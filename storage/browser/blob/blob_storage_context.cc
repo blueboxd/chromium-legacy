@@ -74,11 +74,6 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
   return CreateHandle(uuid, entry);
 }
 
-mojo::PendingRemote<blink::mojom::Blob>
-BlobStorageContext::GetBlobFromPublicURL(const GURL& url) {
-  return registry_.GetBlobFromURL(url);
-}
-
 void BlobStorageContext::GetBlobDataFromBlobRemote(
     mojo::PendingRemote<blink::mojom::Blob> blob,
     base::OnceCallback<void(std::unique_ptr<BlobDataHandle>)> callback) {
@@ -144,16 +139,6 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::AddBrokenBlob(
   entry->set_status(reason);
   FinishBuilding(entry);
   return CreateHandle(uuid, entry);
-}
-
-bool BlobStorageContext::RegisterPublicBlobURL(
-    const GURL& blob_url,
-    mojo::PendingRemote<blink::mojom::Blob> blob) {
-  return registry_.CreateUrlMapping(blob_url, std::move(blob));
-}
-
-void BlobStorageContext::RevokePublicBlobURL(const GURL& blob_url) {
-  registry_.DeleteURLMapping(blob_url);
 }
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFutureBlob(

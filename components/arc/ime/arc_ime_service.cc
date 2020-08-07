@@ -616,9 +616,42 @@ bool ArcImeService::ShouldDoLearning() {
 bool ArcImeService::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  // TODO(https://crbug.com/952757): Implement this method.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  // TODO(https://crbug.com/952757): Implement this method using
+  // Android API's |SetComposingRegion|.
+  if (!selection_range_.is_empty() || !selection_range_.IsBoundedBy(range)) {
+    return true;
+  }
+
+  // |text_in_range_| might be only a subset of the full text, so make sure that
+  // the composition range is within bounds.
+  const gfx::Range range_relative_to_text(
+      range.GetMin() - text_range_.GetMin(),
+      range.GetMax() - text_range_.GetMin());
+  if (range_relative_to_text.GetMin() < 0 ||
+      range_relative_to_text.length() > text_in_range_.length()) {
+    return true;
+  }
+
+  // Save the text to be composed since we need to recompose it later.
+  base::string16 text = text_in_range_.substr(range_relative_to_text.GetMin(),
+                                              range_relative_to_text.length());
+  const int cursor_relative_to_text =
+      selection_range_.start() - text_range_.GetMin();
+
+  // Confirm the existing composition, delete the text to be composed, and
+  // recompose it.
+  ConfirmCompositionText(/*keep_selection=*/true);
+  ExtendSelectionAndDelete(
+      /*before=*/cursor_relative_to_text - range_relative_to_text.GetMin(),
+      /*after=*/range_relative_to_text.GetMax() - cursor_relative_to_text);
+  ui::CompositionText composition;
+
+  composition.text = std::move(text);
+  composition.selection =
+      gfx::Range(cursor_relative_to_text, cursor_relative_to_text);
+  composition.ime_text_spans = ui_ime_text_spans;
+  SetCompositionText(std::move(composition));
+  return true;
 }
 
 gfx::Range ArcImeService::GetAutocorrectRange() const {

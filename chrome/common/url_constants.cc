@@ -356,6 +356,9 @@ const char kArcPrivacyPolicyPathFormat[] = "arc_tos/%s/privacy_policy.pdf";
 
 const char kEolNotificationURL[] = "https://www.google.com/chromebook/older/";
 
+const char kAutoUpdatePolicyURL[] =
+    "http://support.google.com/chrome/a?p=auto-update-policy";
+
 const char kGoogleNameserversLearnMoreURL[] =
     "https://developers.google.com/speed/public-dns";
 

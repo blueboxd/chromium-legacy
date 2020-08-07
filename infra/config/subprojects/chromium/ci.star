@@ -1096,17 +1096,6 @@ ci.thin_tester(
     triggered_by = [builder_name("Mac Builder (dbg)")],
 )
 
-ci.thin_tester(
-    name = "WebKit Mac10.13 (retina)",
-    mastername = "chromium.mac",
-    console_view_entry = ci.console_view_entry(
-        category = "release",
-        short_name = "ret",
-    ),
-    main_console_view = settings.main_console_name,
-    triggered_by = [builder_name("Mac Builder")],
-)
-
 ci.mac_ios_builder(
     name = "ios-simulator",
     console_view_entry = ci.console_view_entry(

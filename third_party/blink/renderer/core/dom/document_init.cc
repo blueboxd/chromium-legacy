@@ -57,17 +57,6 @@
 
 namespace blink {
 
-// FIXME: Broken with OOPI.
-static Document* ParentDocument(DocumentLoader* loader) {
-  DCHECK(loader);
-  DCHECK(loader->GetFrame());
-
-  Element* owner_element = loader->GetFrame()->DeprecatedLocalOwner();
-  if (!owner_element)
-    return nullptr;
-  return &owner_element->GetDocument();
-}
-
 // static
 DocumentInit DocumentInit::Create() {
   return DocumentInit();
@@ -79,7 +68,7 @@ DocumentInit::~DocumentInit() = default;
 
 DocumentInit& DocumentInit::ForTest() {
   DCHECK(!execution_context_);
-  DCHECK(!document_loader_);
+  DCHECK(!window_);
 #if DCHECK_IS_ON()
   DCHECK(!for_test_);
   for_test_ = true;
@@ -94,48 +83,26 @@ DocumentInit& DocumentInit::WithImportsController(
 }
 
 bool DocumentInit::ShouldSetURL() const {
-  DocumentLoader* loader = TreeRootDocumentLoader();
-  return (loader && loader->GetFrame()->Tree().Parent()) || !url_.IsEmpty();
+  return (window_ && !window_->GetFrame()->IsMainFrame()) || !url_.IsEmpty();
 }
 
 bool DocumentInit::IsSrcdocDocument() const {
-  // TODO(dgozman): why do we check |parent_document_| here?
-  return parent_document_ && is_srcdoc_document_;
+  return window_ && !window_->GetFrame()->IsMainFrame() && is_srcdoc_document_;
 }
 
-DocumentLoader* DocumentInit::TreeRootDocumentLoader() const {
-  if (document_loader_)
-    return document_loader_;
-  if (imports_controller_) {
-    return imports_controller_->TreeRoot()
-        ->GetFrame()
-        ->Loader()
-        .GetDocumentLoader();
-  }
-  return nullptr;
-}
-
-DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader,
-                                               Document* owner_document) {
-  DCHECK(!document_loader_);
+DocumentInit& DocumentInit::WithWindow(LocalDOMWindow* window,
+                                       Document* owner_document) {
+  DCHECK(!window_);
   DCHECK(!execution_context_);
   DCHECK(!imports_controller_);
 #if DCHECK_IS_ON()
   DCHECK(!for_test_);
 #endif
-  DCHECK(loader);
-  document_loader_ = loader;
-  parent_document_ = ParentDocument(document_loader_);
+  DCHECK(window);
+  window_ = window;
+  execution_context_ = window;
   owner_document_ = owner_document;
   return *this;
-}
-
-LocalFrame* DocumentInit::GetFrame() const {
-  return document_loader_ ? document_loader_->GetFrame() : nullptr;
-}
-
-UseCounter* DocumentInit::GetUseCounter() const {
-  return document_loader_;
 }
 
 // static
@@ -218,15 +185,15 @@ PluginData* DocumentInit::GetPluginData(LocalFrame* frame, const KURL& url) {
 
 DocumentInit& DocumentInit::WithTypeFrom(const String& mime_type) {
   mime_type_ = mime_type;
-  type_ = ComputeDocumentType(GetFrame(), Url(), mime_type_,
-                              &is_for_external_handler_);
+  type_ = ComputeDocumentType(window_ ? window_->GetFrame() : nullptr, Url(),
+                              mime_type_, &is_for_external_handler_);
   return *this;
 }
 
 DocumentInit& DocumentInit::WithExecutionContext(
     ExecutionContext* execution_context) {
   DCHECK(!execution_context_);
-  DCHECK(!document_loader_);
+  DCHECK(!window_);
 #if DCHECK_IS_ON()
   DCHECK(!for_test_);
 #endif
@@ -276,12 +243,6 @@ V0CustomElementRegistrationContext* DocumentInit::RegistrationContext(
   return registration_context_;
 }
 
-ExecutionContext* DocumentInit::GetExecutionContext() const {
-  if (execution_context_)
-    return execution_context_;
-  return GetFrame() ? GetFrame()->DomWindow() : nullptr;
-}
-
 DocumentInit& DocumentInit::WithWebBundleClaimedUrl(
     const KURL& web_bundle_claimed_url) {
   web_bundle_claimed_url_ = web_bundle_claimed_url;
@@ -290,7 +251,7 @@ DocumentInit& DocumentInit::WithWebBundleClaimedUrl(
 
 Document* DocumentInit::CreateDocument() const {
 #if DCHECK_IS_ON()
-  DCHECK(document_loader_ || execution_context_ || for_test_);
+  DCHECK(execution_context_ || for_test_);
 #endif
   switch (type_) {
     case Type::kHTML:
@@ -300,8 +261,8 @@ Document* DocumentInit::CreateDocument() const {
     case Type::kImage:
       return MakeGarbageCollected<ImageDocument>(*this);
     case Type::kPlugin: {
-      DCHECK(GetFrame());
-      if (GetFrame()->DomWindow()->IsSandboxed(
+      DCHECK(window_);
+      if (window_->IsSandboxed(
               network::mojom::blink::WebSandboxFlags::kPlugins)) {
         return MakeGarbageCollected<SinkDocument>(*this);
       }

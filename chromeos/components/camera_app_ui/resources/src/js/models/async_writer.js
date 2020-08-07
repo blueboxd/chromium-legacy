@@ -11,8 +11,9 @@ import {assert} from '../chrome_util.js';
 export class AsyncWriter {
   /**
    * @param {function(!Blob): !Promise} doWrite
+   * @param {{onClosed: ((function(): !Promise)|undefined)}=} callbacks
    */
-  constructor(doWrite) {
+  constructor(doWrite, {onClosed = (async () => {})} = {}) {
     /**
      * @type {!AsyncJobQueue}
      * @private
@@ -24,6 +25,12 @@ export class AsyncWriter {
      * @private
      */
     this.doWrite_ = doWrite;
+
+    /**
+     * @type {function(): !Promise}
+     * @private
+     */
+    this.onClosed_ = onClosed;
 
     /**
      * @type {boolean}
@@ -49,6 +56,7 @@ export class AsyncWriter {
   async close() {
     this.closed_ = true;
     await this.queue_.flush();
+    await this.onClosed_();
   }
 
   /**
@@ -61,6 +69,9 @@ export class AsyncWriter {
     const doWrite = (blob) => {
       return Promise.all(writers.map((writer) => writer.write(blob)));
     };
-    return new AsyncWriter(doWrite);
+    const onClosed = () => {
+      return Promise.all(writers.map((writer) => writer.close()));
+    };
+    return new AsyncWriter(doWrite, {onClosed});
   }
 }

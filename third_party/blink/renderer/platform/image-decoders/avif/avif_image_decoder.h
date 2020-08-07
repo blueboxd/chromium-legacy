@@ -78,8 +78,12 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   // desired.
   void ColorCorrectImage(ImageFrame* buffer);
 
+  // The bit depth from the container.
   uint8_t bit_depth_ = 0;
   bool decode_to_half_float_ = false;
+  // The YUV format from the container. Stores an avifPixelFormat enum value.
+  // Declared as uint8_t because we can't forward-declare an enum type in C++.
+  uint8_t avif_yuv_format_ = 0;  // AVIF_PIXEL_FORMAT_NONE
   uint8_t chroma_shift_x_ = 0;
   uint8_t chroma_shift_y_ = 0;
   size_t decoded_frame_count_ = 0;

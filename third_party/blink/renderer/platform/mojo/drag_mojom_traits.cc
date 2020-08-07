@@ -5,8 +5,11 @@
 #include "third_party/blink/renderer/platform/mojo/drag_mojom_traits.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/strings/string16.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom-blink.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -93,6 +96,14 @@ bool StructTraits<
   item.storage_type = blink::WebDragData::Item::kStorageTypeFilename;
   item.filename_data = blink::FilePathToWebString(filename_data);
   item.display_name_data = blink::FilePathToWebString(display_name_data);
+  mojo::PendingRemote<::blink::mojom::blink::NativeFileSystemDragDropToken>
+      native_file_system_token(
+          data.TakeNativeFileSystemToken<mojo::PendingRemote<
+              ::blink::mojom::blink::NativeFileSystemDragDropToken>>());
+  item.native_file_system_entry =
+      base::MakeRefCounted<::blink::NativeFileSystemDropData>(
+          std::move(native_file_system_token));
+
   *out = std::move(item);
   return true;
 }
@@ -154,6 +165,16 @@ WTF::String StructTraits<blink::mojom::DragItemFileSystemFileDataView,
                          blink::WebDragData::Item>::
     file_system_id(const blink::WebDragData::Item& item) {
   return item.file_system_id;
+}
+
+//  static
+mojo::PendingRemote<blink::mojom::blink::NativeFileSystemDragDropToken>
+StructTraits<blink::mojom::DragItemFileDataView, blink::WebDragData::Item>::
+    native_file_system_token(const blink::WebDragData::Item& item) {
+  // Should never have to send a transfer token information from the renderer
+  // to the browser.
+  NOTREACHED();
+  return mojo::NullRemote();
 }
 
 // static

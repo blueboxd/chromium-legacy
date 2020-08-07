@@ -8,6 +8,7 @@ has_native_libraries = false
 has_proguard_flags = true
 has_r_text_file = true
 is_manifest_empty = false
+manifest_package = "com.google.android.gms.cast.framework"
 resources = [
   "res/drawable-hdpi-v4/cast_abc_scrubber_control_off_mtrl_alpha.png",
   "res/drawable-hdpi-v4/cast_abc_scrubber_control_to_pressed_mtrl_000.png",

@@ -1267,6 +1267,8 @@ source_set("browser") {
     "native_file_system/fixed_native_file_system_permission_grant.h",
     "native_file_system/native_file_system_directory_handle_impl.cc",
     "native_file_system/native_file_system_directory_handle_impl.h",
+    "native_file_system/native_file_system_drag_drop_token_impl.cc",
+    "native_file_system/native_file_system_drag_drop_token_impl.h",
     "native_file_system/native_file_system_error.cc",
     "native_file_system/native_file_system_error.h",
     "native_file_system/native_file_system_file_handle_impl.cc",

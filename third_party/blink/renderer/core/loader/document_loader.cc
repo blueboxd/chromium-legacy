@@ -1765,7 +1765,7 @@ void DocumentLoader::CommitNavigation() {
   WillCommitNavigation();
 
   DocumentInit init = DocumentInit::Create()
-                          .WithDocumentLoader(this, owner_document)
+                          .WithWindow(frame_->DomWindow(), owner_document)
                           .WithURL(Url())
                           .WithTypeFrom(MimeType())
                           .WithSrcdocDocument(loading_srcdoc_)
@@ -1818,10 +1818,8 @@ void DocumentLoader::CommitNavigation() {
     document->SetBaseURLOverride(archive_->MainResource()->Url());
   }
 
-  if (commit_reason_ == CommitReason::kXSLT) {
-    DocumentXSLT::From(*document).SetTransformSourceDocument(
-        previous_window->document());
-  }
+  if (commit_reason_ == CommitReason::kXSLT)
+    DocumentXSLT::SetHasTransformSource(*document);
 
   DidInstallNewDocument(document);
 

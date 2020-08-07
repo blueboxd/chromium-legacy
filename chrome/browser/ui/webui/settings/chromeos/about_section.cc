@@ -344,7 +344,8 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 }
 
 void AboutSection::AddHandlers(content::WebUI* web_ui) {
-  web_ui->AddMessageHandler(std::make_unique<::settings::AboutHandler>());
+  web_ui->AddMessageHandler(
+      std::make_unique<::settings::AboutHandler>(profile()));
 }
 
 int AboutSection::GetSectionNameMessageId() const {

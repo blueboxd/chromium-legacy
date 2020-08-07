@@ -206,9 +206,11 @@ void EolNotification::Click(const base::Optional<int>& button_index,
 
   switch (*button_index) {
     case BUTTON_MORE_INFO: {
+      const GURL url = dismiss_pref_ == prefs::kEolNotificationDismissed
+                           ? GURL(chrome::kEolNotificationURL)
+                           : GURL(chrome::kAutoUpdatePolicyURL);
       // show eol link
-      NavigateParams params(profile_, GURL(chrome::kEolNotificationURL),
-                            ui::PAGE_TRANSITION_LINK);
+      NavigateParams params(profile_, url, ui::PAGE_TRANSITION_LINK);
       params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
       params.window_action = NavigateParams::SHOW_WINDOW;
       Navigate(&params);

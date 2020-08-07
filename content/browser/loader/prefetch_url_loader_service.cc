@@ -117,8 +117,6 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
   // request.
   network::ResourceRequest resource_request = resource_request_in;
 
-  DCHECK_EQ(static_cast<int>(blink::mojom::ResourceType::kPrefetch),
-            resource_request.resource_type);
   BindContext& current_context = *current_bind_context();
 
   if (!current_context.render_frame_host) {

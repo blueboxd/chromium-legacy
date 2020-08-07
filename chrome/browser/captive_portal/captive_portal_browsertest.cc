@@ -2832,7 +2832,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
             GetInterstitialType(broken_tab_contents));
 }
 
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SecureDnsCaptivePortal) {
+// Disabled due to flake. https://crbug.com/1113928
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
+                       DISABLED_SecureDnsCaptivePortal) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kDnsOverHttpsMode,
                          SecureDnsConfig::kModeSecure);

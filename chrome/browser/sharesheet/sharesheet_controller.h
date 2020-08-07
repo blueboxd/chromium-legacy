@@ -19,7 +19,7 @@ class SharesheetController {
 
   // Called by ShareAction to notify SharesheetBubbleView that ShareAction
   // has completed.
-  virtual void ShareActionCompleted() = 0;
+  virtual void CloseSharesheet() = 0;
 };
 
 }  // namespace sharesheet

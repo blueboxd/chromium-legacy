@@ -197,11 +197,6 @@ luci.console_view(
             short_name = "fuzz",
         ),
         luci.console_view_entry(
-            builder = "ci/WebKit Mac10.13 (retina)",
-            category = "week2c|mac",
-            short_name = "webkit",
-        ),
-        luci.console_view_entry(
             builder = "ci/Android CFI",
             category = "week2c|android",
             short_name = "cfi",

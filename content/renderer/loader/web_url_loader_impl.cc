@@ -649,7 +649,9 @@ void WebURLLoaderImpl::Context::Start(
   extra_data->CopyToResourceRequest(request.get());
 
   std::unique_ptr<RequestPeer> peer;
-  if (download_to_network_cache_only) {
+  if (download_to_network_cache_only &&
+      !base::FeatureList::IsEnabled(
+          features::kNoStatePrefetchUsingPrefetchLoader)) {
     peer = std::make_unique<SinkPeer>(this);
   } else {
     peer = std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this);

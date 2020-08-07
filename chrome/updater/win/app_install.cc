@@ -679,12 +679,15 @@ class AppInstall : public App {
 
  private:
   ~AppInstall() override = default;
+
+  // Overrides for App.
   void Initialize() override;
   void Uninitialize() override;
   void FirstTaskRun() override;
 
   void SetupDone(int result);
 
+  std::unique_ptr<LocalPrefs> local_prefs_;
   scoped_refptr<Configurator> config_;
   scoped_refptr<AppInstallController> app_install_controller_;
 
@@ -695,10 +698,12 @@ class AppInstall : public App {
 
 void AppInstall::Initialize() {
   base::i18n::InitializeICU();
+  local_prefs_ = CreateLocalPrefs();
   config_ = base::MakeRefCounted<Configurator>(CreateGlobalPrefs());
 }
 
 void AppInstall::Uninitialize() {
+  PrefsCommitPendingWrites(local_prefs_->GetPrefService());
   PrefsCommitPendingWrites(config_->GetPrefService());
 }
 
@@ -728,6 +733,11 @@ void AppInstall::SetupDone(int result) {
     Shutdown(result);
     return;
   }
+
+  // TODO(crbug.com/1109231) - this is a temporary workaround until a better
+  // fix is found. For now, promote this updater instance and make it active
+  // when it is invoked with --install.
+  local_prefs_->SetQualified(true);
 
   base::MakeRefCounted<PersistedData>(config_->GetPrefService())
       ->SetProductVersion(kUpdaterAppId, base::Version(UPDATER_VERSION_STRING));

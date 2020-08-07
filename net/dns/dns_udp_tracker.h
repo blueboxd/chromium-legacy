@@ -38,6 +38,13 @@ class NET_EXPORT_PRIVATE DnsUdpTracker {
   void RecordQuery(uint16_t port, uint16_t query_id);
   void RecordResponseId(uint16_t query_id, uint16_t response_id);
 
+  // If true, the entropy from random UDP port and DNS ID has been detected to
+  // potentially be low, e.g. due to exhaustion of the port pool or mismatches
+  // on IDs.
+  bool low_entropy() const { return low_entropy_; }
+
+  void set_low_entropy_for_testing(bool value) { low_entropy_ = value; }
+
   void set_tick_clock_for_testing(base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
   }
@@ -48,6 +55,8 @@ class NET_EXPORT_PRIVATE DnsUdpTracker {
   void PurgeOldQueries();
   void SaveQuery(QueryData query);
 
+  // TODO(crbug.com/1093361): Set based on recorded queries and responses.
+  bool low_entropy_ = false;
   base::circular_deque<QueryData> recent_queries_;
 
   const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();

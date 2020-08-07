@@ -546,12 +546,16 @@ void ReadYUV(const char* file_name,
     rgb_pixel->set_z(reinterpret_cast<uint8_t*>(planes[2])[0]);
   }
 
-  if (color_type == kGray_8_SkColorType ||
-      color_type == kA16_unorm_SkColorType) {
-    const double max_channel = (1 << bit_depth) - 1;
+  if (color_type == kGray_8_SkColorType) {
+    const float max_channel = (1 << bit_depth) - 1;
     rgb_pixel->set_x(rgb_pixel->x() / max_channel);
     rgb_pixel->set_y(rgb_pixel->y() / max_channel);
     rgb_pixel->set_z(rgb_pixel->z() / max_channel);
+  } else if (color_type == kA16_unorm_SkColorType) {
+    constexpr float kR16MaxChannel = 65535.0f;
+    rgb_pixel->set_x(rgb_pixel->x() / kR16MaxChannel);
+    rgb_pixel->set_y(rgb_pixel->y() / kR16MaxChannel);
+    rgb_pixel->set_z(rgb_pixel->z() / kR16MaxChannel);
   } else {
     DCHECK_EQ(color_type, kA16_float_SkColorType);
     rgb_pixel->set_x(HalfFloatToUnorm(rgb_pixel->x()));

@@ -47,6 +47,7 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/display_feature.h"
 #include "content/browser/renderer_host/display_util.h"
@@ -67,6 +68,7 @@
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/drag_messages.h"
@@ -103,6 +105,7 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom.h"
 #include "third_party/blink/public/mojom/page/drag.mojom.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/ui_base_switches.h"
@@ -246,7 +249,10 @@ std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
   return metadata;
 }
 
-blink::mojom::DragDataPtr DropDataToDragData(const DropData& drop_data) {
+blink::mojom::DragDataPtr DropDataToDragData(
+    const DropData& drop_data,
+    NativeFileSystemManagerImpl* native_file_system_manager,
+    int child_id) {
   // These fields are currently unused when dragging into Blink.
   DCHECK(drop_data.download_metadata.empty());
   DCHECK(drop_data.file_contents.empty());
@@ -277,6 +283,11 @@ blink::mojom::DragDataPtr DropDataToDragData(const DropData& drop_data) {
     blink::mojom::DragItemFilePtr item = blink::mojom::DragItemFile::New();
     item->path = file.path;
     item->display_name = file.display_name;
+    mojo::PendingRemote<blink::mojom::NativeFileSystemDragDropToken>
+        pending_token;
+    native_file_system_manager->CreateNativeFileSystemDragDropToken(
+        file.path, child_id, pending_token.InitWithNewPipeAndPassReceiver());
+    item->native_file_system_token = std::move(pending_token);
     items.push_back(blink::mojom::DragItem::NewFile(std::move(item)));
   }
   for (const content::DropData::FileSystemFileInfo& file_system_file :
@@ -1835,8 +1846,12 @@ void RenderWidgetHostImpl::DragTargetDrop(const DropData& drop_data,
   if (blink_frame_widget_) {
     DropData drop_data_with_permissions(drop_data);
     GrantFileAccessFromDropData(&drop_data_with_permissions);
+    StoragePartitionImpl* storage_partition =
+        static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition());
     blink_frame_widget_->DragTargetDrop(
-        DropDataToDragData(drop_data_with_permissions),
+        DropDataToDragData(drop_data_with_permissions,
+                           storage_partition->GetNativeFileSystemManager(),
+                           GetProcess()->GetID()),
         ConvertWindowPointToViewport(client_point), screen_point,
         key_modifiers);
   }

@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
+#include "components/variations/hashing.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
 
@@ -41,6 +42,11 @@ const base::Feature kOptimizationHints {
 // Optimization proto.
 const base::Feature kOptimizationHintsExperiments{
     "OptimizationHintsExperiments", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature flag that contains a feature param that specifies the field trials
+// that are allowed to be sent up to the Optimization Guide Server.
+const base::Feature kOptimizationHintsFieldTrials{
+    "OptimizationHintsFieldTrials", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables fetching from a remote Optimization Guide Service.
 const base::Feature kRemoteOptimizationGuideFetching {
@@ -290,6 +296,22 @@ base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch() {
       value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   return base::flat_set<std::string>(app_packages_list.begin(),
                                      app_packages_list.end());
+}
+
+base::flat_set<uint32_t> FieldTrialNameHashesAllowedForFetch() {
+  std::string value = base::GetFieldTrialParamValueByFeature(
+      kOptimizationHintsFieldTrials, "allowed_field_trial_names");
+  if (value.empty())
+    return {};
+
+  std::vector<std::string> allowed_field_trial_names = base::SplitString(
+      value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  base::flat_set<uint32_t> allowed_field_trial_name_hashes;
+  for (const auto& allowed_field_trial_name : allowed_field_trial_names) {
+    allowed_field_trial_name_hashes.insert(
+        variations::HashName(allowed_field_trial_name));
+  }
+  return allowed_field_trial_name_hashes;
 }
 
 bool ShouldUseMLServiceForPrediction() {

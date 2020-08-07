@@ -684,10 +684,8 @@ Document::Document(const DocumentInit& initializer,
       TreeScope(*this),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
-      dom_window_(initializer.GetFrame() ? initializer.GetFrame()->DomWindow()
-                                         : nullptr),
+      dom_window_(initializer.GetWindow()),
       imports_controller_(initializer.ImportsController()),
-      use_counter_during_construction_(initializer.GetUseCounter()),
       execution_context_(initializer.GetExecutionContext()),
       context_features_(ContextFeatures::DefaultSwitch()),
       http_refresh_scheduler_(MakeGarbageCollected<HttpRefreshScheduler>(this)),
@@ -869,9 +867,6 @@ Document::Document(const DocumentInit& initializer,
 #ifndef NDEBUG
   liveDocumentSet().insert(this);
 #endif
-
-  // We will use Loader() as UseCounter after initialization.
-  use_counter_during_construction_ = nullptr;
 }
 
 Document::~Document() {
@@ -8054,7 +8049,6 @@ StylePropertyMapReadOnly* Document::RemoveComputedStyleMapItem(
 
 void Document::Trace(Visitor* visitor) const {
   visitor->Trace(imports_controller_);
-  visitor->Trace(use_counter_during_construction_);
   visitor->Trace(doc_type_);
   visitor->Trace(implementation_);
   visitor->Trace(autofocus_candidates_);
@@ -8322,17 +8316,13 @@ bool Document::InDarkMode() {
 }
 
 void Document::CountUse(mojom::WebFeature feature) const {
-  if (use_counter_during_construction_)
-    use_counter_during_construction_->CountUse(feature);
-  else if (DocumentLoader* loader = Loader())
-    loader->CountUse(feature);
+  if (execution_context_)
+    execution_context_->CountUse(feature);
 }
 
 void Document::CountUse(mojom::WebFeature feature) {
-  if (use_counter_during_construction_)
-    use_counter_during_construction_->CountUse(feature);
-  else if (DocumentLoader* loader = Loader())
-    loader->CountUse(feature);
+  if (execution_context_)
+    execution_context_->CountUse(feature);
 }
 
 void Document::CountProperty(CSSPropertyID property) const {

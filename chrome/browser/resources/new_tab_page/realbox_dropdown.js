@@ -285,8 +285,8 @@ class RealboxDropdownElement extends PolymerElement {
    * @param {!Event} e
    * @private
    */
-  onToggleButtonClick_(e) {
-    const groupId = e.target.dataset.id;
+  onHeaderClick_(e) {
+    const groupId = e.currentTarget.dataset.id;
 
     // Tell the backend to toggle visibility of the given suggestion group ID.
     this.pageHandler_.toggleSuggestionGroupIdVisibility(groupId);
@@ -309,7 +309,7 @@ class RealboxDropdownElement extends PolymerElement {
       return;
     }
 
-    // Simulate a click so that it gets handled by |onToggleButtonClick_|.
+    // Simulate a click so that it gets handled by |onHeaderClick_|.
     e.target.click();
     e.preventDefault();  // Prevents default browser action.
   }

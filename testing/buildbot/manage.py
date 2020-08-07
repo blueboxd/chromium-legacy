@@ -52,7 +52,6 @@ SKIP = {
   'WebKit Mac10.11',
   'WebKit Mac10.12',
   'WebKit Mac10.11 (dbg)',
-  'WebKit Mac10.13 (retina)',
   'Chromium Mac10.10 Tests',
   'Chromium Mac10.11 Tests',
 

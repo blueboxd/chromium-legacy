@@ -362,17 +362,36 @@ TEST(DiscardableSharedMemoryHeapTest, OnMemoryDumpTest) {
 
     base::trace_event::MemoryAllocatorDump::Entry freelist("freelist_size",
                                                            "bytes", 0);
+    base::trace_event::MemoryAllocatorDump::Entry virtual_size("virtual_size",
+                                                               "bytes", 0);
     EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(freelist))));
+    EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(virtual_size))));
+  }
+
+  auto memory = std::make_unique<base::DiscardableSharedMemory>();
+  ASSERT_TRUE(memory->CreateAndMap(block_size));
+  auto span =
+      heap.Grow(std::move(memory), block_size,
+                next_discardable_shared_memory_id++, base::BindOnce(NullTask));
+
+  {
+    base::trace_event::ProcessMemoryDump pmd(args);
+    heap.OnMemoryDump(args, &pmd);
+    auto* dump = pmd.GetAllocatorDump(base::StringPrintf(
+        "discardable/child_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(&heap)));
+    ASSERT_NE(nullptr, dump);
+
+    base::trace_event::MemoryAllocatorDump::Entry freelist("freelist_size",
+                                                           "bytes", 0);
+    base::trace_event::MemoryAllocatorDump::Entry virtual_size(
+        "virtual_size", "bytes", block_size);
+    EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(freelist))));
+    EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(virtual_size))));
   }
 
   {
-    std::unique_ptr<base::DiscardableSharedMemory> memory(
-        new base::DiscardableSharedMemory);
-    ASSERT_TRUE(memory->CreateAndMap(block_size));
-    std::unique_ptr<DiscardableSharedMemoryHeap::Span> span = heap.Grow(
-        std::move(memory), block_size, next_discardable_shared_memory_id++,
-        base::BindOnce(NullTask));
     heap.MergeIntoFreeLists(std::move(span));
+
     base::trace_event::ProcessMemoryDump pmd(args);
     heap.OnMemoryDump(args, &pmd);
     auto* dump = pmd.GetAllocatorDump(base::StringPrintf(
@@ -381,7 +400,10 @@ TEST(DiscardableSharedMemoryHeapTest, OnMemoryDumpTest) {
 
     base::trace_event::MemoryAllocatorDump::Entry freelist("freelist_size",
                                                            "bytes", block_size);
+    base::trace_event::MemoryAllocatorDump::Entry virtual_size(
+        "virtual_size", "bytes", block_size);
     EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(freelist))));
+    EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(virtual_size))));
   }
 }
 

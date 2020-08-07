@@ -34,6 +34,7 @@
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_url_registry.h"
 #include "storage/browser/blob/blob_url_store_impl.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_context.h"
@@ -189,7 +190,8 @@ class BlobURLTest : public testing::Test {
     request.headers = extra_headers;
 
     storage::MockBlobRegistryDelegate delegate;
-    storage::BlobURLStoreImpl url_store(GetStorageContext(), &delegate);
+    storage::BlobURLStoreImpl url_store(blob_url_registry_.AsWeakPtr(),
+                                        &delegate);
 
     mojo::PendingRemote<blink::mojom::Blob> blob_remote;
     storage::BlobImpl::Create(
@@ -304,6 +306,7 @@ class BlobURLTest : public testing::Test {
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   storage::BlobStorageContext blob_context_;
+  storage::BlobUrlRegistry blob_url_registry_;
   std::unique_ptr<storage::BlobDataHandle> blob_handle_;
   std::unique_ptr<BlobDataBuilder> blob_data_;
   std::string blob_uuid_;

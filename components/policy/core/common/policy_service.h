@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list_types.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_export.h"
@@ -18,6 +19,12 @@
 namespace policy {
 
 class ConfigurationPolicyProvider;
+
+#if defined(OS_ANDROID)
+namespace android {
+class PolicyServiceAndroid;
+}
+#endif
 
 // The PolicyService merges policies from all available sources, taking into
 // account their priorities. Policy clients can retrieve policy for their domain
@@ -36,7 +43,7 @@ class POLICY_EXPORT PolicyService {
     // and |current| contains the current values.
     virtual void OnPolicyUpdated(const PolicyNamespace& ns,
                                  const PolicyMap& previous,
-                                 const PolicyMap& current) = 0;
+                                 const PolicyMap& current) {}
 
     // Invoked at most once for each |domain|, when the PolicyService becomes
     // ready. If IsInitializationComplete() is false, then this will be invoked
@@ -97,6 +104,11 @@ class POLICY_EXPORT PolicyService {
   // |callback| is invoked once every source has reloaded its policies, and
   // GetPolicies() is guaranteed to return the updated values at that point.
   virtual void RefreshPolicies(base::OnceClosure callback) = 0;
+
+#if defined(OS_ANDROID)
+  // Get the PolicyService JNI bridge instance.
+  virtual android::PolicyServiceAndroid* GetPolicyServiceAndroid() = 0;
+#endif
 };
 
 // A registrar that only observes changes to particular policies within the

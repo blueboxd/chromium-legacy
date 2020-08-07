@@ -34,11 +34,6 @@
         "port_name": "mac-mac10.13",
         "specifiers": ["Mac10.13", "Release"]
     },
-    "WebKit Mac10.13 (retina)": {
-        "master": "chromium.mac",
-        "port_name": "mac-retina",
-        "specifiers": ["Retina", "Release"]
-    },
     "Mac10.13 Tests (dbg)": {
         "master": "chromium.mac",
         "port_name": "mac-mac10.13",

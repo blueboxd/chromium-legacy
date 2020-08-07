@@ -1096,14 +1096,6 @@ void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
   item_widget_->GetLayer()->SetOpacity(1.f);
 
   overview_grid_->PositionWindows(/*animate=*/false);
-  // If |activate_on_unminimized_| is true, then this code path is from an
-  // unminimizing an ARC app async from |OverviewSession::SelectWindow|.
-  if (activate_on_unminimized_) {
-    activate_on_unminimized_ = false;
-    DCHECK(!minimized);
-    SetOpacity(1.f);
-    wm::ActivateWindow(GetWindow());
-  }
 }
 
 gfx::Rect OverviewItem::GetShadowBoundsForTesting() {

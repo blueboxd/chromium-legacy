@@ -586,7 +586,7 @@ bool LocalDOMWindow::HasInsecureContextInAncestors() {
 }
 
 Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
-  DCHECK_EQ(init.GetFrame(), GetFrame());
+  DCHECK_EQ(init.GetWindow(), this);
   DCHECK(!document_);
   document_ = init.CreateDocument();
   document_->Initialize();

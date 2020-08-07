@@ -130,7 +130,8 @@ const std::string CountryNames::GetCountryCodeForLocalizedCountryName(
   result = country_names_for_locale.GetCountryCode(country);
 
   // Put the country names for the locale into the cache.
-  localized_country_names_cache_.Put(locale_name, std::move(result));
+  localized_country_names_cache_.Put(locale_name,
+                                     std::move(country_names_for_locale));
 
   return result;
 }

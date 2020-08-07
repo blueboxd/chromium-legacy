@@ -226,11 +226,14 @@ Vector<String> DataObject::Filenames() const {
   return results;
 }
 
-void DataObject::AddFilename(const String& filename,
-                             const String& display_name,
-                             const String& file_system_id) {
+void DataObject::AddFilename(
+    const String& filename,
+    const String& display_name,
+    const String& file_system_id,
+    scoped_refptr<NativeFileSystemDropData> native_file_system_entry) {
   InternalAddFileItem(DataObjectItem::CreateFromFileWithFileSystemId(
-      File::CreateForUserProvidedFile(filename, display_name), file_system_id));
+      File::CreateForUserProvidedFile(filename, display_name), file_system_id,
+      std::move(native_file_system_entry)));
 }
 
 void DataObject::AddSharedBuffer(scoped_refptr<SharedBuffer> buffer,
@@ -304,7 +307,8 @@ DataObject* DataObject::Create(WebDragData data) {
       case WebDragData::Item::kStorageTypeFilename:
         has_file_system = true;
         data_object->AddFilename(item.filename_data, item.display_name_data,
-                                 data.FilesystemId());
+                                 data.FilesystemId(),
+                                 item.native_file_system_entry);
         break;
       case WebDragData::Item::kStorageTypeBinaryData:
         // This should never happen when dragging in.

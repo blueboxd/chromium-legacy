@@ -503,7 +503,7 @@ bool InputMethodEngineBase::SetCompositionRange(
 
   // When there is composition text, commit it to the text field first before
   // changing the composition range.
-  ConfirmCompositionText(/* reset_engine */ false, /* keep_selection */ false);
+  ConfirmCompositionText(/* reset_engine */ false, /* keep_selection */ true);
 
   std::vector<ui::ImeTextSpan> text_spans;
   for (const auto& segment : segments) {

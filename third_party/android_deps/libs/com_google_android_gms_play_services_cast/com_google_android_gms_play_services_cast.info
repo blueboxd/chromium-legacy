@@ -8,6 +8,7 @@ has_native_libraries = false
 has_proguard_flags = false
 has_r_text_file = true
 is_manifest_empty = true
+manifest_package = "com.google.android.gms.cast"
 resources = [
   "res/drawable-hdpi-v4/cast_ic_notification_0.png",
   "res/drawable-hdpi-v4/cast_ic_notification_1.png",

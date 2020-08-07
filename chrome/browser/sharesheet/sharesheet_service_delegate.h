@@ -52,7 +52,7 @@ class SharesheetServiceDelegate : public SharesheetController {
 
   // SharesheetController overrides
   uint32_t GetId() override;
-  void ShareActionCompleted() override;
+  void CloseSharesheet() override;
 
  private:
   const uint32_t id_;

@@ -2512,9 +2512,20 @@ TEST_F(DnsTransactionTestWithMockTime, SlowHttpsResponse_TwoAttempts) {
   EXPECT_TRUE(helper.has_completed());
 }
 
-TEST_F(DnsTransactionTest, TCPLookup) {
+TEST_F(DnsTransactionTest, TcpLookup_UdpRetry) {
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
                         dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);
+  AddQueryAndResponse(0 /* id */, kT0HostName, kT0Qtype, kT0ResponseDatagram,
+                      base::size(kT0ResponseDatagram), ASYNC, Transport::TCP);
+
+  TransactionHelper helper0(kT0HostName, kT0Qtype, false /* secure */,
+                            kT0RecordCount, resolve_context_.get());
+  EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+}
+
+TEST_F(DnsTransactionTest, TcpLookup_LowEntropy) {
+  session_->udp_tracker()->set_low_entropy_for_testing(true);
+
   AddQueryAndResponse(0 /* id */, kT0HostName, kT0Qtype, kT0ResponseDatagram,
                       base::size(kT0ResponseDatagram), ASYNC, Transport::TCP);
 
@@ -2557,10 +2568,24 @@ TEST_F(DnsTransactionTest, TCPMalformed) {
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
 }
 
-TEST_F(DnsTransactionTestWithMockTime, TCPTimeout) {
+TEST_F(DnsTransactionTestWithMockTime, TcpTimeout_UdpRetry) {
   ConfigureFactory();
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
                         dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);
+  AddSocketData(std::make_unique<DnsSocketData>(
+      1 /* id */, kT0HostName, kT0Qtype, ASYNC, Transport::TCP));
+
+  TransactionHelper helper0(kT0HostName, kT0Qtype, false /* secure */,
+                            ERR_DNS_TIMED_OUT, resolve_context_.get());
+  EXPECT_FALSE(helper0.Run(transaction_factory_.get()));
+  FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(helper0.has_completed());
+}
+
+TEST_F(DnsTransactionTestWithMockTime, TcpTimeout_LowEntropy) {
+  ConfigureFactory();
+  session_->udp_tracker()->set_low_entropy_for_testing(true);
+
   AddSocketData(std::make_unique<DnsSocketData>(
       1 /* id */, kT0HostName, kT0Qtype, ASYNC, Transport::TCP));
 

@@ -74,6 +74,9 @@ TEST(CountryNamesTest, GetCountryCodeForLocalizedCountryName) {
   TestCountryNames names("en_US");
   EXPECT_EQ("AM", names.GetCountryCodeForLocalizedCountryName(
                       ASCIIToUTF16("Armenien"), "de"));
+  // Check that there is no cache by requesting the same result twice.
+  EXPECT_EQ("AM", names.GetCountryCodeForLocalizedCountryName(
+                      ASCIIToUTF16("Armenien"), "de"));
   EXPECT_EQ("AZ", names.GetCountryCodeForLocalizedCountryName(
                       ASCIIToUTF16("Azerbeidzjan"), "nl"));
 }

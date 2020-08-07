@@ -8,6 +8,7 @@ has_native_libraries = false
 has_proguard_flags = true
 has_r_text_file = true
 is_manifest_empty = false
+manifest_package = "com.google.android.gms.base"
 resources = [
   "res/color/common_google_signin_btn_text_dark.xml",
   "res/color/common_google_signin_btn_text_light.xml",

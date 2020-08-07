@@ -8,6 +8,7 @@ has_native_libraries = false
 has_proguard_flags = false
 has_r_text_file = true
 is_manifest_empty = false
+manifest_package = "androidx.slice.core"
 resources = [
   "res/drawable-anydpi-v21/abc_ic_arrow_forward.xml",
   "res/drawable-anydpi-v21/abc_ic_permission.xml",

@@ -35,6 +35,16 @@ CaptureModeController* CaptureModeController::Get() {
   return g_instance;
 }
 
+void CaptureModeController::SetSource(CaptureModeSource source) {
+  source_ = source;
+  // TODO(afakhry): Fill in here.
+}
+
+void CaptureModeController::SetType(CaptureModeType type) {
+  type_ = type;
+  // TODO(afakhry): Fill in here.
+}
+
 void CaptureModeController::Start() {
   StartWith(type_, source_);
 }

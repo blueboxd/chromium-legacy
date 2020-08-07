@@ -32,8 +32,6 @@
 #include "storage/browser/blob/blob_storage_registry.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
-class GURL;
-
 namespace content {
 
 class ChromeBlobStorageContext;
@@ -72,7 +70,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
   // The following three methods all lookup a BlobDataHandle based on some
   // input. If no blob matching the input exists these methods return null.
   std::unique_ptr<BlobDataHandle> GetBlobDataFromUUID(const std::string& uuid);
-  mojo::PendingRemote<blink::mojom::Blob> GetBlobFromPublicURL(const GURL& url);
   // If this BlobStorageContext is deleted before this method finishes, the
   // callback will still be called with null.
   void GetBlobDataFromBlobRemote(
@@ -96,11 +93,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
       const std::string& content_type,
       const std::string& content_disposition,
       BlobStatus reason);
-
-  // Useful for coining blob urls from within the browser process.
-  bool RegisterPublicBlobURL(const GURL& url,
-                             mojo::PendingRemote<blink::mojom::Blob> blob);
-  void RevokePublicBlobURL(const GURL& url);
 
   size_t blob_count() const { return registry_.blob_count(); }
 

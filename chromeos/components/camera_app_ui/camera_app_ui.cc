@@ -204,6 +204,8 @@ CameraAppUI::CameraAppUI(content::WebUI* web_ui,
   allowlist->RegisterAutoGrantedPermission(host_origin,
                                            ContentSettingsType::NOTIFICATIONS);
 
+  delegate_->SetLaunchDirectory();
+
   // Set up the data source.
   content::WebUIDataSource* source = CreateCameraAppUIHTMLSource();
   content::WebUIDataSource::Add(browser_context, source);

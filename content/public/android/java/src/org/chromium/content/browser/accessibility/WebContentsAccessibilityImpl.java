@@ -760,6 +760,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                         mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId);
                 return true;
             case ACTION_CONTEXT_CLICK:
+            case AccessibilityNodeInfo.ACTION_LONG_CLICK:
                 WebContentsAccessibilityImplJni.get().showContextMenu(
                         mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId);
                 return true;
@@ -1415,6 +1416,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         addAction(node, AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
         addAction(node, ACTION_SHOW_ON_SCREEN);
         addAction(node, ACTION_CONTEXT_CLICK);
+        addAction(node, AccessibilityNodeInfo.ACTION_LONG_CLICK);
 
         if (hasNonEmptyInnerText) {
             addAction(node, AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);

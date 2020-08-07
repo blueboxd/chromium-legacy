@@ -177,6 +177,7 @@ EmbeddedWorkerInstanceClientImpl::BuildStartData(
           : blink::WebEmbeddedWorkerStartData::kDontWaitForDebugger;
   start_data->devtools_worker_token = params.devtools_worker_token;
   start_data->service_worker_token = params.service_worker_token;
+  start_data->ukm_source_id = params.ukm_source_id;
 
   return start_data;
 }

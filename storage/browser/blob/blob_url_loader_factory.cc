@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_url_registry.h"
 
 namespace storage {
 
@@ -19,13 +19,13 @@ namespace {
 // by this method.
 void CreateFactoryForToken(
     mojo::Remote<blink::mojom::BlobURLToken>,
-    const base::WeakPtr<BlobStorageContext>& context,
+    base::WeakPtr<BlobUrlRegistry> url_registry,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     const base::UnguessableToken& token) {
   mojo::PendingRemote<blink::mojom::Blob> blob;
   GURL blob_url;
-  if (context)
-    context->registry().GetTokenMapping(token, &blob_url, &blob);
+  if (url_registry)
+    url_registry->GetTokenMapping(token, &blob_url, &blob);
   BlobURLLoaderFactory::Create(std::move(blob), blob_url, std::move(receiver));
 }
 
@@ -43,7 +43,7 @@ void BlobURLLoaderFactory::Create(
 // static
 void BlobURLLoaderFactory::Create(
     mojo::PendingRemote<blink::mojom::BlobURLToken> token,
-    base::WeakPtr<BlobStorageContext> context,
+    base::WeakPtr<BlobUrlRegistry> url_registry,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   // Not every URLLoaderFactory user deals with the URLLoaderFactory simply
   // disconnecting very well, so make sure we always at least bind the receiver
@@ -53,7 +53,7 @@ void BlobURLLoaderFactory::Create(
   auto* raw_token = token_remote.get();
   raw_token->GetToken(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       base::BindOnce(&CreateFactoryForToken, std::move(token_remote),
-                     std::move(context), std::move(receiver)),
+                     std::move(url_registry), std::move(receiver)),
       base::UnguessableToken()));
 }
 

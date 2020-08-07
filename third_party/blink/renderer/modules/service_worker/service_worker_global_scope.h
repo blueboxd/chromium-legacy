@@ -37,6 +37,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/network_context.mojom-blink-forward.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink-forward.h"
@@ -97,7 +98,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
       mojo::PendingRemote<mojom::blink::CacheStorage>,
       base::TimeTicks time_origin,
-      const ServiceWorkerToken& service_worker_token);
+      const ServiceWorkerToken& service_worker_token,
+      ukm::SourceId ukm_source_id);
 
   ServiceWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>,
@@ -105,7 +107,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
       mojo::PendingRemote<mojom::blink::CacheStorage>,
       base::TimeTicks time_origin,
-      const ServiceWorkerToken& service_worker_token);
+      const ServiceWorkerToken& service_worker_token,
+      ukm::SourceId ukm_source_id);
   ~ServiceWorkerGlobalScope() override;
 
   // ExecutionContext overrides:

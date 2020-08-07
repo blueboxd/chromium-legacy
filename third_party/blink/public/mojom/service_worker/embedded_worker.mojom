@@ -121,6 +121,11 @@ struct EmbeddedWorkerStartParams {
   // that aren't on the EmbeddedWorkerInstanceHost interface. This is not
   // persistent across worker restarts.
   ServiceWorkerToken service_worker_token;
+
+  // The UKM SourceId associated with the service worker. This persists across
+  // service worker restarts, but not browser restarts. It is distinct from the
+  // IDs associated with the connected clients.
+  int64 ukm_source_id;
 };
 
 // Holds timing information about the start worker sequence for UMA.

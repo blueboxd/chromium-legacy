@@ -16,8 +16,7 @@ class DataTransferItemNativeFileSystem {
   STATIC_ONLY(DataTransferItemNativeFileSystem);
 
  public:
-  static NativeFileSystemHandle* getAsFileSystemHandle(ScriptState*,
-                                                       DataTransferItem&);
+  static ScriptPromise getAsFileSystemHandle(ScriptState*, DataTransferItem&);
 };
 
 }  // namespace blink

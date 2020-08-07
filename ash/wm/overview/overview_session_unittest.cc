@@ -5954,6 +5954,48 @@ TEST_P(SplitViewOverviewSessionTest, OnScreenLock) {
             split_view_controller()->state());
 }
 
+// Verify that selecting an minimized snappable window while in split view
+// triggers auto snapping.
+TEST_P(SplitViewOverviewSessionTest,
+       SelectMinimizedSnappableWindowInSplitView) {
+  // Create two snappable windows.
+  std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> minimized_window = CreateTestWindow();
+  WindowState::Get(minimized_window.get())->Minimize();
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+
+  // Snap a window to enter split view mode.
+  split_view_controller()->SnapWindow(snapped_window.get(),
+                                      SplitViewController::LEFT);
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
+
+  // Select the minimized window.
+  OverviewItem* overview_item =
+      GetOverviewItemForWindow(minimized_window.get());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_screen_location(
+      gfx::ToRoundedPoint(overview_item->target_bounds().CenterPoint()));
+  generator->ClickLeftButton();
+
+  // Verify that both windows are in a snapped state and overview mode is ended.
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(
+      split_view_controller()->IsWindowInSplitView(snapped_window.get()));
+  EXPECT_EQ(
+      split_view_controller()->GetPositionOfSnappedWindow(snapped_window.get()),
+      SplitViewController::LEFT);
+  EXPECT_TRUE(
+      split_view_controller()->IsWindowInSplitView(minimized_window.get()));
+  EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(
+                minimized_window.get()),
+            SplitViewController::RIGHT);
+  EXPECT_FALSE(overview_controller()->InOverviewSession());
+  EXPECT_EQ(minimized_window.get(), window_util::GetActiveWindow());
+}
+
 // Test the split view and overview functionalities in clamshell mode. Split
 // view is only active when overview is active in clamshell mode.
 class SplitViewOverviewSessionInClamshellTest

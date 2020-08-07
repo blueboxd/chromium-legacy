@@ -63,7 +63,7 @@ uint32_t SharesheetServiceDelegate::GetId() {
   return id_;
 }
 
-void SharesheetServiceDelegate::ShareActionCompleted() {
+void SharesheetServiceDelegate::CloseSharesheet() {
   sharesheet_bubble_view_->CloseBubble();
 }
 

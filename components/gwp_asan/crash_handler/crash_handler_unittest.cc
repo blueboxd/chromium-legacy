@@ -124,22 +124,22 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   static crashpad::SanitizationInformation sanitization_info = {};
-  static crashpad::SanitizationMemoryRangeWhitelist memory_whitelist;
+  static crashpad::SanitizationAllowedMemoryRanges allowed_memory_ranges;
   if (cmd_line->HasSwitch("sanitize")) {
     auto memory_ranges = gpa->GetInternalMemoryRegions();
     auto* range_array =
-        new crashpad::SanitizationMemoryRangeWhitelist::Range[memory_ranges
-                                                                  .size()];
+        new crashpad::SanitizationAllowedMemoryRanges::Range[memory_ranges
+                                                                 .size()];
     for (size_t i = 0; i < memory_ranges.size(); i++) {
       range_array[i].base =
           reinterpret_cast<crashpad::VMAddress>(memory_ranges[i].first);
       range_array[i].length = memory_ranges[i].second;
     }
-    memory_whitelist.size = memory_ranges.size();
-    memory_whitelist.entries =
+    allowed_memory_ranges.size = memory_ranges.size();
+    allowed_memory_ranges.entries =
         reinterpret_cast<crashpad::VMAddress>(range_array);
-    sanitization_info.memory_range_whitelist_address =
-        reinterpret_cast<crashpad::VMAddress>(&memory_whitelist);
+    sanitization_info.allowed_memory_ranges_address =
+        reinterpret_cast<crashpad::VMAddress>(&allowed_memory_ranges);
     arguments.push_back(base::StringPrintf("--sanitization-information=%p",
                                            &sanitization_info));
   }

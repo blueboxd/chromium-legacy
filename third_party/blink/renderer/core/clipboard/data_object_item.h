@@ -33,7 +33,9 @@
 
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom-blink.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink.h"
+#include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -57,7 +59,8 @@ class CORE_EXPORT DataObjectItem final
   // webkitGetAsEntry.
   static DataObjectItem* CreateFromFileWithFileSystemId(
       File*,
-      const String& file_system_id);
+      const String& file_system_id,
+      scoped_refptr<NativeFileSystemDropData> native_file_entry = nullptr);
   static DataObjectItem* CreateFromURL(const String& url, const String& title);
   static DataObjectItem* CreateFromHTML(const String& html,
                                         const KURL& base_url);
@@ -93,39 +96,18 @@ class CORE_EXPORT DataObjectItem final
   String FileSystemId() const;
 
   bool HasNativeFileSystemEntry() const;
-  String NativeFileSystemFileName() const;
-  bool NativeFileSystemEntryIsDirectory() const;
-  mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
+  mojo::PendingRemote<mojom::blink::NativeFileSystemDragDropToken>
   CloneNativeFileSystemEntryToken() const;
 
   void Trace(Visitor*) const;
 
  private:
-  // Incoming DroppedNativeFileSystemEntriy objects are stored using this
-  // intermediary type. This is because this class must own a
-  // Remote<NativeFileSystemTransferToken> to clone tokens, and the Mojo
-  // DroppedNativeFileSystemEntry struct only allows storing a
-  // PendingRemote<NativeFileSystemTransferToken>.
-  struct NativeFileSystemEntryData {
-    NativeFileSystemEntryData(
-        String name,
-        bool is_directory,
-        mojo::Remote<mojom::blink::NativeFileSystemTransferToken> token_remote)
-        : name(name),
-          is_directory(is_directory),
-          token_remote(std::move(token_remote)) {}
-
-    String name;
-    bool is_directory;
-    mojo::Remote<mojom::blink::NativeFileSystemTransferToken> token_remote;
-  };
-
   enum class DataSource {
     kClipboardSource,
     kInternalSource,
   };
 
-  base::Optional<NativeFileSystemEntryData> native_file_system_entry_;
+  scoped_refptr<NativeFileSystemDropData> native_file_system_entry_;
   DataSource source_;
   ItemKind kind_;
   String type_;

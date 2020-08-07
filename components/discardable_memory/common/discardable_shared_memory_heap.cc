@@ -259,12 +259,15 @@ bool DiscardableSharedMemoryHeap::OnMemoryDump(
   auto* total_dump = pmd->CreateAllocatorDump(base::StringPrintf(
       "discardable/child_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this)));
   const size_t freelist_size = GetSizeOfFreeLists();
+  const size_t total_size = GetSize();
   total_dump->AddScalar("freelist_size",
                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                         freelist_size);
+  total_dump->AddScalar("virtual_size",
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        total_size);
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
-    const size_t total_size = GetSize();
     total_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                           total_size - freelist_size);

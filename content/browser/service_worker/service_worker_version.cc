@@ -267,7 +267,9 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       clock_(base::DefaultClock::GetInstance()),
       ping_controller_(this),
       validator_(std::make_unique<blink::TrialTokenValidator>()),
-      remote_reference_(std::move(remote_reference)) {
+      remote_reference_(std::move(remote_reference)),
+      ukm_source_id_(ukm::ConvertToSourceId(ukm::AssignNewSourceId(),
+                                            ukm::SourceIdType::WORKER_ID)) {
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId, version_id);
   DCHECK(context_);
   DCHECK(registration);
@@ -1895,6 +1897,8 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->controller_receiver = std::move(controller_receiver_);
 
   params->provider_info = std::move(provider_info);
+
+  params->ukm_source_id = ukm_source_id_;
 
   embedded_worker_->Start(std::move(params),
                           base::BindOnce(&ServiceWorkerVersion::OnStartSent,

@@ -48,7 +48,8 @@ ServiceWorkerThread::ServiceWorkerThread(
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     scoped_refptr<base::SingleThreadTaskRunner>
         parent_thread_default_task_runner,
-    const blink::ServiceWorkerToken& service_worker_token)
+    const blink::ServiceWorkerToken& service_worker_token,
+    ukm::SourceId ukm_source_id)
     : WorkerThread(*global_scope_proxy,
                    std::move(parent_thread_default_task_runner)),
       global_scope_proxy_(std::move(global_scope_proxy)),
@@ -56,7 +57,8 @@ ServiceWorkerThread::ServiceWorkerThread(
           ThreadCreationParams(GetThreadType()))),
       installed_scripts_manager_(std::move(installed_scripts_manager)),
       cache_storage_remote_(std::move(cache_storage_remote)),
-      service_worker_token_(service_worker_token) {}
+      service_worker_token_(service_worker_token),
+      ukm_source_id_(ukm_source_id) {}
 
 ServiceWorkerThread::~ServiceWorkerThread() {
   global_scope_proxy_->Detach();
@@ -75,7 +77,8 @@ WorkerOrWorkletGlobalScope* ServiceWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   return ServiceWorkerGlobalScope::Create(
       this, std::move(creation_params), std::move(installed_scripts_manager_),
-      std::move(cache_storage_remote_), time_origin_, service_worker_token_);
+      std::move(cache_storage_remote_), time_origin_, service_worker_token_,
+      ukm_source_id_);
 }
 
 }  // namespace blink

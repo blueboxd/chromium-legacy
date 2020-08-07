@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '2c4a07d925cca715a6790aa64da0ecf3c02d2810',
+  'skia_revision': 'b35c3b8bcdf783437c8d6a85d9d348ead108ec92',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '32be4523385c9cc9611f300e54ad9f80b1e48709',
+  'catapult_revision': '5cf00e2674386de93da508c80e51dc3b5191f815',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -831,7 +831,7 @@ deps = {
   },
 
   'src/third_party/breakpad/breakpad':
-    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + '3d8daa2c7458c8e411e691ac6f0d503418ef6231',
+    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + 'e3a62dc5502dec6ab451061769d7efaf5b7ffba8',
 
   'src/third_party/byte_buddy': {
       'packages': [
@@ -1326,7 +1326,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'f3U-txC3MEm9VvlQ4pywd_v8j7679EBLg7b-jCVWqhQC'
+              'version': 'xa2xI0A-kKlMVwMtJRzexwWWPSwHynmUpB0Z6C9Y7wkC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1537,7 +1537,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@beb677bfc87764ef65326f5375d9ab6344045b68',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@595e752cb14174f67ee01415d9d0e6ae4e3af16b',
     'condition': 'checkout_src_internal',
   },
 

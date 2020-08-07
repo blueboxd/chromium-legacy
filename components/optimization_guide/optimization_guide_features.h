@@ -21,6 +21,7 @@ namespace features {
 
 extern const base::Feature kOptimizationHints;
 extern const base::Feature kOptimizationHintsExperiments;
+extern const base::Feature kOptimizationHintsFieldTrials;
 constexpr char kOptimizationHintsExperimentNameParam[] = "experiment_name";
 extern const base::Feature kRemoteOptimizationGuideFetching;
 extern const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent;
@@ -150,6 +151,11 @@ int PredictionModelFetchRandomMaxDelaySecs();
 // Returns a set of external Android app packages whose predictions have been
 // approved for fetching from the remote Optimization Guide Service.
 base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch();
+
+// Returns a set of field trial name hashes that can be sent in the request to
+// the remote Optimization Guide Service if the client is in one of the
+// specified field trials.
+base::flat_set<uint32_t> FieldTrialNameHashesAllowedForFetch();
 
 // Whether out-of-process model evaluation via the ML Service is enabled.
 bool ShouldUseMLServiceForPrediction();

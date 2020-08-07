@@ -127,7 +127,7 @@ TEST_F(LoginPasswordViewTestFeatureEnabled,
 
   // The display password button is not toggled by default and the password is
   // not visible.
-  EXPECT_FALSE(test_api.display_password_button()->toggled_for_testing());
+  EXPECT_FALSE(test_api.display_password_button()->toggled());
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
 
@@ -136,7 +136,7 @@ TEST_F(LoginPasswordViewTestFeatureEnabled,
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_FALSE(test_api.display_password_button()->toggled_for_testing());
+  EXPECT_FALSE(test_api.display_password_button()->toggled());
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
 
@@ -145,14 +145,14 @@ TEST_F(LoginPasswordViewTestFeatureEnabled,
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_TRUE(test_api.display_password_button()->toggled_for_testing());
+  EXPECT_TRUE(test_api.display_password_button()->toggled());
   EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_NULL);
 
   // Click the display password button again. The password should be hidden.
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_FALSE(test_api.display_password_button()->toggled_for_testing());
+  EXPECT_FALSE(test_api.display_password_button()->toggled());
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
 }

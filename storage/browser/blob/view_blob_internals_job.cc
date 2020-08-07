@@ -133,10 +133,6 @@ void AddHTMLListItem(const std::string& element_title,
   out->append("</li>\n");
 }
 
-void AddHorizontalRule(std::string* out) {
-  out->append("\n<hr>\n");
-}
-
 }  // namespace
 
 std::string ViewBlobInternalsJob::GenerateHTML(
@@ -154,15 +150,7 @@ std::string ViewBlobInternalsJob::GenerateHTML(
                               entry->content_disposition(), entry->refcount(),
                               &out);
     }
-    if (!blob_storage_context->registry().url_to_blob_.empty()) {
-      AddHorizontalRule(&out);
-      for (const auto& url_uuid_pair :
-           blob_storage_context->registry().url_to_blob_) {
-        AddHTMLBoldText(url_uuid_pair.first.spec(), &out);
-        // TODO(mek): Somehow include information on the blob the URL is mapped
-        // to.
-      }
-    }
+    // TODO(https://crbug.com/1112483): Bring back information about blob URLs.
   }
   EndHTML(&out);
   return out;

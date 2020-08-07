@@ -10,12 +10,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -110,9 +114,17 @@ public class FlagsFragment extends DevUiBaseFragment {
 
         EditText searchBar = view.findViewById(R.id.flag_search_bar);
         searchBar.addTextChangedListener(new TextWatcher() {
+            private boolean mPreviouslyHadText;
             @Override
             public void onTextChanged(CharSequence cs, int start, int before, int count) {
                 mListAdapter.getFilter().filter(cs);
+                boolean currentlyHasText = !cs.toString().isEmpty();
+                // As an optimization, only change the clear text button if the search bar just now
+                // became empty or non-empty.
+                if (mPreviouslyHadText != currentlyHasText) {
+                    setClearTextButtonEnabled(searchBar, currentlyHasText);
+                }
+                mPreviouslyHadText = currentlyHasText;
             }
 
             @Override
@@ -131,6 +143,40 @@ public class FlagsFragment extends DevUiBaseFragment {
         InputMethodManager inputMethodManager =
                 (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    private void setClearTextButtonEnabled(EditText editText, boolean enabled) {
+        int iconColor = getResources().getColor(R.color.navigation_unselected);
+        Drawable clearTextIcon = getResources().getDrawable(R.drawable.ic_clear_text);
+        clearTextIcon.mutate();
+        clearTextIcon.setColorFilter(new PorterDuffColorFilter(iconColor, PorterDuff.Mode.SRC_IN));
+
+        // Overwrite only the end drawable (index = 2), since there's already a drawable at the
+        // start.
+        Drawable[] compoundDrawables = editText.getCompoundDrawablesRelative();
+        compoundDrawables[2] = enabled ? clearTextIcon : null;
+        editText.setCompoundDrawablesRelativeWithIntrinsicBounds(compoundDrawables[0],
+                compoundDrawables[1], compoundDrawables[2], compoundDrawables[3]);
+
+        // Set (or remove) the onTouchListener
+        if (enabled) {
+            editText.setOnTouchListener((View v, MotionEvent event) -> {
+                int x = (int) event.getX();
+                int iconStart = editText.getWidth() - clearTextIcon.getIntrinsicWidth();
+                int iconEnd = editText.getWidth();
+
+                boolean didTapIcon = x >= iconStart && x <= iconEnd;
+                if (didTapIcon) {
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        editText.setText("");
+                    }
+                    return true;
+                }
+                return false;
+            });
+        } else {
+            editText.setOnTouchListener(null);
+        }
     }
 
     /**

@@ -103,21 +103,64 @@ TEST(IdentifiabilityPaintOpDigestTest, DigestIsInitialIfNotInStudy) {
       identifiability_paintop_digest.encountered_partially_digested_image());
 }
 
-TEST(IdentifiabilityPaintOpDigestTest, SkipsTextOps) {
+TEST(IdentifiabilityPaintOpDigestTest, IgnoresTextOpsContents) {
   StudyParticipationRaii study_participation_raii;
-  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
-  auto paint_record = sk_make_sp<cc::PaintRecord>();
-  paint_record->push<cc::DrawTextBlobOp>(
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest1(kSize);
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest2(kSize);
+  auto paint_record1 = sk_make_sp<cc::PaintRecord>();
+  auto paint_record2 = sk_make_sp<cc::PaintRecord>();
+  paint_record1->push<cc::DrawTextBlobOp>(
       SkTextBlob::MakeFromString("abc", SkFont(SkTypeface::MakeDefault())),
       1.0f, 1.0f, cc::PaintFlags());
-  identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
-                                                   /*num_ops_to_visit=*/1);
-  EXPECT_EQ(kTokenBuilderInitialDigest,
-            identifiability_paintop_digest.GetToken().ToUkmMetricValue());
+  paint_record2->push<cc::DrawTextBlobOp>(
+      SkTextBlob::MakeFromString("def", SkFont(SkTypeface::MakeDefault())),
+      2.0f, 2.0f, cc::PaintFlags());
+  identifiability_paintop_digest1.MaybeUpdateDigest(paint_record1,
+                                                    /*num_ops_to_visit=*/1);
+  identifiability_paintop_digest2.MaybeUpdateDigest(paint_record2,
+                                                    /*num_ops_to_visit=*/1);
+  EXPECT_EQ(identifiability_paintop_digest1.GetToken().ToUkmMetricValue(),
+            identifiability_paintop_digest2.GetToken().ToUkmMetricValue());
+  EXPECT_NE(kTokenBuilderInitialDigest,
+            identifiability_paintop_digest1.GetToken().ToUkmMetricValue());
+  EXPECT_EQ(INT64_C(5364951310489041526),
+            identifiability_paintop_digest1.GetToken().ToUkmMetricValue());
 
-  EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
+  EXPECT_FALSE(identifiability_paintop_digest1.encountered_skipped_ops());
   EXPECT_FALSE(
-      identifiability_paintop_digest.encountered_partially_digested_image());
+      identifiability_paintop_digest1.encountered_partially_digested_image());
+  EXPECT_FALSE(identifiability_paintop_digest2.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest2.encountered_partially_digested_image());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, RelativeOrderingTextOpsAndOtherOps) {
+  StudyParticipationRaii study_participation_raii;
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest1(kSize);
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest2(kSize);
+  auto paint_record1 = sk_make_sp<cc::PaintRecord>();
+  auto paint_record2 = sk_make_sp<cc::PaintRecord>();
+  paint_record1->push<cc::DrawTextBlobOp>(
+      SkTextBlob::MakeFromString("abc", SkFont(SkTypeface::MakeDefault())),
+      1.0f, 1.0f, cc::PaintFlags());
+  paint_record1->push<cc::ScaleOp>(kScaleX, kScaleY);
+  paint_record2->push<cc::ScaleOp>(kScaleX, kScaleY);
+  paint_record2->push<cc::DrawTextBlobOp>(
+      SkTextBlob::MakeFromString("abc", SkFont(SkTypeface::MakeDefault())),
+      1.0f, 1.0f, cc::PaintFlags());
+  identifiability_paintop_digest1.MaybeUpdateDigest(paint_record1,
+                                                    /*num_ops_to_visit=*/1);
+  identifiability_paintop_digest2.MaybeUpdateDigest(paint_record2,
+                                                    /*num_ops_to_visit=*/1);
+  EXPECT_NE(identifiability_paintop_digest1.GetToken().ToUkmMetricValue(),
+            identifiability_paintop_digest2.GetToken().ToUkmMetricValue());
+
+  EXPECT_FALSE(identifiability_paintop_digest1.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest1.encountered_partially_digested_image());
+  EXPECT_FALSE(identifiability_paintop_digest2.encountered_skipped_ops());
+  EXPECT_FALSE(
+      identifiability_paintop_digest2.encountered_partially_digested_image());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, SkPathDigestStability) {

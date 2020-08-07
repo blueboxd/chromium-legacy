@@ -1216,6 +1216,10 @@ void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
   browser->GetFindBarController()->Show(find_next, forward_direction);
 }
 
+void ShowTabSearch(Browser* browser) {
+  browser->window()->CreateTabSearchBubble();
+}
+
 bool CanCloseFind(Browser* browser) {
   WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
   if (!current_tab)

@@ -490,7 +490,6 @@
     'chromium.mac': {
       'Mac Builder': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
-      'WebKit Mac10.13 (retina)': 'release_bot',
       'ios-device': 'ios_device_release_rbe_compile_only',
       'ios-simulator': 'ios_simulator_debug_static_rbe_bot',
       'ios-simulator-full-configs': 'ios_simulator_debug_static_bot',
@@ -618,7 +617,6 @@
       'WebKit Linux Trusty Leak': 'release_bot',
       'WebKit Linux Trusty MSAN': 'msan_release_bot',
       'WebKit Mac Builder': 'release_bot',
-      'WebKit Mac10.13 (retina)': 'release_bot',
       'WebKit Win Builder': 'release_bot_x86_minimal_symbols',
     },
 

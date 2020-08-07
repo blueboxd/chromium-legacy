@@ -163,6 +163,10 @@ class HintsFetcher {
   // retrieving hints from the remote Optimization Guide Service.
   base::TimeTicks hints_fetch_start_time_;
 
+  // Field trial name hashes that are allowed to be sent up in the request to
+  // the remote Optimization Guide Service.
+  base::flat_set<uint32_t> allowed_field_trial_name_hashes_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(HintsFetcher);

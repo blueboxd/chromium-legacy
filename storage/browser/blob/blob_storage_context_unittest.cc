@@ -626,39 +626,6 @@ TEST_F(BlobStorageContextTest, CompoundBlobs) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(BlobStorageContextTest, PublicBlobUrls) {
-  // Build up a basic blob.
-  const std::string kId("id");
-  mojo::PendingRemote<blink::mojom::Blob> pending_blob_remote;
-  BlobImpl::Create(SetupBasicBlob(kId),
-                   pending_blob_remote.InitWithNewPipeAndPassReceiver());
-
-  // Now register a url for that blob.
-  GURL kUrl("blob:id");
-  context_->RegisterPublicBlobURL(kUrl, std::move(pending_blob_remote));
-  pending_blob_remote = context_->GetBlobFromPublicURL(kUrl);
-  ASSERT_TRUE(pending_blob_remote);
-  mojo::Remote<blink::mojom::Blob> blob_remote(std::move(pending_blob_remote));
-  EXPECT_EQ(kId, UUIDFromBlob(blob_remote.get()));
-  blob_remote.reset();
-  base::RunLoop().RunUntilIdle();
-
-  // The url registration should keep the blob alive even after
-  // explicit references are dropped.
-  pending_blob_remote = context_->GetBlobFromPublicURL(kUrl);
-  EXPECT_TRUE(pending_blob_remote);
-  pending_blob_remote.reset();
-
-  base::RunLoop().RunUntilIdle();
-  // Finally get rid of the url registration and the blob.
-  context_->RevokePublicBlobURL(kUrl);
-  pending_blob_remote = context_->GetBlobFromPublicURL(kUrl);
-  EXPECT_FALSE(pending_blob_remote);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(context_->registry().HasEntry(kId));
-}
-
 TEST_F(BlobStorageContextTest, TestUnknownBrokenAndBuildingBlobReference) {
   const std::string kBrokenId("broken_id");
   const std::string kBuildingId("building_id");

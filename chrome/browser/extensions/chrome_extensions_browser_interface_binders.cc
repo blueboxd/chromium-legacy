@@ -34,7 +34,6 @@
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/handwriting_recognizer_manager.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
-#include "chromeos/services/machine_learning/public/mojom/handwriting_recognizer.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/handwriting_recognizer_requestor.mojom.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -60,17 +59,6 @@ void BindInputEngineManager(
     mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
   chromeos::input_method::InputMethodManager::Get()->ConnectInputEngineManager(
       std::move(receiver));
-}
-
-void BindHandwritingRecognizer(
-    content::RenderFrameHost* render_frame_host,
-    mojo::PendingReceiver<
-        chromeos::machine_learning::mojom::HandwritingRecognizer> receiver) {
-  chromeos::machine_learning::ServiceConnection::GetInstance()
-      ->LoadHandwritingModelWithSpec(
-          chromeos::machine_learning::mojom::HandwritingRecognizerSpec::New(
-              "en"),
-          std::move(receiver), base::DoNothing());
 }
 
 void BindHandwritingRecognizerRequestor(
@@ -116,8 +104,6 @@ void PopulateChromeFrameBindersForExtension(
   if (extension->id() == chromeos::extension_ime_util::kXkbExtensionId) {
     binder_map->Add<chromeos::ime::mojom::InputEngineManager>(
         base::BindRepeating(&BindInputEngineManager));
-    binder_map->Add<chromeos::machine_learning::mojom::HandwritingRecognizer>(
-        base::BindRepeating(&BindHandwritingRecognizer));
     binder_map->Add<
         chromeos::machine_learning::mojom::HandwritingRecognizerRequestor>(
         base::BindRepeating(&BindHandwritingRecognizerRequestor));

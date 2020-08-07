@@ -4,17 +4,14 @@
 
 // eslint-disable-next-line no-unused-vars
 import {BackgroundOps} from '../background_ops.js';
+import {assert} from '../chrome_util.js';
+import {NotImplementedError} from '../error.js';
 import {Intent} from '../intent.js';
+import {NativeDirectoryEntry} from '../models/native_file_system_entry.js';
 import {PerfLogger} from '../perf.js';
+
 // eslint-disable-next-line no-unused-vars
 import {BrowserProxy} from './browser_proxy_interface.js';
-
-/* eslint-disable new-cap */
-
-/** @throws {!Error} */
-function NOTIMPLEMENTED() {
-  throw Error('Browser proxy method not implemented!');
-}
 
 /**
  * The WebUI implementation of the CCA's interaction with the browser.
@@ -30,8 +27,17 @@ class WebUIBrowserProxy {
 
   /** @override */
   async getExternalDir() {
-    NOTIMPLEMENTED();
-    return null;
+    return new Promise((resolve) => {
+      const launchQueue = window.launchQueue;
+      assert(launchQueue !== undefined);
+      launchQueue.setConsumer((launchParams) => {
+        assert(launchParams.files.length > 0);
+        const dir =
+            /** @type {!FileSystemDirectoryHandle} */ (launchParams.files[0]);
+        assert(dir.kind === 'directory');
+        resolve(new NativeDirectoryEntry(dir));
+      });
+    });
   }
 
   /** @override */
@@ -84,57 +90,52 @@ class WebUIBrowserProxy {
 
   /** @override */
   async getBoard() {
-    NOTIMPLEMENTED();
-    return '';
+    throw new NotImplementedError();
   }
 
   /** @override */
   getI18nMessage(name, substitutions = undefined) {
-    NOTIMPLEMENTED();
-    return '';
+    throw new NotImplementedError();
   }
 
   /** @override */
   async isCrashReportingEnabled() {
-    NOTIMPLEMENTED();
-    return false;
+    throw new NotImplementedError();
   }
 
   /** @override */
   async openGallery(file) {
-    NOTIMPLEMENTED();
+    throw new NotImplementedError();
   }
 
   /** @override */
   openInspector(type) {
-    NOTIMPLEMENTED();
+    throw new NotImplementedError();
   }
 
   /** @override */
   getAppId() {
-    NOTIMPLEMENTED();
-    return '';
+    throw new NotImplementedError();
   }
 
   /** @override */
   getAppVersion() {
-    NOTIMPLEMENTED();
-    return '';
+    throw new NotImplementedError();
   }
 
   /** @override */
   addOnMessageExternalListener(listener) {
-    NOTIMPLEMENTED();
+    throw new NotImplementedError();
   }
 
   /** @override */
   addOnConnectExternalListener(listener) {
-    NOTIMPLEMENTED();
+    throw new NotImplementedError();
   }
 
   /** @override */
   sendMessage(extensionId, message) {
-    NOTIMPLEMENTED();
+    throw new NotImplementedError();
   }
 
   /** @override */

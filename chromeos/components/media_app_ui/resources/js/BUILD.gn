@@ -33,7 +33,7 @@ js_library("app_context_test_support") {
 
 js_library("launch") {
   externs_list = [
-    "web_app_file_handling.externs.js",
+    "//chromeos/components/web_applications/externs/file_handling.externs.js",
     "dom_draft.externs.js",
 
     # The privileged context can't access the app, but shares struct definitions

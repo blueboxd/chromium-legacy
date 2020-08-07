@@ -17,6 +17,7 @@
 
 namespace chromecast {
 namespace media {
+namespace {
 
 const int kDefaultSampleRate = 48000;
 const int kDefaultInputBufferSize = 1024;
@@ -25,6 +26,12 @@ const int kDefaultInputBufferSize = 1024;
 const int kCommunicationsSampleRate = 16000;
 const int kCommunicationsInputBufferSize = 160;  // 10 ms.
 #endif  // BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
+
+bool ShouldUseCastAudioOutputStream(const ::media::AudioParameters& params) {
+  return params.effects() & ::media::AudioParameters::AUDIO_PREFETCH;
+}
+
+}  // namespace
 
 CastAudioManagerAndroid::CastAudioManagerAndroid(
     std::unique_ptr<::media::AudioThread> audio_thread,
@@ -120,9 +127,14 @@ void CastAudioManagerAndroid::GetAudioOutputDeviceNames(
     const ::media::AudioManager::LogCallback& log_callback) {
   DCHECK_EQ(::media::AudioParameters::AUDIO_PCM_LINEAR, params.format());
 
-  return new CastAudioOutputStream(
-      &helper_, params, ::media::AudioDeviceDescription::kDefaultDeviceId,
-      false /* use_mixer_service */);
+  if (ShouldUseCastAudioOutputStream(params)) {
+    return new CastAudioOutputStream(
+        &helper_, params, ::media::AudioDeviceDescription::kDefaultDeviceId,
+        false /* use_mixer_service */);
+  }
+
+  return ::media::AudioManagerAndroid::MakeLinearOutputStream(params,
+                                                              log_callback);
 }
 
 ::media::AudioOutputStream* CastAudioManagerAndroid::MakeLowLatencyOutputStream(
@@ -131,12 +143,17 @@ void CastAudioManagerAndroid::GetAudioOutputDeviceNames(
     const ::media::AudioManager::LogCallback& log_callback) {
   DCHECK_EQ(::media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
 
-  return new CastAudioOutputStream(
-      &helper_, params,
-      device_id_or_group_id.empty()
-          ? ::media::AudioDeviceDescription::kDefaultDeviceId
-          : device_id_or_group_id,
-      false /* use_mixer_service */);
+  if (ShouldUseCastAudioOutputStream(params)) {
+    return new CastAudioOutputStream(
+        &helper_, params,
+        device_id_or_group_id.empty()
+            ? ::media::AudioDeviceDescription::kDefaultDeviceId
+            : device_id_or_group_id,
+        false /* use_mixer_service */);
+  }
+
+  return ::media::AudioManagerAndroid::MakeLowLatencyOutputStream(
+      params, device_id_or_group_id, log_callback);
 }
 
 ::media::AudioOutputStream* CastAudioManagerAndroid::MakeBitstreamOutputStream(
@@ -150,10 +167,15 @@ void CastAudioManagerAndroid::GetAudioOutputDeviceNames(
 ::media::AudioOutputStream* CastAudioManagerAndroid::MakeAudioOutputStreamProxy(
     const ::media::AudioParameters& params,
     const std::string& device_id) {
-  // Override to use MakeAudioOutputStream to prevent the audio output stream
-  // from closing during pause/stop.
-  return MakeAudioOutputStream(params, device_id,
-                               /*log_callback, not used*/ base::DoNothing());
+  if (ShouldUseCastAudioOutputStream(params)) {
+    // Override to use MakeAudioOutputStream to prevent the audio output stream
+    // from closing during pause/stop.
+    return MakeAudioOutputStream(params, device_id,
+                                 /*log_callback, not used*/ base::DoNothing());
+  }
+
+  return ::media::AudioManagerAndroid::MakeAudioOutputStreamProxy(params,
+                                                                  device_id);
 }
 
 }  // namespace media

@@ -350,6 +350,18 @@ void AVIFImageDecoder::DecodeToYUV() {
     SetFailed();
     return;
   }
+  // Frame bit depth must be equal to container bit depth.
+  if (image->depth != bit_depth_) {
+    DVLOG(1) << "Frame bit depth must be equal to container bit depth";
+    SetFailed();
+    return;
+  }
+  // Frame YUV format must be equal to container YUV format.
+  if (image->yuvFormat != avif_yuv_format_) {
+    DVLOG(1) << "Frame YUV format must be equal to container YUV format";
+    SetFailed();
+    return;
+  }
   DCHECK(!image->alphaPlane);
   static_assert(SkYUVAIndex::kY_Index == static_cast<int>(AVIF_CHAN_Y), "");
   static_assert(SkYUVAIndex::kU_Index == static_cast<int>(AVIF_CHAN_U), "");
@@ -357,9 +369,11 @@ void AVIFImageDecoder::DecodeToYUV() {
 
   // Disable subnormal floats which can occur when converting to half float.
   std::unique_ptr<cc::ScopedSubnormalFloatDisabler> disable_subnormals;
-  if (image_planes_->color_type() == kA16_float_SkColorType)
+  const bool is_f16 = image_planes_->color_type() == kA16_float_SkColorType;
+  if (is_f16)
     disable_subnormals = std::make_unique<cc::ScopedSubnormalFloatDisabler>();
-  const float kHighBitDepthMultiplier = 1.0 / ((1 << bit_depth_) - 1);
+  const float kHighBitDepthMultiplier =
+      (is_f16 ? 1.0f : 65535.0f) / ((1 << bit_depth_) - 1);
 
   // Initialize |width| and |height| to the width and height of the luma plane.
   uint32_t width = image->width;
@@ -386,8 +400,14 @@ void AVIFImageDecoder::DecodeToYUV() {
           reinterpret_cast<uint16_t*>(image->yuvPlanes[plane]);
       uint16_t* dst = static_cast<uint16_t*>(image_planes_->Plane(plane));
       if (image_planes_->color_type() == kA16_unorm_SkColorType) {
-        libyuv::CopyPlane_16(src, src_row_bytes / 2, dst, dst_row_bytes / 2,
-                             width, height);
+        const size_t src_stride = src_row_bytes / 2;
+        const size_t dst_stride = dst_row_bytes / 2;
+        for (uint32_t j = 0; j < height; ++j) {
+          for (uint32_t i = 0; i < width; ++i) {
+            dst[j * dst_stride + i] =
+                src[j * src_stride + i] * kHighBitDepthMultiplier + 0.5f;
+          }
+        }
       } else if (image_planes_->color_type() == kA16_float_SkColorType) {
         // Note: Unlike CopyPlane_16, HalfFloatPlane wants the stride in bytes.
         libyuv::HalfFloatPlane(src, src_row_bytes, dst, dst_row_bytes,
@@ -502,6 +522,12 @@ void AVIFImageDecoder::Decode(size_t index) {
     SetFailed();
     return;
   }
+  // Frame YUV format must be equal to container YUV format.
+  if (image->yuvFormat != avif_yuv_format_) {
+    DVLOG(1) << "Frame YUV format must be equal to container YUV format";
+    SetFailed();
+    return;
+  }
 
   ImageFrame& buffer = frame_buffer_cache_[index];
   DCHECK_EQ(buffer.GetStatus(), ImageFrame::kFrameEmpty);
@@ -613,9 +639,9 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
       ImageIsHighBitDepth() &&
       high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat;
 
-  const avifPixelFormat yuv_format = container->yuvFormat;
+  avif_yuv_format_ = container->yuvFormat;
   avifPixelFormatInfo format_info;
-  avifGetPixelFormatInfo(yuv_format, &format_info);
+  avifGetPixelFormatInfo(container->yuvFormat, &format_info);
   chroma_shift_x_ = format_info.chromaShiftX;
   chroma_shift_y_ = format_info.chromaShiftY;
 
@@ -668,7 +694,7 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
   //   method does not have an 'index' parameter.)
   // * If ColorTransform() returns a non-null pointer, the decoder has to do a
   //   color space conversion, so we don't decode to YUV.
-  allow_decode_to_yuv_ = yuv_format != AVIF_PIXEL_FORMAT_YUV400 &&
+  allow_decode_to_yuv_ = avif_yuv_format_ != AVIF_PIXEL_FORMAT_YUV400 &&
                          !decoder_->alphaPresent && decoded_frame_count_ == 1 &&
                          GetColorSpace(container).ToSkYUVColorSpace(
                              container->depth, &yuv_color_space_.emplace()) &&

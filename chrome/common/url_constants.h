@@ -309,6 +309,9 @@ extern const char kEasyUnlockLearnMoreUrl[];
 // The URL for EOL notification
 extern const char kEolNotificationURL[];
 
+// The URL for Auto Update Policy.
+extern const char kAutoUpdatePolicyURL[];
+
 // The URL for providing more information about Google nameservers.
 extern const char kGoogleNameserversLearnMoreURL[];
 

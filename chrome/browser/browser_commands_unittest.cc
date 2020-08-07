@@ -4,12 +4,14 @@
 
 #include <stddef.h>
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -488,6 +490,18 @@ TEST_F(BrowserCommandsTest, ToggleCaretBrowsing) {
         web_contents->GetMutableRendererPrefs();
     EXPECT_FALSE(renderer_preferences->caret_browsing_enabled);
   }
+}
+
+TEST_F(BrowserCommandsTest, TabSearchDisabled) {
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_TAB_SEARCH));
+}
+
+TEST_F(BrowserCommandsTest, TabSearchEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kTabSearch);
+  auto browser =
+      CreateBrowser(profile(), Browser::TYPE_NORMAL, false, window());
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser.get(), IDC_TAB_SEARCH));
 }
 
 }  // namespace

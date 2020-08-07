@@ -39,6 +39,13 @@ message UrlInfo {
   optional string url = 1;
 }
 
+message FieldTrial {
+  // The hash of a field trial.
+  optional uint32 name_hash = 1;
+  // The hash of the active group within the field trial.
+  optional uint32 group_hash = 2;
+}
+
 // Request to return a set of hints that guide what optimizations to perform
 // on those hosts.
 message GetHintsRequest {
@@ -64,6 +71,9 @@ message GetHintsRequest {
 
   // Context in which this request is made.
   optional RequestContext context = 3;
+
+  // The field trials that are currently active when this request is made.
+  repeated FieldTrial active_field_trials = 6;
 }
 
 // Response to the GetHints request.

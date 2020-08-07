@@ -2032,6 +2032,21 @@ suite('NewTabPageRealboxTest', () => {
     matchEls =
         realbox.$.matches.shadowRoot.querySelectorAll('ntp-realbox-match');
     assertEquals(1, matchEls.length);
+
+    testProxy.handler.reset();
+
+    // Show the second match by clicking the header.
+    headerEl.click();
+    await testProxy.handler.whenCalled('toggleSuggestionGroupIdVisibility')
+        .then((args) => {
+          assertEquals('100', args.suggestionGroupId);
+        });
+    assertEquals(
+        1, testProxy.handler.getCallCount('toggleSuggestionGroupIdVisibility'));
+    // Second match is visible again.
+    matchEls =
+        realbox.$.matches.shadowRoot.querySelectorAll('ntp-realbox-match');
+    assertEquals(2, matchEls.length);
   });
 
   test(

@@ -15,7 +15,7 @@
 
 namespace storage {
 
-class BlobStorageContext;
+class BlobUrlRegistry;
 
 // URLLoaderFactory that can create loaders for exactly one url, loading the
 // blob that was passed to its constructor. This factory keeps the blob alive.
@@ -33,7 +33,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoaderFactory
   // use a blob URL to load the contents of an unrelated blob.
   static void Create(
       mojo::PendingRemote<blink::mojom::BlobURLToken> token,
-      base::WeakPtr<BlobStorageContext> context,
+      base::WeakPtr<BlobUrlRegistry> url_registry,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
 
   // URLLoaderFactory:

@@ -52,56 +52,59 @@
 namespace crashpad {
 namespace {
 
-class MemoryRangeWhitelist {
+class AllowedMemoryRanges {
  public:
-  MemoryRangeWhitelist() {
-    whitelist_.entries = 0;
-    whitelist_.size = 0;
+  AllowedMemoryRanges() {
+    allowed_memory_ranges_.entries = 0;
+    allowed_memory_ranges_.size = 0;
   }
 
   void AddEntry(VMAddress base, VMSize length) {
-    SanitizationMemoryRangeWhitelist::Range new_entry;
+    SanitizationAllowedMemoryRanges::Range new_entry;
     new_entry.base = base;
     new_entry.length = length;
 
     base::AutoLock lock(lock_);
-    std::vector<SanitizationMemoryRangeWhitelist::Range> new_array(array_);
+    std::vector<SanitizationAllowedMemoryRanges::Range> new_array(array_);
     new_array.push_back(new_entry);
-    whitelist_.entries = FromPointerCast<VMAddress>(new_array.data());
-    whitelist_.size += 1;
+    allowed_memory_ranges_.entries =
+        FromPointerCast<VMAddress>(new_array.data());
+    allowed_memory_ranges_.size += 1;
     array_ = std::move(new_array);
   }
 
-  SanitizationMemoryRangeWhitelist* GetSanitizationAddress() {
-    return &whitelist_;
+  SanitizationAllowedMemoryRanges* GetSanitizationAddress() {
+    return &allowed_memory_ranges_;
   }
 
-  static MemoryRangeWhitelist* Singleton() {
-    static base::NoDestructor<MemoryRangeWhitelist> singleton;
+  static AllowedMemoryRanges* Singleton() {
+    static base::NoDestructor<AllowedMemoryRanges> singleton;
     return singleton.get();
   }
 
  private:
   base::Lock lock_;
-  SanitizationMemoryRangeWhitelist whitelist_;
-  std::vector<SanitizationMemoryRangeWhitelist::Range> array_;
+  SanitizationAllowedMemoryRanges allowed_memory_ranges_;
+  std::vector<SanitizationAllowedMemoryRanges::Range> array_;
 
-  DISALLOW_COPY_AND_ASSIGN(MemoryRangeWhitelist);
+  DISALLOW_COPY_AND_ASSIGN(AllowedMemoryRanges);
 };
 
 bool SetSanitizationInfo(crash_reporter::CrashReporterClient* client,
                          SanitizationInformation* info) {
-  const char* const* whitelist = nullptr;
+  const char* const* allowed_annotations = nullptr;
   void* target_module = nullptr;
   bool sanitize_stacks = false;
-  client->GetSanitizationInformation(&whitelist, &target_module,
+  client->GetSanitizationInformation(&allowed_annotations, &target_module,
                                      &sanitize_stacks);
-  info->annotations_whitelist_address = FromPointerCast<VMAddress>(whitelist);
+  info->allowed_annotations_address =
+      FromPointerCast<VMAddress>(allowed_annotations);
   info->target_module_address = FromPointerCast<VMAddress>(target_module);
-  info->memory_range_whitelist_address = FromPointerCast<VMAddress>(
-      MemoryRangeWhitelist::Singleton()->GetSanitizationAddress());
+  info->allowed_memory_ranges_address = FromPointerCast<VMAddress>(
+      AllowedMemoryRanges::Singleton()->GetSanitizationAddress());
   info->sanitize_stacks = sanitize_stacks;
-  return whitelist != nullptr || target_module != nullptr || sanitize_stacks;
+  return allowed_annotations != nullptr || target_module != nullptr ||
+         sanitize_stacks;
 }
 
 void SetExceptionInformation(siginfo_t* siginfo,
@@ -689,8 +692,8 @@ bool DumpWithoutCrashingForClient(CrashReporterClient* client) {
   return handler_client.RequestCrashDump(info) == 0;
 }
 
-void WhitelistMemoryRange(void* begin, size_t length) {
-  crashpad::MemoryRangeWhitelist::Singleton()->AddEntry(
+void AllowMemoryRange(void* begin, size_t length) {
+  crashpad::AllowedMemoryRanges::Singleton()->AddEntry(
       crashpad::FromPointerCast<crashpad::VMAddress>(begin),
       static_cast<crashpad::VMSize>(length));
 }

@@ -12,8 +12,11 @@
 #include "base/check.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/optional.h"
+#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/load_flags.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -288,6 +291,16 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
   if ((request.resource_type ==
        static_cast<int>(blink::mojom::ResourceType::kPrefetch)) &&
       prefetch_loader_factory_) {
+    prefetch_loader_factory_->CreateLoaderAndStart(
+        std::move(loader), routing_id, request_id, options, request,
+        std::move(client), traffic_annotation);
+    return;
+  }
+  if (base::FeatureList::IsEnabled(
+          features::kNoStatePrefetchUsingPrefetchLoader) &&
+      (request.load_flags & net::LOAD_PREFETCH) && prefetch_loader_factory_) {
+    // This is no-state prefetch (see
+    // WebURLRequest::GetLoadFlagsForWebUrlRequest).
     prefetch_loader_factory_->CreateLoaderAndStart(
         std::move(loader), routing_id, request_id, options, request,
         std::move(client), traffic_annotation);

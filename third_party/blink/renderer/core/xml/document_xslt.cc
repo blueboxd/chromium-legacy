@@ -67,7 +67,7 @@ class DOMContentLoadedListener final
 };
 
 DocumentXSLT::DocumentXSLT(Document& document)
-    : Supplement<Document>(document), transform_source_document_(nullptr) {}
+    : Supplement<Document>(document) {}
 
 void DocumentXSLT::ApplyXSLTransform(Document& document,
                                      ProcessingInstruction* pi) {
@@ -154,17 +154,13 @@ bool DocumentXSLT::HasTransformSourceDocument(Document& document) {
   return Supplement<Document>::From<DocumentXSLT>(document);
 }
 
-DocumentXSLT& DocumentXSLT::From(Document& document) {
-  DocumentXSLT* supplement = Supplement<Document>::From<DocumentXSLT>(document);
-  if (!supplement) {
-    supplement = MakeGarbageCollected<DocumentXSLT>(document);
-    Supplement<Document>::ProvideTo(document, supplement);
-  }
-  return *supplement;
+void DocumentXSLT::SetHasTransformSource(Document& document) {
+  DCHECK(!HasTransformSourceDocument(document));
+  Supplement<Document>::ProvideTo(document,
+                                  MakeGarbageCollected<DocumentXSLT>(document));
 }
 
 void DocumentXSLT::Trace(Visitor* visitor) const {
-  visitor->Trace(transform_source_document_);
   Supplement<Document>::Trace(visitor);
 }
 

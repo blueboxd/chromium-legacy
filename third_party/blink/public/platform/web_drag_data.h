@@ -31,6 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DRAG_DATA_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DRAG_DATA_H_
 
+#include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -38,9 +41,12 @@
 #include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
-
 template <typename T>
 class WebVector;
+
+using NativeFileSystemDropData =
+    base::RefCountedData<blink::CrossVariantMojoRemote<
+        mojom::NativeFileSystemDragDropTokenInterfaceBase>>;
 
 // Holds data that may be exchanged through a drag-n-drop operation. It is
 // inexpensive to copy a WebDragData object.
@@ -77,6 +83,7 @@ class WebDragData {
     // Only valid when storage_type == kStorageTypeFilename.
     WebString filename_data;
     WebString display_name_data;
+    scoped_refptr<NativeFileSystemDropData> native_file_system_entry;
 
     // Only valid when storage_type == kStorageTypeBinaryData.
     WebData binary_data;

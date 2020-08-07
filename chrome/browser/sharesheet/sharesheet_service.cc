@@ -100,6 +100,7 @@ void SharesheetService::OnTargetSelected(uint32_t delegate_id,
             WindowOpenDisposition::NEW_WINDOW,
             /*prefer_container=*/true),
         std::move(intent), launch_source, display::kDefaultDisplayId);
+    delegate->CloseSharesheet();
   }
 }
 

@@ -314,7 +314,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("isOSSettings", false);
 #endif
 
-  AddSettingsPageUIHandler(std::make_unique<AboutHandler>());
+  AddSettingsPageUIHandler(std::make_unique<AboutHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));
 
   // Add a handler to provide pluralized strings.

@@ -48,6 +48,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -213,6 +214,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
   ServiceWorkerVersionInfo GetInfo();
   Status status() const { return status_; }
+  ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
 
   // This status is set to EXISTS or DOES_NOT_EXIST when the install event has
   // been executed in a new version or when an installed version is loaded from
@@ -1094,6 +1096,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // See comments at the definition of storage::mojom::ServiceWorkerVersionRef
   // for more details.
   mojo::Remote<storage::mojom::ServiceWorkerLiveVersionRef> remote_reference_;
+
+  // Identifier for UKM recording in the service worker thread. Stored here so
+  // it can be associated with clients' source IDs.
+  const ukm::SourceId ukm_source_id_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_{this};
 

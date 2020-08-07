@@ -55,7 +55,8 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
       mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
       scoped_refptr<base::SingleThreadTaskRunner>
           parent_thread_default_task_runner,
-      const ServiceWorkerToken& service_worker_token);
+      const ServiceWorkerToken& service_worker_token,
+      ukm::SourceId ukm_source_id);
   ~ServiceWorkerThread() override;
 
   WorkerBackingThread& GetWorkerBackingThread() override {
@@ -81,6 +82,8 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
   mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote_;
 
   const ServiceWorkerToken service_worker_token_;
+
+  const ukm::SourceId ukm_source_id_;
 };
 
 }  // namespace blink

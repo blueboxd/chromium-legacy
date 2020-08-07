@@ -757,6 +757,11 @@ bool StackSamplingProfiler::IsSupported() {
   // simultaneously can cause crashes and has no known use case.
   if (GetModuleHandleA(base::win::kApplicationVerifierDllName))
     return false;
+  // Checks if Trend Micro DLLs are loaded in process, so we can disable the
+  // profiler to avoid hitting their performance bug. See
+  // https://crbug.com/1018291 and https://crbug.com/1113832.
+  if (GetModuleHandleA("tmmon64.dll") || GetModuleHandleA("tmmonmgr64.dll"))
+    return false;
 #endif
   return true;
 #else

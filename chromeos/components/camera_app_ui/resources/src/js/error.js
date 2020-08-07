@@ -52,6 +52,20 @@ export let TestingErrorCallback;
 export let StackFrame;
 
 /**
+ * Throws when a method is not implemented.
+ */
+export class NotImplementedError extends Error {
+  /**
+   * @param {string=} message
+   * @public
+   */
+  constructor(message = 'Method is not implemented') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
  * Converts v8 CallSite object to StackFrame.
  * @param {!CallSite} callsite
  * @return {!StackFrame}

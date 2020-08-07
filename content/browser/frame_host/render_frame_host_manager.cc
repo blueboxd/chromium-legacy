@@ -1311,6 +1311,11 @@ RenderFrameHostManager::ShouldProactivelySwapBrowsingInstance(
   if (!render_frame_host_->frame_tree_node()->IsMainFrame())
     return ShouldSwapBrowsingInstance::kNo_NotMainFrame;
 
+  // If the frame has not committed any navigation yet, we should not try to do
+  // a proactive swap.
+  if (!render_frame_host_->has_committed_any_navigation())
+    return ShouldSwapBrowsingInstance::kNo_HasNotComittedAnyNavigation;
+
   // Skip cases when there are other windows that might script this one.
   SiteInstanceImpl* current_instance = render_frame_host_->GetSiteInstance();
   if (current_instance->GetRelatedActiveContentsCount() > 1u)

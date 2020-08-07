@@ -9,6 +9,7 @@ import "third_party/blink/public/mojom/native_file_system/native_file_system_dir
 import "third_party/blink/public/mojom/native_file_system/native_file_system_file_handle.mojom";
 import "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom";
 import "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom";
+import "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom";
 
 enum ChooseFileSystemEntryType {
   kOpenFile,
@@ -65,4 +66,13 @@ interface NativeFileSystemManager {
   GetDirectoryHandleFromToken(
     pending_remote<NativeFileSystemTransferToken> token,
     pending_receiver<NativeFileSystemDirectoryHandle> directory_handle);
+
+  // Used to redeem NativeFileSystemDragDropToken that are passed to the
+  // renderer from the browser during a drag and drop operation. Token
+  // redemption can fail if the id of the process trying to redeem the token
+  // does not match the id assigned to the token at creation or if the
+  // NativeFileSystemManager does not have record of the token.
+  GetEntryFromDragDropToken(
+    pending_remote<NativeFileSystemDragDropToken> token
+  )  => (NativeFileSystemEntry entry);
 };

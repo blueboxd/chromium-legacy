@@ -22,6 +22,7 @@
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -239,13 +240,15 @@ class TestWallpaperControllerClient : public WallpaperControllerClient {
   virtual ~TestWallpaperControllerClient() = default;
 
   size_t open_count() const { return open_count_; }
+  size_t close_preview_count() const { return close_preview_count_; }
 
   // WallpaperControllerClient:
   void OpenWallpaperPicker() override { open_count_++; }
-  void MaybeClosePreviewWallpaper() override {}
+  void MaybeClosePreviewWallpaper() override { close_preview_count_++; }
 
  private:
   size_t open_count_ = 0;
+  size_t close_preview_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestWallpaperControllerClient);
 };
@@ -2088,6 +2091,116 @@ TEST_F(WallpaperControllerTest, ShouldNotShowInitialAnimationAfterSignOut) {
   RunAllTasksUntilIdle();
   EXPECT_FALSE(controller_->ShouldShowInitialAnimation());
   EXPECT_EQ(1, GetWallpaperCount());
+}
+
+TEST_F(WallpaperControllerTest, ClosePreviewWallpaperOnOverviewStart) {
+  TestWallpaperControllerClient client;
+  controller_->SetClient(&client);
+
+  // Verify the user starts with a default wallpaper and the user wallpaper info
+  // is initialized with default values.
+  SimulateUserLogin(kUser1);
+  ClearWallpaperCount();
+  controller_->ShowUserWallpaper(account_id_1);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  WallpaperInfo user_wallpaper_info;
+  WallpaperInfo default_wallpaper_info(std::string(),
+                                       WALLPAPER_LAYOUT_CENTER_CROPPED, DEFAULT,
+                                       base::Time::Now().LocalMidnight());
+  EXPECT_TRUE(
+      controller_->GetUserWallpaperInfo(account_id_1, &user_wallpaper_info));
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+
+  // Simulate opening the wallpaper picker window.
+  std::unique_ptr<aura::Window> wallpaper_picker_window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  WindowState::Get(wallpaper_picker_window.get())->Activate();
+
+  // Set a custom wallpaper for the user and enable preview. Verify that the
+  // wallpaper is changed to the expected color.
+  const WallpaperLayout layout = WALLPAPER_LAYOUT_CENTER;
+  gfx::ImageSkia custom_wallpaper = CreateImage(640, 480, kWallpaperColor);
+  EXPECT_NE(kWallpaperColor, GetWallpaperColor());
+  ClearWallpaperCount();
+  controller_->SetCustomWallpaper(account_id_1, wallpaper_files_id_1,
+                                  file_name_1, layout, custom_wallpaper,
+                                  true /*preview_mode=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+  // Verify that the user wallpaper info remains unchanged during the preview.
+  EXPECT_TRUE(
+      controller_->GetUserWallpaperInfo(account_id_1, &user_wallpaper_info));
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+
+  // Now enter overview mode. Verify the wallpaper changes back to the default,
+  // the user wallpaper info remains unchanged, and enters overview mode
+  // properly.
+  ClearWallpaperCount();
+  Shell::Get()->overview_controller()->StartOverview();
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_NE(kWallpaperColor, GetWallpaperColor());
+  EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(1u, client.close_preview_count());
+}
+
+TEST_F(WallpaperControllerTest, ClosePreviewWallpaperOnWindowCycleStart) {
+  TestWallpaperControllerClient client;
+  controller_->SetClient(&client);
+
+  // Verify the user starts with a default wallpaper and the user wallpaper info
+  // is initialized with default values.
+  SimulateUserLogin(kUser1);
+  ClearWallpaperCount();
+  controller_->ShowUserWallpaper(account_id_1);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  WallpaperInfo user_wallpaper_info;
+  WallpaperInfo default_wallpaper_info(std::string(),
+                                       WALLPAPER_LAYOUT_CENTER_CROPPED, DEFAULT,
+                                       base::Time::Now().LocalMidnight());
+  EXPECT_TRUE(
+      controller_->GetUserWallpaperInfo(account_id_1, &user_wallpaper_info));
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+
+  // Simulate opening the wallpaper picker window.
+  std::unique_ptr<aura::Window> wallpaper_picker_window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  WindowState::Get(wallpaper_picker_window.get())->Activate();
+
+  // Set a custom wallpaper for the user and enable preview. Verify that the
+  // wallpaper is changed to the expected color.
+  const WallpaperLayout layout = WALLPAPER_LAYOUT_CENTER;
+  gfx::ImageSkia custom_wallpaper = CreateImage(640, 480, kWallpaperColor);
+  EXPECT_NE(kWallpaperColor, GetWallpaperColor());
+  ClearWallpaperCount();
+  controller_->SetCustomWallpaper(account_id_1, wallpaper_files_id_1,
+                                  file_name_1, layout, custom_wallpaper,
+                                  true /*preview_mode=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+  // Verify that the user wallpaper info remains unchanged during the preview.
+  EXPECT_TRUE(
+      controller_->GetUserWallpaperInfo(account_id_1, &user_wallpaper_info));
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+
+  // Now start window cycle. Verify the wallpaper changes back to the default,
+  // the user wallpaper info remains unchanged, and enters window cycle.
+  ClearWallpaperCount();
+  Shell::Get()->window_cycle_controller()->HandleCycleWindow(
+      WindowCycleController::FORWARD);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_NE(kWallpaperColor, GetWallpaperColor());
+  EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+  EXPECT_TRUE(Shell::Get()->window_cycle_controller()->IsCycling());
+  EXPECT_EQ(1u, client.close_preview_count());
 }
 
 TEST_F(WallpaperControllerTest, ConfirmPreviewWallpaper) {

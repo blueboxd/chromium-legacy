@@ -118,6 +118,7 @@
 #include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
+#include "chrome/browser/ui/views/tab_search/tab_search_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_groups_iph_controller.h"
@@ -125,6 +126,7 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
+#include "chrome/browser/ui/views/toolbar/tab_search_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
@@ -2565,6 +2567,11 @@ views::Widget* BrowserView::GetWidget() {
 
 const views::Widget* BrowserView::GetWidget() const {
   return View::GetWidget();
+}
+
+void BrowserView::CreateTabSearchBubble() {
+  views::View* anchor_view = toolbar()->tab_search_button();
+  TabSearchBubbleView::CreateTabSearchBubble(browser_->profile(), anchor_view);
 }
 
 void BrowserView::RevealTabStripIfNeeded() {

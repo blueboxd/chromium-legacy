@@ -28,13 +28,8 @@ chrome.test.sendMessage('loaded', function(test) {
           }
 
           if (test == 'INVALID_VALUE') {
-            var jsBindingsError =
-                'Invalid value for argument 1. Expected \'object\'' +
-                ' but got \'string\'.';
-            var nativeBindingsError = 'No matching signature.';
-            var regexp =
-                new RegExp(nativeBindingsError + '|' + jsBindingsError);
-            chrome.test.assertThrows(callback, ['XXX'], regexp);
+            chrome.test.assertThrows(callback, ['XXX'],
+                                     'No matching signature.');
           } else if (test == 'EMPTY') {
             callback({});
           } else {

@@ -31,6 +31,7 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_url_registry.h"
 #include "storage/browser/test/fake_blob.h"
 #include "storage/browser/test/fake_progress_client.h"
 #include "storage/browser/test/mock_blob_registry_delegate.h"
@@ -79,8 +80,8 @@ class BlobRegistryImplTest : public testing::Test {
         FileSystemOptions(FileSystemOptions::PROFILE_MODE_INCOGNITO,
                           false /* force_in_memory */,
                           std::vector<std::string>()));
-    registry_impl_ = std::make_unique<BlobRegistryImpl>(context_->AsWeakPtr(),
-                                                        file_system_context_);
+    registry_impl_ = std::make_unique<BlobRegistryImpl>(
+        context_->AsWeakPtr(), url_registry_.AsWeakPtr(), file_system_context_);
     auto delegate = std::make_unique<MockBlobRegistryDelegate>();
     delegate_ptr_ = delegate.get();
     registry_impl_->Bind(registry_.BindNewPipeAndPassReceiver(),
@@ -190,6 +191,7 @@ class BlobRegistryImplTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<BlobStorageContext> context_;
   scoped_refptr<FileSystemContext> file_system_context_;
+  BlobUrlRegistry url_registry_;
   std::unique_ptr<BlobRegistryImpl> registry_impl_;
   mojo::Remote<blink::mojom::BlobRegistry> registry_;
   MockBlobRegistryDelegate* delegate_ptr_;

@@ -30,13 +30,15 @@ class FilePath;
 class ListValue;
 }  // namespace base
 
+class Profile;
+
 namespace settings {
 
 // WebUI message handler for the help page.
 class AboutHandler : public settings::SettingsPageUIHandler,
                      public UpgradeObserver {
  public:
-  AboutHandler();
+  explicit AboutHandler(Profile* profile);
   ~AboutHandler() override;
 
   // WebUIMessageHandler implementation.
@@ -168,6 +170,8 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void OnGetEndOfLifeInfo(std::string callback_id,
                           chromeos::UpdateEngineClient::EolInfo eol_info);
 #endif
+
+  Profile* profile_;
 
   // Specialized instance of the VersionUpdater used to update the browser.
   std::unique_ptr<VersionUpdater> version_updater_;

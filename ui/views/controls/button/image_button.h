@@ -122,6 +122,8 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   explicit ToggleImageButton(ButtonListener* listener);
   ~ToggleImageButton() override;
 
+  bool toggled() const { return toggled_; }
+
   // Change the toggled state.
   void SetToggled(bool toggled);
 
@@ -143,8 +145,6 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   // Overridden from View:
   base::string16 GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-
-  bool toggled_for_testing() const;
 
  private:
   // The parent class's images_ member is used for the current images,

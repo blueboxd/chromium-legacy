@@ -36,6 +36,14 @@ class CaptureModeController {
   // owned by Shell.
   static CaptureModeController* Get();
 
+  CaptureModeType type() const { return type_; }
+  CaptureModeSource source() const { return source_; }
+
+  // Sets the capture source/type, which will be applied to an ongoing capture
+  // session (if any), or to a future capture session when Start() is called.
+  void SetSource(CaptureModeSource source);
+  void SetType(CaptureModeType type);
+
   // Starts a new capture session with the most-recently used |type_| and
   // |source_|.
   void Start();

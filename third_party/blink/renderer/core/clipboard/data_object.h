@@ -98,7 +98,9 @@ class CORE_EXPORT DataObject : public GarbageCollected<DataObject>,
   Vector<String> Filenames() const;
   void AddFilename(const String& filename,
                    const String& display_name,
-                   const String& file_system_id);
+                   const String& file_system_id,
+                   scoped_refptr<NativeFileSystemDropData>
+                       native_file_system_entry = nullptr);
 
   // Used for dragging in filesystem from the desktop.
   void SetFilesystemId(const String& file_system_id) {

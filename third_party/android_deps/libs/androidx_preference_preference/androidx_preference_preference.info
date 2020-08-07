@@ -8,6 +8,7 @@ has_native_libraries = false
 has_proguard_flags = true
 has_r_text_file = true
 is_manifest_empty = true
+manifest_package = "androidx.preference"
 resources = [
   "res/drawable/ic_arrow_down_24dp.xml",
   "res/drawable/preference_list_divider_material.xml",

@@ -8,6 +8,7 @@ has_native_libraries = false
 has_proguard_flags = false
 has_r_text_file = true
 is_manifest_empty = false
+manifest_package = "com.google.android.gms.auth.api"
 resources = [
   "res/drawable-watch-v20/common_google_signin_btn_text_dark_normal.xml",
   "res/drawable-watch-v20/common_google_signin_btn_text_disabled.xml",

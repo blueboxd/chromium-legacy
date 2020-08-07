@@ -40,8 +40,9 @@ class WebAppTabStripBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList features_;
 };
 
+// Disabled due to flake. https://crbug.com/1113951
 IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
-                       CustomTabBarUpdateOnTabSwitch) {
+                       DISABLED_CustomTabBarUpdateOnTabSwitch) {
   Profile* profile = browser()->profile();
 
   ASSERT_TRUE(embedded_test_server()->Start());

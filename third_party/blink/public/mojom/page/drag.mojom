@@ -7,6 +7,7 @@ module blink.mojom;
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/url.mojom";
+import "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom";
 
 // "Verb" of a drag-and-drop operation as negotiated between the source and
 // destination. It's typemapped to blink::WebDragOperation.
@@ -54,6 +55,7 @@ struct DragItemString {
 struct DragItemFile {
   mojo_base.mojom.FilePath path;
   mojo_base.mojom.FilePath display_name;
+  pending_remote<NativeFileSystemDragDropToken>? native_file_system_token;
 };
 
 // Only used when dragging images out of Blink.
@@ -87,4 +89,3 @@ struct DragData {
                           // new isolated file system to access the dropped
                           // files.
 };
-

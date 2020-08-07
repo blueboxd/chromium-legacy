@@ -1880,10 +1880,9 @@ void LocalFrame::ForceSynchronousDocumentInstall(
   GetDocument()->Shutdown();
   DomWindow()->ClearForReuse();
 
-  DomWindow()->InstallNewDocument(
-      DocumentInit::Create()
-          .WithDocumentLoader(loader_.GetDocumentLoader(), nullptr)
-          .WithTypeFrom(mime_type));
+  DomWindow()->InstallNewDocument(DocumentInit::Create()
+                                      .WithWindow(DomWindow(), nullptr)
+                                      .WithTypeFrom(mime_type));
   loader_.StateMachine()->AdvanceTo(
       FrameLoaderStateMachine::kCommittedFirstRealLoad);
 

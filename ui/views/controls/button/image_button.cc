@@ -299,10 +299,6 @@ void ToggleImageButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 }
 
-bool ToggleImageButton::toggled_for_testing() const {
-  return toggled_;
-}
-
 DEFINE_ENUM_CONVERTERS(ImageButton::HorizontalAlignment,
                        {ImageButton::HorizontalAlignment::ALIGN_LEFT,
                         base::ASCIIToUTF16("ALIGN_LEFT")},

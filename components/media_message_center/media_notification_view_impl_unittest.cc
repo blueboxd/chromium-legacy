@@ -539,7 +539,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, PlayToggle_FromObserver_Empty) {
     views::ToggleImageButton* button = static_cast<views::ToggleImageButton*>(
         GetButtonForAction(MediaSessionAction::kPlay));
     ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
-    EXPECT_FALSE(button->toggled_for_testing());
+    EXPECT_FALSE(button->toggled());
   }
 
   view()->UpdateWithMediaSessionInfo(
@@ -549,7 +549,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, PlayToggle_FromObserver_Empty) {
     views::ToggleImageButton* button = static_cast<views::ToggleImageButton*>(
         GetButtonForAction(MediaSessionAction::kPlay));
     ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
-    EXPECT_FALSE(button->toggled_for_testing());
+    EXPECT_FALSE(button->toggled());
   }
 }
 
@@ -562,7 +562,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest,
     views::ToggleImageButton* button = static_cast<views::ToggleImageButton*>(
         GetButtonForAction(MediaSessionAction::kPlay));
     ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
-    EXPECT_FALSE(button->toggled_for_testing());
+    EXPECT_FALSE(button->toggled());
   }
 
   media_session::mojom::MediaSessionInfoPtr session_info(
@@ -576,7 +576,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest,
     views::ToggleImageButton* button = static_cast<views::ToggleImageButton*>(
         GetButtonForAction(MediaSessionAction::kPause));
     ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
-    EXPECT_TRUE(button->toggled_for_testing());
+    EXPECT_TRUE(button->toggled());
   }
 
   session_info->playback_state =
@@ -587,7 +587,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest,
     views::ToggleImageButton* button = static_cast<views::ToggleImageButton*>(
         GetButtonForAction(MediaSessionAction::kPlay));
     ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
-    EXPECT_FALSE(button->toggled_for_testing());
+    EXPECT_FALSE(button->toggled());
   }
 }
 

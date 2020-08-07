@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/clipboard/data_object_item.h"
 
 #include "base/time/time.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
@@ -61,11 +62,13 @@ DataObjectItem* DataObjectItem::CreateFromFile(File* file) {
 // static
 DataObjectItem* DataObjectItem::CreateFromFileWithFileSystemId(
     File* file,
-    const String& file_system_id) {
+    const String& file_system_id,
+    scoped_refptr<NativeFileSystemDropData> native_file_entry) {
   DataObjectItem* item =
       MakeGarbageCollected<DataObjectItem>(kFileKind, file->type());
   item->file_ = file;
   item->file_system_id_ = file_system_id;
+  item->native_file_system_entry_ = native_file_entry;
   return item;
 }
 
@@ -223,25 +226,17 @@ String DataObjectItem::FileSystemId() const {
 }
 
 bool DataObjectItem::HasNativeFileSystemEntry() const {
-  return native_file_system_entry_.has_value();
+  return static_cast<bool>(native_file_system_entry_);
 }
 
-String DataObjectItem::NativeFileSystemFileName() const {
-  DCHECK(HasNativeFileSystemEntry());
-  return native_file_system_entry_->name;
-}
-
-bool DataObjectItem::NativeFileSystemEntryIsDirectory() const {
-  DCHECK(HasNativeFileSystemEntry());
-  return native_file_system_entry_->is_directory;
-}
-
-mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
+mojo::PendingRemote<mojom::blink::NativeFileSystemDragDropToken>
 DataObjectItem::CloneNativeFileSystemEntryToken() const {
   DCHECK(HasNativeFileSystemEntry());
-  mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> token_clone;
-  native_file_system_entry_->token_remote->Clone(
-      token_clone.InitWithNewPipeAndPassReceiver());
+  mojo::Remote<mojom::blink::NativeFileSystemDragDropToken> token_cloner(
+      std::move(native_file_system_entry_->data));
+  mojo::PendingRemote<mojom::blink::NativeFileSystemDragDropToken> token_clone;
+  token_cloner->Clone(token_clone.InitWithNewPipeAndPassReceiver());
+  native_file_system_entry_->data = token_cloner.Unbind();
   return token_clone;
 }
 

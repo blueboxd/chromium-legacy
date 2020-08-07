@@ -77,6 +77,50 @@ void EndOverview() {
 
 }  // namespace
 
+// A self-deleting window state observer that runs the given callback when its
+// associated window state has been changed.
+class AsyncWindowStateChangeObserver : public WindowStateObserver,
+                                       public aura::WindowObserver {
+ public:
+  AsyncWindowStateChangeObserver(
+      aura::Window* window,
+      base::OnceCallback<void(WindowState*)> on_post_window_state_changed)
+      : window_(window),
+        on_post_window_state_changed_(std::move(on_post_window_state_changed)) {
+    DCHECK(!on_post_window_state_changed_.is_null());
+    WindowState::Get(window_)->AddObserver(this);
+    window_->AddObserver(this);
+  }
+
+  ~AsyncWindowStateChangeObserver() override { RemoveAllObservers(); }
+
+  AsyncWindowStateChangeObserver(const AsyncWindowStateChangeObserver&) =
+      delete;
+  AsyncWindowStateChangeObserver& operator=(
+      const AsyncWindowStateChangeObserver&) = delete;
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override { delete this; }
+
+  // WindowStateObserver:
+  void OnPostWindowStateTypeChange(WindowState* window_state,
+                                   WindowStateType) override {
+    RemoveAllObservers();
+    std::move(on_post_window_state_changed_).Run(window_state);
+    delete this;
+  }
+
+ private:
+  void RemoveAllObservers() {
+    WindowState::Get(window_)->RemoveObserver(this);
+    window_->RemoveObserver(this);
+  }
+
+  aura::Window* window_;
+
+  base::OnceCallback<void(WindowState*)> on_post_window_state_changed_;
+};
+
 OverviewSession::OverviewSession(OverviewDelegate* delegate)
     : delegate_(delegate),
       restore_focus_window_(window_util::GetFocusedWindow()),
@@ -327,12 +371,24 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
   }
   // If the selected window is a minimized window, un-minimize it first before
   // activating it so that the window can use the scale-up animation instead of
-  // un-minimizing animation. If minimized, the activation of the window will
-  // happen in OverviewItem which listens for window state changes.
-  if (WindowState::Get(window)->IsMinimized()) {
-    item->set_activate_on_unminimized(true);
+  // un-minimizing animation. The activation of the window will happen in an
+  // asynchronous manner on window state has been changed. That's because some
+  // windows (ARC app windows) have their window states changed async, so we
+  // need to wait until the window is fully unminimized before activation as
+  // opposed to having two consecutive calls.
+  auto* window_state = WindowState::Get(window);
+  if (window_state->IsMinimized()) {
     ScopedAnimationDisabler disabler(window);
-    WindowState::Get(window)->Unminimize();
+    // The following instance self-destructs when the window state changed.
+    new AsyncWindowStateChangeObserver(
+        window, base::BindOnce([](WindowState* window_state) {
+          for (auto* window_iter :
+               GetVisibleTransientTreeIterator(window_state->window())) {
+            window_iter->layer()->SetOpacity(1.0);
+          }
+          wm::ActivateWindow(window_state->window());
+        }));
+    window->Show();
     return;
   }
 

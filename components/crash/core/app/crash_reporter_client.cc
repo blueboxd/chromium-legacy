@@ -187,10 +187,10 @@ bool CrashReporterClient::ShouldWriteMinidumpToLog() {
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
 void CrashReporterClient::GetSanitizationInformation(
-    const char* const** annotations_whitelist,
+    const char* const** allowed_annotations,
     void** target_module,
     bool* sanitize_stacks) {
-  *annotations_whitelist = nullptr;
+  *allowed_annotations = nullptr;
   *target_module = nullptr;
   *sanitize_stacks = false;
 }

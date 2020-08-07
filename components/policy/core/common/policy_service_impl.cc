@@ -26,6 +26,10 @@
 #include "components/policy/core/common/values_util.h"
 #include "components/policy/policy_constants.h"
 
+#if defined(OS_ANDROID)
+#include "components/policy/core/common/android/policy_service_android.h"
+#endif
+
 namespace policy {
 
 namespace {
@@ -203,6 +207,15 @@ void PolicyServiceImpl::RefreshPolicies(base::OnceClosure callback) {
       provider->RefreshPolicies();
   }
 }
+
+#if defined(OS_ANDROID)
+android::PolicyServiceAndroid* PolicyServiceImpl::GetPolicyServiceAndroid() {
+  if (!policy_service_android_)
+    policy_service_android_ =
+        std::make_unique<android::PolicyServiceAndroid>(this);
+  return policy_service_android_.get();
+}
+#endif
 
 void PolicyServiceImpl::UnthrottleInitialization() {
   DCHECK(thread_checker_.CalledOnValidThread());

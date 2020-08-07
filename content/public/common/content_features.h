@@ -91,6 +91,7 @@ CONTENT_EXPORT extern const base::Feature kMouseSubframeNoImplicitCapture;
 CONTENT_EXPORT extern const base::Feature kNetworkQualityEstimatorWebHoldback;
 CONTENT_EXPORT extern const base::Feature kNetworkServiceInProcess;
 CONTENT_EXPORT extern const base::Feature kNeverSlowMode;
+CONTENT_EXPORT extern const base::Feature kNoStatePrefetchUsingPrefetchLoader;
 CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
 CONTENT_EXPORT extern const base::Feature kNotificationTriggers;
 CONTENT_EXPORT extern const base::Feature kOriginIsolationHeader;

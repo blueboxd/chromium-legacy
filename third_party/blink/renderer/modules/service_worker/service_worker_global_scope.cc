@@ -40,7 +40,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -194,7 +193,8 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
         installed_scripts_manager,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin,
-    const ServiceWorkerToken& service_worker_token) {
+    const ServiceWorkerToken& service_worker_token,
+    ukm::SourceId ukm_source_id) {
 #if DCHECK_IS_ON()
   // If the script is being loaded via script streaming, the script is not yet
   // loaded.
@@ -211,7 +211,8 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
 
   return MakeGarbageCollected<ServiceWorkerGlobalScope>(
       std::move(creation_params), thread, std::move(installed_scripts_manager),
-      std::move(cache_storage_remote), time_origin, service_worker_token);
+      std::move(cache_storage_remote), time_origin, service_worker_token,
+      ukm_source_id);
 }
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
@@ -221,11 +222,12 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
         installed_scripts_manager,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin,
-    const ServiceWorkerToken& service_worker_token)
+    const ServiceWorkerToken& service_worker_token,
+    ukm::SourceId ukm_source_id)
     : WorkerGlobalScope(std::move(creation_params),
                         thread,
                         time_origin,
-                        ukm::kInvalidSourceId),
+                        ukm_source_id),
       installed_scripts_manager_(std::move(installed_scripts_manager)),
       cache_storage_remote_(std::move(cache_storage_remote)),
       token_(service_worker_token) {

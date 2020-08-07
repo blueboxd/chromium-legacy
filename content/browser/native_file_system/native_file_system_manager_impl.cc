@@ -6,7 +6,9 @@
 
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
@@ -15,6 +17,7 @@
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
 #include "content/browser/native_file_system/native_file_system.pb.h"
 #include "content/browser/native_file_system/native_file_system_directory_handle_impl.h"
+#include "content/browser/native_file_system/native_file_system_drag_drop_token_impl.h"
 #include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
 #include "content/browser/native_file_system/native_file_system_file_writer_impl.h"
@@ -37,6 +40,7 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom.h"
 #include "url/origin.h"
 
@@ -121,7 +125,6 @@ bool CreateOrTruncateFile(const base::FilePath& path) {
 
 bool IsValidTransferToken(NativeFileSystemTransferTokenImpl* token,
                           const url::Origin& expected_origin,
-                          int process_id,
                           HandleType expected_handle_type) {
   if (!token) {
     return false;
@@ -131,11 +134,17 @@ bool IsValidTransferToken(NativeFileSystemTransferTokenImpl* token,
     return false;
   }
 
-  if (!token->MatchesOriginAndPID(expected_origin, process_id)) {
+  if (token->url().origin() != expected_origin) {
     return false;
   }
 
   return true;
+}
+
+HandleType GetFileType(const base::FilePath& file_path) {
+  base::File::Info file_info;
+  base::GetFileInfo(file_path, &file_info);
+  return file_info.is_directory ? HandleType::kDirectory : HandleType::kFile;
 }
 
 }  // namespace
@@ -280,6 +289,93 @@ void NativeFileSystemManagerImpl::ChooseEntries(
                      std::move(callback)));
 }
 
+void NativeFileSystemManagerImpl::CreateNativeFileSystemDragDropToken(
+    const base::FilePath& file_path,
+    int renderer_id,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemDragDropToken>
+        receiver) {
+  auto drag_drop_token_impl =
+      std::make_unique<NativeFileSystemDragDropTokenImpl>(
+          this, file_path, renderer_id, std::move(receiver));
+  auto token = drag_drop_token_impl->token();
+  drag_drop_tokens_.emplace(token, std::move(drag_drop_token_impl));
+}
+
+void NativeFileSystemManagerImpl::GetEntryFromDragDropToken(
+    mojo::PendingRemote<blink::mojom::NativeFileSystemDragDropToken> token,
+    GetEntryFromDragDropTokenCallback token_resolved_callback) {
+  mojo::Remote<blink::mojom::NativeFileSystemDragDropToken> drop_token_remote(
+      std::move(token));
+
+  // Get a failure callback in case this token ends up not being valid (i.e.
+  // unrecognized token or wrong renderer process ID).
+  mojo::ReportBadMessageCallback failed_token_redemption_callback =
+      receivers_.GetBadMessageCallback();
+
+  // Must pass `drop_token_remote` into GetInternalId in order to ensure it
+  // stays in scope long enough for the callback to be called.
+  auto* raw_drop_token_remote = drop_token_remote.get();
+  raw_drop_token_remote->GetInternalId(
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(
+              &NativeFileSystemManagerImpl::ResolveDragDropToken,
+              weak_factory_.GetWeakPtr(), std::move(drop_token_remote),
+              receivers_.current_context(), std::move(token_resolved_callback),
+              std::move(failed_token_redemption_callback)),
+          base::UnguessableToken()));
+}
+
+void NativeFileSystemManagerImpl::ResolveDragDropToken(
+    mojo::Remote<blink::mojom::NativeFileSystemDragDropToken>,
+    const BindingContext& binding_context,
+    GetEntryFromDragDropTokenCallback token_resolved_callback,
+    mojo::ReportBadMessageCallback failed_token_redemption_callback,
+    const base::UnguessableToken& token) {
+  auto drag_token_impl = drag_drop_tokens_.find(token);
+
+  // Call `token_resolved_callback` with an error if the token isn't registered.
+  if (drag_token_impl == drag_drop_tokens_.end()) {
+    std::move(failed_token_redemption_callback)
+        .Run("Unrecognized drag drop token.");
+    return;
+  }
+
+  // Call `token_resolved_callback` with an error if the process redeeming the
+  // token isn't the same process that the token is registered to.
+  if (drag_token_impl->second->renderer_process_id() !=
+      binding_context.process_id()) {
+    std::move(failed_token_redemption_callback).Run("Invalid renderer ID.");
+    return;
+  }
+
+  // Look up whether the file path that's associated with the token is a file or
+  // directory and call ResolveDragDropTokenWithFileType with the result.
+  const base::FilePath& drag_drop_token_path =
+      drag_token_impl->second->file_path();
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&GetFileType, drag_drop_token_path),
+      base::BindOnce(
+          &NativeFileSystemManagerImpl::ResolveDragDropTokenWithFileType,
+          weak_factory_.GetWeakPtr(), binding_context, drag_drop_token_path,
+          std::move(token_resolved_callback)));
+}
+
+void NativeFileSystemManagerImpl::ResolveDragDropTokenWithFileType(
+    const BindingContext& binding_context,
+    const base::FilePath& file_path,
+    GetEntryFromDragDropTokenCallback token_resolved_callback,
+    HandleType file_type) {
+  blink::mojom::NativeFileSystemEntryPtr entry;
+  if (file_type == HandleType::kDirectory) {
+    entry = CreateDirectoryEntryFromPath(binding_context, file_path);
+  } else {
+    entry = CreateFileEntryFromPath(binding_context, file_path);
+  }
+
+  std::move(token_resolved_callback).Run(std::move(entry));
+}
+
 void NativeFileSystemManagerImpl::GetFileHandleFromToken(
     mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
     mojo::PendingReceiver<blink::mojom::NativeFileSystemFileHandle>
@@ -336,12 +432,12 @@ base::FilePath DeserializePath(const std::string& bytes) {
 void NativeFileSystemManagerImpl::DidResolveForSerializeHandle(
     SerializeHandleCallback callback,
     NativeFileSystemTransferTokenImpl* resolved_token) {
-  if (!resolved_token || !resolved_token->GetAsFileSystemURL()) {
+  if (!resolved_token) {
     std::move(callback).Run({});
     return;
   }
 
-  const storage::FileSystemURL& url = *resolved_token->GetAsFileSystemURL();
+  const storage::FileSystemURL& url = resolved_token->url();
 
   NativeFileSystemHandleData data;
   data.set_handle_type(resolved_token->type() == HandleType::kFile
@@ -552,34 +648,12 @@ NativeFileSystemManagerImpl::CreateFileWriter(
   return result;
 }
 
-void NativeFileSystemManagerImpl::CreateTransferTokenFromPath(
-    const base::FilePath& file_path,
-    content::NativeFileSystemPermissionContext::HandleType handle_type,
-    int renderer_id,
-    mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
-        receiver) {
-  auto token_impl = NativeFileSystemTransferTokenImpl::CreateFromPath(
-      file_path, handle_type, this, std::move(receiver), renderer_id);
-  auto token = token_impl->token();
-  transfer_tokens_.emplace(token, std::move(token_impl));
-}
-
 void NativeFileSystemManagerImpl::CreateTransferToken(
     const NativeFileSystemFileHandleImpl& file,
     mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
         receiver) {
   return CreateTransferTokenImpl(file.url(), file.handle_state(),
                                  HandleType::kFile, std::move(receiver));
-}
-
-void NativeFileSystemManagerImpl::CreateTransferTokenForTesting(
-    const storage::FileSystemURL& url,
-    const SharedHandleState& handle_state,
-    HandleType handle_type,
-    mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
-        receiver) {
-  return CreateTransferTokenImpl(url, handle_state, handle_type,
-                                 std::move(receiver));
 }
 
 void NativeFileSystemManagerImpl::CreateTransferToken(
@@ -613,7 +687,7 @@ void NativeFileSystemManagerImpl::DidResolveTransferTokenForFileHandle(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsValidTransferToken(resolved_token, binding_context.origin,
-                            binding_context.process_id(), HandleType::kFile)) {
+                            HandleType::kFile)) {
     // Fail silently. In practice, the NativeFileSystemManager should not
     // receive any invalid tokens. Before redeeming a token, the render process
     // performs an origin check to ensure the token is valid. Invalid tokens
@@ -638,7 +712,6 @@ void NativeFileSystemManagerImpl::DidResolveTransferTokenForDirectoryHandle(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsValidTransferToken(resolved_token, binding_context.origin,
-                            binding_context.process_id(),
                             HandleType::kDirectory)) {
     // Fail silently. See comment above in
     // DidResolveTransferTokenForFileHandle() for details.
@@ -834,7 +907,7 @@ void NativeFileSystemManagerImpl::CreateTransferTokenImpl(
         receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto token_impl = NativeFileSystemTransferTokenImpl::Create(
+  auto token_impl = std::make_unique<NativeFileSystemTransferTokenImpl>(
       url, handle_state, handle_type, this, std::move(receiver));
   auto token = token_impl->token();
   transfer_tokens_.emplace(token, std::move(token_impl));
@@ -845,6 +918,14 @@ void NativeFileSystemManagerImpl::RemoveToken(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   size_t count_removed = transfer_tokens_.erase(token);
+  DCHECK_EQ(1u, count_removed);
+}
+
+void NativeFileSystemManagerImpl::RemoveDragDropToken(
+    const base::UnguessableToken& token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  size_t count_removed = drag_drop_tokens_.erase(token);
   DCHECK_EQ(1u, count_removed);
 }
 

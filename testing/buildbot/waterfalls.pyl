@@ -4358,21 +4358,6 @@
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
-      'WebKit Mac10.13 (retina)': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '1002:6821',
-              'hidpi': '1',
-              'os': 'Mac-10.13.6',
-              'pool': 'chromium.tests.gpu',
-            }
-          ],
-        },
-      },
       'ios-device': {
         'additional_compile_targets': [
           'all',

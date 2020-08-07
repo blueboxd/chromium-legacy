@@ -5,6 +5,7 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
+  closure_flags = default_closure_args + [ "language_in=ECMASCRIPT_2018" ]
   deps = [ ":compile_resources" ]
 }
 
@@ -35,6 +36,7 @@ js_library("compile_resources") {
     "models/file_system_entry.js",
     "models/file_util.js",
     "models/mp4_video_processor.js",
+    "models/native_file_system_entry.js",
     "models/nop_video_processor.js",
     "models/result_saver.js",
     "models/video_saver.js",
@@ -79,5 +81,8 @@ js_library("compile_resources") {
     "$externs_path/file_manager_private.js",
     "$externs_path/file_system_provider.js",
     "$externs_path/metrics_private.js",
+
+    # TODO(980846): Remove it once it is upstreamed to the closure compiler.
+    "//chromeos/components/web_applications/externs/file_handling.externs.js",
   ]
 }

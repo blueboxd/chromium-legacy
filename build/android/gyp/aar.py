@@ -32,18 +32,29 @@ _PROGUARD_TXT = 'proguard.txt'
 _PROGUARD_CHECKS_TXT = 'proguard-checks.txt'
 
 
-def _IsManifestEmpty(manifest_str):
+def _GetManifestPackage(doc):
+  """Returns the package specified in the manifest.
+
+  Args:
+    doc: an XML tree parsed by ElementTree
+
+  Returns:
+    String representing the package name.
+  """
+  return doc.attrib['package']
+
+
+def _IsManifestEmpty(doc):
   """Decides whether the given manifest has merge-worthy elements.
 
   E.g.: <activity>, <service>, etc.
 
   Args:
-    manifest_str: Content of a manifiest XML.
+    doc: an XML tree parsed by ElementTree
 
   Returns:
     Whether the manifest has merge-worthy elements.
   """
-  doc = ElementTree.fromstring(manifest_str)
   for node in doc:
     if node.tag == 'application':
       if node.getchildren():
@@ -74,8 +85,11 @@ def _CreateInfo(aar_file):
   data['has_native_libraries'] = False
   data['has_r_text_file'] = False
   with zipfile.ZipFile(aar_file) as z:
-    data['is_manifest_empty'] = (
-        _IsManifestEmpty(z.read('AndroidManifest.xml')))
+    manifest_xml = ElementTree.fromstring(z.read('AndroidManifest.xml'))
+    data['is_manifest_empty'] = _IsManifestEmpty(manifest_xml)
+    manifest_package = _GetManifestPackage(manifest_xml)
+    if manifest_package:
+      data['manifest_package'] = manifest_package
 
     for name in z.namelist():
       if name.endswith('/'):

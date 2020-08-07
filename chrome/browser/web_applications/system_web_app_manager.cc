@@ -114,6 +114,11 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
         SystemAppInfo("Camera", GURL("chrome://camera-app/pwa.html")));
     infos.at(SystemAppType::CAMERA).uninstall_and_replace = {
         extension_misc::kCameraAppId};
+    // We need "FileHandling" to use File Handling API to set launch directory.
+    // And we need "NativeFileSystem2" to use Native File System API.
+    infos.at(SystemAppType::CAMERA).enabled_origin_trials =
+        OriginTrialsMap({{GetOrigin("chrome://camera-app"),
+                          {"FileHandling", "NativeFileSystem2"}}});
   }
 
   infos.emplace(

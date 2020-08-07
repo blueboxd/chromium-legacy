@@ -16,12 +16,12 @@
 
 namespace storage {
 
-class BlobStorageContext;
+class BlobUrlRegistry;
 
 class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
     : public blink::mojom::BlobURLStore {
  public:
-  BlobURLStoreImpl(base::WeakPtr<BlobStorageContext> context,
+  BlobURLStoreImpl(base::WeakPtr<BlobUrlRegistry> registry,
                    BlobRegistryImpl::Delegate* delegate);
   ~BlobURLStoreImpl() override;
 
@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
       mojo::PendingReceiver<blink::mojom::BlobURLToken> token) override;
 
  private:
-  base::WeakPtr<BlobStorageContext> context_;
+  base::WeakPtr<BlobUrlRegistry> registry_;
   BlobRegistryImpl::Delegate* delegate_;
 
   std::set<GURL> urls_;

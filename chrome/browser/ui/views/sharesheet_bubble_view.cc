@@ -190,7 +190,6 @@ void SharesheetBubbleView::ButtonPressed(views::Button* sender,
   delegate_->OnTargetSelected(targets_[sender->tag()].launch_name, type,
                               std::move(intent_), share_action_view_);
   intent_.reset();
-  RequestFocus();
 }
 
 std::unique_ptr<views::NonClientFrameView>

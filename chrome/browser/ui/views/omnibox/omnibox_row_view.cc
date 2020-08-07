@@ -57,10 +57,7 @@ class OmniboxRowView::HeaderView : public views::View,
         views::FocusRing::Install(header_toggle_button_);
     header_toggle_button_focus_ring_->SetHasFocusPredicate([&](View* view) {
       return view->GetVisible() &&
-             row_view_->popup_model_->selection() ==
-                 OmniboxPopupModel::Selection(
-                     row_view_->line_,
-                     OmniboxPopupModel::FOCUSED_BUTTON_HEADER);
+             row_view_->popup_model_->selection() == HeaderSelection();
     });
 
     if (row_view_->pref_service_) {
@@ -107,6 +104,13 @@ class OmniboxRowView::HeaderView : public views::View,
     return gfx::Insets(vertical, left_inset, vertical,
                        OmniboxMatchCellView::kMarginRight);
   }
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    // Needed to receive the OnMouseReleased event.
+    return true;
+  }
+  void OnMouseReleased(const ui::MouseEvent& event) override {
+    row_view_->popup_model_->TriggerSelectionAction(HeaderSelection());
+  }
   void OnMouseEntered(const ui::MouseEvent& event) override { UpdateUI(); }
   void OnMouseExited(const ui::MouseEvent& event) override { UpdateUI(); }
   void OnThemeChanged() override {
@@ -129,18 +133,14 @@ class OmniboxRowView::HeaderView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(sender, header_toggle_button_);
-    row_view_->popup_model_->TriggerSelectionAction(
-        OmniboxPopupModel::Selection(row_view_->line_,
-                                     OmniboxPopupModel::FOCUSED_BUTTON_HEADER));
+    row_view_->popup_model_->TriggerSelectionAction(HeaderSelection());
     // The PrefChangeRegistrar will update the actual button toggle state.
   }
 
   // Updates the UI state for the new hover or selection state.
   void UpdateUI() {
     OmniboxPartState part_state = OmniboxPartState::NORMAL;
-    if (row_view_->popup_model_->selection() ==
-        OmniboxPopupModel::Selection(
-            row_view_->line_, OmniboxPopupModel::FOCUSED_BUTTON_HEADER)) {
+    if (row_view_->popup_model_->selection() == HeaderSelection()) {
       part_state = OmniboxPartState::SELECTED;
     } else if (IsMouseHovered()) {
       part_state = OmniboxPartState::HOVERED;
@@ -209,6 +209,12 @@ class OmniboxRowView::HeaderView : public views::View,
     }
 
     header_toggle_button_->SetToggled(suggestion_group_hidden_);
+  }
+
+  // Convenience method to get the OmniboxPopupModel::Selection for this view.
+  OmniboxPopupModel::Selection HeaderSelection() {
+    return OmniboxPopupModel::Selection(
+        row_view_->line_, OmniboxPopupModel::FOCUSED_BUTTON_HEADER);
   }
 
   // Non-owning pointer our parent row view. We access a lot of private members

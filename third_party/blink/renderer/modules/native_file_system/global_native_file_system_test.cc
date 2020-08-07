@@ -84,6 +84,11 @@ class MockNativeFileSystemManager
       mojo::PendingReceiver<mojom::blink::NativeFileSystemDirectoryHandle>)
       override {}
 
+  void GetEntryFromDragDropToken(
+      mojo::PendingRemote<blink::mojom::blink::NativeFileSystemDragDropToken>
+          token,
+      GetEntryFromDragDropTokenCallback callback) override {}
+
  private:
   void BindNativeFileSystemManager(mojo::ScopedMessagePipeHandle handle) {
     receivers_.Add(this,

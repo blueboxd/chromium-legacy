@@ -315,7 +315,7 @@ WebUIController* NewWebUI<chromeos::OobeUI>(WebUI* web_ui, const GURL& url) {
 template <>
 WebUIController* NewWebUI<chromeos::CameraAppUI>(WebUI* web_ui,
                                                  const GURL& url) {
-  auto delegate = std::make_unique<ChromeCameraAppUIDelegate>();
+  auto delegate = std::make_unique<ChromeCameraAppUIDelegate>(web_ui);
   return new chromeos::CameraAppUI(web_ui, std::move(delegate));
 }
 

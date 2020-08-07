@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
@@ -89,6 +90,11 @@ void WindowCycleController::HandleCycleWindow(Direction direction) {
 }
 
 void WindowCycleController::StartCycling() {
+  // Close the wallpaper preview if it is open to prevent visual glitches where
+  // the window view item for the preview is transparent
+  // (http://crbug.com/895265).
+  Shell::Get()->wallpaper_controller()->MaybeClosePreviewWallpaper();
+
   WindowCycleList::WindowList window_list =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleWithPipList(
           features::IsAltTabLimitedToActiveDesk() ? kActiveDesk : kAllDesks);

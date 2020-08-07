@@ -6,6 +6,7 @@
 
 #include "base/containers/span.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -268,24 +269,46 @@ TEST(VTConfigUtil, GetImageBufferColorSpace_GAMMA28) {
   EXPECT_EQ(cs.ToGfxColorSpace(), GetImageBufferColorSpace(image_buffer));
 }
 
-TEST(VTConfigUtil, DISABLED_GetImageBufferColorSpace_BT2020_PQ) {
+TEST(VTConfigUtil, GetImageBufferColorSpace_BT2020_PQ) {
   auto cs = VideoColorSpace(VideoColorSpace::PrimaryID::BT2020,
                             VideoColorSpace::TransferID::SMPTEST2084,
                             VideoColorSpace::MatrixID::BT2020_NCL,
                             gfx::ColorSpace::RangeID::LIMITED);
   auto image_buffer = CreateCVImageBuffer(cs);
   ASSERT_TRUE(image_buffer);
-  EXPECT_EQ(cs.ToGfxColorSpace(), GetImageBufferColorSpace(image_buffer));
+  auto image_buffer_cs = GetImageBufferColorSpace(image_buffer);
+
+  // When BT.2020 is unavailable the default should be BT.709.
+  if (base::mac::IsAtLeastOS10_13()) {
+    EXPECT_EQ(cs.ToGfxColorSpace(), image_buffer_cs);
+  } else if (base::mac::IsAtLeastOS10_11()) {
+    // 10.11 and 10.12 don't have HDR transfer functions.
+    cs.transfer = VideoColorSpace::TransferID::BT709;
+    EXPECT_EQ(cs.ToGfxColorSpace(), image_buffer_cs);
+  } else {
+    EXPECT_EQ(gfx::ColorSpace::CreateREC709(), image_buffer_cs);
+  }
 }
 
-TEST(VTConfigUtil, DISABLED_GetImageBufferColorSpace_BT2020_HLG) {
+TEST(VTConfigUtil, GetImageBufferColorSpace_BT2020_HLG) {
   auto cs = VideoColorSpace(VideoColorSpace::PrimaryID::BT2020,
                             VideoColorSpace::TransferID::ARIB_STD_B67,
                             VideoColorSpace::MatrixID::BT2020_NCL,
                             gfx::ColorSpace::RangeID::LIMITED);
   auto image_buffer = CreateCVImageBuffer(cs);
   ASSERT_TRUE(image_buffer);
-  EXPECT_EQ(cs.ToGfxColorSpace(), GetImageBufferColorSpace(image_buffer));
+  auto image_buffer_cs = GetImageBufferColorSpace(image_buffer);
+
+  // When BT.2020 is unavailable the default should be BT.709.
+  if (base::mac::IsAtLeastOS10_13()) {
+    EXPECT_EQ(cs.ToGfxColorSpace(), image_buffer_cs);
+  } else if (base::mac::IsAtLeastOS10_11()) {
+    // 10.11 and 10.12 don't have HDR transfer functions.
+    cs.transfer = VideoColorSpace::TransferID::BT709;
+    EXPECT_EQ(cs.ToGfxColorSpace(), image_buffer_cs);
+  } else {
+    EXPECT_EQ(gfx::ColorSpace::CreateREC709(), image_buffer_cs);
+  }
 }
 
 }  // namespace media

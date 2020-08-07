@@ -488,8 +488,10 @@ bool BlobRegistryImpl::BlobUnderConstruction::ContainsCycles(
 
 BlobRegistryImpl::BlobRegistryImpl(
     base::WeakPtr<BlobStorageContext> context,
+    base::WeakPtr<BlobUrlRegistry> url_registry,
     scoped_refptr<FileSystemContext> file_system_context)
     : context_(std::move(context)),
+      url_registry_(std::move(url_registry)),
       file_system_context_(std::move(file_system_context)) {}
 
 BlobRegistryImpl::~BlobRegistryImpl() {
@@ -625,7 +627,7 @@ void BlobRegistryImpl::URLStoreForOrigin(
   Delegate* delegate = receivers_.current_context().get();
   DCHECK(delegate);
   auto self_owned_associated_receiver = mojo::MakeSelfOwnedAssociatedReceiver(
-      std::make_unique<BlobURLStoreImpl>(context_, delegate),
+      std::make_unique<BlobURLStoreImpl>(url_registry_, delegate),
       std::move(receiver));
   if (g_url_store_creation_hook)
     g_url_store_creation_hook->Run(self_owned_associated_receiver);

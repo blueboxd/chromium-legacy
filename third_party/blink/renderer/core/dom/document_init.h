@@ -40,12 +40,11 @@
 namespace blink {
 
 class Document;
-class DocumentLoader;
 class ExecutionContext;
 class HTMLImportsController;
+class LocalDOMWindow;
 class LocalFrame;
 class PluginData;
-class UseCounter;
 
 class CORE_EXPORT DocumentInit final {
   STACK_ALLOCATED();
@@ -63,7 +62,8 @@ class CORE_EXPORT DocumentInit final {
   // Before creating a Document from this DocumentInit, the caller must invoke
   // exactly one of:
   // * ForTest() - for unit-test-only cases
-  // * WithDocumentLoader() - for navigations originating from DocumentLoader
+  // * WithWindow() - for navigations originating from DocumentLoader and
+  //       attaching to a LocalDOMWindow.
   // * WithExecutionContext() - for all other cases
   //
   // Invoking init.CreateDocument() will construct a Document of the appropriate
@@ -102,9 +102,8 @@ class CORE_EXPORT DocumentInit final {
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
 
-  DocumentInit& WithDocumentLoader(DocumentLoader*, Document* owner_document);
-  LocalFrame* GetFrame() const;
-  UseCounter* GetUseCounter() const;
+  DocumentInit& WithWindow(LocalDOMWindow*, Document* owner_document);
+  LocalDOMWindow* GetWindow() const { return window_; }
 
   // Compute the type of document to be loaded inside a |frame|, given its |url|
   // and its |mime_type|.
@@ -123,7 +122,7 @@ class CORE_EXPORT DocumentInit final {
 
   // Used when creating Documents not attached to a window.
   DocumentInit& WithExecutionContext(ExecutionContext*);
-  ExecutionContext* GetExecutionContext() const;
+  ExecutionContext* GetExecutionContext() const { return execution_context_; }
 
   DocumentInit& WithURL(const KURL&);
   const KURL& Url() const { return url_; }
@@ -142,22 +141,12 @@ class CORE_EXPORT DocumentInit final {
  private:
   DocumentInit() = default;
 
-  // For a Document associated directly with a frame, this will be the
-  // DocumentLoader driving the commit. For an import, XSLT-generated
-  // document, etc., it will be the DocumentLoader that drove the commit
-  // of its owning Document.
-  DocumentLoader* TreeRootDocumentLoader() const;
-
   static PluginData* GetPluginData(LocalFrame* frame, const KURL& url);
 
   Type type_ = Type::kUnspecified;
   String mime_type_;
-
-  DocumentLoader* document_loader_ = nullptr;
-  Document* parent_document_ = nullptr;
-
+  LocalDOMWindow* window_ = nullptr;
   HTMLImportsController* imports_controller_ = nullptr;
-
   ExecutionContext* execution_context_ = nullptr;
   KURL url_;
   Document* owner_document_ = nullptr;

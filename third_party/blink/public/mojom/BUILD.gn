@@ -99,6 +99,7 @@ mojom("mojom_platform") {
     "mediastream/media_stream.mojom",
     "mime/mime_registry.mojom",
     "native_file_system/native_file_system_directory_handle.mojom",
+    "native_file_system/native_file_system_drag_drop_token.mojom",
     "native_file_system/native_file_system_error.mojom",
     "native_file_system/native_file_system_file_handle.mojom",
     "native_file_system/native_file_system_file_writer.mojom",

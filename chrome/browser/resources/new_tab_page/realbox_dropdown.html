@@ -64,14 +64,15 @@
     <template is="dom-if" if="[[groupHasHeader_(groupId)]]">
       <!-- Header cannot be tabbed into but gets focus when clicked. This stops
            the dropdown from losing focus and closing as a result. -->
-      <div class="header" tabindex="-1" on-focusin="onHeaderFocusin_"
+      <div class="header" data-id$="[[groupId]]" tabindex="-1"
+          on-focusin="onHeaderFocusin_" on-click="onHeaderClick_"
           aria-hidden="true"
           group-is-hidden$="[[groupIsHidden_(groupId, hiddenGroupIds_.*)]]">
         <span class="text">[[headerForGroup_(groupId)]]</span>
-        <ntp-realbox-button data-id$="[[groupId]]" tabindex="0" role="button"
+        <ntp-realbox-button tabindex="0" role="button"
             title="[[toggleButtonTitleForGroup_(groupId, hiddenGroupIds_.*)]]"
             aria-label$="[[toggleButtonA11yLabelForGroup_(groupId, hiddenGroupIds_.*)]]"
-            on-click="onToggleButtonClick_" on-keydown="onToggleButtonKeydown_">
+            on-keydown="onToggleButtonKeydown_">
         </ntp-realbox-button>
       </div>
     </template>

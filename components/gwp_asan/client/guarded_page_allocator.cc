@@ -189,11 +189,11 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages,
   state_.metadata_addr = reinterpret_cast<uintptr_t>(metadata_.get());
 
 #if defined(OS_ANDROID)
-  // Explicitly whitelist memory ranges the crash_handler needs to reads. This
-  // is required for WebView because it has a stricter set of privacy
-  // constraints on what it reads from the crashing process.
+  // Explicitly allow memory ranges the crash_handler needs to read. This is
+  // required for WebView because it has a stricter set of privacy constraints
+  // on what it reads from the crashing process.
   for (auto& region : GetInternalMemoryRegions())
-    crash_reporter::WhitelistMemoryRange(region.first, region.second);
+    crash_reporter::AllowMemoryRange(region.first, region.second);
 #endif
 }
 

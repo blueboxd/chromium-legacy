@@ -8,6 +8,7 @@ has_native_libraries = false
 has_proguard_flags = true
 has_r_text_file = true
 is_manifest_empty = true
+manifest_package = "android.support.design"
 resources = [
   "res/anim/design_bottom_sheet_slide_in.xml",
   "res/anim/design_bottom_sheet_slide_out.xml",

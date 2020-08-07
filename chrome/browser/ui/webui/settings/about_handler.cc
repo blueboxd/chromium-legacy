@@ -259,7 +259,8 @@ std::string UpdateStatusToString(VersionUpdater::Status status) {
 
 namespace settings {
 
-AboutHandler::AboutHandler() : apply_changes_from_upgrade_observer_(false) {
+AboutHandler::AboutHandler(Profile* profile)
+    : profile_(profile), apply_changes_from_upgrade_observer_(false) {
   UpgradeDetector::GetInstance()->AddObserver(this);
 }
 
@@ -339,7 +340,7 @@ void AboutHandler::RegisterMessages() {
 
 #if defined(OS_CHROMEOS)
   // Handler for the product label image, which will be shown if available.
-  content::URLDataSource::Add(Profile::FromWebUI(web_ui()),
+  content::URLDataSource::Add(profile_,
                               std::make_unique<chromeos::ImageSource>());
 #endif
 }
@@ -459,7 +460,7 @@ void AboutHandler::HandleLaunchReleaseNotes(const base::ListValue* args) {
   if (network && network->IsOnline()) {
     base::RecordAction(
         base::UserMetricsAction("ReleaseNotes.LaunchedAboutPage"));
-    chrome::LaunchReleaseNotes(Profile::FromWebUI(web_ui()));
+    chrome::LaunchReleaseNotes(profile_);
   }
 }
 
@@ -473,7 +474,7 @@ void AboutHandler::HandleOpenOsHelpPage(const base::ListValue* args) {
 void AboutHandler::HandleSetChannel(const base::ListValue* args) {
   DCHECK(args->GetSize() == 2);
 
-  if (!CanChangeChannel(Profile::FromWebUI(web_ui()))) {
+  if (!CanChangeChannel(profile_)) {
     LOG(WARNING) << "Non-owner tried to change release track.";
     return;
   }
@@ -539,9 +540,8 @@ void AboutHandler::HandleCanChangeChannel(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
-  ResolveJavascriptCallback(
-      base::Value(callback_id),
-      base::Value(CanChangeChannel(Profile::FromWebUI(web_ui()))));
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(CanChangeChannel(profile_)));
 }
 
 void AboutHandler::OnGetCurrentChannel(std::string callback_id,
@@ -618,15 +618,17 @@ void AboutHandler::OnGetEndOfLifeInfo(
     chromeos::UpdateEngineClient::EolInfo eol_info) {
   base::Value response(base::Value::Type::DICTIONARY);
   if (!eol_info.eol_date.is_null()) {
-    response.SetBoolKey("hasEndOfLife", eol_info.eol_date <= base::Time::Now());
-    int eol_string_id = eol_info.eol_date <= base::Time::Now()
-                          ? IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE_PAST
-                          : IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE_FUTURE;
+    bool has_eol_passed = eol_info.eol_date <= base::Time::Now();
+    response.SetBoolKey("hasEndOfLife", has_eol_passed);
+    int eol_string_id =
+        has_eol_passed ? IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE_PAST
+                       : IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE_FUTURE;
     response.SetStringKey(
-          "aboutPageEndOfLifeMessage",
-          l10n_util::GetStringFUTF16(
-              eol_string_id, base::TimeFormatMonthAndYear(eol_info.eol_date),
-              base::ASCIIToUTF16(chrome::kEolNotificationURL)));
+        "aboutPageEndOfLifeMessage",
+        l10n_util::GetStringFUTF16(
+            eol_string_id, base::TimeFormatMonthAndYear(eol_info.eol_date),
+            base::ASCIIToUTF16(has_eol_passed ? chrome::kEolNotificationURL
+                                              : chrome::kAutoUpdatePolicyURL)));
   } else {
     response.SetBoolKey("hasEndOfLife", false);
     response.SetStringKey("aboutPageEndOfLifeMessage", "");

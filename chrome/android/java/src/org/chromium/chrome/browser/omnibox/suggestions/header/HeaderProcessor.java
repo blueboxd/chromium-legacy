@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox.suggestions.header;
 
 import android.content.Context;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.DropdownItemProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
@@ -62,7 +63,12 @@ public class HeaderProcessor implements DropdownItemProcessor {
 
             @Override
             public void onHeaderClicked() {
-                boolean newState = !model.get(HeaderViewProperties.IS_EXPANDED);
+                final boolean newState = !model.get(HeaderViewProperties.IS_EXPANDED);
+                RecordHistogram.recordSparseHistogram(newState
+                                ? "Omnibox.ToggleSuggestionGroupId.On"
+                                : "Omnibox.ToggleSuggestionGroupId.Off",
+                        groupId);
+
                 model.set(HeaderViewProperties.IS_EXPANDED, newState);
                 mSuggestionHost.setGroupVisibility(groupId, newState);
             }

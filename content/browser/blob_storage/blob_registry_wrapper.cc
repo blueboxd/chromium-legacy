@@ -73,6 +73,7 @@ void BlobRegistryWrapper::InitializeOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   blob_registry_ = std::make_unique<storage::BlobRegistryImpl>(
       blob_storage_context->context()->AsWeakPtr(),
+      blob_storage_context->url_registry()->AsWeakPtr(),
       std::move(file_system_context));
 }
 

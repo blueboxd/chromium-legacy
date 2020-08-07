@@ -115,7 +115,9 @@ js_type_check("closure_compile_browsertests") {
 
 js_library("test_driver_api_js") {
   testonly = true
-  externs_list = [ "resources/js/web_app_file_handling.externs.js" ]
+  externs_list = [
+    "//chromeos/components/web_applications/externs/file_handling.externs.js",
+  ]
   sources = [ "test/driver_api.js" ]
 }
 

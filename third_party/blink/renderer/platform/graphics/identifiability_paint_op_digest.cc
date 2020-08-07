@@ -90,9 +90,15 @@ void IdentifiabilityPaintOpDigest::MaybeUpdateDigest(
       break;
 
     // To capture font fallback identifiability, we capture text draw operations
-    // at the 2D context layer.
-    if (op->GetType() == cc::PaintOpType::DrawTextBlob)
+    // at the 2D context layer. We still need to modify the token builder digest
+    // since we want to track the relative ordering of text operations and other
+    // operations.
+    if (op->GetType() == cc::PaintOpType::DrawTextBlob) {
+      constexpr uint64_t kDrawTextBlobValue =
+          UINT64_C(0x8c1587a34065ea3b);  // Picked form a hat.
+      builder_.AddValue(kDrawTextBlobValue);
       continue;
+    }
 
     // DrawRecord PaintOps contain nested PaintOps.
     if (op->GetType() == cc::PaintOpType::DrawRecord) {

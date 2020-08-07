@@ -82,7 +82,7 @@ bool IsLanguageSettingsV2Enabled() {
 
 const std::vector<SearchConcept>& GetSmartInputsSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_LANGUAGES_SMART_INPUTS,
+      {IDS_OS_SETTINGS_TAG_LANGUAGES_SUGGESTIONS,
        mojom::kSmartInputsSubpagePath,
        mojom::SearchResultIcon::kGlobe,
        mojom::SearchResultDefaultRank::kMedium,
@@ -122,22 +122,22 @@ bool IsAssistivePersonalInfoAllowed() {
              ::chromeos::features::kAssistPersonalInfo);
 }
 
+// TODO(crbug/1113611): As Smart Inputs page is renamed to Suggestions.
+// All related strings, function names and filenames should be renamed as well.
 void AddSmartInputsStrings(content::WebUIDataSource* html_source,
                            bool is_emoji_suggestion_allowed) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"smartInputsTitle", IDS_SETTINGS_SMART_INPUTS_TITLE},
+      {"smartInputsTitle", IDS_SETTINGS_SUGGESTIONS_TITLE},
       {"personalInfoSuggestionTitle",
-       IDS_SETTINGS_SMART_INPUTS_PERSONAL_INFO_TITLE},
+       IDS_SETTINGS_SUGGESTIONS_PERSONAL_INFO_TITLE},
+      {"personalInfoSuggestionHelpTooltip",
+       IDS_SETTINGS_SUGGESTIONS_PERSONAL_INFO_HELP_TOOLTIP},
       {"personalInfoSuggestionDescription",
-       IDS_SETTINGS_SMART_INPUTS_PERSONAL_INFO_DESCRIPTION},
-      {"showPersonalInfoSuggestion",
-       IDS_SETTINGS_SMART_INPUTS_SHOW_PERSONAL_INFO},
-      {"managePersonalInfo", IDS_SETTINGS_SMART_INPUTS_MANAGE_PERSONAL_INFO},
-      {"emojiSuggestionTitle",
-       IDS_SETTINGS_SMART_INPUTS_EMOJI_SUGGESTION_TITLE},
+       IDS_SETTINGS_SUGGESTIONS_PERSONAL_INFO_DESCRIPTION},
+      {"managePersonalInfo", IDS_SETTINGS_SUGGESTIONS_MANAGE_PERSONAL_INFO},
+      {"emojiSuggestionTitle", IDS_SETTINGS_SUGGESTIONS_EMOJI_SUGGESTION_TITLE},
       {"emojiSuggestionDescription",
-       IDS_SETTINGS_SMART_INPUTS_EMOJI_SUGGESTION_DESCRIPTION},
-      {"showEmojiSuggestion", IDS_SETTINGS_SMART_INPUTS_SHOW_EMOJI_SUGGESTION},
+       IDS_SETTINGS_SUGGESTIONS_EMOJI_SUGGESTION_DESCRIPTION},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
@@ -344,7 +344,7 @@ void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 
   // Smart inputs.
   generator->RegisterTopLevelSubpage(
-      IDS_SETTINGS_SMART_INPUTS_TITLE, mojom::Subpage::kSmartInputs,
+      IDS_SETTINGS_SUGGESTIONS_TITLE, mojom::Subpage::kSmartInputs,
       mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
       mojom::kSmartInputsSubpagePath);
   static constexpr mojom::Setting kSmartInputsFeaturesSettings[] = {

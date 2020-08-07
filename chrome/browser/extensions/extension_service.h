@@ -441,9 +441,8 @@ class ExtensionService : public ExtensionServiceInterface,
     external_updates_finished_callback_ = callback;
   }
 
-  void set_external_updates_disabled_for_test(bool value) {
-    external_updates_disabled_for_test_ = value;
-  }
+  // While disabled all calls to CheckForExternalUpdates() will bail out.
+  static base::AutoReset<bool> DisableExternalUpdatesForTesting();
 
  private:
   // Loads extensions specified via a command line flag/switch.
@@ -670,9 +669,6 @@ class ExtensionService : public ExtensionServiceInterface,
   // updating additional extensions and allows in-progress installations to
   // decide to abort.
   bool browser_terminating_ = false;
-
-  // If set, call to CheckForExternalUpdates() will bail out.
-  bool external_updates_disabled_for_test_ = false;
 
   // Set to true if this is the first time this ExtensionService has run.
   // Used for specially handling external extensions that are installed the

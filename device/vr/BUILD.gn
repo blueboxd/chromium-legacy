@@ -91,13 +91,6 @@ if (enable_vr) {
         "android/gvr/gvr_utils.h",
       ]
 
-      if (enable_arcore) {
-        sources += [
-          "android/arcore/arcore_device_provider_factory.cc",
-          "android/arcore/arcore_device_provider_factory.h",
-        ]
-      }
-
       deps += [
         ":jni_headers",
         "//third_party/blink/public:blink_headers",

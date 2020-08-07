@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/family_link_notice_screen.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
+#include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 #include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
@@ -43,6 +44,7 @@
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
+#include "chrome/browser/chromeos/login/screens/user_creation_screen.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "components/account_id/account_id.h"
@@ -177,6 +179,7 @@ class WizardController {
   // Configure and show GAIA password changed screen.
   void ShowGaiaPasswordChangedScreen(const AccountId& account_id,
                                      bool has_error);
+
   // Configure and show active directory password change screen.
   void ShowActiveDirectoryPasswordChangeScreen(const std::string& username);
 
@@ -276,6 +279,8 @@ class WizardController {
   void OnPackagedLicenseScreenExit(PackagedLicenseScreen::Result result);
   void OnActiveDirectoryPasswordChangeScreenExit();
   void OnFamilyLinkNoticeScreenExit(FamilyLinkNoticeScreen::Result result);
+  void OnUserCreationScreenExit(UserCreationScreen::Result result);
+  void OnGaiaScreenExit(GaiaScreen::Result result);
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.

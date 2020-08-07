@@ -44,6 +44,7 @@ class SamlPasswordAttributes;
 class SigninScreenHandler;
 class UserContext;
 class PublicSamlUrlFetcher;
+class GaiaScreen;
 
 class GaiaView {
  public:
@@ -69,6 +70,10 @@ class GaiaView {
   // Shows Gaia screen.
   virtual void Show() = 0;
   virtual void Hide() = 0;
+  // Binds |screen| to the view.
+  virtual void Bind(GaiaScreen* screen) = 0;
+  // Unbinds the screen from the view.
+  virtual void Unbind() = 0;
 
   // Show sign-in screen for the given credentials. |services| is a list of
   // services returned by userInfo call as JSON array. Should be an empty array
@@ -125,6 +130,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void LoadOfflineGaia(const AccountId& account_id) override;
   void Show() override;
   void Hide() override;
+  void Bind(GaiaScreen* screen) override;
+  void Unbind() override;
   void ShowSigninScreenForTest(const std::string& username,
                                const std::string& password,
                                const std::string& services) override;
@@ -189,6 +196,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
+  void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;
 
   // WebUIMessageHandler implementation:

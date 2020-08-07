@@ -671,6 +671,38 @@
     Don't enroll
   </message>
 
+  <!-- Strings for the OOBE user creation screen -->
+  <message name="IDS_OOBE_USER_CREATION_TITLE" desc="Title of the screen which allows users to choose whom the device is set up for.">
+    Who's using this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_SUBTITLE" desc="Subtitle of the screen which allows users to choose whom the device is set up for.">
+    You can always add more people after setup. Each person can personalize their account and keep data private.
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_SELF_BUTTON_LABEL" desc="The label of the button that leads to set up device for self.">
+    You
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_SELF_BUTTON_DESCRIPTION" desc="The description of the button that leads to set up device for self.">
+    Set up this device for work or personal use
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_BUTTON_LABEL" desc="The label of the button that leads to set up device for child.">
+    Your child
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_BUTTON_DESCRIPTION" desc="The description of the button that leads to set up device for child.">
+    Set digital ground rules to help your child learn, play, and explore
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_SIGNIN_TITLE" desc="Title of the screen which allows users to choose signin method for child.">
+    Set up this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> for your child
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_SIGNIN_SUBTITLE" desc="Subtitle of the screen which allows users to choose signin method for child.">
+    To set up parental controls, your child must have a Google Account that you'll help manage. You can set screen time limits, approve or block websites, and more with the Family Link app.
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_ACCOUNT_CREATION_BUTTON_LABEL" desc="The label of the button that leads to child account creation.">
+    Create a Google Account for your child
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_SIGN_IN_BUTTON_LABEL" desc="The label of the button that leads to child sign in using existing account.">
+    Sign in with your child's Google Account
+  </message>
+
    <!-- Strings for the OOBE demo setup flow -->
   <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_SCREEN_TITLE" desc="The title of the dialog that allows to choose demo setup preferences.">
     Choose your demo preferences

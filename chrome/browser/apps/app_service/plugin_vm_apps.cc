@@ -233,6 +233,7 @@ void PluginVmApps::SetPermission(const std::string& app_id,
 }
 
 void PluginVmApps::Uninstall(const std::string& app_id,
+                             apps::mojom::UninstallSource uninstall_source,
                              bool clear_site_data,
                              bool report_abuse) {
   guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)

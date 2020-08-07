@@ -566,8 +566,8 @@ function handleExternalConnectionFromTest(port) {
       });
       return;
     case 'SET_TEST_CONNECTION':
-      // TODO(crbug/1082133): Documents or adds typing to the test connection
-      // port message.
+      // TODO(crbug.com/1082133): Documents or adds typing to the test
+      // connection port message.
       windowTestEventCallbacks = {
         onCreated: (windowUrl) => {
           port.postMessage({name: 'connect', windowUrl});

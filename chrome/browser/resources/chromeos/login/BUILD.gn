@@ -43,6 +43,7 @@ js_type_check("closure_compile") {
     ":sync_consent",
     ":throbber_notice",
     ":update_required_card",
+    ":user_creation",
   ]
 }
 
@@ -264,6 +265,15 @@ js_library("recommend_apps") {
     "components:oobe_dialog_host_behavior",
     "components:oobe_i18n_behavior",
     "components:oobe_types",
+  ]
+}
+
+js_library("user_creation") {
+  deps = [
+    "components:login_screen_behavior",
+    "components:multi_step_behavior",
+    "components:oobe_dialog_host_behavior",
+    "components:oobe_i18n_behavior",
   ]
 }
 

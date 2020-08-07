@@ -23,6 +23,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -58,6 +59,9 @@ class StorageHandlerTest : public testing::Test {
   ~StorageHandlerTest() override = default;
 
   void SetUp() override {
+    // Need to initialize DBusThreadManager before ArcSessionManager's
+    // constructor calls DBusThreadManager::Get().
+    chromeos::DBusThreadManager::Initialize();
     // The storage handler requires an instance of DiskMountManager,
     // ArcServiceManager and ArcSessionManager.
     chromeos::disks::DiskMountManager::InitializeForTesting(
@@ -119,8 +123,11 @@ class StorageHandlerTest : public testing::Test {
     apps_size_test_api_.reset();
     crostini_size_test_api_.reset();
     other_users_size_test_api_.reset();
+    arc_session_manager_.reset();
+    arc_service_manager_.reset();
     chromeos::disks::DiskMountManager::Shutdown();
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:

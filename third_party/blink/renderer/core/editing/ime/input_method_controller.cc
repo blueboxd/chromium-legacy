@@ -1805,10 +1805,13 @@ WebVector<ui::ImeTextSpan> InputMethodController::GetImeTextSpansAroundPosition(
   WebVector<ui::ImeTextSpan> ime_text_spans;
   const EphemeralRange range =
       PlainTextRange(position, position).CreateRange(*editable);
+  // Only queries Suggestion markers for now.
+  // This can be expanded when browser needs information for
+  // other types of markers.
   const DocumentMarkerVector& marker_list =
       GetDocument().Markers().MarkersAroundPosition(
           ToPositionInFlatTree(range.StartPosition()),
-          DocumentMarker::MarkerTypes::All());
+          DocumentMarker::MarkerTypes::Suggestion());
 
   for (DocumentMarker* marker : marker_list) {
     if (marker->GetType() == DocumentMarker::MarkerType::kSuggestion) {

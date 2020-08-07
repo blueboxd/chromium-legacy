@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -204,17 +204,17 @@ TEST_F(PowerStatusTest, BatteryImageInfoChargeLevel) {
   EXPECT_EQ(0, power_status_->GetBatteryImageInfo().charge_percent);
   gfx::Image empty_image = get_battery_image();
 
-  // 17% and 18% look different.
-  prop.set_battery_percent(17.0);
+  // 14% and 15% look different.
+  prop.set_battery_percent(14.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(17, power_status_->GetBatteryImageInfo().charge_percent);
-  gfx::Image image_17 = get_battery_image();
-  EXPECT_FALSE(gfx::test::AreImagesEqual(empty_image, image_17));
-  prop.set_battery_percent(18.0);
+  EXPECT_EQ(14.0, power_status_->GetBatteryImageInfo().charge_percent);
+  gfx::Image image_14 = get_battery_image();
+  EXPECT_FALSE(gfx::test::AreImagesEqual(empty_image, image_14));
+  prop.set_battery_percent(15.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(18, power_status_->GetBatteryImageInfo().charge_percent);
-  gfx::Image image_18 = get_battery_image();
-  EXPECT_FALSE(gfx::test::AreImagesEqual(image_17, image_18));
+  EXPECT_EQ(15.0, power_status_->GetBatteryImageInfo().charge_percent);
+  gfx::Image image_15 = get_battery_image();
+  EXPECT_FALSE(gfx::test::AreImagesEqual(image_14, image_15));
 
   // 99% and 100% look different.
   prop.set_battery_percent(99.0);

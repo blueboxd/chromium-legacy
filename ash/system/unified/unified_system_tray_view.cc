@@ -358,8 +358,9 @@ int UnifiedSystemTrayView::GetExpandedSystemTrayHeight() const {
 
 int UnifiedSystemTrayView::GetCollapsedSystemTrayHeight() const {
   int managed_device_view_height =
-      managed_device_view_ ? managed_device_view_->GetPreferredSize().height()
-                           : 0;
+      managed_device_view_ && managed_device_view_->GetVisible()
+          ? managed_device_view_->GetPreferredSize().height()
+          : 0;
   return (notification_hidden_view_->GetVisible()
               ? notification_hidden_view_->GetPreferredSize().height()
               : 0) +

@@ -80,7 +80,7 @@ class BatteryImageSource : public gfx::CanvasImageSource {
     // case, still draw 1dip of charge.
 
     SkPath path;
-    gfx::RectF fill_rect = gfx::RectF(7, 6, 6, 10);
+    gfx::RectF fill_rect = gfx::RectF(8, 6, 6, 12);
     fill_rect.Scale(const_scale);
     path.addRect(gfx::RectToSkRect(gfx::ToEnclosingRect(fill_rect)));
     cc::PaintFlags flags;

@@ -246,7 +246,7 @@ class PasswordManagerPresenterTest : public testing::Test {
 
     bool result =
         mock_controller_.GetPasswordManagerPresenter()->ChangeSavedPassword(
-            password_manager::CreateSortKey(temp_form),
+            {password_manager::CreateSortKey(temp_form)},
             base::ASCIIToUTF16(std::move(new_password)));
     // The password store posts mutation tasks to a background thread, thus we
     // need to spin the message loop here.

@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_password_changed_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
@@ -257,12 +258,15 @@ void LoginDisplayHostMojo::OnStartSignInScreen() {
     // If we already have a signin screen instance, just reset the state of the
     // oobe dialog.
 
-    // Try to switch to Gaia screen.
-    StartWizard(GaiaView::kScreenId);
+    OobeScreenId signin_screen_id = features::IsChildSpecificSigninEnabled()
+                                        ? UserCreationView::kScreenId
+                                        : GaiaView::kScreenId;
+
+    // Try to switch to user creation screen.
+    StartWizard(signin_screen_id);
 
     if (wizard_controller_->current_screen() &&
-        wizard_controller_->current_screen()->screen_id() !=
-            GaiaView::kScreenId) {
+        wizard_controller_->current_screen()->screen_id() != signin_screen_id) {
       // Switching might fail due to the screen priorities. Do no hide the
       // dialog in that case.
       return;

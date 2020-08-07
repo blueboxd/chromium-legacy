@@ -124,6 +124,8 @@ using LoadErrorBehavior = ExtensionRegistrar::LoadErrorBehavior;
 
 namespace {
 
+bool g_external_updates_disabled_for_test_ = false;
+
 // Wait this long after an extensions becomes idle before updating it.
 constexpr base::TimeDelta kUpdateIdleDelay = base::TimeDelta::FromSeconds(5);
 
@@ -660,6 +662,10 @@ bool ExtensionService::UpdateExtension(const CRXFileInfo& file,
   return true;
 }
 
+base::AutoReset<bool> ExtensionService::DisableExternalUpdatesForTesting() {
+  return base::AutoReset<bool>(&g_external_updates_disabled_for_test_, true);
+}
+
 void ExtensionService::LoadExtensionsFromCommandLineFlag(
     const char* switch_name) {
   if (command_line_->HasSwitch(switch_name)) {
@@ -780,6 +786,7 @@ bool ExtensionService::UninstallExtension(
   bool external_uninstall =
       (reason == UNINSTALL_REASON_INTERNAL_MANAGEMENT) ||
       (reason == UNINSTALL_REASON_COMPONENT_REMOVED) ||
+      (reason == UNINSTALL_REASON_MIGRATED) ||
       (reason == UNINSTALL_REASON_REINSTALL) ||
       (reason == UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION) ||
       (reason == UNINSTALL_REASON_ORPHANED_SHARED_MODULE);
@@ -1218,7 +1225,7 @@ void ExtensionService::CheckForUpdatesSoon() {
 // a new version is available.
 // Errors are reported through LoadErrorReporter. Success is not reported.
 void ExtensionService::CheckForExternalUpdates() {
-  if (external_updates_disabled_for_test_)
+  if (g_external_updates_disabled_for_test_)
     return;
 
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -311,6 +311,10 @@ cr.define('cr.ui.login.debug', function() {
       ],
     },
     {
+      id: 'user-creation',
+      kind: ScreenKind.NORMAL,
+    },
+    {
       id: 'enterprise-enrollment',
       kind: ScreenKind.NORMAL,
       defaultState: 'step-signin',

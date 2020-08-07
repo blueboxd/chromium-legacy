@@ -2341,6 +2341,7 @@ if (!is_android) {
         "../browser/chromeos/login/screens/terms_of_service_screen_browsertest.cc",
         "../browser/chromeos/login/screens/update_required_screen_browsertest.cc",
         "../browser/chromeos/login/screens/update_screen_browsertest.cc",
+        "../browser/chromeos/login/screens/user_creation_screen_browsertest.cc",
         "../browser/chromeos/login/screens/user_selection_screen_browsertest.cc",
         "../browser/chromeos/login/screens/welcome_screen_browsertest.cc",
         "../browser/chromeos/login/screens/wrong_hwid_screen_browsertest.cc",
@@ -4870,8 +4871,6 @@ test("unit_tests") {
       "../browser/extensions/external_policy_loader_unittest.cc",
       "../browser/extensions/external_provider_impl_chromeos_unittest.cc",
       "../browser/extensions/external_provider_impl_unittest.cc",
-      "../browser/extensions/external_testing_loader.cc",
-      "../browser/extensions/external_testing_loader.h",
       "../browser/extensions/forced_extensions/force_installed_metrics_unittest.cc",
       "../browser/extensions/install_tracker_unittest.cc",
       "../browser/extensions/install_verifier_unittest.cc",
@@ -5043,6 +5042,7 @@ test("unit_tests") {
     ]
 
     deps += [
+      "//chrome/browser/extensions:test_support",
       "//chrome/browser/web_applications:unit_tests",
       "//chrome/browser/web_applications:web_applications_unit_tests",
       "//chrome/browser/web_applications/extensions:unit_tests",

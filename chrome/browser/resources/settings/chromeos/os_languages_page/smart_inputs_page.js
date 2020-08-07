@@ -46,4 +46,13 @@ Polymer({
   onManagePersonalInfoClick_() {
     window.open('chrome://settings/addresses');
   },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onPersonalInfoSuggestionToggled_(e) {
+    this.setPrefValue(
+        'assistive_input.personal_info_enabled', e.target.checked);
+  },
 });

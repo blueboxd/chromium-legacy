@@ -41,7 +41,7 @@ class ScopedKeepAlive;
 
 namespace blink {
 namespace mojom {
-enum class PushDeliveryStatus;
+enum class PushEventStatus;
 enum class PushRegistrationStatus;
 }  // namespace mojom
 }  // namespace blink
@@ -157,7 +157,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                               int64_t service_worker_registration_id,
                               const gcm::IncomingMessage& message,
                               base::OnceClosure message_handled_closure,
-                              blink::mojom::PushDeliveryStatus status);
+                              blink::mojom::PushEventStatus status);
 
   void DidHandleMessage(const std::string& app_id,
                         const std::string& push_message_id,

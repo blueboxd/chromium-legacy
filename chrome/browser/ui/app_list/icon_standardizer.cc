@@ -17,11 +17,9 @@ constexpr int kMinimumVisibleAlpha = 40;
 
 constexpr float kCircleShapePixelDifferenceThreshold = 0.01f;
 
-constexpr float kInsideCircleDifferenceThreshold = 0.005f;
+constexpr float kIconScaleToFit = 0.85f;
 
-constexpr float kIconScaleToFit = 0.9f;
-
-constexpr float kBackgroundCirclePaddingRatio = 0.01f;
+constexpr float kBackgroundCircleScale = 176.0f / 192.0f;
 
 // Returns the bounding rect for the opaque part of the icon.
 gfx::Rect GetVisibleIconBounds(const SkBitmap& bitmap) {
@@ -77,6 +75,67 @@ gfx::Rect GetVisibleIconBounds(const SkBitmap& bitmap) {
   int visible_width = x_right - x_left + 1;
   int visible_height = y_to - y_from + 1;
   return gfx::Rect(x_left, y_from, visible_width, visible_height);
+}
+
+float GetDistanceBetweenPoints(gfx::PointF first_point,
+                               gfx::PointF second_point) {
+  float x_difference = first_point.x() - second_point.x();
+  float y_difference = first_point.y() - second_point.y();
+  return sqrt(x_difference * x_difference + y_difference * y_difference);
+}
+
+// Returns the distance for the farthest visible pixel away from the center of
+// the icon.
+float GetFarthestVisiblePointFromCenter(const SkBitmap& bitmap) {
+  int width = bitmap.width();
+  int height = bitmap.height();
+
+  const SkPixmap pixmap = bitmap.pixmap();
+  bool const nativeColorType = pixmap.colorType() == kN32_SkColorType;
+
+  gfx::PointF center_point((width - 1) / 2.0f, (height - 1) / 2.0f);
+  float max_distance = -1.0f;
+
+  // Find the farthest visible pixel from the center by going through one row
+  // at a time and for each row find the first and the last non-transparent
+  // pixel and calculate its distance from the center.
+  for (int y = 0; y < height; y++) {
+    const SkColor* nativeRow =
+        nativeColorType
+            ? reinterpret_cast<const SkColor*>(bitmap.getAddr32(0, y))
+            : nullptr;
+    bool does_row_have_visible_pixels = false;
+
+    for (int x = 0; x < width; x++) {
+      if (SkColorGetA(nativeRow ? nativeRow[x] : pixmap.getColor(x, y)) >
+          kMinimumVisibleAlpha) {
+        gfx::PointF current_point(x, y);
+        max_distance =
+            std::max(GetDistanceBetweenPoints(current_point, center_point),
+                     max_distance);
+
+        does_row_have_visible_pixels = true;
+        break;
+      }
+    }
+
+    // No visible pixels on this row.
+    if (!does_row_have_visible_pixels)
+      continue;
+
+    for (int x = width - 1; x > 0; x--) {
+      if (SkColorGetA(nativeRow ? nativeRow[x] : pixmap.getColor(x, y)) >
+          kMinimumVisibleAlpha) {
+        gfx::PointF current_point(x, y);
+        max_distance =
+            std::max(GetDistanceBetweenPoints(current_point, center_point),
+                     max_distance);
+
+        break;
+      }
+    }
+  }
+  return (max_distance == -1.0f) ? (sqrt(width * width * 2)) : max_distance;
 }
 
 // Returns whether the shape of the icon is roughly circle shaped.
@@ -184,75 +243,6 @@ bool IsIconCircleShaped(const gfx::ImageSkia& image) {
   return is_icon_already_circle_shaped;
 }
 
-// Returns whether the opaque part of the icon can fit within a circle.
-bool CanVisibleIconFitInCircle(const gfx::ImageSkia& image) {
-  bool can_icon_fit_in_circle = false;
-
-  for (gfx::ImageSkiaRep rep : image.image_reps()) {
-    SkBitmap bitmap(rep.GetBitmap());
-    int width = bitmap.width();
-    int height = bitmap.height();
-
-    SkBitmap preview;
-    preview.allocN32Pixels(width, height);
-    preview.eraseColor(SK_ColorTRANSPARENT);
-
-    // |preview| will be the original icon with all visible pixels colored red.
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        const SkColor* src_color =
-            reinterpret_cast<SkColor*>(bitmap.getAddr32(0, y));
-        SkColor* preview_color =
-            reinterpret_cast<SkColor*>(preview.getAddr32(0, y));
-
-        SkColor target_color;
-
-        if (SkColorGetA(src_color[x]) < 1) {
-          target_color = SK_ColorTRANSPARENT;
-        } else {
-          target_color = SK_ColorRED;
-        }
-
-        preview_color[x] = target_color;
-      }
-    }
-
-    SkCanvas canvas(preview);
-    SkPaint paint_circle_mask;
-    paint_circle_mask.setColor(SK_ColorBLUE);
-    paint_circle_mask.setStyle(SkPaint::kFill_Style);
-    paint_circle_mask.setAntiAlias(true);
-
-    // DST_OUT operation will generate a transparent bitmap for |preview| if the
-    // original icon fits inside of a circle.
-    paint_circle_mask.setBlendMode(SkBlendMode::kDstOut);
-    canvas.drawCircle(SkPoint::Make(width / 2, height / 2), width / 2,
-                      paint_circle_mask);
-
-    int total_pixel_difference = 0;
-
-    // Compute the total pixel difference between the circle mask and the
-    // original icon.
-    for (int y = 0; y < preview.height(); ++y) {
-      SkColor* src_color = reinterpret_cast<SkColor*>(preview.getAddr32(0, y));
-      for (int x = 0; x < preview.width(); ++x) {
-        if (SkColorGetA(src_color[x]) >= kMinimumVisibleAlpha)
-          total_pixel_difference++;
-      }
-    }
-
-    float percentage_diff_pixels =
-        static_cast<float>(total_pixel_difference) / (width * height);
-
-    // If the pixel difference between a circle and the original icon is small
-    // enough, then the icon can be considered as fitting inside the circle.
-    if (!(percentage_diff_pixels >= kInsideCircleDifferenceThreshold))
-      can_icon_fit_in_circle = true;
-  }
-
-  return can_icon_fit_in_circle;
-}
-
 // Returns an image with equal width and height. If necessary, padding is
 // added to ensure the width and height are equal.
 gfx::ImageSkia StandardizeSize(const gfx::ImageSkia& image) {
@@ -292,9 +282,6 @@ gfx::ImageSkia CreateStandardIconImage(const gfx::ImageSkia& image) {
   if (IsIconCircleShaped(standard_size_image))
     return standard_size_image;
 
-  bool visible_icon_fits_in_circle =
-      CanVisibleIconFitInCircle(standard_size_image);
-
   for (gfx::ImageSkiaRep rep : standard_size_image.image_reps()) {
     SkBitmap unscaled_bitmap(rep.GetBitmap());
     int width = unscaled_bitmap.width();
@@ -312,28 +299,21 @@ gfx::ImageSkia CreateStandardIconImage(const gfx::ImageSkia& image) {
     paint_background_circle.setColor(SK_ColorWHITE);
     paint_background_circle.setStyle(SkPaint::kFill_Style);
 
-    float circle_diameter = width;
+    float circle_diameter = width * kBackgroundCircleScale;
 
     // Draw the background circle.
-    canvas.drawCircle(
-        SkPoint::Make((width - 1) / 2.0f, (height - 1) / 2.0f),
-        circle_diameter / 2.0f - width * kBackgroundCirclePaddingRatio,
-        paint_background_circle);
+    canvas.drawCircle(SkPoint::Make((width - 1) / 2.0f, (height - 1) / 2.0f),
+                      circle_diameter / 2.0f, paint_background_circle);
 
-    gfx::Rect visible_icon_rect = GetVisibleIconBounds(unscaled_bitmap);
-    float visible_icon_diagonal =
-        std::sqrt(visible_icon_rect.height() * visible_icon_rect.height() +
-                  visible_icon_rect.width() * visible_icon_rect.width());
+    float dis_to_center = GetFarthestVisiblePointFromCenter(unscaled_bitmap);
+    float icon_diameter = dis_to_center * 2.0f;
+    float target_diameter = circle_diameter * kIconScaleToFit;
 
-    // Calculate the icon scale required to fit the bounds of the visible icon
-    // in the background circle.
-    float icon_scale =
-        fmin(1.0f, circle_diameter * kIconScaleToFit / visible_icon_diagonal);
-
-    // Special case scaling when the unscaled visible icon already fits within
-    // the background circle.
-    if (visible_icon_fits_in_circle)
-      icon_scale = kIconScaleToFit;
+    // If the icon is too big to fit correctly within the background circle,
+    // then set |icon_scale| to fit.
+    float icon_scale = (icon_diameter > target_diameter)
+                           ? target_diameter / icon_diameter
+                           : 1.0f;
 
     SkPaint paint_icon;
     paint_icon.setMaskFilter(nullptr);

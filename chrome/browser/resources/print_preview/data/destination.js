@@ -971,9 +971,19 @@ Destination.LOCATION_TAG_PREFIXES =
  */
 Destination.GooglePromotedId = {
   DOCS: '__google__docs',
-  SAVE_AS_PDF: 'Save as PDF'
+  SAVE_AS_PDF: 'Save as PDF',
+  // <if expr="chromeos">
+  SAVE_TO_DRIVE_CROS: 'Save to Drive CrOS',
+  // </if>
 };
 
 /** @type {string} Unique identifier for the Save as PDF destination */
 export const PDF_DESTINATION_KEY =
     `${Destination.GooglePromotedId.SAVE_AS_PDF}/${DestinationOrigin.LOCAL}/`;
+
+// <if expr="chromeos">
+/** @type {string} Unique identifier for the Save to Drive CrOS destination */
+export const SAVE_TO_DRIVE_CROS_DESTINATION_KEY =
+    `${Destination.GooglePromotedId.SAVE_TO_DRIVE_CROS}/${
+        DestinationOrigin.LOCAL}/`;
+// </if>

@@ -63,11 +63,12 @@ ResponseAction PasswordsPrivateChangeSavedPasswordFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
   if (!GetDelegate(browser_context())
-           ->ChangeSavedPassword(parameters->id,
+           ->ChangeSavedPassword(parameters->ids,
                                  base::UTF8ToUTF16(parameters->new_password))) {
     return RespondNow(Error(
         "Could not change the password. Either the password is empty, the user "
-        "is not authenticated or no matching password could be found."));
+        "is not authenticated, vector of ids is empty or no matching password "
+        "could be found at least for one of the ids."));
   }
 
   return RespondNow(NoArguments());

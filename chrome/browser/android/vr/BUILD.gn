@@ -69,14 +69,10 @@ static_library("vr_android") {
 
   if (enable_arcore) {
     sources += [
-      "arcore_device/address_to_id_map.h",
       "arcore_device/ar_image_transport.cc",
       "arcore_device/ar_image_transport.h",
       "arcore_device/ar_renderer.cc",
       "arcore_device/ar_renderer.h",
-      "arcore_device/arcore.h",
-      "arcore_device/arcore_anchor_manager.cc",
-      "arcore_device/arcore_anchor_manager.h",
       "arcore_device/arcore_device.cc",
       "arcore_device/arcore_device.h",
       "arcore_device/arcore_device_provider.cc",
@@ -85,21 +81,11 @@ static_library("vr_android") {
       "arcore_device/arcore_gl.h",
       "arcore_device/arcore_gl_thread.cc",
       "arcore_device/arcore_gl_thread.h",
-      "arcore_device/arcore_impl.cc",
-      "arcore_device/arcore_impl.h",
       "arcore_device/arcore_install_helper.cc",
       "arcore_device/arcore_install_helper.h",
       "arcore_device/arcore_java_utils.cc",
       "arcore_device/arcore_java_utils.h",
-      "arcore_device/arcore_plane_manager.cc",
-      "arcore_device/arcore_plane_manager.h",
-      "arcore_device/arcore_sdk.h",
       "arcore_device/arcore_session_utils.h",
-      "arcore_device/arcore_shim.cc",
-      "arcore_device/arcore_shim.h",
-      "arcore_device/scoped_arcore_objects.h",
-      "arcore_device/type_converters.cc",
-      "arcore_device/type_converters.h",
     ]
   }
 
@@ -137,7 +123,10 @@ static_library("vr_android") {
   ]
 
   if (enable_arcore) {
-    deps += [ ":ar_jni_headers" ]
+    deps += [
+      ":ar_jni_headers",
+      "//device/vr/android/arcore",
+    ]
   }
 
   public_deps = [ "//device/vr/public/mojom" ]
@@ -148,10 +137,6 @@ static_library("vr_android") {
     "//third_party/gvr-android-keyboard:kb_config",
     "//third_party/gvr-android-sdk:libgvr_config",
   ]
-
-  if (enable_arcore) {
-    configs += [ "//third_party/arcore-android-sdk:libarcore_config" ]
-  }
 }
 
 # The VR UI module factory interface.
@@ -254,6 +239,7 @@ test("vr_android_unittests") {
     "//chrome/browser",
     "//components/translate/core/language_detection:language_detection",
     "//device/vr:vr_fakes",
+    "//device/vr/android/arcore",
     "//device/vr/public/mojom",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",

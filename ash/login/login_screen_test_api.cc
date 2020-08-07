@@ -436,6 +436,13 @@ bool LoginScreenTestApi::ClickGuestButton() {
 }
 
 // static
+bool LoginScreenTestApi::ClickEnterpriseEnrollmentButton() {
+  LoginShelfView* view = GetLoginShelfView();
+  return view && view->SimulateButtonPressedForTesting(
+                     LoginShelfView::kEnterpriseEnrollment);
+}
+
+// static
 bool LoginScreenTestApi::PressAccelerator(const ui::Accelerator& accelerator) {
   LockScreen::TestApi lock_screen_test(LockScreen::Get());
   return lock_screen_test.contents_view()->AcceleratorPressed(accelerator);

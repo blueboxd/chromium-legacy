@@ -3554,6 +3554,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-ng", flag_descriptions::kFilesNGName,
      flag_descriptions::kFilesNGDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesNG)},
+    {"files-swa", flag_descriptions::kFilesSWAName,
+     flag_descriptions::kFilesSWADescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesSWA)},
     {"files-transfer-details", flag_descriptions::kFilesTransferDetailsName,
      flag_descriptions::kFilesTransferDetailsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesTransferDetails)},
@@ -5554,10 +5557,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-suggested-files", flag_descriptions::kEnableSuggestedFilesName,
      flag_descriptions::kEnableSuggestedFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableSuggestedFiles)},
-
-    {"zero-state-files", flag_descriptions::kZeroStateFilesName,
-     flag_descriptions::kZeroStateFilesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableZeroStateMixedTypesRanker)},
 
     {"aggregated-ml-app-ranking",
      flag_descriptions::kAggregatedMlAppRankingName,

@@ -897,7 +897,14 @@ void ArcNetHostImpl::NetworkListChanged() {
     return !IsActiveNetworkState(
         GetStateHandler()->GetNetworkState(entry.first));
   });
-  for (const auto* network : GetActiveNetworks())
+  const auto active_networks = GetActiveNetworks();
+  // If there is no active networks, send an explicit ActiveNetworksChanged
+  // event to ARC and skip updating Shill properties.
+  if (active_networks.empty()) {
+    UpdateActiveNetworks();
+    return;
+  }
+  for (const auto* network : active_networks)
     NetworkPropertiesUpdated(network);
 }
 

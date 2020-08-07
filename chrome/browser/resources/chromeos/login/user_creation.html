@@ -1,0 +1,145 @@
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_card_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<dom-module id="user-creation">
+  <template>
+    <style include="oobe-dialog-host">
+      cr-card-radio-button {
+        border-radius: 16px;
+        --cr-button-edge-spacing: 0;
+        --cr-card-radio-button-height: 100%;
+        --cr-card-radio-button-padding: 0;
+        --cr-card-radio-button-margin: 0;
+        --cr-radio-group-item-padding: 8px;
+      }
+
+      cr-card-radio-button:not(:last-child) {
+        margin-inline-end: 16px;
+      }
+
+      .card-container {
+        padding-bottom: 32px;
+        padding-inline-end: 16px;
+        padding-inline-start: 16px;
+        padding-top: 50px;
+        text-align: center;
+      }
+
+      .card-icon {
+        --iron-icon-width: 48px;
+        --iron-icon-height: 48px;
+      }
+
+      .card-label {
+        color: var(--oobe-header-text-color);
+        font-family: var(--oobe-header-font-family);
+        font-size: 16px;
+        font-weight: 500;
+        padding-top: 16px;
+      }
+
+      .footer-container {
+        padding-bottom: 20px;
+      }
+
+      .next-button {
+        float: right;
+      }
+    </style>
+    <oobe-dialog id="userCreationDialog" role="dialog" has-buttons
+        title-key="userCreationTitle" subtitle-key="userCreationSubtitle"
+        for-step="create">
+      <hd-iron-icon icon1x="oobe-32:googleg" icon2x="oobe-64:googleg"
+        slot="oobe-icon">
+      </hd-iron-icon>
+      <div slot="footer" class="footer-container flex layout vertical
+          center-justified">
+        <cr-radio-group id="userType" class="layout horizontal"
+            selected="{{selectedUserType}}">
+          <cr-card-radio-button id="selfButton" class="flex" name="self">
+            <div class="card-container layout vertical center">
+              <hd-iron-icon class="card-icon" icon1x="oobe-48:self"
+                  icon2x="oobe-96:self">
+              </hd-iron-icon>
+              <div class="card-label">
+                [[i18nDynamic(locale, 'createForSelfLabel')]]
+              </div>
+              <div>
+                [[i18nDynamic(locale, 'createForSelfDescription')]]
+              </div>
+            </div>
+          </cr-card-radio-button>
+          <cr-card-radio-button id="childButton" class="flex" name="child">
+            <div class="card-container layout vertical center">
+              <hd-iron-icon class="card-icon" icon1x="oobe-32:avatar"
+                icon2x="oobe-64:avatar">
+              </hd-iron-icon>
+              <div class="card-label">
+                [[i18nDynamic(locale, 'createForChildLabel')]]
+              </div>
+              <div">
+                [[i18nDynamic(locale, 'createForChildDescription')]]
+              </div>
+            </div>
+          </cr-card-radio-button>
+        </cr-radio-group>
+        </div>
+      </div>
+      <div slot="bottom-buttons">
+        <oobe-back-button id="backButton" on-tap="onBackClicked_"
+            hidden="[[!isBackButtonVisible_]]">
+        </oobe-back-button>
+        <oobe-next-button id="nextButton" class="next-button"
+            on-tap="onNextClicked_">
+        </oobe-next-button>
+      </div>
+    </oobe-dialog>
+    <oobe-dialog id="childSignInDialog" role="dialog" has-buttons
+        title-key="childSignInTitle" subtitle-key="childSignInSubtitle"
+        for-step="child">
+      <hd-iron-icon icon1x="oobe-32:googleg" icon2x="oobe-64:googleg"
+        slot="oobe-icon">
+      </hd-iron-icon>
+      <div slot="footer" class="footer-container flex layout vertical
+          center-justified">
+        <cr-radio-group id="childSignInMethod" class="layout horizontal"
+            selected="{{selectedSignInMethod}}">
+          <cr-card-radio-button id="childCreateButton" name="create"
+              class="flex">
+            <div class="card-container layout vertical center">
+              <hd-iron-icon class="card-icon" icon1x="oobe-48:person-add"
+                  icon2x="oobe-96:person-add">
+              </hd-iron-icon>
+              <div class="card-label">
+                [[i18nDynamic(locale, 'createAccountForChildLabel')]]
+              </div>
+            </div>
+          </cr-card-radio-button>
+          <cr-card-radio-button id="childSignInButton" name="signin"
+              class="flex">
+            <div class="card-container layout vertical center">
+              <hd-iron-icon class="card-icon" icon1x="oobe-48:child-account"
+                  icon2x="oobe-96:child-account">
+              </hd-iron-icon>
+              <div class="card-label">
+                [[i18nDynamic(locale, 'signInForChildLabel')]]
+              </div>
+            </div>
+          </cr-card-radio-button>
+        </cr-radio-group>
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal justified">
+        <oobe-back-button id="childBackButton" on-tap="onBackClicked_">
+        </oobe-back-button>
+        <oobe-next-button id="childNextButton" on-tap="onNextClicked_"
+            disabled="[[!selectedSignInMethod]]">
+        </oobe-next-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

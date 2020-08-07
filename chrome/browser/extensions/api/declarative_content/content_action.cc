@@ -73,24 +73,11 @@ class ShowExtensionAction : public ContentAction {
       *error = kNoAction;
       return nullptr;
     }
-
-    auto action = std::make_unique<ShowExtensionAction>();
-    // Sanity check for https://crbug.com/1010336.
-    // |browser_context| is null in unit tests.
-    CHECK(!browser_context || action->GetAction(browser_context, extension));
-    return action;
+    return std::make_unique<ShowExtensionAction>();
   }
 
   // Implementation of ContentAction:
   void Apply(const ApplyInfo& apply_info) const override {
-    // Sanity check for https://crbug.com/1010336.
-    // This check fails on the 2 cases that could cause
-    // ExtensionActionManager::GetExtensionAction to return null so we can
-    // understand null-related crashes.
-    CHECK(ActionInfo::GetExtensionActionInfo(apply_info.extension));
-    CHECK(ExtensionRegistry::Get(apply_info.browser_context)
-              ->enabled_extensions()
-              .Contains(apply_info.extension->id()));
     ExtensionAction* action =
         GetAction(apply_info.browser_context, apply_info.extension);
     action->DeclarativeShow(ExtensionTabUtil::GetTabId(apply_info.tab));

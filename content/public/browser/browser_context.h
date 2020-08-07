@@ -192,7 +192,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       int64_t service_worker_registration_id,
       const std::string& message_id,
       base::Optional<std::string> payload,
-      base::OnceCallback<void(blink::mojom::PushDeliveryStatus)> callback);
+      base::OnceCallback<void(blink::mojom::PushEventStatus)> callback);
 
   // Fires a push subscription change event to the Service Worker identified by
   // |origin| and |service_worker_registration_id| with |new_subscription| and
@@ -203,7 +203,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       int64_t service_worker_registration_id,
       blink::mojom::PushSubscriptionPtr new_subscription,
       blink::mojom::PushSubscriptionPtr old_subscription,
-      base::OnceCallback<void(blink::mojom::PushDeliveryStatus)> callback);
+      base::OnceCallback<void(blink::mojom::PushEventStatus)> callback);
 
   static void NotifyWillBeDestroyed(BrowserContext* browser_context);
 

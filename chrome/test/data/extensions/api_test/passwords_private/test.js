@@ -9,30 +9,43 @@
 
 const COMPROMISE_TIME = 158322960000;
 
+const ERROR_MESSAGE_FOR_CHANGE_PASSWORD =
+    'Could not change the password. Either the password is empty, the user ' +
+    'is not authenticated, vector of ids is empty or no matching password ' +
+    'could be found at least for one of the ids.'
+
 var availableTests = [
   function changeSavedPasswordSucceeds() {
-    chrome.passwordsPrivate.changeSavedPassword(0, 'new_pass', () => {
+    chrome.passwordsPrivate.changeSavedPassword([0], 'new_pass', () => {
       chrome.test.assertNoLastError();
       chrome.test.succeed();
     });
   },
 
-  function changeSavedPasswordFails() {
-    chrome.passwordsPrivate.changeSavedPassword(-1, 'new_pass', () => {
-      chrome.test.assertLastError(
-          'Could not change the password. Either the password is empty, ' +
-          'the user is not authenticated or no matching password could be ' +
-          'found.');
+  function changeSavedPasswordWithIncorrectIdFails() {
+    chrome.passwordsPrivate.changeSavedPassword([-1], 'new_pass', () => {
+      chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
+      chrome.test.succeed();
+    });
+  },
+
+  function changeSavedPasswordWithOneIncorrectIdFromArrayFails() {
+    chrome.passwordsPrivate.changeSavedPassword([0, -1], 'new_pass', () => {
+      chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
       chrome.test.succeed();
     });
   },
 
   function changeSavedPasswordWithEmptyPasswordFails() {
-    chrome.passwordsPrivate.changeSavedPassword(0, '', () => {
-      chrome.test.assertLastError(
-          'Could not change the password. Either the password is empty, ' +
-          'the user is not authenticated or no matching password could be ' +
-          'found.');
+    chrome.passwordsPrivate.changeSavedPassword([0], '', () => {
+      chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
+      chrome.test.succeed();
+    });
+  },
+
+  function changeSavedPasswordWithEmptyArrayIdFails() {
+    chrome.passwordsPrivate.changeSavedPassword([], '', () => {
+      chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
       chrome.test.succeed();
     });
   },

@@ -94,6 +94,19 @@ std::string GetSourceFromAppListSource(ash::ShelfLaunchSource source) {
   }
 }
 
+extensions::UninstallReason GetUninstallReason(
+    apps::mojom::UninstallSource uninstall_source) {
+  switch (uninstall_source) {
+    case apps::mojom::UninstallSource::kUnknown:
+      NOTREACHED();
+      FALLTHROUGH;
+    case apps::mojom::UninstallSource::kUser:
+      return extensions::UNINSTALL_REASON_USER_INITIATED;
+    case apps::mojom::UninstallSource::kMigration:
+      return extensions::UNINSTALL_REASON_MIGRATED;
+  }
+}
+
 ash::ShelfLaunchSource ConvertLaunchSource(
     apps::mojom::LaunchSource launch_source) {
   switch (launch_source) {
@@ -606,6 +619,7 @@ void ExtensionAppsBase::SetPermission(const std::string& app_id,
       permission_value);
 }
 void ExtensionAppsBase::Uninstall(const std::string& app_id,
+                                  apps::mojom::UninstallSource uninstall_source,
                                   bool clear_site_data,
                                   bool report_abuse) {
   // TODO(crbug.com/1009248): We need to add the error code, which could be used
@@ -621,7 +635,7 @@ void ExtensionAppsBase::Uninstall(const std::string& app_id,
   base::string16 error;
   extensions::ExtensionSystem::Get(profile())
       ->extension_service()
-      ->UninstallExtension(app_id, extensions::UNINSTALL_REASON_USER_INITIATED,
+      ->UninstallExtension(app_id, GetUninstallReason(uninstall_source),
                            &error);
 
   if (extension->from_bookmark()) {

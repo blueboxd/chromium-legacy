@@ -31,6 +31,7 @@ destination_store_test.TestNames = {
   RecentSaveAsPdf: 'recent save as pdf',
   MultipleRecentDestinationsAccounts: 'multiple recent destinations accounts',
   LoadAndSelectDestination: 'select loaded destination',
+  LoadSaveToDriveCros: 'load Save to Drive Cros',
 };
 
 suite(destination_store_test.suiteName, function() {
@@ -511,5 +512,15 @@ suite(destination_store_test.suiteName, function() {
                 assertTrue(!!destination.policies);
               }
             });
+      });
+
+  /** Tests that the SAVE_TO_DRIVE_CROS destination is loaded on Chrome OS. */
+  test(
+      assert(destination_store_test.TestNames.LoadSaveToDriveCros), function() {
+        return setInitialSettings(false).then(function(args) {
+          assertTrue(!!destinationStore.destinations().find(
+              destination => destination.id ===
+                  Destination.GooglePromotedId.SAVE_TO_DRIVE_CROS));
+        });
       });
 });

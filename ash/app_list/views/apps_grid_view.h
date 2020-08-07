@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -47,7 +48,7 @@ namespace ash {
 namespace test {
 class AppsGridViewTest;
 class AppsGridViewTestApi;
-}
+}  // namespace test
 
 class ApplicationDragAndDropHost;
 class AppListConfig;
@@ -317,6 +318,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void RemoveBackgroundCard();
   // Masks the apps grid container to background cards bounds.
   void MaskContainerToBackgroundBounds();
+  // Removes all background cards from |background_cards_|.
+  void RemoveAllBackgroundCards();
 
   // Return the view model.
   views::ViewModelT<AppListItemView>* view_model() { return &view_model_; }
@@ -538,6 +541,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // views::BoundsAnimatorObserver:
   void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override;
   void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
+
+  // Call OnBoundsAnimatorDone when all layer animations finish.
+  void MaybeCallOnBoundsAnimatorDone();
 
   // Hide a given view temporarily without losing (mouse) events and / or
   // changing the size of it. If |immediate| is set the change will be
@@ -917,6 +923,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Layer array for apps grid background cards. Used to display the background
   // card during cardified state.
   std::vector<std::unique_ptr<ui::Layer>> background_cards_;
+
+  int bounds_animation_for_cardified_state_in_progress_ = 0;
+
+  base::WeakPtrFactory<AppsGridView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

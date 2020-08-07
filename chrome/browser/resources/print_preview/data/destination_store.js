@@ -279,6 +279,11 @@ export class DestinationStore extends EventTarget {
     this.useSystemDefaultAsDefault_ =
         loadTimeData.getBoolean('useSystemDefaultPrinter');
 
+    // <if expr="chromeos">
+    /** @private */
+    this.saveToDriveFlagEnabled_ = loadTimeData.getBoolean('printSaveToDrive');
+    // </if>
+
     addListenerCallback('printers-added', this.onPrintersAdded_.bind(this));
   }
 
@@ -348,6 +353,11 @@ export class DestinationStore extends EventTarget {
     this.pdfPrinterEnabled_ = !pdfPrinterDisabled;
     this.systemDefaultDestinationId_ = systemDefaultDestinationId;
     this.createLocalPdfPrintDestination_();
+    // <if expr="chromeos">
+    if (this.saveToDriveFlagEnabled_) {
+      this.createLocalDrivePrintDestination_();
+    }
+    // </if>
 
     let destinationSelected = false;
     // System default printer policy takes priority.
@@ -1126,6 +1136,19 @@ export class DestinationStore extends EventTarget {
           DestinationConnectionStatus.ONLINE));
     }
   }
+
+  // <if expr="chromeos">
+  /**
+   * Creates a local Drive print destination.
+   * @private
+   */
+  createLocalDrivePrintDestination_() {
+    this.insertDestination_(new Destination(
+        Destination.GooglePromotedId.SAVE_TO_DRIVE_CROS, DestinationType.LOCAL,
+        DestinationOrigin.LOCAL, loadTimeData.getString('printToGoogleDrive'),
+        DestinationConnectionStatus.ONLINE));
+  }
+  // </if>
 
   /**
    * Starts a timeout to select the default destination.

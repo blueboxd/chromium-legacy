@@ -41,7 +41,6 @@
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
@@ -379,9 +378,6 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_STOP:
       Stop(browser_);
-      break;
-    case IDC_TAB_SEARCH:
-      ShowTabSearch(browser_);
       break;
 
       // Window management commands
@@ -1045,11 +1041,6 @@ void BrowserCommandController::InitCommandState() {
                                         normal_window);
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_OTHER_TABS,
                                         normal_window);
-
-  command_updater_.UpdateCommandEnabled(
-      IDC_TAB_SEARCH, base::FeatureList::IsEnabled(features::kTabSearch) &&
-                          browser_->is_type_normal() &&
-                          !browser_->profile()->IsIncognitoProfile());
 
   // Initialize other commands whose state changes based on various conditions.
   UpdateCommandsForFullscreenMode();

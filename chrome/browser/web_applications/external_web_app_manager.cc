@@ -338,9 +338,8 @@ void ExternalWebAppManager::SynchronizeAppsForTesting(
     base::Optional<ExternalInstallOptions> install_options =
         ParseConfig(base::FilePath().AppendASCII("test"),
                     apps::DetermineUserType(profile_), *app_config);
-    DCHECK(install_options);
-
-    install_options_list.push_back(std::move(*install_options));
+    if (install_options)
+      install_options_list.push_back(std::move(*install_options));
   }
 
   pending_app_manager_->SynchronizeInstalledApps(

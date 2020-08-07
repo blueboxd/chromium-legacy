@@ -40390,6 +40390,7 @@ from previous Chrome versions.
   <int value="-1573468162" label="ClientStorageAccessContextAuditing:enabled"/>
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
+  <int value="-1571525676" label="FilesSWA:disabled"/>
   <int value="-1568737447" label="InsecureFormSubmissionInterstitial:enabled"/>
   <int value="-1568559155" label="WebSocketHandshakeReuseConnection:enabled"/>
   <int value="-1567727398" label="DesktopPWAsWithoutExtensions:disabled"/>
@@ -43780,6 +43781,7 @@ from previous Chrome versions.
   <int value="2041570184" label="UsePreferredIntervalForVideo:enabled"/>
   <int value="2043141918" label="DnsOverHttps:enabled"/>
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
+  <int value="2047503404" label="FilesSWA:enabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
   <int value="2050985807" label="AllowPopupsDuringPageUnload:enabled"/>
@@ -58380,17 +58382,6 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </int>
 </enum>
 
-<enum name="PushDeliveryStatus">
-  <int value="0" label="Successful"/>
-  <int value="1" label="Message was invalid"/>
-  <int value="2" label="App id was unknown"/>
-  <int value="3" label="Origin no longer has permission"/>
-  <int value="4" label="Service Worker not found"/>
-  <int value="5" label="Service Worker error"/>
-  <int value="6" label="event.waitUntil promise rejected"/>
-  <int value="7" label="Service Worker timeout while processing event"/>
-</enum>
-
 <enum name="PushedStreamVaryResponseHeaderValues">
   <int value="0" label="There is no Vary header."/>
   <int value="1" label="The value of Vary is empty."/>
@@ -58404,6 +58395,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="5"
       label="The value of Vary does not contain &quot;accept-encoding&quot;,
              is not empty, and is not &quot;*&quot;."/>
+</enum>
+
+<enum name="PushEventStatus">
+  <int value="0" label="Successful"/>
+  <int value="1" label="Message was invalid"/>
+  <int value="2" label="App id was unknown"/>
+  <int value="3" label="Origin no longer has permission"/>
+  <int value="4" label="Service Worker not found"/>
+  <int value="5" label="Service Worker error"/>
+  <int value="6" label="event.waitUntil promise rejected"/>
+  <int value="7" label="Service Worker timeout while processing event"/>
 </enum>
 
 <enum name="PushGetRegistrationStatus">

@@ -104,7 +104,7 @@ const char kSenderIdRegistrationDeprecatedMessage[] =
     "will be supported in the future. For more information check "
     "https://crbug.com/979235.";
 
-void RecordDeliveryStatus(blink::mojom::PushDeliveryStatus status) {
+void RecordDeliveryStatus(blink::mojom::PushEventStatus status) {
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus", status);
 }
 
@@ -305,7 +305,7 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
     DeliverMessageCallback(app_id, GURL::EmptyGURL(),
                            -1 /* kInvalidServiceWorkerRegistrationId */,
                            message, std::move(message_handled_closure),
-                           blink::mojom::PushDeliveryStatus::UNKNOWN_APP_ID);
+                           blink::mojom::PushEventStatus::UNKNOWN_APP_ID);
     return;
   }
 
@@ -320,7 +320,7 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
     DeliverMessageCallback(app_id, app_identifier.origin(),
                            app_identifier.service_worker_registration_id(),
                            message, std::move(message_handled_closure),
-                           blink::mojom::PushDeliveryStatus::PERMISSION_DENIED);
+                           blink::mojom::PushEventStatus::PERMISSION_DENIED);
     return;
   }
 
@@ -355,7 +355,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     int64_t service_worker_registration_id,
     const gcm::IncomingMessage& message,
     base::OnceClosure message_handled_closure,
-    blink::mojom::PushDeliveryStatus status) {
+    blink::mojom::PushEventStatus status) {
   DCHECK_GE(in_flight_message_deliveries_.count(app_id), 1u);
 
   // Note: It's important that |message_handled_closure| is run or passed to
@@ -375,9 +375,9 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     // the Service Worker JavaScript, even if the website's event handler failed
     // (to prevent sites deliberately failing in order to avoid having to show
     // notifications).
-    case blink::mojom::PushDeliveryStatus::SUCCESS:
-    case blink::mojom::PushDeliveryStatus::EVENT_WAITUNTIL_REJECTED:
-    case blink::mojom::PushDeliveryStatus::TIMEOUT:
+    case blink::mojom::PushEventStatus::SUCCESS:
+    case blink::mojom::PushEventStatus::EVENT_WAITUNTIL_REJECTED:
+    case blink::mojom::PushEventStatus::TIMEOUT:
       // Only enforce the user visible requirements if this is currently running
       // as the delivery callback for the last in-flight message, and silent
       // push has not been enabled through a command line flag.
@@ -392,18 +392,18 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
                            std::move(message_handled_closure)));
       }
       break;
-    case blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR:
+    case blink::mojom::PushEventStatus::SERVICE_WORKER_ERROR:
       // Do nothing, and hope the error is transient.
       break;
-    case blink::mojom::PushDeliveryStatus::UNKNOWN_APP_ID:
+    case blink::mojom::PushEventStatus::UNKNOWN_APP_ID:
       unsubscribe_reason =
           blink::mojom::PushUnregistrationReason::DELIVERY_UNKNOWN_APP_ID;
       break;
-    case blink::mojom::PushDeliveryStatus::PERMISSION_DENIED:
+    case blink::mojom::PushEventStatus::PERMISSION_DENIED:
       unsubscribe_reason =
           blink::mojom::PushUnregistrationReason::DELIVERY_PERMISSION_DENIED;
       break;
-    case blink::mojom::PushDeliveryStatus::NO_SERVICE_WORKER:
+    case blink::mojom::PushEventStatus::NO_SERVICE_WORKER:
       unsubscribe_reason =
           blink::mojom::PushUnregistrationReason::DELIVERY_NO_SERVICE_WORKER;
       break;

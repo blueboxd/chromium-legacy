@@ -161,6 +161,16 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   static bool CanUseNewLayout(const LayoutBox&);
   bool CanUseNewLayout() const;
 
+  bool ShouldApplyLayoutContainment() const {
+    return box_->ShouldApplyLayoutContainment();
+  }
+
+  bool HasLineIfEmpty() const {
+    if (const auto* block = DynamicTo<LayoutBlock>(box_))
+      return block->HasLineIfEmpty();
+    return false;
+  }
+
   String ToString() const;
 
  private:

@@ -50,7 +50,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobUrlRegistry {
   void RemoveTokenMapping(const base::UnguessableToken& token);
   bool GetTokenMapping(const base::UnguessableToken& token,
                        GURL* url,
-                       mojo::PendingRemote<blink::mojom::Blob>* blob) const;
+                       mojo::PendingRemote<blink::mojom::Blob>* blob);
 
   base::WeakPtr<BlobUrlRegistry> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -59,9 +59,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobUrlRegistry {
  private:
   SEQUENCE_CHECKER(sequence_checker_);
 
-  std::map<GURL, mojo::Remote<blink::mojom::Blob>> url_to_blob_;
+  std::map<GURL, mojo::PendingRemote<blink::mojom::Blob>> url_to_blob_;
   std::map<base::UnguessableToken,
-           std::pair<GURL, mojo::Remote<blink::mojom::Blob>>>
+           std::pair<GURL, mojo::PendingRemote<blink::mojom::Blob>>>
       token_to_url_and_blob_;
 
   base::WeakPtrFactory<BlobUrlRegistry> weak_ptr_factory_{this};

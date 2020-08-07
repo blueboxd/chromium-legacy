@@ -136,6 +136,20 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2NavigateOnRelaunch) {
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 }
 
+// Test direct navigation to a subpage.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2DirectNavigation) {
+  WaitForTestSystemAppInstall();
+  auto params = LaunchParamsForApp(web_app::SystemAppType::HELP);
+  params.override_url = GURL("chrome://help-app/help/");
+
+  content::WebContents* web_contents = LaunchApp(params);
+
+  // The inner frame should have the same pathname as the launch URL.
+  EXPECT_EQ("chrome-untrusted://help-app/help/",
+            SandboxedWebUiAppTestBase::EvalJsInAppFrame(
+                web_contents, "window.location.href"));
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          HelpAppIntegrationTest,
                          ::testing::Values(web_app::ProviderType::kBookmarkApps,

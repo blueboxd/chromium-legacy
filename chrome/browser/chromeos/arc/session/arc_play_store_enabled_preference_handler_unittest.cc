@@ -21,6 +21,7 @@
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/arc/arc_prefs.h"
@@ -54,6 +55,9 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
             std::make_unique<chromeos::FakeChromeUserManager>()) {}
 
   void SetUp() override {
+    // Need to initialize DBusThreadManager before ArcSessionManager's
+    // constructor calls DBusThreadManager::Get().
+    chromeos::DBusThreadManager::Initialize();
     chromeos::SessionManagerClient::InitializeFakeInMemory();
     chromeos::UpstartClient::InitializeFake();
 
@@ -95,6 +99,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     profile_.reset();
     chromeos::UpstartClient::Shutdown();
     chromeos::SessionManagerClient::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   TestingProfile* profile() const { return profile_.get(); }

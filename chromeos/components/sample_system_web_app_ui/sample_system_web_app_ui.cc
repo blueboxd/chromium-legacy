@@ -14,6 +14,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "ui/webui/webui_allowlist.h"
 
 namespace chromeos {
 namespace {
@@ -64,6 +65,22 @@ SampleSystemWebAppUI::SampleSystemWebAppUI(content::WebUI* web_ui)
 
   // Add ability to request chrome-untrusted: URLs
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
+
+  // Register common permissions for chrome-untrusted:// pages.
+  // TODO(https://crbug.com/1113568): Remove this after common permissions are
+  // granted by default.
+  auto* webui_allowlist = WebUIAllowlist::GetOrCreate(browser_context);
+  const url::Origin untrusted_sample_system_web_app_origin =
+      url::Origin::Create(GURL(kChromeUIUntrustedSampleSystemWebAppURL));
+  for (const auto& permission : {
+           ContentSettingsType::COOKIES,
+           ContentSettingsType::JAVASCRIPT,
+           ContentSettingsType::IMAGES,
+           ContentSettingsType::SOUND,
+       }) {
+    webui_allowlist->RegisterAutoGrantedPermission(
+        untrusted_sample_system_web_app_origin, permission);
+  }
 }
 
 SampleSystemWebAppUI::~SampleSystemWebAppUI() = default;

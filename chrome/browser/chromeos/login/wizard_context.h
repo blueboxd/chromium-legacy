@@ -39,10 +39,16 @@ class WizardContext {
   // for a child.
   bool is_child_gaia_account_new = false;
 
-  // Whether the enrollment screen should be skipped when enrollment isn't
-  // mandatory so that the normal gaia login is shown. Set by WizardController
-  // SkipToLoginForTesting and checked on EnrollmentScreen::MaybeSkip
-  bool skip_non_forced_enrollment_for_tests = false;
+  // Whether the screens should be skipped so that the normal gaia login is
+  // shown. Set by WizardController SkipToLoginForTesting and checked on
+  // EnrollmentScreen::MaybeSkip (determines if enrollment screen should be
+  // skipped when enrollment isn't mandatory) and UserCreationScreen::MaybeSkip
+  // (determines if user creation screen should be skipped).
+  bool skip_to_login_for_tests = false;
+
+  // Indicates whether the device has users. Set during the initialization of
+  // WizardController.
+  bool device_has_users = false;
 };
 
 }  // namespace chromeos

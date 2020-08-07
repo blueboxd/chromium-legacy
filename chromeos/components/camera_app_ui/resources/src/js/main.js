@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     metrics.setMetricsEnabled(false);
   }
 
-  // TODO(crbug/1082585): Initializes it before any other javascript loaded.
+  // TODO(crbug.com/1082585): Initializes it before any other javascript loaded.
   error.initialize(testErrorCallback);
 
   const perfLogger = bgOps.getPerfLogger();

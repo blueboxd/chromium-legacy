@@ -11,6 +11,10 @@ helpAppUi.mojom.PageHandlerFactory.getRemote().createPageHandler(
     help_app.handler.$.bindNewPipeAndPassReceiver());
 
 const GUEST_ORIGIN = 'chrome-untrusted://help-app';
+const guestFrame = /** @type{HTMLIFrameElement} */ (
+    document.createElement('iframe'));
+guestFrame.src = `${GUEST_ORIGIN}${location.pathname}`;
+document.body.appendChild(guestFrame);
 
 /**
  * Handles messages from the untrusted context.
@@ -25,9 +29,7 @@ function receiveMessage(event) {
   switch (msgEvent.data) {
     case 'feedback':
       help_app.handler.openFeedbackDialog().then(response => {
-        const guest = /** @type{HTMLIFrameElement} */ (
-            document.querySelector(`iframe[src^="${GUEST_ORIGIN}"]`));
-        guest.contentWindow.postMessage(response, GUEST_ORIGIN);
+        guestFrame.contentWindow.postMessage(response, GUEST_ORIGIN);
       });
   }
 }

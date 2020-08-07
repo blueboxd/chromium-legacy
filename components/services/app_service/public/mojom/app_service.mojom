@@ -71,6 +71,7 @@ interface AppService {
   Uninstall(
       AppType app_type,
       string app_id,
+      UninstallSource uninstall_source,
       bool clear_site_data,
       bool report_abuse);
 
@@ -169,6 +170,7 @@ interface Publisher {
   // reported for abuse to the Web Store.
   Uninstall(
       string app_id,
+      UninstallSource uninstall_source,
       bool clear_site_data,
       bool report_abuse);
 

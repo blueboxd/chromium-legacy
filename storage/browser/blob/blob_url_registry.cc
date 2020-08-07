@@ -22,7 +22,7 @@ bool BlobUrlRegistry::AddUrlMapping(
   DCHECK(!BlobUrlUtils::UrlHasFragment(blob_url));
   if (IsUrlMapped(blob_url))
     return false;
-  url_to_blob_[blob_url] = mojo::Remote<blink::mojom::Blob>(std::move(blob));
+  url_to_blob_[blob_url] = std::move(blob);
   return true;
 }
 
@@ -47,8 +47,10 @@ mojo::PendingRemote<blink::mojom::Blob> BlobUrlRegistry::GetBlobFromUrl(
   auto it = url_to_blob_.find(BlobUrlUtils::ClearUrlFragment(url));
   if (it == url_to_blob_.end())
     return mojo::NullRemote();
+  mojo::Remote<blink::mojom::Blob> blob(std::move(it->second));
   mojo::PendingRemote<blink::mojom::Blob> result;
-  it->second->Clone(result.InitWithNewPipeAndPassReceiver());
+  blob->Clone(result.InitWithNewPipeAndPassReceiver());
+  it->second = blob.Unbind();
   return result;
 }
 
@@ -58,9 +60,7 @@ void BlobUrlRegistry::AddTokenMapping(
     mojo::PendingRemote<blink::mojom::Blob> blob) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(token_to_url_and_blob_.find(token) == token_to_url_and_blob_.end());
-  token_to_url_and_blob_.emplace(
-      token,
-      std::make_pair(url, mojo::Remote<blink::mojom::Blob>(std::move(blob))));
+  token_to_url_and_blob_.emplace(token, std::make_pair(url, std::move(blob)));
 }
 
 void BlobUrlRegistry::RemoveTokenMapping(const base::UnguessableToken& token) {
@@ -72,13 +72,15 @@ void BlobUrlRegistry::RemoveTokenMapping(const base::UnguessableToken& token) {
 bool BlobUrlRegistry::GetTokenMapping(
     const base::UnguessableToken& token,
     GURL* url,
-    mojo::PendingRemote<blink::mojom::Blob>* blob) const {
+    mojo::PendingRemote<blink::mojom::Blob>* blob) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = token_to_url_and_blob_.find(token);
   if (it == token_to_url_and_blob_.end())
     return false;
   *url = it->second.first;
-  it->second.second->Clone(blob->InitWithNewPipeAndPassReceiver());
+  mojo::Remote<blink::mojom::Blob> source_blob(std::move(it->second.second));
+  source_blob->Clone(blob->InitWithNewPipeAndPassReceiver());
+  it->second.second = source_blob.Unbind();
   return true;
 }
 

@@ -832,6 +832,7 @@ void ArcApps::SetPermission(const std::string& app_id,
 }
 
 void ArcApps::Uninstall(const std::string& app_id,
+                        apps::mojom::UninstallSource uninstall_source,
                         bool clear_site_data,
                         bool report_abuse) {
   arc::UninstallArcApp(app_id, profile_);

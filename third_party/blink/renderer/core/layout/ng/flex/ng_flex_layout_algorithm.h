@@ -73,6 +73,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
 
   void HandleOutOfFlowPositioned(NGBlockNode child);
 
+  void AdjustButtonBaseline(LayoutUnit final_content_cross_size);
+
   // Propagates the baseline from the given flex-item if needed.
   void PropagateBaselineFromChild(
       const FlexItem&,

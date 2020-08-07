@@ -47,6 +47,8 @@ void HTMLButtonElement::setType(const AtomicString& type) {
 }
 
 bool HTMLButtonElement::TypeShouldForceLegacyLayout() const {
+  if (RuntimeEnabledFeatures::LayoutNGForControlsEnabled())
+    return false;
   UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByButton);
   return true;
 }

@@ -24,6 +24,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/features/feature_session_type.h"
@@ -318,7 +320,13 @@ void LoginDisplayHostCommon::ShowGaiaDialogCommon(
   GaiaScreen* gaia_screen =
       GaiaScreen::Get(GetWizardController()->screen_manager());
   gaia_screen->LoadOnline(prefilled_account);
-  StartWizard(GaiaView::kScreenId);
+
+  if (chromeos::features::IsChildSpecificSigninEnabled() &&
+      !prefilled_account.is_valid()) {
+    StartWizard(UserCreationView::kScreenId);
+  } else {
+    StartWizard(GaiaView::kScreenId);
+  }
 }
 
 void LoginDisplayHostCommon::Cleanup() {

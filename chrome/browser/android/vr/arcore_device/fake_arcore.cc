@@ -35,7 +35,7 @@ void FakeArCore::SetDisplayGeometry(
   frame_size_ = frame_size;
 }
 
-void FakeArCore::SetCameraTexture(GLuint texture) {
+void FakeArCore::SetCameraTexture(uint32_t texture) {
   DCHECK(IsOnGlThread());
   // This is a no-op for the FakeArCore implementation. We might want to
   // store the textureid for use in unit tests, but currently ArCoreDeviceTest

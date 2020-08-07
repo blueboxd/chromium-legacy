@@ -133,7 +133,8 @@ void WebAppUiManagerImpl::UninstallAndReplace(
 
     apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile_);
-    proxy->UninstallSilently(from_app);
+    proxy->UninstallSilently(from_app,
+                             apps::mojom::UninstallSource::kMigration);
   }
 }
 

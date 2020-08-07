@@ -170,6 +170,7 @@ void CrostiniApps::Launch(const std::string& app_id,
 }
 
 void CrostiniApps::Uninstall(const std::string& app_id,
+                             apps::mojom::UninstallSource uninstall_source,
                              bool clear_site_data,
                              bool report_abuse) {
   crostini::CrostiniPackageService::GetForProfile(profile_)

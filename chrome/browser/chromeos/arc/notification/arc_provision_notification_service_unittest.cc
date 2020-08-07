@@ -19,6 +19,7 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -42,6 +43,9 @@ class ArcProvisionNotificationServiceTest : public BrowserWithTestWindowTest {
             std::make_unique<chromeos::FakeChromeUserManager>()) {}
 
   void SetUp() override {
+    // Need to initialize DBusThreadManager before ArcSessionManager's
+    // constructor calls DBusThreadManager::Get().
+    chromeos::DBusThreadManager::Initialize();
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
     ArcSessionManager::SetUiEnabledForTesting(false);
@@ -76,6 +80,7 @@ class ArcProvisionNotificationServiceTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
     arc_session_manager_.reset();
     arc_service_manager_.reset();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() {

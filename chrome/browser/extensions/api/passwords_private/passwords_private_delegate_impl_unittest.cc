@@ -371,7 +371,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
 
   int sample_form_id = delegate.GetPasswordIdGeneratorForTesting().GenerateId(
       password_manager::CreateSortKey(sample_form));
-  EXPECT_TRUE(delegate.ChangeSavedPassword(sample_form_id,
+  EXPECT_TRUE(delegate.ChangeSavedPassword({sample_form_id},
                                            base::ASCIIToUTF16("new_pass")));
 
   // Spin the loop to allow PasswordStore tasks posted when changing the

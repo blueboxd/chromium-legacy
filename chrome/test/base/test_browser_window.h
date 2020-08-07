@@ -199,8 +199,6 @@ class TestBrowserWindow : public BrowserWindow {
 
   void SetCloseCallback(base::OnceClosure close_callback);
 
-  void CreateTabSearchBubble() override {}
-
  protected:
   void DestroyBrowser() override {}
 

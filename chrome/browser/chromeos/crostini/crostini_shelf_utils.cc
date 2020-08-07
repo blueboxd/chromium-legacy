@@ -10,7 +10,9 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace crostini {
 
@@ -228,6 +230,15 @@ bool IsCrostiniShelfAppId(const Profile* profile,
   return profile->GetPrefs()
              ->GetDictionary(guest_os::prefs::kGuestOsRegistry)
              ->FindKey(shelf_app_id) != nullptr;
+}
+
+base::string16 GetCrostiniShelfTitle(base::StringPiece shelf_app_id) {
+  if (shelf_app_id == kCrostiniInstallerShelfId) {
+    return l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_INSTALLING);
+  } else if (shelf_app_id == kCrostiniUpgraderShelfId) {
+    return l10n_util::GetStringUTF16(IDS_CROSTINI_UPGRADING_LABEL);
+  }
+  return base::string16();
 }
 
 }  // namespace crostini

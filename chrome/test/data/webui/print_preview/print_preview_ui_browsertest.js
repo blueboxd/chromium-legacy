@@ -596,6 +596,36 @@ TEST_F(
           destination_store_test.TestNames.MultipleRecentDestinationsAccounts);
     });
 
+GEN('#if defined(OS_CHROMEOS)');
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationStoreTestCros = class extends PrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/test_loader.html?module=print_preview/destination_store_test.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_store_test.suiteName;
+  }
+
+  /** @override */
+  get featureList() {
+    const kPrintSaveToDrive = ['chromeos::features::kPrintSaveToDrive'];
+    const featureList = super.featureList;
+    featureList.enabled = featureList.enabled ?
+        featureList.enabled.concat(kPrintSaveToDrive) :
+        kPrintSaveToDrive;
+    return featureList;
+  }
+};
+
+TEST_F(
+    'PrintPreviewDestinationStoreTestCros', 'LoadSaveToDriveCros', function() {
+      this.runMochaTest(destination_store_test.TestNames.LoadSaveToDriveCros);
+    });
+GEN('#endif');
+
 // eslint-disable-next-line no-var
 var PrintPreviewDestinationDialogTest = class extends PrintPreviewTest {
   /** @override */

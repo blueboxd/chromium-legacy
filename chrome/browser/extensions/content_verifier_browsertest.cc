@@ -672,7 +672,6 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, Backoff) {
 IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, FailedUpdateRetries) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   ExtensionSystem* system = ExtensionSystem::Get(profile());
-  ExtensionService* service = system->extension_service();
   ContentVerifier* verifier = system->content_verifier();
 
   // Wait for the extension to be installed by the policy we set up in
@@ -683,21 +682,23 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, FailedUpdateRetries) {
   }
 
   content_verifier_test::DelayTracker delay_tracker;
-  service->set_external_updates_disabled_for_test(true);
   TestExtensionRegistryObserver registry_observer(registry, id_);
-  verifier->VerifyFailedForTest(id_, ContentVerifyJob::HASH_MISMATCH);
-  EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
+  {
+    base::AutoReset<bool> disable_scope =
+        ExtensionService::DisableExternalUpdatesForTesting();
+    verifier->VerifyFailedForTest(id_, ContentVerifyJob::HASH_MISMATCH);
+    EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
 
-  const std::vector<base::TimeDelta>& calls = delay_tracker.calls();
-  ASSERT_EQ(1u, calls.size());
-  EXPECT_EQ(base::TimeDelta(), delay_tracker.calls()[0]);
+    const std::vector<base::TimeDelta>& calls = delay_tracker.calls();
+    ASSERT_EQ(1u, calls.size());
+    EXPECT_EQ(base::TimeDelta(), delay_tracker.calls()[0]);
 
-  delay_tracker.Proceed();
+    delay_tracker.Proceed();
 
-  // Remove the override and set ExtensionService to update again. The extension
-  // should be now installed.
-  PolicyExtensionReinstaller::set_policy_reinstall_action_for_test(nullptr);
-  service->set_external_updates_disabled_for_test(false);
+    PolicyExtensionReinstaller::set_policy_reinstall_action_for_test(nullptr);
+  }
+  // Update ExtensionService again without disabling external updates.
+  // The extension should now get installed.
   delay_tracker.Proceed();
 
   EXPECT_TRUE(registry_observer.WaitForExtensionInstalled());

@@ -24,6 +24,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -96,6 +97,17 @@ class WebAppDataRetrieverTest : public ChromeRenderViewHostTestHarness {
             chrome::mojom::ChromeRenderFrame::Name_,
             base::BindRepeating(&FakeChromeRenderFrame::Bind,
                                 base::Unretained(&fake_chrome_render_frame_)));
+
+    // When ProactivelySwapBrowsingInstance or RenderDocument is enabled on
+    // same-site main-frame navigations, a same-site navigation might result in
+    // a change of RenderFrames, which WebAppDataRetriever does not track (it
+    // tracks the old RenderFrame where the navigation started in). So we
+    // should disable same-site proactive BrowsingInstance for the main frame.
+    // Note: this will not disable RenderDocument.
+    // TODO(crbug.com/936696): Make WebAppDataRetriever support a change of
+    // RenderFrames.
+    content::DisableProactiveBrowsingInstanceSwapFor(
+        web_contents()->GetMainFrame());
   }
 
   void SetRendererWebApplicationInfo(const WebApplicationInfo& web_app_info) {

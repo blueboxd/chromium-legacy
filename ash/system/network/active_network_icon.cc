@@ -270,9 +270,8 @@ gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageForNoNetwork(
   if (animating)
     *animating = false;
   if (model_->GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled) {
-    // WiFi is enabled but disconnected, show an empty wedge.
-    return network_icon::GetBasicImage(icon_type, NetworkType::kWiFi,
-                                       false /* connected */);
+    // WiFi is enabled but no connections available.
+    return network_icon::GetImageForWiFiNoConnections(icon_type);
   }
   // WiFi is disabled, show a full icon with a strikethrough.
   return network_icon::GetImageForWiFiEnabledState(false /* not enabled*/,

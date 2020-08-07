@@ -1209,7 +1209,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
       0 /* SERVICE_WORKER_OK */, 1);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
-      static_cast<int>(blink::mojom::PushDeliveryStatus::SUCCESS), 1);
+      static_cast<int>(blink::mojom::PushEventStatus::SUCCESS), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventOnShutdown) {
@@ -1311,7 +1311,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
       "PushMessaging.DeliveryStatus.ServiceWorkerEvent", 0);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
-      static_cast<int>(blink::mojom::PushDeliveryStatus::NO_SERVICE_WORKER), 1);
+      static_cast<int>(blink::mojom::PushEventStatus::NO_SERVICE_WORKER), 1);
 
   // Missing Service Workers should trigger an automatic unsubscription attempt.
   EXPECT_EQ(app_id, gcm_driver_->last_deletetoken_app_id());
@@ -1363,7 +1363,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, NoSubscription) {
       "PushMessaging.DeliveryStatus.ServiceWorkerEvent", 0);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
-      static_cast<int>(blink::mojom::PushDeliveryStatus::UNKNOWN_APP_ID), 1);
+      static_cast<int>(blink::mojom::PushEventStatus::UNKNOWN_APP_ID), 1);
 
   // Missing subscriptions should trigger an automatic unsubscription attempt.
   EXPECT_EQ(app_identifier.app_id(), gcm_driver_->last_deletetoken_app_id());
@@ -1414,7 +1414,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventWithoutPermission) {
       "PushMessaging.DeliveryStatus.ServiceWorkerEvent", 0);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
-      static_cast<int>(blink::mojom::PushDeliveryStatus::PERMISSION_DENIED), 1);
+      static_cast<int>(blink::mojom::PushEventStatus::PERMISSION_DENIED), 1);
 
   // Missing permission should trigger an automatic unsubscription attempt.
   EXPECT_EQ(app_identifier.app_id(), gcm_driver_->last_deletetoken_app_id());

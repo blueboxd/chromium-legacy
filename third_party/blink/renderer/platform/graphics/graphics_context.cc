@@ -651,7 +651,8 @@ static void EnforceDotsAtEndpoints(GraphicsContext& context,
 
 void GraphicsContext::DrawLine(const IntPoint& point1,
                                const IntPoint& point2,
-                               const DarkModeFilter::ElementRole role) {
+                               const DarkModeFilter::ElementRole role,
+                               bool is_text_line) {
   DCHECK(canvas_);
 
   StrokeStyle pen_style = GetStrokeStyle();
@@ -668,18 +669,21 @@ void GraphicsContext::DrawLine(const IntPoint& point1,
   // probably worth the speed up of no square root, which also won't be exact.
   FloatSize disp = p2 - p1;
   int length = SkScalarRoundToInt(disp.Width() + disp.Height());
-  const DarkModeFlags flags(this, ImmutableState()->StrokeFlags(length), role);
+  const DarkModeFlags flags(this, ImmutableState()->StrokeFlags(length, width),
+                            role);
 
   if (pen_style == kDottedStroke) {
     if (StrokeData::StrokeIsDashed(width, pen_style)) {
-      // We draw thin dotted lines as dashes and gaps that are always
-      // exactly the size of the width. When the length of the line is
-      // an odd multiple of the width, things work well because we get
-      // dots at each end of the line, but if the length is anything else,
-      // we get gaps or partial dots at the end of the line. Fix that by
-      // explicitly enforcing full dots at the ends of lines.
-      EnforceDotsAtEndpoints(*this, p1, p2, length, width, flags,
-                             is_vertical_line);
+      // When the length of the line is an odd multiple of the width, things
+      // work well because we get dots at each end of the line, but if the
+      // length is anything else, we get gaps or partial dots at the end of the
+      // line. Fix that by explicitly enforcing full dots at the ends of lines.
+      // Note that we don't enforce end points when it's text line as enforcing
+      // is to improve border line quality.
+      if (!is_text_line) {
+        EnforceDotsAtEndpoints(*this, p1, p2, length, width, flags,
+                               is_vertical_line);
+      }
     } else {
       // We draw thick dotted lines with 0 length dash strokes and round
       // endcaps, producing circles. The endcaps extend beyond the line's
@@ -725,7 +729,7 @@ void GraphicsContext::DrawLineForText(const FloatPoint& pt, float width) {
     case kDashedStroke: {
       int y = floorf(pt.Y() + std::max<float>(StrokeThickness() / 2.0f, 0.5f));
       DrawLine(IntPoint(pt.X(), y), IntPoint(pt.X() + width, y),
-               DarkModeFilter::ElementRole::kText);
+               DarkModeFilter::ElementRole::kText, true);
       return;
     }
     case kWavyStroke:

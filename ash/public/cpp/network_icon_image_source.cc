@@ -21,6 +21,7 @@ namespace network_icon {
 namespace {
 
 constexpr int kIconStrokeWidth = 2;
+constexpr int kCellularIconOffset = 1;
 
 SkPath CreateArcPath(gfx::RectF oval, float start_angle, float sweep_angle) {
   SkPath path;
@@ -75,10 +76,10 @@ void NetworkIconImageSource::Draw(gfx::Canvas* canvas) {
         height - gfx::GetDefaultSizeOfVectorIcon(*badges_.bottom_left.icon));
   }
   if (badges_.bottom_right.icon) {
-    const int badge_size =
-        gfx::GetDefaultSizeOfVectorIcon(*badges_.bottom_right.icon) -
-        kIconStrokeWidth;
-    paint_badge(badges_.bottom_right, width - badge_size, height - badge_size);
+    const int badge_offset =
+        gfx::GetDefaultSizeOfVectorIcon(*badges_.bottom_right.icon) - 1;
+    paint_badge(badges_.bottom_right, width - badge_offset,
+                height - badge_offset);
   }
 }
 
@@ -171,7 +172,8 @@ void SignalStrengthImageSource::DrawBars(gfx::Canvas* canvas) {
 
   auto make_triangle = [scale, kFullTriangleSide, this](SkScalar side) {
     SkPath triangle;
-    triangle.moveTo(scale(padding_), scale(padding_ + kFullTriangleSide));
+    triangle.moveTo(scale(padding_ + kCellularIconOffset),
+                    scale(padding_ + kFullTriangleSide + kCellularIconOffset));
     triangle.rLineTo(scale(side), 0);
     triangle.rLineTo(0, -scale(side));
     triangle.close();

@@ -41,6 +41,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -62,6 +63,75 @@
 namespace {
 
 static const int kInvalidIconResource = 0;
+
+#if defined(OS_CHROMEOS)
+using SizeToImageSkiaRep = std::map<int, gfx::ImageSkiaRep>;
+using ScaleToImageSkiaReps = std::map<float, SizeToImageSkiaRep>;
+using MaskImageSkiaReps = std::pair<SkBitmap, ScaleToImageSkiaReps>;
+
+MaskImageSkiaReps& GetMaskResourceIconCache() {
+  static base::NoDestructor<MaskImageSkiaReps> mask_cache;
+  return *mask_cache;
+}
+
+const SkBitmap& GetMaskBitmap() {
+  auto& mask_cache = GetMaskResourceIconCache();
+  if (mask_cache.first.empty()) {
+    // We haven't yet loaded the mask image from resources. Do so and store it
+    // in the cache.
+    mask_cache.first = *ui::ResourceBundle::GetSharedInstance()
+                            .GetImageNamed(IDR_ICON_MASK)
+                            .ToSkBitmap();
+  }
+  DCHECK(!mask_cache.first.empty());
+  return mask_cache.first;
+}
+
+// Returns the mask image corresponding to the given image |scale| and edge
+// pixel |size|. The mask must precisely match the properties of the image it
+// will be composited onto.
+const gfx::ImageSkiaRep& GetMaskAsImageSkiaRep(float scale,
+                                               int size_hint_in_dip) {
+  auto& mask_cache = GetMaskResourceIconCache();
+  const auto& scale_iter = mask_cache.second.find(scale);
+  if (scale_iter != mask_cache.second.end()) {
+    const auto& size_iter = scale_iter->second.find(size_hint_in_dip);
+    if (size_iter != scale_iter->second.end()) {
+      return size_iter->second;
+    }
+  }
+
+  auto& image_rep = mask_cache.second[scale][size_hint_in_dip];
+  image_rep = gfx::ImageSkiaRep(
+      skia::ImageOperations::Resize(GetMaskBitmap(),
+                                    skia::ImageOperations::RESIZE_LANCZOS3,
+                                    size_hint_in_dip, size_hint_in_dip),
+      scale);
+  return image_rep;
+}
+
+gfx::ImageSkia LoadMaskImage(const gfx::ImageSkia& image) {
+  std::map<float, gfx::Size> scale_to_size;
+  if (image.image_reps().empty()) {
+    scale_to_size[1.0f] = image.size();
+  } else {
+    for (const auto& rep : image.image_reps()) {
+      scale_to_size[rep.scale()] = rep.pixel_size();
+    }
+  }
+
+  gfx::ImageSkia mask_image;
+  for (const auto& it : scale_to_size) {
+    float scale = it.first;
+    int size_hint_in_dip = it.second.width();
+    mask_image.AddRepresentation(
+        GetMaskAsImageSkiaRep(scale, size_hint_in_dip));
+  }
+
+  return mask_image;
+}
+
+#endif
 
 std::map<std::pair<int, int>, gfx::ImageSkia>& GetResourceIconCache() {
   static base::NoDestructor<std::map<std::pair<int, int>, gfx::ImageSkia>>
@@ -187,29 +257,6 @@ void LoadCompressedDataFromExtension(
       base::BindOnce(&CompressedDataFromResource, std::move(ext_resource)),
       std::move(compressed_data_callback));
 }
-
-#if defined(OS_CHROMEOS)
-gfx::ImageSkia LoadMaskImage(const gfx::Size& image_size) {
-  std::map<std::pair<int, int>, gfx::ImageSkia>& cache = GetResourceIconCache();
-  const auto cache_key = std::make_pair(IDR_ICON_MASK, image_size.width());
-  const auto cache_iter = cache.find(cache_key);
-  if (cache_iter != cache.end()) {
-    return cache_iter->second;
-  }
-
-  const gfx::ImageSkia* mask_image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_ICON_MASK);
-  DCHECK(mask_image);
-  gfx::ImageSkia resized_mask_image = *mask_image;
-  if (mask_image->size() != image_size) {
-    resized_mask_image = gfx::ImageSkiaOperations::CreateResizedImage(
-        *mask_image, skia::ImageOperations::RESIZE_BEST, image_size);
-  }
-  cache.insert(std::make_pair(cache_key, resized_mask_image));
-  return resized_mask_image;
-}
-
-#endif  // OS_CHROMEOS
 
 // This pipeline is meant to:
 // * Simplify loading icons, as things like effects and type are common
@@ -653,7 +700,7 @@ void IconLoadingPipeline::ApplyBackgroundAndMask(const gfx::ImageSkia& image) {
   std::move(image_skia_callback_)
       .Run(gfx::ImageSkiaOperations::CreateResizedImage(
           gfx::ImageSkiaOperations::CreateButtonBackground(
-              SK_ColorWHITE, image, LoadMaskImage(image.size())),
+              SK_ColorWHITE, image, LoadMaskImage(image)),
           skia::ImageOperations::RESIZE_LANCZOS3,
           gfx::Size(size_hint_in_dip_, size_hint_in_dip_)));
 }
@@ -684,7 +731,7 @@ void IconLoadingPipeline::CompositeImagesAndApplyMask(
           gfx::ImageSkiaOperations::CreateMaskedImage(
               gfx::ImageSkiaOperations::CreateSuperimposedImage(
                   background_image_, foreground_image_),
-              LoadMaskImage(image.size())),
+              LoadMaskImage(image)),
           skia::ImageOperations::RESIZE_BEST,
           gfx::Size(size_hint_in_dip_, size_hint_in_dip_)));
 }
@@ -951,8 +998,9 @@ void ApplyIconEffects(IconEffects icon_effects,
   }
 
   if (icon_effects & IconEffects::kCrOsStandardMask) {
-    *image_skia = gfx::ImageSkiaOperations::CreateMaskedImage(
-        *image_skia, LoadMaskImage(image_skia->size()));
+    auto mask_image = LoadMaskImage(*image_skia);
+    *image_skia =
+        gfx::ImageSkiaOperations::CreateMaskedImage(*image_skia, mask_image);
   }
 
   if (icon_effects & IconEffects::kCrOsStandardIcon) {

@@ -87,6 +87,7 @@ void PublisherBase::SetPermission(const std::string& app_id,
 }
 
 void PublisherBase::Uninstall(const std::string& app_id,
+                              apps::mojom::UninstallSource uninstall_source,
                               bool clear_site_data,
                               bool report_abuse) {
   LOG(ERROR) << "Uninstall failed, could not remove the app with id " << app_id;

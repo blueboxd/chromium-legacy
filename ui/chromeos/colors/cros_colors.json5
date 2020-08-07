@@ -42,6 +42,11 @@
       dark: "$google_blue_300",
     },
 
+    icon_color_secondary: {
+      light: "$google_grey_500",
+      dark: "$google_grey_500",
+    },
+
     /*
      * Component colors.
      */

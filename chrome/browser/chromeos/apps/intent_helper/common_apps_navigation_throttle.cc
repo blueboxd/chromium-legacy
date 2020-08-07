@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -118,16 +119,20 @@ void CommonAppsNavigationThrottle::OnIntentPickerClosed(
     proxy->AddPreferredApp(launch_name, url);
 
   if (should_launch_app) {
-    // TODO(crbug.com/853604): Distinguish the source from link and omnibox.
-    apps::mojom::LaunchSource launch_source =
-        apps::mojom::LaunchSource::kFromLink;
-    proxy->LaunchAppWithUrl(
-        launch_name,
-        GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      /*prefer_container=*/true),
-        url, launch_source, display::kDefaultDisplayId);
-    CloseOrGoBack(web_contents);
+    if (entry_type == PickerEntryType::kWeb) {
+      web_app::ReparentWebContentsIntoAppBrowser(web_contents, launch_name);
+    } else {
+      // TODO(crbug.com/853604): Distinguish the source from link and omnibox.
+      apps::mojom::LaunchSource launch_source =
+          apps::mojom::LaunchSource::kFromLink;
+      proxy->LaunchAppWithUrl(
+          launch_name,
+          GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                        WindowOpenDisposition::NEW_WINDOW,
+                        /*prefer_container=*/true),
+          url, launch_source, display::kDefaultDisplayId);
+      CloseOrGoBack(web_contents);
+    }
   }
 
   apps::AppsNavigationThrottle::PickerAction action =

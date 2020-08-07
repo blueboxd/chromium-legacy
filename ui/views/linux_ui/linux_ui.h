@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "build/buildflag.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/cursor_theme_manager.h"
@@ -78,6 +77,8 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
     kRightClick,
   };
 
+  LinuxUI(const LinuxUI&) = delete;
+  LinuxUI& operator=(const LinuxUI&) = delete;
   ~LinuxUI() override;
 
   // Sets the dynamically loaded singleton that draws the desktop native UI.
@@ -178,9 +179,6 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
 
  protected:
   LinuxUI();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LinuxUI);
 };
 
 }  // namespace views

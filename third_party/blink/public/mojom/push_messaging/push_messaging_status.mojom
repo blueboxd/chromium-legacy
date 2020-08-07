@@ -4,29 +4,30 @@
 
 module blink.mojom;
 
-// Push message event success/error codes for internal use & reporting in UMA.
+// `push` and `pushsubscriptionchange` event success/error codes for internal
+// use & reporting in UMA.
 // Enum values can be added, but must never be renumbered or deleted and reused.
-enum PushDeliveryStatus {
-  // The message was successfully delivered.
+enum PushEventStatus {
+  // The event was successfully delivered.
   SUCCESS = 0,
 
-  // The message could not be delivered because the app id was unknown.
+  // The event could not be delivered because the app id was unknown.
   UNKNOWN_APP_ID = 2,
 
-  // The message could not be delivered because origin no longer has permission.
+  // The event could not be delivered because origin no longer has permission.
   PERMISSION_DENIED = 3,
 
-  // The message could not be delivered because no service worker was found.
+  // The event could not be delivered because no service worker was found.
   NO_SERVICE_WORKER = 4,
 
-  // The message could not be delivered because of a service worker error.
+  // The event could not be delivered because of a service worker error.
   SERVICE_WORKER_ERROR = 5,
 
-  // The message was delivered, but the Service Worker passed a Promise to
+  // The event was delivered, but the Service Worker passed a Promise to
   // event.waitUntil that got rejected.
   EVENT_WAITUNTIL_REJECTED = 6,
 
-  // The message was delivered, but the Service Worker timed out processing it.
+  // The event was delivered, but the Service Worker timed out processing it.
   TIMEOUT = 7,
 
   // NOTE: Do not renumber or delete these as that would confuse interpretation

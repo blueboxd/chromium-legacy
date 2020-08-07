@@ -50,5 +50,6 @@
 // <include src="../device_disabled.js">
 // <include src="../screen_wrong_hwid.js">
 // <include src="../family_link_notice.js">
+// <include src="../user_creation.js">
 
 // <include src="components_[OOBE].js">

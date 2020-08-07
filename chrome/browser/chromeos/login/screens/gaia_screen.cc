@@ -8,14 +8,38 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "components/account_id/account_id.h"
 
+namespace {
+constexpr char kUserActionBack[] = "back";
+}  // namespace
+
 namespace chromeos {
 
-GaiaScreen::GaiaScreen()
-    : BaseScreen(GaiaView::kScreenId, OobeScreenPriority::DEFAULT) {}
+// static
+std::string GaiaScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::BACK:
+      return "Back";
+  }
+}
+
+GaiaScreen::GaiaScreen(const ScreenExitCallback& exit_callback)
+    : BaseScreen(GaiaView::kScreenId, OobeScreenPriority::DEFAULT),
+      exit_callback_(exit_callback) {}
+
+GaiaScreen::~GaiaScreen() {
+  if (view_)
+    view_->Unbind();
+}
 
 // static
 GaiaScreen* GaiaScreen::Get(ScreenManager* manager) {
   return static_cast<GaiaScreen*>(manager->GetScreen(GaiaView::kScreenId));
+}
+
+void GaiaScreen::SetView(GaiaView* view) {
+  view_ = view;
+  if (view_)
+    view_->Bind(this);
 }
 
 void GaiaScreen::MaybePreloadAuthExtension() {
@@ -37,6 +61,14 @@ void GaiaScreen::ShowImpl() {
 void GaiaScreen::HideImpl() {
   view_->LoadGaiaAsync(EmptyAccountId());
   view_->Hide();
+}
+
+void GaiaScreen::OnUserAction(const std::string& action_id) {
+  if (action_id == kUserActionBack) {
+    exit_callback_.Run(Result::BACK);
+  } else {
+    BaseScreen::OnUserAction(action_id);
+  }
 }
 
 }  // namespace chromeos

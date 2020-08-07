@@ -40,7 +40,7 @@ constexpr int kNumberIconFontSize = 11;
 gfx::FontList GetNumberIconFontList() {
   // |kNumberIconFontSize| is hard-coded as 11, which whould be updated when
   // the tray icon size is changed.
-  DCHECK_EQ(20, kUnifiedTrayIconSize);
+  DCHECK_EQ(18, kUnifiedTrayIconSize);
 
   gfx::Font default_font;
   int font_size_delta = kNumberIconFontSize - default_font.GetFontSize();

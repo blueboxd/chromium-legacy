@@ -184,7 +184,8 @@ class PLATFORM_EXPORT GraphicsContext {
   void DrawLine(const IntPoint&,
                 const IntPoint&,
                 const DarkModeFilter::ElementRole role =
-                    DarkModeFilter::ElementRole::kBackground);
+                    DarkModeFilter::ElementRole::kBackground,
+                bool is_text_line = false);
 
   void FillPath(const Path&);
 

@@ -6,6 +6,10 @@
 # helps our team to load-balance incoming reviews. Googlers can read more about
 # this at go/gwsq-gerrit.
 per-file histograms.xml=file://base/metrics/OWNERS
+# Extending enums by adding new buckets is allowed without OWNERS review, but
+# you should add a metrics reviewer if you are changing the semantics of existing
+# buckets.
+per-file enums.xml=*
 
 # Use the following owners only if:
 #  - You work in the same area as them.
@@ -20,10 +24,5 @@ per-file histograms.xml=tbansal@chromium.org
 per-file histograms.xml=tby@chromium.org # For chrome knowledge team metrics only.
 per-file histograms.xml=chrome-metrics-team+robot@google.com # For bot updates to expiry.
 per-file histograms.xml=set noparent
-
-# Extending enums by adding new buckets is allowed without OWNERS review, but
-# you should add a metrics team OWNER if you are changing the semantics of
-# existing buckets.
-per-file enums.xml=*
 
 # COMPONENT: Internals>Metrics

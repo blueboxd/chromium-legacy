@@ -490,10 +490,7 @@ Polymer({
    * @private
    */
   getErrorMessage_(state) {
-    // TODO(nverne): Surface error messages once we have better details.
-    let messageId = null;
-    return messageId ? loadTimeData.getString(messageId) :
-                       this.lastProgressLine_;
+    return this.progressMessages_.join('\n');
   },
 
   /**

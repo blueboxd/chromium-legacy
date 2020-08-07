@@ -152,7 +152,9 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 // Tests that requesting desktop site of a page works and the user agent
 // propagates to the next navigations in the same tab.
-- (void)testRequestDesktopSitePropagatesToNextNavigations {
+//
+// Disabled due to flakiness: https://crbug.com/1111194.
+- (void)DISABLED_testRequestDesktopSitePropagatesToNextNavigations {
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
@@ -174,7 +176,9 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 // Tests that requesting desktop site of a page works and the requested user
 // agent is kept when restoring the session.
-- (void)testRequestDesktopSiteKeptSessionRestoration {
+//
+// Disabled due to flakiness: https://crbug.com/1111194.
+- (void)DISABLED_testRequestDesktopSiteKeptSessionRestoration {
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
@@ -208,7 +212,9 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 // Tests that requesting desktop site of a page works and desktop user agent
 // does not propagate to next the new tab.
-- (void)testRequestDesktopSiteDoesNotPropagateToNewTab {
+//
+// Disabled due to flakiness: https://crbug.com/1111194.
+- (void)DISABLED_testRequestDesktopSiteDoesNotPropagateToNewTab {
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
@@ -255,7 +261,9 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 // Tests that when requesting desktop on another page and coming back to a page
 // that has been purged from memory, we still display the mobile page.
-- (void)testRequestDesktopSiteGoBackToMobilePurged {
+//
+// Disabled due to flakiness: https://crbug.com/1111194.
+- (void)DISABLED_testRequestDesktopSiteGoBackToMobilePurged {
   if (@available(iOS 13, *)) {
   } else {
     EARL_GREY_TEST_DISABLED(@"On iOS 12, the User Agent can be wrong when "
@@ -324,7 +332,9 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 // Tests that requesting mobile site of a page works and the user agent
 // propagates to the next navigations in the same tab.
-- (void)testRequestMobileSitePropagatesToNextNavigations {
+//
+// Disabled due to flakiness: https://crbug.com/1111194.
+- (void)DISABLED_testRequestMobileSitePropagatesToNextNavigations {
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
@@ -402,7 +412,9 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 // Tests that navigator.appVersion JavaScript API returns correct string for
 // mobile User Agent and the platform.
-- (void)testAppVersionJSAPIWithMobileUserAgent {
+//
+// Disabled due to flakiness: https://crbug.com/1111194.
+- (void)DISABLED_testAppVersionJSAPIWithMobileUserAgent {
   web::test::SetUpFileBasedHttpServer();
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUserAgentTestURL)];
   // Verify initial reception of the mobile site.

@@ -862,13 +862,13 @@
   <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_INPUT_OPTIONS_SHELF_ALT1" desc="Text for search result item which, when clicked, navigates the user to languages and input settings, with a toggle to enable/disable showing input options in the shelf. Alternate phrase for: 'Show input options in the shelf'">
     Input options in toolbar
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_SMART_INPUTS" desc="Text for search result item which, when clicked, navigates the user to smart input settings, which allows spelling/grammar suggestions generated using personal information such as contacts.">
-    Smart inputs
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_SUGGESTIONS" desc="Text for search result item which, when clicked, navigates the user to suggestions settings, which allows spelling/grammar suggestions generated using personal information such as contacts.">
+    Suggestions
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_PERSONAL_INFORMATION_SUGGESTIONS" desc="Text for search result item which, when clicked, navigates the user to smart input settings, which with a toggle to enable/disable showing personal information suggestions.">
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_PERSONAL_INFORMATION_SUGGESTIONS" desc="Text for search result item which, when clicked, navigates the user to suggestions settings, which with a toggle to enable/disable showing personal information suggestions.">
     Personal information suggestions
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_EMOJI_SUGGESTIONS" desc="Text for search result item which, when clicked, navigates the user to smart input settings, with a section having a toggle to enable/disable showing emoji suggestions after an user types a word.">
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_EMOJI_SUGGESTIONS" desc="Text for search result item which, when clicked, navigates the user to suggestions settings, with a section having a toggle to enable/disable showing emoji suggestions after an user types a word.">
     Emoji suggestions
   </message>
 

@@ -5,7 +5,7 @@
 #include "chrome/browser/android/vr/arcore_device/arcore_device_provider.h"
 
 #include "chrome/browser/android/vr/arcore_device/arcore_device.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_shim.h"
+#include "device/vr/android/arcore/arcore_shim.h"
 
 namespace device {
 

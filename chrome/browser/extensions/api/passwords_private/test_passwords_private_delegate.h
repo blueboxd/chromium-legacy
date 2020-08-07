@@ -23,9 +23,11 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   // PasswordsPrivateDelegate implementation.
   void GetSavedPasswordsList(UiEntriesCallback callback) override;
   void GetPasswordExceptionsList(ExceptionEntriesCallback callback) override;
-  // Fake implementation of ChangeSavedPassword. This succeeds if the
-  // current list of entries has the id and if the new password isn't empty.
-  bool ChangeSavedPassword(int id, base::string16 new_password) override;
+  // Fake implementation of ChangeSavedPassword. This succeeds if the current
+  // list of entries has each of the ids, vector of ids isn't empty and if the
+  // new password isn't empty.
+  bool ChangeSavedPassword(const std::vector<int>& ids,
+                           base::string16 new_password) override;
   void RemoveSavedPasswords(const std::vector<int>& id) override;
   void RemovePasswordExceptions(const std::vector<int>& ids) override;
   // Simplified version of undo logic, only use for testing.

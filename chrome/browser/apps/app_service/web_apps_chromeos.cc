@@ -129,6 +129,7 @@ void WebAppsChromeOs::LaunchAppWithIntent(
 }
 
 void WebAppsChromeOs::Uninstall(const std::string& app_id,
+                                apps::mojom::UninstallSource uninstall_source,
                                 bool clear_site_data,
                                 bool report_abuse) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
@@ -140,6 +141,8 @@ void WebAppsChromeOs::Uninstall(const std::string& app_id,
   DCHECK(provider()->install_finalizer().CanUserUninstallExternalApp(app_id));
 
   auto origin = url::Origin::Create(web_app->launch_url());
+  // TODO(crbug.com/1104696): Update web_app::InstallFinalizer to accommodate
+  // when install_source == apps::mojom::UninstallSource::kMigration.
   provider()->install_finalizer().UninstallExternalAppByUser(app_id,
                                                              base::DoNothing());
   web_app = nullptr;

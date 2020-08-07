@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/arc/session/adb_sideloading_availability_delegate_impl.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
+#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/mojom/auth.mojom.h"
 #include "components/arc/session/arc_session_runner.h"
@@ -47,7 +48,8 @@ enum class ProvisioningResult : int;
 // This class is responsible for handing stages of ARC life-cycle.
 class ArcSessionManager : public ArcSessionRunner::Observer,
                           public ArcSupportHost::ErrorDelegate,
-                          public chromeos::SessionManagerClient::Observer {
+                          public chromeos::SessionManagerClient::Observer,
+                          public chromeos::ConciergeClient::VmObserver {
  public:
   // Represents each State of ARC session.
   // NOT_INITIALIZED: represents the state that the Profile is not yet ready
@@ -282,6 +284,16 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     property_files_dest_dir_ = property_files_dest_dir;
   }
 
+  // chromeos::ConciergeClient::VmObserver overrides.
+  void OnVmStarted(
+      const vm_tools::concierge::VmStartedSignal& vm_signal) override;
+  void OnVmStopped(
+      const vm_tools::concierge::VmStoppedSignal& vm_signal) override;
+
+  // Getter for |vm_info_|.
+  // If ARCVM is not running, return base::nullopt.
+  const base::Optional<vm_tools::concierge::VmInfo>& GetVmInfo() const;
+
  private:
   // Reports statuses of OptIn flow to UMA.
   class ScopedOptInFlowTracker;
@@ -416,6 +428,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   base::Optional<bool> property_files_expansion_result_;
   base::FilePath property_files_source_dir_;
   base::FilePath property_files_dest_dir_;
+
+  base::Optional<vm_tools::concierge::VmInfo> vm_info_;
 
   // Must be the last member.
   base::WeakPtrFactory<ArcSessionManager> weak_ptr_factory_{this};

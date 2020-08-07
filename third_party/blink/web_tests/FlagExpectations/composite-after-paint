@@ -41,6 +41,7 @@ crbug.com/802915 css3/blending/isolation-should-include-non-local-background.htm
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Pass ]
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Pass ]
 paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Pass ]
+crbug.com/1113838 external/wpt/css/css-contain/content-visibility/content-visibility-074.html [ Pass ]
 
 # With CompositeAfterPaint and LayoutNGFragmentItem enabled
 crbug.com/1103138 paint/invalidation/compositing/float-under-composited-inline.html [ Pass Crash ]

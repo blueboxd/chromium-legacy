@@ -82,7 +82,8 @@ js_library("compile_resources") {
     "$externs_path/file_system_provider.js",
     "$externs_path/metrics_private.js",
 
-    # TODO(980846): Remove it once it is upstreamed to the closure compiler.
+    # TODO(crbug.com/980846): Remove it once it is upstreamed to the closure
+    # compiler.
     "//chromeos/components/web_applications/externs/file_handling.externs.js",
   ]
 }

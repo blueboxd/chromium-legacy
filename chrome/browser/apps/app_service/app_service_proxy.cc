@@ -367,9 +367,11 @@ void AppServiceProxy::Uninstall(const std::string& app_id,
 #endif
 }
 
-void AppServiceProxy::UninstallSilently(const std::string& app_id) {
+void AppServiceProxy::UninstallSilently(
+    const std::string& app_id,
+    apps::mojom::UninstallSource uninstall_source) {
   if (app_service_.is_connected()) {
-    app_service_->Uninstall(cache_.GetAppType(app_id), app_id,
+    app_service_->Uninstall(cache_.GetAppType(app_id), app_id, uninstall_source,
                             /*clear_site_data=*/false, /*report_abuse=*/false);
   }
 }
@@ -670,7 +672,9 @@ void AppServiceProxy::OnUninstallDialogClosed(
   if (uninstall) {
     cache_.ForOneApp(app_id, RecordAppBounce);
 
-    app_service_->Uninstall(app_type, app_id, clear_site_data, report_abuse);
+    app_service_->Uninstall(app_type, app_id,
+                            apps::mojom::UninstallSource::kUser,
+                            clear_site_data, report_abuse);
   }
 
   DCHECK(uninstall_dialog);

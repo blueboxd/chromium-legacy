@@ -81,6 +81,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_board_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
@@ -503,6 +504,9 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<PackagedLicenseScreenHandler>(
       js_calls_container_.get()));
+
+  AddScreenHandler(
+      std::make_unique<UserCreationScreenHandler>(js_calls_container_.get()));
 
   AddScreenHandler(
       std::make_unique<TpmErrorScreenHandler>(js_calls_container_.get()));

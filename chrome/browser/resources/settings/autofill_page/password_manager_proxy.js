@@ -43,13 +43,13 @@ export class PasswordManagerProxy {
   recordPasswordsPageAccessInSettings() {}
 
   /**
-   * Changes the password corresponding to |id|.
-   * @param {number} id The id for the password entry being updated.
+   * Changes the saved password corresponding to |ids|.
+   * @param {!Array<number>} ids The ids for the password entry being updated.
    * @param {string} new_password
    * @return {!Promise<void>} A promise that resolves when the password is
-   *     updated.
+   *     updated for all ids.
    */
-  changeSavedPassword(id, new_password) {}
+  changeSavedPassword(ids, new_password) {}
 
   /**
    * Should remove the saved password and notify that the list has changed.
@@ -371,10 +371,10 @@ export class PasswordManagerImpl {
     chrome.passwordsPrivate.recordPasswordsPageAccessInSettings();
   }
 
-  /** override */
-  changeSavedPassword(id, new_password) {
+  /** @override */
+  changeSavedPassword(ids, new_password) {
     return new Promise(resolve => {
-      chrome.passwordsPrivate.changeSavedPassword(id, new_password, resolve);
+      chrome.passwordsPrivate.changeSavedPassword(ids, new_password, resolve);
     });
   }
 

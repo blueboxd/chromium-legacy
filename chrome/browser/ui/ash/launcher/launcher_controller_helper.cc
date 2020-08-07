@@ -181,6 +181,9 @@ base::string16 LauncherControllerHelper::GetAppTitle(
   if (extension && extension->is_extension())
     return base::UTF8ToUTF16(extension->name());
 
+  if (crostini::IsUnmatchedCrostiniShelfAppId(app_id))
+    return crostini::GetCrostiniShelfTitle(app_id);
+
   return base::string16();
 }
 

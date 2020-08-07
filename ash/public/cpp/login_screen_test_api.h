@@ -53,6 +53,7 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool ClickAddUserButton();
   static bool ClickCancelButton();
   static bool ClickGuestButton();
+  static bool ClickEnterpriseEnrollmentButton();
   static bool PressAccelerator(const ui::Accelerator& accelerator);
   static bool WaitForUiUpdate(int64_t previous_update_count);
   static int GetUsersCount();

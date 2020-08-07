@@ -1244,3 +1244,19 @@ static_library("extensions") {
     sources += [ "api/braille_display_private/braille_controller_stub.cc" ]
   }
 }
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "external_testing_loader.cc",
+    "external_testing_loader.h",
+  ]
+
+  deps = [
+    ":extensions",
+    "//base",
+    "//content/public/browser",
+    "//extensions/browser:test_support",
+  ]
+}

@@ -178,7 +178,8 @@ class AppServiceProxy : public KeyedService,
 
   // Uninstalls an app for the given |app_id| without prompting the user to
   // confirm.
-  void UninstallSilently(const std::string& app_id);
+  void UninstallSilently(const std::string& app_id,
+                         apps::mojom::UninstallSource uninstall_source);
 
 #if defined(OS_CHROMEOS)
   // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData

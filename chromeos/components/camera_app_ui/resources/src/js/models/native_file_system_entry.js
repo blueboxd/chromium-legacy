@@ -75,9 +75,9 @@ export class NativeFileEntry extends NativeFileSystemEntry {
    */
   async getWriter() {
     const writer = await this.handle_.createWritable();
-    // TODO(980846): We should write files in-place so that even the app is
-    // accidentally closed or hit any unexpected exceptions, the captured video
-    // will not be dropped entirely.
+    // TODO(crbug.com/980846): We should write files in-place so that even the
+    // app is accidentally closed or hit any unexpected exceptions, the captured
+    // video will not be dropped entirely.
     const doWrite = (blob) => writer.write(blob);
     return new AsyncWriter(doWrite, {
       onClosed: () => writer.close(),

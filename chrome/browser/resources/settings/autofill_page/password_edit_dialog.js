@@ -101,9 +101,18 @@ Polymer({
    */
   onActionButtonTap_() {
     if (this.isEditDialog_) {
+      const idsToChange = [];
+      const accountId = this.entry.accountId;
+      const deviceId = this.entry.deviceId;
+      if (accountId !== null) {
+        idsToChange.push(accountId);
+      }
+      if (deviceId !== null) {
+        idsToChange.push(deviceId);
+      }
+
       this.passwordManager_
-          .changeSavedPassword(
-              this.entry.getAnyId(), this.$.passwordInput.value)
+          .changeSavedPassword(idsToChange, this.$.passwordInput.value)
           .finally(() => {
             this.close();
           });

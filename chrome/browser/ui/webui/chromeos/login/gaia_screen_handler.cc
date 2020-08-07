@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/channel_info.h"
@@ -344,6 +345,7 @@ GaiaScreenHandler::GaiaScreenHandler(
       network_state_informer_(network_state_informer),
       core_oobe_view_(core_oobe_view) {
   DCHECK(network_state_informer_.get());
+  set_user_acted_method_path("login.GaiaSigninScreen.userActed");
 }
 
 GaiaScreenHandler::~GaiaScreenHandler() {
@@ -694,6 +696,12 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_REQUEST_PIN_DIALOG_MAX_ATTEMPTS_EXCEEDED_ERROR);
 }
 
+void GaiaScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
+  dict->SetBoolKey("childSpecificSigninFeatureEnabled",
+                   chromeos::features::IsChildSpecificSigninEnabled());
+  BaseScreenHandler::GetAdditionalParameters(dict);
+}
+
 void GaiaScreenHandler::Initialize() {
   initialized_ = true;
   // This should be called only once on page load.
@@ -739,6 +747,7 @@ void GaiaScreenHandler::RegisterMessages() {
 
   // Allow UMA metrics collection from JS.
   web_ui()->AddMessageHandler(std::make_unique<MetricsHandler>());
+  BaseScreenHandler::RegisterMessages();
 }
 
 void GaiaScreenHandler::OnPortalDetectionCompleted(
@@ -1160,7 +1169,10 @@ void GaiaScreenHandler::OnShowAddUser() {
   signin_screen_handler_->is_account_picker_showing_first_time_ = false;
   lock_screen_utils::EnforceDevicePolicyInputMethods(std::string());
   LoadGaiaAsync(EmptyAccountId());
-  LoginDisplayHost::default_host()->StartWizard(GaiaView::kScreenId);
+  LoginDisplayHost::default_host()->StartWizard(
+      chromeos::features::IsChildSpecificSigninEnabled()
+          ? UserCreationView::kScreenId
+          : GaiaView::kScreenId);
 }
 
 void GaiaScreenHandler::DoCompleteLogin(
@@ -1294,6 +1306,14 @@ void GaiaScreenHandler::Show() {
 
 void GaiaScreenHandler::Hide() {
   hidden_ = true;
+}
+
+void GaiaScreenHandler::Bind(GaiaScreen* screen) {
+  BaseScreenHandler::SetBaseScreen(screen);
+}
+
+void GaiaScreenHandler::Unbind() {
+  BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
 void GaiaScreenHandler::LoadGaiaAsync(const AccountId& account_id) {

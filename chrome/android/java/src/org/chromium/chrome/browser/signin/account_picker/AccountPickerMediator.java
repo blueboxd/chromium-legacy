@@ -44,7 +44,6 @@ class AccountPickerMediator {
     private final AccountManagerFacade mAccountManagerFacade;
     private final AccountsChangeObserver mAccountsChangeObserver = this::updateAccounts;
     private final ProfileDataCache.Observer mProfileDataObserver = this::updateProfileData;
-    private List<String> mAccountNames;
 
     @MainThread
     AccountPickerMediator(Context context, MVCListAdapter.ModelList listModel,
@@ -83,20 +82,22 @@ class AccountPickerMediator {
      * Implements {@link AccountsChangeObserver}.
      */
     private void updateAccounts() {
-        mAccountNames = AccountUtils.toAccountNames(mAccountManagerFacade.tryGetGoogleAccounts());
-        mProfileDataCache.update(mAccountNames);
-
+        List<String> accountNames =
+                AccountUtils.toAccountNames(mAccountManagerFacade.tryGetGoogleAccounts());
+        mProfileDataCache.update(accountNames);
         mListModel.clear();
+
         // Add an "existing account" row for each account
-        if (mAccountNames.size() > 0) {
+        if (accountNames.size() > 0) {
             DisplayableProfileData profileData =
-                    mProfileDataCache.getProfileDataOrDefault(mAccountNames.get(0));
+                    mProfileDataCache.getProfileDataOrDefault(accountNames.get(0));
             mListModel.add(createExistingAccountRowItem(profileData, true));
-            for (int i = 1; i < mAccountNames.size(); ++i) {
-                profileData = mProfileDataCache.getProfileDataOrDefault(mAccountNames.get(i));
+            for (int i = 1; i < accountNames.size(); ++i) {
+                profileData = mProfileDataCache.getProfileDataOrDefault(accountNames.get(i));
                 mListModel.add(createExistingAccountRowItem(profileData, false));
             }
         }
+
         // Add an "add account" row
         PropertyModel model =
                 AddAccountRowProperties.createModel(mAccountPickerListener::addAccount);

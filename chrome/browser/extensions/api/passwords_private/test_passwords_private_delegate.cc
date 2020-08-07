@@ -62,13 +62,14 @@ void TestPasswordsPrivateDelegate::GetPasswordExceptionsList(
 }
 
 bool TestPasswordsPrivateDelegate::ChangeSavedPassword(
-    int id,
+    const std::vector<int>& ids,
     base::string16 new_password) {
-  if ((static_cast<size_t>(id) >= current_entries_.size()) ||
-      new_password.empty())
-    return false;
-
-  return true;
+  for (int id : ids) {
+    if (static_cast<size_t>(id) >= current_entries_.size()) {
+      return false;
+    }
+  }
+  return !new_password.empty() && !ids.empty();
 }
 
 void TestPasswordsPrivateDelegate::RemoveSavedPasswords(

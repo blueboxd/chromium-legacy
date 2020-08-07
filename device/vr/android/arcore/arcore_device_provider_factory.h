@@ -6,14 +6,15 @@
 #define DEVICE_VR_ANDROID_ARCORE_ARCORE_DEVICE_PROVIDER_FACTORY_H_
 
 #include <memory>
+
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "device/vr/vr_export.h"
 
 namespace device {
 
 class VRDeviceProvider;
 
-class DEVICE_VR_EXPORT ArCoreDeviceProviderFactory {
+class COMPONENT_EXPORT(VR_ARCORE) ArCoreDeviceProviderFactory {
  public:
   static std::unique_ptr<device::VRDeviceProvider> Create();
   static void Install(std::unique_ptr<ArCoreDeviceProviderFactory> factory);

@@ -84,6 +84,19 @@ Polymer({
 
   properties: {
     /**
+     * Determine the behavior of back button and brings user back to user
+     * creation screen when enabled. True when kChildSpecificSignin feature
+     * flag is enabled.
+     */
+    childSpecificSigninFeatureEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('childSpecificSigninFeatureEnabled');
+      },
+      readOnly: true,
+    },
+
+    /**
      * Current mode of this screen.
      * @private
      */
@@ -510,7 +523,11 @@ Polymer({
    */
   onBackButtonClicked_() {
     if (!this.canGoBack_()) {
-      this.cancel();
+      if (this.childSpecificSigninFeatureEnabled_) {
+        this.userActed('back');
+      } else {
+        this.cancel();
+      }
     } else {
       this.getActiveFrame_().back();
     }

@@ -31,6 +31,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_session.h"
 #include "content/public/test/browser_task_environment.h"
@@ -142,6 +143,9 @@ class LockScreenAppManagerImplTest
   ~LockScreenAppManagerImplTest() override = default;
 
   void SetUp() override {
+    // Need to initialize DBusThreadManager before ArcSessionManager's
+    // constructor calls DBusThreadManager::Get().
+    chromeos::DBusThreadManager::Initialize();
     // Initialize command line so chromeos::NoteTakingHelper thinks note taking
     // on lock screen is enabled.
     command_line_ = std::make_unique<base::test::ScopedCommandLine>();
@@ -177,8 +181,11 @@ class LockScreenAppManagerImplTest
     // destruction.
     app_manager_.reset();
 
+    lock_screen_profile_creator_.reset();
     chromeos::NoteTakingHelper::Shutdown();
+    arc_session_manager_.reset();
     extensions::ExtensionSystem::Get(profile())->Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   void InitExtensionSystem(Profile* profile) {

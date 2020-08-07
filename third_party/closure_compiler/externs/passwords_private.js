@@ -131,15 +131,15 @@ chrome.passwordsPrivate.PasswordCheckStatus;
 chrome.passwordsPrivate.recordPasswordsPageAccessInSettings = function() {};
 
 /**
- * Changes the password corresponding to |id|. Invokes |callback| or raises an
- * error depending on whether the operation succeeded.
- * @param {number} id The id for the password entry being updated.
+ * Changes the saved password corresponding to |ids|. Invokes |callback| or
+ * raises an error depending on whether the operation succeeded.
+ * @param {!Array<number>} ids The ids for the password entry being updated.
  * @param {string} new_password The new password.
  * @param {function(): void=} callback The callback that gets invoked in the
  *     end.
  */
 chrome.passwordsPrivate.changeSavedPassword = function(
-    id, new_password, callback) {};
+    ids, new_password, callback) {};
 
 /**
  * Removes the saved password corresponding to |id|. If no saved password for

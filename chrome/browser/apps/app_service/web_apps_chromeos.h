@@ -55,6 +55,7 @@ class WebAppsChromeOs : public WebAppsBase,
                            apps::mojom::LaunchSource launch_source,
                            int64_t display_id) override;
   void Uninstall(const std::string& app_id,
+                 apps::mojom::UninstallSource uninstall_source,
                  bool clear_site_data,
                  bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;

@@ -66,6 +66,10 @@ ASH_EXPORT gfx::ImageSkia GetImageForVPN(
     IconType icon_type,
     bool* animating = nullptr);
 
+// Returns an image for Wi-Fi with no connections available, Wi-Fi icon with
+// a cross in the center.
+ASH_EXPORT gfx::ImageSkia GetImageForWiFiNoConnections(IconType icon_type);
+
 // Returns an image for a Wi-Fi network, either full strength or strike-through
 // based on |enabled|.
 ASH_EXPORT gfx::ImageSkia GetImageForWiFiEnabledState(

@@ -1072,8 +1072,8 @@ INSTANTIATE_TEST_SUITE_P(
     AutoEnrollmentClientImplTest,
     testing::Values(AutoEnrollmentProtocol::kInitialEnrollment));
 
-class AutoEnrollmentClientImplFREToInitialEnrollmentTest
-    : public AutoEnrollmentClientImplTest {};
+using AutoEnrollmentClientImplFREToInitialEnrollmentTest =
+    AutoEnrollmentClientImplTest;
 
 TEST_P(AutoEnrollmentClientImplFREToInitialEnrollmentTest,
        NoReEnrollmentInitialEnrollmentLicensePackaging) {

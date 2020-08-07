@@ -71,7 +71,7 @@ export class NotImplementedError extends Error {
  * @return {!StackFrame}
  */
 function toStackFrame(callsite) {
-  // TODO(crbug/1072700): Handle native frame.
+  // TODO(crbug.com/1072700): Handle native frame.
   let fileName = callsite.getFileName() || 'unknown';
   if (fileName.startsWith(window.location.origin)) {
     fileName = fileName.substring(window.location.origin.length + 1);

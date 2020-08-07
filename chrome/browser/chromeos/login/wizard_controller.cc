@@ -83,6 +83,7 @@
 #include "chrome/browser/chromeos/login/screens/tpm_error_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_required_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
+#include "chrome/browser/chromeos/login/screens/user_creation_screen.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -142,6 +143,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
@@ -173,6 +175,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
@@ -390,6 +393,9 @@ void WizardController::Init(OobeScreenId first_screen) {
     is_out_of_box_ = true;
   }
 
+  wizard_context_->device_has_users =
+      !user_manager::UserManager::Get()->GetUsers().empty();
+
   // This is a hacky way to check for local state corruption, because
   // it depends on the fact that the local state is loaded
   // synchronously and at the first demand. IsEnterpriseManaged()
@@ -597,8 +603,9 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       oobe_ui->GetView<PackagedLicenseScreenHandler>(),
       base::BindRepeating(&WizardController::OnPackagedLicenseScreenExit,
                           weak_factory_.GetWeakPtr())));
-  auto gaia_screen = std::make_unique<GaiaScreen>();
-  gaia_screen->set_view(oobe_ui->GetView<GaiaScreenHandler>());
+  auto gaia_screen = std::make_unique<GaiaScreen>(base::BindRepeating(
+      &WizardController::OnGaiaScreenExit, weak_factory_.GetWeakPtr()));
+  gaia_screen->SetView(oobe_ui->GetView<GaiaScreenHandler>());
   append(std::move(gaia_screen));
 
   append(std::make_unique<TpmErrorScreen>(
@@ -616,6 +623,11 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
   append(std::make_unique<FamilyLinkNoticeScreen>(
       oobe_ui->GetView<FamilyLinkNoticeScreenHandler>(),
       base::BindRepeating(&WizardController::OnFamilyLinkNoticeScreenExit,
+                          weak_factory_.GetWeakPtr())));
+
+  append(std::make_unique<UserCreationScreen>(
+      oobe_ui->GetView<UserCreationScreenHandler>(),
+      base::BindRepeating(&WizardController::OnUserCreationScreenExit,
                           weak_factory_.GetWeakPtr())));
 
   return result;
@@ -643,7 +655,7 @@ void WizardController::ShowLoginScreen() {
     return;
 
   // Landed on the login screen. No longer skipping enrollment for tests.
-  wizard_context_->skip_non_forced_enrollment_for_tests = false;
+  wizard_context_->skip_to_login_for_tests = false;
 
   if (!time_eula_accepted_.is_null()) {
     base::TimeDelta delta = base::TimeTicks::Now() - time_eula_accepted_;
@@ -811,11 +823,49 @@ void WizardController::OnActiveDirectoryPasswordChangeScreenExit() {
   ShowLoginScreen();
 }
 
+void WizardController::OnUserCreationScreenExit(
+    UserCreationScreen::Result result) {
+  OnScreenExit(UserCreationView::kScreenId,
+               UserCreationScreen::GetResultString(result));
+  switch (result) {
+    case UserCreationScreen::Result::SIGNIN:
+    case UserCreationScreen::Result::SKIPPED:
+      GaiaScreen::Get(screen_manager())->LoadOnline(EmptyAccountId());
+      AdvanceToScreen(GaiaView::kScreenId);
+      break;
+    case UserCreationScreen::Result::CHILD_SIGNIN:
+      // TODO(crbug.com/1101318): entry point for child sign in screen
+      GaiaScreen::Get(screen_manager())->LoadOnline(EmptyAccountId());
+      AdvanceToScreen(GaiaView::kScreenId);
+      break;
+    case UserCreationScreen::Result::CHILD_ACCOUNT_CREATE:
+      // TODO(crbug.com/1101318): entry point for account creation screen
+      GaiaScreen::Get(screen_manager())->LoadOnline(EmptyAccountId());
+      AdvanceToScreen(GaiaView::kScreenId);
+      break;
+    case UserCreationScreen::Result::ENTERPRISE_ENROLL:
+      ShowEnrollmentScreen();
+      break;
+    case UserCreationScreen::Result::CANCEL:
+      LoginDisplayHost::default_host()->HideOobeDialog();
+      break;
+  }
+}
+
+void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
+  OnScreenExit(GaiaView::kScreenId, GaiaScreen::GetResultString(result));
+  switch (result) {
+    case GaiaScreen::Result::BACK:
+      AdvanceToScreen(UserCreationView::kScreenId);
+      break;
+  }
+}
+
 void WizardController::SkipToLoginForTesting() {
   VLOG(1) << "SkipToLoginForTesting.";
   if (current_screen_ && current_screen_->screen_id() == GaiaView::kScreenId)
     return;
-  wizard_context_->skip_non_forced_enrollment_for_tests = true;
+  wizard_context_->skip_to_login_for_tests = true;
   StartupUtils::MarkEulaAccepted();
 
   PerformPostEulaActions();
@@ -1641,7 +1691,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
              screen_id == GaiaPasswordChangedView::kScreenId ||
              screen_id == ActiveDirectoryPasswordChangeView::kScreenId ||
              screen_id == FamilyLinkNoticeView::kScreenId ||
-             screen_id == GaiaView::kScreenId) {
+             screen_id == GaiaView::kScreenId ||
+             screen_id == UserCreationView::kScreenId) {
     SetCurrentScreen(GetScreen(screen_id));
   } else {
     if (is_out_of_box_) {

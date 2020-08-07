@@ -76,6 +76,8 @@ bool BaseButtonInputType::ShouldSaveAndRestoreFormControlState() const {
 void BaseButtonInputType::AppendToFormData(FormData&) const {}
 
 bool BaseButtonInputType::TypeShouldForceLegacyLayout() const {
+  if (RuntimeEnabledFeatures::LayoutNGForControlsEnabled())
+    return false;
   UseCounter::Count(GetElement().GetDocument(),
                     WebFeature::kLegacyLayoutByButton);
   return true;

@@ -477,7 +477,6 @@ class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest,
 // CheckForExternalUpdates() will fail.
 IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, FailedUpdateRetries) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  ExtensionService* service = extension_service();
   ContentVerifier* verifier =
       ExtensionSystem::Get(profile())->content_verifier();
 
@@ -489,20 +488,23 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, FailedUpdateRetries) {
   }
 
   content_verifier_test::DelayTracker delay_tracker;
-  service->set_external_updates_disabled_for_test(true);
   TestExtensionRegistryObserver registry_observer(registry, id_);
-  verifier->VerifyFailedForTest(id_, ContentVerifyJob::HASH_MISMATCH);
-  EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
+  {
+    base::AutoReset<bool> disable_scope =
+        ExtensionService::DisableExternalUpdatesForTesting();
 
-  const std::vector<base::TimeDelta>& calls = delay_tracker.calls();
-  ASSERT_EQ(1u, calls.size());
-  EXPECT_EQ(base::TimeDelta(), delay_tracker.calls()[0]);
+    verifier->VerifyFailedForTest(id_, ContentVerifyJob::HASH_MISMATCH);
+    EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
 
-  delay_tracker.Proceed();
+    const std::vector<base::TimeDelta>& calls = delay_tracker.calls();
+    ASSERT_EQ(1u, calls.size());
+    EXPECT_EQ(base::TimeDelta(), delay_tracker.calls()[0]);
 
-  // Remove the override and set ExtensionService to update again. The extension
-  // should be now installed.
-  service->set_external_updates_disabled_for_test(false);
+    delay_tracker.Proceed();
+  }
+
+  // Update ExtensionService again without disabling external updates.
+  // The extension should now get installed.
   delay_tracker.StopWatching();
   delay_tracker.Proceed();
 

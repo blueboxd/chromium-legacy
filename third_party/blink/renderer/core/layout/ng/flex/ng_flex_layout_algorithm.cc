@@ -941,6 +941,15 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
       if (ShouldItemShrinkToFit(flex_item.ng_input_node))
         space_builder.SetIsShrinkToFit(true);
 
+      // For a button child, we need the baseline type same as the container's
+      // baseline type for UseCounter. For example, if the container's display
+      // property is 'inline-block', we need the last-line baseline of the
+      // child. See the bottom of GiveLinesAndItemsFinalPositionAndSize().
+      if (Node().IsButton()) {
+        space_builder.SetBaselineAlgorithmType(
+            ConstraintSpace().BaselineAlgorithmType());
+      }
+
       NGConstraintSpace child_space = space_builder.ToConstraintSpace();
       flex_item.layout_result =
           flex_item.ng_input_node.Layout(child_space, nullptr /*break token*/);
@@ -961,8 +970,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
 
   LayoutUnit intrinsic_block_size = BorderScrollbarPadding().BlockSum();
 
-  if (algorithm_->FlexLines().IsEmpty() &&
-      To<LayoutBlock>(Node().GetLayoutBox())->HasLineIfEmpty()) {
+  if (algorithm_->FlexLines().IsEmpty() && Node().HasLineIfEmpty()) {
     intrinsic_block_size += Node().GetLayoutBox()->LogicalHeightForEmptyLine();
   } else {
     intrinsic_block_size += algorithm_->IntrinsicContentBlockSize();
@@ -1122,8 +1130,52 @@ bool NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
   if (!container_builder_.Baseline() && fallback_baseline)
     container_builder_.SetBaseline(*fallback_baseline);
 
+  if (Node().IsButton())
+    AdjustButtonBaseline(final_content_cross_size);
+
   // Signal if we need to relayout with new child scrollbar information.
   return success;
+}
+
+void NGFlexLayoutAlgorithm::AdjustButtonBaseline(
+    LayoutUnit final_content_cross_size) {
+  // See LayoutButton::BaselinePosition()
+  if (!Node().HasLineIfEmpty() && !Node().ShouldApplyLayoutContainment() &&
+      !container_builder_.Baseline()) {
+    // To ensure that we have a consistent baseline when we have no children,
+    // even when we have the anonymous LayoutBlock child, we calculate the
+    // baseline for the empty case manually here.
+    container_builder_.SetBaseline(BorderScrollbarPadding().block_start +
+                                   final_content_cross_size);
+    return;
+  }
+
+  // Apply flexbox's baseline as is.  That is to say, the baseline of the
+  // first line.
+  // However, we count the differences between it and the last-line baseline
+  // of the anonymous block. crbug.com/690036.
+
+  // The button should have at most one child.
+  const NGContainerFragmentBuilder::ChildrenVector& children =
+      container_builder_.Children();
+  if (children.size() < 1)
+    return;
+  DCHECK_EQ(children.size(), 1u);
+  const NGContainerFragmentBuilder::ChildWithOffset& child = children[0];
+  DCHECK(!child.fragment->IsLineBox());
+  const NGConstraintSpace& space = ConstraintSpace();
+  NGBoxFragment fragment(space.GetWritingMode(), space.Direction(),
+                         To<NGPhysicalBoxFragment>(*child.fragment));
+  base::Optional<LayoutUnit> child_baseline =
+      space.BaselineAlgorithmType() == NGBaselineAlgorithmType::kFirstLine
+          ? fragment.FirstBaseline()
+          : fragment.Baseline();
+  if (child_baseline)
+    child_baseline = *child_baseline + child.offset.block_offset;
+  if (container_builder_.Baseline() != child_baseline) {
+    UseCounter::Count(Node().GetDocument(),
+                      WebFeature::kWrongBaselineOfButtonElement);
+  }
 }
 
 void NGFlexLayoutAlgorithm::PropagateBaselineFromChild(
@@ -1136,7 +1188,9 @@ void NGFlexLayoutAlgorithm::PropagateBaselineFromChild(
     return;
 
   LayoutUnit baseline_offset =
-      block_offset + fragment.Baseline().value_or(fragment.BlockSize());
+      block_offset +
+      (Node().IsButton() ? fragment.FirstBaseline() : fragment.Baseline())
+          .value_or(fragment.BlockSize());
 
   // We prefer a baseline from a child with baseline alignment, and no
   // auto-margins in the cross axis (even if we have to synthesize the

@@ -30,17 +30,18 @@ TEST_F(CreateStandardIconTest, SquareIconToStandardIcon) {
 
   SkCanvas canvas(test_standard_bitmap);
 
+  float circle_diameter = test_width * (176.0f / 192.0f);
   SkPaint paint_background_circle;
   paint_background_circle.setAntiAlias(true);
   paint_background_circle.setColor(SK_ColorWHITE);
   paint_background_circle.setStyle(SkPaint::kFill_Style);
   canvas.drawCircle(
       SkPoint::Make((test_width - 1) / 2.0f, (test_width - 1) / 2.0f),
-      test_width / 2.0f - test_width * 0.01f, paint_background_circle);
+      circle_diameter / 2.0f, paint_background_circle);
 
   const SkBitmap scaled_bitmap = skia::ImageOperations::Resize(
-      square_icon_bitmap, skia::ImageOperations::RESIZE_BEST, 41, 41);
-  canvas.drawBitmap(scaled_bitmap, 11, 11);
+      square_icon_bitmap, skia::ImageOperations::RESIZE_BEST, 36, 36);
+  canvas.drawBitmap(scaled_bitmap, 14, 14);
 
   // Test that |standard_icon| has an identical bitmap to
   // |test_standard_bitmap|.

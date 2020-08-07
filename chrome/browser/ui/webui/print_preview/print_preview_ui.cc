@@ -394,6 +394,9 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
   source->AddBoolean(
       "showPrinterStatus",
       base::FeatureList::IsEnabled(chromeos::features::kPrinterStatus));
+  source->AddBoolean(
+      "printSaveToDrive",
+      base::FeatureList::IsEnabled(chromeos::features::kPrintSaveToDrive));
 #endif
 }
 

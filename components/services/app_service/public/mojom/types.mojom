@@ -120,6 +120,13 @@ enum InstallSource {
   kUser,       // Installed by user action.
 };
 
+// What caused the app to be uninstalled.
+enum UninstallSource {
+  kUnknown = 0,
+  kUser,       // Uninstall by user action.
+  kMigration,  // Uninstall by app migration.
+};
+
 // Augments a bool to include an 'unknown' value.
 enum OptionalBool {
   kUnknown = 0,

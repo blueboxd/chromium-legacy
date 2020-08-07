@@ -1,4 +1,8 @@
 <style>
+  #error-log {
+      white-space: pre;
+  }
+
   #img-rect-illustration {
     align-self: center;
     height: 180px;
@@ -9,7 +13,7 @@
   #img-square-illustration {
     align-self: center;
     height: 180px;
-    margin-bottom: 80px;
+    margin-bottom: 40px;
     width: 180px;
   }
 
@@ -121,7 +125,7 @@
       <paper-progress class="progress-bar" indeterminate></paper-progress>
     </div>
     <div id="error-message" hidden="[[!isState_(state_, State.ERROR)]]">
-      <div>[[getErrorMessage_(state_)]]</div>
+      <textarea id="error-log" rows="6" cols="80" readonly>[[getErrorMessage_(state_)]]</textarea>
     </div>
   </div>
 

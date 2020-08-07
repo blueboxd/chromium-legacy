@@ -2295,6 +2295,9 @@ extern const char kExperimentalAccessibilityCursorColorsDescription[];
 extern const char kFilesNGName[];
 extern const char kFilesNGDescription[];
 
+extern const char kFilesSWAName[];
+extern const char kFilesSWADescription[];
+
 extern const char kFilesTransferDetailsName[];
 extern const char kFilesTransferDetailsDescription[];
 
@@ -2490,9 +2493,6 @@ extern const char kVirtualKeyboardDescription[];
 
 extern const char kZeroCopyVideoCaptureName[];
 extern const char kZeroCopyVideoCaptureDescription[];
-
-extern const char kZeroStateFilesName[];
-extern const char kZeroStateFilesDescription[];
 
 // Prefer keeping this section sorted to adding new declarations down here.
 

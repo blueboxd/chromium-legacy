@@ -17,7 +17,7 @@
 
 namespace blink {
 namespace mojom {
-enum class PushDeliveryStatus;
+enum class PushEventStatus;
 }  // namespace mojom
 }  // namespace blink
 
@@ -30,7 +30,7 @@ class ServiceWorkerVersion;
 class PushMessagingRouter {
  public:
   using PushEventCallback =
-      base::OnceCallback<void(blink::mojom::PushDeliveryStatus)>;
+      base::OnceCallback<void(blink::mojom::PushEventStatus)>;
 
   // Delivers a push message with |payload| to the Service Worker identified by
   // |origin| and |service_worker_registration_id|. Must be called on the UI

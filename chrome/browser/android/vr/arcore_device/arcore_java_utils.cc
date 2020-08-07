@@ -10,7 +10,7 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/vr/android_vr_utils.h"
 #include "chrome/browser/android/vr/ar_jni_headers/ArCoreJavaUtils_jni.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_shim.h"
+#include "device/vr/android/arcore/arcore_shim.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;

@@ -15,12 +15,12 @@
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_gl.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_gl_thread.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_impl.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_java_utils.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_session_utils.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "content/public/browser/render_frame_host.h"
+#include "device/vr/android/arcore/arcore_impl.h"
 #include "ui/display/display.h"
 
 using base::android::JavaRef;

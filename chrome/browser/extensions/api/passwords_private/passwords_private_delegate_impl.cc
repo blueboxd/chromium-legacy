@@ -203,13 +203,14 @@ void PasswordsPrivateDelegateImpl::GetPasswordExceptionsList(
 }
 
 bool PasswordsPrivateDelegateImpl::ChangeSavedPassword(
-    int id,
+    const std::vector<int>& ids,
     base::string16 new_password) {
-  const std::string* sort_key = password_id_generator_.TryGetKey(id);
+  const std::vector<std::string> sort_keys =
+      GetSortKeys(password_id_generator_, ids);
 
-  return sort_key != nullptr &&
+  return !ids.empty() && sort_keys.size() == ids.size() &&
          password_manager_presenter_->ChangeSavedPassword(
-             *sort_key, std::move(new_password));
+             sort_keys, std::move(new_password));
 }
 
 void PasswordsPrivateDelegateImpl::RemoveSavedPasswords(

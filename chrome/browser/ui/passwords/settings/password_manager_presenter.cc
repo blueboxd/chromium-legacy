@@ -322,25 +322,32 @@ const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
 }
 
 bool PasswordManagerPresenter::ChangeSavedPassword(
-    const std::string& sort_key,
+    const std::vector<std::string>& sort_keys,
     base::string16 new_password) {
-  // Find the equivalence class that needs to be updated.
-  auto it = password_map_.find(sort_key);
-  if (it == password_map_.end())
-    return false;
-
   // Make sure new_password is not empty.
   if (new_password.empty()) {
     DLOG(ERROR) << "The password is empty.";
     return false;
   }
+  DCHECK(!sort_keys.empty());
 
-  const FormVector& old_forms = it->second;
+  std::vector<base::span<const FormVector::value_type>> old_forms_for_sort_keys;
+  for (const auto& sort_key : sort_keys) {
+    // Find the equivalence class that needs to be updated.
+    auto it = password_map_.find(sort_key);
+    if (it == password_map_.end()) {
+      return false;
+    } else {
+      DCHECK(!it->second.empty());
+      old_forms_for_sort_keys.push_back(it->second);
+    }
+  }
 
-  DCHECK(!old_forms.empty());
-  const base::string16& username = old_forms[0]->username_value;
-  EditSavedPasswords(password_view_->GetProfile(), old_forms, username,
-                     std::move(new_password));
+  for (const auto& old_forms : old_forms_for_sort_keys) {
+    const base::string16& username = old_forms[0]->username_value;
+    EditSavedPasswords(password_view_->GetProfile(), old_forms, username,
+                       new_password);
+  }
 
   return true;
 }

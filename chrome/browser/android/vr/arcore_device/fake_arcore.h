@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/vr/arcore_device/arcore.h"
+#include "device/vr/android/arcore/arcore.h"
 
 namespace device {
 
@@ -24,7 +24,7 @@ class FakeArCore : public ArCore {
   // ArCore implementation.
   bool Initialize(
       base::android::ScopedJavaLocalRef<jobject> application_context) override;
-  void SetCameraTexture(GLuint texture) override;
+  void SetCameraTexture(uint32_t texture) override;
   void SetDisplayGeometry(const gfx::Size& frame_size,
                           display::Display::Rotation display_rotation) override;
   std::vector<float> TransformDisplayUvCoords(

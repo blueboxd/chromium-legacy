@@ -69,6 +69,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -573,7 +574,9 @@ void LoginDisplayHostWebUI::StartWizard(OobeScreenId first_screen) {
   // Keep parameters to restore if renderer crashes.
   restore_path_ = RESTORE_WIZARD;
   first_screen_ = first_screen;
-  is_showing_login_ = (first_screen == GaiaView::kScreenId);
+  is_showing_login_ = (first_screen == (features::IsChildSpecificSigninEnabled()
+                                            ? UserCreationView::kScreenId
+                                            : GaiaView::kScreenId));
 
   VLOG(1) << "Login WebUI >> wizard";
 

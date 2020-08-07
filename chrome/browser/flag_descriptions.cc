@@ -3955,6 +3955,10 @@ const char kFilesNGName[] = "Enable Files App. NG.";
 const char kFilesNGDescription[] =
     "Enable the next generation UI style of the file manager.";
 
+const char kFilesSWAName[] = "Enable Files App SWA.";
+const char kFilesSWADescription[] =
+    "Enable the SWA version of the file manager.";
+
 const char kFilesTransferDetailsName[] = "Enable Files Transfer Details.";
 const char kFilesTransferDetailsDescription[] =
     "Enable transfer details like remaining time in the progress center panel.";
@@ -4270,11 +4274,6 @@ const char kVirtualKeyboardName[] = "Virtual Keyboard";
 const char kVirtualKeyboardDescription[] =
     "Always show virtual keyboard regardless of having a physical keyboard "
     "present";
-
-const char kZeroStateFilesName[] = "Enable Launcher Zero State Files";
-const char kZeroStateFilesDescription[] =
-    "Enables zero state file recommendations in the Launcher, which appear when"
-    "the search box is active and no query has been entered.";
 
 const char kZeroCopyVideoCaptureName[] = "Enable Zero-Copy Video Capture";
 const char kZeroCopyVideoCaptureDescription[] =

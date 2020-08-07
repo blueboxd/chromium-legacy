@@ -150,7 +150,7 @@ class WebUIBrowserProxy {
 
   /** @override */
   getBackgroundOps() {
-    // TODO(980846): Refactor after migrating to SWA since there is no
+    // TODO(crbug.com/980846): Refactor after migrating to SWA since there is no
     // background page for SWA.
     const perfLogger = new PerfLogger();
     const url = window.location.href;
@@ -167,34 +167,34 @@ class WebUIBrowserProxy {
 
   /** @override */
   isFullscreenOrMaximized() {
-    // TODO(980846): Implement the fullscreen monitor.
+    // TODO(crbug.com/980846): Implement the fullscreen monitor.
     return false;
   }
 
   /** @override */
   fitWindow() {
-    // TODO(980846): Remove the method once we migrate to SWA.
+    // TODO(crbug.com/980846): Remove the method once we migrate to SWA.
   }
 
   /** @override */
   showWindow() {
-    // TODO(980846): Remove the method once we migrate to SWA.
+    // TODO(crbug.com/980846): Remove the method once we migrate to SWA.
   }
 
   /** @override */
   hideWindow() {
-    // TODO(980846): Remove the method once we migrate to SWA.
+    // TODO(crbug.com/980846): Remove the method once we migrate to SWA.
   }
 
   /** @override */
   isMinimized() {
-    // TODO(980846): Implement the minimization monitor.
+    // TODO(crbug.com/980846): Implement the minimization monitor.
     return false;
   }
 
   /** @override */
   addOnMinimizedListener(listener) {
-    // TODO(980846): Implement the minimization monitor.
+    // TODO(crbug.com/980846): Implement the minimization monitor.
   }
 }
 

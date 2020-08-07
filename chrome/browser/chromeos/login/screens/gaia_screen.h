@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
@@ -20,12 +21,17 @@ class ScreenManager;
 // GAIA-based sign-in.
 class GaiaScreen : public BaseScreen {
  public:
-  GaiaScreen();
-  ~GaiaScreen() override = default;
+  enum class Result { BACK };
+
+  static std::string GetResultString(Result result);
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
+  explicit GaiaScreen(const ScreenExitCallback& exit_callback);
+  ~GaiaScreen() override;
 
   static GaiaScreen* Get(ScreenManager* manager);
 
-  void set_view(GaiaView* view) { view_ = view; }
+  void SetView(GaiaView* view);
 
   void MaybePreloadAuthExtension();
   // Loads online Gaia into the webview.
@@ -36,8 +42,11 @@ class GaiaScreen : public BaseScreen {
  private:
   void ShowImpl() override;
   void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
 
   GaiaView* view_ = nullptr;
+
+  ScreenExitCallback exit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaScreen);
 };

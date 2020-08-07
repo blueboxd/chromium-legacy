@@ -43,6 +43,8 @@ static_library("url_formatter") {
     "//base",
     "//base:i18n",
     "//components/url_formatter:skeleton_generator",
+    "//components/url_formatter/spoof_checks/common_words:common",
+    "//components/url_formatter/spoof_checks/common_words:common_words_dafsa",
     "//components/url_formatter/spoof_checks/top_domains:common",
     "//components/url_formatter/spoof_checks/top_domains:generate_top_domains_trie",
     "//net",

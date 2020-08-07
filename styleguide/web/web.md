@@ -462,8 +462,7 @@ function isWindows() {
 `<include src="[path]">` reads the file at `path` and replaces the `<include>`
 tag with the file contents of `[path]`. Don't use `<include>` in new JS code;
 [it is being removed.](https://docs.google.com/document/d/1Z18WTNv28z5FW3smNEm_GtsfVD2IL-CmmAikwjw3ryo/edit?usp=sharing#heading=h.66ycuu6hfi9n)
-Instead, use JS imports in new pages and pages that use JS modules. Use HTML
-imports in existing pages that are still using HTML imports/Polymer 2.
+Instead, use JS imports in new pages and pages that use JS modules.
 
 Grit can read and inline resources when enabled via `flattenhtml="true"`.
 

@@ -1,0 +1,15 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://html.spec.whatwg.org/#cross-origin-opener-policies
+
+[
+  NoInterfaceObject
+] interface CoopAccessViolationReportBody : ReportBody {
+  readonly attribute DOMString? sourceFile;
+  readonly attribute unsigned long? lineNumber;
+  readonly attribute unsigned long? columnNumber;
+  readonly attribute DOMString property;
+  [CallWith=ScriptState] object toJSON();
+};

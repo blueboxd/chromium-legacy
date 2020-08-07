@@ -276,7 +276,8 @@ static void JNI_UmaSessionStats_UpdateMetricsServiceState(
 static void JNI_UmaSessionStats_RegisterExternalExperiment(
     JNIEnv* env,
     const JavaParamRef<jstring>& jfallback_study_name,
-    const JavaParamRef<jintArray>& jexperiment_ids) {
+    const JavaParamRef<jintArray>& jexperiment_ids,
+    jboolean override_existing_ids) {
   std::string fallback_study_name(
       ConvertJavaStringToUTF8(env, jfallback_study_name));
   std::vector<int> experiment_ids;
@@ -286,11 +287,15 @@ static void JNI_UmaSessionStats_RegisterExternalExperiment(
                                            &experiment_ids);
   }
 
+  auto override_mode =
+      override_existing_ids
+          ? variations::SyntheticTrialRegistry::kOverrideExistingIds
+          : variations::SyntheticTrialRegistry::kDoNotOverrideExistingIds;
+
   g_browser_process->metrics_service()
       ->synthetic_trial_registry()
-      ->RegisterExternalExperiments(
-          fallback_study_name, experiment_ids,
-          variations::SyntheticTrialRegistry::kOverrideExistingIds);
+      ->RegisterExternalExperiments(fallback_study_name, experiment_ids,
+                                    override_mode);
 }
 
 static void JNI_UmaSessionStats_RegisterSyntheticFieldTrial(

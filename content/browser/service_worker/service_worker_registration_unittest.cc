@@ -186,13 +186,10 @@ class ServiceWorkerRegistrationTest : public testing::Test {
     storage_partition_impl_->Initialize();
     helper_->context_wrapper()->set_storage_partition(
         storage_partition_impl_.get());
-
-    context()->storage()->LazyInitializeForTest();
   }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
   ServiceWorkerRegistry* registry() { return helper_->context()->registry(); }
-  ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
 
   class RegistrationListener : public ServiceWorkerRegistration::Listener {
    public:
@@ -907,8 +904,6 @@ class ServiceWorkerRegistrationObjectHostTest
   }
 
   int64_t SetUpRegistration(const GURL& scope, const GURL& script_url) {
-    storage()->LazyInitializeForTest();
-
     // Prepare ServiceWorkerRegistration and ServiceWorkerVersion.
     scoped_refptr<ServiceWorkerRegistration> registration =
         CreateNewRegistration(scope);

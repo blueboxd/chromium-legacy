@@ -38,8 +38,6 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
   void SetUp() override {
     // Set up the service worker system.
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
-    ServiceWorkerContextCore* context = helper_->context();
-    context->storage()->LazyInitializeForTest();
 
     browser_context_getter_ =
         base::BindRepeating(&ServiceWorkerContextWrapper::browser_context,

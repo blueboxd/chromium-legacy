@@ -4,8 +4,16 @@
      found in the LICENSE file. -->
 
 <resources>
+  <dimen name="check_status_description_margin_top">2dp</dimen>
+  <dimen name="check_status_icon_margin_horizontal">16dp</dimen>
+  <dimen name="check_status_icon_size">24dp</dimen>
   <dimen name="check_status_restart_button_clickable_surface_size">48dp</dimen>
   <dimen name="check_status_restart_button_margin_end">4dp</dimen>
+
+  <!-- Margin for the header message, it depends on the status -->
+  <dimen name="check_status_message_error_margin_vertical">24dp</dimen>
+  <dimen name="check_status_message_idle_margin_vertical">27dp</dimen>
+  <dimen name="check_status_message_running_margin_vertical">36dp</dimen>
 
   <dimen name="compromised_credential_row_button_margin_top">16dp</dimen>
   <dimen name="compromised_credential_row_more_padding_end">8dp</dimen>

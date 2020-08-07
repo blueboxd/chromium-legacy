@@ -1,0 +1,19 @@
+Verifies that CSP issue is created from a page with eval() usage.
+
+Inspector issue: {
+    issue : {
+        code : ContentSecurityPolicyIssue
+        details : {
+            contentSecurityPolicyIssueDetails : {
+                contentSecurityPolicyViolationType : kEvalViolation
+                sourceCodeLocation : {
+                    columnNumber : 13
+                    lineNumber : 7
+                    url : https://devtools.test:8443/inspector-protocol/resources/content-security-policy-issue-eval.html
+                }
+                violatedDirective : script-src
+            }
+        }
+    }
+}
+

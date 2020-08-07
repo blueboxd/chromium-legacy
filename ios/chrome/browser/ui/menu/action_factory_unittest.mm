@@ -199,4 +199,21 @@ TEST_F(ActionFactoryTest, OpenInNewWindowAction) {
   }
 }
 
+// Tests that the edit action has the right title and image.
+TEST_F(ActionFactoryTest, EditAction) {
+  if (@available(iOS 13.0, *)) {
+    ActionFactory* factory =
+        [[ActionFactory alloc] initWithBrowser:test_browser_.get()
+                                      scenario:kTestMenuScenario];
+
+    NSString* expectedTitle = l10n_util::GetNSString(IDS_IOS_EDIT_ACTION_TITLE);
+
+    UIAction* action = [factory actionToEditWithBlock:^{
+    }];
+
+    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+    EXPECT_EQ(nil, action.image);
+  }
+}
+
 #endif  // defined(__IPHONE_13_0)

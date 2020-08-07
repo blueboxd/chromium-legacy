@@ -112,8 +112,6 @@ class ServiceWorkerObjectHostTest : public testing::Test {
   }
 
   void SetUpRegistration(const GURL& scope, const GURL& script_url) {
-    helper_->context()->storage()->LazyInitializeForTest();
-
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
     registration_ = CreateNewServiceWorkerRegistration(

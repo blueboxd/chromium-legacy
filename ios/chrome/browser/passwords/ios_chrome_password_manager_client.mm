@@ -34,6 +34,7 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -87,7 +88,7 @@ SyncState IOSChromePasswordManagerClient::GetPasswordSyncState() const {
 bool IOSChromePasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const url::Origin& origin,
-    const CredentialsCallback& callback) {
+    CredentialsCallback callback) {
   NOTIMPLEMENTED();
   return false;
 }
@@ -112,6 +113,10 @@ bool IOSChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
 void IOSChromePasswordManagerClient::PromptUserToMovePasswordToAccount(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move) {
   NOTIMPLEMENTED();
+}
+
+bool IOSChromePasswordManagerClient::RequiresReauthToFill() {
+  return base::FeatureList::IsEnabled(kEnableAutofillPasswordReauthIOS);
 }
 
 bool IOSChromePasswordManagerClient::ShowOnboarding(

@@ -37,6 +37,8 @@ struct ShareTarget {
     return !text_attachments.empty() || !file_attachments.empty();
   }
 
+  std::vector<base::UnguessableToken> GetAttachmentIds() const;
+
   base::UnguessableToken id = base::UnguessableToken::Create();
   std::string device_name;
   // Uri that points to an image of the ShareTarget, if one exists.

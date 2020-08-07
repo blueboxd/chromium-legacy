@@ -112,6 +112,16 @@ Mailbox ClientSharedImageInterface::CreateSharedImage(
       alpha_type, usage));
 }
 
+#if defined(OS_ANDROID)
+Mailbox ClientSharedImageInterface::CreateSharedImageWithAHB(
+    const Mailbox& mailbox,
+    uint32_t usage,
+    const SyncToken& sync_token) {
+  return AddMailbox(
+      proxy_->CreateSharedImageWithAHB(mailbox, usage, sync_token));
+}
+#endif
+
 ClientSharedImageInterface::SwapChainMailboxes
 ClientSharedImageInterface::CreateSwapChain(viz::ResourceFormat format,
                                             const gfx::Size& size,

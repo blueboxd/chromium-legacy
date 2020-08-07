@@ -149,4 +149,11 @@
   return action;
 }
 
+- (UIAction*)actionToEditWithBlock:(ProceduralBlock)block {
+  return [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_EDIT_ACTION_TITLE)
+                         image:nil
+                          type:MenuActionType::Edit
+                         block:block];
+}
+
 @end

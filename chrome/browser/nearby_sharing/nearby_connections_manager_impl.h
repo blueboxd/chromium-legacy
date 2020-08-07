@@ -60,6 +60,7 @@ class NearbyConnectionsManagerImpl
   void ClearIncomingPayloads() override;
   base::Optional<std::vector<uint8_t>> GetRawAuthenticationToken(
       const std::string& endpoint_id) override;
+  void UpgradeBandwidth(const std::string& endpoint_id) override;
 
  private:
   using DiscoveryOptions =

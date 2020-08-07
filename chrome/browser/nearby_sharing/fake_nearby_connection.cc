@@ -18,7 +18,7 @@ void FakeNearbyConnection::Read(ReadCallback callback) {
 
 void FakeNearbyConnection::Write(std::vector<uint8_t> bytes) {
   DCHECK(!closed_);
-  NOTIMPLEMENTED();
+  write_data_.push(std::move(bytes));
 }
 
 void FakeNearbyConnection::Close() {
@@ -38,15 +38,24 @@ void FakeNearbyConnection::RegisterForDisconnection(
 
 void FakeNearbyConnection::AppendReadableData(std::vector<uint8_t> bytes) {
   DCHECK(!closed_);
-  data_.push(std::move(bytes));
+  read_data_.push(std::move(bytes));
   MaybeRunCallback();
+}
+
+std::vector<uint8_t> FakeNearbyConnection::GetWrittenData() {
+  if (write_data_.empty())
+    return {};
+
+  std::vector<uint8_t> bytes = std::move(write_data_.front());
+  write_data_.pop();
+  return bytes;
 }
 
 void FakeNearbyConnection::MaybeRunCallback() {
   DCHECK(!closed_);
-  if (!callback_ || data_.empty())
+  if (!callback_ || read_data_.empty())
     return;
-  auto item = std::move(data_.front());
-  data_.pop();
+  auto item = std::move(read_data_.front());
+  read_data_.pop();
   std::move(callback_).Run(std::move(item));
 }

@@ -6,7 +6,6 @@
 #define COMPONENTS_SIGNIN_IOS_BROWSER_ACCOUNT_CONSISTENCY_SERVICE_H_
 
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 
@@ -19,6 +18,7 @@
 #include "components/signin/ios/browser/active_state_manager.h"
 #import "components/signin/ios/browser/manage_accounts_delegate.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
 
 namespace content_settings {
@@ -34,9 +34,11 @@ class WebStatePolicyDecider;
 class AccountReconcilor;
 class PrefService;
 
-// Handles actions necessary for Account Consistency to work on iOS. This
-// includes setting the Account Consistency cookie (informing Gaia that the
-// Account Consistency is on).
+// Handles actions necessary for keeping the list of Google accounts available
+// on the web and those available on the iOS device from first-party Google apps
+// consistent. This includes setting the Account Consistency cookie,
+// CHROME_CONNECTED, which informs Gaia that the user is signed in to Chrome
+// with Account Consistency on.
 class AccountConsistencyService : public KeyedService,
                                   public signin::IdentityManager::Observer,
                                   public ActiveStateManager::Observer {
@@ -45,6 +47,9 @@ class AccountConsistencyService : public KeyedService,
   // to inform Google web properties that the browser is connected and that
   // Google authentication cookies are managed by |AccountReconcilor|).
   static const char kChromeConnectedCookieName[];
+
+  // Name of the Google authentication cookie.
+  static const char kGaiaCookieName[];
 
   // Name of the preference property that persists the domains that have a
   // CHROME_CONNECTED cookie set by this service.
@@ -72,12 +77,17 @@ class AccountConsistencyService : public KeyedService,
   // set. Calls callback once all cookies were removed.
   void RemoveChromeConnectedCookies(base::OnceClosure callback);
 
-  // Enqueues a request to add the CHROME_CONNECTED cookie to |domain|. If the
-  // cookie is already on |domain|, this function will do nothing unless
-  // |force_update_if_too_old| is true. In this case, the cookie will be
-  // refreshed if it is considered too old.
-  void AddChromeConnectedCookieToDomain(const std::string& domain,
-                                        bool force_update_if_too_old);
+  // Checks for the presence of Gaia cookies and if they have been deleted
+  // notifies the AccountReconcilor (the class responsible for rebuilding Gaia
+  // cookies if needed).
+  //
+  // Applies a one hour time restriction in between updates to avoid too many
+  // |GetAllCookies| calls on the cookie manager.
+  void SetGaiaCookiesIfDeleted();
+
+  // Enqueues a request to set the CHROME_CONNECTED cookie for |domain|.
+  // The cookie is set if it is not already on |domain|.
+  void SetChromeConnectedCookieWithDomain(const std::string& domain);
 
   // Enqueues a request to remove the CHROME_CONNECTED cookie to |domain|.
   // Does nothing if the cookie is not set on |domain|.
@@ -126,20 +136,38 @@ class AccountConsistencyService : public KeyedService,
   // Applies the pending CHROME_CONNECTED cookie requests one by one.
   void ApplyCookieRequests();
 
-  void FinishedSetCookie(net::CookieAccessResult cookie_access_result);
+  // Called when the request to set CHROME_CONNECTED cookie is done.
+  void FinishedSetChromeConnectedCookie(
+      net::CookieAccessResult cookie_access_result);
 
   // Called when the current CHROME_CONNECTED cookie request is done.
-  void FinishedApplyingCookieRequest(bool success);
+  void FinishedApplyingChromeConnectedCookieRequest(bool success);
 
   // Returns whether the CHROME_CONNECTED cookie should be added to |domain|.
-  // If the cookie is already on |domain|, this function will return false
-  // unless |force_update_if_too_old| is true. In this case, it will return true
-  // if the cookie is considered to be too old.
-  bool ShouldAddChromeConnectedCookieToDomain(const std::string& domain,
-                                              bool force_update_if_too_old);
+  // If the cookie is not already on |domain|, it will return true. If the
+  // cookie is time constrained, |cookie_refresh_interval| is present, then a
+  // cookie older than |cookie_refresh_interval| returns true.
+  bool ShouldSetChromeConnectedCookieToDomain(
+      const std::string& domain,
+      const base::TimeDelta& cookie_refresh_interval);
+
+  // Enqueues a request to set the CHROME_CONNECTED cookie for |domain|.
+  // The cookie is set if it is not already on |domain| or if it is too old
+  // compared to the given |cookie_refresh_interval|.
+  void SetChromeConnectedCookieWithDomain(
+      const std::string& domain,
+      const base::TimeDelta& cookie_refresh_interval);
 
   // Adds CHROME_CONNECTED cookies on all the main Google domains.
   void AddChromeConnectedCookies();
+
+  // Triggers a Gaia cookie update on the Google domain.
+  void TriggerGaiaCookieChangeIfDeleted(
+      const net::CookieAccessResultList& cookie_list,
+      const net::CookieAccessResultList& excluded_cookies);
+
+  // Records whether Gaia cookies were present on navigation in UMA histogram.
+  static void LogIOSGaiaCookiesPresentOnNavigation(bool is_present);
 
   // IdentityManager::Observer implementation.
   void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
@@ -173,6 +201,9 @@ class AccountConsistencyService : public KeyedService,
   // The map between domains where a CHROME_CONNECTED cookie is present and
   // the time when the cookie was last updated.
   std::map<std::string, base::Time> last_cookie_update_map_;
+
+  // Last time Gaia cookie was updated for the Google domain.
+  base::Time last_gaia_cookie_verification_time_;
 
   // Handlers reacting on GAIA responses with the X-Chrome-Manage-Accounts
   // header set.

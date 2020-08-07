@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.omaha;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -183,9 +184,9 @@ public class RequestGeneratorTest {
         AdvancedMockContext context = new AdvancedMockContext(targetContext);
 
         IdentityServicesProvider.setInstanceForTests(mock(IdentityServicesProvider.class));
-        when(IdentityServicesProvider.get().getIdentityManager())
+        when(IdentityServicesProvider.get().getIdentityManager(any()))
                 .thenReturn(mock(IdentityManager.class));
-        when(IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount())
+        when(IdentityServicesProvider.get().getIdentityManager(any()).hasPrimaryAccount())
                 .thenReturn(true);
 
         for (Account account : accounts) {

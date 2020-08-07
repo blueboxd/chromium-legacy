@@ -32,7 +32,6 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
     ServiceWorkerContextCore* context = helper_->context();
-    context->storage()->LazyInitializeForTest();
 
     scope_ = GURL("https://host/scope");
     script_url_ = GURL("https://host/script.js");

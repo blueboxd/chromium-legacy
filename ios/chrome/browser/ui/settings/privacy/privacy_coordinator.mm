@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/privacy/privacy_coordinator.h"
 
 #import "base/mac/foundation_util.h"
+#include "components/content_settings/core/common/features.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/main/browser.h"
@@ -19,6 +20,7 @@
 #import "ios/chrome/browser/ui/settings/privacy/privacy_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -56,11 +58,13 @@
   self.handler = HandlerForProtocol(self.browser->GetCommandDispatcher(),
                                     ApplicationCommands);
 
-  self.cookiesStatusMediator = [[CookiesStatusMediator alloc]
-      initWithPrefService:self.browser->GetBrowserState()->GetPrefs()
-              settingsMap:ios::HostContentSettingsMapFactory::
-                              GetForBrowserState(
-                                  self.browser->GetBrowserState())];
+  if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls)) {
+    self.cookiesStatusMediator = [[CookiesStatusMediator alloc]
+        initWithPrefService:self.browser->GetBrowserState()->GetPrefs()
+                settingsMap:ios::HostContentSettingsMapFactory::
+                                GetForBrowserState(
+                                    self.browser->GetBrowserState())];
+  }
 
   self.viewController = [[PrivacyTableViewController alloc]
          initWithBrowser:self.browser

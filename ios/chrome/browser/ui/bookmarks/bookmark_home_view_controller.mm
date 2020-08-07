@@ -2188,9 +2188,49 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
           [[ActionFactory alloc] initWithBrowser:self.browser
                                         scenario:MenuScenario::kBookmarkEntry];
 
-      UIAction* copyAction = [actionFactory actionToCopyURL:node->url()];
+      NSMutableArray<UIMenuElement*>* menuElements =
+          [[NSMutableArray alloc] init];
 
-      return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
+      [menuElements addObject:[actionFactory actionToOpenInNewTabWithBlock:^{
+                      std::vector<const BookmarkNode*> nodes = {node};
+                      [self openAllNodes:nodes inIncognito:NO newTab:YES];
+                    }]];
+
+      [menuElements
+          addObject:[actionFactory actionToOpenInNewIncognitoTabWithBlock:^{
+            std::vector<const BookmarkNode*> nodes = {node};
+            [self openAllNodes:nodes inIncognito:YES newTab:YES];
+          }]];
+
+      if (IsMultipleScenesSupported()) {
+        [menuElements
+            addObject:
+                [actionFactory
+                    actionToOpenInNewWindowWithURL:node->url()
+                                    activityOrigin:WindowActivityBookmarksOrigin
+                                        completion:^{
+                                          [self
+                                              dismissViewControllerAnimated:YES
+                                                                 completion:
+                                                                     nil];
+                                        }]];
+      }
+
+      [menuElements addObject:[actionFactory actionToCopyURL:node->url()]];
+
+      [menuElements addObject:[actionFactory actionToEditWithBlock:^{
+                      [self editNode:node];
+                    }]];
+
+      [menuElements addObject:[actionFactory actionToDeleteWithBlock:^{
+                      std::set<const BookmarkNode*> nodes;
+                      nodes.insert(node);
+                      [self handleSelectNodesForDeletion:nodes];
+                      base::RecordAction(base::UserMetricsAction(
+                          "MobileBookmarkManagerEntryDeleted"));
+                    }]];
+
+      return [UIMenu menuWithTitle:@"" children:menuElements];
     };
   }
 

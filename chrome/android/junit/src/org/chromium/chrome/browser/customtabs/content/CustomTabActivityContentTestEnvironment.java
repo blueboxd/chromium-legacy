@@ -112,6 +112,10 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     protected void starting(Description description) {
         MockitoAnnotations.initMocks(this);
 
+        // There are a number of places that call CustomTabsConnection.getInstance(), which would
+        // otherwise result in a real CustomTabsConnection being created.
+        CustomTabsConnection.setInstanceForTesting(connection);
+
         tabFromFactory = prepareTab();
 
         when(intentDataProvider.getIntent()).thenReturn(intent);

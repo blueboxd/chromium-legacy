@@ -1457,7 +1457,7 @@ void TestResponseProvider::GetLanguageResponse(
   // Make sure the Translate manual trigger button is enabled and tap it.
   [ChromeEarlGreyUI openToolsMenu];
   [[[[EarlGrey selectElementWithMatcher:toolsMenuTranslateButton()]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 250)
       onElementWithMatcher:ToolsMenuView()]
       assertWithMatcher:grey_not(grey_accessibilityTrait(
                             UIAccessibilityTraitNotEnabled))]
@@ -1482,7 +1482,7 @@ void TestResponseProvider::GetLanguageResponse(
   // Make sure the Translate manual trigger button is enabled and tap it.
   [ChromeEarlGreyUI openToolsMenu];
   [[[[EarlGrey selectElementWithMatcher:toolsMenuTranslateButton()]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 250)
       onElementWithMatcher:ToolsMenuView()]
       assertWithMatcher:grey_not(grey_accessibilityTrait(
                             UIAccessibilityTraitNotEnabled))]
@@ -1546,7 +1546,7 @@ void TestResponseProvider::GetLanguageResponse(
   // Tap the Translate manual trigger button.
   [ChromeEarlGreyUI openToolsMenu];
   [[[EarlGrey selectElementWithMatcher:toolsMenuTranslateButton()]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 250)
       onElementWithMatcher:ToolsMenuView()] performAction:grey_tap()];
 
   // Make sure the infobar reappears.
@@ -1599,7 +1599,7 @@ void TestResponseProvider::GetLanguageResponse(
   // Tap the Translate manual trigger button.
   [ChromeEarlGreyUI openToolsMenu];
   [[[EarlGrey selectElementWithMatcher:toolsMenuTranslateButton()]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 250)
       onElementWithMatcher:ToolsMenuView()] performAction:grey_tap()];
 
   // Make sure the infobar reappears.

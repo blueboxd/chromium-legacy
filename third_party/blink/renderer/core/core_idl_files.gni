@@ -182,6 +182,7 @@ core_interface_idl_files_core_only =
                     "fileapi/file_reader.idl",
                     "fileapi/file_reader_sync.idl",
                     "frame/bar_prop.idl",
+                    "frame/coop_access_violation_report_body.idl",
                     "frame/csp/csp_violation_report_body.idl",
                     "frame/deprecation_report_body.idl",
                     "frame/document_policy_violation_report_body.idl",

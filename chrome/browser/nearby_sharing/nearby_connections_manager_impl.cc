@@ -178,6 +178,11 @@ NearbyConnectionsManagerImpl::GetRawAuthenticationToken(
   return it->second->raw_authentication_token;
 }
 
+void NearbyConnectionsManagerImpl::UpgradeBandwidth(
+    const std::string& endpoint_id) {
+  // TODO(crbug/1076008): Implement.
+}
+
 void NearbyConnectionsManagerImpl::OnNearbyProfileChanged(Profile* profile) {
   NS_LOG(VERBOSE) << __func__;
 }

@@ -72,7 +72,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD3(PromptUserToChooseCredentialsPtr,
                bool(const std::vector<autofill::PasswordForm*>& local_forms,
                     const url::Origin& origin,
-                    const CredentialsCallback& callback));
+                    CredentialsCallback callback));
   MOCK_METHOD3(PasswordWasAutofilled,
                void(const std::vector<const autofill::PasswordForm*>&,
                     const url::Origin&,
@@ -131,19 +131,19 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const url::Origin& origin,
-      const CredentialsCallback& callback) override {
+      CredentialsCallback callback) override {
     EXPECT_FALSE(local_forms.empty());
     const autofill::PasswordForm* form = local_forms[0].get();
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(callback,
+        base::BindOnce(std::move(callback),
                        base::Owned(new autofill::PasswordForm(*form))));
     std::vector<autofill::PasswordForm*> raw_forms(local_forms.size());
     std::transform(local_forms.begin(), local_forms.end(), raw_forms.begin(),
                    [](const std::unique_ptr<autofill::PasswordForm>& form) {
                      return form.get();
                    });
-    PromptUserToChooseCredentialsPtr(raw_forms, origin, callback);
+    PromptUserToChooseCredentialsPtr(raw_forms, origin, base::DoNothing());
     return true;
   }
 

@@ -37,7 +37,6 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils.ActivityType;
@@ -192,13 +191,9 @@ public class IncognitoPermissionLeakageTest {
         // Request permission in incognitoActivity2's tab.
         requestLocationPermission(tab2);
 
-        // Incognito CCTs with isolated profiles should not inherit permissions from other sessions.
-        if (CustomTabIncognitoManager.hasIsolatedProfile()) {
-            // Permission is asked again, therefore the previous permission wasn't inherited.
-            assertDialogIsShown();
-        } else {
-            assertDialogIsNotShown();
-        }
+        // Incognito CCTs should not inherit permissions from other sessions.
+        // If permission is asked again, we can infer that the previous permission wasn't inherited.
+        assertDialogIsShown();
     }
 
     @Test
@@ -223,13 +218,9 @@ public class IncognitoPermissionLeakageTest {
         // Request permission now in incognitoActivity2's tab.
         requestLocationPermission(tab2);
 
-        // Incognito CCTs with isolated profiles should not inherit permissions from other sessions.
-        if (CustomTabIncognitoManager.hasIsolatedProfile()) {
-            // Permission is asked again, therefore the previous permission wasn't inherited.
-            assertDialogIsShown();
-        } else {
-            assertDialogIsNotShown();
-        }
+        // Incognito CCTs should not inherit permissions from other sessions.
+        // If permission is asked again, we can infer that the previous permission wasn't inherited.
+        assertDialogIsShown();
     }
 
     @Test

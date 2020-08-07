@@ -41,6 +41,7 @@ class UpdateRequiredNotification : public message_center::NotificationObserver {
   void Show(policy::MinimumVersionPolicyHandler::NotificationType type,
             base::TimeDelta warning_time,
             const std::string& domain_name,
+            const base::string16& device_type,
             base::OnceClosure button_click_callback,
             base::OnceClosure close_callback);
 

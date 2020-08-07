@@ -13,6 +13,8 @@ blink_core_sources("frame") {
     "bar_prop.h",
     "browser_controls.cc",
     "browser_controls.h",
+    "coop_access_violation_report_body.cc",
+    "coop_access_violation_report_body.h",
     "csp/content_security_policy.cc",
     "csp/content_security_policy.h",
     "csp/csp_directive.h",

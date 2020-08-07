@@ -1228,7 +1228,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/become-unfragmented-
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/change-fragmentainer-height-inline-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/content-preceding-first-fragmentainer.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/float-after-forced-break.html [ Failure ]
-crbug.com/1066625 virtual/layout_ng_block_frag/fragmentation/outline-crossing-columns.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/overflow-crossing-boundary.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/relayout-abspos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/remove-unbreakable-block-in-line-float.html [ Failure ]

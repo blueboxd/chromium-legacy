@@ -124,6 +124,9 @@ class NearbyConnectionsManager {
   // Gets the raw authentication token for the |endpoint_id|.
   virtual base::Optional<std::vector<uint8_t>> GetRawAuthenticationToken(
       const std::string& endpoint_id) = 0;
+
+  // Initiates bandwidth upgrade for |endpoint_id|.
+  virtual void UpgradeBandwidth(const std::string& endpoint_id) = 0;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_NEARBY_CONNECTIONS_MANAGER_H_

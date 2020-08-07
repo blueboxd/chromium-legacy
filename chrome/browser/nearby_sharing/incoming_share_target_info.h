@@ -53,7 +53,7 @@ class IncomingShareTargetInfo {
  private:
   base::Optional<std::string> endpoint_id_;
   base::Optional<NearbyShareDecryptedPublicCertificate> certificate_;
-  NearbyConnection* connection_;
+  NearbyConnection* connection_ = nullptr;
   base::Optional<std::string> token_;
 };
 

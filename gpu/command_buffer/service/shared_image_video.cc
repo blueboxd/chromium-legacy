@@ -138,6 +138,12 @@ base::Optional<VulkanYCbCrInfo> SharedImageVideo::GetYcbcrInfo(
   return base::Optional<VulkanYCbCrInfo>(ycbcr_info);
 }
 
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+SharedImageVideo::GetAHardwareBuffer() {
+  DCHECK(stream_texture_sii_);
+  return stream_texture_sii_->GetAHardwareBuffer();
+}
+
 // Representation of SharedImageVideo as a GL Texture.
 class SharedImageRepresentationGLTextureVideo
     : public SharedImageRepresentationGLTexture {

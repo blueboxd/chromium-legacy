@@ -126,6 +126,12 @@ class GPU_GLES2_EXPORT SharedImageFactory {
     return shared_context_state_;
   }
 
+#if defined(OS_ANDROID)
+  bool CreateSharedImageWithAHB(const Mailbox& out_mailbox,
+                                const Mailbox& in_mailbox,
+                                uint32_t usage);
+#endif
+
   void RegisterSharedImageBackingFactoryForTesting(
       SharedImageBackingFactory* factory);
 

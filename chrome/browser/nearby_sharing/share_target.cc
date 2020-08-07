@@ -34,3 +34,15 @@ ShareTarget& ShareTarget::operator=(const ShareTarget&) = default;
 ShareTarget& ShareTarget::operator=(ShareTarget&&) = default;
 
 ShareTarget::~ShareTarget() = default;
+
+std::vector<base::UnguessableToken> ShareTarget::GetAttachmentIds() const {
+  std::vector<base::UnguessableToken> attachments;
+
+  for (const auto& file : file_attachments)
+    attachments.push_back(file.id());
+
+  for (const auto& text : text_attachments)
+    attachments.push_back(text.id());
+
+  return attachments;
+}

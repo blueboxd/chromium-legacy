@@ -81,7 +81,7 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
   bool OnChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
       const url::Origin& origin,
-      const ManagePasswordsState::CredentialsCallback& callback) override;
+      ManagePasswordsState::CredentialsCallback callback) override;
   void OnPasswordAutofilled(
       const std::vector<const autofill::PasswordForm*>& password_forms,
       const url::Origin& origin,
@@ -209,10 +209,10 @@ void CustomManagePasswordsUIController::OnHideManualFallbackForSaving() {
 bool CustomManagePasswordsUIController::OnChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
     const url::Origin& origin,
-    const ManagePasswordsState::CredentialsCallback& callback) {
+    ManagePasswordsState::CredentialsCallback callback) {
   ProcessStateExpectations(password_manager::ui::CREDENTIAL_REQUEST_STATE);
   return ManagePasswordsUIController::OnChooseCredentials(
-      std::move(local_credentials), origin, callback);
+      std::move(local_credentials), origin, std::move(callback));
 }
 
 void CustomManagePasswordsUIController::OnPasswordAutofilled(

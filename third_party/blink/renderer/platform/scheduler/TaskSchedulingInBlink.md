@@ -54,10 +54,8 @@ a named per-thread task runner should be used:
 Per-thread task runners include:
 - Compositor task runner
 - GC task runner
-- Cleanup task runner
 - Default (deprecated)
 - Input task runner (semi-deprecated)
-- IPC (semi-deprecated)
 
 New task runners might be added in the future; contact scheduler-dev@chromium.org
 if you think you need a new one.

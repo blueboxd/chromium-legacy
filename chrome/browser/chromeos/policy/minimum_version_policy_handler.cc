@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string16.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -31,6 +32,7 @@
 #include "chromeos/settings/cros_settings_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 using MinimumVersionRequirement =
     policy::MinimumVersionPolicyHandler::MinimumVersionRequirement;
@@ -488,6 +490,7 @@ void MinimumVersionPolicyHandler::MaybeShowNotification(
   NotificationType type = NotificationType::kNoConnection;
   base::OnceClosure button_click_callback;
   std::string domain_name = GetEnterpriseDomainName();
+  base::string16 device_type = ui::GetChromeOSDeviceName();
   auto close_callback =
       base::BindOnce(&MinimumVersionPolicyHandler::StopObservingNetwork,
                      weak_factory_.GetWeakPtr());
@@ -508,7 +511,7 @@ void MinimumVersionPolicyHandler::MaybeShowNotification(
     NOTREACHED();
     return;
   }
-  notification_handler_->Show(type, warning, domain_name,
+  notification_handler_->Show(type, warning, domain_name, device_type,
                               std::move(button_click_callback),
                               std::move(close_callback));
 

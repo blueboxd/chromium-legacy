@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_gles2_export.h"
@@ -26,6 +27,10 @@
 #include "ui/gfx/native_pixmap.h"
 
 namespace base {
+namespace android {
+class ScopedHardwareBufferFenceSync;
+}  // namespace android
+
 namespace trace_event {
 class ProcessMemoryDump;
 class MemoryAllocatorDump;
@@ -128,6 +133,12 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Returns the NativePixmap backing the SharedImageBacking. Returns null if
   // the SharedImage is not backed by a NativePixmap.
   virtual scoped_refptr<gfx::NativePixmap> GetNativePixmap();
+
+#if defined(OS_ANDROID)
+  // Returns the AHardwareBuffer from backing if supported and available.
+  virtual std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBuffer();
+#endif
 
   // Helper to determine if the entire SharedImage is cleared.
   bool IsCleared() const { return ClearedRect() == gfx::Rect(size()); }

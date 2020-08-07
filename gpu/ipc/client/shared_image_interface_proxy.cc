@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
@@ -203,6 +204,27 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   AddMailbox(params.mailbox, usage);
   return mailbox;
 }
+
+#if defined(OS_ANDROID)
+Mailbox SharedImageInterfaceProxy::CreateSharedImageWithAHB(
+    const Mailbox& mailbox,
+    uint32_t usage,
+    const SyncToken& sync_token) {
+  auto out_mailbox = Mailbox::GenerateForSharedImage();
+  std::vector<SyncToken> dependencies =
+      GenerateDependenciesFromSyncToken(std::move(sync_token), host_);
+  {
+    base::AutoLock lock(lock_);
+    AddMailbox(out_mailbox, usage);
+    gfx::GpuFenceHandle acquire_fence_handle;
+    last_flush_id_ = host_->EnqueueDeferredMessage(
+        GpuChannelMsg_CreateSharedImageWithAHB(route_id_, out_mailbox, mailbox,
+                                               usage, ++next_release_id_),
+        std::move(dependencies));
+  }
+  return out_mailbox;
+}
+#endif
 
 void SharedImageInterfaceProxy::UpdateSharedImage(const SyncToken& sync_token,
                                                   const Mailbox& mailbox) {

@@ -26,7 +26,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils.ActivityType;
@@ -145,13 +144,6 @@ public class IncognitoStorageLeakageTest {
 
         for (String type : sSiteData) {
             String expected = "false";
-
-            // Both activity types are incognito (one of them being CCT) and they share the storage
-            // only if incognito CCT doesn't have an isolated profile.
-            if (activity1.incognito && activity2.incognito
-                    && !CustomTabIncognitoManager.hasIsolatedProfile()) {
-                expected = "true";
-            }
 
             // Both activity types are regular and they share storages.
             if (!activity1.incognito && !activity2.incognito) {

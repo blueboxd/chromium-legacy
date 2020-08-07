@@ -52,12 +52,12 @@ class PlayerFrameBitmapPainter {
         if (mTileSize.getWidth() <= 0 || mTileSize.getHeight() <= 0) return;
 
         final int rowStart = mViewPort.top / mTileSize.getHeight();
-        final int rowEnd = (int) Math.ceil((double) mViewPort.bottom / mTileSize.getHeight());
+        int rowEnd = (int) Math.ceil((double) mViewPort.bottom / mTileSize.getHeight());
         final int colStart = mViewPort.left / mTileSize.getWidth();
-        final int colEnd = (int) Math.ceil((double) mViewPort.right / mTileSize.getWidth());
-        if (rowEnd > mBitmapMatrix.length || colEnd > mBitmapMatrix[rowEnd - 1].length) {
-            return;
-        }
+        int colEnd = (int) Math.ceil((double) mViewPort.right / mTileSize.getWidth());
+
+        rowEnd = Math.min(rowEnd, mBitmapMatrix.length);
+        colEnd = Math.min(colEnd, rowEnd > 1 ? mBitmapMatrix[rowEnd - 1].length : 0);
 
         for (int row = rowStart; row < rowEnd; row++) {
             for (int col = colStart; col < colEnd; col++) {

@@ -70,6 +70,7 @@ public class PasswordCheckIntegrationTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1114096")
     public void testDoesNotDestroyComponentIfNotFirstInSettingsStack() {
         PasswordCheckFactory.getOrCreate();
         SettingsActivity activity = setUpUiLaunchedFromSettings();

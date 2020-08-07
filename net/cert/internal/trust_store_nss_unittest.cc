@@ -55,6 +55,8 @@ scoped_refptr<ParsedCertificate> GetASSLTrustedBuiltinRoot() {
   scoped_refptr<X509Certificate> ssl_trusted_root;
 
   CERTCertList* cert_list = PK11_ListCertsInSlot(root_certs_slot.get());
+  if (!cert_list)
+    return nullptr;
   for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
        !CERT_LIST_END(node, cert_list); node = CERT_LIST_NEXT(node)) {
     CERTCertTrust trust;

@@ -46,6 +46,9 @@ class Browser;
 // first.
 - (void)disconnect;
 
+// Notifies of a forced resizing layout of the tab strip.
+- (void)tabStripSizeDidChange;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TABS_TAB_STRIP_CONTROLLER_H_

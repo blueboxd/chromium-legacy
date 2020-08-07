@@ -88,7 +88,6 @@ class ServiceWorkerVersionTest : public testing::Test {
 
   void SetUp() override {
     helper_ = GetHelper();
-    helper_->context()->storage()->LazyInitializeForTest();
 
     scope_ = GURL("https://www.example.com/test/");
     blink::mojom::ServiceWorkerRegistrationOptions options;

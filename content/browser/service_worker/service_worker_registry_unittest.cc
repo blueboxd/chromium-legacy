@@ -42,7 +42,6 @@ class ServiceWorkerRegistryTest : public testing::Test {
     special_storage_policy_ =
         base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
     InitializeTestHelper();
-    LazyInitialize();
   }
 
   void TearDown() override {
@@ -63,8 +62,6 @@ class ServiceWorkerRegistryTest : public testing::Test {
         user_data_directory_path_, special_storage_policy_.get());
   }
 
-  void LazyInitialize() { registry()->storage()->LazyInitializeForTest(); }
-
   void SimulateRestart() {
     // Need to reset |helper_| then wait for scheduled tasks to be finished
     // because |helper_| has TestBrowserContext and the dtor schedules storage
@@ -72,7 +69,6 @@ class ServiceWorkerRegistryTest : public testing::Test {
     helper_.reset();
     base::RunLoop().RunUntilIdle();
     InitializeTestHelper();
-    LazyInitialize();
   }
 
   blink::ServiceWorkerStatusCode FindRegistrationForClientUrl(
@@ -129,7 +125,6 @@ class ServiceWorkerRegistryTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerRegistryTest, FindRegistration_LongestScopeMatch) {
-  LazyInitialize();
   const GURL kDocumentUrl("http://www.example.com/scope/foo");
   scoped_refptr<ServiceWorkerRegistration> found_registration;
 

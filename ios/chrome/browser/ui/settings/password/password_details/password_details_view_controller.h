@@ -26,7 +26,7 @@
 // Dispatcher for this ViewController.
 @property(nonatomic, weak) id<ApplicationCommands> commandsDispatcher;
 
-// Module containing the reauthentication mechanism for interections
+// Module containing the reauthentication mechanism for interactions
 // with password.
 @property(nonatomic, weak) id<ReauthenticationProtocol> reauthModule;
 

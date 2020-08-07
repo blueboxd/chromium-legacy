@@ -31,11 +31,11 @@ extern const char kPasscodeArticleURL[];
 @interface ReauthenticationModule : NSObject <ReauthenticationProtocol>
 
 // The designated initializer. |successfulReauthTimeAccessor| must not be nil.
+// Use |init| to have ReauthenticationModule be it's own
+// |SuccessfulReauthTimeAccessor|.
 - (instancetype)initWithSuccessfulReauthTimeAccessor:
     (id<SuccessfulReauthTimeAccessor>)successfulReauthTimeAccessor
     NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

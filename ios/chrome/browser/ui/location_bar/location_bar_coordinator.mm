@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/google/core/common/google_util.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search_engines/util.h"
@@ -65,14 +64,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// The histogram recording CLAuthorizationStatus for omnibox queries.
-const char* const kOmniboxQueryLocationAuthorizationStatusHistogram =
-    "Omnibox.QueryIosLocationAuthorizationStatus";
-// The number of possible CLAuthorizationStatus values to report.
-const int kLocationAuthorizationStatusCount = 5;
-}  // namespace
 
 @interface LocationBarCoordinator () <LoadQueryCommands,
                                       LocationBarDelegate,
@@ -314,13 +305,6 @@ const int kLocationAuthorizationStatusCount = 5;
     UrlLoadParams params = UrlLoadParams::InCurrentTab(web_params);
     params.disposition = disposition;
     UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
-
-    if (google_util::IsGoogleSearchUrl(url)) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kOmniboxQueryLocationAuthorizationStatusHistogram,
-          [CLLocationManager authorizationStatus],
-          kLocationAuthorizationStatusCount);
-    }
   }
   [self cancelOmniboxEdit];
 }

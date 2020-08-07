@@ -26,7 +26,7 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
       content::WebContents* web_contents,
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
       const url::Origin& origin,
-      const ManagePasswordsState::CredentialsCallback& callback);
+      ManagePasswordsState::CredentialsCallback callback);
 
   ~AccountChooserDialogAndroid() override;
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

@@ -20,7 +20,6 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.password_check.BulkLeakCheckServiceState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckBridge.SafetyCheckCommonObserver;
 
 /** Unit tests for {@link SafetyCheckBridge}. */
@@ -28,10 +27,8 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckBridge.SafetyCheckCom
 public class SafetyCheckBridgeTest {
     class TestObserver implements SafetyCheckCommonObserver {
         public boolean sbCallbackInvoked;
-        public boolean passwordsStateChangeInvoked;
 
         private @SafeBrowsingStatus int mSBExpected = -1;
-        private @BulkLeakCheckServiceState int mPasswordsStateExpected = -1;
 
         @Override
         public void onSafeBrowsingCheckResult(@SafeBrowsingStatus int status) {
@@ -39,21 +36,8 @@ public class SafetyCheckBridgeTest {
             assertEquals(mSBExpected, status);
         }
 
-        @Override
-        public void onPasswordCheckCredentialDone(int checked, int total) {}
-
-        @Override
-        public void onPasswordCheckStateChange(@BulkLeakCheckServiceState int state) {
-            passwordsStateChangeInvoked = true;
-            assertEquals(mPasswordsStateExpected, state);
-        }
-
         public void setSafeBrowsingExpected(@SafeBrowsingStatus int expected) {
             mSBExpected = expected;
-        }
-
-        public void setPasswordsExpected(@BulkLeakCheckServiceState int expected) {
-            mPasswordsStateExpected = expected;
         }
     }
 
@@ -90,24 +74,5 @@ public class SafetyCheckBridgeTest {
         mSafetyCheckBridge.checkSafeBrowsing();
 
         assertTrue(mObserver.sbCallbackInvoked);
-    }
-
-    @Test
-    public void testCheckPasswords() {
-        assertFalse(mObserver.passwordsStateChangeInvoked);
-
-        @BulkLeakCheckServiceState
-        int expected = BulkLeakCheckServiceState.HASHING_FAILURE;
-        doAnswer(invocation -> {
-            mObserver.onPasswordCheckStateChange(expected);
-            return null;
-        })
-                .when(mNativeMock)
-                .checkPasswords(anyLong(), any(SafetyCheckBridge.class));
-        mObserver.setPasswordsExpected(expected);
-
-        mSafetyCheckBridge.checkPasswords();
-
-        assertTrue(mObserver.passwordsStateChangeInvoked);
     }
 }

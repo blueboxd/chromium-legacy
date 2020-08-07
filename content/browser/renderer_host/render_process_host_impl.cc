@@ -5177,7 +5177,7 @@ void RenderProcessHostImpl::ProvideStatusFileForRenderer() {
 #endif
 
 void RenderProcessHostImpl::ProvideSwapFileForRenderer() {
-  if (!base::FeatureList::IsEnabled(blink::features::kParkableStringsToDisk))
+  if (!blink::features::IsParkableStringsToDiskEnabled())
     return;
 
   // In Incognito, nothing should be written to disk. Don't provide a file..

@@ -4,6 +4,12 @@
 
 package org.chromium.chrome.browser.sync;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
 import android.app.Dialog;
 import android.support.test.InstrumentationRegistry;
 import android.widget.Button;
@@ -211,6 +217,26 @@ public class ManageSyncSettingsTest {
         // empty set in the backend. But sync stop request should not be called.
         mSyncTestRule.togglePreference(getSyncEverything(fragment));
         Assert.assertTrue(SyncTestUtil.isSyncRequested());
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testPressingTurnOffSyncAndSignOutShowsSignOutDialog() {
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        mSyncTestRule.setChosenDataTypes(true, null);
+        mSyncTestRule.startSync();
+        ManageSyncSettings fragment = startManageSyncPreferences();
+
+        Preference turnOffSyncPreference =
+                fragment.findPreference(ManageSyncSettings.PREF_TURN_OFF_SYNC);
+        Assert.assertTrue("Turn off sync and sign out button should be shown",
+                turnOffSyncPreference.isVisible());
+        TestThreadUtils.runOnUiThreadBlocking(
+                fragment.findPreference(ManageSyncSettings.PREF_TURN_OFF_SYNC)::performClick);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        onView(withText(R.string.signout_title)).inRoot(isDialog()).check(matches(isDisplayed()));
     }
 
     @Test

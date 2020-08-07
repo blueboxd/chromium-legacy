@@ -67,8 +67,8 @@ AccountChooserDialogAndroid* AccountChooserDialogAndroidTest::CreateDialog(
   return new AccountChooserDialogAndroid(
       web_contents(), std::move(credentials),
       url::Origin::Create(GURL("https://example.com")),
-      base::Bind(&AccountChooserDialogAndroidTest::OnChooseCredential,
-                 base::Unretained(this)));
+      base::BindOnce(&AccountChooserDialogAndroidTest::OnChooseCredential,
+                     base::Unretained(this)));
 }
 
 AccountChooserDialogAndroid*

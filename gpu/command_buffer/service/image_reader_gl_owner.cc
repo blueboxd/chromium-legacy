@@ -36,6 +36,7 @@ bool IsSurfaceControl(TextureOwner::Mode mode) {
     case TextureOwner::Mode::kAImageReaderSecureSurfaceControl:
       return true;
     case TextureOwner::Mode::kAImageReaderInsecure:
+    case TextureOwner::Mode::kAImageReaderInsecureMultithreaded:
       return false;
     case TextureOwner::Mode::kSurfaceTextureInsecure:
       NOTREACHED();
@@ -51,13 +52,19 @@ bool IsSurfaceControl(TextureOwner::Mode mode) {
 // smoothness. This is because in case an image is not acquired for some
 // reasons, last acquired image should be displayed which is only possible with
 // 2 images (1 previously acquired, 1 currently acquired/tried to acquire).
-// But some devices only support only 1 image. (see crbug.com/1051705).
-// For SurfaceControl we need 3 images instead of 2 since 1 frame (and hence
-// image associated with it) will be with system compositor and 2 frames will
-// be in flight.
+// But some devices supports only 1 image to be acquired. (see
+// crbug.com/1051705). For SurfaceControl we need 3 images instead of 2 since 1
+// frame (and hence image associated with it) will be with system compositor and
+// 2 frames will be in flight. For multi-threaded compositor, when AImageReader
+// is supported, we need 3 images in order to skip texture copy. 1 frame with
+// display compositor, 1 frame in flight and 1 frame being prepared by the
+// renderer.
 uint32_t NumRequiredMaxImages(TextureOwner::Mode mode) {
-  if (IsSurfaceControl(mode))
+  if (IsSurfaceControl(mode) ||
+      mode == TextureOwner::Mode::kAImageReaderInsecureMultithreaded) {
+    DCHECK(!media::MediaCodecUtil::LimitAImageReaderMaxSizeToOne());
     return 3;
+  }
   return media::MediaCodecUtil::LimitAImageReaderMaxSizeToOne() ? 1 : 2;
 }
 

@@ -102,14 +102,14 @@ AccountChooserDialogAndroid::AccountChooserDialogAndroid(
     content::WebContents* web_contents,
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
     const url::Origin& origin,
-    const ManagePasswordsState::CredentialsCallback& callback)
+    ManagePasswordsState::CredentialsCallback callback)
     : content::WebContentsObserver(web_contents),
       web_contents_(web_contents),
       origin_(origin) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents_));
   passwords_data_.OnRequestCredentials(std::move(local_credentials), origin);
-  passwords_data_.set_credentials_callback(callback);
+  passwords_data_.set_credentials_callback(std::move(callback));
 }
 
 AccountChooserDialogAndroid::~AccountChooserDialogAndroid() {}

@@ -213,6 +213,19 @@ void OpenReadingList() {
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI
       tapToolsMenuButton:chrome_test_util::ReadingListMenuButton()];
+  // It seems that sometimes there is a delay before the ReadingList is
+  // displayed. See https://crbug.com/1109202 .
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kWaitForUIElementTimeout,
+                 ^BOOL {
+                   NSError* error = nil;
+                   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                                           kReadingListViewID)]
+                       assertWithMatcher:grey_sufficientlyVisible()
+                                   error:&error];
+                   return error == nil;
+                 }),
+             @"Reading List didn't appear.");
 }
 
 // Adds 20 read and 20 unread entries to the model, opens the reading list menu
@@ -444,14 +457,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 }
 
 // Tests that the Reading List view is accessible.
-//
-// Disabled due to https://crbug.com/1109202.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testAccessibility DISABLED_testAccessibility
-#else
-#define MAYBE_testAccessibility testAccessibility
-#endif
-- (void)MAYBE_testAccessibility {
+- (void)testAccessibility {
   AddEntriesAndEnterEdit();
   // In edit mode.
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];

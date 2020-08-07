@@ -162,7 +162,7 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginImpl(
 }
 
 PasswordStoreChangeList PasswordStoreX::RemoveLoginsByURLAndTimeImpl(
-    const base::Callback<bool(const GURL&)>& url_filter,
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end) {
   CheckMigration();
@@ -179,7 +179,7 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginsCreatedBetweenImpl(
 }
 
 PasswordStoreChangeList PasswordStoreX::DisableAutoSignInForOriginsImpl(
-    const base::Callback<bool(const GURL&)>& origin_filter) {
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
   CheckMigration();
   return PasswordStoreDefault::DisableAutoSignInForOriginsImpl(origin_filter);
 }

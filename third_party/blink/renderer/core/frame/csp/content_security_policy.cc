@@ -1468,7 +1468,10 @@ void ContentSecurityPolicy::ReportContentSecurityPolicyIssue(
                             ContentSecurityPolicyViolationType::kURLViolation ||
       violation_type ==
           blink::ContentSecurityPolicy::ContentSecurityPolicyViolationType::
-              kInlineViolation) {
+              kInlineViolation ||
+      violation_type ==
+          blink::ContentSecurityPolicy::ContentSecurityPolicyViolationType::
+              kEvalViolation) {
     if (frame_ancestor)
       frame_ancestor->AddInspectorIssue(std::move(info));
     else if (delegate_)

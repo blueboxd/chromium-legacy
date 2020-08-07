@@ -54,7 +54,7 @@ class AccountPickerBottomSheetViewBinder {
                 view.expandAccountList();
                 break;
             case AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS:
-                // TODO(https://crbug.com/1102784): Implement UI update when sign-in in progress
+                view.setUpSignInInProgressView();
                 break;
             default:
                 throw new IllegalArgumentException(

@@ -398,7 +398,6 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
     // Create an active service worker.
-    storage()->LazyInitializeForTest();
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = GURL("https://example.com/");
     registration_ = CreateNewServiceWorkerRegistration(
@@ -453,7 +452,6 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
   }
 
   ServiceWorkerRegistry* registry() { return helper_->context()->registry(); }
-  ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
   mojo::Remote<storage::mojom::ServiceWorkerStorageControl>&
   GetStorageControl() {
     return helper_->context()->GetStorageControl();

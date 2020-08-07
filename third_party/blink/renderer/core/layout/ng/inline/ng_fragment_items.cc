@@ -281,23 +281,6 @@ void NGFragmentItems::DirtyLinesFromNeedsLayout(
 // static
 void NGFragmentItems::LayoutObjectWillBeMoved(
     const LayoutObject& layout_object) {
-  if (UNLIKELY(layout_object.IsInsideFlowThread())) {
-    // TODO(crbug.com/829028): Make NGInlineCursor handle block
-    // fragmentation. For now, perform a slow walk here manually.
-    const LayoutBlock& container = *layout_object.ContainingBlock();
-    for (wtf_size_t idx = 0; idx < container.PhysicalFragmentCount(); idx++) {
-      const NGPhysicalBoxFragment& fragment =
-          *container.GetPhysicalFragment(idx);
-      if (const NGFragmentItems* fragment_items = fragment.Items()) {
-        for (const auto& item : fragment_items->Items()) {
-          if (item.GetLayoutObject() == &layout_object)
-            item.LayoutObjectWillBeMoved();
-        }
-      }
-    }
-    return;
-  }
-
   NGInlineCursor cursor;
   cursor.MoveTo(layout_object);
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
@@ -309,23 +292,6 @@ void NGFragmentItems::LayoutObjectWillBeMoved(
 // static
 void NGFragmentItems::LayoutObjectWillBeDestroyed(
     const LayoutObject& layout_object) {
-  if (UNLIKELY(layout_object.IsInsideFlowThread())) {
-    // TODO(crbug.com/829028): Make NGInlineCursor handle block
-    // fragmentation. For now, perform a slow walk here manually.
-    const LayoutBlock& container = *layout_object.ContainingBlock();
-    for (wtf_size_t idx = 0; idx < container.PhysicalFragmentCount(); idx++) {
-      const NGPhysicalBoxFragment& fragment =
-          *container.GetPhysicalFragment(idx);
-      if (const NGFragmentItems* fragment_items = fragment.Items()) {
-        for (const auto& item : fragment_items->Items()) {
-          if (item.GetLayoutObject() == &layout_object)
-            item.LayoutObjectWillBeDestroyed();
-        }
-      }
-    }
-    return;
-  }
-
   NGInlineCursor cursor;
   cursor.MoveTo(layout_object);
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {

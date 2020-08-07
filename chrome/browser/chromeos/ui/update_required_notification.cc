@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
+#include "base/i18n/message_formatter.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -14,15 +15,16 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using NotificationType = policy::MinimumVersionPolicyHandler::NotificationType;
+using MessageFormatter = base::i18n::MessageFormatter;
 
 namespace chromeos {
 namespace {
 
 const char kUpdateRequiredNotificationId[] = "policy.update_required";
 
-base::string16 GetTitle(NotificationType type, int days_remaining) {
-  // TODO(https://crbug.com/1048607): Add and use title strings for weeks if
-  // |days_remaining| >= 7.
+base::string16 GetTitle(NotificationType type,
+                        int days_remaining,
+                        const base::string16& device_type) {
   // |days_remaining| could be zero if we are very close to the deadline, like
   // 10 minutes as we round of the time remaining into days. In this case, we
   // need to show the last day notification title which does not mention the
@@ -33,53 +35,49 @@ base::string16 GetTitle(NotificationType type, int days_remaining) {
     case NotificationType::kNoConnection:
     case NotificationType::kMeteredConnection:
       return (days_remaining % 7)
-                 ? l10n_util::GetPluralStringFUTF16(
-                       IDS_UPDATE_REQUIRED_NETWORK_LIMITATION_TITLE_DAYS,
-                       days_remaining)
-                 : l10n_util::GetPluralStringFUTF16(
-                       IDS_UPDATE_REQUIRED_NETWORK_LIMITATION_TITLE_WEEKS,
-                       days_remaining / 7);
+                 ? MessageFormatter::FormatWithNumberedArgs(
+                       l10n_util::GetStringUTF16(
+                           IDS_UPDATE_REQUIRED_NETWORK_LIMITATION_TITLE_DAYS),
+                       days_remaining, device_type)
+                 : MessageFormatter::FormatWithNumberedArgs(
+                       l10n_util::GetStringUTF16(
+                           IDS_UPDATE_REQUIRED_NETWORK_LIMITATION_TITLE_WEEKS),
+                       days_remaining / 7, device_type);
     case NotificationType::kEolReached:
       return (days_remaining % 7)
-                 ? l10n_util::GetPluralStringFUTF16(
-                       IDS_UPDATE_REQUIRED_EOL_TITLE_DAYS, days_remaining)
-                 : l10n_util::GetPluralStringFUTF16(
-                       IDS_UPDATE_REQUIRED_EOL_TITLE_WEEKS, days_remaining / 7);
+                 ? MessageFormatter::FormatWithNumberedArgs(
+                       l10n_util::GetStringUTF16(
+                           IDS_UPDATE_REQUIRED_EOL_TITLE_DAYS),
+                       days_remaining, device_type)
+                 : MessageFormatter::FormatWithNumberedArgs(
+                       l10n_util::GetStringUTF16(
+                           IDS_UPDATE_REQUIRED_EOL_TITLE_WEEKS),
+                       days_remaining / 7, device_type);
   }
 }
 
 base::string16 GetMessage(NotificationType type,
                           const std::string& domain_name,
-                          int days_remaining) {
-  if (days_remaining > 1) {
-    switch (type) {
-      case NotificationType::kNoConnection:
-        return l10n_util::GetStringFUTF16(
-            IDS_UPDATE_REQUIRED_NO_NETWORK_MESSAGE,
-            base::UTF8ToUTF16(domain_name));
-      case NotificationType::kMeteredConnection:
-        return l10n_util::GetStringFUTF16(
-            IDS_UPDATE_REQUIRED_METERED_NETWORK_MESSAGE,
-            base::UTF8ToUTF16(domain_name));
-      case NotificationType::kEolReached:
-        return l10n_util::GetStringFUTF16(IDS_UPDATE_REQUIRED_EOL_MESSAGE,
-                                          base::UTF8ToUTF16(domain_name));
-    }
-  }
-
+                          int days_remaining,
+                          const base::string16& device_type) {
+  // |days_remaining| could be zero if we are very close to the deadline, like
+  // 10 minutes as we round of the time remaining into days. In this case, we
+  // need to show the last day notification.
+  days_remaining = days_remaining > 1 ? days_remaining : 1;
   switch (type) {
     case NotificationType::kNoConnection:
-      return l10n_util::GetStringFUTF16(
-          IDS_UPDATE_REQUIRED_NO_NETWORK_MESSAGE_IMMEDIATE,
-          base::UTF8ToUTF16(domain_name));
+      return MessageFormatter::FormatWithNumberedArgs(
+          l10n_util::GetStringUTF16(IDS_UPDATE_REQUIRED_NO_NETWORK_MESSAGE),
+          days_remaining, base::UTF8ToUTF16(domain_name));
     case NotificationType::kMeteredConnection:
-      return l10n_util::GetStringFUTF16(
-          IDS_UPDATE_REQUIRED_METERED_NETWORK_MESSAGE_IMMEDIATE,
-          base::UTF8ToUTF16(domain_name));
+      return MessageFormatter::FormatWithNumberedArgs(
+          l10n_util::GetStringUTF16(
+              IDS_UPDATE_REQUIRED_METERED_NETWORK_MESSAGE),
+          days_remaining, base::UTF8ToUTF16(domain_name));
     case NotificationType::kEolReached:
-      return l10n_util::GetStringFUTF16(
-          IDS_UPDATE_REQUIRED_EOL_MESSAGE_IMMEDIATE,
-          base::UTF8ToUTF16(domain_name));
+      return MessageFormatter::FormatWithNumberedArgs(
+          l10n_util::GetStringUTF16(IDS_UPDATE_REQUIRED_EOL_MESSAGE),
+          days_remaining, base::UTF8ToUTF16(domain_name), device_type);
   }
 }
 
@@ -121,14 +119,16 @@ UpdateRequiredNotification::~UpdateRequiredNotification() = default;
 void UpdateRequiredNotification::Show(NotificationType type,
                                       base::TimeDelta warning_time,
                                       const std::string& domain_name,
+                                      const base::string16& device_type,
                                       base::OnceClosure button_click_callback,
                                       base::OnceClosure close_callback) {
   const int days_remaining = warning_time.InDays();
   notification_button_click_callback_ = std::move(button_click_callback);
   notification_close_callback_ = std::move(close_callback);
 
-  base::string16 title = GetTitle(type, days_remaining);
-  base::string16 body = GetMessage(type, domain_name, days_remaining);
+  base::string16 title = GetTitle(type, days_remaining, device_type);
+  base::string16 body =
+      GetMessage(type, domain_name, days_remaining, device_type);
   base::string16 button = GetButtonText(type);
   if (title.empty() || body.empty() || button.empty()) {
     NOTREACHED();

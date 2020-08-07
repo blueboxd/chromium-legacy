@@ -18,22 +18,28 @@ import androidx.test.filters.SmallTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.password_check.PasswordCheck;
+import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesState;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Tests {@link SafetyCheckSettingsFragment} together with {@link SafetyCheckViewBinder}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@Features.EnableFeatures({ChromeFeatureList.SAFETY_CHECK_ANDROID, ChromeFeatureList.PASSWORD_CHECK})
 public class SafetyCheckSettingsFragmentTest {
     private static final String PASSWORDS = "passwords";
     private static final String SAFE_BROWSING = "safe_browsing";
@@ -47,8 +53,14 @@ public class SafetyCheckSettingsFragmentTest {
     public SettingsActivityTestRule<SafetyCheckSettingsFragment> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(SafetyCheckSettingsFragment.class);
 
+    @Rule
+    public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
+
     @Mock
     private SafetyCheckBridge mSafetyCheckBridge;
+
+    @Mock
+    private PasswordCheck mPasswordCheck;
 
     private PropertyModel mModel;
     private SafetyCheckSettingsFragment mFragment;
@@ -56,6 +68,7 @@ public class SafetyCheckSettingsFragmentTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
     }
 
     @Test

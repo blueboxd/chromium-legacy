@@ -27,7 +27,6 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils.ActivityType;
@@ -134,7 +133,7 @@ public class IncognitoCookieLeakageTest {
         Tab getter_tab = incognitoActivity2.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mCookiesTestPage);
 
-        String expected = CustomTabIncognitoManager.hasIsolatedProfile() ? "\"\"" : "\"Foo=Bar\"";
+        String expected = "\"\"";
 
         assertCookies(getter_tab, expected);
     }

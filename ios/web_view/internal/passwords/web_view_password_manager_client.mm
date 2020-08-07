@@ -92,7 +92,7 @@ SyncState WebViewPasswordManagerClient::GetPasswordSyncState() const {
 bool WebViewPasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const url::Origin& origin,
-    const CredentialsCallback& callback) {
+    CredentialsCallback callback) {
   NOTIMPLEMENTED();
   return false;
 }

@@ -35,7 +35,7 @@ class TestPasswordManagerClient
   MOCK_METHOD3(PromptUserToChooseCredentialsPtr,
                bool(const std::vector<autofill::PasswordForm*>& local_forms,
                     const url::Origin& origin,
-                    const CredentialsCallback& callback));
+                    CredentialsCallback callback));
 
   scoped_refptr<TestPasswordStore> password_store() const;
   void set_password_store(scoped_refptr<TestPasswordStore> store);
@@ -61,7 +61,7 @@ class TestPasswordManagerClient
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const url::Origin& origin,
-      const CredentialsCallback& callback) override;
+      CredentialsCallback callback) override;
 
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
   GURL last_committed_url_;

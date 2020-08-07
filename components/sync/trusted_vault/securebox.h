@@ -110,7 +110,7 @@ class SecureBoxKeyPair {
   // nullptr if P-256 key can't be decoded from |private_key_bytes| or its
   // format is incorrect.
   static std::unique_ptr<SecureBoxKeyPair> CreateByPrivateKeyImport(
-      base::span<uint8_t> private_key_bytes);
+      base::span<const uint8_t> private_key_bytes);
 
   SecureBoxKeyPair(const SecureBoxKeyPair& other) = delete;
   SecureBoxKeyPair& operator=(const SecureBoxKeyPair& other) = delete;

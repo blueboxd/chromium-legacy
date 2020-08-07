@@ -106,7 +106,6 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
         registration_.get(), script_url_, blink::mojom::ScriptType::kClassic,
         1L, mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
         context()->AsWeakPtr());
-    context()->storage()->LazyInitializeForTest();
 
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     records.push_back(WriteToDiskCacheSync(

@@ -155,17 +155,35 @@ Polymer({
     }
   },
 
+  /**
+   * @param {!SafetyCheckInteractions} safetyCheckInteraction
+   * @param {!string} userAction
+   * @private
+   */
+  logUserInteraction_: function(safetyCheckInteraction, userAction) {
+    // Log user interaction both in user action and histogram.
+    this.metricsBrowserProxy_.recordSafetyCheckInteractionHistogram(
+        safetyCheckInteraction);
+    this.metricsBrowserProxy_.recordAction(userAction);
+  },
+
   /** @private */
   onButtonClick_: function() {
-    // TODO(crbug.com/1087263): Add metrics for safety check CCT child user
-    // actions.
     switch (this.status_) {
       case SafetyCheckChromeCleanerStatus.INFECTED:
+        this.logUserInteraction_(
+            SafetyCheckInteractions
+                .SAFETY_CHECK_CHROME_CLEANER_REVIEW_INFECTED_STATE,
+            'Settings.SafetyCheck.ChromeCleanerReviewInfectedState');
+        // Navigate to Chrome cleaner UI.
         Router.getInstance().navigateTo(
             routes.CHROME_CLEANUP,
             /* dynamicParams= */ null, /* removeSearch= */ true);
         break;
       case SafetyCheckChromeCleanerStatus.REBOOT_REQUIRED:
+        this.logUserInteraction_(
+            SafetyCheckInteractions.SAFETY_CHECK_CHROME_CLEANER_REBOOT,
+            'Settings.SafetyCheck.ChromeCleanerReboot');
         this.chromeCleanupBrowserProxy_.restartComputer();
         break;
       default:

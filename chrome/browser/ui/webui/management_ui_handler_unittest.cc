@@ -829,9 +829,10 @@ TEST_F(ManagementUIHandlerTests,
   handler_.EnableUpdateRequiredEolInfo(true);
   SetUpProfileAndHandler();
 
-  EXPECT_EQ(GetUpdateRequiredEolMessage(),
-            l10n_util::GetStringFUTF16(
-                IDS_MANAGEMENT_UPDATE_REQUIRED_EOL_MESSAGE, device_domain()));
+  EXPECT_EQ(
+      GetUpdateRequiredEolMessage(),
+      l10n_util::GetStringFUTF16(IDS_MANAGEMENT_UPDATE_REQUIRED_EOL_MESSAGE,
+                                 device_domain(), ui::GetChromeOSDeviceName()));
   EXPECT_EQ(GetPageSubtitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                        l10n_util::GetStringUTF16(device_type),

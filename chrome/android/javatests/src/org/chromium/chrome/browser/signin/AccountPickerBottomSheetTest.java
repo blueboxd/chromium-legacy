@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import android.support.test.InstrumentationRegistry;
+import android.view.View;
 
 import androidx.test.filters.MediumTest;
 
@@ -37,6 +38,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -287,10 +289,18 @@ public class AccountPickerBottomSheetTest {
     @MediumTest
     public void testSignInDefaultAccountOnCollapsedSheet() {
         buildAndShowCollapsedBottomSheet();
-        String continueAsText = mActivityTestRule.getActivity().getString(
-                R.string.signin_promo_continue_as, PROFILE_DATA1.getGivenName());
-        onView(withText(continueAsText)).perform(click());
+        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        ThreadUtils.runOnUiThread(
+                bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::performClick);
+        CriteriaHelper.pollUiThread(() -> {
+            return !bottomSheetView.findViewById(R.id.account_picker_continue_as_button).isShown();
+        });
         verify(mAccountPickerDelegateMock).signIn(PROFILE_DATA1.getAccountName());
+        onView(withId(R.id.account_picker_bottom_sheet_subtitle))
+                .check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_continue_as_button)).check(matches(not(isDisplayed())));
     }
 
     @Test

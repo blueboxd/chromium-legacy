@@ -219,7 +219,7 @@
 #   Each policy has an 'owners' field. This field is a list of strings which
 #   describe the group of people responsible for maintaining the policy and can
 #   help answer questions or solve issues with the policy. The entries can be
-#   either emails of comitters or file:// references to OWNERS files in the
+#   either emails of committers or file:// references to OWNERS files in the
 #   Chromium repository.
 #
 # Placeholders:
@@ -6410,6 +6410,75 @@
           For cookies on domains not covered by the patterns specified here, or for all cookies if this policy is not set, the global default value will be used either from the <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME">LegacySameSiteCookieBehaviorEnabled</ph> policy, if it is set, or the user's personal configuration otherwise.
 
           Note that patterns you list here are treated as domains, not URLs, so you should not specify a scheme or port.''',
+    },
+    {
+      'name': 'InsecurePrivateNetworkRequestsAllowed',
+      'owners': [
+        'titouan@chromium.org',
+        'clamy@chromium.org',
+        'mkwst@chromium.org',
+      ],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': [],
+      'future_on': [
+        'chrome.*',
+        'chrome_os',
+        'android',
+        'webview_android',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 766,
+      'caption': '''Specifies whether to allow insecure websites to make requests to more-private network endpoints.''',
+      'tags': ['system-security'],
+      'desc': '''Controls whether insecure websites are allowed to make requests to more-private network endpoints. E.g. controls whether http://evil.com is allowed to make requests to both `localhost` and endpoints on the private network, neither of which are accessible from the public internet. See https://wicg.github.io/cors-rfc1918/#goals for more details.
+
+          When this policy is not set, the default behavior for requests from insecure contexts to more-private network endpoints will depend on the user's personal configuration for the <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME">BlockInsecurePrivateNetworkRequests</ph> feature, which may be set by a field trial or on the command line.
+
+          When this policy is set to false, insecure websites are forbidden from making requests to more-private network endpoints. That is, insecure websites served from public IP addresses are forbidden from making requests to both localhost and private IP addresses. Insecure websites served from private IP addresses are forbidden from making requests to localhost.
+
+          When this policy is set to true, insecure websites are allowed to make requests to any network endpoint, subject to other cross-origin checks.''',
+    },
+    {
+      'name': 'InsecurePrivateNetworkRequestsAllowedForUrls',
+      'owners': [
+        'titouan@chromium.org',
+        'clamy@chromium.org',
+        'mkwst@chromium.org',
+      ],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': [],
+      'future_on': [
+        'chrome.*',
+        'chrome_os',
+        'android',
+        'webview_android',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['http://www.example.com:8080', '[*.]example.edu'],
+      'id': 767,
+      'caption': '''Allow the listed sites to make requests to more-private network endpoints from insecure contexts.''',
+      'tags': ['system-security'],
+      'desc': '''List of URL patterns. Private network requests initiated from insecure websites served by matching origins are allowed.
+
+          If unset, this policy behaves as if set to the empty list.
+
+          For origins not covered by the patterns specified here, the global default value will be used either from the <ph name="INSECURE_PRIVATE_NETWORK_REQUESTS_ALLOWED_POLICY_NAME">InsecurePrivateNetworkRequestsAllowed</ph> policy, if it is set, or the user's personal configuration otherwise.
+
+          Note that this policy only affects insecure origins, so secure origins (e.g. https://example.com) included in this list will be ignored.
+
+          For detailed information on valid URL patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'PluginsAllowedForUrls',
@@ -23715,9 +23784,18 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'SensorsBlockedForUrls',
       ],
     },
+    {
+      'id': 40,
+      'name': 'PrivateNetworkRequestSettings',
+      'caption': '''Private network request settings''',
+      'policies': [
+        'InsecurePrivateNetworkRequestsAllowed',
+        'InsecurePrivateNetworkRequestsAllowedForUrls',
+      ],
+    },
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 765,
-  'highest_atomic_group_id_currently_used': 39
+  'highest_id_currently_used': 767,
+  'highest_atomic_group_id_currently_used': 40
 }

@@ -141,6 +141,10 @@ class TestWebState : public web::TestWebState {
 
 class AccountConsistencyServiceTest : public PlatformTest {
  public:
+  AccountConsistencyServiceTest()
+      : task_environment_(web::WebTaskEnvironment::Options::DEFAULT,
+                          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
   void OnRemoveChromeConnectedCookieFinished() {
     EXPECT_FALSE(remove_cookie_callback_called_);
     remove_cookie_callback_called_ = true;
@@ -209,12 +213,6 @@ class AccountConsistencyServiceTest : public PlatformTest {
     WaitUntilAllCookieRequestsAreApplied();
   }
 
-  bool ShouldAddCookieToDomain(const std::string& domain,
-                               bool should_check_last_update_time) {
-    return account_consistency_service_->ShouldAddChromeConnectedCookieToDomain(
-        domain, should_check_last_update_time);
-  }
-
   std::vector<net::CanonicalCookie> GetCookiesInCookieJar() {
     std::vector<net::CanonicalCookie> cookies_out;
     base::RunLoop run_loop;
@@ -262,6 +260,31 @@ class AccountConsistencyServiceTest : public PlatformTest {
     account_consistency_service_->RemoveChromeConnectedCookies(
         run_loop.QuitClosure());
     run_loop.Run();
+  }
+
+  // Simulates setting the CHROME_CONNECTED cookie for the Google domain at the
+  // designated time interval. Returns the time at which the cookie was updated.
+  base::Time SimulateSetChromeConnectedCookie() {
+    account_consistency_service_->SetChromeConnectedCookieWithDomain(
+        kGoogleDomain);
+    WaitUntilAllCookieRequestsAreApplied();
+
+    return account_consistency_service_->last_cookie_update_map_[kGoogleDomain];
+  }
+
+  // Simulates updating the Gaia cookie on the Google domain at the designated
+  // time interval. Returns the time at which the cookie was updated.
+  base::Time SimulateUpdateGaiaCookie() {
+    account_consistency_service_->SetGaiaCookiesIfDeleted();
+    WaitUntilAllCookieRequestsAreApplied();
+
+    return account_consistency_service_->last_gaia_cookie_verification_time_;
+  }
+
+  void CheckGoogleDomainHasGaiaCookie() {
+    EXPECT_TRUE(ContainsCookie(GetCookiesInCookieJar(),
+                               AccountConsistencyService::kGaiaCookieName,
+                               ".google.com"));
   }
 
   // Creates test threads, necessary for ActiveStateManager that needs a UI
@@ -471,43 +494,46 @@ TEST_F(AccountConsistencyServiceTest, DomainsClearedOnBrowsingDataRemoved) {
           ->size());
 }
 
-// Tests that cookie requests are correctly processed or ignored when the update
-// time isn't checked.
-TEST_F(AccountConsistencyServiceTest, ShouldAddCookieDontCheckUpdateTime) {
-  EXPECT_TRUE(ShouldAddCookieToDomain(kGoogleDomain, false));
-  EXPECT_TRUE(ShouldAddCookieToDomain(kYoutubeDomain, false));
-
+TEST_F(AccountConsistencyServiceTest, SetChromeConnectedCookieNotUpdateTime) {
   SignIn();
-  CheckDomainHasChromeConnectedCookie(kGoogleDomain);
-  CheckDomainHasChromeConnectedCookie(kYoutubeDomain);
-  EXPECT_FALSE(ShouldAddCookieToDomain(kGoogleDomain, false));
-  EXPECT_FALSE(ShouldAddCookieToDomain(kYoutubeDomain, false));
+  base::Time first_cookie_update = SimulateSetChromeConnectedCookie();
 
-  ResetAccountConsistencyService();
-
-  CheckDomainHasChromeConnectedCookie(kGoogleDomain);
-  CheckDomainHasChromeConnectedCookie(kYoutubeDomain);
-  EXPECT_FALSE(ShouldAddCookieToDomain(kGoogleDomain, false));
-  EXPECT_FALSE(ShouldAddCookieToDomain(kYoutubeDomain, false));
+  // The second update will not send a cookie request, since this call is made
+  // before update time.
+  base::Time second_cookie_update = SimulateSetChromeConnectedCookie();
+  EXPECT_EQ(first_cookie_update, second_cookie_update);
 }
 
-// Tests that cookie requests are correctly processed or ignored when the update
-// time is checked.
-TEST_F(AccountConsistencyServiceTest, ShouldAddCookieCheckUpdateTime) {
-  EXPECT_TRUE(ShouldAddCookieToDomain(kGoogleDomain, true));
-  EXPECT_TRUE(ShouldAddCookieToDomain(kYoutubeDomain, true));
-
+TEST_F(AccountConsistencyServiceTest, SetChromeConnectedCookieAtUpdateTime) {
   SignIn();
-  CheckDomainHasChromeConnectedCookie(kGoogleDomain);
-  CheckDomainHasChromeConnectedCookie(kYoutubeDomain);
+  base::Time first_cookie_update = SimulateSetChromeConnectedCookie();
 
-  EXPECT_FALSE(ShouldAddCookieToDomain(kGoogleDomain, true));
-  EXPECT_FALSE(ShouldAddCookieToDomain(kYoutubeDomain, true));
+  // Advance clock past 24-hour CHROME_CONNECTED update time.
+  task_environment_.FastForwardBy(base::TimeDelta::FromDays(2));
 
-  ResetAccountConsistencyService();
-  CheckDomainHasChromeConnectedCookie(kGoogleDomain);
-  CheckDomainHasChromeConnectedCookie(kYoutubeDomain);
+  // The second update will not send a cookie request, since CHROME_CONNECTED
+  // has already been set.
+  base::Time second_cookie_update = SimulateSetChromeConnectedCookie();
+  EXPECT_GT(second_cookie_update, first_cookie_update);
+}
 
-  EXPECT_TRUE(ShouldAddCookieToDomain(kGoogleDomain, true));
-  EXPECT_TRUE(ShouldAddCookieToDomain(kYoutubeDomain, true));
+TEST_F(AccountConsistencyServiceTest, SetGaiaCookieUpdateNotUpdateTime) {
+  base::Time first_gaia_cookie_update = SimulateUpdateGaiaCookie();
+
+  // The second update will not send a cookie request, since this call is made
+  // before update time.
+  base::Time second_gaia_cookie_update = SimulateUpdateGaiaCookie();
+  EXPECT_EQ(first_gaia_cookie_update, second_gaia_cookie_update);
+}
+
+TEST_F(AccountConsistencyServiceTest, SetGaiaCookieUpdateAtUpdateTime) {
+  base::Time first_gaia_cookie_update = SimulateUpdateGaiaCookie();
+
+  // Advance clock past one-hour Gaia update time.
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(2));
+
+  // The second update will send a cookie request, since update time is not
+  // considered for the call.
+  base::Time second_gaia_cookie_update = SimulateUpdateGaiaCookie();
+  EXPECT_GT(second_gaia_cookie_update, first_gaia_cookie_update);
 }

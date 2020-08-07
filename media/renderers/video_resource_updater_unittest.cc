@@ -201,13 +201,10 @@ class VideoResourceUpdaterTest : public testing::Test {
   }
 
   scoped_refptr<media::VideoFrame> CreateTestStreamTextureHardwareVideoFrame(
-      bool needs_copy) {
+      base::Optional<media::VideoFrameMetadata::CopyMode> copy_mode) {
     scoped_refptr<media::VideoFrame> video_frame = CreateTestHardwareVideoFrame(
         media::PIXEL_FORMAT_ARGB, GL_TEXTURE_EXTERNAL_OES);
-    if (needs_copy) {
-      video_frame->metadata()->copy_mode =
-          VideoFrameMetadata::CopyMode::kCopyToNewTexture;
-    }
+    video_frame->metadata()->copy_mode = std::move(copy_mode);
     return video_frame;
   }
 
@@ -541,13 +538,14 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
   EXPECT_TRUE(resources.resources[2].read_lock_fences_enabled);
 }
 
-TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
+TEST_F(VideoResourceUpdaterTest,
+       CreateForHardwarePlanes_StreamTexture_CopyToNewTexture) {
   // Note that |use_stream_video_draw_quad| is true for this test.
   std::unique_ptr<VideoResourceUpdater> updater =
       CreateUpdaterForHardware(true);
   EXPECT_EQ(0u, GetSharedImageCount());
   scoped_refptr<media::VideoFrame> video_frame =
-      CreateTestStreamTextureHardwareVideoFrame(false);
+      CreateTestStreamTextureHardwareVideoFrame(base::nullopt);
 
   VideoFrameExternalResources resources =
       updater->CreateExternalResourcesFromVideoFrame(video_frame);
@@ -560,7 +558,8 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
 
   // A copied stream texture should return an RGBA resource in a new
   // GL_TEXTURE_2D texture.
-  video_frame = CreateTestStreamTextureHardwareVideoFrame(true);
+  video_frame = CreateTestStreamTextureHardwareVideoFrame(
+      media::VideoFrameMetadata::CopyMode::kCopyToNewTexture);
   resources = updater->CreateExternalResourcesFromVideoFrame(video_frame);
   EXPECT_EQ(VideoFrameResourceType::RGBA_PREMULTIPLIED, resources.type);
   EXPECT_EQ(1u, resources.resources.size());
@@ -570,11 +569,43 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
   EXPECT_EQ(1u, GetSharedImageCount());
 }
 
+TEST_F(VideoResourceUpdaterTest,
+       CreateForHardwarePlanes_StreamTexture_CopyMailboxesOnly) {
+  // Note that |use_stream_video_draw_quad| is true for this test.
+  std::unique_ptr<VideoResourceUpdater> updater =
+      CreateUpdaterForHardware(true);
+  EXPECT_EQ(0u, GetSharedImageCount());
+  scoped_refptr<media::VideoFrame> video_frame =
+      CreateTestStreamTextureHardwareVideoFrame(base::nullopt);
+  VideoFrameExternalResources resources =
+      updater->CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameResourceType::STREAM_TEXTURE, resources.type);
+  EXPECT_EQ(1u, resources.resources.size());
+  EXPECT_EQ((GLenum)GL_TEXTURE_EXTERNAL_OES,
+            resources.resources[0].mailbox_holder.texture_target);
+  EXPECT_EQ(1u, resources.release_callbacks.size());
+  EXPECT_EQ(0u, GetSharedImageCount());
+
+  // If mailbox is copied, the texture target should still be
+  // GL_TEXTURE_EXTERNAL_OES and resource type should be STREAM_TEXTURE.
+  video_frame = CreateTestStreamTextureHardwareVideoFrame(
+      media::VideoFrameMetadata::CopyMode::kCopyMailboxesOnly);
+  resources = updater->CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameResourceType::STREAM_TEXTURE, resources.type);
+  EXPECT_EQ(1u, resources.resources.size());
+  EXPECT_EQ((GLenum)GL_TEXTURE_EXTERNAL_OES,
+            resources.resources[0].mailbox_holder.texture_target);
+  EXPECT_EQ(1u, resources.release_callbacks.size());
+  // This count will be 1 since a new mailbox will be created when mailbox is
+  // being copied.
+  EXPECT_EQ(1u, GetSharedImageCount());
+}
+
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_TextureQuad) {
   std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForHardware();
   EXPECT_EQ(0u, GetSharedImageCount());
   scoped_refptr<media::VideoFrame> video_frame =
-      CreateTestStreamTextureHardwareVideoFrame(false);
+      CreateTestStreamTextureHardwareVideoFrame(base::nullopt);
 
   VideoFrameExternalResources resources =
       updater->CreateExternalResourcesFromVideoFrame(video_frame);
@@ -663,7 +694,8 @@ TEST_F(VideoResourceUpdaterTest, GenerateSyncTokenOnTextureCopy) {
   std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForHardware();
 
   scoped_refptr<media::VideoFrame> video_frame =
-      CreateTestStreamTextureHardwareVideoFrame(true /* needs_copy */);
+      CreateTestStreamTextureHardwareVideoFrame(
+          media::VideoFrameMetadata::CopyMode::kCopyToNewTexture);
 
   VideoFrameExternalResources resources =
       updater->CreateExternalResourcesFromVideoFrame(video_frame);

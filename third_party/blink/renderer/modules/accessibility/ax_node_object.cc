@@ -3949,6 +3949,8 @@ String AXNodeObject::NativeTextAlternative(
   String text_alternative;
   AXRelatedObjectVector local_related_objects;
 
+  const auto* input_element = DynamicTo<HTMLInputElement>(GetNode());
+
   // 5.1/5.5 Text inputs, Other labelable Elements
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
   auto* html_element = DynamicTo<HTMLElement>(GetNode());
@@ -3999,7 +4001,6 @@ String AXNodeObject::NativeTextAlternative(
   }
 
   // 5.2 input type="button", input type="submit" and input type="reset"
-  const auto* input_element = DynamicTo<HTMLInputElement>(GetNode());
   if (input_element && input_element->IsTextButton()) {
     // value attribute.
     name_from = ax::mojom::blink::NameFrom::kValue;
@@ -4142,31 +4143,6 @@ String AXNodeObject::NativeTextAlternative(
       } else {
         return text_alternative;
       }
-    }
-  }
-
-  // Input type=file. Not part of the spec, but Blink implements it
-  // as a single control that has both a button ("Choose file...") and
-  // some text showing the filename, and we need to concatenate both into
-  // the name of the button.
-  if (input_element && input_element->type() == input_type_names::kFile) {
-    name_from = ax::mojom::blink::NameFrom::kValue;
-
-    String displayed_file_path = StringValue();
-    String upload_button_text = input_element->UploadButton()->value();
-    if (!displayed_file_path.IsEmpty()) {
-      text_alternative = displayed_file_path + ", " + upload_button_text;
-    } else {
-      text_alternative = upload_button_text;
-    }
-    *found_text_alternative = true;
-
-    if (name_sources) {
-      name_sources->push_back(NameSource(true, kValueAttr));
-      name_sources->back().type = name_from;
-      name_sources->back().text = text_alternative;
-    } else {
-      return text_alternative;
     }
   }
 

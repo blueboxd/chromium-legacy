@@ -583,6 +583,9 @@ const base::Feature kUseAudioLatencyFromHAL{"UseAudioLatencyFromHAL",
 const base::Feature kUsePooledSharedImageVideoProvider{
     "UsePooledSharedImageVideoProvider", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Used to enable/disable zero copy video path on webview for MCVD.
+const base::Feature kWebViewZeroCopyVideo{"EnableZeroCopyVideoOnWebview",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)

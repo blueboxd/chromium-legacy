@@ -32,6 +32,8 @@ namespace {
 constexpr base::TimeDelta kReadFramesTimeout = base::TimeDelta::FromSeconds(15);
 constexpr base::TimeDelta kReadResponseFrameTimeout =
     base::TimeDelta::FromSeconds(60);
+constexpr base::TimeDelta kIncomingRejectionDelay =
+    base::TimeDelta::FromSeconds(2);
 
 std::string ReceiveSurfaceStateToString(
     NearbySharingService::ReceiveSurfaceState state) {
@@ -292,12 +294,50 @@ void NearbySharingServiceImpl::SendFiles(
 void NearbySharingServiceImpl::Accept(
     const ShareTarget& share_target,
     StatusCodesCallback status_codes_callback) {
-  std::move(status_codes_callback).Run(StatusCodes::kOk);
+  base::Optional<std::pair<ShareTarget, TransferMetadata>> metadata =
+      share_target.is_incoming ? last_incoming_metadata_
+                               : last_outgoing_metadata_;
+  if (!metadata || metadata->second.status() !=
+                       TransferMetadata::Status::kAwaitingLocalConfirmation) {
+    std::move(status_codes_callback).Run(StatusCodes::kOutOfOrderApiCall);
+    return;
+  }
+
+  StatusCodes status_code = share_target.is_incoming
+                                ? ReceivePayloads(share_target)
+                                : SendPayloads(share_target);
+  std::move(status_codes_callback).Run(status_code);
 }
 
 void NearbySharingServiceImpl::Reject(
     const ShareTarget& share_target,
     StatusCodesCallback status_codes_callback) {
+  NearbyConnection* connection = GetIncomingConnection(share_target);
+  if (!connection) {
+    NS_LOG(WARNING) << __func__ << ": Reject invoked for unknown share target";
+    std::move(status_codes_callback).Run(StatusCodes::kOutOfOrderApiCall);
+    return;
+  }
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&NearbySharingServiceImpl::CloseConnection,
+                     weak_ptr_factory_.GetWeakPtr(), share_target),
+      kIncomingRejectionDelay);
+
+  connection->RegisterForDisconnection(
+      base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
+                     weak_ptr_factory_.GetWeakPtr(), share_target));
+
+  WriteResponse(*connection, sharing::nearby::ConnectionResponseFrame::REJECT);
+  NS_LOG(VERBOSE) << __func__
+                  << ": Successfully wrote a rejection response frame";
+
+  OnIncomingTransferUpdate(share_target,
+                           TransferMetadataBuilder()
+                               .set_status(TransferMetadata::Status::kRejected)
+                               .build());
+
   std::move(status_codes_callback).Run(StatusCodes::kOk);
 }
 
@@ -350,6 +390,7 @@ void NearbySharingServiceImpl::OnIncomingConnection(
   share_target.is_incoming = true;
 
   incoming_share_target_info_map_[share_target.id].set_connection(connection);
+  incoming_share_target_info_map_[share_target.id].set_endpoint_id(endpoint_id);
   connection->RegisterForDisconnection(
       base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
                      weak_ptr_factory_.GetWeakPtr(), share_target));
@@ -708,6 +749,68 @@ void NearbySharingServiceImpl::OnIncomingTransferUpdate(
   }
 }
 
+NearbySharingService::StatusCodes NearbySharingServiceImpl::ReceivePayloads(
+    const ShareTarget& share_target) {
+  mutual_acceptance_timeout_alarm_.Cancel();
+
+  NearbyConnection* connection = GetIncomingConnection(share_target);
+  if (!connection) {
+    NS_LOG(WARNING) << __func__ << ": Accept invoked for unknown share target";
+    return StatusCodes::kOutOfOrderApiCall;
+  }
+
+  // TODO(himanshujaju) - Implement payload tracker.
+
+  for (const auto& attachment_id : share_target.GetAttachmentIds()) {
+    base::Optional<int64_t> payload_id = GetAttachmentPayloadId(attachment_id);
+    if (!payload_id) {
+      NS_LOG(WARNING) << __func__
+                      << ": Failed to retrieve payload for attachment id - "
+                      << attachment_id;
+      continue;
+    }
+
+    NS_LOG(VERBOSE) << __func__
+                    << ": Started listening for progress on payload - "
+                    << *payload_id;
+    // TODO(himanshujaju) - Register payload listener.
+    NS_LOG(VERBOSE) << __func__
+                    << ": Accepted incoming files from share target - "
+                    << share_target.device_name;
+  }
+
+  WriteResponse(*connection, sharing::nearby::ConnectionResponseFrame::ACCEPT);
+  NS_LOG(VERBOSE) << __func__ << ": Successfully wrote response frame";
+
+  OnIncomingTransferUpdate(
+      share_target,
+      TransferMetadataBuilder()
+          .set_status(TransferMetadata::Status::kAwaitingRemoteAcceptance)
+          .set_token(GetIncomingShareTargetInfo(share_target).token())
+          .build());
+
+  base::Optional<std::string> endpoint_id =
+      GetIncomingShareTargetInfo(share_target).endpoint_id();
+  if (endpoint_id) {
+    nearby_connections_manager_->UpgradeBandwidth(*endpoint_id);
+  } else {
+    NS_LOG(WARNING) << __func__
+                    << ": Failed to initiate bandwidth upgrade. No endpoint_id "
+                       "found for target - "
+                    << share_target.device_name;
+    return StatusCodes::kOutOfOrderApiCall;
+  }
+
+  return StatusCodes::kOk;
+}
+
+NearbySharingService::StatusCodes NearbySharingServiceImpl::SendPayloads(
+    const ShareTarget& share_target) {
+  // TODO(crbug.com/1085067) - Implement.
+
+  return StatusCodes::kOk;
+}
+
 void NearbySharingServiceImpl::WriteResponse(
     NearbyConnection& connection,
     sharing::nearby::ConnectionResponseFrame::Status status) {
@@ -759,6 +862,17 @@ void NearbySharingServiceImpl::Fail(const ShareTarget& share_target,
     OnIncomingTransferUpdate(
         share_target, TransferMetadataBuilder().set_status(status).build());
   }
+}
+
+void NearbySharingServiceImpl::CloseConnection(
+    const ShareTarget& share_target) {
+  NearbyConnection* connection = GetIncomingConnection(share_target);
+  if (!connection) {
+    NS_LOG(WARNING) << __func__ << ": Invalid connection for target - "
+                    << share_target.device_name;
+    return;
+  }
+  connection->Close();
 }
 
 void NearbySharingServiceImpl::ReceiveIntroduction(
@@ -999,4 +1113,13 @@ void NearbySharingServiceImpl::SetAttachmentPayloadId(
     const Attachment& attachment,
     int64_t payload_id) {
   attachment_info_map_[attachment.id()].payload_id = payload_id;
+}
+
+base::Optional<int64_t> NearbySharingServiceImpl::GetAttachmentPayloadId(
+    const base::UnguessableToken& attachment_id) {
+  auto it = attachment_info_map_.find(attachment_id);
+  if (it == attachment_info_map_.end())
+    return base::nullopt;
+
+  return it->second.payload_id;
 }

@@ -73,14 +73,14 @@ class TestThread : public PlatformThread::Delegate {
 }  // namespace
 
 #if defined(OS_ANDROID)
-#define MAYBE_SetThreadCpuAffinityMode SetThreadCpuAffinityMode
+// Flaky on Android. crbug.com/1113964
+#define MAYBE_SetThreadCpuAffinityMode DISABLED_SetThreadCpuAffinityMode
 #else
 // The test only considers Android device hardware models at the moment. Some
 // CrOS devices on the waterfall have asymmetric CPUs that aren't covered. The
 // linux-trusty-rel bot also fails to sched_setaffinity().
 #define MAYBE_SetThreadCpuAffinityMode DISABLED_SetThreadCpuAffinityMode
 #endif
-
 TEST(CpuAffinityTest, MAYBE_SetThreadCpuAffinityMode) {
   // This test currently only supports Nexus 5x and Pixel devices as big.LITTLE
   // devices. For other devices, we assume that the cores are symmetric. This is

@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -460,7 +461,7 @@ TEST_F(MinimumVersionPolicyHandlerTest, NoNetworkNotifications) {
 
   // Check notification is shown for offline devices with the warning time.
   base::string16 expected_title =
-      base::ASCIIToUTF16("Update device within 10 days");
+      base::ASCIIToUTF16("Update Chrome device within 10 days");
   base::string16 expected_message = base::ASCIIToUTF16(
       "managed.com requires you to download an update before the deadline. The "
       "update will download automatically when you connect to the internet.");
@@ -471,7 +472,7 @@ TEST_F(MinimumVersionPolicyHandlerTest, NoNetworkNotifications) {
   task_environment.FastForwardBy(warning);
 
   base::string16 expected_title_last_day =
-      base::ASCIIToUTF16("Last day to update device");
+      base::ASCIIToUTF16("Last day to update Chrome device");
   base::string16 expected_message_last_day = base::ASCIIToUTF16(
       "managed.com requires you to download an update today. The "
       "update will download automatically when you connect to the internet.");
@@ -509,7 +510,7 @@ TEST_F(MinimumVersionPolicyHandlerTest, MeteredNetworkNotifications) {
 
   // Check notification is shown for metered network with the warning time.
   base::string16 expected_title =
-      base::ASCIIToUTF16("Update device within 10 days");
+      base::ASCIIToUTF16("Update Chrome device within 10 days");
   base::string16 expected_message = base::ASCIIToUTF16(
       "managed.com requires you to connect to Wi-Fi and download an update "
       "before the deadline. Or, download from a metered connection (charges "
@@ -521,7 +522,7 @@ TEST_F(MinimumVersionPolicyHandlerTest, MeteredNetworkNotifications) {
   task_environment.FastForwardBy(warning);
 
   base::string16 expected_title_last_day =
-      base::ASCIIToUTF16("Last day to update device");
+      base::ASCIIToUTF16("Last day to update Chrome device");
   base::string16 expected_message_last_day = base::ASCIIToUTF16(
       "managed.com requires you to connect to Wi-Fi today to download an "
       "update. Or, download from a metered connection (charges may apply).");
@@ -551,10 +552,10 @@ TEST_F(MinimumVersionPolicyHandlerTest, EolNotifications) {
 
   // Check notification is shown for end of life with the warning time.
   base::string16 expected_title =
-      base::ASCIIToUTF16("Return device within 10 days");
+      base::ASCIIToUTF16("Return Chrome device within 10 days");
   base::string16 expected_message = base::ASCIIToUTF16(
-      "managed.com requires you to back up your data and return this device "
-      "before the deadline.");
+      "managed.com requires you to back up your data and return this Chrome "
+      "device before the deadline.");
   VerifyUpdateRequiredNotification(expected_title, expected_message);
 
   // Expire notification timer to show new notification a week before deadline.
@@ -562,7 +563,7 @@ TEST_F(MinimumVersionPolicyHandlerTest, EolNotifications) {
   task_environment.FastForwardBy(warning);
 
   base::string16 expected_title_one_week =
-      base::ASCIIToUTF16("Return device within 1 week");
+      base::ASCIIToUTF16("Return Chrome device within 1 week");
   VerifyUpdateRequiredNotification(expected_title_one_week, expected_message);
 
   // Expire the notification timer to show new notification on the last day.
@@ -572,8 +573,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, EolNotifications) {
   base::string16 expected_title_last_day =
       base::ASCIIToUTF16("Immediate return required");
   base::string16 expected_message_last_day = base::ASCIIToUTF16(
-      "managed.com requires you to back up your data and return this device "
-      "today.");
+      "managed.com requires you to back up your data and return this Chrome "
+      "device today.");
   VerifyUpdateRequiredNotification(expected_title_last_day,
                                    expected_message_last_day);
 }
@@ -611,10 +612,50 @@ TEST_F(MinimumVersionPolicyHandlerTest, LastHourEolNotifications) {
   base::string16 expected_title_last_day =
       base::ASCIIToUTF16("Immediate return required");
   base::string16 expected_message_last_day = base::ASCIIToUTF16(
-      "managed.com requires you to back up your data and return this device "
-      "today.");
+      "managed.com requires you to back up your data and return this Chrome "
+      "device today.");
   VerifyUpdateRequiredNotification(expected_title_last_day,
                                    expected_message_last_day);
+}
+
+TEST_F(MinimumVersionPolicyHandlerTest, ChromeboxNotifications) {
+  base::SysInfo::SetChromeOSVersionInfoForTest("DEVICETYPE=CHROMEBOX",
+                                               base::Time::Now());
+  // Set device state to end of life reached.
+  update_engine()->set_eol_date(base::DefaultClock::GetInstance()->Now() -
+                                base::TimeDelta::FromDays(kLongWarning));
+
+  // This is needed to wait till EOL status is fetched from the update_engine.
+  base::RunLoop run_loop;
+  GetMinimumVersionPolicyHandler()->set_fetch_eol_callback_for_testing(
+      run_loop.QuitClosure());
+
+  // Create and set pref value to invoke policy handler.
+  base::Value requirement_list(base::Value::Type::LIST);
+  requirement_list.Append(
+      CreateRequirement(kNewVersion, kLongWarning, kLongWarning));
+  SetPolicyPref(CreatePolicyValue(std::move(requirement_list),
+                                  false /* unmanaged_user_restricted */));
+  run_loop.Run();
+  EXPECT_TRUE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+
+  // Check Chromebox notification is shown for end of life with the warning
+  // time.
+  base::string16 expected_title =
+      base::ASCIIToUTF16("Return Chromebox within 10 days");
+  base::string16 expected_message = base::ASCIIToUTF16(
+      "managed.com requires you to back up your data and return this Chromebox "
+      "before the deadline.");
+  VerifyUpdateRequiredNotification(expected_title, expected_message);
+
+  // Expire notification timer to show new notification a week before deadline.
+  const base::TimeDelta warning = base::TimeDelta::FromDays(kLongWarning - 7);
+  task_environment.FastForwardBy(warning);
+
+  base::string16 expected_title_one_week =
+      base::ASCIIToUTF16("Return Chromebox within 1 week");
+  VerifyUpdateRequiredNotification(expected_title_one_week, expected_message);
 }
 
 }  // namespace policy

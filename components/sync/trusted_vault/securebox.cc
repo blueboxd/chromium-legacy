@@ -196,7 +196,7 @@ base::Optional<std::vector<uint8_t>> SecureBoxAesGcmDecrypt(
 // big-endian format. Returns nullptr if P-256 key can't be derived using
 // |key_bytes| or its format is incorrect.
 bssl::UniquePtr<EC_KEY> ImportECPrivateKey(
-    base::span<uint8_t> key_bytes,
+    base::span<const uint8_t> key_bytes,
     const crypto::OpenSSLErrStackTracer& err_tracer) {
   if (key_bytes.size() != kECPrivateKeyLength) {
     return nullptr;
@@ -292,31 +292,11 @@ std::unique_ptr<SecureBoxPrivateKey> SecureBoxPrivateKey::CreateByImport(
     base::span<const uint8_t> key_bytes) {
   const crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  if (key_bytes.size() != kECPrivateKeyLength) {
+  bssl::UniquePtr<EC_KEY> private_ec_key =
+      ImportECPrivateKey(key_bytes, err_tracer);
+  if (!private_ec_key) {
     return nullptr;
   }
-
-  bssl::UniquePtr<EC_KEY> private_ec_key(
-      EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
-  DCHECK(private_ec_key);
-
-  bssl::UniquePtr<BIGNUM> private_key(
-      BN_bin2bn(key_bytes.data(), kECPrivateKeyLength, /*ret=*/nullptr));
-  if (!private_key ||
-      !EC_KEY_set_private_key(private_ec_key.get(), private_key.get())) {
-    return nullptr;
-  }
-
-  const EC_GROUP* group = EC_KEY_get0_group(private_ec_key.get());
-  bssl::UniquePtr<EC_POINT> point(EC_POINT_new(group));
-  if (!EC_POINT_mul(EC_KEY_get0_group(private_ec_key.get()), point.get(),
-                    private_key.get(), /*q=*/nullptr, /*m=*/nullptr,
-                    /*ctx=*/nullptr) ||
-      !EC_KEY_set_public_key(private_ec_key.get(), point.get()) ||
-      !EC_KEY_check_key(private_ec_key.get())) {
-    return nullptr;
-  }
-
   return base::WrapUnique(
       new SecureBoxPrivateKey(std::move(private_ec_key), err_tracer));
 }
@@ -397,7 +377,7 @@ std::unique_ptr<SecureBoxKeyPair> SecureBoxKeyPair::GenerateRandom() {
 
 // static
 std::unique_ptr<SecureBoxKeyPair> SecureBoxKeyPair::CreateByPrivateKeyImport(
-    base::span<uint8_t> private_key_bytes) {
+    base::span<const uint8_t> private_key_bytes) {
   const crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   bssl::UniquePtr<EC_KEY> private_key =

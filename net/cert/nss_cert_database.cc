@@ -508,6 +508,14 @@ NSSCertDatabase::CertInfoList NSSCertDatabase::ListCertsInfoImpl(
     cert_list = PK11_ListCertsInSlot(slot.get());
   else
     cert_list = PK11_ListCerts(PK11CertListUnique, nullptr);
+  // PK11_ListCerts[InSlot] can return nullptr, e.g. because the PKCS#11 token
+  // that was backing the specified slot is not available anymore.
+  // Treat it as no certificates being present on the slot.
+  if (!cert_list) {
+    LOG(WARNING) << (slot ? "PK11_ListCertsInSlot" : "PK11_ListCerts")
+                 << " returned null";
+    return certs_info;
+  }
 
   CERTCertListNode* node;
   for (node = CERT_LIST_HEAD(cert_list); !CERT_LIST_END(node, cert_list);

@@ -602,7 +602,7 @@ installer::InstallStatus UninstallProducts(InstallationState& original_state,
   install_status = UninstallProduct(modify_params, remove_all, force, cmd_line);
 
   installer::CleanUpInstallationDirectoryAfterUninstall(
-      original_state, installer_state, setup_exe, &install_status);
+      installer_state.target_path(), setup_exe, &install_status);
 
   // The app and vendor dirs may now be empty. Make a last-ditch attempt to
   // delete them.

@@ -27,8 +27,6 @@ namespace blink {
 class DiskDataAllocator;
 class ParkableString;
 
-PLATFORM_EXPORT extern const base::Feature kCompressParkableStrings;
-
 class PLATFORM_EXPORT ParkableStringManagerDumpProvider
     : public base::trace_event::MemoryDumpProvider {
   USING_FAST_MALLOC(ParkableStringManagerDumpProvider);

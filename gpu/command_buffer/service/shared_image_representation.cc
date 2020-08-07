@@ -9,6 +9,10 @@
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
+#endif
+
 namespace gpu {
 
 SharedImageRepresentation::SharedImageRepresentation(
@@ -283,6 +287,13 @@ SharedImageRepresentationFactoryRef::~SharedImageRepresentationFactoryRef() {
   backing()->UnregisterImageFactory();
   backing()->MarkForDestruction();
 }
+
+#if defined(OS_ANDROID)
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+SharedImageRepresentationFactoryRef::GetAHardwareBuffer() {
+  return backing()->GetAHardwareBuffer();
+}
+#endif
 
 SharedImageRepresentationVaapi::SharedImageRepresentationVaapi(
     SharedImageManager* manager,

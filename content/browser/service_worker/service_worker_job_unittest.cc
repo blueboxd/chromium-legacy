@@ -179,7 +179,6 @@ class ServiceWorkerJobTest : public testing::Test {
     return context()->job_coordinator();
   }
   ServiceWorkerRegistry* registry() const { return context()->registry(); }
-  ServiceWorkerStorage* storage() const { return context()->storage(); }
 
  protected:
   scoped_refptr<ServiceWorkerRegistration> RunRegisterJob(
@@ -1296,7 +1295,6 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     ScriptFailureEmbeddedWorkerInstanceClient* client_;
   };
 
-  ServiceWorkerStorage* storage() { return context()->storage(); }
   ServiceWorkerJobCoordinator* job_coordinator() {
     return context()->job_coordinator();
   }

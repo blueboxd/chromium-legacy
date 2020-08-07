@@ -91,7 +91,7 @@ enum SyncState {
 class PasswordManagerClient {
  public:
   using CredentialsCallback =
-      base::Callback<void(const autofill::PasswordForm*)>;
+      base::OnceCallback<void(const autofill::PasswordForm*)>;
   using ReauthSucceeded = util::StrongAlias<class ReauthSucceededTag, bool>;
 
   PasswordManagerClient() {}
@@ -171,7 +171,11 @@ class PasswordManagerClient {
   virtual bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const url::Origin& origin,
-      const CredentialsCallback& callback) = 0;
+      CredentialsCallback callback) = 0;
+
+  // Indicates if re-auth with the device is needed before filling passwords.
+  // Currently only used by iOS.
+  virtual bool RequiresReauthToFill();
 
   // Instructs the client to show the Touch To Fill UI.
   virtual void ShowTouchToFill(PasswordManagerDriver* driver);
@@ -272,8 +276,9 @@ class PasswordManagerClient {
   virtual bool WasLastNavigationHTTPError() const;
 
   // Returns true if a credential leak dialog was shown. Used by Autofill
-  // Assistance to verify a password change intent. TODO(b/151391231): Remove
-  // when proper intent signing is implemented.
+  // Assistance to verify a password change intent. TODO(b/151391231): At the
+  // moment, password change scripts don't need validation, but it may change.
+  // If it doesn't change, remove this method and related code.
   virtual bool WasCredentialLeakDialogShown() const;
 
   // Obtains the cert status for the main frame.

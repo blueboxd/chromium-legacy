@@ -21366,6 +21366,8 @@ Called by update_document_policy_enum.py.-->
   <int value="763" label="DeviceShowLowDiskSpaceNotification"/>
   <int value="764" label="DeviceUserAllowlist"/>
   <int value="765" label="UsbDetachableAllowlist"/>
+  <int value="766" label="InsecurePrivateNetworkRequestsAllowed"/>
+  <int value="767" label="InsecurePrivateNetworkRequestsAllowedForUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -37199,6 +37201,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Open in New Incognito Tab"/>
   <int value="4" label="Open in New Window"/>
   <int value="5" label="Remove"/>
+  <int value="6" label="Edit"/>
 </enum>
 
 <enum name="IOSMenuScenario">
@@ -54325,6 +54328,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Fill On Select">
     User is browsing with the Fill On Select feature enabled.
   </int>
+  <int value="7" label="Reauth required">
+    Re-authenticaion for filling passwords is required.
+  </int>
 </enum>
 
 <enum name="PasswordManagerHttpCredentialType">
@@ -55952,6 +55958,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="37" label="ActiveDirectoryManagement"/>
   <int value="38" label="LegacySameSiteCookieBehaviorSettings"/>
   <int value="39" label="SensorsSettings"/>
+  <int value="40" label="PrivateNetworkRequestSettings"/>
 </enum>
 
 <enum name="PolicyLoadStatus">
@@ -61131,6 +61138,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="RoamingUserDataDirectoryDeletionResult">
+  <obsolete>
+    Removed in 2020-08 (M86).
+  </obsolete>
   <int value="0" label="Error">
     An unexpected error occurred during processing.
   </int>
@@ -63685,6 +63695,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Safety check, manage passwords"/>
   <int value="3" label="Safety check, manage safe browsing"/>
   <int value="4" label="Safety check, review extensions"/>
+  <int value="5" label="Safety check, reboot via Chrome cleaner"/>
+  <int value="6" label="Safety check, review Chrome cleaner infected state"/>
 </enum>
 
 <enum name="SettingsSections">

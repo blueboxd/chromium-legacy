@@ -171,6 +171,7 @@ source_set("browser_view") {
     "//ios/chrome/browser/window_activities",
     "//ios/chrome/common",
     "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/common/ui/util",
     "//ios/components/security_interstitials",
     "//ios/components/webui:url_constants",

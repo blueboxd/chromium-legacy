@@ -104,13 +104,19 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     page.remove();
   });
 
-  /** @return {!Promise} */
-  async function expectChromeCleanerRouteButtonClickActions() {
-    // User clicks review extensions button.
-    page.$$('#safetyCheckChild').$$('#button').click();
-    // // TODO(crbug.com/1087263): Ensure UMA is logged.
-    // Ensure the correct Settings page is shown.
-    assertEquals(routes.CHROME_CLEANUP, Router.getInstance().getCurrentRoute());
+  /**
+   * @param {!SafetyCheckInteractions} safetyCheckInteraction
+   * @param {!string} userAction
+   * @return {!Promise}
+   * @private
+   */
+  async function expectLogging(safetyCheckInteraction, userAction) {
+    assertEquals(
+        safetyCheckInteraction,
+        await metricsBrowserProxy.whenCalled(
+            'recordSafetyCheckInteractionHistogram'));
+    assertEquals(
+        userAction, await metricsBrowserProxy.whenCalled('recordAction'));
   }
 
   test('chromeCleanerHiddenUiTest', function() {
@@ -130,7 +136,7 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     });
   });
 
-  test('chromeCleanerInfectedTest', function() {
+  test('chromeCleanerInfectedTest', async function() {
     fireSafetyCheckChromeCleanerEvent(SafetyCheckChromeCleanerStatus.INFECTED);
     flush();
     assertSafetyCheckChild({
@@ -141,10 +147,17 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
       buttonAriaLabel: 'Review device software',
       buttonClass: 'action-button',
     });
-    expectChromeCleanerRouteButtonClickActions();
+    // User clicks the button.
+    page.$$('#safetyCheckChild').$$('#button').click();
+    await expectLogging(
+        SafetyCheckInteractions
+            .SAFETY_CHECK_CHROME_CLEANER_REVIEW_INFECTED_STATE,
+        'Settings.SafetyCheck.ChromeCleanerReviewInfectedState');
+    // Ensure the correct Settings page is shown.
+    assertEquals(routes.CHROME_CLEANUP, Router.getInstance().getCurrentRoute());
   });
 
-  test('chromeCleanerRebootRequiredUiTest', function() {
+  test('chromeCleanerRebootRequiredUiTest', async function() {
     fireSafetyCheckChromeCleanerEvent(
         SafetyCheckChromeCleanerStatus.REBOOT_REQUIRED);
     flush();
@@ -156,9 +169,11 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
       buttonAriaLabel: 'Restart computer',
       buttonClass: 'action-button',
     });
-    // User clicks review extensions button.
+    // User clicks the button.
     page.$$('#safetyCheckChild').$$('#button').click();
-    // TODO(crbug.com/1087263): Ensure UMA is logged.
+    await expectLogging(
+        SafetyCheckInteractions.SAFETY_CHECK_CHROME_CLEANER_REBOOT,
+        'Settings.SafetyCheck.ChromeCleanerReboot');
     // Ensure the browser proxy call is done.
     return chromeCleanupBrowserProxy.whenCalled('restartComputer');
   });

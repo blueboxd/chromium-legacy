@@ -612,6 +612,39 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result.value();
   }
 
+  int64_t GetNewRegistrationId() {
+    int64_t result;
+    base::RunLoop loop;
+    storage()->GetNewRegistrationId(base::BindLambdaForTesting([&](int64_t id) {
+      result = id;
+      loop.Quit();
+    }));
+    loop.Run();
+    return result;
+  }
+
+  int64_t GetNewVersionId() {
+    int64_t result;
+    base::RunLoop loop;
+    storage()->GetNewVersionId(base::BindLambdaForTesting([&](int64_t id) {
+      result = id;
+      loop.Quit();
+    }));
+    loop.Run();
+    return result;
+  }
+
+  int64_t GetNewResourceId() {
+    int64_t result;
+    base::RunLoop loop;
+    storage()->GetNewResourceId(base::BindLambdaForTesting([&](int64_t id) {
+      result = id;
+      loop.Quit();
+    }));
+    loop.Run();
+    return result;
+  }
+
   base::circular_deque<int64_t> GetPurgingResources() {
     return storage()->purgeable_resource_ids_;
   }
@@ -752,11 +785,9 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
 
   // Next available ids should be invalid.
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerRegistrationId,
-            storage()->NewRegistrationId());
-  EXPECT_EQ(blink::mojom::kInvalidServiceWorkerVersionId,
-            storage()->NewVersionId());
-  EXPECT_EQ(blink::mojom::kInvalidServiceWorkerResourceId,
-            storage()->NewRegistrationId());
+            GetNewRegistrationId());
+  EXPECT_EQ(blink::mojom::kInvalidServiceWorkerVersionId, GetNewVersionId());
+  EXPECT_EQ(blink::mojom::kInvalidServiceWorkerResourceId, GetNewResourceId());
 }
 
 TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {

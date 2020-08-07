@@ -10,6 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "build/build_config.h"
 #include "gpu/ipc/common/surface_handle.h"
 
 namespace gpu {
@@ -63,6 +64,11 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
                             GrSurfaceOrigin surface_origin,
                             SkAlphaType alpha_type,
                             uint32_t usage) override;
+#if defined(OS_ANDROID)
+  Mailbox CreateSharedImageWithAHB(const Mailbox& mailbox,
+                                   uint32_t usage,
+                                   const SyncToken& sync_token) override;
+#endif
   SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,

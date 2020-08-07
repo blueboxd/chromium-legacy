@@ -10,30 +10,44 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PASSWORDS_STATE;
+import static org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SAFE_BROWSING_STATE;
+import static org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UPDATES_STATE;
+
 import android.os.Handler;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.password_check.BulkLeakCheckServiceState;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.password_check.PasswordCheck;
+import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
+import org.chromium.chrome.browser.password_check.PasswordCheckUIStatus;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesState;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.ref.WeakReference;
 
 /** Unit tests for {@link SafetyCheckMediator}. */
 @RunWith(BaseRobolectricTestRunner.class)
+@Features.EnableFeatures({ChromeFeatureList.SAFETY_CHECK_ANDROID, ChromeFeatureList.PASSWORD_CHECK})
 public class SafetyCheckMediatorTest {
+    @Rule
+    public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
+
     private PropertyModel mModel;
     @Mock
     private SafetyCheckUpdatesDelegate mUpdatesDelegate;
@@ -43,13 +57,28 @@ public class SafetyCheckMediatorTest {
     private SafetyCheckBridge mBridge;
     @Mock
     private Handler mHandler;
+    @Mock
+    private PasswordCheck mPasswordCheck;
 
     private SafetyCheckMediator mMediator;
+
+    private void passwordDiskDataAvailable() {
+        doAnswer(invocation -> {
+            PasswordCheck.Observer observer =
+                    (PasswordCheck.Observer) (invocation.getArguments()[0]);
+            observer.onCompromisedCredentialsFetchCompleted();
+            observer.onSavedPasswordsFetchCompleted();
+            return null;
+        })
+                .when(mPasswordCheck)
+                .addObserver(mMediator, true);
+    }
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mModel = SafetyCheckProperties.createSafetyCheckModel();
+        PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
         mMediator = new SafetyCheckMediator(
                 mModel, mUpdatesDelegate, mSettingsLauncher, mBridge, mHandler);
         // Execute any delayed tasks immediately.
@@ -74,7 +103,7 @@ public class SafetyCheckMediatorTest {
                 .checkForUpdates(any(WeakReference.class));
 
         mMediator.performSafetyCheck();
-        assertEquals(UpdatesState.UPDATED, mModel.get(SafetyCheckProperties.UPDATES_STATE));
+        assertEquals(UpdatesState.UPDATED, mModel.get(UPDATES_STATE));
     }
 
     @Test
@@ -89,7 +118,7 @@ public class SafetyCheckMediatorTest {
                 .checkForUpdates(any(WeakReference.class));
 
         mMediator.performSafetyCheck();
-        assertEquals(UpdatesState.OUTDATED, mModel.get(SafetyCheckProperties.UPDATES_STATE));
+        assertEquals(UpdatesState.OUTDATED, mModel.get(UPDATES_STATE));
     }
 
     @Test
@@ -102,8 +131,7 @@ public class SafetyCheckMediatorTest {
                 .checkSafeBrowsing();
 
         mMediator.performSafetyCheck();
-        assertEquals(SafeBrowsingState.ENABLED_STANDARD,
-                mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
+        assertEquals(SafeBrowsingState.ENABLED_STANDARD, mModel.get(SAFE_BROWSING_STATE));
     }
 
     @Test
@@ -116,67 +144,73 @@ public class SafetyCheckMediatorTest {
                 .checkSafeBrowsing();
 
         mMediator.performSafetyCheck();
-        assertEquals(
-                SafeBrowsingState.DISABLED, mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
+        assertEquals(SafeBrowsingState.DISABLED, mModel.get(SAFE_BROWSING_STATE));
     }
 
     @Test
     public void testPasswordsCheckError() {
         doAnswer(invocation -> {
-            mMediator.onPasswordCheckStateChange(BulkLeakCheckServiceState.SERVICE_ERROR);
+            mMediator.onPasswordCheckStatusChanged(PasswordCheckUIStatus.ERROR_UNKNOWN);
             return null;
         })
-                .when(mBridge)
-                .checkPasswords();
+                .when(mPasswordCheck)
+                .startCheck();
 
         mMediator.performSafetyCheck();
-        assertEquals(PasswordsState.ERROR, mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
+        mMediator.onCompromisedCredentialsFetchCompleted();
+        mMediator.onSavedPasswordsFetchCompleted();
+        assertEquals(PasswordsState.ERROR, mModel.get(PASSWORDS_STATE));
     }
 
     @Test
     public void testPasswordsCheckNoPasswords() {
         doAnswer(invocation -> {
-            mMediator.onPasswordCheckStateChange(BulkLeakCheckServiceState.IDLE);
+            mMediator.onPasswordCheckStatusChanged(PasswordCheckUIStatus.ERROR_NO_PASSWORDS);
             return null;
         })
-                .when(mBridge)
-                .checkPasswords();
-        when(mBridge.savedPasswordsExist()).thenReturn(false);
+                .when(mPasswordCheck)
+                .startCheck();
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(0);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(0);
 
         mMediator.performSafetyCheck();
-        assertEquals(
-                PasswordsState.NO_PASSWORDS, mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
+        mMediator.onCompromisedCredentialsFetchCompleted();
+        mMediator.onSavedPasswordsFetchCompleted();
+        assertEquals(PasswordsState.NO_PASSWORDS, mModel.get(PASSWORDS_STATE));
     }
 
     @Test
     public void testPasswordsCheckNoLeaks() {
         doAnswer(invocation -> {
-            mMediator.onPasswordCheckStateChange(BulkLeakCheckServiceState.IDLE);
+            mMediator.onPasswordCheckStatusChanged(PasswordCheckUIStatus.IDLE);
             return null;
         })
-                .when(mBridge)
-                .checkPasswords();
-        when(mBridge.savedPasswordsExist()).thenReturn(true);
-        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(0);
+                .when(mPasswordCheck)
+                .startCheck();
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(15);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(0);
 
         mMediator.performSafetyCheck();
-        assertEquals(PasswordsState.SAFE, mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
+        mMediator.onCompromisedCredentialsFetchCompleted();
+        mMediator.onSavedPasswordsFetchCompleted();
+        assertEquals(PasswordsState.SAFE, mModel.get(PASSWORDS_STATE));
     }
 
     @Test
     public void testPasswordsCheckHasLeaks() {
         doAnswer(invocation -> {
-            mMediator.onPasswordCheckStateChange(BulkLeakCheckServiceState.IDLE);
+            mMediator.onPasswordCheckStatusChanged(PasswordCheckUIStatus.IDLE);
             return null;
         })
-                .when(mBridge)
-                .checkPasswords();
-        when(mBridge.savedPasswordsExist()).thenReturn(true);
-        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(123);
+                .when(mPasswordCheck)
+                .startCheck();
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(199);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(123);
 
         mMediator.performSafetyCheck();
-        assertEquals(PasswordsState.COMPROMISED_EXIST,
-                mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
+        mMediator.onCompromisedCredentialsFetchCompleted();
+        mMediator.onSavedPasswordsFetchCompleted();
+        assertEquals(PasswordsState.COMPROMISED_EXIST, mModel.get(PASSWORDS_STATE));
     }
 
     @Test
@@ -193,8 +227,9 @@ public class SafetyCheckMediatorTest {
                 .when(mBridge)
                 .checkSafeBrowsing();
         // Passwords: safe state.
-        when(mBridge.savedPasswordsExist()).thenReturn(true);
-        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(0);
+        passwordDiskDataAvailable();
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(12);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(0);
         // Updates: outdated.
         doAnswer(invocation -> {
             Callback<Integer> callback =
@@ -206,10 +241,9 @@ public class SafetyCheckMediatorTest {
                 .checkForUpdates(any(WeakReference.class));
         mMediator.setInitialState();
         // Verify the states.
-        assertEquals(SafeBrowsingState.ENABLED_STANDARD,
-                mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
-        assertEquals(PasswordsState.SAFE, mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
-        assertEquals(UpdatesState.OUTDATED, mModel.get(SafetyCheckProperties.UPDATES_STATE));
+        assertEquals(SafeBrowsingState.ENABLED_STANDARD, mModel.get(SAFE_BROWSING_STATE));
+        assertEquals(PasswordsState.SAFE, mModel.get(PASSWORDS_STATE));
+        assertEquals(UpdatesState.OUTDATED, mModel.get(UPDATES_STATE));
     }
 
     @Test
@@ -226,8 +260,9 @@ public class SafetyCheckMediatorTest {
                 .when(mBridge)
                 .checkSafeBrowsing();
         // Passwords: no passwords.
-        when(mBridge.savedPasswordsExist()).thenReturn(false);
-        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(0);
+        passwordDiskDataAvailable();
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(0);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(0);
         // Updates: offline.
         doAnswer(invocation -> {
             Callback<Integer> callback =
@@ -239,11 +274,9 @@ public class SafetyCheckMediatorTest {
                 .checkForUpdates(any(WeakReference.class));
         mMediator.setInitialState();
         // Verify the states.
-        assertEquals(SafeBrowsingState.DISABLED_BY_ADMIN,
-                mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
-        assertEquals(
-                PasswordsState.NO_PASSWORDS, mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
-        assertEquals(UpdatesState.OFFLINE, mModel.get(SafetyCheckProperties.UPDATES_STATE));
+        assertEquals(SafeBrowsingState.DISABLED_BY_ADMIN, mModel.get(SAFE_BROWSING_STATE));
+        assertEquals(PasswordsState.NO_PASSWORDS, mModel.get(PASSWORDS_STATE));
+        assertEquals(UpdatesState.OFFLINE, mModel.get(UPDATES_STATE));
     }
 
     @Test
@@ -260,8 +293,9 @@ public class SafetyCheckMediatorTest {
                 .when(mBridge)
                 .checkSafeBrowsing();
         // Passwords: compromised state.
-        when(mBridge.savedPasswordsExist()).thenReturn(true);
-        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(18);
+        passwordDiskDataAvailable();
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(20);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(18);
         // Updates: updated.
         doAnswer(invocation -> {
             Callback<Integer> callback =
@@ -273,11 +307,9 @@ public class SafetyCheckMediatorTest {
                 .checkForUpdates(any(WeakReference.class));
         mMediator.setInitialState();
         // Verify the states.
-        assertEquals(
-                SafeBrowsingState.DISABLED, mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
-        assertEquals(PasswordsState.COMPROMISED_EXIST,
-                mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
-        assertEquals(UpdatesState.UPDATED, mModel.get(SafetyCheckProperties.UPDATES_STATE));
+        assertEquals(SafeBrowsingState.DISABLED, mModel.get(SAFE_BROWSING_STATE));
+        assertEquals(PasswordsState.COMPROMISED_EXIST, mModel.get(PASSWORDS_STATE));
+        assertEquals(UpdatesState.UPDATED, mModel.get(UPDATES_STATE));
     }
 
     @Test
@@ -294,8 +326,9 @@ public class SafetyCheckMediatorTest {
                 .when(mBridge)
                 .checkSafeBrowsing();
         // Passwords: safe state.
-        when(mBridge.savedPasswordsExist()).thenReturn(true);
-        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(0);
+        passwordDiskDataAvailable();
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(13);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(0);
         // Updates: outdated.
         doAnswer(invocation -> {
             Callback<Integer> callback =
@@ -307,10 +340,9 @@ public class SafetyCheckMediatorTest {
                 .checkForUpdates(any(WeakReference.class));
         mMediator.setInitialState();
         // Verify the states.
-        assertEquals(
-                SafeBrowsingState.UNCHECKED, mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
-        assertEquals(PasswordsState.UNCHECKED, mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
-        assertEquals(UpdatesState.UNCHECKED, mModel.get(SafetyCheckProperties.UPDATES_STATE));
+        assertEquals(SafeBrowsingState.UNCHECKED, mModel.get(SAFE_BROWSING_STATE));
+        assertEquals(PasswordsState.UNCHECKED, mModel.get(PASSWORDS_STATE));
+        assertEquals(UpdatesState.UNCHECKED, mModel.get(UPDATES_STATE));
     }
 
     @Test
@@ -327,8 +359,9 @@ public class SafetyCheckMediatorTest {
                 .when(mBridge)
                 .checkSafeBrowsing();
         // Passwords: compromised state.
-        when(mBridge.savedPasswordsExist()).thenReturn(true);
-        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(18);
+        passwordDiskDataAvailable();
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(20);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(18);
         // Updates: updated.
         doAnswer(invocation -> {
             Callback<Integer> callback =
@@ -340,10 +373,90 @@ public class SafetyCheckMediatorTest {
                 .checkForUpdates(any(WeakReference.class));
         mMediator.setInitialState();
         // Verify the states.
-        assertEquals(
-                SafeBrowsingState.UNCHECKED, mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
-        assertEquals(PasswordsState.COMPROMISED_EXIST,
-                mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
-        assertEquals(UpdatesState.UNCHECKED, mModel.get(SafetyCheckProperties.UPDATES_STATE));
+        assertEquals(SafeBrowsingState.UNCHECKED, mModel.get(SAFE_BROWSING_STATE));
+        assertEquals(PasswordsState.COMPROMISED_EXIST, mModel.get(PASSWORDS_STATE));
+        assertEquals(UpdatesState.UNCHECKED, mModel.get(UPDATES_STATE));
+    }
+
+    @Test
+    public void testPasswordsInitialLoadDuringInitialState() {
+        // Order: initial state -> load completed -> done.
+        // setInitialState was invoked on Mediator creation.
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        mMediator.onCompromisedCredentialsFetchCompleted();
+        // Not complete fetch - still checking.
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        // Data available.
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(20);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(18);
+        mMediator.onSavedPasswordsFetchCompleted();
+        assertEquals(PasswordsState.COMPROMISED_EXIST, mModel.get(PASSWORDS_STATE));
+    }
+
+    @Test
+    public void testPasswordsInitialLoadDuringRunningCheck() {
+        // Order: initial state -> safety check triggered -> load completed -> check done.
+        // setInitialState was invoked on Mediator creation.
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        mMediator.performSafetyCheck();
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(20);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(18);
+        mMediator.onSavedPasswordsFetchCompleted();
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        mMediator.onCompromisedCredentialsFetchCompleted();
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        mMediator.onPasswordCheckStatusChanged(PasswordCheckUIStatus.IDLE);
+        assertEquals(PasswordsState.COMPROMISED_EXIST, mModel.get(PASSWORDS_STATE));
+    }
+
+    @Test
+    public void testPasswordsInitialLoadAfterRunningCheck() {
+        // Order: initial state -> safety check triggered -> check done -> load completed.
+        // setInitialState was invoked on Mediator creation.
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        mMediator.performSafetyCheck();
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        mMediator.onPasswordCheckStatusChanged(PasswordCheckUIStatus.IDLE);
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(20);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(18);
+        mMediator.onSavedPasswordsFetchCompleted();
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        mMediator.onCompromisedCredentialsFetchCompleted();
+        assertEquals(PasswordsState.COMPROMISED_EXIST, mModel.get(PASSWORDS_STATE));
+    }
+
+    @Test
+    public void testPasswordsInitialLoadCheckReturnsError() {
+        // Order: initial state -> safety check triggered -> check error -> load ignored.
+        // setInitialState was invoked on Mediator creation.
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        mMediator.performSafetyCheck();
+        assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
+
+        mMediator.onPasswordCheckStatusChanged(PasswordCheckUIStatus.ERROR_UNKNOWN);
+        assertEquals(PasswordsState.ERROR, mModel.get(PASSWORDS_STATE));
+
+        // Previous check found compromises.
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(20);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(18);
+        // The results of the previous check should be ignored.
+        mMediator.onSavedPasswordsFetchCompleted();
+        assertEquals(PasswordsState.ERROR, mModel.get(PASSWORDS_STATE));
+
+        mMediator.onCompromisedCredentialsFetchCompleted();
+        assertEquals(PasswordsState.ERROR, mModel.get(PASSWORDS_STATE));
     }
 }

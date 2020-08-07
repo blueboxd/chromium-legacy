@@ -170,7 +170,9 @@ LikelyFormFilling SendFillInformationToRenderer(
       PasswordFormMetricsRecorder::WaitForUsernameReason;
   WaitForUsernameReason wait_for_username_reason =
       WaitForUsernameReason::kDontWait;
-  if (client->IsIncognito()) {
+  if (client->RequiresReauthToFill()) {
+    wait_for_username_reason = WaitForUsernameReason::kReauthRequired;
+  } else if (client->IsIncognito()) {
     wait_for_username_reason = WaitForUsernameReason::kIncognitoMode;
   } else if (preferred_match->is_public_suffix_match) {
     wait_for_username_reason = WaitForUsernameReason::kPublicSuffixMatch;

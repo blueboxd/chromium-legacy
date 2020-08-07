@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
@@ -85,6 +86,8 @@ public class CustomTabActivityTabController implements InflationObserver {
         int TRANSFERRED_WEBCONTENTS = 3;
         int NUM_ENTRIES = 4;
     }
+
+    private static final String GSA_STUDY_NAME = "GsaExperiments";
 
     private final Lazy<CustomTabDelegateFactory> mCustomTabDelegateFactory;
     private final ChromeActivity<?> mActivity;
@@ -383,6 +386,16 @@ public class CustomTabActivityTabController implements InflationObserver {
     }
 
     private Tab createTab() {
+        // At this point we know native has been loaded, but we haven't kicked off a navigation yet.
+        // Experiment ids for GSA are normally set a bit later in the process, but this resulted in
+        // them being absent for the initial request. We set them here early.
+        int[] experimentIds = mIntentDataProvider.getGsaExperimentIds();
+        if (experimentIds != null) {
+            // When ids are set through the intent, we don't want them to override the existing ids.
+            boolean override = false;
+            UmaSessionStats.registerExternalExperiment(GSA_STUDY_NAME, experimentIds, override);
+        }
+
         WebContents webContents = takeWebContents();
         // clang-format off
         Tab tab = mTabFactory.createTab(webContents, mCustomTabDelegateFactory.get(),

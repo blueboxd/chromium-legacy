@@ -6,15 +6,25 @@ package org.chromium.chrome.browser.password_check;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.CREDENTIAL_HANDLER;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_TIMESTAMP;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.COMPROMISED_CREDENTIALS_COUNT;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.UNKNOWN_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
 import static org.chromium.components.embedder_support.util.UrlUtilities.stripScheme;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.ItemType;
 import org.chromium.chrome.browser.password_check.internal.R;
@@ -152,28 +162,203 @@ class PasswordCheckViewBinder {
      * @param key   The {@link PropertyKey} which changed.
      */
     private static void bindHeaderView(PropertyModel model, View view, PropertyKey key) {
-        if (key == CHECK_STATUS) {
-            // TODO(crbug.com/1101256): Set text and illustration based on status.
-            @PasswordCheckUIStatus
-            int status = model.get(CHECK_STATUS);
-            ImageButton restartButton = view.findViewById(R.id.check_status_restart_button);
-            if (status != PasswordCheckUIStatus.RUNNING) {
-                restartButton.setVisibility(View.VISIBLE);
-                restartButton.setClickable(true);
-                restartButton.setOnClickListener(unusedView
-                        -> {
-                                // TODO(crbug.com/1092444): Add call to restart the check.
-                        });
-            } else {
-                restartButton.setVisibility(View.GONE);
-                restartButton.setClickable(false);
-            }
+        Pair<Integer, Integer> progress = model.get(CHECK_PROGRESS);
+        @PasswordCheckUIStatus
+        int status = model.get(CHECK_STATUS);
+        Long checkTimestamp = model.get(CHECK_TIMESTAMP);
+        Integer compromisedCredentialsCount = model.get(COMPROMISED_CREDENTIALS_COUNT);
+
+        if (key == CHECK_PROGRESS) {
+            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
+        } else if (key == CHECK_STATUS) {
+            // TODO(crbug.com/1109691): Set illustration based on status.
+            updateActionButton(view, status);
+            updateStatusIcon(view, status, compromisedCredentialsCount);
+            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
+        } else if (key == CHECK_TIMESTAMP) {
+            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
+        } else if (key == COMPROMISED_CREDENTIALS_COUNT) {
+            // TODO(crbug.com/1109691): Set illustration based on compromised credentials count.
+            updateStatusIcon(view, status, compromisedCredentialsCount);
+            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
         } else {
             assert false : "Unhandled update to property:" + key;
         }
     }
 
     private PasswordCheckViewBinder() {}
+
+    private static void updateActionButton(View view, @PasswordCheckUIStatus int status) {
+        ImageButton restartButton = view.findViewById(R.id.check_status_restart_button);
+        if (status != PasswordCheckUIStatus.RUNNING) {
+            restartButton.setVisibility(View.VISIBLE);
+            restartButton.setClickable(true);
+            restartButton.setOnClickListener(unusedView
+                    -> {
+                            // TODO(crbug.com/1109691): Add call to restart the check.
+                    });
+        } else {
+            restartButton.setVisibility(View.GONE);
+            restartButton.setClickable(false);
+        }
+    }
+
+    private static void updateStatusIcon(
+            View view, @PasswordCheckUIStatus int status, Integer compromisedCredentialsCount) {
+        // TODO(crbug.com/1114051): Set default values for header properties.
+        if (status == PasswordCheckUIStatus.IDLE && compromisedCredentialsCount == null) return;
+        ImageView statusIcon = view.findViewById(R.id.check_status_icon);
+        statusIcon.setImageResource(getIconResource(status, compromisedCredentialsCount));
+        statusIcon.setVisibility(getIconVisibility(status));
+        view.findViewById(R.id.check_status_progress)
+                .setVisibility(getProgressBarVisibility(status));
+    }
+
+    private static int getIconResource(
+            @PasswordCheckUIStatus int status, Integer compromisedCredentialsCount) {
+        switch (status) {
+            case PasswordCheckUIStatus.IDLE:
+                assert compromisedCredentialsCount != null;
+                return compromisedCredentialsCount == 0
+                        ? R.drawable.ic_check_circle_filled_green_24dp
+                        : org.chromium.chrome.R.drawable.ic_warning_red_24dp;
+            case PasswordCheckUIStatus.RUNNING:
+                return 0;
+            case PasswordCheckUIStatus.ERROR_OFFLINE:
+            case PasswordCheckUIStatus.ERROR_NO_PASSWORDS:
+            case PasswordCheckUIStatus.ERROR_SIGNED_OUT:
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT:
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT_ACCOUNT_CHECK:
+            case PasswordCheckUIStatus.ERROR_UNKNOWN:
+                return org.chromium.chrome.R.drawable.ic_error_grey800_24dp_filled;
+            default:
+                assert false : "Unhandled check status " + status + "on icon update";
+        }
+        return 0;
+    }
+
+    private static int getIconVisibility(@PasswordCheckUIStatus int status) {
+        return status == PasswordCheckUIStatus.RUNNING ? View.GONE : View.VISIBLE;
+    }
+
+    private static int getProgressBarVisibility(@PasswordCheckUIStatus int status) {
+        return status == PasswordCheckUIStatus.RUNNING ? View.VISIBLE : View.GONE;
+    }
+
+    private static void updateStatusText(View view, @PasswordCheckUIStatus int status,
+            Integer compromisedCredentialsCount, Long checkTimestamp,
+            Pair<Integer, Integer> progress) {
+        // TODO(crbug.com/1114051): Set default values for header properties.
+        if (status == PasswordCheckUIStatus.IDLE
+                && (compromisedCredentialsCount == null || checkTimestamp == null)) {
+            return;
+        }
+        if (status == PasswordCheckUIStatus.RUNNING && progress == null) return;
+
+        TextView statusMessage = view.findViewById(R.id.check_status_message);
+        statusMessage.setText(
+                getStatusMessage(view, status, compromisedCredentialsCount, progress));
+
+        LinearLayout textLayout = view.findViewById(R.id.check_status_text_layout);
+        int verticalMargin = getDimensionPixelOffset(view, getStatusTextMargin(status));
+        textLayout.setPadding(0, verticalMargin, 0, verticalMargin);
+
+        TextView statusDescription = view.findViewById(R.id.check_status_description);
+        statusDescription.setText(getStatusDescription(view, checkTimestamp));
+        statusDescription.setVisibility(getStatusDescriptionVisibility(status));
+    }
+
+    private static String getStatusMessage(View view, @PasswordCheckUIStatus int status,
+            Integer compromisedCredentialsCount, Pair<Integer, Integer> progress) {
+        switch (status) {
+            case PasswordCheckUIStatus.IDLE:
+                assert compromisedCredentialsCount != null;
+                return compromisedCredentialsCount == 0
+                        ? getString(view, R.string.password_check_status_message_idle_no_leaks)
+                        : view.getContext().getResources().getQuantityString(
+                                R.plurals.password_check_status_message_idle_with_leaks,
+                                compromisedCredentialsCount, compromisedCredentialsCount);
+            case PasswordCheckUIStatus.RUNNING:
+                assert progress != null;
+                if (progress.equals(UNKNOWN_PROGRESS)) {
+                    return getString(view, R.string.password_check_status_message_initial_running);
+                } else {
+                    return String.format(
+                            getString(view, R.string.password_check_status_message_running),
+                            progress.first, progress.second);
+                }
+            case PasswordCheckUIStatus.ERROR_OFFLINE:
+                return getString(view, R.string.password_check_status_message_error_offline);
+            case PasswordCheckUIStatus.ERROR_NO_PASSWORDS:
+                return getString(view, R.string.password_check_status_message_error_no_passwords);
+            case PasswordCheckUIStatus.ERROR_SIGNED_OUT:
+                return getString(view, R.string.password_check_status_message_error_signed_out);
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT:
+                return getString(view, R.string.password_check_status_message_error_quota_limit);
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT_ACCOUNT_CHECK:
+                return getString(view,
+                        R.string.password_check_status_message_error_quota_limit_account_check);
+            case PasswordCheckUIStatus.ERROR_UNKNOWN:
+                return getString(view, R.string.password_check_status_message_error_unknown);
+            default:
+                assert false : "Unhandled check status " + status + "on message update";
+        }
+        return null;
+    }
+
+    private static int getStatusTextMargin(@PasswordCheckUIStatus int status) {
+        switch (status) {
+            case PasswordCheckUIStatus.IDLE:
+                return R.dimen.check_status_message_idle_margin_vertical;
+            case PasswordCheckUIStatus.RUNNING:
+                return R.dimen.check_status_message_running_margin_vertical;
+            case PasswordCheckUIStatus.ERROR_OFFLINE:
+            case PasswordCheckUIStatus.ERROR_NO_PASSWORDS:
+            case PasswordCheckUIStatus.ERROR_SIGNED_OUT:
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT:
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT_ACCOUNT_CHECK:
+            case PasswordCheckUIStatus.ERROR_UNKNOWN:
+                return R.dimen.check_status_message_error_margin_vertical;
+            default:
+                assert false : "Unhandled check status " + status + "on text margin update";
+        }
+        return 0;
+    }
+
+    private static String getStatusDescription(View view, Long checkTimestamp) {
+        if (checkTimestamp == null) return null;
+        Resources res = view.getContext().getResources();
+        return res.getString(R.string.password_check_status_description_idle,
+                getTimestamp(res, System.currentTimeMillis() - checkTimestamp));
+    }
+
+    @VisibleForTesting
+    protected static String getTimestamp(Resources res, long timeDeltaMs) {
+        if (timeDeltaMs < 0) timeDeltaMs = 0;
+
+        int daysElapsed = (int) (timeDeltaMs / (24L * 60L * 60L * 1000L));
+        int hoursElapsed = (int) (timeDeltaMs / (60L * 60L * 1000L));
+        int minutesElapsed = (int) (timeDeltaMs / (60L * 1000L));
+
+        String relativeTime;
+        if (daysElapsed > 0L) {
+            relativeTime = res.getQuantityString(
+                    org.chromium.chrome.R.plurals.n_days_ago, daysElapsed, daysElapsed);
+        } else if (hoursElapsed > 0L) {
+            relativeTime = res.getQuantityString(
+                    org.chromium.chrome.R.plurals.n_hours_ago, hoursElapsed, hoursElapsed);
+        } else if (minutesElapsed > 0L) {
+            relativeTime = res.getQuantityString(
+                    org.chromium.chrome.R.plurals.n_minutes_ago, minutesElapsed, minutesElapsed);
+        } else {
+            relativeTime = res.getString(R.string.password_check_just_now);
+        }
+        return relativeTime;
+    }
+
+    private static int getStatusDescriptionVisibility(@PasswordCheckUIStatus int status) {
+        return status == PasswordCheckUIStatus.IDLE ? View.VISIBLE : View.GONE;
+    }
 
     private static ListMenu createCredentialMenu(Context context, CompromisedCredential credential,
             PasswordCheckCoordinator.CredentialEventHandler credentialHandler) {
@@ -189,5 +374,13 @@ class PasswordCheckViewBinder {
             }
         };
         return new BasicListMenu(context, menuItems, delegate);
+    }
+
+    private static String getString(View view, int resourceId) {
+        return view.getContext().getResources().getString(resourceId);
+    }
+
+    private static int getDimensionPixelOffset(View view, int resourceId) {
+        return view.getContext().getResources().getDimensionPixelOffset(resourceId);
     }
 }

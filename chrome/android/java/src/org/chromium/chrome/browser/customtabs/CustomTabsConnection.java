@@ -1607,6 +1607,11 @@ public class CustomTabsConnection {
                 sessionToken, uri, purpose, extras);
     }
 
+    @VisibleForTesting
+    public static void setInstanceForTesting(CustomTabsConnection connection) {
+        sInstance = connection;
+    }
+
     @NativeMethods
     interface Natives {
         void createAndStartDetachedResourceRequest(Profile profile, CustomTabsSessionToken session,

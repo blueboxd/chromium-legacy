@@ -15,7 +15,8 @@ enum class MenuActionType {
   OpenInNewIncognitoTab = 3,
   OpenInNewWindow = 4,
   Remove = 5,
-  kMaxValue = Remove
+  Edit = 6,
+  kMaxValue = Edit
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_MENU_MENU_ACTION_TYPE_H_

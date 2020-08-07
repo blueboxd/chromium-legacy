@@ -120,11 +120,16 @@
 
     <oobe-dialog
         hidden="[[showOn_(ui_state, 'eol')]]" id="eolDialog"
-        title-key="eolTitle" subtitle-key="eolMessage" role="dialog"
-        aria-label$="[[i18nDynamic(locale, 'eolTitle')]]">
+        role="dialog" aria-labelledby="eolTitle">
       <hd-iron-icon slot="oobe-icon" id="eolAlertIcon"
           icon1x="oobe-32:warning" icon2x="oobe-64:warning">
       </hd-iron-icon>
+      <h1 id="eolTitle" slot="title">
+        [[i18nDynamic(locale, 'eolTitle', deviceName)]]
+      </h1>
+      <div slot="subtitle">
+        [[i18nDynamic(locale, 'eolMessage', deviceName)]]
+      </div>
       <div slot="footer" class="flex layout vertical">
         <div id="adminMessageContainer"
             hidden="[[isEmpty_(eolAdminMessage_)]]">

@@ -94,7 +94,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       VideoPixelFormat pixel_format,
       OverlayMode overlay_mode,
-      bool enable_threaded_texture_mailboxes,
+      const base::Optional<VideoFrameMetadata::CopyMode>& copy_mode,
       scoped_refptr<base::SequencedTaskRunner> gpu_task_runner,
       std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
       FrameInfoHelper::FrameInfo frame_info,
@@ -116,8 +116,8 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
 
   OverlayMode overlay_mode_ = OverlayMode::kDontRequestPromotionHints;
 
-  // Is the sync mailbox manager enabled?
-  bool enable_threaded_texture_mailboxes_ = false;
+  // Indicates how video frame needs to be copied when required.
+  base::Optional<VideoFrameMetadata::CopyMode> copy_mode_;
 
   // Current group that new CodecImages should belong to.  Do not use this on
   // our thread; everything must be posted to the gpu main thread, including

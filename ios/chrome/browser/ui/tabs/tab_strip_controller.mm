@@ -564,6 +564,11 @@ UIColor* BackgroundColor() {
   [self updateTabSwitcherGuide];
 }
 
+- (void)tabStripSizeDidChange {
+  [self updateContentSizeAndRepositionViews];
+  [self layoutTabStripSubviews];
+}
+
 #pragma mark - Private
 
 - (void)initializeTabArray {

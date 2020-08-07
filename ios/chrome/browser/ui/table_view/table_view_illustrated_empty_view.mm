@@ -124,7 +124,7 @@ const CGFloat kImageHeightPt = 150.0;
     subtitleLabel.numberOfLines = 0;
     subtitleLabel.text = self.subtitle;
     subtitleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+        [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
     subtitleLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
     subtitleLabel.textAlignment = NSTextAlignmentCenter;
     [subviewsArray addObject:subtitleLabel];

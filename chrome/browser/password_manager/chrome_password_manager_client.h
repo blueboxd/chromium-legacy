@@ -103,7 +103,7 @@ class ChromePasswordManagerClient
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const url::Origin& origin,
-      const CredentialsCallback& callback) override;
+      CredentialsCallback callback) override;
   void ShowTouchToFill(
       password_manager::PasswordManagerDriver* driver) override;
   // Returns a pointer to the BiometricAuthenticator which is created on demand.

@@ -71,7 +71,7 @@ class WebViewPasswordManagerClient
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const url::Origin& origin,
-      const CredentialsCallback& callback) override;
+      CredentialsCallback callback) override;
   void AutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
           saved_form_manager) override;

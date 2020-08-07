@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.safety_check;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.chrome.browser.password_check.BulkLeakCheckServiceState;
+import org.chromium.chrome.browser.password_check.PasswordCheckUIStatus;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
@@ -53,20 +53,22 @@ class SafetyCheckProperties {
         int ERROR = 8;
     }
 
-    static @PasswordsState int passwordsStatefromErrorState(@BulkLeakCheckServiceState int state) {
+    static @PasswordsState int passwordsStatefromErrorState(@PasswordCheckUIStatus int state) {
         switch (state) {
-            case BulkLeakCheckServiceState.SIGNED_OUT:
+            case PasswordCheckUIStatus.ERROR_OFFLINE:
+                return PasswordsState.OFFLINE;
+            case PasswordCheckUIStatus.ERROR_NO_PASSWORDS:
+                return PasswordsState.NO_PASSWORDS;
+            case PasswordCheckUIStatus.ERROR_SIGNED_OUT:
                 return PasswordsState.SIGNED_OUT;
-            case BulkLeakCheckServiceState.QUOTA_LIMIT:
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT:
+            case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT_ACCOUNT_CHECK:
                 return PasswordsState.QUOTA_LIMIT;
-            case BulkLeakCheckServiceState.CANCELED:
-            case BulkLeakCheckServiceState.TOKEN_REQUEST_FAILURE:
-            case BulkLeakCheckServiceState.HASHING_FAILURE:
-            case BulkLeakCheckServiceState.NETWORK_ERROR:
-            case BulkLeakCheckServiceState.SERVICE_ERROR:
+            case PasswordCheckUIStatus.CANCELED:
+            case PasswordCheckUIStatus.ERROR_UNKNOWN:
                 return PasswordsState.ERROR;
             default:
-                assert false : "Unknown BulkLeakCheckServiceState value.";
+                assert false : "Unknown PasswordCheckUIStatus value.";
         }
         // Never reached.
         return 0;

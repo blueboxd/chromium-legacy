@@ -885,17 +885,63 @@ void ServiceWorkerStorage::DiskCacheImplDoneWithDisk() {
 
 void ServiceWorkerStorage::GetNewRegistrationId(
     base::OnceCallback<void(int64_t registration_id)> callback) {
-  std::move(callback).Run(NewRegistrationId());
+  switch (state_) {
+    case STORAGE_STATE_DISABLED:
+      std::move(callback).Run(
+          blink::mojom::kInvalidServiceWorkerRegistrationId);
+      return;
+    case STORAGE_STATE_INITIALIZING:  // Fall-through.
+    case STORAGE_STATE_UNINITIALIZED:
+      LazyInitialize(base::BindOnce(&ServiceWorkerStorage::GetNewRegistrationId,
+                                    weak_factory_.GetWeakPtr(),
+                                    std::move(callback)));
+      return;
+    case STORAGE_STATE_INITIALIZED:
+      break;
+  }
+  int64_t registration_id = next_registration_id_;
+  ++next_registration_id_;
+  std::move(callback).Run(registration_id);
 }
 
 void ServiceWorkerStorage::GetNewVersionId(
     base::OnceCallback<void(int64_t version_id)> callback) {
-  std::move(callback).Run(NewVersionId());
+  switch (state_) {
+    case STORAGE_STATE_DISABLED:
+      std::move(callback).Run(blink::mojom::kInvalidServiceWorkerVersionId);
+      return;
+    case STORAGE_STATE_INITIALIZING:  // Fall-through.
+    case STORAGE_STATE_UNINITIALIZED:
+      LazyInitialize(base::BindOnce(&ServiceWorkerStorage::GetNewVersionId,
+                                    weak_factory_.GetWeakPtr(),
+                                    std::move(callback)));
+      return;
+    case STORAGE_STATE_INITIALIZED:
+      break;
+  }
+  int64_t version_id = next_version_id_;
+  ++next_version_id_;
+  std::move(callback).Run(version_id);
 }
 
 void ServiceWorkerStorage::GetNewResourceId(
     base::OnceCallback<void(int64_t resource_id)> callback) {
-  std::move(callback).Run(NewResourceId());
+  switch (state_) {
+    case STORAGE_STATE_DISABLED:
+      std::move(callback).Run(blink::mojom::kInvalidServiceWorkerResourceId);
+      return;
+    case STORAGE_STATE_INITIALIZING:  // Fall-through.
+    case STORAGE_STATE_UNINITIALIZED:
+      LazyInitialize(base::BindOnce(&ServiceWorkerStorage::GetNewResourceId,
+                                    weak_factory_.GetWeakPtr(),
+                                    std::move(callback)));
+      return;
+    case STORAGE_STATE_INITIALIZED:
+      break;
+  }
+  int64_t resource_id = next_resource_id_;
+  ++next_resource_id_;
+  std::move(callback).Run(resource_id);
 }
 
 void ServiceWorkerStorage::Disable() {
@@ -1252,28 +1298,6 @@ void ServiceWorkerStorage::ClearSessionOnlyOrigins() {
   database_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DeleteAllDataForOriginsFromDB, database_.get(),
                                 origins_to_purge_on_shutdown_));
-}
-
-int64_t ServiceWorkerStorage::NewRegistrationId() {
-  if (state_ == STORAGE_STATE_DISABLED) {
-    return blink::mojom::kInvalidServiceWorkerRegistrationId;
-  }
-  DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
-  return next_registration_id_++;
-}
-
-int64_t ServiceWorkerStorage::NewVersionId() {
-  if (state_ == STORAGE_STATE_DISABLED)
-    return blink::mojom::kInvalidServiceWorkerVersionId;
-  DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
-  return next_version_id_++;
-}
-
-int64_t ServiceWorkerStorage::NewResourceId() {
-  if (state_ == STORAGE_STATE_DISABLED)
-    return blink::mojom::kInvalidServiceWorkerResourceId;
-  DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
-  return next_resource_id_++;
 }
 
 // static

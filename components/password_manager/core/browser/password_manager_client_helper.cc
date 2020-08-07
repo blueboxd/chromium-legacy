@@ -67,10 +67,10 @@ void PasswordManagerClientHelper::NotifySuccessfulLoginWithExistingPassword(
 }
 
 void PasswordManagerClientHelper::OnCredentialsChosen(
-    const PasswordManagerClient::CredentialsCallback& callback,
+    PasswordManagerClient::CredentialsCallback callback,
     bool one_local_credential,
     const autofill::PasswordForm* form) {
-  callback.Run(form);
+  std::move(callback).Run(form);
   // If a site gets back a credential some navigations are likely to occur. They
   // shouldn't trigger the autofill password manager.
   if (form)

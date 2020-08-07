@@ -39,6 +39,13 @@ class SharedImageInterfaceProxy {
                             GrSurfaceOrigin surface_origin,
                             SkAlphaType alpha_type,
                             uint32_t usage);
+
+#if defined(OS_ANDROID)
+  Mailbox CreateSharedImageWithAHB(const Mailbox& mailbox,
+                                   uint32_t usage,
+                                   const SyncToken& sync_token);
+#endif
+
   void UpdateSharedImage(const SyncToken& sync_token, const Mailbox& mailbox);
   void UpdateSharedImage(const SyncToken& sync_token,
                          std::unique_ptr<gfx::GpuFence> acquire_fence,

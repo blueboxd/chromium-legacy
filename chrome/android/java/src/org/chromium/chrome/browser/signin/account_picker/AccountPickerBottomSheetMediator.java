@@ -161,6 +161,8 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
         if (mSelectedAccountName == null) {
             addAccount();
         } else {
+            mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
+                    AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS);
             mAccountPickerDelegate.signIn(mSelectedAccountName);
         }
     }

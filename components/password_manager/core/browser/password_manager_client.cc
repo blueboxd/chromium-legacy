@@ -25,6 +25,10 @@ bool PasswordManagerClient::IsFillingFallbackEnabled(const GURL& url) const {
   return true;
 }
 
+bool PasswordManagerClient::RequiresReauthToFill() {
+  return false;
+}
+
 void PasswordManagerClient::ShowTouchToFill(PasswordManagerDriver* driver) {}
 
 BiometricAuthenticator* PasswordManagerClient::GetBiometricAuthenticator() {

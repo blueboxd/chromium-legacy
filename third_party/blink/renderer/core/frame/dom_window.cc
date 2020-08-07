@@ -17,12 +17,15 @@
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/coop_access_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/location.h"
+#include "third_party/blink/renderer/core/frame/report.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
@@ -451,7 +454,7 @@ void DOMWindow::ReportCoopAccess(v8::Isolate* isolate,
     return;
 
   LocalDOMWindow* accessing_window = IncumbentDOMWindow(isolate);
-  Frame* accessing_frame = accessing_window->GetFrame();
+  LocalFrame* accessing_frame = accessing_window->GetFrame();
 
   // A frame might be destroyed, but its context can still be able to execute
   // some code. Those accesses are ignored. See https://crbug.com/1108256.
@@ -463,12 +466,14 @@ void DOMWindow::ReportCoopAccess(v8::Isolate* isolate,
   if (accessing_frame->IsCrossOriginToParentFrame())
     return;
 
-  const base::UnguessableToken& accessing_main_frame =
-      accessing_window->GetFrame()->Tree().Top().GetFrameToken();
+  LocalFrame& accessing_main_frame =
+      To<LocalFrame>(accessing_frame->Tree().Top());
+  const base::UnguessableToken& accessing_main_frame_token =
+      accessing_main_frame.GetFrameToken();
 
   auto* it = coop_access_monitor_.begin();
   while (it != coop_access_monitor_.end()) {
-    if (it->accessing_main_frame != accessing_main_frame) {
+    if (it->accessing_main_frame != accessing_main_frame_token) {
       ++it;
       continue;
     }
@@ -486,8 +491,18 @@ void DOMWindow::ReportCoopAccess(v8::Isolate* isolate,
     it->reporter->QueueAccessReport(it->report_type, property_name,
                                     std::move(source_location));
 
-    // TODO(arthursonzogni): In the access-from-coop case, dispatch a
-    // reportingObserver event.
+    // TODO(arthursonzogni): Dispatch a console error/warning message.
+
+    // Send a coop-access-violation report.
+    if (it->report_type ==
+        network::mojom::CoopAccessReportType::kReportAccessFrom) {
+      ReportingContext::From(accessing_main_frame.DomWindow())
+          ->QueueReport(MakeGarbageCollected<Report>(
+              ReportType::kCoopAccessViolation,
+              accessing_main_frame.GetDocument()->Url().GetString(),
+              MakeGarbageCollected<CoopAccessViolationReportBody>(
+                  std::move(location), String(property_name))));
+    }
 
     // CoopAccessMonitor are used once and destroyed. This avoids sending
     // multiple reports for the same access.

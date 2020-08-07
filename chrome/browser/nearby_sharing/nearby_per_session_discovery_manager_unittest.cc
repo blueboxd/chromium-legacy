@@ -109,6 +109,10 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, StartDiscovery_Error) {
 
 TEST_F(NearbyPerSessionDiscoveryManagerTest, OnShareTargetDiscovered) {
   MockShareTargetListener listener;
+  EXPECT_CALL(sharing_service(),
+              RegisterSendSurface(testing::_, testing::_, testing::_))
+      .WillOnce(testing::Return(NearbySharingService::StatusCodes::kOk));
+
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
 
   ShareTarget share_target;
@@ -124,6 +128,10 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnShareTargetDiscovered) {
 
 TEST_F(NearbyPerSessionDiscoveryManagerTest, OnShareTargetLost) {
   MockShareTargetListener listener;
+  EXPECT_CALL(sharing_service(),
+              RegisterSendSurface(testing::_, testing::_, testing::_))
+      .WillOnce(testing::Return(NearbySharingService::StatusCodes::kOk));
+
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
 
   ShareTarget share_target;
@@ -150,6 +158,10 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_Invalid) {
 TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_SendSuccess) {
   // Setup share target
   MockShareTargetListener listener;
+  EXPECT_CALL(sharing_service(),
+              RegisterSendSurface(testing::_, testing::_, testing::_))
+      .WillOnce(testing::Return(NearbySharingService::StatusCodes::kOk));
+
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
   ShareTarget share_target;
   manager().OnShareTargetDiscovered(share_target);
@@ -173,6 +185,10 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_SendSuccess) {
 TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_SendError) {
   // Setup share target
   MockShareTargetListener listener;
+  EXPECT_CALL(sharing_service(),
+              RegisterSendSurface(testing::_, testing::_, testing::_))
+      .WillOnce(testing::Return(NearbySharingService::StatusCodes::kOk));
+
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
   ShareTarget share_target;
   manager().OnShareTargetDiscovered(share_target);
@@ -198,6 +214,10 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_SendError) {
 TEST_F(NearbyPerSessionDiscoveryManagerTest, OnTransferUpdate_WaitRemote) {
   // Setup share target
   MockShareTargetListener listener;
+  EXPECT_CALL(sharing_service(),
+              RegisterSendSurface(testing::_, testing::_, testing::_))
+      .WillOnce(testing::Return(NearbySharingService::StatusCodes::kOk));
+
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
   ShareTarget share_target;
   manager().OnShareTargetDiscovered(share_target);
@@ -219,6 +239,10 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnTransferUpdate_WaitRemote) {
 TEST_F(NearbyPerSessionDiscoveryManagerTest, OnTransferUpdate_WaitLocal) {
   // Setup share target
   MockShareTargetListener listener;
+  EXPECT_CALL(sharing_service(),
+              RegisterSendSurface(testing::_, testing::_, testing::_))
+      .WillOnce(testing::Return(NearbySharingService::StatusCodes::kOk));
+
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
   ShareTarget share_target;
   manager().OnShareTargetDiscovered(share_target);

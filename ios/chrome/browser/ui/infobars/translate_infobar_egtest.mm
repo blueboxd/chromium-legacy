@@ -996,7 +996,7 @@ void TestResponseProvider::GetLanguageResponse(
   [[[[EarlGrey selectElementWithMatcher:grey_allOf(grey_accessibilityID(
                                                        kToolsMenuTranslateId),
                                                    grey_interactable(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 250)
       onElementWithMatcher:chrome_test_util::ToolsMenuView()]
       assertWithMatcher:grey_not(grey_accessibilityTrait(
                             UIAccessibilityTraitNotEnabled))]

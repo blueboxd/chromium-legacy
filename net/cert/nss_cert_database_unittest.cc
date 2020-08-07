@@ -109,6 +109,8 @@ class CertDatabaseNSSTest : public TestWithTaskEnvironment {
   ScopedCERTCertificateList ListCerts() {
     ScopedCERTCertificateList result;
     CERTCertList* cert_list = PK11_ListCertsInSlot(test_nssdb_.slot());
+    if (!cert_list)
+      return result;
     for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
          !CERT_LIST_END(node, cert_list);
          node = CERT_LIST_NEXT(node)) {

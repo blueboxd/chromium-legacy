@@ -104,8 +104,8 @@ const base::Feature kNavigationPredictor {
 #endif
 };
 
-const base::Feature kParentNodeReplaceChildren {
-  "ParentNodeReplaceChildren", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kParentNodeReplaceChildren{
+    "ParentNodeReplaceChildren", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991
@@ -672,9 +672,21 @@ const base::Feature kWebXrMultiGpu{"WebXRMultiGpu",
 const base::Feature kCSSMatchedPropertiesCacheDependencies{
     "CSSMatchedPropertiesCacheDependencies", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Disabling this will cause parkable strings to never be compressed.
+// This is useful for headless mode + virtual time. Since virtual time advances
+// quickly, strings may be parked too eagerly in that mode.
+const base::Feature kCompressParkableStrings{"CompressParkableStrings",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Whether ParkableStrings can be written out to disk.
+// Depends on compression above.
 const base::Feature kParkableStringsToDisk{"ParkableStringsToDisk",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsParkableStringsToDiskEnabled() {
+  return base::FeatureList::IsEnabled(kParkableStringsToDisk) &&
+         base::FeatureList::IsEnabled(kCompressParkableStrings);
+}
 
 }  // namespace features
 }  // namespace blink

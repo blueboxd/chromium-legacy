@@ -27,10 +27,12 @@ class NearbyShareLocalDeviceDataManager;
 class NearbySharingService : public KeyedService {
  public:
   enum class StatusCodes {
-    // The operation was successful.
-    kOk,
     // The operation failed, without any more information.
     kError,
+    // The operation was successful.
+    kOk,
+    // The operation failed since it was called in an invalid order.
+    kOutOfOrderApiCall,
   };
 
   enum class ReceiveSurfaceState {

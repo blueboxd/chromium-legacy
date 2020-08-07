@@ -78,7 +78,7 @@ class ManagePasswordsUIController
   bool OnChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
       const url::Origin& origin,
-      const ManagePasswordsState::CredentialsCallback& callback) override;
+      ManagePasswordsState::CredentialsCallback callback) override;
   void OnAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const url::Origin& origin) override;

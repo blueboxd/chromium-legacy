@@ -193,7 +193,7 @@ void ManagePasswordsUIController::OnHideManualFallbackForSaving() {
 bool ManagePasswordsUIController::OnChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
     const url::Origin& origin,
-    const ManagePasswordsState::CredentialsCallback& callback) {
+    ManagePasswordsState::CredentialsCallback callback) {
   DCHECK(!local_credentials.empty());
   if (!HasBrowserWindow())
     return false;
@@ -205,7 +205,7 @@ bool ManagePasswordsUIController::OnChooseCredentials(
   if (!local_credentials[0]->is_public_suffix_match)
     locals = CopyFormVector(local_credentials);
   passwords_data_.OnRequestCredentials(std::move(locals), origin);
-  passwords_data_.set_credentials_callback(callback);
+  passwords_data_.set_credentials_callback(std::move(callback));
   auto* raw_controller = new CredentialManagerDialogControllerImpl(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()), this);
   dialog_controller_.reset(raw_controller);

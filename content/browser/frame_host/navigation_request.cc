@@ -1714,6 +1714,23 @@ void NavigationRequest::CreateCoopReporter(
     return;
   }
 
+  // If the main document hasn't specified any network report endpoint(s),
+  // then it is likely not interested in receiving:
+  // 1. Network reports (for obvious reasons).
+  // 2. ReportingObserver's reports.
+  // 3. Devtools warnings.
+  //
+  // Not creating a COOP reporter currently prevents all of these.
+  //
+  // TODO(arthursonzogni): Reconsider this decision later, developers might be
+  // interested in (2) and (3), despite not being interested in (1).
+  if (!render_frame_host_->cross_origin_opener_policy().reporting_endpoint &&
+      !render_frame_host_->cross_origin_opener_policy()
+           .report_only_reporting_endpoint) {
+    return;
+  }
+
+  DCHECK(IsInMainFrame());
   coop_reporter_ = std::make_unique<CrossOriginOpenerPolicyReporter>(
       storage_partition, frame_tree_node_->current_frame_host(),
       common_params_->url, render_frame_host_->cross_origin_opener_policy());

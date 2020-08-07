@@ -56,13 +56,10 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
                    url_loader_factory_getter_.get());
     // Init() posts a couple tasks to the IO thread. Let them finish.
     base::RunLoop().RunUntilIdle();
-
-    storage()->LazyInitializeForTest();
   }
 
   ServiceWorkerContextCore* context() { return wrapper_->context(); }
   ServiceWorkerRegistry* registry() { return context()->registry(); }
-  ServiceWorkerStorage* storage() { return context()->storage(); }
 
   blink::ServiceWorkerStatusCode StoreRegistration(
       scoped_refptr<ServiceWorkerRegistration> registration) {

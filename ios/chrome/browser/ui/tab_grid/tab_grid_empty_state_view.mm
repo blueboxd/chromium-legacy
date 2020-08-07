@@ -119,7 +119,12 @@ const CGFloat kImageWidth = 150.0;
   bottomLabel.translatesAutoresizingMaskIntoConstraints = NO;
   bottomLabel.text = self.body;
   bottomLabel.textColor = UIColorFromRGB(kTabGridEmptyStateBodyTextColor);
-  bottomLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    bottomLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+  } else {
+    bottomLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  }
   bottomLabel.adjustsFontForContentSizeCategory = YES;
   bottomLabel.numberOfLines = 0;
   bottomLabel.textAlignment = NSTextAlignmentCenter;

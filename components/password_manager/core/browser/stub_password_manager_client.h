@@ -45,7 +45,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const url::Origin& origin,
-      const CredentialsCallback& callback) override;
+      CredentialsCallback callback) override;
   void NotifyUserAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const url::Origin& origin) override;

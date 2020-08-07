@@ -381,7 +381,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       return;
     }
     case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY: {
-      // Don't call completion because current siggestion state should remain
+      // Don't call completion because current suggestion state should remain
       // whether user injects a generated password or cancels.
       [self generatePasswordForFormId:uniqueFormID
                       fieldIdentifier:uniqueFieldID];

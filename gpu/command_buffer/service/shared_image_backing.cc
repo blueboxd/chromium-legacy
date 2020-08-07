@@ -10,6 +10,10 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
+#endif
+
 namespace gpu {
 
 SharedImageBacking::SharedImageBacking(const Mailbox& mailbox,
@@ -223,5 +227,12 @@ void ClearTrackingSharedImageBacking::SetClearedRectInternal(
 scoped_refptr<gfx::NativePixmap> SharedImageBacking::GetNativePixmap() {
   return nullptr;
 }
+
+#if defined(OS_ANDROID)
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+SharedImageBacking::GetAHardwareBuffer() {
+  return nullptr;
+}
+#endif
 
 }  // namespace gpu

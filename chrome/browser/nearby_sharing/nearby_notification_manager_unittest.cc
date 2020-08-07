@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -158,6 +159,18 @@ class NearbyNotificationManagerConnectionRequestTest
     : public NearbyNotificationManagerTest,
       public testing::WithParamInterface<ConnectionRequestTestParam> {};
 
+base::string16 FormatNotificationTitle(
+    int resource_id,
+    const AttachmentsTestParamInternal& param,
+    const std::string& device_name) {
+  size_t total = param.text_attachments.size() + param.file_attachments.size();
+  return base::ReplaceStringPlaceholders(
+      l10n_util::GetPluralStringFUTF16(resource_id, total),
+      {l10n_util::GetPluralStringFUTF16(param.expected_resource_id, total),
+       base::ASCIIToUTF16(device_name)},
+      /*offsets=*/nullptr);
+}
+
 }  // namespace
 
 TEST_F(NearbyNotificationManagerTest, RegistersAsBackgroundSurfaces) {
@@ -277,14 +290,10 @@ TEST_P(NearbyNotificationManagerAttachmentsTest, ShowProgress) {
   TransferMetadata transfer_metadata = TransferMetadataBuilder().build();
   manager()->ShowProgress(share_target, transfer_metadata);
 
-  int expected_resource_id =
+  base::string16 expected = FormatNotificationTitle(
       is_incoming ? IDS_NEARBY_NOTIFICATION_RECEIVE_PROGRESS_TITLE
-                  : IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE;
-  size_t total = param.text_attachments.size() + param.file_attachments.size();
-  base::string16 expected = l10n_util::GetStringFUTF16(
-      expected_resource_id,
-      l10n_util::GetPluralStringFUTF16(param.expected_resource_id, total),
-      base::ASCIIToUTF16(device_name));
+                  : IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE,
+      param, device_name);
 
   std::vector<message_center::Notification> notifications =
       GetDisplayedNotifications();
@@ -311,14 +320,10 @@ TEST_P(NearbyNotificationManagerAttachmentsTest, ShowSuccess) {
 
   manager()->ShowSuccess(share_target);
 
-  int expected_resource_id = is_incoming
-                                 ? IDS_NEARBY_NOTIFICATION_RECEIVE_SUCCESS_TITLE
-                                 : IDS_NEARBY_NOTIFICATION_SEND_SUCCESS_TITLE;
-  size_t total = param.text_attachments.size() + param.file_attachments.size();
-  base::string16 expected = l10n_util::GetStringFUTF16(
-      expected_resource_id,
-      l10n_util::GetPluralStringFUTF16(param.expected_resource_id, total),
-      base::ASCIIToUTF16(device_name));
+  base::string16 expected = FormatNotificationTitle(
+      is_incoming ? IDS_NEARBY_NOTIFICATION_RECEIVE_SUCCESS_TITLE
+                  : IDS_NEARBY_NOTIFICATION_SEND_SUCCESS_TITLE,
+      param, device_name);
 
   std::vector<message_center::Notification> notifications =
       GetDisplayedNotifications();
@@ -345,14 +350,10 @@ TEST_P(NearbyNotificationManagerAttachmentsTest, ShowFailure) {
 
   manager()->ShowFailure(share_target);
 
-  int expected_resource_id = is_incoming
-                                 ? IDS_NEARBY_NOTIFICATION_RECEIVE_FAILURE_TITLE
-                                 : IDS_NEARBY_NOTIFICATION_SEND_FAILURE_TITLE;
-  size_t total = param.text_attachments.size() + param.file_attachments.size();
-  base::string16 expected = l10n_util::GetStringFUTF16(
-      expected_resource_id,
-      l10n_util::GetPluralStringFUTF16(param.expected_resource_id, total),
-      base::ASCIIToUTF16(device_name));
+  base::string16 expected = FormatNotificationTitle(
+      is_incoming ? IDS_NEARBY_NOTIFICATION_RECEIVE_FAILURE_TITLE
+                  : IDS_NEARBY_NOTIFICATION_SEND_FAILURE_TITLE,
+      param, device_name);
 
   std::vector<message_center::Notification> notifications =
       GetDisplayedNotifications();
@@ -397,11 +398,14 @@ TEST_P(NearbyNotificationManagerConnectionRequestTest,
 
   base::string16 expected_title = l10n_util::GetStringUTF16(
       IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_TITLE);
+  base::string16 plural_message = l10n_util::GetPluralStringFUTF16(
+      IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE, 1);
 
-  base::string16 expected_message = l10n_util::GetStringFUTF16(
-      IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE,
-      base::ASCIIToUTF16(device_name),
-      l10n_util::GetPluralStringFUTF16(IDS_NEARBY_FILE_ATTACHMENTS_IMAGES, 1));
+  base::string16 expected_message = base::ReplaceStringPlaceholders(
+      plural_message,
+      {base::ASCIIToUTF16(device_name),
+       l10n_util::GetPluralStringFUTF16(IDS_NEARBY_FILE_ATTACHMENTS_IMAGES, 1)},
+      /*offsets=*/nullptr);
 
   if (with_token) {
     expected_message = base::StrCat(

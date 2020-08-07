@@ -48,7 +48,11 @@ public class PasswordCheckFactory {
         sPasswordCheck = passwordCheck;
     }
 
-    @VisibleForTesting
+    /**
+     * Returns the underlying instance.
+     * Should only be used when there's a need to avoid creating a new instance.
+     * @return A {@link PasswordCheeck} instance as stored here.
+     */
     public static PasswordCheck getPasswordCheckInstance() {
         return sPasswordCheck;
     }

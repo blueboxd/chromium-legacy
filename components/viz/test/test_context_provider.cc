@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <set>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -165,6 +164,16 @@ gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
   shared_images_.insert(mailbox);
   most_recent_size_ = gpu_memory_buffer->GetSize();
   return mailbox;
+}
+
+gpu::Mailbox TestSharedImageInterface::CreateSharedImageWithAHB(
+    const gpu::Mailbox& mailbox,
+    uint32_t usage,
+    const gpu::SyncToken& sync_token) {
+  base::AutoLock locked(lock_);
+  auto out_mailbox = gpu::Mailbox::GenerateForSharedImage();
+  shared_images_.insert(out_mailbox);
+  return out_mailbox;
 }
 
 void TestSharedImageInterface::UpdateSharedImage(

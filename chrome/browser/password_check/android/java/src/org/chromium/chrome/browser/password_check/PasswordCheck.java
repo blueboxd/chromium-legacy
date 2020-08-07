@@ -56,7 +56,7 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
     void destroy();
 
     /**
-     * Adds a new observer to the list of observers
+     * Adds a new observer to the list of observers. If it's already there, does nothing.
      * @param obs An {@link Observer} implementation instance.
      * @param callImmediatelyIfReady Invokes {@link Observer#onCompromisedCredentialsFetchCompleted}
      *   and {@link Observer#onSavedPasswordsFetchCompleted} on the observer if the corresponding
@@ -65,7 +65,7 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
     void addObserver(Observer obs, boolean callImmediatelyIfReady);
 
     /**
-     * Removes a given observer from the observers list if it is there.
+     * Removes a given observer from the observers list if it is there. Otherwise, does nothing.
      * @param obs An {@link Observer} implementation instance.
      */
     void removeObserver(Observer obs);
@@ -96,7 +96,7 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
     void startCheck();
 
     /**
-     * Stops the password check, if one is running.
+     * Stops the password check, if one is running. Otherwise, does nothing.
      */
     void stopCheck();
 }

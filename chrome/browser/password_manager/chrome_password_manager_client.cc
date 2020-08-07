@@ -413,22 +413,23 @@ void ChromePasswordManagerClient::FocusedInputChanged(
 bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const url::Origin& origin,
-    const CredentialsCallback& callback) {
+    CredentialsCallback callback) {
   // Set up an intercept callback if the prompt is zero-clickable (e.g. just one
   // form provided).
-  CredentialsCallback intercept =
-      base::Bind(&PasswordManagerClientHelper::OnCredentialsChosen,
-                 base::Unretained(&helper_), callback, local_forms.size() == 1);
+  CredentialsCallback intercept = base::BindOnce(
+      &PasswordManagerClientHelper::OnCredentialsChosen,
+      base::Unretained(&helper_), std::move(callback), local_forms.size() == 1);
 #if defined(OS_ANDROID)
   // Deletes itself on the event from Java counterpart, when user interacts with
   // dialog.
   AccountChooserDialogAndroid* acccount_chooser_dialog =
       new AccountChooserDialogAndroid(web_contents(), std::move(local_forms),
-                                      origin, intercept);
+                                      origin, std::move(intercept));
   return acccount_chooser_dialog->ShowDialog();
 #else
   return PasswordsClientUIDelegateFromWebContents(web_contents())
-      ->OnChooseCredentials(std::move(local_forms), origin, intercept);
+      ->OnChooseCredentials(std::move(local_forms), origin,
+                            std::move(intercept));
 #endif
 }
 
@@ -1166,7 +1167,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
   log_manager_ = autofill::LogManager::Create(
       password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
           profile_),
-      base::Bind(
+      base::BindRepeating(
           &ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability,
           base::Unretained(driver_factory_)));
 

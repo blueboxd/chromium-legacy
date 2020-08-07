@@ -9,16 +9,20 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/pending_app_manager_impl.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
@@ -667,6 +671,119 @@ TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
 
   EXPECT_EQ(3u, install_requests.size());
   EXPECT_FALSE(install_requests[2].force_reinstall);
+}
+
+TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
+  base::HistogramTester histograms;
+  const std::string settings_app_install_result_histogram =
+      std::string(SystemWebAppManager::kInstallResultHistogramName) + ".Apps." +
+      kSettingsAppNameForLogging;
+  const std::string discover_app_install_result_histogram =
+      std::string(SystemWebAppManager::kInstallResultHistogramName) + ".Apps." +
+      kDiscoverAppNameForLogging;
+  // Profile category for Chrome OS testing environment is "Other".
+  const std::string profile_install_result_histogram =
+      std::string(SystemWebAppManager::kInstallResultHistogramName) +
+      ".Profiles.Other";
+
+  InitEmptyRegistrar();
+
+  {
+    PrepareSystemAppDataToRetrieve({{AppUrl1(), AppIconUrl1()}});
+    PrepareLoadUrlResults({AppUrl1()});
+
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+    system_apps.emplace(SystemAppType::SETTINGS,
+                        SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
+    system_web_app_manager().SetSystemAppsForTesting(system_apps);
+
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallResultHistogramName, 0);
+    histograms.ExpectTotalCount(settings_app_install_result_histogram, 0);
+    histograms.ExpectTotalCount(profile_install_result_histogram, 0);
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallDurationHistogramName, 0);
+
+    StartAndWaitForAppsToSynchronize();
+
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallResultHistogramName, 1);
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kSuccessNewInstall, 1);
+    histograms.ExpectTotalCount(settings_app_install_result_histogram, 1);
+    histograms.ExpectBucketCount(settings_app_install_result_histogram,
+                                 InstallResultCode::kSuccessNewInstall, 1);
+    histograms.ExpectTotalCount(profile_install_result_histogram, 1);
+    histograms.ExpectBucketCount(profile_install_result_histogram,
+                                 InstallResultCode::kSuccessNewInstall, 1);
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallDurationHistogramName, 1);
+  }
+
+  pending_app_manager().SetPreInstallCallback(base::BindLambdaForTesting(
+      [](const ExternalInstallOptions&) { return false; }));
+
+  {
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+    system_apps.emplace(SystemAppType::SETTINGS,
+                        SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
+    system_apps.emplace(SystemAppType::DISCOVER,
+                        SystemAppInfo(kDiscoverAppNameForLogging, AppUrl2()));
+    system_web_app_manager().SetSystemAppsForTesting(system_apps);
+
+    StartAndWaitForAppsToSynchronize();
+
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallResultHistogramName, 3);
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kWebAppDisabled, 2);
+    histograms.ExpectTotalCount(settings_app_install_result_histogram, 2);
+    histograms.ExpectBucketCount(settings_app_install_result_histogram,
+                                 InstallResultCode::kWebAppDisabled, 1);
+    histograms.ExpectBucketCount(discover_app_install_result_histogram,
+                                 InstallResultCode::kWebAppDisabled, 1);
+  }
+  {
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+    system_apps.emplace(SystemAppType::SETTINGS,
+                        SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
+    system_web_app_manager().SetSystemAppsForTesting(system_apps);
+
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallDurationHistogramName, 2);
+    histograms.ExpectBucketCount(
+        settings_app_install_result_histogram,
+        InstallResultCode::kCancelledOnWebAppProviderShuttingDown, 0);
+    histograms.ExpectBucketCount(
+        profile_install_result_histogram,
+        InstallResultCode::kCancelledOnWebAppProviderShuttingDown, 0);
+
+    {
+      SystemWebAppWaiter waiter(&system_web_app_manager());
+      system_web_app_manager().Start();
+      system_web_app_manager().Shutdown();
+      waiter.Wait();
+    }
+
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kCancelledOnWebAppProviderShuttingDown, 1);
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kWebAppDisabled, 2);
+
+    histograms.ExpectBucketCount(
+        settings_app_install_result_histogram,
+        InstallResultCode::kCancelledOnWebAppProviderShuttingDown, 1);
+    histograms.ExpectBucketCount(
+        profile_install_result_histogram,
+        InstallResultCode::kCancelledOnWebAppProviderShuttingDown, 1);
+    // If install was interrupted by shutdown, do not report duration.
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallDurationHistogramName, 2);
+  }
 }
 
 TEST_F(SystemWebAppManagerTest, AbandonFailedInstalls) {

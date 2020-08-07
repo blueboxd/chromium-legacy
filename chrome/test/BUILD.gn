@@ -3643,7 +3643,6 @@ test("unit_tests") {
       "../browser/chrome_browser_main_win_unittest.cc",
       "../browser/notifications/win/fake_notification_image_retainer.cc",
       "../browser/notifications/win/fake_notification_image_retainer.h",
-      "../browser/sync/roaming_profile_directory_deleter_win_unittest.cc",
       "../browser/ui/views/try_chrome_dialog_win/button_layout_unittest.cc",
     ]
     if (enable_widevine) {
@@ -4028,7 +4027,6 @@ test("unit_tests") {
       "//chrome/android/features/media_router:java",
       "//chrome/browser/optimization_guide/android:native_j_unittests_jni_headers",
       "//chrome/browser/optimization_guide/android:native_java_unittests",
-      "//chrome/browser/password_check/android:unit_tests",
       "//chrome/browser/thumbnail:unit_tests",
       "//chrome/browser/updates:unit_tests",
       "//chrome/services/media_gallery_util:unit_tests",

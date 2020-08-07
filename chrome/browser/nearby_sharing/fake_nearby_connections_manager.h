@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NEARBY_SHARING_FAKE_NEARBY_CONNECTIONS_MANAGER_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -47,6 +48,7 @@ class FakeNearbyConnectionsManager : public NearbyConnectionsManager {
   void ClearIncomingPayloads() override;
   base::Optional<std::vector<uint8_t>> GetRawAuthenticationToken(
       const std::string& endpoint_id) override;
+  void UpgradeBandwidth(const std::string& endpoint_id) override;
 
   // Testing methods
   bool IsAdvertising();
@@ -54,6 +56,7 @@ class FakeNearbyConnectionsManager : public NearbyConnectionsManager {
   bool IsShutdown();
   DataUsage GetAdvertisingDataUsage();
   PowerLevel GetAdvertisingPowerLevel();
+  bool DidUpgradeBandwidth(const std::string& endpoint_id);
 
  private:
   IncomingConnectionListener* advertising_listener_ = nullptr;
@@ -61,6 +64,7 @@ class FakeNearbyConnectionsManager : public NearbyConnectionsManager {
   bool is_shutdown_ = false;
   DataUsage advertising_data_usage_ = DataUsage::kUnknown;
   PowerLevel advertising_power_level_ = PowerLevel::kUnknown;
+  std::set<std::string> upgrade_bandwidth_endpoint_ids_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_FAKE_NEARBY_CONNECTIONS_MANAGER_H_

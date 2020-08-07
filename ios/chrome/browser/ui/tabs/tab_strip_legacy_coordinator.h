@@ -31,6 +31,9 @@
 // Hides or shows the TabStrip.
 - (void)hideTabStrip:(BOOL)hidden;
 
+// Force resizing layout of the tab strip.
+- (void)tabStripSizeDidChange;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TABS_TAB_STRIP_LEGACY_COORDINATOR_H_

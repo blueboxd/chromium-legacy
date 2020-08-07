@@ -20,7 +20,9 @@
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/form_observer_helper.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
@@ -50,6 +52,10 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
 // Convenience getter for the current suggestion manager.
 @property(nonatomic, readonly) JsSuggestionManager* suggestionManager;
 
+// Interface for |reauthenticationModule|, handling mostly the case when no
+// hardware for authentication is available.
+@property(nonatomic, strong) ReauthenticationModule* reauthenticationModule;
+
 // The WebStateList with the relevant active web state for the injection.
 @property(nonatomic, assign) WebStateList* webStateList;
 
@@ -68,10 +74,6 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
 // The last seen focused element identifier.
 @property(nonatomic, assign) std::string lastFocusedElementIdentifier;
 
-// The view controller this object was initialized with.
-@property(weak, nonatomic, nullable, readonly)
-    UIViewController* baseViewController;
-
 // Used to present alerts.
 @property(nonatomic, weak) id<AutofillSecurityAlertPresenter> alertPresenter;
 
@@ -81,7 +83,9 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
 
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
               securityAlertPresenter:
-                  (id<AutofillSecurityAlertPresenter>)securityAlertPresenter {
+                  (id<AutofillSecurityAlertPresenter>)securityAlertPresenter
+              reauthenticationModule:
+                  (ReauthenticationModule*)reauthenticationModule {
   self = [super init];
   if (self) {
     _webStateList = webStateList;
@@ -89,6 +93,7 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
     _formHelper =
         [[FormObserverHelper alloc] initWithWebStateList:webStateList];
     _formHelper.delegate = self;
+    _reauthenticationModule = reauthenticationModule;
   }
   return self;
 }
@@ -117,7 +122,32 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
              requiresHTTPS:(BOOL)requiresHTTPS {
   if ([self canUserInjectInPasswordField:passwordField
                            requiresHTTPS:requiresHTTPS]) {
-    [self fillLastSelectedFieldWithString:content];
+    if (!base::FeatureList::IsEnabled(kEnableAutofillPasswordReauthIOS)) {
+      [self fillLastSelectedFieldWithString:content];
+    } else {
+      if (!passwordField) {
+        [self fillLastSelectedFieldWithString:content];
+        return;
+      }
+
+      if ([self.reauthenticationModule canAttemptReauth]) {
+        NSString* reason =
+            l10n_util::GetNSString(IDS_IOS_AUTOFILL_REAUTH_REASON);
+        __weak __typeof(self) weakSelf = self;
+        auto completionHandler = ^(ReauthenticationResult result) {
+          if (result != ReauthenticationResult::kFailure) {
+            [weakSelf fillLastSelectedFieldWithString:content];
+          }
+        };
+
+        [self.reauthenticationModule
+            attemptReauthWithLocalizedReason:reason
+                        canReusePreviousAuth:YES
+                                     handler:completionHandler];
+      } else {
+        [self.alertPresenter showSetPasscodeDialog];
+      }
+    }
   }
 }
 

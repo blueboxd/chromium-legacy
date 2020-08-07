@@ -7,6 +7,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <org.chromium.components.browser_ui.settings.TextMessagePreference
+        android:key="page_description"
+        app:iconSpaceReserved="false"
+        android:summary="@string/website_settings_permissions_description"/>
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:key="os_permissions_warning" />
     <org.chromium.components.browser_ui.settings.ChromeBasePreference

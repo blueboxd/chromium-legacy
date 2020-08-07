@@ -1559,6 +1559,8 @@ source_set("chromeos") {
     "login/saml/in_session_password_sync_manager_factory.h",
     "login/saml/password_expiry_notification.cc",
     "login/saml/password_expiry_notification.h",
+    "login/saml/password_sync_token_fetcher.cc",
+    "login/saml/password_sync_token_fetcher.h",
     "login/saml/public_saml_url_fetcher.cc",
     "login/saml/public_saml_url_fetcher.h",
     "login/saml/saml_metric_utils.cc",

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.password_check;
 
+import android.util.Pair;
+
 import androidx.annotation.IntDef;
 
 import org.chromium.ui.modelutil.ListModel;
@@ -47,10 +49,21 @@ class PasswordCheckProperties {
      * Properties defining the header (banner logo and status line).
      */
     static class HeaderProperties {
+        static final PropertyModel
+                .WritableObjectPropertyKey<Pair<Integer, Integer>> CHECK_PROGRESS =
+                new PropertyModel.WritableObjectPropertyKey<>("check_progress");
         static final PropertyModel.WritableIntPropertyKey CHECK_STATUS =
                 new PropertyModel.WritableIntPropertyKey("check_status");
+        static final PropertyModel.WritableObjectPropertyKey<Long> CHECK_TIMESTAMP =
+                new PropertyModel.WritableObjectPropertyKey<>("check_timestamp");
+        static final PropertyModel
+                .WritableObjectPropertyKey<Integer> COMPROMISED_CREDENTIALS_COUNT =
+                new PropertyModel.WritableObjectPropertyKey<>("compromised_credentials_count");
 
-        static final PropertyKey[] ALL_KEYS = {CHECK_STATUS};
+        static final PropertyKey[] ALL_KEYS = {
+                CHECK_PROGRESS, CHECK_STATUS, CHECK_TIMESTAMP, COMPROMISED_CREDENTIALS_COUNT};
+
+        static final Pair<Integer, Integer> UNKNOWN_PROGRESS = new Pair<>(-1, -1);
 
         private HeaderProperties() {}
     }

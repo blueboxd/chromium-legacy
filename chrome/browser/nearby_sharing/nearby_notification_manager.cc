@@ -7,6 +7,7 @@
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -123,34 +124,37 @@ base::string16 GetAttachmentsString(const ShareTarget& share_target) {
   return l10n_util::GetPluralStringFUTF16(resource_id, text_count + file_count);
 }
 
-base::string16 GetProgressNotificationTitle(const ShareTarget& share_target) {
-  int resource_id = share_target.is_incoming
-                        ? IDS_NEARBY_NOTIFICATION_RECEIVE_PROGRESS_TITLE
-                        : IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE;
+base::string16 FormatNotificationTitle(const ShareTarget& share_target,
+                                       int resource_id) {
   base::string16 attachments = GetAttachmentsString(share_target);
   base::string16 device_name = base::ASCIIToUTF16(share_target.device_name);
+  size_t attachment_count = share_target.file_attachments.size() +
+                            share_target.text_attachments.size();
 
-  return l10n_util::GetStringFUTF16(resource_id, attachments, device_name);
+  return base::ReplaceStringPlaceholders(
+      l10n_util::GetPluralStringFUTF16(resource_id, attachment_count),
+      {attachments, device_name}, /*offsets=*/nullptr);
+}
+
+base::string16 GetProgressNotificationTitle(const ShareTarget& share_target) {
+  return FormatNotificationTitle(
+      share_target, share_target.is_incoming
+                        ? IDS_NEARBY_NOTIFICATION_RECEIVE_PROGRESS_TITLE
+                        : IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE);
 }
 
 base::string16 GetSuccessNotificationTitle(const ShareTarget& share_target) {
-  int resource_id = share_target.is_incoming
+  return FormatNotificationTitle(
+      share_target, share_target.is_incoming
                         ? IDS_NEARBY_NOTIFICATION_RECEIVE_SUCCESS_TITLE
-                        : IDS_NEARBY_NOTIFICATION_SEND_SUCCESS_TITLE;
-  base::string16 attachments = GetAttachmentsString(share_target);
-  base::string16 device_name = base::ASCIIToUTF16(share_target.device_name);
-
-  return l10n_util::GetStringFUTF16(resource_id, attachments, device_name);
+                        : IDS_NEARBY_NOTIFICATION_SEND_SUCCESS_TITLE);
 }
 
 base::string16 GetFailureNotificationTitle(const ShareTarget& share_target) {
-  int resource_id = share_target.is_incoming
+  return FormatNotificationTitle(
+      share_target, share_target.is_incoming
                         ? IDS_NEARBY_NOTIFICATION_RECEIVE_FAILURE_TITLE
-                        : IDS_NEARBY_NOTIFICATION_SEND_FAILURE_TITLE;
-  base::string16 attachments = GetAttachmentsString(share_target);
-  base::string16 device_name = base::ASCIIToUTF16(share_target.device_name);
-
-  return l10n_util::GetStringFUTF16(resource_id, attachments, device_name);
+                        : IDS_NEARBY_NOTIFICATION_SEND_FAILURE_TITLE);
 }
 
 base::string16 GetConnectionRequestNotificationMessage(
@@ -159,9 +163,12 @@ base::string16 GetConnectionRequestNotificationMessage(
   base::string16 attachments = GetAttachmentsString(share_target);
   base::string16 device_name = base::ASCIIToUTF16(share_target.device_name);
 
-  base::string16 message = l10n_util::GetStringFUTF16(
-      IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE, device_name,
-      attachments);
+  size_t attachment_count = share_target.file_attachments.size() +
+                            share_target.text_attachments.size();
+  base::string16 message = base::ReplaceStringPlaceholders(
+      l10n_util::GetPluralStringFUTF16(
+          IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE, attachment_count),
+      {device_name, attachments}, /*offsets=*/nullptr);
 
   if (transfer_metadata.token()) {
     base::string16 token = l10n_util::GetStringFUTF16(

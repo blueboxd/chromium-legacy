@@ -4314,12 +4314,6 @@ interface MediaSession
     method setPositionState
     setter metadata
     setter playbackState
-interface MediaSettingsRange
-    attribute @@toStringTag
-    getter max
-    getter min
-    getter step
-    method constructor
 interface MediaSource : EventTarget
     static method isTypeSupported
     attribute @@toStringTag
@@ -5122,13 +5116,6 @@ interface Permissions
     attribute @@toStringTag
     method constructor
     method query
-interface PhotoCapabilities
-    attribute @@toStringTag
-    getter fillLightMode
-    getter imageHeight
-    getter imageWidth
-    getter redEyeReduction
-    method constructor
 interface PictureInPictureEvent : Event
     attribute @@toStringTag
     getter pictureInPictureWindow

@@ -94,6 +94,8 @@ public class PageInfoControllerDelegateImpl extends PageInfoControllerDelegate {
         SingleWebsiteSettings fragment = (SingleWebsiteSettings) Fragment.instantiate(
                 mContext, SingleWebsiteSettings.class.getName(), fragmentArgs);
         fragment.setSiteSettingsClient(new WebLayerSiteSettingsClient(getBrowserContext()));
+        fragment.setHideNonPermissionPreferences(true);
+        fragment.setRefreshAfterReset(true);
         return fragment;
     }
 

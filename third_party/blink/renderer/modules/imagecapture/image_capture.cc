@@ -13,16 +13,16 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_settings_range.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_photo_capabilities.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/imagecapture/image_capture_frame_grabber.h"
-#include "third_party/blink/renderer/modules/imagecapture/media_settings_range.h"
-#include "third_party/blink/renderer/modules/imagecapture/photo_capabilities.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
@@ -36,6 +36,7 @@ namespace blink {
 
 using FillLightMode = media::mojom::blink::FillLightMode;
 using MeteringMode = media::mojom::blink::MeteringMode;
+using RedEyeReduction = media::mojom::blink::RedEyeReduction;
 
 namespace {
 
@@ -81,10 +82,38 @@ WebString ToString(MeteringMode value) {
       return WebString::FromUTF8("single-shot");
     case MeteringMode::CONTINUOUS:
       return WebString::FromUTF8("continuous");
-    default:
-      NOTREACHED() << "Unknown MeteringMode";
   }
-  return WebString();
+}
+
+WebString ToString(FillLightMode value) {
+  switch (value) {
+    case FillLightMode::OFF:
+      return WebString::FromUTF8("off");
+    case FillLightMode::AUTO:
+      return WebString::FromUTF8("auto");
+    case FillLightMode::FLASH:
+      return WebString::FromUTF8("flash");
+  }
+}
+
+WebString ToString(RedEyeReduction value) {
+  switch (value) {
+    case RedEyeReduction::NEVER:
+      return WebString::FromUTF8("never");
+    case RedEyeReduction::ALWAYS:
+      return WebString::FromUTF8("always");
+    case RedEyeReduction::CONTROLLABLE:
+      return WebString::FromUTF8("controllable");
+  }
+}
+
+MediaSettingsRange* ToMediaSettingsRange(
+    const media::mojom::blink::Range& range) {
+  MediaSettingsRange* result = MediaSettingsRange::Create();
+  result->setMax(range.max);
+  result->setMin(range.min);
+  result->setStep(range.step);
+  return result;
 }
 
 }  // anonymous namespace
@@ -241,7 +270,7 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
   settings->has_red_eye_reduction = photo_settings->hasRedEyeReduction();
   if (settings->has_red_eye_reduction) {
     if (photo_capabilities_ &&
-        !photo_capabilities_->IsRedEyeReductionControllable()) {
+        photo_capabilities_->redEyeReduction() != "controllable") {
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "redEyeReduction is not controllable."));
@@ -926,20 +955,22 @@ void ImageCapture::OnMojoGetPhotoState(
   // TODO(mcasas): collect the remaining two entries https://crbug.com/732521.
 
   photo_capabilities_ = MakeGarbageCollected<PhotoCapabilities>();
-  photo_capabilities_->SetRedEyeReduction(photo_state->red_eye_reduction);
-  // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
-  // mojo::StructTraits supports garbage-collected mappings,
-  // https://crbug.com/700180.
+  photo_capabilities_->setRedEyeReduction(
+      ToString(photo_state->red_eye_reduction));
   if (photo_state->height->min != 0 || photo_state->height->max != 0) {
-    photo_capabilities_->SetImageHeight(
-        MediaSettingsRange::Create(std::move(photo_state->height)));
+    photo_capabilities_->setImageHeight(
+        ToMediaSettingsRange(*photo_state->height));
   }
   if (photo_state->width->min != 0 || photo_state->width->max != 0) {
-    photo_capabilities_->SetImageWidth(
-        MediaSettingsRange::Create(std::move(photo_state->width)));
+    photo_capabilities_->setImageWidth(
+        ToMediaSettingsRange(*photo_state->width));
   }
-  if (!photo_state->fill_light_mode.IsEmpty())
-    photo_capabilities_->SetFillLightMode(photo_state->fill_light_mode);
+  WTF::Vector<WTF::String> fill_light_mode;
+  for (const auto& mode : photo_state->fill_light_mode) {
+    fill_light_mode.push_back(ToString(mode));
+  }
+  if (!fill_light_mode.IsEmpty())
+    photo_capabilities_->setFillLightMode(fill_light_mode);
 
   // Update the local track photo_state cache.
   UpdateMediaTrackCapabilities(base::DoNothing(), std::move(photo_state));
@@ -1051,72 +1082,67 @@ void ImageCapture::UpdateMediaTrackCapabilities(
   }
   settings_->setPointsOfInterest(current_points_of_interest);
 
-  // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
-  // mojo::StructTraits supports garbage-collected mappings,
-  // https://crbug.com/700180.
   if (photo_state->exposure_compensation->max !=
       photo_state->exposure_compensation->min) {
     capabilities_->setExposureCompensation(
-        MediaSettingsRange::Create(*photo_state->exposure_compensation));
+        ToMediaSettingsRange(*photo_state->exposure_compensation));
     settings_->setExposureCompensation(
         photo_state->exposure_compensation->current);
   }
   if (photo_state->exposure_time->max != photo_state->exposure_time->min) {
     capabilities_->setExposureTime(
-        MediaSettingsRange::Create(*photo_state->exposure_time));
+        ToMediaSettingsRange(*photo_state->exposure_time));
     settings_->setExposureTime(photo_state->exposure_time->current);
   }
   if (photo_state->color_temperature->max !=
       photo_state->color_temperature->min) {
     capabilities_->setColorTemperature(
-        MediaSettingsRange::Create(*photo_state->color_temperature));
+        ToMediaSettingsRange(*photo_state->color_temperature));
     settings_->setColorTemperature(photo_state->color_temperature->current);
   }
   if (photo_state->iso->max != photo_state->iso->min) {
-    capabilities_->setIso(MediaSettingsRange::Create(*photo_state->iso));
+    capabilities_->setIso(ToMediaSettingsRange(*photo_state->iso));
     settings_->setIso(photo_state->iso->current);
   }
 
   if (photo_state->brightness->max != photo_state->brightness->min) {
     capabilities_->setBrightness(
-        MediaSettingsRange::Create(*photo_state->brightness));
+        ToMediaSettingsRange(*photo_state->brightness));
     settings_->setBrightness(photo_state->brightness->current);
   }
   if (photo_state->contrast->max != photo_state->contrast->min) {
-    capabilities_->setContrast(
-        MediaSettingsRange::Create(*photo_state->contrast));
+    capabilities_->setContrast(ToMediaSettingsRange(*photo_state->contrast));
     settings_->setContrast(photo_state->contrast->current);
   }
   if (photo_state->saturation->max != photo_state->saturation->min) {
     capabilities_->setSaturation(
-        MediaSettingsRange::Create(*photo_state->saturation));
+        ToMediaSettingsRange(*photo_state->saturation));
     settings_->setSaturation(photo_state->saturation->current);
   }
   if (photo_state->sharpness->max != photo_state->sharpness->min) {
-    capabilities_->setSharpness(
-        MediaSettingsRange::Create(*photo_state->sharpness));
+    capabilities_->setSharpness(ToMediaSettingsRange(*photo_state->sharpness));
     settings_->setSharpness(photo_state->sharpness->current);
   }
 
   if (photo_state->focus_distance->max != photo_state->focus_distance->min) {
     capabilities_->setFocusDistance(
-        MediaSettingsRange::Create(*photo_state->focus_distance));
+        ToMediaSettingsRange(*photo_state->focus_distance));
     settings_->setFocusDistance(photo_state->focus_distance->current);
   }
 
   if (HasPanTiltZoomPermissionGranted()) {
     if (photo_state->pan->max != photo_state->pan->min) {
-      capabilities_->setPan(MediaSettingsRange::Create(*photo_state->pan));
+      capabilities_->setPan(ToMediaSettingsRange(*photo_state->pan));
       settings_->setPan(photo_state->pan->current);
     }
     if (photo_state->tilt->max != photo_state->tilt->min) {
-      capabilities_->setTilt(MediaSettingsRange::Create(*photo_state->tilt));
+      capabilities_->setTilt(ToMediaSettingsRange(*photo_state->tilt));
       settings_->setTilt(photo_state->tilt->current);
     }
   }
   if (HasZoomPermissionGranted()) {
     if (photo_state->zoom->max != photo_state->zoom->min) {
-      capabilities_->setZoom(MediaSettingsRange::Create(*photo_state->zoom));
+      capabilities_->setZoom(ToMediaSettingsRange(*photo_state->zoom));
       settings_->setZoom(photo_state->zoom->current);
     }
   }

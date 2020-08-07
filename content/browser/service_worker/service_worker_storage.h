@@ -430,10 +430,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   void ClearSessionOnlyOrigins();
 
-  int64_t NewRegistrationId();
-  int64_t NewVersionId();
-  int64_t NewResourceId();
-
   bool IsDisabled() const { return state_ == STORAGE_STATE_DISABLED; }
 
   // Static cross-thread helpers.

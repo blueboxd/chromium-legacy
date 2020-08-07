@@ -66,24 +66,23 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         implements SignOutDialogListener, SignInStateObserver, ProfileDataCache.Observer {
     private static final String TAG = "AcctManagementPref";
 
-    public static final String SIGN_OUT_DIALOG_TAG = "sign_out_dialog_tag";
+    private static final String SIGN_OUT_DIALOG_TAG = "sign_out_dialog_tag";
     private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
 
     /**
      * The key for an integer value in arguments bundle to
      * specify the correct GAIA service that has triggered the dialog.
      * If the argument is not set, GAIA_SERVICE_TYPE_NONE is used as the origin of the dialog.
-     * TODO(https://crbug.com/1038924): Set the TAG variables of this class to private
      */
-    public static final String SHOW_GAIA_SERVICE_TYPE_EXTRA = "ShowGAIAServiceType";
+    private static final String SHOW_GAIA_SERVICE_TYPE_EXTRA = "ShowGAIAServiceType";
 
-    public static final String PREF_ACCOUNTS_CATEGORY = "accounts_category";
-    public static final String PREF_PARENTAL_SETTINGS = "parental_settings";
-    public static final String PREF_PARENT_ACCOUNTS = "parent_accounts";
-    public static final String PREF_CHILD_CONTENT = "child_content";
-    public static final String PREF_CHILD_CONTENT_DIVIDER = "child_content_divider";
-    public static final String PREF_SIGN_OUT = "sign_out";
-    public static final String PREF_SIGN_OUT_DIVIDER = "sign_out_divider";
+    private static final String PREF_ACCOUNTS_CATEGORY = "accounts_category";
+    private static final String PREF_PARENTAL_SETTINGS = "parental_settings";
+    private static final String PREF_PARENT_ACCOUNTS = "parent_accounts";
+    private static final String PREF_CHILD_CONTENT = "child_content";
+    private static final String PREF_CHILD_CONTENT_DIVIDER = "child_content_divider";
+    private static final String PREF_SIGN_OUT = "sign_out";
+    private static final String PREF_SIGN_OUT_DIVIDER = "sign_out_divider";
 
     private @GAIAServiceType int mGaiaServiceType = GAIAServiceType.GAIA_SERVICE_TYPE_NONE;
 

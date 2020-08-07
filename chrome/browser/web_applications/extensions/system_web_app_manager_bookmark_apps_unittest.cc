@@ -399,6 +399,8 @@ TEST_F(SystemWebAppManagerTestBookmarkApps, UpdateOnLocaleChange) {
   EXPECT_FALSE(install_requests[2].force_reinstall);
 }
 
+// Deprecated. See corresponding SystemWebAppManagerTest.InstallResultHistogram
+// test for web apps.
 TEST_F(SystemWebAppManagerTestBookmarkApps, InstallResultHistogram) {
   base::HistogramTester histograms;
   const std::string settings_app_install_result_histogram =

@@ -73,6 +73,10 @@ API_AVAILABLE(ios(13.0))
 // the given delete |block| when executed.
 - (UIAction*)actionToRemoveWithBlock:(ProceduralBlock)block;
 
+// Creates a UIAction instance whose title and icon are configured for editing
+// which will invoke the given edit |block| when executed.
+- (UIAction*)actionToEditWithBlock:(ProceduralBlock)block;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MENU_ACTION_FACTORY_H_

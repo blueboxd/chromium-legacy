@@ -351,6 +351,12 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_AUTOFILL_ZIP" desc="Title of the field of a profile address representing the postal code of the address. [Length: 15em] [iOS only]">
         Zip Code
       </message>
+      <message name="IDS_IOS_AUTOFILL_REAUTH_REASON" desc="Message explaining that the reason why we are requiring the user to re-authenticate is to be able to use the password. This is shown by iOS in the Touch ID reauthentication system dialogue, right under the OS string 'Touch ID for $BROWSER_NAME'. [CHAR_LIMIT=22]">
+        Use password
+      </message>
+      <message name="IDS_IOS_AUTOFILL_SET_UP_SCREENLOCK_CONTENT" desc="Message informing the user that in order to use the password, a screen lock needs to be set up on the device. This is shown as an alert message after the user tries to view or copy the password from a settings page. [CHAR_LIMIT=100]">
+        To use passwords, you must first set a passcode on your device.
+      </message>
       <message name="IDS_IOS_COPY_ACTION_TITLE" desc="Title of the action used to copy the selected piece of content to the clipboard. Targeted content type includes URL or image. [iOS only]">
         Copy
       </message>
@@ -1683,6 +1689,9 @@ While in incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_DELETE_COMPROMISED_PASSWORD_DESCRIPTION" desc="Message on top of the confirmation alert when the user tapped delete password button. [iOS only]" meaning="Explaining to the user that deleting password locally won't delete account on a website.">
         Deleting this password will not delete your account on <ph name="WEBSITE">$1<ex>twitter.com</ex></ph>. Change your password on <ph name="WEBSITE">$1<ex>twitter.com</ex></ph> to keep it safe from others.
+      </message>
+      <message name="IDS_IOS_EDIT_ACTION_TITLE" desc="Title of the action used to edit a selected item. [iOS only]">
+        Edit
       </message>
       <message name="IDS_IOS_EDIT_PASSWORD_DESCRIPTION" desc="Message inside confirmation alert when the user is trying to edit password [iOS only]" meaning="Telling user to ensure provided password matches password on the website.">
         Make sure the password you are saving matches your password for <ph name="WEBSITE">$1<ex>twitter.com</ex></ph>

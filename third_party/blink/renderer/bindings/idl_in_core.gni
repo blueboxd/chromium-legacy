@@ -247,6 +247,7 @@ static_idl_files_in_core = get_path_info(
           "//third_party/blink/renderer/core/fileapi/file_reader_sync.idl",
           "//third_party/blink/renderer/core/fileapi/url_file_api.idl",
           "//third_party/blink/renderer/core/frame/bar_prop.idl",
+          "//third_party/blink/renderer/core/frame/coop_access_violation_report_body.idl",
           "//third_party/blink/renderer/core/frame/csp/csp_violation_report_body.idl",
           "//third_party/blink/renderer/core/frame/deprecation_report_body.idl",
           "//third_party/blink/renderer/core/frame/document_policy_violation_report_body.idl",

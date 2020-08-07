@@ -264,11 +264,24 @@ public class PageInfoViewTest {
     @Feature({"RenderTest"})
     @Features.EnableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
     public void testShowConnectionInfoSubpage() throws IOException {
-        setThirdPartyCookieBlocking(true);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
         View dialog = (View) getPageInfoView().getParent();
         onView(withId(R.id.page_info_connection_row)).perform(click());
         mRenderTestRule.render(dialog, "PageInfo_ConnectionInfoSubpage");
+    }
+
+    /**
+     * Tests the permissions page of the new PageInfo UI.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @Features.EnableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
+    public void testShowPermissionsSubpage() throws IOException {
+        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
+        View dialog = (View) getPageInfoView().getParent();
+        onView(withId(R.id.page_info_permissions_row)).perform(click());
+        mRenderTestRule.render(dialog, "PageInfo_PermissionsSubpage");
     }
 
     /**

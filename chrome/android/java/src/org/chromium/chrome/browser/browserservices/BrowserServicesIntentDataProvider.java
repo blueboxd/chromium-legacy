@@ -500,4 +500,9 @@ public abstract class BrowserServicesIntentDataProvider {
     public int getTwaDisclosureUi() {
         return TwaDisclosureUi.DEFAULT;
     }
+
+    @Nullable
+    public int[] getGsaExperimentIds() {
+        return null;
+    }
 }

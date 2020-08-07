@@ -314,8 +314,7 @@ DeleteResult DeleteUserDataDir(const base::FilePath& user_data_dir) {
 // to change the current directory to the TMP directory. On Windows, each
 // process has a handle to its CWD. If setup.exe's CWD happens to be within the
 // install directory, deletion will fail as a result of the open handle.
-bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
-                                 const base::FilePath& setup_exe) {
+bool MoveSetupOutOfInstallFolder(const base::FilePath& setup_exe) {
   // The list of files which setup.exe depends on at runtime. Typically this is
   // solely setup.exe itself, but in component builds this also includes the
   // DLLs installed by setup.exe.
@@ -1079,15 +1078,13 @@ InstallStatus UninstallProduct(const ModifyParams& modify_params,
 }
 
 void CleanUpInstallationDirectoryAfterUninstall(
-    const InstallationState& original_state,
-    const InstallerState& installer_state,
+    const base::FilePath& target_path,
     const base::FilePath& setup_exe,
     InstallStatus* uninstall_status) {
   if (*uninstall_status != UNINSTALL_SUCCESSFUL &&
       *uninstall_status != UNINSTALL_REQUIRES_REBOOT) {
     return;
   }
-  const base::FilePath target_path(installer_state.target_path());
   if (target_path.empty()) {
     LOG(ERROR) << "No installation destination path.";
     *uninstall_status = UNINSTALL_FAILED;
@@ -1104,7 +1101,7 @@ void CleanUpInstallationDirectoryAfterUninstall(
   // In order to be able to remove the folder in which we're running, we need to
   // move setup.exe out of the install folder.
   // TODO(tommi): What if the temp folder is on a different volume?
-  MoveSetupOutOfInstallFolder(installer_state, setup_exe);
+  MoveSetupOutOfInstallFolder(setup_exe);
 
   // Remove files from "...\<product>\Application\<version>\Installer"
   if (!RemoveInstallerFiles(install_directory)) {

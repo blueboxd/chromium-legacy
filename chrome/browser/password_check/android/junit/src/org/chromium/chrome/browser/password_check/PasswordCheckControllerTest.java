@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.password_check;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -14,9 +15,17 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.CREDENTIAL_HANDLER;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_TIMESTAMP;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.COMPROMISED_CREDENTIALS_COUNT;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.UNKNOWN_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
+import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.ERROR_OFFLINE;
 import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.IDLE;
+import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.RUNNING;
+
+import android.util.Pair;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,6 +59,8 @@ public class PasswordCheckControllerTest {
 
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
+
+    private static final Pair<Integer, Integer> PROGRESS_UPDATE = new Pair<>(2, 19);
 
     @Mock
     private PasswordCheckComponentUi.Delegate mDelegate;
@@ -87,11 +98,45 @@ public class PasswordCheckControllerTest {
     }
 
     @Test
+    public void testInitializeRunningHeader() {
+        assertRunningHeader(mModel.get(ITEMS).get(0), UNKNOWN_PROGRESS);
+    }
+
+    @Test
     public void testCreatesHeaderForStatus() {
         mMediator.onPasswordCheckStatusChanged(IDLE);
         ListModel<MVCListAdapter.ListItem> itemList = mModel.get(ITEMS);
         assertThat(itemList.get(0).type, is(ItemType.HEADER));
         assertThat(itemList.get(0).model.get(CHECK_STATUS), is(IDLE));
+    }
+
+    @Test
+    public void testUpdateStatusHeaderOnError() {
+        assertRunningHeader(mModel.get(ITEMS).get(0), UNKNOWN_PROGRESS);
+        mMediator.onPasswordCheckStatusChanged(ERROR_OFFLINE);
+        ListModel<MVCListAdapter.ListItem> itemList = mModel.get(ITEMS);
+        assertThat(itemList.size(), is(1));
+        MVCListAdapter.ListItem header = itemList.get(0);
+        assertHeaderTypeWithStatus(header, ERROR_OFFLINE);
+        assertNull(header.model.get(CHECK_PROGRESS));
+        assertNull(header.model.get(CHECK_TIMESTAMP));
+        assertNull(header.model.get(COMPROMISED_CREDENTIALS_COUNT));
+    }
+
+    @Test
+    public void testUpdateStatusHeaderOnIdle() {
+        assertRunningHeader(mModel.get(ITEMS).get(0), UNKNOWN_PROGRESS);
+        mMediator.onPasswordCheckStatusChanged(IDLE);
+        ListModel<MVCListAdapter.ListItem> itemList = mModel.get(ITEMS);
+        assertThat(itemList.size(), is(1));
+        assertIdleHeader(itemList.get(0));
+    }
+
+    @Test
+    public void testUpdateProgressHeader() {
+        assertRunningHeader(mModel.get(ITEMS).get(0), UNKNOWN_PROGRESS);
+        mMediator.onPasswordCheckProgressChanged(PROGRESS_UPDATE);
+        assertRunningHeader(mModel.get(ITEMS).get(0), PROGRESS_UPDATE);
     }
 
     @Test
@@ -139,5 +184,26 @@ public class PasswordCheckControllerTest {
     public void testOnChangePasswordWithScriptButtonClick() {
         mMediator.onChangePasswordWithScriptButtonClick(BOB);
         verify(mLaunchCctWithScriptConsumer).accept(eq(BOB));
+    }
+
+    private void assertIdleHeader(MVCListAdapter.ListItem header) {
+        assertHeaderTypeWithStatus(header, IDLE);
+        assertNull(header.model.get(CHECK_PROGRESS));
+        assertNotNull(header.model.get(CHECK_TIMESTAMP));
+        assertNotNull(header.model.get(COMPROMISED_CREDENTIALS_COUNT));
+    }
+
+    private void assertRunningHeader(
+            MVCListAdapter.ListItem header, Pair<Integer, Integer> progress) {
+        assertHeaderTypeWithStatus(header, RUNNING);
+        assertThat(header.model.get(CHECK_PROGRESS), is(progress));
+        assertNull(header.model.get(CHECK_TIMESTAMP));
+        assertNull(header.model.get(COMPROMISED_CREDENTIALS_COUNT));
+    }
+
+    private void assertHeaderTypeWithStatus(
+            MVCListAdapter.ListItem header, @PasswordCheckUIStatus int status) {
+        assertThat(header.type, is(ItemType.HEADER));
+        assertThat(header.model.get(CHECK_STATUS), is(status));
     }
 }

@@ -20445,6 +20445,22 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.SafetyCheck.ChromeCleanerReboot">
+  <owner>rainhard@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicks the safety check Chrome cleaner reboot button.
+  </description>
+</action>
+
+<action name="Settings.SafetyCheck.ChromeCleanerReviewInfectedState">
+  <owner>rainhard@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicks the review button in an CCT infected state.
+  </description>
+</action>
+
 <action name="Settings.SafetyCheck.ManagePasswords">
   <owner>rainhard@chromium.org</owner>
   <owner>andzaytsev@google.com</owner>

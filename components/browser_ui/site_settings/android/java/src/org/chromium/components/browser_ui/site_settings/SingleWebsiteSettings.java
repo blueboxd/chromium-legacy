@@ -55,9 +55,11 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
 
     // Preference keys, see single_website_preferences.xml
     // Headings:
+    public static final String PREF_PAGE_DESCRIPTION = "page_description";
+    public static final String PREF_SITE_HEADING = "site_heading";
     public static final String PREF_SITE_TITLE = "site_title";
     public static final String PREF_USAGE = "site_usage";
-    public static final String PREF_PERMISSIONS = "site_permissions";
+    public static final String PREF_PERMISSIONS_HEADER = "site_permissions";
     public static final String PREF_OS_PERMISSIONS_WARNING = "os_permissions_warning";
     public static final String PREF_OS_PERMISSIONS_WARNING_EXTRA = "os_permissions_warning_extra";
     public static final String PREF_OS_PERMISSIONS_WARNING_DIVIDER =
@@ -96,6 +98,20 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
             "sensors_permission_list", // PermissionInfo.Type.SENSORS
             "vr_permission_list", // PermissionInfo.Type.VIRTUAL_REALITY
     };
+
+    // A list of preferences keys that will be hidden on this page if this boolean below is true
+    private boolean mHideNonPermissionPreferences;
+    private static final String[] NON_PERMISSION_PREFERENCES = {
+            PREF_SITE_HEADING,
+            PREF_SITE_TITLE,
+            PREF_USAGE,
+            PREF_PERMISSIONS_HEADER,
+            PREF_CLEAR_DATA,
+    };
+
+    // Determines if this page will refresh its permissions display after clear and reset is
+    // clicked.
+    private boolean mRefreshAfterReset;
 
     private static final int REQUEST_CODE_NOTIFICATION_CHANNEL_SETTINGS = 1;
 
@@ -173,7 +189,11 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         getActivity().setTitle(R.string.prefs_site_settings);
+        init();
+        super.onActivityCreated(savedInstanceState);
+    }
 
+    private void init() {
         Object extraSite = getArguments().getSerializable(EXTRA_SITE);
         Object extraSiteAddress = getArguments().getSerializable(EXTRA_SITE_ADDRESS);
 
@@ -193,8 +213,6 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
 
         // Disable animations of preference changes.
         getListView().setItemAnimator(null);
-
-        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
@@ -213,6 +231,14 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         } else {
             super.onDisplayPreferenceDialog(preference);
         }
+    }
+
+    public void setHideNonPermissionPreferences(boolean hide) {
+        mHideNonPermissionPreferences = hide;
+    }
+
+    public void setRefreshAfterReset(boolean refresh) {
+        mRefreshAfterReset = refresh;
     }
 
     /**
@@ -298,6 +324,9 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
      * Must only be called once mSite is set.
      */
     private void displaySitePermissions() {
+        if (getPreferenceScreen() != null) {
+            getPreferenceScreen().removeAll();
+        }
         SettingsUtils.addPreferencesFromResource(this, R.xml.single_website_preferences);
 
         Set<String> permissionPreferenceKeys =
@@ -325,7 +354,16 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
             removePreferenceSafely(PREF_USAGE);
         }
         if (!hasPermissionsPreferences()) {
-            removePreferenceSafely(PREF_PERMISSIONS);
+            removePreferenceSafely(PREF_PERMISSIONS_HEADER);
+        }
+
+        // Remove certain preferences explicitly
+        if (mHideNonPermissionPreferences) {
+            for (String key : NON_PERMISSION_PREFERENCES) {
+                removePreferenceSafely(key);
+            }
+        } else {
+            removePreferenceSafely(PREF_PAGE_DESCRIPTION);
         }
     }
 
@@ -630,7 +668,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                         mObjectUserPermissionCount--;
 
                         if (!hasPermissionsPreferences()) {
-                            removePreferenceSafely(PREF_PERMISSIONS);
+                            removePreferenceSafely(PREF_PERMISSIONS_HEADER);
                         }
                     });
 
@@ -947,7 +985,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     }
 
     private void popBackIfNoSettings() {
-        if (!hasPermissionsPreferences() && !hasUsagePreferences() && getActivity() != null) {
+        if (!hasPermissionsPreferences() && !hasUsagePreferences() && getActivity() != null
+                && !mRefreshAfterReset) {
             getActivity().finish();
         }
     }
@@ -1022,7 +1061,9 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         RecordHistogram.recordEnumeratedHistogram("SingleWebsitePreferences.NavigatedFromToReset",
                 navigationSource, SettingsNavigationSource.NUM_ENTRIES);
 
-        if (finishActivityImmediately) {
+        if (mRefreshAfterReset) {
+            init();
+        } else if (finishActivityImmediately) {
             getActivity().finish();
         }
     }

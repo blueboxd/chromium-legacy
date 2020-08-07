@@ -64,7 +64,7 @@ class ParkableStringTest : public ::testing::Test {
   }
 
   void WaitForAging() {
-    if (base::FeatureList::IsEnabled(kCompressParkableStrings)) {
+    if (base::FeatureList::IsEnabled(features::kCompressParkableStrings)) {
       EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
     }
     task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
@@ -854,7 +854,7 @@ TEST_F(ParkableStringTest, MemoryFootprintForDump) {
 
 TEST_F(ParkableStringTest, CompressionDisabled) {
   base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(kCompressParkableStrings);
+  features.InitAndDisableFeature(features::kCompressParkableStrings);
 
   ParkableString parkable(MakeLargeString().ReleaseImpl());
   WaitForDelayedParking();
@@ -1056,7 +1056,10 @@ TEST_F(ParkableStringTest, ReportTotalDiskTime) {
   base::ScopedMockElapsedTimersForTest mock_elapsed_timers;
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(features::kParkableStringsToDisk);
+  features.InitWithFeatures(
+      {features::kCompressParkableStrings, features::kParkableStringsToDisk},
+      {});
+  ASSERT_TRUE(features::IsParkableStringsToDiskEnabled());
 
   ParkableString parkable(MakeLargeString().ReleaseImpl());
   ParkAndWait(parkable);
@@ -1116,10 +1119,10 @@ TEST_F(ParkableStringTestWithQueuedThreadPool, AgingParkingInProgress) {
   WaitForAging();
   parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress);
 
-  // Advance the main thread until aging occurs. This uses RunLoop combined with
-  // ThreadPoolExecutionMode::QUEUED to force the 2-seconds-delayed aging task
-  // on the main thread to kick in before the immediate async compression task
-  // completes.
+  // Advance the main thread until aging occurs. This uses RunLoop combined
+  // with ThreadPoolExecutionMode::QUEUED to force the 2-seconds-delayed aging
+  // task on the main thread to kick in before the immediate async compression
+  // task completes.
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(),

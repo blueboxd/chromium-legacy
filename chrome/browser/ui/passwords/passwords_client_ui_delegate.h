@@ -66,7 +66,7 @@ class PasswordsClientUIDelegate {
   virtual bool OnChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
       const url::Origin& origin,
-      const base::Callback<void(const autofill::PasswordForm*)>& callback) = 0;
+      base::OnceCallback<void(const autofill::PasswordForm*)> callback) = 0;
 
   // Called when user is auto signed in to the site. |local_forms[0]| contains
   // the credential returned to the site. |origin| is a URL of the site.

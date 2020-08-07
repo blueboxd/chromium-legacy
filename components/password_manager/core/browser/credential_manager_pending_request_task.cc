@@ -302,7 +302,7 @@ void CredentialManagerPendingRequestTask::ProcessForms(
       base::AdaptCallbackForRepeating(std::move(send_callback_));
   if (!delegate_->client()->PromptUserToChooseCredentials(
           std::move(local_results), origin_,
-          base::Bind(
+          base::BindOnce(
               &CredentialManagerPendingRequestTaskDelegate::SendPasswordForm,
               base::Unretained(delegate_), repeating_send_callback,
               mediation_))) {

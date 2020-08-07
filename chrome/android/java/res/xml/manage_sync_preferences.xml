@@ -53,6 +53,15 @@
         android:title="@string/sync_settings"
         android:persistent="false"/>
 
+    <org.chromium.chrome.browser.sync.settings.SyncOffPreference
+        android:key="turn_off_sync"
+        app:isPreferenceVisible="false"/>
+
+    <PreferenceCategory
+        android:key="advanced_category"
+        android:title="@string/prefs_section_advanced"
+        app:isPreferenceVisible="false"/>
+
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:key="google_activity_controls"
         android:title="@string/sign_in_google_activity_controls_title"

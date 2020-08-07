@@ -85,6 +85,7 @@ source_set("passwords") {
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/translate:translate",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/elements",

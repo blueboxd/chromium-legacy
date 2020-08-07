@@ -32,7 +32,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
       const url::Origin& origin,
-      const CredentialsCallback& callback) override {
+      CredentialsCallback callback) override {
     forms_passed_to_ui_ = std::move(forms);
     return true;
   }

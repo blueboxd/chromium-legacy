@@ -10,9 +10,6 @@ blink_modules_sources("imagecapture") {
     "image_capture.h",
     "image_capture_frame_grabber.cc",
     "image_capture_frame_grabber.h",
-    "media_settings_range.h",
-    "photo_capabilities.cc",
-    "photo_capabilities.h",
   ]
 
   deps = [

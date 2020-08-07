@@ -29,10 +29,9 @@ class PasswordManagerClientHelper {
   // PasswordManagerClient::PromptUserToChooseCredentials. nullptr in |form|
   // means that nothing was chosen. |one_local_credential| is true if there was
   // just one local credential to be chosen from.
-  void OnCredentialsChosen(
-      const PasswordManagerClient::CredentialsCallback& callback,
-      bool one_local_credential,
-      const autofill::PasswordForm* form);
+  void OnCredentialsChosen(PasswordManagerClient::CredentialsCallback callback,
+                           bool one_local_credential,
+                           const autofill::PasswordForm* form);
 
   // Common logic for IOSChromePasswordManagerClient and
   // ChromePasswordManagerClient implementation of NotifyStorePasswordCalled.

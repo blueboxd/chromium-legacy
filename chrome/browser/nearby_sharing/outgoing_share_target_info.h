@@ -66,10 +66,10 @@ class OutgoingShareTargetInfo {
  private:
   base::Optional<std::string> endpoint_id_;
   base::Optional<NearbyShareDecryptedPublicCertificate> certificate_;
-  NearbyConnection* connection_;
+  NearbyConnection* connection_ = nullptr;
   base::Optional<std::string> obfuscated_gaia_id_;
   base::Optional<std::string> token_;
-  bool is_connected_;
+  bool is_connected_ = false;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_OUTGOING_SHARE_TARGET_INFO_H_

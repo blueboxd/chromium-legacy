@@ -445,9 +445,7 @@ DocumentMarker* DocumentMarkerController::FirstMarkerAroundPosition(
   const PositionInFlatTree& end = SearchAroundPositionEnd(position);
 
   if (start > end) {
-    // TODO(crbug.com/778507): We shouldn't reach here, but currently do due to
-    // legacy implementation of StartOfWord(). Rewriting StartOfWord() with
-    // TextOffsetMapping should fix it.
+    // TODO(crbug/1114021): Investigate why this might happen.
     NOTREACHED() << "|start| should be before |end|.";
     return nullptr;
   }
@@ -554,6 +552,12 @@ DocumentMarkerVector DocumentMarkerController::MarkersAroundPosition(
 
   const PositionInFlatTree& start = SearchAroundPositionStart(position);
   const PositionInFlatTree& end = SearchAroundPositionEnd(position);
+
+  if (start > end) {
+    // TODO(crbug/1114021): Investigate why this might happen.
+    NOTREACHED() << "|start| should be before |end|.";
+    return result;
+  }
 
   const Node* const start_node = start.ComputeContainerNode();
   const unsigned start_offset = start.ComputeOffsetInContainerNode();

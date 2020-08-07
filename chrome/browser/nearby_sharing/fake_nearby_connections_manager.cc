@@ -105,6 +105,11 @@ FakeNearbyConnectionsManager::GetRawAuthenticationToken(
   return base::nullopt;
 }
 
+void FakeNearbyConnectionsManager::UpgradeBandwidth(
+    const std::string& endpoint_id) {
+  upgrade_bandwidth_endpoint_ids_.insert(endpoint_id);
+}
+
 bool FakeNearbyConnectionsManager::IsAdvertising() {
   return advertising_listener_ != nullptr;
 }
@@ -123,4 +128,9 @@ DataUsage FakeNearbyConnectionsManager::GetAdvertisingDataUsage() {
 
 PowerLevel FakeNearbyConnectionsManager::GetAdvertisingPowerLevel() {
   return advertising_power_level_;
+}
+
+bool FakeNearbyConnectionsManager::DidUpgradeBandwidth(
+    const std::string& endpoint_id) {
+  return (upgrade_bandwidth_endpoint_ids_.count(endpoint_id) > 0);
 }

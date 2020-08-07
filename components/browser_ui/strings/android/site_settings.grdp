@@ -141,6 +141,9 @@
   <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_CATEGORY" desc="The headline above all the permissions on the website details page.">
     Permissions
   </message>
+  <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_DESCRIPTION" desc="The description explaining what the website site settings page is for">
+    Control this site's access to your device
+  </message>
   <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW" desc="Summary text explaining that Chrome will allow a website to access some permission, e.g. JavaScript: allow.">
     Allow
   </message>

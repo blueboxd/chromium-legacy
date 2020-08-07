@@ -161,6 +161,8 @@ class ONCCertificateImporterImplTest : public testing::Test {
   net::ScopedCERTCertificateList ListCertsInSlot(PK11SlotInfo* slot) {
     net::ScopedCERTCertificateList result;
     CERTCertList* cert_list = PK11_ListCertsInSlot(slot);
+    if (!cert_list)
+      return result;
     for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
          !CERT_LIST_END(node, cert_list);
          node = CERT_LIST_NEXT(node)) {

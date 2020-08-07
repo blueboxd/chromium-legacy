@@ -78,7 +78,6 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
 
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
-    context()->storage()->LazyInitializeForTest();
     SetUpRegistration(kScriptURL);
 
     // Create the old script resource in storage.

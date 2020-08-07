@@ -193,6 +193,13 @@ IPC_MESSAGE_ROUTED3(GpuChannelMsg_UpdateSharedImage,
                     gpu::Mailbox /* id */,
                     uint32_t /* release_id */,
                     gfx::GpuFenceHandle /* in_fence_handle */)
+#if defined(OS_ANDROID)
+IPC_MESSAGE_ROUTED4(GpuChannelMsg_CreateSharedImageWithAHB,
+                    gpu::Mailbox /* out id */,
+                    gpu::Mailbox /* in id */,
+                    uint32_t /* usage */,
+                    uint32_t /* release_id */)
+#endif
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_DestroySharedImage, gpu::Mailbox /* id */)
 #if defined(OS_WIN)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateSwapChain,

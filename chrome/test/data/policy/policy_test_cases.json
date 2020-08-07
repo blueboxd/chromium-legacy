@@ -1971,6 +1971,30 @@
     ]
   },
 
+  "InsecurePrivateNetworkRequestsAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "InsecurePrivateNetworkRequestsAllowed": false },
+        "prefs": { "profile.managed_default_content_settings.insecure_private_network": {} }
+      },
+      {
+        "policies": { "InsecurePrivateNetworkRequestsAllowed": true },
+        "prefs": { "profile.managed_default_content_settings.insecure_private_network": {} }
+      }
+    ]
+  },
+
+  "InsecurePrivateNetworkRequestsAllowedForUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "InsecurePrivateNetworkRequestsAllowedForUrls": ["[*.]google.com"] },
+        "prefs": { "profile.managed_insecure_private_network_allowed_for_urls": {} }
+      }
+    ]
+  },
+
   "DefaultPluginsSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [

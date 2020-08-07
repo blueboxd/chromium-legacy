@@ -27,7 +27,7 @@ class PasswordManagerClient;
 class ManagePasswordsState {
  public:
   using CredentialsCallback =
-      base::Callback<void(const autofill::PasswordForm*)>;
+      base::OnceCallback<void(const autofill::PasswordForm*)>;
 
   ManagePasswordsState();
   ~ManagePasswordsState();
@@ -110,8 +110,8 @@ class ManagePasswordsState {
   const CredentialsCallback& credentials_callback() {
     return credentials_callback_;
   }
-  void set_credentials_callback(const CredentialsCallback& callback) {
-    credentials_callback_ = callback;
+  void set_credentials_callback(CredentialsCallback callback) {
+    credentials_callback_ = std::move(callback);
   }
 
   bool auth_for_account_storage_opt_in_failed() const {

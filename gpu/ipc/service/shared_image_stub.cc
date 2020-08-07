@@ -74,6 +74,10 @@ bool SharedImageStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateGMBSharedImage,
                         OnCreateGMBSharedImage)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_UpdateSharedImage, OnUpdateSharedImage)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateSharedImageWithAHB,
+                        OnCreateSharedImageWithAHB)
+#endif
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroySharedImage, OnDestroySharedImage)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_RegisterSharedImageUploadBuffer,
                         OnRegisterSharedImageUploadBuffer)
@@ -148,6 +152,30 @@ bool SharedImageStub::UpdateSharedImage(
   }
   return true;
 }
+
+#if defined(OS_ANDROID)
+bool SharedImageStub::CreateSharedImageWithAHB(const Mailbox& out_mailbox,
+                                               const Mailbox& in_mailbox,
+                                               uint32_t usage) {
+  TRACE_EVENT0("gpu", "SharedImageStub::CreateSharedImageWithAHB");
+  if (!out_mailbox.IsSharedImage() || !in_mailbox.IsSharedImage()) {
+    LOG(ERROR) << "SharedImageStub: Trying to access a SharedImage with a "
+                  "non-SharedImage mailbox.";
+    OnError();
+    return false;
+  }
+  if (!MakeContextCurrent()) {
+    OnError();
+    return false;
+  }
+  if (!factory_->CreateSharedImageWithAHB(out_mailbox, in_mailbox, usage)) {
+    LOG(ERROR) << "SharedImageStub: Unable to update shared image";
+    OnError();
+    return false;
+  }
+  return true;
+}
+#endif
 
 void SharedImageStub::OnCreateSharedImage(
     const GpuChannelMsg_CreateSharedImage_Params& params) {
@@ -279,6 +307,25 @@ void SharedImageStub::OnUpdateSharedImage(
   mailbox_manager->PushTextureUpdates(sync_token);
   sync_point_client_state_->ReleaseFenceSync(release_id);
 }
+
+#if defined(OS_ANDROID)
+void SharedImageStub::OnCreateSharedImageWithAHB(const Mailbox& out_mailbox,
+                                                 const Mailbox& in_mailbox,
+                                                 uint32_t usage,
+                                                 uint32_t release_id) {
+  TRACE_EVENT0("gpu", "SharedImageStub::OnCreateSharedImageWithAHB");
+
+  if (!CreateSharedImageWithAHB(out_mailbox, in_mailbox, usage))
+    return;
+
+  SyncToken sync_token(sync_point_client_state_->namespace_id(),
+                       sync_point_client_state_->command_buffer_id(),
+                       release_id);
+  auto* mailbox_manager = channel_->gpu_channel_manager()->mailbox_manager();
+  mailbox_manager->PushTextureUpdates(sync_token);
+  sync_point_client_state_->ReleaseFenceSync(release_id);
+}
+#endif
 
 void SharedImageStub::OnDestroySharedImage(const Mailbox& mailbox) {
   TRACE_EVENT0("gpu", "SharedImageStub::OnDestroySharedImage");

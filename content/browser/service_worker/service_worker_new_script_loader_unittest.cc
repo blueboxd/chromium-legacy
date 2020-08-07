@@ -153,8 +153,6 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
-    context()->storage()->LazyInitializeForTest();
-
     mock_server_.Set(GURL(kNormalScriptURL),
                      MockHTTPServer::Response(
                          std::string("HTTP/1.1 200 OK\n"

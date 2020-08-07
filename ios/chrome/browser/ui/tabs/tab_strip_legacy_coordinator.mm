@@ -53,6 +53,10 @@
   [self.tabStripController hideTabStrip:hidden];
 }
 
+- (void)tabStripSizeDidChange {
+  [self.tabStripController tabStripSizeDidChange];
+}
+
 #pragma mark - ChromeCoordinator
 
 - (void)start {

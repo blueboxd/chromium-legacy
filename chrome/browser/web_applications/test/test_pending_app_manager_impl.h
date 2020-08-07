@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/optional.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/pending_app_manager_impl.h"
 
 namespace web_app {
@@ -35,10 +37,16 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
     drop_requests_for_testing_ = drop_requests_for_testing;
   }
 
+  using PreInstallCallback =
+      base::RepeatingCallback<bool(const ExternalInstallOptions&)>;
+
+  void SetPreInstallCallback(PreInstallCallback callback);
+
  private:
   std::vector<ExternalInstallOptions> install_requests_;
   std::vector<GURL> uninstall_requests_;
   bool drop_requests_for_testing_ = false;
+  PreInstallCallback pre_install_callback_;
 };
 
 }  // namespace web_app

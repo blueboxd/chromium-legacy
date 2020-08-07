@@ -17,8 +17,13 @@
 // autofill these a warning is displayed using the security alert presenter
 - (void)presentSecurityWarningAlertWithText:(NSString*)body;
 
+// Request the presented a dialog informing the user that a password must be set
+// to use the feature.
+- (void)showSetPasscodeDialog;
+
 @end
 
+@class ReauthenticationModule;
 class WebStateList;
 
 // Handler with the common logic for injecting data from manual fill.
@@ -28,7 +33,9 @@ class WebStateList;
 // state and |securityAlertPresenter| to present alerts.
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
               securityAlertPresenter:
-                  (id<AutofillSecurityAlertPresenter>)securityAlertPresenter;
+                  (id<AutofillSecurityAlertPresenter>)securityAlertPresenter
+              reauthenticationModule:
+                  (ReauthenticationModule*)reauthenticationModule;
 
 @end
 

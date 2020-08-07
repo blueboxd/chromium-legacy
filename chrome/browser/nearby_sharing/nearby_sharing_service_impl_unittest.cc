@@ -141,6 +141,27 @@ class MockTransferUpdateCallback : public TransferUpdateCallback {
 
 namespace {
 
+const char kEndpointId[] = "endpoint_id";
+
+sharing::mojom::FramePtr GetValidIntroductionFrame() {
+  std::vector<sharing::mojom::TextMetadataPtr> mojo_text_metadatas;
+  for (int i = 1; i <= 3; i++) {
+    mojo_text_metadatas.push_back(sharing::mojom::TextMetadata::New(
+        "title " + base::NumberToString(i),
+        static_cast<sharing::mojom::TextMetadata::Type>(i), i, i, i));
+  }
+
+  sharing::mojom::V1FramePtr mojo_v1frame = sharing::mojom::V1Frame::New();
+  mojo_v1frame->set_introduction(sharing::mojom::IntroductionFrame::New(
+      std::vector<sharing::mojom::FileMetadataPtr>(),
+      std::move(mojo_text_metadatas), base::nullopt,
+      std::vector<sharing::mojom::WifiCredentialsMetadataPtr>()));
+
+  sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
+  mojo_frame->set_v1(std::move(mojo_v1frame));
+  return mojo_frame;
+}
+
 class NearbySharingServiceImplTest : public testing::Test {
  public:
   NearbySharingServiceImplTest() {
@@ -768,8 +789,19 @@ TEST_F(NearbySharingServiceImplTest,
   EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
   EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
 
-  service_->OnIncomingConnection("endpoint_id", {}, &connection);
+  service_->OnIncomingConnection(kEndpointId, {}, &connection);
   run_loop.Run();
+
+  // Check data written to connection.
+  std::vector<uint8_t> data = connection.GetWrittenData();
+  sharing::nearby::Frame frame;
+  frame.ParseFromArray(data.data(), data.size());
+
+  EXPECT_TRUE(frame.has_v1());
+  EXPECT_TRUE(frame.v1().has_connection_response());
+  EXPECT_EQ(
+      sharing::nearby::ConnectionResponseFrame::UNSUPPORTED_ATTACHMENT_TYPE,
+      frame.v1().connection_response().status());
 
   // To avoid UAF in OnIncomingTransferUpdate().
   service_->UnregisterReceiveSurface(&callback);
@@ -784,25 +816,7 @@ TEST_F(NearbySharingServiceImplTest,
       .WillOnce(testing::Invoke(
           [&](const std::vector<uint8_t>& data,
               MockNearbySharingDecoder::DecodeFrameCallback callback) {
-            // TODO(himanshujaju) - Write helper functions for these.
-            std::vector<sharing::mojom::TextMetadataPtr> mojo_text_metadatas;
-            for (int i = 1; i <= 3; i++) {
-              mojo_text_metadatas.push_back(sharing::mojom::TextMetadata::New(
-                  "title " + base::NumberToString(i),
-                  static_cast<sharing::mojom::TextMetadata::Type>(i), i, i, i));
-            }
-
-            sharing::mojom::V1FramePtr mojo_v1frame =
-                sharing::mojom::V1Frame::New();
-            mojo_v1frame->set_introduction(
-                sharing::mojom::IntroductionFrame::New(
-                    std::vector<sharing::mojom::FileMetadataPtr>(),
-                    std::move(mojo_text_metadatas), base::nullopt,
-                    std::vector<sharing::mojom::WifiCredentialsMetadataPtr>()));
-
-            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
-            mojo_frame->set_v1(std::move(mojo_v1frame));
-            std::move(callback).Run(std::move(mojo_frame));
+            std::move(callback).Run(GetValidIntroductionFrame());
           }));
 
   EXPECT_CALL(mock_nearby_process_manager(),
@@ -828,8 +842,182 @@ TEST_F(NearbySharingServiceImplTest,
   EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
   EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
 
+  service_->OnIncomingConnection(kEndpointId, {}, &connection);
+  run_loop.Run();
+
+  // To avoid UAF in OnIncomingTransferUpdate().
+  service_->UnregisterReceiveSurface(&callback);
+}
+
+TEST_F(NearbySharingServiceImplTest, AcceptInvalidShareTarget) {
+  ShareTarget share_target;
+  base::RunLoop run_loop;
+  service_->Accept(
+      share_target,
+      base::BindLambdaForTesting(
+          [&](NearbySharingServiceImpl::StatusCodes status_code) {
+            EXPECT_EQ(NearbySharingServiceImpl::StatusCodes::kOutOfOrderApiCall,
+                      status_code);
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+}
+
+TEST_F(NearbySharingServiceImplTest, AcceptValidShareTarget) {
+  // TODO(himanshujaju) - Refactor common set up.
+  std::string intro = "introduction_frame";
+  std::vector<uint8_t> bytes(intro.begin(), intro.end());
+  NiceMock<MockNearbySharingDecoder> mock_decoder;
+  EXPECT_CALL(mock_decoder, DecodeFrame(testing::Eq(bytes), testing::_))
+      .WillOnce(testing::Invoke(
+          [&](const std::vector<uint8_t>& data,
+              MockNearbySharingDecoder::DecodeFrameCallback callback) {
+            std::move(callback).Run(GetValidIntroductionFrame());
+          }));
+
+  EXPECT_CALL(mock_nearby_process_manager(),
+              GetOrStartNearbySharingDecoder(testing::_))
+      .WillRepeatedly(testing::Return(&mock_decoder));
+
+  ShareTarget share_target;
+  FakeNearbyConnection connection;
+  connection.AppendReadableData(bytes);
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  NiceMock<MockTransferUpdateCallback> callback;
+  base::RunLoop run_loop;
+  EXPECT_CALL(callback, OnTransferUpdate(testing::_, testing::_))
+      .WillOnce(testing::Invoke([&](const ShareTarget& incoming_share_target,
+                                    TransferMetadata metadata) {
+        EXPECT_EQ(TransferMetadata::Status::kAwaitingLocalConfirmation,
+                  metadata.status());
+        share_target = incoming_share_target;
+        run_loop.Quit();
+      }));
+
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+
+  service_->OnIncomingConnection(kEndpointId, {}, &connection);
+  run_loop.Run();
+
+  base::RunLoop run_loop_accept;
+  EXPECT_CALL(callback, OnTransferUpdate(testing::_, testing::_))
+      .WillOnce(testing::Invoke(
+          [](const ShareTarget& share_target, TransferMetadata metadata) {
+            EXPECT_EQ(TransferMetadata::Status::kAwaitingRemoteAcceptance,
+                      metadata.status());
+          }));
+
+  service_->Accept(share_target,
+                   base::BindLambdaForTesting(
+                       [&](NearbySharingServiceImpl::StatusCodes status_code) {
+                         EXPECT_EQ(NearbySharingServiceImpl::StatusCodes::kOk,
+                                   status_code);
+                         run_loop_accept.Quit();
+                       }));
+
+  run_loop_accept.Run();
+
+  EXPECT_TRUE(
+      fake_nearby_connections_manager_->DidUpgradeBandwidth(kEndpointId));
+  // Check data written to connection.
+  std::vector<uint8_t> data = connection.GetWrittenData();
+  sharing::nearby::Frame frame;
+  frame.ParseFromArray(data.data(), data.size());
+
+  EXPECT_TRUE(frame.has_v1());
+  EXPECT_TRUE(frame.v1().has_connection_response());
+  EXPECT_EQ(sharing::nearby::ConnectionResponseFrame::ACCEPT,
+            frame.v1().connection_response().status());
+
+  // To avoid UAF in OnIncomingTransferUpdate().
+  service_->UnregisterReceiveSurface(&callback);
+}
+
+TEST_F(NearbySharingServiceImplTest, RejectInvalidShareTarget) {
+  ShareTarget share_target;
+  base::RunLoop run_loop;
+  service_->Reject(
+      share_target,
+      base::BindLambdaForTesting(
+          [&](NearbySharingServiceImpl::StatusCodes status_code) {
+            EXPECT_EQ(NearbySharingServiceImpl::StatusCodes::kOutOfOrderApiCall,
+                      status_code);
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+}
+
+TEST_F(NearbySharingServiceImplTest, RejectValidShareTarget) {
+  std::string intro = "introduction_frame";
+  std::vector<uint8_t> bytes(intro.begin(), intro.end());
+  NiceMock<MockNearbySharingDecoder> mock_decoder;
+  EXPECT_CALL(mock_decoder, DecodeFrame(testing::Eq(bytes), testing::_))
+      .WillOnce(testing::Invoke(
+          [&](const std::vector<uint8_t>& data,
+              MockNearbySharingDecoder::DecodeFrameCallback callback) {
+            std::move(callback).Run(GetValidIntroductionFrame());
+          }));
+
+  EXPECT_CALL(mock_nearby_process_manager(),
+              GetOrStartNearbySharingDecoder(testing::_))
+      .WillRepeatedly(testing::Return(&mock_decoder));
+
+  ShareTarget share_target;
+  FakeNearbyConnection connection;
+  connection.AppendReadableData(bytes);
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  NiceMock<MockTransferUpdateCallback> callback;
+  base::RunLoop run_loop;
+  EXPECT_CALL(callback, OnTransferUpdate(testing::_, testing::_))
+      .WillOnce(testing::Invoke([&](const ShareTarget& incoming_share_target,
+                                    TransferMetadata metadata) {
+        EXPECT_EQ(TransferMetadata::Status::kAwaitingLocalConfirmation,
+                  metadata.status());
+        share_target = incoming_share_target;
+        run_loop.Quit();
+      }));
+
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+
   service_->OnIncomingConnection("endpoint_id", {}, &connection);
   run_loop.Run();
+
+  base::RunLoop run_loop_reject;
+  EXPECT_CALL(callback, OnTransferUpdate(testing::_, testing::_))
+      .WillOnce(testing::Invoke(
+          [](const ShareTarget& share_target, TransferMetadata metadata) {
+            EXPECT_EQ(TransferMetadata::Status::kRejected, metadata.status());
+          }));
+
+  service_->Reject(share_target,
+                   base::BindLambdaForTesting(
+                       [&](NearbySharingServiceImpl::StatusCodes status_code) {
+                         EXPECT_EQ(NearbySharingServiceImpl::StatusCodes::kOk,
+                                   status_code);
+                         run_loop_reject.Quit();
+                       }));
+
+  run_loop_reject.Run();
+
+  // Check data written to connection.
+  std::vector<uint8_t> data = connection.GetWrittenData();
+  sharing::nearby::Frame frame;
+  frame.ParseFromArray(data.data(), data.size());
+
+  EXPECT_TRUE(frame.has_v1());
+  EXPECT_TRUE(frame.v1().has_connection_response());
+  EXPECT_EQ(sharing::nearby::ConnectionResponseFrame::REJECT,
+            frame.v1().connection_response().status());
 
   // To avoid UAF in OnIncomingTransferUpdate().
   service_->UnregisterReceiveSurface(&callback);

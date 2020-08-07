@@ -107,7 +107,7 @@ const CGFloat kButtonCornerRadius = 8.0;
     _subtitleLabel = [[UILabel alloc] init];
     _subtitleLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
     _subtitleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+        [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
     _subtitleLabel.textAlignment = NSTextAlignmentCenter;
     _subtitleLabel.numberOfLines = 0;
     _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;

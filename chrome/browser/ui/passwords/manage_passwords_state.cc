@@ -186,8 +186,7 @@ void ManagePasswordsState::TransitionToState(
       << state_;
   if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
     if (!credentials_callback_.is_null()) {
-      credentials_callback_.Run(nullptr);
-      credentials_callback_.Reset();
+      std::move(credentials_callback_).Run(nullptr);
     }
   }
   SetState(state);
@@ -233,10 +232,9 @@ void ManagePasswordsState::ProcessUnsyncedCredentialsWillBeDeleted(
 
 void ManagePasswordsState::ChooseCredential(const PasswordForm* form) {
   DCHECK_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE, state());
-  DCHECK(!credentials_callback().is_null());
+  DCHECK(!credentials_callback_.is_null());
 
-  credentials_callback().Run(form);
-  set_credentials_callback(ManagePasswordsState::CredentialsCallback());
+  std::move(credentials_callback_).Run(form);
 }
 
 void ManagePasswordsState::ClearData() {

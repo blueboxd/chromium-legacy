@@ -24,6 +24,9 @@ class CRYPTO_EXPORT ScopedTestNSSDB {
   PK11SlotInfo* slot() const { return slot_.get(); }
 
  private:
+  // Removes trust from all certificates found in |slot_|.
+  void RemoveTrustFromAllCerts();
+
   base::ScopedTempDir temp_dir_;
   ScopedPK11Slot slot_;
 

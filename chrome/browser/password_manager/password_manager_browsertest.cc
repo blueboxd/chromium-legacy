@@ -1423,7 +1423,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoLastLoadGoodLastLoad) {
 
   // Teach the embedded server to handle requests by issuing the basic auth
   // challenge.
-  http_test_server.RegisterRequestHandler(base::Bind(&HandleTestAuthRequest));
+  http_test_server.RegisterRequestHandler(
+      base::BindRepeating(&HandleTestAuthRequest));
   ASSERT_TRUE(http_test_server.Start());
 
   LoginPromptBrowserTestObserver login_observer;
@@ -2822,7 +2823,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, BasicAuthSeparateRealms) {
   // already started at this point and adding the request handler to it would
   // not be thread safe.
   net::EmbeddedTestServer http_test_server;
-  http_test_server.RegisterRequestHandler(base::Bind(&HandleTestAuthRequest));
+  http_test_server.RegisterRequestHandler(
+      base::BindRepeating(&HandleTestAuthRequest));
   ASSERT_TRUE(http_test_server.Start());
 
   // Save credentials for "test realm" in the store.
@@ -3570,7 +3572,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, CorrectEntryForHttpAuth) {
 
   // Teach the embedded server to handle requests by issuing the basic auth
   // challenge.
-  http_test_server.RegisterRequestHandler(base::Bind(&HandleTestAuthRequest));
+  http_test_server.RegisterRequestHandler(
+      base::BindRepeating(&HandleTestAuthRequest));
   ASSERT_TRUE(http_test_server.Start());
 
   LoginPromptBrowserTestObserver login_observer;

@@ -46,6 +46,8 @@ void UpdateRequiredScreenHandler::DeclareLocalizedValues(
   builder->Add("checkingForUpdatesTitle", IDS_CHECKING_FOR_UPDATES);
   builder->Add("updatingTitle", IDS_UPDATING_SCREEN_TITLE);
   builder->Add("updatingMessage", IDS_UPDATE_REQUIRED_UPDATING_MESSAGE);
+  builder->AddF("updatingMessage", IDS_UPDATE_REQUIRED_UPDATING_MESSAGE,
+                ui::GetChromeOSDeviceName());
   builder->Add("downloading", IDS_DOWNLOADING);
   builder->Add("downloadingTimeLeftLong", IDS_DOWNLOADING_TIME_LEFT_LONG);
   builder->Add("downloadingTimeLeftStatusOneHour",

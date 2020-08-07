@@ -22,13 +22,15 @@ class FakeNearbyConnection : public NearbyConnection {
   void RegisterForDisconnection(base::OnceClosure listener) override;
 
   void AppendReadableData(std::vector<uint8_t> bytes);
+  std::vector<uint8_t> GetWrittenData();
 
  private:
   void MaybeRunCallback();
 
   bool closed_ = false;
   ReadCallback callback_;
-  std::queue<std::vector<uint8_t>> data_;
+  std::queue<std::vector<uint8_t>> read_data_;
+  std::queue<std::vector<uint8_t>> write_data_;
   std::vector<base::OnceClosure> disconnect_listeners_;
 };
 

@@ -45,6 +45,7 @@ scoped_refptr<TextureOwner> TextureOwner::Create(
     Mode mode) {
   switch (mode) {
     case Mode::kAImageReaderInsecure:
+    case Mode::kAImageReaderInsecureMultithreaded:
     case Mode::kAImageReaderInsecureSurfaceControl:
     case Mode::kAImageReaderSecureSurfaceControl:
       return new ImageReaderGLOwner(std::move(texture), mode);

@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/feature_list.h"
+#include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace chromeos {
 namespace settings {
@@ -82,18 +84,19 @@ void AddUpdateRequiredEolStrings(content::WebUIDataSource* html_source) {
           base::UTF8ToUTF16(connector->GetEnterpriseDisplayDomain());
       base::string16 link_url =
           base::UTF8ToUTF16(chrome::kChromeUIManagementURL);
-      if (days_remaining == 1) {
-        eol_return_banner_text = l10n_util::GetStringFUTF16(
-            IDS_SETTINGS_UPDATE_REQUIRED_EOL_BANNER_LAST_DAY, domain_name,
-            link_url);
-      } else if (days_remaining == 7) {
+      if (days_remaining == 7) {
         eol_return_banner_text = l10n_util::GetStringFUTF16(
             IDS_SETTINGS_UPDATE_REQUIRED_EOL_BANNER_ONE_WEEK, domain_name,
-            link_url);
+            ui::GetChromeOSDeviceName(), link_url);
       } else {
-        eol_return_banner_text = l10n_util::GetStringFUTF16(
-            IDS_SETTINGS_UPDATE_REQUIRED_EOL_BANNER_DAYS, domain_name,
-            base::FormatNumber(days_remaining), link_url);
+        eol_return_banner_text =
+            base::i18n::MessageFormatter::FormatWithNumberedArgs(
+                l10n_util::GetStringUTF16(
+                    IDS_SETTINGS_UPDATE_REQUIRED_EOL_BANNER_DAYS),
+                days_remaining,
+                base::UTF8ToUTF16(connector->GetEnterpriseDisplayDomain()),
+                ui::GetChromeOSDeviceName(),
+                base::UTF8ToUTF16(chrome::kChromeUIManagementURL));
       }
     }
   }

@@ -277,6 +277,8 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
         SingleWebsiteSettings fragment = (SingleWebsiteSettings) Fragment.instantiate(
                 mContext, SingleWebsiteSettings.class.getName(), fragmentArgs);
         fragment.setSiteSettingsClient(new ChromeSiteSettingsClient(mContext, getBrowserContext()));
+        fragment.setHideNonPermissionPreferences(true);
+        fragment.setRefreshAfterReset(true);
         return fragment;
     }
 

@@ -8,15 +8,11 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_list.h"
 #include "build/build_config.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/public/identity_manager/account_info.h"
 
 class Profile;
-
-namespace content {
-class BrowserContext;
-}  // namespace content
 
 namespace network {
 class TestURLLoaderFactory;
@@ -25,7 +21,7 @@ class TestURLLoaderFactory;
 namespace secondary_account_helper {
 
 using ScopedSigninClientFactory = std::unique_ptr<
-    base::CallbackList<void(content::BrowserContext*)>::Subscription>;
+    BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>;
 
 // Sets up a factory to create a SigninClient which uses the
 // provided |test_url_loader_factory| for cookie-related requests. Meant to be

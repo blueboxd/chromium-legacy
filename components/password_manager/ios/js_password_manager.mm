@@ -16,6 +16,8 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::CreateBoolCallback;
+using autofill::CreateStringCallback;
 using autofill::FormRendererId;
 using autofill::FieldRendererId;
 using base::SysNSStringToUTF8;
@@ -78,7 +80,8 @@ std::unique_ptr<base::Value> SerializeFillData(
   DCHECK(completionHandler);
   std::vector<base::Value> parameters;
   autofill::ExecuteJavaScriptFunction("passwords.findPasswordForms", parameters,
-                                      frame, base::BindOnce(completionHandler));
+                                      frame,
+                                      CreateStringCallback(completionHandler));
 }
 
 - (void)extractForm:(FormRendererId)formIdentifier
@@ -89,21 +92,22 @@ std::unique_ptr<base::Value> SerializeFillData(
   parameters.emplace_back(static_cast<int>(formIdentifier.value()));
   autofill::ExecuteJavaScriptFunction("passwords.getPasswordFormDataAsString",
                                       parameters, frame,
-                                      base::BindOnce(completionHandler));
+                                      CreateStringCallback(completionHandler));
 }
 
 - (void)fillPasswordForm:(std::unique_ptr<base::Value>)form
                  inFrame:(web::WebFrame*)frame
             withUsername:(std::string)username
                 password:(std::string)password
-       completionHandler:(void (^)(NSString*))completionHandler {
+       completionHandler:(void (^)(BOOL))completionHandler {
   DCHECK(completionHandler);
   std::vector<base::Value> parameters;
   parameters.push_back(std::move(*form));
   parameters.emplace_back(std::move(username));
   parameters.emplace_back(std::move(password));
   autofill::ExecuteJavaScriptFunction("passwords.fillPasswordForm", parameters,
-                                      frame, base::BindOnce(completionHandler));
+                                      frame,
+                                      CreateBoolCallback(completionHandler));
 }
 
 - (void)fillPasswordForm:(FormRendererId)formIdentifier
@@ -111,7 +115,7 @@ std::unique_ptr<base::Value> SerializeFillData(
         newPasswordIdentifier:(FieldRendererId)newPasswordIdentifier
     confirmPasswordIdentifier:(FieldRendererId)confirmPasswordIdentifier
             generatedPassword:(NSString*)generatedPassword
-            completionHandler:(void (^)(NSString*))completionHandler {
+            completionHandler:(void (^)(BOOL))completionHandler {
   DCHECK(completionHandler);
   std::vector<base::Value> parameters;
   parameters.emplace_back(static_cast<int>(formIdentifier.value()));
@@ -120,7 +124,7 @@ std::unique_ptr<base::Value> SerializeFillData(
   parameters.push_back(base::Value(SysNSStringToUTF8(generatedPassword)));
   autofill::ExecuteJavaScriptFunction(
       "passwords.fillPasswordFormWithGeneratedPassword", parameters, frame,
-      base::BindOnce(completionHandler));
+      CreateBoolCallback(completionHandler));
 }
 
 - (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID
@@ -129,7 +133,7 @@ std::unique_ptr<base::Value> SerializeFillData(
   parameters.emplace_back(static_cast<int>(nextAvailableID));
   autofill::ExecuteJavaScriptFunction("fill.setUpForUniqueIDs", parameters,
                                       frame,
-                                      base::OnceCallback<void(NSString*)>());
+                                      autofill::JavaScriptResultCallback());
 }
 
 @end

@@ -74,8 +74,8 @@ class GcmApiTest : public ExtensionApiTest {
   void OnWillCreateBrowserContextServices(content::BrowserContext* context);
 
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
+      create_services_subscription_;
 };
 
 void GcmApiTest::SetUpCommandLine(base::CommandLine* command_line) {
@@ -89,12 +89,11 @@ void GcmApiTest::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void GcmApiTest::SetUpInProcessBrowserTestFixture() {
-  will_create_browser_context_services_subscription_ =
+  create_services_subscription_ =
       BrowserContextDependencyManager::GetInstance()
-          ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-              base::BindRepeating(
-                  &GcmApiTest::OnWillCreateBrowserContextServices,
-                  base::Unretained(this)));
+          ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+              &GcmApiTest::OnWillCreateBrowserContextServices,
+              base::Unretained(this)));
   ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 }
 

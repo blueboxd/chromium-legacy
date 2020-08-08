@@ -34,7 +34,8 @@ class FontUpdateInvalidationTest
 
 TEST_F(FontUpdateInvalidationTest, PartialLayoutInvalidationAfterFontLoading) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Write(R"HTML(
@@ -86,7 +87,8 @@ TEST_F(FontUpdateInvalidationTest, PartialLayoutInvalidationAfterFontLoading) {
 TEST_F(FontUpdateInvalidationTest,
        PartialLayoutInvalidationAfterFontFaceDeletion) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Write(R"HTML(
@@ -142,7 +144,8 @@ TEST_F(FontUpdateInvalidationTest,
 // https://crbug.com/1092411
 TEST_F(FontUpdateInvalidationTest, LayoutInvalidationOnModalDialog) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Write(R"HTML(
@@ -184,9 +187,10 @@ TEST_F(FontUpdateInvalidationTest, LayoutInvalidationOnModalDialog) {
 // https://crbug.com/1101483
 TEST_F(FontUpdateInvalidationTest, FallbackBetweenPendingAndLoadedCustomFonts) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest slow_font_resource("https://example.com/nonexist.woff2",
-                                "font/woff2");
-  SimRequest fast_font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest slow_font_resource("https://example.com/nonexist.woff2",
+                                           "font/woff2");
+  SimSubresourceRequest fast_font_resource("https://example.com/Ahem.woff2",
+                                           "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -217,7 +221,7 @@ TEST_F(FontUpdateInvalidationTest, FallbackBetweenPendingAndLoadedCustomFonts) {
   Element* target = GetDocument().getElementById("target");
   DCHECK_EQ(250, target->OffsetWidth());
 
-  slow_font_resource.Finish();
+  slow_font_resource.Complete();
 
   Compositor().BeginFrame();
   EXPECT_EQ(250, target->OffsetWidth());
@@ -226,7 +230,8 @@ TEST_F(FontUpdateInvalidationTest, FallbackBetweenPendingAndLoadedCustomFonts) {
 // https://crrev.com/1397423004
 TEST_F(FontUpdateInvalidationTest, NoRedundantLoadingForSegmentedFont) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/font2.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/font2.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(

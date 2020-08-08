@@ -621,6 +621,7 @@ crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-gi
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-004.html [ Failure ]
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-005.html [ Failure ]
 crbug.com/694374 external/wpt/css/css-tables/anonymous-table-ws-001.html [ Failure ]
+crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-row-004.html [ Failure ]
 crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-001.html [ Failure ]
 crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-002.html [ Failure ]
 crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-003.html [ Failure ]

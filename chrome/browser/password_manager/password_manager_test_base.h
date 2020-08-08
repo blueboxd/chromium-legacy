@@ -7,11 +7,11 @@
 
 #include <memory>
 
-#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -256,8 +256,8 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   content::WebContents* web_contents_;
 
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
+      create_services_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTestBase);
 };

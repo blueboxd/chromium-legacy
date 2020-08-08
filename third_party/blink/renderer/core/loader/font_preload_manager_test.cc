@@ -54,7 +54,8 @@ class FontPreloadManagerTest : public SimTest {
 
 TEST_F(FontPreloadManagerTest, FastFontFinishBeforeBody) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/font.woff", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/font.woff",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Write(R"HTML(
@@ -72,7 +73,7 @@ TEST_F(FontPreloadManagerTest, FastFontFinishBeforeBody) {
   EXPECT_TRUE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
   EXPECT_EQ(State::kLoading, GetState());
 
-  font_resource.Finish();
+  font_resource.Complete();
   test::RunPendingTasks();
 
   // Font preloading no longer blocks renderings. However, rendering is still
@@ -91,7 +92,8 @@ TEST_F(FontPreloadManagerTest, FastFontFinishBeforeBody) {
 
 TEST_F(FontPreloadManagerTest, FastFontFinishAfterBody) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/font.woff", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/font.woff",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Write(R"HTML(
@@ -114,7 +116,7 @@ TEST_F(FontPreloadManagerTest, FastFontFinishAfterBody) {
   EXPECT_TRUE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
   EXPECT_EQ(State::kLoading, GetState());
 
-  font_resource.Finish();
+  font_resource.Complete();
   test::RunPendingTasks();
 
   // Rendering starts after font preloading has finished.
@@ -125,7 +127,8 @@ TEST_F(FontPreloadManagerTest, FastFontFinishAfterBody) {
 
 TEST_F(FontPreloadManagerTest, SlowFontTimeoutBeforeBody) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/font.woff", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/font.woff",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Write(R"HTML(
@@ -155,12 +158,13 @@ TEST_F(FontPreloadManagerTest, SlowFontTimeoutBeforeBody) {
   EXPECT_FALSE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
   EXPECT_EQ(State::kUnblocked, GetState());
 
-  font_resource.Finish();
+  font_resource.Complete();
 }
 
 TEST_F(FontPreloadManagerTest, SlowFontTimeoutAfterBody) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/font.woff", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/font.woff",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Write(R"HTML(
@@ -189,13 +193,14 @@ TEST_F(FontPreloadManagerTest, SlowFontTimeoutAfterBody) {
   EXPECT_FALSE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
   EXPECT_EQ(State::kUnblocked, GetState());
 
-  font_resource.Finish();
+  font_resource.Complete();
 }
 
 // A trivial test case to verify test setup
 TEST_F(FontPreloadManagerTest, RegularWebFont) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -226,7 +231,8 @@ TEST_F(FontPreloadManagerTest, RegularWebFont) {
 
 TEST_F(FontPreloadManagerTest, OptionalFontWithoutPreloading) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -259,7 +265,8 @@ TEST_F(FontPreloadManagerTest, OptionalFontWithoutPreloading) {
 
 TEST_F(FontPreloadManagerTest, OptionalFontRemoveAndReadd) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -302,7 +309,8 @@ TEST_F(FontPreloadManagerTest, OptionalFontRemoveAndReadd) {
 
 TEST_F(FontPreloadManagerTest, OptionalFontSlowPreloading) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -351,7 +359,8 @@ TEST_F(FontPreloadManagerTest, OptionalFontSlowPreloading) {
 
 TEST_F(FontPreloadManagerTest, OptionalFontFastPreloading) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -396,7 +405,8 @@ TEST_F(FontPreloadManagerTest, OptionalFontFastPreloading) {
 
 TEST_F(FontPreloadManagerTest, OptionalFontSlowImperativeLoad) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -446,7 +456,8 @@ TEST_F(FontPreloadManagerTest, OptionalFontSlowImperativeLoad) {
 
 TEST_F(FontPreloadManagerTest, OptionalFontFastImperativeLoad) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -544,7 +555,8 @@ TEST_P(FontPreloadBehaviorObservationTest, ObserveBehaviorWithLinkPreload) {
   }
 
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/font.woff", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/font.woff",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -556,7 +568,7 @@ TEST_P(FontPreloadBehaviorObservationTest, ObserveBehaviorWithLinkPreload) {
   EXPECT_TRUE(ObservedBehaviors() |
               kLoadingBehaviorFontPreloadStartedBeforeRendering);
 
-  font_resource.Finish();
+  font_resource.Complete();
   test::RunPendingTasks();
 }
 
@@ -571,7 +583,8 @@ TEST_P(FontPreloadBehaviorObservationTest, ObserveBehaviorWithImperativeLoad) {
   }
 
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/font.woff", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/font.woff",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -584,7 +597,7 @@ TEST_P(FontPreloadBehaviorObservationTest, ObserveBehaviorWithImperativeLoad) {
   EXPECT_TRUE(ObservedBehaviors() |
               kLoadingBehaviorFontPreloadStartedBeforeRendering);
 
-  font_resource.Finish();
+  font_resource.Complete();
   test::RunPendingTasks();
 }
 

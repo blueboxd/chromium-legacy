@@ -25,12 +25,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetPropertyModelBuilder.ContentType;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -38,6 +40,7 @@ import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.user_prefs.UserPrefsJni;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivity;
 
@@ -77,12 +80,24 @@ public class ChromeProvidedSharingOptionsProviderTest {
     private Activity mActivity;
     private ChromeProvidedSharingOptionsProvider mChromeProvidedSharingOptionsProvider;
 
+    @Mock
+    private Supplier<Tab> mTabProvider;
+
+    @Mock
+    private Tab mTab;
+
+    @Mock
+    private WebContents mWebContents;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsNatives);
         Profile.setLastUsedProfileForTesting(mProfile);
         Mockito.when(mUserPrefsNatives.get(mProfile)).thenReturn(mPrefService);
+        Mockito.when(mTabProvider.get()).thenReturn(mTab);
+        Mockito.when(mTab.getWebContents()).thenReturn(mWebContents);
+        Mockito.when(mWebContents.isIncognito()).thenReturn(false);
         mActivity = mActivityTestRule.getActivity();
     }
 
@@ -261,14 +276,14 @@ public class ChromeProvidedSharingOptionsProviderTest {
     private void setUpChromeProvidedSharingOptionsProviderTest(boolean printingEnabled) {
         Mockito.when(mPrefService.getBoolean(anyString())).thenReturn(printingEnabled);
 
-        mChromeProvidedSharingOptionsProvider = new ChromeProvidedSharingOptionsProvider(mActivity,
-                /*activityTabProvider=*/null,
-                /*bottomSheetController=*/null,
-                new ShareSheetBottomSheetContent(mActivity, mShareSheetCoordinator),
-                new ShareParams.Builder(null, "", "").build(),
-                new ChromeShareExtras.Builder().build(),
-                /*TabPrinterDelegate=*/null,
-                /*shareStartTime=*/0, mShareSheetCoordinator);
+        mChromeProvidedSharingOptionsProvider =
+                new ChromeProvidedSharingOptionsProvider(mActivity, mTabProvider,
+                        /*bottomSheetController=*/null,
+                        new ShareSheetBottomSheetContent(mActivity, mShareSheetCoordinator),
+                        new ShareParams.Builder(null, "", "").build(),
+                        new ChromeShareExtras.Builder().build(),
+                        /*TabPrinterDelegate=*/null,
+                        /*shareStartTime=*/0, mShareSheetCoordinator);
     }
 
     private void assertModelsAreInTheRightOrder(

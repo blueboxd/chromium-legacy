@@ -70,7 +70,6 @@ source_set("audio") {
     "//base",
     "//media",
     "//media/webrtc",
-    "//sandbox/policy",
     "//services/audio/public/mojom",
   ]
 
@@ -79,16 +78,12 @@ source_set("audio") {
       "audio_sandbox_hook_linux.cc",
       "audio_sandbox_hook_linux.h",
     ]
-    public_deps += [ "//sandbox/linux:sandbox_services" ]
+    public_deps += [
+      "//sandbox/linux:sandbox_services",
+      "//sandbox/policy",
+    ]
   }
 
-  if (is_win) {
-    sources += [
-      "audio_sandbox_win.cc",
-      "audio_sandbox_win.h",
-    ]
-    public_deps += [ "//sandbox/win:sandbox" ]
-  }
   configs += [
     "//build/config/compiler:wexit_time_destructors",
     "//media:media_config",

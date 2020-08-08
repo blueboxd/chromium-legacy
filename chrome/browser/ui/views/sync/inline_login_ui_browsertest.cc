@@ -425,9 +425,9 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    will_create_browser_context_services_subscription_ =
+    create_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+            ->RegisterCreateServicesCallbackForTesting(
                 base::Bind(&InlineLoginHelperBrowserTest::
                                OnWillCreateBrowserContextServices,
                            base::Unretained(this)));
@@ -516,8 +516,8 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_profile_adaptor_;
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
+      create_services_subscription_;
   Profile* profile_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHelperBrowserTest);

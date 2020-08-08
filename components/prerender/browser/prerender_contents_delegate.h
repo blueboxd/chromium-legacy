@@ -18,14 +18,14 @@ namespace prerender {
 // PrerenderContents logic.
 class PrerenderContentsDelegate {
  public:
+  PrerenderContentsDelegate();
   virtual ~PrerenderContentsDelegate() = default;
 
   // Handle creation of new PrerenderContents.
-  virtual void OnPrerenderContentsCreated(
-      content::WebContents* web_contents) = 0;
+  virtual void OnPrerenderContentsCreated(content::WebContents* web_contents);
 
   // Prepare for |web_contents| to no longer be PrerenderContents.
-  virtual void ReleasePrerenderContents(content::WebContents* web_contents) = 0;
+  virtual void ReleasePrerenderContents(content::WebContents* web_contents);
 };
 
 }  // namespace prerender

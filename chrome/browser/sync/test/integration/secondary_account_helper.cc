@@ -9,7 +9,6 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_test_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
@@ -39,9 +38,8 @@ void OnWillCreateBrowserContextServices(
 ScopedSigninClientFactory SetUpSigninClient(
     network::TestURLLoaderFactory* test_url_loader_factory) {
   return BrowserContextDependencyManager::GetInstance()
-      ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-          base::BindRepeating(&OnWillCreateBrowserContextServices,
-                              test_url_loader_factory));
+      ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+          &OnWillCreateBrowserContextServices, test_url_loader_factory));
 }
 
 #if defined(OS_CHROMEOS)

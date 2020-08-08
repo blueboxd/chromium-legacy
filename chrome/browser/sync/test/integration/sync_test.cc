@@ -51,7 +51,6 @@
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -892,9 +891,9 @@ void SyncTest::TearDownOnMainThread() {
 }
 
 void SyncTest::SetUpInProcessBrowserTestFixture() {
-  will_create_browser_context_services_subscription_ =
+  create_services_subscription_ =
       BrowserContextDependencyManager::GetInstance()
-          ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+          ->RegisterCreateServicesCallbackForTesting(
               base::BindRepeating(&SyncTest::OnWillCreateBrowserContextServices,
                                   base::Unretained(this)));
 }

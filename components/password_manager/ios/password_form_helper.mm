@@ -322,8 +322,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
                 inFrame:GetMainFrame(_webState)
            withUsername:UTF16ToUTF8(usernameValue)
                password:UTF16ToUTF8(passwordValue)
-      completionHandler:^(NSString* result) {
-        BOOL success = [result isEqual:@"true"];
+      completionHandler:^(BOOL success) {
         if (success) {
           weakSelf.fieldDataManager->UpdateFieldDataWithAutofilledValue(
               usernameID, usernameValue,
@@ -351,8 +350,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
           newPasswordIdentifier:newPasswordIdentifier
       confirmPasswordIdentifier:confirmPasswordIdentifier
               generatedPassword:generatedPassword
-              completionHandler:^(NSString* result) {
-                BOOL success = [result isEqual:@"true"];
+              completionHandler:^(BOOL success) {
                 if (success) {
                   weakSelf.fieldDataManager->UpdateFieldDataWithAutofilledValue(
                       newPasswordIdentifier,
@@ -384,8 +382,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
                 inFrame:GetMainFrame(_webState)
            withUsername:UTF16ToUTF8(usernameValue)
                password:UTF16ToUTF8(passwordValue)
-      completionHandler:^(NSString* result) {
-        BOOL success = [result isEqual:@"true"];
+      completionHandler:^(BOOL success) {
         if (success) {
           weakSelf.fieldDataManager->UpdateFieldDataWithAutofilledValue(
               usernameID, usernameValue,

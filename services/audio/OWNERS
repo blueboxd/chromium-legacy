@@ -3,6 +3,5 @@ dalecurtis@chromium.org
 miu@chromium.org
 
 per-file audio_sandbox_hook_linux.*=file://sandbox/linux/OWNERS
-per-file audio_sandbox_win.*=file://sandbox/win/OWNERS
 
 # COMPONENT: Internals>Media>Audio

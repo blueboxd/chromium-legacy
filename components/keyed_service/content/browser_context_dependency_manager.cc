@@ -42,7 +42,7 @@ void BrowserContextDependencyManager::DoCreateBrowserContextServices(
   TRACE_EVENT0(
       "browser",
       "BrowserContextDependencyManager::DoCreateBrowserContextServices")
-  will_create_browser_context_services_callbacks_.Notify(context);
+  create_services_callbacks_.Notify(context);
   DependencyManager::CreateContextServices(context, is_testing_context);
 }
 
@@ -52,12 +52,10 @@ void BrowserContextDependencyManager::DestroyBrowserContextServices(
 }
 
 std::unique_ptr<
-    base::CallbackList<void(content::BrowserContext*)>::Subscription>
-BrowserContextDependencyManager::
-    RegisterWillCreateBrowserContextServicesCallbackForTesting(
-        const base::RepeatingCallback<void(content::BrowserContext*)>&
-            callback) {
-  return will_create_browser_context_services_callbacks_.Add(callback);
+    BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
+BrowserContextDependencyManager::RegisterCreateServicesCallbackForTesting(
+    const CreateServicesCallback& callback) {
+  return create_services_callbacks_.Add(callback);
 }
 
 void BrowserContextDependencyManager::AssertBrowserContextWasntDestroyed(

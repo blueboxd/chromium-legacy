@@ -113,9 +113,9 @@ class DiceWebSigninInterceptorBrowserTest : public InProcessBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-    will_create_browser_context_services_subscription_ =
+    create_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+            ->RegisterCreateServicesCallbackForTesting(
                 base::Bind(&DiceWebSigninInterceptorBrowserTest::
                                OnWillCreateBrowserContextServices,
                            base::Unretained(this)));
@@ -137,8 +137,8 @@ class DiceWebSigninInterceptorBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_profile_adaptor_;
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
+      create_services_subscription_;
 };
 
 // Tests the complete interception flow including profile and browser creation.

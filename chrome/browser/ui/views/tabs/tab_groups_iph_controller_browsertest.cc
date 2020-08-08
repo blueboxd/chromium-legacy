@@ -31,7 +31,7 @@ class TabGroupsIPHControllerBrowserTest : public DialogBrowserTest {
   TabGroupsIPHControllerBrowserTest() {
     service_manager_subscription_ =
         BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+            ->RegisterCreateServicesCallbackForTesting(
                 base::BindRepeating(RegisterMockTrackerFactory));
   }
 
@@ -74,7 +74,7 @@ class TabGroupsIPHControllerBrowserTest : public DialogBrowserTest {
   }
 
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
       service_manager_subscription_;
 };
 

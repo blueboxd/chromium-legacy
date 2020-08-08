@@ -56,7 +56,7 @@
   parameters.push_back(base::Value(base::SysNSStringToUTF8(fieldName)));
   autofill::ExecuteJavaScriptFunction(
       "suggestion.selectNextElement", parameters,
-      [self frameWithFrameID:frameID], base::OnceCallback<void(NSString*)>());
+      [self frameWithFrameID:frameID], autofill::JavaScriptResultCallback());
 }
 
 - (void)selectPreviousElementInFrameWithID:(NSString*)frameID {
@@ -71,7 +71,7 @@
   parameters.push_back(base::Value(base::SysNSStringToUTF8(fieldName)));
   autofill::ExecuteJavaScriptFunction(
       "suggestion.selectPreviousElement", parameters,
-      [self frameWithFrameID:frameID], base::OnceCallback<void(NSString*)>());
+      [self frameWithFrameID:frameID], autofill::JavaScriptResultCallback());
 }
 
 - (void)fetchPreviousAndNextElementsPresenceInFrameWithID:(NSString*)frameID
@@ -96,7 +96,8 @@
   parameters.push_back(base::Value(base::SysNSStringToUTF8(fieldName)));
   autofill::ExecuteJavaScriptFunction(
       "suggestion.hasPreviousNextElements", parameters,
-      [self frameWithFrameID:frameID], base::BindOnce(^(NSString* result) {
+      [self frameWithFrameID:frameID],
+      autofill::CreateStringCallback(^(NSString* result) {
         // The result maybe an empty string here due to 2 reasons:
         // 1) When there is an exception running the JS
         // 2) There is a race when the page is changing due to which
@@ -124,7 +125,7 @@
   std::vector<base::Value> parameters;
   autofill::ExecuteJavaScriptFunction(
       "suggestion.blurActiveElement", parameters,
-      [self frameWithFrameID:frameID], base::OnceCallback<void(NSString*)>());
+      [self frameWithFrameID:frameID], autofill::JavaScriptResultCallback());
 }
 
 - (web::WebFrame*)frameWithFrameID:(NSString*)frameID {

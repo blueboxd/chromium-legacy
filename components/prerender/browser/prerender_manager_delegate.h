@@ -20,6 +20,7 @@ namespace prerender {
 // PrerenderManager logic.
 class PrerenderManagerDelegate {
  public:
+  PrerenderManagerDelegate();
   virtual ~PrerenderManagerDelegate() = default;
 
   // Checks whether third party cookies should be blocked.
@@ -27,23 +28,23 @@ class PrerenderManagerDelegate {
   GetCookieSettings() = 0;
 
   // Perform preconnect, if feasible.
-  virtual void MaybePreconnect(const GURL& url) = 0;
+  virtual void MaybePreconnect(const GURL& url);
 
   // Get the prerender contents delegate.
   virtual std::unique_ptr<PrerenderContentsDelegate>
   GetPrerenderContentsDelegate() = 0;
 
   // Check whether predictive loading of web pages is enabled for |origin|.
-  virtual bool IsPredictionEnabled(Origin origin) = 0;
+  virtual bool IsPredictionEnabled(Origin origin);
 
   // Check whether predictive loading of web pages is enabled.
-  virtual bool IsPredictionEnabled() = 0;
+  virtual bool IsPredictionEnabled();
 
   // Check whether predictive loading of web pages is disabled due to network.
-  virtual bool IsPredictionDisabledDueToNetwork(Origin origin) = 0;
+  virtual bool IsPredictionDisabledDueToNetwork(Origin origin);
 
   // Gets the reason why predictive loading of web pages was disabld.
-  virtual std::string GetReasonForDisablingPrediction() = 0;
+  virtual std::string GetReasonForDisablingPrediction();
 };
 
 }  // namespace prerender

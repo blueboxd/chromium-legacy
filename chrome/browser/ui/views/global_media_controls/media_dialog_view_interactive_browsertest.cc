@@ -324,10 +324,9 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     subscription_ =
         BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                base::BindRepeating(&MediaDialogViewBrowserTest::
-                                        OnWillCreateBrowserContextServices,
-                                    base::Unretained(this)));
+            ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+                &MediaDialogViewBrowserTest::OnWillCreateBrowserContextServices,
+                base::Unretained(this)));
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
@@ -559,7 +558,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
 
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
       subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDialogViewBrowserTest);

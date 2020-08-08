@@ -122,11 +122,10 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
   void SetUpInProcessBrowserTestFixture() override {
     subscription_ =
         BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                base::BindRepeating(
-                    &FlocIdProviderWithCustomizedServicesBrowserTest::
-                        OnWillCreateBrowserContextServices,
-                    base::Unretained(this)));
+            ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+                &FlocIdProviderWithCustomizedServicesBrowserTest::
+                    OnWillCreateBrowserContextServices,
+                base::Unretained(this)));
   }
 
   // FlocIdProviderBrowserTest::RegisterRequestHandler
@@ -261,7 +260,7 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
       subscription_;
 };
 

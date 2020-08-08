@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -679,9 +678,9 @@ void PasswordManagerBrowserTestBase::CheckElementValue(
 
 void PasswordManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   CertVerifierBrowserTest::SetUpInProcessBrowserTestFixture();
-  will_create_browser_context_services_subscription_ =
+  create_services_subscription_ =
       BrowserContextDependencyManager::GetInstance()
-          ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+          ->RegisterCreateServicesCallbackForTesting(
               base::BindRepeating(&PasswordManagerBrowserTestBase::
                                       OnWillCreateBrowserContextServices));
 }

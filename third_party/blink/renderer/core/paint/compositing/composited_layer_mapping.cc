@@ -1641,15 +1641,13 @@ void CompositedLayerMapping::UpdateLocalClipRectForSquashedLayer(
   // disallowed squashing.
   DCHECK(ancestor_paint_info);
 
-  // FIXME: this is a potential performance issue. We should consider caching
-  // these clip rects or otherwise optimizing.
   ClipRectsContext clip_rects_context(
       ancestor_paint_info->paint_layer,
       &ancestor_paint_info->paint_layer->GetLayoutObject().FirstFragment(),
       kUncachedClipRects);
   ClipRect parent_clip_rect;
   paint_info.paint_layer
-      ->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
+      ->Clipper(PaintLayer::GeometryMapperOption::kUseGeometryMapper)
       .CalculateBackgroundClipRect(clip_rects_context, parent_clip_rect);
 
   // Convert from ancestor to local coordinates.

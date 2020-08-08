@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/test/fake_server/fake_server.h"
@@ -479,8 +479,8 @@ class SyncTest : public PlatformBrowserTest {
   std::unique_ptr<ConfigurationRefresher> configuration_refresher_;
 
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
+      create_services_subscription_;
 
   // Sync profile against which changes to individual profiles are verified.
   // We don't need a corresponding verifier sync client because the contents

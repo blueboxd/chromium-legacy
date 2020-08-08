@@ -554,12 +554,11 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     AsyncExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
 
-    will_create_browser_context_services_subscription_ =
+    create_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                base::BindRepeating(
-                    &IdentityTestWithSignin::OnWillCreateBrowserContextServices,
-                    base::Unretained(this)));
+            ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+                &IdentityTestWithSignin::OnWillCreateBrowserContextServices,
+                base::Unretained(this)));
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
@@ -615,8 +614,8 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
       identity_test_env_profile_adaptor_;
 
   std::unique_ptr<
-      base::RepeatingCallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
+      create_services_subscription_;
 };
 
 class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
@@ -863,10 +862,8 @@ class GetAuthTokenFunctionTest
     : public IdentityTestWithSignin,
       public signin::IdentityManager::DiagnosticsObserver {
  public:
-  explicit GetAuthTokenFunctionTest() : GetAuthTokenFunctionTest(true) {}
-
-  explicit GetAuthTokenFunctionTest(bool isReturnScopesEnabled) {
-    if (isReturnScopesEnabled) {
+  explicit GetAuthTokenFunctionTest(bool is_return_scopes_enabled = true) {
+    if (is_return_scopes_enabled) {
       feature_list_.InitAndEnableFeature(
           extensions_features::kReturnScopesInGetAuthToken);
     } else {
@@ -2886,7 +2883,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, Whitelisted) {
 class GetAuthTokenFunctionReturnScopesDisabledTest
     : public GetAuthTokenFunctionTest {
  public:
-  explicit GetAuthTokenFunctionReturnScopesDisabledTest()
+  GetAuthTokenFunctionReturnScopesDisabledTest()
       : GetAuthTokenFunctionTest(false) {}
 
   void RunGetAuthTokenFunctionReturnScopesDisabled(ExtensionFunction* function,

@@ -227,11 +227,32 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
   return field_data->option_values.size() == field_data->option_contents.size();
 }
 
+JavaScriptResultCallback CreateStringCallback(
+    void (^completionHandler)(NSString*)) {
+  return base::BindOnce(^(const base::Value* res) {
+    NSString* result = nil;
+    if (res && res->is_string()) {
+      result = base::SysUTF8ToNSString(res->GetString());
+    }
+    completionHandler(result);
+  });
+}
+
+JavaScriptResultCallback CreateBoolCallback(void (^completionHandler)(BOOL)) {
+  return base::BindOnce(^(const base::Value* res) {
+    BOOL result = NO;
+    if (res && res->is_bool()) {
+      result = res->GetBool();
+    }
+    completionHandler(result);
+  });
+}
+
 void ExecuteJavaScriptFunction(const std::string& name,
                                const std::vector<base::Value>& parameters,
                                web::WebFrame* frame,
-                               base::OnceCallback<void(NSString*)> callback) {
-  __block base::OnceCallback<void(NSString*)> cb = std::move(callback);
+                               JavaScriptResultCallback callback) {
+  __block JavaScriptResultCallback cb = std::move(callback);
 
   if (!frame) {
     if (!cb.is_null()) {
@@ -243,11 +264,7 @@ void ExecuteJavaScriptFunction(const std::string& name,
   if (!cb.is_null()) {
     bool called = frame->CallJavaScriptFunction(
         name, parameters, base::BindOnce(^(const base::Value* res) {
-          NSString* result = nil;
-          if (res && res->is_string()) {
-            result = base::SysUTF8ToNSString(res->GetString());
-          }
-          std::move(cb).Run(result);
+          std::move(cb).Run(res);
         }),
         base::TimeDelta::FromSeconds(kJavaScriptExecutionTimeoutInSeconds));
     if (!called) {

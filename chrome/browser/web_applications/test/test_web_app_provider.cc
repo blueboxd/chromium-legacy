@@ -21,7 +21,6 @@
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace web_app {
 
@@ -144,12 +143,11 @@ void TestWebAppProvider::StartImpl() {
 TestWebAppProviderCreator::TestWebAppProviderCreator(
     CreateWebAppProviderCallback callback)
     : callback_(std::move(callback)) {
-  will_create_browser_context_services_subscription_ =
+  create_services_subscription_ =
       BrowserContextDependencyManager::GetInstance()
-          ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-              base::BindRepeating(&TestWebAppProviderCreator::
-                                      OnWillCreateBrowserContextServices,
-                                  base::Unretained(this)));
+          ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+              &TestWebAppProviderCreator::OnWillCreateBrowserContextServices,
+              base::Unretained(this)));
 }
 
 TestWebAppProviderCreator::~TestWebAppProviderCreator() = default;

@@ -74,10 +74,9 @@ class LocalNTPSearchSuggestTest : public InProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     subscription_ =
         BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                base::BindRepeating(&LocalNTPSearchSuggestTest::
-                                        OnWillCreateBrowserContextServices,
-                                    base::Unretained(this)));
+            ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+                &LocalNTPSearchSuggestTest::OnWillCreateBrowserContextServices,
+                base::Unretained(this)));
   }
 
   static std::unique_ptr<KeyedService> CreateSearchSuggestService(
@@ -93,7 +92,7 @@ class LocalNTPSearchSuggestTest : public InProcessBrowserTest {
   }
 
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
       subscription_;
 };
 

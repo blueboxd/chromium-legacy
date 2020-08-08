@@ -37,9 +37,9 @@
     if (base::StringToInt(delayString, &commandLineDelay)) {
       std::vector<base::Value> parameters;
       parameters.push_back(base::Value(commandLineDelay));
-      autofill::ExecuteJavaScriptFunction(
-          "autofill.setDelay", parameters, frame,
-          base::OnceCallback<void(NSString*)>());
+      autofill::ExecuteJavaScriptFunction("autofill.setDelay", parameters,
+                                          frame,
+                                          autofill::JavaScriptResultCallback());
     }
   }
 }
@@ -55,8 +55,9 @@
   std::vector<base::Value> parameters;
   parameters.push_back(base::Value(static_cast<int>(requiredFieldsCount)));
   parameters.push_back(base::Value(restrictUnownedFieldsToFormlessCheckout));
-  autofill::ExecuteJavaScriptFunction("autofill.extractForms", parameters,
-                                      frame, base::BindOnce(completionHandler));
+  autofill::ExecuteJavaScriptFunction(
+      "autofill.extractForms", parameters, frame,
+      autofill::CreateStringCallback(completionHandler));
 }
 
 #pragma mark -
@@ -70,7 +71,7 @@
   parameters.push_back(std::move(*data));
   autofill::ExecuteJavaScriptFunction("autofill.fillActiveFormField",
                                       parameters, frame,
-                                      base::BindOnce(^(NSString*) {
+                                      base::BindOnce(^(const base::Value*) {
                                         completionHandler();
                                       }));
 }
@@ -80,7 +81,7 @@
   parameters.push_back(base::Value(state ? 200 : 0));
   autofill::ExecuteJavaScriptFunction("formHandlers.trackFormMutations",
                                       parameters, frame,
-                                      base::OnceCallback<void(NSString*)>());
+                                      autofill::JavaScriptResultCallback());
 }
 
 - (void)toggleTrackingUserEditedFields:(BOOL)state
@@ -89,7 +90,7 @@
   parameters.push_back(base::Value(static_cast<bool>(state)));
   autofill::ExecuteJavaScriptFunction(
       "formHandlers.toggleTrackingUserEditedFields", parameters, frame,
-      base::OnceCallback<void(NSString*)>());
+      autofill::JavaScriptResultCallback());
 }
 
 - (void)fillForm:(std::unique_ptr<base::Value>)data
@@ -106,7 +107,7 @@
   parameters.push_back(std::move(*data));
   parameters.push_back(base::Value(fieldIdentifier));
   autofill::ExecuteJavaScriptFunction("autofill.fillForm", parameters, frame,
-                                      base::BindOnce(^(NSString*) {
+                                      base::BindOnce(^(const base::Value*) {
                                         completionHandler();
                                       }));
 }
@@ -121,7 +122,7 @@
   parameters.push_back(base::Value(base::SysNSStringToUTF8(fieldIdentifier)));
   autofill::ExecuteJavaScriptFunction("autofill.clearAutofilledFields",
                                       parameters, frame,
-                                      base::BindOnce(^(NSString*) {
+                                      base::BindOnce(^(const base::Value*) {
                                         completionHandler();
                                       }));
 }
@@ -133,7 +134,7 @@
   parameters.push_back(std::move(*data));
   autofill::ExecuteJavaScriptFunction("autofill.fillPredictionData", parameters,
                                       frame,
-                                      base::OnceCallback<void(NSString*)>());
+                                      autofill::JavaScriptResultCallback());
 }
 
 @end

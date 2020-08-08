@@ -66,13 +66,22 @@ bool ExtractFormData(const base::Value& form,
 bool ExtractFormFieldData(const base::DictionaryValue& field,
                           FormFieldData* field_data);
 
+typedef base::OnceCallback<void(const base::Value*)> JavaScriptResultCallback;
+
+// Creates a callback for a string JS function return type.
+JavaScriptResultCallback CreateStringCallback(
+    void (^completionHandler)(NSString*));
+
+// Creates a callback for a bool JS function return type.
+JavaScriptResultCallback CreateBoolCallback(void (^completionHandler)(BOOL));
+
 // Executes the JavaScript function with the given name and argument.
 // If |callback| is not null, it will be called when the result of the
 // command is received, or immediately if the command cannot be executed.
 void ExecuteJavaScriptFunction(const std::string& name,
                                const std::vector<base::Value>& parameters,
                                web::WebFrame* frame,
-                               base::OnceCallback<void(NSString*)> callback);
+                               JavaScriptResultCallback callback);
 
 }  // namespace autofill
 

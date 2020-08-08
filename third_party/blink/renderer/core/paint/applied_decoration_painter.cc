@@ -35,7 +35,7 @@ void AppliedDecorationPainter::Paint() {
 
 void AppliedDecorationPainter::StrokeWavyTextDecoration() {
   context_.SetShouldAntialias(true);
-  context_.StrokePath(decoration_info_.PrepareWavyStrokePath(line_));
+  context_.StrokePath(decoration_info_.PrepareWavyStrokePath(line_).value());
 }
 
 }  // namespace blink

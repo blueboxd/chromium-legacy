@@ -1376,7 +1376,7 @@ void PaintArtifactCompositor::Update(
                        .GetTracking();
       }
       UpdateLayerDebugInfo(
-          *layer, pending_layer.FirstPaintChunk().id,
+          layer.get(), pending_layer.FirstPaintChunk().id,
           GetCompositingReasons(pending_layer, previous_pending_layer),
           tracking);
     }
@@ -1593,11 +1593,11 @@ void PaintArtifactCompositor::SetLayerDebugInfoEnabled(bool enabled) {
 }
 
 void PaintArtifactCompositor::UpdateLayerDebugInfo(
-    cc::Layer& layer,
+    cc::Layer* layer,
     const PaintChunk::Id& id,
     CompositingReasons compositing_reasons,
     RasterInvalidationTracking* raster_invalidation_tracking) {
-  cc::LayerDebugInfo& debug_info = layer.EnsureDebugInfo();
+  cc::LayerDebugInfo& debug_info = layer->EnsureDebugInfo();
 
   debug_info.name = id.client.DebugName().Utf8();
   if (id.type == DisplayItem::kForeignLayerContentsWrapper) {

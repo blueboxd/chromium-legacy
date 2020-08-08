@@ -247,6 +247,41 @@ bool AddAutofillProfileNames(const AutofillProfile& profile,
   return s.Run();
 }
 
+bool AddAutofillProfileAddresses(const AutofillProfile& profile,
+                                 sql::Database* db) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillAddressEnhancementVotes)) {
+    sql::Statement s(db->GetUniqueStatement(
+        "INSERT INTO autofill_profile_addresses "
+        "(guid, "
+        "street_address, street_address_status, "
+        "street_name, street_name_status, "
+        "dependent_street_name, dependent_street_name_status, "
+        "house_number, house_number_status, "
+        "subpremise, subpremise_status, "
+        "premise_name, premise_name_status) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+
+    s.BindString(0, profile.guid());
+    s.BindString16(1, profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+    s.BindInt(2, profile.GetVerificationStatusInt(ADDRESS_HOME_STREET_ADDRESS));
+    s.BindString16(3, profile.GetRawInfo(ADDRESS_HOME_STREET_NAME));
+    s.BindInt(4, profile.GetVerificationStatusInt(ADDRESS_HOME_STREET_NAME));
+    s.BindString16(5, profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME));
+    s.BindInt(6, profile.GetVerificationStatusInt(
+                     ADDRESS_HOME_DEPENDENT_STREET_NAME));
+    s.BindString16(7, profile.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER));
+    s.BindInt(8, profile.GetVerificationStatusInt(ADDRESS_HOME_HOUSE_NUMBER));
+    s.BindString16(9, profile.GetRawInfo(ADDRESS_HOME_SUBPREMISE));
+    s.BindInt(10, profile.GetVerificationStatusInt(ADDRESS_HOME_SUBPREMISE));
+    s.BindString16(11, profile.GetRawInfo(ADDRESS_HOME_PREMISE_NAME));
+    s.BindInt(12, profile.GetVerificationStatusInt(ADDRESS_HOME_PREMISE_NAME));
+
+    return s.Run();
+  }
+  return true;
+}
+
 bool AddAutofillProfileNamesToProfile(sql::Database* db,
                                       AutofillProfile* profile) {
   sql::Statement s(db->GetUniqueStatement(
@@ -306,6 +341,62 @@ bool AddAutofillProfileNamesToProfile(sql::Database* db,
     }
   }
   return s.Succeeded();
+}
+
+bool AddAutofillProfileAddressesToProfile(sql::Database* db,
+                                          AutofillProfile* profile) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillAddressEnhancementVotes)) {
+    sql::Statement s(db->GetUniqueStatement(
+        "SELECT "
+        "guid, "
+        "street_address, street_address_status, "
+        "street_name, street_name_status, "
+        "dependent_street_name, dependent_street_name_status, "
+        "house_number, house_number_status, "
+        "subpremise, subpremise_status, "
+        "premise_name, premise_name_status "
+        "FROM autofill_profile_addresses "
+        "WHERE guid=? "
+        "LIMIT 1"));
+    s.BindString(0, profile->guid());
+
+    if (!s.is_valid())
+      return false;
+
+    if (s.Step()) {
+      DCHECK_EQ(profile->guid(), s.ColumnString(0));
+      base::string16 street_address = s.ColumnString16(1);
+      // At this stage, the unstructured street address was already written to
+      // the profile. If the street address was changed by a legacy client, the
+      // information diverged from the one in this table that is only written by
+      // new clients. If this is not the case, read the structured information.
+      if (street_address == profile->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS)) {
+        profile->SetRawInfoWithVerificationStatusInt(
+            ADDRESS_HOME_STREET_ADDRESS, s.ColumnString16(1), s.ColumnInt(2));
+        profile->SetRawInfoWithVerificationStatusInt(
+            ADDRESS_HOME_STREET_NAME, s.ColumnString16(3), s.ColumnInt(4));
+        profile->SetRawInfoWithVerificationStatusInt(
+            ADDRESS_HOME_DEPENDENT_STREET_NAME, s.ColumnString16(5),
+            s.ColumnInt(6));
+        profile->SetRawInfoWithVerificationStatusInt(
+            ADDRESS_HOME_HOUSE_NUMBER, s.ColumnString16(7), s.ColumnInt(8));
+        profile->SetRawInfoWithVerificationStatusInt(
+            ADDRESS_HOME_SUBPREMISE, s.ColumnString16(9), s.ColumnInt(10));
+        profile->SetRawInfoWithVerificationStatusInt(
+            ADDRESS_HOME_PREMISE_NAME, s.ColumnString16(11), s.ColumnInt(12));
+      } else {
+        // Otherwise remove the structured information from the table for
+        // eventual deletion consistency.
+        sql::Statement s1(db->GetUniqueStatement(
+            "DELETE FROM autofill_profile_addresses WHERE guid = ?"));
+        s1.BindString(0, profile->guid());
+        s1.Run();
+      }
+    }
+    return s.Succeeded();
+  }
+  return true;
 }
 
 bool AddAutofillProfileEmailsToProfile(sql::Database* db,
@@ -376,6 +467,10 @@ bool AddAutofillProfilePieces(const AutofillProfile& profile,
 
   if (!AddAutofillProfilePhones(profile, db))
     return false;
+
+  if (!AddAutofillProfileAddresses(profile, db))
+    return false;
+
   return true;
 }
 
@@ -398,7 +493,14 @@ bool RemoveAutofillProfilePieces(const std::string& guid, sql::Database* db) {
       "DELETE FROM autofill_profile_phones WHERE guid = ?"));
   s3.BindString(0, guid);
 
-  return s3.Run();
+  if (!s3.Run())
+    return false;
+
+  sql::Statement s4(db->GetUniqueStatement(
+      "DELETE FROM autofill_profile_addresses WHERE guid = ?"));
+  s4.BindString(0, guid);
+
+  return s4.Run();
 }
 
 WebDatabaseTable::TypeKey GetKey() {
@@ -481,13 +583,13 @@ WebDatabaseTable::TypeKey AutofillTable::GetTypeKey() const {
 
 bool AutofillTable::CreateTablesIfNecessary() {
   return (InitMainTable() && InitCreditCardsTable() && InitProfilesTable() &&
-          InitProfileNamesTable() && InitProfileEmailsTable() &&
-          InitProfilePhonesTable() && InitProfileTrashTable() &&
-          InitMaskedCreditCardsTable() && InitUnmaskedCreditCardsTable() &&
-          InitServerCardMetadataTable() && InitServerAddressesTable() &&
-          InitServerAddressMetadataTable() && InitAutofillSyncMetadataTable() &&
-          InitModelTypeStateTable() && InitPaymentsCustomerDataTable() &&
-          InitPaymentsUPIVPATable() &&
+          InitProfileAddressesTable() && InitProfileNamesTable() &&
+          InitProfileEmailsTable() && InitProfilePhonesTable() &&
+          InitProfileTrashTable() && InitMaskedCreditCardsTable() &&
+          InitUnmaskedCreditCardsTable() && InitServerCardMetadataTable() &&
+          InitServerAddressesTable() && InitServerAddressMetadataTable() &&
+          InitAutofillSyncMetadataTable() && InitModelTypeStateTable() &&
+          InitPaymentsCustomerDataTable() && InitPaymentsUPIVPATable() &&
           InitServerCreditCardCloudTokenDataTable());
 }
 
@@ -1029,6 +1131,11 @@ std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
   // The details should be added after the other info to make sure they don't
   // change when we change the names/emails/phones.
   AddAutofillProfileDetailsFromStatement(s, profile.get());
+
+  // The structured address information should be added after the street_address
+  // from the query above was  written because this information is used to
+  // detect changes by a legacy client.
+  AddAutofillProfileAddressesToProfile(db_, profile.get());
 
   // For more-structured profiles, the profile must be finalized to fully
   // populate the name fields.
@@ -2065,9 +2172,15 @@ bool AutofillTable::ClearAutofillProfiles() {
     return false;
 
   sql::Statement s4(
+      db_->GetUniqueStatement("DELETE FROM autofill_profile_addresses"));
+
+  if (!s4.Run())
+    return false;
+
+  sql::Statement s5(
       db_->GetUniqueStatement("DELETE FROM autofill_profile_phones"));
 
-  return s4.Run();
+  return s5.Run();
 }
 
 bool AutofillTable::ClearCreditCards() {
@@ -2157,7 +2270,9 @@ bool AutofillTable::RemoveOrphanAutofillTableRows() {
   sql::Statement s_orphan_profile_pieces_get(db_->GetUniqueStatement(
       "SELECT guid FROM (SELECT guid FROM autofill_profile_names UNION SELECT "
       "guid FROM autofill_profile_emails UNION SELECT guid FROM "
-      "autofill_profile_phones) WHERE guid NOT IN (SELECT guid FROM "
+      "autofill_profile_phones UNION SELECT guid FROM "
+      "autofill_profile_addresses) "
+      "WHERE guid NOT IN (SELECT guid FROM "
       "autofill_profiles)"));
 
   // Put the orphan guids in a set.
@@ -3271,6 +3386,31 @@ bool AutofillTable::InitProfileNamesTable() {
                       "conjunction_last_name_status INTEGER DEFAULT 0, "
                       "second_last_name_status INTEGER DEFAULT 0, "
                       "full_name_status INTEGER DEFAULT 0)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AutofillTable::InitProfileAddressesTable() {
+  if (!db_->DoesTableExist("autofill_profile_addresses")) {
+    // The default value of 0 corresponds to the verification status
+    // |kNoStatus|.
+    if (!db_->Execute("CREATE TABLE autofill_profile_addresses ( "
+                      "guid VARCHAR, "
+                      "street_address VARCHAR, "
+                      "street_name VARCHAR, "
+                      "dependent_street_name VARCHAR, "
+                      "house_number VARCHAR, "
+                      "subpremise VARCHAR, "
+                      "premise_name VARCHAR, "
+                      "street_address_status INTEGER DEFAULT 0, "
+                      "street_name_status INTEGER DEFAULT 0, "
+                      "dependent_street_name_status INTEGER DEFAULT 0, "
+                      "house_number_status INTEGER DEFAULT 0, "
+                      "subpremise_status INTEGER DEFAULT 0, "
+                      "premise_name_status INTEGER DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }

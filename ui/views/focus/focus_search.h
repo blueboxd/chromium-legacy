@@ -6,7 +6,6 @@
 #define UI_VIEWS_FOCUS_FOCUS_SEARCH_H_
 
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -54,6 +53,9 @@ class VIEWS_EXPORT FocusSearch {
   //   needed and you want to check IsAccessibilityFocusable(), rather than
   //   IsFocusable().
   FocusSearch(View* root, bool cycle, bool accessibility_mode);
+
+  FocusSearch(const FocusSearch&) = delete;
+  FocusSearch& operator=(const FocusSearch&) = delete;
   virtual ~FocusSearch() = default;
 
   // Finds the next view that should be focused and returns it. If a
@@ -149,8 +151,6 @@ class VIEWS_EXPORT FocusSearch {
   View* root_;
   bool cycle_;
   bool accessibility_mode_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusSearch);
 };
 
 }  // namespace views

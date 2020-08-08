@@ -98,6 +98,35 @@ struct PaymentsCustomerData;
 //                      different fields according to the client validity api is
 //                      updated or not. Added in version 80.
 //
+// autofill_profile_addresses
+//   guid               The guid string that identifies the profile to which
+//                      the name belongs.
+//                      This table stores the structured address information.
+//   street_address     Stores the street address. This field is also stored in
+//                      the profile table and is used to detect if a legacy
+//                      client that does not support writing to this table
+//                      changed the address. If this is true, the address stored
+//                      in the table is removed.
+//   street_name        The name of the street.
+//   dependent_street_name
+//                      The name of the crossing street.
+//   house_number       The house number.
+//   subpremise         The floor, apartment number and staircase.
+//                      apartment number.
+//   premise_name       The name of the premise.
+//   street_address_status
+//   street_name_status
+//   dependent_street_name_status
+//   house_number_status
+//   subpremise_status
+//   premise_name_status
+//                      Each token of the address has an additional validation
+//                      status that indicates if Autofill parsed the value out
+//                      of an unstructured (last) name, or if autofill formatted
+//                      the token from its structured subcomponents, or if the
+//                      value was observed in a form submission, or even
+//                      validated by the user in the settings.
+//
 // autofill_profile_names
 //                      This table contains the multi-valued name fields
 //                      associated with a profile.
@@ -679,6 +708,7 @@ class AutofillTable : public WebDatabaseTable,
   bool InitMainTable();
   bool InitCreditCardsTable();
   bool InitProfilesTable();
+  bool InitProfileAddressesTable();
   bool InitProfileNamesTable();
   bool InitProfileEmailsTable();
   bool InitProfilePhonesTable();

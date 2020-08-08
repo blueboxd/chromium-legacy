@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -28,13 +27,13 @@ class VIEWS_EXPORT FocusManagerFactory {
 
  protected:
   FocusManagerFactory();
+
+  FocusManagerFactory(const FocusManagerFactory&) = delete;
+  FocusManagerFactory& operator=(const FocusManagerFactory&) = delete;
   virtual ~FocusManagerFactory();
 
   // Create a FocusManager for the given |widget|.
   virtual std::unique_ptr<FocusManager> CreateFocusManager(Widget* widget) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FocusManagerFactory);
 };
 
 }  // namespace views

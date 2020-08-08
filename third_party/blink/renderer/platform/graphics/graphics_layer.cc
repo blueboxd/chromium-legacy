@@ -261,13 +261,29 @@ IntRect GraphicsLayer::InterestRect() {
 }
 
 bool GraphicsLayer::PaintRecursively() {
+  // TODO(crbug.com/1033240): Debugging information for the referenced bug.
+  // Remove when it is fixed.
+  CHECK(&client_);
+  if (client_.PaintBlockedByDisplayLockIncludingAncestors(
+          DisplayLockContextLifecycleTarget::kSelf)) {
+    return false;
+  }
+
   bool painted = false;
-  ForAllPaintingGraphicsLayers(
-      *this, [&painted](GraphicsLayer& layer) { painted |= layer.Paint(); });
+  if (PaintsContentOrHitTest()) {
+    if (Paint())
+      painted = true;
+  }
+
+  for (auto* child : Children())
+    painted |= child->PaintRecursively();
   return painted;
 }
 
 bool GraphicsLayer::Paint() {
+  if (client_.ShouldThrottleRendering())
+    return false;
+
 #if !DCHECK_IS_ON()
   // TODO(crbug.com/853096): Investigate why we can ever reach here without
   // a valid layer state. Seems to only happen on Android builds.

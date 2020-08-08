@@ -210,7 +210,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   // TODO(wangxianzhu): Make this private and refactor when removing
   // pre-CompositeAfterPaint.
-  static void UpdateLayerDebugInfo(cc::Layer& layer,
+  static void UpdateLayerDebugInfo(cc::Layer* layer,
                                    const PaintChunk::Id&,
                                    CompositingReasons,
                                    RasterInvalidationTracking*);

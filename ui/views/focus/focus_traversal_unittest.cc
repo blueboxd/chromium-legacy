@@ -138,6 +138,9 @@ class BorderView : public NativeViewHost {
     SetFocusBehavior(FocusBehavior::NEVER);
   }
 
+  BorderView(const BorderView&) = delete;
+  BorderView& operator=(const BorderView&) = delete;
+
   virtual internal::RootView* GetContentsRootView() {
     return static_cast<internal::RootView*>(widget_->GetRootView());
   }
@@ -172,14 +175,14 @@ class BorderView : public NativeViewHost {
  private:
   View* child_;
   std::unique_ptr<Widget> widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(BorderView);
 };
 
 }  // namespace
 
 class FocusTraversalTest : public FocusManagerTest {
  public:
+  FocusTraversalTest(const FocusTraversalTest&) = delete;
+  FocusTraversalTest& operator=(const FocusTraversalTest&) = delete;
   ~FocusTraversalTest() override;
 
   void InitContentView() override;
@@ -226,8 +229,6 @@ class FocusTraversalTest : public FocusManagerTest {
   DummyComboboxModel combobox_model_;
   PaneView* left_container_;
   PaneView* right_container_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusTraversalTest);
 };
 
 FocusTraversalTest::FocusTraversalTest() = default;
@@ -813,15 +814,16 @@ TEST_F(FocusTraversalTest, PaneTraversal) {
 
 class FocusTraversalNonFocusableTest : public FocusManagerTest {
  public:
+  FocusTraversalNonFocusableTest(const FocusTraversalNonFocusableTest&) =
+      delete;
+  FocusTraversalNonFocusableTest& operator=(
+      const FocusTraversalNonFocusableTest&) = delete;
   ~FocusTraversalNonFocusableTest() override = default;
 
   void InitContentView() override;
 
  protected:
   FocusTraversalNonFocusableTest() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FocusTraversalNonFocusableTest);
 };
 
 void FocusTraversalNonFocusableTest::InitContentView() {

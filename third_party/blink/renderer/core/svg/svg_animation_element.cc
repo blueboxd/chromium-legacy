@@ -136,8 +136,9 @@ static bool ParseKeySplinesInternal(const String& string,
       ptr++;
     SkipOptionalSVGSpaces(ptr, end);
 
-    // Require that the x values are within the [0, 1] range.
-    if (!IsInZeroToOneRange(cp1x) || !IsInZeroToOneRange(cp2x))
+    // The values of cpx1 cpy1 cpx2 cpy2 must all be in the range 0 to 1.
+    if (!IsInZeroToOneRange(cp1x) || !IsInZeroToOneRange(cp1y) ||
+        !IsInZeroToOneRange(cp2x) || !IsInZeroToOneRange(cp2y))
       return false;
 
     result.push_back(gfx::CubicBezier(cp1x, cp1y, cp2x, cp2y));

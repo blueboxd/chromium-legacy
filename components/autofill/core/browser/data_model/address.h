@@ -68,7 +68,7 @@ class Address : public FormGroup {
   base::string16 dependent_street_name_;
   base::string16 house_number_;
   base::string16 premise_name_;
-  base::string16 floor_;
+  base::string16 subpremise_;
 
   // The ISO 3166 2-letter country code, or an empty string if there is no
   // country data specified for this address.

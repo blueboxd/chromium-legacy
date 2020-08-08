@@ -194,6 +194,7 @@ void TextDecorationInfo::SetPerLineData(TextDecoration line,
   line_data_[index].line_offset = line_offset;
   line_data_[index].double_offset = double_offset;
   line_data_[index].wavy_offset_factor = wavy_offset_factor;
+  line_data_[index].stroke_path.reset();
 }
 
 ETextDecorationStyle TextDecorationInfo::DecorationStyle() const {
@@ -272,30 +273,35 @@ FloatRect TextDecorationInfo::BoundsForLine(TextDecoration line) const {
 
 FloatRect TextDecorationInfo::BoundsForDottedOrDashed(
     TextDecoration line) const {
-  // These coordinate transforms need to match what's happening in
-  // GraphicsContext's drawLineForText and drawLine.
-  FloatPoint start_point = StartPoint(line);
-  int y = floorf(start_point.Y() +
-                 std::max<float>(ResolvedThickness() / 2.0f, 0.5f));
-  FloatPoint rounded_start_point(start_point.X(), y);
-  FloatPoint rounded_end_point(rounded_start_point + FloatPoint(width_, 0));
-  GraphicsContext::AdjustLineToPixelBoundaries(
-      rounded_start_point, rounded_end_point, roundf(ResolvedThickness()));
+  int line_data_index = TextDecorationToLineDataIndex(line);
+  if (!line_data_[line_data_index].stroke_path) {
+    // These coordinate transforms need to match what's happening in
+    // GraphicsContext's drawLineForText and drawLine.
+    FloatPoint start_point = StartPoint(line);
+    int y = floorf(start_point.Y() +
+                   std::max<float>(ResolvedThickness() / 2.0f, 0.5f));
+    FloatPoint rounded_start_point(start_point.X(), y);
+    FloatPoint rounded_end_point(rounded_start_point + FloatPoint(width_, 0));
+    GraphicsContext::AdjustLineToPixelBoundaries(
+        rounded_start_point, rounded_end_point, roundf(ResolvedThickness()));
 
-  Path stroke_path;
-  stroke_path.MoveTo(rounded_start_point);
-  stroke_path.AddLineTo(rounded_end_point);
+    Path& stroke_path =
+        line_data_[TextDecorationToLineDataIndex(line)].stroke_path.emplace();
+    stroke_path.MoveTo(rounded_start_point);
+    stroke_path.AddLineTo(rounded_end_point);
+  }
 
   StrokeData stroke_data;
   stroke_data.SetThickness(ResolvedThickness());
   stroke_data.SetStyle(TextDecorationStyleToStrokeStyle(DecorationStyle()));
-  return stroke_path.StrokeBoundingRect(stroke_data);
+  return line_data_[line_data_index].stroke_path.value().StrokeBoundingRect(
+      stroke_data);
 }
 
 FloatRect TextDecorationInfo::BoundsForWavy(TextDecoration line) const {
   StrokeData stroke_data;
   stroke_data.SetThickness(ResolvedThickness());
-  return PrepareWavyStrokePath(line).StrokeBoundingRect(stroke_data);
+  return PrepareWavyStrokePath(line)->StrokeBoundingRect(stroke_data);
 }
 
 /*
@@ -325,7 +331,12 @@ FloatRect TextDecorationInfo::BoundsForWavy(TextDecoration line) const {
  *             |-----------|
  *                 step
  */
-Path TextDecorationInfo::PrepareWavyStrokePath(TextDecoration line) const {
+base::Optional<Path> TextDecorationInfo::PrepareWavyStrokePath(
+    TextDecoration line) const {
+  int line_data_index = TextDecorationToLineDataIndex(line);
+  if (line_data_[line_data_index].stroke_path)
+    return line_data_[line_data_index].stroke_path;
+
   FloatPoint start_point = StartPoint(line);
   float wave_offset =
       DoubleOffset(line) *
@@ -336,7 +347,7 @@ Path TextDecorationInfo::PrepareWavyStrokePath(TextDecoration line) const {
 
   GraphicsContext::AdjustLineToPixelBoundaries(p1, p2, ResolvedThickness());
 
-  Path path;
+  Path& path = line_data_[line_data_index].stroke_path.emplace();
   path.MoveTo(p1);
 
   // Distance between decoration's axis and Bezier curve's control points.
@@ -349,9 +360,10 @@ Path TextDecorationInfo::PrepareWavyStrokePath(TextDecoration line) const {
   // as strockThickness increases to make the curve looks better.
   float control_point_distance = 3 * std::max<float>(2, ResolvedThickness());
 
-  // Increment used to form the diamond shape between start point (p1), control
-  // points and end point (p2) along the axis of the decoration. Makes the
-  // curve wider as strockThickness increases to make the curve looks better.
+  // Increment used to form the diamond shape between start point (p1),
+  // control points and end point (p2) along the axis of the decoration. Makes
+  // the curve wider as strockThickness increases to make the curve looks
+  // better.
   float step = 2 * std::max<float>(2, ResolvedThickness());
 
   bool is_vertical_line = (p1.X() == p2.X());
@@ -409,7 +421,7 @@ Path TextDecorationInfo::PrepareWavyStrokePath(TextDecoration line) const {
                             FloatPoint(x, y_axis));
     }
   }
-  return path;
+  return line_data_[line_data_index].stroke_path;
 }
 
 }  // namespace blink

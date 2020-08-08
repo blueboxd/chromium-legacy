@@ -112,8 +112,8 @@ base::string16 Address::GetRawInfo(ServerFieldType type) const {
     case ADDRESS_HOME_PREMISE_NAME:
       return premise_name_;
 
-    case ADDRESS_HOME_FLOOR:
-      return floor_;
+    case ADDRESS_HOME_SUBPREMISE:
+      return subpremise_;
 
     default:
       NOTREACHED() << "Unrecognized type: " << type;
@@ -211,8 +211,8 @@ void Address::SetRawInfoWithVerificationStatus(ServerFieldType type,
       premise_name_ = value;
       break;
 
-    case ADDRESS_HOME_FLOOR:
-      floor_ = value;
+    case ADDRESS_HOME_SUBPREMISE:
+      subpremise_ = value;
       break;
 
     default:
@@ -225,7 +225,7 @@ void Address::ResetStructuredTokes() {
   dependent_street_name_.clear();
   house_number_.clear();
   premise_name_.clear();
-  floor_.clear();
+  subpremise_.clear();
 }
 
 void Address::GetMatchingTypes(const base::string16& text,
@@ -279,7 +279,7 @@ void Address::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
     supported_types->insert(ADDRESS_HOME_DEPENDENT_STREET_NAME);
     supported_types->insert(ADDRESS_HOME_HOUSE_NUMBER);
     supported_types->insert(ADDRESS_HOME_PREMISE_NAME);
-    supported_types->insert(ADDRESS_HOME_FLOOR);
+    supported_types->insert(ADDRESS_HOME_SUBPREMISE);
   }
 }
 

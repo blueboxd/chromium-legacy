@@ -1032,6 +1032,196 @@ TEST_F(AutofillTableTest,
             VerificationStatus::kNoStatus);
 }
 
+TEST_F(AutofillTableTest, AutofillProfile_StructuredAddresses) {
+  // Enable the structured addresses.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillAddressEnhancementVotes);
+
+  AutofillProfile profile;
+  profile.set_origin(std::string());
+
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_ADDRESS,
+                                           ASCIIToUTF16("Street Address"),
+                                           VerificationStatus::kUserVerified);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_NAME,
+                                           ASCIIToUTF16("Street Name"),
+                                           VerificationStatus::kFormatted);
+  profile.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_DEPENDENT_STREET_NAME, ASCIIToUTF16("Dependent Street Name"),
+      VerificationStatus::kObserved);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER,
+                                           ASCIIToUTF16("House Number"),
+                                           VerificationStatus::kUserVerified);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_SUBPREMISE,
+                                           ASCIIToUTF16("Subpremise"),
+                                           VerificationStatus::kUserVerified);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_PREMISE_NAME,
+                                           ASCIIToUTF16("Premise"),
+                                           VerificationStatus::kUserVerified);
+  ASSERT_EQ(profile.GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            ASCIIToUTF16("Street Name"));
+
+  // Add the profile to the table.
+  EXPECT_TRUE(table_->AddAutofillProfile(profile));
+
+  std::unique_ptr<AutofillProfile> db_profile =
+      table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
+
+  EXPECT_EQ(db_profile->GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            ASCIIToUTF16("Street Name"));
+  EXPECT_EQ(db_profile->GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME),
+            ASCIIToUTF16("Dependent Street Name"));
+  EXPECT_EQ(db_profile->GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER),
+            ASCIIToUTF16("House Number"));
+  EXPECT_EQ(db_profile->GetRawInfo(ADDRESS_HOME_SUBPREMISE),
+            ASCIIToUTF16("Subpremise"));
+  EXPECT_EQ(db_profile->GetRawInfo(ADDRESS_HOME_PREMISE_NAME),
+            ASCIIToUTF16("Premise"));
+
+  // Verify that it is correct.
+  EXPECT_EQ(profile, *db_profile);
+}
+
+TEST_F(AutofillTableTest,
+       AutofillProfile_StructuredAddresses_Eventual_Deletion) {
+  // Enable the structured addresses.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillAddressEnhancementVotes);
+
+  AutofillProfile profile;
+  profile.set_origin(std::string());
+
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_ADDRESS,
+                                           ASCIIToUTF16("Street Address"),
+                                           VerificationStatus::kUserVerified);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_NAME,
+                                           ASCIIToUTF16("Street Name"),
+                                           VerificationStatus::kFormatted);
+  profile.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_DEPENDENT_STREET_NAME, ASCIIToUTF16("Dependent Street Name"),
+      VerificationStatus::kObserved);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER,
+                                           ASCIIToUTF16("House Number"),
+                                           VerificationStatus::kUserVerified);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_SUBPREMISE,
+                                           ASCIIToUTF16("Subpremise"),
+                                           VerificationStatus::kUserVerified);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_PREMISE_NAME,
+                                           ASCIIToUTF16("Premise"),
+                                           VerificationStatus::kUserVerified);
+  ASSERT_EQ(profile.GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            ASCIIToUTF16("Street Name"));
+  // Add the profile to the table.
+  EXPECT_TRUE(table_->AddAutofillProfile(profile));
+
+  AutofillClock::Now();
+  std::unique_ptr<AutofillProfile> db_profile =
+      table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
+
+  // Verify that it is correct.
+  EXPECT_EQ(profile, *db_profile);
+
+  EXPECT_EQ(db_profile->GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            ASCIIToUTF16("Street Name"));
+  EXPECT_EQ(db_profile->GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME),
+            ASCIIToUTF16("Dependent Street Name"));
+  EXPECT_EQ(db_profile->GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER),
+            ASCIIToUTF16("House Number"));
+  EXPECT_EQ(db_profile->GetRawInfo(ADDRESS_HOME_SUBPREMISE),
+            ASCIIToUTF16("Subpremise"));
+  EXPECT_EQ(db_profile->GetRawInfo(ADDRESS_HOME_PREMISE_NAME),
+            ASCIIToUTF16("Premise"));
+
+  // Deactivate the feature.
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillAddressEnhancementVotes);
+
+  // Retrieve the address and verify that the structured tokens are not written.
+  std::unique_ptr<AutofillProfile> legacy_db_profile =
+      table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(legacy_db_profile);
+
+  EXPECT_EQ(legacy_db_profile->GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            base::string16());
+  EXPECT_EQ(legacy_db_profile->GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME),
+            base::string16());
+  EXPECT_EQ(legacy_db_profile->GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER),
+            base::string16());
+  EXPECT_EQ(legacy_db_profile->GetRawInfo(ADDRESS_HOME_SUBPREMISE),
+            base::string16());
+  EXPECT_EQ(legacy_db_profile->GetRawInfo(ADDRESS_HOME_PREMISE_NAME),
+            base::string16());
+
+  // Change the street address and update the profile.
+  legacy_db_profile->SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_STREET_ADDRESS, ASCIIToUTF16("Other Street Address"),
+      VerificationStatus::kUserVerified);
+  table_->UpdateAutofillProfile(*legacy_db_profile);
+  std::unique_ptr<AutofillProfile> changed_db_profile =
+      table_->GetAutofillProfile(profile.guid());
+  EXPECT_EQ(changed_db_profile->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS),
+            ASCIIToUTF16("Other Street Address"));
+
+  // Note, this step already removes the structured address entry from the
+  // table. To simulate the behavior of legacy clients, we manually insert it
+  // again.
+  sql::Statement s(db_->GetSQLConnection()->GetUniqueStatement(
+      "INSERT INTO autofill_profile_addresses "
+      "(guid, street_address) VALUES (?,?)"));
+  s.BindString(0, profile.guid());
+  s.BindString16(1, ASCIIToUTF16("Street Address"));
+  ASSERT_TRUE(s.is_valid());
+  ASSERT_TRUE(s.Run());
+
+  // And very that it is written.
+  sql::Statement s1(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT count(*) "
+      "FROM autofill_profile_addresses "
+      "WHERE guid=?"));
+  s1.BindString(0, profile.guid());
+  ASSERT_TRUE(s1.is_valid());
+  ASSERT_TRUE(s1.Step());
+  EXPECT_EQ(0, s1.ColumnInt(1));
+
+  // Enable the feature again and load the profile.
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillAddressEnhancementVotes);
+
+  // Retrieve the address and verify that the structured tokens are not written
+  // because the data is in an inconsistent state that should trigger a complete
+  // removal of the structured address.
+  std::unique_ptr<AutofillProfile> migrated_db_profile =
+      table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(migrated_db_profile);
+
+  EXPECT_EQ(migrated_db_profile->GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            base::string16());
+  EXPECT_EQ(migrated_db_profile->GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME),
+            base::string16());
+  EXPECT_EQ(migrated_db_profile->GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER),
+            base::string16());
+  EXPECT_EQ(migrated_db_profile->GetRawInfo(ADDRESS_HOME_SUBPREMISE),
+            base::string16());
+  EXPECT_EQ(migrated_db_profile->GetRawInfo(ADDRESS_HOME_PREMISE_NAME),
+            base::string16());
+
+  // Manually query the data base to verify that the structured address was
+  // deleted.
+  sql::Statement s2(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT count(*) "
+      "FROM autofill_profile_addresses "
+      "WHERE guid=?"));
+  s2.BindString(0, profile.guid());
+  ASSERT_TRUE(s2.is_valid());
+  ASSERT_TRUE(s2.Step());
+
+  EXPECT_EQ(0, s2.ColumnInt(0));
+}
+
 // This test is an adaption of |AutofillTableTest.AutofillProfile| to structured
 // names.
 TEST_F(AutofillTableTest, AutofillProfile_StructuredNames) {

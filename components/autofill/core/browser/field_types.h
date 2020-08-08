@@ -196,8 +196,8 @@ enum ServerFieldType {
   // House number of an address, may be alphanumeric.
   ADDRESS_HOME_HOUSE_NUMBER = 104,
 
-  // Floor within in a building, may be alphanumeric.
-  ADDRESS_HOME_FLOOR = 105,
+  // Contains the floor, the staircase the apartment number within a building.
+  ADDRESS_HOME_SUBPREMISE = 105,
 
   // A catch-all for other type of subunits (only used until something more
   // precise is defined).

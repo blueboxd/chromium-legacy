@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/views/view_observer.h"
@@ -143,6 +142,9 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   enum class FocusCycleWrapping { kEnabled, kDisabled };
 
   FocusManager(Widget* widget, std::unique_ptr<FocusManagerDelegate> delegate);
+
+  FocusManager(const FocusManager&) = delete;
+  FocusManager& operator=(const FocusManager&) = delete;
   ~FocusManager() override;
 
   // Processes the passed key event for accelerators and keyboard traversal.
@@ -379,8 +381,6 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
 
   // Whether FocusManager is currently trying to restore a focused view.
   bool in_restoring_focused_view_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusManager);
 };
 
 }  // namespace views

@@ -93,7 +93,7 @@ class CORE_EXPORT TextDecorationInfo {
 
   // Return a path for a wavy line at the given position, for the
   // current decoration.
-  Path PrepareWavyStrokePath(TextDecoration line) const;
+  base::Optional<Path> PrepareWavyStrokePath(TextDecoration line) const;
 
  private:
   float ComputeUnderlineThickness(
@@ -124,6 +124,7 @@ class CORE_EXPORT TextDecorationInfo {
     float line_offset;
     float double_offset;
     int wavy_offset_factor;
+    mutable base::Optional<Path> stroke_path;
   };
   PerLineData line_data_[3];
 };

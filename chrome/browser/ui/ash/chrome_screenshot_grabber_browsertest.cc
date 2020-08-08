@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -24,6 +25,9 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
+using testing::_;
+using testing::Return;
+
 class ChromeScreenshotGrabberBrowserTest
     : public InProcessBrowserTest,
       public ChromeScreenshotGrabberTestObserver,
@@ -38,6 +42,8 @@ class ChromeScreenshotGrabberBrowserTest
     display_service_->SetNotificationAddedClosure(base::BindRepeating(
         &ChromeScreenshotGrabberBrowserTest::OnNotificationAdded,
         base::Unretained(this)));
+    policy::DlpContentManager::SetDlpContentManagerForTesting(
+        &mock_dlp_content_manager_);
   }
 
   void SetTestObserver(ChromeScreenshotGrabber* chrome_screenshot_grabber,
@@ -82,6 +88,7 @@ class ChromeScreenshotGrabberBrowserTest
   base::FilePath screenshot_path_;
   bool notification_added_ = false;
   bool clipboard_changed_ = false;
+  policy::MockDlpContentManager mock_dlp_content_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeScreenshotGrabberBrowserTest);
@@ -140,6 +147,26 @@ IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest,
 
   chrome_screenshot_grabber->HandleTakeWindowScreenshot(
       ash::Shell::GetPrimaryRootWindow());
+  RunLoop();
+
+  EXPECT_TRUE(notification_added_);
+  EXPECT_TRUE(display_service_->GetNotification(std::string("screenshot")));
+  EXPECT_EQ(ui::ScreenshotResult::DISABLED, screenshot_result_);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest,
+                       ScreenshotsRestricted) {
+  ChromeScreenshotGrabber* chrome_screenshot_grabber =
+      ChromeScreenshotGrabber::Get();
+  SetTestObserver(chrome_screenshot_grabber, this);
+
+  auto* window = ash::Shell::GetPrimaryRootWindow();
+
+  EXPECT_CALL(mock_dlp_content_manager_, IsScreenshotRestricted(_))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  chrome_screenshot_grabber->HandleTakeWindowScreenshot(window);
   RunLoop();
 
   EXPECT_TRUE(notification_added_);

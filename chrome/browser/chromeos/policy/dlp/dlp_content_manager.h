@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_CONTENT_MANAGER_H_
 
 #include "base/containers/flat_map.h"
+#include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
 
 class GURL;
+struct ScreenshotArea;
 
 namespace content {
 class WebContents;
@@ -30,11 +32,14 @@ class DlpContentManager {
   // Returns which restrictions are applied to the |web_contents| according to
   // the policy.
   DlpContentRestrictionSet GetConfidentialRestrictions(
-      const content::WebContents* web_contents) const;
+      content::WebContents* web_contents) const;
 
   // Returns which restrictions are applied to the WebContents which are
   // currently visible.
   DlpContentRestrictionSet GetOnScreenPresentRestrictions() const;
+
+  // Returns whether screenshots should be restricted.
+  virtual bool IsScreenshotRestricted(const ScreenshotArea& area) const;
 
   // The caller (test) should manage |dlp_content_manager| lifetime.
   // Reset doesn't delete the object.
@@ -43,6 +48,7 @@ class DlpContentManager {
   static void ResetDlpContentManagerForTesting();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DlpContentManagerBrowserTest, ScreenshotsRestricted);
   friend class DlpContentManagerTest;
   friend class DlpContentTabHelper;
   friend class MockDlpContentManager;
@@ -59,7 +65,7 @@ class DlpContentManager {
       content::WebContents* web_contents,
       const DlpContentRestrictionSet& restriction_set);
   // Called when |web_contents| is about to be destroyed.
-  virtual void OnWebContentsDestroyed(const content::WebContents* web_contents);
+  virtual void OnWebContentsDestroyed(content::WebContents* web_contents);
   // Should return which restrictions are being applied to the |url| according
   // to the policies.
   virtual DlpContentRestrictionSet GetRestrictionSetForURL(
@@ -68,7 +74,7 @@ class DlpContentManager {
   virtual void OnVisibilityChanged(content::WebContents* web_contents);
 
   // Helper to remove |web_contents| from the confidential set.
-  void RemoveFromConfidential(const content::WebContents* web_contents);
+  void RemoveFromConfidential(content::WebContents* web_contents);
 
   // Updates |on_screen_restrictions_| and calls
   // OnScreenRestrictionsChanged() if needed.

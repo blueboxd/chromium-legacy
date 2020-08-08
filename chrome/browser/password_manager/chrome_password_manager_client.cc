@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
@@ -19,7 +20,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -168,9 +171,11 @@ const syncer::SyncService* GetSyncService(Profile* profile) {
 void AddToWidgetInputEventObservers(
     content::RenderWidgetHost* widget_host,
     content::RenderWidgetHost::InputEventObserver* observer) {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // TODO(https://crbug.com/1104919): Remove this logging.
   VLOG(1) << __FUNCTION__ << ": widget_host: " << widget_host
           << "; observer: " << observer;
+#endif
 
   // Since Widget API doesn't allow to check whether the observer is already
   // added, the observer is removed and added again, to ensure that it is added
@@ -187,9 +192,11 @@ void AddToWidgetInputEventObservers(
 void RemoveFromWidgetInputEventObservers(
     content::RenderWidgetHost* widget_host,
     content::RenderWidgetHost::InputEventObserver* observer) {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // TODO(https://crbug.com/1104919): Remove this logging.
   VLOG(1) << __FUNCTION__ << ": widget_host: " << widget_host
           << "; observer: " << observer;
+#endif
 
   if (!widget_host)
     return;
@@ -259,7 +266,18 @@ void ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
                             contents, autofill_client)));
 }
 
-ChromePasswordManagerClient::~ChromePasswordManagerClient() = default;
+ChromePasswordManagerClient::~ChromePasswordManagerClient() {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // TODO(https://crbug.com/1104919): Remove this logging.
+  VLOG(1) << __FUNCTION__ << ": this: " << this;
+  VLOG(1) << "wc: " << web_contents();
+  if (web_contents()) {
+    VLOG(1) << "wc->GetRenderViewHost(): "
+            << web_contents()->GetRenderViewHost();
+  }
+  VLOG(1) << base::debug::StackTrace();
+#endif
+}
 
 bool ChromePasswordManagerClient::IsSavingAndFillingEnabled(
     const GURL& url) const {
@@ -1176,6 +1194,13 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
   static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
       this, GetSyncService(profile_), GetIdentityManager(), GetPrefs());
   driver_factory_->RequestSendLoggingAvailability();
+
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // TODO(https://crbug.com/1104919): Remove this logging.
+  VLOG(1) << __FUNCTION__ << ": this: " << this;
+  VLOG(1) << "wc: " << web_contents;
+  VLOG(1) << "wc->GetRenderViewHost(): " << web_contents->GetRenderViewHost();
+#endif
 }
 
 void ChromePasswordManagerClient::DidStartNavigation(
@@ -1207,10 +1232,13 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   password_reuse_detection_manager_.DidNavigateMainFrame(GetLastCommittedURL());
 #endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // TODO(https://crbug.com/1104919): Remove this logging.
   VLOG(1) << __FUNCTION__ << ": this: " << this;
   VLOG(1) << "wc: " << web_contents();
   VLOG(1) << "wc->GetRenderViewHost(): " << web_contents()->GetRenderViewHost();
+  VLOG(1) << base::debug::StackTrace();
+#endif
   AddToWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
 #if defined(OS_ANDROID)
@@ -1235,20 +1263,26 @@ void ChromePasswordManagerClient::WebContentsDestroyed() {
 
   DCHECK(web_contents()->GetRenderViewHost());
 
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // TODO(https://crbug.com/1104919): Remove this logging.
   VLOG(1) << __FUNCTION__ << ": this: " << this;
   VLOG(1) << "wc: " << web_contents();
   VLOG(1) << "wc->GetRenderViewHost(): " << web_contents()->GetRenderViewHost();
+  VLOG(1) << base::debug::StackTrace();
+#endif
   RemoveFromWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
 }
 
 #if !defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnPaste() {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // TODO(https://crbug.com/1104919): Remove this logging.
   VLOG(1) << __FUNCTION__ << ": this: " << this;
   VLOG(1) << "wc: " << web_contents();
   VLOG(1) << "wc->GetRenderViewHost(): " << web_contents()->GetRenderViewHost();
+  VLOG(1) << base::debug::StackTrace();
+#endif
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   base::string16 text;
@@ -1261,10 +1295,13 @@ void ChromePasswordManagerClient::OnPaste() {
 
 void ChromePasswordManagerClient::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // TODO(https://crbug.com/1104919): Remove this logging.
   VLOG(1) << __FUNCTION__ << ": this: " << this;
-  VLOG(1) << "; rfh: " << render_frame_host;
-  VLOG(1) << "; rfh->GetView(): " << render_frame_host->GetView();
+  VLOG(1) << "rfh: " << render_frame_host;
+  VLOG(1) << "rfh->GetView(): " << render_frame_host->GetView();
+  VLOG(1) << base::debug::StackTrace();
+#endif
 
   // TODO(drubery): We should handle input events on subframes separately, so
   // that we can accurately report that the password was reused on a subframe.
@@ -1276,10 +1313,13 @@ void ChromePasswordManagerClient::RenderFrameCreated(
 
 void ChromePasswordManagerClient::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // TODO(https://crbug.com/1104919): Remove this logging.
-  VLOG(1) << __FUNCTION__ << ": this: " << this
-          << "; rfh: " << render_frame_host
-          << "; rfh->GetView(): " << render_frame_host->GetView();
+  VLOG(1) << __FUNCTION__ << ": this: " << this;
+  VLOG(1) << "rfh: " << render_frame_host;
+  VLOG(1) << "rfh->GetView(): " << render_frame_host->GetView();
+  VLOG(1) << base::debug::StackTrace();
+#endif
 
   if (!render_frame_host->GetView())
     return;

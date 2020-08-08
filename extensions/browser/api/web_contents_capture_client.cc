@@ -34,7 +34,7 @@ WebContentsCaptureClient::CaptureResult WebContentsCaptureClient::CaptureAsync(
   if (!view)
     return FAILURE_REASON_VIEW_INVISIBLE;
 
-  if (!IsScreenshotEnabled())
+  if (!IsScreenshotEnabled(web_contents))
     return FAILURE_REASON_SCREEN_SHOTS_DISABLED;
 
   // The default format and quality setting used when encoding jpegs.

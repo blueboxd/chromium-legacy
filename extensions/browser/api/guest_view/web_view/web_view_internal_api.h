@@ -14,6 +14,10 @@
 #include "extensions/browser/guest_view/web_view/web_ui/web_ui_url_fetcher.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 
+namespace content {
+class WebContents;
+}
+
 // WARNING: WebViewInternal could be loaded in an unblessed context, thus any
 // new APIs must extend WebViewInternalExtensionFunction or
 // WebViewInternalExecuteCodeFunction which do a process ID check to prevent
@@ -47,7 +51,7 @@ class WebViewInternalCaptureVisibleRegionFunction
 
  private:
   // extensions::WebContentsCaptureClient:
-  bool IsScreenshotEnabled() const override;
+  bool IsScreenshotEnabled(content::WebContents* web_contents) const override;
   bool ClientAllowsTransparency() override;
   void OnCaptureSuccess(const SkBitmap& bitmap) override;
   void OnCaptureFailure(CaptureResult result) override;

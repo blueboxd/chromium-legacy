@@ -158,6 +158,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       const override;
   bool HasIsolatedStorage(const std::string& extension_id,
                           content::BrowserContext* context) override;
+  bool IsScreenshotRestricted(
+      content::WebContents* web_contents) const override;
 
   static void set_did_chrome_update_for_testing(bool did_update);
 

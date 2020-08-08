@@ -21,6 +21,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 #include "extensions/common/api/web_view_internal.h"
@@ -314,9 +315,9 @@ WebViewInternalCaptureVisibleRegionFunction::Run() {
 
   return RespondNow(Error(GetErrorMessage(capture_result)));
 }
-bool WebViewInternalCaptureVisibleRegionFunction::IsScreenshotEnabled() const {
-  // TODO(wjmaclean): Is it ok to always return true here?
-  return true;
+bool WebViewInternalCaptureVisibleRegionFunction::IsScreenshotEnabled(
+    content::WebContents* web_contents) const {
+  return !ExtensionsBrowserClient::Get()->IsScreenshotRestricted(web_contents);
 }
 
 bool WebViewInternalCaptureVisibleRegionFunction::ClientAllowsTransparency() {
@@ -353,8 +354,7 @@ std::string WebViewInternalCaptureVisibleRegionFunction::GetErrorMessage(
       reason_description = "view is invisible";
       break;
     case FAILURE_REASON_SCREEN_SHOTS_DISABLED:
-      NOTREACHED() << "WebViewInternalCaptureVisibleRegionFunction always have "
-                      "screenshots enabled";
+      reason_description = "screenshot has been disabled";
       break;
     case OK:
       NOTREACHED()

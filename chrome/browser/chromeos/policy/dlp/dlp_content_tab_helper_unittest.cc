@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_tab_helper.h"
 
-#include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -24,16 +24,6 @@ const DlpContentRestrictionSet kEmptyRestrictionSet;
 const DlpContentRestrictionSet kNonEmptyRestrictionSet(
     DlpContentRestriction::kScreenshot);
 }  // namespace
-
-class MockDlpContentManager : public DlpContentManager {
- public:
-  MOCK_METHOD2(OnConfidentialityChanged,
-               void(content::WebContents*, const DlpContentRestrictionSet&));
-  MOCK_METHOD1(OnWebContentsDestroyed, void(const content::WebContents*));
-  MOCK_CONST_METHOD1(GetRestrictionSetForURL,
-                     DlpContentRestrictionSet(const GURL&));
-  MOCK_METHOD1(OnVisibilityChanged, void(content::WebContents*));
-};
 
 class DlpContentTabHelperTest : public ChromeRenderViewHostTestHarness {
  protected:

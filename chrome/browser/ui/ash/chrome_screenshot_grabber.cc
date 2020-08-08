@@ -30,6 +30,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/platform_util.h"
@@ -272,6 +273,31 @@ void EnsureLocalDirectoryExists(
 
 }  // namespace
 
+// static
+ScreenshotArea ScreenshotArea::CreateForAllRootWindows() {
+  return ScreenshotArea(ScreenshotType::kAllRootWindows, nullptr,
+                        base::nullopt);
+}
+
+// static
+ScreenshotArea ScreenshotArea::CreateForWindow(const aura::Window* window) {
+  return ScreenshotArea(ScreenshotType::kWindow, window, base::nullopt);
+}
+
+// static
+ScreenshotArea ScreenshotArea::CreateForPartialWindow(
+    const aura::Window* window,
+    const gfx::Rect rect) {
+  return ScreenshotArea(ScreenshotType::kPartialWindow, window, rect);
+}
+
+ScreenshotArea::ScreenshotArea(const ScreenshotArea& area) = default;
+
+ScreenshotArea::ScreenshotArea(ScreenshotType type,
+                               const aura::Window* window,
+                               base::Optional<const gfx::Rect> rect)
+    : type(type), window(window), rect(rect) {}
+
 ChromeScreenshotGrabber::ChromeScreenshotGrabber()
     : screenshot_grabber_(new ui::ScreenshotGrabber) {
   DCHECK(!g_chrome_screenshot_grabber_instance);
@@ -289,7 +315,8 @@ ChromeScreenshotGrabber* ChromeScreenshotGrabber::Get() {
 }
 
 void ChromeScreenshotGrabber::HandleTakeScreenshotForAllRootWindows() {
-  if (!ScreenshotsAllowed()) {
+  const ScreenshotArea area = ScreenshotArea::CreateForAllRootWindows();
+  if (!IsScreenshotAllowed(area)) {
     OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
     return;
   }
@@ -313,7 +340,7 @@ void ChromeScreenshotGrabber::HandleTakeScreenshotForAllRootWindows() {
     screenshot_grabber_->TakeScreenshot(
         root_window, rect,
         base::BindOnce(&ChromeScreenshotGrabber::OnTookScreenshot,
-                       weak_factory_.GetWeakPtr(), time, display_id));
+                       weak_factory_.GetWeakPtr(), time, display_id, area));
   }
   base::RecordAction(base::UserMetricsAction("Screenshot_TakeFull"));
 }
@@ -321,7 +348,9 @@ void ChromeScreenshotGrabber::HandleTakeScreenshotForAllRootWindows() {
 void ChromeScreenshotGrabber::HandleTakePartialScreenshot(
     aura::Window* window,
     const gfx::Rect& rect) {
-  if (!ScreenshotsAllowed()) {
+  const ScreenshotArea area =
+      ScreenshotArea::CreateForPartialWindow(window, rect);
+  if (!IsScreenshotAllowed(area)) {
     OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
     return;
   }
@@ -330,12 +359,13 @@ void ChromeScreenshotGrabber::HandleTakePartialScreenshot(
       window, rect,
       base::BindOnce(&ChromeScreenshotGrabber::OnTookScreenshot,
                      weak_factory_.GetWeakPtr(), base::Time::Now(),
-                     base::Optional<int>()));
+                     base::Optional<int>(), area));
   base::RecordAction(base::UserMetricsAction("Screenshot_TakePartial"));
 }
 
 void ChromeScreenshotGrabber::HandleTakeWindowScreenshot(aura::Window* window) {
-  if (!ScreenshotsAllowed()) {
+  const ScreenshotArea area = ScreenshotArea::CreateForWindow(window);
+  if (!IsScreenshotAllowed(area)) {
     OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
     return;
   }
@@ -344,7 +374,7 @@ void ChromeScreenshotGrabber::HandleTakeWindowScreenshot(aura::Window* window) {
       window, gfx::Rect(window->bounds().size()),
       base::BindOnce(&ChromeScreenshotGrabber::OnTookScreenshot,
                      weak_factory_.GetWeakPtr(), base::Time::Now(),
-                     base::Optional<int>()));
+                     base::Optional<int>(), area));
   base::RecordAction(base::UserMetricsAction("Screenshot_TakeWindow"));
 }
 
@@ -355,6 +385,7 @@ bool ChromeScreenshotGrabber::CanTakeScreenshot() {
 void ChromeScreenshotGrabber::OnTookScreenshot(
     const base::Time& screenshot_time,
     const base::Optional<int>& display_num,
+    const ScreenshotArea& area,
     ScreenshotResult result,
     scoped_refptr<base::RefCountedMemory> png_data) {
   if (result != ScreenshotResult::SUCCESS) {
@@ -363,7 +394,7 @@ void ChromeScreenshotGrabber::OnTookScreenshot(
     return;
   }
 
-  if (!ScreenshotsAllowed()) {
+  if (!IsScreenshotAllowed(area)) {
     OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
     return;
   }
@@ -534,13 +565,17 @@ Profile* ChromeScreenshotGrabber::GetProfile() {
   return ProfileManager::GetActiveUserProfile();
 }
 
-bool ChromeScreenshotGrabber::ScreenshotsAllowed() const {
-  // Have two ways to disable screenshots:
+bool ChromeScreenshotGrabber::IsScreenshotAllowed(
+    const ScreenshotArea& area) const {
+  // Have three ways to disable screenshots:
   // - local state pref whose value is set from policy;
   // - simple flag which is set/unset when entering/exiting special modes where
   // screenshots should be disabled (pref is problematic because it's kept
   // across reboots, hence if the device crashes it may get stuck with the wrong
   // value).
-  return screenshots_allowed_ && !g_browser_process->local_state()->GetBoolean(
-      prefs::kDisableScreenshots);
+  // - because of DLP restricted content present in the area of the screenshot.
+  return screenshots_allowed_ &&
+         !g_browser_process->local_state()->GetBoolean(
+             prefs::kDisableScreenshots) &&
+         !policy::DlpContentManager::Get()->IsScreenshotRestricted(area);
 }

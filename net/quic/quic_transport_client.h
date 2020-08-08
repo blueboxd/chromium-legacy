@@ -13,6 +13,7 @@
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/quic_context.h"
+#include "net/quic/quic_event_logger.h"
 #include "net/quic/quic_transport_error.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
@@ -222,6 +223,7 @@ class NET_EXPORT QuicTransportClient
   std::unique_ptr<quic::QuicConnection> connection_;
   std::unique_ptr<quic::QuicTransportClientSession> session_;
   std::unique_ptr<QuicChromiumPacketReader> packet_reader_;
+  std::unique_ptr<QuicEventLogger> event_logger_;
 
   base::WeakPtrFactory<QuicTransportClient> weak_factory_{this};
 };

@@ -26,7 +26,8 @@ class WebContentsCaptureClient {
  protected:
   virtual ~WebContentsCaptureClient() {}
 
-  virtual bool IsScreenshotEnabled() const = 0;
+  virtual bool IsScreenshotEnabled(
+      content::WebContents* web_contents) const = 0;
   virtual bool ClientAllowsTransparency() = 0;
 
   enum CaptureResult {

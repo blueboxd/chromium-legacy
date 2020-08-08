@@ -9,5 +9,9 @@ namespace tabs_util {
 
 void SetLockedFullscreenState(Browser* browser, bool locked) {}
 
+bool IsScreenshotRestricted(content::WebContents* web_contents) {
+  return false;
+}
+
 }  // namespace tabs_util
 }  // namespace extensions

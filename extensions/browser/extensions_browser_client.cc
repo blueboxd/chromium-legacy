@@ -124,4 +124,9 @@ bool ExtensionsBrowserClient::HasIsolatedStorage(
   return false;
 }
 
+bool ExtensionsBrowserClient::IsScreenshotRestricted(
+    content::WebContents* web_contents) const {
+  return false;
+}
+
 }  // namespace extensions

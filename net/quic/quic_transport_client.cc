@@ -291,6 +291,10 @@ void QuicTransportClient::CreateConnection() {
           kQuicYieldAfterDurationMilliseconds),
       net_log_);
 
+  event_logger_ = std::make_unique<QuicEventLogger>(session_.get(), net_log_);
+  connection_->set_debug_visitor(event_logger_.get());
+  connection_->set_creator_debug_delegate(event_logger_.get());
+
   session_->Initialize();
   packet_reader_->StartReading();
   session_->CryptoConnect();

@@ -12,11 +12,13 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -64,6 +66,11 @@ void SetLockedFullscreenState(Browser* browser, bool locked) {
       chromeos::assistant::AssistantAllowedState::ALLOWED) {
     ash::AssistantState::Get()->NotifyLockedFullScreenStateChanged(locked);
   }
+}
+
+bool IsScreenshotRestricted(content::WebContents* web_contents) {
+  return policy::DlpContentManager::Get()->IsScreenshotRestricted(
+      ScreenshotArea::CreateForWindow(web_contents->GetNativeView()));
 }
 
 }  // namespace tabs_util

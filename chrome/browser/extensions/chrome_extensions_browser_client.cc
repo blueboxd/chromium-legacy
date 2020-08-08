@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
+#include "chrome/browser/extensions/api/tabs/tabs_util.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -588,6 +589,11 @@ bool ChromeExtensionsBrowserClient::HasIsolatedStorage(
     const std::string& extension_id,
     content::BrowserContext* context) {
   return extensions::util::HasIsolatedStorage(extension_id, context);
+}
+
+bool ChromeExtensionsBrowserClient::IsScreenshotRestricted(
+    content::WebContents* web_contents) const {
+  return tabs_util::IsScreenshotRestricted(web_contents);
 }
 
 // static

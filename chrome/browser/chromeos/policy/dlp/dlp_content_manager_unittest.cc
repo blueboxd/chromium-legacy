@@ -17,8 +17,9 @@ namespace policy {
 
 namespace {
 const DlpContentRestrictionSet kEmptyRestrictionSet;
-const DlpContentRestrictionSet kNonEmptyRestrictionSet(
+const DlpContentRestrictionSet kScreenshotRestricted(
     DlpContentRestriction::kScreenshot);
+const DlpContentRestrictionSet kNonEmptyRestrictionSet = kScreenshotRestricted;
 const DlpContentRestrictionSet kPrivacyScreenEnforced(
     DlpContentRestriction::kPrivacyScreen);
 

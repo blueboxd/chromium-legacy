@@ -364,6 +364,10 @@ class ExtensionsBrowserClient {
   virtual bool HasIsolatedStorage(const std::string& extension_id,
                                   content::BrowserContext* context);
 
+  // Returns whether screenshot of |web_contents| is restricted due to Data Leak
+  // Protection policy.
+  virtual bool IsScreenshotRestricted(content::WebContents* web_contents) const;
+
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;
 

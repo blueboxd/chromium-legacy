@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Файлдарды өзгерту</translation>
 <translation id="1285320974508926690">Бұл сайтты ешқашан аудармау</translation>
 <translation id="1285484354230578868">Google Drive есептік жазбаңызда деректер сақтау</translation>
-<translation id="1285717512281186441">Принтер қолжетімді емес.</translation>
 <translation id="1288037062697528143">Күн батқанда, түнгі шам автоматты түрде қосылады</translation>
 <translation id="1288300545283011870">Дауыс сипаттары</translation>
 <translation id="1293264513303784526">USB-C құрылғысы (сол жақ ұяшық)</translation>
@@ -483,7 +482,6 @@
 <translation id="1587129667417059148"><ph name="ORIGIN_NAME" /> сайтында сақталған барлық деректер мен cookie файлдары өшіріледі.</translation>
 <translation id="1587275751631642843">&amp;JavaScript консолі</translation>
 <translation id="1587907146729660231">Қуат түймесін саусағыңызбен түртіңіз.</translation>
-<translation id="1588200577109872591">Ақылды енгізу әдістері</translation>
 <translation id="1588438908519853928">Қалыпты</translation>
 <translation id="158849752021629804">Үй желісі қажет</translation>
 <translation id="1588870296199743671">Сілтемені келесі арқылы ашу…</translation>
@@ -1283,7 +1281,6 @@
 <translation id="253557089021624350">Кеңейтімдер қолданатын процестер саны</translation>
 <translation id="2535799430745250929">Ешқандай ұялы байланыс желісі жоқ.</translation>
 <translation id="2537178555904266562">Құпия сөздерді синхрондау кезінде қате шықты</translation>
-<translation id="2537296579376733324">Барлық cookie файлдары осы сайтта ғана бар.</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> мына файлдар мен қалталарды көреді және өңдей алады.</translation>
 <translation id="2537927931785713436">Виртуалды құрылғы кескіні тексерілуде</translation>
 <translation id="2538361623464451692">Синхрондау өшірілген</translation>
@@ -1424,7 +1421,6 @@
 <translation id="2712173769900027643">Рұқсат сұрау</translation>
 <translation id="2713444072780614174">Ақ</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
-<translation id="2714997332747470971">Ұсынылатын жеке ақпарат (мысалы, аты, мекенжайы немесе телефон нөмірі) жылдам жазуға көмектеседі. Есептік жазбаңызға арналған құпия әрі жекелендірілген ұсыныстарды тек сіз көресіз.</translation>
 <translation id="2715751256863167692">Бұл жаңартуда Chromebook құрылғысы бастапқы күйіне қайтарылып, ағымдағы пайдаланушы деректері өшіріледі.</translation>
 <translation id="2716986496990888774">Бұл параметрді ата-ана басқарады.</translation>
 <translation id="2718395828230677721">Түнгі жарық</translation>
@@ -2946,7 +2942,6 @@
 <translation id="4608520674724523647">Сәтті тіркеу иллюстрациясы</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> файлында құпия мазмұн бар.</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> плагинінде қате шықты</translation>
-<translation id="4610178114344604329">Жеке ақпарат ұсыныстарын көрсету</translation>
 <translation id="4610637590575890427"><ph name="SITE" /> сайтына өту керек пе?</translation>
 <translation id="4611114513649582138">Деректер байланысы қолжетімді</translation>
 <translation id="4613144866899789710">Linux жүйесін орнатудан бас тартылуда…</translation>
@@ -6007,7 +6002,6 @@
 <translation id="8448729345478502352">Экрандағы элементтерді кішірейту немесе ұлғайту</translation>
 <translation id="8449008133205184768">Қою және сәйкестендіру стилі</translation>
 <translation id="8449036207308062757">Жадты басқару</translation>
-<translation id="84501823665211008">Эмодзи ұсыныстарын көрсету</translation>
 <translation id="8452135315243592079">SIM картасы жоқ</translation>
 <translation id="8455026683977728932">ADB кескіні қосылмады</translation>
 <translation id="845702320058262034">Қосылу мүмкін емес. Телефоныңыздағы Bluetooth қосылып тұрғанына көз жеткізіңіз.</translation>
@@ -6291,7 +6285,6 @@
 <translation id="8798441408945964110">Провайдер аты</translation>
 <translation id="8800004011501252845">Келесі үшін бағыттарды көрсету</translation>
 <translation id="8800034312320686233">Сайт жұмыс істемей ме?</translation>
-<translation id="880069872639153240">Енгізілетін мәтін негізінде эмодзи ұсыныстарын алу</translation>
 <translation id="8803953437405899238">Жаңа қойындыны бір рет басып ашыңыз</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Қойындыны басқа терезеден ашу}other{Қойындыларды басқа терезеден ашу}}</translation>
 <translation id="8805140816472474147">Синхрондауды бастау үшін синхрондау параметрлерін растаңыз.</translation>

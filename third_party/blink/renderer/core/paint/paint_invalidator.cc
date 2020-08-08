@@ -237,6 +237,9 @@ void PaintInvalidator::UpdateLayoutShiftTracking(
   }();
 
   bool should_create_containing_block_scope =
+      // TODO(crbug.com/1104064): Support multiple-fragments when switching to
+      // LayoutNGFragmentTraversal.
+      context.fragment_data == &box.FirstFragment() &&
       box.IsLayoutBlockFlow() && box.ChildrenInline() && box.SlowFirstChild();
   if (!should_report_layout_shift && !should_create_containing_block_scope)
     return;

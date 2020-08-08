@@ -19,10 +19,9 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
  public:
   METADATA_HEADER(MdTextButton);
 
-  static std::unique_ptr<MdTextButton> Create(
-      ButtonListener* listener,
-      const base::string16& text,
-      int button_context = style::CONTEXT_BUTTON_MD);
+  explicit MdTextButton(ButtonListener* listener = nullptr,
+                        const base::string16& text = base::string16(),
+                        int button_context = style::CONTEXT_BUTTON_MD);
 
   ~MdTextButton() override;
 
@@ -56,8 +55,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   // View:
   void OnFocus() override;
   void OnBlur() override;
-
-  MdTextButton(ButtonListener* listener, int button_context);
 
  private:
   void UpdatePadding();

@@ -342,6 +342,10 @@ class GraphView {
     this.nodeGroup_ = graphGroup.append('g')
         .classed('graph-nodes', true);
     /** @private {*} */
+    this.hullLabelGroup_ = graphGroup.append('g')
+        .classed('graph-hull-labels', true)
+        .attr('pointer-events', 'none');
+    /** @private {*} */
     this.labelGroup_ = graphGroup.append('g')
         .classed('graph-labels', true)
         .attr('pointer-events', 'none');
@@ -559,6 +563,8 @@ class GraphView {
    * @typedef {Object} HullData
    * @property {string} key The unique key for the hull.
    * @property {string} color The color to display the hull as.
+   * @property {!Array<number>} labelPosition An [x, y] point representing where
+   *     this hull's label should be rendered.
    * @property {!Array<!Array<number>>} points A list of [x, y] points making up
    *     the hull.
    */
@@ -583,9 +589,18 @@ class GraphView {
         const [expandX, expandY] = resizeVector(deltaX, deltaY, HULL_EXPANSION);
         return [nodeX + expandX, nodeY + expandY];
       });
+      // A decent heuristic is for the hull's label to be displayed above its
+      // highest node. Recall that on an SVG, lower y-values are higher.
+      let highestPoint = [0, Number.POSITIVE_INFINITY];
+      for (const point of expandedPolygon) {
+        if (point[1] < highestPoint[1]) {
+          highestPoint = point;
+        }
+      }
       resultHulls.push({
         key,
         color: this.hullColorManager_.getColorForHull(key),
+        labelPosition: highestPoint,
         points: expandedPolygon,
       });
     }
@@ -599,6 +614,18 @@ class GraphView {
    *     the current data.
    */
   updateHullData(hullData) {
+    this.hullLabelGroup_.selectAll('text')
+      .data(hullData, hull => hull.key)
+      .join(enter => enter.append('text')
+          .text(hull => hull.key)
+          .attr('fill', hull => hull.color)
+          .attr('dy', -8)
+          .attr('x', hull => hull.labelPosition[0])
+          .attr('y', hull => hull.labelPosition[1]),
+        update => update
+          .attr('x', hull => hull.labelPosition[0])
+          .attr('y', hull => hull.labelPosition[1]));
+
     // The SVG path generator for the hull outlines.
     const getHullLine = d3.line().curve(d3.curveCatmullRomClosed.alpha(0.75));
     this.hullGroup_.selectAll('path')

@@ -52,7 +52,6 @@
 <translation id="2490684707762498678">Управляват се от <ph name="APP_NAME" /></translation>
 <translation id="2498359688066513246">Помощ и отзиви</translation>
 <translation id="2501278716633472235">Назад</translation>
-<translation id="2537296579376733324">Всички „бисквитки“, само на този сайт</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Блокирана е 1 „бисквитка“}other{Блокирани са # „бисквитки“}}</translation>
 <translation id="2570922361219980984">Достъпът до местоположението е изключен и за това устройство. Включете го от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Разгънато – кликнете за свиване.</translation>

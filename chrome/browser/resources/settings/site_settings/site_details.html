@@ -261,4 +261,11 @@
             label="$i18n{siteSettingsWindowPlacement}">
         </site-details-permission>
       </template>
+      <template is="dom-if" if="[[enableFontAccessContentSetting_]]">
+        <site-details-permission
+            category="[[ContentSettingsTypes.FONT_ACCESS]]"
+            icon="settings:font-access" id="fontAccess"
+            label="$i18n{fonts}">
+        </site-details-permission>
+      </template>
     </div>

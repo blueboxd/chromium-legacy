@@ -30,6 +30,7 @@ const InteractionMedium = {
  * @enum {string}
  */
 const Screen = {
+  NONE: 'none',
   MAIN_MENU: 'main_menu',
   LESSON_MENU: 'lesson_menu',
   LESSON: 'lesson',
@@ -79,6 +80,8 @@ Polymer({
 
     continue: {type: String, value: 'Continue where I left off'},
 
+    restartBasicOrientation: {type: String, value: 'Restart basic orientation'},
+
     previousLesson: {type: String, value: 'Previous lesson'},
 
     nextLesson: {type: String, value: 'Next lesson'},
@@ -93,11 +96,14 @@ Polymer({
       type: Array,
       value: [
         {
-          content:
-              ['Welcome to the ChromeVox tutorial. We noticed this might be ' +
-               'your first time using ChromeVox, so let\'s quickly cover the ' +
-               `basics. When you're ready, use the space bar to move to the ` +
-               'next lesson.'],
+          content: [`Welcome to the ChromeVox tutorial. We noticed this might be
+            your first time using ChromeVox, so let's quickly cover the
+            basics. To exit this tutorial at any time, press the Escape
+            key, which is located in the top left corner of the
+            keyboard. To turn off ChromeVox, exit this tutorial and press
+            Control, Alt, and Z
+            at the same time. When you're ready, use the space bar to move
+            to the next lesson.`],
           medium: InteractionMedium.KEYBOARD,
           curriculums: [Curriculum.OOBE],
           actions: [
@@ -107,19 +113,49 @@ Polymer({
         },
 
         {
-          content: [
-            `Let's learn how to navigate the tutorial first. ` +
-                'In ChromeVox, the Search key is the modifier key. ' +
-                'Most ChromeVox shortcuts start with the Search key. ' +
-                'On the Chromebook, the Search key is immediately above the ' +
-                `left Shift key. When you're ready, try finding and ` +
-                'pressing the search key on your keyboard',
+          content:
+              [`Let's start with the keyboard layout. There are a few keys that
+            are crucial to know when using ChromeVox: Control, Shift,
+            Search, and the Arrow keys. To continue to the next lesson,
+            find and press the Control key, which is located in the bottom
+            left corner of the keyboard`],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE],
+          actions: [
+            {type: 'key_sequence', value: {keys: {keyCode: [17 /* Ctrl */]}}}
           ],
+          autoInteractive: true,
+        },
+
+        {
+          content:
+              [`The Control key can be used at any time to silence any current
+            speech; however, it does not prevent any new speech from being
+            announced. To continue to the next lesson, find and press
+            the left Shift key, which is directly above the Control key.`],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE],
+          actions: [
+            {type: 'key_sequence', value: {keys: {keyCode: [16 /* Shift */]}}}
+          ],
+          autoInteractive: true,
+        },
+
+        {
+          content:
+              [`We'll talk more about the shift key in later lessons, as it is
+            used in many ChromeVox commands. Let's
+            move on to the Search Key, which is arguably the most important
+            key to know when using ChromeVox. In ChromeVox, the Search key
+            is the modifier key. Most ChromeVox shortcuts start with the
+            Search key. On a Chromebook, the Search key is immediately
+            above the left Shift key. To continue to the next lesson,
+            find and press the Search key.`],
           medium: InteractionMedium.KEYBOARD,
           curriculums: [Curriculum.OOBE],
           actions: [{
             type: 'key_sequence',
-            value: {skipStripping: false, keys: {keyCode: [91 /* Search*/]}},
+            value: {skipStripping: false, keys: {keyCode: [91 /* Search */]}},
             afterActionMsg: 'You found the search key!',
           }],
           autoInteractive: true,
@@ -127,14 +163,15 @@ Polymer({
 
         {
           content: [
-            `Now that you know where the search key is, let's learn ` +
-                'some basic navigation. While holding search, use the arrow ' +
-                'keys to move ChromeVox around the screen. Press Search + ' +
-                'right arrow to move to the next instruction',
-            'You can use Search + right arrow and search + left arrow to ' +
-                'navigate the tutorial. Now press Search + right arrow again.',
-            'If you reach an item you want to click, press Search + Space. ' +
-                'Try doing so now to move to the next lesson',
+            `Now that you know where the search key is, let's learn
+              some basic navigation. While holding search, use the arrow
+              keys to move ChromeVox around the screen. Press Search +
+              right arrow to move to the next instruction`,
+            `You can use Search + right arrow and search + left arrow to
+                move ChromeVox around the screen. Try pressing Search +
+                right arrow again.`,
+            `If you reach an item you want to click, press Search + Space.
+                Try doing so now to move to the next lesson`,
           ],
           medium: InteractionMedium.KEYBOARD,
           curriculums: [Curriculum.OOBE],
@@ -160,10 +197,11 @@ Polymer({
         {
           title: 'Basic orientation complete!',
           content: [
-            'Well done! You have learned the basics of ChromeVox. You can ' +
-                `now continue browsing the tutorial with what you've ` +
-                'learned, or exit by finding and pressing the Quit Tutorial ' +
-                'button',
+            `Well done! You have learned the basics of ChromeVox. You can
+                replay the basic orientation or exit this tutorial by
+                finding and clicking on a button below.`,
+            `After you setup your device, you can come back to this tutorial
+                and view more lessons by pressing Search + O, then T.`,
           ],
           medium: InteractionMedium.KEYBOARD,
           curriculums: [Curriculum.OOBE],
@@ -341,7 +379,7 @@ Polymer({
           ],
           medium: InteractionMedium.KEYBOARD,
           curriculums: [
-            Curriculum.OOBE, Curriculum.NEW_USER, Curriculum.DEVELOPER,
+            Curriculum.NEW_USER, Curriculum.DEVELOPER,
             Curriculum.EXPERIENCED_USER
           ],
         }
@@ -351,7 +389,24 @@ Polymer({
 
   /** @override */
   ready() {
-    this.showMainMenu();
+    document.addEventListener('keydown', this.onKeyDown.bind(this));
+    this.hideAllScreens();
+    this.$.lessonTemplate.addEventListener('dom-change', (evt) => {
+      // Executes once all lessons have been added to the dom.
+      this.show();
+    });
+  },
+
+  /** Shows the tutorial */
+  show() {
+    if (this.curriculum === Curriculum.OOBE) {
+      // If opening the tutorial from the OOBE, automatically show the first
+      // lesson.
+      this.updateIncludedLessons();
+      this.showLesson(0);
+    } else {
+      this.showMainMenu();
+    }
   },
 
   /**
@@ -366,15 +421,12 @@ Polymer({
       this.curriculum = Curriculum.EXPERIENCED_USER;
     } else if (id === 'developerButton') {
       this.curriculum = Curriculum.DEVELOPER;
-    } else if (id === 'oobeButton') {
-      this.curriculum = Curriculum.OOBE;
     } else {
       throw new Error('Invalid target for chooseCurriculum: ' + evt.target.id);
     }
     this.showLessonMenu();
   },
 
-  /** @private */
   showNextLesson() {
     this.showLesson(this.activeLessonIndex + 1);
   },
@@ -382,6 +434,11 @@ Polymer({
   /** @private */
   showPreviousLesson() {
     this.showLesson(this.activeLessonIndex - 1);
+  },
+
+  /** @private */
+  showFirstLesson() {
+    this.showLesson(0);
   },
 
   /**
@@ -403,11 +460,17 @@ Polymer({
     const lesson = this.includedLessons[this.activeLessonIndex];
     if (lesson.autoInteractive) {
       this.startInteractiveMode(lesson.actions);
+    } else {
+      this.stopInteractiveMode();
     }
   },
 
-
   // Methods for hiding and showing screens.
+
+  /** @private */
+  hideAllScreens() {
+    this.activeScreen = Screen.NONE;
+  },
 
   /** @private */
   showMainMenu() {
@@ -476,12 +539,8 @@ Polymer({
    * @private
    */
   shouldHideNextLessonButton(activeLessonIndex, activeScreen) {
-    if (activeLessonIndex === this.numLessons - 1 ||
-        activeScreen !== Screen.LESSON) {
-      return true;
-    }
-
-    return false;
+    return activeLessonIndex === this.numLessons - 1 ||
+        activeScreen !== Screen.LESSON;
   },
 
   /**
@@ -491,11 +550,39 @@ Polymer({
    * @private
    */
   shouldHidePreviousLessonButton(activeLessonIndex, activeScreen) {
-    if (activeLessonIndex === 0 || activeScreen !== Screen.LESSON) {
-      return true;
-    }
+    return activeLessonIndex === 0 || activeScreen !== Screen.LESSON;
+  },
 
-    return false;
+  /**
+   * @param {Screen} activeScreen
+   * @return {boolean}
+   * @private
+   */
+  shouldHideLessonMenuButton(activeScreen) {
+    return !this.curriculum || this.curriculum === Curriculum.OOBE ||
+        activeScreen === Screen.LESSON_MENU;
+  },
+
+  /**
+   * @param {Screen} activeScreen
+   * @return {boolean}
+   * @private
+   */
+  shouldHideMainMenuButton(activeScreen) {
+    return this.curriculum === Curriculum.OOBE ||
+        activeScreen === Screen.MAIN_MENU;
+  },
+
+  /**
+   * @param {number} activeLessonIndex
+   * @return {boolean}
+   * @private
+   */
+  shouldHideRestartBasicOrientationButton(activeLessonIndex) {
+    // Only show when the user has completed the basic orientation.
+    return !(
+        this.curriculum === Curriculum.OOBE &&
+        activeLessonIndex === this.numLessons - 1);
   },
 
   /**
@@ -504,11 +591,7 @@ Polymer({
    * @private
    */
   shouldHideMainMenu(activeScreen) {
-    if (activeScreen === Screen.MAIN_MENU) {
-      return false;
-    }
-
-    return true;
+    return activeScreen !== Screen.MAIN_MENU;
   },
 
   /**
@@ -517,11 +600,7 @@ Polymer({
    * @private
    */
   shouldHideLessonContainer(activeScreen) {
-    if (activeScreen === Screen.LESSON) {
-      return false;
-    }
-
-    return true;
+    return activeScreen !== Screen.LESSON;
   },
 
   /**
@@ -530,11 +609,7 @@ Polymer({
    * @private
    */
   shouldHideLessonMenu(activeScreen) {
-    if (activeScreen === Screen.LESSON_MENU) {
-      return false;
-    }
-
-    return true;
+    return activeScreen !== Screen.LESSON_MENU;
   },
 
   /**
@@ -554,8 +629,35 @@ Polymer({
 
   // Interactive mode.
 
+  /**
+   * @param {!Array<{
+   *    type: string,
+   *    value: (string|Object),
+   *    beforeActionMsg: (string|undefined),
+   *    afterActionMsg: (string|undefined)}>} actions
+   * @private
+   */
   startInteractiveMode(actions) {
     this.dispatchEvent(new CustomEvent(
         'startinteractivemode', {composed: true, detail: {actions}}));
+  },
+
+  /** @private */
+  stopInteractiveMode() {
+    this.dispatchEvent(
+        new CustomEvent('stopinteractivemode', {composed: true}));
+  },
+
+  /**
+   * @param {Event} evt
+   * @private
+   */
+  onKeyDown(evt) {
+    const key = evt.key;
+    if (key === 'Escape') {
+      this.exit();
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
   },
 });

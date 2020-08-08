@@ -509,7 +509,6 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
   // Setup Cleaner registry values.
   registry_logger.ClearExitCode();
   registry_logger.ClearEndTime();
-  registry_logger.WriteVersion();
   registry_logger.WriteStartTime();
 
   // CoInitialize into the MTA since we desire to use the System Restore Point

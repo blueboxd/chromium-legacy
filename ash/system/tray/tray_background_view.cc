@@ -220,8 +220,11 @@ void TrayBackgroundView::SetVisiblePreferred(bool visible_preferred) {
   StartVisibilityAnimation(GetEffectiveVisibility());
 
   // We need to update which trays overflow after showing or hiding a tray.
-  if (shelf_->GetStatusAreaWidget())
-    shelf_->GetStatusAreaWidget()->UpdateCollapseState();
+  auto* status_area_widget = shelf_->GetStatusAreaWidget();
+  if (status_area_widget) {
+    status_area_widget->UpdateCollapseState();
+    status_area_widget->LogVisiblePodCountMetric();
+  }
 }
 
 void TrayBackgroundView::StartVisibilityAnimation(bool visible) {

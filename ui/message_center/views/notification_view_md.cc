@@ -312,9 +312,7 @@ NotificationMdTextButton::NotificationMdTextButton(
     views::ButtonListener* listener,
     const base::string16& label,
     const base::Optional<base::string16>& placeholder)
-    : views::MdTextButton(listener, views::style::CONTEXT_BUTTON_MD),
-      placeholder_(placeholder) {
-  SetText(label);
+    : views::MdTextButton(listener, label), placeholder_(placeholder) {
   SetMinSize(kActionButtonMinSize);
   views::InstallRectHighlightPathGenerator(this);
   SetTextSubpixelRenderingEnabled(false);

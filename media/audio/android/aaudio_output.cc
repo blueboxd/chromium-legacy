@@ -145,14 +145,24 @@ void AAudioOutputStream::Stop() {
   // not always be asynchronous, we don't hold |lock_| while we call stop.
   auto result = AAudioStream_requestStop(aaudio_stream_);
 
-  base::AutoLock al(lock_);
-  if (result != AAUDIO_OK) {
-    DLOG(ERROR) << "Failed to stop audio stream, result: "
-                << AAudio_convertResultToText(result);
-    callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
+  {
+    base::AutoLock al(lock_);
+    if (result != AAUDIO_OK) {
+      DLOG(ERROR) << "Failed to stop audio stream, result: "
+                  << AAudio_convertResultToText(result);
+      callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
+    }
+
+    callback_ = nullptr;
   }
 
-  callback_ = nullptr;
+  // Wait for AAUDIO_STREAM_STATE_STOPPED, but do not explicitly check for the
+  // success of this wait.
+  aaudio_stream_state_t current_state = AAUDIO_STREAM_STATE_STOPPING;
+  aaudio_stream_state_t next_state = AAUDIO_STREAM_STATE_UNINITIALIZED;
+  static const int64_t kTimeoutNanoseconds = 1e8;
+  result = AAudioStream_waitForStateChange(aaudio_stream_, current_state,
+                                           &next_state, kTimeoutNanoseconds);
 }
 
 base::TimeDelta AAudioOutputStream::GetDelay(base::TimeTicks delay_timestamp) {

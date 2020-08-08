@@ -49,6 +49,10 @@ enum class FeaturePolicyFeature;
 }  // namespace blink
 
 namespace base {
+namespace trace_event {
+class TracedValue;
+}  // namespace trace_event
+
 class UnguessableToken;
 class Value;
 }  // namespace base
@@ -605,6 +609,12 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       blink::mojom::HeavyAdReason reason) = 0;
 
   virtual IdleManager* GetIdleManager() = 0;
+
+  // Write a description of this RenderFrameHost into provided |traced_value|.
+  // The caller is responsible for ensuring that key-value pairs can be written
+  // into |traced_value| — either by creating a new TracedValue or calling
+  // BeginDictionary() before calling this method.
+  virtual void AsValueInto(base::trace_event::TracedValue* traced_value) = 0;
 
  private:
   // This interface should only be implemented inside content.

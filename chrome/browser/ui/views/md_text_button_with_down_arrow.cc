@@ -14,8 +14,7 @@ namespace views {
 
 MdTextButtonWithDownArrow::MdTextButtonWithDownArrow(ButtonListener* listener,
                                                      const base::string16& text)
-    : MdTextButton(listener, style::CONTEXT_BUTTON_MD) {
-  SetText(text);
+    : MdTextButton(listener, text) {
   SetFocusForPlatform();
   SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   SetImageLabelSpacing(LayoutProvider::Get()->GetDistanceMetric(

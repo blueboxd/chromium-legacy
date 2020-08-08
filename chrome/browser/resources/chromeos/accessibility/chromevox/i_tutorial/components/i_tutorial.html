@@ -101,7 +101,6 @@ h1 {
     hidden$="[[ shouldHideMainMenu(activeScreen) ]]">
   <h1 id="mainMenuHeader" tabindex="-1">[[ chooseYourExperience ]]</h1>
   <div id="mainMenuButtons">
-    <cr-button id="oobeButton" on-click="chooseCurriculum">OOBE</cr-button>
     <cr-button id="newUserButton" on-click="chooseCurriculum">
       [[ newUser ]]
     </cr-button>
@@ -125,8 +124,8 @@ h1 {
     hidden$="[[ shouldHideLessonContainer(activeScreen) ]]">
 
   <!-- Use lessonData object to create all lessons -->
-  <template is="dom-repeat" items="[[ lessonData ]]" as="lesson"
-      index-as="index">
+  <template id="lessonTemplate" is="dom-repeat" items="[[ lessonData ]]"
+      as="lesson" index-as="index">
     <tutorial-lesson
     lesson-num="[[ index ]]"
     title="[[ lesson.title ]]"
@@ -161,12 +160,17 @@ h1 {
       [[ nextLesson ]]
     </cr-button>
     <cr-button on-click="showLessonMenu"
-        hidden$="[[ !shouldHideLessonMenu(activeScreen) ]]">
+        hidden$="[[ shouldHideLessonMenuButton(activeScreen) ]]">
       [[ lessonMenu ]]
     </cr-button>
     <cr-button on-click="showMainMenu"
-        hidden$="[[ !shouldHideMainMenu(activeScreen) ]]">
+        hidden$="[[ shouldHideMainMenuButton(activeScreen) ]]">
       [[ mainMenu ]]
+    </cr-button>
+    <cr-button on-click="showFirstLesson"
+        hidden$="[[
+      shouldHideRestartBasicOrientationButton(activeLessonIndex) ]]">
+      [[ restartBasicOrientation ]]
     </cr-button>
     <cr-button on-click="exit">[[ exitTutorial ]]</cr-button>
   </div>

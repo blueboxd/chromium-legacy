@@ -146,10 +146,14 @@ AutofillProfile ConstructCompleteProfile() {
   profile.set_use_count(7);
   profile.set_use_date(base::Time::FromTimeT(1423182152));
 
+  profile.SetRawInfo(NAME_HONORIFIC_PREFIX, ASCIIToUTF16(""));
   profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("John K. Doe, Jr."));
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
   profile.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("K."));
   profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Doe"));
+  profile.SetRawInfo(NAME_LAST_FIRST, ASCIIToUTF16("D"));
+  profile.SetRawInfo(NAME_LAST_CONJUNCTION, ASCIIToUTF16("o"));
+  profile.SetRawInfo(NAME_LAST_SECOND, ASCIIToUTF16("e"));
 
   profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("user@example.com"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1.800.555.1234"));
@@ -168,6 +172,12 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE, ASCIIToUTF16("CEDEX"));
   profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
                      ASCIIToUTF16("Santa Clara"));
+  profile.SetRawInfo(ADDRESS_HOME_STREET_NAME, ASCIIToUTF16("Street Name"));
+  profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                     ASCIIToUTF16("Dependent Street Name"));
+  profile.SetRawInfo(ADDRESS_HOME_HOUSE_NUMBER, ASCIIToUTF16("House Number"));
+  profile.SetRawInfo(ADDRESS_HOME_FLOOR, ASCIIToUTF16("Floor"));
+  profile.SetRawInfo(ADDRESS_HOME_PREMISE_NAME, ASCIIToUTF16("Premise"));
   profile.set_language_code("en");
   profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   return profile;
@@ -183,10 +193,39 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   specifics.set_use_count(7);
   specifics.set_use_date(1423182152);
 
+  specifics.add_name_honorific("");
   specifics.add_name_first("John");
   specifics.add_name_middle("K.");
   specifics.add_name_last("Doe");
   specifics.add_name_full("John K. Doe, Jr.");
+  specifics.add_name_last_first("D");
+  specifics.add_name_last_conjunction("o");
+  specifics.add_name_last_second("e");
+
+  specifics.add_name_honorific_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+  specifics.add_name_first_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+  specifics.add_name_middle_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+  specifics.add_name_last_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+  specifics.add_name_full_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+  specifics.add_name_last_first_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+  specifics.add_name_last_conjunction_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+  specifics.add_name_last_second_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
 
   specifics.add_email_address("user@example.com");
 
@@ -206,8 +245,15 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   specifics.set_address_home_sorting_code("CEDEX");
   specifics.set_address_home_dependent_locality("Santa Clara");
   specifics.set_address_home_language_code("en");
-  specifics.set_validity_state_bitfield(kValidityStateBitfield);
 
+  specifics.set_address_home_thoroughfare_name("Street Name");
+  specifics.set_address_home_dependent_thoroughfare_name(
+      "Dependent Street Name");
+  specifics.set_address_home_thoroughfare_number("House Number");
+  specifics.set_address_home_subpremise_name("Floor");
+  specifics.set_address_home_premise_name("Premise");
+
+  specifics.set_validity_state_bitfield(kValidityStateBitfield);
   return specifics;
 }
 

@@ -89,6 +89,7 @@
 #include "base/json/json_writer.h"
 #include "base/trace_event/trace_event.h"
 #include "components/autofill/android/provider/autofill_provider_android.h"
+#include "components/browser_ui/sms/android/sms_infobar.h"
 #include "components/embedder_support/android/contextmenu/context_menu_builder.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"  // nogncheck
@@ -877,6 +878,23 @@ content::ColorChooser* TabImpl::OpenColorChooser(
       web_contents, color, suggestions);
 #else
   return nullptr;
+#endif
+}
+
+void TabImpl::CreateSmsPrompt(content::RenderFrameHost* render_frame_host,
+                              const url::Origin& origin,
+                              const std::string& one_time_code,
+                              base::OnceClosure on_confirm,
+                              base::OnceClosure on_cancel) {
+#if defined(OS_ANDROID)
+  auto* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  sms::SmsInfoBar::Create(
+      web_contents, InfoBarService::FromWebContents(web_contents),
+      InfoBarService::GetResourceIdMapper(), origin, one_time_code,
+      std::move(on_confirm), std::move(on_cancel));
+#else
+  NOTREACHED();
 #endif
 }
 

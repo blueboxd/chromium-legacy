@@ -191,6 +191,16 @@ function getCategoryItemMap() {
           loadTimeData.getBoolean('enableFileSystemWriteContentSetting'),
     },
     {
+      route: routes.SITE_SETTINGS_FONT_ACCESS,
+      id: Id.FONT_ACCESS,
+      label: 'fonts',
+      icon: 'settings:font-access',
+      enabledLabel: 'siteSettingsFontAccessAsk',
+      disabledLabel: 'siteSettingsFontAccessBlock',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enableFontAccessContentSetting'),
+    },
+    {
       route: routes.SITE_SETTINGS_NOTIFICATIONS,
       id: Id.NOTIFICATIONS,
       label: 'siteSettingsNotifications',
@@ -374,6 +384,7 @@ Polymer({
             Id.AR,
             Id.VR,
             Id.WINDOW_PLACEMENT,
+            Id.FONT_ACCESS,
           ]),
           contentBasic: buildItemListFromIds([
             Id.COOKIES,

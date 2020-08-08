@@ -8,6 +8,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -34,6 +35,27 @@ TEST_F(WindowMirrorViewTest, LocalWindowOcclusionMadeVisible) {
   // visible. This is to ensure renderers still produce content.
   EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
             widget_window->occlusion_state());
+}
+
+// Tests that a mirror view that mirrors a window with an existing transform
+// does not copy that transform onto its mirror layer (and then putting the
+// mirror layer offscreen). Regression test for https://crbug.com/1113429.
+TEST_F(WindowMirrorViewTest, MirrorLayerHasNoTransformWhenNonClientViewShown) {
+  // Create a window that has a transform already. When the layer is mirrored,
+  // the transform will be copied with it.
+  auto widget = CreateTestWidget();
+  aura::Window* widget_window = widget->GetNativeWindow();
+  const gfx::Transform transform(1.f, 0.f, 0.f, 1.f, 100.f, 100.f);
+  widget_window->SetTransform(transform);
+
+  auto mirror_widget = CreateTestWidget();
+  auto mirror_view = std::make_unique<WindowMirrorView>(
+      widget_window, /*trilinear_filtering_on_init=*/false,
+      /*show_non_client_view=*/true);
+  mirror_view->RecreateMirrorLayers();
+
+  EXPECT_TRUE(
+      mirror_view->GetMirrorLayerForTesting()->transform().IsIdentity());
 }
 
 }  // namespace

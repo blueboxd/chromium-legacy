@@ -132,7 +132,7 @@ STDMETHODIMP LegacyOnDemandImpl::checkForUpdate() {
                     },
                     obj));
           },
-          com_server->service(), LegacyOnDemandImplPtr(this)));
+          com_server->update_service(), LegacyOnDemandImplPtr(this)));
   return S_OK;
 }
 

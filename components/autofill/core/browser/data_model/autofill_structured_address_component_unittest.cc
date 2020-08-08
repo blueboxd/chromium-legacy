@@ -837,8 +837,8 @@ TEST(AutofillStructuredAddressAddressComponent, IsTreeCompletable) {
   // Create a compound component.
   TestCompoundNameAddressComponent compound_component;
 
-  // This tree is not completable because it has not a single assigned node.
-  EXPECT_FALSE(compound_component.IsTreeCompletable());
+  // This tree is completable because it has not a single assigned node.
+  EXPECT_TRUE(compound_component.IsTreeCompletable());
 
   // Set the first name node of the tree.
   compound_component.SetValueForTypeIfPossible(

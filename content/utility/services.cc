@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -54,6 +55,11 @@
 extern sandbox::TargetServices* g_utility_target_services;
 #endif  // defined(OS_WIN)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+#if defined(OS_LINUX)
+#include "sandbox/linux/services/libc_interceptor.h"
+#include "sandbox/policy/sandbox_type.h"
+#endif  // defined(OS_LINUX)
 
 namespace content {
 
@@ -150,6 +156,15 @@ auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
       << "task_policy_set TASK_QOS_POLICY";
 #endif
 
+#if defined(OS_LINUX)
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (sandbox::policy::SandboxTypeFromCommandLine(*command_line) ==
+      sandbox::policy::SandboxType::kNoSandbox) {
+    // This is necessary to avoid crashes in certain environments.
+    // See https://crbug.com/1109346
+    sandbox::InitLibcLocaltimeFunctions();
+  }
+#endif
   return audio::CreateStandaloneService(std::move(receiver));
 }
 

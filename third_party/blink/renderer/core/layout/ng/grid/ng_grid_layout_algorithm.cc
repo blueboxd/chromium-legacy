@@ -23,18 +23,46 @@ NGGridLayoutAlgorithm::NGGridLayoutAlgorithm(
 }
 
 scoped_refptr<const NGLayoutResult> NGGridLayoutAlgorithm::Layout() {
-  switch (state_) {
-    case GridLayoutAlgorithmState::kMeasuringItems:
-      SetSpecifiedTracks();
-      ConstructAndAppendGridItems();
-      row_track_collection_.FinalizeRanges();
-      column_track_collection_.FinalizeRanges();
-      break;
+  // Proceed by algorithm state, as some scenarios will involve a non-linear
+  // path through these steps (e.g. skipping or redoing some of them).
+  while (state_ != GridLayoutAlgorithmState::kCompletedLayout) {
+    switch (state_) {
+      case GridLayoutAlgorithmState::kMeasuringItems: {
+        SetSpecifiedTracks();
+        ConstructAndAppendGridItems();
+        block_column_track_collection_.FinalizeRanges();
+        block_row_track_collection_.FinalizeRanges();
 
-    default:
-      break;
+        DCHECK_NE(child_percentage_size_.inline_size, kIndefiniteSize);
+        algorithm_column_track_collection_ =
+            NGGridLayoutAlgorithmTrackCollection(
+                block_column_track_collection_,
+                /* is_content_box_size_indefinite */ false);
+
+        bool is_content_box_block_size_indefinite =
+            child_percentage_size_.block_size == kIndefiniteSize;
+        algorithm_row_track_collection_ = NGGridLayoutAlgorithmTrackCollection(
+            block_row_track_collection_, is_content_box_block_size_indefinite);
+
+        state_ = GridLayoutAlgorithmState::kResolvingInlineSize;
+        break;
+      }
+
+      case GridLayoutAlgorithmState::kResolvingInlineSize:
+        ComputeUsedTrackSizes(GridTrackSizingDirection::kForColumns);
+        state_ = GridLayoutAlgorithmState::kResolvingBlockSize;
+        break;
+
+      case GridLayoutAlgorithmState::kResolvingBlockSize:
+        ComputeUsedTrackSizes(GridTrackSizingDirection::kForRows);
+        state_ = GridLayoutAlgorithmState::kCompletedLayout;
+        break;
+
+      case GridLayoutAlgorithmState::kCompletedLayout:
+        NOTREACHED();
+        break;
+    }
   }
-
   return container_builder_.ToBoxFragment();
 }
 
@@ -43,14 +71,20 @@ MinMaxSizesResult NGGridLayoutAlgorithm::ComputeMinMaxSizes(
   return {MinMaxSizes(), /* depends_on_percentage_block_size */ true};
 }
 
-const NGGridBlockTrackCollection& NGGridLayoutAlgorithm::ColumnTrackCollection()
-    const {
-  return column_track_collection_;
+const NGGridLayoutAlgorithmTrackCollection&
+NGGridLayoutAlgorithm::ColumnTrackCollection() const {
+  return algorithm_column_track_collection_;
 }
 
-const NGGridBlockTrackCollection& NGGridLayoutAlgorithm::RowTrackCollection()
-    const {
-  return row_track_collection_;
+const NGGridLayoutAlgorithmTrackCollection&
+NGGridLayoutAlgorithm::RowTrackCollection() const {
+  return algorithm_row_track_collection_;
+}
+
+NGGridLayoutAlgorithmTrackCollection& NGGridLayoutAlgorithm::TrackCollection(
+    GridTrackSizingDirection track_direction) {
+  return (track_direction == kForColumns) ? algorithm_column_track_collection_
+                                          : algorithm_row_track_collection_;
 }
 
 void NGGridLayoutAlgorithm::ConstructAndAppendGridItems() {
@@ -128,12 +162,12 @@ void NGGridLayoutAlgorithm::SetSpecifiedTracks() {
   // children, rather than specified auto-column/track.
   // TODO(janewman): We need to implement calculation for track auto repeat
   // count so this can be used outside of testing.
-  column_track_collection_.SetSpecifiedTracks(
+  block_column_track_collection_.SetSpecifiedTracks(
       &grid_style.GridTemplateColumns().NGTrackList(),
       &grid_style.GridAutoColumns().NGTrackList(),
       automatic_column_repetitions_for_testing);
 
-  row_track_collection_.SetSpecifiedTracks(
+  block_row_track_collection_.SetSpecifiedTracks(
       &grid_style.GridTemplateRows().NGTrackList(),
       &grid_style.GridAutoRows().NGTrackList(),
       automatic_row_repetitions_for_testing);
@@ -144,10 +178,10 @@ void NGGridLayoutAlgorithm::EnsureTrackCoverageForGridItem(
   const ComputedStyle& item_style = grid_item.Style();
   EnsureTrackCoverageForGridPositions(item_style.GridColumnStart(),
                                       item_style.GridColumnEnd(),
-                                      column_track_collection_);
+                                      block_column_track_collection_);
   EnsureTrackCoverageForGridPositions(item_style.GridRowStart(),
                                       item_style.GridRowEnd(),
-                                      row_track_collection_);
+                                      block_row_track_collection_);
 }
 
 void NGGridLayoutAlgorithm::EnsureTrackCoverageForGridPositions(
@@ -161,6 +195,57 @@ void NGGridLayoutAlgorithm::EnsureTrackCoverageForGridPositions(
     track_collection.EnsureTrackCoverage(
         start_position.IntegerPosition(),
         end_position.IntegerPosition() - start_position.IntegerPosition() + 1);
+  }
+}
+
+// https://drafts.csswg.org/css-grid-1/#algo-track-sizing
+void NGGridLayoutAlgorithm::ComputeUsedTrackSizes(
+    GridTrackSizingDirection track_direction) {
+  NGGridLayoutAlgorithmTrackCollection& track_collection =
+      TrackCollection(track_direction);
+  LayoutUnit content_box_size = (track_direction == kForColumns)
+                                    ? child_percentage_size_.inline_size
+                                    : child_percentage_size_.block_size;
+
+  // 1. Initialize track sizes (https://drafts.csswg.org/css-grid-1/#algo-init).
+  for (auto set_iterator = track_collection.GetSetIterator();
+       !set_iterator.IsAtEnd(); set_iterator.MoveToNextSet()) {
+    NGGridSet& current_set = set_iterator.CurrentSet();
+    const GridTrackSize& track_size = current_set.TrackSize();
+
+    if (track_size.HasFixedMinTrackBreadth()) {
+      // Indefinite lengths cannot occur, as they’re treated as 'auto'.
+      DCHECK(!track_size.MinTrackBreadth().HasPercentage() ||
+             content_box_size != kIndefiniteSize);
+
+      // A fixed sizing function: Resolve to an absolute length and use that
+      // size as the track’s initial base size.
+      LayoutUnit fixed_min_breadth = ValueForLength(
+          track_size.MinTrackBreadth().length(), content_box_size);
+      current_set.SetBaseSize(fixed_min_breadth * current_set.TrackCount());
+    } else {
+      // An intrinsic sizing function: Use an initial base size of zero.
+      DCHECK(track_size.HasIntrinsicMinTrackBreadth());
+      current_set.SetBaseSize(LayoutUnit());
+    }
+
+    if (track_size.HasFixedMaxTrackBreadth()) {
+      DCHECK(!track_size.MaxTrackBreadth().HasPercentage() ||
+             content_box_size != kIndefiniteSize);
+
+      // A fixed sizing function: Resolve to an absolute length and use that
+      // size as the track’s initial growth limit; if the growth limit is less
+      // than the base size, increase the growth limit to match the base size.
+      LayoutUnit fixed_max_breadth = ValueForLength(
+          track_size.MaxTrackBreadth().length(), content_box_size);
+      current_set.SetGrowthLimit(
+          std::max(current_set.BaseSize(),
+                   fixed_max_breadth * current_set.TrackCount()));
+    } else {
+      // An intrinsic or flexible sizing function: Use an initial growth limit
+      // of infinity.
+      current_set.SetGrowthLimit(kIndefiniteSize);
+    }
   }
 }
 

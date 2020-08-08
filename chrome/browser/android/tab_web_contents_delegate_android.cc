@@ -43,8 +43,8 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/android/device_dialog/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/device_dialog/bluetooth_scanning_prompt_android.h"
+#include "chrome/browser/ui/android/infobars/chrome_confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
-#include "chrome/browser/ui/android/sms/sms_infobar.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/chrome_popup_navigation_delegate.h"
@@ -58,6 +58,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/blocked_content/popup_blocker.h"
 #include "components/blocked_content/popup_tracker.h"
+#include "components/browser_ui/sms/android/sms_infobar.h"
 #include "components/browser_ui/util/android/url_constants.h"
 #include "components/find_in_page/find_notification_details.h"
 #include "components/find_in_page/find_tab_helper.h"
@@ -212,8 +213,10 @@ void TabWebContentsDelegateAndroid::CreateSmsPrompt(
     base::OnceClosure on_confirm,
     base::OnceClosure on_cancel) {
   auto* web_contents = content::WebContents::FromRenderFrameHost(host);
-  SmsInfoBar::Create(web_contents, origin, one_time_code, std::move(on_confirm),
-                     std::move(on_cancel));
+  sms::SmsInfoBar::Create(
+      web_contents, InfoBarService::FromWebContents(web_contents),
+      ChromeConfirmInfoBar::GetResourceIdMapper(), origin, one_time_code,
+      std::move(on_confirm), std::move(on_cancel));
 }
 
 std::unique_ptr<content::BluetoothScanningPrompt>

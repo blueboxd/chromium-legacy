@@ -54,13 +54,6 @@ import org.chromium.url.GURL;
 @Batch(Batch.UNIT_TESTS)
 @CommandLineFlags.Add(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE)
 public class EntitySuggestionProcessorUnitTest {
-    // These values are used with UMA to report Omnibox.RichEntity.DecorationType histograms.
-    // These values are INTENTIONALLY copied here to prevent accidental updates that may
-    // cause metrics to break.
-    private static final int DECORATION_TYPE_ICON = 0;
-    private static final int DECORATION_TYPE_COLOR = 1;
-    private static final int DECORATION_TYPE_IMAGE = 2;
-
     @Mock
     SuggestionHost mSuggestionHost;
 
@@ -83,11 +76,6 @@ public class EntitySuggestionProcessorUnitTest {
         private SuggestionTestHelper(OmniboxSuggestion suggestion, PropertyModel model) {
             mSuggestion = suggestion;
             mModel = model;
-        }
-
-        void verifyReportedType(int expectedType) {
-            Assert.assertEquals(
-                    expectedType, mModel.get(EntitySuggestionViewProperties.DECORATION_TYPE));
         }
 
         /** Get Drawable associated with the suggestion. */
@@ -149,7 +137,6 @@ public class EntitySuggestionProcessorUnitTest {
                 "subject", suggHelper.mModel.get(EntitySuggestionViewProperties.SUBJECT_TEXT));
         Assert.assertEquals(
                 "details", suggHelper.mModel.get(EntitySuggestionViewProperties.DESCRIPTION_TEXT));
-        suggHelper.verifyReportedType(DECORATION_TYPE_ICON);
     }
 
     @Test
@@ -161,7 +148,6 @@ public class EntitySuggestionProcessorUnitTest {
 
         Assert.assertNotNull(suggHelper.getIcon());
         Assert.assertThat(suggHelper.getIcon(), instanceOf(BitmapDrawable.class));
-        suggHelper.verifyReportedType(DECORATION_TYPE_ICON);
     }
 
     @Test
@@ -174,7 +160,6 @@ public class EntitySuggestionProcessorUnitTest {
         Assert.assertThat(suggHelper.getIcon(), instanceOf(ColorDrawable.class));
         ColorDrawable icon = (ColorDrawable) suggHelper.getIcon();
         Assert.assertEquals(icon.getColor(), 0xfffedcba);
-        suggHelper.verifyReportedType(DECORATION_TYPE_COLOR);
     }
 
     @Test
@@ -187,7 +172,6 @@ public class EntitySuggestionProcessorUnitTest {
         Assert.assertThat(suggHelper.getIcon(), instanceOf(ColorDrawable.class));
         ColorDrawable icon = (ColorDrawable) suggHelper.getIcon();
         Assert.assertEquals(icon.getColor(), Color.RED);
-        suggHelper.verifyReportedType(DECORATION_TYPE_COLOR);
     }
 
     @Test
@@ -198,17 +182,14 @@ public class EntitySuggestionProcessorUnitTest {
         SuggestionTestHelper suggHelper = createSuggestion("", "", "", GURL.emptyGURL());
         processSuggestion(suggHelper);
         Assert.assertThat(suggHelper.getIcon(), instanceOf(BitmapDrawable.class));
-        suggHelper.verifyReportedType(DECORATION_TYPE_ICON);
 
         suggHelper = createSuggestion("", "", "#", GURL.emptyGURL());
         processSuggestion(suggHelper);
         Assert.assertThat(suggHelper.getIcon(), instanceOf(BitmapDrawable.class));
-        suggHelper.verifyReportedType(DECORATION_TYPE_ICON);
 
         suggHelper = createSuggestion("", "", "invalid", GURL.emptyGURL());
         processSuggestion(suggHelper);
         Assert.assertThat(suggHelper.getIcon(), instanceOf(BitmapDrawable.class));
-        suggHelper.verifyReportedType(DECORATION_TYPE_ICON);
     }
 
     @Test
@@ -222,12 +203,10 @@ public class EntitySuggestionProcessorUnitTest {
         final ArgumentCaptor<Callback<Bitmap>> callback = ArgumentCaptor.forClass(Callback.class);
         verify(mImageFetcher).fetchImage(eq(createParams(url.getSpec())), callback.capture());
 
-        suggHelper.verifyReportedType(DECORATION_TYPE_COLOR);
         Assert.assertThat(suggHelper.getIcon(), instanceOf(ColorDrawable.class));
         callback.getValue().onResult(mBitmap);
         Assert.assertThat(suggHelper.getIcon(), instanceOf(BitmapDrawable.class));
         Assert.assertEquals(mBitmap, ((BitmapDrawable) suggHelper.getIcon()).getBitmap());
-        suggHelper.verifyReportedType(DECORATION_TYPE_IMAGE);
     }
 
     @Test
@@ -269,17 +248,11 @@ public class EntitySuggestionProcessorUnitTest {
         final Drawable icon1 = sugg1.getIcon();
         final Drawable icon2 = sugg2.getIcon();
         final Drawable icon3 = sugg3.getIcon();
-        sugg1.verifyReportedType(DECORATION_TYPE_ICON);
-        sugg2.verifyReportedType(DECORATION_TYPE_ICON);
-        sugg3.verifyReportedType(DECORATION_TYPE_ICON);
 
         callback.getValue().onResult(mBitmap);
         final Drawable newIcon1 = sugg1.getIcon();
         final Drawable newIcon2 = sugg2.getIcon();
         final Drawable newIcon3 = sugg3.getIcon();
-        sugg1.verifyReportedType(DECORATION_TYPE_IMAGE);
-        sugg2.verifyReportedType(DECORATION_TYPE_IMAGE);
-        sugg3.verifyReportedType(DECORATION_TYPE_IMAGE);
 
         Assert.assertNotEquals(icon1, newIcon1);
         Assert.assertNotEquals(icon2, newIcon2);
@@ -311,7 +284,6 @@ public class EntitySuggestionProcessorUnitTest {
 
         Assert.assertEquals(oldIcon, newIcon);
         Assert.assertThat(oldIcon, instanceOf(BitmapDrawable.class));
-        suggHelper.verifyReportedType(DECORATION_TYPE_ICON);
     }
 
     @Test
@@ -331,7 +303,6 @@ public class EntitySuggestionProcessorUnitTest {
 
         Assert.assertEquals(oldIcon, newIcon);
         Assert.assertThat(oldIcon, instanceOf(ColorDrawable.class));
-        suggHelper.verifyReportedType(DECORATION_TYPE_COLOR);
     }
 
     @Test
@@ -362,7 +333,5 @@ public class EntitySuggestionProcessorUnitTest {
         // Observe no change, despite updated image.
         Assert.assertEquals(icon1, newIcon1);
         Assert.assertEquals(icon2, newIcon2);
-        sugg1.verifyReportedType(DECORATION_TYPE_ICON);
-        sugg2.verifyReportedType(DECORATION_TYPE_ICON);
     }
 }

@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Bestanden bewerken</translation>
 <translation id="1285320974508926690">Deze site nooit vertalen</translation>
 <translation id="1285484354230578868">Gegevens opslaan in je Google Drive-account</translation>
-<translation id="1285717512281186441">Printer is niet bereikbaar</translation>
 <translation id="1288037062697528143">Nachtverlichting wordt automatisch ingeschakeld bij zonsondergang</translation>
 <translation id="1288300545283011870">Spraakeigenschappen</translation>
 <translation id="1293264513303784526">USB-C-apparaat (poort aan linkerkant)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Hiermee wis je alle gegevens en cookies die zijn opgeslagen door <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">&amp;JavaScript-console</translation>
 <translation id="1587907146729660231">Plaats je vinger op de aan/uit-knop</translation>
-<translation id="1588200577109872591">Slimme invoer</translation>
 <translation id="1588438908519853928">Normaal</translation>
 <translation id="158849752021629804">Thuisnetwerk vereist</translation>
 <translation id="1588870296199743671">Link openen met...</translation>
@@ -1286,7 +1284,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="253557089021624350">Aantal keepalive-activiteiten</translation>
 <translation id="2535799430745250929">Er bestaat geen mobiel netwerk</translation>
 <translation id="2537178555904266562">Fout bij synchroniseren van wachtwoorden</translation>
-<translation id="2537296579376733324">Alle cookies, alleen op deze site</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> kan de volgende bestanden en mappen bekijken en bewerken</translation>
 <translation id="2537927931785713436">De image van de virtuele machine wordt gecontroleerd</translation>
 <translation id="2538361623464451692">Synchroniseren uitgeschakeld</translation>
@@ -1427,7 +1424,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2712173769900027643">Rechten vragen</translation>
 <translation id="2713444072780614174">Wit</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
-<translation id="2714997332747470971">Met suggesties voor persoonlijke informatie kun je sneller typen, doordat je naam, adres of telefoonnummer wordt voorgesteld. Alleen jij kunt je eigen, persoonlijke suggesties voor jouw account zien.</translation>
 <translation id="2715751256863167692">Met deze upgrade wordt je Chromebook gereset en worden huidige gebruikersgegevens verwijderd.</translation>
 <translation id="2716986496990888774">Deze instelling wordt beheerd door een ouder.</translation>
 <translation id="2718395828230677721">Nachtlicht</translation>
@@ -2949,7 +2945,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4608520674724523647">Illustratie van geslaagde inschrijving</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> bevat gevoelige content</translation>
 <translation id="4610162781778310380">Er is een fout opgetreden in <ph name="PLUGIN_NAME" /></translation>
-<translation id="4610178114344604329">Suggesties voor persoonlijke informatie weergeven</translation>
 <translation id="4610637590575890427">Wilde je naar <ph name="SITE" /> gaan?</translation>
 <translation id="4611114513649582138">Gegevensverbinding beschikbaar</translation>
 <translation id="4613144866899789710">Linux-installatie annuleren…</translation>
@@ -6010,7 +6005,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8448729345478502352">Items op het scherm kleiner of groter maken</translation>
 <translation id="8449008133205184768">Plakken en stijl aanpassen</translation>
 <translation id="8449036207308062757">Opslag beheren</translation>
-<translation id="84501823665211008">Suggesties voor emoji's weergeven</translation>
 <translation id="8452135315243592079">Simkaart ontbreekt</translation>
 <translation id="8455026683977728932">Kan ADB-illustratie niet inschakelen</translation>
 <translation id="845702320058262034">Kan geen verbinding maken. Controleer of Bluetooth is ingeschakeld op je telefoon.</translation>
@@ -6295,7 +6289,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8798441408945964110">Naam provider</translation>
 <translation id="8800004011501252845">Bestemmingen weergeven voor</translation>
 <translation id="8800034312320686233">Werkt de site niet?</translation>
-<translation id="880069872639153240">Suggesties voor emoji's krijgen op basis van wat je typt</translation>
 <translation id="8803953437405899238">Je kunt met één klik een nieuw tabblad openen</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Tabblad verplaatsen naar ander venster}other{Tabbladen verplaatsen naar ander venster}}</translation>
 <translation id="8805140816472474147">Bevestig de synchronisatie-instellingen om de synchronisatie te starten.</translation>

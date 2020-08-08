@@ -176,6 +176,8 @@ Polymer({
         return this.i18n('siteSettingsVr');
       case ContentSettingsTypes.WINDOW_PLACEMENT:
         return this.i18n('siteSettingsWindowPlacement');
+      case ContentSettingsTypes.FONT_ACCESS:
+        return this.i18n('fonts');
       default:
         return '';
     }

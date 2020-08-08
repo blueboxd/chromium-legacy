@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Editar arquivos</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1285484354230578868">Armazenar dados em sua conta do Google Drive</translation>
-<translation id="1285717512281186441">A impressora está inacessível</translation>
 <translation id="1288037062697528143">O Modo noturno será ativado automaticamente ao anoitecer</translation>
 <translation id="1288300545283011870">Propriedades da fala</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porta da esquerda)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Isso limpará todos os dados e cookies armazenados por <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">&amp;Console JavaScript</translation>
 <translation id="1587907146729660231">Toque no botão liga/desliga com o dedo</translation>
-<translation id="1588200577109872591">Entradas inteligentes</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Rede doméstica ausente</translation>
 <translation id="1588870296199743671">Abrir link com...</translation>
@@ -1286,7 +1284,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="253557089021624350">Contagem de manutenção de atividade</translation>
 <translation id="2535799430745250929">Não há nenhuma rede celular</translation>
 <translation id="2537178555904266562">Erro ao sincronizar senhas</translation>
-<translation id="2537296579376733324">Todos os cookies, apenas neste site</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> tem permissão para ver e editar os arquivos e as pastas a seguir</translation>
 <translation id="2537927931785713436">Verificando a imagem da máquina virtual</translation>
 <translation id="2538361623464451692">Sincronização desativada</translation>
@@ -1427,7 +1424,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2712173769900027643">Pedir permissão</translation>
 <translation id="2713444072780614174">Branco</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
-<translation id="2714997332747470971">As sugestões de informações pessoais ajudam você a escrever mais rápido com sugestões como nome, endereço ou número de telefone. As sugestões são particulares e personalizadas para sua conta.</translation>
 <translation id="2715751256863167692">Esse upgrade redefine seu Chromebook e remove os dados do usuário atuais.</translation>
 <translation id="2716986496990888774">Esta configuração é gerenciada por um dos seus pais.</translation>
 <translation id="2718395828230677721">Modo noturno</translation>
@@ -2952,7 +2948,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4608520674724523647">Ilustração de inscrição concluída</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> tem conteúdo confidencial</translation>
 <translation id="4610162781778310380">O plug-in <ph name="PLUGIN_NAME" /> encontrou um erro</translation>
-<translation id="4610178114344604329">Mostrar sugestões de informações pessoais</translation>
 <translation id="4610637590575890427">Você quis ir a <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Conexão de dados disponível</translation>
 <translation id="4613144866899789710">Cancelando instalação do Linux...</translation>
@@ -6020,7 +6015,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8448729345478502352">Torne os itens na tela menores ou maiores</translation>
 <translation id="8449008133205184768">Colar com o Mesmo Estilo</translation>
 <translation id="8449036207308062757">Gerenciar armazenamento</translation>
-<translation id="84501823665211008">Exibir sugestões de emojis</translation>
 <translation id="8452135315243592079">Chip ausente</translation>
 <translation id="8455026683977728932">Não foi possível ativar a ilustração do adb</translation>
 <translation id="845702320058262034">Não foi possível conectar. Verifique se o Bluetooth do smartphone está ativado.</translation>
@@ -6306,7 +6300,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8798441408945964110">Nome do provedor</translation>
 <translation id="8800004011501252845">Mostrando destinos para</translation>
 <translation id="8800034312320686233">Site indisponível?</translation>
-<translation id="880069872639153240">Receba sugestões de emojis com base no que você está digitando</translation>
 <translation id="8803953437405899238">Abra uma nova guia com um único clique</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Mover guia para outra janela}one{Mover guia para outra janela}other{Mover guias para outra janela}}</translation>
 <translation id="8805140816472474147">Confirme as configurações de sincronização para iniciá-la.</translation>

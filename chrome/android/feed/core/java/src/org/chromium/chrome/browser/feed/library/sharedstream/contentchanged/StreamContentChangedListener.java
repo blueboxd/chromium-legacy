@@ -35,4 +35,11 @@ public class StreamContentChangedListener implements ContentChangedListener {
             listener.onAddFinished();
         }
     }
+
+    @Override
+    public void onAddStarting() {
+        for (ContentChangedListener listener : mListeners) {
+            listener.onAddStarting();
+        }
+    }
 }

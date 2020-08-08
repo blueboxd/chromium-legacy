@@ -36,7 +36,7 @@ class CONTENT_EXPORT NavigationThrottleRunner {
         NavigationThrottle::ThrottleCheckResult result) = 0;
   };
 
-  NavigationThrottleRunner(Delegate* delegate);
+  NavigationThrottleRunner(Delegate* delegate, int64_t navigation_id);
   ~NavigationThrottleRunner();
 
   // Will call the appropriate NavigationThrottle function based on |event| on
@@ -68,13 +68,17 @@ class CONTENT_EXPORT NavigationThrottleRunner {
   void ProcessInternal();
   void InformDelegate(const NavigationThrottle::ThrottleCheckResult& result);
 
-  Delegate* delegate_;
+  Delegate* const delegate_;
 
   // A list of Throttles registered for this navigation.
   std::vector<std::unique_ptr<NavigationThrottle>> throttles_;
 
   // The index of the next throttle to check.
   size_t next_index_;
+
+  // The unique id of the navigation which this throttle runner is associated
+  // with.
+  const int64_t navigation_id_;
 
   // The event currently being processed.
   Event current_event_ = Event::NoEvent;

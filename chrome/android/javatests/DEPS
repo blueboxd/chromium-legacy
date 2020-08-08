@@ -17,6 +17,7 @@ include_rules = [
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",
   "+components/browser_ui/notifications/android",
   "+components/browser_ui/settings/android",
+  "+components/browser_ui/sms/android",
   "+components/browser_ui/styles/android",
   "+components/browser_ui/widget/android",
   "+components/crash/android",

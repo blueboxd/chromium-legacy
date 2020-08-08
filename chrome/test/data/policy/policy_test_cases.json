@@ -637,10 +637,21 @@
   },
 
   "UserNativePrintersAllowed": {
+    "note": "This policy is deprecated, see http://crbug.com/1113371.",
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": { "UserNativePrintersAllowed": true },
+        "prefs": { "native_printing.user_native_printers_allowed": {} }
+      }
+    ]
+  },
+
+  "UserPrintersAllowed": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "UserPrintersAllowed": true },
         "prefs": { "native_printing.user_native_printers_allowed": {} }
       }
     ]

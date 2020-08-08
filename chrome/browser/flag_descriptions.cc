@@ -1884,6 +1884,11 @@ const char kPrivacyElevatedAndroidDescription[] =
     "Moves the Privacy section up to Basics and moves the Homepage one to "
     " Advanced.";
 
+const char kPrivacyReorderedAndroidName[] =
+    "Reorder settings in Privacy on Android";
+const char kPrivacyReorderedAndroidDescription[] =
+    "Reorder settings in the Privacy settings page for better user experience.";
+
 const char kPrivacySettingsRedesignName[] = "Privacy Settings Redesign";
 const char kPrivacySettingsRedesignDescription[] =
     "Redesign of the privacy settings card to make it more prominent and "
@@ -2537,6 +2542,11 @@ const char kAndroidAutofillAccessibilityDescription[] =
 const char kAndroidDefaultBrowserPromoName[] = "Default Browser Promo";
 const char kAndroidDefaultBrowserPromoDescription[] =
     "Shows a promo dialog to set Chrome as the default browser";
+
+const char kAndroidManagedByMenuItemName[] = "Managed by menu item";
+const char kAndroidManagedByMenuItemDescription[] =
+    "whether policies have been applied to this browser at the profile or "
+    "machine level.";
 
 const char kAndroidMultipleDisplayName[] = "Multiple Display";
 const char kAndroidMultipleDisplayDescription[] =

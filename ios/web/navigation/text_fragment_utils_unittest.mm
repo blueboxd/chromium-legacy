@@ -18,12 +18,16 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
 // These values correspond to the members that the JavaScript implementation is
 // expecting.
-const std::string kPrefixKey = "prefix";
-const std::string kTextStartKey = "textStart";
-const std::string kTextEndKey = "textEnd";
-const std::string kSuffixKey = "suffix";
+const char kPrefixKey[] = "prefix";
+const char kTextStartKey[] = "textStart";
+const char kTextEndKey[] = "textEnd";
+const char kSuffixKey[] = "suffix";
+
+}  // namespace
 
 namespace web {
 

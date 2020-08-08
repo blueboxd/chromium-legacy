@@ -115,7 +115,7 @@ bool IsRecentTabsCommand(int command_id) {
 class FullscreenButton : public ImageButton {
  public:
   explicit FullscreenButton(views::ButtonListener* listener)
-      : ImageButton(listener) { }
+      : ImageButton(listener) {}
   FullscreenButton(const FullscreenButton&) = delete;
   FullscreenButton& operator=(const FullscreenButton&) = delete;
 
@@ -219,13 +219,13 @@ base::string16 GetAccessibleNameForAppMenuItem(ButtonMenuItemModel* model,
   ui::Accelerator menu_accelerator;
   if (add_accelerator_text &&
       model->GetAcceleratorAt(item_index, &menu_accelerator)) {
-    accelerator_text =
-        ui::Accelerator(menu_accelerator.key_code(),
-                        menu_accelerator.modifiers()).GetShortcutText();
+    accelerator_text = ui::Accelerator(menu_accelerator.key_code(),
+                                       menu_accelerator.modifiers())
+                           .GetShortcutText();
   }
 
-  return MenuItemView::GetAccessibleNameForMenuItem(
-      accessible_name, accelerator_text);
+  return MenuItemView::GetAccessibleNameForMenuItem(accessible_name,
+                                                    accelerator_text, false);
 }
 
 // A button that lives inside a menu item.
@@ -402,7 +402,6 @@ class AppMenu::CutCopyPasteView : public AppMenuView {
 
 // ZoomView --------------------------------------------------------------------
 
-
 // ZoomView contains the various zoom controls: two buttons to increase/decrease
 // the zoom, a label showing the current zoom percent, and a button to go
 // full-screen.
@@ -556,9 +555,8 @@ class AppMenu::ZoomView : public AppMenuView {
 
  private:
   content::WebContents* GetActiveWebContents() const {
-    return menu() ?
-        menu()->browser_->tab_strip_model()->GetActiveWebContents() :
-        nullptr;
+    return menu() ? menu()->browser_->tab_strip_model()->GetActiveWebContents()
+                  : nullptr;
   }
 
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change) {
@@ -572,10 +570,8 @@ class AppMenu::ZoomView : public AppMenuView {
       auto* zoom_controller = zoom::ZoomController::FromWebContents(contents);
       if (zoom_controller)
         zoom = zoom_controller->GetZoomPercent();
-      increment_button_->SetEnabled(zoom <
-                                    contents->GetMaximumZoomPercent());
-      decrement_button_->SetEnabled(zoom >
-                                    contents->GetMinimumZoomPercent());
+      increment_button_->SetEnabled(zoom < contents->GetMaximumZoomPercent());
+      decrement_button_->SetEnabled(zoom > contents->GetMinimumZoomPercent());
     }
     zoom_label_->SetText(base::FormatPercent(zoom));
     // An alert notification will ensure that the zoom label is always announced
@@ -790,15 +786,16 @@ void AppMenu::GetLabelStyle(int command_id, LabelStyle* style) const {
 
 base::string16 AppMenu::GetTooltipText(int command_id,
                                        const gfx::Point& p) const {
-  return IsBookmarkCommand(command_id) ?
-      bookmark_menu_delegate_->GetTooltipText(command_id, p) : base::string16();
+  return IsBookmarkCommand(command_id)
+             ? bookmark_menu_delegate_->GetTooltipText(command_id, p)
+             : base::string16();
 }
 
 bool AppMenu::IsTriggerableEvent(views::MenuItemView* menu,
                                  const ui::Event& e) {
-  return IsBookmarkCommand(menu->GetCommand()) ?
-      bookmark_menu_delegate_->IsTriggerableEvent(menu, e) :
-      MenuDelegate::IsTriggerableEvent(menu, e);
+  return IsBookmarkCommand(menu->GetCommand())
+             ? bookmark_menu_delegate_->IsTriggerableEvent(menu, e)
+             : MenuDelegate::IsTriggerableEvent(menu, e);
 }
 
 bool AppMenu::GetDropFormats(MenuItemView* menu,
@@ -806,27 +803,27 @@ bool AppMenu::GetDropFormats(MenuItemView* menu,
                              std::set<ui::ClipboardFormatType>* format_types) {
   CreateBookmarkMenu();
   return bookmark_menu_delegate_.get() &&
-      bookmark_menu_delegate_->GetDropFormats(menu, formats, format_types);
+         bookmark_menu_delegate_->GetDropFormats(menu, formats, format_types);
 }
 
 bool AppMenu::AreDropTypesRequired(MenuItemView* menu) {
   CreateBookmarkMenu();
   return bookmark_menu_delegate_.get() &&
-      bookmark_menu_delegate_->AreDropTypesRequired(menu);
+         bookmark_menu_delegate_->AreDropTypesRequired(menu);
 }
 
 bool AppMenu::CanDrop(MenuItemView* menu, const ui::OSExchangeData& data) {
   CreateBookmarkMenu();
   return bookmark_menu_delegate_.get() &&
-      bookmark_menu_delegate_->CanDrop(menu, data);
+         bookmark_menu_delegate_->CanDrop(menu, data);
 }
 
 int AppMenu::GetDropOperation(MenuItemView* item,
                               const ui::DropTargetEvent& event,
                               DropPosition* position) {
-  return IsBookmarkCommand(item->GetCommand()) ?
-      bookmark_menu_delegate_->GetDropOperation(item, event, position) :
-      ui::DragDropTypes::DRAG_NONE;
+  return IsBookmarkCommand(item->GetCommand())
+             ? bookmark_menu_delegate_->GetDropOperation(item, event, position)
+             : ui::DragDropTypes::DRAG_NONE;
 }
 
 int AppMenu::OnPerformDrop(MenuItemView* menu,
@@ -843,15 +840,16 @@ bool AppMenu::ShowContextMenu(MenuItemView* source,
                               int command_id,
                               const gfx::Point& p,
                               ui::MenuSourceType source_type) {
-  return IsBookmarkCommand(command_id) ?
-      bookmark_menu_delegate_->ShowContextMenu(source, command_id, p,
-                                               source_type) :
-      false;
+  return IsBookmarkCommand(command_id)
+             ? bookmark_menu_delegate_->ShowContextMenu(source, command_id, p,
+                                                        source_type)
+             : false;
 }
 
 bool AppMenu::CanDrag(MenuItemView* menu) {
-  return IsBookmarkCommand(menu->GetCommand()) ?
-      bookmark_menu_delegate_->CanDrag(menu) : false;
+  return IsBookmarkCommand(menu->GetCommand())
+             ? bookmark_menu_delegate_->CanDrag(menu)
+             : false;
 }
 
 void AppMenu::WriteDragData(MenuItemView* sender, ui::OSExchangeData* data) {
@@ -860,9 +858,9 @@ void AppMenu::WriteDragData(MenuItemView* sender, ui::OSExchangeData* data) {
 }
 
 int AppMenu::GetDragOperations(MenuItemView* sender) {
-  return IsBookmarkCommand(sender->GetCommand()) ?
-      bookmark_menu_delegate_->GetDragOperations(sender) :
-      MenuDelegate::GetDragOperations(sender);
+  return IsBookmarkCommand(sender->GetCommand())
+             ? bookmark_menu_delegate_->GetDragOperations(sender)
+             : MenuDelegate::GetDragOperations(sender);
 }
 
 int AppMenu::GetMaxWidthForMenu(MenuItemView* menu) {
@@ -905,7 +903,7 @@ bool AppMenu::IsCommandEnabled(int command_id) const {
 void AppMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
   if (IsBookmarkCommand(command_id)) {
     UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.OpenBookmark",
-                        menu_opened_timer_.Elapsed());
+                               menu_opened_timer_.Elapsed());
     UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction",
                               MENU_ACTION_BOOKMARK_OPEN, LIMIT_MENU_ACTION);
     bookmark_menu_delegate_->ExecuteCommand(command_id, mouse_event_flags);
@@ -963,8 +961,8 @@ void AppMenu::WillHideMenu(MenuItemView* menu) {
     // It's okay to just turn off the animation and not turn it back on because
     // the menu widget will be recreated next time it's opened. See
     // ToolbarView::RunMenu() and Init() of this class.
-    menu->GetSubmenu()->GetWidget()->
-        SetVisibilityChangedAnimationsEnabled(false);
+    menu->GetSubmenu()->GetWidget()->SetVisibilityChangedAnimationsEnabled(
+        false);
   }
 }
 
@@ -1080,9 +1078,8 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
 
       case IDC_RECENT_TABS_MENU:
         DCHECK(!recent_tabs_menu_model_delegate_.get());
-        recent_tabs_menu_model_delegate_.reset(
-            new RecentTabsMenuModelDelegate(this, model->GetSubmenuModelAt(i),
-                                            item));
+        recent_tabs_menu_model_delegate_.reset(new RecentTabsMenuModelDelegate(
+            this, model->GetSubmenuModelAt(i), item));
         break;
 
       default:
@@ -1164,10 +1161,8 @@ void AppMenu::CreateBookmarkMenu() {
       browser_->window()->GetNativeWindow());
   bookmark_menu_delegate_.reset(
       new BookmarkMenuDelegate(browser_, browser_, parent));
-  bookmark_menu_delegate_->Init(this,
-                                bookmark_menu_,
-                                model->bookmark_bar_node(),
-                                0,
+  bookmark_menu_delegate_->Init(this, bookmark_menu_,
+                                model->bookmark_bar_node(), 0,
                                 BookmarkMenuDelegate::SHOW_PERMANENT_FOLDERS,
                                 BOOKMARK_LAUNCH_LOCATION_APP_MENU);
 }

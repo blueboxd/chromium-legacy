@@ -119,8 +119,8 @@ ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
 
 views::MdTextButton* ConfirmInfoBar::CreateButton(
     ConfirmInfoBarDelegate::InfoBarButton type) {
-  auto button =
-      views::MdTextButton::Create(this, GetDelegate()->GetButtonLabel(type));
+  auto button = std::make_unique<views::MdTextButton>(
+      this, GetDelegate()->GetButtonLabel(type));
   button->SetProperty(
       views::kMarginsKey,
       gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(

@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Izmeni datoteke</translation>
 <translation id="1285320974508926690">Nikad ne prevodi ovaj sajt</translation>
 <translation id="1285484354230578868">Skladištite podatke na nalogu Google diska</translation>
-<translation id="1285717512281186441">Štampač nije dostupan</translation>
 <translation id="1288037062697528143">Noćno svetlo se automatski uključuje kada sunce zađe</translation>
 <translation id="1288300545283011870">Svojstva govora</translation>
 <translation id="1293264513303784526">Uređaj sa USB priključkom tipa C (levi port)</translation>
@@ -483,7 +482,6 @@
 <translation id="1587129667417059148">Ovim brišete sve podatke i kolačiće koje čuva sajt <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">&amp;JavaScript konzola</translation>
 <translation id="1587907146729660231">Prstom dodirnite dugme za uključivanje</translation>
-<translation id="1588200577109872591">Pametni unosi</translation>
 <translation id="1588438908519853928">Normalan</translation>
 <translation id="158849752021629804">Potrebna je matična mreža</translation>
 <translation id="1588870296199743671">Otvori link koristeći...</translation>
@@ -1283,7 +1281,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="253557089021624350">Broj keepalive signala</translation>
 <translation id="2535799430745250929">Ne postoji nijedna mobilna mreža</translation>
 <translation id="2537178555904266562">Došlo je do greške pri sinhronizovanju lozinki</translation>
-<translation id="2537296579376733324">Svi kolačići, samo na ovom sajtu</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> može da pregleda i menja sledeće datoteke i direktorijume</translation>
 <translation id="2537927931785713436">Proverava se slika virtuelne mašine</translation>
 <translation id="2538361623464451692">Sinhronizacija je onemogućena</translation>
@@ -1424,7 +1421,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2712173769900027643">Zatraži dozvolu</translation>
 <translation id="2713444072780614174">Bela</translation>
 <translation id="2714393097308983682">Google Play prodavnica</translation>
-<translation id="2714997332747470971">Predlozi za lične podatke vam pomažu da brže pišete tako što vam predlažu ime, adresu ili broj telefona. Samo vi možete da vidite svoje privatne personalizovane predloge za nalog.</translation>
 <translation id="2715751256863167692">Ovom nadogradnjom Chromebook se resetuje i uklanjaju se aktuelni podaci korisnika.</translation>
 <translation id="2716986496990888774">Ovim podešavanjem upravlja roditelj.</translation>
 <translation id="2718395828230677721">Noćno svetlo</translation>
@@ -2948,7 +2944,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4608520674724523647">Ilustracija uspešnog prijavljivanja</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> sadrži osetljiv sadržaj</translation>
 <translation id="4610162781778310380">Dodatna komponenta <ph name="PLUGIN_NAME" /> je naišla na grešku</translation>
-<translation id="4610178114344604329">Prikazuj predloge za lične podatke</translation>
 <translation id="4610637590575890427">Da li ste želeli da odete na <ph name="SITE" /></translation>
 <translation id="4611114513649582138">Veza za prenos podataka je dostupna</translation>
 <translation id="4613144866899789710">Otkazuje se Linux instalacija…</translation>
@@ -6015,7 +6010,6 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8448729345478502352">Uvećajte ili umanjite stavke na ekranu</translation>
 <translation id="8449008133205184768">Nalepi sa podudaranjem stila</translation>
 <translation id="8449036207308062757">Upravljaj memorijskim prostorom</translation>
-<translation id="84501823665211008">Prikazuj predloge za emodžije</translation>
 <translation id="8452135315243592079">SIM kartica nedostaje</translation>
 <translation id="8455026683977728932">Omogućavanje ilustracije ADB-a nije uspelo.</translation>
 <translation id="845702320058262034">Povezivanje nije uspelo. Proverite da li je Bluetooth na telefonu uključen.</translation>
@@ -6301,7 +6295,6 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8798441408945964110">Naziv dobavljača</translation>
 <translation id="8800004011501252845">Prikazivanje odredišta za</translation>
 <translation id="8800034312320686233">Da li sajt ne radi?</translation>
-<translation id="880069872639153240">Dobijajte predloge za emodžije na osnovu onoga što unosite</translation>
 <translation id="8803953437405899238">Otvorite novu karticu jednim klikom</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Premesti karticu u drugi prozor}one{Premesti kartice u drugi prozor}few{Premesti kartice u drugi prozor}other{Premesti kartice u drugi prozor}}</translation>
 <translation id="8805140816472474147">Potvrdite podešavanja sinhronizacije da biste započeli sinhronizaciju.</translation>

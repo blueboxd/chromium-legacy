@@ -125,7 +125,10 @@ ChromeAshMessageCenterClient::~ChromeAshMessageCenterClient() {
 }
 
 void ChromeAshMessageCenterClient::Display(
-    const message_center::Notification& notification) {
+    NotificationHandler::Type notification_type,
+    Profile* profile,
+    const message_center::Notification& notification,
+    std::unique_ptr<NotificationCommon::Metadata> metadata) {
   auto message_center_notification =
       std::make_unique<message_center::Notification>(
           base::WrapRefCounted(
@@ -134,13 +137,29 @@ void ChromeAshMessageCenterClient::Display(
   MessageCenter::Get()->AddNotification(std::move(message_center_notification));
 }
 
-void ChromeAshMessageCenterClient::Close(const std::string& notification_id) {
+void ChromeAshMessageCenterClient::Close(Profile* profile,
+                                         const std::string& notification_id) {
   // During shutdown, Ash is destroyed before |this|, taking the MessageCenter
   // with it.
   if (MessageCenter::Get()) {
     MessageCenter::Get()->RemoveNotification(notification_id,
                                              false /* by_user */);
   }
+}
+
+void ChromeAshMessageCenterClient::GetDisplayed(
+    Profile* profile,
+    GetDisplayedNotificationsCallback callback) const {
+  // Right now, this is only used to get web notifications that were created by
+  // and have outlived a previous browser process. Ash itself doesn't outlive
+  // the browser process, so there's no need to implement.
+  std::move(callback).Run(/*notification_ids=*/{}, /*supports_sync=*/false);
+}
+
+void ChromeAshMessageCenterClient::SetReadyCallback(
+    NotificationBridgeReadyCallback callback) {
+  // Ash is always available in-process, so report the client is ready.
+  std::move(callback).Run(true);
 }
 
 void ChromeAshMessageCenterClient::GetNotifiers() {

@@ -28,6 +28,7 @@ class BrowsingDataRemoverDelegate : public content::BrowsingDataRemoverDelegate,
 
     // WebLayer-specific datatypes.
     DATA_TYPE_ISOLATED_ORIGINS = DATA_TYPE_EMBEDDER_BEGIN,
+    DATA_TYPE_FAVICONS = DATA_TYPE_EMBEDDER_BEGIN << 1,
   };
 
   explicit BrowsingDataRemoverDelegate(

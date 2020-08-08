@@ -165,6 +165,18 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
   specifics->set_address_home_line2(
       TruncateUTF8(UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_LINE2))));
 
+  // The following entries are only popluated by Sync.
+  specifics->set_address_home_thoroughfare_name(
+      UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_STREET_NAME)));
+  specifics->set_address_home_dependent_thoroughfare_name(
+      UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME)));
+  specifics->set_address_home_subpremise_name(
+      UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_FLOOR)));
+  specifics->set_address_home_premise_name(
+      UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_PREMISE_NAME)));
+  specifics->set_address_home_thoroughfare_number(
+      UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER)));
+
   return entity_data;
 }
 
@@ -314,6 +326,35 @@ std::unique_ptr<AutofillProfile> CreateAutofillProfileFromSpecifics(
     profile->SetRawInfo(ADDRESS_HOME_LINE2,
                         UTF8ToUTF16(specifics.address_home_line2()));
   }
+
+  profile->SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_STREET_NAME,
+      UTF8ToUTF16(specifics.address_home_thoroughfare_name()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.address_home_thoroughfare_name_status()));
+
+  profile->SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_DEPENDENT_STREET_NAME,
+      UTF8ToUTF16(specifics.address_home_dependent_thoroughfare_name()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.address_home_dependent_thoroughfare_name_status()));
+
+  profile->SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_HOUSE_NUMBER,
+      UTF8ToUTF16(specifics.address_home_thoroughfare_number()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.address_home_thoroughfare_number_status()));
+
+  profile->SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_PREMISE_NAME,
+      UTF8ToUTF16(specifics.address_home_premise_name()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.address_home_premise_name_status()));
+
+  profile->SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_FLOOR, UTF8ToUTF16(specifics.address_home_subpremise_name()),
+      ConvertSpecificsToProfileVerificationStatus(
+          specifics.address_home_subpremise_name_status()));
 
   // This has to be the last one, otherwise setting the raw info may change it.
   profile->set_is_client_validity_states_updated(

@@ -47,8 +47,8 @@ class MockMFCdmProxy
                                uint32_t content_init_data_size,
                                REFIID riid,
                                IUnknown** object_result));
-  MOCK_STDCALL_METHOD2(SetLastKeyIds,
-                       HRESULT(GUID* key_ids, uint32_t key_ids_count));
+  MOCK_STDCALL_METHOD2(SetLastKeyId,
+                       HRESULT(uint32_t stream_id, REFGUID key_id));
   MOCK_STDCALL_METHOD0(RefreshTrustedInput, HRESULT());
   MOCK_STDCALL_METHOD2(ProcessContentEnabler,
                        HRESULT(IUnknown* request, IMFAsyncResult* result));

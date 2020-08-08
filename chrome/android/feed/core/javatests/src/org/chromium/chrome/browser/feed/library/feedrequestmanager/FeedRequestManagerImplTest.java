@@ -95,7 +95,9 @@ import java.util.Set;
 /** Test of the {@link FeedRequestManagerImpl} class. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+@Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
+@Features.
+DisableFeatures({ChromeFeatureList.REPORT_FEED_USER_ACTIONS, ChromeFeatureList.INTEREST_FEED_V2})
 public class FeedRequestManagerImplTest {
     private static final int NOT_FOUND = 404;
     private static final String TABLE = "table";

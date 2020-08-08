@@ -240,7 +240,6 @@
 <translation id="1280965841156951489">Chỉnh sửa tệp</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
 <translation id="1285484354230578868">Lưu trữ dữ liệu trong tài khoản Google Drive của bạn</translation>
-<translation id="1285717512281186441">Không thể kết nối với máy in</translation>
 <translation id="1288037062697528143">Chế độ Ánh sáng đêm sẽ tự động bật khi trời tối</translation>
 <translation id="1288300545283011870">Thuộc tính giọng nói</translation>
 <translation id="1293264513303784526">Thiết bị USB-C (cổng bên trái)</translation>
@@ -481,7 +480,6 @@
 <translation id="1587129667417059148">Thao tác này sẽ xóa toàn bộ dữ liệu và cookie lưu trữ trong <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">Bảng điều khiển &amp;JavaScript</translation>
 <translation id="1587907146729660231">Dùng ngón tay chạm vào nút nguồn</translation>
-<translation id="1588200577109872591">Phương thức nhập thông minh</translation>
 <translation id="1588438908519853928">Bình thường</translation>
 <translation id="158849752021629804">Cần mạng gia đình</translation>
 <translation id="1588870296199743671">Mở liên kết bằng...</translation>
@@ -1276,7 +1274,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="253557089021624350">Số lượng giữ kết nối</translation>
 <translation id="2535799430745250929">Không có mạng di động</translation>
 <translation id="2537178555904266562">Lỗi khi đồng bộ hóa mật khẩu</translation>
-<translation id="2537296579376733324">Tất cả cookie, chỉ trên trang web này</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> có thể xem và chỉnh sửa các tệp và thư mục sau đây</translation>
 <translation id="2537927931785713436">Đang kiểm tra hình ảnh máy ảo</translation>
 <translation id="2538361623464451692">Tính năng đồng bộ hóa đã bị tắt</translation>
@@ -1416,7 +1413,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2712173769900027643">Xin phép</translation>
 <translation id="2713444072780614174">Trắng</translation>
 <translation id="2714393097308983682">Cửa hàng Google Play</translation>
-<translation id="2714997332747470971">Thông tin cá nhân đề xuất giúp bạn viết nhanh hơn nhờ các đề xuất như tên, địa chỉ hoặc số điện thoại của bạn. Chỉ bạn mới thấy các thông tin đề xuất riêng tư dành riêng cho tài khoản của mình.</translation>
 <translation id="2715751256863167692">Bản nâng cấp này sẽ đặt lại Chromebook và xóa dữ liệu người dùng hiện tại.</translation>
 <translation id="2716986496990888774">Tùy chọn cài đặt này do cha mẹ quản lý.</translation>
 <translation id="2718395828230677721">Ánh sáng đêm</translation>
@@ -2930,7 +2926,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4608520674724523647">Minh họa đăng ký thành công</translation>
 <translation id="4608703838363792434">Tệp <ph name="FILE_NAME" /> có chứa nội dung nhạy cảm</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> đã gặp lỗi</translation>
-<translation id="4610178114344604329">Hiển thị các thông tin cá nhân đề xuất</translation>
 <translation id="4610637590575890427">Có phải ý bạn là chuyển đến <ph name="SITE" /> không?</translation>
 <translation id="4611114513649582138">Kết nối dữ liệu có sẵn</translation>
 <translation id="4613144866899789710">Đang hủy quá trình cài đặt Linux...</translation>
@@ -5977,7 +5972,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8448729345478502352">Thu nhỏ hoặc phóng to các mục trên màn hình</translation>
 <translation id="8449008133205184768">Dán và Khớp Kiểu</translation>
 <translation id="8449036207308062757">Quản lý bộ nhớ</translation>
-<translation id="84501823665211008">Hiển thị biểu tượng cảm xúc đề xuất</translation>
 <translation id="8452135315243592079">Thiếu thẻ SIM</translation>
 <translation id="8455026683977728932">Không bật được hình minh họa ADB</translation>
 <translation id="845702320058262034">Không thể kết nối. Hãy đảm bảo bạn đã bật Bluetooth trên điện thoại.</translation>
@@ -6259,7 +6253,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8798441408945964110">Tên nhà mạng</translation>
 <translation id="8800004011501252845">Hiển thị điểm đến cho</translation>
 <translation id="8800034312320686233">Trang web không hoạt động?</translation>
-<translation id="880069872639153240">Nhận các biểu tượng cảm xúc đề xuất dựa vào nội dung bạn đang nhập</translation>
 <translation id="8803953437405899238">Mở thẻ mới bằng một cú nhấp</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Di chuyển thẻ sang một cửa sổ khác}other{Di chuyển các thẻ sang một cửa sổ khác}}</translation>
 <translation id="8805140816472474147">Hãy xác nhận cài đặt đồng bộ hóa để bắt đầu đồng bộ hóa.</translation>

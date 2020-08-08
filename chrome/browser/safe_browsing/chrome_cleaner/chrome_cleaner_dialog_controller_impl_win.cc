@@ -73,7 +73,6 @@ ChromeCleanerDialogControllerImpl::~ChromeCleanerDialogControllerImpl() =
     default;
 
 void ChromeCleanerDialogControllerImpl::DialogShown() {
-  time_dialog_shown_ = base::Time::Now();
   base::RecordAction(
       base::UserMetricsAction("SoftwareReporter.PromptDialog_Shown"));
 }
@@ -83,9 +82,6 @@ void ChromeCleanerDialogControllerImpl::Accept(bool logs_enabled) {
 
   RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_ACCEPTED);
   RecordCleanupStartedHistogram(CLEANUP_STARTED_FROM_PROMPT_DIALOG);
-  UMA_HISTOGRAM_LONG_TIMES_100(
-      "SoftwareReporter.PromptDialog.TimeUntilDone_Accepted",
-      base::Time::Now() - time_dialog_shown_);
   base::RecordAction(
       base::UserMetricsAction("SoftwareReporter.PromptDialog_Accepted"));
 
@@ -108,10 +104,6 @@ void ChromeCleanerDialogControllerImpl::Cancel() {
   DCHECK(browser_);
 
   RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_CANCELLED);
-  DCHECK(!time_dialog_shown_.is_null());
-  UMA_HISTOGRAM_LONG_TIMES_100(
-      "SoftwareReporter.PromptDialog.TimeUntilDone_Canceled",
-      base::Time::Now() - time_dialog_shown_);
   base::RecordAction(
       base::UserMetricsAction("SoftwareReporter.PromptDialog_Canceled"));
 
@@ -130,10 +122,6 @@ void ChromeCleanerDialogControllerImpl::Close() {
   DCHECK(browser_);
 
   RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_DISMISSED);
-  DCHECK(!time_dialog_shown_.is_null());
-  UMA_HISTOGRAM_LONG_TIMES_100(
-      "SoftwareReporter.PromptDialog.TimeUntilDone_Dismissed",
-      base::Time::Now() - time_dialog_shown_);
   base::RecordAction(
       base::UserMetricsAction("SoftwareReporter.PromptDialog_Dismissed"));
 
@@ -159,10 +147,6 @@ void ChromeCleanerDialogControllerImpl::ClosedWithoutUserInteraction() {
 void ChromeCleanerDialogControllerImpl::DetailsButtonClicked(
     bool logs_enabled) {
   RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_DETAILS);
-  DCHECK(!time_dialog_shown_.is_null());
-  UMA_HISTOGRAM_LONG_TIMES_100(
-      "SoftwareReporter.PromptDialog.TimeUntilDone_DetailsButtonClicked",
-      base::Time::Now() - time_dialog_shown_);
   base::RecordAction(base::UserMetricsAction(
       "SoftwareReporter.PromptDialog_DetailsButtonClicked"));
 

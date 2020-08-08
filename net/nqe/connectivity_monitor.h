@@ -8,24 +8,33 @@
 #ifndef NET_NQE_CONNECTIVITY_MONITOR_H_
 #define NET_NQE_CONNECTIVITY_MONITOR_H_
 
+#include <memory>
 #include <set>
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 
 namespace net {
 
+#if defined(OS_ANDROID)
+namespace android {
+class NetworkActivationRequest;
+}
+#endif  // defined(OS_ANDROID)
+
 // ConnectivityMonitor is driven by NetworkQualityEstimator and is used to
 // monitor progress of active URLRequests. If all active requests fail to make
 // progress for a certain time interval, this will log accordingly and may
 // report the problem to the operating system as a potential hint to fall back
 // onto a more responsive network.
-class NET_EXPORT_PRIVATE ConnectivityMonitor {
+class NET_EXPORT_PRIVATE ConnectivityMonitor
+    : public NetworkChangeNotifier::NetworkObserver {
  public:
   // Constructs a new ConnectivityMonitor as below, but with builtin default
   // TimeDelta values.
@@ -39,7 +48,7 @@ class NET_EXPORT_PRIVATE ConnectivityMonitor {
                       base::TimeDelta min_failure_logging_interval);
   ConnectivityMonitor(const ConnectivityMonitor&) = delete;
   ConnectivityMonitor& operator=(const ConnectivityMonitor&) = delete;
-  ~ConnectivityMonitor();
+  ~ConnectivityMonitor() override;
 
   // Registers a new `request` to be tracked by the ConnectivityMonitor. Called
   // just before the request's first header bytes hit the wire.
@@ -80,6 +89,17 @@ class NET_EXPORT_PRIVATE ConnectivityMonitor {
   void ScheduleNextActivityDeadline(base::TimeDelta delay);
   void OnActivityDeadlineExceeded();
   void ReportConnectivityFailure();
+  void RequestMobileNetworkActivation();
+
+  // NetworkChangeNotifier::NetworkObserver:
+  void OnNetworkConnected(
+      NetworkChangeNotifier::NetworkHandle network) override;
+  void OnNetworkDisconnected(
+      NetworkChangeNotifier::NetworkHandle network) override;
+  void OnNetworkSoonToDisconnect(
+      NetworkChangeNotifier::NetworkHandle network) override;
+  void OnNetworkMadeDefault(
+      NetworkChangeNotifier::NetworkHandle network) override;
 
   const base::TimeDelta inactivity_threshold_;
   const base::TimeDelta min_failure_logging_interval_;
@@ -90,6 +110,12 @@ class NET_EXPORT_PRIVATE ConnectivityMonitor {
   std::set<const URLRequest*> active_requests_;
   base::CancelableOnceClosure next_activity_deadline_;
   base::Optional<base::TimeTicks> time_last_failure_observed_;
+
+  NetworkChangeNotifier::ConnectionType current_connection_type_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<android::NetworkActivationRequest> mobile_network_request_;
+#endif
 };
 
 }  // namespace net

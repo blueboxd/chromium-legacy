@@ -240,7 +240,6 @@
 <translation id="1280965841156951489">Editar archivos</translation>
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="1285484354230578868">Almacenar datos en tu cuenta de Google Drive</translation>
-<translation id="1285717512281186441">No se puede acceder a la impresora</translation>
 <translation id="1288037062697528143">La Luz nocturna se activará automáticamente al atardecer</translation>
 <translation id="1288300545283011870">Propiedades de voz</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (puerto izquierdo)</translation>
@@ -478,7 +477,6 @@
 <translation id="1587129667417059148">Esta acción borrará todos los datos y cookies almacenados por <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">Consola &amp;JavaScript</translation>
 <translation id="1587907146729660231">Toca el botón de encendido con el dedo</translation>
-<translation id="1588200577109872591">Entradas inteligentes</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Se necesita red local</translation>
 <translation id="1588870296199743671">Abrir vínculo con...</translation>
@@ -1273,7 +1271,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="253557089021624350">Número de actividades en curso</translation>
 <translation id="2535799430745250929">No hay redes celulares</translation>
 <translation id="2537178555904266562">Se produjo un error al sincronizar las contraseñas</translation>
-<translation id="2537296579376733324">Todas las cookies, solo en este sitio</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> puede ver y editar los siguientes archivos y carpetas</translation>
 <translation id="2537927931785713436">Revisando la imagen de la máquina virtual</translation>
 <translation id="2538361623464451692">Se inhabilitó la sincronización</translation>
@@ -1413,7 +1410,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2712173769900027643">Solicitar permiso</translation>
 <translation id="2713444072780614174">Blanco</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
-<translation id="2714997332747470971">Las sugerencias de información personal te brindan propuestas, como tu nombre, dirección o número de teléfono, para que puedas escribir más rápido. Solo tú verás las sugerencias privadas y personalizadas para tu cuenta.</translation>
 <translation id="2715751256863167692">Esta actualización restablece tu Chromebook y quita los datos del usuario actual.</translation>
 <translation id="2716986496990888774">Esta configuración la administra uno de tus padres.</translation>
 <translation id="2718395828230677721">Luz nocturna</translation>
@@ -2927,7 +2923,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4608520674724523647">Ilustración de inscripción correcta</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> incluye contenido sensible</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> detectó un error</translation>
-<translation id="4610178114344604329">Mostrar sugerencias de información personal</translation>
 <translation id="4610637590575890427">¿Tal vez quieres ir a <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Conexión de datos disponible</translation>
 <translation id="4613144866899789710">Cancelando la instalación de Linux…</translation>
@@ -5974,7 +5969,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8448729345478502352">Aumenta o reduce el tamaño de los elementos en tu pantalla</translation>
 <translation id="8449008133205184768">Pegar con el mismo estilo</translation>
 <translation id="8449036207308062757">Administrar almacenamiento</translation>
-<translation id="84501823665211008">Mostrar sugerencias de emojis</translation>
 <translation id="8452135315243592079">Falta la tarjeta SIM</translation>
 <translation id="8455026683977728932">No se pudo habilitar la ilustración de ADB</translation>
 <translation id="845702320058262034">No se puede establecer la conexión. Asegúrate de que la conexión Bluetooth del teléfono esté activada.</translation>
@@ -6256,7 +6250,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8798441408945964110">Nombre del proveedor</translation>
 <translation id="8800004011501252845">Mostrando destinos para</translation>
 <translation id="8800034312320686233">¿No funciona el sitio?</translation>
-<translation id="880069872639153240">Obtén sugerencias de emojis basadas en lo que escribes</translation>
 <translation id="8803953437405899238">Abre una pestaña nueva con un solo clic</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Mover la pestaña a otra ventana}other{Mover las pestañas a otra ventana}}</translation>
 <translation id="8805140816472474147">Confirma la configuración para comenzar la sincronización.</translation>

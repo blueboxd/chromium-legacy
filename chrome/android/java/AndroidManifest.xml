@@ -39,6 +39,7 @@ by a child template that "extends" this file.
     <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
     {% if target_sdk_version|int > 27 or target_sdk_version == "Q" %}
         <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

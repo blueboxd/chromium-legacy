@@ -104,12 +104,16 @@ bool IsColorSpaceSupportedByPCVR(const avifImage* image) {
   SkYUVColorSpace yuv_color_space;
   if (!GetColorSpace(image).ToSkYUVColorSpace(image->depth, &yuv_color_space))
     return false;
-  if (!image->alphaPlane)
-    return true;
+  if (!image->alphaPlane) {
+    return yuv_color_space == kJPEG_Full_SkYUVColorSpace ||
+           yuv_color_space == kRec601_Limited_SkYUVColorSpace ||
+           yuv_color_space == kRec709_Limited_SkYUVColorSpace ||
+           yuv_color_space == kBT2020_8bit_Limited_SkYUVColorSpace;
+  }
   // libyuv supports the alpha channel only with the I420 pixel format, which is
-  // 8-bit YUV 4:2:0 with kRec601_SkYUVColorSpace.
+  // 8-bit YUV 4:2:0 with kRec601_Limited_SkYUVColorSpace.
   return image->depth == 8 && image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420 &&
-         yuv_color_space == kRec601_SkYUVColorSpace &&
+         yuv_color_space == kRec601_Limited_SkYUVColorSpace &&
          image->alphaRange == AVIF_RANGE_FULL;
 }
 
@@ -315,8 +319,8 @@ size_t AVIFImageDecoder::DecodedYUVWidthBytes(int component) const {
 
 SkYUVColorSpace AVIFImageDecoder::GetYUVColorSpace() const {
   DCHECK(CanDecodeToYUV());
-  DCHECK(yuv_color_space_);
-  return *yuv_color_space_;
+  DCHECK_NE(yuv_color_space_, SkYUVColorSpace::kIdentity_SkYUVColorSpace);
+  return yuv_color_space_;
 }
 
 uint8_t AVIFImageDecoder::GetYUVBitDepth() const {
@@ -697,7 +701,7 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
   allow_decode_to_yuv_ = avif_yuv_format_ != AVIF_PIXEL_FORMAT_YUV400 &&
                          !decoder_->alphaPresent && decoded_frame_count_ == 1 &&
                          GetColorSpace(container).ToSkYUVColorSpace(
-                             container->depth, &yuv_color_space_.emplace()) &&
+                             container->depth, &yuv_color_space_) &&
                          !ColorTransform();
   return SetSize(container->width, container->height);
 }

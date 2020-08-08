@@ -83,6 +83,7 @@
       'Deterministic Android (dbg)': 'android_debug_bot',
 
       'android-arm64-proguard-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
+      'android-bfcache-rel': 'android_release_bot_minimal_symbols',
       'android-binary-size-generator': 'android_binary_size',
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-cronet-arm-rel': 'android_cronet_release_bot_minimal_symbols_arm_no_neon',
@@ -111,7 +112,6 @@
       'Android WebView P Blink-CORS FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'Android WebView P FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-marshmallow-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting_webview_google',
-      'android-bfcache-rel': 'android_release_bot_minimal_symbols',
       'android-weblayer-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
     },
 
@@ -286,7 +286,6 @@
       'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_multi_window',
       'ios-webkit-tot': 'ios_simulator_debug_static_rbe_bot',
       'linux-annotator-rel': 'release_bot',
-      'linux-bfcache-rel': 'release_bot',
       'linux-blink-animation-use-time-delta': 'debug_bot_enable_blink_animation_use_time_delta',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_tsan',
       'linux-blink-heap-verification': 'release_bot_enable_blink_heap_verification_dcheck_always_on',
@@ -481,6 +480,7 @@
       'fuchsia-arm64-cast': 'release_bot_fuchsia_arm64_cast',
       'fuchsia-x64-cast': 'release_bot_fuchsia_cast',
       'fuchsia-x64-dbg': 'debug_bot_fuchsia_compile_only',
+      'linux-bfcache-rel': 'release_bot',
       'linux-blink-cors-rel': 'release_bot_blink_minimal_symbols',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
       'linux-ozone-rel': 'ozone_linux_release_bot',
@@ -685,8 +685,6 @@
       # waterfall bots, and run_web_tests.py can't handle that (by design).
       'linux-blink-rel': 'release_bot_blink_minimal_symbols',
       'linux-blink-optional-highdpi-rel': 'release_bot_blink_minimal_symbols',
-      'mac10.10-blink-rel': 'release_bot_blink_minimal_symbols',
-      'mac10.11-blink-rel': 'release_bot_blink_minimal_symbols',
       'mac10.12-blink-rel': 'release_bot_blink_minimal_symbols',
       'mac10.13-blink-rel': 'release_bot_blink_minimal_symbols',
       'mac10.14-blink-rel': 'release_bot_blink_minimal_symbols',

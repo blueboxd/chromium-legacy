@@ -32,8 +32,7 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
                              const base::string16& text,
                              const gfx::VectorIcon& icon,
                              const views::FocusRing::ViewPredicate& predicate)
-      : MdTextButton(listener, CONTEXT_OMNIBOX_PRIMARY), icon_(icon) {
-    SetText(text);
+      : MdTextButton(listener, text, CONTEXT_OMNIBOX_PRIMARY), icon_(icon) {
     views::InstallPillHighlightPathGenerator(this);
     SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
         DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));

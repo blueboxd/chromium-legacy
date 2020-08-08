@@ -101,6 +101,14 @@ void FaviconServiceImpl::Init(const base::FilePath& db_path) {
       base::BindOnce(&FaviconBackendWrapper::Init, backend_, db_path));
 }
 
+void FaviconServiceImpl::DeleteAndRecreateDatabase(base::OnceClosure callback) {
+  backend_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&FaviconBackendWrapper::DeleteAndRecreateDatabase,
+                     backend_),
+      std::move(callback));
+}
+
 base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetFaviconForPageUrl(
     const GURL& page_url,
     base::OnceCallback<void(gfx::Image)> callback,

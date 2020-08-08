@@ -32,6 +32,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
@@ -3400,6 +3401,29 @@ void RenderFrameHostImpl::ReportHeavyAdIssue(
   auto issue =
       devtools_instrumentation::GetHeavyAdIssue(this, resolution, reason);
   devtools_instrumentation::ReportBrowserInitiatedIssue(this, issue.get());
+}
+
+void RenderFrameHostImpl::AsValueInto(
+    base::trace_event::TracedValue* traced_value) {
+  traced_value->SetPointer("this", this);
+  traced_value->SetInteger("process_id", GetProcess()->GetID());
+  traced_value->SetInteger("render_frame_id", GetRoutingID());
+  traced_value->SetString("lifecycle_state",
+                          LifecycleStateToString(lifecycle_state_));
+  traced_value->SetString(
+      "origin", base::trace_event::ValueToString(GetLastCommittedOrigin()));
+  traced_value->SetString(
+      "url", base::trace_event::ValueToString(GetLastCommittedURL()));
+  traced_value->SetInteger("frame_tree_node_id",
+                           frame_tree_node_->frame_tree_node_id());
+  traced_value->SetInteger("site_instance_id", GetSiteInstance()->GetId());
+  traced_value->SetInteger("browsing_instance_id",
+                           GetSiteInstance()->GetBrowsingInstanceId());
+  traced_value->BeginDictionary("parent");
+  if (GetParent()) {
+    GetParent()->AsValueInto(traced_value);
+  }
+  traced_value->EndDictionary();
 }
 
 StoragePartition* RenderFrameHostImpl::GetStoragePartition() {
@@ -9047,8 +9071,8 @@ void RenderFrameHostImpl::SetLifecycleStateToActive() {
 
 void RenderFrameHostImpl::SetLifecycleState(LifecycleState state) {
   TRACE_EVENT2("content", "RenderFrameHostImpl::SetLifecycleState",
-               "render_frame_host", this, "state",
-               LifecycleStateToString(state));
+               "render_frame_host", base::trace_event::ToTracedValue(this),
+               "new_state", LifecycleStateToString(state));
 #if DCHECK_IS_ON()
   static const base::NoDestructor<StateTransitions<LifecycleState>>
       allowed_transitions(

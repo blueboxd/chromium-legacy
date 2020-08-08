@@ -77,6 +77,13 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE, ASCIIToUTF16("CEDEX"));
   profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
                      ASCIIToUTF16("Santa Clara"));
+
+  profile.SetRawInfo(ADDRESS_HOME_STREET_NAME, ASCIIToUTF16("Street Name"));
+  profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                     ASCIIToUTF16("Dependent Street Name"));
+  profile.SetRawInfo(ADDRESS_HOME_HOUSE_NUMBER, ASCIIToUTF16("House Number"));
+  profile.SetRawInfo(ADDRESS_HOME_FLOOR, ASCIIToUTF16("Floor"));
+  profile.SetRawInfo(ADDRESS_HOME_PREMISE_NAME, ASCIIToUTF16("Premise"));
   profile.set_language_code("en");
   profile.SetClientValidityFromBitfieldValue(1984);
   profile.set_is_client_validity_states_updated(true);
@@ -137,6 +144,12 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   specifics.set_address_home_street_address(
       "123 Fake St.\n"
       "Apt. 42");
+  specifics.set_address_home_thoroughfare_name("Street Name");
+  specifics.set_address_home_dependent_thoroughfare_name(
+      "Dependent Street Name");
+  specifics.set_address_home_thoroughfare_number("House Number");
+  specifics.set_address_home_subpremise_name("Floor");
+  specifics.set_address_home_premise_name("Premise");
 
   specifics.set_company_name("Google, Inc.");
   specifics.set_address_home_city("Mountain View");

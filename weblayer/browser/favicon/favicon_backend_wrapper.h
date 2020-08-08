@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/timer/timer.h"
@@ -42,6 +43,8 @@ class FaviconBackendWrapper
   void Init(const base::FilePath& db_path);
 
   void Shutdown();
+
+  void DeleteAndRecreateDatabase();
 
   // All of these functions are called by the FaviconServiceImpl. They call
   // through to |favicon_backend_|.
@@ -92,6 +95,8 @@ class FaviconBackendWrapper
   // The real implementation of the backend. Is there is a problem initializing
   // the database this will be null.
   std::unique_ptr<favicon::FaviconBackend> favicon_backend_;
+
+  base::FilePath db_path_;
 };
 
 }  // namespace weblayer

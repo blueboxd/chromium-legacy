@@ -151,6 +151,14 @@ Polymer({
     },
 
     /** @private */
+    enableFontAccessContentSetting_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enableFontAccessContentSetting');
+      }
+    },
+
+    /** @private */
     enableQuietNotificationPromptsSetting_: {
       type: Boolean,
       value: () =>

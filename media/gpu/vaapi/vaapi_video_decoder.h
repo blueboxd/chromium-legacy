@@ -21,7 +21,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame_layout.h"
@@ -98,23 +97,23 @@ class VaapiVideoDecoder : public DecoderInterface,
 
   // Schedule the next decode task in the queue to be executed.
   void ScheduleNextDecodeTask();
-  // Try to decode a single input buffer on the decoder thread.
+  // Try to decode a single input buffer.
   void HandleDecodeTask();
-  // Clear the decode task queue on the decoder thread. This is done when
-  // resetting or destroying the decoder, or encountering an error.
+  // Clear the decode task queue. This is done when resetting or destroying the
+  // decoder, or encountering an error.
   void ClearDecodeTaskQueue(DecodeStatus status);
 
   // Releases the local reference to the VideoFrame associated with the
-  // specified |surface_id| on the decoder thread. This is called when
-  // |decoder_| has outputted the VideoFrame and stopped using it as a
-  // reference frame. Note that this doesn't mean the frame can be reused
-  // immediately, as it might still be used by the client.
+  // specified |surface_id|. This is called when |decoder_| has outputted the
+  // VideoFrame and stopped using it as a reference frame. Note that this
+  // doesn't mean the frame can be reused immediately, as it might still be used
+  // by the client.
   void ReleaseVideoFrame(VASurfaceID surface_id);
   // Callback for |frame_pool_| to notify of available resources.
   void NotifyFrameAvailable();
 
-  // Flushes |decoder_| on the decoder thread, blocking until all pending decode
-  // tasks have been executed and all frames have been output.
+  // Flushes |decoder_|, blocking until all pending decode tasks have been
+  // executed and all frames have been output.
   void Flush();
 
   // Called when resetting the decoder is finished, to execute |reset_cb|.
@@ -123,7 +122,7 @@ class VaapiVideoDecoder : public DecoderInterface,
   // Create codec-specific AcceleratedVideoDecoder and reset related variables.
   bool CreateAcceleratedVideoDecoder();
 
-  // Change the current |state_| to the specified |state| on the decoder thread.
+  // Change the current |state_| to the specified |state|.
   void SetState(State state);
 
   // The video decoder's state.
@@ -175,7 +174,7 @@ class VaapiVideoDecoder : public DecoderInterface,
   // the pointer from AcceleratedVideoDecoder.
   VaapiVideoDecoderDelegate* decoder_delegate_ = nullptr;
 
-  SEQUENCE_CHECKER(decoder_sequence_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtr<VaapiVideoDecoder> weak_this_;
   base::WeakPtrFactory<VaapiVideoDecoder> weak_this_factory_;

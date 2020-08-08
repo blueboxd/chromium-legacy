@@ -17,7 +17,6 @@ js_type_check("closure_compile") {
     ":pref_control_behavior",
     ":settings_boolean_control_behavior",
     ":settings_dropdown_menu",
-    ":settings_idle_load",
     ":settings_radio_group",
     ":settings_slider",
     ":settings_textarea",
@@ -88,11 +87,6 @@ js_library("settings_dropdown_menu") {
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
-js_library("settings_idle_load") {
-  deps = [ "//ui/webui/resources/js:assert" ]
-  externs_list = [ "$externs_path/pending_polymer.js" ]
-}
-
 js_library("settings_radio_group") {
   deps = [
     ":pref_control_behavior",
@@ -133,7 +127,7 @@ js_type_check("closure_compile_module") {
     ":settings_boolean_control_behavior.m",
     ":settings_checkbox",
     ":settings_dropdown_menu.m",
-    ":settings_idle_load.m",
+    ":settings_idle_load",
     ":settings_radio_group.m",
     ":settings_slider.m",
     ":settings_textarea.m",
@@ -228,13 +222,11 @@ js_library("settings_dropdown_menu.m") {
   extra_deps = [ ":settings_dropdown_menu_module" ]
 }
 
-js_library("settings_idle_load.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/controls/settings_idle_load.m.js" ]
+js_library("settings_idle_load") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
   ]
-  extra_deps = [ ":settings_idle_load_module" ]
 }
 
 js_library("settings_radio_group.m") {
@@ -287,7 +279,6 @@ group("polymer3_elements") {
     ":modulize",
     ":password_prompt_dialog_module",
     ":settings_dropdown_menu_module",
-    ":settings_idle_load_module",
     ":settings_radio_group_module",
     ":settings_slider_module",
     ":settings_textarea_module",
@@ -348,20 +339,6 @@ polymer_modulizer("settings_dropdown_menu") {
                    "ui/webui/resources/html/assert.html|assert",
                  ]
   namespace_rewrites = settings_namespace_rewrites
-}
-
-polymer_modulizer("settings_idle_load") {
-  js_file = "settings_idle_load.js"
-  html_file = "settings_idle_load.html"
-  html_type = "dom-module"
-  migrated_imports = settings_migrated_imports
-  auto_imports = [
-    "chrome/browser/resources/settings/ensure_lazy_loaded.html|ensureLazyLoaded",
-    "ui/webui/resources/html/assert.html|assert",
-    "ui/webui/resources/html/polymer.html|Polymer,html,templatize,TemplateInstanceBase",
-  ]
-  namespace_rewrites = settings_namespace_rewrites +
-                       [ "Polymer.Templatize.templatize|templatize" ]
 }
 
 polymer_modulizer("settings_radio_group") {

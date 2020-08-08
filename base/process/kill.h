@@ -13,6 +13,7 @@
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 
 namespace base {
 
@@ -53,7 +54,7 @@ enum TerminationStatus {
   TERMINATION_STATUS_PROCESS_WAS_KILLED,   // e.g. SIGKILL or task manager kill
   TERMINATION_STATUS_PROCESS_CRASHED,      // e.g. Segmentation fault
   TERMINATION_STATUS_STILL_RUNNING,        // child hasn't exited yet
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   // Used for the case when oom-killer kills a process on ChromeOS.
   TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM,
 #endif

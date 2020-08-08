@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">ፋይሎችን አርትዕ</translation>
 <translation id="1285320974508926690">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
 <translation id="1285484354230578868">ውሂብ በእርስዎ Google Drive መለያ ላይ ያከማቹ</translation>
-<translation id="1285717512281186441">አታሚ ላይ ሊደረስበት አይቻልም</translation>
 <translation id="1288037062697528143">ፀሐይ ስትጠልቅ የማታ ብርሃን በራስ-ሰር ይበራል</translation>
 <translation id="1288300545283011870">የንግግር ባህሪያትን</translation>
 <translation id="1293264513303784526">USB-C መሣሪያ (የግራ ወደብ)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">ይህ በ<ph name="ORIGIN_NAME" /> የተከማቹ ሁሉንም ውሂብ እና ኩኪዎች ያጠፋል</translation>
 <translation id="1587275751631642843">&amp;ጃቫስክሪፕት ኮንሶል</translation>
 <translation id="1587907146729660231">በጣትዎ የኃይል አዝራሩን ነካ ያድርጉ</translation>
-<translation id="1588200577109872591">ዘመናዊ ግቤቶች</translation>
 <translation id="1588438908519853928">መደበኛ</translation>
 <translation id="158849752021629804">የቤት አውታረ መረብ ያስፈልጋል</translation>
 <translation id="1588870296199743671">አገናኝ ክፈት በ...</translation>
@@ -1285,7 +1283,6 @@
 <translation id="253557089021624350">የKeepalive መለያ</translation>
 <translation id="2535799430745250929">ምንም ተንቀሳቃሽ አውታረ መረብ የለም</translation>
 <translation id="2537178555904266562">የይለፍ ቃሎችን ማስመር ላይ ስሕተት</translation>
-<translation id="2537296579376733324">ሁሉም ኩኪዎች፣ በዚህ ጣቢያ ላይ ብቻ</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> የሚከተሉትን ፋይሎች እና አቃፊዎች መመልከትና ማርትዕ ይችላል</translation>
 <translation id="2537927931785713436">የምናባዊ ማሽን ምስሉን በመፈተሽ ላይ</translation>
 <translation id="2538361623464451692">ስምረት ተሰናክሏል</translation>
@@ -1426,7 +1423,6 @@
 <translation id="2712173769900027643">ፍቃድ ጠይቅ</translation>
 <translation id="2713444072780614174">ነጭ</translation>
 <translation id="2714393097308983682">Google Play መደብር</translation>
-<translation id="2714997332747470971">የግል መረጃ ጥቆማ ሐሳቦች እንደ የእርስዎ ስም፣ አድራሻ ወይም የስልክ ቁጥር የመሳሰሉ ጥቆማ ሐሳቦችን በፍጥነት እንዲጽፉ ያግዝዎታል። እርስዎ ብቻ ነዎት የራስዎን የግል፣ ለመለያዎ ግላዊነት የተላበሱ የአስተያየት ጥቆማዎችን ማየት የሚችሉት።</translation>
 <translation id="2715751256863167692">ይህ ማላቅ የእርስዎን Chromebook ዳግም ያስጀምረውና የአሁኑን ተጠቃሚ ውሂብ ያስወግዳል።</translation>
 <translation id="2716986496990888774">ይህ ቅንብር በወላጅ የሚተዳደር ነው።</translation>
 <translation id="2718395828230677721">የምሽት ብርሃን</translation>
@@ -2948,7 +2944,6 @@
 <translation id="4608520674724523647">የተሳካ የምዝገባ ማሳያ</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> ሚስጥራዊነት ያለው ይዘት አለው</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> አንድ ስህተት አጋጥሞታል</translation>
-<translation id="4610178114344604329">የግል መረጃ ጥቆማ ሐሳቦችን አሳይ</translation>
 <translation id="4610637590575890427"><ph name="SITE" />ን ማለትዎ ይሆን?</translation>
 <translation id="4611114513649582138">የውሂብ ግንኙነት ይገኛል</translation>
 <translation id="4613144866899789710">የLinux ጭነትን በመሰረዝ ላይ...</translation>
@@ -6018,7 +6013,6 @@ nil</translation>
 <translation id="8448729345478502352">በማያ ገጽዎ ላይ ያሉ ንጥሎችን ያሳንሱ ወይም ያተልቁ</translation>
 <translation id="8449008133205184768">ለጥፍና ቅጥ አዛምድ</translation>
 <translation id="8449036207308062757">የማከማቻ ያቀናብሩ</translation>
-<translation id="84501823665211008">የስሜት ገላጭ ምስል አስተያየት ጥቆማዎችን አሳይ</translation>
 <translation id="8452135315243592079">ሲም ካርድ ይጎድላል</translation>
 <translation id="8455026683977728932">የ ADB ሥዕልን ማንቃት አልተሳካም</translation>
 <translation id="845702320058262034">ማገናኘት አይቻልም። የእርስዎ ስልክ ብሉቱዝ እንደበራ ያረጋግጡ።</translation>
@@ -6304,7 +6298,6 @@ nil</translation>
 <translation id="8798441408945964110">የአቅራቢ ስም</translation>
 <translation id="8800004011501252845">መድረሻዎችን በማሳየት ላይ ለ፦</translation>
 <translation id="8800034312320686233">ጣቢያው እየሰራ አይደለም?</translation>
-<translation id="880069872639153240">እርስዎ በሚተይቡት ላይ በመመርኮዝ የስሜት ገላጭ ምስል ጥቆማዎችን ያግኙ</translation>
 <translation id="8803953437405899238">በአንድ ጠቅታ አዲስ ትር ይክፈቱ</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{ትር ወደ ሌላ መስኮት ውሰድ}one{ትሮችን ወደ ሌላ መስኮት ውሰድ}other{ትሮችን ወደ ሌላ መስኮት ውሰድ}}</translation>
 <translation id="8805140816472474147">ስምረትን ለመጀመር የስምረት ቅንብሮችን ያረጋግጡ።</translation>

@@ -153,7 +153,7 @@ void MediaNotificationAudioDeviceSelectorView::ButtonPressed(
 
 void MediaNotificationAudioDeviceSelectorView::CreateDeviceButton(
     const media::AudioDeviceDescription& device_description) {
-  auto button = views::MdTextButton::Create(
+  auto button = std::make_unique<views::MdTextButton>(
       this, base::UTF8ToUTF16(device_description.device_name.c_str()));
   button->SetImage(views::Button::ButtonState::STATE_NORMAL,
                    gfx::CreateVectorIcon(vector_icons::kHeadsetIcon,

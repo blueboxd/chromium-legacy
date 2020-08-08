@@ -23,6 +23,7 @@ void ClearAllTask::Run() {
 
 void ClearAllTask::StoreClearComplete(bool ok) {
   DLOG_IF(ERROR, !ok) << "FeedStore::ClearAll failed";
+  stream_->FinishClearAll();
   if (stream_->HasSurfaceAttached()) {
     stream_->TriggerStreamLoad();
   }

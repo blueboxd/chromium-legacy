@@ -60,5 +60,12 @@ avifenc -r f -d 10 -y 444 -s 0 --nclx 9/18/9 red.png red-full-range-bt2020-pq-44
 avifenc -r f -d 10 -y 444 -s 0 --nclx 9/18/9 red.png red-full-range-bt2020-pq-444-12bpc.avif
 ```
 
+### silver-full-range-srgb-420-8bpc.avif
+This is generated from silver.png (3x3 rgb(192, 192, 192)) with the appropriate
+avifenc command line:
+
+```
+avifenc -r f -d  8 -y 420 -s 0 --nclx 1/13/1 silver.png silver-full-range-srgb-420-8bpc.avif
+```
 
 ### TODO(crbug.com/960620): Figure out how the rest of files were generated.

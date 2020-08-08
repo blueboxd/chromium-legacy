@@ -163,13 +163,11 @@ public class ShareSheetCoordinator
         PropertyModel morePropertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(activity, R.drawable.sharing_more),
                 activity.getResources().getString(R.string.sharing_more_icon_label),
-                (shareParams)
-                        -> {
+                (shareParams) -> {
                     RecordUserAction.record("SharingHubAndroid.MoreSelected");
                     mBottomSheetController.hideContent(mBottomSheet, true);
                     ShareHelper.showDefaultShareUi(params, saveLastUsed);
-                },
-                /*isFirstParty=*/true);
+                });
         models.add(morePropertyModel);
 
         return models;

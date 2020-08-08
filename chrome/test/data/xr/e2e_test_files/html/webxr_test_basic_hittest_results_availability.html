@@ -14,14 +14,13 @@ Tests that AR hit test results are available in rAF as soon as hit test source i
     <script>
       setup({single_test: true});
 
-
       const TestState = Object.freeze({
         "Initial":  0,
         "RequestHitTestSource": 1,
         "HitTestSourceRequested": 2,
         "HitTestSourceAvailable": 3,  // hitTestSource variable is guaranteed to be non-null in this state
         "Done": 4,
-        });
+      });
 
       let testState = null;
 

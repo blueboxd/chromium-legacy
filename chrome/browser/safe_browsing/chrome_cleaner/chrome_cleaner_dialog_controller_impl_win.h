@@ -77,7 +77,6 @@ class ChromeCleanerDialogControllerImpl
   // In case there is no browser available to prompt a user
   // signal it, this way we can prompt it once a browser gets available..
   bool prompt_pending_ = false;
-  base::Time time_dialog_shown_;  // Used for reporting metrics.
   Browser* browser_ = nullptr;
   std::unique_ptr<ChromeCleanerPromptDelegate> prompt_delegate_impl_;
   ChromeCleanerPromptDelegate* prompt_delegate_ = nullptr;

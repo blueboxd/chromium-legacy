@@ -47,12 +47,13 @@ public class CachedFeatureFlags {
      */
     private static Map<String, Boolean> sDefaults = new HashMap<String, Boolean>() {
         {
+            put(ChromeFeatureList.ANDROID_MANAGED_BY_MENU_ITEM, true);
             put(ChromeFeatureList.ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE, false);
             put(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID, false);
             put(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, false);
             put(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD, false);
             put(ChromeFeatureList.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH, false);
-            put(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, false);
+            put(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, true);
             put(ChromeFeatureList.CHROME_DUET, false);
             put(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED, false);
             put(ChromeFeatureList.CHROME_DUET_ADAPTIVE, true);

@@ -44,17 +44,16 @@ CaptureModeTypeView::CaptureModeTypeView()
       kButtonSpacing));
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
-  switch (CaptureModeController::Get()->type()) {
-    case CaptureModeType::kImage:
-      image_toggle_button_->SetToggled(true);
-      break;
-    case CaptureModeType::kVideo:
-      video_toggle_button_->SetToggled(true);
-      break;
-  }
+  OnCaptureTypeChanged(CaptureModeController::Get()->type());
 }
 
 CaptureModeTypeView::~CaptureModeTypeView() = default;
+
+void CaptureModeTypeView::OnCaptureTypeChanged(CaptureModeType new_type) {
+  image_toggle_button_->SetToggled(new_type == CaptureModeType::kImage);
+  video_toggle_button_->SetToggled(new_type == CaptureModeType::kVideo);
+  DCHECK_NE(image_toggle_button_->toggled(), video_toggle_button_->toggled());
+}
 
 const char* CaptureModeTypeView::GetClassName() const {
   return "CaptureModeTypeView";
@@ -64,13 +63,9 @@ void CaptureModeTypeView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   auto* controller = CaptureModeController::Get();
   if (sender == image_toggle_button_) {
-    image_toggle_button_->SetToggled(true);
-    video_toggle_button_->SetToggled(false);
     controller->SetType(CaptureModeType::kImage);
   } else {
     DCHECK_EQ(sender, video_toggle_button_);
-    image_toggle_button_->SetToggled(false);
-    video_toggle_button_->SetToggled(true);
     controller->SetType(CaptureModeType::kVideo);
   }
 }

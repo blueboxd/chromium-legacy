@@ -49,7 +49,7 @@ namespace {
 std::unique_ptr<views::LabelButton> CreateNewFolderButton(
     views::ButtonListener* listener,
     bool enabled) {
-  auto new_folder_button = views::MdTextButton::Create(
+  auto new_folder_button = std::make_unique<views::MdTextButton>(
       listener,
       l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON));
   new_folder_button->SetEnabled(enabled);

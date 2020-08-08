@@ -38,12 +38,12 @@ IMFCdmProxy : public IUnknown {
       _COM_Outptr_ IUnknown** object_out) = 0;
 
   // When the media Renderer is suspended, `MediaFoundationSourceWrapper`
-  // provides its last set of key IDs using `SetLastKeyIds()` when it is
+  // provides its last set of key IDs using `SetLastKeyId()` when it is
   // destructed. Then during resume, the new `MediaFoundationSourceWrapper`
-  // calls `RefreshTrustedInput()` to let the CDM use the key ID information to
+  // calls `RefreshTrustedInput()` to let the CDM use the key IDs information to
   // perform some optimization.
-  virtual HRESULT STDMETHODCALLTYPE SetLastKeyIds(GUID * key_ids,
-                                                  uint32_t key_ids_count) = 0;
+  virtual HRESULT STDMETHODCALLTYPE SetLastKeyId(_In_ uint32_t stream_id,
+                                                 _In_ REFGUID key_id) = 0;
   virtual HRESULT STDMETHODCALLTYPE RefreshTrustedInput() = 0;
 
   // Used by MediaFoundationProtectionManager to implement

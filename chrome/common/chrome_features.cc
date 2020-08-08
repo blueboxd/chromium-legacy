@@ -572,6 +572,9 @@ const base::Feature kPrerenderFallbackToPreconnect{
 #if defined(OS_ANDROID)
 const base::Feature kPrivacyElevatedAndroid{"PrivacyElevatedAndroid",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPrivacyReorderedAndroid{"PrivacyReorderedAndroid",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Whether to display redesign of the chrome privacy settings page

@@ -602,7 +602,7 @@
   {
     "prefix": "cache-storage-eager-reading",
     "bases": ["external/wpt/service-workers"],
-    "args": ["--enable-features=CacheStorageEagerReading"]
+    "args": ["--disable-features=CacheStorageEagerReading"]
   },
   {
     "prefix": "conditional-appcache-delay",

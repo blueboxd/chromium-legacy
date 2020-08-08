@@ -123,14 +123,6 @@ bool CrashReporterClient::GetCrashMetricsLocation(base::FilePath* crash_dir) {
   return false;
 }
 
-bool CrashReporterClient::UseCrashKeysWhiteList() {
-  return false;
-}
-
-const char* const* CrashReporterClient::GetCrashKeyWhiteList() {
-  return nullptr;
-}
-
 bool CrashReporterClient::IsRunningUnattended() {
   return true;
 }

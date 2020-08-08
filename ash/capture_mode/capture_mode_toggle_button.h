@@ -5,6 +5,7 @@
 #ifndef ASH_CAPTURE_MODE_CAPTURE_MODE_TOGGLE_BUTTON_H_
 #define ASH_CAPTURE_MODE_CAPTURE_MODE_TOGGLE_BUTTON_H_
 
+#include "ash/ash_export.h"
 #include "ash/capture_mode/view_with_ink_drop.h"
 #include "ui/views/controls/button/image_button.h"
 
@@ -17,7 +18,7 @@ namespace ash {
 // A toggle button that will be used in the sub views of the CaptureBarView to
 // toggle between image and video capture, and between fullscreen, window, and
 // region capture sources.
-class CaptureModeToggleButton
+class ASH_EXPORT CaptureModeToggleButton
     : public ViewWithInkDrop<views::ToggleImageButton> {
  public:
   CaptureModeToggleButton(views::ButtonListener* listener,

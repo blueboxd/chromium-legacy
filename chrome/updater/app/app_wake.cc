@@ -12,9 +12,6 @@
 
 namespace updater {
 
-// TODO(sorin): Implement the control service for Windows. crbug.com/1105589.
-#if !defined(OS_WIN)
-
 // AppWake is a simple client which dials the same-versioned server via RPC and
 // tells that server to run its control tasks. This is done via the
 // ControlService interface.
@@ -27,8 +24,9 @@ class AppWake : public App {
 
   // Overrides for App.
   void FirstTaskRun() override;
+  void Uninitialize() override;
 
-  scoped_refptr<ControlService> service_;
+  scoped_refptr<ControlService> control_service_;
 };
 
 void AppWake::FirstTaskRun() {
@@ -37,14 +35,16 @@ void AppWake::FirstTaskRun() {
   //
   // TODO(crbug.com/1113448) - consider initializing the thread pool in the
   // constructor of the base class or earlier, in the updater main.
-  service_ = CreateControlService();
-  service_->Run(base::BindOnce(&AppWake::Shutdown, this, 0));
+  control_service_ = CreateControlService();
+  control_service_->Run(base::BindOnce(&AppWake::Shutdown, this, 0));
+}
+
+void AppWake::Uninitialize() {
+  control_service_->Uninitialize();
 }
 
 scoped_refptr<App> MakeAppWake() {
   return base::MakeRefCounted<AppWake>();
 }
-
-#endif  // OS_WIN
 
 }  // namespace updater

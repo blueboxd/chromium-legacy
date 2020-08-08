@@ -158,6 +158,9 @@ suite('SiteDetails', function() {
           createContentSettingTypeToValuePair(
               ContentSettingsTypes.WINDOW_PLACEMENT,
               [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.FONT_ACCESS,
+              [createRawSiteException('https://foo.com:443')]),
         ],
         [
           createContentSettingTypeToValuePair(
@@ -226,12 +229,15 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
                                                 .BLUETOOTH_DEVICES] =
         'enableWebBluetoothNewPermissionsBackend';
+    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.FONT_ACCESS] =
+        'enableFontAccessContentSetting';
 
     const controlledSettingsCount = /** @type{string : int } */ ({});
 
     controlledSettingsCount['enableExperimentalWebPlatformFeatures'] = 2;
     controlledSettingsCount['enableInsecureContentContentSetting'] = 1;
     controlledSettingsCount['enableFileSystemWriteContentSetting'] = 1;
+    controlledSettingsCount['enableFontAccessContentSetting'] = 1;
     controlledSettingsCount['enablePaymentHandlerContentSetting'] = 1;
     controlledSettingsCount['enableSafeBrowsingSubresourceFilter'] = 1;
     controlledSettingsCount['enableWebBluetoothNewPermissionsBackend'] = 1;
@@ -363,6 +369,7 @@ suite('SiteDetails', function() {
       enableExperimentalWebPlatformFeatures: true,
       enableInsecureContentContentSetting: true,
       enableFileSystemWriteContentSetting: true,
+      enableFontAccessContentSetting: true,
       enablePaymentHandlerContentSetting: true,
       enableSafeBrowsingSubresourceFilter: true,
       enableWebBluetoothNewPermissionsBackend: true,

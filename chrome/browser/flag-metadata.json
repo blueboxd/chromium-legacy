@@ -109,6 +109,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "android-managed-by-menu-item",
+    "owners": [ "gangwu@google.com", "twellington" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "android-multiple-display",
     "owners": [ "lazzzis@google.com", "twellington" ],
     "expiry_milestone": 87
@@ -3254,7 +3259,7 @@
   {
     "name": "omnibox-context-menu-show-full-urls",
     "owners": [ "livvielin", "chrome-security-enamel@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "omnibox-deferred-keyboard-popup",
@@ -3663,6 +3668,15 @@
       "andzaytsev",
       "msramek",
       "chrome-friendly-settings@google.com"
+    ],
+    "expiry_milestone": 89
+  },
+  {
+    "name": "privacy-reordered-android",
+    "owners": [
+      "vakh",
+      "xinghuilu",
+      "chrome-safebrowsing-core@google.com"
     ],
     "expiry_milestone": 89
   },

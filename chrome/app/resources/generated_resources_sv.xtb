@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Redigera filer</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
 <translation id="1285484354230578868">Spara data i Google Drive-kontot</translation>
-<translation id="1285717512281186441">Det går inte att nå skrivaren</translation>
 <translation id="1288037062697528143">Nattljuset aktiveras automatiskt vid solnedgången</translation>
 <translation id="1288300545283011870">Talegenskaper</translation>
 <translation id="1293264513303784526">USB-C-enhet (vänster port)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">All data och alla cookies som har sparats av <ph name="ORIGIN_NAME" /> rensas</translation>
 <translation id="1587275751631642843">&amp;JavaScript-konsol</translation>
 <translation id="1587907146729660231">Sätt fingret på strömbrytaren</translation>
-<translation id="1588200577109872591">Smart inmatning</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Behöver hemnätverk</translation>
 <translation id="1588870296199743671">Öppna länk med ...</translation>
@@ -1286,7 +1284,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="253557089021624350">Antal keepalive</translation>
 <translation id="2535799430745250929">Det finns inget mobilnätverk</translation>
 <translation id="2537178555904266562">Det gick inte att synkronisera lösenord</translation>
-<translation id="2537296579376733324">Alla cookies, endast på den här webbplatsen</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> har läs- och redigeringsbehörighet till följande filer och mappar</translation>
 <translation id="2537927931785713436">Den virtuella maskinavbildningen kontrolleras</translation>
 <translation id="2538361623464451692">Synkronisering inaktiverad</translation>
@@ -1427,7 +1424,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2712173769900027643">Be om tillstånd</translation>
 <translation id="2713444072780614174">Vit</translation>
 <translation id="2714393097308983682">Google Play Butik</translation>
-<translation id="2714997332747470971">Med personuppgiftsförslag kan du skriva snabbare genom att till exempel ditt namn, din adress eller ditt telefonnummer ges som förslag. Det är bara du som ser de privata, anpassade förslagen för kontot.</translation>
 <translation id="2715751256863167692">Med den här uppgraderingen återställs Chromebook och nuvarande användardata tas bort.</translation>
 <translation id="2716986496990888774">Den här inställningen hanteras av en förälder.</translation>
 <translation id="2718395828230677721">Nattljus</translation>
@@ -2951,7 +2947,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4608520674724523647">Illustration av att registreringen är klar</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> har känsligt innehåll</translation>
 <translation id="4610162781778310380">Ett fel har uppstått i <ph name="PLUGIN_NAME" /></translation>
-<translation id="4610178114344604329">Visa personuppgiftsförslag</translation>
 <translation id="4610637590575890427">Ville du besöka <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Dataanslutningar är tillgängliga</translation>
 <translation id="4613144866899789710">Linux-installationen avbryts …</translation>
@@ -6017,7 +6012,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8448729345478502352">Gör objekt på skärmen mindre eller större</translation>
 <translation id="8449008133205184768">Klistra in och matcha stilen</translation>
 <translation id="8449036207308062757">Hantera lagringsutrymme</translation>
-<translation id="84501823665211008">Visa förslag på emojis</translation>
 <translation id="8452135315243592079">SIM-kort saknas</translation>
 <translation id="8455026683977728932">Kunde inte aktivera illustration med adb</translation>
 <translation id="845702320058262034">Det gick inte att ansluta. Kontrollera att Bluetooth har aktiverats på mobilen.</translation>
@@ -6303,7 +6297,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8798441408945964110">Leverantörens namn</translation>
 <translation id="8800004011501252845">Visar platser för</translation>
 <translation id="8800034312320686233">Fungerar inte webbplatsen?</translation>
-<translation id="880069872639153240">Få emoji-förslag utifrån det du skriver</translation>
 <translation id="8803953437405899238">Öppna en ny flik med ett klick</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Flytta fliken till ett annat fönster}other{Flytta flikarna till ett annat fönster}}</translation>
 <translation id="8805140816472474147">Bekräfta synkroniseringsinställningarna för att börja synkronisera.</translation>

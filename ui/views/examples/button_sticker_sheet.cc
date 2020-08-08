@@ -80,12 +80,12 @@ std::vector<std::unique_ptr<MdTextButton>> MakeButtonsInState(
     Button::ButtonState state) {
   std::vector<std::unique_ptr<MdTextButton>> buttons;
   const base::string16 button_text = base::ASCIIToUTF16("Button");
-  auto primary = MdTextButton::Create(listener, button_text);
+  auto primary = std::make_unique<views::MdTextButton>(listener, button_text);
   primary->SetProminent(true);
   primary->SetState(state);
   buttons.push_back(std::move(primary));
 
-  auto secondary = MdTextButton::Create(listener, button_text);
+  auto secondary = std::make_unique<views::MdTextButton>(listener, button_text);
   secondary->SetState(state);
   buttons.push_back(std::move(secondary));
   return buttons;

@@ -193,8 +193,8 @@ void StartupData::CreateServicesInternal() {
 
   // StoragePartitionImplMap uses profile directory as default storage
   // partition, see StoragePartitionImplMap::GetStoragePartitionPath().
-  proto_db_provider_ =
-      std::make_unique<leveldb_proto::ProtoDatabaseProvider>(path);
+  proto_db_provider_ = std::make_unique<leveldb_proto::ProtoDatabaseProvider>(
+      path, /*is_in_memory=*/false);
   key_->SetProtoDatabaseProvider(proto_db_provider_.get());
 
   RegisterProfilePrefs(false /* is_signin_profile */,

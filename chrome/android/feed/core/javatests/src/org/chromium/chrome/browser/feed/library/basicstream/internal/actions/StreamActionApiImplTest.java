@@ -78,6 +78,8 @@ import java.util.List;
 /** Tests for {@link StreamActionApiImpl}. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.DisableFeatures(ChromeFeatureList.INTEREST_FEED_V2)
+@Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
 public class StreamActionApiImplTest {
     private static final String URL = "www.google.com";
     private static final String OPEN_LABEL = "Open";

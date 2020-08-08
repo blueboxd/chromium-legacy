@@ -237,6 +237,14 @@ ci.android_builder(
 )
 
 ci.android_builder(
+    name = "android-bfcache-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "bfcache",
+        short_name = "bfc",
+    ),
+)
+
+ci.android_builder(
     name = "android-cronet-arm64-dbg",
     console_view_entry = ci.console_view_entry(
         category = "cronet|arm64",
@@ -333,13 +341,6 @@ ci.android_builder(
     console_view_entry = ci.console_view_entry(
         category = "builder|other",
         short_name = "size",
-    ),
-)
-
-ci.android_fyi_builder(
-    name = "android-bfcache-rel",
-    console_view_entry = ci.console_view_entry(
-        category = "android",
     ),
 )
 
@@ -1524,13 +1525,6 @@ ci.fyi_builder(
             ],
         },
     },
-)
-
-ci.fyi_builder(
-    name = "linux-bfcache-rel",
-    console_view_entry = ci.console_view_entry(
-        category = "linux",
-    ),
 )
 
 ci.fyi_builder(
@@ -2884,6 +2878,15 @@ ci.linux_builder(
     ),
     main_console_view = "main",
     extra_notifies = ["cr-fuchsia"],
+)
+
+ci.linux_builder(
+    name = "linux-bfcache-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "bfcache",
+        short_name = "bfc",
+    ),
+    main_console_view = "main",
 )
 
 ci.linux_builder(

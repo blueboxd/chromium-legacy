@@ -50,8 +50,7 @@ void DeleteHardLinkOrCopyCallback(const base::FilePath& launcher_path,
 }
 
 void RecordWebAppLauncherUpdateResult(WebAppLauncherUpdateResult result) {
-  base::UmaHistogramEnumeration("WebApp.Launcher.WebAppLauncherUpdateResult",
-                                result);
+  base::UmaHistogramEnumeration("WebApp.Launcher.UpdateResult", result);
 }
 
 // Replaces |launcher_path| with the one at |latest_version_path|. This is done

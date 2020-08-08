@@ -50,6 +50,15 @@ message FeedAction {
       CLIENT_CACHE = 2;
     }
 
+    // The surface an action was taken on.
+    enum ActionSurface {
+      UNKNOWN_SURFACE = 0;
+      ANDROID_CHROME_NEW_TAB = 7;
+    }
+
+    // What surface the action came from - AGA, iGA, -1, secondary screen etc.
+    optional ActionSurface action_surface = 5;
+
     // Where the action came from on the client.
     // Optional: This field is purely for diagnostics.
     optional ActionOrigin action_origin = 4;

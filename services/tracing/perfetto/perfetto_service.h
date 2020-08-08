@@ -64,6 +64,7 @@ class PerfettoService : public mojom::PerfettoService {
   // actively running services (whenever a service starts or stops).
   void AddActiveServicePid(base::ProcessId pid);
   void RemoveActiveServicePid(base::ProcessId pid);
+  void RemoveActiveServicePidIfNoActiveConnections(base::ProcessId pid);
   void SetActiveServicePidsInitialized();
 
   std::set<base::ProcessId> active_service_pids() const {

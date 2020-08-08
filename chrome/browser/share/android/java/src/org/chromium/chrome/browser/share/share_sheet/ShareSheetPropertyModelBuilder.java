@@ -179,8 +179,7 @@ public class ShareSheetPropertyModelBuilder {
             };
             PropertyModel propertyModel =
                     createPropertyModel(ShareHelper.loadIconForResolveInfo(info, mPackageManager),
-                            (String) info.loadLabel(mPackageManager), onClickListener,
-                            /*isFirstParty=*/false);
+                            (String) info.loadLabel(mPackageManager), onClickListener);
             models.add(propertyModel);
         }
 
@@ -245,12 +244,11 @@ public class ShareSheetPropertyModelBuilder {
     }
 
     static PropertyModel createPropertyModel(
-            Drawable icon, String label, OnClickListener listener, boolean isFirstParty) {
+            Drawable icon, String label, OnClickListener listener) {
         return new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
                 .with(ShareSheetItemViewProperties.ICON, icon)
                 .with(ShareSheetItemViewProperties.LABEL, label)
                 .with(ShareSheetItemViewProperties.CLICK_LISTENER, listener)
-                .with(ShareSheetItemViewProperties.IS_FIRST_PARTY, isFirstParty)
                 .build();
     }
 

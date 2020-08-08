@@ -252,6 +252,17 @@ interface IUpdater : IUnknown {
 };
 
 [
+  object,
+  dual,
+  uuid(IUPDATERCONTROL_IID),
+  helpstring("IUpdaterControl Interface"),
+  pointer_default(unique)
+]
+interface IUpdaterControl : IUnknown {
+  HRESULT Run([in] IUpdaterObserver * observer);
+};
+
+[
   uuid(UPDATER_LIB_UUID),
   version(1.0),
   helpstring("Omaha 4.0 Type Library")
@@ -273,6 +284,7 @@ library UpdaterLib {
   }
 
   interface IUpdater;
+  interface IUpdaterControl;
 
   interface ICurrentState;
   interface IGoogleUpdate3Web;

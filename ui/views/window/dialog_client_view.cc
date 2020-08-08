@@ -266,7 +266,7 @@ void DialogClientView::UpdateDialogButton(LabelButton** member,
     return;
   }
 
-  auto button = MdTextButton::Create(this, title);
+  auto button = std::make_unique<MdTextButton>(this, title);
   button->SetProminent(is_default);
   button->SetIsDefault(is_default);
   button->SetEnabled(delegate->IsDialogButtonEnabled(type));

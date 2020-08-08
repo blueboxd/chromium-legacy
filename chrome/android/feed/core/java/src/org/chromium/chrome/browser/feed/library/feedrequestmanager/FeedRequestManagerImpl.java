@@ -41,7 +41,7 @@ import org.chromium.chrome.browser.feed.library.common.protoextensions.FeedExten
 import org.chromium.chrome.browser.feed.library.common.time.TimingUtils;
 import org.chromium.chrome.browser.feed.library.common.time.TimingUtils.ElapsedTimeTracker;
 import org.chromium.chrome.browser.feed.library.feedrequestmanager.internal.Utils;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
@@ -395,7 +395,7 @@ public class FeedRequestManagerImpl implements FeedRequestManager {
             addCapabilityIfConfigEnabled(feedRequestBuilder, ConfigKey.USE_SECONDARY_PAGE_REQUEST,
                     Capability.USE_SECONDARY_PAGE_REQUEST);
 
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+            if (FeedFeatures.isReportingUserActions()) {
                 feedRequestBuilder.addClientCapability(Capability.CLICK_ACTION);
                 feedRequestBuilder.addClientCapability(Capability.VIEW_ACTION);
                 feedRequestBuilder.addClientCapability(

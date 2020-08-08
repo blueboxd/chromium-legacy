@@ -39,6 +39,11 @@ void InMemoryVideoDecodeStatsDBImpl::Initialize(InitializeCB init_cb) {
   DCHECK(init_cb);
   DCHECK(!db_init_);
 
+  // Tracking down crbug.com/1114128. Suspect we're double initializing somehow,
+  // so this should show who the crash at the time of the second initialize
+  // call.
+  CHECK(!seed_db_) << __func__ << " Already have a seed_db_?";
+
   // Fetch an *initialized* seed DB.
   if (seed_db_provider_) {
     seed_db_provider_->GetVideoDecodeStatsDB(

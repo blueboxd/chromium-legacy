@@ -16,7 +16,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
@@ -50,14 +49,6 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
     private static final int LOW_MEMORY_THRESHOLD_KB =
             (int) (1.5 * ConversionUtils.KILOBYTES_PER_GIGABYTE);
 
-    // These values are used with UMA to report Omnibox.RichEntity.DecorationType histograms, and
-    // should therefore be treated as append-only.
-    // See http://cs.chromium.org/Omnibox.RichEntity.DecorationType.
-    private static final int DECORATION_TYPE_ICON = 0;
-    private static final int DECORATION_TYPE_COLOR = 1;
-    private static final int DECORATION_TYPE_IMAGE = 2;
-    private static final int DECORATION_TYPE_TOTAL_COUNT = 3;
-
     /**
      * @param context An Android context.
      * @param suggestionHost A handle to the object using the suggestions.
@@ -83,15 +74,6 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
     @Override
     public PropertyModel createModel() {
         return new PropertyModel(EntitySuggestionViewProperties.ALL_KEYS);
-    }
-
-    @Override
-    public void recordItemPresented(PropertyModel model) {
-        // SuggestionUsed bookkeeping handled in C++:
-        // http://cs.chromium.org/Omnibox.SuggestionUsed.RichEntity
-        int decorationType = model.get(EntitySuggestionViewProperties.DECORATION_TYPE);
-        RecordHistogram.recordEnumeratedHistogram(
-                "Omnibox.RichEntity.DecorationType", decorationType, DECORATION_TYPE_TOTAL_COUNT);
     }
 
     private void fetchEntityImage(OmniboxSuggestion suggestion, PropertyModel model) {
@@ -133,8 +115,6 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
                                         .setUseRoundedCorners(true)
                                         .setLarge(true)
                                         .build());
-                        pendingModel.set(EntitySuggestionViewProperties.DECORATION_TYPE,
-                                DECORATION_TYPE_IMAGE);
                     }
                 });
     }
@@ -158,7 +138,6 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
                         .setLarge(true)
                         .setUseRoundedCorners(true)
                         .build());
-        model.set(EntitySuggestionViewProperties.DECORATION_TYPE, DECORATION_TYPE_COLOR);
     }
 
     @Override
@@ -169,7 +148,6 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
                         .forDrawableRes(getContext(), R.drawable.ic_suggestion_magnifier)
                         .setAllowTint(true)
                         .build());
-        model.set(EntitySuggestionViewProperties.DECORATION_TYPE, DECORATION_TYPE_ICON);
 
         if (SysUtils.amountOfPhysicalMemoryKB() >= LOW_MEMORY_THRESHOLD_KB
                 || CommandLine.getInstance().hasSwitch(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE)) {

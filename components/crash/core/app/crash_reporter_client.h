@@ -130,11 +130,6 @@ class CrashReporterClient {
   virtual bool GetCrashMetricsLocation(base::FilePath* metrics_dir);
 #endif
 
-  virtual bool UseCrashKeysWhiteList();
-
-  // Returns a NULL-terminated array of crash keys to whitelist.
-  virtual const char* const* GetCrashKeyWhiteList();
-
   // Returns true if running in unattended mode (for automated testing).
   virtual bool IsRunningUnattended();
 
@@ -177,7 +172,7 @@ class CrashReporterClient {
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
   // Configures sanitization of crash dumps.
-  // |annotations_whitelist| is a nullptr terminated array of NUL-terminated
+  // |allowed_annotations| is a nullptr terminated array of NUL-terminated
   // strings of allowed annotation names or nullptr if all annotations are
   // allowed. |target_module| is a pointer to a location inside a module to
   // target or nullptr if there is no target module. Crash dumps are not
@@ -186,7 +181,7 @@ class CrashReporterClient {
   // sanitized for possible PII. If they are sanitized, only small integers and
   // pointers to modules and stacks will be preserved.
   virtual void GetSanitizationInformation(
-      const char* const** annotations_whitelist,
+      const char* const** allowed_annotations,
       void** target_module,
       bool* sanitize_stacks);
 #endif

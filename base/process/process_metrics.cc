@@ -63,7 +63,7 @@ SystemMetrics SystemMetrics::Sample() {
   GetVmStatInfo(&system_metrics.vmstat_info_);
   GetSystemDiskInfo(&system_metrics.disk_info_);
 #endif
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   GetSwapInfo(&system_metrics.swap_info_);
 #endif
 #if defined(OS_WIN)
@@ -83,7 +83,7 @@ std::unique_ptr<Value> SystemMetrics::ToValue() const {
   res->Set("meminfo", std::move(meminfo));
   res->Set("diskinfo", disk_info_.ToValue());
 #endif
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   res->Set("swapinfo", swap_info_.ToValue());
 #endif
 #if defined(OS_WIN)

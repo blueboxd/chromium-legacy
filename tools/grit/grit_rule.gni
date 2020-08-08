@@ -87,6 +87,7 @@
 #     # files.
 #   }
 import("//build/config/chrome_build.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/compute_inputs_for_analyze.gni")
 import("//build/config/crypto.gni")
@@ -140,6 +141,13 @@ if (is_chromeos) {
   grit_defines += [
     "-D",
     "chromeos",
+  ]
+}
+
+if (chromeos_is_browser_only) {
+  grit_defines += [
+    "-D",
+    "lacros",
   ]
 }
 

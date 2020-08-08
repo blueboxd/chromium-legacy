@@ -70,8 +70,9 @@ class VectorIconGallery : public View,
         file_container->SetLayoutManager(std::make_unique<BoxLayout>(
             BoxLayout::Orientation::kHorizontal, gfx::Insets(10), 10));
     file_chooser_ = file_container->AddChildView(std::move(file_chooser));
-    file_go_button_ = file_container->AddChildView(
-        MdTextButton::Create(this, GetStringUTF16(IDS_VECTOR_RENDER_LABEL)));
+    file_go_button_ =
+        file_container->AddChildView(std::make_unique<MdTextButton>(
+            this, GetStringUTF16(IDS_VECTOR_RENDER_LABEL)));
     file_box->SetFlexForView(file_chooser_, 1);
     AddChildView(std::move(file_container));
 

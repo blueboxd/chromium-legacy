@@ -5,8 +5,6 @@
 #ifndef CHROME_UPDATER_WIN_UPDATE_SERVICE_OUT_OF_PROCESS_H_
 #define CHROME_UPDATER_WIN_UPDATE_SERVICE_OUT_OF_PROCESS_H_
 
-#include <wrl/implements.h>
-
 #include <string>
 
 #include "base/callback.h"
@@ -30,38 +28,6 @@ namespace updater {
 // second thread which serializes the tasks and the invocations originating
 // in the COM RPC runtime, which arrive sequentially but they are not sequenced
 // through the task runner.
-//
-// This class implements the IUpdaterObserver interface and exposes it as a COM
-// object. The class has thread-affinity for the STA thread. However, its
-// functions are invoked directly by COM RPC, and they are not sequenced through
-// the thread task runner. This means that the usual mechanisms that check for
-// the correct sequence are not going to work for this class.
-class UpdaterObserverImpl
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IUpdaterObserver> {
- public:
-  UpdaterObserverImpl(Microsoft::WRL::ComPtr<IUpdater> updater,
-                      UpdateService::Callback callback);
-  UpdaterObserverImpl(const UpdaterObserverImpl&) = delete;
-  UpdaterObserverImpl& operator=(const UpdaterObserverImpl&) = delete;
-
-  // Overrides for IUpdaterObserver.
-  IFACEMETHODIMP OnComplete(ICompleteStatus* status) override;
-
- private:
-  ~UpdaterObserverImpl() override;
-
-  // Bound to the STA thread.
-  scoped_refptr<base::SequencedTaskRunner> com_task_runner_;
-
-  // Keeps a reference of the updater object alive, while this object is
-  // owned by the COM RPC runtime.
-  Microsoft::WRL::ComPtr<IUpdater> updater_;
-
-  // Called by IUpdaterObserver::OnComplete when the COM RPC call is done.
-  UpdateService::Callback callback_;
-};
 
 // All public functions and callbacks must be called on the same sequence.
 class UpdateServiceOutOfProcess : public UpdateService {

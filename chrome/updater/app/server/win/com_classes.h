@@ -69,6 +69,24 @@ class UpdaterImpl
   ~UpdaterImpl() override = default;
 };
 
+// This class implements the IUpdaterControl interface and exposes it as a COM
+// object.
+class UpdaterControlImpl
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IUpdaterControl> {
+ public:
+  UpdaterControlImpl() = default;
+  UpdaterControlImpl(const UpdaterControlImpl&) = delete;
+  UpdaterControlImpl& operator=(const UpdaterControlImpl&) = delete;
+
+  // Overrides for IUpdaterControl.
+  IFACEMETHODIMP Run(IUpdaterObserver* observer) override;
+
+ private:
+  ~UpdaterControlImpl() override = default;
+};
+
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_APP_SERVER_WIN_COM_CLASSES_H_

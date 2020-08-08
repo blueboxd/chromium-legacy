@@ -323,13 +323,13 @@ void BubbleHeaderView::AddPasswordReuseButtons(bool is_saved_password) {
 
   std::unique_ptr<views::MdTextButton> change_password_button;
   if (change_password_template) {
-    change_password_button = views::MdTextButton::Create(
+    change_password_button = std::make_unique<views::MdTextButton>(
         button_listener_, l10n_util::GetStringUTF16(change_password_template));
     change_password_button->SetProminent(true);
     change_password_button->SetID(
         PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
   }
-  auto allowlist_password_reuse_button = views::MdTextButton::Create(
+  auto allowlist_password_reuse_button = std::make_unique<views::MdTextButton>(
       button_listener_,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_ALLOWLIST_PASSWORD_REUSE_BUTTON));
   allowlist_password_reuse_button->SetID(
@@ -872,8 +872,8 @@ void PageInfoBubbleView::SetPageFeatureInfo(const PageFeatureInfo& info) {
   auto icon = std::make_unique<NonAccessibleImageView>();
   icon->SetImage(PageInfoUI::GetVrSettingsIcon(GetRelatedTextColor()));
 
-  std::unique_ptr<views::MdTextButton> exit_button(views::MdTextButton::Create(
-      this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_TURN_OFF_BUTTON_TEXT)));
+  auto exit_button = std::make_unique<views::MdTextButton>(
+      this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_TURN_OFF_BUTTON_TEXT));
   exit_button->SetID(VIEW_ID_PAGE_INFO_BUTTON_END_VR);
   exit_button->SetProminent(true);
 

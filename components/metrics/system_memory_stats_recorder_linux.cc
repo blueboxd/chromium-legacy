@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 
 namespace metrics {
 
@@ -33,7 +34,7 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
   base::SystemMemoryInfoKB memory;
   if (!base::GetSystemMemoryInfo(&memory))
     return;
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   // Record graphics GEM object size in a histogram with 50 MB buckets.
   int mem_graphics_gem_mb = 0;
   if (memory.gem_size != -1)
@@ -46,7 +47,8 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
   // On Intel, graphics objects are in anonymous pages, but on ARM they are
   // not. For a total "allocated count" add in graphics pages on ARM.
   int mem_allocated_mb = (memory.active_anon + memory.inactive_anon) / 1024;
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+#if (defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)) && \
+    defined(ARCH_CPU_ARM_FAMILY)
   mem_allocated_mb += mem_graphics_gem_mb;
 #endif
 
@@ -55,7 +57,7 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
 
   switch (type) {
     case RECORD_MEMORY_STATS_CONTENTS_OOM_KILLED: {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
       UMA_HISTOGRAM_MEGABYTES_LINEAR("Memory.OOMKill.Contents.MemGraphicsMB",
                                      mem_graphics_gem_mb);
       UMA_HISTOGRAM_MEGABYTES_LINEAR("Memory.OOMKill.Contents.MemShmemMB",
@@ -68,7 +70,7 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
       break;
     }
     case RECORD_MEMORY_STATS_EXTENSIONS_OOM_KILLED: {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
       UMA_HISTOGRAM_MEGABYTES_LINEAR("Memory.OOMKill.Extensions.MemGraphicsMB",
                                      mem_graphics_gem_mb);
       UMA_HISTOGRAM_MEGABYTES_LINEAR("Memory.OOMKill.Extensions.MemShmemMB",

@@ -3,12 +3,17 @@
     position: fixed;
     top: 48px;
   }
+
+  :host([menu-open_]) #download {
+    background-color: var(--active-button-bg);
+    border-radius: 50%;
+  }
 </style>
 <cr-icon-button id="download" iron-icon="cr:file-download"
     on-click="onDownloadClick_" aria-label$="$i18n{tooltipDownload}"
     aria-haspopup$="[[downloadHasPopup_]]"
     title="$i18n{tooltipDownload}"></cr-icon-button>
-<cr-action-menu id="menu" force-dark-mode>
+<cr-action-menu id="menu" on-close="onMenuClose_">
   <button class="dropdown-item" on-click="onDownloadEditedClick_">
     $i18n{downloadEdited}
   </button>

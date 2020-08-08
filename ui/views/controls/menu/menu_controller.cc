@@ -1507,10 +1507,12 @@ bool MenuController::OnKeyPressed(ui::KeyboardCode key_code) {
       break;
 
     case ui::VKEY_UP:
+    case ui::VKEY_PRIOR:
       IncrementSelection(INCREMENT_SELECTION_UP);
       break;
 
     case ui::VKEY_DOWN:
+    case ui::VKEY_NEXT:
       IncrementSelection(INCREMENT_SELECTION_DOWN);
       break;
 

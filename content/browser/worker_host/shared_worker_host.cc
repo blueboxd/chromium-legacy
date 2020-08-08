@@ -27,10 +27,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/worker_type.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "net/base/isolation_info.h"
 #include "net/cookies/site_for_cookies.h"
+#include "services/metrics/public/cpp/delegating_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -124,9 +127,6 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
 
   service_->NotifyWorkerCreated(token_, worker_process_host_->GetID(),
                                 devtools_handle_->dev_tools_token());
-
-  // TODO(crbug.com/1085645): Emit UKM event notifying of the creation of the
-  // |ukm_source_id_| source.
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
@@ -469,8 +469,13 @@ void SharedWorkerHost::AddClient(
   info.client.set_disconnect_handler(base::BindOnce(
       &SharedWorkerHost::OnClientConnectionLost, weak_factory_.GetWeakPtr()));
 
-  // TODO(crbug.com/1085645): Emit UKM event linking |client_ukm_source_id| and
-  // |ukm_source_id_|.
+  ukm::DelegatingUkmRecorder* ukm_recorder = ukm::DelegatingUkmRecorder::Get();
+  if (ukm_recorder) {
+    ukm::builders::Worker_ClientAdded(ukm_source_id_)
+        .SetClientSourceId(client_ukm_source_id)
+        .SetWorkerType(static_cast<int64_t>(WorkerType::kSharedWorker))
+        .Record(ukm_recorder);
+  }
 
   worker_->Connect(info.connection_request_id, port.ReleaseHandle());
 

@@ -60,7 +60,7 @@ class NavigationThrottleRunnerTest : public RenderViewHostTestHarness,
 
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
-    runner_ = std::make_unique<NavigationThrottleRunner>(this);
+    runner_ = std::make_unique<NavigationThrottleRunner>(this, 1);
   }
 
   void Resume() { runner_->CallResumeForTesting(); }

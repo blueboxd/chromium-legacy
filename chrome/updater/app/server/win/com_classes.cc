@@ -77,7 +77,7 @@ HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
                           base::BindOnce(
                               &IUpdaterObserver::OnComplete, observer,
                               Microsoft::WRL::Make<CompleteStatusImpl>(
-                                  static_cast<int>(result), L"Test")),
+                                  static_cast<int>(result), L"")),
                           base::BindOnce([](HRESULT hr) {
                             VLOG(2) << "IUpdaterObserver::OnComplete returned "
                                     << std::hex << hr;
@@ -85,7 +85,39 @@ HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
                     },
                     observer));
           },
-          com_server->service(), IUpdaterObserverPtr(observer)));
+          com_server->update_service(), IUpdaterObserverPtr(observer)));
+
+  return S_OK;
+}
+
+// Called by the COM RPC runtime on one of its threads.
+HRESULT UpdaterControlImpl::Run(IUpdaterObserver* observer) {
+  using IUpdaterObserverPtr = Microsoft::WRL::ComPtr<IUpdaterObserver>;
+
+  // Invoke the in-process |control_service| on the main sequence.
+  scoped_refptr<ComServerApp> com_server = AppServerSingletonInstance();
+  com_server->main_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<ControlService> control_service,
+             IUpdaterObserverPtr observer) {
+            control_service->Run(base::BindOnce(
+                [](IUpdaterObserverPtr observer) {
+                  // The COM RPC outgoing call blocks and it must be posted
+                  // through the thread pool.
+                  base::ThreadPool::PostTaskAndReplyWithResult(
+                      FROM_HERE, {base::MayBlock()},
+                      base::BindOnce(
+                          &IUpdaterObserver::OnComplete, observer,
+                          Microsoft::WRL::Make<CompleteStatusImpl>(0, L"")),
+                      base::BindOnce([](HRESULT hr) {
+                        VLOG(2) << "IUpdaterObserver::OnComplete returned "
+                                << std::hex << hr;
+                      }));
+                },
+                observer));
+          },
+          com_server->control_service(), IUpdaterObserverPtr(observer)));
 
   return S_OK;
 }

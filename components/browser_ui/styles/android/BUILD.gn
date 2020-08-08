@@ -114,6 +114,7 @@ android_resources("java_resources") {
     "java/res/drawable/ic_warning_red_16dp.xml",
     "java/res/drawable/ic_warning_red_24dp.xml",
     "java/res/drawable/permission_location.xml",
+    "java/res/drawable/smartphone_black_24dp.xml",
     "java/res/values-night/colors.xml",
     "java/res/values/colors.xml",
     "java/res/values/dimens.xml",

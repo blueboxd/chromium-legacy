@@ -51,8 +51,8 @@ WidgetDialogExample::WidgetDialogExample() {
   SetBackground(CreateSolidBackground(SK_ColorGRAY));
   SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical, gfx::Insets(10), 10));
-  SetExtraView(
-      MdTextButton::Create(nullptr, GetStringUTF16(IDS_WIDGET_EXTRA_BUTTON)));
+  SetExtraView(std::make_unique<MdTextButton>(
+      nullptr, GetStringUTF16(IDS_WIDGET_EXTRA_BUTTON)));
   SetFootnoteView(
       std::make_unique<Label>(GetStringUTF16(IDS_WIDGET_FOOTNOTE_LABEL)));
   AddChildView(std::make_unique<Label>(

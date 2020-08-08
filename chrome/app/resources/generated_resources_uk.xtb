@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Змінити файли</translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="1285484354230578868">Зберігати дані в обліковому записі Google Диска</translation>
-<translation id="1285717512281186441">Принтер недоступний</translation>
 <translation id="1288037062697528143">Нічний екран увімкнеться автоматично після заходу сонця</translation>
 <translation id="1288300545283011870">Властивості мовлення</translation>
 <translation id="1293264513303784526">Пристрій із портом USB типу C (ліворуч)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Буде видалено всі дані й файли cookie сайту <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">Консоль &amp;JavaScript</translation>
 <translation id="1587907146729660231">Торкніться кнопки живлення пальцем</translation>
-<translation id="1588200577109872591">Розумне введення</translation>
 <translation id="1588438908519853928">Звичайний</translation>
 <translation id="158849752021629804">Потрібна домашня мережа</translation>
 <translation id="1588870296199743671">Відкрити посилання за допомогою...</translation>
@@ -1286,7 +1284,6 @@
 <translation id="253557089021624350">Кількість процесів, які використовуються розширеннями</translation>
 <translation id="2535799430745250929">Немає мобільної мережі</translation>
 <translation id="2537178555904266562">Не вдалося синхронізувати паролі</translation>
-<translation id="2537296579376733324">Усі файли cookie, лише на цьому сайті</translation>
 <translation id="2537395079978992874">Сайт <ph name="ORIGIN" /> може переглядати й змінювати вказані нижче файли та папки</translation>
 <translation id="2537927931785713436">Перевірка зображення віртуальної машини</translation>
 <translation id="2538361623464451692">Синхронізацію вимкнено</translation>
@@ -1427,7 +1424,6 @@
 <translation id="2712173769900027643">Запитувати дозвіл</translation>
 <translation id="2713444072780614174">Білий</translation>
 <translation id="2714393097308983682">Магазин Google Play</translation>
-<translation id="2714997332747470971">Завдяки підказкам з особистою інформацією (наприклад, іменем, адресою чи номером телефону) ви можете писати швидше. Підказки є приватними й персоналізованими, тож їх бачите лише ви у своєму обліковому записі.</translation>
 <translation id="2715751256863167692">Це оновлення скидає налаштування Chromebook і вилучає дані поточного користувача.</translation>
 <translation id="2716986496990888774">Цим налаштуванням керують батьки.</translation>
 <translation id="2718395828230677721">Нічний екран</translation>
@@ -2949,7 +2945,6 @@
 <translation id="4608520674724523647">Ілюстрація успішної реєстрації</translation>
 <translation id="4608703838363792434">Файл "<ph name="FILE_NAME" />" містить конфіденційний контент</translation>
 <translation id="4610162781778310380">У плагіні <ph name="PLUGIN_NAME" /> сталася помилка</translation>
-<translation id="4610178114344604329">Показувати підказки з особистою інформацією</translation>
 <translation id="4610637590575890427">Ви мали на увазі перейти до <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Доступне передавання даних</translation>
 <translation id="4613144866899789710">Скасовується встановлення Linux…</translation>
@@ -6011,7 +6006,6 @@
 <translation id="8448729345478502352">Зменшуйте або збільшуйте елементи на екрані</translation>
 <translation id="8449008133205184768">Вставити та застосувати стиль</translation>
 <translation id="8449036207308062757">Керувати пам’яттю</translation>
-<translation id="84501823665211008">Пропозиції смайлів</translation>
 <translation id="8452135315243592079">Немає SIM-карти</translation>
 <translation id="8455026683977728932">Не вдалось увімкнути ілюстрацію ADB</translation>
 <translation id="845702320058262034">Не вдається під’єднатися. Переконайтеся, що на телефоні ввімкнено Bluetooth.</translation>
@@ -6295,7 +6289,6 @@
 <translation id="8798441408945964110">Назва постачальника</translation>
 <translation id="8800004011501252845">Показано місця призначення для</translation>
 <translation id="8800034312320686233">Сайт не працює?</translation>
-<translation id="880069872639153240">Отримувати підказки смайлів на основі введених слів</translation>
 <translation id="8803953437405899238">Відкривайте нову вкладку одним кліком</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Перемістити вкладку в інше вікно}one{Перемістити вкладки в інше вікно}few{Перемістити вкладки в інше вікно}many{Перемістити вкладки в інше вікно}other{Перемістити вкладки в інше вікно}}</translation>
 <translation id="8805140816472474147">Щоб почати синхронізацію, підтвердьте її налаштування.</translation>

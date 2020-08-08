@@ -27,6 +27,7 @@
 #include "chrome/updater/app/server/win/com_classes.h"
 #include "chrome/updater/app/server/win/com_classes_legacy.h"
 #include "chrome/updater/configurator.h"
+#include "chrome/updater/control_service_in_process.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/update_service_in_process.h"
 #include "chrome/updater/win/constants.h"
@@ -66,7 +67,7 @@ HRESULT ComServerApp::RegisterClassObjects() {
       Microsoft::WRL::SimpleClassFactory<UpdaterImpl>>(
       &flags, nullptr, __uuidof(IClassFactory), &factory);
   if (FAILED(hr)) {
-    LOG(ERROR) << "Factory creation failed; hr: " << hr;
+    LOG(ERROR) << "Factory creation for UpdaterImpl failed; hr: " << hr;
     return hr;
   }
 
@@ -79,10 +80,26 @@ HRESULT ComServerApp::RegisterClassObjects() {
   factory.Reset();
 
   hr = Microsoft::WRL::Details::CreateClassFactory<
+      Microsoft::WRL::SimpleClassFactory<UpdaterControlImpl>>(
+      &flags, nullptr, __uuidof(IClassFactory), &factory);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Factory creation for UpdaterControlImpl failed; hr: " << hr;
+    return hr;
+  }
+
+  Microsoft::WRL::ComPtr<IClassFactory> class_factory_updater_control;
+  hr = factory.As(&class_factory_updater_control);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "IClassFactory object creation failed; hr: " << hr;
+    return hr;
+  }
+  factory.Reset();
+
+  hr = Microsoft::WRL::Details::CreateClassFactory<
       Microsoft::WRL::SimpleClassFactory<LegacyOnDemandImpl>>(
       &flags, nullptr, __uuidof(IClassFactory), &factory);
   if (FAILED(hr)) {
-    LOG(ERROR) << "Factory creation failed; hr: " << hr;
+    LOG(ERROR) << "Factory creation for LegacyOnDemandImpl failed; hr: " << hr;
     return hr;
   }
 
@@ -95,12 +112,14 @@ HRESULT ComServerApp::RegisterClassObjects() {
 
   // The pointer in this array is unowned. Do not release it.
   IClassFactory* class_factories[] = {class_factory_updater.Get(),
+                                      class_factory_updater_control.Get(),
                                       class_factory_legacy_ondemand.Get()};
   static_assert(
       std::extent<decltype(cookies_)>() == base::size(class_factories),
       "Arrays cookies_ and class_factories must be the same size.");
 
-  IID class_ids[] = {__uuidof(UpdaterClass), CLSID_GoogleUpdate3WebUserClass};
+  IID class_ids[] = {__uuidof(UpdaterClass), CLSID_UpdaterControlServiceClass,
+                     CLSID_GoogleUpdate3WebUserClass};
   DCHECK_EQ(base::size(cookies_), base::size(class_ids));
   static_assert(std::extent<decltype(cookies_)>() == base::size(class_ids),
                 "Arrays cookies_ and class_ids must be the same size.");
@@ -135,7 +154,8 @@ void ComServerApp::Stop() {
       FROM_HERE, base::BindOnce([]() {
         scoped_refptr<ComServerApp> this_server = AppServerSingletonInstance();
         this_server->config_->GetPrefService()->CommitPendingWrite();
-        this_server->service_ = nullptr;
+        this_server->update_service_ = nullptr;
+        this_server->control_service_ = nullptr;
         this_server->config_ = nullptr;
         this_server->Shutdown(0);
       }));
@@ -148,7 +168,8 @@ void ComServerApp::ActiveDuty() {
     return;
   }
   main_task_runner_ = base::SequencedTaskRunnerHandle::Get();
-  service_ = base::MakeRefCounted<UpdateServiceInProcess>(config_);
+  update_service_ = base::MakeRefCounted<UpdateServiceInProcess>(config_);
+  control_service_ = base::MakeRefCounted<ControlServiceInProcess>(config_);
   CreateWRLModule();
   HRESULT hr = RegisterClassObjects();
   if (FAILED(hr))

@@ -92,4 +92,35 @@ public class WebXrArHitTestTest {
         mWebXrArTestFramework.executeStepAndWait("stepStartHitTesting()");
         mWebXrArTestFramework.endTest();
     }
+
+    /**
+     * Tests that hit test cancellation works for hit test sources when the session has ended.
+     */
+    @Test
+    @MediumTest
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    @ArPlaybackFile("chrome/test/data/xr/ar_playback_datasets/floor_session_12s_30fps.mp4")
+    public void testHitTestCancellationWorks() {
+        mWebXrArTestFramework.loadFileAndAwaitInitialization(
+                "webxr_test_basic_hittest_cancellation", PAGE_LOAD_TIMEOUT_S);
+        mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
+        mWebXrArTestFramework.executeStepAndWait("stepStartHitTesting(false)");
+        mWebXrArTestFramework.endTest();
+    }
+
+    /**
+     * Tests that hit test cancellation works for transient input hit tests when the session has
+     * ended.
+     */
+    @Test
+    @MediumTest
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    @ArPlaybackFile("chrome/test/data/xr/ar_playback_datasets/floor_session_12s_30fps.mp4")
+    public void testHitTestForTransientInputCancellationWorks() {
+        mWebXrArTestFramework.loadFileAndAwaitInitialization(
+                "webxr_test_basic_hittest_cancellation", PAGE_LOAD_TIMEOUT_S);
+        mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
+        mWebXrArTestFramework.executeStepAndWait("stepStartHitTesting(true)");
+        mWebXrArTestFramework.endTest();
+    }
 }

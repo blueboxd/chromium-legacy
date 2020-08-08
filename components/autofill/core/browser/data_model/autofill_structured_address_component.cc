@@ -508,10 +508,21 @@ base::string16 AddressComponent::ReplacePlaceholderTypesWithValues(
 }
 
 bool AddressComponent::CompleteFullTree() {
-  if (!GetRootNode().IsTreeCompletable())
-    return false;
-  GetRootNode().RecursivelyCompleteTree();
-  return true;
+  int max_nodes_on_root_to_leaf_path =
+      GetRootNode().MaximumNumberOfAssignedAddressComponentsOnNodeToLeafPaths();
+  // With more than one node the tree cannot be completed.
+  switch (max_nodes_on_root_to_leaf_path) {
+    // An empty tree is already complete.
+    case 0:
+      return true;
+    // With a single node, the tree is completable.
+    case 1:
+      GetRootNode().RecursivelyCompleteTree();
+      return true;
+    // In any other case, the tree is not completable.
+    default:
+      return false;
+  }
 }
 
 void AddressComponent::RecursivelyCompleteTree() {
@@ -551,7 +562,8 @@ int AddressComponent::
 }
 
 bool AddressComponent::IsTreeCompletable() {
-  return MaximumNumberOfAssignedAddressComponentsOnNodeToLeafPaths() == 1;
+  // An empty tree is also a completable tree.
+  return MaximumNumberOfAssignedAddressComponentsOnNodeToLeafPaths() <= 1;
 }
 
 const AddressComponent& AddressComponent::GetRootNode() const {

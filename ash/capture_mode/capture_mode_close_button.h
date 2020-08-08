@@ -5,6 +5,7 @@
 #ifndef ASH_CAPTURE_MODE_CAPTURE_MODE_CLOSE_BUTTON_H_
 #define ASH_CAPTURE_MODE_CAPTURE_MODE_CLOSE_BUTTON_H_
 
+#include "ash/ash_export.h"
 #include "ash/capture_mode/view_with_ink_drop.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -12,7 +13,8 @@
 namespace ash {
 
 // A view that shows a close button which is part of the CaptureBarView.
-class CaptureModeCloseButton : public ViewWithInkDrop<views::ImageButton> {
+class ASH_EXPORT CaptureModeCloseButton
+    : public ViewWithInkDrop<views::ImageButton> {
  public:
   explicit CaptureModeCloseButton(views::ButtonListener* listener);
   CaptureModeCloseButton(const CaptureModeCloseButton&) = delete;

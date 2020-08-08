@@ -74,6 +74,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     private final View mNtpHeader;
     private final boolean mShowDarkBackground;
     private final boolean mIsPlaceholderShown;
+    private final boolean mIsPlaceholderShownInV1;
     private final boolean mV2Enabled;
     private final FeedSurfaceDelegate mDelegate;
     private final int mDefaultMargin;
@@ -221,6 +222,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         mIsPlaceholderShown = isPlaceholderShown;
         mV2Enabled = FeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2);
+        mIsPlaceholderShownInV1 = mIsPlaceholderShown && !mV2Enabled;
         mDelegate = delegate;
         mPageNavigationDelegate = pageNavigationDelegate;
         mBottomSheetController = bottomSheetController;
@@ -305,6 +307,11 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         return mStream;
     }
 
+    /** @return Whether the placeholder shows in V1. */
+    public boolean isPlaceholderShownInV1() {
+        return mIsPlaceholderShownInV1;
+    }
+
     /**
      * Create a {@link Stream} for this class.
      */
@@ -316,9 +323,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             mScrollViewResizer = null;
         }
 
-        boolean isPlaceholderShownInV1 = mIsPlaceholderShown && !mV2Enabled;
         mStreamCreatedTimeMs = SystemClock.elapsedRealtime();
-
         if (mV2Enabled) {
             mStream = new FeedStream(mActivity, mShowDarkBackground, mSnackbarManager,
                     mPageNavigationDelegate, mBottomSheetController);
@@ -333,14 +338,14 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
                     FeedProcessScopeFactory.getFeedConsumptionObserver(),
                     FeedProcessScopeFactory.getFeedLoggingBridge(), mActivity, mProfile);
             mStream = FeedV1StreamCreator.createStream(mActivity, mImageLoader, actionApi,
-                    mUiConfig, mSnackbarManager, mShowDarkBackground, isPlaceholderShownInV1);
+                    mUiConfig, mSnackbarManager, mShowDarkBackground, mIsPlaceholderShownInV1);
         }
 
         mStreamLifecycleManager = mDelegate.createStreamLifecycleManager(mStream, mActivity);
 
         View view = mStream.getView();
         view.setBackgroundResource(R.color.default_bg_color);
-        if (isPlaceholderShownInV1) {
+        if (mIsPlaceholderShownInV1) {
             // Set recyclerView as transparent until first patch of articles are loaded. Before
             // that, the placeholder is shown.
             view.getBackground().setAlpha(0);
@@ -448,6 +453,11 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             mSigninPromoView = (PersonalizedSigninPromoView) inflater.inflate(
                     R.layout.personalized_signin_promo_view_modern_content_suggestions, mRootView,
                     false);
+            // If the placeholder is shown in V1, delay to show the sign-in view until the articles
+            // are shown.
+            if (mIsPlaceholderShownInV1) {
+                mSigninPromoView.setVisibility(View.INVISIBLE);
+            }
         }
         return mSigninPromoView;
     }

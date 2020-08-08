@@ -21369,6 +21369,7 @@ Called by update_document_policy_enum.py.-->
   <int value="765" label="UsbDetachableAllowlist"/>
   <int value="766" label="InsecurePrivateNetworkRequestsAllowed"/>
   <int value="767" label="InsecurePrivateNetworkRequestsAllowedForUrls"/>
+  <int value="768" label="UserPrintersAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28785,7 +28786,8 @@ Called by update_feature_policy_enum.py.-->
   <int value="0" label="Engaged - scrolled an inch or interacted"/>
   <int value="1" label="Engaged Simple - scrolled any amount or interacted"/>
   <int value="2" label="Interacted - opened page or used menu"/>
-  <int value="3" label="Scrolled - scrolled any amount"/>
+  <int value="3" label="DEPRECATED: Scrolled - scrolled any amount"/>
+  <int value="4" label="Scrolled - scrolled any amount"/>
 </enum>
 
 <enum name="FeedHostMismatch">
@@ -40336,6 +40338,7 @@ from previous Chrome versions.
       label="AutofillCreditCardLocalCardMigration:disabled"/>
   <int value="-1634154256" label="ZeroSuggestRedirectToChrome:enabled"/>
   <int value="-1633586675" label="TabModalJsDialog:enabled"/>
+  <int value="-1632828661" label="PrivacyReorderedAndroid:disabled"/>
   <int value="-1631329950" label="ssl-version-max"/>
   <int value="-1630419335" label="enable-download-notification"/>
   <int value="-1626110605" label="WebBundles:disabled"/>
@@ -40605,6 +40608,7 @@ from previous Chrome versions.
   <int value="-1375111024" label="enable-fixed-position-compositing"/>
   <int value="-1373942769" label="WebAuthenticationCtap2:disabled"/>
   <int value="-1373705581" label="ManualSaving:enabled"/>
+  <int value="-1372926635" label="AndroidManagedByMenuItem:disabled"/>
   <int value="-1371984027" label="CrostiniWebUIUpgrader:disabled"/>
   <int value="-1371239786" label="EnablePasswordsAccountStorage:enabled"/>
   <int value="-1370532920" label="AppServiceAsh:enabled"/>
@@ -43440,6 +43444,7 @@ from previous Chrome versions.
   <int value="1683560662" label="ChromeShareHighlightsAndroid:disabled"/>
   <int value="1684043382" label="AssistantKeyRemapping:enabled"/>
   <int value="1685280468" label="AppServiceShelf:enabled"/>
+  <int value="1687544136" label="AndroidManagedByMenuItem:enabled"/>
   <int value="1688075820" label="OmniboxExperimentalKeywordMode:disabled"/>
   <int value="1689123607" label="enable-app-link"/>
   <int value="1689183477" label="enable-merge-key-char-events"/>
@@ -43660,6 +43665,7 @@ from previous Chrome versions.
   <int value="1920894670"
       label="OmniboxPreserveDefaultMatchAgainstAsyncUpdate:enabled"/>
   <int value="1923052799" label="CrostiniUseDlc:disabled"/>
+  <int value="1923780021" label="PrivacyReorderedAndroid:enabled"/>
   <int value="1924192543" label="ProactiveTabFreezeAndDiscard:enabled"/>
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
   <int value="1926524951" label="SystemWebApps:disabled"/>
@@ -50488,6 +50494,13 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="1" label="Disabled">NPAPI is disabled</int>
   <int value="2" label="Enabled">NPAPI is enabled</int>
+</enum>
+
+<enum name="NQE.ConnectivityMonitor.NetworkChangeType">
+  <int value="0" label="NoEarlyActivation"/>
+  <int value="1" label="EarlyActivationOfUnknownNetwork"/>
+  <int value="2" label="EarlyActivationOfDifferentNetwork"/>
+  <int value="3" label="EarlyActivationOfSameNetwork"/>
 </enum>
 
 <enum name="NQEEffectiveConnectionType">
@@ -76404,6 +76417,11 @@ Called by update_scheduler_enums.py.-->
   <int value="1" label="data: URL"/>
   <int value="2" label="cross-origin (from extension)"/>
   <int value="3" label="cross-origin (others)"/>
+</enum>
+
+<enum name="WorkerType">
+  <int value="0" label="SharedWorker"/>
+  <int value="1" label="ServiceWorker"/>
 </enum>
 
 <enum name="WrenchMenuAction">

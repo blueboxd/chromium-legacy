@@ -631,8 +631,9 @@ class ScopedNavigationRequestCrashKeys {
 void EnterChildTraceEvent(const char* name, NavigationRequest* request) {
   // Tracing no longer outputs the end event name, so we can simply pass an
   // empty string here.
-  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "", request);
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("navigation", name, request);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "", request->GetNavigationId());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("navigation", name,
+                                    request->GetNavigationId());
 }
 
 // Start a new nested async event with the given name and args.
@@ -643,9 +644,9 @@ void EnterChildTraceEvent(const char* name,
                           ArgType arg_value) {
   // Tracing no longer outputs the end event name, so we can simply pass an
   // empty string here.
-  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "", request);
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("navigation", name, request, arg_name,
-                                    arg_value);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "", request->GetNavigationId());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      "navigation", name, request->GetNavigationId(), arg_name, arg_value);
 }
 
 network::mojom::RequestDestination GetDestinationFromFrameTreeNode(
@@ -1119,10 +1120,11 @@ NavigationRequest::NavigationRequest(
          commit_params_->frame_policy.has_value());
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
-      "navigation", "NavigationRequest", this, "frame_tree_node",
+      "navigation", "NavigationRequest", navigation_id_, "frame_tree_node",
       frame_tree_node_->frame_tree_node_id(), "url",
       common_params_->url.possibly_invalid_spec());
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("navigation", "Initializing", this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("navigation", "Initializing",
+                                    navigation_id_);
   NavigationControllerImpl* controller = GetNavigationController();
 
   if (frame_entry) {
@@ -1284,8 +1286,9 @@ NavigationRequest::~NavigationRequest() {
 
   // Close the last child event. Tracing no longer outputs the end event name,
   // so we can simply pass an empty string here.
-  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "", this);
-  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "NavigationRequest", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "", navigation_id_);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "NavigationRequest",
+                                  navigation_id_);
   if (loading_mem_tracker_)
     loading_mem_tracker_->Cancel();
   ResetExpectedProcess();
@@ -1551,7 +1554,8 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
   modified_request_headers_.Clear();
   removed_request_headers_.clear();
 
-  throttle_runner_ = base::WrapUnique(new NavigationThrottleRunner(this));
+  throttle_runner_ =
+      base::WrapUnique(new NavigationThrottleRunner(this, navigation_id_));
 
 #if defined(OS_ANDROID)
   navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);

@@ -170,6 +170,7 @@
 <translation id="1620510694547887537">Κάμερα</translation>
 <translation id="1623104350909869708">Αποτροπή δημιουργίας πρόσθετων παραθύρων διαλόγου από αυτήν τη σελίδα</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1634828734222219955">Σύνολο</translation>
 <translation id="1638780421120290329">Δεν είναι δυνατή η αποθήκευση της κάρτας</translation>
 <translation id="1639239467298939599">Γίνεται φόρτωση</translation>
 <translation id="1640180200866533862">Πολιτικές χρηστών</translation>
@@ -1926,6 +1927,7 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Επιχειρήσατε να μεταβείτε στον <ph name="DOMAIN" /> , αλλά ο διακομιστής παρουσίασε ένα μη έγκυρο πιστοποιητικό.</translation>
 <translation id="9050666287014529139">Φράση πρόσβασής σας</translation>
+<translation id="9056953843249698117">Κατάστημα</translation>
 <translation id="9062620674789239642">Ενδέχεται να έχει μετακινηθεί, να έχει υποβληθεί σε επεξεργασία ή να έχει διαγραφεί.</translation>
 <translation id="9065203028668620118">Επεξεργασία</translation>
 <translation id="9065745800631924235">Αναζήτηση <ph name="TEXT" /> από το ιστορικό</translation>

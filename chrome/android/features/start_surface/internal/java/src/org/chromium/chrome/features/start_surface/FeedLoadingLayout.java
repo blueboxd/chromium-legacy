@@ -19,8 +19,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.components.browser_ui.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
@@ -75,11 +74,12 @@ public class FeedLoadingLayout extends LinearLayout {
     private void setHeader() {
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View header;
-        // This flag is checked directly with ChromeFeatureList#isEnabled() in other places. Using
-        // CachedFeatureFlags#isEnabled here is deliberate for a pre-native check. This
+        // FeedFeatures.cachedIsReportingUserActions uses CachedFeatureFlags for checking feature
+        // states, but these same features are checked directly with ChromeFeatureList in other
+        // places. Using the cached check here is deliberate for pre-native usage. This
         // inconsistency is fine because the check here is for the Feed header blank size, the
         // mismatch is bearable and only once for every change.
-        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+        if (FeedFeatures.cachedIsReportingUserActions()) {
             header = inflater.inflate(
                     R.layout.new_tab_page_snippets_expandable_header_with_menu, null, false);
             header.findViewById(R.id.header_menu).setVisibility(INVISIBLE);

@@ -56,7 +56,7 @@ class DialogExample::Delegate : public virtual DialogType {
     parent_->last_body_label_ = this->AddChildView(std::move(body));
 
     if (parent_->has_extra_button_->GetChecked()) {
-      DialogDelegate::SetExtraView(MdTextButton::Create(
+      DialogDelegate::SetExtraView(std::make_unique<views::MdTextButton>(
           nullptr, parent_->extra_button_label_->GetText()));
     }
   }
@@ -172,8 +172,8 @@ void DialogExample::CreateExampleView(View* container) {
       kFixed, kButtonsColumnId, kFixed,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
-  show_ =
-      layout->AddView(MdTextButton::Create(this, base::ASCIIToUTF16("Show")));
+  show_ = layout->AddView(
+      std::make_unique<views::MdTextButton>(this, base::ASCIIToUTF16("Show")));
 }
 
 void DialogExample::StartRowWithLabel(GridLayout* layout, const char* label) {

@@ -350,8 +350,8 @@ CreditCardEditorViewController::CreateExtraViewForField(
   button_view->SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // The button to add new billing addresses.
-  auto add_button =
-      views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_ADD));
+  auto add_button = std::make_unique<views::MdTextButton>(
+      this, l10n_util::GetStringUTF16(IDS_ADD));
   add_button->SetID(static_cast<int>(DialogViewID::ADD_BILLING_ADDRESS_BUTTON));
   add_button->set_tag(add_billing_address_button_tag_);
   add_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);

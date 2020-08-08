@@ -87,7 +87,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
       base::Unretained(browser_)));
 
   if (!error_->GetBubbleViewDetailsButtonLabel().empty()) {
-    SetExtraView(views::MdTextButton::Create(
+    SetExtraView(std::make_unique<views::MdTextButton>(
         this, error_->GetBubbleViewDetailsButtonLabel()));
   }
 

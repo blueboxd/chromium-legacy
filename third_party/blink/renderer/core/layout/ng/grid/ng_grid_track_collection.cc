@@ -381,17 +381,72 @@ wtf_size_t NGGridBlockTrackCollection::RangeCount() const {
   return ranges_.size();
 }
 
+// Default track size for a set with no specified track definition should be
+// 'auto', but we will normalize it directly as 'minmax(auto, max-content)'.
 NGGridSet::NGGridSet(wtf_size_t track_count, bool is_collapsed)
-    : track_count_(track_count), track_size_(Length::Auto()) {
+    : track_count_(track_count),
+      track_size_(Length::Auto(), Length::MaxContent()) {
   if (is_collapsed) {
-    // From https://www.w3.org/TR/css-grid-1/#collapsed-track:
-    // A collapsed track is treated as having a fixed size of '0px'.
-    track_size_ = GridTrackSize(Length::Fixed());
+    // From https://drafts.csswg.org/css-grid-1/#collapsed-track: "A collapsed
+    // track is treated as having a fixed track sizing function of '0px'".
+    track_size_ = GridTrackSize(Length::Fixed(), Length::Fixed());
   }
 }
 
-NGGridSet::NGGridSet(wtf_size_t track_count, const GridTrackSize& track_size)
-    : track_count_(track_count), track_size_(track_size) {}
+NGGridSet::NGGridSet(wtf_size_t track_count,
+                     const GridTrackSize& track_size,
+                     bool is_content_box_size_indefinite)
+    : track_count_(track_count), track_size_(track_size) {
+  if (track_size_.IsFitContent()) {
+    DCHECK(track_size_.FitContentTrackBreadth().IsLength());
+
+    // Argument for 'fit-content' is a <percentage> that couldn't be resolved to
+    // a definite <length>, normalize to 'minmax(auto, max-content)'.
+    if (is_content_box_size_indefinite &&
+        track_size_.FitContentTrackBreadth().length().IsPercent()) {
+      track_size_ = GridTrackSize(Length::Auto(), Length::MaxContent());
+    }
+  } else {
+    // Normalize |track_size_| into a |kMinMaxTrackSizing| type; follow the
+    // definitions from https://drafts.csswg.org/css-grid-1/#algo-terms.
+    bool is_unresolvable_percentage_min_function =
+        is_content_box_size_indefinite &&
+        track_size_.MinTrackBreadth().HasPercentage();
+
+    GridLength normalized_min_track_sizing_function =
+        (is_unresolvable_percentage_min_function ||
+         track_size_.HasFlexMinTrackBreadth())
+            ? Length::Auto()
+            : track_size_.MinTrackBreadth();
+
+    bool is_unresolvable_percentage_max_function =
+        is_content_box_size_indefinite &&
+        track_size_.MaxTrackBreadth().HasPercentage();
+
+    GridLength normalized_max_track_sizing_function =
+        (is_unresolvable_percentage_max_function ||
+         track_size_.HasAutoMaxTrackBreadth())
+            ? Length::MaxContent()
+            : track_size_.MaxTrackBreadth();
+
+    track_size_ = GridTrackSize(normalized_min_track_sizing_function,
+                                normalized_max_track_sizing_function);
+  }
+  DCHECK(track_size_.GetType() == kFitContentTrackSizing ||
+         track_size_.GetType() == kMinMaxTrackSizing);
+}
+
+void NGGridSet::SetBaseSize(LayoutUnit base_size) {
+  DCHECK_NE(base_size_, kIndefiniteSize);
+  DCHECK_LE(base_size_, base_size);
+  base_size_ = base_size;
+}
+
+void NGGridSet::SetGrowthLimit(LayoutUnit growth_limit) {
+  DCHECK(growth_limit_ == kIndefiniteSize || growth_limit == kIndefiniteSize ||
+         growth_limit_ <= growth_limit);
+  growth_limit_ = growth_limit;
+}
 
 NGGridLayoutAlgorithmTrackCollection::Range::Range(
     const NGGridBlockTrackCollection::Range& block_track_range,
@@ -429,23 +484,24 @@ NGGridSet& NGGridLayoutAlgorithmTrackCollection::SetIterator::CurrentSet()
 }
 
 NGGridLayoutAlgorithmTrackCollection::NGGridLayoutAlgorithmTrackCollection(
-    const NGGridBlockTrackCollection& block_track_collection) {
-  RangeRepeatIterator range_iterator = block_track_collection.RangeIterator();
-
-  while (!range_iterator.IsAtEnd()) {
+    const NGGridBlockTrackCollection& block_track_collection,
+    bool is_content_box_size_indefinite) {
+  for (auto range_iterator = block_track_collection.RangeIterator();
+       !range_iterator.IsAtEnd(); range_iterator.MoveToNextRange()) {
     const NGGridBlockTrackCollection::Range& block_track_range =
         block_track_collection.RangeAtRangeIndex(range_iterator.RangeIndex());
     AppendTrackRange(block_track_range,
                      block_track_range.is_implicit_range
                          ? block_track_collection.ImplicitTracks()
-                         : block_track_collection.ExplicitTracks());
-    range_iterator.MoveToNextRange();
+                         : block_track_collection.ExplicitTracks(),
+                     is_content_box_size_indefinite);
   }
 }
 
 void NGGridLayoutAlgorithmTrackCollection::AppendTrackRange(
     const NGGridBlockTrackCollection::Range& block_track_range,
-    const NGGridTrackList& specified_track_list) {
+    const NGGridTrackList& specified_track_list,
+    bool is_content_box_size_indefinite) {
   Range new_range(block_track_range, /* starting_set_index */ sets_.size());
 
   if (block_track_range.is_collapsed ||
@@ -493,7 +549,8 @@ void NGGridLayoutAlgorithmTrackCollection::AppendTrackRange(
       const GridTrackSize& set_track_size =
           specified_track_list.RepeatTrackSize(block_track_range.repeater_index,
                                                set_repeater_offset);
-      sets_.emplace_back(set_track_count, set_track_size);
+      sets_.emplace_back(set_track_count, set_track_size,
+                         is_content_box_size_indefinite);
     }
   }
   ranges_.push_back(new_range);
@@ -502,6 +559,11 @@ void NGGridLayoutAlgorithmTrackCollection::AppendTrackRange(
 NGGridSet& NGGridLayoutAlgorithmTrackCollection::SetAt(wtf_size_t set_index) {
   DCHECK_LT(set_index, SetCount());
   return sets_[set_index];
+}
+
+NGGridLayoutAlgorithmTrackCollection::SetIterator
+NGGridLayoutAlgorithmTrackCollection::GetSetIterator() {
+  return SetIterator(this, 0u, SetCount());
 }
 
 NGGridLayoutAlgorithmTrackCollection::SetIterator

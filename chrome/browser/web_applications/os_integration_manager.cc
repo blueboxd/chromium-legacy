@@ -215,14 +215,19 @@ void OsIntegrationManager::OnShortcutsCreated(
       ui_manager_->CanAddAppToQuickLaunchBar()) {
     ui_manager_->AddAppToQuickLaunchBar(app_id);
   }
-  if (shortcuts_created) {
+  if (shortcuts_created && base::FeatureList::IsEnabled(
+                               features::kDesktopPWAsAppIconShortcutsMenu)) {
     if (web_app_info) {
-      shortcut_manager_->RegisterShortcutsMenuWithOs(
-          app_id, web_app_info->shortcut_infos,
-          web_app_info->shortcuts_menu_icons_bitmaps);
-      // TODO(https://crbug.com/1098471): fix RegisterShortcutsMenuWithOs to
-      // take callback.
-      barrier_callback.Run(OsHookType::kShortcutsMenu, /*completed=*/true);
+      if (web_app_info->shortcut_infos.empty()) {
+        barrier_callback.Run(OsHookType::kShortcutsMenu, /*completed=*/false);
+      } else {
+        shortcut_manager_->RegisterShortcutsMenuWithOs(
+            app_id, web_app_info->shortcut_infos,
+            web_app_info->shortcuts_menu_icons_bitmaps);
+        // TODO(https://crbug.com/1098471): fix RegisterShortcutsMenuWithOs to
+        // take callback.
+        barrier_callback.Run(OsHookType::kShortcutsMenu, /*completed=*/true);
+      }
     } else {
       shortcut_manager_->ReadAllShortcutsMenuIconsAndRegisterShortcutsMenu(
           app_id, base::BindOnce(barrier_callback, OsHookType::kShortcutsMenu));

@@ -413,6 +413,55 @@ IsolatedPrerenderTabHelper::MaybeUpdatePrefetchStatusWithNSPContext(
   return status;
 }
 
+std::unique_ptr<IsolatedPrerenderTabHelper::AfterSRPMetrics>
+IsolatedPrerenderTabHelper::ComputeAfterSRPMetricsBeforeCommit(
+    content::NavigationHandle* handle) const {
+  if (page_->srp_metrics_->predicted_urls_count_ <= 0) {
+    return nullptr;
+  }
+
+  auto metrics = std::make_unique<AfterSRPMetrics>();
+
+  metrics->url_ = handle->GetURL();
+  metrics->prefetch_eligible_count_ =
+      page_->srp_metrics_->prefetch_eligible_count_;
+
+  metrics->probe_latency_ = page_->probe_latency_;
+
+  // Check every url in the redirect chain for a status, starting at the end
+  // and working backwards. Note: When a redirect chain is eligible all the
+  // way to the end, the status is already propagated. But if a redirect was
+  // not eligible then this will find its last known status.
+  DCHECK(!handle->GetRedirectChain().empty());
+  base::Optional<PrefetchStatus> status;
+  base::Optional<size_t> prediction_position;
+  for (auto back_iter = handle->GetRedirectChain().rbegin();
+       back_iter != handle->GetRedirectChain().rend(); ++back_iter) {
+    GURL chain_url = *back_iter;
+    auto status_iter = page_->prefetch_status_by_url_.find(chain_url);
+    if (!status && status_iter != page_->prefetch_status_by_url_.end()) {
+      status = MaybeUpdatePrefetchStatusWithNSPContext(chain_url,
+                                                       status_iter->second);
+    }
+
+    // Same check for the original prediction ordering.
+    auto position_iter = page_->original_prediction_ordering_.find(chain_url);
+    if (!prediction_position &&
+        position_iter != page_->original_prediction_ordering_.end()) {
+      prediction_position = position_iter->second;
+    }
+  }
+
+  if (status) {
+    metrics->prefetch_status_ = *status;
+  } else {
+    metrics->prefetch_status_ = PrefetchStatus::kNavigatedToLinkNotOnSRP;
+  }
+  metrics->clicked_link_srp_position_ = prediction_position;
+
+  return metrics;
+}
+
 void IsolatedPrerenderTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -450,46 +499,8 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
     // If the previous page load was a Google SRP, the AfterSRPMetrics class
     // needs to be created now from the SRP's |page_| and then set on the new
     // one when we set it at the end of this method.
-    new_page->after_srp_metrics_ = std::make_unique<AfterSRPMetrics>();
-    new_page->after_srp_metrics_->url_ = url;
-    new_page->after_srp_metrics_->prefetch_eligible_count_ =
-        page_->srp_metrics_->prefetch_eligible_count_;
-
-    new_page->after_srp_metrics_->probe_latency_ = page_->probe_latency_;
-
-    // Check every url in the redirect chain for a status, starting at the end
-    // and working backwards. Note: When a redirect chain is eligible all the
-    // way to the end, the status is already propagated. But if a redirect was
-    // not eligible then this will find its last known status.
-    DCHECK(!navigation_handle->GetRedirectChain().empty());
-    base::Optional<PrefetchStatus> status;
-    base::Optional<size_t> prediction_position;
-    for (auto back_iter = navigation_handle->GetRedirectChain().rbegin();
-         back_iter != navigation_handle->GetRedirectChain().rend();
-         ++back_iter) {
-      GURL chain_url = *back_iter;
-      auto status_iter = page_->prefetch_status_by_url_.find(chain_url);
-      if (!status && status_iter != page_->prefetch_status_by_url_.end()) {
-        status = MaybeUpdatePrefetchStatusWithNSPContext(chain_url,
-                                                         status_iter->second);
-      }
-
-      // Same check for the original prediction ordering.
-      auto position_iter = page_->original_prediction_ordering_.find(chain_url);
-      if (!prediction_position &&
-          position_iter != page_->original_prediction_ordering_.end()) {
-        prediction_position = position_iter->second;
-      }
-    }
-
-    if (status) {
-      new_page->after_srp_metrics_->prefetch_status_ = *status;
-    } else {
-      new_page->after_srp_metrics_->prefetch_status_ =
-          PrefetchStatus::kNavigatedToLinkNotOnSRP;
-    }
-    new_page->after_srp_metrics_->clicked_link_srp_position_ =
-        prediction_position;
+    new_page->after_srp_metrics_ =
+        ComputeAfterSRPMetricsBeforeCommit(navigation_handle);
 
     // See if the page being navigated to was prerendered. If so, copy over its
     // subresource manager and networking pipes.

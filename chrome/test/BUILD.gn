@@ -1418,6 +1418,7 @@ if (!is_android) {
       "../browser/ui/webui/webui_load_timer_browsertest.cc",
       "../browser/ui/webui/webui_webview_browsertest.cc",
       "../browser/ui/zoom/zoom_controller_browsertest.cc",
+      "../browser/ukm_worker_browsertest.cc",
       "../browser/unload_browsertest.cc",
       "../browser/usb/usb_browsertest.cc",
       "../browser/wake_lock/wake_lock_browsertest.cc",
@@ -4518,7 +4519,8 @@ test("unit_tests") {
   }
 
   if (enable_native_notifications) {
-    if (is_desktop_linux) {
+    # TODO(crbug.com/1052397): Rename chromeos_is_browser_only to is_lacros.
+    if (is_desktop_linux && !chromeos_is_browser_only) {
       sources += [ "../browser/notifications/notification_platform_bridge_linux_unittest.cc" ]
     }
 

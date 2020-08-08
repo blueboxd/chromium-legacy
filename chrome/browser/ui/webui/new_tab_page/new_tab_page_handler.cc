@@ -917,11 +917,6 @@ void NewTabPageHandler::OpenAutocompleteMatch(
   autocomplete_controller_->UpdateMatchDestinationURLWithQueryFormulationTime(
       elapsed_time_since_first_autocomplete_query, &match);
 
-  // Note: this is always false for the realbox.
-  UMA_HISTOGRAM_BOOLEAN(
-      "Omnibox.SuggestionUsed.RichEntity",
-      match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
-
   LOCAL_HISTOGRAM_BOOLEAN("Omnibox.EventCount", true);
 
   UMA_HISTOGRAM_MEDIUM_TIMES("Omnibox.FocusToOpenTimeAnyPopupState3",

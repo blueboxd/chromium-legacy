@@ -60,10 +60,12 @@ void ControlServiceInProcess::Run(base::OnceClosure callback) {
 
 void ControlServiceInProcess::Uninitialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  PrefsCommitPendingWrites(config_->GetPrefService());
 }
 
 ControlServiceInProcess::~ControlServiceInProcess() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  config_->GetPrefService()->SchedulePendingLossyWrites();
 }
 
 }  // namespace updater

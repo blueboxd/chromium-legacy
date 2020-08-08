@@ -55,9 +55,7 @@ class TextVectorImageButton : public views::MdTextButton {
   TextVectorImageButton(ButtonListener* listener,
                         const base::string16& text,
                         const gfx::VectorIcon& icon)
-      : MdTextButton(listener, style::CONTEXT_BUTTON_MD), icon_(icon) {
-    SetText(text);
-  }
+      : MdTextButton(listener, text), icon_(icon) {}
   TextVectorImageButton(const TextVectorImageButton&) = delete;
   TextVectorImageButton& operator=(const TextVectorImageButton&) = delete;
   ~TextVectorImageButton() override = default;

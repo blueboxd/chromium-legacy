@@ -34,7 +34,9 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(
     const base::string16& hint,
     const base::string16& hint_short,
     const gfx::VectorIcon& icon)
-    : MdTextButton(result_view, views::style::CONTEXT_BUTTON_MD),
+    : MdTextButton(result_view,
+                   base::string16(),
+                   views::style::CONTEXT_BUTTON_MD),
       popup_contents_view_(popup_contents_view),
       result_view_(result_view),
       hint_(hint),

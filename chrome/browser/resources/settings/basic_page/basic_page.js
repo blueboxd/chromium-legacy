@@ -15,7 +15,7 @@ import '../appearance_page/appearance_page.js';
 import '../privacy_page/privacy_page.js';
 import '../safety_check_page/safety_check_page.js';
 import '../autofill_page/autofill_page.js';
-import '../controls/settings_idle_load.m.js';
+import '../controls/settings_idle_load.js';
 import '../on_startup_page/on_startup_page.js';
 import '../people_page/people_page.js';
 import '../reset_page/reset_profile_banner.js';

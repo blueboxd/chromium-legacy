@@ -25,7 +25,7 @@ namespace {
 
 std::unique_ptr<views::View> CreateManageCardsButton(
     views::ButtonListener* listener) {
-  auto manage_cards_button = views::MdTextButton::Create(
+  auto manage_cards_button = std::make_unique<views::MdTextButton>(
       listener, l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_CARDS));
   manage_cards_button->SetID(autofill::DialogViewId::MANAGE_CARDS_BUTTON);
   return manage_cards_button;

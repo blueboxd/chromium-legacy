@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -353,7 +354,9 @@ IDBRequest* IDBObjectStore::add(ScriptState* script_state,
   IDB_TRACE1("IDBObjectStore::addRequestSetup", "store_name",
              metadata_->name.Utf8());
   return DoPut(script_state, mojom::IDBPutMode::AddOnly, value, key,
-               exception_state);
+               exception_state,
+               /*optional_custom_callback=*/nullptr,
+               /*blob_handles_out=*/nullptr);
 }
 
 IDBRequest* IDBObjectStore::put(ScriptState* script_state,
@@ -364,20 +367,171 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
              exception_state);
 }
 
-HeapVector<Member<IDBRequest>> IDBObjectStore::putAll(
-    ScriptState* script_state,
-    const HeapVector<ScriptValue>& values,
-    ExceptionState& exception_state) {
+namespace {
+
+class PutAllWebCallbacksAccumulationImpl
+    : public base::RefCounted<PutAllWebCallbacksAccumulationImpl> {
+ public:
+  PutAllWebCallbacksAccumulationImpl(
+      int num_custom_callbacks,
+      std::unique_ptr<WebIDBCallbacks> request_callbacks)
+      : request_callbacks_(std::move(request_callbacks)),
+        num_custom_callbacks_(num_custom_callbacks) {}
+
+  void HandleCustomCallbackSuccess() {
+    DCHECK_GT(num_custom_callbacks_, 0);
+    num_custom_callbacks_--;
+    if (num_custom_callbacks_ == 0)
+      CallRequestCallbacks();
+  }
+
+  void HandleCustomCallbackError(mojom::blink::IDBException code,
+                                 const String& message) {
+    DCHECK_GT(num_custom_callbacks_, 0);
+    num_custom_callbacks_--;
+    received_error_ = true;
+    latest_error_code = code;
+    latest_error_message = message;
+    if (num_custom_callbacks_ == 0)
+      CallRequestCallbacks();
+  }
+
+  void CallRequestCallbacks() {
+    if (!received_error_) {
+      request_callbacks_->Success();
+    } else {
+      request_callbacks_->Error(latest_error_code, latest_error_message);
+    }
+  }
+
+ private:
+  friend class base::RefCounted<PutAllWebCallbacksAccumulationImpl>;
+  ~PutAllWebCallbacksAccumulationImpl() = default;
+
+  std::unique_ptr<WebIDBCallbacks> request_callbacks_;
+  int num_custom_callbacks_;
+  bool received_error_ = false;
+  mojom::blink::IDBException latest_error_code;
+  String latest_error_message;
+};
+
+class PutAllWebCallbacksImpl : public WebIDBCallbacks {
+ public:
+  explicit PutAllWebCallbacksImpl(
+      scoped_refptr<PutAllWebCallbacksAccumulationImpl> callback_accumulator)
+      : callback_accumulator_(callback_accumulator) {}
+
+  void Success() override { NOTREACHED(); }
+
+  void Error(mojom::blink::IDBException code, const String& message) override {
+    callback_accumulator_->HandleCustomCallbackError(code, message);
+  }
+
+  void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
+                int64_t transaction_id) override {}
+
+  void SuccessNamesAndVersionsList(
+      Vector<mojom::blink::IDBNameAndVersionPtr> names_and_versions) override {
+    NOTREACHED();
+  }
+
+  void SuccessStringList(const Vector<String>&) override { NOTREACHED(); }
+
+  void SuccessCursor(
+      mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor_info,
+      std::unique_ptr<IDBKey> key,
+      std::unique_ptr<IDBKey> primary_key,
+      base::Optional<std::unique_ptr<IDBValue>> optional_value) override {
+    NOTREACHED();
+  }
+
+  void SuccessCursorPrefetch(
+      Vector<std::unique_ptr<IDBKey>> keys,
+      Vector<std::unique_ptr<IDBKey>> primary_keys,
+      Vector<std::unique_ptr<IDBValue>> values) override {
+    NOTREACHED();
+  }
+
+  void SuccessDatabase(
+      mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_backend,
+      const IDBDatabaseMetadata& metadata) override {
+    NOTREACHED();
+  }
+
+  void SuccessKey(std::unique_ptr<IDBKey> key) override {
+    callback_accumulator_->HandleCustomCallbackSuccess();
+  }
+
+  void SuccessValue(mojom::blink::IDBReturnValuePtr return_value) override {
+    NOTREACHED();
+  }
+
+  void SuccessArray(Vector<mojom::blink::IDBReturnValuePtr> values) override {
+    NOTREACHED();
+  }
+
+  void SuccessInteger(int64_t value) override { NOTREACHED(); }
+
+  void SuccessCursorContinue(
+      std::unique_ptr<IDBKey> key,
+      std::unique_ptr<IDBKey> primary_key,
+      base::Optional<std::unique_ptr<IDBValue>> value) override {
+    NOTREACHED();
+  }
+
+  void Blocked(int64_t old_version) override { NOTREACHED(); }
+
+  void UpgradeNeeded(
+      mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_database,
+      int64_t old_version,
+      mojom::IDBDataLoss data_loss,
+      const String& data_loss_message,
+      const IDBDatabaseMetadata& metadata) override {
+    NOTREACHED();
+  }
+
+  void DetachRequestFromCallback() override { NOTREACHED(); }
+
+  void ReceiveGetAllResults(
+      bool key_only,
+      mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink> receiver)
+      override {
+    NOTREACHED();
+  }
+
+ private:
+  scoped_refptr<PutAllWebCallbacksAccumulationImpl> callback_accumulator_;
+};
+
+}  // namespace
+
+IDBRequest* IDBObjectStore::putAll(ScriptState* script_state,
+                                   const HeapVector<ScriptValue>& values,
+                                   ExceptionState& exception_state) {
   v8::Isolate* isolate = script_state->GetIsolate();
   const ScriptValue& v8_undefined =
       ScriptValue(isolate, v8::Undefined(isolate));
-  HeapVector<Member<IDBRequest>> requests;
+  IDBRequest::AsyncTraceState metrics("IDBObjectStore::putAll");
+  IDBRequest* request = IDBRequest::Create(
+      script_state, this, transaction_.Get(), std::move(metrics));
+  std::unique_ptr<WebIDBCallbacks> request_callbacks =
+      request->CreateWebCallbacks();
+  scoped_refptr<PutAllWebCallbacksAccumulationImpl> callback_accumulator =
+      base::MakeRefCounted<PutAllWebCallbacksAccumulationImpl>(
+          values.size(), std::move(request_callbacks));
   for (const auto& value : values) {
+    std::unique_ptr<WebIDBCallbacks> custom_callback =
+        std::make_unique<PutAllWebCallbacksImpl>(callback_accumulator);
+    Vector<scoped_refptr<BlobDataHandle>> blob_handles_out;
     IDBRequest* result =
-        put(script_state, value, v8_undefined, exception_state);
-    requests.push_back(*result);
+        DoPut(script_state, mojom::IDBPutMode::AddOrUpdate, value, v8_undefined,
+              exception_state, std::move(custom_callback), &blob_handles_out);
+    for (const auto& blob_handle : blob_handles_out) {
+      request->transit_blob_handles().push_back(blob_handle);
+    }
+    DCHECK(result == nullptr);
   }
-  return requests;
+  return request;
 }
 
 IDBRequest* IDBObjectStore::put(ScriptState* script_state,
@@ -387,14 +541,19 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
   IDB_TRACE1("IDBObjectStore::putRequestSetup", "store_name",
              metadata_->name.Utf8());
   return DoPut(script_state, mojom::IDBPutMode::AddOrUpdate, value, key,
-               exception_state);
+               exception_state,
+               /*optional_custom_callback=*/nullptr,
+               /*blob_handles_out=*/nullptr);
 }
 
-IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
-                                  mojom::IDBPutMode put_mode,
-                                  const ScriptValue& value,
-                                  const ScriptValue& key_value,
-                                  ExceptionState& exception_state) {
+IDBRequest* IDBObjectStore::DoPut(
+    ScriptState* script_state,
+    mojom::IDBPutMode put_mode,
+    const ScriptValue& value,
+    const ScriptValue& key_value,
+    ExceptionState& exception_state,
+    std::unique_ptr<WebIDBCallbacks> optional_custom_callback,
+    Vector<scoped_refptr<BlobDataHandle>>* blob_handles_out) {
   std::unique_ptr<IDBKey> key =
       key_value.IsUndefined()
           ? nullptr
@@ -402,30 +561,38 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
                 script_state->GetIsolate(), key_value, exception_state);
   if (exception_state.HadException())
     return nullptr;
+
   return DoPut(script_state, put_mode,
                IDBRequest::Source::FromIDBObjectStore(this), value, key.get(),
-               exception_state);
+               exception_state, std::move(optional_custom_callback),
+               blob_handles_out);
 }
 
-IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
-                                  mojom::IDBPutMode put_mode,
-                                  const IDBRequest::Source& source,
-                                  const ScriptValue& value,
-                                  const IDBKey* key,
-                                  ExceptionState& exception_state) {
+IDBRequest* IDBObjectStore::DoPut(
+    ScriptState* script_state,
+    mojom::IDBPutMode put_mode,
+    const IDBRequest::Source& source,
+    const ScriptValue& value,
+    const IDBKey* key,
+    ExceptionState& exception_state,
+    std::unique_ptr<WebIDBCallbacks> optional_custom_callback,
+    Vector<scoped_refptr<BlobDataHandle>>* blob_handles_out) {
   const char* tracing_name = nullptr;
-  switch (put_mode) {
-    case mojom::IDBPutMode::AddOrUpdate:
-      tracing_name = "IDBObjectStore::put";
-      break;
-    case mojom::IDBPutMode::AddOnly:
-      tracing_name = "IDBObjectStore::add";
-      break;
-    case mojom::IDBPutMode::CursorUpdate:
-      tracing_name = "IDBCursor::update";
-      break;
+  IDBRequest::AsyncTraceState metrics;
+  if (!optional_custom_callback) {
+    switch (put_mode) {
+      case mojom::IDBPutMode::AddOrUpdate:
+        tracing_name = "IDBObjectStore::put";
+        break;
+      case mojom::IDBPutMode::AddOnly:
+        tracing_name = "IDBObjectStore::add";
+        break;
+      case mojom::IDBPutMode::CursorUpdate:
+        tracing_name = "IDBCursor::update";
+        break;
+    }
+    metrics = IDBRequest::AsyncTraceState(tracing_name);
   }
-  IDBRequest::AsyncTraceState metrics(tracing_name);
   if (IsDeleted()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -596,8 +763,11 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
       base::saturated_cast<base::HistogramBase::Sample>(
           value_wrapper.DataLengthBeforeWrapInBytes() / 1024));
 
-  IDBRequest* request = IDBRequest::Create(
-      script_state, source, transaction_.Get(), std::move(metrics));
+  IDBRequest* request = nullptr;
+  if (!optional_custom_callback) {
+    request = IDBRequest::Create(script_state, source, transaction_.Get(),
+                                 std::move(metrics));
+  }
 
   value_wrapper.DoneCloning();
 
@@ -607,11 +777,18 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
       value_wrapper.TakeWireBytes(), value_wrapper.TakeBlobInfo(),
       value_wrapper.TakeNativeFileSystemTransferTokens());
 
-  request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
+  std::unique_ptr<WebIDBCallbacks> callbacks;
+  if (optional_custom_callback) {
+    *blob_handles_out = value_wrapper.TakeBlobDataHandles();
+    callbacks = std::move(optional_custom_callback);
+  } else {
+    request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
+    callbacks = request->CreateWebCallbacks();
+  }
+
   transaction_->transaction_backend()->Put(
       Id(), std::move(idb_value), IDBKey::Clone(key), put_mode,
-      base::WrapUnique(request->CreateWebCallbacks().release()),
-      std::move(index_keys));
+      std::move(callbacks), std::move(index_keys));
 
   return request;
 }

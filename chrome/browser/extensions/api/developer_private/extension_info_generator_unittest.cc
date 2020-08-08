@@ -763,24 +763,6 @@ TEST_F(ExtensionInfoGeneratorUnitTest,
   }
 }
 
-// Test that file:// access checkbox does not show up when the user can't
-// modify an extension's settings. https://crbug.com/173640.
-TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoLockedAllUrls) {
-  // Force installed extensions aren't user modifyable.
-  scoped_refptr<const Extension> locked_extension =
-      CreateExtension("locked", ListBuilder().Append("file://*/*").Build(),
-                      Manifest::EXTERNAL_POLICY_DOWNLOAD);
-
-  std::unique_ptr<developer::ExtensionInfo> info =
-      GenerateExtensionInfo(locked_extension->id());
-
-  // Extension wants file:// access but the checkbox will not appear
-  // in chrome://extensions.
-  EXPECT_TRUE(locked_extension->wants_file_access());
-  EXPECT_FALSE(info->file_access.is_enabled);
-  EXPECT_FALSE(info->file_access.is_active);
-}
-
 // Tests that file:// access checkbox shows up for extensions with activeTab
 // permission. See crbug.com/850643.
 TEST_F(ExtensionInfoGeneratorUnitTest, ActiveTabFileUrls) {

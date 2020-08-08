@@ -104,8 +104,7 @@ class CustomizedLabelButton : public views::MdTextButton {
   CustomizedLabelButton(views::ButtonListener* listener,
                         const base::string16& text,
                         const SkColor color)
-      : MdTextButton(listener, views::style::CONTEXT_BUTTON_MD) {
-    SetText(text);
+      : MdTextButton(listener, text) {
     SetCustomPadding(kButtonInsets);
     SetEnabledTextColors(color);
     label()->SetLineHeight(kLineHeightDip);

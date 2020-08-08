@@ -133,11 +133,11 @@ FrameSequenceMetrics::ThreadType FrameSequenceMetrics::GetEffectiveThread()
   switch (type_) {
     case FrameSequenceTrackerType::kCompositorAnimation:
     case FrameSequenceTrackerType::kPinchZoom:
+    case FrameSequenceTrackerType::kVideo:
       return ThreadType::kCompositor;
 
     case FrameSequenceTrackerType::kMainThreadAnimation:
     case FrameSequenceTrackerType::kRAF:
-    case FrameSequenceTrackerType::kVideo:
       return ThreadType::kMain;
 
     case FrameSequenceTrackerType::kTouchScroll:
@@ -318,14 +318,16 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
       thread_type == ThreadType::kMain)
     return base::nullopt;
 
-  STATIC_HISTOGRAM_POINTER_GROUP(
-      GetFrameSequenceLengthHistogramName(sequence_type),
-      static_cast<int>(sequence_type),
-      static_cast<int>(FrameSequenceTrackerType::kMaxType),
-      Add(data.frames_expected),
-      base::Histogram::FactoryGet(
-          GetFrameSequenceLengthHistogramName(sequence_type), 1, 1000, 50,
-          base::HistogramBase::kUmaTargetedHistogramFlag));
+  if (metrics->GetEffectiveThread() == thread_type) {
+    STATIC_HISTOGRAM_POINTER_GROUP(
+        GetFrameSequenceLengthHistogramName(sequence_type),
+        static_cast<int>(sequence_type),
+        static_cast<int>(FrameSequenceTrackerType::kMaxType),
+        Add(data.frames_expected),
+        base::Histogram::FactoryGet(
+            GetFrameSequenceLengthHistogramName(sequence_type), 1, 1000, 50,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
+  }
 
   if (data.frames_expected < kMinFramesForThroughputMetric)
     return base::nullopt;

@@ -1030,6 +1030,10 @@ std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
   // change when we change the names/emails/phones.
   AddAutofillProfileDetailsFromStatement(s, profile.get());
 
+  // For more-structured profiles, the profile must be finalized to fully
+  // populate the name fields.
+  profile->FinalizeAfterImport();
+
   return profile;
 }
 
@@ -1109,6 +1113,10 @@ bool AutofillTable::GetServerProfiles(
     profile->SetInfo(NAME_FULL, recipient_name, profile->language_code());
     profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, phone_number,
                      profile->language_code());
+
+    // For more-structured profiles, the profile must be finalized to fully
+    // populate the name fields.
+    profile->FinalizeAfterImport();
 
     profiles->push_back(std::move(profile));
   }

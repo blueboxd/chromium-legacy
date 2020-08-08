@@ -369,6 +369,84 @@ XML_WRONG_ORDER = """
 </histogram-configuration>
 """.strip()
 
+PRETTY_XML_WITH_TOKEN = """
+<histogram-configuration>
+
+<!-- Histogram definitions -->
+
+<histograms>
+
+<histogram name="Omnibox.Version.{content}.Time" units="ms"
+    expires_after="2020-12-25">
+  <owner>me@google.com</owner>
+  <summary>
+    The length of time taken by version of {content} provider's synchronous
+    pass.
+  </summary>
+  <token key="content">
+    <variant name=".ExtensionApp" label="ExtensionApp"/>
+    <variant name=".HistoryContents" label="HistoryContents"/>
+    <variant name=".HistoryQuick" label="HistoryQuick"/>
+  </token>
+</histogram>
+
+</histograms>
+
+</histogram-configuration>
+""".strip()
+
+XML_WRONG_TOKEN_CHILDREN_ORDER = """
+<histogram-configuration>
+
+<!-- Histogram definitions -->
+
+<histograms>
+
+<histogram name="Omnibox.Version.{content}.Time" units="ms"
+    expires_after="2020-12-25">
+  <owner>me@google.com</owner>
+  <summary>
+    The length of time taken by version of {content} provider's synchronous
+    pass.
+  </summary>
+  <token key="content">
+    <variant name=".ExtensionApp" label="ExtensionApp"/>
+    <variant name=".HistoryContents" label="HistoryContents"/>
+    <variant name=".HistoryQuick" label="HistoryQuick"/>
+  </token>
+</histogram>
+
+</histograms>
+
+</histogram-configuration>
+""".strip()
+
+XML_WRONG_VARIANT_ORDER = """
+<histogram-configuration>
+
+<!-- Histogram definitions -->
+
+<histograms>
+
+<histogram name="Omnibox.Version.{content}.Time" units="ms"
+    expires_after="2020-12-25">
+  <owner>me@google.com</owner>
+  <summary>
+    The length of time taken by version of {content} provider's synchronous
+    pass.
+  </summary>
+  <token key="content">
+    <variant name=".ExtensionApp" label="ExtensionApp"/>
+    <variant name=".HistoryQuick" label="HistoryQuick"/>
+    <variant name=".HistoryContents" label="HistoryContents"/>
+  </token>
+</histogram>
+
+</histograms>
+
+</histogram-configuration>
+""".strip()
+
 
 class HistogramXmlTest(unittest.TestCase):
   @parameterized.expand([
@@ -431,6 +509,19 @@ class HistogramXmlTest(unittest.TestCase):
           etree_util.ParseXMLString(BAD_XML))
     self.assertIn(bad_string, str(context.exception))
     self.assertIn('does not match regex', str(context.exception))
+
+  @parameterized.expand([
+      # Test prettify already pretty XML to verify the pretty-printed version
+      # is the same.
+      ('AlreadyPrettyXml', PRETTY_XML_WITH_TOKEN, PRETTY_XML_WITH_TOKEN),
+      ('ChildrenOrder', XML_WRONG_TOKEN_CHILDREN_ORDER, PRETTY_XML_WITH_TOKEN),
+      ('VariantOrder', XML_WRONG_VARIANT_ORDER, PRETTY_XML_WITH_TOKEN),
+  ])
+  def testPrettify(self, _, input_xml, expected_xml):
+    self.maxDiff = None
+    result = histogram_configuration_model.PrettifyTree(
+        etree_util.ParseXMLString(input_xml))
+    self.assertMultiLineEqual(result.strip(), expected_xml)
 
 
 if __name__ == '__main__':

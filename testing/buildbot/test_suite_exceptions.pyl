@@ -397,16 +397,6 @@
           '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentItem',
         ],
       },
-      'mac10.10-blink-rel-dummy': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'mac10.11-blink-rel-dummy': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
       'mac10.12-blink-rel-dummy': {
         'swarming': {
           'shards': 20,
@@ -685,6 +675,13 @@
       'mac-archive-dbg',
       'mac-archive-rel',
     ],
+  },
+  'chrome_all_tast_tests': {
+    'modifications': {
+      'chromeos-eve-arc-r-chrome': {
+        'experiment_percentage': 100,  # https://crbug.com/1092973
+      },
+    },
   },
   'chrome_java_test_pagecontroller_tests': {
     'remove_from': [
@@ -1141,6 +1138,13 @@
             },
           ],
         },
+      },
+    },
+  },
+  'cros_browser_sanity_test': {
+    'modifications': {
+      'chromeos-eve-arc-r-chrome': {
+        'experiment_percentage': 100,  # https://crbug.com/1092973
       },
     },
   },
@@ -2188,6 +2192,19 @@
       'Win7 Tests (dbg)(1)': {
         'args': [
           '--browser=debug',
+        ],
+      },
+    },
+  },
+  'pixel_browser_tests': {
+    'modifications': {
+      'win-pixel-tester-rel': {
+        'non_precommit_args': [
+          # Do not allow retry or it will break the bulk approval process.
+          # When retry with fail-pass pattern, the passing test will overwrite the previously
+          # seen flaky version on the trace. We can triage the image using the printed link,
+          # but it will not show on the Skia Gold search page.
+          '--test-launcher-retry-limit=0',
         ],
       },
     },

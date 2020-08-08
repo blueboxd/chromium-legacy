@@ -56,27 +56,6 @@ gfx::Rect GetClipboardHistoryMenuBoundsInScreen() {
   return GetClipboardHistoryController()->GetMenuBoundsInScreenForTest();
 }
 
-class ClipboardTestHelper {
- public:
-  ClipboardTestHelper() = default;
-  ~ClipboardTestHelper() = default;
-
-  void Init() {
-    event_generator_ = std::make_unique<ui::test::EventGenerator>(
-        ash::Shell::GetPrimaryRootWindow());
-  }
-
-  ui::test::EventGenerator* event_generator() { return event_generator_.get(); }
-
-  void PressAndRelease(ui::KeyboardCode key, int modifiers) {
-    event_generator_->PressKey(key, modifiers);
-    event_generator_->ReleaseKey(key, modifiers);
-  }
-
- private:
-  std::unique_ptr<ui::test::EventGenerator> event_generator_;
-};
-
 }  // namespace
 
 // Verify clipboard history's features in the multiprofile environment.
@@ -94,30 +73,39 @@ class ClipboardHistoryWithMultiProfileBrowserTest
   ~ClipboardHistoryWithMultiProfileBrowserTest() override = default;
 
   ui::test::EventGenerator* GetEventGenerator() {
-    return test_helper_->event_generator();
+    return event_generator_.get();
   }
 
  protected:
+  void Press(ui::KeyboardCode key, int modifiers = ui::EF_NONE) {
+    event_generator_->PressKey(key, modifiers);
+  }
+
+  void Release(ui::KeyboardCode key, int modifiers = ui::EF_NONE) {
+    event_generator_->ReleaseKey(key, modifiers);
+  }
+
   void PressAndRelease(ui::KeyboardCode key, int modifiers = ui::EF_NONE) {
-    test_helper_->PressAndRelease(key, modifiers);
+    Press(key, modifiers);
+    Release(key, modifiers);
   }
 
   void ShowContextMenuViaAccelerator() {
     PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
   }
 
+  // chromeos::LoginManagerTest:
   void SetUpOnMainThread() override {
     chromeos::LoginManagerTest::SetUpOnMainThread();
-
-    test_helper_ = std::make_unique<ClipboardTestHelper>();
-    test_helper_->Init();
+    event_generator_ = std::make_unique<ui::test::EventGenerator>(
+        ash::Shell::GetPrimaryRootWindow());
   }
 
   AccountId account_id1_;
   AccountId account_id2_;
   chromeos::LoginManagerMixin login_mixin_{&mixin_host_};
 
-  std::unique_ptr<ClipboardTestHelper> test_helper_;
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
   base::test::ScopedFeatureList feature_list_;
 };
@@ -277,4 +265,59 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
   EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
   EXPECT_EQ("A", base::UTF16ToUTF8(textfield->GetText()));
+}
+
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
+                       ShouldPasteHistoryWhileHoldingDownCommandKey) {
+  LoginUser(account_id1_);
+  CloseAllBrowsers();
+
+  // Create a widget containing a single, focusable textfield.
+  auto widget = CreateTestWidget();
+  auto* textfield =
+      widget->SetContentsView(std::make_unique<views::Textfield>());
+  textfield->SetAccessibleName(base::UTF8ToUTF16("Textfield"));
+  textfield->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+
+  // Show the widget.
+  widget->SetBounds(gfx::Rect(0, 0, 100, 100));
+  widget->Show();
+  EXPECT_TRUE(widget->IsActive());
+
+  // Focus the textfield and confirm initial state.
+  textfield->RequestFocus();
+  EXPECT_TRUE(textfield->HasFocus());
+  EXPECT_TRUE(textfield->GetText().empty());
+
+  // Write some things to the clipboard.
+  SetClipboardText("A");
+  SetClipboardText("B");
+  SetClipboardText("C");
+
+  // Verify we can traverse clipboard history and paste the first history item
+  // while holding down the COMMAND key.
+  Press(ui::KeyboardCode::VKEY_COMMAND);
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN, ui::EF_COMMAND_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  EXPECT_EQ("C", base::UTF16ToUTF8(textfield->GetText()));
+  Release(ui::KeyboardCode::VKEY_COMMAND);
+
+  textfield->SetText(base::string16());
+  EXPECT_TRUE(textfield->GetText().empty());
+
+  // Verify we can traverse clipboard history and paste the last history item
+  // while holding down the COMMAND key.
+  Press(ui::KeyboardCode::VKEY_COMMAND);
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN, ui::EF_COMMAND_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN, ui::EF_COMMAND_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN, ui::EF_COMMAND_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  EXPECT_EQ("A", base::UTF16ToUTF8(textfield->GetText()));
+  Release(ui::KeyboardCode::VKEY_COMMAND);
 }

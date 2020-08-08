@@ -27,7 +27,7 @@ DiceSigninButtonView::DiceSigninButtonView(
     : account_(base::nullopt) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   // Regular MD text button when there is no account.
-  auto button = views::MdTextButton::Create(
+  auto button = std::make_unique<views::MdTextButton>(
       button_listener,
       l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON));
   button->SetProminent(prominent);
@@ -69,7 +69,7 @@ DiceSigninButtonView::DiceSigninButtonView(
   // Add a stretching column for the sign in button.
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::TRAILING, 1.0,
                      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  auto signin_button = views::MdTextButton::Create(
+  auto signin_button = std::make_unique<views::MdTextButton>(
       button_listener,
       l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON));
   signin_button->SetProminent(true);

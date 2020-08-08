@@ -417,7 +417,7 @@ void ZoomBubbleView::Init() {
                                gfx::Insets(vector_button_margin));
 
   // Add "Reset" button.
-  auto reset_button = views::MdTextButton::Create(
+  auto reset_button = std::make_unique<views::MdTextButton>(
       this, l10n_util::GetStringUTF16(IDS_ZOOM_SET_DEFAULT));
   reset_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ACCNAME_ZOOM_SET_DEFAULT));

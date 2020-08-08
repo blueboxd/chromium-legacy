@@ -153,6 +153,12 @@ public interface Stream {
          * {@link androidx.recyclerview.widget.SimpleItemAnimator#onAddFinished} event is received.
          */
         default void onAddFinished(){};
+
+        /**
+         * Called by Stream when an
+         * {@link androidx.recyclerview.widget.SimpleItemAnimator#onAddStarting} event is received.
+         */
+        default void onAddStarting(){};
     }
 
     /** Interface users can implement to be told about changes to scrolling in the Stream. */

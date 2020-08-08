@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Uredi fajlove</translation>
 <translation id="1285320974508926690">Nikada ne prevodi ovu web lokaciju</translation>
 <translation id="1285484354230578868">Pohranite podatke na svoj račun na Google Disku</translation>
-<translation id="1285717512281186441">Štampač je nedostupan</translation>
 <translation id="1288037062697528143">Noćno svjetlo će se automatski uključiti po zalasku sunca</translation>
 <translation id="1288300545283011870">Svojstva govora</translation>
 <translation id="1293264513303784526">USB-C uređaj (lijevi priključak)</translation>
@@ -486,7 +485,6 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="1587129667417059148">Ovim će se obrisati svi podaci i kolačići koje je pohranila web lokacija <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">Konzola za &amp;JavaScript</translation>
 <translation id="1587907146729660231">Prstom dodirnite dugme za uključivanje</translation>
-<translation id="1588200577109872591">Pametni unosi</translation>
 <translation id="1588438908519853928">Normalno</translation>
 <translation id="158849752021629804">Potrebna je matična mreža</translation>
 <translation id="1588870296199743671">Otvori link koristeći…</translation>
@@ -1286,7 +1284,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="253557089021624350">Broj aktivnih radnji</translation>
 <translation id="2535799430745250929">Mobilna mreža ne postoji</translation>
 <translation id="2537178555904266562">Greška prilikom sinhroniziranja lozinki</translation>
-<translation id="2537296579376733324">Svi kolačići, isključivo na ovoj web lokaciji</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> može pregledati i uređivati sljedeće fajlove i foldere</translation>
 <translation id="2537927931785713436">Provjeravanje slike virtuelnog računara</translation>
 <translation id="2538361623464451692">Sinhronizacija je onemogućena</translation>
@@ -1427,7 +1424,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2712173769900027643">Zatraži odobrenje</translation>
 <translation id="2713444072780614174">Bijela</translation>
 <translation id="2714393097308983682">Google Play trgovina</translation>
-<translation id="2714997332747470971">Prijedlozi ličnih informacija vam pomažu da brže pišete pomoću prijedloga kao što su vaše ime, adresa ili broj telefona. Samo vi možete vidjeti privatne, personalizirane prijedloge za svoj račun.</translation>
 <translation id="2715751256863167692">Ovom nadogradnjom vaš Chromebook se vraća na zadane postavke i uklanjaju se podaci trenutnog korisnika.</translation>
 <translation id="2716986496990888774">Ovom postavkom upravlja roditelj.</translation>
 <translation id="2718395828230677721">Noćno svjetlo</translation>
@@ -2951,7 +2947,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4608520674724523647">Ilustracija uspješne prijave</translation>
 <translation id="4608703838363792434">U fajlu <ph name="FILE_NAME" /> postoji osjetljiv sadržaj</translation>
 <translation id="4610162781778310380">Dodatak <ph name="PLUGIN_NAME" /> naišao je na pogrešku</translation>
-<translation id="4610178114344604329">Prikaži prijedloge ličnih informacija</translation>
 <translation id="4610637590575890427">Htjeli ste ići na <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Veza za prijenos podataka je dostupna</translation>
 <translation id="4613144866899789710">Otkazivanje instaliranja Linuxa...</translation>
@@ -6017,7 +6012,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8448729345478502352">Smanjite ili povećajte stavke na ekranu</translation>
 <translation id="8449008133205184768">Stil lijepljenja i podudaranja</translation>
 <translation id="8449036207308062757">Upravljaj prostorom za pohranu</translation>
-<translation id="84501823665211008">Prikaži prijedloge emoji sličica</translation>
 <translation id="8452135315243592079">Nedostaje SIM kartica</translation>
 <translation id="8455026683977728932">Omogućavanje ADB ilustracije nije uspjelo</translation>
 <translation id="845702320058262034">Nije se moguće povezati. Provjerite je li Bluetooth na vašem telefonu uključen.</translation>
@@ -6303,7 +6297,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8798441408945964110">Naziv pružaoca usluge</translation>
 <translation id="8800004011501252845">Prikaz odredišta za</translation>
 <translation id="8800034312320686233">Web lokacija ne funkcionira?</translation>
-<translation id="880069872639153240">Primajte prijedloge za emoji sličice na osnovu teksta koji unosite</translation>
 <translation id="8803953437405899238">Otvori novu karticu jednim klikom</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Premjesti karticu u drugi prozor}one{Premjesti kartice u drugi prozor}few{Premjesti kartice u drugi prozor}other{Premjesti kartice u drugi prozor}}</translation>
 <translation id="8805140816472474147">Potvrdite postavke za sinhronizaciju da biste je pokrenuli.</translation>

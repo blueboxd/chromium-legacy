@@ -47,6 +47,10 @@ class NewTabButton : public views::ImageButton,
   void RemoveLayerBeneathView(ui::Layer* old_layer) override;
 
  protected:
+  virtual void PaintIcon(gfx::Canvas* canvas);
+
+  SkColor GetForegroundColor() const;
+
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
@@ -70,9 +74,6 @@ class NewTabButton : public views::ImageButton,
 
   // Paints the fill region of the button into |canvas|.
   void PaintFill(gfx::Canvas* canvas) const;
-
-  // Paints a properly sized plus (+) icon into the center of the button.
-  void PaintPlusIcon(gfx::Canvas* canvas) const;
 
   SkColor GetButtonFillColor() const;
 

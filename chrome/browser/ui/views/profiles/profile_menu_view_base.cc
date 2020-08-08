@@ -655,7 +655,7 @@ void ProfileMenuViewBase::SetSyncInfo(const SyncInfo& sync_info,
   label->SetHandlesTooltips(false);
 
   // Add the prominent button at the bottom.
-  auto button = views::MdTextButton::Create(this, clickable_text);
+  auto button = std::make_unique<views::MdTextButton>(this, clickable_text);
   button->SetProminent(true);
   RegisterClickAction(sync_info_container_->AddChildView(std::move(button)),
                       std::move(action));

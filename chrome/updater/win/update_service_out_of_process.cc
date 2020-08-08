@@ -13,6 +13,7 @@
 
 #include <windows.h>
 #include <wrl/client.h>
+#include <wrl/implements.h>
 #include <wrl/module.h>
 
 #include <memory>
@@ -20,6 +21,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
@@ -28,27 +30,57 @@
 #include "base/win/scoped_bstr.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
 
+namespace updater {
 namespace {
 
 static constexpr base::TaskTraits kComClientTraits = {
     base::TaskPriority::BEST_EFFORT,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
+// This class implements the IUpdaterObserver interface and exposes it as a COM
+// object. The class has thread-affinity for the STA thread. However, its
+// functions are invoked directly by COM RPC, and they are not sequenced through
+// the thread task runner. This means that sequence checkers can't be used in
+// this class.
+class UpdaterObserver
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IUpdaterObserver> {
+ public:
+  UpdaterObserver(Microsoft::WRL::ComPtr<IUpdater> updater,
+                  UpdateService::Callback callback);
+  UpdaterObserver(const UpdaterObserver&) = delete;
+  UpdaterObserver& operator=(const UpdaterObserver&) = delete;
+
+  // Overrides for IUpdaterObserver.
+  IFACEMETHODIMP OnComplete(ICompleteStatus* status) override;
+
+ private:
+  ~UpdaterObserver() override;
+
+  // Bound to the STA thread.
+  scoped_refptr<base::SequencedTaskRunner> com_task_runner_;
+
+  // Keeps a reference of the updater object alive, while this object is
+  // owned by the COM RPC runtime.
+  Microsoft::WRL::ComPtr<IUpdater> updater_;
+
+  // Called by IUpdaterObserver::OnComplete when the COM RPC call is done.
+  UpdateService::Callback callback_;
+};
+
 }  // namespace
 
-namespace updater {
-
-UpdaterObserverImpl::UpdaterObserverImpl(
-    Microsoft::WRL::ComPtr<IUpdater> updater,
-    UpdateService::Callback callback)
+UpdaterObserver::UpdaterObserver(Microsoft::WRL::ComPtr<IUpdater> updater,
+                                 UpdateService::Callback callback)
     : com_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       updater_(updater),
       callback_(std::move(callback)) {}
 
-UpdaterObserverImpl::~UpdaterObserverImpl() = default;
+UpdaterObserver::~UpdaterObserver() = default;
 
 // Called on the STA thread by the COM RPC runtime.
-HRESULT UpdaterObserverImpl::OnComplete(ICompleteStatus* status) {
+HRESULT UpdaterObserver::OnComplete(ICompleteStatus* status) {
   DCHECK(status);
 
   LONG code = 0;
@@ -56,7 +88,7 @@ HRESULT UpdaterObserverImpl::OnComplete(ICompleteStatus* status) {
   CHECK(SUCCEEDED(status->get_statusCode(&code)));
   CHECK(SUCCEEDED(status->get_statusMessage(message.Receive())));
 
-  VLOG(2) << "UpdaterObserverImpl::OnComplete(" << code << ", " << message.Get()
+  VLOG(2) << "UpdaterObserver::OnComplete(" << code << ", " << message.Get()
           << ")";
 
   com_task_runner_->PostTask(
@@ -66,10 +98,12 @@ HRESULT UpdaterObserverImpl::OnComplete(ICompleteStatus* status) {
   return S_OK;
 }
 
-UpdateServiceOutOfProcess::UpdateServiceOutOfProcess() {
+UpdateServiceOutOfProcess::UpdateServiceOutOfProcess()
+    : com_task_runner_(
+          base::ThreadPool::CreateCOMSTATaskRunner(kComClientTraits)) {
   Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create(
       &UpdateServiceOutOfProcess::ModuleStop);
-  com_task_runner_ = base::ThreadPool::CreateCOMSTATaskRunner(kComClientTraits);
+  ;
 }
 
 UpdateServiceOutOfProcess::~UpdateServiceOutOfProcess() = default;
@@ -145,7 +179,7 @@ void UpdateServiceOutOfProcess::UpdateAllOnSTA(StateChangeCallback state_update,
   // the execution flow returns back into the App object once the completion
   // callback is posted.
   auto observer =
-      Microsoft::WRL::Make<UpdaterObserverImpl>(updater, std::move(callback));
+      Microsoft::WRL::Make<UpdaterObserver>(updater, std::move(callback));
   hr = updater->UpdateAll(observer.Get());
   if (FAILED(hr)) {
     VLOG(2) << "Failed to call IUpdater::UpdateAll" << std::hex << hr;

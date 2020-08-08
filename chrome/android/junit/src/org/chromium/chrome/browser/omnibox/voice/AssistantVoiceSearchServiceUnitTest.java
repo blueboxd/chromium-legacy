@@ -197,4 +197,12 @@ public class AssistantVoiceSearchServiceUnitTest {
 
         Assert.assertNotEquals(greyMic, colorfulMic);
     }
+
+    @Test
+    @Feature("OmniboxAssistantVoiceSearch")
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH)
+    public void testDeviceEligibleButFeatureDisabled() {
+        Assert.assertTrue(mAssistantVoiceSearchService.canRequestAssistantVoiceSearch());
+        Assert.assertFalse(mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch());
+    }
 }

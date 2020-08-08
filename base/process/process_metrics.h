@@ -26,6 +26,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 
 #if defined(OS_APPLE)
 #include <mach/mach.h>
@@ -380,13 +381,13 @@ struct BASE_EXPORT SystemMemoryInfoKB {
 #endif  // defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_AIX) ||
         // defined(OS_FUCHSIA)
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   int shmem = 0;
   int slab = 0;
   // Gem data will be -1 if not supported.
   int gem_objects = -1;
   long long gem_size = -1;
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 
 #if defined(OS_APPLE)
   int speculative = 0;
@@ -481,7 +482,7 @@ BASE_EXPORT TimeDelta GetUserCpuTimeSinceBoot();
 
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 // Data from files in directory /sys/block/zram0 about ZRAM usage.
 struct BASE_EXPORT SwapInfo {
   SwapInfo()
@@ -518,7 +519,7 @@ BASE_EXPORT bool ParseZramStat(StringPiece stat_data, SwapInfo* swap_info);
 // Fills in the provided |swap_data| structure.
 // Returns true on success or false for a parsing error.
 BASE_EXPORT bool GetSwapInfo(SwapInfo* swap_info);
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 
 struct BASE_EXPORT SystemPerformanceInfo {
   SystemPerformanceInfo();
@@ -579,7 +580,7 @@ class BASE_EXPORT SystemMetrics {
   VmStatInfo vmstat_info_;
   SystemDiskInfo disk_info_;
 #endif
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   SwapInfo swap_info_;
 #endif
 #if defined(OS_WIN)

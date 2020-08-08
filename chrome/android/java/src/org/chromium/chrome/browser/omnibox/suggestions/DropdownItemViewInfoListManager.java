@@ -9,7 +9,6 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -19,7 +18,6 @@ import java.util.List;
 
 /** Manages the list of DropdownItemViewInfo elements. */
 class DropdownItemViewInfoListManager {
-    private static final int OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS = 10;
     private final ModelList mManagedModel;
     private int mLayoutDirection;
     private @OmniboxTheme int mOmniboxTheme;
@@ -106,21 +104,10 @@ class DropdownItemViewInfoListManager {
 
     /** Record histograms for all currently presented suggestions. */
     void recordSuggestionsShown() {
-        int richEntitiesCount = 0;
         for (int index = 0; index < mManagedModel.size(); index++) {
             DropdownItemViewInfo info = (DropdownItemViewInfo) mManagedModel.get(index);
             info.processor.recordItemPresented(info.model);
-
-            if (info.type == OmniboxSuggestionUiType.ENTITY_SUGGESTION) {
-                richEntitiesCount++;
-            }
         }
-
-        // Note: valid range for histograms must start with (at least) 1. This does not prevent us
-        // from reporting 0 as a count though - values lower than 'min' fall in the 'underflow'
-        // bucket, while values larger than 'max' will be reported in 'overflow' bucket.
-        RecordHistogram.recordLinearCountHistogram("Omnibox.RichEntityShown", richEntitiesCount, 1,
-                OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS, OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS + 1);
     }
 
     /**

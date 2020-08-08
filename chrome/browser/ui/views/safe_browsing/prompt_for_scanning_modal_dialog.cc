@@ -54,7 +54,7 @@ PromptForScanningModalDialog::PromptForScanningModalDialog(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_CANCEL_BUTTON));
   SetAcceptCallback(std::move(accept_callback));
-  open_now_button_ = SetExtraView(views::MdTextButton::Create(
+  open_now_button_ = SetExtraView(std::make_unique<views::MdTextButton>(
       this, l10n_util::GetStringUTF16(
                 IDS_DEEP_SCANNING_INFO_DIALOG_OPEN_NOW_BUTTON)));
 

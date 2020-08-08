@@ -98,7 +98,7 @@ class FeedStream::OfflineSuggestionsProvider
 RefreshResponseData FeedStream::WireResponseTranslator::TranslateWireResponse(
     feedwire::Response response,
     StreamModelUpdateRequest::Source source,
-    base::Time current_time) {
+    base::Time current_time) const {
   return ::feed::TranslateWireResponse(std::move(response), source,
                                        current_time);
 }
@@ -570,11 +570,15 @@ void FeedStream::BackgroundRefreshComplete(LoadStreamTask::Result result) {
 }
 
 void FeedStream::ClearAll() {
-  prefs::ClearClientInstanceId(*profile_prefs_);
-  delegate_->ClearAll();
   metrics_reporter_->OnClearAll(clock_->Now() - GetLastFetchTime());
 
   task_queue_.AddTask(std::make_unique<ClearAllTask>(this));
+}
+
+void FeedStream::FinishClearAll() {
+  prefs::ClearClientInstanceId(*profile_prefs_);
+  metadata_.Populate(feedstore::Metadata());
+  delegate_->ClearAll();
 }
 
 void FeedStream::UploadAction(

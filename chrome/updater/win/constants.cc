@@ -25,6 +25,13 @@ const CLSID CLSID_UpdaterServiceClass = {
     0x42D7,
     {0x93, 0xAC, 0x1B, 0xA6, 0xE5, 0xFD, 0x4E, 0x93}};
 
+// {1F87FE2F-D6A9-4711-9D11-8187705F8457}
+const CLSID CLSID_UpdaterControlServiceClass{
+    0x1f87fe2f,
+    0xd6a9,
+    0x4711,
+    {0x9d, 0x11, 0x81, 0x87, 0x70, 0x5f, 0x84, 0x57}};
+
 // {22181302-A8A6-4f84-A541-E5CBFC70CC43}
 const CLSID CLSID_GoogleUpdate3WebUserClass = {
     0x22181302,

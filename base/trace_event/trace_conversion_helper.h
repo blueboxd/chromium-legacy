@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/traced_value.h"
 
 namespace base {
 
@@ -103,6 +104,24 @@ std::string ValueToString(const ValueType& value,
                           std::string fallback_value = "<value>") {
   return internal::ValueToStringHelper(internal::ValueToStringPriority<0>(),
                                        value, std::move(fallback_value));
+}
+
+// ToTracedValue helpers simplify using |AsValueInto| method to capture by
+// eliminating the need to create TracedValue manually. Also supports passing
+// pointers, including null ones.
+template <typename T>
+std::unique_ptr<TracedValue> ToTracedValue(T& value) {
+  std::unique_ptr<TracedValue> result = std::make_unique<TracedValue>();
+  // AsValueInto might not be const-only, so do not use const references.
+  value.AsValueInto(result.get());
+  return result;
+}
+
+template <typename T>
+std::unique_ptr<TracedValue> ToTracedValue(T* value) {
+  if (!value)
+    return TracedValue::Build({{"this", "nullptr"}});
+  return ToTracedValue(*value);
 }
 
 }  // namespace trace_event

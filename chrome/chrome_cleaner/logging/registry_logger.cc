@@ -36,30 +36,6 @@ const wchar_t* kPendingLogFilesSeparatorForLogs = L":";
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms724872(v=vs.85).aspx
 static const size_t kMaxRegistryLength = 0x3FFF;
 
-// Encode the current tool's version number into a uint32_t suitable for
-// e.g. reporting via an UMA histogram.
-// This code is the same as in
-// chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.cc
-// TODO(joenotcharles): Move the shared code to components/chrome_cleaner.
-uint32_t GetVersionNumber() {
-  base::Version version(CHROME_CLEANER_VERSION_UTF8_STRING);
-  DCHECK(!version.components().empty());
-  // The version number for X.Y.Z is X*256^3+Y*256+Z. If there are additional
-  // components, only the first three count, and if there are less than 3, the
-  // missing values are just replaced by zero. So 1 is equivalent 1.0.0.
-  DCHECK_LT(version.components()[0], 0x100U);
-  uint32_t version_number = 0x1000000 * version.components()[0];
-  if (version.components().size() >= 2) {
-    DCHECK_LT(version.components()[1], 0x10000U);
-    version_number += 0x100 * version.components()[1];
-  }
-  if (version.components().size() >= 3) {
-    DCHECK_LT(version.components()[2], 0x100U);
-    version_number += version.components()[2];
-  }
-  return version_number;
-}
-
 void CreateRegKey(base::win::RegKey* reg_key, const std::wstring& path) {
   if (reg_key->Create(HKEY_CURRENT_USER, path.c_str(),
                       KEY_SET_VALUE | KEY_QUERY_VALUE) != ERROR_SUCCESS) {
@@ -104,11 +80,6 @@ RegistryLogger::RegistryLogger(Mode mode, const std::string& suffix)
 }
 
 RegistryLogger::~RegistryLogger() {}
-
-void RegistryLogger::WriteVersion() {
-  if (logging_key_.Valid())
-    logging_key_.WriteValue(kVersionValueName, GetVersionNumber());
-}
 
 void RegistryLogger::WriteExitCode(int exit_code) {
   if (logging_key_.Valid())

@@ -374,6 +374,7 @@ if (enable_feed_in_chrome) {
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library/sharedstream/scroll/ScrollListenerNotifier.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library/sharedstream/scroll/ScrollLogger.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library/sharedstream/scroll/ScrollRestoreHelper.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/shared/FeedFeatures.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/shared/FeedSurfaceDelegate.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/shared/FeedSurfaceProvider.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/shared/ScrollTracker.java",

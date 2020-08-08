@@ -41,7 +41,6 @@ import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivity;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -106,7 +105,6 @@ public class ChromeProvidedSharingOptionsProviderTest {
                         mActivity.getResources().getString(
                                 R.string.send_tab_to_self_share_activity_title),
                         mActivity.getResources().getString(R.string.qr_code_share_icon_label)));
-        assertModelsAreFirstParty(propertyModels);
     }
 
     @Test
@@ -125,7 +123,6 @@ public class ChromeProvidedSharingOptionsProviderTest {
                 ImmutableList.of(mActivity.getResources().getString(R.string.sharing_copy_url),
                         mActivity.getResources().getString(
                                 R.string.send_tab_to_self_share_activity_title)));
-        assertModelsAreFirstParty(propertyModels);
     }
 
     @Test
@@ -145,7 +142,6 @@ public class ChromeProvidedSharingOptionsProviderTest {
                         mActivity.getResources().getString(
                                 R.string.send_tab_to_self_share_activity_title),
                         mActivity.getResources().getString(R.string.print_share_activity_title)));
-        assertModelsAreFirstParty(propertyModels);
     }
 
     @Test
@@ -165,7 +161,6 @@ public class ChromeProvidedSharingOptionsProviderTest {
         Assert.assertEquals("Incorrect number of property models.", 1, propertyModels.size());
         assertModelsAreInTheRightOrder(propertyModels,
                 ImmutableList.of(mActivity.getResources().getString(R.string.sharing_copy_text)));
-        assertModelsAreFirstParty(propertyModels);
     }
 
     @Test
@@ -186,7 +181,6 @@ public class ChromeProvidedSharingOptionsProviderTest {
                         mActivity.getResources().getString(
                                 R.string.send_tab_to_self_share_activity_title),
                         mActivity.getResources().getString(R.string.qr_code_share_icon_label)));
-        assertModelsAreFirstParty(propertyModels);
     }
 
     @Test
@@ -208,7 +202,6 @@ public class ChromeProvidedSharingOptionsProviderTest {
                         mActivity.getResources().getString(
                                 R.string.send_tab_to_self_share_activity_title),
                         mActivity.getResources().getString(R.string.qr_code_share_icon_label)));
-        assertModelsAreFirstParty(propertyModels);
     }
 
     @Test
@@ -222,7 +215,6 @@ public class ChromeProvidedSharingOptionsProviderTest {
                         ImmutableSet.of(ContentType.TEXT));
 
         Assert.assertEquals("Incorrect number of property models.", 0, propertyModels.size());
-        assertModelsAreFirstParty(propertyModels);
     }
 
     @Test
@@ -240,7 +232,6 @@ public class ChromeProvidedSharingOptionsProviderTest {
         assertModelsAreInTheRightOrder(propertyModels,
                 ImmutableList.of(mActivity.getResources().getString(R.string.sharing_copy_text),
                         mActivity.getResources().getString(R.string.sharing_highlights)));
-        assertModelsAreFirstParty(propertyModels);
     }
 
     @Test
@@ -288,13 +279,5 @@ public class ChromeProvidedSharingOptionsProviderTest {
         }
         assertEquals(
                 "Property models in the wrong order.", expectedOrder, actualLabelOrder.build());
-    }
-
-    private void assertModelsAreFirstParty(Collection<PropertyModel> propertyModels) {
-        for (PropertyModel propertyModel : propertyModels) {
-            assertEquals(propertyModel.get(ShareSheetItemViewProperties.LABEL)
-                            + " isn't marked as first party.",
-                    true, propertyModel.get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
-        }
     }
 }

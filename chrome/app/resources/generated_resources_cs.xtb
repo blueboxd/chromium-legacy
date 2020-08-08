@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Upravit soubory</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="1285484354230578868">Ukládat údaje v účtu na Disku Google</translation>
-<translation id="1285717512281186441">Tiskárna není dostupná</translation>
 <translation id="1288037062697528143">Noční režim se zapne automaticky za soumraku</translation>
 <translation id="1288300545283011870">Vlastnosti řeči</translation>
 <translation id="1293264513303784526">Zařízení USB Type-C (levý port)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Tímto vymažete všechna uložená data a soubory cookie webu <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">Konzole JavaScriptu</translation>
 <translation id="1587907146729660231">Položte prst na vypínač</translation>
-<translation id="1588200577109872591">Chytré zadávání</translation>
 <translation id="1588438908519853928">Normální</translation>
 <translation id="158849752021629804">Je potřeba domácí síť</translation>
 <translation id="1588870296199743671">Otevřít odkaz pomocí...</translation>
@@ -1285,7 +1283,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="253557089021624350">Aktivity zabraňující ukončení</translation>
 <translation id="2535799430745250929">Žádná mobilní síť není k dispozici</translation>
 <translation id="2537178555904266562">Při synchronizaci došlo k chybě</translation>
-<translation id="2537296579376733324">Všechny soubory cookie, pouze na tomto webu</translation>
 <translation id="2537395079978992874">Web <ph name="ORIGIN" /> může zobrazovat a upravovat následující soubory a složky</translation>
 <translation id="2537927931785713436">Kontrola obrazu virtuálního počítače</translation>
 <translation id="2538361623464451692">Synchronizace deaktivována</translation>
@@ -1426,7 +1423,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2712173769900027643">Požádat o oprávnění</translation>
 <translation id="2713444072780614174">Bílá</translation>
 <translation id="2714393097308983682">Obchod Google Play</translation>
-<translation id="2714997332747470971">Návrhy osobních údajů pomáhají psát rychleji, protože zobrazují návrhy, jako je jméno, adresa, nebo telefonní číslo. Návrhy personalizované pro váš účet jsou soukromé, takže je vidíte jen vy.</translation>
 <translation id="2715751256863167692">Tento upgrade váš Chromebook resetuje a odstraní z něj uživatelská data.</translation>
 <translation id="2716986496990888774">Toto nastavení spravuje rodič.</translation>
 <translation id="2718395828230677721">Noční režim</translation>
@@ -2949,7 +2945,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4608520674724523647">Ilustrace úspěšné registrace</translation>
 <translation id="4608703838363792434">Obsah souboru <ph name="FILE_NAME" /> je citlivý</translation>
 <translation id="4610162781778310380">Plugin <ph name="PLUGIN_NAME" /> narazil na chybu</translation>
-<translation id="4610178114344604329">Zobrazovat návrhy osobních údajů</translation>
 <translation id="4610637590575890427">Chtěli jste přejít na <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Je k dispozici datové připojení</translation>
 <translation id="4613144866899789710">Rušení instalace Linuxu...</translation>
@@ -6014,7 +6009,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8448729345478502352">Umožňuje zvětšit nebo zmenšit položky na obrazovce</translation>
 <translation id="8449008133205184768">Vložit a použít odpovídající styl</translation>
 <translation id="8449036207308062757">Spravovat úložiště</translation>
-<translation id="84501823665211008">Zobrazovat návrhy emodži</translation>
 <translation id="8452135315243592079">Chybí SIM karta</translation>
 <translation id="8455026683977728932">Ilustraci ADB se nepodařilo aktivovat</translation>
 <translation id="845702320058262034">Nelze se připojit. Zkontrolujte, zda na telefonu máte zapnuté rozhraní Bluetooth.</translation>
@@ -6300,7 +6294,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8798441408945964110">Název poskytovatele</translation>
 <translation id="8800004011501252845">Zobrazují se cíle pro</translation>
 <translation id="8800034312320686233">Web nefunguje?</translation>
-<translation id="880069872639153240">Zobrazovat návrhy emodži podle toho, co píšete</translation>
 <translation id="8803953437405899238">Otevírejte novou kartu jedním kliknutím</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Přesunout kartu do jiného okna}few{Přesunout karty do jiného okna}many{Přesunout karty do jiného okna}other{Přesunout karty do jiného okna}}</translation>
 <translation id="8805140816472474147">Chcete-li zahájit synchronizaci, potvrďte nastavení synchronizace.</translation>

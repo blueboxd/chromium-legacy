@@ -240,7 +240,6 @@
 <translation id="1280965841156951489">編輯檔案</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
 <translation id="1285484354230578868">將資料儲存在 Google 雲端硬碟帳戶中</translation>
-<translation id="1285717512281186441">無法連上印表機</translation>
 <translation id="1288037062697528143">夜燈功能將於日落時自動開啟</translation>
 <translation id="1288300545283011870">語音屬性</translation>
 <translation id="1293264513303784526">USB-C 裝置 (左側連接埠)</translation>
@@ -481,7 +480,6 @@
 <translation id="1587129667417059148">這會清除 <ph name="ORIGIN_NAME" /> 儲存的所有資料和 Cookie</translation>
 <translation id="1587275751631642843">JavaScript 控制台(&amp;J)</translation>
 <translation id="1587907146729660231">用手指輕觸電源按鈕</translation>
-<translation id="1588200577109872591">智慧型輸入</translation>
 <translation id="1588438908519853928">一般</translation>
 <translation id="158849752021629804">需要家用網路</translation>
 <translation id="1588870296199743671">使用其他程式開啟連結...</translation>
@@ -1275,7 +1273,6 @@
 <translation id="253557089021624350">Keepalive 數量</translation>
 <translation id="2535799430745250929">沒有行動數據網路</translation>
 <translation id="2537178555904266562">同步密碼時發生錯誤</translation>
-<translation id="2537296579376733324">所有 Cookies，僅限這個網站</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> 可以查看及編輯下列檔案和資料夾</translation>
 <translation id="2537927931785713436">正在檢查虛擬機器映像檔</translation>
 <translation id="2538361623464451692">同步處理已停用</translation>
@@ -1415,7 +1412,6 @@
 <translation id="2712173769900027643">要求權限</translation>
 <translation id="2713444072780614174">白色</translation>
 <translation id="2714393097308983682">Google Play 商店</translation>
-<translation id="2714997332747470971">個人資訊建議功能可提供關於姓名、地址或電話號碼等建議，方便你直接填入適用的內容。系統會為你的帳戶提供專屬的個人化建議，只有你能看到這些建議內容。</translation>
 <translation id="2715751256863167692">這項升級作業會重設你的 Chromebook 並移除目前的使用者資料。</translation>
 <translation id="2716986496990888774">這項設定是由家長管理。</translation>
 <translation id="2718395828230677721">夜燈</translation>
@@ -2928,7 +2924,6 @@
 <translation id="4608520674724523647">註冊成功插圖</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> 含有敏感內容</translation>
 <translation id="4610162781778310380">「<ph name="PLUGIN_NAME" />」發生錯誤</translation>
-<translation id="4610178114344604329">顯示個人資訊建議</translation>
 <translation id="4610637590575890427">你的意思是想瀏覽 <ph name="SITE" /> 嗎?</translation>
 <translation id="4611114513649582138">可使用數據連線</translation>
 <translation id="4613144866899789710">正在取消安裝 Linux...</translation>
@@ -5974,7 +5969,6 @@
 <translation id="8448729345478502352">縮小或放大畫面上的項目</translation>
 <translation id="8449008133205184768">貼上並符合樣式</translation>
 <translation id="8449036207308062757">管理儲存空間</translation>
-<translation id="84501823665211008">顯示表情符號建議</translation>
 <translation id="8452135315243592079">找不到 SIM 卡</translation>
 <translation id="8455026683977728932">無法啟用 ADB 圖例</translation>
 <translation id="845702320058262034">無法連線。請確認手機的藍牙功能已開啟。</translation>
@@ -6257,7 +6251,6 @@
 <translation id="8798441408945964110">提供者名稱</translation>
 <translation id="8800004011501252845">顯示以下地址的目的地：</translation>
 <translation id="8800034312320686233">網站無法正常運作嗎？</translation>
-<translation id="880069872639153240">根據輸入內容取得表情符號建議</translation>
 <translation id="8803953437405899238">按一下即可開啟新分頁</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{將分頁移到其他視窗}other{將分頁移到其他視窗}}</translation>
 <translation id="8805140816472474147">如要開始同步處理，請確認同步處理設定。</translation>

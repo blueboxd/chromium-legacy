@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Modifiko skedarët</translation>
 <translation id="1285320974508926690">Asnjëherë mos e përkthe këtë sajt</translation>
 <translation id="1285484354230578868">Ruaji të dhënat në llogarinë tënde të "Diskut të Google"</translation>
-<translation id="1285717512281186441">Printeri është i paarritshëm</translation>
 <translation id="1288037062697528143">"Drita e natës" do të aktivizohet automatikisht kur të perëndojë dielli</translation>
 <translation id="1288300545283011870">Karakteristikat e ligjërimit</translation>
 <translation id="1293264513303784526">Pajisja USB-C (porta majtas)</translation>
@@ -483,7 +482,6 @@
 <translation id="1587129667417059148">Kjo do të pastrojë të gjitha të dhënat dhe kukit e ruajtura nga <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">Paneli i &amp;JavaScript</translation>
 <translation id="1587907146729660231">Prek butonin e energjisë me gisht</translation>
-<translation id="1588200577109872591">Hyrjet inteligjente</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Nevojitet rrjeti i shtëpisë</translation>
 <translation id="1588870296199743671">Hape lidhjen me...</translation>
@@ -1283,7 +1281,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="253557089021624350">Numërimi i mbajtjes aktive</translation>
 <translation id="2535799430745250929">Nuk ekziston ndonjë rrjet celular</translation>
 <translation id="2537178555904266562">Gabim gjatë sinkronizimit të fjalëkalimeve</translation>
-<translation id="2537296579376733324">Të gjitha kukit, vetëm në këtë sajt</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> mund të shikojë dhe të modifikojë skedarët dhe dosjet e mëposhtme</translation>
 <translation id="2537927931785713436">Po kontrollon imazhin e pajisjes virtuale</translation>
 <translation id="2538361623464451692">Sinkronizimi u çaktivizua</translation>
@@ -1424,7 +1421,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2712173769900027643">Kërko për leje</translation>
 <translation id="2713444072780614174">E bardhë</translation>
 <translation id="2714393097308983682">Dyqani i "Luaj me Google"</translation>
-<translation id="2714997332747470971">Sugjerimet e informacionit personal të ndihmojnë të shkruash më shpejt me sugjerime të tilla si emri, adresa ose numri yt i telefonit. Vetëm ti i shikon sugjerimet e tua private dhe të personalizuara për llogarinë tënde.</translation>
 <translation id="2715751256863167692">Ky përmirësim e rivendos pajisjen tënde Chromebook dhe heq të dhënat e përdoruesit aktual.</translation>
 <translation id="2716986496990888774">Ky cilësim menaxhohet nga një prind.</translation>
 <translation id="2718395828230677721">Drita e natës</translation>
@@ -2946,7 +2942,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4608520674724523647">Ilustrim i regjistrimit të suksesshëm</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> ka përmbajtje delikate</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> ka hasur në një gabim</translation>
-<translation id="4610178114344604329">Shfaq sugjerimet e informacionit personal</translation>
 <translation id="4610637590575890427">Mos dëshiron të shkosh te <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Lidhja e të dhënave e disponueshme</translation>
 <translation id="4613144866899789710">Po anulohet instalimi i sistemit Linux...</translation>
@@ -6006,7 +6001,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8448729345478502352">Bëji artikujt në ekran më të vegjël ose më të mëdhenj</translation>
 <translation id="8449008133205184768">Stili i ngjitjes dhe përputhjes</translation>
 <translation id="8449036207308062757">Menaxho hapësirën ruajtëse</translation>
-<translation id="84501823665211008">Shfaq sugjerimet për emoji</translation>
 <translation id="8452135315243592079">Karta SIM mungon</translation>
 <translation id="8455026683977728932">Aktivizimi i ilustrimit të ADB-së dështoi</translation>
 <translation id="845702320058262034">Nuk mund të lidhet. Sigurohu që të jetë aktivizuar Bluetooth-i i telefonit tënd.</translation>
@@ -6290,7 +6284,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8798441408945964110">Emri i ofruesit</translation>
 <translation id="8800004011501252845">Po shfaq destinacionet për</translation>
 <translation id="8800034312320686233">Sajti nuk funksionon?</translation>
-<translation id="880069872639153240">Merr sugjerime për emoji bazuar në atë që po shkruan</translation>
 <translation id="8803953437405899238">Hap një skedë të re me një klikim</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Zhvendose skedën në një dritare të re}other{Zhvendosi skedat në një dritare të re}}</translation>
 <translation id="8805140816472474147">Konfirmo cilësimet e sinkronizimit për të nisur sinkronizimin.</translation>

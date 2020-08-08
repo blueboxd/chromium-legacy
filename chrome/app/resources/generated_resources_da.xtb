@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Rediger filer</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="1285484354230578868">Gemme data på din Google Drev-konto</translation>
-<translation id="1285717512281186441">Ingen forbindelse til printer</translation>
 <translation id="1288037062697528143">Nattelys tændes automatisk ved solnedgang</translation>
 <translation id="1288300545283011870">Taleegenskaber</translation>
 <translation id="1293264513303784526">USB-C-enhed (venstre port)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Denne handling rydder alle de data og cookies, der er gemt af <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">&amp;JavaScript-konsol</translation>
 <translation id="1587907146729660231">Sæt fingeren på afbryderknappen.</translation>
-<translation id="1588200577109872591">Smarte forslag</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Hjemmenetværk mangler</translation>
 <translation id="1588870296199743671">Åbn link med...</translation>
@@ -1286,7 +1284,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="253557089021624350">Antal aktiviteter, der bruger udvidelsen</translation>
 <translation id="2535799430745250929">Der er intet mobilnetværk</translation>
 <translation id="2537178555904266562">Adgangskoderne kunne ikke synkroniseres</translation>
-<translation id="2537296579376733324">Alle cookies, kun på dette website</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> kan se og redigere følgende filer og mapper</translation>
 <translation id="2537927931785713436">Tjekker den virtuelle maskines systembillede</translation>
 <translation id="2538361623464451692">Synkronisering er deaktiveret</translation>
@@ -1427,7 +1424,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2712173769900027643">Spørg om tilladelse</translation>
 <translation id="2713444072780614174">Hvid</translation>
 <translation id="2714393097308983682">Google Play Butik</translation>
-<translation id="2714997332747470971">Forslag til personlige oplysninger hjælper dig med at skrive hurtigere med forslag til f.eks. dit navn, din adresse eller dit telefonnummer. Det er kun dig, der kan se dine egne private, tilpassede forslag til din konto.</translation>
 <translation id="2715751256863167692">Denne opgradering nulstiller din Chromebook og fjerner aktuelle brugerdata.</translation>
 <translation id="2716986496990888774">Denne indstilling administreres af en forælder.</translation>
 <translation id="2718395828230677721">Nattelys</translation>
@@ -2949,7 +2945,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4608520674724523647">Illustration af fuldført tilmelding</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> har følsomt indhold</translation>
 <translation id="4610162781778310380">Der opstod en fejl i <ph name="PLUGIN_NAME" /></translation>
-<translation id="4610178114344604329">Vis forslag til personlige oplysninger</translation>
 <translation id="4610637590575890427">Ville du gå til <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Tilgængelig dataforbindelse</translation>
 <translation id="4613144866899789710">Annullerer Linux-installation...</translation>
@@ -6011,7 +6006,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8448729345478502352">Gør elementer på skærmen mindre eller større</translation>
 <translation id="8449008133205184768">Sæt ind og match stil</translation>
 <translation id="8449036207308062757">Administrer lagerplads</translation>
-<translation id="84501823665211008">Vis forslag til emojis</translation>
 <translation id="8452135315243592079">SIM-kort mangler</translation>
 <translation id="8455026683977728932">Illustration, der viser, at ADB kunne ikke aktiveres</translation>
 <translation id="845702320058262034">Der kan ikke oprettes forbindelse. Sørg for, at Bluetooth er aktiveret på din telefon.</translation>
@@ -6296,7 +6290,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8798441408945964110">Navn på udbyder</translation>
 <translation id="8800004011501252845">Viser destinationer for</translation>
 <translation id="8800034312320686233">Fungerer websitet ikke?</translation>
-<translation id="880069872639153240">Få forslag til emojis baseret på, hvad du skriver</translation>
 <translation id="8803953437405899238">Åbn en ny fane med et enkelt klik</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Flyt fanen til et andet vindue}one{Flyt fanen til et andet vindue}other{Flyt fanerne til et andet vindue}}</translation>
 <translation id="8805140816472474147">Bekræft synkroniseringsindstillingerne for at starte synkronisering.</translation>

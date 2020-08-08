@@ -60,15 +60,6 @@ namespace {
 using safe_browsing::SwReporterInvocation;
 using safe_browsing::SwReporterInvocationSequence;
 
-// These values are used to send UMA information and are replicated in the
-// histograms.xml file, so the order MUST NOT CHANGE.
-enum SRTCompleted {
-  SRT_COMPLETED_NOT_YET = 0,
-  SRT_COMPLETED_YES = 1,
-  SRT_COMPLETED_LATER = 2,
-  SRT_COMPLETED_MAX,
-};
-
 // CRX hash. The extension id is: gkmgaooipdjhmangpemjhigmamcehddo. The hash was
 // generated in Python with something like this:
 // hashlib.sha256().update(open("<file>.crx").read()[16:16+294]).digest().
@@ -95,39 +86,13 @@ base::OnceClosure& GetRegistrationCBForTesting() {
   return *registration_cb_for_testing;
 }
 
-void SRTHasCompleted(SRTCompleted value) {
-  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.HasCompleted", value,
-                            SRT_COMPLETED_MAX);
-}
-
 void ReportUploadsWithUma(const base::string16& upload_results) {
   base::String16Tokenizer tokenizer(upload_results, STRING16_LITERAL(";"));
-  int failure_count = 0;
-  int success_count = 0;
-  int longest_failure_run = 0;
-  int current_failure_run = 0;
   bool last_result = false;
   while (tokenizer.GetNext()) {
-    if (tokenizer.token_piece() == STRING16_LITERAL("0")) {
-      ++failure_count;
-      ++current_failure_run;
-      last_result = false;
-    } else {
-      ++success_count;
-      current_failure_run = 0;
-      last_result = true;
-    }
-
-    if (current_failure_run > longest_failure_run)
-      longest_failure_run = current_failure_run;
+    last_result = (tokenizer.token_piece() != STRING16_LITERAL("0"));
   }
 
-  UMA_HISTOGRAM_COUNTS_100("SoftwareReporter.UploadFailureCount",
-                           failure_count);
-  UMA_HISTOGRAM_COUNTS_100("SoftwareReporter.UploadSuccessCount",
-                           success_count);
-  UMA_HISTOGRAM_COUNTS_100("SoftwareReporter.UploadLongestFailureRun",
-                           longest_failure_run);
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.LastUploadResult", last_result);
 }
 
@@ -463,13 +428,6 @@ void ReportUMAForLastCleanerRun() {
   // Cleaner is assumed to have run if we have a start time.
   if (cleaner_key.Valid()) {
     if (cleaner_key.HasValue(chrome_cleaner::kStartTimeValueName)) {
-      // Get version number.
-      if (cleaner_key.HasValue(chrome_cleaner::kVersionValueName)) {
-        DWORD version = {};
-        cleaner_key.ReadValueDW(chrome_cleaner::kVersionValueName, &version);
-        base::UmaHistogramSparse("SoftwareReporter.Cleaner.Version", version);
-        cleaner_key.DeleteValue(chrome_cleaner::kVersionValueName);
-      }
       // Get start & end time. If we don't have an end time, we can assume the
       // cleaner has not completed.
       int64_t start_time_value = {};
@@ -480,7 +438,6 @@ void ReportUMAForLastCleanerRun() {
 
       const bool completed =
           cleaner_key.HasValue(chrome_cleaner::kEndTimeValueName);
-      SRTHasCompleted(completed ? SRT_COMPLETED_YES : SRT_COMPLETED_NOT_YET);
       if (completed) {
         int64_t end_time_value = {};
         cleaner_key.ReadInt64(chrome_cleaner::kEndTimeValueName,
@@ -521,7 +478,6 @@ void ReportUMAForLastCleanerRun() {
       }
     } else {
       if (cleaner_key.HasValue(chrome_cleaner::kEndTimeValueName)) {
-        SRTHasCompleted(SRT_COMPLETED_LATER);
         cleaner_key.DeleteValue(chrome_cleaner::kEndTimeValueName);
       }
     }

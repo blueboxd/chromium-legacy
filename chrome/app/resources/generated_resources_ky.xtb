@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Файлдарды түзөтүү</translation>
 <translation id="1285320974508926690">Бул сайт эч качан которулбасын</translation>
 <translation id="1285484354230578868">Дайындарды Google Drive Аккаунтуңузда сактаңыз</translation>
-<translation id="1285717512281186441">Принтер жеткиликсиз</translation>
 <translation id="1288037062697528143">Түнкү режим күн батканда автоматтык түрдө күйөт</translation>
 <translation id="1288300545283011870">Кептин жөндөөлөрү</translation>
 <translation id="1293264513303784526">USB-C түзмөгү (сол жактагы оюкча)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Ушуну менен <ph name="ORIGIN_NAME" /> сактаган бардык маалымат менен cookie-файлдары тазаланат</translation>
 <translation id="1587275751631642843">&amp;JavaScript консолу</translation>
 <translation id="1587907146729660231">Күйгүзүү/өчүрүү баскычын басыңыз</translation>
-<translation id="1588200577109872591">Акылдуу киргизүүлөр</translation>
 <translation id="1588438908519853928">Кадыресе</translation>
 <translation id="158849752021629804">Үй тармагы талап кылынат</translation>
 <translation id="1588870296199743671">Шилтемени төмөнкү менен ачуу…</translation>
@@ -1286,7 +1284,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="253557089021624350">Байланышты текшерүүчү билдирүүлөрдүн саны</translation>
 <translation id="2535799430745250929">Мобилдик тармак жок</translation>
 <translation id="2537178555904266562">Сырсөздөрдү шайкештирүүдө ката кетти</translation>
-<translation id="2537296579376733324">Бардык cookie файлдары, бул сайтта гана</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> төмөнкү файлдар менен папкаларды көрүп, түзөтө алат</translation>
 <translation id="2537927931785713436">Виртуалдык машинанын сүрөтү текшерилүүдө</translation>
 <translation id="2538361623464451692">Шайкештирүү өчүрүлгөн</translation>
@@ -1427,7 +1424,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2712173769900027643">Уруксат суроо</translation>
 <translation id="2713444072780614174">Ак</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
-<translation id="2714997332747470971">Жеке маалыматты сунуштоо аты-жөнүңүздү, дарегиңизди же телефонуңуздун номерин сунуштап, тез терүүгө жардам берет. Аккаунтуңуздагы купуя жана жекелештирилген сунуштар сизге гана көрүнөт.</translation>
 <translation id="2715751256863167692">Chromebook'уңузду кийинки версияга көтөрүү менен ал баштапкы абалга келтирилип, учурдагы колдонуучунун дайындары тазаланат.</translation>
 <translation id="2716986496990888774">Бул жөндөөнү ата-эне башкарууда.</translation>
 <translation id="2718395828230677721">Түнкү режим</translation>
@@ -2949,7 +2945,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4608520674724523647">Ийгиликтүү катталууну билдирген мисал</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> файлында купуя мазмун бар</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> плагининде ката кетти</translation>
-<translation id="4610178114344604329">Жеке маалымат сунуштарын көрсөтүү</translation>
 <translation id="4610637590575890427">Бул жерге <ph name="SITE" /> өтөйүн дедиңиз беле?</translation>
 <translation id="4611114513649582138">Мобилдик Интернет жеткиликтүү</translation>
 <translation id="4613144866899789710">Linux'ту орнотуу жокко чыгарылууда…</translation>
@@ -6010,7 +6005,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8448729345478502352">Экраныңыздагы элементтерди кичирейтип же чоңойтот</translation>
 <translation id="8449008133205184768">Чаптоо жана далдаштыруу стили</translation>
 <translation id="8449036207308062757">Сактагычты башкаруу</translation>
-<translation id="84501823665211008">Сунушталган быйтыкчаларды көрүү</translation>
 <translation id="8452135315243592079">SIM-картасы жок</translation>
 <translation id="8455026683977728932">ADB иллюстрациясы иштетилген жок</translation>
 <translation id="845702320058262034">Телефонго туташуу мүмкүн болбой жатат. Bluetooth күйүп турабы?</translation>
@@ -6294,7 +6288,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8798441408945964110">Жабдуучунун аталышы</translation>
 <translation id="8800004011501252845">Төмөнкүнүн көздөгөн жерлерин көрсөтүүдө</translation>
 <translation id="8800034312320686233">Сайт иштебей жатабы?</translation>
-<translation id="880069872639153240">Терип жаткан тексттин негизинде сунушталган быйтыкчаларды алуу</translation>
 <translation id="8803953437405899238">Жаңы өтмөктү бир чыкылдатуу менен ачыңыз</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Өтмөктү башка терезеге жылдыруу}other{Өтмөктөрдү башка терезеге жылдыруу}}</translation>
 <translation id="8805140816472474147">Шайкештештирип баштоо үчүн шайкештештирүү жөндөөлөрүн ырастаңыз.</translation>

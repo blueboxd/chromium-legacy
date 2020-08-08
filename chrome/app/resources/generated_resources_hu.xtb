@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Fájlok szerkesztése</translation>
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="1285484354230578868">Adattárolás a Google Drive-fiókban</translation>
-<translation id="1285717512281186441">Nem lehet hozzáférni a nyomtatóhoz</translation>
 <translation id="1288037062697528143">Az Éjszakai fény automatikusan bekapcsol naplementekor.</translation>
 <translation id="1288300545283011870">Beszéd tulajdonságai</translation>
 <translation id="1293264513303784526">C típusú USB-vel kompatibilis eszköz (bal oldali port)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Ezzel törli a(z) <ph name="ORIGIN_NAME" /> által tárolt összes adatot és cookie-t</translation>
 <translation id="1587275751631642843">&amp;JavaScript-konzol</translation>
 <translation id="1587907146729660231">Érintse meg ujjával a bekapcsológombot</translation>
-<translation id="1588200577109872591">Intelligens bevitel</translation>
 <translation id="1588438908519853928">Normál</translation>
 <translation id="158849752021629804">Otthoni hálózat szükséges</translation>
 <translation id="1588870296199743671">Link megnyitása...</translation>
@@ -1286,7 +1284,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="253557089021624350">Életben tartási számláló</translation>
 <translation id="2535799430745250929">Nincs mobilhálózat</translation>
 <translation id="2537178555904266562">Hiba történt a jelszavak szinkronizálásakor</translation>
-<translation id="2537296579376733324">Az összes cookie, csak ezen a webhelyen</translation>
 <translation id="2537395079978992874">A(z) <ph name="ORIGIN" /> megtekintheti és szerkesztheti a következő fájlokat és mappákat:</translation>
 <translation id="2537927931785713436">Virtuális gép rendszerképének ellenőrzése</translation>
 <translation id="2538361623464451692">Szinkronizálás letiltva</translation>
@@ -1427,7 +1424,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2712173769900027643">Engedély kérése</translation>
 <translation id="2713444072780614174">Fehér</translation>
 <translation id="2714393097308983682">Google Play Áruház</translation>
-<translation id="2714997332747470971">A személyes adatokra vonatkozó javaslatok segítségével gyorsabban gépelhet, mivel a rendszer közben javaslatot tesz például a nevére, címére vagy telefonszámára. Csak Ön látja a fiókjához tartozó privát és személyre szabott javaslatokat.</translation>
 <translation id="2715751256863167692">Ez a frissítés visszaállítja a Chromebookot, és eltávolítja a jelenlegi felhasználói adatokat.</translation>
 <translation id="2716986496990888774">Ezt a beállítást szülő kezeli.</translation>
 <translation id="2718395828230677721">Éjszakai fény</translation>
@@ -2950,7 +2946,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4608520674724523647">Sikeres regisztráció illusztrációja</translation>
 <translation id="4608703838363792434">A(z) <ph name="FILE_NAME" /> fájlban bizalmas tartalom található.</translation>
 <translation id="4610162781778310380">A(z) <ph name="PLUGIN_NAME" /> hibába ütközött</translation>
-<translation id="4610178114344604329">Személyes adatokra vonatkozó javaslatok megjelenítése</translation>
 <translation id="4610637590575890427">Valójában ide szeretett volna menni: <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Rendelkezésre áll adatkapcsolat</translation>
 <translation id="4613144866899789710">Linux-telepítés megszakítása…</translation>
@@ -6018,7 +6013,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8448729345478502352">Nagyíthatja és kicsinyítheti a képernyőn megjelenő elemeket</translation>
 <translation id="8449008133205184768">Beillesztés és stílus egyeztetése</translation>
 <translation id="8449036207308062757">Tárhely kezelése</translation>
-<translation id="84501823665211008">Javasolt emojik megjelenítése</translation>
 <translation id="8452135315243592079">Hiányzó SIM-kártya</translation>
 <translation id="8455026683977728932">Illusztráció: Nem sikerült az ADB engedélyezése</translation>
 <translation id="845702320058262034">Nem sikerült kapcsolódni. A telefon Bluetooth funkciójának bekapcsolt állapotban kell lennie.</translation>
@@ -6304,7 +6298,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8798441408945964110">Szolgáltató neve</translation>
 <translation id="8800004011501252845">Célhelyek megjelenítése a következőhöz:</translation>
 <translation id="8800034312320686233">Nem működik a webhely?</translation>
-<translation id="880069872639153240">Emoji-javaslatok megjelenítése az Ön által beírt szöveg alapján</translation>
 <translation id="8803953437405899238">Nyisson új lapot egy kattintással</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Lap áthelyezése másik ablakba}other{Lapok áthelyezése másik ablakba}}</translation>
 <translation id="8805140816472474147">A szinkronizálás megkezdéséhez meg kell erősítenie a szinkronizálási beállításokat.</translation>

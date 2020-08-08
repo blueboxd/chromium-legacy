@@ -30,15 +30,32 @@
 
 namespace views {
 
-// static
-std::unique_ptr<MdTextButton> MdTextButton::Create(ButtonListener* listener,
-                                                   const base::string16& text,
-                                                   int button_context) {
-  auto button = base::WrapUnique<MdTextButton>(
-      new MdTextButton(listener, button_context));
-  button->SetText(text);
+MdTextButton::MdTextButton(ButtonListener* listener,
+                           const base::string16& text,
+                           int button_context)
+    : LabelButton(listener, text, button_context) {
+  SetInkDropMode(InkDropMode::ON);
+  set_has_ink_drop_action_on_click(true);
+  set_show_ink_drop_when_hot_tracked(true);
+  SetCornerRadius(LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW));
+  SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  SetFocusForPlatform();
 
-  return button;
+  const int minimum_width = LayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH);
+  SetMinSize(gfx::Size(minimum_width, 0));
+  SetInstallFocusRingOnFocus(true);
+  label()->SetAutoColorReadabilityEnabled(false);
+  set_request_focus_on_press(false);
+  set_animate_on_state_change(true);
+
+  // Paint to a layer so that the canvas is snapped to pixel boundaries (useful
+  // for fractional DSF).
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
+  // Call this to calculate the border given text.
+  UpdatePadding();
 }
 
 MdTextButton::~MdTextButton() = default;
@@ -156,29 +173,6 @@ PropertyEffects MdTextButton::UpdateStyleToIndicateDefaultStatus() {
   is_prominent_ = is_prominent_ || GetIsDefault();
   UpdateColors();
   return kPropertyEffectsNone;
-}
-
-MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
-    : LabelButton(listener, base::string16(), button_context) {
-  SetInkDropMode(InkDropMode::ON);
-  set_has_ink_drop_action_on_click(true);
-  set_show_ink_drop_when_hot_tracked(true);
-  SetCornerRadius(LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW));
-  SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  SetFocusForPlatform();
-  const int minimum_width = LayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH);
-  SetMinSize(gfx::Size(minimum_width, 0));
-  SetInstallFocusRingOnFocus(true);
-  label()->SetAutoColorReadabilityEnabled(false);
-  set_request_focus_on_press(false);
-
-  set_animate_on_state_change(true);
-
-  // Paint to a layer so that the canvas is snapped to pixel boundaries (useful
-  // for fractional DSF).
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
 }
 
 void MdTextButton::UpdatePadding() {

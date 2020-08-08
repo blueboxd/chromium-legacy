@@ -33,7 +33,8 @@ namespace updater {
 
 void DeleteComServer(HKEY root) {
   for (const auto& clsid :
-       {__uuidof(UpdaterClass), CLSID_GoogleUpdate3WebUserClass}) {
+       {__uuidof(UpdaterClass), CLSID_UpdaterControlServiceClass,
+        CLSID_GoogleUpdate3WebUserClass}) {
     InstallUtil::DeleteRegistryKey(root, GetComServerClsidRegistryPath(clsid),
                                    WorkItem::kWow64Default);
   }

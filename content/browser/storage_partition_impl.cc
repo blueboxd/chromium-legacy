@@ -1649,7 +1649,8 @@ leveldb_proto::ProtoDatabaseProvider*
 StoragePartitionImpl::GetProtoDatabaseProvider() {
   if (!proto_database_provider_) {
     proto_database_provider_ =
-        std::make_unique<leveldb_proto::ProtoDatabaseProvider>(partition_path_);
+        std::make_unique<leveldb_proto::ProtoDatabaseProvider>(partition_path_,
+                                                               is_in_memory_);
   }
   return proto_database_provider_.get();
 }

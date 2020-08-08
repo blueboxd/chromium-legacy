@@ -17,6 +17,7 @@
 #include "net/base/features.h"
 
 #if defined(OS_ANDROID)
+#include "net/android/network_activation_request.h"
 #include "net/android/network_library.h"
 #endif
 
@@ -37,6 +38,19 @@ constexpr base::FeatureParam<int> kDefaultInactivityThresholdMs{
 constexpr base::TimeDelta kDefaultMinFailureLoggingInterval{
     base::TimeDelta::FromSeconds(45)};
 
+#if defined(OS_ANDROID)
+// NOTE: This corresponds to the NQE.ConnectivityMonitor.NetworkChangeType
+// enum in //tools/metrics/histograms/enums.xml. Do not re-order or change the
+// meaning of any existing enum values.
+enum class NetworkChangeType {
+  kNoEarlyActivation,
+  kEarlyActivationOfUnknownNetwork,
+  kEarlyActivationOfSameNetwork,
+  kEarlyActivationOfDifferentNetwork,
+  kMaxValue = kEarlyActivationOfDifferentNetwork,
+};
+#endif
+
 }  // namespace
 
 ConnectivityMonitor::ConnectivityMonitor()
@@ -48,9 +62,16 @@ ConnectivityMonitor::ConnectivityMonitor(
     base::TimeDelta inactivity_threshold,
     base::TimeDelta min_failure_logging_interval)
     : inactivity_threshold_(inactivity_threshold),
-      min_failure_logging_interval_(min_failure_logging_interval) {}
+      min_failure_logging_interval_(min_failure_logging_interval),
+      current_connection_type_(NetworkChangeNotifier::GetConnectionType()) {
+  if (NetworkChangeNotifier::AreNetworkHandlesSupported())
+    NetworkChangeNotifier::AddNetworkObserver(this);
+}
 
-ConnectivityMonitor::~ConnectivityMonitor() = default;
+ConnectivityMonitor::~ConnectivityMonitor() {
+  if (NetworkChangeNotifier::AreNetworkHandlesSupported())
+    NetworkChangeNotifier::RemoveNetworkObserver(this);
+}
 
 void ConnectivityMonitor::TrackNewRequest(const URLRequest& request) {
   active_requests_.insert(&request);
@@ -77,6 +98,8 @@ void ConnectivityMonitor::NotifyRequestCompleted(const URLRequest& request) {
 
 void ConnectivityMonitor::NotifyConnectionTypeChanged(
     NetworkChangeNotifier::ConnectionType type) {
+  current_connection_type_ = type;
+
   if (time_last_failure_observed_) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "NQE.ConnectivityMonitor.TimeToSwitchNetworks",
@@ -118,8 +141,15 @@ void ConnectivityMonitor::OnActivityDeadlineExceeded() {
   time_last_failure_observed_ = now;
   if (next_deadline_callback_for_testing_)
     std::move(next_deadline_callback_for_testing_).Run();
+
   if (base::FeatureList::IsEnabled(features::kReportPoorConnectivity))
     ReportConnectivityFailure();
+
+  if (base::FeatureList::IsEnabled(
+          features::kPreemptiveMobileNetworkActivation) &&
+      current_connection_type_ == NetworkChangeNotifier::CONNECTION_WIFI) {
+    RequestMobileNetworkActivation();
+  }
 }
 
 void ConnectivityMonitor::ReportConnectivityFailure() {
@@ -135,6 +165,18 @@ void ConnectivityMonitor::ReportConnectivityFailure() {
   DLOG(ERROR) << "The current network appears to be unresponsive.";
 #if defined(OS_ANDROID)
   net::android::ReportBadDefaultNetwork();
+#endif
+}
+
+void ConnectivityMonitor::RequestMobileNetworkActivation() {
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kPreemptiveMobileNetworkActivation));
+
+  // TODO(crbug.com/1111560): Explore implementation on platforms other than
+  // Android.
+#if defined(OS_ANDROID)
+  mobile_network_request_ = std::make_unique<android::NetworkActivationRequest>(
+      android::NetworkActivationRequest::TransportType::kMobile);
 #endif
 }
 
@@ -154,6 +196,44 @@ ConnectivityMonitor::GetTimeSinceLastFailureForTesting() {
     return base::nullopt;
 
   return base::TimeTicks::Now() - *time_last_failure_observed_;
+}
+
+void ConnectivityMonitor::OnNetworkConnected(
+    NetworkChangeNotifier::NetworkHandle network) {}
+
+void ConnectivityMonitor::OnNetworkDisconnected(
+    NetworkChangeNotifier::NetworkHandle network) {}
+
+void ConnectivityMonitor::OnNetworkSoonToDisconnect(
+    NetworkChangeNotifier::NetworkHandle network) {}
+
+void ConnectivityMonitor::OnNetworkMadeDefault(
+    NetworkChangeNotifier::NetworkHandle network) {
+#if defined(OS_ANDROID)
+  NetworkChangeType change_type = NetworkChangeType::kNoEarlyActivation;
+  if (mobile_network_request_) {
+    const base::Optional<NetworkChangeNotifier::NetworkHandle>&
+        activated_network = mobile_network_request_->activated_network();
+    if (!activated_network) {
+      change_type = NetworkChangeType::kEarlyActivationOfUnknownNetwork;
+    } else if (activated_network == network) {
+      change_type = NetworkChangeType::kEarlyActivationOfSameNetwork;
+    } else {
+      change_type = NetworkChangeType::kEarlyActivationOfDifferentNetwork;
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION("NQE.ConnectivityMonitor.NetworkChangeType",
+                            change_type);
+
+  // If we had requested activation of a mobile network from the system, we
+  // cancel the request now: either the network we had activated is the new
+  // default network -- in which case this object no longer needs to exist to
+  // keep the network active -- or a different network was chosen as the new
+  // default and we can't be sure the mobile network is a better choice.
+  // Dropping the request in that case may allow the activated network to go
+  // back to an inactive state, avoiding unnecessary power consumption.
+  mobile_network_request_.reset();
+#endif
 }
 
 }  // namespace net

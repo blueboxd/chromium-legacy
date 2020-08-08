@@ -36,8 +36,8 @@ LogoutButtonTray::LogoutButtonTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   DCHECK(shelf);
   Shell::Get()->session_controller()->AddObserver(this);
 
-  auto button = views::MdTextButton::Create(this, base::string16(),
-                                            CONTEXT_LAUNCHER_BUTTON);
+  auto button = std::make_unique<views::MdTextButton>(this, base::string16(),
+                                                      CONTEXT_LAUNCHER_BUTTON);
   button->SetProminent(true);
   button->SetBgColorOverride(AshColorProvider::Get()->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kControlBackgroundColorAlert,

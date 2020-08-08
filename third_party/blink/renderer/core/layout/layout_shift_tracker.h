@@ -84,6 +84,9 @@ class CORE_EXPORT LayoutShiftTracker final
     explicit ReattachHookScope(const Node&);
     ~ReattachHookScope();
 
+    ReattachHookScope(const ReattachHookScope&) = delete;
+    ReattachHookScope& operator=(const ReattachHookScope&) = delete;
+
     static void NotifyDetach(const Node&);
     static void NotifyAttach(const Node&);
 
@@ -117,7 +120,13 @@ class CORE_EXPORT LayoutShiftTracker final
           new_rect_(new_rect) {
       top_ = this;
     }
-    ~ContainingBlockScope() { top_ = outer_; }
+    ~ContainingBlockScope() {
+      DCHECK_EQ(top_, this);
+      top_ = outer_;
+    }
+
+    ContainingBlockScope(const ContainingBlockScope&) = delete;
+    ContainingBlockScope& operator=(const ContainingBlockScope&) = delete;
 
    private:
     friend class LayoutShiftTracker;

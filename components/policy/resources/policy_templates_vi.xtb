@@ -2255,16 +2255,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn sử dụng chính sách này thì chỉ những máy in có id khớp với các giá trị trong chính sách này mới được cung cấp cho người dùng. Các id này phải tương ứng với các trường "id" hoặc "guid" trong tệp đã chỉ định trong <ph name="BULK_PRINTERS_POLICY" />.
       </translation>
 <translation id="4285674129118156176">Cho phép người dùng không được liên kết sử dụng ARC</translation>
-<translation id="4298509794364745131">Chỉ định danh sách các ứng dụng có thể bật làm ứng dụng ghi chú trên màn hình khóa của <ph name="PRODUCT_OS_NAME" />.
-
-      Nếu bạn bật ứng dụng ghi chú ưa thích trên màn hình khóa, màn hình khóa sẽ chứa phần tử giao diện người dùng để khởi chạy ứng dụng ghi chú ưa thích.
-      Khi đã khởi chạy, ứng dụng sẽ có thể tạo cửa sổ ứng dụng ở đầu màn hình khóa và tạo mục dữ liệu (ghi chú) trong ngữ cảnh màn hình khóa. Ứng dụng sẽ có thể nhập các ghi chú đã tạo vào phiên người dùng chính, khi phiên được mở khóa. Hiện tại, chỉ hỗ trợ các ứng dụng ghi chú của Chrome trên màn hình khóa.
-
-      Nếu bạn đã đặt chính sách, người dùng sẽ chỉ được phép bật ứng dụng trên màn hình khóa khi ID tiện ích của ứng dụng có trong giá trị danh sách chính sách.
-      Do vậy, việc đặt chính sách này cho một danh sách trống sẽ tắt hoàn toàn tính năng viết ghi chú trên màn hình khóa.
-      Lưu ý rằng chính sách chứa ID ứng dụng không nhất thiết có nghĩa là người dùng sẽ có thể bật ứng dụng làm ứng dụng ghi chú trên màn hình khóa - ví dụ: trên Chrome 61, tập hợp các ứng dụng hiện có bị nền tảng hạn chế thêm.
-
-      Nếu không đặt chính sách thì sẽ không có hạn chế nào được chính sách áp dụng cho tập hợp các ứng dụng mà người dùng có thể bật trên màn hình khóa.</translation>
 <translation id="4311195029067684288">Đầy</translation>
 <translation id="4313767483634435271">Địa chỉ MAC chỉ định cho đế sạc của thiết bị</translation>
 <translation id="4322842393287974810">Cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /></translation>

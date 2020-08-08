@@ -531,6 +531,28 @@ void TracedValue::SetValueWithCopiedName(base::StringPiece name,
   writer_->SetValueWithCopiedName(name, value->writer_.get());
 }
 
+namespace {
+
+// TODO(altimin): Add native support for pointers for nested values in
+// DebugAnnotation proto.
+std::string PointerToString(void* value) {
+  return base::StringPrintf(
+      "0x%" PRIx64, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(value)));
+}
+
+}  // namespace
+
+void TracedValue::SetPointer(const char* name, void* value) {
+  DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
+  writer_->SetString(name, PointerToString(value));
+}
+
+void TracedValue::SetPointerWithCopiedName(base::StringPiece name,
+                                           void* value) {
+  DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
+  writer_->SetStringWithCopiedName(name, PointerToString(value));
+}
+
 void TracedValue::BeginDictionary(const char* name) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   DEBUG_PUSH_CONTAINER(kStackTypeDict);
@@ -677,11 +699,7 @@ void TracedValue::DictionaryItem::WriteToValue(TracedValue* value) const {
       break;
     }
     case KeptValueType::kVoidPtrType: {
-      value->SetString(
-          name_,
-          base::StringPrintf("0x%" PRIx64,
-                             static_cast<uint64_t>(reinterpret_cast<uintptr_t>(
-                                 kept_value_.void_ptr_value))));
+      value->SetPointer(name_, kept_value_.void_ptr_value);
       break;
     }
   }

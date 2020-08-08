@@ -2290,51 +2290,6 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
   EXPECT_TRUE(elide_animation->IsAnimating());
 }
 
-// Tests that in the hide-on-interaction field trial, the omnibox is reset to
-// the local bounds on tab change when the new text is not eligible for
-// simplified domain elision.
-TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
-       TabChangeWhenNotEligibleForEliding) {
-  SetUpSimplifiedDomainTest();
-
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(),
-      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                 kSimplifiedDomainDisplayUrl.size())));
-
-  // Simulate a user interaction and advance through the animation to elide the
-  // URL.
-  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
-  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
-      kSimplifiedDomainDisplayUrlSubdomain,
-      kSimplifiedDomainDisplayUrlHostnameAndScheme,
-      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
-
-  // Change the tab and set state such that the current text is not eligible for
-  // simplified domain eliding. The omnibox should take up the full local bounds
-  // and be reset to tail-eliding behavior, just as if the above simplified
-  // domain elision had not happened.
-  omnibox_view()->model()->SetInputInProgress(true);
-  std::unique_ptr<content::WebContents> web_contents =
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
-  omnibox_view()->SaveStateToTab(web_contents.get());
-  omnibox_view()->OnTabChanged(web_contents.get());
-
-  EXPECT_EQ(gfx::ELIDE_TAIL, omnibox_view()->GetRenderText()->elide_behavior());
-  EXPECT_EQ(kSimplifiedDomainDisplayUrl,
-            omnibox_view()->GetRenderText()->GetDisplayText());
-}
-
 // Tests that in the hide-on-interaction field trial, when the path changes
 // while being elided, the animation is stopped.
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
@@ -3019,4 +2974,41 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, AfterBlur) {
       omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
   ASSERT_TRUE(elide_animation);
   EXPECT_TRUE(elide_animation->IsAnimating());
+}
+
+// Tests that registrable domain elision properly handles the case when the
+// registrable domain appears as a subdomain, e.g. test.com.test.com.
+TEST_P(OmniboxViewViewsRevealOnHoverTest, RegistrableDomainRepeated) {
+  // This test only applies when the URL is elided to the registrable domain.
+  if (!ShouldElideToRegistrableDomain())
+    return;
+
+  const base::string16 kRepeatedRegistrableDomainUrl =
+      base::ASCIIToUTF16("https://example.com.example.com/foo");
+  gfx::Range registrable_domain_and_path_range(
+      20 /* "https://www.example.com." */,
+      kRepeatedRegistrableDomainUrl.size());
+
+  location_bar_model()->set_url(GURL(kRepeatedRegistrableDomainUrl));
+  location_bar_model()->set_url_for_display(kRepeatedRegistrableDomainUrl);
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+  // Call OnThemeChanged() to create the animations.
+  omnibox_view()->OnThemeChanged();
+
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), base::ASCIIToUTF16("https://"),
+      base::ASCIIToUTF16("example.com."),
+      base::ASCIIToUTF16("https://example.com.example.com"),
+      base::ASCIIToUTF16("/foo"), ShouldElideToRegistrableDomain()));
+
+  // Check that the domain is elided up to the second instance of "example.com",
+  // not the first.
+  gfx::Rect registrable_domain_and_path;
+  for (const auto& rect : omnibox_view()->GetRenderText()->GetSubstringBounds(
+           registrable_domain_and_path_range)) {
+    registrable_domain_and_path.Union(rect);
+  }
+  EXPECT_EQ(omnibox_view()->GetRenderText()->display_rect().x(),
+            registrable_domain_and_path.x());
 }

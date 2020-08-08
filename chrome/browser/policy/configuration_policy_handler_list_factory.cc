@@ -939,9 +939,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kNativePrintersBulkWhitelist,
     prefs::kRecommendedNativePrintersWhitelist,
     base::Value::Type::LIST },
-  { key::kUserNativePrintersAllowed,
-    prefs::kUserNativePrintersAllowed,
-    base::Value::Type::BOOLEAN },
   { key::kAllowedLanguages,
     prefs::kAllowedLanguages,
     base::Value::Type::LIST },
@@ -1677,6 +1674,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           chrome_schema.GetValidationSchema(),
           SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
           SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(key::kUserNativePrintersAllowed,
+                                            prefs::kUserPrintersAllowed,
+                                            base::Value::Type::BOOLEAN),
+      std::make_unique<SimplePolicyHandler>(key::kUserPrintersAllowed,
+                                            prefs::kUserPrintersAllowed,
+                                            base::Value::Type::BOOLEAN)));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kSAMLOfflineSigninTimeLimit, prefs::kSAMLOfflineSigninTimeLimit, -1,
       INT_MAX, true));

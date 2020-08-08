@@ -250,6 +250,12 @@ NET_EXPORT extern const base::Feature kUseLookalikesForNavigationSuggestions;
 // significantly degraded connectivity. Currently only effective on Android.
 NET_EXPORT extern const base::Feature kReportPoorConnectivity;
 
+// When enabled, the NQE may preemptively request that the OS activate a mobile
+// network when requests on the active Wi-Fi connection are stalled. This can be
+// used to warm the radio for a faster transition if/when the OS chooses to drop
+// the Wi-Fi connection.
+NET_EXPORT extern const base::Feature kPreemptiveMobileNetworkActivation;
+
 }  // namespace features
 }  // namespace net
 

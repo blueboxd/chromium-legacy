@@ -25,18 +25,27 @@ class CORE_EXPORT NGGridLayoutAlgorithm
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
 
-  const NGGridBlockTrackCollection& ColumnTrackCollection() const;
-  const NGGridBlockTrackCollection& RowTrackCollection() const;
+  const NGGridLayoutAlgorithmTrackCollection& ColumnTrackCollection() const;
+  const NGGridLayoutAlgorithmTrackCollection& RowTrackCollection() const;
 
  private:
+  friend class NGGridLayoutAlgorithmTest;
+
+  enum class GridLayoutAlgorithmState {
+    kMeasuringItems,
+    kResolvingInlineSize,
+    kResolvingBlockSize,
+    kCompletedLayout
+  };
+
   struct GridItemData {
     LayoutUnit inline_size;
     MinMaxSizes min_max_sizes;
     NGBoxStrut margins;
   };
 
- private:
-  friend class NGGridLayoutAlgorithmTest;
+  NGGridLayoutAlgorithmTrackCollection& TrackCollection(
+      GridTrackSizingDirection track_direction);
 
   void ConstructAndAppendGridItems();
   void ConstructAndAppendGridItem(const NGBlockNode& node);
@@ -53,24 +62,27 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       const GridPosition& end_position,
       NGGridBlockTrackCollection& track_list);
 
+  // Calculates from the min and max track sizing functions the used track size.
+  void ComputeUsedTrackSizes(GridTrackSizingDirection track_direction);
+
   // Allows a test to set the value for automatic track repetition.
   void SetAutomaticTrackRepetitionsForTesting(wtf_size_t auto_column,
                                               wtf_size_t auto_row);
 
-  enum class GridLayoutAlgorithmState {
-    kMeasuringItems,
-  };
-  GridLayoutAlgorithmState state_;
-
   Vector<GridItemData> items_;
-  NGGridBlockTrackCollection column_track_collection_;
-  NGGridBlockTrackCollection row_track_collection_;
+  GridLayoutAlgorithmState state_;
+  LogicalSize child_percentage_size_;
+
+  NGGridBlockTrackCollection block_column_track_collection_;
+  NGGridBlockTrackCollection block_row_track_collection_;
+
+  NGGridLayoutAlgorithmTrackCollection algorithm_column_track_collection_;
+  NGGridLayoutAlgorithmTrackCollection algorithm_row_track_collection_;
+
   wtf_size_t automatic_column_repetitions_for_testing =
       NGGridBlockTrackCollection::kInvalidRangeIndex;
   wtf_size_t automatic_row_repetitions_for_testing =
       NGGridBlockTrackCollection::kInvalidRangeIndex;
-
-  LogicalSize child_percentage_size_;
 };
 
 }  // namespace blink

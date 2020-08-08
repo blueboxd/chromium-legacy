@@ -232,7 +232,7 @@ suite('InternetDetailPage', function() {
       prefs_.vpn_config_allowed.value = true;
       internetDetailPage.prefs = Object.assign({}, prefs_);
       return flushAsync().then(() => {
-        const disconnectButton = getButton('disconnect');
+        const disconnectButton = getButton('connectDisconnect');
         assertFalse(disconnectButton.hasAttribute('enforced_'));
         assertFalse(!!disconnectButton.$$('cr-policy-pref-indicator'));
       });
@@ -249,7 +249,7 @@ suite('InternetDetailPage', function() {
       prefs_.vpn_config_allowed.value = false;
       internetDetailPage.prefs = Object.assign({}, prefs_);
       return flushAsync().then(() => {
-        const disconnectButton = getButton('disconnect');
+        const disconnectButton = getButton('connectDisconnect');
         assertTrue(disconnectButton.hasAttribute('enforced_'));
         assertTrue(!!disconnectButton.$$('cr-policy-pref-indicator'));
       });
@@ -267,7 +267,7 @@ suite('InternetDetailPage', function() {
 
       internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
       return flushAsync().then(() => {
-        const connectButton = getButton('connect');
+        const connectButton = getButton('connectDisconnect');
         assertFalse(connectButton.hasAttribute('hidden'));
         assertTrue(connectButton.hasAttribute('disabled'));
       });
@@ -296,7 +296,7 @@ suite('InternetDetailPage', function() {
   });
 
   suite('DetailsPageAutoConnect', function() {
-    test.only('Auto Connect toggle updates after GUID change', function() {
+    test('Auto Connect toggle updates after GUID change', function() {
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
       const wifi1 = getManagedProperties(
@@ -325,7 +325,7 @@ suite('InternetDetailPage', function() {
           });
     });
 
-    test.only('Auto Connect updates don\'t trigger a re-save', function() {
+    test('Auto Connect updates don\'t trigger a re-save', function() {
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
       let wifi1 = getManagedProperties(

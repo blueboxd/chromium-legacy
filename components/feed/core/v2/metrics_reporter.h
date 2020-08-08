@@ -24,7 +24,8 @@ enum class FeedEngagementType {
   kFeedEngaged = 0,
   kFeedEngagedSimple = 1,
   kFeedInteracted = 2,
-  kFeedScrolled = 3,
+  kDeprecatedFeedScrolled = 3,
+  kFeedScrolled = 4,
   kMaxValue = FeedEngagementType::kFeedScrolled,
 };
 

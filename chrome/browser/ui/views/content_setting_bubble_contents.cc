@@ -600,7 +600,7 @@ ContentSettingBubbleContents::CreateHelpAndManageView() {
     base::string16 title = bubble_content.manage_text;
     if (title.empty())
       title = l10n_util::GetStringUTF16(IDS_MANAGE);
-    auto manage_button = views::MdTextButton::Create(this, title);
+    auto manage_button = std::make_unique<views::MdTextButton>(this, title);
     manage_button->SetMinSize(gfx::Size(
         layout->GetDistanceMetric(views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH),
         0));

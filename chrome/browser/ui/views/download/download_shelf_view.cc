@@ -71,7 +71,7 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
   // cases, like when installing a theme. See DownloadShelf::AddDownload().
   SetVisible(false);
 
-  auto show_all_view = views::MdTextButton::Create(
+  auto show_all_view = std::make_unique<views::MdTextButton>(
       this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS));
   show_all_view_ = AddChildView(std::move(show_all_view));
 

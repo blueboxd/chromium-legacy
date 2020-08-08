@@ -397,9 +397,9 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
   Printer printer(printer_id);
   printer.set_display_name(printer_name);
 
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kUserNativePrintersAllowed)) {
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kUserPrintersAllowed)) {
     PRINTER_LOG(DEBUG) << "HandleUpdateCupsPrinter() called when "
-                          "kUserNativePrintersAllowed is set to false";
+                          "kUserPrintersAllowed is set to false";
     OnAddedOrEditedPrinterCommon(printer,
                                  PrinterSetupResult::kNativePrintersNotAllowed,
                                  false /* is_automatic */);
@@ -639,9 +639,9 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::ListValue* args,
     return;
   }
 
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kUserNativePrintersAllowed)) {
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kUserPrintersAllowed)) {
     PRINTER_LOG(DEBUG) << "AddOrReconfigurePrinter() called when "
-                          "kUserNativePrintersAllowed is set to false";
+                          "kUserPrintersAllowed is set to false";
     OnAddedOrEditedPrinterCommon(*printer,
                                  PrinterSetupResult::kNativePrintersNotAllowed,
                                  false /* is_automatic */);

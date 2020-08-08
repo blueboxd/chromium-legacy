@@ -345,7 +345,7 @@ void IDBRequest::HandleResponse(int64_t value_or_old_version) {
 }
 
 void IDBRequest::HandleResponse() {
-  DCHECK(transit_blob_handles_.IsEmpty());
+  transit_blob_handles_.clear();
   if (!transaction_ || !transaction_->HasQueuedResults())
     return EnqueueResponse();
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(

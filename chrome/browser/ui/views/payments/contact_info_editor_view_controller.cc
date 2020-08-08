@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_component.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -133,8 +134,10 @@ base::string16 ContactInfoEditorViewController::GetSheetTitle() {
 void ContactInfoEditorViewController::PopulateProfile(
     autofill::AutofillProfile* profile) {
   for (const auto& field : text_fields()) {
-    profile->SetInfo(autofill::AutofillType(field.second.type),
-                     field.first->GetText(), state()->GetApplicationLocale());
+    profile->SetInfoWithVerificationStatus(
+        autofill::AutofillType(field.second.type), field.first->GetText(),
+        state()->GetApplicationLocale(),
+        autofill::structured_address::VerificationStatus::kUserVerified);
   }
   profile->set_origin(autofill::kSettingsOrigin);
 }

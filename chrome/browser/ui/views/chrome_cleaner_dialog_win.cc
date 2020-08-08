@@ -61,7 +61,7 @@ ChromeCleanerDialog::ChromeCleanerDialog(
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_PROMPT_REMOVE_BUTTON_LABEL));
-  details_button_ = SetExtraView(views::MdTextButton::Create(
+  details_button_ = SetExtraView(std::make_unique<views::MdTextButton>(
       this, l10n_util::GetStringUTF16(
                 IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL)));
 

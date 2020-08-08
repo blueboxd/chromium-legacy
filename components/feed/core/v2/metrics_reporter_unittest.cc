@@ -154,7 +154,7 @@ TEST_F(MetricsReporterTest, NewVisitAfterInactivity) {
       {FeedEngagementType::kFeedEngaged, 2},
       {FeedEngagementType::kFeedInteracted, 2},
       {FeedEngagementType::kFeedEngagedSimple, 2},
-      {FeedEngagementType::kFeedScrolled, 1},
+      {FeedEngagementType::kFeedScrolled, 2},
   });
   EXPECT_EQ(want, ReportedEngagementType());
 }

@@ -373,8 +373,9 @@ void SubmenuView::SetSelectedRow(int row) {
 }
 
 base::string16 SubmenuView::GetTextForRow(int row) {
-  return MenuItemView::GetAccessibleNameForMenuItem(GetMenuItemAt(row)->title(),
-                                                    base::string16());
+  return MenuItemView::GetAccessibleNameForMenuItem(
+      GetMenuItemAt(row)->title(), base::string16(),
+      GetMenuItemAt(row)->ShouldShowNewBadge());
 }
 
 bool SubmenuView::IsShowing() const {

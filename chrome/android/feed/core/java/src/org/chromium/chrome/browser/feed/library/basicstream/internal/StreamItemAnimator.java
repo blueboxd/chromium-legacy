@@ -31,9 +31,13 @@ public class StreamItemAnimator extends DefaultItemAnimator {
     @Override
     public void onAddFinished(RecyclerView.ViewHolder item) {
         super.onAddFinished(item);
-        // After first patch of articles are loaded, set recyclerView back to non-transparent.
-        mParent.getBackground().setAlpha(255);
         mContentChangedListener.onAddFinished();
+    }
+
+    @Override
+    public void onAddStarting(RecyclerView.ViewHolder item) {
+        super.onAddStarting(item);
+        mContentChangedListener.onAddStarting();
     }
 
     @Override

@@ -2304,16 +2304,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
       Se esta política for usada, somente as impressoras com códigos que correspondem aos valores da política estarão disponíveis para o usuário. Os códigos precisam corresponder aos campos "id" ou "guid" no arquivo especificado em <ph name="BULK_PRINTERS_POLICY" />.
       </translation>
 <translation id="4285674129118156176">Permitir que usuários sem afiliação utilizem o ARC</translation>
-<translation id="4298509794364745131">Especifica uma lista de apps que podem ser ativados como apps de anotação na tela de bloqueio do <ph name="PRODUCT_OS_NAME" />.
-
-      Se o app de anotação preferencial for permitido na tela de bloqueio, essa tela mostrará o elemento de IU para abrir o app de anotação preferencial.
-      Quando aberto, o app poderá criar uma janela de app na parte superior da tela de bloqueio e criar itens de dados (anotações) no contexto da tela de bloqueio. O app poderá importar anotações criadas para a sessão do usuário principal quando a sessão estiver desbloqueada. Atualmente, apenas apps de anotação do Chrome funcionam na tela de bloqueio.
-
-      Se a política for definida, o usuário poderá ativar o app na tela de bloqueio apenas se o código da extensão do app estiver contido no valor da lista da política.
-      Como consequência, configurar esta política como uma lista vazia desativará completamente o uso de apps de anotação na tela de bloqueio.
-      Observe que a política que contém um código de app não significa necessariamente que o usuário poderá ativar o app como um app de anotações na tela de bloqueio. Por exemplo, no Chrome 61, o conjunto de apps disponíveis é ainda mais restrito pela plataforma.
-
-      Se a política for deixada sem definição, não haverá restrições impostas por ela no conjunto de apps que o usuário pode ativar na tela de bloqueio.</translation>
 <translation id="4311195029067684288">Completa</translation>
 <translation id="4313767483634435271">Endereço MAC designado da base para o dispositivo</translation>
 <translation id="4322842393287974810">Permitir que o aplicativo de quiosque aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>

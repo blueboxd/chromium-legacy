@@ -99,6 +99,17 @@ public class FeedLoggingBridgeTest {
 
         verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_ENGAGED, 0);
         verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_ENGAGED_SIMPLE, 1);
+        verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_SCROLLED, 1);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Feed"})
+    public void negativeScroll() throws Exception {
+        mFeedLoggingBridge.onScroll(ScrollType.STREAM_SCROLL, -1);
+
+        verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_ENGAGED_SIMPLE, 1);
+        verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_SCROLLED, 1);
     }
 
     @Test
@@ -125,23 +136,29 @@ public class FeedLoggingBridgeTest {
         verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_ENGAGED_SIMPLE, 0);
 
         mFeedLoggingBridge.reportFeedInteraction();
+        mFeedLoggingBridge.onScroll(ScrollType.STREAM_SCROLL, LONG_SCROLL_DISTANCE);
 
         verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_ENGAGED, 1);
         verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_ENGAGED_SIMPLE, 1);
+        verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_SCROLLED, 1);
 
         // Make almost 5 minutes pass then an interaction, it should not be counted as a new visit.
         mFakeClock.advance(LESS_THAN_FIVE_MINUTES_IN_MILLISECONDS);
         mFeedLoggingBridge.reportFeedInteraction();
+        mFeedLoggingBridge.onScroll(ScrollType.STREAM_SCROLL, LONG_SCROLL_DISTANCE);
 
         verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_ENGAGED, 1);
         verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_ENGAGED_SIMPLE, 1);
+        verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_SCROLLED, 1);
 
         // Make more than 5 minutes pass with no interaction, should be counted as a new visit.
         mFakeClock.advance(MORE_THAN_FIVE_MINUTES_IN_MILLISECONDS);
         mFeedLoggingBridge.reportFeedInteraction();
+        mFeedLoggingBridge.onScroll(ScrollType.STREAM_SCROLL, LONG_SCROLL_DISTANCE);
 
         verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_ENGAGED, 2);
         verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_ENGAGED_SIMPLE, 2);
+        verifyHistogram(FeedLoggingBridge.FeedEngagementType.FEED_SCROLLED, 2);
     }
 
     private void verifyHistogram(int sample, int expectedCount) {

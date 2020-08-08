@@ -160,22 +160,6 @@ void RecordReporterSequenceTypeHistogram(
                             static_cast<int>(SwReporterInvocationType::kMax));
 }
 
-void RecordReporterSequenceResultHistogram(
-    SwReporterInvocationType invocation_type,
-    SwReporterInvocationResult result) {
-  if (invocation_type == SwReporterInvocationType::kPeriodicRun) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SoftwareReporter.ReporterSequenceResult_Periodic",
-        static_cast<int>(result),
-        static_cast<int>(SwReporterInvocationResult::kMax));
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SoftwareReporter.ReporterSequenceResult_UserInitiated",
-        static_cast<int>(result),
-        static_cast<int>(SwReporterInvocationResult::kMax));
-  }
-}
-
 void RecordOnDemandUpdateRequiredHistogram(bool value) {
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.OnDemandUpdateRequired", value);
 }
@@ -324,8 +308,6 @@ void ChromeCleanerControllerImpl::OnReporterSequenceDone(
     SwReporterInvocationResult result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(SwReporterInvocationResult::kUnspecified, result);
-
-  RecordReporterSequenceResultHistogram(pending_invocation_type_, result);
 
   // Ignore if any interaction with cleaner runs is ongoing. This can happen
   // in two situations:

@@ -86,6 +86,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kOverscrollHistoryNavigation,
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &features::kPrivacyElevatedAndroid,
+    &features::kPrivacyReorderedAndroid,
     &features::kPrioritizeBootstrapTasks,
     &features::kQuietNotificationPrompts,
     &features::kSafetyCheckAndroid,
@@ -104,6 +105,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAllowNewIncognitoTabIntents,
     &kAllowRemoteContextForNotifications,
     &kAndroidDefaultBrowserPromo,
+    &kAndroidManagedByMenuItem,
     &kAndroidMultipleDisplay,
     &kAndroidNightModeTabReparenting,
     &kAndroidPartnerCustomizationPhenotype,
@@ -283,6 +285,9 @@ const base::Feature kAdjustWebApkInstallationSpace = {
 
 const base::Feature kAndroidDefaultBrowserPromo{
     "AndroidDefaultBrowserPromo", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAndroidManagedByMenuItem{"AndroidManagedByMenuItem",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidMultipleDisplay{"AndroidMultipleDisplay",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

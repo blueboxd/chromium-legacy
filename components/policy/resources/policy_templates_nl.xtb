@@ -2298,16 +2298,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als dit beleid wordt gebruikt, zijn voor de gebruiker alleen de printers beschikbaar met ID's die overeenkomen met de waarden in dit beleid. De ID's moeten overeenkomen met het ID- of GUID- veld in het bestand dat is opgegeven in <ph name="BULK_PRINTERS_POLICY" />.
       </translation>
 <translation id="4285674129118156176">Toestaan dat niet-gelieerde gebruikers ARC gebruiken</translation>
-<translation id="4298509794364745131">Specificeert de lijst met apps die kunnen worden ingeschakeld als notitie-app op het <ph name="PRODUCT_OS_NAME" />-vergrendelscherm.
-
-      Als de gewenste notitie-app is ingeschakeld op het vergrendelscherm, bevat het vergrendelscherm een UI-element om de gewenste notitie-app te starten.
-      Wanneer de app is gestart, kan deze een app-venster bovenop het vergrendelscherm maken en gegevensitems (notities) maken in de context van het vergrendelscherm. De app kan gemaakte notities importeren naar de primaire gebruikerssessie wanneer de sessie ontgrendeld is. Momenteel worden alleen Chrome-notitie-apps ondersteund op het vergrendelscherm.
-
-      Als het beleid is ingesteld, kan de gebruiker een app alleen inschakelen op het vergrendelscherm als de extensie-ID van de app is opgenomen in de beleidslijstwaarde.
-      Dit betekent dat als je dit beleid instelt op een lege lijst, het maken van notities op het vergrendelscherm volledig wordt uitgeschakeld.
-      Houd er rekening mee dat als het beleid een app-ID bevat, dit niet noodzakelijkerwijs betekent dat de gebruiker de app kan inschakelen als notitie-app op het vergrendelscherm. In Chrome 61 wordt de reeks beschikbare apps bijvoorbeeld extra beperkt door het platform.
-
-      Als het beleid niet wordt ingesteld, gelden er geen beperkingen voor de reeks apps die de gebruiker kan inschakelen op het vergrendelscherm.</translation>
 <translation id="4311195029067684288">Full</translation>
 <translation id="4313767483634435271">Toegewezen MAC-adres van dock van apparaat</translation>
 <translation id="4322842393287974810">Toestaan dat de kiosk-app die automatisch zonder vertraging is gestart, de <ph name="PRODUCT_OS_NAME" />-versie beheert</translation>

@@ -43,7 +43,7 @@ void TrimKeyValuePairs(StringPairs* pairs) {
   }
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 // Read a file with a single number string and return the number as a uint64_t.
 uint64_t ReadFileToUint64(const FilePath& file) {
   std::string file_contents;
@@ -150,7 +150,7 @@ int64_t GetProcessCPU(pid_t pid) {
   return ParseTotalCPUTimeFromStats(proc_stats);
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 // Report on Chrome OS GEM object graphics memory. /run/debugfs_gpu is a
 // bind mount into /sys/kernel/debug and synchronously reading the in-memory
 // files in /sys is fast.
@@ -186,7 +186,7 @@ void ReadChromeOSGraphicsMemory(SystemMemoryInfoKB* meminfo) {
   }
 #endif  // defined(ARCH_CPU_ARM_FAMILY)
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 
 bool SupportsPerTaskTimeInState() {
   FilePath time_in_state_path = internal::GetProcPidDir(GetCurrentProcId())
@@ -565,7 +565,7 @@ std::unique_ptr<DictionaryValue> SystemMemoryInfoKB::ToValue() const {
   res->SetIntKey("swap_used", swap_total - swap_free);
   res->SetIntKey("dirty", dirty);
   res->SetIntKey("reclaimable", reclaimable);
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   res->SetIntKey("shmem", shmem);
   res->SetIntKey("slab", slab);
   res->SetIntKey("gem_objects", gem_objects);
@@ -629,7 +629,7 @@ bool ParseProcMeminfo(StringPiece meminfo_data, SystemMemoryInfoKB* meminfo) {
       target = &meminfo->dirty;
     else if (tokens[0] == "SReclaimable:")
       target = &meminfo->reclaimable;
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
     // Chrome OS has a tweaked kernel that allows querying Shmem, which is
     // usually video memory otherwise invisible to the OS.
     else if (tokens[0] == "Shmem:")
@@ -707,7 +707,7 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
     return false;
   }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   ReadChromeOSGraphicsMemory(meminfo);
 #endif
 
@@ -883,7 +883,7 @@ TimeDelta GetUserCpuTimeSinceBoot() {
   return internal::GetUserCpuTimeSinceBoot();
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 std::unique_ptr<Value> SwapInfo::ToValue() const {
   auto res = std::make_unique<DictionaryValue>();
 
@@ -1041,7 +1041,7 @@ bool GetSwapInfo(SwapInfo* swap_info) {
   }
   return true;
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 
 #if defined(OS_LINUX) || defined(OS_AIX)
 int ProcessMetrics::GetIdleWakeupsPerSecond() {

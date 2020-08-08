@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.voice;
 
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 import android.content.Context;
@@ -23,7 +24,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.SysUtils;
@@ -73,6 +74,11 @@ public class VoiceRecognitionHandlerTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
+
+    @Mock
+    Intent mIntent;
+    @Mock
+    AssistantVoiceSearchService mAssistantVoiceSearchService;
 
     private TestDataProvider mDataProvider;
     private TestDelegate mDelegate;
@@ -470,6 +476,10 @@ public class VoiceRecognitionHandlerTest {
             mWindowAndroid.setAndroidPermissionDelegate(mPermissionDelegate);
             mTab = new MockTab(0, false);
         });
+
+        doReturn(false).when(mAssistantVoiceSearchService).shouldRequestAssistantVoiceSearch();
+        doReturn(mIntent).when(mAssistantVoiceSearchService).getAssistantVoiceSearchIntent();
+        mHandler.setAssistantVoiceSearchService(mAssistantVoiceSearchService);
     }
 
     @After
@@ -527,6 +537,7 @@ public class VoiceRecognitionHandlerTest {
                 () -> { mHandler.startVoiceRecognition(VoiceInteractionSource.OMNIBOX); });
         Assert.assertEquals(-1, mHandler.getVoiceSearchStartEventSource());
         Assert.assertTrue(mDelegate.updatedMicButtonState());
+        verify(mAssistantVoiceSearchService).reportUserEligibility();
     }
 
     @Test
@@ -538,6 +549,7 @@ public class VoiceRecognitionHandlerTest {
                 () -> { mHandler.startVoiceRecognition(VoiceInteractionSource.OMNIBOX); });
         Assert.assertEquals(-1, mHandler.getVoiceSearchStartEventSource());
         Assert.assertTrue(mDelegate.updatedMicButtonState());
+        verify(mAssistantVoiceSearchService).reportUserEligibility();
     }
 
     @Test
@@ -545,16 +557,12 @@ public class VoiceRecognitionHandlerTest {
     @Feature("OmniboxAssistantVoiceSearch")
     @EnableFeatures("OmniboxAssistantVoiceSearch")
     public void testStartVoiceRecognition_StartsAssistantVoiceSearch() {
-        AssistantVoiceSearchService service = Mockito.mock(AssistantVoiceSearchService.class);
-        doReturn(true).when(service).shouldRequestAssistantVoiceSearch();
-        Intent intent = new Intent();
-        doReturn(intent).when(service).getAssistantVoiceSearchIntent();
-
-        mHandler.setAssistantVoiceSearchService(service);
+        doReturn(true).when(mAssistantVoiceSearchService).shouldRequestAssistantVoiceSearch();
         startVoiceRecognition(VoiceInteractionSource.OMNIBOX);
 
         Assert.assertTrue(mWindowAndroid.wasCancelableIntentShown());
-        Assert.assertEquals(intent, mWindowAndroid.getCancelableIntent());
+        Assert.assertEquals(mIntent, mWindowAndroid.getCancelableIntent());
+        verify(mAssistantVoiceSearchService).reportUserEligibility();
     }
 
     /**

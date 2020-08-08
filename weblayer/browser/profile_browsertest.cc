@@ -59,4 +59,58 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, GetCachedFaviconForPageUrl) {
   run_loop.Run();
 }
 
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ClearBrowsingDataDeletesFavicons) {
+  // Navigate to a page with a favicon.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  TestFaviconFetcherDelegate fetcher_delegate;
+  auto fetcher = shell()->tab()->CreateFaviconFetcher(&fetcher_delegate);
+  const GURL url =
+      embedded_test_server()->GetURL("/simple_page_with_favicon.html");
+  NavigateAndWaitForCompletion(url, shell());
+  fetcher_delegate.WaitForFavicon();
+  EXPECT_FALSE(fetcher_delegate.last_image().IsEmpty());
+  EXPECT_EQ(1, fetcher_delegate.on_favicon_changed_call_count());
+
+  // Delete the favicons.
+  base::RunLoop run_loop;
+  base::Time now = base::Time::Now();
+  ProfileImpl* profile = static_cast<TabImpl*>(shell()->tab())->profile();
+  profile->ClearBrowsingData({BrowsingDataType::COOKIES_AND_SITE_DATA},
+                             now - base::TimeDelta::FromMinutes(5), now,
+                             run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Ask for the cached favicon, there shouldn't be one.
+  base::RunLoop run_loop2;
+  profile->GetCachedFaviconForPageUrl(
+      url, base::BindLambdaForTesting([&](gfx::Image image) {
+        EXPECT_TRUE(image.IsEmpty());
+        run_loop2.Quit();
+      }));
+  run_loop2.Run();
+
+  // Navigate to another page, and verify favicon is downloaded.
+  fetcher_delegate.ClearLastImage();
+  const GURL url2 =
+      embedded_test_server()->GetURL("/simple_page_with_favicon2.html");
+  NavigateAndWaitForCompletion(url2, shell());
+  fetcher_delegate.WaitForFavicon();
+  EXPECT_FALSE(fetcher_delegate.last_image().IsEmpty());
+  EXPECT_EQ(1, fetcher_delegate.on_favicon_changed_call_count());
+
+  // And fetch the favicon one more time.
+  base::RunLoop run_loop3;
+  profile->GetCachedFaviconForPageUrl(
+      url2, base::BindLambdaForTesting([&](gfx::Image image) {
+        EXPECT_FALSE(image.IsEmpty());
+        // The last parameter is the max difference allowed for each color
+        // component. As the image is encoded before saving to disk some
+        // variance is expected.
+        EXPECT_TRUE(gfx::test::AreImagesClose(
+            image, fetcher_delegate.last_image(), 10));
+        run_loop3.Quit();
+      }));
+  run_loop3.Run();
+}
+
 }  // namespace weblayer

@@ -3598,7 +3598,7 @@ CalendarHeaderView.prototype = Object.create(View.prototype);
 CalendarHeaderView.Height = 24;
 CalendarHeaderView.BottomMargin = 10;
 CalendarHeaderView.ClassNameCalendarNavigationButtonIconRefresh =
-    'today-button-icon-refresh';
+    'navigation-button-icon-refresh';
 CalendarHeaderView._ForwardTriangle =
     '<svg width=\'4\' height=\'7\'><polygon points=\'0,7 0,0, 4,3.5\' style=\'fill:#6e6e6e;\' /></svg>';
 CalendarHeaderView._ForwardTriangleRefresh = `<svg class="${
@@ -5121,7 +5121,7 @@ CalendarPicker.prototype.onBodyClick = function(event) {
   if (global.params.isFormControlsRefreshEnabled &&
       this.type !== 'datetime-local') {
     if (event.target.matches(
-            '.calendar-navigation-button, .today-button-icon-refresh, .month-button')) {
+            '.calendar-navigation-button, .navigation-button-icon-refresh, .month-button')) {
       window.pagePopupController.setValue(this.getSelectedValue());
     }
   }

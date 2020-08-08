@@ -1,0 +1,10 @@
+include_rules = [
+  "+components/infobars/android",
+  "+components/infobars/core",
+  "+components/resources/android",
+  "+components/strings",
+  "+components/url_formatter",
+  "+content/public",
+  "+ui/android",
+  "+ui/base",
+]

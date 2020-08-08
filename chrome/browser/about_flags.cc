@@ -5309,6 +5309,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"privacy-elevated-android", flag_descriptions::kPrivacyElevatedAndroidName,
      flag_descriptions::kPrivacyElevatedAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kPrivacyElevatedAndroid)},
+
+    {"privacy-reordered-android",
+     flag_descriptions::kPrivacyReorderedAndroidName,
+     flag_descriptions::kPrivacyReorderedAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kPrivacyReorderedAndroid)},
 #endif
 
     {"privacy-settings-redesign",
@@ -6002,6 +6007,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidDefaultBrowserPromoName,
      flag_descriptions::kAndroidDefaultBrowserPromoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidDefaultBrowserPromo)},
+
+    {"android-managed-by-menu-item",
+     flag_descriptions::kAndroidManagedByMenuItemName,
+     flag_descriptions::kAndroidManagedByMenuItemDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidManagedByMenuItem)},
 
     {"android-multiple-display", flag_descriptions::kAndroidMultipleDisplayName,
      flag_descriptions::kAndroidMultipleDisplayDescription, kOsAndroid,

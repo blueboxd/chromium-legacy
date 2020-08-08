@@ -553,10 +553,13 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
         allowed->SetLayoutManager(std::make_unique<views::GridLayout>());
 
     StartNewButtonColumnSet(layout, 0);
-    block_allowed_button_ = layout->AddView(views::MdTextButton::Create(
-        this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON)));
-    delete_allowed_button_ = layout->AddView(views::MdTextButton::Create(
-        this, l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL)));
+    block_allowed_button_ =
+        layout->AddView(std::make_unique<views::MdTextButton>(
+            this,
+            l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON)));
+    delete_allowed_button_ =
+        layout->AddView(std::make_unique<views::MdTextButton>(
+            this, l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL)));
 
     allowed_buttons_pane_ = view->AddChildView(std::move(allowed));
   }
@@ -568,11 +571,14 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
     blocked->SetVisible(false);
 
     StartNewButtonColumnSet(layout, 0);
-    allow_blocked_button_ = layout->AddView(views::MdTextButton::Create(
-        this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON)));
-    for_session_blocked_button_ = layout->AddView(views::MdTextButton::Create(
-        this,
-        l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON)));
+    allow_blocked_button_ =
+        layout->AddView(std::make_unique<views::MdTextButton>(
+            this,
+            l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON)));
+    for_session_blocked_button_ =
+        layout->AddView(std::make_unique<views::MdTextButton>(
+            this, l10n_util::GetStringUTF16(
+                      IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON)));
 
     blocked_buttons_pane_ = view->AddChildView(std::move(blocked));
   }

@@ -1740,7 +1740,12 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   EXPECT_EQ(1U, personal_data_->GetProfiles().size());
 
   personal_data_->GetNonEmptyTypes(&non_empty_types);
-  EXPECT_EQ(15U, non_empty_types.size());
+  // For structured names, there is one more non-empty type.
+  // TODO(crbug.com/1103421): Clean once launched.
+  if (StructuredNames())
+    EXPECT_EQ(16U, non_empty_types.size());
+  else
+    EXPECT_EQ(15U, non_empty_types.size());
   EXPECT_TRUE(non_empty_types.count(NAME_FIRST));
   EXPECT_TRUE(non_empty_types.count(NAME_LAST));
   // TODO(crbug.com/1103421): Clean once launched.
@@ -1777,7 +1782,12 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   EXPECT_EQ(3U, personal_data_->GetProfiles().size());
 
   personal_data_->GetNonEmptyTypes(&non_empty_types);
-  EXPECT_EQ(19U, non_empty_types.size());
+  // For structured names, there is one more non-empty type.
+  // TODO(crbug.com/1103421): Clean once launched.
+  if (StructuredNames())
+    EXPECT_EQ(20U, non_empty_types.size());
+  else
+    EXPECT_EQ(19U, non_empty_types.size());
   EXPECT_TRUE(non_empty_types.count(NAME_FIRST));
   EXPECT_TRUE(non_empty_types.count(NAME_MIDDLE));
   EXPECT_TRUE(non_empty_types.count(NAME_MIDDLE_INITIAL));
@@ -1810,7 +1820,12 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
 
   personal_data_->GetNonEmptyTypes(&non_empty_types);
-  EXPECT_EQ(29U, non_empty_types.size());
+  // For structured names, there is one more non-empty type.
+  // TODO(crbug.com/1103421): Clean once launched.
+  if (StructuredNames())
+    EXPECT_EQ(30U, non_empty_types.size());
+  else
+    EXPECT_EQ(29U, non_empty_types.size());
   EXPECT_TRUE(non_empty_types.count(NAME_FIRST));
   EXPECT_TRUE(non_empty_types.count(NAME_MIDDLE));
   EXPECT_TRUE(non_empty_types.count(NAME_MIDDLE_INITIAL));
@@ -5644,7 +5659,13 @@ TEST_F(PersonalDataManagerTest,
                        "77401", "US", "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  server_profiles.back().SetRawInfo(NAME_FULL, base::ASCIIToUTF16("John Doe"));
+
+  if (!StructuredNames()) {
+    server_profiles.back().SetRawInfo(NAME_FULL,
+                                      base::ASCIIToUTF16("John Doe"));
+  }
+  EXPECT_EQ(server_profiles.back().GetRawInfo(NAME_FULL),
+            base::ASCIIToUTF16("John Doe"));
   server_profiles.back().set_use_count(100);
   SetServerProfiles(server_profiles);
 
@@ -5881,8 +5902,15 @@ TEST_F(
                        "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  server_profiles.back().SetRawInfo(NAME_FULL, base::ASCIIToUTF16("John Doe"));
+  // This step happens automatically for structured names.
+  if (!StructuredNames()) {
+    server_profiles.back().SetRawInfo(NAME_FULL,
+                                      base::ASCIIToUTF16("John Doe"));
+  }
+  EXPECT_EQ(server_profiles.back().GetRawInfo(NAME_FULL),
+            base::ASCIIToUTF16("John Doe"));
   server_profiles.back().set_use_count(100);
+
   // Add a similar server profile.
   server_profiles.push_back(
       AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId2));

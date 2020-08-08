@@ -98,13 +98,6 @@ const char kChromeUIUntrustedNewTabPageUrl[] =
 
 const char kChromiumProjectURL[] = "https://www.chromium.org/";
 
-const char kCloudPrintLearnMoreURL[] =
-#if defined(OS_CHROMEOS)
-    "https://support.google.com/chromebook/?p=settings_cloud_print";
-#else
-    "https://support.google.com/chrome/?p=settings_cloud_print";
-#endif
-
 const char kCloudPrintCertificateErrorLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook?p=cloudprint_error_troubleshoot";

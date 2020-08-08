@@ -70,7 +70,9 @@ const char kIncompatibleLayer[] =
 const char kInlineVerticalFOVNotSupported[] =
     "This session does not support inlineVerticalFieldOfView";
 
-const char kAnchorsNotSupported[] = "Device does not support anchors!";
+const char kAnchorsNotSupportedByDevice[] = "Device does not support anchors!";
+
+const char kHitTestNotSupportedByDevice[] = "Device does not support hit test!";
 
 const char kDeviceDisconnected[] = "The XR device has been disconnected.";
 
@@ -569,7 +571,7 @@ ScriptPromise XRSession::CreateAnchorHelper(
   // Reject the promise if device doesn't support the anchors API.
   if (!xr_->xrEnvironmentProviderRemote()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kAnchorsNotSupported);
+                                      kAnchorsNotSupportedByDevice);
     return ScriptPromise();
   }
 
@@ -619,7 +621,7 @@ ScriptPromise XRSession::CreatePlaneAnchorHelper(
   // Reject the promise if device doesn't support the anchors API.
   if (!xr_->xrEnvironmentProviderRemote()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kAnchorsNotSupported);
+                                      kAnchorsNotSupportedByDevice);
     return ScriptPromise();
   }
 
@@ -728,6 +730,12 @@ ScriptPromise XRSession::requestHitTestSource(
     return {};
   }
 
+  if (!xr_->xrEnvironmentProviderRemote()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kHitTestNotSupportedByDevice);
+    return {};
+  }
+
   // 1. Grab the native origin from the passed in XRSpace.
   base::Optional<device::mojom::blink::XRNativeOriginInformation>
       maybe_native_origin = options_init && options_init->hasSpace()
@@ -814,6 +822,12 @@ ScriptPromise XRSession::requestHitTestSourceForTransientInput(
   if (ended_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionEnded);
+    return {};
+  }
+
+  if (!xr_->xrEnvironmentProviderRemote()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kHitTestNotSupportedByDevice);
     return {};
   }
 
@@ -1878,10 +1892,29 @@ bool XRSession::RemoveHitTestSource(XRHitTestSource* hit_test_source) {
 
   DCHECK(hit_test_source);
 
+  if (!base::Contains(hit_test_source_ids_, hit_test_source->id())) {
+    DVLOG(2) << __func__
+             << ": hit test source was already removed, hit_test_source->id()="
+             << hit_test_source->id();
+    return false;
+  }
+
+  if (ended_) {
+    DVLOG(1) << __func__
+             << ": attempted to remove a hit test source on a session that has "
+                "already ended.";
+    // Since the session has ended, we won't be able to reach out to the device
+    // to remove a hit test source subscription. Just notify the caller that the
+    // removal was successful.
+    return true;
+  }
+
   DCHECK_HIT_TEST_SOURCES();
 
   hit_test_source_ids_to_hit_test_sources_.erase(hit_test_source->id());
   hit_test_source_ids_.erase(hit_test_source->id());
+
+  DCHECK(xr_->xrEnvironmentProviderRemote());
 
   xr_->xrEnvironmentProviderRemote()->UnsubscribeFromHitTest(
       hit_test_source->id());
@@ -1893,13 +1926,35 @@ bool XRSession::RemoveHitTestSource(XRHitTestSource* hit_test_source) {
 
 bool XRSession::RemoveHitTestSource(
     XRTransientInputHitTestSource* hit_test_source) {
+  DVLOG(2) << __func__;
+
   DCHECK(hit_test_source);
+
+  if (!base::Contains(hit_test_source_for_transient_input_ids_,
+                      hit_test_source->id())) {
+    DVLOG(2) << __func__
+             << ": hit test source was already removed, hit_test_source->id()="
+             << hit_test_source->id();
+    return false;
+  }
+
+  if (ended_) {
+    DVLOG(1) << __func__
+             << ": attempted to remove a hit test source on a session that has "
+                "already ended.";
+    // Since the session has ended, we won't be able to reach out to the device
+    // to remove a hit test source subscription. Just notify the caller that the
+    // removal was successful.
+    return true;
+  }
 
   DCHECK_HIT_TEST_SOURCES();
 
   hit_test_source_ids_to_transient_input_hit_test_sources_.erase(
       hit_test_source->id());
   hit_test_source_for_transient_input_ids_.erase(hit_test_source->id());
+
+  DCHECK(xr_->xrEnvironmentProviderRemote());
 
   xr_->xrEnvironmentProviderRemote()->UnsubscribeFromHitTest(
       hit_test_source->id());

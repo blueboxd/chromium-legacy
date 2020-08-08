@@ -2939,6 +2939,7 @@ static_library("browser") {
       "//chrome/services/media_gallery_util/public/cpp",
       "//components/autofill_assistant/browser",
       "//components/browser_ui/site_settings/android",
+      "//components/browser_ui/sms/android",
       "//components/browser_ui/util/android",
       "//components/cbor",
       "//components/cdm/browser",
@@ -4032,6 +4033,7 @@ static_library("browser") {
     ]
   }
 
+  # TODO(crbug.com/1052397): Rename chromeos_is_browser_only to is_lacros.
   if (chromeos_is_browser_only) {
     sources += [
       "chrome_browser_main_extra_parts_lacros.cc",
@@ -4040,6 +4042,11 @@ static_library("browser") {
       "lacros/lacros_chrome_service_delegate_impl.h",
       "metrics/lacros_metrics_provider.cc",
       "metrics/lacros_metrics_provider.h",
+      "notifications/message_center_client_lacros.cc",
+      "notifications/message_center_client_lacros.h",
+      "notifications/notification_platform_bridge_chromeos.cc",
+      "notifications/notification_platform_bridge_chromeos.h",
+      "notifications/notification_platform_bridge_delegate.h",
     ]
     deps += [
       "//chromeos/crosapi/mojom",
@@ -4438,7 +4445,8 @@ static_library("browser") {
       deps += [ "//components/dbus/thread_linux" ]
     }
 
-    if (enable_native_notifications) {
+    # TODO(crbug.com/1052397): Rename chromeos_is_browser_only to is_lacros.
+    if (enable_native_notifications && !chromeos_is_browser_only) {
       sources += [
         "notifications/notification_platform_bridge_linux.cc",
         "notifications/notification_platform_bridge_linux.h",

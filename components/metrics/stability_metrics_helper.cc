@@ -15,6 +15,7 @@
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "build/lacros_buildflags.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -26,7 +27,7 @@
 #include <windows.h>  // Needed for STATUS_* codes
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 #include "components/metrics/system_memory_stats_recorder.h"
 #endif
 
@@ -253,7 +254,7 @@ void StabilityMetricsHelper::LogRendererCrash(bool was_extension_process,
       // TODO(wfh): Check if this should be a Kill or a Crash on Android.
       break;
 #endif
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
       RecordChildKills(histogram_type);
       base::UmaHistogramExactLinear("BrowserRenderProcessHost.ChildKills.OOM",

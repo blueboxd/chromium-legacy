@@ -402,6 +402,7 @@ source_set("browser_sources") {
     "webrtc_log.cc",
     "webrtc_log.h",
     "websocket_handshake_request_info.h",
+    "worker_type.h",
   ]
   configs += [
     "//build/config:precompiled_headers",

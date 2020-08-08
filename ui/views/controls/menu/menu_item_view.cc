@@ -219,7 +219,8 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   } else {
     item_text = title_;
   }
-  node_data->SetName(GetAccessibleNameForMenuItem(item_text, GetMinorText()));
+  node_data->SetName(GetAccessibleNameForMenuItem(item_text, GetMinorText(),
+                                                  ShouldShowNewBadge()));
 
   switch (type_) {
     case Type::kSubMenu:
@@ -276,7 +277,8 @@ bool MenuItemView::IsBubble(MenuAnchorPosition anchor) {
 // static
 base::string16 MenuItemView::GetAccessibleNameForMenuItem(
     const base::string16& item_text,
-    const base::string16& minor_text) {
+    const base::string16& minor_text,
+    bool is_new_feature) {
   base::string16 accessible_name = item_text;
 
   // Filter out the "&" for accessibility clients.
@@ -296,6 +298,12 @@ base::string16 MenuItemView::GetAccessibleNameForMenuItem(
   if (!minor_text.empty()) {
     accessible_name.push_back(' ');
     accessible_name.append(minor_text);
+  }
+
+  if (is_new_feature) {
+    accessible_name.push_back(' ');
+    accessible_name.append(l10n_util::GetStringUTF16(
+        IDS_MENU_ITEM_NEW_BADGE_SCREEN_READER_MESSAGE));
   }
 
   return accessible_name;
@@ -760,6 +768,12 @@ void MenuItemView::SetCornerRadius(int radius) {
 void MenuItemView::SetAlerted() {
   is_alerted_ = true;
   SchedulePaint();
+}
+
+bool MenuItemView::ShouldShowNewBadge() const {
+  static const bool feature_enabled =
+      base::FeatureList::IsEnabled(features::kEnableNewBadgeOnMenuItems);
+  return feature_enabled && is_new_;
 }
 
 MenuItemView::MenuItemView(MenuItemView* parent,
@@ -1452,12 +1466,6 @@ bool MenuItemView::HasChecksOrRadioButtons() const {
   return std::any_of(
       menu_items.cbegin(), menu_items.cend(),
       [](const auto* item) { return item->HasChecksOrRadioButtons(); });
-}
-
-bool MenuItemView::ShouldShowNewBadge() const {
-  static const bool feature_enabled =
-      base::FeatureList::IsEnabled(features::kEnableNewBadgeOnMenuItems);
-  return feature_enabled && is_new_;
 }
 
 BEGIN_METADATA(MenuItemView)

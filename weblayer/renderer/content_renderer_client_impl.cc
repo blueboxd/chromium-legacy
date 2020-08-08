@@ -130,11 +130,8 @@ void ContentRendererClientImpl::PrepareErrorPage(
     const std::string& http_method,
     std::string* error_html) {
   auto* error_page_helper = ErrorPageHelper::GetForFrame(render_frame);
-  if (error_page_helper) {
-    error_page_helper->PrepareErrorPage(error_page::Error::NetError(
-        error.url(), error.reason(), error.resolve_error_info(),
-        error.has_copy_in_cache()));
-  }
+  if (error_page_helper)
+    error_page_helper->PrepareErrorPage();
 
 #if defined(OS_ANDROID)
   // This does nothing if |error_html| is non-null (which happens if the

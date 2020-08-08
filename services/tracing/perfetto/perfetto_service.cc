@@ -125,6 +125,15 @@ void PerfettoService::RemoveActiveServicePid(base::ProcessId pid) {
   }
 }
 
+void PerfettoService::RemoveActiveServicePidIfNoActiveConnections(
+    base::ProcessId pid) {
+  const auto num_connections_it = num_active_connections_.find(pid);
+  if (num_connections_it == num_active_connections_.end() ||
+      num_connections_it->second == 0) {
+    RemoveActiveServicePid(pid);
+  }
+}
+
 void PerfettoService::SetActiveServicePidsInitialized() {
   active_service_pids_initialized_ = true;
   for (auto* tracing_session : tracing_sessions_) {

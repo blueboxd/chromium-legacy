@@ -49,7 +49,8 @@ void AddComServerWorkItems(HKEY root,
   }
 
   for (const auto& clsid :
-       {__uuidof(UpdaterClass), CLSID_GoogleUpdate3WebUserClass}) {
+       {__uuidof(UpdaterClass), CLSID_UpdaterControlServiceClass,
+        CLSID_GoogleUpdate3WebUserClass}) {
     const base::string16 clsid_reg_path = GetComServerClsidRegistryPath(clsid);
 
     // Delete any old registrations first.
@@ -106,10 +107,10 @@ void AddComInterfacesWorkItems(HKEY root,
     return;
   }
 
-  for (const auto& iid :
-       {__uuidof(IUpdater), __uuidof(IUpdaterObserver),
-        __uuidof(ICompleteStatus), __uuidof(IGoogleUpdate3Web),
-        __uuidof(IAppBundleWeb), __uuidof(IAppWeb), __uuidof(ICurrentState)}) {
+  for (const auto& iid : {__uuidof(IUpdater), __uuidof(IUpdaterControl),
+                          __uuidof(IUpdaterObserver), __uuidof(ICompleteStatus),
+                          __uuidof(IGoogleUpdate3Web), __uuidof(IAppBundleWeb),
+                          __uuidof(IAppWeb), __uuidof(ICurrentState)}) {
     const base::string16 iid_reg_path = GetComIidRegistryPath(iid);
     const base::string16 typelib_reg_path = GetComTypeLibRegistryPath(iid);
 

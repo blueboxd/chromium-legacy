@@ -691,9 +691,8 @@ class TabStrip : public views::AccessiblePaneView,
   // Container that holds the |new_tab_button_| and the |tab_search_button_|.
   views::View* tab_controls_container_ = nullptr;
   NewTabButton* new_tab_button_ = nullptr;
-  // |tab_search_button_| will be null if features::kTabSearch is disabled.
-  // TODO(tluk): Subclass NewTabButton and set the appropriate icon for
-  // |tab_search_button_|.
+  // |tab_search_button_| will be null if features::kTabSearch is disabled or if
+  // the current profile is an incognito profile.
   NewTabButton* tab_search_button_ = nullptr;
 
   // Ideal bounds of container holding the tab controls.

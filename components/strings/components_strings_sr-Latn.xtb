@@ -170,6 +170,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Spreči ovu stranicu da pravi dodatne dijaloge</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1634828734222219955">Ukupno</translation>
 <translation id="1638780421120290329">Čuvanje kartice nije uspelo</translation>
 <translation id="1639239467298939599">Učitavanje</translation>
 <translation id="1640180200866533862">Smernice za korisnike</translation>
@@ -1924,6 +1925,7 @@ Dodatni detalji:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Pokušali ste da dođete do domena <ph name="DOMAIN" />, ali server je poslao nevažeći sertifikat.</translation>
 <translation id="9050666287014529139">Pristupna fraza</translation>
+<translation id="9056953843249698117">Prodavnica</translation>
 <translation id="9062620674789239642">Možda je premešten, izmenjen ili izbrisan.</translation>
 <translation id="9065203028668620118">Izmeni</translation>
 <translation id="9065745800631924235">Pretraga <ph name="TEXT" /> iz istorije</translation>

@@ -28,6 +28,7 @@
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/i18n/time_formatting.h"
+#include "base/metrics/histogram_macros.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -174,6 +175,26 @@ void StatusAreaWidget::UpdateCollapseState() {
 
   status_area_widget_delegate_->OnStatusAreaCollapseStateChanged(
       collapse_state_);
+}
+
+void StatusAreaWidget::LogVisiblePodCountMetric() {
+  int visible_pod_count = 0;
+  for (auto* tray_button : tray_buttons_) {
+    if (tray_button == overflow_button_tray_.get() ||
+        tray_button == overview_button_tray_.get() ||
+        tray_button == unified_system_tray_.get() || !tray_button->GetVisible())
+      continue;
+
+    visible_pod_count += 1;
+  }
+
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    UMA_HISTOGRAM_COUNTS_100("ChromeOS.SystemTray.Tablet.ShelfPodCount",
+                             visible_pod_count);
+  } else {
+    UMA_HISTOGRAM_COUNTS_100("ChromeOS.SystemTray.ShelfPodCount",
+                             visible_pod_count);
+  }
 }
 
 void StatusAreaWidget::CalculateTargetBounds() {

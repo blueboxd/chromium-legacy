@@ -63,7 +63,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1589090746204042747">Bu seansdagi barcha harakatlaringizga ruxsat</translation>
 <translation id="1632985212731562677">Switch Access funksiyasini Sozlamalar &gt; Maxsus imkoniyatlar orqali faolsizlantirish mumkin.</translation>
 <translation id="1654477262762802994">Ovozli qidiruvni boshlash</translation>
-<translation id="1658406695958299976">Parol noto‘g‘ri kiritildi. Unutmangki: bu parol yaqinda o‘zgartirilgan, lekin tizimdan chiqilmagan, yangi parol qo‘llanishi uchun eski parolingizni kiriting.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> qoldi</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> taymer · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 manzil: <ph name="ADDRESS" /></translation>
@@ -434,7 +433,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="6047696787498798094">Agar joriy foydalanuvchi boshqasiga almashinilsa, ekranni uzatish to‘xtatiladi. Davom ettirilsinmi?</translation>
 <translation id="6054305421211936131">Smart karta orqali kirish</translation>
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" />dan keyin tizimdan avtomatik ravishda chiqiladi.</translation>
-<translation id="6064337552080329342">Kechirasiz, parol tasdiqlanmadi. Qayta urinib ko‘ring.</translation>
 <translation id="607652042414456612">Kompyuteringiz yaqin-atrofdagi Bluetooth qurilmalariga <ph name="NAME" /> nomida <ph name="ADDRESS" /> manzilida ko‘rinadi</translation>
 <translation id="612734058257491180">Google Assistent mehmon seansida ishlamaydi.</translation>
 <translation id="615957422585914272">Ekran klaviaturasini ko‘rsatish</translation>

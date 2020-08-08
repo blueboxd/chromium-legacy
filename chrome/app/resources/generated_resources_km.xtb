@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">កែ​ឯកសារ</translation>
 <translation id="1285320974508926690">មិនបកប្រែគេហទំព័រនេះទៀតឡើយ</translation>
 <translation id="1285484354230578868">ផ្ទុកទិន្នន័យនៅក្នុងគណនី Google Drive របស់អ្នក</translation>
-<translation id="1285717512281186441">មិនអាចភ្ជាប់​ម៉ាស៊ីនបោះពុម្ព​បានទេ</translation>
 <translation id="1288037062697528143">ពន្លឺ​ពេល​យប់នឹងបើកដោយស្វ័យប្រវត្តិនៅពេលថ្ងៃលិច</translation>
 <translation id="1288300545283011870">លក្ខណៈ​សម្បត្តិ​ការនិយាយ</translation>
 <translation id="1293264513303784526">ឧបករណ៍ USB-C (រន្ធខាងឆ្វេង)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">សកម្មភាព​នេះនឹងសម្អាត​ទិន្នន័យ និងខូគីទាំងអស់​ដែលបានរក្សាទុកដោយ <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">ខនសូល JavaScript</translation>
 <translation id="1587907146729660231">ចុចប៊ូតុង​ថាមពល​ដោយប្រើម្រាម​ដៃរបស់អ្នក</translation>
-<translation id="1588200577109872591">ការបញ្ចូល​ឆ្លាតវៃ</translation>
 <translation id="1588438908519853928">ធម្មតា</translation>
 <translation id="158849752021629804">ត្រូវការបណ្តាញនៅតាមផ្ទះ</translation>
 <translation id="1588870296199743671">បើកដំណជាមួយ...</translation>
@@ -1286,7 +1284,6 @@
 <translation id="253557089021624350">ចំនួន Keepalive</translation>
 <translation id="2535799430745250929">មិនមាន​បណ្ដាញចល័តទេ</translation>
 <translation id="2537178555904266562">មានបញ្ហា​ក្នុងការ​ធ្វើសមកាលកម្ម​ពាក្យសម្ងាត់</translation>
-<translation id="2537296579376733324">ខូគីទាំងអស់ នៅលើគេហទំព័រនេះតែប៉ុណ្ណោះ</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> អាចមើល និងកែថត និងឯកសារខាងក្រោម</translation>
 <translation id="2537927931785713436">កំពុងពិនិត្យមើល​រូបភាព​ម៉ាស៊ីននិម្មិត</translation>
 <translation id="2538361623464451692">បាន​បិទ​ការ​ធ្វើ​សម​កាល​កម្ម</translation>
@@ -1427,7 +1424,6 @@
 <translation id="2712173769900027643">សុំការអនុញ្ញាត</translation>
 <translation id="2713444072780614174">ស</translation>
 <translation id="2714393097308983682">ហាង Google Play</translation>
-<translation id="2714997332747470971">ការណែនាំ​ព័ត៌មានផ្ទាល់ខ្លួន​ជួយឱ្យអ្នក​សរសេរលឿនជាងមុន​ដោយប្រើការណែនាំដូចជា ឈ្មោះ អាសយដ្ឋាន ឬលេខទូរសព្ទ​របស់អ្នកជាដើម។ មានតែអ្នកប៉ុណ្ណោះ​ដែលមើលឃើញ​ការណែនាំផ្ទាល់ខ្លួនលក្ខណៈឯកជនសម្រាប់គណនីរបស់អ្នក។</translation>
 <translation id="2715751256863167692">ការដំឡើង​កំណែនេះ​នឹង​កំណត់ Chromebook របស់អ្នកឡើងវិញ និងលុបទិន្នន័យ​អ្នកប្រើប្រាស់បច្ចុប្បន្នចេញ។</translation>
 <translation id="2716986496990888774">ការកំណត់​នេះ​ស្ថិតក្រោម​ការគ្រប់គ្រង​របស់​មាតាបិតា។</translation>
 <translation id="2718395828230677721">ពន្លឺពេលយប់</translation>
@@ -2949,7 +2945,6 @@
 <translation id="4608520674724523647">រូបភាព​នៃការចុះឈ្មោះជោគជ័យ</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> មានខ្លឹមសាររសើប</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> បានជួបបញ្ហា</translation>
-<translation id="4610178114344604329">បង្ហាញការណែនាំ​ព័ត៌មានផ្ទាល់ខ្លួន</translation>
 <translation id="4610637590575890427">តើអ្នកពិតជាចង់ទៅ <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">មាន​ការតភ្ជាប់​ទិន្នន័យ</translation>
 <translation id="4613144866899789710">កំពុង​បោះបង់​ការដំឡើង Linux...</translation>
@@ -6011,7 +6006,6 @@
 <translation id="8448729345478502352">ធ្វើឱ្យធាតុ​នៅលើ​អេក្រង់​របស់អ្នក​តូចជាងមុន ឬ​ធំជាង​មុន</translation>
 <translation id="8449008133205184768">បិទភ្ជាប់ និងការផ្គូរផ្គងស្តាយ៍</translation>
 <translation id="8449036207308062757">គ្រប់គ្រងទំហំផ្ទុក</translation>
-<translation id="84501823665211008">បង្ហាញ​ការណែនាំអំពី​រូបអារម្មណ៍</translation>
 <translation id="8452135315243592079">បាត់ស៊ីមកាត</translation>
 <translation id="8455026683977728932">មិនអាចបើក​រូបភាព ADB បានទេ</translation>
 <translation id="845702320058262034">មិនអាចភ្ជាប់​បានទេ។ សូមប្រាកដ​ថាបាន​បើកប៊្លូធូស​ទូរសព្ទ​របស់​អ្នក។</translation>
@@ -6295,7 +6289,6 @@
 <translation id="8798441408945964110">ឈ្មោះក្រុមហ៊ុនផ្តល់សេវា</translation>
 <translation id="8800004011501252845">កំពុងបង្ហាញគោលដៅសម្រាប់</translation>
 <translation id="8800034312320686233">គេហទំព័រ​មិន​ដំណើរការ​?</translation>
-<translation id="880069872639153240">ទទួលបាន​ការណែនាំអំពី​រូបអារម្មណ៍ ដោយផ្អែកលើ​អ្វីដែលអ្នកកំពុង​វាយបញ្ចូល</translation>
 <translation id="8803953437405899238">បើក​ផ្ទាំងថ្មី​ដោយចុច​តែម្តង​ប៉ុណ្ណោះ</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{ផ្លាស់ទី​ផ្ទាំងទៅ​វិនដូ​ផ្សេងទៀត}other{ផ្លាស់ទី​ផ្ទាំងទៅ​វិនដូ​ផ្សេងទៀត}}</translation>
 <translation id="8805140816472474147">បញ្ជាក់​ការកំណត់​សមកាលកម្ម ដើម្បីចាប់ផ្តើម​សមកាលកម្ម។</translation>

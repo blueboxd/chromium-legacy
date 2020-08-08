@@ -4,7 +4,6 @@
 
 #include "weblayer/browser/favicon/favicon_backend_wrapper.h"
 
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
@@ -19,6 +18,7 @@ FaviconBackendWrapper::FaviconBackendWrapper(
       task_runner_(task_runner) {}
 
 void FaviconBackendWrapper::Init(const base::FilePath& db_path) {
+  db_path_ = db_path;
   favicon_backend_ = favicon::FaviconBackend::Create(db_path, this);
   if (!favicon_backend_) {
     LOG(WARNING) << "Could not initialize the favicon database.";
@@ -40,6 +40,13 @@ void FaviconBackendWrapper::Shutdown() {
   // Ensures there isn't a reference to this in the task runner (by way of the
   // task the timer posts).
   commit_timer_.Stop();
+}
+
+void FaviconBackendWrapper::DeleteAndRecreateDatabase() {
+  Shutdown();
+  favicon_backend_.reset();
+  base::DeleteFile(db_path_);
+  Init(db_path_);
 }
 
 std::vector<favicon_base::FaviconRawBitmapResult>

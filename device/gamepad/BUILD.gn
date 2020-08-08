@@ -47,8 +47,6 @@ component("gamepad") {
     "gamepad_platform_data_fetcher_linux.h",
     "gamepad_platform_data_fetcher_mac.h",
     "gamepad_platform_data_fetcher_mac.mm",
-    "gamepad_platform_data_fetcher_win.cc",
-    "gamepad_platform_data_fetcher_win.h",
     "gamepad_provider.cc",
     "gamepad_provider.h",
     "gamepad_service.cc",
@@ -89,6 +87,8 @@ component("gamepad") {
     "xbox_data_fetcher_mac.h",
     "xbox_hid_controller.cc",
     "xbox_hid_controller.h",
+    "xinput_data_fetcher_win.cc",
+    "xinput_data_fetcher_win.h",
     "xinput_haptic_gamepad_win.cc",
     "xinput_haptic_gamepad_win.h",
   ]

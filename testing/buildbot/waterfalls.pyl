@@ -530,6 +530,16 @@
         },
         'os_type': 'android',
       },
+      'android-bfcache-rel': {
+        'mixins': [
+          'lollipop',
+          'hammerhead',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'bfcache_android_gtests',
+        }
+      },
       'android-cronet-arm-dbg': {
         'mixins': [
           'lollipop',
@@ -820,16 +830,6 @@
         },
         'use_swarming': True,
         'os_type': 'android',
-      },
-      'android-bfcache-rel': {
-        'mixins': [
-          'lollipop',
-          'hammerhead',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'bfcache_android_gtests',
-        }
       },
       'android-marshmallow-x86-fyi-rel': {
         'mixins': [
@@ -2189,15 +2189,6 @@
           'chrome',
         ],
       },
-      'linux-bfcache-rel': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'test_suites': {
-          'gtest_tests': 'bfcache_linux_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
       'linux-blink-animation-use-time-delta': {
         'mixins': [
           'linux-xenial',
@@ -2377,32 +2368,6 @@
           'isolated_scripts': 'upload_perfetto',
         },
         'use_swarming': False,
-      },
-      'mac10.10-blink-rel-dummy': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            { # This should match Mac10.10 Tests on chromium.mac.
-              'gpu': 'none',
-              'os': 'Mac-10.10.5',
-            },
-          ],
-        },
-      },
-      'mac10.11-blink-rel-dummy': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            { # This should match Mac10.10 Tests on chromium.mac.
-              'gpu': 'none',
-              'os': 'Mac-10.11.6',
-            },
-          ],
-        },
       },
       'mac10.12-blink-rel-dummy': {
         'test_suites': {
@@ -4230,6 +4195,15 @@
         'additional_compile_targets': [
           'all',
         ],
+      },
+      'linux-bfcache-rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'bfcache_linux_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
       },
       'linux-blink-cors-rel': {
         'mixins': [

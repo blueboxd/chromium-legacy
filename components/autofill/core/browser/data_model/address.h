@@ -35,6 +35,8 @@ class Address : public FormGroup {
                         const std::string& locale,
                         ServerFieldTypeSet* matching_types) const override;
 
+  void ResetStructuredTokes();
+
  private:
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
@@ -59,6 +61,14 @@ class Address : public FormGroup {
   // Similar to a ZIP code, but used by entities that might not be
   // geographically contiguous.  The canonical example is CEDEX in France.
   base::string16 sorting_code_;
+
+  // The following entries are only popluated by Sync and
+  // used to create type votes, but are not used for filling fields.
+  base::string16 street_name_;
+  base::string16 dependent_street_name_;
+  base::string16 house_number_;
+  base::string16 premise_name_;
+  base::string16 floor_;
 
   // The ISO 3166 2-letter country code, or an empty string if there is no
   // country data specified for this address.

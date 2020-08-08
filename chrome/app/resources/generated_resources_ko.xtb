@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">파일 수정</translation>
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
 <translation id="1285484354230578868">Google 드라이브 계정에 데이터 저장</translation>
-<translation id="1285717512281186441">프린터에 연결할 수 없음</translation>
 <translation id="1288037062697528143">일몰 시 야간 조명이 자동으로 켜짐</translation>
 <translation id="1288300545283011870">음성 속성</translation>
 <translation id="1293264513303784526">USB-C 기기(왼쪽 포트)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148"><ph name="ORIGIN_NAME" />에서 저장한 모든 데이터와 쿠키가 삭제됩니다.</translation>
 <translation id="1587275751631642843">자바스크립트 콘솔(&amp;J)</translation>
 <translation id="1587907146729660231">전원 버튼을 손가락으로 터치하세요.</translation>
-<translation id="1588200577109872591">스마트 입력</translation>
 <translation id="1588438908519853928">일반</translation>
 <translation id="158849752021629804">홈 네크워크가 필요합니다.</translation>
 <translation id="1588870296199743671">다음으로 링크 열기...</translation>
@@ -1286,7 +1284,6 @@
 <translation id="253557089021624350">프로그램 사용자 수</translation>
 <translation id="2535799430745250929">모바일 네트워크가 없습니다.</translation>
 <translation id="2537178555904266562">비밀번호 동기화 중 오류 발생</translation>
-<translation id="2537296579376733324">모든 쿠키, 이 사이트에서만</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" />에서 다음 파일과 폴더를 보고 수정할 수 있습니다.</translation>
 <translation id="2537927931785713436">가상 머신 이미지 확인 중</translation>
 <translation id="2538361623464451692">동기화 사용중지됨</translation>
@@ -1427,7 +1424,6 @@
 <translation id="2712173769900027643">권한 요청</translation>
 <translation id="2713444072780614174">흰색</translation>
 <translation id="2714393097308983682">Google Play 스토어</translation>
-<translation id="2714997332747470971">개인 정보를 기반으로 한 추천 기능을 사용하면 이름, 주소, 전화번호와 같은 항목을 추천해 주므로 더 빠르게 작성할 수 있습니다. 이러한 추천 항목은 내 계정을 기반으로 맞춤설정되며 나만 볼 수 있습니다.</translation>
 <translation id="2715751256863167692">이 업그레이드를 설치하면 Chromebook이 재설정되며, 현재 사용자 데이터가 삭제됩니다.</translation>
 <translation id="2716986496990888774">보호자가 관리하는 설정입니다.</translation>
 <translation id="2718395828230677721">야간 조명</translation>
@@ -2947,7 +2943,6 @@
 <translation id="4608520674724523647">등록 성공 그림</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" />에 민감한 콘텐츠가 있습니다.</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" />에 오류가 발생했습니다</translation>
-<translation id="4610178114344604329">개인 정보 기반 추천 표시</translation>
 <translation id="4610637590575890427"><ph name="SITE" />(으)로 이동하려고 하셨나요?</translation>
 <translation id="4611114513649582138">데이터 연결을 사용할 수 있습니다.</translation>
 <translation id="4613144866899789710">Linux 설치를 취소하는 중...</translation>
@@ -6009,7 +6004,6 @@
 <translation id="8448729345478502352">화면에 표시되는 항목을 축소 또는 확대합니다.</translation>
 <translation id="8449008133205184768">붙여넣고 스타일 일치시킴</translation>
 <translation id="8449036207308062757">저장용량 관리</translation>
-<translation id="84501823665211008">추천 그림 이모티콘 표시</translation>
 <translation id="8452135315243592079">SIM 카드 없음</translation>
 <translation id="8455026683977728932">ADB 사용 설정 실패 삽화</translation>
 <translation id="845702320058262034">연결할 수 없습니다. 휴대전화의 블루투스가 켜져 있는지 확인하세요.</translation>
@@ -6293,7 +6287,6 @@
 <translation id="8798441408945964110">공급자 이름</translation>
 <translation id="8800004011501252845">해당 목적지 사용자 표시</translation>
 <translation id="8800034312320686233">사이트가 작동하지 않나요?</translation>
-<translation id="880069872639153240">입력 내용을 기반으로 이모티콘 추천 받기</translation>
 <translation id="8803953437405899238">클릭 한 번으로 새 탭을 열 수 있습니다.</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{탭을 다른 창으로 이동}other{탭을 다른 창으로 이동}}</translation>
 <translation id="8805140816472474147">동기화를 시작하려면 동기화 설정을 확인하세요.</translation>

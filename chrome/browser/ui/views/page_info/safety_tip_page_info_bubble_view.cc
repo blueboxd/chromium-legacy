@@ -143,7 +143,7 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   bottom_layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
                                      views::GridLayout::kFixedSize, spacing);
   auto text_label = std::make_unique<views::Label>(
-      GetSafetyTipDescription(safety_tip_status, url_, suggested_url_));
+      GetSafetyTipDescription(safety_tip_status, suggested_url_));
   text_label->SetMultiLine(true);
   text_label->SetLineHeight(20);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -180,7 +180,7 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   info_button_ = button_layout->AddView(std::move(info_link));
 
   // Leave site button.
-  auto leave_button = views::MdTextButton::Create(
+  auto leave_button = std::make_unique<views::MdTextButton>(
       this,
       l10n_util::GetStringUTF16(GetSafetyTipLeaveButtonId(safety_tip_status)));
   leave_button->SetProminent(true);

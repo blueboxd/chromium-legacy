@@ -183,6 +183,24 @@ Background = class extends ChromeVoxState {
         onTtsInterrupted() {}
       };
       new ProgressPlayer();
+
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-experimental-accessibility-chromevox-tutorial', (enabled) => {
+            if (!enabled) {
+              return;
+            }
+
+            chrome.loginState.getSessionState((sessionState) => {
+              // If starting ChromeVox from OOBE, start the ChromeVox tutorial.
+              // Use a timeout to allow ChromeVox to initialize first.
+              if (sessionState ===
+                  chrome.loginState.SessionState.IN_OOBE_SCREEN) {
+                setTimeout(() => {
+                  (new PanelCommand(PanelCommandType.TUTORIAL)).send();
+                }, 1000);
+              }
+            });
+          });
   }
 
   /**

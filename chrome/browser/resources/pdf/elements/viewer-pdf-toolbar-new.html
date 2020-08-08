@@ -116,7 +116,7 @@
 
 <if expr="chromeos">
   :host([annotation-mode]) #annotate {
-    background-color: rgba(255, 255, 255, 0.24);
+    background-color: var(--active-button-bg);
     border-radius: 50%;
   }
 </if>
@@ -193,7 +193,7 @@
 <paper-progress id="progress" value="[[loadProgress]]" hidden="[[!loading_]]">
 </paper-progress>
 
-<cr-action-menu force-dark-mode>
+<cr-action-menu>
   <button id="single-page-view-button"
       class="dropdown-item" on-click="onSinglePageViewClick_"
       role="radio"

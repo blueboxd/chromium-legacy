@@ -158,6 +158,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     public @Nullable List<CustomViewBinder> getCustomViewBinders() {
         List<CustomViewBinder> customViewBinders = new ArrayList<>();
         customViewBinders.add(new UpdateMenuItemViewBinder());
+        customViewBinders.add(new ManagedByMenuItemViewBinder());
         return customViewBinders;
     }
 
@@ -293,6 +294,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
         // Only display the Enter VR button if VR Shell Dev environment is enabled.
         menu.findItem(R.id.enter_vr_id).setVisible(shouldShowEnterVr());
+
+        menu.findItem(R.id.managed_by_menu_id).setVisible(shouldShowManagedByMenuItem(currentTab));
     }
 
     private void prepareCommonMenuItems(Menu menu, @MenuGroup int menuGroup, boolean isIncognito) {
@@ -349,7 +352,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @param currentTab The currentTab for which the app menu is showing.
      * @return Whether the reader mode preferences menu item should be displayed.
      */
-    protected boolean shouldShowReaderModePrefs(@NonNull Tab currentTab) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public boolean shouldShowReaderModePrefs(@NonNull Tab currentTab) {
         return DomDistillerUrlUtils.isDistilledPage(currentTab.getUrlString());
     }
 
@@ -358,7 +362,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @return Whether the {@code currentTab} may be downloaded, indicating whether the download
      *         page menu item should be enabled.
      */
-    protected boolean shouldEnableDownloadPage(@NonNull Tab currentTab) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public boolean shouldEnableDownloadPage(@NonNull Tab currentTab) {
         return DownloadUtils.isAllowedToDownloadPage(currentTab);
     }
 
@@ -367,7 +372,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @return Whether bookmark page menu item should be checked, indicating that the current tab
      *         is bookmarked.
      */
-    protected boolean shouldCheckBookmarkStar(@NonNull Tab currentTab) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public boolean shouldCheckBookmarkStar(@NonNull Tab currentTab) {
         return sItemBookmarkedForTesting != null
                 ? sItemBookmarkedForTesting
                 : mBookmarkBridge != null && mBookmarkBridge.hasBookmarkIdForTab(currentTab);
@@ -394,7 +400,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @param isIncognito Whether the currentTab is incognito.
      * @return Whether the paint preview menu item should be displayed.
      */
-    protected boolean shouldShowPaintPreview(
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public boolean shouldShowPaintPreview(
             boolean isChromeScheme, @NonNull Tab currentTab, boolean isIncognito) {
         return CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_DEMO) && !isChromeScheme
                 && !isIncognito;
@@ -419,7 +426,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @param currentTab The currentTab for which the app menu is showing.
      * @return Whether the translate menu item should be displayed.
      */
-    protected boolean shouldShowTranslateMenuItem(@NonNull Tab currentTab) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public boolean shouldShowTranslateMenuItem(@NonNull Tab currentTab) {
         return TranslateUtils.canTranslateCurrentTab(currentTab);
     }
 
@@ -445,6 +453,14 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         // * If creating shortcuts it not supported by the current home screen.
         return ShortcutHelper.isAddToHomeIntentSupported() && !isChromeScheme && !isFileScheme
                 && !isContentScheme && !isIncognito && !TextUtils.isEmpty(url);
+    }
+
+    /**
+     * @param currentTab Current tab being displayed.
+     * @return Whether the "Managed by your organization" menu item should be displayed.
+     */
+    protected boolean shouldShowManagedByMenuItem(Tab currentTab) {
+        return false;
     }
 
     /**
@@ -482,9 +498,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         }
     }
 
-    @VisibleForTesting
-    @StringRes
-    int getAddToHomeScreenTitle() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public @StringRes int getAddToHomeScreenTitle() {
         return AppBannerManager.getHomescreenLanguageOption();
     }
 
@@ -651,13 +666,13 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                         : mContext.getString(R.string.menu_request_desktop_site_off));
     }
 
-    @VisibleForTesting
-    boolean isIncognitoEnabled() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+    public boolean isIncognitoEnabled() {
         return IncognitoUtils.isIncognitoModeEnabled();
     }
 
-    @VisibleForTesting
-    boolean isIncognitoManaged() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+    public boolean isIncognitoManaged() {
         return IncognitoUtils.isIncognitoModeManaged();
     }
 

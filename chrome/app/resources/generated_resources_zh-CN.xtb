@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">修改文件</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="1285484354230578868">将数据存储在您的 Google 云端硬盘帐号中</translation>
-<translation id="1285717512281186441">无法连接到打印机</translation>
 <translation id="1288037062697528143">护眼模式将于日落时自动开启</translation>
 <translation id="1288300545283011870">语音属性</translation>
 <translation id="1293264513303784526">USB-C 设备（左侧端口）</translation>
@@ -483,7 +482,6 @@
 <translation id="1587129667417059148">此操作会清除 <ph name="ORIGIN_NAME" /> 存储的所有数据和 Cookie</translation>
 <translation id="1587275751631642843">JavaScript 控制台(&amp;J)</translation>
 <translation id="1587907146729660231">用手指轻触电源按钮</translation>
-<translation id="1588200577109872591">智能输入</translation>
 <translation id="1588438908519853928">正常</translation>
 <translation id="158849752021629804">需要家庭网络</translation>
 <translation id="1588870296199743671">链接打开方式...</translation>
@@ -1282,7 +1280,6 @@
 <translation id="253557089021624350">正在使用相应扩展程序的活动数</translation>
 <translation id="2535799430745250929">无移动网络</translation>
 <translation id="2537178555904266562">同步密码时出错</translation>
-<translation id="2537296579376733324">所有 Cookie，仅限在此网站上</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> 可查看和修改以下文件和文件夹</translation>
 <translation id="2537927931785713436">正在检查虚拟机映像</translation>
 <translation id="2538361623464451692">同步功能已停用</translation>
@@ -1423,7 +1420,6 @@
 <translation id="2712173769900027643">请求批准</translation>
 <translation id="2713444072780614174">白色</translation>
 <translation id="2714393097308983682">Google Play 商店</translation>
-<translation id="2714997332747470971">个人信息建议可提供与您名字、地址或电话号码等个人信息有关的建议，帮助您提高输入速度。系统为您的帐号提供的私人专用个性化建议仅对您本人可见。</translation>
 <translation id="2715751256863167692">此项升级操作会重置您 Chromebook 的硬件并移除当前的用户数据。</translation>
 <translation id="2716986496990888774">此设置由家长管理。</translation>
 <translation id="2718395828230677721">护眼模式</translation>
@@ -2944,7 +2940,6 @@
 <translation id="4608520674724523647">注册成功图示</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> 包含敏感内容</translation>
 <translation id="4610162781778310380">“<ph name="PLUGIN_NAME" />”遇到了错误</translation>
-<translation id="4610178114344604329">显示个人信息建议</translation>
 <translation id="4610637590575890427">您是不是要访问 <ph name="SITE" />？</translation>
 <translation id="4611114513649582138">有可用的数据网络连接</translation>
 <translation id="4613144866899789710">正在取消安装 Linux…</translation>
@@ -6005,7 +6000,6 @@
 <translation id="8448729345478502352">缩小或放大屏幕上的内容</translation>
 <translation id="8449008133205184768">粘贴并匹配样式</translation>
 <translation id="8449036207308062757">管理存储空间</translation>
-<translation id="84501823665211008">显示表情符号建议</translation>
 <translation id="8452135315243592079">缺少 SIM 卡</translation>
 <translation id="8455026683977728932">未能启用 ADB 图示</translation>
 <translation id="845702320058262034">无法连接。请确保您手机的蓝牙已开启。</translation>
@@ -6289,7 +6283,6 @@
 <translation id="8798441408945964110">提供商名称</translation>
 <translation id="8800004011501252845">目前显示的是以下帐号的目标打印机：</translation>
 <translation id="8800034312320686233">网站无法正常运行？</translation>
-<translation id="880069872639153240">根据您输入的内容，获取表情符号建议</translation>
 <translation id="8803953437405899238">只需点击一下，即可打开一个新标签页</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{将标签页移至另一个窗口}other{将标签页移至另一个窗口}}</translation>
 <translation id="8805140816472474147">请确认同步设置以开始同步。</translation>

@@ -398,6 +398,14 @@ class IsolatedPrerenderTabHelper
     scoped_refptr<network::SharedURLLoaderFactory> isolated_url_loader_factory_;
   };
 
+  // Computes the AfterSRPMetrics that would be returned for the next
+  // navigation, when it commits. This method exists to allow the PLM Observer
+  // to get the AfterSRPMetrics if the navigation fails to commit, so that
+  // metrics can be logged anyways. Returns nullptr if the after srp metrics
+  // wouldn't be set on the next commit.
+  std::unique_ptr<IsolatedPrerenderTabHelper::AfterSRPMetrics>
+  ComputeAfterSRPMetricsBeforeCommit(content::NavigationHandle* handle) const;
+
   // A helper method to make it easier to tell when prefetching is already
   // active.
   bool PrefetchingActive() const;

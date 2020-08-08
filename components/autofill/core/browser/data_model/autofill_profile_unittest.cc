@@ -1184,7 +1184,9 @@ TEST_P(AutofillProfileTest, OverwriteName_AddNameFull) {
   AutofillProfile b = a;
   a.FinalizeAfterImport();
 
-  b.SetRawInfo(NAME_FULL, base::ASCIIToUTF16("Marion Mitchell Morrison"));
+  b.SetRawInfoWithVerificationStatus(
+      NAME_FULL, base::ASCIIToUTF16("Marion Mitchell Morrison"),
+      structured_address::VerificationStatus::kUserVerified);
   b.FinalizeAfterImport();
 
   EXPECT_TRUE(a.MergeDataFrom(b, "en-US"));

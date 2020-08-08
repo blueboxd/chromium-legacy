@@ -1213,6 +1213,71 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
           ukm::builders::PrefetchProxy_AfterSRPClick::kProbeLatencyMsName));
 }
 
+// 204's don't commit so this is used to test that the AfterSRPMetrics UKM event
+// is recorded if the page does not commit. In the wild, we expect this to
+// normally occur due to aborted navigations but the end result is the same.
+IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(PrefetchingUKM_NoCommit)) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      "isolated-prerender-unlimited-prefetches");
+
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  SetDataSaverEnabled(true);
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link_204 =
+      GetOriginServerURL("/prerender/isolated/page204.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link_204});
+
+  base::RunLoop run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(run_loop.QuitClosure());
+
+  base::HistogramTester histogram_tester;
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link_204});
+
+  // This run loop will quit when all the prefetch responses have been
+  // successfully done and processed.
+  run_loop.Run();
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 204, 1);
+
+  // Navigate to a prefetched page to trigger UKM recording. Note that because
+  // the navigation is never committed, the UKM recording happens immediately.
+  ui_test_utils::NavigateToURL(browser(), eligible_link_204);
+  base::RunLoop().RunUntilIdle();
+
+  VerifyUKMAfterSRP(
+      eligible_link_204,
+      ukm::builders::PrefetchProxy_AfterSRPClick::kClickedLinkSRPPositionName,
+      0);
+  VerifyUKMAfterSRP(
+      eligible_link_204,
+      ukm::builders::PrefetchProxy_AfterSRPClick::kSRPPrefetchEligibleCountName,
+      1);
+  // 0 is the value of |PrefetchStatus::kPrefetchUsedNoProbe|. The enum is not
+  // used here intentionally because its value should never change.
+  VerifyUKMAfterSRP(
+      eligible_link_204,
+      ukm::builders::PrefetchProxy_AfterSRPClick::kSRPClickPrefetchStatusName,
+      0);
+
+  EXPECT_EQ(
+      base::nullopt,
+      GetUKMMetric(
+          eligible_link_204,
+          ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+          ukm::builders::PrefetchProxy_AfterSRPClick::kProbeLatencyMsName));
+}
+
 IN_PROC_BROWSER_TEST_F(
     IsolatedPrerenderBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(PrefetchingUKM_PrefetchError)) {

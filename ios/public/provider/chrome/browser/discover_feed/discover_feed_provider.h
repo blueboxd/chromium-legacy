@@ -42,7 +42,11 @@ class DiscoverFeedProvider {
       NS_RETURNS_RETAINED;
   // Updates the feed's theme to match the user's theme (light/dark).
   virtual void UpdateTheme();
-  // Refreshes the Discover Feed with completion.
+  // Refreshes the Discover Feed. Once the Feed model is refreshed it will
+  // update all ViewControllers returned by NewFeedViewController.
+  virtual void RefreshFeed();
+  // DEPRECATED. Delete once https://crrev.com/i/3205705 lands, along
+  // base/ios/block_types.h
   virtual void RefreshFeedWithCompletion(ProceduralBlock completion);
   // Methods to register or remove observers.
   virtual void AddObserver(Observer* observer);

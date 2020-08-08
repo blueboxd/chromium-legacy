@@ -145,7 +145,7 @@ class ReadOnlyOriginView : public views::View {
         views::GridLayout::LEADING, views::GridLayout::CENTER, 1.0,
         views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     const bool has_icon = icon_bitmap && !icon_bitmap->drawsNothing();
-    float adjusted_width = base::checked_cast<float>(icon_bitmap->width());
+    float adjusted_width = base::checked_cast<float>(has_icon ? icon_bitmap->width() : 0);
     if (has_icon) {
       adjusted_width =
           adjusted_width *

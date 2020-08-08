@@ -16,7 +16,7 @@ namespace tracing {
 namespace {
 
 void OnProcessConnectFailed(PerfettoService* perfetto_service, uint32_t pid) {
-  perfetto_service->RemoveActiveServicePid(pid);
+  perfetto_service->RemoveActiveServicePidIfNoActiveConnections(pid);
 }
 
 void OnProcessConnected(

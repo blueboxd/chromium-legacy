@@ -52,8 +52,9 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         int FEED_ENGAGED = 0;
         int FEED_ENGAGED_SIMPLE = 1;
         int FEED_INTERACTED = 2;
-        int FEED_SCROLLED = 3;
-        int NUM_ENTRIES = 4;
+        int DEPRECATED_FEED_SCROLLED = 3;
+        int FEED_SCROLLED = 4;
+        int NUM_ENTRIES = 5;
     }
 
     /**
@@ -453,6 +454,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     /** Records FEED_ENGAGED and FEED_ENGAGED_SIMPLE if appropriate. */
     private void recordEngagement(int scrollAmount, boolean interacted) {
         // Convert scrollAmount from pixels to DP.
+        scrollAmount = Math.abs(scrollAmount);
         int dpScrolled = 0;
         if (scrollAmount > 0) {
             dpScrolled = convertPixelsToDP(scrollAmount);
@@ -483,6 +485,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         if (mClock.elapsedRealtime() - mVisitStartTime > VISIT_TIME_THRESHOLD) {
             mEngagedReported = false;
             mEngagedSimpleReported = false;
+            mScrolledReported = false;
         }
         // Reset the last active time for session measurement.
         mVisitStartTime = mClock.elapsedRealtime();

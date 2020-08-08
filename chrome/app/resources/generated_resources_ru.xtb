@@ -240,7 +240,6 @@
 <translation id="1280965841156951489">Разрешить</translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
 <translation id="1285484354230578868">Сохранение данных на вашем Google Диске</translation>
-<translation id="1285717512281186441">Принтер недоступен.</translation>
 <translation id="1288037062697528143">Ночная подсветка будет автоматически включаться на закате</translation>
 <translation id="1288300545283011870">Настройки голоса</translation>
 <translation id="1293264513303784526">Устройство USB-C (порт слева)</translation>
@@ -480,7 +479,6 @@
 <translation id="1587129667417059148">Будут удалены все данные и файлы cookie, которые сохранены сайтом <ph name="ORIGIN_NAME" />.</translation>
 <translation id="1587275751631642843">Консоль &amp;JavaScript</translation>
 <translation id="1587907146729660231">Приложите палец к кнопке питания</translation>
-<translation id="1588200577109872591">Умный ввод</translation>
 <translation id="1588438908519853928">Обычный</translation>
 <translation id="158849752021629804">Необходима домашняя сеть</translation>
 <translation id="1588870296199743671">Открыть ссылку с помощью...</translation>
@@ -1274,7 +1272,6 @@
 <translation id="253557089021624350">Количество соединений keepalive</translation>
 <translation id="2535799430745250929">Мобильные сети не найдены</translation>
 <translation id="2537178555904266562">Не удалось синхронизировать пароли.</translation>
-<translation id="2537296579376733324">Все файлы cookie только на этом сайте</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> может просматривать и изменять указанные ниже файлы и папки.</translation>
 <translation id="2537927931785713436">Проверка образа виртуальной машины</translation>
 <translation id="2538361623464451692">Синхронизация отключена</translation>
@@ -1414,7 +1411,6 @@
 <translation id="2712173769900027643">Попросить разрешения</translation>
 <translation id="2713444072780614174">Белый</translation>
 <translation id="2714393097308983682">Google Play</translation>
-<translation id="2714997332747470971">Благодаря подсказкам с личной информацией вы можете быстрее вводить такие данные, как ваше имя, адрес или номер телефона. Эти подсказки видны только вам.</translation>
 <translation id="2715751256863167692">Установив это обновление, вы восстановите исходные настройки устройства Chromebook. При этом с него будут удалены пользовательские данные.</translation>
 <translation id="2716986496990888774">Этим параметром управляет родитель.</translation>
 <translation id="2718395828230677721">Ночной свет</translation>
@@ -2928,7 +2924,6 @@
 <translation id="4608520674724523647">Пример с завершенной регистрацией</translation>
 <translation id="4608703838363792434">Файл <ph name="FILE_NAME" /> содержит конфиденциальный контент.</translation>
 <translation id="4610162781778310380">Ошибка в плагине <ph name="PLUGIN_NAME" /></translation>
-<translation id="4610178114344604329">Показывать подсказки с личной информацией</translation>
 <translation id="4610637590575890427">Возможно, вы хотели перейти на <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Доступно Интернет-подключение</translation>
 <translation id="4613144866899789710">Отмена установки Linux…</translation>
@@ -5974,7 +5969,6 @@
 <translation id="8448729345478502352">Уменьшить или увеличить объекты на экране</translation>
 <translation id="8449008133205184768">Вставить с соблюдением стиля</translation>
 <translation id="8449036207308062757">Управление хранилищем</translation>
-<translation id="84501823665211008">Предлагать эмодзи</translation>
 <translation id="8452135315243592079">SIM-карта не обнаружена</translation>
 <translation id="8455026683977728932">Не удалось включить ADB для создания иллюстраций</translation>
 <translation id="845702320058262034">Не удается подключиться к телефону. Убедитесь, что на нем включен Bluetooth.</translation>
@@ -6256,7 +6250,6 @@
 <translation id="8798441408945964110">Название провайдера</translation>
 <translation id="8800004011501252845">Поиск мест назначения для</translation>
 <translation id="8800034312320686233">Сайт не работает?</translation>
-<translation id="880069872639153240">Получайте подсказки с эмодзи по мере ввода текста.</translation>
 <translation id="8803953437405899238">Открывайте новые вкладки одним нажатием</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Открыть вкладку в другом окне}one{Открыть вкладки в другом окне}few{Открыть вкладки в другом окне}many{Открыть вкладки в другом окне}other{Открыть вкладки в другом окне}}</translation>
 <translation id="8805140816472474147">Чтобы начать синхронизацию, подтвердите настройки.</translation>

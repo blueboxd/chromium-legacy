@@ -122,7 +122,7 @@
       </cr-button>
       <!-- Use policy properties from vpn_config_allowed to indicate when that
            pref disables buttons in this row. -->
-      <controlled-button id="connect" class="action-button"
+      <controlled-button id="connectDisconnect" class="action-button"
           on-click="onConnectDisconnectTap_"
           hidden$="[[shouldConnectDisconnectButtonBeHidden_(managedProperties_,
               globalPolicy,managedNetworkAvailable, deviceState_)]]"

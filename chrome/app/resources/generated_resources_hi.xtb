@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">फ़ाइलों में बदलाव करें</translation>
 <translation id="1285320974508926690">कभी भी इस साइट का अनुवाद न करें</translation>
 <translation id="1285484354230578868">डेटा को अपने Google डिस्क खाते में संगृहीत करें</translation>
-<translation id="1285717512281186441">प्रिंटर कनेक्ट नहीं हो पा रहा है</translation>
 <translation id="1288037062697528143">सूर्यास्त होने पर नाइट लाइट अपने आप चालू हो जाएगी</translation>
 <translation id="1288300545283011870">बोली के विवरण</translation>
 <translation id="1293264513303784526">USB-C डिवाइस (बायां पोर्ट)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">इससे वे सभी डेटा और कुकी मिट जाएंगे जिन्हें <ph name="ORIGIN_NAME" /> ने सेव किया है</translation>
 <translation id="1587275751631642843">&amp;JavaScript कंसोल</translation>
 <translation id="1587907146729660231">अपनी उंगली से पावर बटन को छुएं</translation>
-<translation id="1588200577109872591">स्मार्ट इनपुट</translation>
 <translation id="1588438908519853928">सामान्य</translation>
 <translation id="158849752021629804">होम नेटवर्क की आवश्यकता है</translation>
 <translation id="1588870296199743671">इनके साथ लिंक खोलें...</translation>
@@ -1286,7 +1284,6 @@
 <translation id="253557089021624350">कीपअलाइव की गणना</translation>
 <translation id="2535799430745250929">कोई मोबाइल नेटवर्क मौजूद नहीं है</translation>
 <translation id="2537178555904266562">पासवर्ड सिंक करने में गड़बड़ी हुई</translation>
-<translation id="2537296579376733324">सिर्फ़ इस साइट की सभी कुकी</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> नीचे दी गई फ़ाइलों और फ़ोल्डर को देख सकती है और उनमें बदलाव कर सकती है</translation>
 <translation id="2537927931785713436">वर्चुअल मशीन की इमेज की जांच हो रही है</translation>
 <translation id="2538361623464451692">सिंक बंद किया गया है</translation>
@@ -1427,7 +1424,6 @@
 <translation id="2712173769900027643">अनुमति मांगें</translation>
 <translation id="2713444072780614174">सफ़ेद</translation>
 <translation id="2714393097308983682">Google Play स्टोर</translation>
-<translation id="2714997332747470971">निजी जानकारी के सुझावों की मदद से आप ज़्यादा तेज़ी से लिख सकते हैं. जैसे कि आपके नाम, पता या फ़ोन नंबर के लिए दिए गए सुझाव. आपके खाते पर दिए जाने वाले, निजी और आपके हिसाब से दिए गए सुझाव सिर्फ़ आपको दिखते हैं.</translation>
 <translation id="2715751256863167692">यह अपग्रेड (बेहतर बनाना) आपका Chromebook रीसेट कर देता है और मौजूदा 'उपयोगकर्ता डेटा' हटा देता है.</translation>
 <translation id="2716986496990888774">अभिभावक इस सेटिंग को प्रबंधित करते हैं.</translation>
 <translation id="2718395828230677721">नाइट लाइट</translation>
@@ -2948,7 +2944,6 @@
 <translation id="4608520674724523647">सफल नामांकन का चित्र</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> में संवेदनशील सामग्री है</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> में कोई गड़बड़ी आई</translation>
-<translation id="4610178114344604329">निजी जानकारी के सुझाव दिखाएं</translation>
 <translation id="4610637590575890427">क्या आपका मतलब <ph name="SITE" /> पर जाने से है ?</translation>
 <translation id="4611114513649582138">डेटा कनेक्शन उपलब्ध है</translation>
 <translation id="4613144866899789710">Linux को इंस्टॉल करना रद्द किया जा रहा है...</translation>
@@ -6009,7 +6004,6 @@
 <translation id="8448729345478502352">अपनी स्क्रीन पर मौजूद आइटम को छोटा या बड़ा करें</translation>
 <translation id="8449008133205184768">चिपकाएं और शैली का मिलान करें</translation>
 <translation id="8449036207308062757">जगह प्रबंधित करें</translation>
-<translation id="84501823665211008">इमोजी के सुझाव दिखाएं</translation>
 <translation id="8452135315243592079">अनुपलब्ध SIM कार्ड</translation>
 <translation id="8455026683977728932">ADB इलस्ट्रेशन चालू नहीं किया जा सका</translation>
 <translation id="845702320058262034">कनेक्ट नहीं किया जा सकता. देखें कि आपके फ़ोन का ब्लूटूथ चालू है या नहीं.</translation>
@@ -6293,7 +6287,6 @@
 <translation id="8798441408945964110">कंपनी का नाम</translation>
 <translation id="8800004011501252845">इसके लिए गंतव्य दिखा रहा है:</translation>
 <translation id="8800034312320686233">साइट काम नहीं कर रही है?</translation>
-<translation id="880069872639153240">आप जो भी लिख रहे हैं, उसके आधार पर इमोजी के सुझाव पाएं</translation>
 <translation id="8803953437405899238">एक क्लिक में नया टैब खोलें</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{टैब को किसी और विंडो पर ले जाएं}one{टैब को किसी और विंडो पर ले जाएं}other{टैब को किसी और विंडो पर ले जाएं}}</translation>
 <translation id="8805140816472474147">सिंक शुरू करने के लिए सिंक सेटिंग की पुष्टि करें.</translation>

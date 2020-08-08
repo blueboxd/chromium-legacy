@@ -84,6 +84,10 @@ export const TutorialLesson = Polymer({
           'A lesson must have an element which specifies tabindex.');
     }
     focus.focus();
+    if (!focus.isEqualNode(this.shadowRoot.activeElement)) {
+      // Call show() again if we weren't able to focus the target element.
+      setTimeout(this.show.bind(this), 500);
+    }
   },
 
   /** @private */

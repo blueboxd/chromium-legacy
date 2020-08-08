@@ -138,7 +138,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // removed and the menu item accelerator text is appended.
   static base::string16 GetAccessibleNameForMenuItem(
       const base::string16& item_text,
-      const base::string16& accelerator_text);
+      const base::string16& accelerator_text,
+      bool is_new_feature);
 
   // Hides and cancels the menu. This does nothing if the menu is not open.
   void Cancel();
@@ -353,6 +354,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   void SetAlerted();
   bool is_alerted() const { return is_alerted_; }
 
+  // Returns whether or not a "new" badge should be shown on this menu item.
+  // Takes into account whether the badging feature is enabled.
+  bool ShouldShowNewBadge() const;
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
@@ -490,10 +495,6 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Returns true if the menu has items with a checkbox or a radio button.
   bool HasChecksOrRadioButtons() const;
-
-  // Returns whether or not a "new" badge should be shown on this menu item.
-  // Takes into account whether the badging feature is enabled.
-  bool ShouldShowNewBadge() const;
 
   void invalidate_dimensions() { dimensions_.height = 0; }
   bool is_dimensions_valid() const { return dimensions_.height > 0; }

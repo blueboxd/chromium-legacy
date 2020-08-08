@@ -121,9 +121,6 @@ ExceptionHandler* g_breakpad = nullptr;
 const char* g_asan_report_str = nullptr;
 #endif
 
-bool g_use_crash_key_white_list = false;
-const char* const* g_crash_key_white_list = nullptr;
-
 #if defined(OS_ANDROID)
 #define G_DUMPS_SUPPRESSED_MAGIC 0x5AFECEDE
 uint32_t g_dumps_suppressed = 0;
@@ -1137,23 +1134,10 @@ void EnableNonBrowserCrashDumping() {
 }
 #endif  // defined(OS_ANDROID)
 
-bool IsInWhiteList(const base::StringPiece& key) {
-  DCHECK(g_crash_key_white_list);
-  for (size_t i = 0; g_crash_key_white_list[i]; ++i) {
-    if (0 == my_strcmp(g_crash_key_white_list[i], key.data())) {
-      return true;
-    }
-  }
-  return false;
-}
-
 // GetCrashReporterClient() cannot call any Set methods until after
 // InitCrashKeys().
 void InitCrashKeys() {
   crash_reporter::InitializeCrashKeys();
-  g_use_crash_key_white_list =
-      GetCrashReporterClient()->UseCrashKeysWhiteList();
-  g_crash_key_white_list = GetCrashReporterClient()->GetCrashKeyWhiteList();
 }
 
 void SetCrashLoopBeforeTime(const std::string& process_type,
@@ -1870,8 +1854,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
     CrashKeyStorage::Iterator crash_key_iterator(*info.crash_keys);
     const CrashKeyStorage::Entry* entry;
     while ((entry = crash_key_iterator.Next())) {
-      if (g_use_crash_key_white_list && !IsInWhiteList(entry->key))
-        continue;
       size_t key_size, value_size;
       // Check for malformed messages.
       key_size = entry->key[CrashKeyStorage::key_size - 1] != '\0'

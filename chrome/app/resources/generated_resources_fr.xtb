@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Modifier les fichiers</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="1285484354230578868">Stocker les données dans votre compte Google Drive</translation>
-<translation id="1285717512281186441">Imprimante inaccessible</translation>
 <translation id="1288037062697528143">L'éclairage nocturne sera activé automatiquement au coucher du soleil</translation>
 <translation id="1288300545283011870">Propriétés relatives à la voix</translation>
 <translation id="1293264513303784526">Appareil USB de type C (port situé sur la gauche de l'appareil)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">L'ensemble des données et des cookies stockés par <ph name="ORIGIN_NAME" /> seront effacés.</translation>
 <translation id="1587275751631642843">Console &amp;JavaScript</translation>
 <translation id="1587907146729660231">Appuyez sur le bouton Marche/Arrêt avec votre doigt</translation>
-<translation id="1588200577109872591">Saisies intelligentes</translation>
 <translation id="1588438908519853928">Standard</translation>
 <translation id="158849752021629804">Réseau domestique requis</translation>
 <translation id="1588870296199743671">Ouvrir le lien avec...</translation>
@@ -1286,7 +1284,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="253557089021624350">Nombre d'activités en cours</translation>
 <translation id="2535799430745250929">Aucun réseau mobile disponible</translation>
 <translation id="2537178555904266562">Erreur lors de la synchronisation des mots de passe</translation>
-<translation id="2537296579376733324">Tous les cookies (sur ce site uniquement)</translation>
 <translation id="2537395079978992874">Le site <ph name="ORIGIN" /> peut afficher et modifier les fichiers et les dossiers suivants</translation>
 <translation id="2537927931785713436">Vérification de l'image de la machine virtuelle…</translation>
 <translation id="2538361623464451692">Synchronisation désactivée</translation>
@@ -1427,7 +1424,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2712173769900027643">Demander l'autorisation</translation>
 <translation id="2713444072780614174">Blanc</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
-<translation id="2714997332747470971">Les suggestions d'informations personnelles permettent d'accélérer la saisie de texte en vous proposant votre nom, votre adresse ou votre numéro de téléphone, par exemple. Ces suggestions privées, spécifiques à votre compte, ne sont visibles que par vous.</translation>
 <translation id="2715751256863167692">Cette mise à niveau entraîne la réinitialisation de votre Chromebook et la suppression des informations sur l'utilisateur actuelles.</translation>
 <translation id="2716986496990888774">Ce paramètre est géré par un parent.</translation>
 <translation id="2718395828230677721">Écl. nocturne</translation>
@@ -2949,7 +2945,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4608520674724523647">Illustration d'inscription réussie</translation>
 <translation id="4608703838363792434">Le contenu du fichier "<ph name="FILE_NAME" />" est sensible</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> a rencontré une erreur</translation>
-<translation id="4610178114344604329">Afficher les suggestions d'informations personnelles</translation>
 <translation id="4610637590575890427">Vouliez-vous accéder à <ph name="SITE" /> ?</translation>
 <translation id="4611114513649582138">Connexion de données disponible</translation>
 <translation id="4613144866899789710">Annulation de l'installation de Linux…</translation>
@@ -6012,7 +6007,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8448729345478502352">Agrandir ou réduire la taille des éléments à l'écran</translation>
 <translation id="8449008133205184768">Coller en adaptant le style</translation>
 <translation id="8449036207308062757">Gérer l'espace de stockage</translation>
-<translation id="84501823665211008">Afficher les suggestions d'emoji</translation>
 <translation id="8452135315243592079">Carte SIM manquante</translation>
 <translation id="8455026683977728932">Illustration de l'échec de l'activation d'ADB</translation>
 <translation id="845702320058262034">Connexion impossible. Assurez-vous que le Bluetooth est activé sur votre téléphone.</translation>
@@ -6296,7 +6290,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8798441408945964110">Nom du fournisseur</translation>
 <translation id="8800004011501252845">Affichage des emplacements de destination pour</translation>
 <translation id="8800034312320686233">Impossible d'accéder au site ?</translation>
-<translation id="880069872639153240">Obtenez des suggestions d'emoji en fonction de ce que vous écrivez</translation>
 <translation id="8803953437405899238">Ouvrez un nouvel onglet d'un simple clic</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Déplacer l'onglet vers une autre fenêtre}one{Déplacer l'onglet vers une autre fenêtre}other{Déplacer les onglets vers une autre fenêtre}}</translation>
 <translation id="8805140816472474147">Confirmez les paramètres de synchronisation pour lancer la synchronisation.</translation>

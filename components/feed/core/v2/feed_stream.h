@@ -77,7 +77,7 @@ class FeedStream : public FeedStreamApi,
     virtual RefreshResponseData TranslateWireResponse(
         feedwire::Response response,
         StreamModelUpdateRequest::Source source,
-        base::Time current_time);
+        base::Time current_time) const;
   };
 
   class Metadata {
@@ -229,6 +229,10 @@ class FeedStream : public FeedStreamApi,
   // is not true.
   void TriggerStreamLoad();
 
+  // Only to be called by ClearAllTask. This clears other stream data stored in
+  // memory.
+  void FinishClearAll();
+
   // Returns the model if it is loaded, or null otherwise.
   StreamModel* GetModel() { return model_.get(); }
 
@@ -236,7 +240,7 @@ class FeedStream : public FeedStreamApi,
   const base::TickClock* GetTickClock() const { return tick_clock_; }
   RequestMetadata GetRequestMetadata();
 
-  WireResponseTranslator* GetWireResponseTranslator() const {
+  const WireResponseTranslator* GetWireResponseTranslator() const {
     return wire_response_translator_;
   }
 
@@ -246,7 +250,7 @@ class FeedStream : public FeedStreamApi,
   // loading from network or storage.
   void LoadModelForTesting(std::unique_ptr<StreamModel> model);
   void SetWireResponseTranslatorForTesting(
-      WireResponseTranslator* wire_response_translator) {
+      const WireResponseTranslator* wire_response_translator) {
     wire_response_translator_ = wire_response_translator;
   }
   void SetIdleCallbackForTesting(base::RepeatingClosure idle_callback);
@@ -290,7 +294,7 @@ class FeedStream : public FeedStreamApi,
   FeedStore* store_;
   const base::Clock* clock_;
   const base::TickClock* tick_clock_;
-  WireResponseTranslator* wire_response_translator_;
+  const WireResponseTranslator* wire_response_translator_;
 
   ChromeInfo chrome_info_;
 

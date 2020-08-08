@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Edytuj pliki</translation>
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="1285484354230578868">Przechowywanie danych na koncie Dysku Google</translation>
-<translation id="1285717512281186441">Drukarka jest nieosiągalna</translation>
 <translation id="1288037062697528143">Podświetlenie nocne włączy się automatycznie o zachodzie słońca</translation>
 <translation id="1288300545283011870">Właściwości syntezy mowy</translation>
 <translation id="1293264513303784526">Urządzenie USB-C (lewy port)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Spowoduje to usunięcie wszystkich danych i plików cookie zapisanych przez stronę <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">Konsola &amp;JavaScript</translation>
 <translation id="1587907146729660231">Dotknij palcem przycisku zasilania</translation>
-<translation id="1588200577109872591">Inteligentne wpisywanie</translation>
 <translation id="1588438908519853928">Normalny</translation>
 <translation id="158849752021629804">Wymagana sieć macierzysta</translation>
 <translation id="1588870296199743671">Otwórz link przy użyciu...</translation>
@@ -1282,7 +1280,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="253557089021624350">Liczba elementów wymuszających aktywność</translation>
 <translation id="2535799430745250929">Brak sieci komórkowej</translation>
 <translation id="2537178555904266562">Błąd podczas synchronizowania haseł</translation>
-<translation id="2537296579376733324">Wszystkie pliki cookie, tylko w tej witrynie</translation>
 <translation id="2537395079978992874">Strona <ph name="ORIGIN" /> może wyświetlać i edytować te pliki i foldery</translation>
 <translation id="2537927931785713436">Sprawdzam obraz maszyny wirtualnej</translation>
 <translation id="2538361623464451692">Synchronizacja wyłączona</translation>
@@ -1423,7 +1420,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2712173769900027643">Poproś o pozwolenie</translation>
 <translation id="2713444072780614174">Biały</translation>
 <translation id="2714393097308983682">Sklep Google Play</translation>
-<translation id="2714997332747470971">Dzięki podpowiadaniu danych osobowych takich jak imię i nazwisko, adres oraz numer telefonu możesz pisać szybciej. Swoje prywatne, spersonalizowane podpowiedzi w obrębie swojego konta widzisz tylko Ty.</translation>
 <translation id="2715751256863167692">Ta aktualizacja resetuje Chromebooka i usuwa dane bieżącego użytkownika.</translation>
 <translation id="2716986496990888774">Tym ustawieniem zarządza rodzic.</translation>
 <translation id="2718395828230677721">Podświetlenie</translation>
@@ -2947,7 +2943,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4608520674724523647">Ilustracja przedstawiająca udaną rejestrację</translation>
 <translation id="4608703838363792434">Plik <ph name="FILE_NAME" /> zawiera treści o charakterze kontrowersyjnym</translation>
 <translation id="4610162781778310380">We wtyczce <ph name="PLUGIN_NAME" /> wystąpił błąd</translation>
-<translation id="4610178114344604329">Podpowiadaj dane osobowe</translation>
 <translation id="4610637590575890427">Czy chodziło o przejście do witryny <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Dostępne jest połączenie transmisji danych</translation>
 <translation id="4613144866899789710">Anulowanie instalacji Linuksa...</translation>
@@ -6013,7 +6008,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8448729345478502352">Powiększ lub pomniejsz elementy na ekranie</translation>
 <translation id="8449008133205184768">Wklej i dopasuj do stylu</translation>
 <translation id="8449036207308062757">Zarządzaj pamięcią</translation>
-<translation id="84501823665211008">Podpowiadaj emotikony</translation>
 <translation id="8452135315243592079">Brak karty SIM</translation>
 <translation id="8455026683977728932">Ilustracja: nie udało się włączyć ADB</translation>
 <translation id="845702320058262034">Nie można nawiązać połączenia. Sprawdź, czy Bluetooth w telefonie jest włączony.</translation>
@@ -6299,7 +6293,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8798441408945964110">Nazwa dostawcy</translation>
 <translation id="8800004011501252845">Pokaż urządzenia docelowe dla</translation>
 <translation id="8800034312320686233">Strona nie działa?</translation>
-<translation id="880069872639153240">Otrzymuj sugestie dotyczące emotikonów na podstawie tego, co piszesz</translation>
 <translation id="8803953437405899238">Otwórz nową kartę jednym kliknięciem</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Przenieś kartę do innego okna}few{Przenieś karty do innego okna}many{Przenieś karty do innego okna}other{Przenieś karty do innego okna}}</translation>
 <translation id="8805140816472474147">Potwierdź ustawienia synchronizacji, by ją rozpocząć.</translation>

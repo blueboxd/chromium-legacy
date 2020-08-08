@@ -91,12 +91,14 @@ Polymer({
    * @private
    */
   computeAriaLabel_() {
-    const rowLabel = this.getItemName_() + ' ' + this.getItemDescription_();
     if (this.checked) {
       return this.i18n(
-          'ambientModeTopicSourceSelectedRow', rowLabel, this.getItemName_());
+          'ambientModeTopicSourceSelectedRow', this.getItemName_(),
+          this.getItemDescription_());
     }
-    return this.i18n('ambientModeTopicSourceUnselectedRow', rowLabel);
+    return this.i18n(
+        'ambientModeTopicSourceUnselectedRow', this.getItemName_(),
+        this.getItemDescription_());
   },
 
   /**

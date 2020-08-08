@@ -383,6 +383,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   BrowserContext* GetBrowserContext() override;
   void ReportHeavyAdIssue(blink::mojom::HeavyAdResolutionStatus resolution,
                           blink::mojom::HeavyAdReason reason) override;
+  void AsValueInto(base::trace_event::TracedValue* traced_value) override;
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to

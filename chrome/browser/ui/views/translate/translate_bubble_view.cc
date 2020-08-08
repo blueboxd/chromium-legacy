@@ -792,7 +792,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewErrorNoTitle(
       views::GridLayout::kFixedSize, COLUMN_SET_ID_BUTTONS,
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
-  auto try_again_button = views::MdTextButton::Create(
+  auto try_again_button = std::make_unique<views::MdTextButton>(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRY_AGAIN));
   try_again_button->SetID(BUTTON_ID_TRY_AGAIN);
   layout->AddView(std::move(try_again_button));
@@ -837,8 +837,8 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedSource() {
   source_language_combobox->set_listener(this);
   source_language_combobox_ = source_language_combobox.get();
 
-  auto advanced_done_button =
-      views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_DONE));
+  auto advanced_done_button = std::make_unique<views::MdTextButton>(
+      this, l10n_util::GetStringUTF16(IDS_DONE));
   advanced_done_button->SetID(BUTTON_ID_DONE);
   advanced_done_button->SetIsDefault(true);
   advanced_done_button_source_ = advanced_done_button.get();
@@ -869,8 +869,8 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTarget() {
   target_language_combobox->set_listener(this);
   target_language_combobox_ = target_language_combobox.get();
 
-  auto advanced_done_button =
-      views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_DONE));
+  auto advanced_done_button = std::make_unique<views::MdTextButton>(
+      this, l10n_util::GetStringUTF16(IDS_DONE));
   advanced_done_button->SetID(BUTTON_ID_DONE);
   advanced_done_button->SetIsDefault(true);
   advanced_done_button_target_ = advanced_done_button.get();
@@ -1004,7 +1004,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvanced(
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_BUTTONS);
   layout->SkipColumns(1);
 
-  auto advanced_reset_button = views::MdTextButton::Create(
+  auto advanced_reset_button = std::make_unique<views::MdTextButton>(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_RESET));
   advanced_reset_button->SetID(BUTTON_ID_RESET);
   layout->AddView(std::move(advanced_reset_button));

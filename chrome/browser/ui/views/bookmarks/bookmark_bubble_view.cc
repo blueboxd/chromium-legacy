@@ -45,7 +45,7 @@ BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = nullptr;
 namespace {
 
 std::unique_ptr<views::View> CreateEditButton(views::ButtonListener* listener) {
-  auto edit_button = views::MdTextButton::Create(
+  auto edit_button = std::make_unique<views::MdTextButton>(
       listener, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
   edit_button->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
   return edit_button;

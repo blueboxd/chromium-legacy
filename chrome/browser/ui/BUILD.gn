@@ -740,10 +740,6 @@ static_library("ui") {
       "android/safe_browsing/password_reuse_dialog_view_android.cc",
       "android/safe_browsing/password_reuse_dialog_view_android.h",
       "android/simple_message_box_android.cc",
-      "android/sms/sms_infobar.cc",
-      "android/sms/sms_infobar.h",
-      "android/sms/sms_infobar_delegate.cc",
-      "android/sms/sms_infobar_delegate.h",
       "android/ssl_client_certificate_selector.cc",
       "android/status_tray_android.cc",
       "android/tab_contents/chrome_web_contents_view_delegate_android.cc",
@@ -4094,6 +4090,13 @@ static_library("ui") {
 
     if (is_chrome_branded) {
       deps += [ "//chrome/browser/ui/media_router/internal/vector_icons" ]
+    }
+
+    if (enable_tab_search) {
+      sources += [
+        "views/tabs/tab_search_button.cc",
+        "views/tabs/tab_search_button.h",
+      ]
     }
   }
 

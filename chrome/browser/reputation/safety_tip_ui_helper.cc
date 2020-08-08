@@ -93,7 +93,10 @@ base::string16 GetSafetyTipTitle(
           IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE);
     case security_state::SafetyTipStatus::kLookalike:
 #if defined(OS_ANDROID)
-      return l10n_util::GetStringUTF16(IDS_SAFETY_TIP_ANDROID_LOOKALIKE_TITLE);
+      return l10n_util::GetStringFUTF16(
+          IDS_SAFETY_TIP_ANDROID_LOOKALIKE_TITLE,
+          security_interstitials::common_string_util::GetFormattedHostName(
+              suggested_url));
 #else
       return l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE,
@@ -114,7 +117,6 @@ base::string16 GetSafetyTipTitle(
 
 base::string16 GetSafetyTipDescription(
     security_state::SafetyTipStatus warning_type,
-    const GURL& url,
     const GURL& suggested_url) {
   switch (warning_type) {
     case security_state::SafetyTipStatus::kBadReputation:
@@ -124,7 +126,6 @@ base::string16 GetSafetyTipDescription(
 #if defined(OS_ANDROID)
       return l10n_util::GetStringFUTF16(
           IDS_SAFETY_TIP_ANDROID_LOOKALIKE_DESCRIPTION,
-          security_interstitials::common_string_util::GetFormattedHostName(url),
           security_interstitials::common_string_util::GetFormattedHostName(
               suggested_url));
 #else
@@ -148,12 +149,14 @@ int GetSafetyTipLeaveButtonId(security_state::SafetyTipStatus warning_type) {
   switch (warning_type) {
 #if defined(OS_ANDROID)
     case security_state::SafetyTipStatus::kBadReputation:
+      return IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_LEAVE_BUTTON;
     case security_state::SafetyTipStatus::kLookalike:
-      return IDS_SAFETY_TIP_ANDROID_LEAVE_BUTTON;
+      return IDS_SAFETY_TIP_ANDROID_LOOKALIKE_LEAVE_BUTTON;
 #else
     case security_state::SafetyTipStatus::kBadReputation:
+      return IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_LEAVE_BUTTON;
     case security_state::SafetyTipStatus::kLookalike:
-      return IDS_PAGE_INFO_SAFETY_TIP_LEAVE_BUTTON;
+      return IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_LEAVE_BUTTON;
 #endif
     case security_state::SafetyTipStatus::kBadReputationIgnored:
     case security_state::SafetyTipStatus::kLookalikeIgnored:

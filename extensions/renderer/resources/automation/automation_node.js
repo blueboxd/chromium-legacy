@@ -618,7 +618,7 @@ AutomationNodeImpl.prototype = {
     return GetLocation(this.treeID, this.id);
   },
 
-  boundsForRange: function(startIndex, endIndex, callback, opt_clipped) {
+  boundsForRange: function(startIndex, endIndex, callback) {
     if (!this.rootImpl)
       return;
 
@@ -632,11 +632,8 @@ AutomationNodeImpl.prototype = {
 
     if (!GetBoolAttribute(this.treeID, this.id, 'supportsTextLocation')) {
       try {
-        // opt_clipped is default to true. Only pass it as false when it is
-        // set to false.
         callback(
-            GetBoundsForRange(this.treeID, this.id, startIndex, endIndex,
-                opt_clipped !== false));
+            GetBoundsForRange(this.treeID, this.id, startIndex, endIndex));
         return;
       } catch (e) {
         logging.WARNING('Error with bounds for range callback' + e);

@@ -550,6 +550,7 @@ source_set("weblayer_lib_base") {
       "//components/autofill/android/provider",
       "//components/browser_ui/client_certificate/android",
       "//components/browser_ui/site_settings/android",
+      "//components/browser_ui/sms/android",
       "//components/cdm/browser",
       "//components/content_settings/android",
       "//components/crash/android:crash_android",

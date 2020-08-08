@@ -164,7 +164,11 @@ crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * 
 # might have the same Nexus 5x driver bug as crbug.com/950932 but that
 # should have made this test flaky instead of always failing. Need to
 # investigate later. Filed a bug to track the debug.
-crbug.com/984734 [ android android-webview-instrumentation qualcomm-adreno-(tm)-418 ] Pixel_Video_Context_Loss_VP9 [ Failure ]
+# crbug.com/984734 [ android android-webview-instrumentation qualcomm-adreno-(tm)-418 ] Pixel_Video_Context_Loss_VP9 [ Failure ]
+
+# Flaking on Nexus 5X even outside WebView now. See commented-out
+# suppression above. Temporarily skipping it to stabilize the CQ.
+crbug.com/1061298 [ android qualcomm-adreno-(tm)-418 ] Pixel_Video_Context_Loss_VP9 [ Skip ]
 
 # Failing on Linux and Windows, both Intel HD 630 and NVIDIA Quadro P400
 crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Skip ]

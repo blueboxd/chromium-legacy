@@ -20,6 +20,10 @@
 namespace autofill {
 namespace features {
 
+// Controls if Autofill sends votes for the new address types.
+const base::Feature kAutofillAddressEnhancementVotes{
+    "kAutofillAddressEnhancementVotes", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the AddressNormalizer is supplied. If available, it may be
 // used to normalize address and will incur fetching rules from the server.
 const base::Feature kAutofillAddressNormalizer{

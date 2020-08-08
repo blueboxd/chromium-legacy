@@ -2309,16 +2309,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika kebijakan ini digunakan, hanya printer dengan id yang cocok dengan nilai di kebijakan ini yang tersedia bagi pengguna. Id harus sesuai dengan kolom "id" atau "guid" dalam file yang ditentukan di <ph name="BULK_PRINTERS_POLICY" />.
       </translation>
 <translation id="4285674129118156176">Mengizinkan pengguna yang tak terafiliasi menggunakan ARC</translation>
-<translation id="4298509794364745131">Menentukan daftar aplikasi yang dapat diaktifkan sebagai aplikasi pencatat di layar kunci <ph name="PRODUCT_OS_NAME" />.
-
-      Jika aplikasi pencatat yang dipilih diaktifkan di layar kunci, layar kunci akan menampilkan elemen UI untuk peluncuran aplikasi pencatat yang dipilih.
-      Saat diluncurkan, aplikasi akan dapat membuat jendela aplikasi di bagian atas layar kunci, dan membuat item data (catatan) saat layar dalam keadaan terkunci. Aplikasi akan dapat mengimpor catatan yang dibuat ke sesi pengguna utama, saat sesi telah dibuka kuncinya. Saat ini, hanya aplikasi pencatat Chrome yang didukung di layar kunci. 
-
-      Jika kebijakan telah ditetapkan, pengguna hanya diperbolehkan untuk mengaktifkan aplikasi di layar kunci, jika ID ekstensi aplikasi terdapat di nilai daftar kebijakan.
-      Sebagai konsekuensinya, menyetel kebijakan ini pada daftar kosong akan menonaktifkan pencatatan di layar kunci sepenuhnya.
-      Harap diperhatikan bahwa kebijakan yang berisi ID aplikasi tidak berarti pengguna dapat mengaktifkan aplikasi sebagai aplikasi pencatat di layar kunci - misalnya, di Chrome 61, kumpulan aplikasi yang tersedia dibatasi oleh platform.
-
-      Jika kebijakan tidak disetel, tidak akan ada batasan di kumpulan aplikasi yang dapat diaktifkan oleh pengguna di layar kunci yang diterapkan oleh kebijakan.</translation>
 <translation id="4311195029067684288">Penuh</translation>
 <translation id="4313767483634435271">Alamat MAC dok yang ditetapkan untuk perangkat</translation>
 <translation id="4322842393287974810">Izinkan peluncuran otomatis dengan aplikasi kios tanpa penundaan untuk mengontrol versi <ph name="PRODUCT_OS_NAME" /></translation>

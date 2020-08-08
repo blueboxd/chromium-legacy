@@ -35,6 +35,9 @@ class FaviconServiceImpl : public favicon::CoreFaviconService {
     observer_ = observer;
   }
 
+  // Deletes the database and recreates it, notifying |callback| when done.
+  void DeleteAndRecreateDatabase(base::OnceClosure callback);
+
   // Requests the favicon image for a url (page). The returned image matches
   // that returned from FaviconFetcher.
   base::CancelableTaskTracker::TaskId GetFaviconForPageUrl(

@@ -563,7 +563,7 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
                               unrelated_vertical_spacing_large);
   layout->AddView(std::move(help_link), 1.0, 1.0, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
-  auto action_button = views::MdTextButton::Create(
+  auto action_button = std::make_unique<views::MdTextButton>(
       this, l10n_util::GetStringUTF16(GetButtonTitle()));
   action_button->SetProminent(true);
   action_button_ =

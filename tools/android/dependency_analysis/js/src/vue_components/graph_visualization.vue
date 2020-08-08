@@ -72,6 +72,14 @@ export default GraphVisualization;
 </script>
 
 <style>
+.graph-hull-labels text {
+  dominant-baseline: baseline;
+  font-family: sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  text-anchor: middle;
+}
+
 .graph-edges path.non-hovered-edge {
   opacity: 0.4;
 }

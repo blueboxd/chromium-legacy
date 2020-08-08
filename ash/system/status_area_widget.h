@@ -73,6 +73,10 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   // changes.
   void UpdateCollapseState();
 
+  // Logs the number of visible status area item pods. Called after the a pod
+  // changes visibility.
+  void LogVisiblePodCountMetric();
+
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 

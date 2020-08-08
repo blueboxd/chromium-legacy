@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Rediger filer</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="1285484354230578868">lagre data i Google Disk-kontoen din</translation>
-<translation id="1285717512281186441">Skriveren kan ikke nås</translation>
 <translation id="1288037062697528143">Nattlys blir slått på automatisk ved solnedgang</translation>
 <translation id="1288300545283011870">Taleegenskaper</translation>
 <translation id="1293264513303784526">USB-C-enhet (porten på venstre side)</translation>
@@ -483,7 +482,6 @@
 <translation id="1587129667417059148">Dette sletter alle data og informasjonskapsler som er lagret av <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">&amp;JavaScript-konsoll</translation>
 <translation id="1587907146729660231">Legg fingeren på av/på-knappen</translation>
-<translation id="1588200577109872591">Smart inndata</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Trenger hjemmenettverk</translation>
 <translation id="1588870296199743671">Åpne link med</translation>
@@ -1283,7 +1281,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="253557089021624350">Keepalive-teller</translation>
 <translation id="2535799430745250929">Det finnes ingen mobilnettverk</translation>
 <translation id="2537178555904266562">Feil under synkronisering av passord</translation>
-<translation id="2537296579376733324">Alle informasjonskapsler, kun på dette nettstedet</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> kan se og redigere disse filene og mappene</translation>
 <translation id="2537927931785713436">Sjekker avbildningen for den virtuelle maskinen</translation>
 <translation id="2538361623464451692">Synkronisering deaktivert</translation>
@@ -1424,7 +1421,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2712173769900027643">Be om tillatelse</translation>
 <translation id="2713444072780614174">Hvit</translation>
 <translation id="2714393097308983682">Google Play Butikk</translation>
-<translation id="2714997332747470971">Forslag til personopplysninger hjelper deg med å skrive raskere med forslag som for eksempel navnet ditt, adressen din eller telefonnummeret ditt. Det er bare du som kan se dine egne private, personlige forslag for kontoen din.</translation>
 <translation id="2715751256863167692">Oppgraderingen tilbakestiller Chromebooken og fjerner gjeldende brukerdata.</translation>
 <translation id="2716986496990888774">Denne innstillingen administreres av en forelder.</translation>
 <translation id="2718395828230677721">Nattlys</translation>
@@ -2944,7 +2940,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4608520674724523647">Illustrasjon av vellykket registrering</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> har sensitivt innhold</translation>
 <translation id="4610162781778310380">Det oppsto en feil med <ph name="PLUGIN_NAME" /></translation>
-<translation id="4610178114344604329">Vis forslag til personopplysninger</translation>
 <translation id="4610637590575890427">Vil du gå til <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">En datatilkobling er tilgjengelig</translation>
 <translation id="4613144866899789710">Avbryter Linux-installasjonen …</translation>
@@ -6006,7 +6001,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8448729345478502352">Gjør elementer på skjermen mindre eller større.</translation>
 <translation id="8449008133205184768">Lim inn og tilpass til stil</translation>
 <translation id="8449036207308062757">Administrer lagringsplassen</translation>
-<translation id="84501823665211008">Vis emoji-forslag</translation>
 <translation id="8452135315243592079">SIM-kort mangler</translation>
 <translation id="8455026683977728932">Kunne ikke slå på ADB-illustrasjonen</translation>
 <translation id="845702320058262034">Kan ikke koble til. Kontrollér at telefonens Bluetooth er på.</translation>
@@ -6290,7 +6284,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8798441408945964110">Leverandørnavn</translation>
 <translation id="8800004011501252845">Viser destinasjoner for</translation>
 <translation id="8800034312320686233">Virker ikke nettstedet?</translation>
-<translation id="880069872639153240">Få emojiforslag basert på det du skriver</translation>
 <translation id="8803953437405899238">Åpne en ny fane med ett klikk</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Flytt fanen til et annet vindu}other{Flytt fanene til et annet vindu}}</translation>
 <translation id="8805140816472474147">Bekreft synkroniseringsinnstillingene for å starte synkroniseringen.</translation>

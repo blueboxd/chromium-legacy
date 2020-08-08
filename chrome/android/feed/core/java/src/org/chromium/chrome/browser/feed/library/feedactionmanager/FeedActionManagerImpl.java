@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunn
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue.TaskType;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
+import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener.ScrollState;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -355,7 +356,7 @@ public class FeedActionManagerImpl implements ActionManager {
 
     private void reportViewActions(Runnable doneCallback) {
         Set<StreamUploadableAction> actions = new HashSet<>();
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+        if (FeedFeatures.isReportingUserActions()) {
             Iterator<Map.Entry<String, ViewActionData>> entryIterator =
                     mContentData.entrySet().iterator();
 

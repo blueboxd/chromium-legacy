@@ -129,8 +129,7 @@ class CupsPrintersManagerImpl
         base::BindRepeating(&CupsPrintersManagerImpl::OnPrintersUpdated,
                             weak_ptr_factory_.GetWeakPtr()));
 
-    native_printers_allowed_.Init(prefs::kUserNativePrintersAllowed,
-                                  pref_service);
+    user_printers_allowed_.Init(prefs::kUserPrintersAllowed, pref_service);
     send_username_and_filename_.Init(
         prefs::kPrintingSendUsernameAndFilenameEnabled, pref_service);
   }
@@ -140,11 +139,11 @@ class CupsPrintersManagerImpl
   // Public API function.
   std::vector<Printer> GetPrinters(PrinterClass printer_class) const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    if (!native_printers_allowed_.GetValue() &&
+    if (!user_printers_allowed_.GetValue() &&
         printer_class != PrinterClass::kEnterprise) {
-      // If native printers are disabled then simply return an empty vector.
-      LOG(WARNING) << "Attempting to retrieve native printers when "
-                      "UserNativePrintersAllowed is set to false";
+      // If printers are disabled then simply return an empty vector.
+      LOG(WARNING) << "Attempting to retrieve printers when "
+                      "UserPrintersAllowed is set to false";
       return {};
     }
 
@@ -162,9 +161,9 @@ class CupsPrintersManagerImpl
   // Public API function.
   void SavePrinter(const Printer& printer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    if (!native_printers_allowed_.GetValue()) {
+    if (!user_printers_allowed_.GetValue()) {
       LOG(WARNING) << "SavePrinter() called when "
-                      "UserNativePrintersAllowed is set to false";
+                      "UserPrintersAllowed is set to false";
       return;
     }
     synced_printers_manager_->UpdateSavedPrinter(printer);
@@ -202,9 +201,9 @@ class CupsPrintersManagerImpl
   // Public API function.
   void PrinterInstalled(const Printer& printer, bool is_automatic) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    if (!native_printers_allowed_.GetValue()) {
+    if (!user_printers_allowed_.GetValue()) {
       LOG(WARNING) << "PrinterInstalled() called when "
-                      "UserNativePrintersAllowed is  set to false";
+                      "UserPrintersAllowed is  set to false";
       return;
     }
     MaybeRecordInstallation(printer, is_automatic);
@@ -225,8 +224,8 @@ class CupsPrintersManagerImpl
   // Public API function.
   base::Optional<Printer> GetPrinter(const std::string& id) const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    if (!native_printers_allowed_.GetValue()) {
-      LOG(WARNING) << "UserNativePrintersAllowed is disabled - only searching "
+    if (!user_printers_allowed_.GetValue()) {
+      LOG(WARNING) << "UserPrintersAllowed is disabled - only searching "
                       "enterprise printers";
       return GetEnterprisePrinter(id);
     }
@@ -703,8 +702,8 @@ class CupsPrintersManagerImpl
 
   base::ObserverList<CupsPrintersManager::Observer>::Unchecked observer_list_;
 
-  // Holds the current value of the pref |UserNativePrintersAllowed|.
-  BooleanPrefMember native_printers_allowed_;
+  // Holds the current value of the pref |UserPrintersAllowed|.
+  BooleanPrefMember user_printers_allowed_;
 
   // Holds the current value of the pref
   // |PrintingSendUsernameAndFilenameEnabled|.
@@ -756,7 +755,7 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::CreateForTesting(
 void CupsPrintersManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
-      prefs::kUserNativePrintersAllowed, true,
+      prefs::kUserPrintersAllowed, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(prefs::kPrintingSendUsernameAndFilenameEnabled,
                                 false);

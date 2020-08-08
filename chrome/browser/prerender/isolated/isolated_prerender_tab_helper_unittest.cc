@@ -1669,14 +1669,14 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure_Continued) {
   GURL final_url("http://final.com/");
 
   content::MockNavigationHandle handle(web_contents());
-  handle.set_url(final_url);
+  handle.set_url(url);
   tab_helper()->DidStartNavigation(&handle);
   handle.set_has_committed(true);
   handle.set_redirect_chain({
-      GURL("https://start.test.com"),
       url,
       final_url,
   });
+  handle.set_url(final_url);
   tab_helper()->DidFinishNavigation(&handle);
 
   ASSERT_TRUE(tab_helper()->after_srp_metrics().has_value());

@@ -346,7 +346,7 @@ class TestWireResponseTranslator : public FeedStream::WireResponseTranslator {
   RefreshResponseData TranslateWireResponse(
       feedwire::Response response,
       StreamModelUpdateRequest::Source source,
-      base::Time current_time) override {
+      base::Time current_time) const override {
     if (injected_response_) {
       if (injected_response_->model_update_request)
         injected_response_->model_update_request->source = source;
@@ -367,7 +367,7 @@ class TestWireResponseTranslator : public FeedStream::WireResponseTranslator {
   bool InjectedResponseConsumed() const { return !injected_response_; }
 
  private:
-  base::Optional<RefreshResponseData> injected_response_;
+  mutable base::Optional<RefreshResponseData> injected_response_;
 };
 
 class FakeRefreshTaskScheduler : public RefreshTaskScheduler {
@@ -1386,8 +1386,29 @@ TEST_F(FeedStreamTest, ClearAllWithNoSurfacesAttachedDoesNotReload) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
-  // Also check that the storage is cleared.
+}
+
+TEST_F(FeedStreamTest, ClearAllWipesAllState) {
+  // Trigger saving a consistency token, so it can be cleared later.
+  network_.consistency_token = "token-11";
+  stream_->UploadAction(MakeFeedAction(42ul), true, base::DoNothing());
+  // Trigger saving a feed stream, so it can be cleared later.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Enqueue an action, so it can be cleared later.
+  stream_->UploadAction(MakeFeedAction(43ul), false, base::DoNothing());
+
+  // Trigger ClearAll, this should erase everything.
+  stream_->OnCacheDataCleared();
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ("loading -> 2 slices -> loading -> cant-refresh",
+            surface.DescribeUpdates());
+
   EXPECT_EQ("", DumpStoreState());
+  EXPECT_EQ("", stream_->GetMetadata()->GetConsistencyToken());
 }
 
 TEST_F(FeedStreamTest, StorePendingAction) {
@@ -1852,6 +1873,8 @@ TEST_F(FeedStreamTest, SendsClientInstanceId) {
 
   // Trigger a ClearAll to verify the instance ID changes.
   stream_->OnSignedOut();
+  WaitForIdleTaskQueue();
+
   const std::string new_instance_id =
       stream_->GetRequestMetadata().client_instance_id;
   ASSERT_NE("", new_instance_id);

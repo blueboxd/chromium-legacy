@@ -85,6 +85,8 @@ component("chromeos") {
     "process_proxy/process_proxy.h",
     "process_proxy/process_proxy_registry.cc",
     "process_proxy/process_proxy_registry.h",
+    "scanning/scanner.cc",
+    "scanning/scanner.h",
   ]
   if (current_cpu == "arm" || current_cpu == "x86") {
     defines = [ "BINDER_IPC_32BIT" ]

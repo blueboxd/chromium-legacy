@@ -272,13 +272,13 @@ Polymer({
   /**
    * @param {boolean} connectedToNetwork Whether the device is connected to
          a network.
-   * @param {boolean} userNativePrintersAllowed Whether users are allowed to
+   * @param {boolean} userPrintersAllowed Whether users are allowed to
          configure their own native printers.
    * @return {boolean} Whether the 'Add Printer' button is active.
    * @private
    */
-  addPrinterButtonActive_(connectedToNetwork, userNativePrintersAllowed) {
-    return connectedToNetwork && userNativePrintersAllowed;
+  addPrinterButtonActive_(connectedToNetwork, userPrintersAllowed) {
+    return connectedToNetwork && userPrintersAllowed;
   },
 
   /**

@@ -386,35 +386,42 @@ body {
 
 @media (prefers-color-scheme: dark) {
   .calendar-picker {
-    background-color: #4a4a4a;
+    background-color: #3B3B3B;
     color:#ffffff;
+    border: 1px solid #858585;
+  }
+
+  .disclosure-triangle polygon,
+  .month-popup-button .disclosure-triangle polygon {
+    fill: #FFFFFF !important;
   }
 
   .calendar-table-header-view {
-    background-color: #4a4a4a;
+    background-color: #3B3B3B;
   }
 
   .calendar-navigation-button {
-    background-color: #4a4a4a;
+    background-color: #3B3B3B;
     color: #ffffff;
   }
 
   .calendar-navigation-button:hover {
-    background-color: rgba(195, 195, 195, 0.3);
+    background-color: #545454;
   }
 
   .calendar-navigation-button:disabled {
-    background-color: #4a4a4a;
+    background-color: #3B3B3B;
   }
 
   .month-popup-button:disabled {
-    background-color: #4a4a4a;
+    background-color: #3B3B3B;
     color: rgba(255, 255, 255, 0.3);
   }
 
+  .week-number-cell,
   .day-cell {
-    background-color: #4a4a4a;
-    color: rgba(255, 255, 255, 0.6);
+    background-color: #3B3B3B;
+    color: #FFFFFF;
   }
 
   .day-cell.current-month {
@@ -422,12 +429,14 @@ body {
   }
 
   .month-button:hover {
-    background-color: rgba(195, 195, 195, 0.3);
+    background-color: #D1E6FF;
+    color: #3B3B3B;
   }
 
   :not(.week-picker) > .calendar-table-view > .scroll-view > .scroll-view-content
       > .calendar-row-cell > .day-cell:not(.selected):hover {
-    background-color: rgba(195, 195, 195, 0.3);
+    background-color: #D1E6FF;
+    color: #3B3B3B;
   }
 
   .week-picker .calendar-row-cell:hover
@@ -435,40 +444,53 @@ body {
   .week-picker .calendar-row-cell:hover + .calendar-row-cell
       .day-cell:not(.selected):not(.disabled):nth-child(2),
   .calendar-row-cell:hover .week-number-cell:not(.selected):not(.disabled) {
-    background-color: rgba(195, 195, 195, 0.3);
+    background-color: #D1E6FF;
+    color: #3B3B3B;
+  }
+
+  .calendar-table-view:focus .day-cell.selected,
+  .year-list-view:focus .month-button.selected,
+  .calendar-table-view:focus .week-number-cell.selected {
+    outline: solid 1px #858585;
+    outline-offset: -1px;
   }
 
   .day-cell.selected,
   .month-button.selected,
   .week-number-cell.selected {
-    background-color: rgba(195, 195, 195, 0.5);
-    color: #FFFFFF;
+    background-color: #99C8FF;
+    color: #3B3B3B;
+    border-color: #858585;
   }
 
   .day-cell.disabled,
   .day-cell.disabled.today,
   .month-button[aria-disabled="true"],
   .week-number-cell.disabled {
-    background-color: #4a4a4a;
+    background-color: #3B3B3B;
     color: rgba(255, 255, 255, 0.3);
   }
 
+  .today-button-refresh {
+    color: #99C8FF;
+  }
+
   .today-button-refresh:hover {
-    background-color: rgba(195, 195, 195, 0.3);
+    color: #D1E6FF;
+    background-color: #545454;
   }
 
   .today-button-refresh:disabled {
-    background-color: #4a4a4a;
     color: rgba(255, 255, 255, 0.3);
   }
 
   .year-list-cell .label {
-    background-color: #4a4a4a;
+    background-color: #3B3B3B;
     color: #ffffff;
   }
 
   body {
-    background-color: #4a4a4a;
+    background-color: #3B3B3B;
   }
 
   .month-popup-button,
@@ -478,8 +500,8 @@ body {
   }
 
   .scrubby-scroll-bar {
-    background-color: #4a4a4a;
-    border-left: 1px solid #4a4a4a;
+    background-color: #3B3B3B;
+    border-left: 1px solid #3B3B3B;
   }
 
   .scrubby-scroll-thumb {
@@ -499,12 +521,11 @@ body {
   }
 
   .year-list-cell .month-chooser {
-    background-color: #4a4a4a;
+    background-color: #3B3B3B;
   }
 
   .month-button {
-    background-color: #4a4a4a;
+    background-color: #3B3B3B;
     color: #ffffff;
   }
-
 }

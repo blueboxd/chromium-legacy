@@ -63,7 +63,6 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1589090746204042747">acessar todas as suas atividades nesta sessão;</translation>
 <translation id="1632985212731562677">O "acesso com interruptor" pode ser desativado em Configurações &gt; Acessibilidade.</translation>
 <translation id="1654477262762802994">Iniciar uma consulta por voz</translation>
-<translation id="1658406695958299976">Ainda não foi possível confirmar sua senha. Observação: se você alterou sua senha recentemente, a nova senha será aplicada depois que você sair da conta. Use a senha antiga aqui.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1698080062160024910">Timer de <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Endereço IPv6: <ph name="ADDRESS" /></translation>
@@ -434,7 +433,6 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="6047696787498798094">O compartilhamento de tela será interrompido quando você alternar para outro usuário. Quer continuar?</translation>
 <translation id="6054305421211936131">Fazer login com cartão inteligente</translation>
 <translation id="6062360702481658777">Você sairá automaticamente em <ph name="LOGOUT_TIME_LEFT" />.</translation>
-<translation id="6064337552080329342">Não foi possível verificar sua senha. Tente novamente.</translation>
 <translation id="607652042414456612">Seu computador pode ser detectado por dispositivos Bluetooth próximos e aparecerá como "<ph name="NAME" />", com o endereço <ph name="ADDRESS" /></translation>
 <translation id="612734058257491180">O Google Assistente não está disponível em uma sessão de visitante.</translation>
 <translation id="615957422585914272">Mostrar teclado na tela</translation>

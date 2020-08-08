@@ -189,7 +189,6 @@ Panel = class {
 
     /** @private {boolean} */
     Panel.iTutorialEnabled_ = false;
-
     chrome.commandLinePrivate.hasSwitch(
         'enable-experimental-accessibility-chromevox-tutorial', (enabled) => {
           Panel.iTutorialEnabled_ = enabled;
@@ -1136,64 +1135,23 @@ Panel = class {
    * @param {string=} opt_page Show a specific page.
    */
   static onTutorial(opt_page) {
-    // Change the url fragment to 'fullscreen', which signals the native
-    // host code to make the window fullscreen, revealing the menus.
     if (Panel.iTutorialEnabled_) {
-      if ($('i-tutorial') === null) {
-        // Load resources if this is the first time opening the tutorial.
-        const tutorialScript = document.createElement('script');
-        tutorialScript.src = '../i_tutorial/i_tutorial.js';
-        tutorialScript.setAttribute('type', 'module');
-        const lessonScript = document.createElement('script');
-        lessonScript.src = '../i_tutorial/tutorial_lesson.js';
-        lessonScript.setAttribute('type', 'module');
-        document.body.appendChild(tutorialScript);
-        document.body.appendChild(lessonScript);
-
-        // Create tutorial container and element.
-        const tutorialContainer = document.createElement('div');
-        tutorialContainer.setAttribute('id', 'i-tutorial-container');
-        tutorialContainer.hidden = true;
-        const tutorialElement = document.createElement('i-tutorial');
-        tutorialElement.setAttribute('id', 'i-tutorial');
-        tutorialContainer.appendChild(tutorialElement);
-        document.body.appendChild(tutorialContainer);
-        Panel.iTutorial = tutorialElement;
-
-        // Add listeners. These are custom events fired from custom components.
-        $('i-tutorial').addEventListener('closetutorial', (evt) => {
-          // Ensure UserActionMonitor is destroyed before closing tutorial.
-          const background =
-              chrome.extension
-                  .getBackgroundPage()['ChromeVoxState']['instance'];
-          background.destroyUserActionMonitor();
-          Panel.onCloseTutorial();
-        });
-        $('i-tutorial').addEventListener('requestspeech', (evt) => {
-          const text = evt.detail.text;
-          const background = chrome.extension.getBackgroundPage();
-          const cvox = background['ChromeVox'];
-          cvox.tts.speak(
-              text, background.QueueMode.FLUSH, {'doNotInterrupt': true});
-        });
-        $('i-tutorial').addEventListener('startinteractivemode', (evt) => {
-          const actions = evt.detail.actions;
-          const background =
-              chrome.extension
-                  .getBackgroundPage()['ChromeVoxState']['instance'];
-          background.createUserActionMonitor(actions, () => {
-            background.destroyUserActionMonitor();
-            Panel.iTutorial.showNextLesson();
-          });
-        });
+      if (!$('i-tutorial')) {
+        const curriculum = Panel.sessionState ===
+                chrome.loginState.SessionState.IN_OOBE_SCREEN ?
+            'oobe' :
+            null;
+        Panel.createITutorial(curriculum);
       }
 
       Panel.setMode(Panel.Mode.FULLSCREEN_I_TUTORIAL);
+      if (Panel.iTutorial.show) {
+        Panel.iTutorial.show();
+      }
       return;
     }
 
     Panel.setMode(Panel.Mode.FULLSCREEN_TUTORIAL);
-
     switch (opt_page) {
       case 'updateNotes':
         Panel.tutorial_.updateNotes();
@@ -1201,6 +1159,64 @@ Panel = class {
       default:
         Panel.tutorial_.lastViewedPage();
     }
+  }
+
+  /**
+   * Creates an <i-tutorial> element and adds it to the dom.
+   * @param {(string|null)} curriculum
+   */
+  static createITutorial(curriculum) {
+    const tutorialScript = document.createElement('script');
+    tutorialScript.src = '../i_tutorial/i_tutorial.js';
+    tutorialScript.setAttribute('type', 'module');
+    const lessonScript = document.createElement('script');
+    lessonScript.src = '../i_tutorial/tutorial_lesson.js';
+    lessonScript.setAttribute('type', 'module');
+    document.body.appendChild(tutorialScript);
+    document.body.appendChild(lessonScript);
+
+    // Create tutorial container and element.
+    const tutorialContainer = document.createElement('div');
+    tutorialContainer.setAttribute('id', 'i-tutorial-container');
+    tutorialContainer.hidden = true;
+    const tutorialElement = document.createElement('i-tutorial');
+    tutorialElement.setAttribute('id', 'i-tutorial');
+    if (curriculum) {
+      tutorialElement.curriculum = curriculum;
+    }
+    tutorialContainer.appendChild(tutorialElement);
+    document.body.appendChild(tutorialContainer);
+    Panel.iTutorial = tutorialElement;
+
+    // Add listeners. These are custom events fired from custom components.
+    $('i-tutorial').addEventListener('closetutorial', (evt) => {
+      // Ensure UserActionMonitor is destroyed before closing tutorial.
+      const background =
+          chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
+      background.destroyUserActionMonitor();
+      Panel.onCloseTutorial();
+    });
+    $('i-tutorial').addEventListener('requestspeech', (evt) => {
+      const text = evt.detail.text;
+      const background = chrome.extension.getBackgroundPage();
+      const cvox = background['ChromeVox'];
+      cvox.tts.speak(
+          text, background.QueueMode.INTERJECT, {'doNotInterrupt': true});
+    });
+    $('i-tutorial').addEventListener('startinteractivemode', (evt) => {
+      const actions = evt.detail.actions;
+      const background =
+          chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
+      background.createUserActionMonitor(actions, () => {
+        background.destroyUserActionMonitor();
+        Panel.iTutorial.showNextLesson();
+      });
+    });
+    $('i-tutorial').addEventListener('stopinteractivemode', (evt) => {
+      const background =
+          chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
+      background.destroyUserActionMonitor();
+    });
   }
 
   /**

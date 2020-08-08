@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">تعديل الملفات</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="1285484354230578868">‏تخزين البيانات في حساب Google Drive</translation>
-<translation id="1285717512281186441">لا يمكن الوصول إلى الطابعة</translation>
 <translation id="1288037062697528143">سيتم تشغيل الإضاءة الليلية تلقائيًا عند غروب الشمس.</translation>
 <translation id="1288300545283011870">خصائص الكلام</translation>
 <translation id="1293264513303784526">‏جهاز USB-C (المنفذ الأيسر)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">سيؤدي هذا الإجراء إلى محو جميع البيانات وملفات تعريف الارتباط المُخزّنة من خلال <ph name="ORIGIN_NAME" />.</translation>
 <translation id="1587275751631642843">‏&amp;وحدة تحكم JavaScript</translation>
 <translation id="1587907146729660231">المس "زر التشغيل" بإصبعك</translation>
-<translation id="1588200577109872591">إدخالات ذكية</translation>
 <translation id="1588438908519853928">عادي</translation>
 <translation id="158849752021629804">يلزم توفر الشبكة الرئيسية</translation>
 <translation id="1588870296199743671">فتح الرابط باستخدام...</translation>
@@ -1286,7 +1284,6 @@
 <translation id="253557089021624350">عدد مرات التحقق من الاتصال</translation>
 <translation id="2535799430745250929">لا تتوفّر شبكة جوّال</translation>
 <translation id="2537178555904266562">حدث خطأ أثناء مزامنة كلمات المرور</translation>
-<translation id="2537296579376733324">جميع ملفات تعريف الارتباط، في هذا الموقع الإلكتروني فقط</translation>
 <translation id="2537395079978992874">بإمكان <ph name="ORIGIN" /> عرض الملفات والمجلدات التالية وتعديلها:</translation>
 <translation id="2537927931785713436">جارٍ التحقُّق من صورة الآلة الافتراضية</translation>
 <translation id="2538361623464451692">تم إيقاف المزامنة.</translation>
@@ -1427,7 +1424,6 @@
 <translation id="2712173769900027643">طلب إذن</translation>
 <translation id="2713444072780614174">أبيض</translation>
 <translation id="2714393097308983682">‏متجر Google Play</translation>
-<translation id="2714997332747470971">تساعدك اقتراحات المعلومات الشخصية على الكتابة بشكلٍ أسرع من خلال تقديم اقتراحات لك، مثل اسمك أو عنوانك أو رقم هاتفك. ولن يتمكّن أحدٌ سواك من الاطّلاع على اقتراحاتك الخاصّة والمخصّصة لحسابك.</translation>
 <translation id="2715751256863167692">‏تؤدي هذه الترقية إلى إعادة ضبط جهاز Chromebook وإزالة بيانات المستخدمين الحالية.</translation>
 <translation id="2716986496990888774">يتولى إدارة هذا الإعداد أحد الوالدين.</translation>
 <translation id="2718395828230677721">الإضاءة الليلية</translation>
@@ -2946,7 +2942,6 @@
 <translation id="4608520674724523647">صورة توضيحية للتسجيل بنجاح</translation>
 <translation id="4608703838363792434">الملف <ph name="FILE_NAME" /> به محتوى حسّاس.</translation>
 <translation id="4610162781778310380">حدث خطأ في <ph name="PLUGIN_NAME" />.</translation>
-<translation id="4610178114344604329">عرض اقتراحات المعلومات الشخصية</translation>
 <translation id="4610637590575890427">هل قصدت الذهاب إلى الموقع <ph name="SITE" />؟</translation>
 <translation id="4611114513649582138">اتصال البيانات متاح</translation>
 <translation id="4613144866899789710">‏جارٍ إلغاء عملية تثبيت Linux...</translation>
@@ -6010,7 +6005,6 @@
 <translation id="8448729345478502352">تصغير العناصر المعروضة على شاشتك أو تكبيرها</translation>
 <translation id="8449008133205184768">لصق النمط ومطابقته</translation>
 <translation id="8449036207308062757">إدارة مساحة التخزين</translation>
-<translation id="84501823665211008">عرض اقتراحات الرموز التعبيرية</translation>
 <translation id="8452135315243592079">‏شريحة SIM مفقودة</translation>
 <translation id="8455026683977728932">‏يتعذّر تفعيل رسم ADB التوضيحي</translation>
 <translation id="845702320058262034">يتعذَّر الاتصال. يُرجى التأكّد من تفعيل البلوتوث في هاتفك.</translation>
@@ -6294,7 +6288,6 @@
 <translation id="8798441408945964110">اسم مقدم الخدمة</translation>
 <translation id="8800004011501252845">عرض الوجهات لـ</translation>
 <translation id="8800034312320686233">هل الموقع الإلكتروني لا يعمل؟</translation>
-<translation id="880069872639153240">يمكنك الحصول على اقتراحات الرموز التعبيرية بناءً على النص الذي تتم كتابته.</translation>
 <translation id="8803953437405899238">يمكنك فتح علامة تبويب جديدة بنقرة واحدة</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{نقل علامة تبويب واحدة إلى نافذة أخرى}zero{نقل علامات تبويب إلى نافذة أخرى}two{نقل علامتَي تبويب إلى نافذة أخرى}few{نقل علامات تبويب إلى نافذة أخرى}many{نقل علامات تبويب إلى نافذة أخرى}other{نقل علامات تبويب إلى نافذة أخرى}}</translation>
 <translation id="8805140816472474147">يُرجى تأكيد إعدادات المزامنة لبدء المزامنة.</translation>

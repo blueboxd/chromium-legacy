@@ -103,6 +103,14 @@ Polymer({
     },
 
     /** @private */
+    enableFontAccessContentSetting_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enableFontAccessContentSetting');
+      }
+    },
+
+    /** @private */
     enableInsecureContentContentSetting_: {
       type: Boolean,
       value() {

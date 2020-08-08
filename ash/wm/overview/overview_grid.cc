@@ -402,12 +402,7 @@ void OverviewGrid::Shutdown() {
         single_animation_in_clamshell, minimized_in_tablet);
   }
 
-  while (!window_list_.empty()) {
-    RemoveItem(window_list_.back().get(), /*item_destroying=*/false,
-               /*reposition=*/false);
-  }
-
-  // RemoveItem() uses `overview_session_`, so clear it at the end.
+  window_list_.clear();
   overview_session_ = nullptr;
 }
 

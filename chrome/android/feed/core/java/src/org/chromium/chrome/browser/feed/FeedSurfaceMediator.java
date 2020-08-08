@@ -14,14 +14,15 @@ import android.widget.ScrollView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.memory.MemoryPressureCallback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
@@ -120,7 +121,7 @@ public class FeedSurfaceMediator
         mPrefChangeRegistrar = new PrefChangeRegistrar();
         mHasHeader = mCoordinator.getSectionHeaderView() != null;
         mPrefChangeRegistrar.addObserver(Pref.ENABLE_SNIPPETS, this::updateContent);
-        mHasHeaderMenu = ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS);
+        mHasHeaderMenu = FeedFeatures.isReportingUserActions();
 
         // Check that there is a navigation delegate when using the feed header menu.
         if (mPageNavigationDelegate == null && mHasHeaderMenu) {
@@ -205,6 +206,9 @@ public class FeedSurfaceMediator
 
             @Override
             public void onAddFinished() {
+                // After first batch of articles are loaded, set recyclerView back to
+                // non-transparent.
+                stream.getView().getBackground().setAlpha(255);
                 if (mContentFirstAvailableTimeMs == 0) {
                     mContentFirstAvailableTimeMs = SystemClock.elapsedRealtime();
                     if (mHasPendingUmaRecording) {
@@ -213,6 +217,24 @@ public class FeedSurfaceMediator
                     }
                 }
                 mIsLoadingFeed = false;
+            }
+
+            @Override
+            public void onAddStarting() {
+                if (!mCoordinator.isPlaceholderShownInV1()) {
+                    return;
+                }
+                // If the placeholder is shown, set sign-in box visible back.
+                RecyclerView recyclerView = (RecyclerView) stream.getView();
+                if (recyclerView != null) {
+                    View signInView = recyclerView.findViewById(R.id.signin_promo_view_container);
+                    if (signInView != null) {
+                        signInView.setAlpha(0f);
+                        signInView.setVisibility(View.VISIBLE);
+                        signInView.animate().alpha(1f).setDuration(
+                                recyclerView.getItemAnimator().getAddDuration());
+                    }
+                }
             }
         };
         stream.addOnContentChangedListener(mStreamContentChangedListener);

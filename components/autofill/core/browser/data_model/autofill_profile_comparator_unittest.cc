@@ -727,7 +727,9 @@ TEST_P(AutofillProfileComparatorTest, AreMergeable) {
                         {ADDRESS_HOME_STATE, "california"},
                         {PHONE_HOME_WHOLE_NUMBER, "5678910 ext. 77"}});
   AutofillProfile not_mergeable_by_name =
-      CopyAndModify(p, {{NAME_FIRST, "Steven"}});
+      CopyAndModify(p, {{NAME_FIRST, "Steven"},
+                        {NAME_FULL, ""},
+                        {autofill::NAME_LAST_SECOND, ""}});
   AutofillProfile not_mergeable_by_email_address =
       CopyAndModify(p, {{EMAIL_ADDRESS, "marion.morrision@me.xyz"}});
   AutofillProfile not_mergeable_by_company_name =

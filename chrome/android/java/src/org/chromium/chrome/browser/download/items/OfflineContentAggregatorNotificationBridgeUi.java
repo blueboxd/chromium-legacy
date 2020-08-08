@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadNotifier;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -164,8 +165,8 @@ public class OfflineContentAggregatorNotificationBridgeUi
                 mUi.notifyDownloadCanceled(item.id);
                 break;
             case OfflineItemState.INTERRUPTED:
-                // TODO(dtrainor): Push the correct value for auto resume.
-                mUi.notifyDownloadInterrupted(info, true, item.pendingState);
+                mUi.notifyDownloadInterrupted(info,
+                        LegacyHelpers.isLegacyDownload(item.id) ? false : true, item.pendingState);
                 break;
             case OfflineItemState.PAUSED:
                 mUi.notifyDownloadPaused(info);

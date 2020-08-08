@@ -263,7 +263,7 @@ QUIC_FLAG(bool,
           false)
 
 // If true, enables support for TLS resumption in QUIC.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_tls_resumption_v3, false)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_tls_resumption_v4, false)
 
 // When true, QUIC's BBRv2 ignores inflight_lo in PROBE_BW.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, true)
@@ -460,3 +460,12 @@ QUIC_FLAG(
 // If true, QuicSession does not keep a separate zombie_streams. Instead, all
 // streams are stored in stream_map_.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_remove_zombie_streams, false)
+
+// If true, always send connection close for idle timeout if NSLC is received.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_no_silent_close_for_idle_timeout,
+          false)
+
+// If true, when server is silently closing connections due to idle timeout,
+// serialize the connection close packets which will be added to time wait list.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_add_silent_idle_timeout, false)

@@ -43,11 +43,11 @@ void ProgressBarExample::CreateExampleView(View* container) {
                         GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(0, 0);
-  minus_button_ =
-      layout->AddView(MdTextButton::Create(this, base::ASCIIToUTF16("-")));
+  minus_button_ = layout->AddView(
+      std::make_unique<views::MdTextButton>(this, base::ASCIIToUTF16("-")));
   progress_bar_ = layout->AddView(std::make_unique<ProgressBar>());
-  plus_button_ =
-      layout->AddView(MdTextButton::Create(this, base::ASCIIToUTF16("+")));
+  plus_button_ = layout->AddView(
+      std::make_unique<views::MdTextButton>(this, base::ASCIIToUTF16("+")));
 
   layout->StartRowWithPadding(0, 0, 0, 10);
   layout->AddView(

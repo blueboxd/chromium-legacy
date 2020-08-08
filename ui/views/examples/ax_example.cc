@@ -30,7 +30,7 @@ void AxExample::CreateExampleView(View* container) {
   layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
 
   announce_button_ = container->AddChildView(
-      MdTextButton::Create(this, base::ASCIIToUTF16("AnnounceText")));
+      std::make_unique<MdTextButton>(this, base::ASCIIToUTF16("AnnounceText")));
 }
 
 void AxExample::ButtonPressed(Button* sender, const ui::Event& event) {

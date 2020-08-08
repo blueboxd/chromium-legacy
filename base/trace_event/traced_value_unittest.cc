@@ -59,10 +59,12 @@ TEST(TraceEventArgumentTest, FlatDictionary) {
   value->SetDouble("double", 0.0);
   value->SetInteger("int", 2014);
   value->SetString("string", "string");
+  value->SetPointer("ptr", reinterpret_cast<void*>(0x1234));
   std::string json = "PREFIX";
   value->AppendAsTraceFormat(&json);
   EXPECT_EQ(
-      "PREFIX{\"bool\":true,\"double\":0.0,\"int\":2014,\"string\":\"string\"}",
+      "PREFIX{\"bool\":true,\"double\":0.0,\"int\":2014,\"string\":\"string\","
+      "\"ptr\":\"0x1234\"}",
       json);
 }
 

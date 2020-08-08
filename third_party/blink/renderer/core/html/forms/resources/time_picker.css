@@ -85,20 +85,24 @@
 
 @media (prefers-color-scheme: dark) {
   .time-picker {
-    background: #4a4a4a;
-    border: 1px solid #bfbfbf;
+    background: #3B3B3B;
+    border: 1px solid #858585;
   }
 
   .time-cell {
+    border: 1px solid transparent;
     color: #ffffff;
   }
 
   .time-cell:hover {
-    background-color: rgba(195, 195, 195, 0.3);
+    background-color: #D1E6FF;
+    color: #3B3B3B;
   }
 
+  .time-column:focus .time-cell.selected,
   .time-cell.selected {
-    background-color: rgba(195, 195, 195, 0.5);
-    color: #FFFFFF;
+    background-color: #99C8FF;
+    color: #3B3B3B;
+    border: 1px solid #858585;
   }
 }

@@ -3,10 +3,6 @@
 // The versions listed here were drawn either from hardcoded HTML intro tables
 // or from the whats_new page.
 {
-  "declarativeNetRequest.ModifyHeaderInfo": {
-    "channel": "stable",
-    "version": 85
-  },
   "devtools.inspectedWindow": {
     "channel": "stable",
     "version": 18

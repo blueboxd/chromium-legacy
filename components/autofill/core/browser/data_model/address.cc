@@ -98,6 +98,23 @@ base::string16 Address::GetRawInfo(ServerFieldType type) const {
     case ADDRESS_HOME_APT_NUM:
       return base::string16();
 
+    // The following tokens are used for creating new type votes but should not
+    // be filled into fields.
+    case ADDRESS_HOME_STREET_NAME:
+      return street_name_;
+
+    case ADDRESS_HOME_HOUSE_NUMBER:
+      return house_number_;
+
+    case ADDRESS_HOME_DEPENDENT_STREET_NAME:
+      return dependent_street_name_;
+
+    case ADDRESS_HOME_PREMISE_NAME:
+      return premise_name_;
+
+    case ADDRESS_HOME_FLOOR:
+      return floor_;
+
     default:
       NOTREACHED() << "Unrecognized type: " << type;
       return base::string16();
@@ -109,9 +126,13 @@ void Address::SetRawInfoWithVerificationStatus(ServerFieldType type,
                                                VerificationStatus status) {
   DCHECK_EQ(ADDRESS_HOME, AutofillType(type).group());
   switch (type) {
+      // If any of the address lines change, the structured tokens must be
+      // reset.
     case ADDRESS_HOME_LINE1:
       if (street_address_.empty())
         street_address_.resize(1);
+      if (street_address_[0] != value)
+        ResetStructuredTokes();
       street_address_[0] = value;
       TrimStreetAddress();
       break;
@@ -119,6 +140,8 @@ void Address::SetRawInfoWithVerificationStatus(ServerFieldType type,
     case ADDRESS_HOME_LINE2:
       if (street_address_.size() < 2)
         street_address_.resize(2);
+      if (street_address_[1] != value)
+        ResetStructuredTokes();
       street_address_[1] = value;
       TrimStreetAddress();
       break;
@@ -126,6 +149,8 @@ void Address::SetRawInfoWithVerificationStatus(ServerFieldType type,
     case ADDRESS_HOME_LINE3:
       if (street_address_.size() < 3)
         street_address_.resize(3);
+      if (street_address_[2] != value)
+        ResetStructuredTokes();
       street_address_[2] = value;
       TrimStreetAddress();
       break;
@@ -157,14 +182,50 @@ void Address::SetRawInfoWithVerificationStatus(ServerFieldType type,
       break;
 
     case ADDRESS_HOME_STREET_ADDRESS:
-      street_address_ =
-          base::SplitString(value, base::ASCIIToUTF16("\n"),
-                            base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      // If the street address changes, the structured tokens must be reset.
+      if (base::SplitString(value, base::ASCIIToUTF16("\n"),
+                            base::TRIM_WHITESPACE,
+                            base::SPLIT_WANT_ALL) != street_address_) {
+        ResetStructuredTokes();
+        street_address_ =
+            base::SplitString(value, base::ASCIIToUTF16("\n"),
+                              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      }
+      break;
+
+    // The following types are used to create type votes but should not be
+    // filled into fields.
+    case ADDRESS_HOME_STREET_NAME:
+      street_name_ = value;
+      break;
+
+    case ADDRESS_HOME_DEPENDENT_STREET_NAME:
+      dependent_street_name_ = value;
+      break;
+
+    case ADDRESS_HOME_HOUSE_NUMBER:
+      house_number_ = value;
+      break;
+
+    case ADDRESS_HOME_PREMISE_NAME:
+      premise_name_ = value;
+      break;
+
+    case ADDRESS_HOME_FLOOR:
+      floor_ = value;
       break;
 
     default:
       NOTREACHED();
   }
+}
+
+void Address::ResetStructuredTokes() {
+  street_name_.clear();
+  dependent_street_name_.clear();
+  house_number_.clear();
+  premise_name_.clear();
+  floor_.clear();
 }
 
 void Address::GetMatchingTypes(const base::string16& text,
@@ -211,6 +272,15 @@ void Address::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(ADDRESS_HOME_ZIP);
   supported_types->insert(ADDRESS_HOME_SORTING_CODE);
   supported_types->insert(ADDRESS_HOME_COUNTRY);
+  // If those types are not added, no votes will be generated.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillAddressEnhancementVotes)) {
+    supported_types->insert(ADDRESS_HOME_STREET_NAME);
+    supported_types->insert(ADDRESS_HOME_DEPENDENT_STREET_NAME);
+    supported_types->insert(ADDRESS_HOME_HOUSE_NUMBER);
+    supported_types->insert(ADDRESS_HOME_PREMISE_NAME);
+    supported_types->insert(ADDRESS_HOME_FLOOR);
+  }
 }
 
 base::string16 Address::GetInfoImpl(const AutofillType& type,

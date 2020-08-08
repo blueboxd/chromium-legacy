@@ -162,6 +162,22 @@ void CastMediaRouteProvider::JoinRoute(const std::string& media_source,
     return;
   }
 
+  if (!activity_manager_) {
+    // This should never happen, but it looks like maybe it does.  See
+    // crbug.com/1114067.
+    NOTREACHED();
+    // This message will probably go unnoticed, but it's here to give some
+    // indication of what went wrong, since NOTREACHED() is compiled out of
+    // release builds.  It would be nice if we could log a message to |logger_|,
+    // but it's initialized in the same place as |activity_manager_|, so it's
+    // almost certainly not available here.
+    LOG(ERROR) << "missing activity manager";
+    std::move(callback).Run(base::nullopt, nullptr,
+                            "Internal error: missing activity manager",
+                            RouteRequestResult::ResultCode::UNKNOWN_ERROR);
+    return;
+  }
+
   activity_manager_->JoinSession(*cast_source, presentation_id, origin, tab_id,
                                  incognito, std::move(callback));
 }

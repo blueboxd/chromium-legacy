@@ -7,15 +7,21 @@
 #include <memory>
 
 #include "base/callback_list.h"
+#include "build/lacros_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/notifications/chrome_ash_message_center_client.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "ui/gfx/image/image.h"
+
+#if BUILDFLAG(IS_LACROS)
+#include "chrome/browser/notifications/message_center_client_lacros.h"
+#else
+#include "chrome/browser/notifications/chrome_ash_message_center_client.h"
+#endif
 
 // static
 std::unique_ptr<NotificationPlatformBridge>
@@ -29,10 +35,16 @@ bool NotificationPlatformBridge::CanHandleType(
   return true;
 }
 
-NotificationPlatformBridgeChromeOs::NotificationPlatformBridgeChromeOs()
-    : impl_(std::make_unique<ChromeAshMessageCenterClient>(this)) {}
+NotificationPlatformBridgeChromeOs::NotificationPlatformBridgeChromeOs() {
+#if BUILDFLAG(IS_LACROS)
+  impl_ = std::make_unique<MessageCenterClientLacros>(this);
+#else
+  impl_ = std::make_unique<ChromeAshMessageCenterClient>(this);
+#endif
+}
 
-NotificationPlatformBridgeChromeOs::~NotificationPlatformBridgeChromeOs() {}
+NotificationPlatformBridgeChromeOs::~NotificationPlatformBridgeChromeOs() =
+    default;
 
 void NotificationPlatformBridgeChromeOs::Display(
     NotificationHandler::Type notification_type,
@@ -41,7 +53,8 @@ void NotificationPlatformBridgeChromeOs::Display(
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   auto active_notification = std::make_unique<ProfileNotification>(
       profile, notification, notification_type);
-  impl_->Display(active_notification->notification());
+  impl_->Display(active_notification->type(), profile,
+                 active_notification->notification(), std::move(metadata));
 
   std::string profile_notification_id =
       active_notification->notification().id();
@@ -56,25 +69,18 @@ void NotificationPlatformBridgeChromeOs::Close(
   const std::string profile_notification_id =
       ProfileNotification::GetProfileNotificationId(
           notification_id, NotificationUIManager::GetProfileID(profile));
-
-  impl_->Close(profile_notification_id);
+  impl_->Close(profile, profile_notification_id);
 }
 
 void NotificationPlatformBridgeChromeOs::GetDisplayed(
     Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
-  // Right now, this is only used to get web notifications that were created by
-  // and have outlived a previous browser process. Ash itself doesn't outlive
-  // the browser process, so there's no need to implement.
-  std::set<std::string> displayed_notifications;
-  std::move(callback).Run(std::move(displayed_notifications), false);
+  impl_->GetDisplayed(profile, std::move(callback));
 }
 
 void NotificationPlatformBridgeChromeOs::SetReadyCallback(
     NotificationBridgeReadyCallback callback) {
-  // We don't handle the absence of Ash or a failure to open a Mojo connection,
-  // so just assume the client is ready.
-  std::move(callback).Run(true);
+  impl_->SetReadyCallback(std::move(callback));
 }
 
 void NotificationPlatformBridgeChromeOs::DisplayServiceShutDown(
@@ -91,6 +97,8 @@ void NotificationPlatformBridgeChromeOs::DisplayServiceShutDown(
 
   for (auto id : ids_to_close)
     HandleNotificationClosed(id, false);
+
+  impl_->DisplayServiceShutDown(profile);
 }
 
 void NotificationPlatformBridgeChromeOs::HandleNotificationClosed(

@@ -666,4 +666,22 @@
           </settings-subpage>
         </template>
       </template>
+      <template is="dom-if" if="[[enableFontAccessContentSetting_]]">
+        <template is="dom-if" route-path="/content/fontAccess" no-search>
+          <settings-subpage page-title="$i18n{fonts}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}">
+            <category-default-setting
+                toggle-off-label="$i18n{siteSettingsFontAccessBlock}"
+                toggle-on-label="$i18n{siteSettingsFontAccessAsk}"
+                category="[[ContentSettingsTypes.FONT_ACCESS]]">
+            </category-default-setting>
+            <category-setting-exceptions
+                category="[[ContentSettingsTypes.FONT_ACCESS]]"
+                block-header="$i18n{siteSettingsBlock}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </settings-subpage>
+        </template>
+      </template>
     </settings-animated-pages>

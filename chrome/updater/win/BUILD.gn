@@ -68,6 +68,8 @@ source_set("constants") {
 source_set("lib") {
   sources = [
     "action_handler.cc",
+    "control_service_out_of_process.cc",
+    "control_service_out_of_process.h",
     "group_policy_manager.cc",
     "group_policy_manager.h",
     "net/net_util.cc",

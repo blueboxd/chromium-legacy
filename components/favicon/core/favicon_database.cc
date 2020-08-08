@@ -67,6 +67,8 @@ namespace favicon {
 //                    table. This is used to determine if it needs to be
 //                    redownloaded from the web. Value 0 denotes that the bitmap
 //                    has been explicitly expired.
+//                    This is used only for ON_VISIT icons, for ON_DEMAND the
+//                    value is always 0.
 //   image_data       PNG encoded data of the favicon.
 //   width            Pixel width of |image_data|.
 //   height           Pixel height of |image_data|.

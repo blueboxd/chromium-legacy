@@ -3,9 +3,11 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/config/linux/gtk/gtk.gni")
 
 # Code lives in the lacros-chrome browser only, not ash-chrome.
 assert(chromeos_is_browser_only)
+assert(!use_gtk)
 
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.

@@ -150,14 +150,14 @@ class StartSurfaceMediator
     private boolean mExcludeMVTiles;
     private boolean mShowStackTabSwitcher;
     /**
-     * The value of {@link Pref.ARTICLES_LIST_VISIBLE} on Startup. Getting this value for recording
-     * the consistency of {@link ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE} with {@link
-     * Pref.ARTICLES_LIST_VISIBLE}.
+     * The value of {@link Pref#ARTICLES_LIST_VISIBLE} on Startup. Getting this value for recording
+     * the consistency of {@link ChromePreferenceKeys#FEED_ARTICLES_LIST_VISIBLE} with {@link
+     * Pref#ARTICLES_LIST_VISIBLE}.
      */
     private Boolean mFeedVisibilityPrefOnStartUp;
     /**
-     * The value of {@link ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE} on Startup. Getting this
-     * value for recording the consistency with {@link Pref.ARTICLES_LIST_VISIBLE}.
+     * The value of {@link ChromePreferenceKeys#FEED_ARTICLES_LIST_VISIBLE} on Startup. Getting this
+     * value for recording the consistency with {@link Pref#ARTICLES_LIST_VISIBLE}.
      */
     @Nullable
     private Boolean mFeedVisibilityInSharedPreferenceOnStartUp;

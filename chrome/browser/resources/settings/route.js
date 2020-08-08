@@ -87,6 +87,9 @@ function addPrivacyChildRoutes(r) {
     r.SITE_SETTINGS_FILE_SYSTEM_WRITE =
         r.SITE_SETTINGS.createChild('filesystem');
   }
+  if (loadTimeData.getBoolean('enableFontAccessContentSetting')) {
+    r.SITE_SETTINGS_FONT_ACCESS = r.SITE_SETTINGS.createChild('fontAccess');
+  }
 }
 
 /**

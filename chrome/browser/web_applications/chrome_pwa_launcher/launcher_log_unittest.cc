@@ -65,8 +65,8 @@ TEST_F(WebAppLauncherLogTest, RecordPwaLauncherResult) {
   RecordPwaLauncherResult();
 
   // |expected_value| should have been recorded to UMA.
-  histogram_tester.ExpectUniqueSample(
-      "WebApp.Launcher.WebAppLauncherLaunchResult", expected_value, 1);
+  histogram_tester.ExpectUniqueSample("WebApp.Launcher.LaunchResult",
+                                      expected_value, 1);
 
   // PWALauncherResult should have been deleted from the registry.
   EXPECT_FALSE(key_.HasValue(kPwaLauncherResult));

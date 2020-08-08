@@ -163,7 +163,6 @@ Polymer({
       case ContentSettingsTypes.PAYMENT_HANDLER:
       case ContentSettingsTypes.POPUPS:
       case ContentSettingsTypes.PROTOCOL_HANDLERS:
-
         // "Allowed" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,
@@ -172,6 +171,7 @@ Polymer({
       case ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
       case ContentSettingsTypes.CAMERA:
       case ContentSettingsTypes.CLIPBOARD:
+      case ContentSettingsTypes.FONT_ACCESS:
       case ContentSettingsTypes.GEOLOCATION:
       case ContentSettingsTypes.MIC:
       case ContentSettingsTypes.NOTIFICATIONS:

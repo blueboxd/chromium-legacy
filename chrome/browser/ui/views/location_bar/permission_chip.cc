@@ -81,8 +81,7 @@ PermissionChip::PermissionChip(Browser* browser)
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetVisible(false);
 
-  chip_button_ = AddChildView(views::MdTextButton::Create(
-      this, base::string16(), views::style::CONTEXT_BUTTON_MD));
+  chip_button_ = AddChildView(std::make_unique<views::MdTextButton>(this));
   chip_button_->SetProminent(true);
   chip_button_->SetCornerRadius(GetIconSize());
   chip_button_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

@@ -117,6 +117,28 @@ TEST_BASE_HISTOGRAM_XML_CONTENT = """
 </histogram-configuration>
 """
 
+TEST_HISTOGRAM_WITH_TOKENS = """
+<histogram-configuration>
+<histograms>
+<histogram name="HistogramName{Color}{Size}" expires_after="2017-10-16">
+  <owner>me@chromium.org</owner>
+  <summary>
+    This is a histogram for button of {Color} color and {Size} size.
+  </summary>
+  <token key="Color">
+    <variant name=".red" label="red"/>
+    <variant name=".green" label="green"/>
+  </token>
+  <token key="Size">
+    <variant name=".small" label="small"/>
+    <variant name=".medium" label="medium"/>
+    <variant name=".large" label="large"/>
+  </token>
+</histogram>
+</histograms>
+</histogram-configuration>
+"""
+
 
 class ExtractHistogramsTest(unittest.TestCase):
 
@@ -530,6 +552,96 @@ class ExtractHistogramsTest(unittest.TestCase):
     have_errors = extract_histograms._UpdateHistogramsWithSuffixes(
         suffix_with_label, {})
     self.assertFalse(have_errors)
+
+  def testUpdateNameWithTokens(self):
+    histogram_with_token = xml.dom.minidom.parseString(
+        TEST_HISTOGRAM_WITH_TOKENS)
+    histograms_dict, _ = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_token, {})
+    histograms_dict, _ = extract_histograms._UpdateHistogramsWithTokens(
+        histograms_dict)
+    self.assertTrue('HistogramName.red.small' in histograms_dict)
+    self.assertTrue('HistogramName.green.small' in histograms_dict)
+    self.assertTrue('HistogramName.red.medium' in histograms_dict)
+    self.assertTrue('HistogramName.green.medium' in histograms_dict)
+    self.assertTrue('HistogramName.red.large' in histograms_dict)
+    self.assertTrue('HistogramName.green.large' in histograms_dict)
+    self.assertFalse('HistogramName{Color}{Size}' in histograms_dict)
+
+    # Make sure generated histograms do not have tokens.
+    new_node = histograms_dict['HistogramName.red.small']
+    self.assertFalse('tokens' in new_node)
+    new_node = histograms_dict['HistogramName.green.large']
+    self.assertFalse('tokens' in new_node)
+
+  def testUpdateSummaryWithTokens(self):
+    histogram_with_token = xml.dom.minidom.parseString(
+        TEST_HISTOGRAM_WITH_TOKENS)
+    histograms_dict, _ = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_token, {})
+    histograms_dict, _ = extract_histograms._UpdateHistogramsWithTokens(
+        histograms_dict)
+    new_node = histograms_dict['HistogramName.red.small']
+    self.assertTrue(
+        new_node['summary'] ==
+        'This is a histogram for button of red color and small size.')
+    new_node = histograms_dict['HistogramName.green.small']
+    self.assertTrue(
+        new_node['summary'] ==
+        'This is a histogram for button of green color and small size.')
+    new_node = histograms_dict['HistogramName.red.medium']
+    self.assertTrue(
+        new_node['summary'] ==
+        'This is a histogram for button of red color and medium size.')
+    new_node = histograms_dict['HistogramName.green.medium']
+    self.assertTrue(
+        new_node['summary'] ==
+        'This is a histogram for button of green color and medium size.')
+    new_node = histograms_dict['HistogramName.red.large']
+    self.assertTrue(
+        new_node['summary'] ==
+        'This is a histogram for button of red color and large size.')
+    new_node = histograms_dict['HistogramName.green.large']
+    self.assertTrue(
+        new_node['summary'] ==
+        'This is a histogram for button of green color and large size.')
+
+  def testUpdateNameDuplicateVariant(self):
+    histogram_with_duplicate_variant = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histograms>
+<histogram name="Histogram{Color}{Size}" units="things"
+    expires_after="2017-10-16">
+  <owner>me@chromium.org</owner>
+  <summary>
+    This is a histogram for button of {Color} color and {Size} size.
+  </summary>
+  <token key="Color">
+    <variant name="" label="all"/>
+    <variant name=".red" label="red"/>
+    <variant name=".green" label="green"/>
+  </token>
+  <token key="Size">
+    <variant name="" label="all"/>
+    <variant name=".red" label="red"/>
+    <variant name=".small" label="small"/>
+    <variant name=".medium" label="medium"/>
+    <variant name=".large" label="large"/>
+  </token>
+</histogram>
+</histograms>
+</histogram-configuration>
+""")
+    # Check that error is logged when empty string variant name is used
+    # in token that is not the last token.
+    with self.assertLogs(level='ERROR') as log:
+      histograms_dict, _ = extract_histograms._ExtractHistogramsFromXmlTree(
+          histogram_with_duplicate_variant, {})
+      histograms_dict, have_errors = extract_histograms._UpdateHistogramsWithTokens(
+          histograms_dict)
+      self.assertTrue(have_errors)
+      self.assertIn('Duplicate histogram name', log.output[0])
+
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.ERROR + 1)

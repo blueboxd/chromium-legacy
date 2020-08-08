@@ -55,7 +55,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -74,8 +74,10 @@ public class TasksViewBinderTest extends DummyUiActivityTestCase {
         super.setUpTest();
         MockitoAnnotations.initMocks(this);
 
-        Map<String, Boolean> testFeatures =
-                Collections.singletonMap(ChromeFeatureList.REPORT_FEED_USER_ACTIONS, true);
+        Map<String, Boolean> testFeatures = new HashMap<>();
+        testFeatures.put(ChromeFeatureList.INTEREST_FEED_V2, false);
+        testFeatures.put(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, true);
+        testFeatures.put(ChromeFeatureList.REPORT_FEED_USER_ACTIONS, false);
         ChromeFeatureList.setTestFeatures(testFeatures);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {

@@ -2417,7 +2417,7 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
   }
 
   size_t simplified_domain_pos =
-      text.find(base::ASCIIToUTF16(simplified_domain));
+      text.rfind(base::ASCIIToUTF16(simplified_domain), host.end());
   DCHECK_NE(simplified_domain_pos, std::string::npos);
   ranges_surrounding_simplified_domain->emplace_back(0, simplified_domain_pos);
   ranges_surrounding_simplified_domain->emplace_back(host.end(), text.size());
@@ -2455,12 +2455,8 @@ void OmniboxViewViews::ResetToHideOnInteraction() {
   elide_after_web_contents_interaction_animation_.reset();
   hover_elide_or_unelide_animation_ =
       std::make_unique<OmniboxViewViews::ElideAnimation>(this, GetRenderText());
-  if (IsURLEligibleForSimplifiedDomainEliding()) {
+  if (IsURLEligibleForSimplifiedDomainEliding())
     ShowFullURLWithoutSchemeAndTrivialSubdomain();
-  } else {
-    GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
-    FitToLocalBounds();
-  }
 }
 
 void OmniboxViewViews::OnShouldPreventElisionChanged() {

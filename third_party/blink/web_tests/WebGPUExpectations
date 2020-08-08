@@ -39,6 +39,11 @@ wpt_internal/webgpu/cts.html?q=webgpu:idl,constants,flags:* [ Failure ]
 # Platform-independent failures
 #
 
+# There's nothing wrong with this test; it just gets unlucky and runs first -
+# and the first test is always slow to start up as it waits on too much browser
+# startup. Which test flakes will change when the CTS is rolled.
+crbug.com/953991 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=0;size=1280;* [ Failure ]
+
 # Many bugs are contained here.
 # - One of them is crbug.com/dawn/424
 # - Mac: Timeout on worker seen at least once.
@@ -86,6 +91,9 @@ crbug.com/1083478 [ Mac ] wpt_internal/webgpu/webgpu/web-platform/reftests/canva
 
 # Very flaky on Windows/Linux, especially (but not exclusively!) with backend validation
 crbug.com/1087130 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:* [ RetryOnFailure ]
+
+# Nvidia only, worker only, very flaky
+[ Linux ] wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api,operation,command_buffer,render,storeop:* [ Failure ]
 
 #
 # Windows (D3D12) specific

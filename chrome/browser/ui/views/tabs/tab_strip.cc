@@ -109,6 +109,7 @@
 #if BUILDFLAG(ENABLE_TAB_SEARCH)
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/tab_search/tab_search_bubble_view.h"
+#include "chrome/browser/ui/views/tabs/tab_search_button.h"
 #endif
 
 namespace {
@@ -2449,16 +2450,13 @@ void TabStrip::Init() {
       tab_controls_container_->AddChildView(std::move(new_tab_button));
 
 #if BUILDFLAG(ENABLE_TAB_SEARCH)
-  if (base::FeatureList::IsEnabled(features::kTabSearch)) {
-    // TODO(tluk): Replace the use of the NewTabButton with an appropriate class
-    // for the tab search button. Current usage is temporary.
-    auto tab_search_button = std::make_unique<NewTabButton>(this, this);
+  if (base::FeatureList::IsEnabled(features::kTabSearch) &&
+      !controller_->GetProfile()->IsIncognitoProfile()) {
+    auto tab_search_button = std::make_unique<TabSearchButton>(this, this);
     tab_search_button->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_SEARCH));
     tab_search_button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_TAB_SEARCH));
-    tab_search_button->SetImageVerticalAlignment(
-        views::ImageButton::ALIGN_BOTTOM);
     tab_search_button->SetEventTargeter(
         std::make_unique<views::ViewTargeter>(tab_search_button.get()));
     tab_search_button->AddObserver(this);

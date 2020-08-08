@@ -1120,8 +1120,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame2) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1148,8 +1149,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame3) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1176,8 +1178,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame4) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1245,8 +1248,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame7) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1273,8 +1277,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame8) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1301,8 +1306,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame9) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1362,8 +1368,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame12) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1390,8 +1397,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame13) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1411,8 +1419,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame14) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1446,8 +1455,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame15) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1474,8 +1484,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame16) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1502,8 +1513,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame17) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1531,8 +1543,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame18) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1559,8 +1572,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame19) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
@@ -1587,8 +1601,9 @@ TEST_F(FrameSequenceTrackerTest, TrackLastImplFrame20) {
   std::string metric = "Graphics.Smoothness.FrameSequenceLength.TouchScroll";
   // Impl thread reports 101 frames expected.
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 101), 1);
-  // The main thread reports 0 frames expected.
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);
+  // The main thread does not submit a report because it is not the effective
+  // thread.
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 0);
   metric =
       "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
   EXPECT_EQ(histogram_tester.GetBucketCount(metric, 0), 1);

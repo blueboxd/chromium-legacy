@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -87,7 +86,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   uint8_t chroma_shift_x_ = 0;
   uint8_t chroma_shift_y_ = 0;
   size_t decoded_frame_count_ = 0;
-  base::Optional<SkYUVColorSpace> yuv_color_space_;
+  SkYUVColorSpace yuv_color_space_ = SkYUVColorSpace::kIdentity_SkYUVColorSpace;
   std::unique_ptr<avifDecoder, void (*)(avifDecoder*)> decoder_{nullptr,
                                                                 nullptr};
 

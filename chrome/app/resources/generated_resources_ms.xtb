@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Edit fail</translation>
 <translation id="1285320974508926690">Jangan sekali-kali menterjemahkan tapak ini</translation>
 <translation id="1285484354230578868">Simpan data dalam akaun Google Drive anda</translation>
-<translation id="1285717512281186441">Pencetak tidak dapat dicapai</translation>
 <translation id="1288037062697528143">Cahaya Malam akan dihidupkan secara automatik pada waktu matahari terbenam</translation>
 <translation id="1288300545283011870">Sifat Pertuturan</translation>
 <translation id="1293264513303784526">Peranti USB-C (port kiri)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Tindakan ini akan mengosongkan semua data dan kuki yang disimpan oleh <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">&amp;Konsol JavaScript</translation>
 <translation id="1587907146729660231">Sentuh butang kuasa dengan jari anda</translation>
-<translation id="1588200577109872591">Input pintar</translation>
 <translation id="1588438908519853928">Biasa</translation>
 <translation id="158849752021629804">Perlukan rangkaian rumah</translation>
 <translation id="1588870296199743671">Buka Pautan Dengan...</translation>
@@ -1286,7 +1284,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="253557089021624350">Kiraan pengekal</translation>
 <translation id="2535799430745250929">Tiada rangkaian selular wujud</translation>
 <translation id="2537178555904266562">Ralat semasa menyegerakkan kata laluan</translation>
-<translation id="2537296579376733324">Semua kuki, pada tapak ini sahaja</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> boleh melihat dan mengedit fail serta folder berikut</translation>
 <translation id="2537927931785713436">Menyemak imej mesin maya</translation>
 <translation id="2538361623464451692">Penyegerakan dilumpuhkan</translation>
@@ -1427,7 +1424,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2712173769900027643">Minta kebenaran</translation>
 <translation id="2713444072780614174">Putih</translation>
 <translation id="2714393097308983682">Gedung Google Play</translation>
-<translation id="2714997332747470971">Cadangan maklumat peribadi membantu anda menulis dengan lebih cepat dengan cadangan seperti nama, alamat atau nombor telefon anda. Hanya anda yang dapat melihat cadangan peribadi anda yang diperibadikan untuk akaun anda.</translation>
 <translation id="2715751256863167692">Peningkatan ini akan menetapkan semula Chromebook anda dan mengalih keluar data pengguna semasa.</translation>
 <translation id="2716986496990888774">Tetapan ini diurus oleh ibu/bapa.</translation>
 <translation id="2718395828230677721">Cahaya Malam</translation>
@@ -2949,7 +2945,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4608520674724523647">Ilustrasi pendaftaran berjaya</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> mengandungi kandungan sensitif</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> telah mengalami ralat</translation>
-<translation id="4610178114344604329">Tunjukkan cadangan maklumat peribadi</translation>
 <translation id="4610637590575890427">Adakah anda maksudkan pergi ke <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Sambungan data tersedia</translation>
 <translation id="4613144866899789710">Membatalkan pemasangan Linux...</translation>
@@ -6012,7 +6007,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8448729345478502352">Kecilkan atau besarkan item pada skrin anda</translation>
 <translation id="8449008133205184768">Gaya Tampal dan Padan</translation>
 <translation id="8449036207308062757">Urus storan</translation>
-<translation id="84501823665211008">Tunjukkan cadangan emoji</translation>
 <translation id="8452135315243592079">Kad SIM tiada</translation>
 <translation id="8455026683977728932">Gagal mendayakan ilustrasi ADB</translation>
 <translation id="845702320058262034">Tidak dapat bersambung. Pastikan Bluetooth telefon anda dihidupkan.</translation>
@@ -6296,7 +6290,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8798441408945964110">Nama penyedia</translation>
 <translation id="8800004011501252845">Menunjukkan destinasi untuk</translation>
 <translation id="8800034312320686233">Tapak tidak berfungsi?</translation>
-<translation id="880069872639153240">Dapatkan cadangan emoji berdasarkan teks yang anda taip</translation>
 <translation id="8803953437405899238">Buka tab baharu dengan satu klik</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Alihkan Tab ke Tetingkap Lain}other{Alihkan Tab ke Tetingkap Lain}}</translation>
 <translation id="8805140816472474147">Sahkan tetapan penyegerakan untuk memulakan penyegerakan.</translation>

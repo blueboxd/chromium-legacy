@@ -4,6 +4,8 @@
 
 #import "ios/web/navigation/text_fragment_utils.h"
 
+#include <cstring.h>
+
 #include "base/strings/string_split.h"
 #include "ios/web/common/features.h"
 #import "ios/web/public/navigation/navigation_context.h"
@@ -14,8 +16,10 @@
 #endif
 
 namespace {
-const std::string kDirectivePrefix = ":~:";
-const std::string kTextFragmentPrefix = "text=";
+
+const char kDirectivePrefix[] = ":~:";
+const char kTextFragmentPrefix[] = "text=";
+
 }  // namespace
 
 namespace web {
@@ -63,7 +67,7 @@ std::vector<std::string> ExtractTextFragments(std::string ref_string) {
   size_t start_pos = ref_string.find(kDirectivePrefix);
   if (start_pos == std::string::npos)
     return {};
-  ref_string.erase(0, start_pos + kDirectivePrefix.size());
+  ref_string.erase(0, start_pos + strlen(kDirectivePrefix));
 
   std::vector<std::string> fragment_strings;
   while (ref_string.size()) {
@@ -71,7 +75,7 @@ std::vector<std::string> ExtractTextFragments(std::string ref_string) {
     size_t prefix_pos = ref_string.find(kTextFragmentPrefix);
     if (prefix_pos == std::string::npos)
       break;
-    ref_string.erase(0, prefix_pos + kTextFragmentPrefix.size());
+    ref_string.erase(0, prefix_pos + strlen(kTextFragmentPrefix));
 
     // A & indicates the end of the fragment (and the start of the next).
     // Save everything up to this point, and then consume it (including the &).

@@ -40,6 +40,13 @@ export class ViewerDownloadControlsElement extends PolymerElement {
         computed: 'computeDownloadHasPopup_(' +
             'pdfFormSaveEnabled, hasEdits, hasEnteredAnnotationMode)',
       },
+
+      /** @private */
+      menuOpen_: {
+        type: Boolean,
+        reflectToAttribute: true,
+        value: false,
+      },
     };
   }
 
@@ -69,11 +76,16 @@ export class ViewerDownloadControlsElement extends PolymerElement {
 
   /** @return {boolean} */
   isMenuOpen() {
-    return this.getDownloadMenu_().open;
+    return this.menuOpen_;
   }
 
   closeMenu() {
     this.getDownloadMenu_().close();
+  }
+
+  /** @private */
+  onMenuClose_() {
+    this.menuOpen_ = false;
   }
 
   /**
@@ -105,6 +117,7 @@ export class ViewerDownloadControlsElement extends PolymerElement {
 
   /** @private */
   showDownloadMenu_() {
+    this.menuOpen_ = true;
     this.getDownloadMenu_().showAt(this.$.download, {
       anchorAlignmentX: AnchorAlignment.CENTER,
     });

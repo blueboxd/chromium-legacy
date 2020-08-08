@@ -1028,15 +1028,13 @@ chrome.automation.AutomationNode.prototype.location;
  * Determines the location of the text within the node specified by |startIndex|
  * and |endIndex|, inclusively. Invokes |callback| with the bounding rectangle,
  * in screen coordinates. |callback| can be invoked either synchronously or
- * asynchronously. By default, |clipped| is true. If |clipped| is set to false, 
- * the bounds will not be clipped to the ancestors of the node.
+ * asynchronously.
  * @param {number} startIndex
  * @param {number} endIndex
  * @param {function(!chrome.automation.Rect): void} callback
- * @param {boolean=} clipped
  * @see https://developer.chrome.com/extensions/automation#method-boundsForRange
  */
-chrome.automation.AutomationNode.prototype.boundsForRange = function(startIndex, endIndex, callback, clipped) {};
+chrome.automation.AutomationNode.prototype.boundsForRange = function(startIndex, endIndex, callback) {};
 
 /**
  * The location (as a bounding box) of this node in global screen coordinates without applying any clipping from ancestors.

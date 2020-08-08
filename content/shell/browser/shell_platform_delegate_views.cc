@@ -160,32 +160,32 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
       views::ColumnSet* toolbar_column_set = toolbar_layout->AddColumnSet(0);
       // Back button
-      auto back_button =
-          views::MdTextButton::Create(this, base::ASCIIToUTF16("Back"));
+      auto back_button = std::make_unique<views::MdTextButton>(
+          this, base::ASCIIToUTF16("Back"));
       gfx::Size back_button_size = back_button->GetPreferredSize();
       toolbar_column_set->AddColumn(
           views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
           ColumnSize::kFixed, back_button_size.width(),
           back_button_size.width() / 2);
       // Forward button
-      auto forward_button =
-          views::MdTextButton::Create(this, base::ASCIIToUTF16("Forward"));
+      auto forward_button = std::make_unique<views::MdTextButton>(
+          this, base::ASCIIToUTF16("Forward"));
       gfx::Size forward_button_size = forward_button->GetPreferredSize();
       toolbar_column_set->AddColumn(
           views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
           ColumnSize::kFixed, forward_button_size.width(),
           forward_button_size.width() / 2);
       // Refresh button
-      auto refresh_button =
-          views::MdTextButton::Create(this, base::ASCIIToUTF16("Refresh"));
+      auto refresh_button = std::make_unique<views::MdTextButton>(
+          this, base::ASCIIToUTF16("Refresh"));
       gfx::Size refresh_button_size = refresh_button->GetPreferredSize();
       toolbar_column_set->AddColumn(
           views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
           ColumnSize::kFixed, refresh_button_size.width(),
           refresh_button_size.width() / 2);
       // Stop button
-      auto stop_button =
-          views::MdTextButton::Create(this, base::ASCIIToUTF16("Stop"));
+      auto stop_button = std::make_unique<views::MdTextButton>(
+          this, base::ASCIIToUTF16("Stop"));
       gfx::Size stop_button_size = stop_button->GetPreferredSize();
       toolbar_column_set->AddColumn(
           views::GridLayout::CENTER, views::GridLayout::CENTER, 0,

@@ -18,7 +18,7 @@ CaptureModeSourceView::CaptureModeSourceView()
           AddChildView(std::make_unique<CaptureModeToggleButton>(
               this,
               kCaptureModeFullscreenIcon))),
-      partial_toggle_button_(AddChildView(
+      region_toggle_button_(AddChildView(
           std::make_unique<CaptureModeToggleButton>(this,
                                                     kCaptureModeRegionIcon))),
       window_toggle_button_(AddChildView(
@@ -29,20 +29,18 @@ CaptureModeSourceView::CaptureModeSourceView()
       capture_mode::kBetweenChildSpacing));
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
-  switch (CaptureModeController::Get()->source()) {
-    case CaptureModeSource::kFullscreen:
-      fullscreen_toggle_button_->SetToggled(true);
-      break;
-    case CaptureModeSource::kRegion:
-      partial_toggle_button_->SetToggled(true);
-      break;
-    case CaptureModeSource::kWindow:
-      window_toggle_button_->SetToggled(true);
-      break;
-  }
+  OnCaptureSourceChanged(CaptureModeController::Get()->source());
 }
 
 CaptureModeSourceView::~CaptureModeSourceView() = default;
+
+void CaptureModeSourceView::OnCaptureSourceChanged(
+    CaptureModeSource new_source) {
+  fullscreen_toggle_button_->SetToggled(new_source ==
+                                        CaptureModeSource::kFullscreen);
+  region_toggle_button_->SetToggled(new_source == CaptureModeSource::kRegion);
+  window_toggle_button_->SetToggled(new_source == CaptureModeSource::kWindow);
+}
 
 const char* CaptureModeSourceView::GetClassName() const {
   return "CaptureModeSourceView";
@@ -52,20 +50,11 @@ void CaptureModeSourceView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   auto* controller = CaptureModeController::Get();
   if (sender == fullscreen_toggle_button_) {
-    fullscreen_toggle_button_->SetToggled(true);
-    partial_toggle_button_->SetToggled(false);
-    window_toggle_button_->SetToggled(false);
     controller->SetSource(CaptureModeSource::kFullscreen);
-  } else if (sender == partial_toggle_button_) {
-    fullscreen_toggle_button_->SetToggled(false);
-    partial_toggle_button_->SetToggled(true);
-    window_toggle_button_->SetToggled(false);
+  } else if (sender == region_toggle_button_) {
     controller->SetSource(CaptureModeSource::kRegion);
   } else {
     DCHECK_EQ(sender, window_toggle_button_);
-    fullscreen_toggle_button_->SetToggled(false);
-    partial_toggle_button_->SetToggled(false);
-    window_toggle_button_->SetToggled(true);
     controller->SetSource(CaptureModeSource::kWindow);
   }
 }

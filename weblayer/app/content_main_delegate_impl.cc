@@ -172,6 +172,8 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
     media::kPictureInPictureAPI,
     ::features::kDisableDeJelly,
     ::features::kDynamicColorGamut,
+#else
+    ::features::kSmsReceiver,
 #endif
   };
 

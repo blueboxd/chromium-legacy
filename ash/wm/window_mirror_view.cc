@@ -15,6 +15,7 @@
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
@@ -77,8 +78,10 @@ void WindowMirrorView::Layout() {
   // Position at 0, 0.
   GetMirrorLayer()->SetBounds(gfx::Rect(GetMirrorLayer()->bounds().size()));
 
-  if (show_non_client_view_)
+  if (show_non_client_view_) {
+    GetMirrorLayer()->SetTransform(gfx::Transform());
     return;
+  }
 
   gfx::Transform transform;
   gfx::Rect client_area_bounds = GetClientAreaBounds();
@@ -121,6 +124,10 @@ void WindowMirrorView::AddedToWidget() {
 
 void WindowMirrorView::RemovedFromWidget() {
   target_ = nullptr;
+}
+
+ui::Layer* WindowMirrorView::GetMirrorLayerForTesting() {
+  return GetMirrorLayer();
 }
 
 void WindowMirrorView::InitLayerOwner() {

@@ -247,7 +247,7 @@ js_type_check("closure_compile_module") {
   deps = [
     ":mojo_interface_provider.m",
 
-    #  ":cr_policy_network_behavior_mojo.m",
+    ":cr_policy_network_behavior_mojo.m",
     #  ":cr_policy_network_indicator_mojo.m",
     #  ":network_apnlist.m",
     #  ":network_choose_mobile.m",
@@ -289,9 +289,11 @@ js_library("mojo_interface_provider.m") {
 js_library("cr_policy_network_behavior_mojo.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/cr_policy_network_behavior_mojo.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "../../../cr_elements/policy:cr_policy_indicator_behavior.m",
+    "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  extra_deps = [ ":cr_policy_network_behavior_mojo_module" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("cr_policy_network_indicator_mojo.m") {
@@ -495,7 +497,6 @@ import("//tools/polymer/polymer.gni")
 
 group("polymer3_elements") {
   public_deps = [
-    ":cr_policy_network_behavior_mojo_module",
     ":cr_policy_network_indicator_mojo_module",
     ":modulize",
     ":network_apnlist_module",
@@ -519,12 +520,6 @@ group("polymer3_elements") {
     ":network_shared_css_module",
     ":network_siminfo_module",
   ]
-}
-
-polymer_modulizer("cr_policy_network_behavior_mojo") {
-  js_file = "cr_policy_network_behavior_mojo.js"
-  html_file = "cr_policy_network_behavior_mojo.html"
-  html_type = "dom-module"
 }
 
 polymer_modulizer("cr_policy_network_indicator_mojo") {
@@ -658,6 +653,7 @@ import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_modulizer("modulize") {
   input_files = [
+    "cr_policy_network_behavior_mojo.js",
     "mojo_interface_provider.js",
     "network_config_element_behavior.js",
     "network_listener_behavior.js",

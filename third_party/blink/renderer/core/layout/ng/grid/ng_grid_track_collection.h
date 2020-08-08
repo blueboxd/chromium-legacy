@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
 namespace blink {
 
 // NGGridTrackCollectionBase provides an implementation for some shared
@@ -167,14 +168,32 @@ class CORE_EXPORT NGGridBlockTrackCollection
 class CORE_EXPORT NGGridSet {
  public:
   NGGridSet(wtf_size_t track_count, bool is_collapsed);
-  NGGridSet(wtf_size_t track_count, const GridTrackSize& track_size);
+  // |is_content_box_size_indefinite| is used to normalize percentage track
+  // sizing functions; from https://drafts.csswg.org/css-grid-1/#track-sizes:
+  //   "If the size of the grid container depends on the size of its tracks,
+  //   then the <percentage> must be treated as 'auto'".
+  NGGridSet(wtf_size_t track_count,
+            const GridTrackSize& track_size,
+            bool is_content_box_size_indefinite);
 
   wtf_size_t TrackCount() const { return track_count_; }
   const GridTrackSize& TrackSize() const { return track_size_; }
 
+  LayoutUnit BaseSize() const { return base_size_; }
+  LayoutUnit GrowthLimit() const { return growth_limit_; }
+
+  // The following setters expect their respective member variables to grow
+  // monotonically; however, |growth_limit_| can also change from a definite
+  // value to |kIndefiniteSize| and vice versa.
+  void SetBaseSize(LayoutUnit base_size);
+  void SetGrowthLimit(LayoutUnit growth_limit);
+
  private:
   wtf_size_t track_count_;
   GridTrackSize track_size_;
+
+  LayoutUnit base_size_;
+  LayoutUnit growth_limit_;
 };
 
 class CORE_EXPORT NGGridLayoutAlgorithmTrackCollection
@@ -208,11 +227,17 @@ class CORE_EXPORT NGGridLayoutAlgorithmTrackCollection
     wtf_size_t end_set_index_;
   };
 
-  explicit NGGridLayoutAlgorithmTrackCollection(
-      const NGGridBlockTrackCollection& block_track_collection);
+  NGGridLayoutAlgorithmTrackCollection() = default;
+  // |is_content_box_size_indefinite| is used to normalize percentage track
+  // sizing functions (see the constructor for |NGGridSet|).
+  NGGridLayoutAlgorithmTrackCollection(
+      const NGGridBlockTrackCollection& block_track_collection,
+      bool is_content_box_size_indefinite);
 
   // Returns a reference to the set located at position |set_index|.
   NGGridSet& SetAt(wtf_size_t set_index);
+  // Returns an iterator for all the sets contained in this collection.
+  SetIterator GetSetIterator();
   // Returns an iterator for all the sets contained within the |range_index|-th
   // range of the collection. Note that this iterator can alter any set's data.
   SetIterator IteratorForRange(wtf_size_t range_index);
@@ -227,7 +252,8 @@ class CORE_EXPORT NGGridLayoutAlgorithmTrackCollection
  private:
   void AppendTrackRange(
       const NGGridBlockTrackCollection::Range& block_track_range,
-      const NGGridTrackList& specified_track_list);
+      const NGGridTrackList& specified_track_list,
+      bool is_content_box_size_indefinite);
 
   // Returns the number of sets in the collection.
   wtf_size_t SetCount() const;

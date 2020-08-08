@@ -135,7 +135,6 @@ if (is_win || is_mac) {
 
     if (is_win) {
       sources += [
-        "app/app_wake_win.cc",
         "app/server/win/com_classes.cc",
         "app/server/win/com_classes.h",
         "app/server/win/com_classes_legacy.cc",
@@ -148,7 +147,7 @@ if (is_win || is_mac) {
         "installer_win.cc",
         "lib_util_win.cc",
         "prefs_win.cc",
-        "update_apps_win.cc",
+        "service_factory_win.cc",
       ]
     }
 

@@ -7,25 +7,16 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
+#include "ash/capture_mode/capture_mode_types.h"
 #include "ash/public/cpp/capture_mode_delegate.h"
 
 namespace ash {
 
-// Defines the capture type Capture Mode is currently using.
-enum class CaptureModeType {
-  kImage,
-  kVideo,
-};
-
-// Defines the source of the capture used by Capture Mode.
-enum class CaptureModeSource {
-  kFullscreen,
-  kRegion,
-  kWindow,
-};
+class CaptureModeSession;
 
 // Controls starting and ending a Capture Mode session and its behavior.
-class CaptureModeController {
+class ASH_EXPORT CaptureModeController {
  public:
   explicit CaptureModeController(std::unique_ptr<CaptureModeDelegate> delegate);
   CaptureModeController(const CaptureModeController&) = delete;
@@ -38,6 +29,12 @@ class CaptureModeController {
 
   CaptureModeType type() const { return type_; }
   CaptureModeSource source() const { return source_; }
+  CaptureModeSession* capture_mode_session() const {
+    return capture_mode_session_.get();
+  }
+
+  // Returns true if a capture mode session is currently active.
+  bool IsActive() const { return !!capture_mode_session_; }
 
   // Sets the capture source/type, which will be applied to an ongoing capture
   // session (if any), or to a future capture session when Start() is called.
@@ -48,9 +45,6 @@ class CaptureModeController {
   // |source_|.
   void Start();
 
-  // Starts a new capture session with the specific given |type| and |source|.
-  void StartWith(CaptureModeType type, CaptureModeSource source);
-
   // Stops an existing capture session.
   void Stop();
 
@@ -59,6 +53,8 @@ class CaptureModeController {
 
   CaptureModeType type_ = CaptureModeType::kImage;
   CaptureModeSource source_ = CaptureModeSource::kRegion;
+
+  std::unique_ptr<CaptureModeSession> capture_mode_session_;
 };
 
 }  // namespace ash

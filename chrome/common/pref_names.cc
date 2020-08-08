@@ -1396,8 +1396,8 @@ const char kRecommendedNativePrintersWhitelist[] =
     "native_printing.recommended_printers_whitelist";
 
 // A Boolean flag which represents whether or not users are allowed to configure
-// and use their own native printers.
-const char kUserNativePrintersAllowed[] =
+// and use their own printers.
+const char kUserPrintersAllowed[] =
     "native_printing.user_native_printers_allowed";
 
 // A pref holding the list of allowed printing color mode as a bitmask composed

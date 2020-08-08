@@ -5,16 +5,11 @@
 #ifndef WEBLAYER_RENDERER_ERROR_PAGE_HELPER_H_
 #define WEBLAYER_RENDERER_ERROR_PAGE_HELPER_H_
 
-#include "components/security_interstitials/content/renderer/security_interstitial_page_controller.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "weblayer/common/error_page_helper.mojom.h"
-
-namespace error_page {
-class Error;
-}
 
 namespace weblayer {
 
@@ -40,7 +35,7 @@ class ErrorPageHelper
   static ErrorPageHelper* GetForFrame(content::RenderFrame* render_frame);
 
   // Called when the current navigation results in an error.
-  void PrepareErrorPage(const error_page::Error& error);
+  void PrepareErrorPage();
 
   // content::RenderFrameObserver:
   void DidCommitProvisionalLoad(ui::PageTransition transition) override;
@@ -51,23 +46,19 @@ class ErrorPageHelper
   void DisableErrorPageHelperForNextError() override;
 
  private:
-  struct ErrorPageInfo;
-
   explicit ErrorPageHelper(content::RenderFrame* render_frame);
   ~ErrorPageHelper() override;
-
-  void Reload();
 
   void BindErrorPageHelper(
       mojo::PendingAssociatedReceiver<mojom::ErrorPageHelper> receiver);
 
-  // Information for the provisional / "pre-provisional" error page. Null when
-  // there's no page pending, or the pending page is not an error page.
-  std::unique_ptr<ErrorPageInfo> pending_error_page_info_;
+  // Set to true in PrepareErrorPage().
+  bool is_preparing_for_error_page_ = false;
 
-  // Information for the committed error page. Null when the committed page is
-  // not an error page.
-  std::unique_ptr<ErrorPageInfo> committed_error_page_info_;
+  // Set to the value of |is_preparing_for_error_page_| in
+  // DidCommitProvisionalLoad(). Used to determine if the security interstitial
+  // should be shown when the load finishes.
+  bool show_error_page_in_finish_load_ = false;
 
   // Set to true when the embedder injects its own error page. When the
   // embedder injects its own error page the support here is not needed and

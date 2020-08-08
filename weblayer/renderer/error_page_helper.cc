@@ -5,27 +5,13 @@
 #include "weblayer/renderer/error_page_helper.h"
 
 #include "base/command_line.h"
-#include "components/error_page/common/error.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/url_constants.h"
+#include "components/security_interstitials/content/renderer/security_interstitial_page_controller.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "weblayer/common/features.h"
 
 namespace weblayer {
-
-struct ErrorPageHelper::ErrorPageInfo {
-  explicit ErrorPageInfo(const error_page::Error& error) : error(error) {}
-
-  // Information about the failed page load.
-  error_page::Error error;
-
-  // True if a page has completed loading, at which point it can receive
-  // updates.
-  bool is_finished_loading = false;
-};
 
 // static
 void ErrorPageHelper::Create(content::RenderFrame* render_frame) {
@@ -39,33 +25,30 @@ ErrorPageHelper* ErrorPageHelper::GetForFrame(
   return render_frame->IsMainFrame() ? Get(render_frame) : nullptr;
 }
 
-void ErrorPageHelper::PrepareErrorPage(const error_page::Error& error) {
+void ErrorPageHelper::PrepareErrorPage() {
   if (is_disabled_for_next_error_) {
     is_disabled_for_next_error_ = false;
     return;
   }
-  pending_error_page_info_ = std::make_unique<ErrorPageInfo>(error);
+  is_preparing_for_error_page_ = true;
 }
 
 void ErrorPageHelper::DidCommitProvisionalLoad(ui::PageTransition transition) {
-  is_disabled_for_next_error_ = false;
-  committed_error_page_info_ = std::move(pending_error_page_info_);
+  show_error_page_in_finish_load_ = is_preparing_for_error_page_;
+  is_preparing_for_error_page_ = false;
 }
 
 void ErrorPageHelper::DidFinishLoad() {
-  if (!committed_error_page_info_)
+  if (!show_error_page_in_finish_load_)
     return;
 
   security_interstitials::SecurityInterstitialPageController::Install(
       render_frame());
-
-  committed_error_page_info_->is_finished_loading = true;
 }
 
 void ErrorPageHelper::OnDestruct() {
   delete this;
 }
-
 
 void ErrorPageHelper::DisableErrorPageHelperForNextError() {
   is_disabled_for_next_error_ = true;
@@ -80,12 +63,6 @@ ErrorPageHelper::ErrorPageHelper(content::RenderFrame* render_frame)
 }
 
 ErrorPageHelper::~ErrorPageHelper() = default;
-
-void ErrorPageHelper::Reload() {
-  if (!committed_error_page_info_)
-    return;
-  render_frame()->GetWebFrame()->StartReload(blink::WebFrameLoadType::kReload);
-}
 
 void ErrorPageHelper::BindErrorPageHelper(
     mojo::PendingAssociatedReceiver<mojom::ErrorPageHelper> receiver) {

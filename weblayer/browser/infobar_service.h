@@ -13,6 +13,10 @@
 #include "components/infobars/content/content_infobar_manager.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+#if defined(OS_ANDROID)
+#include "components/infobars/android/infobar_android.h"
+#endif
+
 namespace content {
 class WebContents;
 }
@@ -32,6 +36,10 @@ class InfoBarService : public infobars::ContentInfoBarManager,
   // InfoBarManager:
   std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate> delegate) override;
+
+#if defined(OS_ANDROID)
+  static infobars::InfoBarAndroid::ResourceIdMapper GetResourceIdMapper();
+#endif
 
  protected:
   explicit InfoBarService(content::WebContents* web_contents);

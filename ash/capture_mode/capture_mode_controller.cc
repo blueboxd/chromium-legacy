@@ -4,8 +4,11 @@
 
 #include "ash/capture_mode/capture_mode_controller.h"
 
+#include <memory>
 #include <utility>
 
+#include "ash/capture_mode/capture_mode_session.h"
+#include "ash/shell.h"
 #include "base/check.h"
 #include "base/check_op.h"
 
@@ -36,28 +39,35 @@ CaptureModeController* CaptureModeController::Get() {
 }
 
 void CaptureModeController::SetSource(CaptureModeSource source) {
+  if (source == source_)
+    return;
+
   source_ = source;
-  // TODO(afakhry): Fill in here.
+  if (capture_mode_session_)
+    capture_mode_session_->OnCaptureSourceChanged(source_);
 }
 
 void CaptureModeController::SetType(CaptureModeType type) {
+  if (type == type_)
+    return;
+
   type_ = type;
-  // TODO(afakhry): Fill in here.
+  if (capture_mode_session_)
+    capture_mode_session_->OnCaptureTypeChanged(type_);
 }
 
 void CaptureModeController::Start() {
-  StartWith(type_, source_);
-}
+  if (capture_mode_session_)
+    return;
 
-void CaptureModeController::StartWith(CaptureModeType type,
-                                      CaptureModeSource source) {
-  type_ = type;
-  source_ = source;
-  // TODO(afakhry): Fill in here.
+  // TODO(afakhry): Use root window of the mouse cursor or the one for new
+  // windows.
+  capture_mode_session_ =
+      std::make_unique<CaptureModeSession>(Shell::GetPrimaryRootWindow());
 }
 
 void CaptureModeController::Stop() {
-  // TODO(afakhry): Fill in here.
+  capture_mode_session_.reset();
 }
 
 }  // namespace ash

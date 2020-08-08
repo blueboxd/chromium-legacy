@@ -138,8 +138,8 @@ views::LabelButton* AuthDialogDebugView::AddButton(const std::string& text,
                                                    int id,
                                                    views::View* container) {
   // Creates a button with |text|.
-  std::unique_ptr<views::LabelButton> button =
-      views::MdTextButton::Create(this, base::ASCIIToUTF16(text));
+  auto button =
+      std::make_unique<views::MdTextButton>(this, base::ASCIIToUTF16(text));
   button->SetID(id);
 
   views::LabelButton* view = button.get();

@@ -18,6 +18,9 @@
         @color/default_bg_color_dark_elev_3
     </color>
 
+    <!-- Infobar colors -->
+    <color name="infobar_icon_drawable_color">@color/default_icon_color_blue</color>
+
     <!-- Control colors for toggles, checkboxes, ratio buttons, list item highlight, and accent.
      Note that these should NOT be used for icon tint. -->
     <color name="control_normal_color">@color/default_control_color_normal_light</color>

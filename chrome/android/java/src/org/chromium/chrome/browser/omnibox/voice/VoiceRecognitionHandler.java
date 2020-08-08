@@ -303,14 +303,16 @@ public class VoiceRecognitionHandler {
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) return;
 
-        // Check if this can be handled by Assistant Voice Search, if so let it handle the search.
-        if (mAssistantVoiceSearchService != null
-                && mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch()) {
-            AssistantVoiceSearchService.reportUserEligibility(true);
-            startAGSAForAssistantVoiceSearch(windowAndroid, source);
-            return;
+        if (mAssistantVoiceSearchService != null) {
+            // Report the client's eligibility for Assistant voice search.
+            mAssistantVoiceSearchService.reportUserEligibility();
+
+            if (mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch()) {
+                startAGSAForAssistantVoiceSearch(windowAndroid, source);
+                return;
+            }
         }
-        AssistantVoiceSearchService.reportUserEligibility(false);
+
         // Check if we need to request audio permissions. If we don't, then trigger a permissions
         // prompt will appear and startVoiceRecognition will be called again.
         if (!ensureAudioPermissionGranted(windowAndroid, source)) return;

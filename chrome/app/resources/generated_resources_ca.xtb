@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Edita els fitxers</translation>
 <translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
 <translation id="1285484354230578868">Emmagatzemar les dades al compte de Google Drive</translation>
-<translation id="1285717512281186441">No es pot accedir a la impressora</translation>
 <translation id="1288037062697528143">La funció Llum nocturna s'activarà automàticament al vespre</translation>
 <translation id="1288300545283011870">Propietats de la veu</translation>
 <translation id="1293264513303784526">Dispositiu USB-C (port esquerre)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Amb aquesta acció s'esborraran totes les dades i galetes emmagatzemades per <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">&amp;Consola de JavaScript</translation>
 <translation id="1587907146729660231">Toca el botó d'engegada amb el dit</translation>
-<translation id="1588200577109872591">Entrades intel·ligents</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Es necessita una xarxa domèstica</translation>
 <translation id="1588870296199743671">Obre l'enllaç amb...</translation>
@@ -1285,7 +1283,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="253557089021624350">Nombre de processos actius</translation>
 <translation id="2535799430745250929">No hi ha cap xarxa mòbil</translation>
 <translation id="2537178555904266562">S'ha produït un error en sincronitzar les contrasenyes</translation>
-<translation id="2537296579376733324">Totes les galetes, només en aquest lloc web</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> pot veure i editar els fitxers i les carpetes següents</translation>
 <translation id="2537927931785713436">S'està comprovant la imatge de la màquina virtual</translation>
 <translation id="2538361623464451692">Sincronització desactivada</translation>
@@ -1426,7 +1423,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2712173769900027643">Demana permís</translation>
 <translation id="2713444072780614174">Blanc</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
-<translation id="2714997332747470971">Els suggeriments sobre informació personal t'ajuden a escriure més ràpidament amb suggeriments com el teu nom, la teva adreça o el teu número de telèfon. Ets l'única persona que pot veure els suggeriments personalitzats privats del teu compte.</translation>
 <translation id="2715751256863167692">Amb aquesta actualització es restableix el dispositiu Chromebook i se suprimeixen les dades d'usuari actuals.</translation>
 <translation id="2716986496990888774">El teu pare o la teva mare gestiona aquesta opció de configuració.</translation>
 <translation id="2718395828230677721">Llum nocturna</translation>
@@ -2949,7 +2945,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="4608520674724523647">Il·lustració d'inscripció correcta</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> inclou contingut sensible</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> ha detectat un error</translation>
-<translation id="4610178114344604329">Mostra els suggeriments sobre informació personal</translation>
 <translation id="4610637590575890427">Volíeu anar a <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Connexió de dades disponible</translation>
 <translation id="4613144866899789710">S'està cancel·lant la instal·lació de Linux...</translation>
@@ -6017,7 +6012,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8448729345478502352">Amplia o redueix els elements de la pantalla</translation>
 <translation id="8449008133205184768">Enganxa i ajusta l'estil</translation>
 <translation id="8449036207308062757">Gestiona l'emmagatzematge</translation>
-<translation id="84501823665211008">Mostra suggeriments d'emojis</translation>
 <translation id="8452135315243592079">Falta la targeta SIM</translation>
 <translation id="8455026683977728932">No s'ha pogut activar la il·lustració d'ADB</translation>
 <translation id="845702320058262034">No es pot establir la connexió. Comprova que el Bluetooth del telèfon estigui activat.</translation>
@@ -6303,7 +6297,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8798441408945964110">Nom del proveïdor</translation>
 <translation id="8800004011501252845">S'estan mostrant les destinacions per a</translation>
 <translation id="8800034312320686233">El lloc web no funciona?</translation>
-<translation id="880069872639153240">Obtén suggeriments d'emojis basats en el que escrius</translation>
 <translation id="8803953437405899238">Obre una pestanya nova amb un sol clic</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Mou la pestanya a una altra finestra}other{Mou les pestanyes a una altra finestra}}</translation>
 <translation id="8805140816472474147">Confirma la configuració de sincronització per començar a sincronitzar.</translation>

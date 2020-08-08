@@ -22,14 +22,12 @@ MediaFoundationSourceWrapper::~MediaFoundationSourceWrapper() {
     return;
 
   // Notify |cdm_proxy_| of last Key IDs.
-  std::vector<GUID> key_ids(StreamCount());
   for (uint32_t stream_id = 0; stream_id < StreamCount(); stream_id++) {
-    key_ids[stream_id] = media_streams_[stream_id]->GetLastKeyId();
+    HRESULT hr = cdm_proxy_->SetLastKeyId(
+        stream_id, media_streams_[stream_id]->GetLastKeyId());
+    DLOG_IF(ERROR, FAILED(hr))
+        << "Failed to notify CDM proxy of last Key IDs: " << PrintHr(hr);
   }
-
-  HRESULT hr = cdm_proxy_->SetLastKeyIds(key_ids.data(), key_ids.size());
-  DLOG_IF(ERROR, FAILED(hr))
-      << "Failed to notify CDM proxy of last Key IDs: " << PrintHr(hr);
 }
 
 HRESULT MediaFoundationSourceWrapper::RuntimeClassInitialize(

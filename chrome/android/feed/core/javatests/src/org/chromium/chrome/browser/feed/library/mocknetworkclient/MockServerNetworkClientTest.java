@@ -68,7 +68,9 @@ import java.util.Collections;
 /** Tests of the {@link MockServerNetworkClient} class. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+@Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
+@Features.
+DisableFeatures({ChromeFeatureList.REPORT_FEED_USER_ACTIONS, ChromeFeatureList.INTEREST_FEED_V2})
 public class MockServerNetworkClientTest extends NetworkClientConformanceTest {
     private final Configuration mConfiguration = new Configuration.Builder().build();
     private final FakeClock mFakeClock = new FakeClock();

@@ -502,6 +502,8 @@
 }
 
 - (void)reload {
+  if (IsDiscoverFeedEnabled())
+    ios::GetChromeBrowserProvider()->GetDiscoverFeedProvider()->RefreshFeed();
   [self.contentSuggestionsMediator.dataSink reloadAllData];
 }
 

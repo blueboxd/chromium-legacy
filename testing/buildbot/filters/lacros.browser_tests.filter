@@ -1,5 +1,7 @@
 # TODO(crbug.com/1111979) Enable all tests on lacros.
 -AccessContextAuditBrowserTest.CheckSessionOnly
+-AccessContextAuditBrowserTest.PRE_RemoveRecords
+-AccessContextAuditBrowserTest.RemoveRecords
 -AdsPageLoadMetricsObserverBrowserTest.PageAdDensityIgnoreDisplayNoneFrame
 -AdsPageLoadMetricsObserverBrowserTest.PageAdDensityMultipleFrames
 -AdsPageLoadMetricsObserverBrowserTest.PageAdDensityRecordsPageMax

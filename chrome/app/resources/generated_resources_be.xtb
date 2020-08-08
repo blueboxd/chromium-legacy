@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Змяніць файлы</translation>
 <translation id="1285320974508926690">Ніколі не перакладаць гэты сайт</translation>
 <translation id="1285484354230578868">Захаванне даных на вашым Google Дыску</translation>
-<translation id="1285717512281186441">Прынтар недаступны</translation>
 <translation id="1288037062697528143">Начная падсветка ўключыцца аўтаматычна пасля захаду сонца</translation>
 <translation id="1288300545283011870">Параметры маўлення</translation>
 <translation id="1293264513303784526">Прылада USB-C (левы порт)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Будуць выдалены файлы cookie і даныя, захаваныя сайтам <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">&amp;Кансоль JavaScript</translation>
 <translation id="1587907146729660231">Дакраніцеся пальцам да кнопкі сілкавання</translation>
-<translation id="1588200577109872591">Разумны ўвод</translation>
 <translation id="1588438908519853928">Звычайны</translation>
 <translation id="158849752021629804">Патрабуецца хатняя сетка</translation>
 <translation id="1588870296199743671">Адкрыць спасылку з дапамогай...</translation>
@@ -1286,7 +1284,6 @@
 <translation id="253557089021624350">Лік актыўных працэсаў</translation>
 <translation id="2535799430745250929">Мабільных сетак няма</translation>
 <translation id="2537178555904266562">Памылка пры сінхранізацыі пароляў</translation>
-<translation id="2537296579376733324">Усе файлы cookie, толькі на гэтым сайце</translation>
 <translation id="2537395079978992874">Сайт <ph name="ORIGIN" /> можа праглядаць і змяняць наступныя файлы і папкі</translation>
 <translation id="2537927931785713436">Ідзе праверка наяўнасці вобраза віртуальнай машыны</translation>
 <translation id="2538361623464451692">Сінхранізацыя выключана</translation>
@@ -1427,7 +1424,6 @@
 <translation id="2712173769900027643">Запытаць дазвол</translation>
 <translation id="2713444072780614174">Белы</translation>
 <translation id="2714393097308983682">Крама Google Play</translation>
-<translation id="2714997332747470971">З дапамогай прапаноў асабістых даных вы зможаце хутчэй набіраць такую інфармацыю, як сваё імя, адрас або нумар тэлефона. Бачыць асабістыя персаналізаваныя прапановы для вашага ўліковага запісу можаце толькі вы.</translation>
 <translation id="2715751256863167692">Гэта абнаўленне скідае налады Chromebook і выдаляе карыстальніцкія даныя.</translation>
 <translation id="2716986496990888774">Гэтай наладай кіруюць бацькі.</translation>
 <translation id="2718395828230677721">Начная падсветка</translation>
@@ -2949,7 +2945,6 @@
 <translation id="4608520674724523647">Ілюстрацыя завершанай рэгістрацыі</translation>
 <translation id="4608703838363792434">Файл "<ph name="FILE_NAME" />" змяшчае канфідэнцыяльнае змесціва</translation>
 <translation id="4610162781778310380">У <ph name="PLUGIN_NAME" /> выяўлена памылка</translation>
-<translation id="4610178114344604329">Паказваць прапановы асабістых даных</translation>
 <translation id="4610637590575890427">Магчыма, вы хацелі перайсці на <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Даступнае падключэнне перадачы даных</translation>
 <translation id="4613144866899789710">Ідзе скасаванне ўсталявання Linux...</translation>
@@ -6010,7 +6005,6 @@
 <translation id="8448729345478502352">Павелічэнне або памяншэнне элементаў на экране</translation>
 <translation id="8449008133205184768">Уставіць з улікам стылю</translation>
 <translation id="8449036207308062757">Кіраванне сховішчам</translation>
-<translation id="84501823665211008">Паказваць прапановы эмодзі</translation>
 <translation id="8452135315243592079">Адсутнічае SIM-карта</translation>
 <translation id="8455026683977728932">Не ўдалося ўключыць ілюстрацыю ADB</translation>
 <translation id="845702320058262034">Не ўдалося падключыцца. Пераканайцеся, што Bluetooth на вашым тэлефоне ўключаны.</translation>
@@ -6294,7 +6288,6 @@
 <translation id="8798441408945964110">Назва пастаўшчыка</translation>
 <translation id="8800004011501252845">Паказваюцца прызначэнні</translation>
 <translation id="8800034312320686233">Сайт не працуе?</translation>
-<translation id="880069872639153240">Атрымлівайце прапановы эмодзі на падставе тэксту, які вы ўводзіце</translation>
 <translation id="8803953437405899238">Адкрывайце новыя ўкладкі адным націсканнем</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Перамясціць укладку ў іншае акно}one{Перамясціць укладкі ў іншае акно}few{Перамясціць укладкі ў іншае акно}many{Перамясціць укладкі ў іншае акно}other{Перамясціць укладкі ў іншае акно}}</translation>
 <translation id="8805140816472474147">Каб пачаць сінхранізацыю, пацвердзіце яе налады.</translation>

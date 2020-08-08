@@ -36,6 +36,7 @@ def _NaturalSortByName(node):
   convert = lambda text: int(text) if text.isdigit() else text
   return [convert(c) for c in re.split('([0-9]+)', name)]
 
+# The following types are used for enums.xml.
 _INT_TYPE = models.ObjectNodeType(
     'int',
     attributes=[
@@ -79,6 +80,38 @@ _ENUMS_TYPE = models.ObjectNodeType(
         models.ChildType(_ENUM_TYPE.tag, _ENUM_TYPE, multiple=True),
     ])
 
+# The following types are used for histograms.xml.
+_VARIANT_TYPE = models.ObjectNodeType(
+    'variant',
+    attributes=[
+        ('name', str, None),
+        ('label', str, None),
+    ],
+    alphabetization=[
+        (_OBSOLETE_TYPE.tag, _KEEP_ORDER),
+    ],
+    required_attributes=['name', 'label'],
+    children=[
+        models.ChildType(_OBSOLETE_TYPE.tag, _OBSOLETE_TYPE, multiple=False),
+    ])
+
+_TOKEN_TYPE = models.ObjectNodeType(
+    'token',
+    attributes=[
+        ('key', str, None),
+    ],
+    required_attributes=['key'],
+    alphabetization=[
+        (_OBSOLETE_TYPE.tag, _KEEP_ORDER),
+        (_OWNER_TYPE.tag, _KEEP_ORDER),
+        (_VARIANT_TYPE.tag, _NaturalSortByName)
+    ],
+    children=[
+        models.ChildType(_OBSOLETE_TYPE.tag, _OBSOLETE_TYPE, multiple=False),
+        models.ChildType(_OWNER_TYPE.tag, _OWNER_TYPE, multiple=True),
+        models.ChildType(_VARIANT_TYPE.tag, _VARIANT_TYPE, multiple=True),
+    ])
+
 _HISTOGRAM_TYPE = models.ObjectNodeType(
     'histogram',
     attributes=[
@@ -97,6 +130,7 @@ _HISTOGRAM_TYPE = models.ObjectNodeType(
         (_OWNER_TYPE.tag, _KEEP_ORDER),
         (_SUMMARY_TYPE.tag, _KEEP_ORDER),
         (_DETAILS_TYPE.tag, _KEEP_ORDER),
+        (_TOKEN_TYPE.tag, _KEEP_ORDER),
     ],
     extra_newlines=(1, 1, 1),
     children=[
@@ -104,11 +138,14 @@ _HISTOGRAM_TYPE = models.ObjectNodeType(
         models.ChildType(_OWNER_TYPE.tag, _OWNER_TYPE, multiple=True),
         models.ChildType(_SUMMARY_TYPE.tag, _SUMMARY_TYPE, multiple=False),
         models.ChildType(_DETAILS_TYPE.tag, _DETAILS_TYPE, multiple=False),
+        models.ChildType(_TOKEN_TYPE.tag, _TOKEN_TYPE, multiple=True),
     ])
 
 _HISTOGRAMS_TYPE = models.ObjectNodeType(
     'histograms',
-    alphabetization=[(_HISTOGRAM_TYPE.tag, _LOWERCASE_FN('name'))],
+    alphabetization=[
+        (_HISTOGRAM_TYPE.tag, _LOWERCASE_FN('name')),
+    ],
     extra_newlines=(2, 1, 1),
     indent=False,
     children=[

@@ -90,13 +90,6 @@ void FillInSystemEnvironment(base::Value::DictStorage& ds) {
   ds["processor"] = std::make_unique<base::Value>(processor);
 }
 
-// TODO(crbug.com/1081962) Support grace period.
-// Set ignore to true. When the test fails, Skia Gold will not make
-// comment on Gerrit.
-void FillInGracePeriod(base::Value::DictStorage& ds) {
-  ds["ignore"] = std::make_unique<base::Value>("1");
-}
-
 // Fill in test environment to the keys_file. The format is json.
 // We need the system information to determine whether a new screenshot
 // is good or not. All the information that can affect the output of pixels
@@ -105,7 +98,6 @@ void FillInGracePeriod(base::Value::DictStorage& ds) {
 bool FillInTestEnvironment(const base::FilePath& keys_file) {
   base::Value::DictStorage ds;
   FillInSystemEnvironment(ds);
-  FillInGracePeriod(ds);
   base::Value root(std::move(ds));
   std::string content;
   base::JSONWriter::Write(root, &content);

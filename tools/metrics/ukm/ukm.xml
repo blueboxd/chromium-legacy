@@ -13248,6 +13248,25 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Worker.ClientAdded">
+  <owner>cfredric@google.com</owner>
+  <summary>
+    Recorded when a client connects to an existing SharedWorker; records the
+    source IDs of the client (which may be a document or another worker), and
+    the type of the worker being connected to.
+  </summary>
+  <metric name="ClientSourceId">
+    <summary>
+      The UKM source ID of the connecting client, as an integer.
+    </summary>
+  </metric>
+  <metric name="WorkerType" enum="WorkerType">
+    <summary>
+      The type of the worker that was connected to.
+    </summary>
+  </metric>
+</event>
+
 <event name="XR.PageSession" singular="True">
   <obsolete>
     Removed 2/2020

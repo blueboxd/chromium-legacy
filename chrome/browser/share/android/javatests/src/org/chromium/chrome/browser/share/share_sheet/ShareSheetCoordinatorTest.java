@@ -73,13 +73,11 @@ public final class ShareSheetCoordinatorTest {
                                            .with(ShareSheetItemViewProperties.ICON, null)
                                            .with(ShareSheetItemViewProperties.LABEL, "testModel1")
                                            .with(ShareSheetItemViewProperties.CLICK_LISTENER, null)
-                                           .with(ShareSheetItemViewProperties.IS_FIRST_PARTY, false)
                                            .build();
         PropertyModel testModel2 = new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
                                            .with(ShareSheetItemViewProperties.ICON, null)
                                            .with(ShareSheetItemViewProperties.LABEL, "testModel2")
                                            .with(ShareSheetItemViewProperties.CLICK_LISTENER, null)
-                                           .with(ShareSheetItemViewProperties.IS_FIRST_PARTY, false)
                                            .build();
 
         ArrayList<PropertyModel> thirdPartyPropertyModels =
@@ -115,16 +113,10 @@ public final class ShareSheetCoordinatorTest {
         assertEquals("Incorrect number of property models.", 3, propertyModels.size());
         assertEquals("First property model isn't testModel1.", "testModel1",
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));
-        assertEquals("First property model is marked as first party.", false,
-                propertyModels.get(0).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
         assertEquals("Second property model isn't testModel2.", "testModel2",
                 propertyModels.get(1).get(ShareSheetItemViewProperties.LABEL));
-        assertEquals("Second property model is marked as first party.", false,
-                propertyModels.get(1).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
         assertEquals("Third property model isn't More.",
                 activity.getResources().getString(R.string.sharing_more_icon_label),
                 propertyModels.get(2).get(ShareSheetItemViewProperties.LABEL));
-        assertEquals("Third property model isn't marked as first party.", true,
-                propertyModels.get(2).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
     }
 }

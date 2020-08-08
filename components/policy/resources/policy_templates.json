@@ -1045,6 +1045,7 @@
         'DevicePrintersAllowlist',
         'PrintPreviewUseSystemDefaultPrinter',
         'UserNativePrintersAllowed',
+        'UserPrintersAllowed',
         'ExternalPrintServers',
         'ExternalPrintServersWhitelist',
         'ExternalPrintServersAllowlist',
@@ -17488,6 +17489,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 433,
       'caption': '''Allow access to native CUPS printers''',
@@ -17497,6 +17499,29 @@
       If the policy is set to True, or not set at all, users will be able to add, configure, and print using their own native printers.
 
       If the policy is set to False, users will not be able to add and configure their own native printers. They will also not be able to print using any previously configured native printers.
+
+      This policy is deprecated, please use <ph name="USER_PRINTERS_ALLOWED">UserPrintersAllowed</ph> instead.
+      ''',
+    },
+    {
+      'name': 'UserPrintersAllowed',
+      'owners': ['valleau@chromium.org', 'skau@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 768,
+      'caption': '''Allow access to CUPS printers''',
+      'tags': [],
+      'desc': '''Allows you to control if users can access non-enterprise printers
+
+      If the policy is set to True, or not set at all, users will be able to add, configure, and print using their own printers.
+
+      If the policy is set to False, users will not be able to add and configure their own printers. They will also not be able to print using any previously configured printers.
       ''',
     },
     {
@@ -23795,6 +23820,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 767,
+  'highest_id_currently_used': 768,
   'highest_atomic_group_id_currently_used': 40
 }

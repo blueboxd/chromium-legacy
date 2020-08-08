@@ -25,11 +25,15 @@ std::unique_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
 
 ChromeConfirmInfoBar::ChromeConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate)
-    : infobars::ConfirmInfoBar(
-          std::move(delegate),
-          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
+    : infobars::ConfirmInfoBar(std::move(delegate), GetResourceIdMapper()) {}
 
 ChromeConfirmInfoBar::~ChromeConfirmInfoBar() {}
+
+// static
+infobars::InfoBarAndroid::ResourceIdMapper
+ChromeConfirmInfoBar::GetResourceIdMapper() {
+  return base::BindRepeating(&ResourceMapper::MapToJavaDrawableId);
+}
 
 TabAndroid* ChromeConfirmInfoBar::GetTab() {
   content::WebContents* web_contents =

@@ -90,8 +90,9 @@ id<GREYMatcher> VisibleInteractableEnabled() {
 
 // Returns the GREYMatcher for the button that closes the QR Scanner.
 id<GREYMatcher> QrScannerCloseButton() {
-  return chrome_test_util::ButtonWithAccessibilityLabel(
-      QRScannerAppInterface.closeIconAccessibilityLabel);
+  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(
+                        QRScannerAppInterface.closeIconAccessibilityLabel),
+                    grey_userInteractionEnabled(), nil);
 }
 
 // Returns the GREYMatcher for the button which indicates that torch is off and
@@ -225,12 +226,6 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 - (void)assertCloseButtonIsVisible {
   [[EarlGrey selectElementWithMatcher:QrScannerCloseButton()]
       assertWithMatcher:VisibleInteractableEnabled()];
-}
-
-// Checks that the close button is not visible.
-- (void)assertCloseButtonIsNotVisible {
-  [[EarlGrey selectElementWithMatcher:QrScannerCloseButton()]
-      assertWithMatcher:grey_notVisible()];
 }
 
 // Checks that the torch off button is visible, interactable, and enabled, and

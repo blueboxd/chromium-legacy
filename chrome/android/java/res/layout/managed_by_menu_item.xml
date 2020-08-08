@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/AppMenuItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <View style="@style/HorizontalDivider"
+        android:layout_width="match_parent"
+        android:background="@color/divider_line_bg_color" />
+
+    <org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables
+        android:id="@+id/menu_item_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:text="@string/managed"
+        android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
+        android:drawableStart="@drawable/ic_business"
+        android:drawableTint="@color/default_icon_color_secondary"
+        android:drawablePadding="12dp"
+        app:drawableWidth="20dp"
+        app:drawableHeight="20dp"/>
+
+
+</LinearLayout>

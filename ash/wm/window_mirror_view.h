@@ -49,6 +49,8 @@ class ASH_EXPORT WindowMirrorView : public views::View,
   void AddedToWidget() override;
   void RemovedFromWidget() override;
 
+  ui::Layer* GetMirrorLayerForTesting();
+
  protected:
   virtual void InitLayerOwner();
 

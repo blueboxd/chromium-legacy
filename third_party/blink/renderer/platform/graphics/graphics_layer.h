@@ -149,7 +149,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   void SetContentsOpaqueForText(bool);
 
   void SetHitTestable(bool);
-  bool GetHitTestable() const { return hit_testable_; }
+  bool IsHitTestable() const { return hit_testable_; }
 
   // Some GraphicsLayers paint only the foreground or the background content
   GraphicsLayerPaintingPhase PaintingPhase() const { return painting_phase_; }
@@ -325,6 +325,59 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
 
   DISALLOW_COPY_AND_ASSIGN(GraphicsLayer);
 };
+
+// Iterates all graphics layers that should be seen by the compositor in
+// pre-order. |GraphicsLayerType| matches |GraphicsLayer&| or
+// |const GraphicsLayer&|.
+template <typename GraphicsLayerType,
+          typename GraphicsLayerFunction,
+          typename ContentsLayerFunction>
+void ForAllActiveGraphicsLayers(
+    GraphicsLayerType& layer,
+    const GraphicsLayerFunction& graphics_layer_function,
+    const ContentsLayerFunction& contents_layer_function) {
+  if (layer.Client().ShouldThrottleRendering() ||
+      layer.Client().IsUnderSVGHiddenContainer()) {
+    return;
+  }
+
+  if (layer.Client().PaintBlockedByDisplayLockIncludingAncestors(
+          DisplayLockContextLifecycleTarget::kSelf)) {
+    // If we skip the layer, then we need to ensure to notify the
+    // display-lock, since we need to force recollect the layers when we commit.
+    layer.Client().NotifyDisplayLockNeedsGraphicsLayerCollection();
+    return;
+  }
+
+  DCHECK(layer.HasLayerState());
+
+  if (layer.PaintsContentOrHitTest() || layer.IsHitTestable())
+    graphics_layer_function(layer);
+
+  if (auto* contents_layer = layer.ContentsLayer())
+    contents_layer_function(layer, *contents_layer);
+
+  for (auto* child : layer.Children()) {
+    ForAllActiveGraphicsLayers(*child, graphics_layer_function,
+                               contents_layer_function);
+  }
+}
+
+template <typename GraphicsLayerType, typename Function>
+void ForAllActiveGraphicsLayers(GraphicsLayerType& layer,
+                                const Function& function) {
+  ForAllActiveGraphicsLayers(layer, function,
+                             [](GraphicsLayerType&, const cc::Layer&) {});
+}
+
+template <typename GraphicsLayerType, typename Function>
+void ForAllPaintingGraphicsLayers(GraphicsLayerType& layer,
+                                  const Function& function) {
+  ForAllActiveGraphicsLayers(layer, [&function](GraphicsLayerType& layer) {
+    if (layer.PaintsContentOrHitTest())
+      function(layer);
+  });
+}
 
 }  // namespace blink
 

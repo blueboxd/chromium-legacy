@@ -283,16 +283,15 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
   deep_scanning_label_->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
   deep_scanning_label_->set_can_process_events_within_subtree(false);
 
-  open_now_button_ = AddChildView(views::MdTextButton::Create(
+  open_now_button_ = AddChildView(std::make_unique<views::MdTextButton>(
       this, l10n_util::GetStringUTF16(IDS_OPEN_DOWNLOAD_NOW)));
 
-  save_button_ =
-      AddChildView(views::MdTextButton::Create(this, base::string16()));
+  save_button_ = AddChildView(std::make_unique<views::MdTextButton>(this));
 
-  discard_button_ = AddChildView(views::MdTextButton::Create(
+  discard_button_ = AddChildView(std::make_unique<views::MdTextButton>(
       this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD)));
 
-  scan_button_ = AddChildView(views::MdTextButton::Create(
+  scan_button_ = AddChildView(std::make_unique<views::MdTextButton>(
       this, l10n_util::GetStringUTF16(IDS_SCAN_DOWNLOAD)));
 
   dropdown_button_ = AddChildView(views::CreateVectorImageButton(this));

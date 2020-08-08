@@ -159,9 +159,9 @@ class ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled
 
     ASSERT_TRUE(embedded_test_server()->Start());
     ui_test_utils::NavigateToURL(browser(), GURL(url));
-
-    // Round trip to the renderer to ensure that the page is loaded
-    EXPECT_TRUE(content::ExecuteScript(content, "var a = 0;"));
+    // We don't ASSERT_TRUE here because some WebUI pages are by design not
+    // PAGE_TYPE_NORMAL (e.g. chrome://interstitials/ssl).
+    content::WaitForLoadStop(content);
     EXPECT_TRUE(console_observer.messages().empty());
   }
 
@@ -180,7 +180,6 @@ IN_PROC_BROWSER_TEST_P(
 // This list was derived from chrome://about. :)
 static constexpr const char* const kChromeUrls[] = {
     "chrome://accessibility",
-    "chrome://appcache-internals",
     "chrome://apps",
     "chrome://autofill-internals",
     "chrome://blob-internals",
@@ -196,7 +195,6 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://crashes",
     "chrome://credits",
     "chrome://device-log",
-    "chrome://devices",
     "chrome://dino",
     "chrome://domain-reliability-internals",
     "chrome://download-internals",
@@ -275,7 +273,6 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://add-supervision",
     "chrome://assistant-optin",
     "chrome://bluetooth-pairing",
-    "chrome://cellular-setup",
     "chrome://certificate-manager",
     "chrome://crostini-credits",
     "chrome://crostini-installer",

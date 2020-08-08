@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "components/subresource_filter/content/browser/activation_state_computing_navigation_throttle.h"
@@ -120,11 +121,14 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
   if (level == mojom::ActivationLevel::kDisabled)
     return;
 
-  TRACE_EVENT1(
+  TRACE_EVENT2(
       TRACE_DISABLED_BY_DEFAULT("loading"),
       "ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation",
       "activation_state",
-      static_cast<int>(filter->activation_state().activation_level));
+      static_cast<int>(filter->activation_state().activation_level),
+      "render_frame_host",
+      base::trace_event::ToTracedValue(
+          navigation_handle->GetRenderFrameHost()));
 
   throttle->WillSendActivationToRenderer();
 

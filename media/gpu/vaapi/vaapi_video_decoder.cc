@@ -82,15 +82,16 @@ VaapiVideoDecoder::VaapiVideoDecoder(
     : DecoderInterface(std::move(decoder_task_runner), std::move(client)),
       buffer_id_to_timestamp_(kTimestampCacheSize),
       weak_this_factory_(this) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   VLOGF(2);
+  DCHECK(decoder_task_runner->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
 VaapiVideoDecoder::~VaapiVideoDecoder() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   VLOGF(2);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Abort all currently scheduled decode tasks.
   ClearDecodeTaskQueue(DecodeStatus::ABORTED);
@@ -114,10 +115,10 @@ VaapiVideoDecoder::~VaapiVideoDecoder() {
 void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    InitCB init_cb,
                                    const OutputCB& output_cb) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(2) << config.AsHumanReadableString();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(config.IsValidConfig());
   DCHECK(state_ == State::kUninitialized || state_ == State::kWaitingForInput);
-  DVLOGF(2) << config.AsHumanReadableString();
 
   // Reinitializing the decoder is allowed if there are no pending decodes.
   if (current_decode_task_ || !decode_task_queue_.empty()) {
@@ -177,7 +178,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
 void VaapiVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                DecodeCB decode_cb) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(4) << "Queuing input buffer, id: " << next_buffer_id_ << ", size: "
             << (buffer->end_of_stream() ? 0 : buffer->data_size());
 
@@ -205,7 +206,7 @@ void VaapiVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 }
 
 void VaapiVideoDecoder::ScheduleNextDecodeTask() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, State::kDecoding);
   DCHECK(!current_decode_task_);
   DCHECK(!decode_task_queue_.empty());
@@ -224,8 +225,8 @@ void VaapiVideoDecoder::ScheduleNextDecodeTask() {
 }
 
 void VaapiVideoDecoder::HandleDecodeTask() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (state_ == State::kError || state_ == State::kResetting)
     return;
@@ -284,8 +285,8 @@ void VaapiVideoDecoder::HandleDecodeTask() {
 }
 
 void VaapiVideoDecoder::ClearDecodeTaskQueue(DecodeStatus status) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (current_decode_task_) {
     std::move(current_decode_task_->decode_done_cb_).Run(status);
@@ -299,10 +300,10 @@ void VaapiVideoDecoder::ClearDecodeTaskQueue(DecodeStatus status) {
 }
 
 scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, State::kDecoding);
   DCHECK(current_decode_task_);
-  DVLOGF(4);
 
   // Get a video frame from the video frame pool.
   scoped_refptr<VideoFrame> frame = frame_pool_->GetFrame();
@@ -364,9 +365,9 @@ void VaapiVideoDecoder::SurfaceReady(scoped_refptr<VASurface> va_surface,
                                      int32_t buffer_id,
                                      const gfx::Rect& visible_rect,
                                      const VideoColorSpace& color_space) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK_EQ(state_, State::kDecoding);
   DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(state_, State::kDecoding);
 
   // Find the timestamp associated with |buffer_id|. It's possible that a
   // surface is output multiple times for different |buffer_id|s (e.g. VP9
@@ -410,7 +411,7 @@ void VaapiVideoDecoder::SurfaceReady(scoped_refptr<VASurface> va_surface,
 }
 
 void VaapiVideoDecoder::ApplyResolutionChange() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_ == State::kChangingResolution ||
          state_ == State::kWaitingForInput);
   DCHECK(output_frames_.empty());
@@ -469,8 +470,8 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
 }
 
 void VaapiVideoDecoder::ReleaseVideoFrame(VASurfaceID surface_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // The decoder has finished using the frame associated with |surface_id| for
   // output or reference, so it's safe to drop our reference here. Once the
@@ -481,8 +482,8 @@ void VaapiVideoDecoder::ReleaseVideoFrame(VASurfaceID surface_id) {
 }
 
 void VaapiVideoDecoder::NotifyFrameAvailable() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If we were waiting for output buffers, retry the current decode task.
   if (state_ == State::kWaitingForOutput) {
@@ -495,12 +496,12 @@ void VaapiVideoDecoder::NotifyFrameAvailable() {
 }
 
 void VaapiVideoDecoder::Flush() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(2);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, State::kDecoding);
   DCHECK(current_decode_task_);
   DCHECK(current_decode_task_->buffer_->end_of_stream());
   DCHECK(decode_task_queue_.empty());
-  DVLOGF(2);
 
   // Flush will block until SurfaceReady() has been called for every frame
   // currently decoding.
@@ -524,8 +525,8 @@ void VaapiVideoDecoder::Flush() {
 }
 
 void VaapiVideoDecoder::Reset(base::OnceClosure reset_cb) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(2);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If we encountered an error, skip reset and notify client.
   if (state_ == State::kError) {
@@ -558,8 +559,8 @@ void VaapiVideoDecoder::Reset(base::OnceClosure reset_cb) {
 }
 
 bool VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(2);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
     auto accelerator =
@@ -589,20 +590,20 @@ bool VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
 }
 
 void VaapiVideoDecoder::ResetDone(base::OnceClosure reset_cb) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(2);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, State::kResetting);
   DCHECK(!current_decode_task_);
   DCHECK(decode_task_queue_.empty());
-  DVLOGF(2);
 
   std::move(reset_cb).Run();
   SetState(State::kWaitingForInput);
 }
 
 void VaapiVideoDecoder::SetState(State state) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3) << static_cast<int>(state)
             << ", current state: " << static_cast<int>(state_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Check whether the state change is valid.
   switch (state) {

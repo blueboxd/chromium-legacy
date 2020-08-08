@@ -100,6 +100,13 @@ void NewTabButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
   ink_drop_container_->RemoveLayerBeneathView(old_layer);
 }
 
+SkColor NewTabButton::GetForegroundColor() const {
+  const SkColor background_color = tab_strip_->GetTabBackgroundColor(
+      TabActive::kInactive, BrowserFrameActiveState::kUseCurrent);
+  return tab_strip_->GetTabForegroundColor(TabActive::kInactive,
+                                           background_color);
+}
+
 void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   ImageButton::OnBoundsChanged(previous_bounds);
   ink_drop_container_->SetBoundsRect(GetLocalBounds());
@@ -141,7 +148,7 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::ScopedCanvas scoped_canvas(canvas);
   canvas->Translate(GetContentsBounds().OffsetFromOrigin());
   PaintFill(canvas);
-  PaintPlusIcon(canvas);
+  PaintIcon(canvas);
 }
 
 gfx::Size NewTabButton::CalculatePreferredSize() const {
@@ -201,14 +208,10 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
   canvas->DrawPath(GetBorderPath(gfx::Point(), scale, false), flags);
 }
 
-void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas) const {
-  const SkColor background_color = tab_strip_->GetTabBackgroundColor(
-      TabActive::kInactive, BrowserFrameActiveState::kUseCurrent);
-
+void NewTabButton::PaintIcon(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(tab_strip_->GetTabForegroundColor(TabActive::kInactive,
-                                                   background_color));
+  flags.setColor(GetForegroundColor());
   flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
   constexpr int kStrokeWidth = 2;
   flags.setStrokeWidth(kStrokeWidth);

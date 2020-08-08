@@ -683,7 +683,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_LIST;
 
   // Native Printing settings.
-  (*s_whitelist)[::prefs::kUserNativePrintersAllowed] =
+  (*s_whitelist)[::prefs::kUserPrintersAllowed] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
 #else

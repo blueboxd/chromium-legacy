@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/menu/menu_controller.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -11,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -1065,67 +1068,115 @@ TEST_F(MenuControllerTest, LastSelectedItem) {
   ResetSelection();
 }
 
-// Tests that opening menu and pressing 'Down' and 'Up' iterates over enabled
-// items.
-TEST_F(MenuControllerTest, NextSelectedItem) {
-  // Disabling the item "Three" gets it skipped when using keyboard to navigate.
-  menu_item()->GetSubmenu()->GetMenuItemAt(2)->SetEnabled(false);
+// MenuController tests which set expectations about how menu item selection
+// behaves should verify test cases work as intended for all supported selection
+// mechanisms.
+class MenuControllerSelectionTest : public MenuControllerTest {
+ public:
+  MenuControllerSelectionTest() = default;
+  ~MenuControllerSelectionTest() override = default;
 
-  // Fake initial hot selection.
-  SetPendingStateItem(menu_item()->GetSubmenu()->GetMenuItemAt(0));
-  EXPECT_EQ(1, pending_state_item()->GetCommand());
+ protected:
+  // Models a mechanism by which menu item selection can be incremented and/or
+  // decremented.
+  struct SelectionMechanism {
+    base::RepeatingClosure IncrementSelection;
+    base::RepeatingClosure DecrementSelection;
+  };
 
-  // Move down in the menu.
-  // Select next item.
-  IncrementSelection();
-  EXPECT_EQ(2, pending_state_item()->GetCommand());
-
-  // Skip disabled item.
-  IncrementSelection();
-  EXPECT_EQ(4, pending_state_item()->GetCommand());
-
-  if (SelectionWraps()) {
-    // Wrap around.
-    IncrementSelection();
-    EXPECT_EQ(1, pending_state_item()->GetCommand());
-
-    // Move up in the menu.
-    // Wrap around.
-    DecrementSelection();
-    EXPECT_EQ(4, pending_state_item()->GetCommand());
-  } else {
-    // Don't wrap.
-    IncrementSelection();
-    EXPECT_EQ(4, pending_state_item()->GetCommand());
+  // Returns all mechanisms by which menu item selection can be incremented
+  // and/or decremented.
+  const std::vector<SelectionMechanism>& selection_mechanisms() {
+    return selection_mechanisms_;
   }
 
-  // Skip disabled item.
-  DecrementSelection();
-  EXPECT_EQ(2, pending_state_item()->GetCommand());
+ private:
+  const std::vector<SelectionMechanism> selection_mechanisms_ = {
+      // Updates selection via IncrementSelection()/DecrementSelection().
+      SelectionMechanism{
+          base::BindLambdaForTesting([this]() { IncrementSelection(); }),
+          base::BindLambdaForTesting([this]() { DecrementSelection(); })},
+      // Updates selection via down/up arrow keys.
+      SelectionMechanism{
+          base::BindLambdaForTesting([this]() { DispatchKey(ui::VKEY_DOWN); }),
+          base::BindLambdaForTesting([this]() { DispatchKey(ui::VKEY_UP); })},
+      // Updates selection via next/prior keys.
+      SelectionMechanism{
+          base::BindLambdaForTesting([this]() { DispatchKey(ui::VKEY_NEXT); }),
+          base::BindLambdaForTesting(
+              [this]() { DispatchKey(ui::VKEY_PRIOR); })}};
+};
 
-  // Select previous item.
-  DecrementSelection();
-  EXPECT_EQ(1, pending_state_item()->GetCommand());
+// Tests that opening menu and exercising various mechanisms to update selection
+// iterates over enabled items.
+TEST_F(MenuControllerSelectionTest, NextSelectedItem) {
+  for (const auto& selection_mechanism : selection_mechanisms()) {
+    // Disabling the item "Three" gets it skipped when using keyboard to
+    // navigate.
+    menu_item()->GetSubmenu()->GetMenuItemAt(2)->SetEnabled(false);
 
-  // Clear references in menu controller to the menu item that is going away.
-  ResetSelection();
+    // Fake initial hot selection.
+    SetPendingStateItem(menu_item()->GetSubmenu()->GetMenuItemAt(0));
+    EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+    // Move down in the menu.
+    // Select next item.
+    selection_mechanism.IncrementSelection.Run();
+    EXPECT_EQ(2, pending_state_item()->GetCommand());
+
+    // Skip disabled item.
+    selection_mechanism.IncrementSelection.Run();
+    EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+    if (SelectionWraps()) {
+      // Wrap around.
+      selection_mechanism.IncrementSelection.Run();
+      EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+      // Move up in the menu.
+      // Wrap around.
+      selection_mechanism.DecrementSelection.Run();
+      EXPECT_EQ(4, pending_state_item()->GetCommand());
+    } else {
+      // Don't wrap.
+      selection_mechanism.IncrementSelection.Run();
+      EXPECT_EQ(4, pending_state_item()->GetCommand());
+    }
+
+    // Skip disabled item.
+    selection_mechanism.DecrementSelection.Run();
+    EXPECT_EQ(2, pending_state_item()->GetCommand());
+
+    // Select previous item.
+    selection_mechanism.DecrementSelection.Run();
+    EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+    // Clear references in menu controller to the menu item that is going
+    // away.
+    ResetSelection();
+  }
 }
 
-// Tests that opening menu and pressing 'Up' selects the last enabled menu item.
-TEST_F(MenuControllerTest, PreviousSelectedItem) {
-  // Disabling the item "Four" gets it skipped when using keyboard to navigate.
-  menu_item()->GetSubmenu()->GetMenuItemAt(3)->SetEnabled(false);
+// Tests that opening menu and exercising various mechanisms to decrement
+// selection selects the last enabled menu item.
+TEST_F(MenuControllerSelectionTest, PreviousSelectedItem) {
+  for (const auto& selection_mechanism : selection_mechanisms()) {
+    // Disabling the item "Four" gets it skipped when using keyboard to
+    // navigate.
+    menu_item()->GetSubmenu()->GetMenuItemAt(3)->SetEnabled(false);
 
-  // Fake initial root item selection and submenu showing.
-  SetPendingStateItem(menu_item());
-  EXPECT_EQ(0, pending_state_item()->GetCommand());
+    // Fake initial root item selection and submenu showing.
+    SetPendingStateItem(menu_item());
+    EXPECT_EQ(0, pending_state_item()->GetCommand());
 
-  // Move up and select a previous (in our case the last enabled) item.
-  DecrementSelection();
-  EXPECT_EQ(3, pending_state_item()->GetCommand());
+    // Move up and select a previous (in our case the last enabled) item.
+    selection_mechanism.DecrementSelection.Run();
+    EXPECT_EQ(3, pending_state_item()->GetCommand());
 
-  // Clear references in menu controller to the menu item that is going away.
-  ResetSelection();
+    // Clear references in menu controller to the menu item that is going
+    // away.
+    ResetSelection();
+  }
 }
 
 // Tests that the APIs related to the current selected item work correctly.
@@ -1714,36 +1765,6 @@ TEST_F(MenuControllerTest, AsynchronousGestureDeletesController) {
   // Close to remove observers before test TearDown
   sub_menu->Close();
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
-}
-
-TEST_F(MenuControllerTest, ArrowKeysAtEnds) {
-  menu_item()->GetSubmenu()->GetMenuItemAt(2)->SetEnabled(false);
-
-  SetPendingStateItem(menu_item()->GetSubmenu()->GetMenuItemAt(0));
-  EXPECT_EQ(1, pending_state_item()->GetCommand());
-
-  if (SelectionWraps()) {
-    DispatchKey(ui::VKEY_UP);
-    EXPECT_EQ(4, pending_state_item()->GetCommand());
-
-    DispatchKey(ui::VKEY_DOWN);
-    EXPECT_EQ(1, pending_state_item()->GetCommand());
-  } else {
-    DispatchKey(ui::VKEY_UP);
-    EXPECT_EQ(1, pending_state_item()->GetCommand());
-  }
-
-  DispatchKey(ui::VKEY_DOWN);
-  EXPECT_EQ(2, pending_state_item()->GetCommand());
-
-  DispatchKey(ui::VKEY_DOWN);
-  EXPECT_EQ(4, pending_state_item()->GetCommand());
-
-  DispatchKey(ui::VKEY_DOWN);
-  if (SelectionWraps())
-    EXPECT_EQ(1, pending_state_item()->GetCommand());
-  else
-    EXPECT_EQ(4, pending_state_item()->GetCommand());
 }
 
 // Test that the menu is properly placed where it best fits.

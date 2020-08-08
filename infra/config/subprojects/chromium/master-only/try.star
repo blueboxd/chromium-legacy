@@ -41,14 +41,6 @@ try_.blink_builder(
 )
 
 try_.blink_mac_builder(
-    name = "mac10.10-blink-rel",
-)
-
-try_.blink_mac_builder(
-    name = "mac10.11-blink-rel",
-)
-
-try_.blink_mac_builder(
     name = "mac10.12-blink-rel",
 )
 

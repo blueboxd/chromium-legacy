@@ -2325,16 +2325,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
       Si cette règle est appliquée, seules les imprimantes dont l'ID correspond aux valeurs de la règle sont à la disposition de l'utilisateur. Les ID doivent correspondre aux champs "id" ou "guid" du fichier spécifié dans <ph name="BULK_PRINTERS_POLICY" />.
       </translation>
 <translation id="4285674129118156176">Autoriser les utilisateurs non affiliés à utiliser ARC</translation>
-<translation id="4298509794364745131">Liste des applications qui peuvent être activées pour la prise de notes sur l'écran de verrouillage de <ph name="PRODUCT_OS_NAME" />.
-
-      Si l'application de prise de notes préférée est activée sur l'écran de verrouillage, ce dernier présente un élément permettant de la lancer.
-      Une fois lancée, l'application peut créer une fenêtre d'application sur l'écran de verrouillage, ainsi que des éléments de données (des notes) dans le contexte de l'écran de verrouillage. L'application pourra ensuite importer les notes créées dans la session utilisateur principale, lorsque celle-ci sera déverrouillée. Actuellement, seules les applications de prises de notes Chrome sont autorisées sur l'écran de verrouillage.
-
-      Si vous définissez la règle, l'utilisateur pourra autoriser une application sur l'écran de verrouillage, uniquement si l'identifiant d'extension de l'application figure dans la liste de valeurs de la règle.
-      Par conséquent, si vous définissez une liste vide pour cette règle, la prise de notes sera totalement désactivée sur l'écran de verrouillage.
-      Sachez qu'une règle contenant un identifiant d'application ne signifie pas forcément que l'utilisateur pourra activer les applications de prise de notes sur l'écran de verrouillage. Par exemple, sur Chrome 61, l'ensemble d'applications disponibles fait l'objet de restrictions supplémentaires imposées par la plate-forme.
-
-      Si vous ne définissez pas de règle, aucune restriction ne s'appliquera sur l'ensemble d'applications que l'utilisateur peut activer sur l'écran de verrouillage.</translation>
 <translation id="4311195029067684288">Complet</translation>
 <translation id="4313767483634435271">Adresse MAC de la station d'accueil désignée de l'appareil</translation>
 <translation id="4322842393287974810">Autoriser l'application kiosque lancée automatiquement sans délai à contrôler la version de l'application <ph name="PRODUCT_OS_NAME" /></translation>

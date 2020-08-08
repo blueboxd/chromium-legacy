@@ -114,6 +114,7 @@ void MetricsReporter::FinalizeVisit() {
     return;
   engaged_reported_ = false;
   engaged_simple_reported_ = false;
+  scrolled_reported_ = false;
   TrackTimeSpentInFeed(false);
 }
 

@@ -20,7 +20,7 @@ void RecordPwaLauncherResult() {
         result >= 0 &&
         result <= static_cast<DWORD>(WebAppLauncherLaunchResult::kMaxValue)) {
       base::UmaHistogramEnumeration(
-          "WebApp.Launcher.WebAppLauncherLaunchResult",
+          "WebApp.Launcher.LaunchResult",
           static_cast<WebAppLauncherLaunchResult>(result));
     }
 

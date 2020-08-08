@@ -7,8 +7,6 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
-GEN('#include "chrome/browser/browser_features.h"');
-GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 /**
@@ -69,85 +67,6 @@ GEN('#if defined(OS_CHROMEOS)');
 TEST_F('CrComponentsManagedFootnoteTest', 'LoadTimeDataDevice', function() {
   runMochaTest(
       this.suiteName, managed_footnote_test.TestNames.LoadTimeDataDevice);
-});
-
-GEN('#endif');
-
-GEN('#if defined(OS_CHROMEOS)');
-/**
- * @constructor
- * @extends {CrComponentsBrowserTest}
- */
-function CrPolicyNetworkBehaviorMojoTest() {}
-
-CrPolicyNetworkBehaviorMojoTest.prototype = {
-  __proto__: CrComponentsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://os-settings/chromeos/internet_page/internet_page.html',
-
-  /** @override */
-  extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
-    '../cr_elements/cr_policy_strings.js',
-    'cr_policy_network_behavior_mojo_tests.js',
-  ]),
-};
-
-TEST_F('CrPolicyNetworkBehaviorMojoTest', 'All', function() {
-  mocha.run();
-});
-
-/**
- * @constructor
- * @extends {CrComponentsBrowserTest}
- */
-function CrComponentsPolicyNetworkIndicatorMojoTest() {}
-
-CrComponentsPolicyNetworkIndicatorMojoTest.prototype = {
-  __proto__: CrComponentsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://os-settings/chromeos/internet_page/internet_page.html',
-
-  /** @override */
-  extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
-    '../cr_elements/cr_policy_strings.js',
-    'cr_policy_network_indicator_mojo_tests.js',
-  ]),
-};
-
-TEST_F('CrComponentsPolicyNetworkIndicatorMojoTest', 'All', function() {
-  mocha.run();
-});
-
-/**
- * @constructor
- * @extends {CrComponentsBrowserTest}
- */
-function CrComponentsNetworkConfigTest() {}
-
-CrComponentsNetworkConfigTest.prototype = {
-  __proto__: CrComponentsBrowserTest.prototype,
-
-  /** @override */
-
-  browsePreload: 'chrome://internet-config-dialog',
-
-  /** @override */
-  extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
-    '//ui/webui/resources/js/assert.js',
-    '//ui/webui/resources/js/promise_resolver.js',
-    '../fake_chrome_event.js',
-    '../chromeos/networking_private_constants.js',
-    '../chromeos/fake_network_config_mojom.js',
-    'network_config_test.js',
-  ]),
-};
-
-TEST_F('CrComponentsNetworkConfigTest', 'All', function() {
-  mocha.run();
 });
 
 GEN('#endif');

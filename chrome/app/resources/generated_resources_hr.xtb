@@ -242,7 +242,6 @@
 <translation id="1280965841156951489">Uredi datoteke</translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
 <translation id="1285484354230578868">spremati podatke na vaš račun na Google disku</translation>
-<translation id="1285717512281186441">Pisač nije dostupan</translation>
 <translation id="1288037062697528143">Noćno svjetlo automatski će se uključiti u suton</translation>
 <translation id="1288300545283011870">Svojstva govora</translation>
 <translation id="1293264513303784526">USB-C uređaj (lijevi priključak)</translation>
@@ -486,7 +485,6 @@
 <translation id="1587129667417059148">Izbrisat će se svi podaci i kolačići koje je spremila web-lokacija <ph name="ORIGIN_NAME" /></translation>
 <translation id="1587275751631642843">&amp;JavaScript konzola</translation>
 <translation id="1587907146729660231">Prstom dodirnite tipku za uključivanje/isključivanje</translation>
-<translation id="1588200577109872591">Pametni ulazi</translation>
 <translation id="1588438908519853928">Uobičajeno</translation>
 <translation id="158849752021629804">Potrebna je matična mreža</translation>
 <translation id="1588870296199743671">Otvori vezu sa...</translation>
@@ -1286,7 +1284,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="253557089021624350">Broj aktivnosti održavanja</translation>
 <translation id="2535799430745250929">Ne postoji nijedna mobilna mreža</translation>
 <translation id="2537178555904266562">Pogreška prilikom sinkronizacije zaporki</translation>
-<translation id="2537296579376733324">Svi kolačići, samo na ovoj web-lokaciji</translation>
 <translation id="2537395079978992874">Web-lokacija <ph name="ORIGIN" /> može pregledavati i uređivati sljedeće datoteke i mape</translation>
 <translation id="2537927931785713436">Provjera slike virtualnog računala</translation>
 <translation id="2538361623464451692">Onemogućena je sinkronizacija</translation>
@@ -1427,7 +1424,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2712173769900027643">Traži dopuštenje</translation>
 <translation id="2713444072780614174">Bijela</translation>
 <translation id="2714393097308983682">Trgovina Google Play</translation>
-<translation id="2714997332747470971">Prijedlozi osobnih podataka pomažu vam brže pisati zahvaljujući prijedlozima kao što su vaše ime, adresa ili telefonski broj. Samo vi možete vidjeti privatne i prilagođene prijedloge za svoj račun.</translation>
 <translation id="2715751256863167692">Ovom nadogradnjom Chromebook se vraća na zadano, a trenutačni korisnički podaci se uklanjaju.</translation>
 <translation id="2716986496990888774">Tom postavkom upravlja roditelj.</translation>
 <translation id="2718395828230677721">Noćno svjetlo</translation>
@@ -2951,7 +2947,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4608520674724523647">Ilustracija uspješne prijave</translation>
 <translation id="4608703838363792434">Datoteka <ph name="FILE_NAME" /> ima osjetljiv sadržaj</translation>
 <translation id="4610162781778310380">Dodatak <ph name="PLUGIN_NAME" /> naišao je na pogrešku</translation>
-<translation id="4610178114344604329">Prikazivanje prijedloga osobnih podataka</translation>
 <translation id="4610637590575890427">Jeste li mislili <ph name="SITE" /></translation>
 <translation id="4611114513649582138">Dostupna je podatkovna veza</translation>
 <translation id="4613144866899789710">Otkazivanje instalacije Linuxa...</translation>
@@ -6017,7 +6012,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8448729345478502352">Povećajte ili smanjite stavke na zaslonu</translation>
 <translation id="8449008133205184768">Zalijepi i podesi stil</translation>
 <translation id="8449036207308062757">Upravljanje pohranom</translation>
-<translation id="84501823665211008">Prikaži prijedloge emojija</translation>
 <translation id="8452135315243592079">Nedostaje SIM kartica</translation>
 <translation id="8455026683977728932">Omogućavanje ADB ilustracije nije uspjelo.</translation>
 <translation id="845702320058262034">Povezivanje nije uspjelo. Provjerite je li Bluetooth na telefonu uključen.</translation>
@@ -6303,7 +6297,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8798441408945964110">Naziv davatelja usluge</translation>
 <translation id="8800004011501252845">Prikazuju se odredišta za korisnika</translation>
 <translation id="8800034312320686233">Web-lokacija ne funkcionira?</translation>
-<translation id="880069872639153240">Primajte prijedloge emojija na temelju onoga što upisujete</translation>
 <translation id="8803953437405899238">Otvaranje nove kartice jednim klikom</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Premjesti karticu u neki drugi prozor}one{Premjesti kartice u neki drugi prozor}few{Premjesti kartice u neki drugi prozor}other{Premjesti kartice u neki drugi prozor}}</translation>
 <translation id="8805140816472474147">Potvrdite postavke sinkronizacije da biste pokrenuli sinkronizaciju.</translation>

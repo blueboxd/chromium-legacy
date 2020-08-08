@@ -65,7 +65,9 @@ import java.util.Set;
 /** Tests of the {@link FeedActionManagerImpl} class. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+@Features.DisableFeatures(ChromeFeatureList.INTEREST_FEED_V2)
+@Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
+        ChromeFeatureList.REPORT_FEED_USER_ACTIONS})
 public class FeedActionManagerImplTest {
     private static final String CONTENT_ID_STRING = "contentIdString";
     private static final String SESSION_ID = "session";

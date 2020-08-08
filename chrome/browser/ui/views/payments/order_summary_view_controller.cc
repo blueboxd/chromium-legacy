@@ -142,7 +142,7 @@ void OrderSummaryViewController::OnSelectedInformationChanged() {
 
 std::unique_ptr<views::Button>
 OrderSummaryViewController::CreatePrimaryButton() {
-  auto button = views::MdTextButton::Create(
+  auto button = std::make_unique<views::MdTextButton>(
       this, state()->selected_app() && state()->selected_app()->type() !=
                                            PaymentApp::Type::AUTOFILL
                 ? l10n_util::GetStringUTF16(IDS_PAYMENTS_CONTINUE_BUTTON)

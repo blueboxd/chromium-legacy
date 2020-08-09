@@ -70,8 +70,16 @@ const char kIncludePath[] = "base/memory/checked_ptr.h";
 //
 // See also:
 // - OutputSectionHelper
-// - FieldDeclFilterFile
+// - FilterFile
 const char kExcludeFieldsParamName[] = "exclude-fields";
+
+// Name of a cmdline parameter that can be used to specify a file listing
+// regular expressions describing paths that should be excluded from the
+// rewrite.
+//
+// See also:
+// - PathFilterFile
+const char kExcludePathsParamName[] = "exclude-paths";
 
 // OutputSectionHelper helps gather and emit a section of output.
 //
@@ -93,12 +101,15 @@ const char kExcludeFieldsParamName[] = "exclude-fields";
 // changes).
 //
 // See also:
-// - FieldDeclFilterFile
+// - FilterFile
 // - OutputHelper
 class OutputSectionHelper {
  public:
   explicit OutputSectionHelper(llvm::StringRef output_delimiter)
       : output_delimiter_(output_delimiter.str()) {}
+
+  OutputSectionHelper(const OutputSectionHelper&) = delete;
+  OutputSectionHelper& operator=(const OutputSectionHelper&) = delete;
 
   void Add(llvm::StringRef output_line, llvm::StringRef tag = "") {
     // Look up |tags| associated with |output_line|.  As a side effect of the
@@ -151,6 +162,9 @@ class OutputHelper : public clang::tooling::SourceFileCallbacks {
   OutputHelper()
       : edits_helper_("EDITS"), field_decl_filter_helper_("FIELD FILTERS") {}
   ~OutputHelper() = default;
+
+  OutputHelper(const OutputHelper&) = delete;
+  OutputHelper& operator=(const OutputHelper&) = delete;
 
   void AddReplacement(const clang::SourceManager& source_manager,
                       const clang::SourceRange& replacement_range,
@@ -255,102 +269,6 @@ llvm::StringRef GetFilePath(const clang::SourceManager& source_manager,
   return file_entry->getName();
 }
 
-// |kSeparateRepoPaths| is a list of directories that
-// 1. Contain a ".git" subdirectory
-// 2. Do not contain "third_party" substring in their path.
-//
-// The list below has been generated with:
-/*
-   $ find . -type d -name .git | \
-       sed -e 's/\.git$//g' | \
-       sed -e 's/\.\///g' | \
-       grep -v third_party | \
-       grep -v '^$' | \
-       sort | uniq | \
-       sed -e 's/^\(.*\)$/    "\1",/g' > ~/scratch/git-paths
-*/
-const char* kSeparateRepoPaths[] = {
-    "buildtools/",
-    "buildtools/clang_format/script/",
-    "chrome/app/theme/default_100_percent/google_chrome/",
-    "chrome/app/theme/default_200_percent/google_chrome/",
-    "chrome/app/theme/google_chrome/",
-    "chrome/app/vector_icons/google_chrome/",
-    "chrome/browser/chromeos/arc/voice_interaction/internal/",
-    "chrome/browser/google/linkdoctor_internal/",
-    "chrome/browser/internal/",
-    "chrome/browser/media/engagement_internal/",
-    "chrome/browser/media/kaleidoscope/internal/",
-    "chrome/browser/resources/chromeos/quickoffice/",
-    "chrome/browser/resources/media_router/extension/src/",
-    "chrome/browser/resources/media_router_internal/",
-    "chrome/browser/resources/settings_internal/",
-    "chrome/browser/spellchecker/internal/",
-    "chrome/browser/ui/media_router/internal/",
-    "chrome/installer/mac/internal/",
-    "chromeos/assistant/internal/",
-    "chromeos/assistant/libassistant/deps/",
-    "chromeos/assistant/libassistant/src/",
-    "chromeos/assistant/libassistant/src/buildtools/",
-    "chromeos/assistant/libassistant/src/buildtools/clang_format/script/",
-    "chromeos/components/media_app_ui/resources/app/",
-    "chrome/services/soda/internal/",
-    "chrome/test/data/firefox3_profile/searchplugins/",
-    "chrome/test/data/firefox3_searchplugins/",
-    "chrome/test/data/gpu/vt/",
-    "chrome/test/data/osdd/",
-    "chrome/test/data/pdf_private/",
-    "chrome/test/data/perf/canvas_bench/",
-    "chrome/test/data/perf/frame_rate/content/",
-    "chrome/test/data/perf/frame_rate/private/",
-    "chrome/test/data/perf/private/",
-    "chrome/test/data/xr/webvr_info/",
-    "chrome/test/media_router/internal/",
-    "chrome/test/python_tests/",
-    "chrome/tools/test/reference_build/chrome_linux/",
-    "clank/",
-    "components/ntp_tiles/resources/internal/",
-    "components/resources/default_100_percent/google_chrome/",
-    "components/resources/default_200_percent/google_chrome/",
-    "components/resources/default_300_percent/google_chrome/",
-    "components/site_isolation/internal/",
-    "content/test/data/plugin/",
-    "data/autodiscovery/",
-    "data/dom_perf/",
-    "data/mach_ports/",
-    "data/memory_test/",
-    "data/mozilla_js_tests/",
-    "data/page_cycler/",
-    "data/selenium_core/",
-    "data/tab_switching/",
-    "google_apis/internal/",
-    "libassistant/communication/",
-    "libassistant/contrib/",
-    "libassistant/internal/",
-    "libassistant/resources/",
-    "libassistant/shared/",
-    "media/cdm/api/",
-    "mojo/internal/",
-    "native_client/",
-    "remoting/android/internal/",
-    "remoting/host/installer/linux/internal/",
-    "remoting/internal/",
-    "remoting/test/internal/",
-    "remoting/tools/internal/",
-    "remoting/webapp/app_remoting/internal/",
-    "skia/tools/clusterfuzz-data/",
-    "tools/histograms/",
-    "tools/page_cycler/acid3/",
-    "tools/perf/data/",
-    "tools/swarming_client/",
-    "ui/file_manager/internal/",
-    "ui/webui/internal/",
-    "v8/",
-    "webkit/data/bmp_decoder/",
-    "webkit/data/ico_decoder/",
-    "webkit/data/test_shell/plugins/",
-};
-
 AST_MATCHER(clang::FieldDecl, isInThirdPartyLocation) {
   llvm::StringRef file_path =
       GetFilePath(Finder->getASTContext().getSourceManager(), Node);
@@ -359,22 +277,6 @@ AST_MATCHER(clang::FieldDecl, isInThirdPartyLocation) {
   // "third_party" in its path.
   if (file_path.contains("third_party/blink/"))
     return false;
-
-  // |apply_edits.py| won't rewrite content of files that are in a separate git
-  // repository (e.g. //v8, //media/cdm/api).  Because of this, we need to
-  // detect such paths below and report them as third party.
-  //
-  // Examples where this is important:
-  // - the rewriter should not append |.get()| to references to
-  //   |v8::RegisterState::pc|, because //v8/include/v8.h will *not* get
-  //   rewritten.
-  // - the rewriter should not append |.get()| to references to
-  //   |cdm::VideoDecoderConfig_3::extra_data|, because
-  //   //media/cdm/api/content_decryption_module.h will *not* get rewritten.
-  for (const char* kPath : kSeparateRepoPaths) {
-    if (file_path.contains(kPath))
-      return true;
-  }
 
   // Otherwise, just check if the paths contains the "third_party" substring.
   // We don't want to rewrite content of such paths even if they are in the main
@@ -389,23 +291,37 @@ AST_MATCHER(clang::FieldDecl, isInGeneratedLocation) {
   return file_path.startswith("gen/") || file_path.contains("/gen/");
 }
 
-// Represents a filter file specified via cmdline, that can be used to filter
-// out specific FieldDecls.
-//
-// See also:
-// - kExcludeFieldsParamName
-// - OutputSectionHelper
-class FieldDeclFilterFile {
+// Represents a filter file specified via cmdline.
+class FilterFile {
  public:
-  explicit FieldDeclFilterFile(const std::string& filepath) {
-    if (!filepath.empty())
-      ParseInputFile(filepath);
+  explicit FilterFile(const llvm::cl::opt<std::string>& cmdline_param) {
+    ParseInputFile(cmdline_param);
   }
 
-  bool Contains(const clang::FieldDecl& field_decl) const {
-    std::string qualified_name = field_decl.getQualifiedNameAsString();
-    auto it = fields_to_filter_.find(qualified_name);
-    return it != fields_to_filter_.end();
+  FilterFile(const FilterFile&) = delete;
+  FilterFile& operator=(const FilterFile&) = delete;
+
+  // Returns true if any of the filter file lines is exactly equal to |line|.
+  bool ContainsLine(llvm::StringRef line) const {
+    auto it = file_lines_.find(line);
+    return it != file_lines_.end();
+  }
+
+  // Returns true if any of the filter file lines is a substring of
+  // |string_to_match|.
+  bool ContainsSubstringOf(llvm::StringRef string_to_match) const {
+    if (!substring_regex_.hasValue()) {
+      std::vector<std::string> regex_escaped_file_lines;
+      regex_escaped_file_lines.reserve(file_lines_.size());
+      for (const llvm::StringRef& file_line : file_lines_.keys())
+        regex_escaped_file_lines.push_back(llvm::Regex::escape(file_line));
+      std::string substring_regex_pattern =
+          llvm::join(regex_escaped_file_lines.begin(),
+                     regex_escaped_file_lines.end(), "|");
+      substring_regex_.emplace(substring_regex_pattern);
+    }
+
+    return substring_regex_->match(string_to_match);
   }
 
  private:
@@ -417,13 +333,17 @@ class FieldDeclFilterFile {
   //       autofill::AddressField::address1_ # some comment
   // - Templates are represented without template arguments, like:
   //       WTF::HashTable::table_ # some comment
-  void ParseInputFile(const std::string& filepath) {
+  void ParseInputFile(const llvm::cl::opt<std::string>& cmdline_param) {
+    std::string filepath = cmdline_param;
+    if (filepath.empty())
+      return;
+
     llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> file_or_err =
         llvm::MemoryBuffer::getFile(filepath);
     if (std::error_code err = file_or_err.getError()) {
       llvm::errs() << "ERROR: Cannot open the file specified in --"
-                   << kExcludeFieldsParamName << " argument: " << filepath
-                   << ": " << err.message() << "\n";
+                   << cmdline_param.ArgStr << " argument: " << filepath << ": "
+                   << err.message() << "\n";
       assert(false);
       return;
     }
@@ -441,19 +361,32 @@ class FieldDeclFilterFile {
       if (line.empty())
         continue;
 
-      fields_to_filter_.insert(line);
+      file_lines_.insert(line);
     }
   }
 
-  // Stores fully-namespace-qualified names of fields matched by the filter.
-  llvm::StringSet<> fields_to_filter_;
+  // Stores all file lines (after stripping comments and blank lines).
+  llvm::StringSet<> file_lines_;
+
+  // Lazily-constructed regex that matches strings that contain any of the
+  // |file_lines_|.
+  mutable llvm::Optional<llvm::Regex> substring_regex_;
 };
 
 AST_MATCHER_P(clang::FieldDecl,
-              isListedInFilterFile,
-              FieldDeclFilterFile,
+              isFieldDeclListedInFilterFile,
+              const FilterFile*,
               Filter) {
-  return Filter.Contains(Node);
+  return Filter->ContainsLine(Node.getQualifiedNameAsString());
+}
+
+AST_MATCHER_P(clang::FieldDecl,
+              isInLocationListedInFilterFile,
+              const FilterFile*,
+              Filter) {
+  llvm::StringRef file_path =
+      GetFilePath(Finder->getASTContext().getSourceManager(), Node);
+  return Filter->ContainsSubstringOf(file_path);
 }
 
 AST_MATCHER(clang::Decl, isInExternCContext) {
@@ -748,6 +681,9 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
   explicit FieldDeclRewriter(OutputHelper* output_helper)
       : output_helper_(output_helper) {}
 
+  FieldDeclRewriter(const FieldDeclRewriter&) = delete;
+  FieldDeclRewriter& operator=(const FieldDeclRewriter&) = delete;
+
   void run(const MatchFinder::MatchResult& result) override {
     const clang::ASTContext& ast_context = *result.Context;
     const clang::SourceManager& source_manager = *result.SourceManager;
@@ -827,6 +763,9 @@ class AffectedExprRewriter : public MatchFinder::MatchCallback {
   explicit AffectedExprRewriter(OutputHelper* output_helper)
       : output_helper_(output_helper) {}
 
+  AffectedExprRewriter(const AffectedExprRewriter&) = delete;
+  AffectedExprRewriter& operator=(const AffectedExprRewriter&) = delete;
+
   void run(const MatchFinder::MatchResult& result) override {
     const clang::SourceManager& source_manager = *result.SourceManager;
 
@@ -854,6 +793,9 @@ class FilteredExprWriter : public MatchFinder::MatchCallback {
   FilteredExprWriter(OutputHelper* output_helper, llvm::StringRef filter_tag)
       : output_helper_(output_helper), filter_tag_(filter_tag) {}
 
+  FilteredExprWriter(const FilteredExprWriter&) = delete;
+  FilteredExprWriter& operator=(const FilteredExprWriter&) = delete;
+
   void run(const MatchFinder::MatchResult& result) override {
     const clang::FieldDecl* field_decl =
         result.Nodes.getNodeAs<clang::FieldDecl>("affectedFieldDecl");
@@ -879,6 +821,9 @@ int main(int argc, const char* argv[]) {
   llvm::cl::opt<std::string> exclude_fields_param(
       kExcludeFieldsParamName, llvm::cl::value_desc("filepath"),
       llvm::cl::desc("file listing fields to be blocked (not rewritten)"));
+  llvm::cl::opt<std::string> exclude_paths_param(
+      kExcludePathsParamName, llvm::cl::value_desc("filepath"),
+      llvm::cl::desc("file listing paths to be blocked (not rewritten)"));
   clang::tooling::CommonOptionsParser options(argc, argv, category);
   clang::tooling::ClangTool tool(options.getCompilations(),
                                  options.getSourcePathList());
@@ -929,16 +874,19 @@ int main(int argc, const char* argv[]) {
   // matches |int* y|.  Doesn't match:
   // - non-pointer types
   // - fields of lambda-supporting classes
-  // - fields listed in the --exclude-fields cmdline param
+  // - fields listed in the --exclude-fields cmdline param or located in paths
+  //   matched by --exclude-paths cmdline param
   // - "implicit" fields (i.e. field decls that are not explicitly present in
   //   the source code)
-  FieldDeclFilterFile fields_to_exclude(exclude_fields_param);
+  FilterFile fields_to_exclude(exclude_fields_param);
+  FilterFile paths_to_exclude(exclude_paths_param);
   auto field_decl_matcher =
       fieldDecl(
           allOf(hasType(supported_pointer_types_matcher),
-                unless(anyOf(isInThirdPartyLocation(), isInGeneratedLocation(),
-                             isExpansionInSystemHeader(), isInExternCContext(),
-                             isListedInFilterFile(fields_to_exclude),
+                unless(anyOf(isExpansionInSystemHeader(), isInExternCContext(),
+                             isInThirdPartyLocation(), isInGeneratedLocation(),
+                             isInLocationListedInFilterFile(&paths_to_exclude),
+                             isFieldDeclListedInFilterFile(&fields_to_exclude),
                              implicit_field_decl_matcher))))
           .bind("affectedFieldDecl");
   FieldDeclRewriter field_decl_rewriter(&output_helper);

@@ -4,15 +4,11 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
-import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/cr_elements/action_link_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
-import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import './icons.js';
 import '../print_preview_utils.js';
 import './destination_list.js';
 import './print_preview_search_box.js';
@@ -71,14 +67,6 @@ Polymer({
       value: null,
     },
 
-    cloudPrintDisabled: Boolean,
-
-    /** @private */
-    cloudPrintPromoDismissed_: {
-      type: Boolean,
-      value: false,
-    },
-
     /** @private {!Array<!Destination>} */
     destinations_: {
       type: Array,
@@ -95,14 +83,6 @@ Polymer({
     searchQuery_: {
       type: Object,
       value: null,
-    },
-
-    /** @private {boolean} */
-    shouldShowCloudPrintPromo_: {
-      type: Boolean,
-      computed: 'computeShouldShowCloudPrintPromo_(' +
-          'cloudPrintDisabled, activeUser, cloudPrintPromoDismissed_)',
-      observer: 'onShouldShowCloudPrintPromoChanged_',
     },
   },
 
@@ -123,21 +103,6 @@ Polymer({
 
   /** @private {boolean} */
   initialized_: false,
-
-  /** @override */
-  ready() {
-    this.$$('.promo-text').innerHTML =
-        this.i18nAdvanced('cloudPrintPromotion', {
-          substitutions: ['<a is="action-link" class="sign-in">', '</a>'],
-          attrs: ['is', 'class', 'tabindex', 'role'],
-        });
-  },
-
-  /** @override */
-  attached() {
-    this.tracker_.add(
-        assert(this.$$('.sign-in')), 'click', this.onSignInClick_.bind(this));
-  },
 
   /** @override */
   detached() {
@@ -332,17 +297,6 @@ Polymer({
     return this.$.dialog.hasAttribute('open');
   },
 
-  /** @private */
-  onSignInClick_() {
-    this.metrics_.record(Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
-    NativeLayerImpl.getInstance().signIn(false);
-  },
-
-  /** @private */
-  onCloudPrintPromoDismissed_() {
-    this.cloudPrintPromoDismissed_ = true;
-  },
-
   /**
    * Updates printer sharing invitations UI.
    * @private
@@ -421,38 +375,10 @@ Polymer({
       this.metrics_.record(Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);
     } else {
       select.value = this.activeUser;
-      NativeLayerImpl.getInstance().signIn(true);
+      NativeLayerImpl.getInstance().signIn();
       this.metrics_.record(
           Metrics.DestinationSearchBucket.ADD_ACCOUNT_SELECTED);
     }
-  },
-
-  /**
-   * @return {boolean} Whether to show the cloud print promo.
-   * @private
-   */
-  computeShouldShowCloudPrintPromo_() {
-    return !this.activeUser && !this.cloudPrintDisabled &&
-        !this.cloudPrintPromoDismissed_;
-  },
-
-  /** @private */
-  onShouldShowCloudPrintPromoChanged_() {
-    if (this.shouldShowCloudPrintPromo_) {
-      this.metrics_.record(Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
-    } else {
-      // Since the sign in link/dismiss promo button is disappearing, focus the
-      // search box.
-      this.$.searchBox.focus();
-    }
-  },
-
-  /**
-   * @return {boolean} Whether to show the footer.
-   * @private
-   */
-  shouldShowFooter_() {
-    return this.shouldShowCloudPrintPromo_ || !!this.invitation_;
   },
 
   /** @private */

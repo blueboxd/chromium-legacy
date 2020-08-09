@@ -1,4 +1,4 @@
-# File that can be used as an argument of the --blocked-fields cmdline
+# File that can be used as an argument of the --exclude-fields cmdline
 # parameter of rewrite_raw_ptr_fields tool.
 #
 # Each non-whitespace / non-comment line specified a

@@ -266,10 +266,8 @@ export class NativeLayer {
   /**
    * Opens the Google Cloud Print sign-in tab. If the user signs in
    * successfully, the user-accounts-updated event will be sent in response.
-   * @param {boolean} addAccount Whether to open an 'add a new account' or
-   *     default sign in page.
    */
-  signIn(addAccount) {}
+  signIn() {}
 
   // <if expr="chromeos">
   /**
@@ -381,8 +379,8 @@ export class NativeLayerImpl {
   }
 
   /** @override */
-  signIn(addAccount) {
-    chrome.send('signIn', [addAccount]);
+  signIn() {
+    chrome.send('signIn', [true]);
   }
 
   // <if expr="chromeos">

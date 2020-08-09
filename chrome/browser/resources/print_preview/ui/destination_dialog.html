@@ -62,33 +62,12 @@
     }
   }
 
-  #dialog .promo {
+  #invitationPromo {
     align-items: center;
     color: var(--cr-primary-text-color);
     display: flex;
-    padding: 16px 20px;
-  }
-
-  #cloudprintPromo .promo-text {
-    flex: 1;
-  }
-
-  #cloudprintPromo iron-icon {
-    margin-inline-end: 16px;
-    width: 20px;
-  }
-
-  #cloudPrintClose {
-    --cr-icon-button-size: 20px;
-    --cr-icon-button-icon-size: 16px;
-    margin-inline-start: 16px;
-    min-height: 14px;
-    min-width: 14px;
-    padding: 0;
-  }
-
-  #invitationPromo {
     flex-direction: column;
+    padding: 16px 20px;
     text-align: center;
   }
 
@@ -148,16 +127,8 @@
       $i18n{cancel}
     </cr-button>
   </div>
-  <div id="promos" slot="footer" hidden="[[!shouldShowFooter_(
-      shouldShowCloudPrintPromo_, invitation_)]]">
-    <div class="promo" id="cloudprintPromo"
-        hidden$="[[!shouldShowCloudPrintPromo_]]">
-      <iron-icon icon="print-preview:cloud-queue" alt=""></iron-icon>
-      <div class="promo-text"></div>
-      <cr-icon-button id="cloudPrintClose" class="icon-clear"
-          on-click="onCloudPrintPromoDismissed_"></cr-icon-button>
-    </div>
-    <div class="promo" id="invitationPromo" hidden="[[!invitation_]]">
+  <div id="promos" slot="footer" hidden="[[!invitation_]]">
+    <div id="invitationPromo">
       <div inner-h-t-m-l="[[getInvitationText_(invitation_)]]"></div>
       <div class="invitation-buttons">
         <cr-button on-click="onInvitationAcceptClick_">

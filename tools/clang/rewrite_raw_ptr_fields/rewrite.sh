@@ -24,6 +24,9 @@ then
   OUT_DIR="$1"
 fi
 
+SCRIPT_PATH=$(realpath $0)
+REWRITER_SRC_DIR=$(dirname $SCRIPT_PATH)
+
 COMPILE_DIRS=.
 EDIT_DIRS=.
 
@@ -49,6 +52,7 @@ time ninja -C $OUT_DIR $GEN_H_TARGETS
 echo "*** Generating the ignore list ***"
 time tools/clang/scripts/run_tool.py \
     --tool rewrite_raw_ptr_fields \
+    --tool-arg=--exclude-paths=$REWRITER_SRC_DIR/manual-paths-to-ignore.txt \
     --generate-compdb \
     -p $OUT_DIR \
     $COMPILE_DIRS > ~/scratch/rewriter.out
@@ -64,6 +68,7 @@ echo "*** Running the main rewrite phase ***"
 time tools/clang/scripts/run_tool.py \
     --tool rewrite_raw_ptr_fields \
     --tool-arg=--exclude-fields=$HOME/scratch/combined-fields-to-ignore.txt \
+    --tool-arg=--exclude-paths=$REWRITER_SRC_DIR/manual-paths-to-ignore.txt \
     -p $OUT_DIR \
     $COMPILE_DIRS > ~/scratch/rewriter.main.out
 
@@ -72,12 +77,6 @@ echo "*** Applying edits ***"
 cat ~/scratch/rewriter.main.out | \
     tools/clang/scripts/extract_edits.py | \
     tools/clang/scripts/apply_edits.py -p $OUT_DIR $EDIT_DIRS
-
-# Revert directories that are known to be troublesome and/or not needed.
-git checkout -- base/allocator/  # prevent cycles; CheckedPtr uses allocator
-git checkout -- ppapi/  # lots of legacy C and pre-C++11 code
-git checkout -- tools/  # not built into Chrome
-git checkout -- net/tools/  # not built into Chrome
 
 # Format sources, as many lines are likely over 80 chars now.
 echo "*** Formatting ***"

@@ -240,10 +240,10 @@ export class NativeLayerStub extends TestBrowserProxy {
   }
 
   /** @override */
-  signIn(addAccount) {
-    this.methodCalled('signIn', addAccount);
+  signIn() {
+    this.methodCalled('signIn');
     const accounts = this.accounts_ || ['foo@chromium.org'];
-    if (!this.accounts_ && addAccount) {
+    if (!this.accounts_) {
       accounts.push('bar@chromium.org');
     }
     if (accounts.length > 0) {
@@ -262,14 +262,6 @@ export class NativeLayerStub extends TestBrowserProxy {
 
   /** @override */
   openSettingsPrintPage() {}
-
-  /**
-   * @param {!Array<string>} accounts The accounts to send when signIn is
-   * called.
-   */
-  setSignIn(accounts) {
-    this.accounts_ = accounts;
-  }
 
   /**
    * @param {!NativeInitialSettings} settings The settings

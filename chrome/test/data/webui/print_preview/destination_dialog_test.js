@@ -170,7 +170,6 @@ suite(destination_dialog_test.suiteName, function() {
    */
   function assertSignedInState(account, numUsers) {
     const signedIn = account !== '';
-    assertEquals(signedIn, dialog.$$('#cloudprintPromo').hidden);
     assertEquals(!signedIn, dialog.$$('.user-info').hidden);
 
     if (numUsers > 0) {
@@ -211,15 +210,11 @@ suite(destination_dialog_test.suiteName, function() {
     let userSelect = null;
 
     await finishSetup();
-    // Check that both cloud print promo and dropdown are hidden when
-    // cloud print is disabled.
-    dialog.cloudPrintDisabled = true;
-    assertTrue(dialog.$$('#cloudprintPromo').hidden);
+    // Check that the user dropdown is hidden when there are no active users.
     assertTrue(dialog.$$('.user-info').hidden);
     userSelect = dialog.$$('.md-select');
 
     // Enable cloud print.
-    dialog.cloudPrintDisabled = false;
     assertSignedInState('', 0);
     // Local, extension, privet, and cloud (since
     // startLoadAllDestinations() was called).
@@ -229,22 +224,14 @@ suite(destination_dialog_test.suiteName, function() {
     // 6 printers, no Google drive (since not signed in).
     assertNumPrintersWithDriveAccount(6, '');
 
-    // Simulate signing in to an account.
-    destinationStore.setActiveUser(user1);
-    dialog.$$('#cloudprintPromo').querySelector('[is=\'action-link\']').click();
-    let addAccount = await nativeLayer.whenCalled('signIn');
-
-    assertFalse(addAccount);
-    nativeLayer.resetResolver('signIn');
-    // This will be done by print-preview-user-info, in response to sign
-    // in.
+    // Set an active user.
     destinationStore.setActiveUser(user1);
     destinationStore.reloadUserCookieBasedDestinations(user1);
     dialog.activeUser = user1;
     dialog.users = [user1];
     flush();
 
-    // Promo is hidden and select shows the signed in user.
+    // Select shows the signed in user.
     assertSignedInState(user1, 1);
 
     // Now have 7 printers (Google Drive), with user1 signed in.
@@ -257,8 +244,7 @@ suite(destination_dialog_test.suiteName, function() {
     userSelect.value = '';
     userSelect.dispatchEvent(new CustomEvent('change'));
 
-    addAccount = await nativeLayer.whenCalled('signIn');
-    assertTrue(addAccount);
+    await nativeLayer.whenCalled('signIn');
     // No new printer fetch until the user actually changes the active
     // account.
     assertEquals(3, nativeLayer.getCallCount('getPrinters'));
@@ -266,7 +252,7 @@ suite(destination_dialog_test.suiteName, function() {
     dialog.users = [user1, user2];
     flush();
 
-    // Promo is hidden and select shows the signed in user.
+    // Select shows the signed in user.
     assertSignedInState(user1, 2);
 
     // Still have 7 printers (Google Drive), with user1 signed in.

@@ -202,9 +202,6 @@
     <message name="IDS_PRINT_PREVIEW_ADD_ACCOUNT_TITLE" desc="Title of the selection control item to let user to sign into another account.">
       Add account...
     </message>
-    <message name="IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION" desc="Message describing features of Google Cloud Print.">
-      Print to Google Docs and other cloud destinations. <ph name="BEGIN_LINK">$1<ex>&lt;span&gt;</ex></ph>Sign in<ph name="END_LINK">$2<ex>&lt;/span&gt;</ex></ph> to print to Google Cloud Print.
-    </message>
     <message name="IDS_PRINT_PREVIEW_SEARCH_BOX_PLACEHOLDER" desc="Text to put in a search box when user has not entered a search query.">
       Search destinations
     </message>

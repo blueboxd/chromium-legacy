@@ -21,7 +21,6 @@ destination_dialog_interactive_test.suiteName =
 /** @enum {string} */
 destination_dialog_interactive_test.TestNames = {
   FocusSearchBox: 'focus search box',
-  FocusSearchBoxOnSignIn: 'focus search box on sign in',
   EscapeSearchBox: 'escape search box',
 };
 
@@ -90,44 +89,6 @@ suite(destination_dialog_interactive_test.suiteName, function() {
         dialog.destinationStore.startLoadAllDestinations();
         dialog.show();
         return whenFocusDone;
-      });
-
-  // Tests that the search input text field is automatically focused when the
-  // user signs in successfully after clicking the sign in link. See
-  // https://crbug.com/924921
-  test(
-      assert(
-          destination_dialog_interactive_test.TestNames.FocusSearchBoxOnSignIn),
-      function() {
-        const searchInput = /** @type {!PrintPreviewSearchBoxElement} */ (
-                                dialog.$$('#searchBox'))
-                                .getSearchInput();
-        assertTrue(!!searchInput);
-        const signInLink = dialog.$$('.sign-in');
-        assertTrue(!!signInLink);
-        const whenFocusDone = eventToPromise('focus', searchInput);
-        dialog.destinationStore.startLoadAllDestinations();
-        dialog.show();
-        return whenFocusDone
-            .then(() => {
-              signInLink.focus();
-              nativeLayer.setSignIn([]);
-              signInLink.click();
-              return nativeLayer.whenCalled('signIn');
-            })
-            .then(() => {
-              // Link stays focused until successful signin.
-              // See https://crbug.com/979603.
-              assertEquals(signInLink, dialog.shadowRoot.activeElement);
-              nativeLayer.setSignIn(['foo@chromium.org']);
-              const whenSearchFocused = eventToPromise('focus', searchInput);
-              signInLink.click();
-              return whenSearchFocused;
-            })
-            .then(() => {
-              assertEquals('foo@chromium.org', dialog.activeUser);
-              assertEquals(1, dialog.users.length);
-            });
       });
 
   // Tests that pressing the escape key while the search box is focused

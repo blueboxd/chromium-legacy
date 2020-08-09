@@ -221,7 +221,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"bottom", IDS_PRINT_PREVIEW_BOTTOM_MARGIN_LABEL},
     {"cancel", IDS_CANCEL},
     {"clearSearch", IDS_CLEAR_SEARCH},
-    {"cloudPrintPromotion", IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION},
     {"copiesInstruction", IDS_PRINT_PREVIEW_COPIES_INSTRUCTION},
     {"copiesLabel", IDS_PRINT_PREVIEW_COPIES_LABEL},
     {"couldNotPrint", IDS_PRINT_PREVIEW_COULD_NOT_PRINT},

@@ -139,7 +139,7 @@ class TestRunResults(object):
             log = t.GetLog()
             if log:
               s.append('[%s] %s:' % (test_type, t))
-              s.append(log)
+              s.append(unicode(log, 'utf-8'))
       return '\n'.join(s)
 
   def GetGtestForm(self):

@@ -44,10 +44,6 @@ class TriggerContext {
   virtual base::Optional<std::string> GetParameter(
       const std::string& name) const = 0;
 
-  // Getters for specific parameters.
-  base::Optional<std::string> GetOverlayColors() const;
-  base::Optional<std::string> GetPasswordChangeUsername() const;
-
   // Returns a comma-separated set of experiment ids.
   virtual std::string experiment_ids() const = 0;
 

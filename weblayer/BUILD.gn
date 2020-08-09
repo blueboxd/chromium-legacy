@@ -210,6 +210,8 @@ source_set("weblayer_lib_base") {
     "browser/no_state_prefetch/prerender_manager_delegate_impl.h",
     "browser/no_state_prefetch/prerender_manager_factory.cc",
     "browser/no_state_prefetch/prerender_manager_factory.h",
+    "browser/no_state_prefetch/prerender_processor_impl_delegate_impl.cc",
+    "browser/no_state_prefetch/prerender_processor_impl_delegate_impl.h",
     "browser/page_load_metrics_initialize.cc",
     "browser/page_load_metrics_initialize.h",
     "browser/password_manager_driver_factory.cc",

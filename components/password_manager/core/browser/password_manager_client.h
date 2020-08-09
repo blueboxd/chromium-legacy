@@ -276,9 +276,8 @@ class PasswordManagerClient {
   virtual bool WasLastNavigationHTTPError() const;
 
   // Returns true if a credential leak dialog was shown. Used by Autofill
-  // Assistance to verify a password change intent. TODO(b/151391231): At the
-  // moment, password change scripts don't need validation, but it may change.
-  // If it doesn't change, remove this method and related code.
+  // Assistance to verify a password change intent. TODO(b/151391231): Remove
+  // when proper intent signing is implemented.
   virtual bool WasCredentialLeakDialogShown() const;
 
   // Obtains the cert status for the main frame.

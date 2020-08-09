@@ -22,10 +22,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-namespace password_manager {
-enum class AutofillAssistantMode;
-}
-
 namespace autofill_assistant {
 
 // Creates a Autofill Assistant client associated with a WebContents.
@@ -133,10 +129,6 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
   bool NeedsUI();
   void OnFetchWebsiteActions(const base::android::JavaRef<jobject>& jcallback);
-  // Notifies Chrome's Password Manager that Autofill Assistant is running or
-  // not. No-op if the script is not a password change script.
-  void NotifyPasswordManagerIfApplicable(
-      password_manager::AutofillAssistantMode mode);
 
   base::android::ScopedJavaLocalRef<jobjectArray>
   GetDirectActionsAsJavaArrayOfStrings(JNIEnv* env) const;

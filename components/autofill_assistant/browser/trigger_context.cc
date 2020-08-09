@@ -5,17 +5,6 @@
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "base/strings/string_split.h"
 
-namespace {
-// Parameter that allows setting the color of the overlay.
-const char kOverlayColorParameterName[] = "OVERLAY_COLORS";
-
-// Parameter that contains the current session username. Should be synced with
-// |SESSION_USERNAME_PARAMETER| from
-// .../password_manager/PasswordChangeLauncher.java
-// TODO(b/151401974): Eliminate duplicate parameter definitions.
-const char kPasswordChangeUsernameParameterName[] = "PASSWORD_CHANGE_USERNAME";
-}  // namespace
-
 namespace autofill_assistant {
 
 // static
@@ -38,14 +27,6 @@ std::unique_ptr<TriggerContext> TriggerContext::Merge(
 
 TriggerContext::TriggerContext() {}
 TriggerContext::~TriggerContext() {}
-
-base::Optional<std::string> TriggerContext::GetOverlayColors() const {
-  return GetParameter(kOverlayColorParameterName);
-}
-
-base::Optional<std::string> TriggerContext::GetPasswordChangeUsername() const {
-  return GetParameter(kPasswordChangeUsernameParameterName);
-}
 
 TriggerContextImpl::TriggerContextImpl() {}
 

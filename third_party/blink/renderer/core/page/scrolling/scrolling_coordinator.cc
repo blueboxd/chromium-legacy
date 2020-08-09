@@ -158,33 +158,12 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
   }
 }
 
-template <typename Function>
-static void ForAllPaintingGraphicsLayers(GraphicsLayer& layer,
-                                         const Function& function) {
-  // Don't recurse into display-locked elements.
-  if (layer.Client().PaintBlockedByDisplayLockIncludingAncestors(
-          DisplayLockContextLifecycleTarget::kSelf)) {
-    return;
-  }
-
-  if (layer.PaintsContentOrHitTest() && layer.HasLayerState())
-    function(layer);
-
-  for (auto* child : layer.Children())
-    ForAllPaintingGraphicsLayers(*child, function);
-}
-
 // Set the non-fast scrollable regions on |layer|'s cc layer.
 static void UpdateLayerNonFastScrollableRegions(GraphicsLayer& layer) {
   // CompositeAfterPaint does this update in PaintArtifactCompositor.
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   DCHECK(layer.PaintsContentOrHitTest());
-
-  if (layer.Client().ShouldThrottleRendering()) {
-    layer.CcLayer()->SetNonFastScrollableRegion(cc::Region());
-    return;
-  }
 
   auto offset = layer.GetOffsetFromTransformNode();
   gfx::Vector2dF layer_offset = gfx::Vector2dF(offset.X(), offset.Y());
@@ -212,10 +191,10 @@ void ScrollingCoordinator::UpdateNonFastScrollableRegions(LocalFrame* frame) {
 // Set the touch action rects on the cc layer from the touch action data stored
 // on the GraphicsLayer's paint chunks.
 static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
-  if (layer.Client().ShouldThrottleRendering()) {
-    layer.CcLayer()->SetTouchActionRegion(cc::TouchActionRegion());
-    return;
-  }
+  // CompositeAfterPaint does this update in PaintArtifactCompositor.
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
+  DCHECK(layer.PaintsContentOrHitTest());
 
   auto offset = layer.GetOffsetFromTransformNode();
   gfx::Vector2dF layer_offset = gfx::Vector2dF(offset.X(), offset.Y());

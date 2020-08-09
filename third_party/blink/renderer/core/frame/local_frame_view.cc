@@ -2657,14 +2657,6 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
   return target_state > DocumentLifecycle::kPrePaintClean;
 }
 
-template <typename Function>
-static void ForAllGraphicsLayers(GraphicsLayer& layer,
-                                 const Function& function) {
-  function(layer);
-  for (auto* child : layer.Children())
-    ForAllGraphicsLayers(*child, function);
-}
-
 void LocalFrameView::RunPaintLifecyclePhase() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPaintLifecyclePhase");
   // While printing or capturing a paint preview of a document, the paint walk
@@ -2722,14 +2714,12 @@ void LocalFrameView::RunPaintLifecyclePhase() {
     if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
       if (root) {
-        ForAllGraphicsLayers(*root, [](GraphicsLayer& layer) {
-          if (layer.PaintsContentOrHitTest() && layer.HasLayerState()) {
-            // Notify the paint controller that the artifact has been pushed and
-            // some lifecycle state can be freed (such as raster invalidations).
-            layer.GetPaintController().FinishCycle();
-            layer.GetPaintController().ClearPropertyTreeChangedStateTo(
-                layer.GetPropertyTreeState());
-          }
+        ForAllPaintingGraphicsLayers(*root, [](GraphicsLayer& layer) {
+          // Notify the paint controller that the artifact has been pushed and
+          // some lifecycle state can be freed (such as raster invalidations).
+          layer.GetPaintController().FinishCycle();
+          layer.GetPaintController().ClearPropertyTreeChangedStateTo(
+              layer.GetPropertyTreeState());
         });
       }
     }
@@ -2794,69 +2784,35 @@ void LocalFrameView::EnqueueScrollEvents() {
   });
 }
 
-template <typename MainLayerFunction, typename ContentsLayerFunction>
-static void ForAllDrawableGraphicsLayers(
-    const GraphicsLayer* layer,
-    const MainLayerFunction& main_layer_function,
-    const ContentsLayerFunction& contents_layer_function) {
-  if (!layer || layer->Client().ShouldThrottleRendering() ||
-      layer->Client().IsUnderSVGHiddenContainer()) {
-    return;
-  }
-
-  if (layer->Client().PaintBlockedByDisplayLockIncludingAncestors(
-          DisplayLockContextLifecycleTarget::kSelf)) {
-    // If we skip the layer, then we need to ensure to notify the
-    // display-lock, since we need to force recollect the layers when we commit.
-    layer->Client().NotifyDisplayLockNeedsGraphicsLayerCollection();
-    return;
-  }
-
-  // We need to collect all layers that draw content, as well as some layers
-  // that don't for the purposes of hit testing. For example, an empty div
-  // will not draw content but needs to create a layer to ensure scroll events
-  // do not pass through it.
-  if (layer->PaintsContentOrHitTest() || layer->GetHitTestable())
-    main_layer_function(layer);
-
-  if (auto* contents_layer = layer->ContentsLayer())
-    contents_layer_function(layer, contents_layer);
-
-  for (const auto* child : layer->Children()) {
-    ForAllDrawableGraphicsLayers(child, main_layer_function,
-                                 contents_layer_function);
-  }
-}
-
-static void CollectDrawableLayersForLayerListRecursively(
+static void CollectGraphicsLayersForLayerListRecursively(
     GraphicsContext& context,
-    const GraphicsLayer* root) {
-  ForAllDrawableGraphicsLayers(
+    const GraphicsLayer& root) {
+  ForAllActiveGraphicsLayers(
       root,
-      [&](const GraphicsLayer* layer) { RecordGraphicsLayer(context, *layer); },
-      [&](const GraphicsLayer* layer, cc::Layer* contents_layer) {
+      [&](const GraphicsLayer& layer) { RecordGraphicsLayer(context, layer); },
+      [&](const GraphicsLayer& layer, cc::Layer& contents_layer) {
         RecordForeignLayer(
-            context, *layer, DisplayItem::kForeignLayerContentsWrapper,
-            contents_layer, layer->GetContentsOffsetFromTransformNode(),
-            &layer->GetContentsPropertyTreeState());
+            context, layer, DisplayItem::kForeignLayerContentsWrapper,
+            &contents_layer, layer.GetContentsOffsetFromTransformNode(),
+            &layer.GetContentsPropertyTreeState());
       });
 }
 
-static void UpdateLayerDebugInfoRecursively(const GraphicsLayer* root) {
-  ForAllDrawableGraphicsLayers(
+static void UpdateLayerDebugInfoRecursively(const GraphicsLayer& root) {
+  ForAllActiveGraphicsLayers(
       root,
-      [](const GraphicsLayer* layer) {
+      [](const GraphicsLayer& layer) {
         PaintArtifactCompositor::UpdateLayerDebugInfo(
-            layer->CcLayer(),
-            PaintChunk::Id(*layer, DisplayItem::kGraphicsLayerWrapper),
-            layer->GetCompositingReasons(),
-            layer->GetRasterInvalidationTracking());
+            *layer.CcLayer(),
+            PaintChunk::Id(layer, DisplayItem::kGraphicsLayerWrapper),
+            layer.GetCompositingReasons(),
+            layer.GetRasterInvalidationTracking());
       },
-      [](const GraphicsLayer* layer, cc::Layer* contents_layer) {
+      [](const GraphicsLayer& layer, cc::Layer& contents_layer) {
         PaintArtifactCompositor::UpdateLayerDebugInfo(
             contents_layer,
-            PaintChunk::Id(*layer, DisplayItem::kForeignLayerContentsWrapper),
-            layer->GetCompositingReasons(), nullptr);
+            PaintChunk::Id(layer, DisplayItem::kForeignLayerContentsWrapper),
+            layer.GetCompositingReasons(), nullptr);
       });
 }
 
@@ -3005,8 +2961,8 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
 
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       layer_debug_info_enabled_) {
-    UpdateLayerDebugInfoRecursively(
-        GetLayoutView()->Compositor()->PaintRootGraphicsLayer());
+    if (auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer())
+      UpdateLayerDebugInfoRecursively(*root);
   }
 
   // Skip updating property trees, pushing cc::Layers, and issuing raster
@@ -3055,7 +3011,8 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
 
     GraphicsContext context(*paint_controller_);
     auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
-    CollectDrawableLayersForLayerListRecursively(context, root);
+    if (root)
+      CollectGraphicsLayersForLayerListRecursively(context, *root);
 
     if (frame_->IsMainFrame()) {
       if (root == GetLayoutView()->Compositor()->RootGraphicsLayer())

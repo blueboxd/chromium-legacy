@@ -478,10 +478,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PhysicalRect BoundingBoxForCompositingOverlapTest() const;
   PhysicalRect BoundingBoxForCompositing() const;
 
-  // If true, this layer's children are included in its bounds for overlap
-  // testing.  We can't rely on the children's positions if this layer has a
-  // filter that could have moved the children's pixels around.
-  bool OverlapBoundsIncludeChildren() const;
 
   // Static position is set in parent's coordinate space.
   LayoutUnit StaticInlinePosition() const { return static_inline_position_; }

@@ -2015,7 +2015,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 || state == OverviewModeState.SHOWING_START);
         if (mStartSurface != null) mStartSurface.getController().setOverviewState(state);
 
-        if (mOverviewModeController.overviewVisible()) return;
+        if (mOverviewModeController == null || mOverviewModeController.overviewVisible()) return;
 
         Tab currentTab = getActivityTab();
         // If we don't have a current tab, show the overview mode.
@@ -2048,7 +2048,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             getTabModelSelector().selectModel(incognito);
 
             if (TabUiFeatureUtilities.supportInstantStart(isTablet())
-                    || getTabModelSelector().isTabStateInitialized()) {
+                    || (getTabModelSelector().isTabStateInitialized()
+                            && isLayoutManagerCreated())) {
                 showOverview(OverviewModeState.SHOWING_HOMEPAGE);
             }
             return true;

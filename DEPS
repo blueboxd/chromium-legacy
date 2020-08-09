@@ -1326,7 +1326,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'OPyy2ts1trS4QpWQ4KGvoohvI1WfiBoTrjuFjdL-PcsC'
+              'version': 'NHKI_hy9EiYHTk25-SwU9lqq_Nmk1LQ748n-ZAtBu9YC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1537,7 +1537,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2b2ed7f21ff97c252b884c35730a8b5a6860aca1',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@19410c19202c3314ebbe67c915ef7e2bb5a557cd',
     'condition': 'checkout_src_internal',
   },
 

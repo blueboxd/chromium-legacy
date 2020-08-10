@@ -172,4 +172,16 @@ ui::WaylandWindow* RootWindowFromWlSurface(wl_surface* surface) {
   return wayland_surface->root_window();
 }
 
+gfx::Rect TranslateWindowBoundsToParentDIP(ui::WaylandWindow* window,
+                                           ui::WaylandWindow* parent_window) {
+  DCHECK(window);
+  DCHECK(parent_window);
+  DCHECK_EQ(window->buffer_scale(), parent_window->buffer_scale());
+  DCHECK_EQ(window->ui_scale(), parent_window->ui_scale());
+  return gfx::ScaleToRoundedRect(
+      wl::TranslateBoundsToParentCoordinates(window->GetBounds(),
+                                             parent_window->GetBounds()),
+      1.0 / window->buffer_scale());
+}
+
 }  // namespace wl

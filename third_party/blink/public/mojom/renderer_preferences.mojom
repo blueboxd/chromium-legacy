@@ -154,4 +154,9 @@ struct RendererPreferences {
   // The width of the arrow bitmap on a horizontal scroll bar in dips.
   [EnableIf=is_win]
   int32 arrow_bitmap_width_horizontal_scroll_bar_in_dips = 0;
+
+  // Whether the selection clipboard buffer is available.  Linux environments
+  // may support this.
+  [EnableIf=is_selection_clipboard_buffer_possible]
+  bool selection_clipboard_buffer_available = false;
 };

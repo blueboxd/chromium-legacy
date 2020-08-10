@@ -11,7 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,7 +30,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/blocked_content/popup_blocker_tab_helper.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/omnibox/browser/location_bar_model_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
@@ -164,9 +164,9 @@ void PresentationReceiverWindowView::Init() {
   InfoBarService::CreateForWebContents(web_contents);
   MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
   blocked_content::PopupBlockerTabHelper::CreateForWebContents(web_contents);
-  content_settings::TabSpecificContentSettings::CreateForWebContents(
+  content_settings::PageSpecificContentSettings::CreateForWebContents(
       web_contents,
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents));
 
   auto* profile =

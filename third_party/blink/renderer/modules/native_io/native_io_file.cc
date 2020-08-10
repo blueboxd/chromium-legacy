@@ -231,6 +231,38 @@ ScriptPromise NativeIOFile::write(ScriptState* script_state,
   return resolver->Promise();
 }
 
+ScriptPromise NativeIOFile::flush(ScriptState* script_state,
+                                  ExceptionState& exception_state) {
+  // This implementation of flush attempts to physically store the data it has
+  // written on disk. This behaviour might change in the future in order to
+  // support more performant but less reliable persistency guarantees.
+  if (io_pending_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Another I/O operation is in progress on the same file");
+    return ScriptPromise();
+  }
+  if (closed_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The file was already closed");
+    return ScriptPromise();
+  }
+  io_pending_ = true;
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  // CrossThreadUnretained() is safe here because the NativeIOFile::FileState
+  // instance is owned by this NativeIOFile, which is also passed to the task
+  // via WrapCrossThreadPersistent. Therefore, the FileState instance is
+  // guaranteed to remain alive during the task's execution.
+  worker_pool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::ThreadPool()},
+      CrossThreadBindOnce(&DoFlush, WrapCrossThreadPersistent(this),
+                          WrapCrossThreadPersistent(resolver),
+                          CrossThreadUnretained(file_state_.get()),
+                          resolver_task_runner_));
+  return resolver->Promise();
+}
+
 void NativeIOFile::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   visitor->Trace(queued_close_resolver_);
@@ -460,6 +492,49 @@ void NativeIOFile::DidWrite(
     return;
   }
   resolver->Resolve(written_bytes);
+}
+
+// static
+void NativeIOFile::DoFlush(
+    CrossThreadPersistent<NativeIOFile> native_io_file,
+    CrossThreadPersistent<ScriptPromiseResolver> resolver,
+    NativeIOFile::FileState* file_state,
+    scoped_refptr<base::SequencedTaskRunner> resolver_task_runner) {
+  DCHECK(!IsMainThread()) << "File I/O should not happen on the main thread";
+  bool success = false;
+  {
+    WTF::MutexLocker mutex_locker(file_state->mutex);
+    DCHECK(file_state->file.IsValid())
+        << "file I/O operation queued after file closed";
+    success = file_state->file.Flush();
+  }
+
+  PostCrossThreadTask(
+      *resolver_task_runner, FROM_HERE,
+      CrossThreadBindOnce(&NativeIOFile::DidFlush, std::move(native_io_file),
+                          std::move(resolver), success));
+}
+
+void NativeIOFile::DidFlush(
+    CrossThreadPersistent<ScriptPromiseResolver> resolver,
+    bool success) {
+  ScriptState* script_state = resolver->GetScriptState();
+  if (!script_state->ContextIsValid())
+    return;
+  ScriptState::Scope scope(script_state);
+
+  DCHECK(io_pending_) << "I/O operation performed without io_pending_ set";
+  io_pending_ = false;
+
+  DispatchQueuedClose();
+
+  if (!success) {
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kOperationError,
+        "flush() failed"));
+    return;
+  }
+  resolver->Resolve();
 }
 
 void NativeIOFile::CloseBackingFile() {

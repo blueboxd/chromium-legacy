@@ -5,11 +5,11 @@
 #include "components/content_settings/browser/ui/cookie_controls_controller.h"
 
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/browser/ui/cookie_controls_view.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
@@ -63,9 +63,9 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    content_settings::TabSpecificContentSettings::CreateForWebContents(
+    content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
-        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+        std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents()));
     profile()->GetPrefs()->SetInteger(
         prefs::kCookieControlsMode,
@@ -92,9 +92,9 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
 
   MockCookieControlsView* mock() { return &mock_; }
 
-  content_settings::TabSpecificContentSettings*
-  tab_specific_content_settings() {
-    return content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings*
+  page_specific_content_settings() {
+    return content_settings::PageSpecificContentSettings::GetForFrame(
         web_contents()->GetMainFrame());
   }
 
@@ -121,7 +121,7 @@ TEST_F(CookieControlsTest, SomeWebSite) {
 
   // Accessing cookies should be notified.
   EXPECT_CALL(*mock(), OnCookiesCountChanged(1, 0));
-  tab_specific_content_settings()->OnWebDatabaseAccessed(
+  page_specific_content_settings()->OnWebDatabaseAccessed(
       GURL("https://example.com"), /*blocked=*/false);
   testing::Mock::VerifyAndClearExpectations(mock());
 
@@ -134,7 +134,7 @@ TEST_F(CookieControlsTest, SomeWebSite) {
 
   // Blocking cookies should update the blocked cookie count.
   EXPECT_CALL(*mock(), OnCookiesCountChanged(1, 1));
-  tab_specific_content_settings()->OnWebDatabaseAccessed(
+  page_specific_content_settings()->OnWebDatabaseAccessed(
       GURL("https://thirdparty.com"), /*blocked=*/true);
   testing::Mock::VerifyAndClearExpectations(mock());
 
@@ -223,9 +223,9 @@ TEST_F(CookieControlsTest, Incognito) {
   std::unique_ptr<content::WebContents> incognito_web_contents =
       content::WebContentsTester::CreateTestWebContents(
           profile()->GetPrimaryOTRProfile(), nullptr);
-  content_settings::TabSpecificContentSettings::CreateForWebContents(
+  content_settings::PageSpecificContentSettings::CreateForWebContents(
       incognito_web_contents.get(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           incognito_web_contents.get()));
   auto* tester = content::WebContentsTester::For(incognito_web_contents.get());
   MockCookieControlsView incognito_mock_;

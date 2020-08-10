@@ -85,9 +85,3 @@ FakeSafeBrowsingService::GetURLLoaderFactory() {
   return base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
       &url_loader_factory_);
 }
-
-void FakeSafeBrowsingService::ClearCookies(
-    const net::CookieDeletionInfo::TimeRange& creation_range,
-    base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-}

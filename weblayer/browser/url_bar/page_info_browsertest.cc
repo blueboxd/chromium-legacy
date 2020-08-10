@@ -76,11 +76,11 @@ IN_PROC_BROWSER_TEST_F(PageInfoBrowserTest, PermissionStatus) {
 }
 
 IN_PROC_BROWSER_TEST_F(PageInfoBrowserTest,
-                       TabSpecificContentSettingsDelegate) {
+                       PageSpecificContentSettingsDelegate) {
   std::unique_ptr<PageInfoDelegate> page_info_delegate =
       page_info::GetPageInfoClient()->CreatePageInfoDelegate(GetWebContents());
   ASSERT_TRUE(page_info_delegate);
-  EXPECT_TRUE(page_info_delegate->GetTabSpecificContentSettingsDelegate());
+  EXPECT_TRUE(page_info_delegate->GetPageSpecificContentSettingsDelegate());
 }
 
 IN_PROC_BROWSER_TEST_F(PageInfoBrowserTest, EmbedderNameSet) {

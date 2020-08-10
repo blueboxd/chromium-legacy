@@ -181,9 +181,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
-    self.preventUpdates = NO;
-  }
   if (!self.preventUpdates) {
     // The table view might get stale while hidden, so we need to forcibly
     // refresh it here.
@@ -193,9 +190,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
-    self.preventUpdates = YES;
-  }
   [super viewWillDisappear:animated];
 }
 
@@ -223,7 +217,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
   _preventUpdates = preventUpdates;
 
-  if (preventUpdates || !base::FeatureList::IsEnabled(kContainedBVC))
+  if (preventUpdates)
     return;
   [self loadModel];
   [self.tableView reloadData];

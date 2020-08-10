@@ -21,7 +21,7 @@ class Profile;
 
 // This is the base class for all bubble controllers. There should be a bubble
 // controller per view. Bubble controller provides the data and controls the
-// password management actions for the coressponding view.
+// password management actions for the corresponding view.
 class PasswordBubbleControllerBase {
  public:
   enum class PasswordAction { kRemovePassword, kAddPassword };

@@ -346,7 +346,7 @@ void DownloadRequestLimiter::TabDownloadState::OnContentSettingChanged(
     return;
 
   GURL origin = origin_.GetURL();
-  // Analogous to TabSpecificContentSettings::OnContentSettingChanged:
+  // Analogous to PageSpecificContentSettings::OnContentSettingChanged:
   const ContentSettingsDetails details(primary_pattern, secondary_pattern,
                                        content_type, resource_identifier);
 

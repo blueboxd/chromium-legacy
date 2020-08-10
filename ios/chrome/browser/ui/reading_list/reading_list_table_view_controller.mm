@@ -441,6 +441,16 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   }
 }
 
+- (void)deleteItem:(id<ReadingListListItem>)item {
+  TableViewItem<ReadingListListItem>* tableViewItem =
+      base::mac::ObjCCastStrict<TableViewItem<ReadingListListItem>>(item);
+  if ([self.tableViewModel hasItem:tableViewItem]) {
+    NSIndexPath* indexPath =
+        [self.tableViewModel indexPathForItem:tableViewItem];
+    [self deleteItemsAtIndexPaths:@[ indexPath ]];
+  }
+}
+
 #pragma mark - ReadingListToolbarButtonCommands
 
 - (void)enterReadingListEditMode {

@@ -7,14 +7,11 @@
 
 namespace mini_installer {
 
-class MiniFile;
-
-// Expands the first file in |source| to the file |destination| using
-// Microsoft's MSCF compression algorithm (a la expand.exe). Returns true on
-// success, in which case |file| holds an open handle to the destination file.
-// |file| will be opened with exclusive write access and shared read and delete
-// access, and will be marked as delete-on-close.
-bool Expand(const wchar_t* source, const wchar_t* destination, MiniFile& file);
+// Same as the tool, expand.exe.  Decompresses a file that was compressed
+// using Microsoft's MSCF compression algorithm.
+// |source| is the full path of the file to decompress and |destination|
+// is the full path of the target file.
+bool Expand(const wchar_t* source, const wchar_t* destination);
 
 }  // namespace mini_installer
 

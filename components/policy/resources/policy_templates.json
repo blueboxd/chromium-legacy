@@ -9353,22 +9353,22 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [0, 1, 2],
+        'enum': [1, 2, 3],
       },
       'items': [
         {
           'name': 'WaitForVersionCatchUp',
-          'value': 0,
+          'value': 1,
           'caption': '''Wait for the target channel to catch up on channel downgrade''',
         },
         {
           'name': 'Rollback',
-          'value': 1,
+          'value': 2,
           'caption': '''Roll back and reset the device on channel downgrade, try to preserve enrollment''',
         },
         {
           'name': 'AllowUserToConfigure',
-          'value': 2,
+          'value': 3,
           'caption': '''User decides on channel downgrade behavior''',
         },
       ],
@@ -9377,7 +9377,7 @@
       'features': {
         'dynamic_refresh': True,
       },
-      'example_value': 0,
+      'example_value': 1,
       'id': 757,
       'caption': '''Channel downgrade behavior''',
       'tags': [],

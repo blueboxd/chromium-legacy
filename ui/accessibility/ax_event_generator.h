@@ -235,6 +235,18 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   void FireActiveDescendantEvents();
   void FireRelationSourceEvents(AXTree* tree, AXNode* target_node);
   bool ShouldFireLoadEvents(AXNode* node);
+  // Remove excessive events for a tree update containing node.
+  // We remove certain events on a node when it changes to IGNORED state and one
+  // of the node's ancestor has also changed to IGNORED in the same tree update.
+  // |ancestor_has_ignored_map| contains if a node's ancestor has changed to
+  // IGNORED state.
+  // Map's key is: an ax node.
+  // Map's value is:
+  // - True if an ancestor of node changed to IGNORED state.
+  // - False if no ancestor of node changed to IGNORED state.
+  void TrimEventsDueToAncestorIgnoredChanged(
+      AXNode* node,
+      std::map<AXNode*, bool>& ancestor_has_ignored_map);
   void PostprocessEvents();
   static void GetRestrictionStates(ax::mojom::Restriction restriction,
                                    bool* is_enabled,

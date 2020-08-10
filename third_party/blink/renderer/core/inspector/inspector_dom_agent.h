@@ -278,7 +278,8 @@ class CORE_EXPORT InspectorDOMAgent final
 
   Node* NodeForId(int node_id);
   int BoundNodeId(Node*);
-  void SetDOMListener(DOMListener*);
+  void AddDOMListener(DOMListener*);
+  void RemoveDOMListener(DOMListener*);
   int PushNodePathToFrontend(Node*);
   protocol::Response NodeForRemoteObjectId(const String& remote_object_id,
                                            Node*&);
@@ -316,6 +317,11 @@ class CORE_EXPORT InspectorDOMAgent final
   // Unconditionally enables the agent, even if |enabled_.Get()==true|.
   // For idempotence, call enable().
   void EnableAndReset();
+
+  void NotifyDidAddDocument(Document*);
+  void NotifyDidRemoveDocument(Document*);
+  void NotifyWillRemoveDOMNode(Node*);
+  void NotifyDidModifyDOMAttr(Element*);
 
   // Node-related methods.
   typedef HeapHashMap<Member<Node>, int> NodeToIdMap;
@@ -367,7 +373,7 @@ class CORE_EXPORT InspectorDOMAgent final
   v8::Isolate* isolate_;
   Member<InspectedFrames> inspected_frames_;
   v8_inspector::V8InspectorSession* v8_session_;
-  Member<DOMListener> dom_listener_;
+  HeapHashSet<Member<DOMListener>> dom_listeners_;
   Member<NodeToIdMap> document_node_to_id_map_;
   // Owns node mappings for dangling nodes.
   HeapVector<Member<NodeToIdMap>> dangling_node_to_id_maps_;

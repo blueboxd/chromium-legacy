@@ -20,8 +20,8 @@
 #include "chrome/browser/complex_tasks/task_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_tab_helper.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -92,7 +92,7 @@
 #include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/blocked_content/popup_opener_tab_helper.h"
 #include "components/captive_portal/core/buildflags.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
 #include "components/download/content/public/download_navigation_observer.h"
@@ -306,9 +306,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
           profile));
-  content_settings::TabSpecificContentSettings::CreateForWebContents(
+  content_settings::PageSpecificContentSettings::CreateForWebContents(
       web_contents,
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents));
   TabUIHelper::CreateForWebContents(web_contents);
   tasks::TaskTabHelper::CreateForWebContents(web_contents);

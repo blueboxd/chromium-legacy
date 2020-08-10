@@ -320,16 +320,19 @@ message AutoUpdateSettingsProto {
 
   // Types of channel downgrade behavior.
   enum ChannelDowngradeBehavior {
+    // Channel downgrade behavior unspecified. Default is
+    // WAIT_FOR_VERSION_CATCH_UP.
+    CHANNEL_DOWNGRADE_BEHAVIOR_UNSPECIFIED = 0;
     // On a channel downgrade, e.g. beta to stable, wait for the device's
     // version to become available on the new channel. No updates happen until
     // then. This is the default.
-    WAIT_FOR_VERSION_CATCH_UP = 0;
+    WAIT_FOR_VERSION_CATCH_UP = 1;
     // Roll back and reset the device on a channel downgrade. This does a full
     // powerwash and tries to preserve wifi and enrollment.
-    ROLLBACK = 1;
+    ROLLBACK = 2;
     // Allow the user to decide whether to wait or roll back and reset on a
     // user-initiated channel downgrade.
-    ALLOW_USER_TO_CONFIGURE = 2;
+    ALLOW_USER_TO_CONFIGURE = 3;
   }
 
   // Specifies what should happen if the device channel is downgraded.

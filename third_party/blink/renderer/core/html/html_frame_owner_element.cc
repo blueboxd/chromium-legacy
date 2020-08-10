@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -383,6 +384,33 @@ void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
                                      std::move(properties));
 }
 
+void HTMLFrameOwnerElement::CSPAttributeChanged() {
+  if (!base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE))
+    return;
+
+  // Don't notify about updates if ContentFrame() is null, for example when
+  // the subframe hasn't been created yet; or if we are in the middle of
+  // swapping one frame for another, in which case the final state
+  // will be propagated at the end of the swapping operation.
+  if (is_swapping_frames_ || !ContentFrame())
+    return;
+
+  String fake_header =
+      "HTTP/1.1 200 OK\nContent-Security-Policy: " + RequiredCsp();
+  network::mojom::blink::ParsedHeadersPtr parsed_headers =
+      ParseHeaders(fake_header, GetDocument().Url());
+
+  DCHECK_LE(parsed_headers->content_security_policy.size(), 1u);
+
+  network::mojom::blink::ContentSecurityPolicyPtr csp =
+      parsed_headers->content_security_policy.IsEmpty()
+          ? nullptr
+          : std::move(parsed_headers->content_security_policy[0]);
+
+  GetDocument().GetFrame()->GetLocalFrameHostRemote().DidChangeCSPAttribute(
+      ContentFrame()->GetFrameToken(), std::move(csp));
+}
+
 void HTMLFrameOwnerElement::AddResourceTiming(const ResourceTimingInfo& info) {
   // Resource timing info should only be reported if the subframe is attached.
   DCHECK(ContentFrame() && ContentFrame()->IsLocalFrame());
@@ -547,6 +575,9 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   DCHECK_EQ(ContentFrame(), child_frame);
   if (!child_frame)
     return false;
+
+  // Send 'csp' attribute to the browser.
+  CSPAttributeChanged();
 
   WebFrameLoadType child_load_type = WebFrameLoadType::kReplaceCurrentItem;
   if (!GetDocument().LoadEventFinished() &&

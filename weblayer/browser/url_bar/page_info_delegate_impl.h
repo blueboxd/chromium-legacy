@@ -43,8 +43,8 @@ class PageInfoDelegateImpl : public PageInfoDelegate {
       override;
   StatefulSSLHostStateDelegate* GetStatefulSSLHostStateDelegate() override;
   HostContentSettingsMap* GetContentSettings() override;
-  std::unique_ptr<content_settings::TabSpecificContentSettings::Delegate>
-  GetTabSpecificContentSettingsDelegate() override;
+  std::unique_ptr<content_settings::PageSpecificContentSettings::Delegate>
+  GetPageSpecificContentSettingsDelegate() override;
   bool IsContentDisplayedInVrHeadset() override;
   security_state::SecurityLevel GetSecurityLevel() override;
   security_state::VisibleSecurityState GetVisibleSecurityState() override;

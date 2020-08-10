@@ -17,7 +17,7 @@
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/safe_browsing/core/db/database_manager.h"
@@ -165,8 +165,8 @@ void ChromeSubresourceFilterClient::ShowUI(const GURL& url) {
   // (it comes  from
   // ContentSubresourceFilterThrottleManager::DidDisallowFirstSubresource, which
   // comes from a specific frame).
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
           web_contents()->GetMainFrame());
   content_settings->OnContentBlocked(ContentSettingsType::ADS);
 

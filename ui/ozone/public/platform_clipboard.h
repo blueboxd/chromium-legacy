@@ -90,6 +90,9 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformClipboard {
 
   // See comment above SequenceNumberUpdateCb. Can be called once.
   virtual void SetSequenceNumberUpdateCb(SequenceNumberUpdateCb cb) = 0;
+
+  // Returns whether the kSelection buffer is available.
+  virtual bool IsSelectionBufferAvailable() const = 0;
 };
 
 }  // namespace ui

@@ -991,6 +991,12 @@ void FrameLoader::CommitNavigation(
       navigation_params->origin_policy, last_origin_window_csp_.Release(),
       commit_reason);
 
+  for (auto& csp : navigation_params->forced_content_security_policies) {
+    content_security_policy->AddPolicyFromHeaderValue(
+        csp, network::mojom::ContentSecurityPolicyType::kEnforce,
+        network::mojom::ContentSecurityPolicySource::kHTTP);
+  }
+
   base::Optional<Document::UnloadEventTiming> unload_timing;
   FrameSwapScope frame_swap_scope(frame_owner);
   {
@@ -1547,7 +1553,8 @@ void FrameLoader::ModifyRequestForCSP(
     const FetchClientSettingsObject* fetch_client_settings_object,
     LocalDOMWindow* window_for_logging,
     mojom::RequestContextFrameType frame_type) const {
-  if (!RequiredCSP().IsEmpty()) {
+  if (!base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE) &&
+      !RequiredCSP().IsEmpty()) {
     DCHECK(
         ContentSecurityPolicy::IsValidCSPAttr(RequiredCSP().GetString(), ""));
     resource_request.SetHttpHeaderField(http_names::kSecRequiredCSP,

@@ -10,7 +10,7 @@
 
 namespace base {
 
-enum class BASE_EXPORT CpuAffinityMode {
+enum class CpuAffinityMode {
   // No restrictions on affinity.
   kDefault,
   // Restrict execution to LITTLE cores only. Only has an effect on platforms

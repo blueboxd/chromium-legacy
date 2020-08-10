@@ -248,6 +248,15 @@ class CONTENT_EXPORT FrameTreeNode {
     frame_owner_properties_ = frame_owner_properties;
   }
 
+  const network::mojom::ContentSecurityPolicy* csp_attribute() {
+    return csp_attribute_.get();
+  }
+
+  void set_csp_attribute(
+      network::mojom::ContentSecurityPolicyPtr parsed_csp_attribute) {
+    csp_attribute_ = std::move(parsed_csp_attribute);
+  }
+
   bool HasSameOrigin(const FrameTreeNode& node) const {
     return replication_state_.origin.IsSameOriginWith(
         node.replication_state_.origin);
@@ -513,6 +522,9 @@ class CONTENT_EXPORT FrameTreeNode {
   //
   // Note that dynamic updates only take effect on the next frame navigation.
   blink::mojom::FrameOwnerProperties frame_owner_properties_;
+
+  // Contains the current parsed value of the 'csp' attribute of this frame.
+  network::mojom::ContentSecurityPolicyPtr csp_attribute_;
 
   // Owns an ongoing NavigationRequest until it is ready to commit. It will then
   // be reset and a RenderFrameHost will be responsible for the navigation.

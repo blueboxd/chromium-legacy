@@ -41,8 +41,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
@@ -163,7 +163,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/captive_portal/core/buildflags.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/find_in_page/find_tab_helper.h"
@@ -1440,11 +1440,11 @@ bool Browser::ShouldAllowRunningInsecureContent(
     // TODO(https://crbug.com/1103176): Plumb the actual frame reference here
     // (MixedContentNavigationThrottle::ShouldBlockNavigation has
     // |mixed_content_frame| reference)
-    content_settings::TabSpecificContentSettings* tab_settings =
-        content_settings::TabSpecificContentSettings::GetForFrame(
+    content_settings::PageSpecificContentSettings* page_settings =
+        content_settings::PageSpecificContentSettings::GetForFrame(
             web_contents->GetMainFrame());
-    DCHECK(tab_settings);
-    tab_settings->OnContentBlocked(ContentSettingsType::MIXEDSCRIPT);
+    DCHECK(page_settings);
+    page_settings->OnContentBlocked(ContentSettingsType::MIXEDSCRIPT);
   }
   return allowed;
 }
@@ -1996,11 +1996,12 @@ void Browser::RegisterProtocolHandler(
 
   // TODO(carlscab): This should probably be FromFrame() once it becomes
   // PageSpecificContentSettingsDelegate
-  auto* tab_content_settings_delegate =
-      chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents);
+  auto* page_content_settings_delegate =
+      chrome::PageSpecificContentSettingsDelegate::FromWebContents(
+          web_contents);
   if (!user_gesture && window_) {
-    tab_content_settings_delegate->set_pending_protocol_handler(handler);
-    tab_content_settings_delegate->set_previous_protocol_handler(
+    page_content_settings_delegate->set_pending_protocol_handler(handler);
+    page_content_settings_delegate->set_previous_protocol_handler(
         registry->GetHandlerFor(handler.protocol()));
     window_->GetLocationBar()->UpdateContentSettingsIcons();
     return;
@@ -2009,7 +2010,7 @@ void Browser::RegisterProtocolHandler(
   // Make sure content-setting icon is turned off in case the page does
   // ungestured and gestured RPH calls.
   if (window_) {
-    tab_content_settings_delegate->ClearPendingProtocolHandler();
+    page_content_settings_delegate->ClearPendingProtocolHandler();
     window_->GetLocationBar()->UpdateContentSettingsIcons();
   }
 
@@ -2133,8 +2134,8 @@ void Browser::RequestPpapiBrokerPermission(
   }
 
   // TODO(https://crbug.com/1103176): Plumb the actual frame reference here
-  content_settings::TabSpecificContentSettings* tab_content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings* tab_content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
           web_contents->GetMainFrame());
 
   HostContentSettingsMap* content_settings =

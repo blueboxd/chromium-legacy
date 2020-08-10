@@ -60,10 +60,12 @@ CompressedDataToImageSkiaCallback(
     base::OnceCallback<void(gfx::ImageSkia)> callback,
     float icon_scale);
 
-// Encode the ImageSkia to the compressed PNG data with the image's 1.0f scale
-// factor representation. Return the encoded PNG data.
-// This function should not be called on the UI thread.
-std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image);
+// Encodes a single SkBitmap representation from the given ImageSkia to the
+// compressed PNG data. |rep_icon_scale| argument denotes, which ImageSkiaRep to
+// take as input. See ImageSkia::GetRepresentation() comments. Returns the
+// encoded PNG data. This function should not be called on the UI thread.
+std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image,
+                                           float rep_icon_scale);
 
 #if defined(OS_CHROMEOS)
 void ArcRawIconPngDataToImageSkia(

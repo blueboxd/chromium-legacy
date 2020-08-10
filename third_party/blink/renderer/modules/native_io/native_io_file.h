@@ -56,6 +56,7 @@ class NativeIOFile final : public ScriptWrappable {
                       MaybeShared<DOMArrayBufferView> buffer,
                       uint64_t file_offset,
                       ExceptionState&);
+  ScriptPromise flush(ScriptState*, ExceptionState&);
 
   // GarbageCollected
   void Trace(Visitor* visitor) const override;
@@ -123,6 +124,16 @@ class NativeIOFile final : public ScriptWrappable {
   void DidWrite(CrossThreadPersistent<ScriptPromiseResolver> resolver,
                 int written_bytes,
                 base::File::Error write_error);
+
+  // Performs the file I/O part of flush().
+  static void DoFlush(
+      CrossThreadPersistent<NativeIOFile> native_io_file,
+      CrossThreadPersistent<ScriptPromiseResolver> resolver,
+      NativeIOFile::FileState* file_state,
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
+  // Performs the post file-I/O part of flush(), on the main thread.
+  void DidFlush(CrossThreadPersistent<ScriptPromiseResolver> resolver,
+                bool success);
 
   // Kicks off closing the file from the main thread.
   void CloseBackingFile();

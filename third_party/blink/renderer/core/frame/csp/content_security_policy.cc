@@ -1048,12 +1048,13 @@ static void GatherSecurityPolicyViolationEventData(
     // StripURLForUseInReport(..)
     source_url.SetQuery(String());
 
-    // TODO(arthursonzogni): |redirect_status| refers to the redirect status of
-    // the |blocked_url|. This is unrelated to |source_url|. Why using it in
-    // this case? This is obviously wrong:
+    // The |source_url| is the URL of the script that triggered the CSP
+    // violation. It is the URL pre-redirect. So it is safe to expose it in
+    // reports without leaking any new informations to the document. See
+    // https://crrev.com/c/2187792.
     String source_file =
         StripURLForUseInReport(delegate->GetSecurityOrigin(), source_url,
-                               redirect_status, effective_type);
+                               RedirectStatus::kNoRedirect, effective_type);
 
     init->setSourceFile(source_file);
     init->setLineNumber(source_location->LineNumber());
@@ -1723,6 +1724,8 @@ bool ContentSecurityPolicy::ShouldBypassContentSecurityPolicy(
 // static
 bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
                                            const String& context_required_csp) {
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE));
+
   // we don't allow any newline characters in the CSP attributes
   if (attr.Contains('\n') || attr.Contains('\r'))
     return false;
@@ -1745,9 +1748,6 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
   if (context_required_csp.IsEmpty() || context_required_csp.IsNull()) {
     return true;
   }
-
-  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE))
-    return true;
 
   auto* context_policy = MakeGarbageCollected<ContentSecurityPolicy>();
   context_policy->AddPolicyFromHeaderValue(context_required_csp,

@@ -8,8 +8,8 @@ source_set("browser") {
     "content_settings_manager_impl.h",
     "content_settings_usages_state.cc",
     "content_settings_usages_state.h",
-    "tab_specific_content_settings.cc",
-    "tab_specific_content_settings.h",
+    "page_specific_content_settings.cc",
+    "page_specific_content_settings.h",
   ]
   deps = [
     "//base",
@@ -29,8 +29,8 @@ source_set("browser") {
 source_set("test_support") {
   testonly = true
   sources = [
-    "test_tab_specific_content_settings_delegate.cc",
-    "test_tab_specific_content_settings_delegate.h",
+    "test_page_specific_content_settings_delegate.cc",
+    "test_page_specific_content_settings_delegate.h",
   ]
   deps = [
     ":browser",
@@ -40,7 +40,7 @@ source_set("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "tab_specific_content_settings_unittest.cc" ]
+  sources = [ "page_specific_content_settings_unittest.cc" ]
   deps = [
     ":browser",
     ":test_support",

@@ -9,7 +9,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
@@ -26,11 +26,11 @@ void PepperBrokerInfoBarDelegate::Create(
     const GURL& url,
     const base::string16& plugin_name,
     HostContentSettingsMap* content_settings,
-    content_settings::TabSpecificContentSettings* tab_content_settings,
+    content_settings::PageSpecificContentSettings* page_content_settings,
     base::OnceCallback<void(bool)> callback) {
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       base::WrapUnique(new PepperBrokerInfoBarDelegate(
-          url, plugin_name, content_settings, tab_content_settings,
+          url, plugin_name, content_settings, page_content_settings,
           std::move(callback)))));
 }
 
@@ -38,13 +38,13 @@ PepperBrokerInfoBarDelegate::PepperBrokerInfoBarDelegate(
     const GURL& url,
     const base::string16& plugin_name,
     HostContentSettingsMap* content_settings,
-    content_settings::TabSpecificContentSettings* tab_content_settings,
+    content_settings::PageSpecificContentSettings* page_content_settings,
     base::OnceCallback<void(bool)> callback)
     : url_(url),
       plugin_name_(plugin_name),
       content_settings_(content_settings),
-      tab_content_settings_(
-          tab_content_settings ? tab_content_settings->AsWeakPtr() : nullptr),
+      page_content_settings_(
+          page_content_settings ? page_content_settings->AsWeakPtr() : nullptr),
       callback_(std::move(callback)) {}
 
 PepperBrokerInfoBarDelegate::~PepperBrokerInfoBarDelegate() {
@@ -100,7 +100,7 @@ void PepperBrokerInfoBarDelegate::DispatchCallback(bool result) {
   content_settings_->SetContentSettingDefaultScope(
       url_, GURL(), ContentSettingsType::PPAPI_BROKER, std::string(),
       result ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
-  if (tab_content_settings_) {
-    tab_content_settings_->SetPepperBrokerAllowed(result);
+  if (page_content_settings_) {
+    page_content_settings_->SetPepperBrokerAllowed(result);
   }
 }

@@ -128,11 +128,12 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/java_exception_reporter.h"
+#include "base/android/library_loader/library_loader_hooks.h"
 #include "chrome/browser/android/crash/pure_java_exception_handler.h"
 #include "chrome/browser/android/metrics/uma_session_stats.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
+#include "chrome/common/android/cpu_affinity_experiments.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #else  // defined(OS_ANDROID)
@@ -578,6 +579,13 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType);
   bool is_browser_process = process_type.empty();
+
+#if defined(OS_ANDROID)
+  // For child processes, this requires whitelisting of the sched_setaffinity()
+  // syscall in the sandbox (baseline_policy_android.cc). When this call is
+  // removed, the sandbox whitelist should be updated too.
+  chrome::InitializeCpuAffinityExperiments();
+#endif
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
   {

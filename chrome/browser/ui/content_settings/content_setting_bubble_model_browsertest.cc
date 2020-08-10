@@ -22,7 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/url_formatter/elide_url.h"
@@ -37,7 +37,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "ui/events/event_constants.h"
 
-using content_settings::TabSpecificContentSettings;
+using content_settings::PageSpecificContentSettings;
 
 class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
  public:
@@ -56,8 +56,8 @@ class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
     ASSERT_TRUE(https_server_->Start());
   }
 
-  TabSpecificContentSettings* GetActiveTabSpecificContentSettings() {
-    return TabSpecificContentSettings::GetForFrame(
+  PageSpecificContentSettings* GetActivePageSpecificContentSettings() {
+    return PageSpecificContentSettings::GetForFrame(
         browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   }
 
@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, MainFrame) {
   // the title string.
   ui_test_utils::NavigateToURL(browser(), url);
 
-  EXPECT_TRUE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
+  EXPECT_TRUE(GetActivePageSpecificContentSettings()->IsContentBlocked(
       ContentSettingsType::MIXEDSCRIPT));
 
   // Emulate link clicking on the mixed script bubble.
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, MainFrame) {
       browser()->tab_strip_model()->GetActiveWebContents());
   observer.Wait();
 
-  EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
+  EXPECT_FALSE(GetActivePageSpecificContentSettings()->IsContentBlocked(
       ContentSettingsType::MIXEDSCRIPT));
 }
 
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsMixedScriptIgnoreCertErrorsTest,
   // the title string.
   ui_test_utils::NavigateToURL(browser(), url);
 
-  EXPECT_TRUE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
+  EXPECT_TRUE(GetActivePageSpecificContentSettings()->IsContentBlocked(
       ContentSettingsType::MIXEDSCRIPT));
 
   // Emulate link clicking on the mixed script bubble.
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsMixedScriptIgnoreCertErrorsTest,
       browser()->tab_strip_model()->GetActiveWebContents());
   observer.Wait();
 
-  EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
+  EXPECT_FALSE(GetActivePageSpecificContentSettings()->IsContentBlocked(
       ContentSettingsType::MIXEDSCRIPT));
 }
 
@@ -149,14 +149,14 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, Iframe) {
   // Blink does not ask the browser to handle mixed content in the case
   // of active subresources in an iframe, so the content type should not
   // be marked as blocked.
-  EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
+  EXPECT_FALSE(GetActivePageSpecificContentSettings()->IsContentBlocked(
       ContentSettingsType::MIXEDSCRIPT));
 }
 
 class ContentSettingBubbleModelMediaStreamTest : public InProcessBrowserTest {
  public:
   void ManageMediaStreamSettings(
-      TabSpecificContentSettings::MicrophoneCameraState state) {
+      PageSpecificContentSettings::MicrophoneCameraState state) {
     content::WebContents* original_tab = OpenTab();
     std::unique_ptr<ContentSettingBubbleModel> bubble = ShowBubble(state);
 
@@ -169,11 +169,11 @@ class ContentSettingBubbleModelMediaStreamTest : public InProcessBrowserTest {
   }
 
   std::unique_ptr<ContentSettingBubbleModel> ShowBubble(
-      TabSpecificContentSettings::MicrophoneCameraState state) {
+      PageSpecificContentSettings::MicrophoneCameraState state) {
     content::WebContents* web_contents = GetActiveTab();
 
     // Create a bubble with the given camera and microphone access state.
-    TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+    PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
         ->OnMediaStreamPermissionSet(web_contents->GetLastCommittedURL(), state,
                                      std::string(), std::string(),
                                      std::string(), std::string());
@@ -217,19 +217,19 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMediaStreamTest,
   // active tab loads the correct internal url.
 
   // The microphone bubble links to microphone exceptions.
-  ManageMediaStreamSettings(TabSpecificContentSettings::MICROPHONE_ACCESSED);
+  ManageMediaStreamSettings(PageSpecificContentSettings::MICROPHONE_ACCESSED);
   EXPECT_EQ(GURL("chrome://settings/contentExceptions#media-stream-mic"),
             GetActiveTab()->GetLastCommittedURL());
 
   // The bubble for both media devices links to the the first section of the
   // default media content settings, which is the microphone section.
-  ManageMediaStreamSettings(TabSpecificContentSettings::MICROPHONE_ACCESSED |
-                            TabSpecificContentSettings::CAMERA_ACCESSED);
+  ManageMediaStreamSettings(PageSpecificContentSettings::MICROPHONE_ACCESSED |
+                            PageSpecificContentSettings::CAMERA_ACCESSED);
   EXPECT_EQ(GURL("chrome://settings/content#media-stream-mic"),
             GetActiveTab()->GetLastCommittedURL());
 
   // The camera bubble links to camera exceptions.
-  ManageMediaStreamSettings(TabSpecificContentSettings::CAMERA_ACCESSED);
+  ManageMediaStreamSettings(PageSpecificContentSettings::CAMERA_ACCESSED);
   EXPECT_EQ(GURL("chrome://settings/contentExceptions#media-stream-camera"),
             GetActiveTab()->GetLastCommittedURL());
 }
@@ -249,8 +249,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMediaStreamTest,
 
   // The mic & camera bubble content does not include camera PTZ.
   std::unique_ptr<ContentSettingBubbleModel> mic_and_camera_bubble =
-      ShowBubble(TabSpecificContentSettings::MICROPHONE_ACCESSED |
-                 TabSpecificContentSettings::CAMERA_ACCESSED);
+      ShowBubble(PageSpecificContentSettings::MICROPHONE_ACCESSED |
+                 PageSpecificContentSettings::CAMERA_ACCESSED);
   EXPECT_EQ(mic_and_camera_bubble->bubble_content().radio_group.radio_items[0],
             l10n_util::GetStringFUTF16(
                 IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION,
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMediaStreamTest,
 
   // The camera bubble content does not include camera PTZ.
   std::unique_ptr<ContentSettingBubbleModel> camera_bubble =
-      ShowBubble(TabSpecificContentSettings::CAMERA_ACCESSED);
+      ShowBubble(PageSpecificContentSettings::CAMERA_ACCESSED);
   EXPECT_EQ(camera_bubble->bubble_content().radio_group.radio_items[0],
             l10n_util::GetStringFUTF16(
                 IDS_ALLOWED_MEDIASTREAM_CAMERA_NO_ACTION,
@@ -272,8 +272,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMediaStreamTest,
 
   // The mic & camera bubble content includes camera PTZ.
   std::unique_ptr<ContentSettingBubbleModel> mic_and_camera_ptz_bubble =
-      ShowBubble(TabSpecificContentSettings::MICROPHONE_ACCESSED |
-                 TabSpecificContentSettings::CAMERA_ACCESSED);
+      ShowBubble(PageSpecificContentSettings::MICROPHONE_ACCESSED |
+                 PageSpecificContentSettings::CAMERA_ACCESSED);
   EXPECT_EQ(
       mic_and_camera_ptz_bubble->bubble_content().radio_group.radio_items[0],
       l10n_util::GetStringFUTF16(
@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMediaStreamTest,
 
   // The camera bubble content includes camera PTZ.
   std::unique_ptr<ContentSettingBubbleModel> camera_ptz_bubble =
-      ShowBubble(TabSpecificContentSettings::CAMERA_ACCESSED);
+      ShowBubble(PageSpecificContentSettings::CAMERA_ACCESSED);
   EXPECT_EQ(camera_ptz_bubble->bubble_content().radio_group.radio_items[0],
             l10n_util::GetStringFUTF16(
                 IDS_ALLOWED_CAMERA_PAN_TILT_ZOOM_NO_ACTION,
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptOopifTest,
   // Load a page with mixed content and verify that mixed content didn't get
   // executed.
   ui_test_utils::NavigateToURL(browser(), main_url);
-  EXPECT_TRUE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
+  EXPECT_TRUE(GetActivePageSpecificContentSettings()->IsContentBlocked(
       ContentSettingsType::MIXEDSCRIPT));
 
   std::string title;
@@ -403,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptOopifTest,
 
   // Wait for reload and verify that mixed content is allowed.
   observer.Wait();
-  EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
+  EXPECT_FALSE(GetActivePageSpecificContentSettings()->IsContentBlocked(
       ContentSettingsType::MIXEDSCRIPT));
 
   // Ensure that the script actually executed by checking the title of the

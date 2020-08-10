@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_cert_store_bridge.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -210,7 +210,7 @@ class ArcCertStoreBridgeTest : public MixinBasedInProcessBrowserTest {
     extensions::StateStore* const state_store =
         extensions::ExtensionSystem::Get(browser()->profile())->state_store();
 
-    chromeos::KeyPermissions permissions(
+    chromeos::platform_keys::KeyPermissions permissions(
         policy_connector->IsManaged(), browser()->profile()->GetPrefs(),
         policy_connector->policy_service(), state_store);
 
@@ -262,13 +262,15 @@ class ArcCertStoreBridgeTest : public MixinBasedInProcessBrowserTest {
   // client_cert2_ is not allowed.
   void GotPermissionsForExtension(
       const base::Closure& done_callback,
-      std::unique_ptr<chromeos::KeyPermissions::PermissionsForExtension>
+      std::unique_ptr<
+          chromeos::platform_keys::KeyPermissions::PermissionsForExtension>
           permissions_for_ext) {
     std::string client_cert1_spki(
         client_cert1_->derPublicKey.data,
         client_cert1_->derPublicKey.data + client_cert1_->derPublicKey.len);
     permissions_for_ext->RegisterKeyForCorporateUsage(
-        client_cert1_spki, {chromeos::KeyPermissions::KeyLocation::kUserSlot});
+        client_cert1_spki,
+        {chromeos::platform_keys::KeyPermissions::KeyLocation::kUserSlot});
     done_callback.Run();
   }
 

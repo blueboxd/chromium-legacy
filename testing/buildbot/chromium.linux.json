@@ -4329,7 +4329,8 @@
       {
         "args": [
           "--no-xvfb",
-          "--ozone-platform=headless"
+          "--ozone-platform=headless",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4351,7 +4352,8 @@
       {
         "args": [
           "--no-xvfb",
-          "--ozone-platform=headless"
+          "--ozone-platform=headless",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4373,7 +4375,8 @@
       {
         "args": [
           "--no-xvfb",
-          "--ozone-platform=headless"
+          "--ozone-platform=headless",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4395,7 +4398,8 @@
       {
         "args": [
           "--no-xvfb",
-          "--ozone-platform=headless"
+          "--ozone-platform=headless",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4422,7 +4426,8 @@
         "args": [
           "--no-xvfb",
           "--use-weston",
-          "--ozone-platform=wayland"
+          "--ozone-platform=wayland",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4445,7 +4450,8 @@
         "args": [
           "--no-xvfb",
           "--use-weston",
-          "--ozone-platform=wayland"
+          "--ozone-platform=wayland",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4469,6 +4475,7 @@
           "--no-xvfb",
           "--use-weston",
           "--ozone-platform=wayland",
+          "--enable-features=UseOzonePlatform",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_browser_tests.filter"
         ],
         "experiment_percentage": 100,
@@ -4494,7 +4501,8 @@
         "args": [
           "--no-xvfb",
           "--use-weston",
-          "--ozone-platform=wayland"
+          "--ozone-platform=wayland",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4518,6 +4526,7 @@
           "--no-xvfb",
           "--use-weston",
           "--ozone-platform=wayland",
+          "--enable-features=UseOzonePlatform",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_content_browsertests.filter"
         ],
         "merge": {
@@ -4542,7 +4551,8 @@
         "args": [
           "--no-xvfb",
           "--use-weston",
-          "--ozone-platform=wayland"
+          "--ozone-platform=wayland",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4565,7 +4575,8 @@
         "args": [
           "--no-xvfb",
           "--use-weston",
-          "--ozone-platform=wayland"
+          "--ozone-platform=wayland",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4588,7 +4599,8 @@
         "args": [
           "--no-xvfb",
           "--use-weston",
-          "--ozone-platform=wayland"
+          "--ozone-platform=wayland",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4611,7 +4623,8 @@
         "args": [
           "--no-xvfb",
           "--use-weston",
-          "--ozone-platform=wayland"
+          "--ozone-platform=wayland",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4635,6 +4648,7 @@
           "--no-xvfb",
           "--use-weston",
           "--ozone-platform=wayland",
+          "--enable-features=UseOzonePlatform",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_views_unittests.filter"
         ],
         "merge": {
@@ -4658,7 +4672,8 @@
         "args": [
           "--no-xvfb",
           "--use-weston",
-          "--ozone-platform=wayland"
+          "--ozone-platform=wayland",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4683,7 +4698,8 @@
     "gtest_tests": [
       {
         "args": [
-          "--ozone-platform=x11"
+          "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4704,7 +4720,8 @@
       },
       {
         "args": [
-          "--ozone-platform=x11"
+          "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4726,6 +4743,7 @@
       {
         "args": [
           "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_browser_tests.filter"
         ],
         "experiment_percentage": 100,
@@ -4749,7 +4767,8 @@
       },
       {
         "args": [
-          "--ozone-platform=x11"
+          "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4771,6 +4790,7 @@
       {
         "args": [
           "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_content_browsertests.filter"
         ],
         "merge": {
@@ -4793,7 +4813,8 @@
       },
       {
         "args": [
-          "--ozone-platform=x11"
+          "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4814,7 +4835,8 @@
       },
       {
         "args": [
-          "--ozone-platform=x11"
+          "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4835,7 +4857,8 @@
       },
       {
         "args": [
-          "--ozone-platform=x11"
+          "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4856,7 +4879,8 @@
       },
       {
         "args": [
-          "--ozone-platform=x11"
+          "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4877,7 +4901,8 @@
       },
       {
         "args": [
-          "--ozone-platform=x11"
+          "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4899,6 +4924,7 @@
       {
         "args": [
           "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter"
         ],
         "merge": {
@@ -4920,7 +4946,8 @@
       },
       {
         "args": [
-          "--ozone-platform=x11"
+          "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],
@@ -4941,7 +4968,8 @@
       },
       {
         "args": [
-          "--ozone-platform=x11"
+          "--ozone-platform=x11",
+          "--enable-features=UseOzonePlatform"
         ],
         "merge": {
           "args": [],

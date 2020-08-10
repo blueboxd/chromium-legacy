@@ -7,7 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_uma_util.h"
@@ -71,8 +71,8 @@ class PageInfoDelegate {
   virtual HostContentSettingsMap* GetContentSettings() = 0;
 
   virtual std::unique_ptr<
-      content_settings::TabSpecificContentSettings::Delegate>
-  GetTabSpecificContentSettingsDelegate() = 0;
+      content_settings::PageSpecificContentSettings::Delegate>
+  GetPageSpecificContentSettingsDelegate() = 0;
   virtual bool IsContentDisplayedInVrHeadset() = 0;
   virtual security_state::SecurityLevel GetSecurityLevel() = 0;
   virtual security_state::VisibleSecurityState GetVisibleSecurityState() = 0;

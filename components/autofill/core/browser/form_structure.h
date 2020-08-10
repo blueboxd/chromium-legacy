@@ -285,10 +285,6 @@ class FormStructure {
   // Returns the possible form types.
   std::set<FormType> GetFormTypes() const;
 
-  // Returns a collection of ServerFieldTypes corresponding to this
-  // FormStructure's fields.
-  std::vector<ServerFieldType> GetServerFieldTypes() const;
-
   bool passwords_were_revealed() const { return passwords_were_revealed_; }
   void set_passwords_were_revealed(bool passwords_were_revealed) {
     passwords_were_revealed_ = passwords_were_revealed;

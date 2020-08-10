@@ -72,7 +72,8 @@ void TestNavigationURLLoader::CallOnRequestRedirected(
 
 void TestNavigationURLLoader::CallOnResponseStarted(
     network::mojom::URLResponseHeadPtr response_head) {
-  response_head->parsed_headers = network::mojom::ParsedHeaders::New();
+  if (!response_head->parsed_headers)
+    response_head->parsed_headers = network::mojom::ParsedHeaders::New();
   // Create a bidirectionnal communication pipe between a URLLoader and a
   // URLLoaderClient. It will be closed at the end of this function. The sole
   // purpose of this is not to violate some DCHECKs when the navigation commits.

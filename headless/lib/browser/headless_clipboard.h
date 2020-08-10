@@ -67,6 +67,9 @@ class HeadlessClipboard : public ui::Clipboard {
   void ReadData(const ui::ClipboardFormatType& format,
                 const ui::ClipboardDataEndpoint* data_dst,
                 std::string* result) const override;
+#if defined(USE_OZONE)
+  bool IsSelectionBufferAvailable() const override;
+#endif  // defined(USE_OZONE)
   void WritePortableRepresentations(
       ui::ClipboardBuffer buffer,
       const ObjectMap& objects,

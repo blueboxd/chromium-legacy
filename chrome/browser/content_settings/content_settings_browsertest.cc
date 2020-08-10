@@ -27,7 +27,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browsing_data/content/cookie_helper.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -67,23 +67,23 @@
 #endif
 
 using content::BrowserThread;
-using content_settings::TabSpecificContentSettings;
+using content_settings::PageSpecificContentSettings;
 using net::URLRequestMockHTTPJob;
 
 namespace {
 
 browsing_data::CannedCookieHelper* GetSiteSettingsCookieContainer(
     Browser* browser) {
-  TabSpecificContentSettings* settings =
-      TabSpecificContentSettings::GetForFrame(
+  PageSpecificContentSettings* settings =
+      PageSpecificContentSettings::GetForFrame(
           browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   return settings->allowed_local_shared_objects().cookies();
 }
 
 browsing_data::CannedCookieHelper* GetSiteSettingsBlockedCookieContainer(
     Browser* browser) {
-  TabSpecificContentSettings* settings =
-      TabSpecificContentSettings::GetForFrame(
+  PageSpecificContentSettings* settings =
+      PageSpecificContentSettings::GetForFrame(
           browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   return settings->blocked_local_shared_objects().cookies();
 }
@@ -731,13 +731,13 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(&observer));
 
   EXPECT_TRUE(
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
 // Any cookie access during a navigation does not end up in a new document (e.g.
 // due to the request returning HTTP 204) should not be tracked by the
-// TabSpecificContentSettings.
+// PageSpecificContentSettings.
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, CookiesIgnoredFor204) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -753,7 +753,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, CookiesIgnoredFor204) {
   ui_test_utils::NavigateToURL(browser(), test_url);
 
   EXPECT_FALSE(
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
@@ -792,20 +792,20 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsBackForwardCacheBrowserTest,
   content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
 
   EXPECT_TRUE(
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::COOKIES));
 
   ui_test_utils::NavigateToURL(browser(), other_url);
   EXPECT_TRUE(main_frame->IsInBackForwardCache());
   EXPECT_FALSE(
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::COOKIES));
 
   web_contents->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(web_contents));
   EXPECT_EQ(main_frame, web_contents->GetMainFrame());
   EXPECT_TRUE(
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
@@ -823,12 +823,12 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsBackForwardCacheBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), test_url);
   EXPECT_TRUE(
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::COOKIES));
 
   ui_test_utils::NavigateToURL(browser(), other_url);
   EXPECT_FALSE(
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::COOKIES));
 
   // This triggers a OnContentSettingChanged notification that should be
@@ -839,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsBackForwardCacheBrowserTest,
   web_contents->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(web_contents));
   EXPECT_FALSE(
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
@@ -896,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
   ASSERT_EQ(base::UTF8ToUTF16("Data URL"), web_contents->GetTitle());
 
   EXPECT_TRUE(
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
 }
 
@@ -922,7 +922,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   EXPECT_TRUE(
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
@@ -1062,7 +1062,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest,
   ui_test_utils::WaitForViewVisibility(
       browser(), VIEW_ID_CONTENT_SETTING_JAVASCRIPT, true);
   EXPECT_TRUE(
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
@@ -1211,10 +1211,10 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
     ui_test_utils::NavigateToURL(browser(), url);
 
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-    auto* tscs =
-        TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+    auto* pscs =
+        PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
     EXPECT_EQ(!expect_loaded,
-              tscs && tscs->IsContentBlocked(ContentSettingsType::PLUGINS));
+              pscs && pscs->IsContentBlocked(ContentSettingsType::PLUGINS));
   }
 
   void RunJavaScriptBlockedTest(const char* path,
@@ -1253,11 +1253,11 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
       // the TitleWatcher adding sufficient delay most of the time.
     }
 
-    TabSpecificContentSettings* tab_settings =
-        TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+    PageSpecificContentSettings* settings =
+        PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
     EXPECT_EQ(expect_is_javascript_content_blocked,
-              tab_settings->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
-    EXPECT_FALSE(tab_settings->IsContentBlocked(ContentSettingsType::PLUGINS));
+              settings->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
+    EXPECT_FALSE(settings->IsContentBlocked(ContentSettingsType::PLUGINS));
   }
 
  private:

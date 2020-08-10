@@ -27,8 +27,8 @@ typedef InProcessBrowserTest ContentSettingImageModelBrowserTest;
 IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest, CreateBubbleModel) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
           web_contents->GetMainFrame());
   content_settings->BlockAllContentForTesting();
 

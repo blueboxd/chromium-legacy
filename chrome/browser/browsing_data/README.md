@@ -27,7 +27,7 @@ CookiesTreeModel on demand by LocalSharedObjectContainer, with only
 some details (e.g. full details for cookies, but only the usage of
 other storage typess).
 
-* TabSpecificContentSettings is notified on storage access/blocked.
+* PageSpecificContentSettings is notified on storage access/blocked.
 * It calls into the "canned" helper instance for the storage type.
 * The "canned" instance records necessary "pending" info about the access.
 * On demand, the "pending" info is used to populate a CookiesTreeModel.

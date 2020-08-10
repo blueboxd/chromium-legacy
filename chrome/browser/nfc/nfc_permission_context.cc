@@ -4,7 +4,7 @@
 
 #include "chrome/browser/nfc/nfc_permission_context.h"
 
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/permissions/permission_request_id.h"
 
 NfcPermissionContext::NfcPermissionContext(
@@ -45,7 +45,7 @@ void NfcPermissionContext::UpdateTabContext(
     const GURL& requesting_frame,
     bool allowed) {
   auto* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+      content_settings::PageSpecificContentSettings::GetForFrame(
           id.render_process_id(), id.render_frame_id());
   if (!content_settings)
     return;

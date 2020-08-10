@@ -14,11 +14,10 @@ namespace mini_installer {
 // A simple abstraction over a path to a file and a Windows file handle to it.
 class MiniFile {
  public:
-  enum class DeleteOnClose : bool { kNo = false, kYes = true };
-  explicit MiniFile(DeleteOnClose delete_on_close);
+  MiniFile();
 
   // Closes the file if the instance holds a valid handle. The file will be
-  // deleted if the instance was constructed with |delete_on_close|.
+  // deleted if directed by a call to DeleteOnClose().
   ~MiniFile();
 
   MiniFile(const MiniFile&) = delete;
@@ -36,27 +35,16 @@ class MiniFile {
   // Returns true if this object has a path and a handle to an open file.
   bool IsValid() const;
 
-  // Drops write permission on the file handle so that other parties that
-  // require no writers may open the file. In particular, the Windows loader
-  // opens files for execution with shared read/delete access, as do the
-  // extraction operations in Chrome's mini_installer.exe and setup.exe. These
-  // would fail with sharing violations if mini_installer were to hold files
-  // open with write permissions. Returns false on failure, in which case the
-  // instance is no longer valid.  The file will have been deleted if the
-  // instance was created with DeleteOnClose.
-  bool DropWritePermission();
+  // Marks the file for deletion when the handle is closed via Close() or the
+  // instance's destructor. This state follows the handle when moved.
+  bool DeleteOnClose();
 
-  // Closes the handle and clears the path. The file will be deleted if the
-  // instance was constructed with |delete_on_close|. Following this, IsValid()
-  // will return false.
+  // Closes the handle and clears the path. Following this, IsValid() will
+  // return false.
   void Close();
 
   // Returns a new handle to the file, or INVALID_HANDLE_VALUE on error.
   HANDLE DuplicateHandle() const;
-
-  // Opens the file for read access, disallowing writers (as if Create followed
-  // by DropWritePermission).
-  bool Open(const PathString& path);
 
   // Returns the path to the open file, or a pointer to an empty string if
   // IsValid() is false.
@@ -73,10 +61,6 @@ class MiniFile {
 
   // A handle to the open file, or INVALID_HANDLE_VALUE.
   HANDLE handle_ = INVALID_HANDLE_VALUE;
-
-  // Zero or FILE_FLAG_DELETE_ON_CLOSE, according to how the instance was
-  // constructed.
-  const DWORD delete_on_close_flag_;
 };
 
 }  // namespace mini_installer

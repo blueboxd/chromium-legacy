@@ -16,7 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
@@ -28,7 +28,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/browser/content_settings_usages_state.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -52,7 +52,7 @@
 #endif
 
 using content::WebContents;
-using content_settings::TabSpecificContentSettings;
+using content_settings::PageSpecificContentSettings;
 
 // The image models hierarchy:
 //
@@ -156,7 +156,7 @@ class ContentSettingMediaImageModel : public ContentSettingImageModel {
       WebContents* web_contents) override;
 
  private:
-  TabSpecificContentSettings::MicrophoneCameraState state_;
+  PageSpecificContentSettings::MicrophoneCameraState state_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaImageModel);
 };
@@ -419,8 +419,8 @@ bool ContentSettingBlockedImageModel::UpdateAndGetVisibility(
 
   // If a content type is blocked by default and was accessed, display the
   // content blocked page action.
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
   if (!content_settings)
     return false;
 
@@ -483,8 +483,8 @@ ContentSettingGeolocationImageModel::ContentSettingGeolocationImageModel()
 
 bool ContentSettingGeolocationImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
   if (!content_settings)
     return false;
   const ContentSettingsUsagesState& usages_state =
@@ -518,7 +518,8 @@ ContentSettingRPHImageModel::ContentSettingRPHImageModel()
 bool ContentSettingRPHImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
   auto* content_settings_delegate =
-      chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents);
+      chrome::PageSpecificContentSettingsDelegate::FromWebContents(
+          web_contents);
   if (!content_settings_delegate)
     return false;
   if (content_settings_delegate->pending_protocol_handler().IsEmpty())
@@ -535,8 +536,8 @@ ContentSettingMIDISysExImageModel::ContentSettingMIDISysExImageModel()
 
 bool ContentSettingMIDISysExImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
   if (!content_settings)
     return false;
   const ContentSettingsUsagesState& usages_state =
@@ -602,8 +603,8 @@ ContentSettingClipboardReadWriteImageModel::
 
 bool ContentSettingClipboardReadWriteImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
   if (!content_settings)
     return false;
   ContentSettingsType content_type = ContentSettingsType::CLIPBOARD_READ_WRITE;
@@ -627,15 +628,15 @@ ContentSettingMediaImageModel::ContentSettingMediaImageModel()
 bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
   set_should_auto_open_bubble(false);
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
   if (!content_settings)
     return false;
   state_ = content_settings->GetMicrophoneCameraState();
 
   // If neither the microphone nor the camera stream was accessed then no icon
   // is displayed in the omnibox.
-  if (state_ == TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED)
+  if (state_ == PageSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED)
     return false;
 
 #if defined(OS_MAC)
@@ -735,19 +736,19 @@ bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
 }
 
 bool ContentSettingMediaImageModel::IsMicAccessed() {
-  return ((state_ & TabSpecificContentSettings::MICROPHONE_ACCESSED) != 0);
+  return ((state_ & PageSpecificContentSettings::MICROPHONE_ACCESSED) != 0);
 }
 
 bool ContentSettingMediaImageModel::IsCamAccessed() {
-  return ((state_ & TabSpecificContentSettings::CAMERA_ACCESSED) != 0);
+  return ((state_ & PageSpecificContentSettings::CAMERA_ACCESSED) != 0);
 }
 
 bool ContentSettingMediaImageModel::IsMicBlockedOnSiteLevel() {
-  return ((state_ & TabSpecificContentSettings::MICROPHONE_BLOCKED) != 0);
+  return ((state_ & PageSpecificContentSettings::MICROPHONE_BLOCKED) != 0);
 }
 
 bool ContentSettingMediaImageModel::IsCameraBlockedOnSiteLevel() {
-  return ((state_ & TabSpecificContentSettings::CAMERA_BLOCKED) != 0);
+  return ((state_ & PageSpecificContentSettings::CAMERA_BLOCKED) != 0);
 }
 
 #if defined(OS_MAC)
@@ -820,7 +821,7 @@ ContentSettingSensorsImageModel::ContentSettingSensorsImageModel()
 bool ContentSettingSensorsImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
   auto* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
   if (!content_settings)
     return false;
 
@@ -860,8 +861,8 @@ ContentSettingPopupImageModel::ContentSettingPopupImageModel()
 
 bool ContentSettingPopupImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
   if (!content_settings || !content_settings->IsContentBlocked(content_type()))
     return false;
   set_icon(kWebIcon, vector_icons::kBlockedBadgeIcon);

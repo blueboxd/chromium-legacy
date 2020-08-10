@@ -788,6 +788,10 @@ void WebSettingsImpl::SetUseAXMenuList(bool enabled) {
   settings_->SetUseAXMenuList(enabled);
 }
 
+void WebSettingsImpl::SetSelectionClipboardBufferAvailable(bool available) {
+  settings_->SetSelectionClipboardBufferAvailable(available);
+}
+
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAllowed,
                    kImageAnimationPolicyAllowed);
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAnimateOnce,

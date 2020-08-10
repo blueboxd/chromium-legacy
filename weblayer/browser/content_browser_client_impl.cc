@@ -76,13 +76,13 @@
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/navigation_error_navigation_throttle.h"
+#include "weblayer/browser/page_specific_content_settings_delegate.h"
 #include "weblayer/browser/password_manager_driver_factory.h"
 #include "weblayer/browser/popup_navigation_delegate_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/signin_url_loader_throttle.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
-#include "weblayer/browser/tab_specific_content_settings_delegate.h"
 #include "weblayer/browser/user_agent.h"
 #include "weblayer/browser/web_contents_view_delegate_impl.h"
 #include "weblayer/browser/weblayer_browser_interface_binders.h"
@@ -692,7 +692,7 @@ void ContentBrowserClientImpl::RenderProcessWillLaunch(
       /*can_persist_data*/ true,
       /*force_to_support_secure_codecs*/ false));
 #endif
-  TabSpecificContentSettingsDelegate::UpdateRendererContentSettingRules(host);
+  PageSpecificContentSettingsDelegate::UpdateRendererContentSettingRules(host);
 }
 
 scoped_refptr<content::QuotaPermissionContext>

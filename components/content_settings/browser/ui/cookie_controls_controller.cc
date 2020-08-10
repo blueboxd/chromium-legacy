@@ -10,7 +10,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/browser/ui/cookie_controls_view.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -108,21 +108,21 @@ void CookieControlsController::OnCookieBlockingEnabledForSite(
 }
 
 int CookieControlsController::GetAllowedCookieCount() {
-  auto* tscs =
-      content_settings::TabSpecificContentSettings::GetForCurrentDocument(
+  auto* pscs =
+      content_settings::PageSpecificContentSettings::GetForCurrentDocument(
           tab_observer_->web_contents()->GetMainFrame());
-  if (tscs) {
-    return tscs->allowed_local_shared_objects().GetObjectCount();
+  if (pscs) {
+    return pscs->allowed_local_shared_objects().GetObjectCount();
   } else {
     return 0;
   }
 }
 int CookieControlsController::GetBlockedCookieCount() {
-  auto* tscs =
-      content_settings::TabSpecificContentSettings::GetForCurrentDocument(
+  auto* pscs =
+      content_settings::PageSpecificContentSettings::GetForCurrentDocument(
           tab_observer_->web_contents()->GetMainFrame());
-  if (tscs) {
-    return tscs->blocked_local_shared_objects().GetObjectCount();
+  if (pscs) {
+    return pscs->blocked_local_shared_objects().GetObjectCount();
   } else {
     return 0;
   }
@@ -163,7 +163,7 @@ void CookieControlsController::RemoveObserver(CookieControlsView* obs) {
 CookieControlsController::TabObserver::TabObserver(
     CookieControlsController* cookie_controls,
     content::WebContents* web_contents)
-    : content_settings::TabSpecificContentSettings::SiteDataObserver(
+    : content_settings::PageSpecificContentSettings::SiteDataObserver(
           web_contents),
       cookie_controls_(cookie_controls) {}
 

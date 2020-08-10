@@ -25,7 +25,7 @@
 #include "build/build_config.h"
 #include "components/browser_ui/util/android/url_constants.h"
 #include "components/browsing_data/content/local_storage_helper.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -435,7 +435,7 @@ void PageInfo::InitializeUiState(PageInfoUI* ui) {
   ui_ = ui;
   DCHECK(ui_);
   // TabSpecificContentSetting needs to be created before page load.
-  DCHECK(GetTabSpecificContentSettings());
+  DCHECK(GetPageSpecificContentSettings());
 
   ComputeUIInputs(site_url_);
   PresentSitePermissions();
@@ -1001,7 +1001,7 @@ void PageInfo::PresentSiteData() {
 
   // Add first party cookie and site data counts.
   // TODO(crbug.com/1058597): Remove the calls to the |delegate_| once
-  // TabSpecificContentSettings has been componentized.
+  // PageSpecificContentSettings has been componentized.
   PageInfoUI::CookieInfo cookie_info;
   cookie_info.allowed = GetFirstPartyAllowedCookiesCount(site_url_);
   cookie_info.blocked = GetFirstPartyBlockedCookiesCount(site_url_);
@@ -1132,16 +1132,16 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
   }
 }
 
-content_settings::TabSpecificContentSettings*
-PageInfo::GetTabSpecificContentSettings() const {
+content_settings::PageSpecificContentSettings*
+PageInfo::GetPageSpecificContentSettings() const {
   // TODO(https://crbug.com/1103176): PageInfo should be per page. Why is it
   // a WebContentsObserver if it is not observing anything?
-  return content_settings::TabSpecificContentSettings::GetForFrame(
+  return content_settings::PageSpecificContentSettings::GetForFrame(
       web_contents()->GetMainFrame());
 }
 
 bool PageInfo::HasContentSettingChangedViaPageInfo(ContentSettingsType type) {
-  auto* settings = GetTabSpecificContentSettings();
+  auto* settings = GetPageSpecificContentSettings();
   if (!settings)
     return false;
 
@@ -1149,7 +1149,7 @@ bool PageInfo::HasContentSettingChangedViaPageInfo(ContentSettingsType type) {
 }
 
 void PageInfo::ContentSettingChangedViaPageInfo(ContentSettingsType type) {
-  auto* settings = GetTabSpecificContentSettings();
+  auto* settings = GetPageSpecificContentSettings();
   if (!settings)
     return;
 
@@ -1157,7 +1157,7 @@ void PageInfo::ContentSettingChangedViaPageInfo(ContentSettingsType type) {
 }
 
 int PageInfo::GetFirstPartyAllowedCookiesCount(const GURL& site_url) {
-  auto* settings = GetTabSpecificContentSettings();
+  auto* settings = GetPageSpecificContentSettings();
   if (!settings)
     return 0;
   return settings->allowed_local_shared_objects().GetObjectCountForDomain(
@@ -1165,7 +1165,7 @@ int PageInfo::GetFirstPartyAllowedCookiesCount(const GURL& site_url) {
 }
 
 int PageInfo::GetFirstPartyBlockedCookiesCount(const GURL& site_url) {
-  auto* settings = GetTabSpecificContentSettings();
+  auto* settings = GetPageSpecificContentSettings();
   if (!settings)
     return 0;
 
@@ -1174,7 +1174,7 @@ int PageInfo::GetFirstPartyBlockedCookiesCount(const GURL& site_url) {
 }
 
 int PageInfo::GetThirdPartyAllowedCookiesCount(const GURL& site_url) {
-  auto* settings = GetTabSpecificContentSettings();
+  auto* settings = GetPageSpecificContentSettings();
   if (!settings)
     return 0;
 
@@ -1183,7 +1183,7 @@ int PageInfo::GetThirdPartyAllowedCookiesCount(const GURL& site_url) {
 }
 
 int PageInfo::GetThirdPartyBlockedCookiesCount(const GURL& site_url) {
-  auto* settings = GetTabSpecificContentSettings();
+  auto* settings = GetPageSpecificContentSettings();
   if (!settings)
     return 0;
 

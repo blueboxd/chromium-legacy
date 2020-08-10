@@ -23,7 +23,7 @@
 namespace {
 constexpr char kNonExistentUrlPath[] = "non-existent-url.html";
 constexpr char kLoadFromDiskUrlPath[] = "telemetry_extension_test.html";
-constexpr char kRegisteredUrlPath[] = "untrusted.html";
+constexpr char kRegisteredUrlPath[] = "dpsl.js";
 }  // namespace
 
 class TelemetryExtensionIntegrationTest : public SystemWebAppIntegrationTest {
@@ -73,10 +73,6 @@ IN_PROC_BROWSER_TEST_P(
   // The |registered_resource_gurl| is a file that is included in the
   // TelemteryExtensionUntrustedSource's list of registered resources.
   EXPECT_TRUE(content::NavigateToURL(web_contents, registered_resource_gurl));
-
-  // Verify that the file loaded from disk has the expected title.
-  EXPECT_EQ(base::UTF8ToUTF16("Untrusted Telemetry Extension"),
-            web_contents->GetTitle());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

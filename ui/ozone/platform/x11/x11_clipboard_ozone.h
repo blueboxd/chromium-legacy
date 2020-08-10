@@ -49,6 +49,7 @@ class X11ClipboardOzone : public PlatformClipboard, public XEventDispatcher {
   bool IsSelectionOwner(ClipboardBuffer buffer) override;
   void SetSequenceNumberUpdateCb(
       PlatformClipboard::SequenceNumberUpdateCb cb) override;
+  bool IsSelectionBufferAvailable() const override;
 
  private:
   struct SelectionState;

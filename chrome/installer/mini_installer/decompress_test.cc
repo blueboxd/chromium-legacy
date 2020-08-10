@@ -5,11 +5,9 @@
 #include <windows.h>
 
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "chrome/installer/mini_installer/decompress.h"
-#include "chrome/installer/mini_installer/mini_file.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(MiniDecompressTest, ExpandTest) {
@@ -29,21 +27,11 @@ TEST(MiniDecompressTest, ExpandTest) {
       temp_dir.GetPath().Append(FILE_PATH_LITERAL("setup.exe")));
 
   // Decompress our test file.
-  mini_installer::MiniFile file(mini_installer::MiniFile::DeleteOnClose::kYes);
-  ASSERT_TRUE(mini_installer::Expand(source_path.value().c_str(),
-                                     dest_path.value().c_str(), file));
-  ASSERT_TRUE(file.IsValid());
-  ASSERT_PRED1(base::PathExists, dest_path);
-
-  // Drop write permission so that the call below can open the file.
-  ASSERT_TRUE(file.DropWritePermission());
+  EXPECT_TRUE(mini_installer::Expand(source_path.value().c_str(),
+                                     dest_path.value().c_str()));
 
   // Check if the expanded file is a valid executable.
   DWORD type = static_cast<DWORD>(-1);
   EXPECT_TRUE(GetBinaryType(dest_path.value().c_str(), &type));
   EXPECT_EQ(static_cast<DWORD>(SCS_32BIT_BINARY), type);
-
-  // Closing the handle should delete the file.
-  file.Close();
-  EXPECT_FALSE(base::PathExists(dest_path));
 }

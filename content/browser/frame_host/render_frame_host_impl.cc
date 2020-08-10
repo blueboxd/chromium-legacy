@@ -4540,6 +4540,17 @@ void RenderFrameHostImpl::DidChangeOpener(
       opener_frame_token.value_or(base::UnguessableToken()), GetSiteInstance());
 }
 
+void RenderFrameHostImpl::DidChangeCSPAttribute(
+    const base::UnguessableToken& child_frame_token,
+    network::mojom::ContentSecurityPolicyPtr parsed_csp_attribute) {
+  auto* child =
+      FindAndVerifyChild(child_frame_token, bad_message::RFH_CSP_ATTRIBUTE);
+  if (!child)
+    return;
+
+  child->frame_tree_node()->set_csp_attribute(std::move(parsed_csp_attribute));
+}
+
 void RenderFrameHostImpl::DidChangeFramePolicy(
     const base::UnguessableToken& child_frame_token,
     const blink::FramePolicy& frame_policy) {
@@ -8222,6 +8233,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     }
   }
 
+  network::mojom::ContentSecurityPolicyPtr required_csp =
+      navigation_request->TakeRequiredCSP();
+
   // TODO(arthursonzogni, altimin): By taking ownership and deleting the
   // NavigationRequest, this line triggers the DidFinishNavigation event. There
   // are several document's associated state assigned below when a new document
@@ -8251,6 +8265,10 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     coep_reporter_ = std::move(coep_reporter);
     coop_reporter_ = std::move(coop_reporter);
 
+    // Store the required CSP (it will be used by the AncestorThrottle if
+    // this frame embeds a subframe when that subframe navigates).
+    required_csp_ = std::move(required_csp);
+
     if (coep_reporter_) {
       mojo::PendingRemote<blink::mojom::ReportingObserver> remote;
       mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver =
@@ -8263,7 +8281,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
           base::BindOnce(&RenderFrameHostImpl::BindReportingObserver,
                          weak_ptr_factory_.GetWeakPtr(), std::move(receiver)));
     }
-
   }
 
   RecordCrossOriginIsolationMetrics(this);

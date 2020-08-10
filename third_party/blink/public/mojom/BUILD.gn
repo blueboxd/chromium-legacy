@@ -4,6 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/blink/public/public_features.gni")
+import("//ui/ozone/ozone.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -257,8 +258,12 @@ mojom("mojom_platform") {
     ]
   }
 
+  enabled_features = []
   if (is_linux || is_chromeos) {
-    enabled_features = [ "renderer_pref_system_font_family_name" ]
+    enabled_features += [ "renderer_pref_system_font_family_name" ]
+  }
+  if (use_x11 || use_ozone) {
+    enabled_features += [ "is_selection_clipboard_buffer_possible" ]
   }
 
   shared_cpp_typemaps = [

@@ -82,9 +82,6 @@ _desugar_jdk_libs_json = "//third_party/r8/desugar_jdk_libs.json"
 _desugar_jdk_libs_jar = "//third_party/android_deps/libs/com_android_tools_desugar_jdk_libs/desugar_jdk_libs-1.0.5.jar"
 _desugar_runtime_jar = "$root_build_dir/obj/third_party/bazel/desugar/Desugar_runtime.processed.jar"
 
-# Where to write failed expectations for bots to read.
-_expectations_failure_dir = "$root_build_dir/failed_expectations"
-
 _dexdump_path = "$android_sdk_build_tools/dexdump"
 _dexlayout_path = "//third_party/android_build_tools/art/dexlayout"
 _profman_path = "//third_party/android_build_tools/art/profman"
@@ -1265,7 +1262,7 @@ if (enable_java_templates) {
         ]
         _actual_file = "$target_gen_dir/$target_name.proguard_configs"
         _failure_file =
-            "$_expectations_failure_dir/" +
+            "$android_configuration_failure_dir/" +
             string_replace(invoker.expected_proguard_config, "/", "_")
         outputs = [ _actual_file ]
         args = _args + [
@@ -2644,7 +2641,7 @@ if (enable_java_templates) {
       action_with_pydeps(_expectations_target) {
         _actual_file = "${invoker.android_manifest}.normalized"
         _failure_file =
-            "$_expectations_failure_dir/" +
+            "$android_configuration_failure_dir/" +
             string_replace(invoker.expected_android_manifest, "/", "_")
         inputs = [
           invoker.android_manifest,
@@ -2923,7 +2920,7 @@ if (enable_java_templates) {
       action_with_pydeps(_expectations_target) {
         _actual_file = "$target_gen_dir/$target_name.libs_and_assets"
         _failure_file =
-            "$_expectations_failure_dir/" +
+            "$android_configuration_failure_dir/" +
             string_replace(invoker.expected_libs_and_assets, "/", "_")
         inputs = [
           invoker.build_config,
@@ -4143,7 +4140,7 @@ template("create_android_app_bundle_module") {
     _expectations_target = "${invoker.top_target_name}_validate_libs_and_assets"
     action_with_pydeps(_expectations_target) {
       _actual_file = "$target_gen_dir/$target_name.libs_and_assets"
-      _failure_file = "$_expectations_failure_dir/" +
+      _failure_file = "$android_configuration_failure_dir/" +
                       string_replace(invoker.expected_libs_and_assets, "/", "_")
       inputs = [
         invoker.expected_libs_and_assets,

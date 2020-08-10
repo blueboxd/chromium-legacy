@@ -182,7 +182,7 @@ bool ClearSiteDataHandler::Run() {
   // modification to cookies. Clear-Site-Data applies this restriction to other
   // data types as well.
   // TODO(msramek): Consider showing a blocked icon via
-  // TabSpecificContentSettings and reporting the action in the "Blocked"
+  // PageSpecificContentSettings and reporting the action in the "Blocked"
   // section of the cookies dialog in OIB.
   if (load_flags_ & net::LOAD_DO_NOT_SAVE_COOKIES) {
     delegate_->AddMessage(

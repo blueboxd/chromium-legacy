@@ -29,8 +29,8 @@ class CORE_EXPORT CSSTransition : public Animation {
 
   uint64_t TransitionGeneration() const { return transition_generation_; }
   AtomicString transitionProperty() const;
-  const CSSProperty& TransitionCSSProperty() const {
-    return transition_property_.GetCSSProperty();
+  CSSPropertyName TransitionCSSPropertyName() const {
+    return transition_property_.GetCSSPropertyName();
   }
 
   // Animation overrides.

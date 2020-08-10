@@ -178,7 +178,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     NTPTabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
 
 // TabSwitcher object -- the tab grid.
-@property(nonatomic, strong) id<TabSwitcher> tabSwitcher;
+@property(nonatomic, strong, readonly) id<TabSwitcher> tabSwitcher;
 
 // The main coordinator, lazily created the first time it is accessed. Manages
 // the main view controller. This property should not be accessed before the
@@ -268,6 +268,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 - (BOOL)isSettingsViewPresented {
   return self.settingsNavigationController ||
          self.signinCoordinator.isSettingsViewPresented;
+}
+
+- (id<TabSwitcher>)tabSwitcher {
+  return self.mainCoordinator;
 }
 
 #pragma mark - SceneStateObserver
@@ -584,9 +588,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // Lazy init of mainCoordinator.
   [self.mainCoordinator start];
 
-  self.tabSwitcher = self.mainCoordinator.tabSwitcher;
   // Call -restoreInternalState so that the grid shows the correct panel.
-  [_tabSwitcher
+  [self.tabSwitcher
       restoreInternalStateWithMainBrowser:self.mainInterface.browser
                                otrBrowser:self.incognitoInterface.browser
                             activeBrowser:self.currentInterface.browser];

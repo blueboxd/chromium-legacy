@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -157,8 +157,8 @@ void ProtectedMediaIdentifierPermissionContext::UpdateTabContext(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // WebContents may have gone away.
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
           id.render_process_id(), id.render_frame_id());
   if (content_settings) {
     content_settings->OnProtectedMediaIdentifierPermissionSet(

@@ -17,7 +17,7 @@
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
@@ -59,7 +59,7 @@ using system_media_permissions::SystemPermission;
 
 namespace {
 
-void UpdateTabSpecificContentSettings(
+void UpdatePageSpecificContentSettings(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     ContentSetting audio_setting,
@@ -69,13 +69,13 @@ void UpdateTabSpecificContentSettings(
 
   // TODO(https://crbug.com/1103176): We should extract the frame from |request|
   auto* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+      content_settings::PageSpecificContentSettings::GetForFrame(
           web_contents->GetMainFrame());
   if (!content_settings)
     return;
 
-  content_settings::TabSpecificContentSettings::MicrophoneCameraState
-      microphone_camera_state = content_settings::TabSpecificContentSettings::
+  content_settings::PageSpecificContentSettings::MicrophoneCameraState
+      microphone_camera_state = content_settings::PageSpecificContentSettings::
           MICROPHONE_CAMERA_NOT_ACCESSED;
   std::string selected_audio_device;
   std::string selected_video_device;
@@ -92,10 +92,10 @@ void UpdateTabSpecificContentSettings(
             ? profile->GetPrefs()->GetString(prefs::kDefaultAudioCaptureDevice)
             : requested_audio_device;
     microphone_camera_state |=
-        content_settings::TabSpecificContentSettings::MICROPHONE_ACCESSED |
+        content_settings::PageSpecificContentSettings::MICROPHONE_ACCESSED |
         (audio_setting == CONTENT_SETTING_ALLOW
              ? 0
-             : content_settings::TabSpecificContentSettings::
+             : content_settings::PageSpecificContentSettings::
                    MICROPHONE_BLOCKED);
   }
 
@@ -105,10 +105,10 @@ void UpdateTabSpecificContentSettings(
             ? profile->GetPrefs()->GetString(prefs::kDefaultVideoCaptureDevice)
             : requested_video_device;
     microphone_camera_state |=
-        content_settings::TabSpecificContentSettings::CAMERA_ACCESSED |
+        content_settings::PageSpecificContentSettings::CAMERA_ACCESSED |
         (video_setting == CONTENT_SETTING_ALLOW
              ? 0
-             : content_settings::TabSpecificContentSettings::CAMERA_BLOCKED);
+             : content_settings::PageSpecificContentSettings::CAMERA_BLOCKED);
   }
 
   content_settings->OnMediaStreamPermissionSet(
@@ -306,8 +306,8 @@ void PermissionBubbleMediaAccessHandler::OnMediaStreamRequestResponse(
   // policy we don't update the tab context.
   if (result != blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON &&
       !blocked_by_feature_policy) {
-    UpdateTabSpecificContentSettings(web_contents, request, audio_setting,
-                                     video_setting);
+    UpdatePageSpecificContentSettings(web_contents, request, audio_setting,
+                                      video_setting);
   }
 
   std::unique_ptr<content::MediaStreamUI> ui;

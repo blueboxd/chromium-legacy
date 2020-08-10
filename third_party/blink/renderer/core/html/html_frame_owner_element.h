@@ -145,6 +145,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
                               bool replace_current_item);
   bool IsKeyboardFocusable() const override;
   void FrameOwnerPropertiesChanged() override;
+  void CSPAttributeChanged() override;
 
   void DisposePluginSoon(WebPluginContainerImpl*);
 

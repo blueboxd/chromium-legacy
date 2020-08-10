@@ -114,7 +114,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/accessibility/magnifier_type.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions_policy_handler.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_policy_handler.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/secondary_google_account_signin_policy_handler.h"
@@ -1725,7 +1725,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED));
   handlers->AddHandler(
-      std::make_unique<chromeos::KeyPermissionsPolicyHandler>(chrome_schema));
+      std::make_unique<chromeos::platform_keys::KeyPermissionsPolicyHandler>(
+          chrome_schema));
   handlers->AddHandler(std::make_unique<DefaultGeolocationPolicyHandler>());
   handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
       key::kNoteTakingAppsLockScreenAllowlist,

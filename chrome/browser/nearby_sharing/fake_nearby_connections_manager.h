@@ -12,11 +12,13 @@
 #include <vector>
 
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
+#include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 
 // Fake NearbyConnectionsManager for testing.
-class FakeNearbyConnectionsManager : public NearbyConnectionsManager {
+class FakeNearbyConnectionsManager
+    : public NearbyConnectionsManager,
+      public location::nearby::connections::mojom::EndpointDiscoveryListener {
  public:
-
   FakeNearbyConnectionsManager();
   ~FakeNearbyConnectionsManager() override;
 
@@ -49,6 +51,13 @@ class FakeNearbyConnectionsManager : public NearbyConnectionsManager {
   base::Optional<std::vector<uint8_t>> GetRawAuthenticationToken(
       const std::string& endpoint_id) override;
   void UpgradeBandwidth(const std::string& endpoint_id) override;
+
+  // mojom::EndpointDiscoveryListener:
+  void OnEndpointFound(
+      const std::string& endpoint_id,
+      location::nearby::connections::mojom::DiscoveredEndpointInfoPtr info)
+      override;
+  void OnEndpointLost(const std::string& endpoint_id) override;
 
   // Testing methods
   bool IsAdvertising();

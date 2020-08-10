@@ -1211,7 +1211,7 @@ void WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {
     // Linux window managers like to handle raise-on-click themselves.  If we
     // raise-on-click manually, this may override user settings that prevent
     // focus-stealing.
-#if !defined(USE_X11)
+#if !defined(OS_LINUX)
     // It is possible for the web-contents to be destroyed while it is being
     // activated. Use a weak-ptr to track whether that happened or not.
     // More in https://crbug.com/1040725

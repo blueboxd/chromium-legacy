@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/blocked_content/url_list_manager.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -406,7 +406,7 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
   // buttons.
   ContentSetting radio_item_setting_[2];
   // The state of the microphone and camera access.
-  content_settings::TabSpecificContentSettings::MicrophoneCameraState state_;
+  content_settings::PageSpecificContentSettings::MicrophoneCameraState state_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaStreamBubbleModel);
 };

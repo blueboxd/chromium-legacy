@@ -1936,6 +1936,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER" desc="Text to display as placeholder in the password field when both password and pin are allowed.">
         PIN or password
       </message>
+      <message name="IDS_ASH_LOGIN_SWITCH_TO_PASSWORD" desc="Text to display on the button that is used for switching between PIN and password authentication">
+        Switch to password
+      </message>
+      <message name="IDS_ASH_LOGIN_SWITCH_TO_PIN" desc="Text to display on the button that is used for switching between PIN and password authentication">
+        Switch to PIN
+      </message>
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER" desc="Text to display as placeholder in the password field when the user can click/tap their profile picture to unlock.">
         Tap your profile image
       </message>

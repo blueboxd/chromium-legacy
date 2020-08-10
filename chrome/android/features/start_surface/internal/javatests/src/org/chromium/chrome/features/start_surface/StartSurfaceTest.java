@@ -407,11 +407,6 @@ public class StartSurfaceTest {
             fail("Failed to tap 'more tabs' " + e.toString());
         }
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
-            // omnibox.
-            return;
-        }
 
         pressBack();
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
@@ -474,11 +469,6 @@ public class StartSurfaceTest {
             fail("Failed to tap 'more tabs' " + e.toString());
         }
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
-            // omnibox.
-            return;
-        }
 
         pressBack();
         onViewWaiting(withId(R.id.primary_tasks_surface_view));

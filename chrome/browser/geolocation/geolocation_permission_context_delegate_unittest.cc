@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/browser/content_settings_usages_state.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request_manager.h"
@@ -56,9 +56,9 @@ class GeolocationPermissionContextDelegateTests
     ChromeRenderViewHostTestHarness::SetUp();
 
     permissions::PermissionRequestManager::CreateForWebContents(web_contents());
-    content_settings::TabSpecificContentSettings::CreateForWebContents(
+    content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
-        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+        std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents()));
 #if defined(OS_ANDROID)
     static_cast<permissions::GeolocationPermissionContextAndroid*>(
@@ -76,8 +76,8 @@ class GeolocationPermissionContextDelegateTests
 
   void CheckTabContentsState(const GURL& requesting_frame,
                              ContentSetting expected_content_setting) {
-    content_settings::TabSpecificContentSettings* content_settings =
-        content_settings::TabSpecificContentSettings::GetForFrame(
+    content_settings::PageSpecificContentSettings* content_settings =
+        content_settings::PageSpecificContentSettings::GetForFrame(
             web_contents()->GetMainFrame());
     const ContentSettingsUsagesState::StateMap& state_map =
         content_settings->geolocation_usages_state().state_map();

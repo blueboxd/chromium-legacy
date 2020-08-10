@@ -13,6 +13,7 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/client/client_resource_provider.h"
@@ -26,6 +27,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
@@ -170,8 +172,20 @@ class RendererPixelTest : public PixelTest {
 
   bool use_gpu() const { return !!child_context_provider_; }
   GraphicsBackend backend() const {
-    if (std::is_base_of<VulkanSkiaRenderer, RendererType>::value)
-      return kSkiaVulkan;
+    if (std::is_base_of<VulkanSkiaRenderer, RendererType>::value) {
+#if defined(USE_OZONE) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+      // TODO(https://crbug.com/1113577): Enable SkiaVulkan backend for
+      // PixelTests. For example, RendererPixelTest* hadn't been using
+      // SkiaVulkanRenderer until USE_X11 was defined for the OS_LINUX
+      // configuration that uses USE_OZONE. Thus, given the lack of test
+      // coverage, we must fix this test variant so that we do not loose
+      // important test coverage when USE_X11 goes away.
+      if (!features::IsUsingOzonePlatform())
+#endif
+      {
+        return kSkiaVulkan;
+      }
+    }
     if (std::is_base_of<DawnSkiaRenderer, RendererType>::value)
       return kSkiaDawn;
     return kDefault;

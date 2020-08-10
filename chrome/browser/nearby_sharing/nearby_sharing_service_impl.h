@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/nearby_sharing/attachment.h"
 #include "chrome/browser/nearby_sharing/attachment_info.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
 #include "chrome/browser/nearby_sharing/incoming_frames_reader.h"
 #include "chrome/browser/nearby_sharing/incoming_share_target_info.h"
+#include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_notification_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
@@ -52,7 +54,8 @@ class NearbySharingServiceImpl
       public nearby_share::mojom::NearbyShareSettingsObserver,
       public NearbyProcessManager::Observer,
       public device::BluetoothAdapter::Observer,
-      public NearbyConnectionsManager::IncomingConnectionListener {
+      public NearbyConnectionsManager::IncomingConnectionListener,
+      public NearbyConnectionsManager::DiscoveryListener {
  public:
   explicit NearbySharingServiceImpl(
       PrefService* prefs,
@@ -117,8 +120,15 @@ class NearbySharingServiceImpl
   NearbyShareContactManager* GetContactManager() override;
   NearbyShareCertificateManager* GetCertificateManager() override;
 
+  // NearbyConnectionsManager::DiscoveryListener:
+  void OnEndpointDiscovered(const std::string& endpoint_id,
+                            const std::vector<uint8_t>& endpoint_info) override;
+  void OnEndpointLost(const std::string& endpoint_id) override;
+
  private:
   bool IsVisibleInBackground(Visibility visibility);
+  const base::Optional<std::vector<uint8_t>> CreateEndpointInfo(
+      const base::Optional<std::string>& device_name);
   void StartFastInitiationAdvertising();
   void StopFastInitiationAdvertising();
   void GetBluetoothAdapter();
@@ -126,12 +136,19 @@ class NearbySharingServiceImpl
   void OnStartFastInitiationAdvertising();
   void OnStartFastInitiationAdvertisingError();
   void OnStopFastInitiationAdvertising();
+  void OnOutgoingAdvertisementDecoded(
+      const std::string& endpoint_id,
+      sharing::mojom::AdvertisementPtr advertisement);
   bool IsBluetoothPresent() const;
   bool IsBluetoothPowered() const;
+  bool HasAvailableConnectionMediums();
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
                              bool present) override;
   void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                              bool powered) override;
+  void InvalidateSurfaceState();
+  void InvalidateSendSurfaceState();
+  void InvalidateScanningState();
   void InvalidateReceiveSurfaceState();
   void InvalidateAdvertisingState();
   void StopAdvertising();
@@ -143,6 +160,10 @@ class NearbySharingServiceImpl
       NearbyConnection& connection,
       sharing::nearby::ConnectionResponseFrame::Status reponse_status);
   void Fail(const ShareTarget& share_target, TransferMetadata::Status status);
+  void StartScanning(
+      base::Optional<ShareTargetDiscoveredCallback*> discovery_callback);
+  void StartScanning();
+  StatusCodes StopScanning();
   void OnIncomingTransferUpdate(const ShareTarget& share_target,
                                 TransferMetadata metadata);
   void CloseConnection(const ShareTarget& share_target);
@@ -158,7 +179,6 @@ class NearbySharingServiceImpl
       const sharing::mojom::CertificateInfoFramePtr& certificate_frame);
 
   void OnIncomingConnectionDisconnected(const ShareTarget& share_target);
-  void UnregisterShareTarget(const ShareTarget& share_target);
   bool IsOutOfStorage(const ShareTarget& share_target);
 
   void OnIncomingMutualAcceptanceTimeout(const ShareTarget& share_target);
@@ -166,14 +186,19 @@ class NearbySharingServiceImpl
   IncomingShareTargetInfo& GetIncomingShareTargetInfo(
       const ShareTarget& share_target);
   NearbyConnection* GetIncomingConnection(const ShareTarget& share_target);
-  OutgoingShareTargetInfo& GetOutgoingShareTargetInfo(
-      const ShareTarget& share_target);
+  OutgoingShareTargetInfo& GetOrCreateOutgoingShareTargetInfo(
+      const ShareTarget& share_target,
+      const std::string& endpoint_id);
   void ClearOutgoingShareTargetInfoMap();
   void SetAttachmentPayloadId(const Attachment& attachment, int64_t payload_id);
   base::Optional<int64_t> GetAttachmentPayloadId(
       const base::UnguessableToken& attachment_id);
+  base::Optional<ShareTarget> CreateShareTarget(
+      const std::string& endpoint_id,
+      sharing::mojom::AdvertisementPtr advertisement,
+      bool is_incoming);
+  void UnregisterShareTarget(const ShareTarget& share_target);
 
-  PrefService* prefs_;
   Profile* profile_;
   NearbyShareSettings settings_;
   std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager_;
@@ -193,6 +218,20 @@ class NearbySharingServiceImpl
   base::ObserverList<TransferUpdateCallback> foreground_receive_callbacks_;
   // A list of foreground receivers.
   base::ObserverList<TransferUpdateCallback> background_receive_callbacks_;
+  // A list of foreground receivers for transfer updates on the send surface.
+  base::ObserverList<TransferUpdateCallback>
+      foreground_send_transfer_callbacks_;
+  // A list of foreground receivers for discovered device updates on the send
+  // surface.
+  base::ObserverList<ShareTargetDiscoveredCallback>
+      foreground_send_discovery_callbacks_;
+  // A list of background receivers for transfer updates on the send surface.
+  base::ObserverList<TransferUpdateCallback>
+      background_send_transfer_callbacks_;
+  // A list of background receivers for discovered device updates on the send
+  // surface.
+  base::ObserverList<ShareTargetDiscoveredCallback>
+      background_send_discovery_callbacks_;
 
   // Registers the most recent TransferMetadata and ShareTarget used for
   // transitioning notifications between foreground surfaces and background
@@ -207,6 +246,10 @@ class NearbySharingServiceImpl
   // incoming share target.
   base::flat_map<base::UnguessableToken, IncomingShareTargetInfo>
       incoming_share_target_info_map_;
+  // A map of endpoint id to ShareTarget, where each ShareTarget entry
+  // directly corresponds to a OutgoingShareTargetInfo entry in
+  // outgoing_share_target_info_map_;
+  base::flat_map<std::string, ShareTarget> outgoing_share_target_map_;
   // A map of ShareTarget id to OutgoingShareTargetInfo. This lets us know which
   // endpoint and public certificate are related to the outgoing share target.
   // TODO(crbug/1085068) update this map when handling payloads
@@ -227,7 +270,13 @@ class NearbySharingServiceImpl
   // True if we are currently scanning for remote devices.
   bool is_scanning_ = false;
   // True if we're currently sending or receiving a file.
-  bool is_transferring_files_ = false;
+  bool is_transferring_ = false;
+  // True if we're currently receiving a file.
+  bool is_receiving_files_ = false;
+  // True if we're currently attempting to connect to a remote device.
+  bool is_connecting_ = false;
+  // The time scanning began.
+  base::Time scanning_start_timestamp_;
 
   mojo::Receiver<nearby_share::mojom::NearbyShareSettingsObserver>
       settings_receiver_{this};

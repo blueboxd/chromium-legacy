@@ -185,6 +185,10 @@ void WaylandClipboard::GetAvailableMimeTypes(
   std::move(callback).Run(mime_types);
 }
 
+bool WaylandClipboard::IsSelectionBufferAvailable() const {
+  return (connection_->primary_selection_device_manager() != nullptr);
+}
+
 void WaylandClipboard::SetData(PlatformClipboard::Data contents,
                                const std::string& mime_type) {
   if (!data_map_)

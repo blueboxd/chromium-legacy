@@ -76,7 +76,6 @@ source_set("unit_tests") {
     "mini_file_test.cc",
     "mini_installer_unittest.cc",
     "mini_string_test.cc",
-    "pe_resource_test.cc",
   ]
 
   public_deps = [ ":lib" ]

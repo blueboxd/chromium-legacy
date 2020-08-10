@@ -9,14 +9,14 @@
 
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/chrome_root_coordinator.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 
 @protocol ApplicationCommands;
 @protocol BrowsingDataCommands;
-@protocol TabSwitcher;
 
 class Browser;
 
-@interface TabGridCoordinator : ChromeRootCoordinator
+@interface TabGridCoordinator : ChromeRootCoordinator <TabSwitcher>
 
 - (instancetype)initWithWindow:(UIWindow*)window
      applicationCommandEndpoint:
@@ -27,7 +27,7 @@ class Browser;
 
 - (instancetype)initWithWindow:(UIWindow*)window NS_UNAVAILABLE;
 
-@property(nonatomic, readonly) id<TabSwitcher> tabSwitcher;
+@property(nonatomic, weak) id<TabSwitcherDelegate> delegate;
 
 @property(nonatomic, assign) Browser* regularBrowser;
 @property(nonatomic, assign) Browser* incognitoBrowser;

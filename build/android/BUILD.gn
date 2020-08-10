@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/android/build_vars.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/python.gni")
@@ -22,6 +21,28 @@ if (enable_java_templates) {
       min_sdk_version = default_min_sdk_version
     }
   }
+
+  # Write to a file some GN vars that are useful to scripts that use the output
+  # directory. Format is chosen as easliy importable by both python and bash.
+  _lines = [
+    "android_sdk_build_tools=" +
+        rebase_path(android_sdk_build_tools, root_build_dir),
+    "android_sdk_build_tools_version=$android_sdk_build_tools_version",
+    "android_sdk_root=" + rebase_path(android_sdk_root, root_build_dir),
+    "android_sdk_version=$android_sdk_version",
+    "android_ndk_root=" + rebase_path(android_ndk_root, root_build_dir),
+    "android_tool_prefix=" + rebase_path(android_tool_prefix, root_build_dir),
+    "android_configuration_failure_dir=" +
+        rebase_path(android_configuration_failure_dir, root_build_dir),
+    "final_android_sdk=$final_android_sdk"
+  ]
+  if (defined(android_secondary_abi_cpu)) {
+    _secondary_label_info =
+        get_label_info(":foo($android_secondary_abi_toolchain)", "root_out_dir")
+    _lines += [ "android_secondary_abi_toolchain=" +
+                rebase_path(_secondary_label_info, root_build_dir) ]
+  }
+  write_file(android_build_vars, _lines)
 }
 
 python_library("devil_chromium_py") {
@@ -77,7 +98,7 @@ python_library("resource_sizes_py") {
     "//third_party/catapult/tracing:convert_chart_json",
   ]
   data = [
-    build_vars_file,
+    android_build_vars,
     android_readelf,
   ]
 }
@@ -105,19 +126,3 @@ if (build_with_chromium) {
         [ "//third_party/android_platform/development/scripts:stack_py" ]
   }
 }
-
-# GN evaluates each .gn file once per toolchain, so restricting to default
-# toolchain will ensure write_file() is called only once.
-assert(current_toolchain == default_toolchain)
-
-# NOTE: If other platforms would benefit from exporting variables, we should
-# move this to a more top-level place.
-# It is currently here (instead of //BUILD.gn) to ensure that the file is
-# written even for non-chromium embedders of //build.
-_build_vars_json = {
-  # Underscore prefix so that it appears at the top.
-  _HEADER = "Generated during 'gn gen' by //build/android/BUILD.gn."
-  forward_variables_from(android_build_vars_json, "*")
-}
-
-write_file(build_vars_file, _build_vars_json, "json")

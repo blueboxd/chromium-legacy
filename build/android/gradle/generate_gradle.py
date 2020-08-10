@@ -29,9 +29,6 @@ import jinja_template
 from util import build_utils
 from util import resource_utils
 
-sys.path.append(os.path.dirname(_BUILD_ANDROID))
-import gn_helpers
-
 _DEPOT_TOOLS_PATH = os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party',
                                  'depot_tools')
 _DEFAULT_ANDROID_MANIFEST_PATH = os.path.join(
@@ -107,6 +104,11 @@ def _WriteFile(path, data):
     os.makedirs(dirname)
   with codecs.open(path, 'w', 'utf-8') as output_file:
     output_file.write(data)
+
+
+def _ReadPropertiesFile(path):
+  with open(path) as f:
+    return dict(l.rstrip().split('=', 1) for l in f if '=' in l)
 
 
 def _RunGnGen(output_dir, args=None):
@@ -823,11 +825,10 @@ def main():
         for t in targets_from_args
     ]
     # Necessary after "gn clean"
-    if not os.path.exists(
-        os.path.join(output_dir, gn_helpers.BUILD_VARS_FILENAME)):
+    if not os.path.exists(os.path.join(output_dir, 'build_vars.txt')):
       _RunGnGen(output_dir)
 
-  build_vars = gn_helpers.ReadBuildVars(output_dir)
+  build_vars = _ReadPropertiesFile(os.path.join(output_dir, 'build_vars.txt'))
   jinja_processor = jinja_template.JinjaProcessor(_FILE_DIR)
   if args.beta:
     channel = 'beta'

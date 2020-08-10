@@ -1452,6 +1452,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return last_committed_client_security_state_;
   }
 
+  const network::mojom::ContentSecurityPolicy* required_csp() {
+    return required_csp_.get();
+  }
+
   // This function mimics DidCommitProvisionalLoad for navigations served from
   // the back-forward cache.
   void DidCommitBackForwardCacheNavigation(
@@ -1616,6 +1620,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::FrameOwnerPropertiesPtr frame_owner_properties) override;
   void DidChangeOpener(
       const base::Optional<base::UnguessableToken>& opener_frame) override;
+  void DidChangeCSPAttribute(
+      const base::UnguessableToken& child_frame_token,
+      network::mojom::ContentSecurityPolicyPtr parsed_csp_attribute) override;
   void DidChangeFramePolicy(const base::UnguessableToken& child_frame_token,
                             const blink::FramePolicy& frame_policy) override;
   void CapturePaintPreviewOfSubframe(
@@ -1890,6 +1897,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            AttemptDuplicateRenderWidgetHost);
   FRIEND_TEST_ALL_PREFIXES(RenderDocumentHostUserDataTest,
                            CheckInPendingDeletionState);
+  FRIEND_TEST_ALL_PREFIXES(AncestorThrottleNavigationTest,
+                           WillStartRequestAddsSecRequiredCSPHeader);
 
   class DroppedInterfaceRequestLogger;
 
@@ -3133,6 +3142,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Indicates whether this frame is an outer delegate frame for some other
   // RenderFrameHost.
   bool is_outer_delegate_frame_ = false;
+
+  // The browsing context's required CSP as defined by
+  // https://w3c.github.io/webappsec-cspee/#required-csp,
+  // stored when the frame commits the navigation.
+  network::mojom::ContentSecurityPolicyPtr required_csp_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

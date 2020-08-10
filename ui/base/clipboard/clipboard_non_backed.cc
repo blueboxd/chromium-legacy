@@ -585,6 +585,10 @@ void ClipboardNonBacked::ReadData(const ClipboardFormatType& format,
   clipboard_internal_->ReadData(format.GetName(), result);
 }
 
+bool ClipboardNonBacked::IsSelectionBufferAvailable() const {
+  return false;
+}
+
 void ClipboardNonBacked::WritePortableRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,

@@ -221,14 +221,19 @@ public abstract class RequestGenerator {
      */
     @VisibleForTesting
     public int getNumSignedIn() {
-        return PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
-            // The native needs to be loaded for the usage of IdentityManager.
-            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
-            // We only have a single account.
-            IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
-                    Profile.getLastUsedRegularProfile());
-            return identityManager.hasPrimaryAccount() ? 1 : 0;
-        });
+        try {
+            return PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
+                // The native needs to be loaded for the usage of IdentityManager.
+                ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
+                // We only have a single account.
+                IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                        Profile.getLastUsedRegularProfile());
+                return identityManager.hasPrimaryAccount() ? 1 : 0;
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Cannot get number of signed in accounts:", e);
+        }
+        return 0;
     }
 
     /**

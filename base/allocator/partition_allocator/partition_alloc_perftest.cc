@@ -9,6 +9,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -57,7 +58,6 @@ class Allocator {
  public:
   Allocator() = default;
   virtual ~Allocator() = default;
-  virtual void Init() {}
   virtual void* Alloc(size_t size) = 0;
   virtual void Free(void* data) = 0;
 };
@@ -72,15 +72,18 @@ class SystemAllocator : public Allocator {
 
 class PartitionAllocator : public Allocator {
  public:
-  PartitionAllocator() : alloc_(std::make_unique<base::PartitionAllocator>()) {}
+  PartitionAllocator() = default;
   ~PartitionAllocator() override = default;
 
-  void Init() override { alloc_->init(); }
-  void* Alloc(size_t size) override { return alloc_->root()->Alloc(size, ""); }
-  void Free(void* data) override { return alloc_->root()->Free(data); }
+  void* Alloc(size_t size) override {
+    return alloc_.AllocFlagsNoHooks(0, size);
+  }
+  void Free(void* data) override {
+    base::ThreadSafePartitionRoot::FreeNoHooks(data);
+  }
 
  private:
-  std::unique_ptr<base::PartitionAllocator> alloc_;
+  base::ThreadSafePartitionRoot alloc_{false};
 };
 
 class TestLoopThread : public PlatformThread::Delegate {
@@ -216,11 +219,11 @@ float MultiBucketWithFree(Allocator* allocator) {
     timer.NextLap();
   } while (!timer.HasTimeLimitExpired());
 
-    for (void* ptr : elems) {
-      allocator->Free(ptr);
-    }
+  for (void* ptr : elems) {
+    allocator->Free(ptr);
+  }
 
-    return timer.LapsPerSecond() * kMultiBucketRounds;
+  return timer.LapsPerSecond() * kMultiBucketRounds;
 }
 
 std::unique_ptr<Allocator> CreateAllocator(AllocatorType type) {
@@ -229,12 +232,20 @@ std::unique_ptr<Allocator> CreateAllocator(AllocatorType type) {
   return std::make_unique<PartitionAllocator>();
 }
 
+void LogResults(int thread_count,
+                AllocatorType alloc_type,
+                uint64_t total_laps_per_second,
+                uint64_t min_laps_per_second) {
+  LOG(INFO) << "RESULTSCSV: " << thread_count << ","
+            << static_cast<int>(alloc_type) << "," << total_laps_per_second
+            << "," << min_laps_per_second;
+}
+
 void RunTest(int thread_count,
              AllocatorType alloc_type,
              float (*test_fn)(Allocator*),
              const char* story_base_name) {
   auto alloc = CreateAllocator(alloc_type);
-  alloc->Init();
 
   std::vector<std::unique_ptr<TestLoopThread>> threads;
   for (int i = 0; i < thread_count; ++i) {
@@ -257,6 +268,8 @@ void RunTest(int thread_count,
 
   DisplayResults(name + "_total", total_laps_per_second);
   DisplayResults(name + "_worst", min_laps_per_second);
+  LogResults(thread_count, alloc_type, total_laps_per_second,
+             min_laps_per_second);
 }
 
 class MemoryAllocationPerfTest

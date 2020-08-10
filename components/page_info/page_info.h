@@ -25,7 +25,7 @@ class WebContents;
 }
 
 namespace content_settings {
-class TabSpecificContentSettings;
+class PageSpecificContentSettings;
 }
 
 namespace net {
@@ -260,10 +260,10 @@ class PageInfo : public content::WebContentsObserver {
   // Exposed for testing.
   static std::vector<ContentSettingsType> GetAllPermissionsForTesting();
 
-  // Returns TabSpecificContentSettings for the observed WebContents if present,
-  // nullptr otherwise.
-  content_settings::TabSpecificContentSettings* GetTabSpecificContentSettings()
-      const;
+  // Returns PageSpecificContentSettings for the observed WebContents if
+  // present, nullptr otherwise.
+  content_settings::PageSpecificContentSettings*
+  GetPageSpecificContentSettings() const;
 
   // Whether the content setting of type |type| has changed via Page Info UI.
   bool HasContentSettingChangedViaPageInfo(ContentSettingsType type);

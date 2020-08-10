@@ -18,8 +18,8 @@
 #include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/blocked_content/popup_navigation_delegate.h"
 #include "components/blocked_content/test/test_popup_navigation_delegate.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
-#include "components/content_settings/browser/test_tab_specific_content_settings_delegate.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
+#include "components/content_settings/browser/test_page_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
@@ -83,10 +83,10 @@ class SafeBrowsingTriggeredPopupBlockerTest
     subresource_filter::SubresourceFilterObserverManager::CreateForWebContents(
         web_contents());
     PopupBlockerTabHelper::CreateForWebContents(web_contents());
-    content_settings::TabSpecificContentSettings::CreateForWebContents(
+    content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
         std::make_unique<
-            content_settings::TestTabSpecificContentSettingsDelegate>(
+            content_settings::TestPageSpecificContentSettingsDelegate>(
             /*prefs=*/nullptr, settings_map_.get()));
     popup_blocker_ =
         SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents());

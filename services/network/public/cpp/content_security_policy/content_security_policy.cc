@@ -949,6 +949,9 @@ bool IsValidRequiredCSPAttr(
     const mojom::ContentSecurityPolicy* context,
     std::string& error_message) {
   DCHECK(policy.size() == 1);
+  if (!policy[0])
+    return false;
+
   if (!policy[0]->parsing_errors.empty()) {
     error_message =
         "Parsing the csp attribute into a Content-Security-Policy returned one "

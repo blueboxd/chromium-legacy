@@ -102,25 +102,34 @@ blink::ContentSecurityPolicyHeaderPtr ConvertToBlink(
       String::FromUTF8(header->header_value), header->type, header->source);
 }
 
+WTF::HashMap<blink::CSPDirectiveName, blink::CSPSourceListPtr> ConvertToBlink(
+    base::flat_map<CSPDirectiveName, CSPSourceListPtr> directives) {
+  WTF::HashMap<blink::CSPDirectiveName, blink::CSPSourceListPtr> out;
+
+  for (auto& list : directives) {
+    out.insert(ConvertToBlink(list.first),
+               ConvertToBlink(std::move(list.second)));
+  }
+
+  return out;
+}
+
+WTF::Vector<WTF::String> ConvertToBlink(std::vector<std::string> in) {
+  WTF::Vector<WTF::String> out;
+  for (auto& el : in)
+    out.push_back(String::FromUTF8(el));
+  return out;
+}
+
 blink::ContentSecurityPolicyPtr ConvertToBlink(
     ContentSecurityPolicyPtr policy_in) {
-  auto policy = blink::ContentSecurityPolicy::New();
-
-  policy->header = ConvertToBlink(std::move(policy_in->header));
-  policy->use_reporting_api = policy_in->use_reporting_api;
-
-  for (auto& list : policy_in->directives) {
-    policy->directives.insert(ConvertToBlink(list.first),
-                              ConvertToBlink(std::move(list.second)));
-  }
-  policy->upgrade_insecure_requests = policy_in->upgrade_insecure_requests;
-  policy->sandbox = policy_in->sandbox;
-  policy->treat_as_public_address = policy_in->treat_as_public_address;
-
-  for (auto& endpoint : policy_in->report_endpoints)
-    policy->report_endpoints.push_back(String::FromUTF8(endpoint));
-
-  return policy;
+  return blink::ContentSecurityPolicy::New(
+      ConvertToBlink(std::move(policy_in->directives)),
+      policy_in->upgrade_insecure_requests, policy_in->treat_as_public_address,
+      policy_in->sandbox, ConvertToBlink(std::move(policy_in->header)),
+      policy_in->use_reporting_api,
+      ConvertToBlink(std::move(policy_in->report_endpoints)),
+      ConvertToBlink(std::move(policy_in->parsing_errors)));
 }
 
 WTF::Vector<blink::ContentSecurityPolicyPtr> ConvertToBlink(

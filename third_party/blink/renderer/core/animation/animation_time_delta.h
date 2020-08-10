@@ -80,6 +80,14 @@ class CORE_EXPORT AnimationTimeDelta {
   AnimationTimeDelta& operator*=(V a) {
     return *this = (*this * a);
   }
+  template <typename T>
+  AnimationTimeDelta operator/(T a) const {
+    return AnimationTimeDelta(delta_ / a);
+  }
+  template <typename T>
+  AnimationTimeDelta& operator/=(T a) {
+    return *this = (*this / a);
+  }
 
  protected:
   constexpr explicit AnimationTimeDelta(double delta) : delta_(delta) {}

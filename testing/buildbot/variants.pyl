@@ -13,6 +13,7 @@
         'args': [
             '--no-xvfb',
             '--ozone-platform=headless',
+            '--enable-features=UseOzonePlatform',
         ],
         'identifier': 'headless',
     },
@@ -20,13 +21,15 @@
         'args': [
             '--no-xvfb',
             '--use-weston',
-            '--ozone-platform=wayland'
+            '--ozone-platform=wayland',
+            '--enable-features=UseOzonePlatform',
         ],
         'identifier': 'wayland',
     },
     'OZONE_X11': {
         'args': [
             '--ozone-platform=x11',
+            '--enable-features=UseOzonePlatform',
         ],
         'identifier': 'x11',
     },

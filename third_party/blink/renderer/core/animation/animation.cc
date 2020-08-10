@@ -171,13 +171,12 @@ Element* OriginatingElement(Element* owning_element) {
 
 AtomicString GetCSSTransitionCSSPropertyName(const Animation* animation) {
   CSSPropertyID property_id =
-      To<CSSTransition>(animation)->TransitionCSSProperty().PropertyID();
+      To<CSSTransition>(animation)->TransitionCSSPropertyName().Id();
   if (property_id == CSSPropertyID::kVariable ||
       property_id == CSSPropertyID::kInvalid)
     return AtomicString();
   return To<CSSTransition>(animation)
-      ->TransitionCSSProperty()
-      .GetCSSPropertyName()
+      ->TransitionCSSPropertyName()
       .ToAtomicString();
 }
 }  // namespace
@@ -1937,16 +1936,15 @@ base::Optional<AnimationTimeDelta> Animation::TimeToEffectChange() {
                                             playback_rate_);
   }
 
-  double result =
+  AnimationTimeDelta result =
       playback_rate_ > 0
-          ? content_->TimeToForwardsEffectChange().InSecondsF() / playback_rate_
-          : content_->TimeToReverseEffectChange().InSecondsF() /
-                -playback_rate_;
+          ? content_->TimeToForwardsEffectChange() / playback_rate_
+          : content_->TimeToReverseEffectChange() / -playback_rate_;
 
   return !HasActiveAnimationsOnCompositor() &&
                  content_->GetPhase() == Timing::kPhaseActive
              ? AnimationTimeDelta()
-             : AnimationTimeDelta::FromSecondsD(result);
+             : result;
 }
 
 void Animation::cancel() {

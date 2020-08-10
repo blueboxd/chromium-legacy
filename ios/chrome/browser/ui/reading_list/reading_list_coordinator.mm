@@ -421,6 +421,8 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
     (id<ReadingListListItem>)item API_AVAILABLE(ios(13.0)) {
+  __weak id<ReadingListListItemAccessibilityDelegate> accessibilityDelegate =
+      self.tableViewController;
   __weak __typeof(self) weakSelf = self;
 
   UIContextMenuActionProvider actionProvider =
@@ -467,6 +469,10 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
         }
 
         [menuElements addObject:[actionFactory actionToCopyURL:item.entryURL]];
+
+        [menuElements addObject:[actionFactory actionToDeleteWithBlock:^{
+                        [accessibilityDelegate deleteItem:item];
+                      }]];
 
         return [UIMenu menuWithTitle:@"" children:menuElements];
       };

@@ -45,6 +45,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/origin_policy.h"
 #include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 
@@ -350,6 +351,8 @@ class CONTENT_EXPORT NavigationRequest
   // The NavigationRequest can be deleted while BeginNavigation() is called.
   void BeginNavigation();
 
+  void ForceCSPForResponse(const std::string& csp);
+
   const mojom::CommonNavigationParams& common_params() const {
     return *common_params_;
   }
@@ -637,6 +640,12 @@ class CONTENT_EXPORT NavigationRequest
   network::mojom::ClientSecurityStatePtr TakeClientSecurityState();
 
   bool ua_change_requires_reload() const { return ua_change_requires_reload_; }
+
+  const network::mojom::ContentSecurityPolicy* required_csp() {
+    return required_csp_.get();
+  }
+  void SetRequiredCSP(network::mojom::ContentSecurityPolicyPtr csp);
+  network::mojom::ContentSecurityPolicyPtr TakeRequiredCSP();
 
   CrossOriginEmbedderPolicyReporter* coep_reporter() {
     return coep_reporter_.get();
@@ -1398,6 +1407,10 @@ class CONTENT_EXPORT NavigationRequest
   // Holds a set of values needed to enforce several WebPlatform security APIs
   // at the network request level.
   network::mojom::ClientSecurityStatePtr client_security_state_;
+
+  // Holds the required CSP for this navigation. This will be moved into
+  // the RenderFrameHost at DidCommitNavigation time.
+  network::mojom::ContentSecurityPolicyPtr required_csp_;
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
   std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter_;

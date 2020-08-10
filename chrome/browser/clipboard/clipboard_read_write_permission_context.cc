@@ -5,7 +5,7 @@
 #include "chrome/browser/clipboard/clipboard_read_write_permission_context.h"
 
 #include "chrome/common/chrome_features.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request_id.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
@@ -23,8 +23,8 @@ void ClipboardReadWritePermissionContext::UpdateTabContext(
     const permissions::PermissionRequestID& id,
     const GURL& requesting_frame,
     bool allowed) {
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
           id.render_process_id(), id.render_frame_id());
   if (!content_settings)
     return;

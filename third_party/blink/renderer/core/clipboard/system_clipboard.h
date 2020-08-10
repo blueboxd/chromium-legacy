@@ -79,9 +79,13 @@ class CORE_EXPORT SystemClipboard final
   bool IsValidBufferType(mojom::ClipboardBuffer);
 
   HeapMojoRemote<mojom::blink::ClipboardHost> clipboard_;
-  // In X11, |buffer_| may equal ClipboardBuffer::kStandard or kSelection.
-  // Outside X11, |buffer_| always equals ClipboardBuffer::kStandard.
+  // In some Linux environments, |buffer_| may equal ClipboardBuffer::kStandard
+  // or kSelection.  In other platforms |buffer_| always equals
+  // ClipboardBuffer::kStandard.
   mojom::ClipboardBuffer buffer_ = mojom::ClipboardBuffer::kStandard;
+
+  // Whether the selection buffer is available on the underlying platform.
+  bool is_selection_buffer_available_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SystemClipboard);
 };

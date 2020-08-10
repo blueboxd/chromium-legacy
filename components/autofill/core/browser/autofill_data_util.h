@@ -15,6 +15,7 @@
 namespace autofill {
 
 class AutofillProfile;
+class FormStructure;
 
 namespace data_util {
 
@@ -54,7 +55,9 @@ bool ContainsEmail(uint32_t groups);
 bool ContainsPhone(uint32_t groups);
 
 // Returns a bitmask indicating which of the name, address, email address, and
-// phone number FieldTypeGroups are associated with the given |types|.
+// phone number FieldTypeGroups are associated with the given |form|'s storable
+// types or |types|, respectively.
+uint32_t DetermineGroups(const FormStructure& form);
 uint32_t DetermineGroups(const std::vector<ServerFieldType>& types);
 
 // Returns true if a form has address fields or has least two supported

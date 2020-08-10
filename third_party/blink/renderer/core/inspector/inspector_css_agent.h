@@ -50,6 +50,7 @@ namespace probe {
 class RecalculateStyle;
 }  // namespace probe
 
+class CSSPropertyName;
 class CSSRule;
 class CSSStyleRule;
 class CSSStyleSheet;
@@ -233,7 +234,7 @@ class CORE_EXPORT InspectorCSSAgent final
       CSSRule*);
 
   CSSStyleDeclaration* FindEffectiveDeclaration(
-      const CSSProperty&,
+      const CSSPropertyName&,
       const HeapVector<Member<CSSStyleDeclaration>>& styles);
 
   HeapVector<Member<CSSStyleDeclaration>> MatchingStyles(Element*);

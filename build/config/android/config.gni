@@ -84,7 +84,7 @@ if (is_android || is_chromeos) {
   public_android_sdk_root = "//third_party/android_sdk/public"
   if (android_sdk_release == "r") {
     default_android_sdk_root = public_android_sdk_root
-    default_android_sdk_version = "30"
+    default_android_sdk_version = 30
     default_android_sdk_build_tools_version = "30.0.1"
     public_android_sdk = true
   }
@@ -137,6 +137,9 @@ if (is_android || is_chromeos) {
 
   assert(defined(default_android_sdk_root),
          "SDK release " + android_sdk_release + " not recognized.")
+
+  # Where to write failed expectations for bots to read.
+  android_configuration_failure_dir = "$root_build_dir/failed_expectations"
 
   declare_args() {
     android_ndk_root = default_android_ndk_root
@@ -246,6 +249,9 @@ if (is_android || is_chromeos) {
     # This will cause an extra classes.dex file to appear in every apk.
     enable_jdk_library_desugaring = false
   }
+
+  # Path to where selected build variables are written to.
+  android_build_vars = "$root_build_dir/build_vars.txt"
 
   # Host stuff -----------------------------------------------------------------
 

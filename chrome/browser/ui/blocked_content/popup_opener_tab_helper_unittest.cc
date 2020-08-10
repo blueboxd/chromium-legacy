@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/common/pref_names.h"
@@ -27,7 +27,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/blocked_content/list_item_position.h"
 #include "components/blocked_content/popup_tracker.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
@@ -67,9 +67,9 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
         web_contents(), &raw_clock_,
         HostContentSettingsMapFactory::GetForProfile(profile()));
     InfoBarService::CreateForWebContents(web_contents());
-    content_settings::TabSpecificContentSettings::CreateForWebContents(
+    content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
-        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+        std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents()));
 #if !defined(OS_ANDROID)
     FramebustBlockTabHelper::CreateForWebContents(web_contents());

@@ -15,7 +15,7 @@ class HostContentSettingsMap;
 class InfoBarService;
 
 namespace content_settings {
-class TabSpecificContentSettings;
+class PageSpecificContentSettings;
 }
 
 // Shows an infobar that asks the user whether a Pepper plugin is allowed
@@ -30,7 +30,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
       const GURL& url,
       const base::string16& plugin_name,
       HostContentSettingsMap* content_settings,
-      content_settings::TabSpecificContentSettings* tab_content_settings,
+      content_settings::PageSpecificContentSettings* page_content_settings,
       base::OnceCallback<void(bool)> callback);
   ~PepperBrokerInfoBarDelegate() override;
 
@@ -39,7 +39,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
       const GURL& url,
       const base::string16& plugin_name,
       HostContentSettingsMap* content_settings,
-      content_settings::TabSpecificContentSettings* tab_content_settings,
+      content_settings::PageSpecificContentSettings* page_content_settings,
       base::OnceCallback<void(bool)> callback);
 
   // ConfirmInfoBarDelegate:
@@ -57,8 +57,8 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
   const GURL url_;
   const base::string16 plugin_name_;
   HostContentSettingsMap* content_settings_;
-  base::WeakPtr<content_settings::TabSpecificContentSettings>
-      tab_content_settings_;
+  base::WeakPtr<content_settings::PageSpecificContentSettings>
+      page_content_settings_;
   base::OnceCallback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperBrokerInfoBarDelegate);

@@ -21,7 +21,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/safe_browsing/core/db/util.h"
@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
                                                    &opened_window));
   EXPECT_TRUE(opened_window);
-  EXPECT_FALSE(content_settings::TabSpecificContentSettings::GetForFrame(
+  EXPECT_FALSE(content_settings::PageSpecificContentSettings::GetForFrame(
                    web_contents->GetMainFrame())
                    ->IsContentBlocked(ContentSettingsType::POPUPS));
 
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
   EXPECT_FALSE(opened_window);
   tester.ExpectTotalCount(kSubresourceFilterActionsHistogram, 0);
   // Make sure the popup UI was shown.
-  EXPECT_TRUE(content_settings::TabSpecificContentSettings::GetForFrame(
+  EXPECT_TRUE(content_settings::PageSpecificContentSettings::GetForFrame(
                   web_contents->GetMainFrame())
                   ->IsContentBlocked(ContentSettingsType::POPUPS));
 
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
                                                    &opened_window));
   EXPECT_TRUE(opened_window);
   // Popup UI should not be shown.
-  EXPECT_FALSE(content_settings::TabSpecificContentSettings::GetForFrame(
+  EXPECT_FALSE(content_settings::PageSpecificContentSettings::GetForFrame(
                    web_contents->GetMainFrame())
                    ->IsContentBlocked(ContentSettingsType::POPUPS));
 }
@@ -344,7 +344,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
   EXPECT_TRUE(content::ExecuteScript(web_contents, "openWindow()"));
   tester.ExpectTotalCount(kSubresourceFilterActionsHistogram, 0);
 
-  EXPECT_TRUE(content_settings::TabSpecificContentSettings::GetForFrame(
+  EXPECT_TRUE(content_settings::PageSpecificContentSettings::GetForFrame(
                   web_contents->GetMainFrame())
                   ->IsContentBlocked(ContentSettingsType::POPUPS));
   const bool enable_adblock_on_abusive_sites = GetParam();
@@ -360,7 +360,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
   navigation_observer.Wait();
 
   // Popup UI should not be shown.
-  EXPECT_FALSE(content_settings::TabSpecificContentSettings::GetForFrame(
+  EXPECT_FALSE(content_settings::PageSpecificContentSettings::GetForFrame(
                    web_contents->GetMainFrame())
                    ->IsContentBlocked(ContentSettingsType::POPUPS));
   EXPECT_FALSE(AreDisallowedRequestsBlocked());
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
                                                    &sent_open));
   EXPECT_TRUE(sent_open);
-  EXPECT_TRUE(content_settings::TabSpecificContentSettings::GetForFrame(
+  EXPECT_TRUE(content_settings::PageSpecificContentSettings::GetForFrame(
                   web_contents->GetMainFrame())
                   ->IsContentBlocked(ContentSettingsType::POPUPS));
   const bool enable_adblock_on_abusive_sites = GetParam();
@@ -405,7 +405,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_FALSE(content_settings::TabSpecificContentSettings::GetForFrame(
+  EXPECT_FALSE(content_settings::PageSpecificContentSettings::GetForFrame(
                    web_contents->GetMainFrame())
                    ->IsContentBlocked(ContentSettingsType::POPUPS));
   const bool enable_adblock_on_abusive_sites = GetParam();

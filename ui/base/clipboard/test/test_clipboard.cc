@@ -239,6 +239,12 @@ void TestClipboard::ClearLastModifiedTime() {
   last_modified_time_ = base::Time();
 }
 
+#if defined(USE_OZONE)
+bool TestClipboard::IsSelectionBufferAvailable() const {
+  return false;
+}
+#endif  // defined(USE_OZONE)
+
 void TestClipboard::WritePortableRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,

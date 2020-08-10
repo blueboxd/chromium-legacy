@@ -33,11 +33,13 @@ source_set("browser_test_support") {
     "../:telemetry_extension_ui",
     "//chrome/test:test_support_ui",
     "//chromeos/components/web_applications/test:test_support",
+    "//chromeos/constants",
     "//chromeos/dbus/cros_healthd:cros_healthd",
   ]
 
   data = [
     "trusted_test_requester.js",
+    "untrusted_app_resources/",
     "untrusted_browsertest.js",
     "untrusted_test_handlers.js",
   ]
@@ -48,6 +50,7 @@ group("closure_compile") {
   deps = [
     ":trusted_browsertest_closure_compile",
     ":untrusted_browsertest_closure_compile",
+    "untrusted_app_resources:closure_compile",
   ]
 }
 

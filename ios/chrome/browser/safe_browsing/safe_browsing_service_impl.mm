@@ -18,14 +18,11 @@
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/net/cookie_util.h"
 #import "ios/chrome/browser/safe_browsing/real_time_url_lookup_service_factory.h"
 #import "ios/chrome/browser/safe_browsing/url_checker_delegate_impl.h"
-#import "ios/net/cookies/system_cookie_store.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state.h"
-#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -64,8 +61,7 @@ void SafeBrowsingServiceImpl::Initialize(PrefService* prefs,
       FROM_HERE, {web::WebThread::IO},
       base::BindOnce(&IOThreadEnabler::Initialize, io_thread_enabler_,
                      base::WrapRefCounted(this),
-                     network_context_client_.BindNewPipeAndPassReceiver(),
-                     safe_browsing_data_path));
+                     network_context_client_.BindNewPipeAndPassReceiver()));
 
   // Watch for changes to the Safe Browsing opt-out preference.
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
@@ -115,21 +111,6 @@ SafeBrowsingServiceImpl::GetURLLoaderFactory() {
   return shared_url_loader_factory_;
 }
 
-void SafeBrowsingServiceImpl::ClearCookies(
-    const net::CookieDeletionInfo::TimeRange& creation_range,
-    base::OnceClosure callback) {
-  if (creation_range.start() == base::Time() &&
-      creation_range.end() == base::Time::Max()) {
-    base::PostTask(
-        FROM_HERE,
-        {web::WebThread::IO, base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-        base::BindOnce(&IOThreadEnabler::ClearAllCookies, io_thread_enabler_,
-                       std::move(callback)));
-  } else {
-    base::PostTask(FROM_HERE, {web::WebThread::IO}, std::move(callback));
-  }
-}
-
 void SafeBrowsingServiceImpl::SetUpURLLoaderFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
@@ -165,9 +146,8 @@ SafeBrowsingServiceImpl::IOThreadEnabler::~IOThreadEnabler() = default;
 void SafeBrowsingServiceImpl::IOThreadEnabler::Initialize(
     scoped_refptr<SafeBrowsingServiceImpl> safe_browsing_service,
     mojo::PendingReceiver<network::mojom::NetworkContext>
-        network_context_receiver,
-    const base::FilePath& safe_browsing_data_path) {
-  SetUpURLRequestContext(safe_browsing_data_path);
+        network_context_receiver) {
+  SetUpURLRequestContext();
   std::vector<std::string> cors_exempt_header_list;
   network_context_ = std::make_unique<network::NetworkContext>(
       /*network_service=*/nullptr, std::move(network_context_receiver),
@@ -198,15 +178,6 @@ void SafeBrowsingServiceImpl::IOThreadEnabler::SetSafeBrowsingEnabled(
     safe_browsing_db_manager_->StopOnIOThread(shutting_down_);
 }
 
-void SafeBrowsingServiceImpl::IOThreadEnabler::ClearAllCookies(
-    base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  net::CookieStore* cookie_store = url_request_context_->cookie_store();
-  cookie_store->DeleteAllAsync(base::BindOnce(
-      [](base::OnceClosure callback, uint32_t) { std::move(callback).Run(); },
-      std::move(callback)));
-}
-
 void SafeBrowsingServiceImpl::IOThreadEnabler::StartSafeBrowsingDBManager() {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
@@ -224,23 +195,12 @@ void SafeBrowsingServiceImpl::IOThreadEnabler::StartSafeBrowsingDBManager() {
                                              config);
 }
 
-void SafeBrowsingServiceImpl::IOThreadEnabler::SetUpURLRequestContext(
-    const base::FilePath& safe_browsing_data_path) {
+void SafeBrowsingServiceImpl::IOThreadEnabler::SetUpURLRequestContext() {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
+  // This uses an in-memory non-persistent cookie store. The Safe Browsing V4
+  // Update API does not depend on cookies.
   net::URLRequestContextBuilder builder;
-  base::FilePath cookie_file_path(safe_browsing_data_path.value() +
-                                  safe_browsing::kCookiesFile);
-  std::unique_ptr<net::CookieStore> cookie_store =
-      cookie_util::CreateCookieStore(
-          cookie_util::CookieStoreConfig(
-              cookie_file_path,
-              cookie_util::CookieStoreConfig::RESTORED_SESSION_COOKIES,
-              cookie_util::CookieStoreConfig::COOKIE_MONSTER,
-              /*crypto_delegate=*/nullptr),
-          /*system_cookie_store=*/nullptr, net::NetLog::Get());
-
-  builder.SetCookieStore(std::move(cookie_store));
   url_request_context_ = builder.Build();
 }
 

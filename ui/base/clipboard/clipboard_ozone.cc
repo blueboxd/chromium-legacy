@@ -77,6 +77,7 @@ class StubPlatformClipboard : public PlatformClipboard {
   bool IsSelectionOwner(ClipboardBuffer buffer) override { return false; }
   void SetSequenceNumberUpdateCb(
       PlatformClipboard::SequenceNumberUpdateCb cb) override {}
+  bool IsSelectionBufferAvailable() const override { return false; }
 };
 
 }  // namespace
@@ -100,6 +101,10 @@ class ClipboardOzone::AsyncClipboardOzone {
   }
 
   ~AsyncClipboardOzone() = default;
+
+  bool IsSelectionBufferAvailable() const {
+    return platform_clipboard_->IsSelectionBufferAvailable();
+  }
 
   base::span<uint8_t> ReadClipboardDataAndWait(ClipboardBuffer buffer,
                                                const std::string& mime_type) {
@@ -299,7 +304,7 @@ class ClipboardOzone::AsyncClipboardOzone {
   base::RepeatingTimer abort_timer_;
 
   // Provides communication to a system clipboard under ozone level.
-  PlatformClipboard* platform_clipboard_ = nullptr;
+  PlatformClipboard* const platform_clipboard_ = nullptr;
 
   base::flat_map<ClipboardBuffer, uint64_t> clipboard_sequence_number_;
 
@@ -511,6 +516,10 @@ void ClipboardOzone::ReadData(const ClipboardFormatType& format,
   auto clipboard_data = async_clipboard_ozone_->ReadClipboardDataAndWait(
       ClipboardBuffer::kCopyPaste, format.GetName());
   result->assign(clipboard_data.begin(), clipboard_data.end());
+}
+
+bool ClipboardOzone::IsSelectionBufferAvailable() const {
+  return async_clipboard_ozone_->IsSelectionBufferAvailable();
 }
 
 // TODO(crbug.com/1103194): |data_src| should be supported

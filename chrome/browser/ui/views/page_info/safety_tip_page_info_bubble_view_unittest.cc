@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/page_info/safety_tip_page_info_bubble_view.h"
 
 #include "base/bind_helpers.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_test_views_delegate.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_contents_factory.h"
@@ -50,9 +50,9 @@ class SafetyTipPageInfoBubbleViewTest : public testing::Test {
     parent_window_->Init(std::move(parent_params));
 
     content::WebContents* web_contents = web_contents_helper_.web_contents();
-    content_settings::TabSpecificContentSettings::CreateForWebContents(
+    content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents,
-        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+        std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents));
 
     bubble_ = CreateSafetyTipBubbleForTesting(

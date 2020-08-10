@@ -208,14 +208,26 @@ static_library("test_support") {
   }
 
   if (use_ozone) {
-    sources += [ "test/test_compositor_host_ozone.cc" ]
+    sources += [
+      "test/test_compositor_host_ozone.cc",
+      "test/test_compositor_host_ozone.h",
+    ]
 
     deps += [
       "//ui/ozone",
       "//ui/platform_window",
     ]
-  } else if (use_x11) {
-    sources += [ "test/test_compositor_host_x11.cc" ]
+  }
+
+  if (use_x11) {
+    sources += [
+      "test/test_compositor_host_x11.cc",
+      "test/test_compositor_host_x11.h",
+    ]
+  }
+
+  if (is_linux) {
+    sources += [ "test/test_compositor_host_linux.cc" ]
   }
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/compositor/test/test_compositor_host.h"
+#include "ui/compositor/test/test_compositor_host_ozone.h"
 
 #include <memory>
 
@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -24,11 +25,10 @@
 
 namespace ui {
 
-namespace {
-
 // Stub implementation of PlatformWindowDelegate that stores the
 // AcceleratedWidget.
-class StubPlatformWindowDelegate : public PlatformWindowDelegate {
+class TestCompositorHostOzone::StubPlatformWindowDelegate
+    : public PlatformWindowDelegate {
  public:
   StubPlatformWindowDelegate() {}
   ~StubPlatformWindowDelegate() override {}
@@ -59,26 +59,6 @@ class StubPlatformWindowDelegate : public PlatformWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(StubPlatformWindowDelegate);
 };
 
-class TestCompositorHostOzone : public TestCompositorHost {
- public:
-  TestCompositorHostOzone(const gfx::Rect& bounds,
-                          ui::ContextFactory* context_factory);
-  ~TestCompositorHostOzone() override;
-
- private:
-  // Overridden from TestCompositorHost:
-  void Show() override;
-  ui::Compositor* GetCompositor() override;
-
-  gfx::Rect bounds_;
-  ui::Compositor compositor_;
-  std::unique_ptr<PlatformWindow> window_;
-  StubPlatformWindowDelegate window_delegate_;
-  viz::ParentLocalSurfaceIdAllocator allocator_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCompositorHostOzone);
-};
-
 TestCompositorHostOzone::TestCompositorHostOzone(
     const gfx::Rect& bounds,
     ui::ContextFactory* context_factory)
@@ -86,7 +66,8 @@ TestCompositorHostOzone::TestCompositorHostOzone(
       compositor_(context_factory->AllocateFrameSinkId(),
                   context_factory,
                   base::ThreadTaskRunnerHandle::Get(),
-                  false /* enable_pixel_canvas */) {}
+                  false /* enable_pixel_canvas */),
+      window_delegate_(std::make_unique<StubPlatformWindowDelegate>()) {}
 
 TestCompositorHostOzone::~TestCompositorHostOzone() {
   // |window_| should be destroyed earlier than |window_delegate_| as it refers
@@ -99,12 +80,12 @@ void TestCompositorHostOzone::Show() {
   properties.bounds = bounds_;
   // Create a PlatformWindow to get the AcceleratedWidget backing it.
   window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
-      &window_delegate_, std::move(properties));
+      window_delegate_.get(), std::move(properties));
   window_->Show();
-  DCHECK_NE(window_delegate_.widget(), gfx::kNullAcceleratedWidget);
+  DCHECK_NE(window_delegate_->widget(), gfx::kNullAcceleratedWidget);
 
   allocator_.GenerateId();
-  compositor_.SetAcceleratedWidget(window_delegate_.widget());
+  compositor_.SetAcceleratedWidget(window_delegate_->widget());
   compositor_.SetScaleAndSize(1.0f, bounds_.size(),
                               allocator_.GetCurrentLocalSurfaceIdAllocation());
   compositor_.SetVisible(true);
@@ -114,13 +95,16 @@ ui::Compositor* TestCompositorHostOzone::GetCompositor() {
   return &compositor_;
 }
 
-}  // namespace
-
+// To avoid multiple definitions when use_x11 && use_ozone is true, disable this
+// factory method for OS_LINUX as Linux has a factory method that decides what
+// screen to use based on IsUsingOzonePlatform feature flag.
+#if !defined(OS_LINUX)
 // static
 TestCompositorHost* TestCompositorHost::Create(
     const gfx::Rect& bounds,
     ui::ContextFactory* context_factory) {
   return new TestCompositorHostOzone(bounds, context_factory);
 }
+#endif
 
 }  // namespace ui

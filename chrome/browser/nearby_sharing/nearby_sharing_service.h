@@ -33,6 +33,14 @@ class NearbySharingService : public KeyedService {
     kOk,
     // The operation failed since it was called in an invalid order.
     kOutOfOrderApiCall,
+    // Tried to stop something that was already stopped.
+    kStatusAlreadyStopped,
+    // Tried to register an opposite foreground surface in the midst of a
+    // transfer or connection.
+    // (Tried to register Send Surface when receiving a file or tried to
+    // register Receive Surface when
+    // sending a file.)
+    kTransferAlreadyInProgress,
   };
 
   enum class ReceiveSurfaceState {

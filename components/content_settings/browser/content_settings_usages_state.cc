@@ -11,7 +11,7 @@
 #include "components/url_formatter/url_formatter.h"
 
 ContentSettingsUsagesState::ContentSettingsUsagesState(
-    content_settings::TabSpecificContentSettings::Delegate* delegate_,
+    content_settings::PageSpecificContentSettings::Delegate* delegate_,
     ContentSettingsType type,
     const GURL& embedder_url)
     : delegate_(delegate_), type_(type), embedder_url_(embedder_url) {}

@@ -6,7 +6,7 @@
 
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "extensions/buildflags/buildflags.h"
 
@@ -25,7 +25,7 @@ void OnFileSystemAccessedInGuestViewContinuation(
     const GURL& url,
     base::OnceCallback<void(bool)> callback,
     bool allowed) {
-  content_settings::TabSpecificContentSettings::FileSystemAccessed(
+  content_settings::PageSpecificContentSettings::FileSystemAccessed(
       render_process_id, render_frame_id, url, !allowed);
   std::move(callback).Run(allowed);
 }

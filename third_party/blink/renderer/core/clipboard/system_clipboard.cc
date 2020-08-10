@@ -12,11 +12,15 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -37,6 +41,10 @@ SystemClipboard::SystemClipboard(LocalFrame* frame)
   frame->GetBrowserInterfaceBroker().GetInterface(
       clipboard_.BindNewPipeAndPassReceiver(
           frame->GetTaskRunner(TaskType::kUserInteraction)));
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  is_selection_buffer_available_ =
+      frame->GetSettings()->GetSelectionClipboardBufferAvailable();
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 }
 
 bool SystemClipboard::IsSelectionMode() const {
@@ -242,14 +250,7 @@ bool SystemClipboard::IsValidBufferType(mojom::ClipboardBuffer buffer) {
     case mojom::ClipboardBuffer::kStandard:
       return true;
     case mojom::ClipboardBuffer::kSelection:
-#if defined(USE_X11)
-      return true;
-#else
-      // Chrome OS and non-X11 unix builds do not support
-      // the X selection clipboard.
-      // TODO(http://crbug.com/361753): remove the need for this case.
-      return false;
-#endif
+      return is_selection_buffer_available_;
   }
   return true;
 }

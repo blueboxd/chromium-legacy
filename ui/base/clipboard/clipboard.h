@@ -227,6 +227,12 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   // Resets the clipboard last modified time to Time::Time().
   virtual void ClearLastModifiedTime();
 
+#if defined(USE_OZONE)
+  // Returns whether the selection buffer is available.  This is true for some
+  // Linux platforms.
+  virtual bool IsSelectionBufferAvailable() const = 0;
+#endif  // defined(USE_OZONE)
+
  protected:
   // PortableFormat designates the type of data to be stored in the clipboard.
   // This designation is shared across all OSes. The system-specific designation

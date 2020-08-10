@@ -66,12 +66,7 @@ CreateUntrustedTelemetryExtensionDataSource() {
   auto untrusted_source = TelemetryExtensionUntrustedSource::Create(
       chromeos::kChromeUIUntrustedTelemetryExtensionURL);
 
-  untrusted_source->AddResourcePath("untrusted.html",
-                                    IDR_TELEMETRY_EXTENSION_UNTRUSTED_HTML);
-  untrusted_source->AddResourcePath(
-      "untrusted_scripts.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_SCRIPTS_JS);
-  untrusted_source->AddResourcePath(
-      "untrusted_worker.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_WORKER_JS);
+  untrusted_source->AddResourcePath("dpsl.js", IDR_TELEMETRY_EXTENSION_DPSL_JS);
 
   untrusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::FrameAncestors,

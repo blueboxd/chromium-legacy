@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/grit/components_scaled_resources.h"
@@ -246,6 +247,27 @@ bool SplitCJKName(const std::vector<base::StringPiece16>& name_tokens,
   return false;
 }
 
+void AddGroupToBitmask(uint32_t* group_bitmask, ServerFieldType type) {
+  const FieldTypeGroup group =
+      AutofillType(AutofillType(type).GetStorableType()).group();
+  switch (group) {
+    case autofill::NAME:
+      *group_bitmask |= kName;
+      break;
+    case autofill::ADDRESS_HOME:
+      *group_bitmask |= kAddress;
+      break;
+    case autofill::EMAIL:
+      *group_bitmask |= kEmail;
+      break;
+    case autofill::PHONE_HOME:
+      *group_bitmask |= kPhone;
+      break;
+    default:
+      break;
+  }
+}
+
 }  // namespace
 
 bool ContainsName(uint32_t groups) {
@@ -264,27 +286,19 @@ bool ContainsPhone(uint32_t groups) {
   return groups & kPhone;
 }
 
+uint32_t DetermineGroups(const FormStructure& form) {
+  uint32_t group_bitmask = 0;
+  for (const auto& field : form) {
+    ServerFieldType type = field->Type().GetStorableType();
+    AddGroupToBitmask(&group_bitmask, type);
+  }
+  return group_bitmask;
+}
+
 uint32_t DetermineGroups(const std::vector<ServerFieldType>& types) {
   uint32_t group_bitmask = 0;
-  for (const ServerFieldType& type : types) {
-    const FieldTypeGroup group =
-        AutofillType(AutofillType(type).GetStorableType()).group();
-    switch (group) {
-      case autofill::NAME:
-        group_bitmask |= kName;
-        break;
-      case autofill::ADDRESS_HOME:
-        group_bitmask |= kAddress;
-        break;
-      case autofill::EMAIL:
-        group_bitmask |= kEmail;
-        break;
-      case autofill::PHONE_HOME:
-        group_bitmask |= kPhone;
-        break;
-      default:
-        break;
-    }
+  for (const auto& type : types) {
+    AddGroupToBitmask(&group_bitmask, type);
   }
   return group_bitmask;
 }

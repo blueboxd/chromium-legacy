@@ -45,6 +45,7 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
 
   ~AncestorThrottle() override;
 
+  NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
   NavigationThrottle::ThrottleCheckResult WillRedirectRequest() override;
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override;
   const char* GetNameForLogging() override;

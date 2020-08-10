@@ -130,7 +130,8 @@ void OnArcAppIconCompletelyLoaded(
     iv->uncompressed.MakeThreadSafe();
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&apps::EncodeImageToPngBytes, iv->uncompressed),
+        base::BindOnce(&apps::EncodeImageToPngBytes, iv->uncompressed,
+                       /*rep_icon_scale=*/1.0f),
         base::BindOnce(&CompleteWithCompressed, std::move(callback)));
     return;
   }

@@ -12,7 +12,7 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
@@ -90,7 +90,7 @@ void FlashDownloadInterception::InterceptFlashDownloadNavigation(
         ContentSettingsType::PLUGINS, web_contents->GetMainFrame(),
         web_contents->GetLastCommittedURL(), true, base::DoNothing());
   } else if (flash_setting == CONTENT_SETTING_BLOCK) {
-    auto* settings = content_settings::TabSpecificContentSettings::GetForFrame(
+    auto* settings = content_settings::PageSpecificContentSettings::GetForFrame(
         web_contents->GetMainFrame());
     if (settings)
       settings->FlashDownloadBlocked();

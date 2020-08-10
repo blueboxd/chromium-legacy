@@ -209,7 +209,6 @@ AccountConsistencyService::AccountConsistencyService(
       identity_manager_(identity_manager),
       applying_cookie_requests_(false) {
   identity_manager_->AddObserver(this);
-  ActiveStateManager::FromBrowserState(browser_state_)->AddObserver(this);
   LoadFromPrefs();
   if (identity_manager_->HasPrimaryAccount()) {
     AddChromeConnectedCookies();
@@ -348,7 +347,6 @@ void AccountConsistencyService::LoadFromPrefs() {
 
 void AccountConsistencyService::Shutdown() {
   identity_manager_->RemoveObserver(this);
-  ActiveStateManager::FromBrowserState(browser_state_)->RemoveObserver(this);
   web_state_handlers_.clear();
 }
 
@@ -359,11 +357,6 @@ void AccountConsistencyService::ApplyCookieRequests() {
     return;
   }
   if (cookie_requests_.empty()) {
-    return;
-  }
-  if (!ActiveStateManager::FromBrowserState(browser_state_)->IsActive()) {
-    // Web view usage isn't active for now, ignore cookie requests for now and
-    // wait to be notified that it became active again.
     return;
   }
   applying_cookie_requests_ = true;
@@ -497,10 +490,4 @@ void AccountConsistencyService::OnAccountsInCookieUpdated(
     const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   AddChromeConnectedCookies();
-}
-
-void AccountConsistencyService::OnActive() {
-  // |browser_state_| is now active. There might be some pending cookie requests
-  // to apply.
-  ApplyCookieRequests();
 }

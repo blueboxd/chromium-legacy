@@ -138,10 +138,6 @@ base::Bucket OnceUserAction(SigninReauthViewController::UserAction action) {
 // Browser tests for SigninReauthViewController.
 class SigninReauthViewControllerBrowserTest : public InProcessBrowserTest {
  public:
-  SigninReauthViewControllerBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(kSigninReauthPrompt);
-  }
-
   void SetUp() override {
     ASSERT_TRUE(https_server()->InitializeAndListen());
     InProcessBrowserTest::SetUp();
@@ -225,7 +221,6 @@ class SigninReauthViewControllerBrowserTest : public InProcessBrowserTest {
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
   base::HistogramTester histogram_tester_;
   std::unique_ptr<net::test_server::ControllableHttpResponse>

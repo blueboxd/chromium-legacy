@@ -15,7 +15,7 @@ class Profile;
 class StatefulSSLHostStateDelegate;
 
 namespace content_settings {
-class TabSpecificContentSettings;
+class PageSpecificContentSettings;
 }
 
 namespace permissions {
@@ -63,8 +63,8 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
   bool IsContentDisplayedInVrHeadset() override;
   security_state::SecurityLevel GetSecurityLevel() override;
   security_state::VisibleSecurityState GetVisibleSecurityState() override;
-  std::unique_ptr<content_settings::TabSpecificContentSettings::Delegate>
-  GetTabSpecificContentSettingsDelegate() override;
+  std::unique_ptr<content_settings::PageSpecificContentSettings::Delegate>
+  GetPageSpecificContentSettingsDelegate() override;
 
 #if defined(OS_ANDROID)
   const base::string16 GetClientApplicationName() override;

@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/cookie_controls_status.h"
@@ -54,12 +54,12 @@ class CookieControlsController : content_settings::CookieSettings::Observer {
   // TODO(dullweber): Make it possible to change the observed class and maybe
   // convert SiteDataObserver to a pure virtual interface.
   class TabObserver
-      : public content_settings::TabSpecificContentSettings::SiteDataObserver {
+      : public content_settings::PageSpecificContentSettings::SiteDataObserver {
    public:
     TabObserver(CookieControlsController* cookie_controls,
                 content::WebContents* web_contents);
 
-    // TabSpecificContentSettings::SiteDataObserver:
+    // PageSpecificContentSettings::SiteDataObserver:
     void OnSiteDataAccessed() override;
 
    private:

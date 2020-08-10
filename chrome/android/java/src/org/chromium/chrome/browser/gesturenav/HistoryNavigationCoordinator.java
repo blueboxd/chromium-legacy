@@ -322,10 +322,8 @@ public class HistoryNavigationCoordinator
      * Starts preparing an edge swipe gesture.
      */
     public void startGesture() {
-        assert mNavigationHandler != null;
-
         // Simulates the initial onDown event to update the internal state.
-        mNavigationHandler.onDown();
+        if (mNavigationHandler != null) mNavigationHandler.onDown();
     }
 
     /**

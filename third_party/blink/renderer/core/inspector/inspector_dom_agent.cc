@@ -231,7 +231,6 @@ InspectorDOMAgent::InspectorDOMAgent(
     : isolate_(isolate),
       inspected_frames_(inspected_frames),
       v8_session_(v8_session),
-      dom_listener_(nullptr),
       document_node_to_id_map_(MakeGarbageCollected<NodeToIdMap>()),
       last_node_id_(1),
       suppress_attribute_modified_event_(false),
@@ -256,8 +255,32 @@ HeapVector<Member<Document>> InspectorDOMAgent::Documents() {
   return result;
 }
 
-void InspectorDOMAgent::SetDOMListener(DOMListener* listener) {
-  dom_listener_ = listener;
+void InspectorDOMAgent::AddDOMListener(DOMListener* listener) {
+  dom_listeners_.insert(listener);
+}
+
+void InspectorDOMAgent::RemoveDOMListener(DOMListener* listener) {
+  dom_listeners_.erase(listener);
+}
+
+void InspectorDOMAgent::NotifyDidAddDocument(Document* document) {
+  for (DOMListener* listener : dom_listeners_)
+    listener->DidAddDocument(document);
+}
+
+void InspectorDOMAgent::NotifyDidRemoveDocument(Document* document) {
+  for (DOMListener* listener : dom_listeners_)
+    listener->DidRemoveDocument(document);
+}
+
+void InspectorDOMAgent::NotifyWillRemoveDOMNode(Node* node) {
+  for (DOMListener* listener : dom_listeners_)
+    listener->WillRemoveDOMNode(node);
+}
+
+void InspectorDOMAgent::NotifyDidModifyDOMAttr(Element* element) {
+  for (DOMListener* listener : dom_listeners_)
+    listener->DidModifyDOMAttr(element);
 }
 
 void InspectorDOMAgent::SetDocument(Document* doc) {
@@ -304,8 +327,8 @@ void InspectorDOMAgent::Unbind(Node* node) {
   id_to_node_.erase(id);
   id_to_nodes_map_.erase(id);
 
-  if (IsA<Document>(node) && dom_listener_)
-    dom_listener_->DidRemoveDocument(To<Document>(node));
+  if (IsA<Document>(node))
+    NotifyDidRemoveDocument(To<Document>(node));
 
   if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
     Document* content_document = frame_owner->contentDocument();
@@ -331,8 +354,7 @@ void InspectorDOMAgent::Unbind(Node* node) {
     }
   }
 
-  if (dom_listener_)
-    dom_listener_->WillRemoveDOMNode(node);
+  NotifyWillRemoveDOMNode(node);
   document_node_to_id_map_->erase(node);
 
   bool children_requested = children_requested_.Contains(id);
@@ -1859,8 +1881,7 @@ void InspectorDOMAgent::InvalidateFrameOwnerElement(
 
 void InspectorDOMAgent::DidCommitLoad(LocalFrame*, DocumentLoader* loader) {
   Document* document = loader->GetFrame()->GetDocument();
-  if (dom_listener_)
-    dom_listener_->DidAddDocument(document);
+  NotifyDidAddDocument(document);
 
   LocalFrame* inspected_frame = inspected_frames_->Root();
   if (loader->GetFrame() != inspected_frame) {
@@ -1948,8 +1969,7 @@ void InspectorDOMAgent::DidModifyDOMAttr(Element* element,
   if (!id)
     return;
 
-  if (dom_listener_)
-    dom_listener_->DidModifyDOMAttr(element);
+  NotifyDidModifyDOMAttr(element);
 
   GetFrontend()->attributeModified(id, name.ToString(), value);
 }
@@ -1961,8 +1981,7 @@ void InspectorDOMAgent::DidRemoveDOMAttr(Element* element,
   if (!id)
     return;
 
-  if (dom_listener_)
-    dom_listener_->DidModifyDOMAttr(element);
+  NotifyDidModifyDOMAttr(element);
 
   GetFrontend()->attributeRemoved(id, name.ToString());
 }
@@ -1977,8 +1996,7 @@ void InspectorDOMAgent::StyleAttributeInvalidated(
     if (!id)
       continue;
 
-    if (dom_listener_)
-      dom_listener_->DidModifyDOMAttr(element);
+    NotifyDidModifyDOMAttr(element);
     node_ids->emplace_back(id);
   }
   GetFrontend()->inlineStyleInvalidated(std::move(node_ids));
@@ -2374,7 +2392,7 @@ Response InspectorDOMAgent::getFileInfo(const String& object_id, String* path) {
 }
 
 void InspectorDOMAgent::Trace(Visitor* visitor) const {
-  visitor->Trace(dom_listener_);
+  visitor->Trace(dom_listeners_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(document_node_to_id_map_);
   visitor->Trace(dangling_node_to_id_maps_);

@@ -917,8 +917,8 @@ class WebAppNonClientFrameViewAshTest
   ContentSettingImageView* GrantGeolocationPermission() {
     content::RenderFrameHost* frame =
         app_browser_->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-    content_settings::TabSpecificContentSettings* content_settings =
-        content_settings::TabSpecificContentSettings::GetForFrame(
+    content_settings::PageSpecificContentSettings* content_settings =
+        content_settings::PageSpecificContentSettings::GetForFrame(
             frame->GetProcess()->GetID(), frame->GetRoutingID());
     content_settings->OnGeolocationPermissionSet(GetAppURL().GetOrigin(), true);
 

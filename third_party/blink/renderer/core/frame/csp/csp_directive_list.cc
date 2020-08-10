@@ -265,7 +265,7 @@ void CSPDirectiveList::ReportEvalViolation(
                            report_endpoints_, use_reporting_api_, header_,
                            header_type_, ContentSecurityPolicy::kEvalViolation,
                            std::unique_ptr<SourceLocation>(), nullptr,
-                           RedirectStatus::kFollowedRedirect, nullptr, content);
+                           RedirectStatus::kNoRedirect, nullptr, content);
 }
 
 bool CSPDirectiveList::CheckEval(SourceListDirective* directive) const {
@@ -340,7 +340,7 @@ bool CSPDirectiveList::AllowTrustedTypeAssignmentFailure(
       ContentSecurityPolicy::GetDirectiveName(
           ContentSecurityPolicy::DirectiveType::kRequireTrustedTypesFor),
       ContentSecurityPolicy::DirectiveType::kRequireTrustedTypesFor, message,
-      KURL(), RedirectStatus::kFollowedRedirect,
+      KURL(), RedirectStatus::kNoRedirect,
       ContentSecurityPolicy::kTrustedTypesSinkViolation, sample, sample_prefix);
   return IsReportOnly();
 }

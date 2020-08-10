@@ -7,7 +7,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/content_settings/browser/test_tab_specific_content_settings_delegate.h"
+#include "components/content_settings/browser/test_page_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_result.h"
@@ -17,16 +17,16 @@
 namespace {
 
 class TestDelegate
-    : public content_settings::TestTabSpecificContentSettingsDelegate {
+    : public content_settings::TestPageSpecificContentSettingsDelegate {
  public:
   explicit TestDelegate(
       HostContentSettingsMap* map,
       permissions::PermissionDecisionAutoBlocker* auto_blocker)
-      : TestTabSpecificContentSettingsDelegate(/*prefs=*/nullptr, map),
+      : TestPageSpecificContentSettingsDelegate(/*prefs=*/nullptr, map),
         auto_blocker_(auto_blocker) {}
 
  private:
-  // content_settings::TabSpecificContentSettings::Delegate:
+  // content_settings::PageSpecificContentSettings::Delegate:
   ContentSetting GetEmbargoSetting(const GURL& request_origin,
                                    ContentSettingsType permission) override {
     return auto_blocker_->GetEmbargoResult(request_origin, permission)

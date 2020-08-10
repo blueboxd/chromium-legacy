@@ -13,7 +13,7 @@
 #include "components/blocked_content/popup_navigation_delegate.h"
 #include "components/blocked_content/popup_tracker.h"
 #include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
@@ -75,10 +75,10 @@ void PopupBlockerTabHelper::DidFinishNavigation(
 }
 
 void PopupBlockerTabHelper::HidePopupNotification() {
-  auto* tscs = content_settings::TabSpecificContentSettings::GetForFrame(
+  auto* pscs = content_settings::PageSpecificContentSettings::GetForFrame(
       web_contents()->GetMainFrame());
-  if (tscs)
-    tscs->ClearPopupsBlocked();
+  if (pscs)
+    pscs->ClearPopupsBlocked();
 }
 
 void PopupBlockerTabHelper::AddBlockedPopup(
@@ -95,11 +95,10 @@ void PopupBlockerTabHelper::AddBlockedPopup(
   blocked_popups_[id] = std::make_unique<BlockedRequest>(
       std::move(delegate), window_features, block_type);
 
-  // TODO(carlscab): TabSpecificContentSettings is really
-  // PageSpecificContentSettings so it does not matter that we use the
-  // source_frame here and the main frame in HidePopupNotification
+  // PageSpecificContentSettings is per page so it does not matter that we use
+  // the source_frame here and the main frame in HidePopupNotification
   auto* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(source_frame);
+      content_settings::PageSpecificContentSettings::GetForFrame(source_frame);
   if (content_settings) {
     content_settings->OnContentBlocked(ContentSettingsType::POPUPS);
   }

@@ -10,7 +10,7 @@
  */
 const workerUrlPolicy = trustedTypes.createPolicy(
     'telemetry-extension-static',
-    {createScriptURL: () => 'untrusted_worker.js'});
+    {createScriptURL: () => 'worker.js'});
 
 // Tests that web workers can be spawned from
 // chrome-untrusted://telemetry_extension.

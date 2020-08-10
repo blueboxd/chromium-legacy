@@ -79,6 +79,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
 
  protected:
   virtual void FrameOwnerPropertiesChanged() {}
+  virtual void CSPAttributeChanged() {}
 
  private:
   virtual void SetIsSwappingFrames(bool) {}
@@ -107,6 +108,7 @@ class FrameSwapScope {
     if (frame_owner_) {
       frame_owner_->SetIsSwappingFrames(false);
       frame_owner_->FrameOwnerPropertiesChanged();
+      frame_owner_->CSPAttributeChanged();
     }
   }
 

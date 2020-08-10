@@ -1360,13 +1360,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 }
 
 // Regression test for crbug.com/702505.
-// Fails occasionally on Mac. http://crbug.com/852697
-#if defined(OS_MAC)
-#define MAYBE_ReattachDevToolsWindow DISABLED_ReattachDevToolsWindow
-#else
-#define MAYBE_ReattachDevToolsWindow ReattachDevToolsWindow
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ReattachDevToolsWindow) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, ReattachDevToolsWindow) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1394,7 +1388,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ReattachDevToolsWindow) {
   // Re-attach the dev tools window. This resets its Browser*.
   devtools_delegate->SetIsDocked(true);
   // Wait until the browser actually gets closed.
-  content::RunAllPendingInMessageLoop();
+  ui_test_utils::WaitForBrowserToClose();
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 
   // Do something that will make SearchTabHelper access its OmniboxView. This

@@ -4,9 +4,12 @@
 
 #include "chromeos/components/telemetry_extension_ui/test/telemetry_extension_ui_browsertest.h"
 
+#include "base/base_paths.h"
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "chromeos/components/telemetry_extension_ui/url_constants.h"
 #include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
 
@@ -19,6 +22,10 @@ constexpr base::FilePath::CharType kWebUiTestUtil[] =
 // File that `kWebUiTestUtil` is dependent on, defines `cr`.
 constexpr base::FilePath::CharType kCr[] =
     FILE_PATH_LITERAL("ui/webui/resources/js/cr.js");
+
+// Folder containing the resources for JS browser tests.
+constexpr base::FilePath::CharType kUntrustedAppResources[] = FILE_PATH_LITERAL(
+    "chromeos/components/telemetry_extension_ui/test/untrusted_app_resources");
 
 // File containing the query handlers for JS unit tests.
 constexpr base::FilePath::CharType kUntrustedTestHandlers[] = FILE_PATH_LITERAL(
@@ -40,6 +47,19 @@ TelemetryExtensionUiBrowserTest::TelemetryExtensionUiBrowserTest()
            base::FilePath(kUntrustedTestCases)}) {}
 
 TelemetryExtensionUiBrowserTest::~TelemetryExtensionUiBrowserTest() = default;
+
+void TelemetryExtensionUiBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  base::FilePath source_root;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root);
+  base::FilePath file_path(kUntrustedAppResources);
+
+  command_line->AppendSwitchASCII(
+      chromeos::switches::kTelemetryExtensionDirectory,
+      source_root.Append(file_path).value());
+
+  SandboxedWebUiAppTestBase::SetUpCommandLine(command_line);
+}
 
 void TelemetryExtensionUiBrowserTest::SetUpOnMainThread() {
   {

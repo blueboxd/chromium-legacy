@@ -8,6 +8,3 @@
 const base::Feature kDiceWebSigninInterceptionFeature{
     "DiceWebSigninInterception", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // ENABLE_DICE_SUPPORT
-
-const base::Feature kSigninReauthPrompt = {"SigninReauthPrompt",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};

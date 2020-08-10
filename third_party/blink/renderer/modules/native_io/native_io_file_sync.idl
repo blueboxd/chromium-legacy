@@ -23,4 +23,7 @@
     RaisesException
   ] unsigned long long write([AllowShared] ArrayBufferView buffer,
                              unsigned long long file_offset);
+  [
+    RaisesException
+  ] void flush();
 };

@@ -36,40 +36,31 @@
 #include <stdlib.h>
 
 #include <initializer_list>
-#include <utility>
 
 #include "build/branding_buildflags.h"
 #include "chrome/installer/mini_installer/appid.h"
 #include "chrome/installer/mini_installer/configuration.h"
 #include "chrome/installer/mini_installer/decompress.h"
-#include "chrome/installer/mini_installer/mini_file.h"
 #include "chrome/installer/mini_installer/mini_installer_constants.h"
 #include "chrome/installer/mini_installer/pe_resource.h"
 #include "chrome/installer/mini_installer/regkey.h"
 
 namespace mini_installer {
 
-namespace {
+typedef StackString<MAX_PATH> PathString;
 
 // This structure passes data back and forth for the processing
 // of resource callbacks.
 struct Context {
   // Input to the call back method. Specifies the dir to save resources.
   const wchar_t* base_path;
-  // First output from call back method; the Chrome archive.
-  MiniFile& archive;
-  // Second output from call back method; the Chrome installer.
-  MiniFile& setup;
+  // First output from call back method. Full path of Chrome archive.
+  PathString* chrome_resource_path;
+  // Second output from call back method. Full path of Setup archive/exe.
+  PathString* setup_resource_path;
   // A Windows error code corresponding to an extraction error.
   DWORD error_code;
 };
-
-MiniFile::DeleteOnClose GetDeleteOnCloseOption(
-    const Configuration& configuration) {
-  return configuration.should_delete_extracted_files()
-             ? MiniFile::DeleteOnClose::kYes
-             : MiniFile::DeleteOnClose::kNo;
-}
 
 // TODO(grt): Frame this in terms of whether or not the brand supports
 // integration with Omaha, where Google Update is the Google-specific fork of
@@ -178,8 +169,6 @@ ProcessExitResult GetSetupExePathForAppGuid(bool system_level,
   return ProcessExitResult(SUCCESS_EXIT_CODE);
 }
 
-}  // namespace
-
 // Gets the path to setup.exe of the previous version. The overall path is found
 // in the Uninstall string in the registry. A previous version number specified
 // in |configuration| is used if available. |size| is measured in wchar_t units.
@@ -192,8 +181,6 @@ ProcessExitResult GetPreviousSetupExePath(const Configuration& configuration,
       configuration.is_system_level(), configuration.chrome_app_guid(),
       configuration.previous_version(), path, size);
 }
-
-namespace {
 
 // Calls CreateProcess with good default parameters and waits for the process to
 // terminate returning the process exit code. In case of CreateProcess failure,
@@ -248,8 +235,6 @@ ProcessExitResult RunProcessAndWait(const wchar_t* exe_path,
   return ProcessExitResult(exit_code);
 }
 
-}  // namespace
-
 void AppendCommandLineFlags(const wchar_t* command_line,
                             CommandString* buffer) {
   // The program name (the first argument parsed by CommandLineToArgvW) is
@@ -292,15 +277,13 @@ void AppendCommandLineFlags(const wchar_t* command_line,
   buffer->append(command_line);
 }
 
-namespace {
-
 // Processes a resource of type |type| in |module| on behalf of a call to
 // EnumResourceNames. On each call, |name| contains the name of a resource. A
 // TRUE return value continues the enumeration, whereas FALSE stops it. This
 // function extracts the first resource starting with "chrome" and/or "setup",
 // populating |context| (which must be a pointer to a Context struct) with the
-// the extracted file(s). Enumeration stops early in case of error, which
-// includes any unexpected resources or duplicate matching resources.
+// path(s) of the extracted file(s). Enumeration stops early in case of error,
+// which includes any unexpected resources or duplicate matching resources.
 // |context|'s |error_code| member may be populated with a Windows error code
 // corresponding to an error condition.
 BOOL CALLBACK OnResourceFound(HMODULE module,
@@ -323,16 +306,20 @@ BOOL CALLBACK OnResourceFound(HMODULE module,
   if (!full_path.assign(context.base_path) || !full_path.append(name))
     return FALSE;  // Break: failed to form the output path.
 
-  if (StrStartsWith(name, kChromeArchivePrefix) && !context.archive.IsValid()) {
-    if (!resource.WriteToDisk(full_path.get(), context.archive)) {
+  if (StrStartsWith(name, kChromeArchivePrefix) &&
+      context.chrome_resource_path->empty()) {
+    if (!resource.WriteToDisk(full_path.get())) {
       context.error_code = ::GetLastError();
       return FALSE;  // Break: failed to write resource.
     }
-  } else if (StrStartsWith(name, kSetupPrefix) && !context.setup.IsValid()) {
-    if (!resource.WriteToDisk(full_path.get(), context.setup)) {
+    context.chrome_resource_path->assign(full_path);
+  } else if (StrStartsWith(name, kSetupPrefix) &&
+             context.setup_resource_path->empty()) {
+    if (!resource.WriteToDisk(full_path.get())) {
       context.error_code = ::GetLastError();
       return FALSE;  // Break: failed to write resource.
     }
+    context.setup_resource_path->assign(full_path);
   } else {
     // Break: unexpected resource names or multiple {chrome,setup}* resources
     // are unexpected.
@@ -343,41 +330,6 @@ BOOL CALLBACK OnResourceFound(HMODULE module,
 }
 
 #if defined(COMPONENT_BUILD)
-// Deletes all files in |base_path| (which must have a trailing path separator).
-void DeleteAllFilesInDir(const wchar_t* base_path) {
-  PathString path;
-  if (!path.assign(base_path))
-    return;
-
-  const size_t base_path_length = path.length();
-  if (!path.append(L"*"))
-    return;
-
-  WIN32_FIND_DATA find_data = {};
-  HANDLE find_handle =
-      ::FindFirstFileEx(path.get(), FindExInfoStandard, &find_data,
-                        FindExSearchNameMatch, /*lpSearchFilter=*/nullptr,
-                        /*dwAdditionalFlags=*/0);
-  if (find_handle == INVALID_HANDLE_VALUE)
-    return;
-
-  do {
-    if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-      continue;
-
-    path.truncate_at(base_path_length);
-    if (!path.append(*find_data.cAlternateFileName
-                         ? find_data.cAlternateFileName
-                         : find_data.cFileName)) {
-      continue;
-    }
-
-    ::DeleteFile(path.get());
-  } while (::FindNextFile(find_handle, &find_data));
-
-  ::FindClose(find_handle);
-}
-
 // An EnumResNameProc callback that writes the resource |name| to disk in the
 // directory |base_path_ptr| (which must end with a path separator).
 BOOL CALLBACK WriteResourceToDirectory(HMODULE module,
@@ -388,10 +340,8 @@ BOOL CALLBACK WriteResourceToDirectory(HMODULE module,
   PathString full_path;
 
   PEResource resource(name, type, module);
-  MiniFile file(MiniFile::DeleteOnClose::kNo);
   return (resource.IsValid() && full_path.assign(base_path) &&
-          full_path.append(name) &&
-          resource.WriteToDisk(full_path.get(), file));
+          full_path.append(name) && resource.WriteToDisk(full_path.get()));
 }
 #endif
 
@@ -410,8 +360,8 @@ BOOL CALLBACK WriteResourceToDirectory(HMODULE module,
 ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
                                         HMODULE module,
                                         const wchar_t* base_path,
-                                        MiniFile& archive,
-                                        MiniFile& setup) {
+                                        PathString* archive_path,
+                                        PathString* setup_path) {
   // Generate the setup.exe path where we patch/uncompress setup resource.
   PathString setup_dest_path;
   if (!setup_dest_path.assign(base_path) || !setup_dest_path.append(kSetupExe))
@@ -419,14 +369,19 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
 
   // Prepare the input to OnResourceFound method that needs a location where
   // it will write all the resources.
-  Context context = {base_path, archive, setup, ERROR_SUCCESS};
+  Context context = {
+      base_path,
+      archive_path,
+      setup_path,
+      ERROR_SUCCESS,
+  };
 
   // Get the resources of type 'B7' (7zip archive).
   // We need a chrome archive to do the installation. So if there
   // is a problem in fetching B7 resource, just return an error.
   if (!::EnumResourceNames(module, kLZMAResourceType, OnResourceFound,
                            reinterpret_cast<LONG_PTR>(&context)) ||
-      !archive.IsValid()) {
+      archive_path->empty()) {
     const DWORD enum_error = ::GetLastError();
     return ProcessExitResult(UNABLE_TO_EXTRACT_CHROME_ARCHIVE,
                              enum_error == ERROR_RESOURCE_ENUM_USER_STOP
@@ -434,59 +389,45 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
                                  : enum_error);
   }
 
-  if (!archive.DropWritePermission())
-    return {DROP_WRITE_ON_EXTRACTED_ARCHIVE_FAILED, ::GetLastError()};
+  ProcessExitResult exit_code = ProcessExitResult(SUCCESS_EXIT_CODE);
 
   // If we found setup 'B7' resource (used for differential updates), handle
   // it.  Note that this is only for Chrome; Chromium installs are always
   // "full" installs.
-  if (setup.IsValid()) {
-    if (!setup.DropWritePermission())
-      return {DROP_WRITE_ON_EXTRACTED_SETUP_PATCH_FAILED, ::GetLastError()};
-
+  if (!setup_path->empty()) {
     CommandString cmd_line;
     PathString exe_path;
     // Get the path to setup.exe first.
-    auto exit_code = GetPreviousSetupExePath(configuration, exe_path.get(),
-                                             exe_path.capacity());
-    if (!exit_code.IsSuccess())
-      return exit_code;
-
-    if (!cmd_line.append(L"\"") || !cmd_line.append(exe_path.get()) ||
-        !cmd_line.append(L"\" --") || !cmd_line.append(kCmdUpdateSetupExe) ||
-        !cmd_line.append(L"=\"") || !cmd_line.append(setup.path()) ||
-        !cmd_line.append(L"\" --") || !cmd_line.append(kCmdNewSetupExe) ||
-        !cmd_line.append(L"=\"") || !cmd_line.append(setup_dest_path.get()) ||
-        !cmd_line.append(L"\"")) {
-      return ProcessExitResult(COMMAND_STRING_OVERFLOW);
+    exit_code = GetPreviousSetupExePath(configuration, exe_path.get(),
+                                        exe_path.capacity());
+    if (exit_code.IsSuccess()) {
+      if (!cmd_line.append(L"\"") || !cmd_line.append(exe_path.get()) ||
+          !cmd_line.append(L"\" --") || !cmd_line.append(kCmdUpdateSetupExe) ||
+          !cmd_line.append(L"=\"") || !cmd_line.append(setup_path->get()) ||
+          !cmd_line.append(L"\" --") || !cmd_line.append(kCmdNewSetupExe) ||
+          !cmd_line.append(L"=\"") || !cmd_line.append(setup_dest_path.get()) ||
+          !cmd_line.append(L"\"")) {
+        exit_code = ProcessExitResult(COMMAND_STRING_OVERFLOW);
+      }
     }
 
     // Get any command line option specified for mini_installer and pass them
     // on to setup.exe.
     AppendCommandLineFlags(configuration.command_line(), &cmd_line);
 
-    exit_code = RunProcessAndWait(exe_path.get(), cmd_line.get(),
-                                  SETUP_PATCH_FAILED_FILE_NOT_FOUND,
-                                  SETUP_PATCH_FAILED_PATH_NOT_FOUND,
-                                  SETUP_PATCH_FAILED_COULD_NOT_CREATE_PROCESS);
-
-    // The setup patch file is no longer needed.
-    setup.Close();
-
-    if (!exit_code.IsSuccess())
-      return exit_code;
-
-    // Open the destination file (with delete-on-close) so that it will be
-    // deleted at process exit.
-    if (!setup.Open(setup_dest_path)) {
-      // Try to delete the file if it could not be opened.
-      const DWORD open_error = ::GetLastError();
-      if (configuration.should_delete_extracted_files())
-        ::DeleteFile(setup_dest_path.get());
-      return {UNABLE_TO_OPEN_PATCHED_SETUP, open_error};
+    if (exit_code.IsSuccess()) {
+      exit_code = RunProcessAndWait(
+          exe_path.get(), cmd_line.get(), SETUP_PATCH_FAILED_FILE_NOT_FOUND,
+          SETUP_PATCH_FAILED_PATH_NOT_FOUND,
+          SETUP_PATCH_FAILED_COULD_NOT_CREATE_PROCESS);
     }
 
-    return ProcessExitResult(SUCCESS_EXIT_CODE);
+    if (!exit_code.IsSuccess())
+      DeleteFile(setup_path->get());
+    else
+      setup_path->assign(setup_dest_path);
+
+    return exit_code;
   }
 
   // setup.exe wasn't sent as 'B7', lets see if it was sent as 'BL'
@@ -494,8 +435,7 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
   context.error_code = ERROR_SUCCESS;
   if (!::EnumResourceNames(module, kLZCResourceType, OnResourceFound,
                            reinterpret_cast<LONG_PTR>(&context)) ||
-      !setup.IsValid()) {
-    // Neither setup_patch.packed.7z nor setup.ex_ could be extracted.
+      setup_path->empty()) {
     const DWORD enum_error = ::GetLastError();
     return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP,
                              enum_error == ERROR_RESOURCE_ENUM_USER_STOP
@@ -503,29 +443,27 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
                                  : enum_error);
   }
 
-  if (!setup.DropWritePermission())
-    return {DROP_WRITE_ON_EXTRACTED_SETUP_FAILED, ::GetLastError()};
-
   // Uncompress LZ compressed resource. Setup is packed with 'MSCF'
   // as opposed to old DOS way of 'SZDD'. Hence we don't use LZCopy.
-  MiniFile setup_dest(GetDeleteOnCloseOption(configuration));
-  mini_installer::Expand(setup.path(), setup_dest_path.get(), setup_dest);
-  setup = std::move(setup_dest);
-
-  if (!setup.IsValid())
-    return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP_EXE);
-  if (!setup.DropWritePermission())
-    return {DROP_WRITE_ON_EXPANDED_SETUP_FAILED, ::GetLastError()};
+  bool success =
+      mini_installer::Expand(setup_path->get(), setup_dest_path.get());
+  ::DeleteFile(setup_path->get());
+  if (success)
+    setup_path->assign(setup_dest_path);
+  else
+    exit_code = ProcessExitResult(UNABLE_TO_EXTRACT_SETUP_EXE);
 
 #if defined(COMPONENT_BUILD)
-  // Extract the modules in component build required by setup.exe.
-  if (!::EnumResourceNames(module, kBinResourceType, WriteResourceToDirectory,
-                           reinterpret_cast<LONG_PTR>(base_path))) {
-    return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP, ::GetLastError());
+  if (exit_code.IsSuccess()) {
+    // Extract the modules in component build required by setup.exe.
+    if (!::EnumResourceNames(module, kBinResourceType, WriteResourceToDirectory,
+                             reinterpret_cast<LONG_PTR>(base_path))) {
+      return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP, ::GetLastError());
+    }
   }
 #endif
 
-  return ProcessExitResult(SUCCESS_EXIT_CODE);
+  return exit_code;
 }
 
 // Executes setup.exe, waits for it to finish and returns the exit code.
@@ -585,6 +523,16 @@ ProcessExitResult RunSetup(const Configuration& configuration,
                            RUN_SETUP_FAILED_FILE_NOT_FOUND,
                            RUN_SETUP_FAILED_PATH_NOT_FOUND,
                            RUN_SETUP_FAILED_COULD_NOT_CREATE_PROCESS);
+}
+
+// Deletes given files and working dir.
+void DeleteExtractedFiles(const wchar_t* base_path,
+                          const wchar_t* archive_path,
+                          const wchar_t* setup_path) {
+  ::DeleteFile(archive_path);
+  ::DeleteFile(setup_path);
+  // Delete the temp dir (if it is empty, otherwise fail).
+  ::RemoveDirectory(base_path);
 }
 
 // Returns true if the supplied path supports ACLs.
@@ -881,8 +829,6 @@ bool ProcessNonInstallOperations(const Configuration& configuration,
   }
 }
 
-}  // namespace
-
 ProcessExitResult WMain(HMODULE module) {
   // Always start with deleting potential leftovers from previous installations.
   // This can make the difference between success and failure.  We've seen
@@ -921,10 +867,10 @@ ProcessExitResult WMain(HMODULE module) {
   SetInstallerFlags(configuration);
 #endif
 
-  MiniFile archive(GetDeleteOnCloseOption(configuration));
-  MiniFile setup(GetDeleteOnCloseOption(configuration));
+  PathString archive_path;
+  PathString setup_path;
   exit_code = UnpackBinaryResources(configuration, module, base_path.get(),
-                                    archive, setup);
+                                    &archive_path, &setup_path);
 
   // While unpacking the binaries, we paged in a whole bunch of memory that
   // we don't need anymore.  Let's give it back to the pool before running
@@ -932,22 +878,10 @@ ProcessExitResult WMain(HMODULE module) {
   ::SetProcessWorkingSetSize(::GetCurrentProcess(), (SIZE_T)-1, (SIZE_T)-1);
 
   if (exit_code.IsSuccess())
-    exit_code = RunSetup(configuration, archive.path(), setup.path());
+    exit_code = RunSetup(configuration, archive_path.get(), setup_path.get());
 
-  // Closing the files will delete them if should_delete_extracted_files is
-  // true (the normal case).
-  archive.Close();
-  setup.Close();
-
-#if defined(COMPONENT_BUILD)
-  // |base_path| is full of component DLLs in this case, which are not held
-  // open for delete-on-close. Manually delete everything in the directory.
   if (configuration.should_delete_extracted_files())
-    DeleteAllFilesInDir(base_path.get());
-#endif
-
-  // Delete the temp dir (if it is empty, otherwise fail).
-  ::RemoveDirectory(base_path.get());
+    DeleteExtractedFiles(base_path.get(), archive_path.get(), setup_path.get());
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   WriteInstallResults(configuration, exit_code);

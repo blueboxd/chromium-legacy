@@ -8,7 +8,7 @@ FAIL Cross origin iframe without Allow-CSP-From header gets blocked. assert_equa
 PASS Cross origin iframe with correct Allow-CSP-From header is allowed.
 PASS Iframe with improper Allow-CSP-From header gets blocked.
 PASS Allow-CSP-From header with a star value allows cross origin frame.
-FAIL Star Allow-CSP-From header enforces EmbeddingCSP. assert_equals: expected (string) "inline" but got (undefined) undefined
-FAIL Allow-CSP-From header enforces EmbeddingCSP. assert_equals: expected (string) "inline" but got (undefined) undefined
+PASS Star Allow-CSP-From header enforces EmbeddingCSP.
+PASS Allow-CSP-From header enforces EmbeddingCSP.
 Harness: the test ran to completion.
 

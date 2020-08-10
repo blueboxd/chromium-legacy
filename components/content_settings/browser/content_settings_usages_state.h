@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
@@ -22,7 +22,7 @@
 class ContentSettingsUsagesState {
  public:
   ContentSettingsUsagesState(
-      content_settings::TabSpecificContentSettings::Delegate* delegate_,
+      content_settings::PageSpecificContentSettings::Delegate* delegate_,
       ContentSettingsType type,
       const GURL& embedder_url);
 
@@ -55,7 +55,7 @@ class ContentSettingsUsagesState {
 
  private:
   std::string GURLToFormattedHost(const GURL& url) const;
-  content_settings::TabSpecificContentSettings::Delegate* delegate_;
+  content_settings::PageSpecificContentSettings::Delegate* delegate_;
   ContentSettingsType type_;
   StateMap state_map_;
   GURL embedder_url_;

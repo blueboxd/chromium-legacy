@@ -370,6 +370,9 @@ Still reading?
     <ignore regexp="The resource `R.plurals.accessibility_tab_selection_editor_group_button` appears to be unused"/>
     <ignore regexp="The resource `R.string.accessibility_tab_suggestion_group_tabs_message` appears to be unused"/>
     <ignore regexp="The resource `R.string.tab_suggestion_group_tabs_message` appears to be unused"/>
+    <!-- crbug.com/1114311 remove this line and the following line after the bug is resolved -->
+    <ignore regexp="The resource `R.string.languages_set_application_language_prompt` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_set_as_application_language` appears to be unused"/>
     <!-- Old-style and new-style WebAPKs use same resources for simplicity. Old-style WebAPKs do
          not use R.style.SplashTheme but new-style WebAPKs do.
          TODO(crbug.com/971254): Remove suppression once old-style WebAPKs are deprecated. -->

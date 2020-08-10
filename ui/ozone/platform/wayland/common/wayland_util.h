@@ -66,6 +66,13 @@ bool IsMenuType(ui::PlatformWindowType type);
 // Returns the root WaylandWindow for the given wl_surface.
 ui::WaylandWindow* RootWindowFromWlSurface(wl_surface* surface);
 
+// Returns bounds of the given window, adjusted to its subsurface. We need to
+// adjust bounds because WaylandWindow::GetBounds() returns absolute bounds in
+// pixels, but wl_subsurface works with bounds relative to the parent surface
+// and in DIP.
+gfx::Rect TranslateWindowBoundsToParentDIP(ui::WaylandWindow* window,
+                                           ui::WaylandWindow* parent_window);
+
 }  // namespace wl
 
 #endif  // UI_OZONE_PLATFORM_WAYLAND_COMMON_WAYLAND_UTIL_H_

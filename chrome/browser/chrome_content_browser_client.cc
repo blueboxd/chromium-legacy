@@ -192,7 +192,7 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/certificate_matching/certificate_principal_pattern.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -2515,7 +2515,7 @@ ChromeContentBrowserClient::AllowServiceWorkerOnIO(
   // Check if this is an extension-related service worker, and, if so, if it's
   // allowed (this can return false if, e.g., the extension is disabled).
   // If it's not allowed, return immediately. We deliberately do *not* report
-  // to the TabSpecificContentSettings, since the service worker is blocked
+  // to the PageSpecificContentSettings, since the service worker is blocked
   // because of the extension, rather than because of the user's content
   // settings.
   if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnIO(
@@ -2557,7 +2557,7 @@ ChromeContentBrowserClient::AllowServiceWorkerOnUI(
   // Check if this is an extension-related service worker, and, if so, if it's
   // allowed (this can return false if, e.g., the extension is disabled).
   // If it's not allowed, return immediately. We deliberately do *not* report
-  // to the TabSpecificContentSettings, since the service worker is blocked
+  // to the PageSpecificContentSettings, since the service worker is blocked
   // because of the extension, rather than because of the user's content
   // settings.
   if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnUI(
@@ -2603,7 +2603,7 @@ bool ChromeContentBrowserClient::AllowSharedWorker(
           ->IsCookieAccessAllowed(worker_url, site_for_cookies,
                                   top_frame_origin);
 
-  content_settings::TabSpecificContentSettings::SharedWorkerAccessed(
+  content_settings::PageSpecificContentSettings::SharedWorkerAccessed(
       render_process_id, render_frame_id, worker_url, name, constructor_origin,
       !allow);
   return allow;
@@ -2687,7 +2687,7 @@ void ChromeContentBrowserClient::FileSystemAccessed(
     bool allow) {
   // Record access to file system for potential display in UI.
   for (const auto& it : render_frames) {
-    content_settings::TabSpecificContentSettings::FileSystemAccessed(
+    content_settings::PageSpecificContentSettings::FileSystemAccessed(
         it.child_id, it.frame_routing_id, url, !allow);
   }
   std::move(callback).Run(allow);
@@ -2704,7 +2704,7 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
 
   // Record access to IndexedDB for potential display in UI.
   for (const auto& it : render_frames) {
-    content_settings::TabSpecificContentSettings::IndexedDBAccessed(
+    content_settings::PageSpecificContentSettings::IndexedDBAccessed(
         it.child_id, it.frame_routing_id, url, !allow);
   }
 
@@ -2721,7 +2721,7 @@ bool ChromeContentBrowserClient::AllowWorkerCacheStorage(
 
   // Record access to CacheStorage for potential display in UI.
   for (const auto& it : render_frames) {
-    content_settings::TabSpecificContentSettings::CacheStorageAccessed(
+    content_settings::PageSpecificContentSettings::CacheStorageAccessed(
         it.child_id, it.frame_routing_id, url, !allow);
   }
 

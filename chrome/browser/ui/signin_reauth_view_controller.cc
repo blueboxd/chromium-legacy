@@ -67,15 +67,6 @@ SigninReauthViewController::SigninReauthViewController(
   // show it in some cases in the future.
   ShowReauthConfirmationDialog();
 
-  if (!base::FeatureList::IsEnabled(kSigninReauthPrompt)) {
-    // Approve reauth automatically.
-    gaia_reauth_type_ = GaiaReauthType::kAutoApproved;
-    gaia_reauth_page_state_ = GaiaReauthPageState::kDone;
-    gaia_reauth_page_result_ = signin::ReauthResult::kSuccess;
-    OnStateChanged();
-    return;
-  }
-
   // Navigate to the Gaia reauth challenge page in background.
   reauth_web_contents_ =
       content::WebContents::Create(content::WebContents::CreateParams(

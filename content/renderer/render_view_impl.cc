@@ -1663,6 +1663,11 @@ void RenderViewImpl::OnSetRendererPrefs(
     GetWebView()->GetSettings()->SetCaretBrowsingEnabled(
         renderer_preferences_.caret_browsing_enabled);
   }
+
+#if defined(USE_X11) || defined(USE_OZONE)
+  GetWebView()->GetSettings()->SetSelectionClipboardBufferAvailable(
+      renderer_preferences_.selection_clipboard_buffer_available);
+#endif  // defined(USE_X11) || defined(USE_OZONE)
 }
 
 void RenderViewImpl::OnMoveOrResizeStarted() {

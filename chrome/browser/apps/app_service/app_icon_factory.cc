@@ -391,6 +391,9 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
   // The scale factor the icon is intended for. See gfx::ImageSkiaRep::scale
   // comments.
   float icon_scale_ = 0.0f;
+  // A scale factor to take as input for the IconType::kCompressed response. See
+  // gfx::ImageSkia::GetRepresentation() comments.
+  float icon_scale_for_compressed_response_ = 1.0f;
 
   bool is_placeholder_icon_;
   apps::IconEffects icon_effects_;
@@ -441,6 +444,16 @@ void IconLoadingPipeline::LoadWebAppIcon(
 
   fallback_favicon_url_ = launch_url;
   profile_ = profile;
+
+  // In all other callpaths MaybeApplyEffectsAndComplete() uses
+  // |icon_scale_for_compressed_response_| to apps::EncodeImageToPngBytes(). In
+  // most cases IconLoadingPipeline always uses the 1.0 intended icon scale
+  // factor as an intermediate representation to be compressed and returned.
+  // TODO(crbug.com/1112737): Investigate how to unify it and set
+  // |icon_scale_for_compressed_response_| value in IconLoadingPipeline()
+  // constructor.
+  icon_scale_for_compressed_response_ = icon_scale_;
+
   if (icon_manager.HasSmallestIcon(web_app_id, icon_size_in_px_)) {
     switch (icon_type_) {
       case apps::mojom::IconType::kCompressed:
@@ -509,11 +522,8 @@ void IconLoadingPipeline::LoadExtensionIcon(
         // LoadImageAtEveryScaleFactorAsync here, because the caller has asked
         // for compressed icons (i.e. PNG-formatted data), not uncompressed
         // (i.e. a gfx::ImageSkia).
-        constexpr bool quantize_to_supported_scale_factor = true;
-        int size_hint_in_px = apps_util::ConvertDipToPx(
-            size_hint_in_dip_, quantize_to_supported_scale_factor);
         LoadCompressedDataFromExtension(
-            extension, size_hint_in_px,
+            extension, icon_size_in_px_,
             base::BindOnce(&IconLoadingPipeline::CompleteWithCompressed,
                            base::WrapRefCounted(this)));
         return;
@@ -774,7 +784,8 @@ void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
   processed_image.MakeThreadSafe();
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&apps::EncodeImageToPngBytes, processed_image),
+      base::BindOnce(&apps::EncodeImageToPngBytes, processed_image,
+                     icon_scale_for_compressed_response_),
       base::BindOnce(&IconLoadingPipeline::CompleteWithCompressed,
                      base::WrapRefCounted(this)));
 }
@@ -807,10 +818,8 @@ void IconLoadingPipeline::CompleteWithImageSkia(gfx::ImageSkia image) {
 }
 
 void IconLoadingPipeline::MaybeLoadFallbackOrCompleteEmpty() {
-  const int icon_size_in_px = apps_util::ConvertDipToPx(
-      size_hint_in_dip_, /*quantize_to_supported_scale_factor=*/true);
   if (fallback_favicon_url_.is_valid() &&
-      icon_size_in_px == kFaviconFallbackImagePx) {
+      icon_size_in_px_ == kFaviconFallbackImagePx) {
     GURL favicon_url = fallback_favicon_url_;
     // Reset to avoid infinite loops.
     fallback_favicon_url_ = GURL();
@@ -899,14 +908,16 @@ CompressedDataToImageSkiaCallback(
       std::move(callback), icon_scale);
 }
 
-std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image) {
+std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image,
+                                           float rep_icon_scale) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
   std::vector<uint8_t> image_data;
 
-  const gfx::ImageSkiaRep& image_skia_rep = image.GetRepresentation(1.0f);
-  if (image_skia_rep.scale() != 1.0f) {
+  const gfx::ImageSkiaRep& image_skia_rep =
+      image.GetRepresentation(rep_icon_scale);
+  if (image_skia_rep.scale() != rep_icon_scale) {
     return image_data;
   }
 

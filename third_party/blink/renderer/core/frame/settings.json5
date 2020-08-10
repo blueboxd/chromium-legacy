@@ -1099,6 +1099,10 @@
     {
       name: "useAXMenuList",
       initial: true,
+    },
+    {
+      name: "selectionClipboardBufferAvailable",
+      initial: false,
       type: "bool",
     },
   ],

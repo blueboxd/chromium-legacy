@@ -27,7 +27,7 @@
 #include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -421,8 +421,8 @@ void CollectedCookiesViews::OnDialogClosed() {
 std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
   // This captures a snapshot of the allowed cookies of the current page so we
   // are fine using WebContents::GetMainFrame() here
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
           web_contents_->GetMainFrame());
 
   // Create the controls that go into the pane.
@@ -478,8 +478,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
 }
 
 std::unique_ptr<views::View> CollectedCookiesViews::CreateBlockedPane() {
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
           web_contents_->GetMainFrame());
 
   Profile* profile =

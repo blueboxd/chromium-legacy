@@ -8,7 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,7 +24,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/blocked_content/popup_blocker_tab_helper.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/notification_permission_ui_selector.h"
 #include "components/permissions/permission_request_manager.h"
@@ -99,14 +99,14 @@ void ContentSettingBubbleDialogTest::ApplyMediastreamSettings(
     bool camera_accessed) {
   const int mic_setting =
       mic_accessed
-          ? content_settings::TabSpecificContentSettings::MICROPHONE_ACCESSED
+          ? content_settings::PageSpecificContentSettings::MICROPHONE_ACCESSED
           : 0;
   const int camera_setting =
       camera_accessed
-          ? content_settings::TabSpecificContentSettings::CAMERA_ACCESSED
+          ? content_settings::PageSpecificContentSettings::CAMERA_ACCESSED
           : 0;
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
           browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   content_settings->OnMediaStreamPermissionSet(
       GURL("https://example.com/"), mic_setting | camera_setting, std::string(),
@@ -117,8 +117,8 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
     ContentSettingsType content_type) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
           web_contents->GetMainFrame());
   switch (content_type) {
     case ContentSettingsType::AUTOMATIC_DOWNLOADS: {
@@ -151,7 +151,7 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
       break;
     }
     case ContentSettingsType::PROTOCOL_HANDLERS:
-      chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents)
+      chrome::PageSpecificContentSettingsDelegate::FromWebContents(web_contents)
           ->set_pending_protocol_handler(ProtocolHandler::CreateProtocolHandler(
               "mailto", GURL("https://example.com/")));
       break;

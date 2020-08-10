@@ -86,6 +86,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
   void ReadData(const ClipboardFormatType& format,
                 const ClipboardDataEndpoint* data_dst,
                 std::string* result) const override;
+  bool IsSelectionBufferAvailable() const override;
   void WritePortableRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,

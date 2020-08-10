@@ -21,7 +21,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/blocked_content/popup_blocker_tab_helper.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/safe_browsing/core/db/v4_embedded_test_server_util.h"
 #include "components/safe_browsing/core/db/v4_test_util.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -290,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, AllowlistedPopup_HasTracker) {
 
   // Is blocked by the popup blocker.
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(content_settings::TabSpecificContentSettings::GetForFrame(
+  EXPECT_TRUE(content_settings::PageSpecificContentSettings::GetForFrame(
                   web_contents->GetMainFrame())
                   ->IsContentBlocked(ContentSettingsType::POPUPS));
 

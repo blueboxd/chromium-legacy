@@ -130,11 +130,6 @@ extern const char kCollectionsCardPresentationStyleDescription[];
 extern const char kConfirmInfobarMessagesUIName[];
 extern const char kConfirmInfobarMessagesUIDescription[];
 
-// Title and description for the flag that makes the Browser being contained by
-// the TabGrid instead of being presented.
-extern const char kContainedBVCName[];
-extern const char kContainedBVCDescription[];
-
 // Title and description for the flag that enables Messages UI on
 // Crash Restore Infobars.
 extern const char kCrashRestoreInfobarMessagesUIName[];

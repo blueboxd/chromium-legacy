@@ -113,6 +113,10 @@
 #include "content/browser/host_zoom_map_impl.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#endif
+
 using base::TimeDelta;
 
 using blink::WebConsoleMessage;
@@ -140,6 +144,20 @@ void GetFontInfo(gfx::win::SystemFont system_font,
   *size = font.GetFontSize();
 }
 #endif  // OS_WIN
+
+#if defined(USE_OZONE) || defined(USE_X11)
+bool IsSelectionBufferAvailable() {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform())
+    return ui::Clipboard::GetForCurrentThread()->IsSelectionBufferAvailable();
+#endif
+#if defined(USE_X11)
+  return true;
+#else
+  return false;
+#endif
+}
+#endif  // defined(USE_OZONE) || defined(USE_X11)
 
 }  // namespace
 
@@ -217,6 +235,9 @@ void RenderViewHostImpl::GetPlatformSpecificPrefs(
   // that's rendered around clickable targets.
   // TODO(crbug.com/1066605): Consider exposing this as a FIDL parameter.
   prefs->focus_ring_color = SK_AlphaTRANSPARENT;
+#endif
+#if defined(USE_OZONE) || defined(USE_X11)
+  prefs->selection_clipboard_buffer_available = IsSelectionBufferAvailable();
 #endif
 }
 

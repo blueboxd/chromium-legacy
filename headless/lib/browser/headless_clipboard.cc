@@ -176,6 +176,12 @@ void HeadlessClipboard::ReadData(const ui::ClipboardFormatType& format,
     *result = it->second;
 }
 
+#if defined(USE_OZONE)
+bool HeadlessClipboard::IsSelectionBufferAvailable() const {
+  return false;
+}
+#endif  // defined(USE_OZONE)
+
 // |data_src| is not used. It's only passed to be consistent with other
 // platforms.
 void HeadlessClipboard::WritePortableRepresentations(

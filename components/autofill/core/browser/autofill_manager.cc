@@ -871,8 +871,7 @@ void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
   if (!user_did_type_ || autofill_field->is_autofilled) {
     form_interactions_ukm_logger_->LogTextFieldDidChange(*form_structure,
                                                          *autofill_field);
-    profile_form_bitmask =
-        data_util::DetermineGroups(form_structure->GetServerFieldTypes());
+    profile_form_bitmask = data_util::DetermineGroups(*form_structure);
   }
 
   if (!autofill_field->is_autofilled) {
@@ -1198,9 +1197,7 @@ void AutofillManager::OnDidFillAutofillFormData(const FormData& form,
   }
 
   uint32_t profile_form_bitmask =
-      form_structure
-          ? data_util::DetermineGroups(form_structure->GetServerFieldTypes())
-          : 0;
+      form_structure ? data_util::DetermineGroups(*form_structure) : 0;
 
   AutofillMetrics::LogUserHappinessMetric(
       AutofillMetrics::USER_DID_AUTOFILL, form_types,
@@ -1233,8 +1230,7 @@ void AutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
 
-  uint32_t profile_form_bitmask =
-      data_util::DetermineGroups(form_structure->GetServerFieldTypes());
+  uint32_t profile_form_bitmask = data_util::DetermineGroups(*form_structure);
   AutofillMetrics::LogUserHappinessMetric(
       AutofillMetrics::SUGGESTIONS_SHOWN, autofill_field->Type().group(),
       client_->GetSecurityLevelForUmaHistograms(), profile_form_bitmask);
@@ -1890,11 +1886,10 @@ void AutofillManager::FillOrPreviewDataModelForm(
 
     // Fill the non-empty value from |data_model| into the result vector, which
     // will be sent to the renderer.
-    FillFieldWithValue(
-        cached_field, data_model, &result.fields[i], should_notify,
-        optional_cvc ? *optional_cvc : kEmptyCvc,
-        data_util::DetermineGroups(form_structure->GetServerFieldTypes()),
-        &failure_to_fill);
+    FillFieldWithValue(cached_field, data_model, &result.fields[i],
+                       should_notify, optional_cvc ? *optional_cvc : kEmptyCvc,
+                       data_util::DetermineGroups(*form_structure),
+                       &failure_to_fill);
 
     bool has_value_after = !result.fields[i].value.empty();
     bool is_autofilled_after = result.fields[i].is_autofilled;
@@ -2056,8 +2051,7 @@ void AutofillManager::OnFormsParsed(const std::vector<const FormData*>& forms,
       continue;
     }
 
-    if (data_util::ContainsPhone(data_util::DetermineGroups(
-            form_structure->GetServerFieldTypes()))) {
+    if (data_util::ContainsPhone(data_util::DetermineGroups(*form_structure))) {
       has_observed_phone_number_field_ = true;
     }
 

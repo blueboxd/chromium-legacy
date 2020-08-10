@@ -24,10 +24,12 @@ bool WaylandPopup::CreateShellPopup() {
 
   DCHECK(parent_window() && !shell_popup_);
 
-  auto bounds_px = AdjustPopupWindowPosition();
+  auto subsurface_bounds_dip =
+      wl::TranslateWindowBoundsToParentDIP(this, parent_window());
 
   ShellObjectFactory factory;
-  shell_popup_ = factory.CreateShellPopupWrapper(connection(), this, bounds_px);
+  shell_popup_ = factory.CreateShellPopupWrapper(connection(), this,
+                                                 subsurface_bounds_dip);
   if (!shell_popup_) {
     LOG(ERROR) << "Failed to create Wayland shell popup";
     return false;
@@ -141,22 +143,6 @@ bool WaylandPopup::OnInitialize(PlatformWindowInitProperties properties) {
   root_surface()->SetBufferScale(parent_window()->buffer_scale(), false);
   set_ui_scale(parent_window()->ui_scale());
   return true;
-}
-
-gfx::Rect WaylandPopup::AdjustPopupWindowPosition() {
-  auto* top_level_parent = GetRootParentWindow();
-  DCHECK(top_level_parent);
-  DCHECK(buffer_scale() == top_level_parent->buffer_scale());
-  DCHECK(ui_scale() == top_level_parent->ui_scale());
-
-  // Chromium positions windows in screen coordinates, but Wayland requires them
-  // to be in local surface coordinates a.k.a relative to parent window.
-  const gfx::Rect parent_bounds_dip =
-      gfx::ScaleToRoundedRect(parent_window()->GetBounds(), 1.0 / ui_scale());
-  gfx::Rect new_bounds_dip = wl::TranslateBoundsToParentCoordinates(
-      gfx::ScaleToRoundedRect(GetBounds(), 1.0 / ui_scale()),
-      parent_bounds_dip);
-  return gfx::ScaleToRoundedRect(new_bounds_dip, ui_scale() / buffer_scale());
 }
 
 }  // namespace ui

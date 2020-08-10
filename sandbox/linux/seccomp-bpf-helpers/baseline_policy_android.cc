@@ -112,6 +112,10 @@ ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_openat:
     case __NR_pwrite64:
     case __NR_rt_sigtimedwait:
+    // sched_setaffinity() is required for an experiment to schedule all
+    // Chromium threads onto LITTLE cores (crbug.com/1111789). Should be removed
+    // or reconsidered once the experiment is complete.
+    case __NR_sched_setaffinity:
     case __NR_sched_getparam:
     case __NR_sched_getscheduler:
     case __NR_sched_setscheduler:

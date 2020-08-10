@@ -28,8 +28,8 @@
 #include "base/time/clock.h"
 #include "build/build_config.h"
 #include "components/content_settings/browser/content_settings_usages_state.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
-#include "components/content_settings/browser/test_tab_specific_content_settings_delegate.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
+#include "components/content_settings/browser/test_page_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_context_base.h"
@@ -253,7 +253,7 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
     const GURL& requesting_frame,
     ContentSetting expected_content_setting) {
   auto* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+      content_settings::PageSpecificContentSettings::GetForFrame(
           web_contents()->GetMainFrame());
 
   const ContentSettingsUsagesState::StateMap& state_map =
@@ -269,10 +269,10 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
 void GeolocationPermissionContextTests::SetUp() {
   RenderViewHostTestHarness::SetUp();
 
-  content_settings::TabSpecificContentSettings::CreateForWebContents(
+  content_settings::PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
       std::make_unique<
-          content_settings::TestTabSpecificContentSettingsDelegate>(
+          content_settings::TestPageSpecificContentSettingsDelegate>(
           /*prefs=*/nullptr,
           PermissionsClient::Get()->GetSettingsMap(browser_context())));
 

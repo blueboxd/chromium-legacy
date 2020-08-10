@@ -10,7 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -22,7 +22,7 @@
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
@@ -99,9 +99,9 @@ void SubresourceFilterTestHarness::SetUp() {
 
   // Set up the tab helpers.
   InfoBarService::CreateForWebContents(web_contents());
-  content_settings::TabSpecificContentSettings::CreateForWebContents(
+  content_settings::PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
   ChromeSubresourceFilterClient::CreateForWebContents(web_contents());
 

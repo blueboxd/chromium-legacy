@@ -21,7 +21,7 @@
 #include "components/blocked_content/popup_opener_tab_helper.h"
 #include "components/blocked_content/popup_tracker.h"
 #include "components/captive_portal/core/buildflags.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
 #include "components/js_injection/browser/js_communication_host.h"
@@ -63,12 +63,12 @@
 #include "weblayer/browser/js_communication/web_message_host_factory_wrapper.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/page_load_metrics_initialize.h"
+#include "weblayer/browser/page_specific_content_settings_delegate.h"
 #include "weblayer/browser/password_manager_driver_factory.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/popup_navigation_delegate_impl.h"
 #include "weblayer/browser/profile_impl.h"
-#include "weblayer/browser/tab_specific_content_settings_delegate.h"
 #include "weblayer/browser/translate_client_impl.h"
 #include "weblayer/browser/weblayer_features.h"
 #include "weblayer/common/isolated_world_ids.h"
@@ -305,9 +305,10 @@ TabImpl::TabImpl(ProfileImpl* profile,
 
   permissions::PermissionRequestManager::CreateForWebContents(
       web_contents_.get());
-  content_settings::TabSpecificContentSettings::CreateForWebContents(
-      web_contents_.get(), std::make_unique<TabSpecificContentSettingsDelegate>(
-                               web_contents_.get()));
+  content_settings::PageSpecificContentSettings::CreateForWebContents(
+      web_contents_.get(),
+      std::make_unique<PageSpecificContentSettingsDelegate>(
+          web_contents_.get()));
   blocked_content::PopupBlockerTabHelper::CreateForWebContents(
       web_contents_.get());
   blocked_content::PopupOpenerTabHelper::CreateForWebContents(

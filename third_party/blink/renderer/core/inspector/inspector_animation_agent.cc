@@ -406,30 +406,31 @@ Response InspectorAnimationAgent::resolveAnimation(
 }
 
 String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
-  static const CSSProperty* g_animation_properties[] = {
-      &GetCSSPropertyAnimationDelay(),
-      &GetCSSPropertyAnimationDirection(),
-      &GetCSSPropertyAnimationDuration(),
-      &GetCSSPropertyAnimationFillMode(),
-      &GetCSSPropertyAnimationIterationCount(),
-      &GetCSSPropertyAnimationName(),
-      &GetCSSPropertyAnimationTimingFunction(),
+  static CSSPropertyID g_animation_properties[] = {
+      CSSPropertyID::kAnimationDelay,
+      CSSPropertyID::kAnimationDirection,
+      CSSPropertyID::kAnimationDuration,
+      CSSPropertyID::kAnimationFillMode,
+      CSSPropertyID::kAnimationIterationCount,
+      CSSPropertyID::kAnimationName,
+      CSSPropertyID::kAnimationTimingFunction,
   };
-  static const CSSProperty* g_transition_properties[] = {
-      &GetCSSPropertyTransitionDelay(), &GetCSSPropertyTransitionDuration(),
-      &GetCSSPropertyTransitionProperty(),
-      &GetCSSPropertyTransitionTimingFunction(),
+  static CSSPropertyID g_transition_properties[] = {
+      CSSPropertyID::kTransitionDelay,
+      CSSPropertyID::kTransitionDuration,
+      CSSPropertyID::kTransitionProperty,
+      CSSPropertyID::kTransitionTimingFunction,
   };
 
   auto* effect = To<KeyframeEffect>(animation.effect());
-  Vector<const CSSProperty*> css_properties;
+  Vector<CSSPropertyName> css_property_names;
   if (IsA<CSSAnimation>(animation)) {
-    for (const CSSProperty* property : g_animation_properties)
-      css_properties.push_back(property);
+    for (CSSPropertyID property : g_animation_properties)
+      css_property_names.push_back(CSSPropertyName(property));
   } else if (auto* css_transition = DynamicTo<CSSTransition>(animation)) {
-    for (const CSSProperty* property : g_transition_properties)
-      css_properties.push_back(property);
-    css_properties.push_back(&css_transition->TransitionCSSProperty());
+    for (CSSPropertyID property : g_transition_properties)
+      css_property_names.push_back(CSSPropertyName(property));
+    css_property_names.push_back(css_transition->TransitionCSSPropertyName());
   } else {
     NOTREACHED();
   }
@@ -442,14 +443,14 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
                           ? AnimationType::CSSTransition
                           : AnimationType::CSSAnimation);
   digestor.UpdateUtf8(animation.id());
-  for (const CSSProperty* property : css_properties) {
+  for (const CSSPropertyName& name : css_property_names) {
     CSSStyleDeclaration* style =
-        css_agent_->FindEffectiveDeclaration(*property, styles);
+        css_agent_->FindEffectiveDeclaration(name, styles);
     // Ignore inline styles.
     if (!style || !style->ParentStyleSheet() || !style->parentRule() ||
         style->parentRule()->GetType() != CSSRule::kStyleRule)
       continue;
-    digestor.UpdateUtf8(property->GetPropertyNameString());
+    digestor.UpdateUtf8(name.ToAtomicString());
     digestor.UpdateUtf8(css_agent_->StyleSheetId(style->ParentStyleSheet()));
     digestor.UpdateUtf8(To<CSSStyleRule>(style->parentRule())->selectorText());
   }

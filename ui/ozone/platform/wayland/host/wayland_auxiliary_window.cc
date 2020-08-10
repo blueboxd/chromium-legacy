@@ -12,21 +12,6 @@
 
 namespace ui {
 
-namespace {
-
-gfx::Rect AdjustSubsurfaceBounds(const gfx::Rect& bounds_px,
-                                 const gfx::Rect& parent_bounds_px,
-                                 float ui_scale,
-                                 int32_t buffer_scale) {
-  const auto parent_bounds_dip =
-      gfx::ScaleToRoundedRect(parent_bounds_px, 1.0 / ui_scale);
-  auto new_bounds_dip =
-      wl::TranslateBoundsToParentCoordinates(bounds_px, parent_bounds_dip);
-  return gfx::ScaleToRoundedRect(new_bounds_dip, ui_scale / buffer_scale);
-}
-
-}  // namespace
-
 WaylandAuxiliaryWindow::WaylandAuxiliaryWindow(PlatformWindowDelegate* delegate,
                                                WaylandConnection* connection)
     : WaylandWindow(delegate, connection) {}
@@ -63,11 +48,10 @@ void WaylandAuxiliaryWindow::SetBounds(const gfx::Rect& bounds) {
   if (old_bounds == bounds || !parent_window())
     return;
 
-  // Translate location from screen to surface coordinates.
-  auto bounds_px = AdjustSubsurfaceBounds(
-      GetBounds(), parent_window()->GetBounds(), ui_scale(), buffer_scale());
-  wl_subsurface_set_position(subsurface_.get(), bounds_px.x() / buffer_scale(),
-                             bounds_px.y() / buffer_scale());
+  auto subsurface_bounds_dip =
+      wl::TranslateWindowBoundsToParentDIP(this, parent_window());
+  wl_subsurface_set_position(subsurface_.get(), subsurface_bounds_dip.x(),
+                             subsurface_bounds_dip.y());
   root_surface()->Commit();
   connection()->ScheduleFlush();
 }
@@ -99,16 +83,13 @@ void WaylandAuxiliaryWindow::CreateSubsurface() {
 
   subsurface_ = root_surface()->CreateSubsurface(parent->root_surface());
 
-  // Chromium positions tooltip windows in screen coordinates, but Wayland
-  // requires them to be in local surface coordinates a.k.a relative to parent
-  // window.
-  auto bounds_px = AdjustSubsurfaceBounds(GetBounds(), parent->GetBounds(),
-                                          ui_scale(), buffer_scale());
+  auto subsurface_bounds_dip =
+      wl::TranslateWindowBoundsToParentDIP(this, parent);
 
   DCHECK(subsurface_);
   // Convert position to DIP.
-  wl_subsurface_set_position(subsurface_.get(), bounds_px.x() / buffer_scale(),
-                             bounds_px.y() / buffer_scale());
+  wl_subsurface_set_position(subsurface_.get(), subsurface_bounds_dip.x(),
+                             subsurface_bounds_dip.y());
   wl_subsurface_set_desync(subsurface_.get());
   parent->root_surface()->Commit();
   connection()->ScheduleFlush();

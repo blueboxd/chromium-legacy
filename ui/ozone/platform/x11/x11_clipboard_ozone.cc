@@ -398,4 +398,8 @@ void X11ClipboardOzone::SetSequenceNumberUpdateCb(
   update_sequence_cb_ = std::move(cb);
 }
 
+bool X11ClipboardOzone::IsSelectionBufferAvailable() const {
+  return true;
+}
+
 }  // namespace ui

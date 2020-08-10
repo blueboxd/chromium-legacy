@@ -145,6 +145,49 @@ std::unique_ptr<NavigationThrottle> AncestorThrottle::MaybeCreateThrottleFor(
 
 AncestorThrottle::~AncestorThrottle() {}
 
+NavigationThrottle::ThrottleCheckResult AncestorThrottle::WillStartRequest() {
+  if (!base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE))
+    return NavigationThrottle::PROCEED;
+
+  NavigationRequest* request = NavigationRequest::From(navigation_handle());
+  if (request->IsInMainFrame())
+    return NavigationThrottle::PROCEED;
+
+  // TODO(antoniosartori): Probably we should have taken a snapshot of the 'csp'
+  // attribute at the beginning of the navigation and not now, since the
+  // beforeunload handlers might have modified it in the meantime.
+  std::vector<network::mojom::ContentSecurityPolicyPtr> frame_csp;
+  frame_csp.emplace_back(
+      request->frame_tree_node()->csp_attribute()
+          ? request->frame_tree_node()->csp_attribute()->Clone()
+          : nullptr);
+  const network::mojom::ContentSecurityPolicy* parent_required_csp =
+      request->frame_tree_node()->parent()->required_csp();
+
+  std::string error_message;
+  if (!network::IsValidRequiredCSPAttr(frame_csp, parent_required_csp,
+                                       error_message)) {
+    if (frame_csp[0]) {
+      navigation_handle()->GetParentFrame()->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kError,
+          base::StringPrintf("The frame 'csp' attribute ('%s') is invalid and "
+                             "will be discarded: %s",
+                             frame_csp[0]->header->header_value.c_str(),
+                             error_message.c_str()));
+    }
+    if (parent_required_csp)
+      request->SetRequiredCSP(parent_required_csp->Clone());
+    // TODO(antoniosartori): Consider instead blocking the navigation here,
+    // since this seems to be insecure
+    // (cf. https://github.com/w3c/webappsec-cspee/pull/11).
+  } else {
+    // If |frame_csp| is valid then it is not null.
+    request->SetRequiredCSP(std::move(frame_csp[0]));
+  }
+
+  return NavigationThrottle::PROCEED;
+}
+
 NavigationThrottle::ThrottleCheckResult
 AncestorThrottle::WillRedirectRequest() {
   // During a redirect, we don't know which RenderFrameHost we'll end up in,
@@ -395,7 +438,8 @@ AncestorThrottle::EvaluateCSPEmbeddedEnforcement() {
   if (!base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE))
     return CheckResult::PROCEED;
 
-  if (NavigationRequest::From(navigation_handle())->IsInMainFrame()) {
+  NavigationRequest* request = NavigationRequest::From(navigation_handle());
+  if (request->IsInMainFrame()) {
     // We enforce CSPEE only for frames, not for portals.
     return CheckResult::PROCEED;
   }
@@ -403,19 +447,16 @@ AncestorThrottle::EvaluateCSPEmbeddedEnforcement() {
   RenderFrameHostImpl* frame = static_cast<RenderFrameHostImpl*>(
       navigation_handle()->GetRenderFrameHost());
 
-  const std::string& required_csp =
-      frame->frame_tree_node()->frame_owner_properties().required_csp;
-
-  if (required_csp.empty())
+  if (!request->required_csp())
     return CheckResult::PROCEED;
 
   const network::mojom::AllowCSPFromHeaderValuePtr& allow_csp_from =
-      NavigationRequest::From(navigation_handle())
-          ->response()
-          ->parsed_headers->allow_csp_from;
+      request->response()->parsed_headers->allow_csp_from;
   if (AllowsBlanketEnforcementOfRequiredCSP(
           frame->GetParent()->GetLastCommittedOrigin(),
           navigation_handle()->GetURL(), allow_csp_from)) {
+    // Enforce the required csps on the frame by passing them down to blink
+    request->ForceCSPForResponse(request->required_csp()->header->header_value);
     return CheckResult::PROCEED;
   }
 
@@ -433,9 +474,7 @@ AncestorThrottle::EvaluateCSPEmbeddedEnforcement() {
   // TODO(antoniosartori): This is temporary, since the check in this function
   // is incomplete and will require iterations in several CLs. For now, let's
   // allow anything that has no "allow-csp-from" header.
-  if (!NavigationRequest::From(navigation_handle())
-           ->GetResponseHeaders()
-           ->HasHeader("allow-csp-from")) {
+  if (!allow_csp_from) {
     return CheckResult::PROCEED;
   }
 
@@ -447,7 +486,8 @@ AncestorThrottle::EvaluateCSPEmbeddedEnforcement() {
           "frame neither accepts that policy using the Allow-CSP-From header "
           "nor delivers a Content Security Policy which is at least as strong "
           "as that one.",
-          sanitized_blocked_url.c_str(), required_csp.c_str()));
+          sanitized_blocked_url.c_str(),
+          request->required_csp()->header->header_value.c_str()));
 
   return CheckResult::BLOCK;
 }

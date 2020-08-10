@@ -84,14 +84,7 @@ void AddressFormEventLogger::OnSubsequentRefillAttempt(
 void AddressFormEventLogger::OnLog(const std::string& name,
                                    FormEvent event,
                                    const FormStructure& form) const {
-  std::vector<ServerFieldType> types;
-  std::transform(
-      form.begin(), form.end(), std::back_inserter(types),
-      [&](const std::unique_ptr<AutofillField>& field) -> ServerFieldType {
-        return field->Type().GetStorableType();
-      });
-
-  uint32_t groups = data_util::DetermineGroups(types);
+  uint32_t groups = data_util::DetermineGroups(form);
   base::UmaHistogramEnumeration(
       name + data_util::GetSuffixForProfileFormType(groups), event,
       NUM_FORM_EVENTS);

@@ -105,6 +105,22 @@ uint64_t NativeIOFileSync::write(MaybeShared<DOMArrayBufferView> buffer,
   return base::as_unsigned(written_bytes);
 }
 
+void NativeIOFileSync::flush(ExceptionState& exception_state) {
+  // This implementation of flush attempts to physically store the data it has
+  // written on disk. This behaviour might change in the future.
+  if (!backing_file_.IsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The file was already closed");
+    return;
+  }
+  bool success = backing_file_.Flush();
+  if (!success) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "flush() failed");
+  }
+  return;
+}
+
 void NativeIOFileSync::Trace(Visitor* visitor) const {
   visitor->Trace(backend_file_);
   ScriptWrappable::Trace(visitor);

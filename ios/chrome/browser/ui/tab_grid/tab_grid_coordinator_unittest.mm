@@ -59,7 +59,7 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
     [coordinator_ start];
 
     delegate_ = [[TestTabSwitcherDelegate alloc] init];
-    coordinator_.tabSwitcher.delegate = delegate_;
+    coordinator_.delegate = delegate_;
 
     normal_tab_view_controller_ = [[UIViewController alloc] init];
     normal_tab_view_controller_.view.frame = CGRectMake(20, 20, 10, 10);
@@ -115,11 +115,11 @@ TEST_F(TabGridCoordinatorTest, TabViewControllerBeforeTabSwitcher) {
   EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
 
   // Now setting a TabSwitcher will make the switcher active.
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
+  [coordinator_ showTabSwitcher:coordinator_];
   bool tab_switcher_active = base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
-        return [coordinator_.tabSwitcher viewController] ==
-               coordinator_.activeViewController;
+        return
+            [coordinator_ viewController] == coordinator_.activeViewController;
       });
   EXPECT_TRUE(tab_switcher_active);
 }
@@ -127,20 +127,19 @@ TEST_F(TabGridCoordinatorTest, TabViewControllerBeforeTabSwitcher) {
 // Tests that it is possible to set a TabViewController after setting a
 // TabSwitcher.
 TEST_F(TabGridCoordinatorTest, TabViewControllerAfterTabSwitcher) {
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
-  EXPECT_EQ([coordinator_.tabSwitcher viewController],
-            coordinator_.activeViewController);
+  [coordinator_ showTabSwitcher:coordinator_];
+  EXPECT_EQ([coordinator_ viewController], coordinator_.activeViewController);
 
   [coordinator_ showTabViewController:normal_tab_view_controller_
                            completion:nil];
   EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
 
   // Showing the TabSwitcher again will make it active.
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
+  [coordinator_ showTabSwitcher:coordinator_];
   bool tab_switcher_active = base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
-        return [coordinator_.tabSwitcher viewController] ==
-               coordinator_.activeViewController;
+        return
+            [coordinator_ viewController] == coordinator_.activeViewController;
       });
   EXPECT_TRUE(tab_switcher_active);
 }
@@ -158,13 +157,11 @@ TEST_F(TabGridCoordinatorTest, SwapTabViewControllers) {
 
 // Tests calling showTabSwitcher twice in a row with the same VC.
 TEST_F(TabGridCoordinatorTest, ShowTabSwitcherTwice) {
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
-  EXPECT_EQ([coordinator_.tabSwitcher viewController],
-            coordinator_.activeViewController);
+  [coordinator_ showTabSwitcher:coordinator_];
+  EXPECT_EQ([coordinator_ viewController], coordinator_.activeViewController);
 
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
-  EXPECT_EQ([coordinator_.tabSwitcher viewController],
-            coordinator_.activeViewController);
+  [coordinator_ showTabSwitcher:coordinator_];
+  EXPECT_EQ([coordinator_ viewController], coordinator_.activeViewController);
 }
 
 // Tests calling showTabViewController twice in a row with the same VC.
@@ -182,7 +179,7 @@ TEST_F(TabGridCoordinatorTest, ShowTabViewControllerTwice) {
 // handlers are called properly after the new view controller is made active.
 TEST_F(TabGridCoordinatorTest, CompletionHandlers) {
   // Setup: show the switcher.
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
+  [coordinator_ showTabSwitcher:coordinator_];
 
   // Tests that the completion handler is called when showing a tab view
   // controller. Tests that the delegate 'didEnd' method is also called.

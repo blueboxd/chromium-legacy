@@ -13,7 +13,6 @@ group("closure_compile") {
   deps = [
     ":trusted_closure_compile",
     ":untrusted_closure_compile",
-    ":untrusted_worker_closure_compile",
   ]
 }
 
@@ -25,10 +24,6 @@ js_type_check("trusted_closure_compile") {
 js_type_check("untrusted_closure_compile") {
   closure_flags = system_app_closure_flags_strict
   deps = [ ":untrusted" ]
-}
-
-js_type_check("untrusted_worker_closure_compile") {
-  deps = [ ":untrusted_worker" ]
 }
 
 js_library("trusted") {
@@ -49,7 +44,4 @@ js_library("untrusted") {
 }
 
 js_library("message_types") {
-}
-
-js_library("untrusted_worker") {
 }

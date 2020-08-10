@@ -137,7 +137,7 @@ class PlatformKeysTest : public PlatformKeysTestBase {
     extensions::StateStore* const state_store =
         extensions::ExtensionSystem::Get(profile())->state_store();
 
-    chromeos::KeyPermissions permissions(
+    chromeos::platform_keys::KeyPermissions permissions(
         policy_connector->IsManaged(), profile()->GetPrefs(),
         policy_connector->policy_service(), state_store);
 
@@ -168,12 +168,14 @@ class PlatformKeysTest : public PlatformKeysTestBase {
 
   void GotPermissionsForExtension(
       const base::Closure& done_callback,
-      std::unique_ptr<chromeos::KeyPermissions::PermissionsForExtension>
+      std::unique_ptr<
+          chromeos::platform_keys::KeyPermissions::PermissionsForExtension>
           permissions_for_ext) {
     std::string client_cert1_spki =
         chromeos::platform_keys::GetSubjectPublicKeyInfo(client_cert1_);
     permissions_for_ext->RegisterKeyForCorporateUsage(
-        client_cert1_spki, {chromeos::KeyPermissions::KeyLocation::kUserSlot});
+        client_cert1_spki,
+        {chromeos::platform_keys::KeyPermissions::KeyLocation::kUserSlot});
     done_callback.Run();
   }
 

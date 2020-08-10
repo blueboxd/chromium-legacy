@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/css_import_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_media_rule.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_rule.h"
@@ -743,7 +744,7 @@ void InspectorCSSAgent::ResourceContentLoaded(
 
 void InspectorCSSAgent::CompleteEnabled() {
   instrumenting_agents_->AddInspectorCSSAgent(this);
-  dom_agent_->SetDOMListener(this);
+  dom_agent_->AddDOMListener(this);
   HeapVector<Member<Document>> documents = dom_agent_->Documents();
   for (Document* document : documents) {
     UpdateActiveStyleSheets(document);
@@ -774,7 +775,7 @@ void InspectorCSSAgent::TriggerFontsUpdatedForDocument(Document* document) {
 
 Response InspectorCSSAgent::disable() {
   Reset();
-  dom_agent_->SetDOMListener(nullptr);
+  dom_agent_->RemoveDOMListener(this);
   instrumenting_agents_->RemoveInspectorCSSAgent(this);
   enable_completed_ = false;
   enable_requested_.Set(false);
@@ -2320,12 +2321,12 @@ HeapVector<Member<CSSStyleDeclaration>> InspectorCSSAgent::MatchingStyles(
 }
 
 CSSStyleDeclaration* InspectorCSSAgent::FindEffectiveDeclaration(
-    const CSSProperty& property_class,
+    const CSSPropertyName& property_name,
     const HeapVector<Member<CSSStyleDeclaration>>& styles) {
   if (!styles.size())
     return nullptr;
 
-  String longhand = property_class.GetPropertyNameString();
+  String longhand = property_name.ToAtomicString();
   CSSStyleDeclaration* found_style = nullptr;
 
   for (unsigned i = 0; i < styles.size(); ++i) {
@@ -2357,16 +2358,13 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
         "Can't edit a node from a non-active document");
   }
 
-  CSSPropertyID property =
-      cssPropertyID(element->GetExecutionContext(), property_name);
-  if (!isValidCSSPropertyID(property))
+  base::Optional<CSSPropertyName> css_property_name =
+      CSSPropertyName::From(element->GetExecutionContext(), property_name);
+  if (!css_property_name.has_value())
     return Response::ServerError("Invalid property name");
 
-  CSSPropertyID property_id =
-      cssPropertyID(element->GetExecutionContext(), property_name);
-  const CSSProperty& property_class = CSSProperty::Get(property_id);
   CSSStyleDeclaration* style =
-      FindEffectiveDeclaration(property_class, MatchingStyles(element));
+      FindEffectiveDeclaration(*css_property_name, MatchingStyles(element));
   if (!style)
     return Response::ServerError("Can't find a style to edit");
 
@@ -2390,13 +2388,13 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
     return Response::ServerError("Can't find a source to edit");
 
   Vector<StylePropertyShorthand, 4> shorthands;
-  getMatchingShorthandsForLonghand(property_id, &shorthands);
+  getMatchingShorthandsForLonghand(css_property_name->Id(), &shorthands);
 
   String shorthand =
       shorthands.size() > 0
           ? CSSProperty::Get(shorthands[0].id()).GetPropertyNameString()
           : String();
-  String longhand = property_class.GetPropertyNameString();
+  String longhand = css_property_name->ToAtomicString();
 
   int found_index = -1;
   Vector<CSSPropertySourceData>& properties = source_data->property_data;

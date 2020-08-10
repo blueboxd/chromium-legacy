@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/ios/browser/active_state_manager.h"
 #import "components/signin/ios/browser/manage_accounts_delegate.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #include "net/cookies/canonical_cookie.h"
@@ -40,8 +39,7 @@ class PrefService;
 // CHROME_CONNECTED, which informs Gaia that the user is signed in to Chrome
 // with Account Consistency on.
 class AccountConsistencyService : public KeyedService,
-                                  public signin::IdentityManager::Observer,
-                                  public ActiveStateManager::Observer {
+                                  public signin::IdentityManager::Observer {
  public:
   // Name of the cookie that is managed by AccountConsistencyService and is used
   // to inform Google web properties that the browser is connected and that
@@ -176,9 +174,6 @@ class AccountConsistencyService : public KeyedService,
   void OnAccountsInCookieUpdated(
       const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
-
-  // ActiveStateManager::Observer implementation.
-  void OnActive() override;
 
   // Browser state associated with the service.
   web::BrowserState* browser_state_;

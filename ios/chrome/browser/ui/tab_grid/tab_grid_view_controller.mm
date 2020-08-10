@@ -182,31 +182,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
-    [self contentWillAppearAnimated:animated];
-  }
-  [super viewWillAppear:animated];
-}
-
-- (void)viewDidAppear:(BOOL)animated {
-  [super viewDidAppear:animated];
-  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
-    [self contentDidAppear];
-  }
-}
-
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
   // Modify Incognito and Regular Tabs Insets
   [self setInsetForGridViews];
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
-    [self contentWillDisappearAnimated:animated];
-  }
-  [super viewWillDisappear:animated];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -376,11 +355,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   [self broadcastIncognitoContentVisibility];
 
-  if (base::FeatureList::IsEnabled(kContainedBVC)) {
-    [self.incognitoTabsViewController contentWillAppearAnimated:animated];
-    [self.regularTabsViewController contentWillAppearAnimated:animated];
-    self.remoteTabsViewController.preventUpdates = NO;
-  }
+  [self.incognitoTabsViewController contentWillAppearAnimated:animated];
+  [self.regularTabsViewController contentWillAppearAnimated:animated];
+  self.remoteTabsViewController.preventUpdates = NO;
 }
 
 - (void)contentDidAppear {
@@ -404,11 +381,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   self.viewVisible = NO;
 
-  if (base::FeatureList::IsEnabled(kContainedBVC)) {
-    [self.incognitoTabsViewController contentWillDisappear];
-    [self.regularTabsViewController contentWillDisappear];
-    self.remoteTabsViewController.preventUpdates = YES;
-  }
+  [self.incognitoTabsViewController contentWillDisappear];
+  [self.regularTabsViewController contentWillDisappear];
+  self.remoteTabsViewController.preventUpdates = YES;
 }
 
 #pragma mark - Public Properties

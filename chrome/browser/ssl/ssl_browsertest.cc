@@ -75,7 +75,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/certificate_transparency/pref_names.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/common/content_settings_agent.mojom.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -3508,7 +3508,7 @@ class SSLUIWorkerFetchTest
     }
 
     EXPECT_EQ(expected_show_blocked,
-              content_settings::TabSpecificContentSettings::GetForFrame(
+              content_settings::PageSpecificContentSettings::GetForFrame(
                   tab->GetMainFrame())
                   ->IsContentBlocked(ContentSettingsType::MIXEDSCRIPT));
     ssl_test_util::CheckSecurityState(
@@ -3532,7 +3532,7 @@ class SSLUIWorkerFetchTest
     }
 
     EXPECT_EQ(expected_show_blocked_after_allow,
-              content_settings::TabSpecificContentSettings::GetForFrame(
+              content_settings::PageSpecificContentSettings::GetForFrame(
                   tab->GetMainFrame())
                   ->IsContentBlocked(ContentSettingsType::MIXEDSCRIPT));
     ssl_test_util::CheckSecurityState(
@@ -3558,7 +3558,7 @@ class SSLUIWorkerFetchTest
 
   void CheckErrorStateIsCleared() {
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-    EXPECT_FALSE(content_settings::TabSpecificContentSettings::GetForFrame(
+    EXPECT_FALSE(content_settings::PageSpecificContentSettings::GetForFrame(
                      tab->GetMainFrame())
                      ->IsContentBlocked(ContentSettingsType::MIXEDSCRIPT));
     ssl_test_util::CheckSecurityState(tab, CertError::NONE,

@@ -86,11 +86,6 @@ class MediaStreamDevicesController {
   // Runs |callback_| with the current audio/video permission settings.
   void RunCallback(bool blocked_by_feature_policy);
 
-  // Called when the permission has been set to update the
-  // TabSpecificContentSettings.
-  void UpdateTabSpecificContentSettings(ContentSetting audio_setting,
-                                        ContentSetting video_setting) const;
-
   // Returns the content settings for the given content type and request.
   ContentSetting GetContentSetting(
       ContentSettingsType content_type,

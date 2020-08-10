@@ -162,7 +162,6 @@ class AccountConsistencyServiceTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(true);
     AccountConsistencyService::RegisterPrefs(prefs_.registry());
     content_settings::CookieSettings::RegisterProfilePrefs(prefs_.registry());
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
@@ -186,7 +185,6 @@ class AccountConsistencyServiceTest : public PlatformTest {
   void TearDown() override {
     account_consistency_service_->Shutdown();
     settings_map_->ShutdownOnUIThread();
-    ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(false);
     identity_test_env_.reset();
     PlatformTest::TearDown();
   }
@@ -204,9 +202,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
     // Spinning the runloop is needed to ensure that the cookie manager requests
     // are executed.
     base::RunLoop().RunUntilIdle();
-
-    if (ActiveStateManager::FromBrowserState(&browser_state_)->IsActive())
-      EXPECT_TRUE(account_consistency_service_->cookie_requests_.empty());
+    EXPECT_TRUE(account_consistency_service_->cookie_requests_.empty());
   }
 
   void SignIn() {
@@ -367,20 +363,6 @@ TEST_F(AccountConsistencyServiceTest, SignOutWithoutDomains) {
 
   SignOutAndSimulateGaiaCookieManagerServiceLogout();
   CheckNoChromeConnectedCookies();
-}
-
-// Tests that pending cookie requests are correctly applied when the browser
-// state becomes active.
-TEST_F(AccountConsistencyServiceTest, ApplyOnActive) {
-  // No request is made until the browser state is active, then a WKWebView and
-  // its navigation delegate are created, and the requests are processed.
-  ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(false);
-  SignIn();
-  CheckNoChromeConnectedCookies();
-
-  ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(true);
-  CheckDomainHasChromeConnectedCookie(kGoogleDomain);
-  CheckDomainHasChromeConnectedCookie(kYoutubeDomain);
 }
 
 // Tests that the X-Chrome-Manage-Accounts header is ignored unless it comes

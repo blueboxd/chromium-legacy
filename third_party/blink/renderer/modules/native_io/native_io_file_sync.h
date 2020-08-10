@@ -45,6 +45,7 @@ class NativeIOFileSync final : public ScriptWrappable {
   uint64_t write(MaybeShared<DOMArrayBufferView> buffer,
                  uint64_t file_offset,
                  ExceptionState&);
+  void flush(ExceptionState&);
 
   // GarbageCollected
   void Trace(Visitor* visitor) const override;

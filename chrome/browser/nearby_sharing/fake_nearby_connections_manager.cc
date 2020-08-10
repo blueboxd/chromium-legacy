@@ -110,6 +110,23 @@ void FakeNearbyConnectionsManager::UpgradeBandwidth(
   upgrade_bandwidth_endpoint_ids_.insert(endpoint_id);
 }
 
+void FakeNearbyConnectionsManager::OnEndpointFound(
+    const std::string& endpoint_id,
+    location::nearby::connections::mojom::DiscoveredEndpointInfoPtr info) {
+  if (!discovery_listener_)
+    return;
+
+  discovery_listener_->OnEndpointDiscovered(endpoint_id, info->endpoint_info);
+}
+
+void FakeNearbyConnectionsManager::OnEndpointLost(
+    const std::string& endpoint_id) {
+  if (!discovery_listener_)
+    return;
+
+  discovery_listener_->OnEndpointLost(endpoint_id);
+}
+
 bool FakeNearbyConnectionsManager::IsAdvertising() {
   return advertising_listener_ != nullptr;
 }

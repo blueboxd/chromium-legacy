@@ -389,6 +389,7 @@ void InspectorOverlayAgent::Trace(Visitor* visitor) const {
   visitor->Trace(dom_agent_);
   visitor->Trace(inspect_tool_);
   visitor->Trace(hinge_);
+  visitor->Trace(document_to_ax_context_);
   InspectorBaseAgent::Trace(visitor);
 }
 
@@ -421,8 +422,25 @@ Response InspectorOverlayAgent::enable() {
   }
   backend_node_id_to_inspect_ = 0;
   SetNeedsUnbufferedInput(true);
+  dom_agent_->AddDOMListener(this);
+  for (Document* document : dom_agent_->Documents())
+    DidAddDocument(document);
+
   return Response::Success();
 }
+
+void InspectorOverlayAgent::DidAddDocument(Document* document) {
+  auto context = std::make_unique<AXContext>(*document);
+  document_to_ax_context_.Set(document, std::move(context));
+}
+
+void InspectorOverlayAgent::DidRemoveDocument(Document* document) {
+  document_to_ax_context_.erase(document);
+}
+
+void InspectorOverlayAgent::WillRemoveDOMNode(Node* node) {}
+
+void InspectorOverlayAgent::DidModifyDOMAttr(Element* element) {}
 
 Response InspectorOverlayAgent::disable() {
   enabled_.Clear();
@@ -450,6 +468,8 @@ Response InspectorOverlayAgent::disable() {
   frame_resource_name_ = 0;
   PickTheRightTool();
   SetNeedsUnbufferedInput(false);
+  dom_agent_->RemoveDOMListener(this);
+  document_to_ax_context_.clear();
   return Response::Success();
 }
 

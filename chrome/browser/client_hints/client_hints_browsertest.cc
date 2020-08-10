@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -300,10 +300,10 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   // Verify that the user is not notified that cookies or JavaScript were
   // blocked on the webpage due to the checks done by client hints.
   void VerifyContentSettingsNotNotified() const {
-    auto* tscs = content_settings::TabSpecificContentSettings::GetForFrame(
+    auto* pscs = content_settings::PageSpecificContentSettings::GetForFrame(
         browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
-    EXPECT_FALSE(tscs->IsContentBlocked(ContentSettingsType::COOKIES));
-    EXPECT_FALSE(tscs->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
+    EXPECT_FALSE(pscs->IsContentBlocked(ContentSettingsType::COOKIES));
+    EXPECT_FALSE(pscs->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
   }
 
   void SetExpectedEffectiveConnectionType(

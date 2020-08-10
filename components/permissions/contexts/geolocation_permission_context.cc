@@ -5,7 +5,7 @@
 #include "components/permissions/contexts/geolocation_permission_context.h"
 
 #include "base/bind.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/permissions/permission_request_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
@@ -52,12 +52,12 @@ void GeolocationPermissionContext::UpdateTabContext(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     bool allowed) {
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
           id.render_process_id(), id.render_frame_id());
 
   // WebContents might not exist (extensions) or no longer exist. In which case,
-  // TabSpecificContentSettings will be null.
+  // PageSpecificContentSettings will be null.
   if (content_settings)
     content_settings->OnGeolocationPermissionSet(requesting_frame.GetOrigin(),
                                                  allowed);

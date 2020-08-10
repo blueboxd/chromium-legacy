@@ -18,7 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/tls_deprecation_test_utils.h"
@@ -149,9 +149,9 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
     ASSERT_TRUE(cert_);
 
     MockInfoBarService::CreateForWebContents(web_contents());
-    content_settings::TabSpecificContentSettings::CreateForWebContents(
+    content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
-        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+        std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents()));
 
     // Setup mock ui.
@@ -249,9 +249,9 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
           content::WebContentsTester::CreateTestWebContents(
               profile()->GetPrimaryOTRProfile(), nullptr);
 
-      content_settings::TabSpecificContentSettings::CreateForWebContents(
+      content_settings::PageSpecificContentSettings::CreateForWebContents(
           incognito_web_contents_.get(),
-          std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+          std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
               incognito_web_contents_.get()));
 
       incognito_mock_ui_ = std::make_unique<MockPageInfoUI>();
@@ -1252,7 +1252,13 @@ TEST_F(PageInfoTest, TimeOpenMetrics) {
 
 // Tests that metrics are recorded on a PageInfo for pages with
 // various Safety Tip statuses.
-TEST_F(PageInfoTest, SafetyTipMetrics) {
+// See https://crbug.com/1114659 for why the test is disabled on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_SafetyTipMetrics DISABLED_SafetyTipMetrics
+#else
+#define MAYBE_SafetyTipMetrics SafetyTipMetrics
+#endif
+TEST_F(PageInfoTest, MAYBE_SafetyTipMetrics) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       security_state::features::kSafetyTipUI);

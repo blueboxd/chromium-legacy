@@ -9,7 +9,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -161,8 +161,8 @@ void SoundContentSettingObserver::CheckSoundBlocked(bool is_audible) {
     // This is a page level event so it is OK to get the main frame here.
     // TODO(https://crbug.com/1103176): We should figure a way of not having to
     // use GetMainFrame here. (pass the source frame somehow)
-    content_settings::TabSpecificContentSettings* settings =
-        content_settings::TabSpecificContentSettings::GetForFrame(
+    content_settings::PageSpecificContentSettings* settings =
+        content_settings::PageSpecificContentSettings::GetForFrame(
             web_contents()->GetMainFrame());
     if (settings)
       settings->OnAudioBlocked();

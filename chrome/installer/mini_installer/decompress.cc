@@ -22,7 +22,7 @@ struct ExpandContext {
   const wchar_t* const dest_path;
 
   // The destination file; valid once the destination is created.
-  mini_installer::MiniFile& dest_file;
+  mini_installer::MiniFile dest_file;
 
   // Set to true if the file was extracted to |dest_path|. Note that |dest_file|
   // may be valid even in case of failure.
@@ -247,7 +247,7 @@ bool InitializeFdi() {
 
 namespace mini_installer {
 
-bool Expand(const wchar_t* source, const wchar_t* destination, MiniFile& file) {
+bool Expand(const wchar_t* source, const wchar_t* destination) {
   if (!InitializeFdi())
     return false;
 
@@ -274,7 +274,7 @@ bool Expand(const wchar_t* source, const wchar_t* destination, MiniFile& file) {
   if (!fdi)
     return false;
 
-  ExpandContext context = {destination, file, /*succeeded=*/false};
+  ExpandContext context = {destination, {}, /*succeeded=*/false};
   g_FDICopy(fdi, source_name_utf8, source_path_utf8, 0, &Notify, nullptr,
             &context);
   g_FDIDestroy(fdi);
@@ -282,7 +282,8 @@ bool Expand(const wchar_t* source, const wchar_t* destination, MiniFile& file) {
     return true;
 
   // Delete the output file if it was created.
-  file.Close();
+  if (context.dest_file.IsValid())
+    context.dest_file.DeleteOnClose();
 
   return false;
 }

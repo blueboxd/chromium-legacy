@@ -12,6 +12,4 @@
 extern const base::Feature kDiceWebSigninInterceptionFeature;
 #endif  // ENABLE_DICE_SUPPORT
 
-extern const base::Feature kSigninReauthPrompt;
-
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_FEATURES_H_

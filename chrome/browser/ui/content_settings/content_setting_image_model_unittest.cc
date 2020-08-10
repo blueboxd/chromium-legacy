@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -24,7 +24,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/permissions/features.h"
@@ -47,7 +47,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 
-using content_settings::TabSpecificContentSettings;
+using content_settings::PageSpecificContentSettings;
 
 namespace {
 
@@ -114,12 +114,12 @@ bool HasIcon(const ContentSettingImageModel& model) {
 }
 
 TEST_F(ContentSettingImageModelTest, Update) {
-  TabSpecificContentSettings::CreateForWebContents(
+  PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(
           ContentSettingImageModel::ImageType::IMAGES);
@@ -135,9 +135,9 @@ TEST_F(ContentSettingImageModelTest, Update) {
 }
 
 TEST_F(ContentSettingImageModelTest, RPHUpdate) {
-  TabSpecificContentSettings::CreateForWebContents(
+  PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(
@@ -145,7 +145,7 @@ TEST_F(ContentSettingImageModelTest, RPHUpdate) {
   content_setting_image_model->Update(web_contents());
   EXPECT_FALSE(content_setting_image_model->is_visible());
 
-  chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents())
+  chrome::PageSpecificContentSettingsDelegate::FromWebContents(web_contents())
       ->set_pending_protocol_handler(ProtocolHandler::CreateProtocolHandler(
           "mailto", GURL("http://www.google.com/")));
   content_setting_image_model->Update(web_contents());
@@ -153,9 +153,9 @@ TEST_F(ContentSettingImageModelTest, RPHUpdate) {
 }
 
 TEST_F(ContentSettingImageModelTest, CookieAccessed) {
-  TabSpecificContentSettings::CreateForWebContents(
+  PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
   HostContentSettingsMapFactory::GetForProfile(profile())
       ->SetDefaultContentSetting(ContentSettingsType::COOKIES,
@@ -170,7 +170,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
       origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie);
-  TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame())
+  PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame())
       ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
                            origin,
                            origin,
@@ -188,12 +188,12 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kGenericSensorExtraClasses);
 
-  TabSpecificContentSettings::CreateForWebContents(
+  PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(
@@ -213,7 +213,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
 
   NavigateAndCommit(controller_, GURL("http://www.google.com"));
   content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Allowing by default but blocking (e.g. due to a feature policy) causes the
   // indicator to be shown.
@@ -230,7 +230,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
 
   NavigateAndCommit(controller_, GURL("http://www.google.com"));
   content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Blocking by default but allowing (e.g. via a site-specific exception)
   // causes the indicator to be shown.
@@ -247,7 +247,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
 
   NavigateAndCommit(controller_, GURL("http://www.google.com"));
   content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Blocking access by default also causes the indicator to be shown so users
   // can set an exception.
@@ -271,13 +271,13 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kGenericSensorExtraClasses);
 
-  TabSpecificContentSettings::CreateForWebContents(
+  PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
   NavigateAndCommit(controller_, GURL("https://www.example.com"));
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
 
@@ -317,7 +317,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 
   NavigateAndCommit(controller_, GURL("https://www.example.com"));
   content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Go from block by default to allow by default to block by default.
   {
@@ -352,7 +352,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 
   NavigateAndCommit(controller_, GURL("https://www.example.com"));
   content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Block by default but allow a specific site.
   {
@@ -373,7 +373,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 
   NavigateAndCommit(controller_, GURL("https://www.example.com"));
   content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   // Clear site-specific exceptions.
   settings_map->ClearSettingsForOneType(ContentSettingsType::SENSORS);
 
@@ -396,9 +396,9 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 }
 
 // Regression test for http://crbug.com/161854.
-TEST_F(ContentSettingImageModelTest, NULLTabSpecificContentSettings) {
-  TabSpecificContentSettings::DeleteForWebContentsForTest(web_contents());
-  EXPECT_EQ(nullptr, TabSpecificContentSettings::GetForFrame(
+TEST_F(ContentSettingImageModelTest, NULLPageSpecificContentSettings) {
+  PageSpecificContentSettings::DeleteForWebContentsForTest(web_contents());
+  EXPECT_EQ(nullptr, PageSpecificContentSettings::GetForFrame(
                          web_contents()->GetMainFrame()));
   // Should not crash.
   ContentSettingImageModel::CreateForContentType(
@@ -407,12 +407,12 @@ TEST_F(ContentSettingImageModelTest, NULLTabSpecificContentSettings) {
 }
 
 TEST_F(ContentSettingImageModelTest, SubresourceFilter) {
-  TabSpecificContentSettings::CreateForWebContents(
+  PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(
           ContentSettingImageModel::ImageType::ADS);
@@ -428,12 +428,12 @@ TEST_F(ContentSettingImageModelTest, SubresourceFilter) {
 }
 
 TEST_F(ContentSettingImageModelTest, NotificationsIconVisibility) {
-  TabSpecificContentSettings::CreateForWebContents(
+  PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(
           ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);

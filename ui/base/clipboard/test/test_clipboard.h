@@ -78,6 +78,9 @@ class TestClipboard : public Clipboard {
                 std::string* result) const override;
   base::Time GetLastModifiedTime() const override;
   void ClearLastModifiedTime() override;
+#if defined(USE_OZONE)
+  bool IsSelectionBufferAvailable() const override;
+#endif  // defined(USE_OZONE)
   void WritePortableRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,

@@ -386,14 +386,14 @@ The core classes are highlighted.
     The `CookieAccessObserver`s forward the notifications to `WebContents`,
     which then notifies its `WebContentsObserver`s. One such
     `WebContentsObserver` that cares about this information is
-    `TabSpecificContentSettings`, which displays information about allowed and
+    `PageSpecificContentSettings`, which displays information about allowed and
     blocked cookies in UI surfaces (see next item).
 
 * [`CookiesTreeModel`](/chrome/browser/browsing_data/cookies_tree_model.h)
 
     Stores cookie information for use in settings UI (the Page Info Bubble and
     various `chrome://settings` pages). Populated with info from
-    `TabSpecificContentSettings`.
+    `PageSpecificContentSettings`.
 
 * [`CookieJar`](/third_party/blink/renderer/core/loader/cookie_jar.h)
 

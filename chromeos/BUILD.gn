@@ -312,6 +312,9 @@ if (is_chromeos_device) {
 
       # crbug.com/1099695
       "platform.Drivefs",
+
+      # crbug.com/1114654
+      "crostini.Restart.artifact",
     ]
   }
 

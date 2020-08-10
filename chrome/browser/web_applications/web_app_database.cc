@@ -177,9 +177,9 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   }
 
   for (const WebApplicationShortcutsMenuItemInfo& shortcut_info :
-       web_app.shortcut_infos()) {
+       web_app.shortcuts_menu_item_infos()) {
     WebAppShortcutsMenuItemInfoProto* shortcut_info_proto =
-        local_data->add_shortcut_infos();
+        local_data->add_shortcuts_menu_item_infos();
     shortcut_info_proto->set_name(base::UTF16ToUTF8(shortcut_info.name));
     shortcut_info_proto->set_url(shortcut_info.url.spec());
     for (const WebApplicationShortcutsMenuItemInfo::Icon& icon_info :
@@ -407,8 +407,9 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetFileHandlers(std::move(file_handlers));
 
-  std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos;
-  for (const auto& shortcut_info_proto : local_data.shortcut_infos()) {
+  std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos;
+  for (const auto& shortcut_info_proto :
+       local_data.shortcuts_menu_item_infos()) {
     WebApplicationShortcutsMenuItemInfo shortcut_info;
     shortcut_info.name = base::UTF8ToUTF16(shortcut_info_proto.name());
     shortcut_info.url = GURL(shortcut_info_proto.url());
@@ -420,9 +421,9 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
       shortcut_info.shortcut_icon_infos.emplace_back(
           std::move(shortcut_icon_info));
     }
-    shortcut_infos.emplace_back(std::move(shortcut_info));
+    shortcuts_menu_item_infos.emplace_back(std::move(shortcut_info));
   }
-  web_app->SetShortcutInfos(std::move(shortcut_infos));
+  web_app->SetShortcutInfos(std::move(shortcuts_menu_item_infos));
 
   std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes;
   for (const auto& shortcuts_icon_sizes_proto :

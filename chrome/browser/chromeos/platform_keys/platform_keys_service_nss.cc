@@ -1298,7 +1298,7 @@ void GetKeyLocationsWithDB(std::unique_ptr<GetKeyLocationsState> state,
 // attributes which are used in tests.
 CK_ATTRIBUTE_TYPE TranslateKeyAttributeTypeForSoftoken(KeyAttributeType type) {
   switch (type) {
-    case KeyAttributeType::CertificateProvisioningId:
+    case KeyAttributeType::kCertificateProvisioningId:
       return CKA_START_DATE;
   }
 }
@@ -1312,7 +1312,7 @@ CK_ATTRIBUTE_TYPE TranslateKeyAttributeType(KeyAttributeType type,
   }
 
   switch (type) {
-    case KeyAttributeType::CertificateProvisioningId:
+    case KeyAttributeType::kCertificateProvisioningId:
       return pkcs11_custom_attributes::kCkaChromeOsBuiltinProvisioningProfileId;
   }
 }

@@ -230,8 +230,10 @@ js_library("passwords_list_handler") {
 
 js_library("password_move_to_account_dialog") {
   deps = [
+    ":avatar_icon",
     ":multi_store_password_ui_entry",
     ":password_manager_proxy",
+    "//third_party/polymer/v3_0/components-chromium/iron-icon",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",

@@ -74,7 +74,8 @@ class AppShortcutManager {
   // registration flow.
   void RegisterShortcutsMenuWithOs(
       const AppId& app_id,
-      const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos,
+      const std::vector<WebApplicationShortcutsMenuItemInfo>&
+          shortcuts_menu_item_infos,
       const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps);
 
   void UnregisterShortcutsMenuWithOs(const AppId& app_id);

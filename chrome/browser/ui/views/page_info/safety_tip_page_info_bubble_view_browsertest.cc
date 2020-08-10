@@ -431,8 +431,9 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(UIStatus::kDisabled,
                       // Disabled for flakiness. https://crbug.com/1113105.
                       // UIStatus::kEnabledWithDefaultFeatures,
-                      UIStatus::kEnabledWithSuspiciousSites,
-                      UIStatus::kEnabledWithAllFeatures));
+                      UIStatus::kEnabledWithSuspiciousSites));
+// Disabled for flakiness. https://crbug.com/1113105.
+// UIStatus::kEnabledWithAllFeatures));
 
 // Ensure normal sites with low engagement are not blocked.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,

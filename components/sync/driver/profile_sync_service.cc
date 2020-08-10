@@ -722,6 +722,9 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
       // For explicit passphrase users, clear the encryption key, such that they
       // will need to reenter it if sync gets re-enabled.
       sync_prefs_.ClearEncryptionBootstrapToken();
+      // Also let observers know that Sync-the-feature is now fully disabled
+      // (before it possibly starts up again in transport-only mode).
+      NotifyObservers();
       break;
   }
 }

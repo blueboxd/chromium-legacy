@@ -149,13 +149,6 @@ mediaApp.ClientApiDelegate.prototype.openFeedbackDialog = function() {};
  */
 mediaApp.ClientApiDelegate.prototype.requestSaveFile = function(
     suggestedName, mimeType) {};
-/**
- * Saves a copy of `file` in the file specified by `token`.
- * @param {!mediaApp.AbstractFile} file
- * @param {number} token
- * @return {!Promise<undefined>}
- */
-mediaApp.ClientApiDelegate.prototype.saveCopy = function(file, token) {};
 
 /**
  * The client Api for interacting with the media app instance.

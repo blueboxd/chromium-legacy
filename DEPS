@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '31954bf23f2435684a9d797a2d99c7cad2122d35',
+  'skia_revision': '64aee0acaab206f718e30281c7e654dab0f54405',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'bcddb0efbf60d16b4c3357e29bf1b6ff2261efb4',
+  'devtools_frontend_revision': '330914341bd4a018d4a9c0be0ad3e3ac2797d440',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1537,7 +1537,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6dbe3f25ad27b01e988e375520605ddbcb6bcaef',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fbb7e0951a272d0c19c197f47f992e886c003931',
     'condition': 'checkout_src_internal',
   },
 

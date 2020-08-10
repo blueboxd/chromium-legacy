@@ -413,13 +413,13 @@ IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTestWithShortcutsMenu,
 
   EXPECT_TRUE(provider().registrar().IsInstalled(app_id));
 
-  std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos =
+  std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos =
       provider().registrar().GetAppShortcutInfos(app_id);
-  EXPECT_EQ(shortcut_infos.size(), 2u);
-  EXPECT_EQ(shortcut_infos[0].name, base::UTF8ToUTF16("shortcut1"));
-  EXPECT_EQ(shortcut_infos[0].shortcut_icon_infos.size(), 1u);
-  EXPECT_EQ(shortcut_infos[1].name, base::UTF8ToUTF16("shortcut2"));
-  EXPECT_EQ(shortcut_infos[1].shortcut_icon_infos.size(), 2u);
+  EXPECT_EQ(shortcuts_menu_item_infos.size(), 2u);
+  EXPECT_EQ(shortcuts_menu_item_infos[0].name, base::UTF8ToUTF16("shortcut1"));
+  EXPECT_EQ(shortcuts_menu_item_infos[0].shortcut_icon_infos.size(), 1u);
+  EXPECT_EQ(shortcuts_menu_item_infos[1].name, base::UTF8ToUTF16("shortcut2"));
+  EXPECT_EQ(shortcuts_menu_item_infos[1].shortcut_icon_infos.size(), 2u);
 
   const std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes = {
       {48}, {96, 144}};
@@ -443,11 +443,15 @@ IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTestWithShortcutsMenu,
   EXPECT_EQ("Manifest test app with Shortcuts", web_app->name());
   EXPECT_EQ(DisplayMode::kStandalone, web_app->display_mode());
 
-  EXPECT_EQ(web_app->shortcut_infos().size(), 2u);
-  EXPECT_EQ(web_app->shortcut_infos()[0].name, base::UTF8ToUTF16("shortcut1"));
-  EXPECT_EQ(web_app->shortcut_infos()[0].shortcut_icon_infos.size(), 1u);
-  EXPECT_EQ(web_app->shortcut_infos()[1].name, base::UTF8ToUTF16("shortcut2"));
-  EXPECT_EQ(web_app->shortcut_infos()[1].shortcut_icon_infos.size(), 2u);
+  EXPECT_EQ(web_app->shortcuts_menu_item_infos().size(), 2u);
+  EXPECT_EQ(web_app->shortcuts_menu_item_infos()[0].name,
+            base::UTF8ToUTF16("shortcut1"));
+  EXPECT_EQ(web_app->shortcuts_menu_item_infos()[0].shortcut_icon_infos.size(),
+            1u);
+  EXPECT_EQ(web_app->shortcuts_menu_item_infos()[1].name,
+            base::UTF8ToUTF16("shortcut2"));
+  EXPECT_EQ(web_app->shortcuts_menu_item_infos()[1].shortcut_icon_infos.size(),
+            2u);
 
   const std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes = {
       {48}, {96, 144}};

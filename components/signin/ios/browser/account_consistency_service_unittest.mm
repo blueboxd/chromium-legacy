@@ -28,6 +28,7 @@
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
+#include "net/cookies/cookie_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -53,6 +54,14 @@ const char* kGoogleDomain = "google.com";
 const char* kYoutubeDomain = "youtube.com";
 // Google domain where the CHROME_CONNECTED cookie is set/removed.
 const char* kCountryGoogleDomain = "google.de";
+
+// Returns a cookie domain that applies for all origins on |host_domain|.
+std::string GetCookieDomain(const std::string& host_domain) {
+  DCHECK(net::cookie_util::DomainIsHostOnly(host_domain));
+  std::string cookie_domain = "." + host_domain;
+  DCHECK(!net::cookie_util::DomainIsHostOnly(cookie_domain));
+  return cookie_domain;
+}
 
 // Returns true if |cookies| contains a cookie with |name| and |domain|.
 //
@@ -230,18 +239,20 @@ class AccountConsistencyServiceTest : public PlatformTest {
   }
 
   void CheckDomainHasChromeConnectedCookie(const std::string& domain) {
-    EXPECT_TRUE(ContainsCookie(
-        GetCookiesInCookieJar(),
-        AccountConsistencyService::kChromeConnectedCookieName, "." + domain));
+    EXPECT_TRUE(
+        ContainsCookie(GetCookiesInCookieJar(),
+                       AccountConsistencyService::kChromeConnectedCookieName,
+                       GetCookieDomain(domain)));
     EXPECT_GE(
         account_consistency_service_->last_cookie_update_map_.count(domain),
         1u);
   }
 
   void CheckNoChromeConnectedCookieForDomain(const std::string& domain) {
-    EXPECT_FALSE(ContainsCookie(
-        GetCookiesInCookieJar(),
-        AccountConsistencyService::kChromeConnectedCookieName, "." + domain));
+    EXPECT_FALSE(
+        ContainsCookie(GetCookiesInCookieJar(),
+                       AccountConsistencyService::kChromeConnectedCookieName,
+                       GetCookieDomain(domain)));
     EXPECT_EQ(0U, account_consistency_service_->last_cookie_update_map_.count(
                       domain));
   }

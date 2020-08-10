@@ -72,11 +72,6 @@ CreateUntrustedTelemetryExtensionDataSource() {
       "untrusted_scripts.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_SCRIPTS_JS);
   untrusted_source->AddResourcePath(
       "untrusted_worker.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_WORKER_JS);
-  untrusted_source->AddResourcePath("mojo_bindings_lite.js",
-                                    IDR_MOJO_MOJO_BINDINGS_LITE_JS);
-  untrusted_source->AddResourcePath(
-      "diagnostics_service.mojom-lite.js",
-      IDR_TELEMETRY_EXTENSION_DIAGNOSTICS_SERVICE_MOJO_LITE_JS);
 
   untrusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::FrameAncestors,

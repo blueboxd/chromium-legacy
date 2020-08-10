@@ -171,7 +171,7 @@ bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
 
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu) &&
-      web_application_info_->shortcut_infos !=
+      web_application_info_->shortcuts_menu_item_infos !=
           registrar_.GetAppShortcutInfos(app_id_)) {
     return true;
   }

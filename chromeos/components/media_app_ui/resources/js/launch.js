@@ -184,17 +184,6 @@ guestMessagePipe.registerHandler(Message.REQUEST_SAVE_FILE, async (message) => {
   return response;
 });
 
-guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
-  const {blob, token} = /** @type {!SaveCopyMessage} */ (message);
-  const handle = tokenMap.get(token);
-  // Note `handle` could be the same as a `FileSystemFileHandle` that exists in
-  // `tokenMap`. Possibly even the `File` currently open. But that's OK. E.g.
-  // the next overwrite-file request will just invoke `saveBlobToFile` in the
-  // same way. Note there may be no currently writable file (e.g. save from
-  // clipboard).
-  await saveBlobToFile(handle, blob);
-});
-
 guestMessagePipe.registerHandler(Message.SAVE_AS, async (message) => {
   const {blob, oldFileToken, pickedFileToken} =
       /** @type {!SaveAsMessage} */ (message);

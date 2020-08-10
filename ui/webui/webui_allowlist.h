@@ -5,6 +5,7 @@
 #ifndef UI_WEBUI_WEBUI_ALLOWLIST_H_
 #define UI_WEBUI_WEBUI_ALLOWLIST_H_
 
+#include <initializer_list>
 #include <map>
 
 #include "base/supports_user_data.h"
@@ -32,10 +33,25 @@ class WebUIAllowlist : public base::SupportsUserData::Data {
   ~WebUIAllowlist() override;
 
   // Register auto-granted |type| permission for |origin|.
+  //
+  // WebUIAllowlist comes with no permission by default. Users can deny
+  // permissions (e.g. Settings > Site Settings) unless they are registered
+  // here.
+  //
+  // Most WebUIs would want to declare these:
+  //   COOKIES: use persistent storage (e.g. localStorage)
+  //   JAVASCRIPT: run JavaScript
+  //   IMAGES: show images
+  //   SOUND: play sounds
   void RegisterAutoGrantedPermission(
       const url::Origin& origin,
       ContentSettingsType type,
       ContentSetting setting = CONTENT_SETTING_ALLOW);
+
+  // Register auto-granted |types| permissions for |origin|.
+  void RegisterAutoGrantedPermissions(
+      const url::Origin& origin,
+      std::initializer_list<ContentSettingsType> types);
 
   std::unique_ptr<content_settings::RuleIterator> GetRuleIterator(
       ContentSettingsType content_type) const;

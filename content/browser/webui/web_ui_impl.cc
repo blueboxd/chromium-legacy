@@ -203,13 +203,11 @@ void WebUIImpl::SetController(std::unique_ptr<WebUIController> controller) {
 }
 
 bool WebUIImpl::CanCallJavascript() {
-  RenderFrameHost* frame_host = web_contents_->GetMainFrame();
-  return frame_host &&
-         (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-              frame_host->GetProcess()->GetID()) ||
+  return (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+              frame_host_->GetProcess()->GetID()) ||
           // It's possible to load about:blank in a Web UI renderer.
           // See http://crbug.com/42547
-          frame_host->GetLastCommittedURL().spec() == url::kAboutBlankURL);
+          frame_host_->GetLastCommittedURL().spec() == url::kAboutBlankURL);
 }
 
 void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name) {
@@ -311,8 +309,7 @@ void WebUIImpl::ExecuteJavascript(const base::string16& javascript) {
   if (!CanCallJavascript())
     return;
 
-  web_contents_->GetMainFrame()->ExecuteJavaScript(javascript,
-                                                   base::NullCallback());
+  frame_host_->ExecuteJavaScript(javascript, base::NullCallback());
 }
 
 void WebUIImpl::DisallowJavascriptOnAllHandlers() {

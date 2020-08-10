@@ -30,6 +30,66 @@ function getOrCreateProbeService() {
 }
 
 /**
+ * Proxying diagnostics requests between DiagnosticsRequester on
+ * chrome-untrusted:// side with WebIDL types and DiagnosticsService on
+ * chrome:// side with Mojo types.
+ */
+class DiagnosticsProxy {
+  constructor() {
+    const routineEnum = chromeos.health.mojom.DiagnosticRoutineEnum;
+
+    /**
+     * @type { !Map<!chromeos.health.mojom.DiagnosticRoutineEnum, !string> }
+     * @const
+     */
+    this.routineToEnum_ = new Map([
+      [routineEnum.kBatteryCapacity, 'battery-capacity'],
+      [routineEnum.kBatteryHealth, 'battery-health'],
+      [routineEnum.kUrandom, 'urandom'],
+      [routineEnum.kSmartctlCheck, 'smartctl-check'],
+      [routineEnum.kAcPower, 'ac-power'],
+      [routineEnum.kCpuCache, 'cpu-cache'],
+      [routineEnum.kCpuStress, 'cpu-stress'],
+      [routineEnum.kFloatingPointAccuracy, 'floating-point-accuracy'],
+      [routineEnum.kNvmeWearLevel, 'nvme-wear-level'],
+      [routineEnum.kNvmeSelfTest, 'nvme-self-test'],
+      [routineEnum.kDiskRead, 'disk-read'],
+      [routineEnum.kPrimeSearch, 'prime-search'],
+      [routineEnum.kBatteryDischarge, 'battery-discharge'],
+    ]);
+
+    if (this.routineToEnum_.size != routineEnum.MAX_VALUE + 1) {
+      throw RangeError('routineToEnum_ does not contain all items from enum!');
+    }
+  }
+
+  /**
+   * @param { !Array<!chromeos.health.mojom.DiagnosticRoutineEnum> } routines
+   * @return { !Array<!string> }
+   */
+  convertRoutines(routines) {
+    return routines.map((routine) => {
+      if (!this.routineToEnum_.has(routine)) {
+        throw TypeError(`Diagnostic routine '${routine}' is unknown.`);
+      }
+      return this.routineToEnum_.get(routine);
+    });
+  }
+
+  /**
+   * Requests available routines.
+   * @return { !Promise<dpsl_internal.DiagnosticsGetAvailableRoutinesResponse> }
+   */
+  async handleGetAvailableRoutines() {
+    const availableRoutines =
+        await getOrCreateDiagnosticsService().getAvailableRoutines();
+    return this.convertRoutines(availableRoutines.availableRoutines);
+  };
+};
+
+const diagnosticsProxy = new DiagnosticsProxy();
+
+/**
  * Proxying telemetry requests between TelemetryRequester on
  * chrome-untrusted:// side with WebIDL types and ProbeService on chrome://
  * side with Mojo types.
@@ -52,6 +112,10 @@ class TelemetryProxy {
       ['stateful-partition', categoryEnum.kStatefulPartition],
       ['bluetooth', categoryEnum.kBluetooth]
     ]);
+
+    if (this.categoryToEnum_.size != categoryEnum.MAX_VALUE + 1) {
+      throw RangeError('categoryToEnum_ does not contain all items from enum!');
+    }
   }
 
   /**
@@ -114,7 +178,7 @@ class TelemetryProxy {
   /**
    * Requests telemetry info.
    * @param { Object } message
-   * @return { !Object }
+   * @return { !Promise<!dpsl_internal.ProbeTelemetryInfoResponse> }
    */
   async handleProbeTelemetryInfo(message) {
     const request =
@@ -125,13 +189,13 @@ class TelemetryProxy {
     try {
       categories = this.convertCategories(request);
     } catch (/** @type {!Error}*/ error) {
-      return {error};
+      return error;
     }
 
     const telemetryInfo =
         await getOrCreateProbeService().probeTelemetryInfo(categories);
-    return /** @type {Object} */ (this.convert(telemetryInfo)) ||
-        {telemetryInfo: {}};
+    return /** @type {!Object} */ (
+        this.convert(telemetryInfo.telemetryInfo) || {});
   }
 };
 
@@ -141,9 +205,8 @@ const untrustedMessagePipe =
     new MessagePipe('chrome-untrusted://telemetry-extension');
 
 untrustedMessagePipe.registerHandler(
-    dpsl_internal.Message.DIAGNOSTICS_AVAILABLE_ROUTINES, async () => {
-      return await getOrCreateDiagnosticsService().getAvailableRoutines();
-    });
+    dpsl_internal.Message.DIAGNOSTICS_AVAILABLE_ROUTINES,
+    () => diagnosticsProxy.handleGetAvailableRoutines());
 
 untrustedMessagePipe.registerHandler(
     dpsl_internal.Message.PROBE_TELEMETRY_INFO,

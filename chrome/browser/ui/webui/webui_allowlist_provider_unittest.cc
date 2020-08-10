@@ -253,3 +253,27 @@ TEST_F(WebUIAllowlistProviderTest, RegisterDevtools) {
                 url_no_permission_webui, url_no_permission_webui,
                 ContentSettingsType::BLUETOOTH_GUARD, std::string()));
 }
+
+TEST_F(WebUIAllowlistProviderTest, RegisterWithPermissionList) {
+  auto* map = GetHostContentSettingsMap(profile());
+  map->SetDefaultContentSetting(ContentSettingsType::BLUETOOTH_GUARD,
+                                CONTENT_SETTING_BLOCK);
+  map->SetDefaultContentSetting(ContentSettingsType::NOTIFICATIONS,
+                                CONTENT_SETTING_BLOCK);
+
+  const GURL url_chrome = GURL("chrome://test");
+
+  auto* allowlist = WebUIAllowlist::GetOrCreate(profile());
+  allowlist->RegisterAutoGrantedPermissions(
+      url::Origin::Create(url_chrome), {ContentSettingsType::BLUETOOTH_GUARD,
+                                        ContentSettingsType::NOTIFICATIONS});
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(url_chrome, url_chrome,
+                                   ContentSettingsType::BLUETOOTH_GUARD,
+                                   std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(url_chrome, url_chrome,
+                                   ContentSettingsType::NOTIFICATIONS,
+                                   std::string()));
+}

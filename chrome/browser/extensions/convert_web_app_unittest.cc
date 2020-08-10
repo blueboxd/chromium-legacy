@@ -569,9 +569,9 @@ TEST_F(ExtensionFromWebApp, WebAppFileHandlersAreCorrectlyConverted) {
   }
 }
 
-// Tests that |shortcut_infos| on the WebAppManifest is correctly converted
-// to |web_app_shortcut_icons| and |web_app_linked_shortcut_items| on an
-// extension manifest.
+// Tests that |shortcuts_menu_item_infos| on the WebAppManifest is correctly
+// converted to |web_app_shortcut_icons| and |web_app_linked_shortcut_items| on
+// an extension manifest.
 TEST_F(ExtensionFromWebAppWithShortcutsMenu,
        WebAppShortcutIconsAreCorrectlyConverted) {
   StartExtensionService();
@@ -598,7 +598,7 @@ TEST_F(ExtensionFromWebAppWithShortcutsMenu,
     web_app.shortcuts_menu_icons_bitmaps.emplace_back(
         std::move(shortcut_icon_bitmaps));
   }
-  web_app.shortcut_infos.push_back(std::move(shortcut_item));
+  web_app.shortcuts_menu_item_infos.push_back(std::move(shortcut_item));
 
   shortcut_item.name = base::ASCIIToUTF16("Shortcut 2");
   shortcut_item.url = GURL("https://shortcut-app.io/shortcuts/shortcut2");
@@ -615,7 +615,7 @@ TEST_F(ExtensionFromWebAppWithShortcutsMenu,
     web_app.shortcuts_menu_icons_bitmaps.emplace_back(
         std::move(shortcut_icon_bitmaps));
   }
-  web_app.shortcut_infos.push_back(std::move(shortcut_item));
+  web_app.shortcuts_menu_item_infos.push_back(std::move(shortcut_item));
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
       web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), ExtensionPath(),
@@ -627,9 +627,9 @@ TEST_F(ExtensionFromWebAppWithShortcutsMenu,
       WebAppLinkedShortcutItems::GetWebAppLinkedShortcutItems(extension.get());
   const std::map<int, ExtensionIconSet>& shortcut_icons =
       WebAppShortcutIconsInfo::GetShortcutIcons(extension.get());
-  for (size_t i = 0; i < web_app.shortcut_infos.size(); ++i) {
+  for (size_t i = 0; i < web_app.shortcuts_menu_item_infos.size(); ++i) {
     const std::vector<WebApplicationShortcutsMenuItemInfo::Icon>& icon_infos =
-        web_app.shortcut_infos[i].shortcut_icon_infos;
+        web_app.shortcuts_menu_item_infos[i].shortcut_icon_infos;
     const std::vector<WebAppLinkedShortcutItems::ShortcutItemInfo::IconInfo>&
         linked_shortcut_icons_info =
             linked_shortcut_items.shortcut_item_infos[i]

@@ -122,7 +122,7 @@ message WebAppProto {
   optional bool is_generated_icon = 18;
 
   // A list of Shortcuts Menu items specified in the Web App Manifest.
-  repeated WebAppShortcutsMenuItemInfoProto shortcut_infos = 19;
+  repeated WebAppShortcutsMenuItemInfoProto shortcuts_menu_item_infos = 19;
   // A list of icon sizes we successfully downloaded to store on disk.
   repeated DownloadedShortcutsMenuIconSizesProto
       downloaded_shortcuts_menu_icons_sizes = 20;

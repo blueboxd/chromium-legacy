@@ -453,7 +453,7 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
       GetSquareSizePxs(web_app_info.icon_bitmaps_any));
   web_app->SetIsGeneratedIcon(web_app_info.is_generated_icon);
 
-  web_app->SetShortcutInfos(web_app_info.shortcut_infos);
+  web_app->SetShortcutInfos(web_app_info.shortcuts_menu_item_infos);
   web_app->SetDownloadedShortcutsMenuIconsSizes(
       GetDownloadedShortcutsMenuIconsSizes(
           web_app_info.shortcuts_menu_icons_bitmaps));

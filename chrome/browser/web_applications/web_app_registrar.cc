@@ -153,7 +153,7 @@ std::vector<SquareSizePx> WebAppRegistrar::GetAppDownloadedIconSizes(
 std::vector<WebApplicationShortcutsMenuItemInfo>
 WebAppRegistrar::GetAppShortcutInfos(const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->shortcut_infos()
+  return web_app ? web_app->shortcuts_menu_item_infos()
                  : std::vector<WebApplicationShortcutsMenuItemInfo>();
 }
 

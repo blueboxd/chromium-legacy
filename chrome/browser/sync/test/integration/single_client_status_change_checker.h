@@ -25,10 +25,11 @@ class SingleClientStatusChangeChecker
   explicit SingleClientStatusChangeChecker(syncer::ProfileSyncService* service);
   ~SingleClientStatusChangeChecker() override;
 
+  syncer::ProfileSyncService* service();
+
+ protected:
   // StatusChangeChecker implementations and stubs.
   bool IsExitConditionSatisfied(std::ostream* os) override = 0;
-
-  syncer::ProfileSyncService* service();
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_SINGLE_CLIENT_STATUS_CHANGE_CHECKER_H_

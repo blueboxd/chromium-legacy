@@ -325,9 +325,11 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     // its the primary plane.
     is_primary_plane = !scoped_hardware_buffer->is_video();
     DCHECK(!is_primary_plane || !primary_plane_fences_);
-    primary_plane_fences_.emplace();
-    primary_plane_fences_->available_fence =
-        scoped_hardware_buffer->TakeAvailableFence();
+    if (is_primary_plane) {
+      primary_plane_fences_.emplace();
+      primary_plane_fences_->available_fence =
+          scoped_hardware_buffer->TakeAvailableFence();
+    }
 
     auto* a_surface = surface_state.surface->surface();
     DCHECK_EQ(pending_frame_resources_.count(a_surface), 0u);

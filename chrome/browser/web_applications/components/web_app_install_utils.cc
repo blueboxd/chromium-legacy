@@ -75,8 +75,8 @@ void AddSquareIconsFromBitmaps(const std::map<SquareSizePx, SkBitmap>& bitmaps,
   }
 }
 
-// Populate |web_app_info|'s shortcut_infos vector using the blink::Manifest's
-// shortcuts vector.
+// Populate |web_app_info|'s shortcuts_menu_item_infos vector using the
+// blink::Manifest's shortcuts vector.
 std::vector<WebApplicationShortcutsMenuItemInfo>
 UpdateShortcutInfosFromManifest(
     const std::vector<blink::Manifest::ShortcutItem>& shortcuts) {
@@ -216,7 +216,7 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   if (!manifest.shortcuts.empty() &&
       base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu)) {
-    web_app_info->shortcut_infos =
+    web_app_info->shortcuts_menu_item_infos =
         UpdateShortcutInfosFromManifest(manifest.shortcuts);
   }
 }
@@ -232,7 +232,7 @@ std::vector<GURL> GetValidIconUrlsToDownload(
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu)) {
     // Also add shortcut icon urls, so they can be downloaded.
-    for (const auto& shortcut : web_app_info.shortcut_infos) {
+    for (const auto& shortcut : web_app_info.shortcuts_menu_item_infos) {
       for (const auto& icon : shortcut.shortcut_icon_infos) {
         if (!icon.url.is_valid())
           continue;
@@ -245,7 +245,7 @@ std::vector<GURL> GetValidIconUrlsToDownload(
 
 void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
                                const IconsMap* icons_map) {
-  for (auto& shortcut : web_app_info->shortcut_infos) {
+  for (auto& shortcut : web_app_info->shortcuts_menu_item_infos) {
     SizeToBitmap shortcut_icon_bitmaps;
     for (const auto& icon : shortcut.shortcut_icon_infos) {
       auto it = icons_map->find(icon.url);

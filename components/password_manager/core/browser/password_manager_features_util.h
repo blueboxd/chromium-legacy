@@ -128,6 +128,23 @@ ComputePasswordAccountStorageUsageLevel(
     const PrefService* pref_service,
     const syncer::SyncService* sync_service);
 
+// Increases the count of how many times Chrome automatically offered to move a
+// password to the account and the user refused this, e.g. by ignoring the
+// bubble that's shown after successful sign-in with a device password. Should
+// only be called if the user is signed-in and not opted-in. |pref_service| and
+// |sync_service| should be non-null.
+void IncrementMoveToAccountRefusedCount(
+    PrefService* pref_service,
+    const syncer::SyncService* sync_service);
+
+// Gets the count of how many times Chrome automatically offered to move a
+// password to the account and the user refused this, e.g. by ignoring the
+// bubble that's shown after successful sign-in with a device password. Should
+// only be called if the user is signed-in and not opted-in. |pref_service| and
+// |sync_service| should be non-null.
+int GetMoveToAccountRefusedCount(const PrefService* pref_service,
+                                 const syncer::SyncService* sync_service);
+
 }  // namespace features_util
 
 }  // namespace password_manager

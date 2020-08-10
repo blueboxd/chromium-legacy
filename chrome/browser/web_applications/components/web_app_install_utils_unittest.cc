@@ -215,17 +215,17 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   web_app_info.icon_infos.push_back(info);
 
   for (int i = 1; i < 4; ++i) {
-    WebApplicationShortcutsMenuItemInfo shortcut_item;
+    WebApplicationShortcutsMenuItemInfo shortcuts_menu_item_info;
     WebApplicationShortcutsMenuItemInfo::Icon icon;
     std::string shortcut_name = kShortcutItemName;
     shortcut_name += base::NumberToString(i);
-    shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
-    shortcut_item.url = ShortcutItemUrl();
+    shortcuts_menu_item_info.name = base::UTF8ToUTF16(shortcut_name);
+    shortcuts_menu_item_info.url = ShortcutItemUrl();
 
     icon.url = IconUrl1();
     icon.square_size_px = kIconSize;
-    shortcut_item.shortcut_icon_infos.push_back(std::move(icon));
-    web_app_info.shortcut_infos.push_back(shortcut_item);
+    shortcuts_menu_item_info.shortcut_icon_infos.push_back(std::move(icon));
+    web_app_info.shortcuts_menu_item_infos.push_back(shortcuts_menu_item_info);
   }
 
   blink::Manifest manifest;
@@ -261,10 +261,11 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   EXPECT_EQ(1u, web_app_info.icon_infos.size());
   EXPECT_EQ(AppIcon1(), web_app_info.icon_infos[0].url);
 
-  // The shortcut_infos from |web_app_info| should be left as is, since the
-  // manifest doesn't have any shortcut information.
-  EXPECT_EQ(3u, web_app_info.shortcut_infos.size());
-  EXPECT_EQ(1u, web_app_info.shortcut_infos[0].shortcut_icon_infos.size());
+  // The shortcuts_menu_item_infos from |web_app_info| should be left as is,
+  // since the manifest doesn't have any shortcut information.
+  EXPECT_EQ(3u, web_app_info.shortcuts_menu_item_infos.size());
+  EXPECT_EQ(
+      1u, web_app_info.shortcuts_menu_item_infos[0].shortcut_icon_infos.size());
 
   // Test that |manifest.name| takes priority over |manifest.short_name|, and
   // that icons provided by the manifest replace icons in |web_app_info|.
@@ -312,14 +313,17 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   EXPECT_EQ(AppIcon2(), web_app_info.icon_infos[0].url);
   EXPECT_EQ(AppIcon3(), web_app_info.icon_infos[1].url);
 
-  EXPECT_EQ(2u, web_app_info.shortcut_infos.size());
-  EXPECT_EQ(1u, web_app_info.shortcut_infos[0].shortcut_icon_infos.size());
+  EXPECT_EQ(2u, web_app_info.shortcuts_menu_item_infos.size());
+  EXPECT_EQ(
+      1u, web_app_info.shortcuts_menu_item_infos[0].shortcut_icon_infos.size());
   WebApplicationShortcutsMenuItemInfo::Icon web_app_shortcut_icon =
-      web_app_info.shortcut_infos[0].shortcut_icon_infos[0];
+      web_app_info.shortcuts_menu_item_infos[0].shortcut_icon_infos[0];
   EXPECT_EQ(IconUrl2(), web_app_shortcut_icon.url);
 
-  EXPECT_EQ(1u, web_app_info.shortcut_infos[1].shortcut_icon_infos.size());
-  web_app_shortcut_icon = web_app_info.shortcut_infos[1].shortcut_icon_infos[0];
+  EXPECT_EQ(
+      1u, web_app_info.shortcuts_menu_item_infos[1].shortcut_icon_infos.size());
+  web_app_shortcut_icon =
+      web_app_info.shortcuts_menu_item_infos[1].shortcut_icon_infos[0];
   EXPECT_EQ(IconUrl3(), web_app_shortcut_icon.url);
 
   // Check file handlers were updated
@@ -376,7 +380,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   UpdateWebAppInfoFromManifest(manifest, &web_app_info);
 
   std::vector<WebApplicationShortcutsMenuItemInfo::Icon> all_icons;
-  for (const auto& shortcut : web_app_info.shortcut_infos) {
+  for (const auto& shortcut : web_app_info.shortcuts_menu_item_infos) {
     for (const auto& icon_info : shortcut.shortcut_icon_infos) {
       all_icons.push_back(icon_info);
     }
@@ -428,7 +432,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   UpdateWebAppInfoFromManifest(manifest, &web_app_info);
 
   std::vector<WebApplicationShortcutsMenuItemInfo::Icon> all_icons;
-  for (const auto& shortcut : web_app_info.shortcut_infos) {
+  for (const auto& shortcut : web_app_info.shortcuts_menu_item_infos) {
     for (const auto& icon_info : shortcut.shortcut_icon_infos) {
       all_icons.push_back(icon_info);
     }
@@ -449,7 +453,7 @@ TEST(WebAppInstallUtils, PopulateShortcutItemIcons) {
   icon.url = IconUrl1();
   icon.square_size_px = kIconSize;
   shortcut_item.shortcut_icon_infos.push_back(std::move(icon));
-  web_app_info.shortcut_infos.push_back(std::move(shortcut_item));
+  web_app_info.shortcuts_menu_item_infos.push_back(std::move(shortcut_item));
 
   shortcut_name = kShortcutItemName;
   shortcut_name += base::NumberToString(2);
@@ -460,7 +464,7 @@ TEST(WebAppInstallUtils, PopulateShortcutItemIcons) {
   icon.url = IconUrl2();
   icon.square_size_px = 2 * kIconSize;
   shortcut_item.shortcut_icon_infos.push_back(std::move(icon));
-  web_app_info.shortcut_infos.push_back(std::move(shortcut_item));
+  web_app_info.shortcuts_menu_item_infos.push_back(std::move(shortcut_item));
 
   IconsMap icons_map;
   std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
@@ -477,7 +481,7 @@ TEST(WebAppInstallUtils, PopulateShortcutItemIcons) {
 }
 
 // Tests that when PopulateShortcutItemIcons is called with no shortcut icon
-// urls specified, no data is written to shortcut_infos.
+// urls specified, no data is written to shortcuts_menu_item_infos.
 TEST(WebAppInstallUtils, PopulateShortcutItemIconsNoShortcutIcons) {
   WebApplicationInfo web_app_info;
   IconsMap icons_map;
@@ -490,7 +494,7 @@ TEST(WebAppInstallUtils, PopulateShortcutItemIconsNoShortcutIcons) {
 
   PopulateShortcutItemIcons(&web_app_info, &icons_map);
 
-  EXPECT_EQ(0U, web_app_info.shortcut_infos.size());
+  EXPECT_EQ(0U, web_app_info.shortcuts_menu_item_infos.size());
 }
 
 // Tests that when FilterAndResizeIconsGenerateMissing is called with no
@@ -608,16 +612,18 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   info.url = IconUrl1();
   web_app_info.icon_infos.push_back(info);
 
-  // Construct |shortcut_item| to add to |web_app_info.shortcut_infos|.
-  WebApplicationShortcutsMenuItemInfo shortcut_item;
-  shortcut_item.name = base::UTF8ToUTF16(kShortcutItemName);
-  shortcut_item.url = ShortcutItemUrl();
-  // Construct |icon| to add to |shortcut_item.shortcut_icon_infos|.
+  // Construct |shortcuts_menu_item_info| to add to
+  // |web_app_info.shortcuts_menu_item_infos|.
+  WebApplicationShortcutsMenuItemInfo shortcuts_menu_item_info;
+  shortcuts_menu_item_info.name = base::UTF8ToUTF16(kShortcutItemName);
+  shortcuts_menu_item_info.url = ShortcutItemUrl();
+  // Construct |icon| to add to |shortcuts_menu_item_info.shortcut_icon_infos|.
   WebApplicationShortcutsMenuItemInfo::Icon icon;
   icon.url = IconUrl2();
   icon.square_size_px = kIconSize;
-  shortcut_item.shortcut_icon_infos.push_back(std::move(icon));
-  web_app_info.shortcut_infos.push_back(std::move(shortcut_item));
+  shortcuts_menu_item_info.shortcut_icon_infos.push_back(std::move(icon));
+  web_app_info.shortcuts_menu_item_infos.push_back(
+      std::move(shortcuts_menu_item_info));
   // Construct shortcut_icon_bitmap to add to
   // |web_app_info.shortcuts_menu_icons_bitmaps|.
   std::map<SquareSizePx, SkBitmap> shortcut_icon_bitmaps;

@@ -495,7 +495,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerProfileBrowserTest,
 
   // Set an attribute for the key on each token.
   const KeyAttributeType kAttributeType =
-      KeyAttributeType::CertificateProvisioningId;
+      KeyAttributeType::kCertificateProvisioningId;
   std::map<TokenId, std::string> token_to_value;
   for (TokenId token_id : GetParam().token_ids) {
     token_to_value[token_id] =
@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
                        SetAndGetKeyAttribute) {
   // The attribute type to be set and retrieved using platform keys service.
   const KeyAttributeType kAttributeType =
-      KeyAttributeType::CertificateProvisioningId;
+      KeyAttributeType::kCertificateProvisioningId;
   const TokenId token_id = GetParam().token_id;
   const std::string kAttributeValue = "test_attr_value";
 
@@ -624,7 +624,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
 IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
                        GetKeyAttributeForNonExistingKey) {
   const KeyAttributeType kAttributeType =
-      KeyAttributeType::CertificateProvisioningId;
+      KeyAttributeType::kCertificateProvisioningId;
   const TokenId token_id = GetParam().token_id;
   const std::string kPublicKey = "Non Existing public key";
 
@@ -642,7 +642,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
 IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
                        SetKeyAttributeForNonExistingKey) {
   const KeyAttributeType kAttributeType =
-      KeyAttributeType::CertificateProvisioningId;
+      KeyAttributeType::kCertificateProvisioningId;
   const TokenId token_id = GetParam().token_id;
   const std::string kAttributeValue = "test";
   const std::string kPublicKey = "Non Existing public key";

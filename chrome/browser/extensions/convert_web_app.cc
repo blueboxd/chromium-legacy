@@ -312,12 +312,12 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   // Add shortcuts icons and linked shortcut items information.
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu) &&
-      !web_app.shortcut_infos.empty()) {
+      !web_app.shortcuts_menu_item_infos.empty()) {
     // |linked_shortcut_items| is a list of all entries in the Web App
     // Manifest's shortcuts member. It includes the name, url and list of
     // shortcut_icon_infos associated with the shortcut item.
     auto linked_shortcut_items = std::make_unique<base::ListValue>();
-    for (const auto& shortcut : web_app.shortcut_infos) {
+    for (const auto& shortcut : web_app.shortcuts_menu_item_infos) {
       auto linked_shortcut_item = std::make_unique<base::DictionaryValue>();
       linked_shortcut_item->SetString(keys::kWebAppLinkedShortcutItemName,
                                       shortcut.name);
@@ -349,8 +349,8 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
          web_app.shortcuts_menu_icons_bitmaps) {
       // |shortcut_icons| is a mapping of filepath keyed to SquareSizePx
       // specified in the WebAppManifest for every icon written to disk for the
-      // current shortcut in web_app.shortcut_infos. A shortcut in the
-      // WebAppManifest can have different icons for different sizes.
+      // current shortcut in web_app.shortcuts_menu_item_infos. A shortcut in
+      // the WebAppManifest can have different icons for different sizes.
       auto shortcut_icons = std::make_unique<base::DictionaryValue>();
       std::string curr_icon = base::NumberToString(shortcuts_icons->size());
       for (const auto& icon : shortcut_icon_bitmaps) {
@@ -409,7 +409,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   // Write the shortcut icon files.
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu) &&
-      !web_app.shortcut_infos.empty()) {
+      !web_app.shortcuts_menu_item_infos.empty()) {
     base::FilePath shortcut_icons_dir =
         temp_dir.GetPath().AppendASCII(kShortcutIconsDirName);
     for (size_t i = 0; i < web_app.shortcuts_menu_icons_bitmaps.size(); ++i) {

@@ -79,7 +79,7 @@ scoped_refptr<net::X509Certificate> CertificateHelperForTesting::AddCert(
       GetAttributeForKey(
           GetPlatformKeysTokenId(cert_scope),
           platform_keys::GetSubjectPublicKeyInfo(cert),
-          platform_keys::KeyAttributeType::CertificateProvisioningId, _))
+          platform_keys::KeyAttributeType::kCertificateProvisioningId, _))
       .WillRepeatedly(RunOnceCallback<3>(cert_profile_id, status));
 
   cert_list_.push_back(cert);

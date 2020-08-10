@@ -122,6 +122,8 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
   // Wait until an actionable error is encountered.
   ASSERT_TRUE(ActionableErrorChecker(GetSyncService(0)).Wait());
 
+  // UPGRADE_CLIENT gets mapped to an unrecoverable error, so Sync will *not*
+  // start up again in transport-only mode (which would clear the cached error).
   syncer::SyncStatus status;
   GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
   ASSERT_EQ(status.sync_protocol_error.error_type, syncer::TRANSIENT_ERROR);
@@ -182,14 +184,14 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
   SetTitle(0, node2, "new_title2");
-  EXPECT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
-  syncer::SyncStatus status;
-  GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
 
-  // Note: If SyncStandaloneTransport is enabled, then on receiving the error,
-  // the SyncService will immediately start up again in transport mode, which
-  // resets the status. So query the status that the checker recorded at the
-  // time Sync was off.
+  SyncDisabledChecker sync_disabled(GetSyncService(0));
+  sync_disabled.Wait();
+
+  // On receiving the error, the SyncService will immediately start up again
+  // in transport mode, which resets the status. So check the status that the
+  // checker recorded at the time Sync was off.
+  syncer::SyncStatus status = sync_disabled.status_on_sync_disabled();
   EXPECT_EQ(status.sync_protocol_error.error_type, syncer::NOT_MY_BIRTHDAY);
   EXPECT_EQ(status.sync_protocol_error.action, syncer::DISABLE_SYNC_ON_CLIENT);
 }
@@ -243,14 +245,14 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, EncryptionObsoleteErrorTest) {
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
   SetTitle(0, node2, "new_title2");
-  EXPECT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
 
-  // Note: If SyncStandaloneTransport is enabled, then on receiving the error,
-  // the SyncService will immediately start up again in transport mode, which
-  // resets the status. So query the status that the checker recorded at the
-  // time Sync was off.
-  syncer::SyncStatus status;
-  GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
+  SyncDisabledChecker sync_disabled(GetSyncService(0));
+  sync_disabled.Wait();
+
+  // On receiving the error, the SyncService will immediately start up again
+  // in transport mode, which resets the status. So check the status that the
+  // checker recorded at the time Sync was off.
+  syncer::SyncStatus status = sync_disabled.status_on_sync_disabled();
   EXPECT_EQ(status.sync_protocol_error.error_type, syncer::ENCRYPTION_OBSOLETE);
   EXPECT_EQ(status.sync_protocol_error.action, syncer::DISABLE_SYNC_ON_CLIENT);
 }

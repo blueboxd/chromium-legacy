@@ -16,6 +16,8 @@
  *     | information.
  */
 
+var chromeos = {};
+
 chromeos.diagnostics = null;
 
 chromeos.telemetry = null;
@@ -38,7 +40,7 @@ chromeos.test_support = {};
 
     /**
      * Requests a list of available routines.
-     * @return {!Promise<!Array<!chromeos.health.mojom.DiagnosticRoutineEnum>>}
+     * @return { !Promise<!Array<!string>> }
      * @public
      */
     async getAvailableRoutines() {
@@ -46,7 +48,7 @@ chromeos.test_support = {};
           /** @type {dpsl_internal.DiagnosticsGetAvailableRoutinesResponse} */ (
               await messagePipe.sendMessage(
                   dpsl_internal.Message.DIAGNOSTICS_AVAILABLE_ROUTINES));
-      return response.availableRoutines;
+      return response;
     }
   };
 
@@ -59,7 +61,7 @@ chromeos.test_support = {};
     /**
      * Requests telemetry info.
      * @param { !Array<!string> } categories
-     * @return { !Promise<!chromeos.health.mojom.TelemetryInfo> }
+     * @return { !Object }
      * @public
      */
     async probeTelemetryInfo(categories) {
@@ -67,11 +69,10 @@ chromeos.test_support = {};
           /** @type {dpsl_internal.ProbeTelemetryInfoResponse} */ (
               await messagePipe.sendMessage(
                   dpsl_internal.Message.PROBE_TELEMETRY_INFO, categories));
-      if (response.error !== undefined) {
-        throw response.error;
+      if (response instanceof Error) {
+        throw response;
       }
-      return /** @type {!chromeos.health.mojom.TelemetryInfo} */ (
-          response.telemetryInfo);
+      return response;
     }
   };
 

@@ -5,12 +5,12 @@
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 
 #include <sstream>
+#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,15 +38,16 @@ base::TimeDelta GetTimeoutFromCommandLineOrDefault() {
 
 StatusChangeChecker::StatusChangeChecker()
     : timeout_(GetTimeoutFromCommandLineOrDefault()),
-      run_loop_(base::RunLoop::Type::kNestableTasksAllowed),
-      timed_out_(false) {}
+      run_loop_(base::RunLoop::Type::kNestableTasksAllowed) {}
 
-StatusChangeChecker::~StatusChangeChecker() {}
+StatusChangeChecker::~StatusChangeChecker() = default;
 
 bool StatusChangeChecker::Wait() {
   std::ostringstream s;
   if (IsExitConditionSatisfied(&s)) {
     DVLOG(1) << "Already satisfied: " << s.str();
+    wait_done_called_ = true;
+    WaitDone();
   } else {
     DVLOG(1) << "Blocking: " << s.str();
     StartBlockingWait();
@@ -59,8 +60,16 @@ bool StatusChangeChecker::TimedOut() const {
 }
 
 void StatusChangeChecker::StopWaiting() {
-  if (run_loop_.running())
+  if (run_loop_.running()) {
+    // Note that we can get here multiple times in some situations, because
+    // RunLoop::Quit() doesn't guarantee that it actually quits immediately.
+    // Make sure that WaitDone() still gets called only once.
+    if (!wait_done_called_) {
+      wait_done_called_ = true;
+      WaitDone();
+    }
     run_loop_.Quit();
+  }
 }
 
 void StatusChangeChecker::CheckExitCondition() {

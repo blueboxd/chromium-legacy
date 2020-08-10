@@ -119,7 +119,7 @@ class WebAppDatabaseTest : public WebAppTest {
   static std::vector<WebApplicationShortcutsMenuItemInfo> CreateShortcutInfos(
       const std::string& base_url,
       uint32_t suffix) {
-    std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos;
+    std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos;
     for (unsigned int i = 0; i < 3; ++i) {
       std::string suffix_str =
           base::NumberToString(suffix) + base::NumberToString(i);
@@ -135,9 +135,9 @@ class WebAppDatabaseTest : public WebAppTest {
         shortcut_info.shortcut_icon_infos.emplace_back(
             std::move(shortcut_icon));
       }
-      shortcut_infos.emplace_back(std::move(shortcut_info));
+      shortcuts_menu_item_infos.emplace_back(std::move(shortcut_info));
     }
-    return shortcut_infos;
+    return shortcuts_menu_item_infos;
   }
 
   static std::vector<std::vector<SquareSizePx>>
@@ -534,7 +534,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->protocol_handlers().empty());
   EXPECT_TRUE(app->last_launch_time().is_null());
   EXPECT_TRUE(app->install_time().is_null());
-  EXPECT_TRUE(app->shortcut_infos().empty());
+  EXPECT_TRUE(app->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app->downloaded_shortcuts_menu_icons_sizes().empty());
   controller().RegisterApp(std::move(app));
 
@@ -586,7 +586,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->file_handlers().empty());
   EXPECT_TRUE(app_copy->additional_search_terms().empty());
   EXPECT_TRUE(app_copy->protocol_handlers().empty());
-  EXPECT_TRUE(app_copy->shortcut_infos().empty());
+  EXPECT_TRUE(app_copy->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app_copy->downloaded_shortcuts_menu_icons_sizes().empty());
 }
 

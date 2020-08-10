@@ -72,6 +72,8 @@ PasswordForm::Store PasswordStoreFromInt(int value) {
 
 const char kAccountStorageOptedInKey[] = "opted_in";
 const char kAccountStorageDefaultStoreKey[] = "default_store";
+const char kMoveToAccountStoreRefusedCountKey[] =
+    "move_to_account_store_refused_count";
 
 // Returns the total number of accounts for which an opt-in to the account
 // storage exists. Used for metrics.
@@ -115,6 +117,13 @@ class AccountStorageSettingsReader {
     return PasswordStoreFromInt(*value);
   }
 
+  int GetMoveToAccountRefusedCount() const {
+    if (!account_settings_)
+      return 0;
+    return account_settings_->FindIntKey(kMoveToAccountStoreRefusedCountKey)
+        .value_or(0);
+  }
+
  private:
   // May be null, if no settings for this account were saved yet.
   const base::Value* account_settings_ = nullptr;
@@ -142,6 +151,8 @@ class ScopedAccountStorageSettingsUpdate {
 
   void SetOptedIn() {
     base::Value* account_settings = GetOrCreateAccountSettings();
+    // The count of refusals is only tracked when the user is not opted-in.
+    account_settings->RemoveKey(kMoveToAccountStoreRefusedCountKey);
     account_settings->SetBoolKey(kAccountStorageOptedInKey, true);
   }
 
@@ -149,6 +160,13 @@ class ScopedAccountStorageSettingsUpdate {
     base::Value* account_settings = GetOrCreateAccountSettings();
     account_settings->SetIntKey(kAccountStorageDefaultStoreKey,
                                 static_cast<int>(default_store));
+  }
+
+  void IncrementMovePasswordToAccountBubble() {
+    base::Value* account_settings = GetOrCreateAccountSettings();
+    int count = account_settings->FindIntKey(kMoveToAccountStoreRefusedCountKey)
+                    .value_or(0);
+    account_settings->SetIntKey(kMoveToAccountStoreRefusedCountKey, ++count);
   }
 
   void ClearAllSettings() { update_->RemoveKey(account_hash_); }
@@ -430,6 +448,33 @@ PasswordAccountStorageUsageLevel ComputePasswordAccountStorageUsageLevel(
     case UserState::kSyncUser:
       return UsageLevel::kSyncing;
   }
+}
+
+void IncrementMoveToAccountRefusedCount(
+    PrefService* pref_service,
+    const syncer::SyncService* sync_service) {
+  DCHECK(pref_service);
+  DCHECK(sync_service);
+  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  DCHECK(!gaia_id.empty());
+  DCHECK(!AccountStorageSettingsReader(pref_service,
+                                       GaiaIdHash::FromGaiaId(gaia_id))
+              .IsOptedIn());
+  ScopedAccountStorageSettingsUpdate(pref_service,
+                                     GaiaIdHash::FromGaiaId(gaia_id))
+      .IncrementMovePasswordToAccountBubble();
+}
+
+int GetMoveToAccountRefusedCount(const PrefService* pref_service,
+                                 const syncer::SyncService* sync_service) {
+  DCHECK(pref_service);
+  DCHECK(sync_service);
+  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  DCHECK(!gaia_id.empty());
+  AccountStorageSettingsReader reader(pref_service,
+                                      GaiaIdHash::FromGaiaId(gaia_id));
+  DCHECK(!reader.IsOptedIn());
+  return reader.GetMoveToAccountRefusedCount();
 }
 
 }  // namespace features_util

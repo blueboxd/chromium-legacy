@@ -615,7 +615,7 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
   EXPECT_TRUE(web_app_info->icon_infos.empty());
 
   // Generated icons are not considered part of the manifest shortcut icons.
-  EXPECT_TRUE(web_app_info->shortcut_infos.empty());
+  EXPECT_TRUE(web_app_info->shortcuts_menu_item_infos.empty());
 }
 
 TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
@@ -640,7 +640,7 @@ TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
   EXPECT_TRUE(web_app_info->icon_infos.empty());
 
   // Generated icons are not considered part of the manifest shortcut icons.
-  EXPECT_TRUE(web_app_info->shortcut_infos.empty());
+  EXPECT_TRUE(web_app_info->shortcuts_menu_item_infos.empty());
 }
 
 TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
@@ -1340,19 +1340,19 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
           std::unique_ptr<WebApplicationInfo> final_web_app_info =
               test_install_finalizer().web_app_info();
           EXPECT_EQ(theme_color, final_web_app_info->theme_color);
-          EXPECT_EQ(1u, final_web_app_info->shortcut_infos.size());
+          EXPECT_EQ(1u, final_web_app_info->shortcuts_menu_item_infos.size());
           EXPECT_EQ(base::UTF8ToUTF16(shortcut_name),
-                    final_web_app_info->shortcut_infos[0].name);
-          EXPECT_EQ(shortcut_url, final_web_app_info->shortcut_infos[0].url);
-          EXPECT_EQ(
-              1u,
-              final_web_app_info->shortcut_infos[0].shortcut_icon_infos.size());
-          EXPECT_EQ(icon_size, final_web_app_info->shortcut_infos[0]
+                    final_web_app_info->shortcuts_menu_item_infos[0].name);
+          EXPECT_EQ(shortcut_url,
+                    final_web_app_info->shortcuts_menu_item_infos[0].url);
+          EXPECT_EQ(1u, final_web_app_info->shortcuts_menu_item_infos[0]
+                            .shortcut_icon_infos.size());
+          EXPECT_EQ(icon_size, final_web_app_info->shortcuts_menu_item_infos[0]
                                    .shortcut_icon_infos[0]
                                    .square_size_px);
-          EXPECT_EQ(
-              icon_src,
-              final_web_app_info->shortcut_infos[0].shortcut_icon_infos[0].url);
+          EXPECT_EQ(icon_src, final_web_app_info->shortcuts_menu_item_infos[0]
+                                  .shortcut_icon_infos[0]
+                                  .url);
 
           callback_called = true;
           run_loop.Quit();
@@ -1391,7 +1391,8 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
     icon.url = icon_src;
     icon.square_size_px = icon_size;
     shortcut_item.shortcut_icon_infos.emplace_back(std::move(icon));
-    web_app_info->shortcut_infos.emplace_back(std::move(shortcut_item));
+    web_app_info->shortcuts_menu_item_infos.emplace_back(
+        std::move(shortcut_item));
 
     base::RunLoop run_loop;
     bool callback_called = false;
@@ -1407,19 +1408,19 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
           std::unique_ptr<WebApplicationInfo> final_web_app_info =
               test_install_finalizer().web_app_info();
           EXPECT_EQ(theme_color, final_web_app_info->theme_color);
-          EXPECT_EQ(1u, final_web_app_info->shortcut_infos.size());
+          EXPECT_EQ(1u, final_web_app_info->shortcuts_menu_item_infos.size());
           EXPECT_EQ(base::UTF8ToUTF16(shortcut_name),
-                    final_web_app_info->shortcut_infos[0].name);
-          EXPECT_EQ(shortcut_url, final_web_app_info->shortcut_infos[0].url);
-          EXPECT_EQ(
-              1u,
-              final_web_app_info->shortcut_infos[0].shortcut_icon_infos.size());
-          EXPECT_EQ(icon_size, final_web_app_info->shortcut_infos[0]
+                    final_web_app_info->shortcuts_menu_item_infos[0].name);
+          EXPECT_EQ(shortcut_url,
+                    final_web_app_info->shortcuts_menu_item_infos[0].url);
+          EXPECT_EQ(1u, final_web_app_info->shortcuts_menu_item_infos[0]
+                            .shortcut_icon_infos.size());
+          EXPECT_EQ(icon_size, final_web_app_info->shortcuts_menu_item_infos[0]
                                    .shortcut_icon_infos[0]
                                    .square_size_px);
-          EXPECT_EQ(
-              icon_src,
-              final_web_app_info->shortcut_infos[0].shortcut_icon_infos[0].url);
+          EXPECT_EQ(icon_src, final_web_app_info->shortcuts_menu_item_infos[0]
+                                  .shortcut_icon_infos[0]
+                                  .url);
 
           callback_called = true;
           run_loop.Quit();

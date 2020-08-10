@@ -133,15 +133,6 @@ let RequestSaveFileResponse;
 
 /**
  * Message sent by the unprivileged context to the privileged context requesting
- * for the provided file to be copied and saved in the location specified by
- * `token`. This method can be called with any file, not just the currently
- * writable file.
- * @typedef {{blob: !Blob, token: number}}
- */
-let SaveCopyMessage;
-
-/**
- * Message sent by the unprivileged context to the privileged context requesting
  * for the provided blob to be saved in the location specified by
  * `pickedFileToken`. Once saved the new file takes over oldFileToken if it is
  * provided, else it gives itself a fresh token, then it becomes currently

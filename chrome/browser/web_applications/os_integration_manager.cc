@@ -183,13 +183,13 @@ void OsIntegrationManager::UpdateOsHooks(
   shortcut_manager_->UpdateShortcuts(app_id, old_name);
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu) &&
-      !web_app_info.shortcut_infos.empty()) {
+      !web_app_info.shortcuts_menu_item_infos.empty()) {
     shortcut_manager_->RegisterShortcutsMenuWithOs(
-        app_id, web_app_info.shortcut_infos,
+        app_id, web_app_info.shortcuts_menu_item_infos,
         web_app_info.shortcuts_menu_icons_bitmaps);
   } else {
-    // Unregister shortcuts menu when feature is disabled or shortcut_infos is
-    // empty.
+    // Unregister shortcuts menu when feature is disabled or
+    // shortcuts_menu_item_infos is empty.
     shortcut_manager_->UnregisterShortcutsMenuWithOs(app_id);
   }
 }
@@ -218,11 +218,11 @@ void OsIntegrationManager::OnShortcutsCreated(
   if (shortcuts_created && base::FeatureList::IsEnabled(
                                features::kDesktopPWAsAppIconShortcutsMenu)) {
     if (web_app_info) {
-      if (web_app_info->shortcut_infos.empty()) {
+      if (web_app_info->shortcuts_menu_item_infos.empty()) {
         barrier_callback.Run(OsHookType::kShortcutsMenu, /*completed=*/false);
       } else {
         shortcut_manager_->RegisterShortcutsMenuWithOs(
-            app_id, web_app_info->shortcut_infos,
+            app_id, web_app_info->shortcuts_menu_item_infos,
             web_app_info->shortcuts_menu_icons_bitmaps);
         // TODO(https://crbug.com/1098471): fix RegisterShortcutsMenuWithOs to
         // take callback.

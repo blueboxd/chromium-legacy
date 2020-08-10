@@ -444,7 +444,7 @@ TEST_F(CertProvisioningWorkerTest, Success) {
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SetAttributeForKey(
         platform_keys::TokenId::kUser, GetPublicKey(),
-        platform_keys::KeyAttributeType::CertificateProvisioningId,
+        platform_keys::KeyAttributeType::kCertificateProvisioningId,
         kCertProfileId, _));
 
     EXPECT_SIGN_RSAPKC1_DIGEST_OK(SignRSAPKCS1Digest(
@@ -510,7 +510,7 @@ TEST_F(CertProvisioningWorkerTest, NoVaSuccess) {
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SetAttributeForKey(
         platform_keys::TokenId::kUser, GetPublicKey(),
-        platform_keys::KeyAttributeType::CertificateProvisioningId,
+        platform_keys::KeyAttributeType::kCertificateProvisioningId,
         kCertProfileId, _));
 
     EXPECT_SIGN_RSAPKC1_DIGEST_OK(SignRSAPKCS1Digest(
@@ -586,7 +586,7 @@ TEST_F(CertProvisioningWorkerTest, TryLaterManualRetry) {
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SetAttributeForKey(
         platform_keys::TokenId::kSystem, GetPublicKey(),
-        platform_keys::KeyAttributeType::CertificateProvisioningId,
+        platform_keys::KeyAttributeType::kCertificateProvisioningId,
         kCertProfileId, _));
 
     EXPECT_SIGN_RSAPKC1_DIGEST_OK(SignRSAPKCS1Digest);
@@ -693,7 +693,7 @@ TEST_F(CertProvisioningWorkerTest, TryLaterWait) {
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SetAttributeForKey(
         platform_keys::TokenId::kUser, GetPublicKey(),
-        platform_keys::KeyAttributeType::CertificateProvisioningId,
+        platform_keys::KeyAttributeType::kCertificateProvisioningId,
         kCertProfileId, _));
 
     EXPECT_SIGN_RSAPKC1_DIGEST_OK(SignRSAPKCS1Digest(
@@ -977,7 +977,7 @@ TEST_F(CertProvisioningWorkerTest, RemoveRegisteredKey) {
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_FAIL(SetAttributeForKey(
         platform_keys::TokenId::kUser, GetPublicKey(),
-        platform_keys::KeyAttributeType::CertificateProvisioningId,
+        platform_keys::KeyAttributeType::kCertificateProvisioningId,
         kCertProfileId, _));
 
     EXPECT_CALL(*mock_invalidator, Unregister()).Times(1);
@@ -1128,7 +1128,7 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SetAttributeForKey(
         platform_keys::TokenId::kUser, GetPublicKey(),
-        platform_keys::KeyAttributeType::CertificateProvisioningId,
+        platform_keys::KeyAttributeType::kCertificateProvisioningId,
         kCertProfileId, _));
 
     EXPECT_SIGN_RSAPKC1_DIGEST_OK(SignRSAPKCS1Digest(

@@ -999,22 +999,23 @@ void SyncTest::SetUpOnMainThread() {
   // the mock gaia responses to be available before GaiaUrls is initialized.
   SetUpTestServerIfRequired();
 
-  if (!UsingExternalServers())
+  if (UsingExternalServers()) {
+    // Allows google.com as well as country-specific TLDs.
+    host_resolver()->AllowDirectLookup("*.google.com");
+    host_resolver()->AllowDirectLookup("accounts.google.*");
+    host_resolver()->AllowDirectLookup("*.googleusercontent.com");
+    // Allow connection to googleapis.com for oauth token requests in E2E tests.
+    host_resolver()->AllowDirectLookup("*.googleapis.com");
+
+    // On Linux, we use Chromium's NSS implementation which uses the following
+    // hosts for certificate verification. Without these overrides, running the
+    // integration tests on Linux causes error as we make external DNS lookups.
+    host_resolver()->AllowDirectLookup("*.thawte.com");
+    host_resolver()->AllowDirectLookup("*.geotrust.com");
+    host_resolver()->AllowDirectLookup("*.gstatic.com");
+  } else {
     SetupMockGaiaResponsesForProfile(ProfileManager::GetActiveUserProfile());
-
-  // Allows google.com as well as country-specific TLDs.
-  host_resolver()->AllowDirectLookup("*.google.com");
-  host_resolver()->AllowDirectLookup("accounts.google.*");
-  host_resolver()->AllowDirectLookup("*.googleusercontent.com");
-  // Allow connection to googleapis.com for oauth token requests in E2E tests.
-  host_resolver()->AllowDirectLookup("*.googleapis.com");
-
-  // On Linux, we use Chromium's NSS implementation which uses the following
-  // hosts for certificate verification. Without these overrides, running the
-  // integration tests on Linux causes error as we make external DNS lookups.
-  host_resolver()->AllowDirectLookup("*.thawte.com");
-  host_resolver()->AllowDirectLookup("*.geotrust.com");
-  host_resolver()->AllowDirectLookup("*.gstatic.com");
+  }
 }
 
 void SyncTest::WaitForDataModels(Profile* profile) {

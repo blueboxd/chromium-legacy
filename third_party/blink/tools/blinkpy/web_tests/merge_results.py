@@ -682,6 +682,85 @@ def ensure_empty_dir(fs, directory, allow_existing, remove_existing):
         fs.remove(merged_output_json)
 
 
+def mark_missing_shards(summary_json,
+                        input_directories,
+                        merged_output_json,
+                        fs=None):
+    """Merge the contents of one or more results JSONs into a single JSON.
+
+    Args:
+        summary_json: swarming summary containing shard info.
+        input_directories: A list of dir paths to JSON files that should be merged.
+        merged_output_json: A path to a JSON file to which the merged results should be
+        written.
+        fs: filesystem object - MockFileSystem or FileSystem.
+    """
+    # summary.json is produced by swarming client.
+    if fs != None:
+        filesystem = fs
+    else:
+        filesystem = FileSystem()
+
+    try:
+        with filesystem.open_binary_file_for_reading(summary_json) as f:
+            summary = json.load(f)
+    except (IOError, ValueError) as e:
+        raise MergeFailure('summary_json is missing or can not be read',
+                           summary_json, None)
+
+    missing_shards = []
+    _log.debug("Missing shard processing: %s", input_directories)
+    for index, result in enumerate(summary['shards']):
+        output_path = None
+        if result:
+            output_path = find_shard_output_path(index, result.get('task_id'),
+                                                 input_directories)
+            if not output_path:
+                missing_shards.append(index)
+
+    if missing_shards:
+        # TODO(crbug.com/1111954) - process summary_json along with others
+        # so the merged output json can be written once to disk.
+        with filesystem.open_binary_file_for_reading(merged_output_json) as f:
+            try:
+                json_contents_merged = json.load(f)
+            except ValueError:
+                raise MergeFailure(
+                    'Failed to parse JSON from merged output.json',
+                    merged_output_json, None)
+        json_contents_merged['missing_shards'] = missing_shards
+
+        with filesystem.open_binary_file_for_writing(merged_output_json) as f:
+            MergeFilesJSONP.dump_jsonp(f, '', json_contents_merged, '')
+
+
+def find_shard_output_path(index, task_id, input_directories):
+    """Finds the shard matching the index/task-id.
+
+    Args:
+        index: The index of the shard to load data for, this is for old api.
+        task_id: The directory of the shard to load data for, this is for new api.
+        input_directories: A container of file paths for shards that emitted output.
+
+    Returns:
+        The matching path, or None
+    """
+    matching_json_files = [
+        j for j in input_directories
+        if (os.path.basename(j) == str(index) or os.path.basename(j) == task_id
+            )
+    ]
+
+    if not matching_json_files:
+        _log.warning('shard %s test output missing', index)
+        return None
+    elif len(matching_json_files) > 1:
+        _log.warning('duplicate test output for shard %s', index)
+        return None
+
+    return matching_json_files[0]
+
+
 def main(argv):
 
     parser = argparse.ArgumentParser()
@@ -863,6 +942,9 @@ directory. The script will be given the arguments plus
 
     merged_output_json = os.path.join(args.output_directory, 'output.json')
     if os.path.exists(merged_output_json) and args.output_json:
+        # process summary_json to mark missing shards.
+        mark_missing_shards(args.summary_json, args.input_directories,
+                            merged_output_json)
         logging.debug('Copying output.json from %s to %s', merged_output_json,
                       args.output_json)
         shutil.copyfile(merged_output_json, args.output_json)

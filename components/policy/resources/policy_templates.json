@@ -9822,7 +9822,7 @@
     },
     {
       'name': 'DeviceLocalAccountManagedSessionEnabled',
-      'owners': ['isandrk@chromium.org', 'voit@chromium.org'],
+      'owners': ['isandrk@chromium.org', 'file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:70-'],
@@ -17605,7 +17605,7 @@
     },
     {
       'name': 'AllowedLanguages',
-      'owners': ['hendrich@chromium.org', 'voit@chromium.org'],
+      'owners': ['hendrich@chromium.org', 'file://components/policy/resources/OWNERS'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -19014,7 +19014,7 @@
     },
     {
       'name': 'DeviceDisplayResolution',
-      'owners': ['voit@chromium.org'],
+      'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'dict',
       'schema': {
         'type': 'object',

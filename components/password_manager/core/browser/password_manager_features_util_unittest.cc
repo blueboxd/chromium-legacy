@@ -506,5 +506,28 @@ TEST(PasswordFeatureManagerUtil, OptInOutHistograms) {
       "PasswordManager.AccountStorage.ClearedOptInForAllAccounts", 1, 1);
 }
 
+TEST(PasswordFeatureManagerUtil, MovePasswordToAccountStoreRefusedCount) {
+  // Set up a user signed-in, not syncing and not opted-in.
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);
+  TestingPrefServiceSimple pref_service;
+  pref_service.registry()->RegisterDictionaryPref(
+      prefs::kAccountStoragePerAccountSettings);
+  CoreAccountInfo account;
+  account.email = "name@account.com";
+  account.gaia = "name";
+  account.account_id = CoreAccountId::FromGaiaId(account.gaia);
+  syncer::TestSyncService sync_service;
+  sync_service.SetAuthenticatedAccountInfo(account);
+  sync_service.SetIsAuthenticatedAccountPrimary(false);
+  ASSERT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+
+  EXPECT_EQ(0, GetMoveToAccountRefusedCount(&pref_service, &sync_service));
+  IncrementMoveToAccountRefusedCount(&pref_service, &sync_service);
+  EXPECT_EQ(1, GetMoveToAccountRefusedCount(&pref_service, &sync_service));
+  IncrementMoveToAccountRefusedCount(&pref_service, &sync_service);
+  EXPECT_EQ(2, GetMoveToAccountRefusedCount(&pref_service, &sync_service));
+}
+
 }  // namespace features_util
 }  // namespace password_manager

@@ -69,7 +69,7 @@ void CertIterator::OnGetCertificatesDone(
     std::string public_key = platform_keys::GetSubjectPublicKeyInfo(cert);
     platform_keys_service_->GetAttributeForKey(
         GetPlatformKeysTokenId(cert_scope_), public_key,
-        platform_keys::KeyAttributeType::CertificateProvisioningId,
+        platform_keys::KeyAttributeType::kCertificateProvisioningId,
         base::BindOnce(&CertIterator::OnGetAttributeForKeyDone,
                        weak_factory_.GetWeakPtr(), cert));
   }

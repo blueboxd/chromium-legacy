@@ -35,6 +35,7 @@ js_library("trusted") {
   sources = [ "trusted.js" ]
   deps = [
     ":message_types",
+    "../mojom:mojom_js_library_for_compile",
     "//chromeos/components/system_apps/public/js:message_pipe",
   ]
 }
@@ -48,7 +49,6 @@ js_library("untrusted") {
 }
 
 js_library("message_types") {
-  deps = [ "../mojom:mojom_js_library_for_compile" ]
 }
 
 js_library("untrusted_worker") {

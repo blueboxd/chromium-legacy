@@ -89,6 +89,13 @@ void WebUIAllowlist::RegisterAutoGrantedPermission(const url::Origin& origin,
   }
 }
 
+void WebUIAllowlist::RegisterAutoGrantedPermissions(
+    const url::Origin& origin,
+    std::initializer_list<ContentSettingsType> types) {
+  for (const ContentSettingsType& type : types)
+    RegisterAutoGrantedPermission(origin, type);
+}
+
 void WebUIAllowlist::SetWebUIAllowlistProvider(
     WebUIAllowlistProvider* provider) {
   provider_ = provider;

@@ -15,7 +15,7 @@ const dpsl_internal = {};
 
 /**
  * Enum for message types.
- * @enum {string}
+ * @enum { string }
  */
 dpsl_internal.Message = {
   DIAGNOSTICS_AVAILABLE_ROUTINES: 'DiagnosticsService.GetAvailableRoutines',
@@ -25,15 +25,14 @@ dpsl_internal.Message = {
 /**
  * Request message sent by the unprivileged context to request the privileged
  * context to diagnostics to get available routines.
- * @typedef {null}
+ * @typedef { null }
  */
 dpsl_internal.DiagnosticsGetAvailableRoutinesRequest;
 
 /**
  * Response message sent by the privileged context containing diagnostic
  * routine enums.
- * @typedef {{availableRoutines:
- *    !Array<!chromeos.health.mojom.DiagnosticRoutineEnum>}}
+ * @typedef { !Array<!string> }
  */
 dpsl_internal.DiagnosticsGetAvailableRoutinesResponse;
 
@@ -47,9 +46,6 @@ dpsl_internal.ProbeTelemetryInfoRequest;
 /**
  * Response message sent by the privileged context sending telemetry
  * information.
- * @typedef {{
- *   telemetryInfo: (!chromeos.health.mojom.TelemetryInfo|undefined),
- *   error: (!Error|undefined)
- * }}
+ * @typedef { !Object|!Error }
  */
 dpsl_internal.ProbeTelemetryInfoResponse;

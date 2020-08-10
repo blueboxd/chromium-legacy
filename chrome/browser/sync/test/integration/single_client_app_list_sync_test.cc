@@ -91,7 +91,7 @@ class AppListSyncUpdateWaiter
   // app_list::AppListSyncableService::Observer:
   void OnSyncModelUpdated() override {
     service_updated_ = true;
-    StopWaiting();
+    CheckExitCondition();
   }
 
  private:

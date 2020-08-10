@@ -1480,3 +1480,162 @@ ADD_RESULTS({
         for fname, contents in self.web_test_output_filesystem.items():
             self.assertIn(fname, fs.files)
             self.assertMultiLineEqual(contents, fs.files[fname])
+
+
+class MarkMissingShardsTest(unittest.TestCase):
+    output_output_json = """\
+{
+  "build_number": "DUMMY_BUILD_NUMBER",
+  "builder_name": "abc",
+  "chromium_revision": "123",
+  "fixable": 10,
+  "interrupted": false,
+  "layout_tests_dir": "src",
+  "num_failures_by_type": {
+    "AUDIO": 12,
+    "CRASH": 14
+  },
+  "num_flaky": 16,
+  "num_passes": 18,
+  "num_regressions": 20,
+  "path_delimiter": "/",
+  "random_order_seed": 4,
+  "seconds_since_epoch": 1488435717,
+  "skipped": 23,
+  "tests": {
+    "testdir1": {
+      "test1.html": {
+        "actual": "PASS",
+        "expected": "PASS",
+        "has_stderr": false,
+        "time": 0.3
+      },
+      "test2.html": {
+        "actual": "PASS",
+        "expected": "PASS",
+        "has_stderr": false,
+        "time": 0.3
+      }
+    },
+    "testdir2": {
+      "testdir2.1": {
+        "test3.html": {
+          "actual": "PASS",
+          "expected": "PASS",
+          "has_stderr": false,
+          "time": 0.3
+        },
+        "test4.html": {
+          "actual": "FAIL",
+          "expected": "PASS",
+          "has_stderr": true,
+          "time": 0.3
+        }
+      }
+    },
+    "testdir3": {
+      "test5.html": {
+        "actual": "PASS",
+        "expected": "PASS",
+        "has_stderr": true,
+        "time": 0.3
+      }
+    }
+  },
+  "version": 3
+}"""
+
+    summary_json = """\
+    {
+       "shards": [
+            {
+            "state": "COMPLETED"
+            },
+            {
+            "state": "COMPLETED"
+            }
+        ]
+    }"""
+
+    web_test_filesystem = {
+        '/out/output.json': output_output_json,
+        '/swarm/summary.json': summary_json,
+        '/0/output.json': {
+            'successes': ['fizz', 'baz'],
+        },
+    }
+
+    final_output_json = """\
+{
+  "build_number": "DUMMY_BUILD_NUMBER",
+  "builder_name": "abc",
+  "chromium_revision": "123",
+  "fixable": 10,
+  "interrupted": false,
+  "layout_tests_dir": "src",
+  "missing_shards": [
+    1
+  ],
+  "num_failures_by_type": {
+    "AUDIO": 12,
+    "CRASH": 14
+  },
+  "num_flaky": 16,
+  "num_passes": 18,
+  "num_regressions": 20,
+  "path_delimiter": "/",
+  "random_order_seed": 4,
+  "seconds_since_epoch": 1488435717,
+  "skipped": 23,
+  "tests": {
+    "testdir1": {
+      "test1.html": {
+        "actual": "PASS",
+        "expected": "PASS",
+        "has_stderr": false,
+        "time": 0.3
+      },
+      "test2.html": {
+        "actual": "PASS",
+        "expected": "PASS",
+        "has_stderr": false,
+        "time": 0.3
+      }
+    },
+    "testdir2": {
+      "testdir2.1": {
+        "test3.html": {
+          "actual": "PASS",
+          "expected": "PASS",
+          "has_stderr": false,
+          "time": 0.3
+        },
+        "test4.html": {
+          "actual": "FAIL",
+          "expected": "PASS",
+          "has_stderr": true,
+          "time": 0.3
+        }
+      }
+    },
+    "testdir3": {
+      "test5.html": {
+        "actual": "PASS",
+        "expected": "PASS",
+        "has_stderr": true,
+        "time": 0.3
+      }
+    }
+  },
+  "version": 3
+}"""
+
+    def test_mark_missing_shards(self):
+        fs = MockFileSystem(self.web_test_filesystem)
+        merge_results.mark_missing_shards(
+            '/swarm/summary.json',
+            ['/0'],  #only dir paths
+            '/out/output.json',
+            fs)
+        final_merged_output_json = fs.files['/out/output.json']
+        self.assertEqual(final_merged_output_json, self.final_output_json)

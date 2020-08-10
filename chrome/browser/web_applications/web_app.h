@@ -132,9 +132,9 @@ class WebApp {
   }
 
   // Represents the "shortcuts" field in the manifest.
-  const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos()
-      const {
-    return shortcut_infos_;
+  const std::vector<WebApplicationShortcutsMenuItemInfo>&
+  shortcuts_menu_item_infos() const {
+    return shortcuts_menu_item_infos_;
   }
 
   // Represents which shortcuts menu icon sizes we successfully downloaded for
@@ -179,8 +179,8 @@ class WebApp {
   // Performs sorting of |sizes| vector. Must be called rarely.
   void SetDownloadedIconSizes(std::vector<SquareSizePx> sizes);
   void SetIsGeneratedIcon(bool is_generated_icon);
-  void SetShortcutInfos(
-      std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos);
+  void SetShortcutInfos(std::vector<WebApplicationShortcutsMenuItemInfo>
+                            shortcuts_menu_item_infos);
   void SetDownloadedShortcutsMenuIconsSizes(
       std::vector<std::vector<SquareSizePx>> icon_sizes);
   void SetFileHandlers(apps::FileHandlers file_handlers);
@@ -224,7 +224,7 @@ class WebApp {
   std::vector<WebApplicationIconInfo> icon_infos_;
   std::vector<SquareSizePx> downloaded_icon_sizes_;
   bool is_generated_icon_ = false;
-  std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos_;
+  std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos_;
   std::vector<std::vector<SquareSizePx>> downloaded_shortcuts_menu_icons_sizes_;
   apps::FileHandlers file_handlers_;
   std::vector<std::string> additional_search_terms_;

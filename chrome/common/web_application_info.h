@@ -153,14 +153,13 @@ struct WebApplicationInfo {
   // Additional search terms that users can use to find the app.
   std::vector<std::string> additional_search_terms;
 
-  // Set of shortcut infos populated using shortcuts specified in the manifest.
-  //
-  // TODO(https://crbug.com/1100751): Rename this to shortcuts_menu_item_infos.
-  std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos;
+  // Set of shortcuts menu item infos populated using shortcuts specified in the
+  // manifest.
+  std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos;
 
   // Vector of shortcut icon bitmaps keyed by their square size. The index of a
-  // given std::map matches that of the shortcut in shortcut_infos whose bitmaps
-  // it contains.
+  // given std::map matches that of the shortcut in shortcuts_menu_item_infos
+  // whose bitmaps it contains.
   ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps;
 
   // The URL protocols/schemes that the app can handle.

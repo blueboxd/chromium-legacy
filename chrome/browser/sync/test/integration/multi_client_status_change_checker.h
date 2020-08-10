@@ -24,16 +24,13 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
       std::vector<syncer::ProfileSyncService*> services);
   ~MultiClientStatusChangeChecker() override;
 
-  // Called when waiting times out.
-  void OnTimeout();
-
+ protected:
   // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync) override;
 
   // StatusChangeChecker implementations and stubs.
   bool IsExitConditionSatisfied(std::ostream* os) override = 0;
 
- protected:
   const std::vector<syncer::ProfileSyncService*>& services() {
     return services_;
   }

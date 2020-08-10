@@ -506,7 +506,7 @@ void CertProvisioningWorkerImpl::MarkKey() {
 
   platform_keys_service_->SetAttributeForKey(
       GetPlatformKeysTokenId(cert_scope_), public_key_,
-      platform_keys::KeyAttributeType::CertificateProvisioningId,
+      platform_keys::KeyAttributeType::kCertificateProvisioningId,
       cert_profile_.profile_id,
       base::BindOnce(&CertProvisioningWorkerImpl::OnMarkKeyDone,
                      weak_factory_.GetWeakPtr()));

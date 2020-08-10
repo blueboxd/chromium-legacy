@@ -5615,6 +5615,14 @@ You can manage this account’s settings by installing the Family Link app on yo
     Restart to powerwash
   </message>
 
+  <!-- Strings for Suggestion features -->
+  <message name="IDS_SUGGESTION_LEARN_MORE" desc="This string is a link that shows up along with a personal information suggestion (in the first 10 instances) to inform the users about the feature. It takes users to the settings page to learn more.">
+    Learn about suggestions
+  </message>
+  <message name="IDS_SUGGESTION_ENTER_KEY" desc="This string is the enter key annotation to educate users how to accept a personal information suggestion.">
+    Enter
+  </message>
+
   <!-- Strings for Custom Tab UI -->
   <message name="IDS_CUSTOM_TABS_ACTION_MENU_ACCESSIBLE_NAME" desc="Accessible name for the overflow menu of the Chrome Custom Tab toolbar.">
     Action menu button

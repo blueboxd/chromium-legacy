@@ -7,7 +7,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -20,9 +22,6 @@ namespace ui {
 namespace ime {
 
 namespace {
-
-// TODO(crbug/1094843): Use localised strings.
-const char kEnter[] = "Enter";
 
 const int kAnnotationLabelChildSpacing = 4;
 const int kArrowIconSize = 14;
@@ -73,7 +72,7 @@ std::unique_ptr<views::ImageView> CreateDownIcon() {
 std::unique_ptr<views::Label> CreateEnterLabel() {
   auto label = std::make_unique<views::Label>();
   label->SetEnabledColor(kSuggestionColor);
-  label->SetText(base::UTF8ToUTF16(kEnter));
+  label->SetText(l10n_util::GetStringUTF16(IDS_SUGGESTION_ENTER_KEY));
   label->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::NORMAL,
                                    kAnnotationFontSize,
                                    gfx::Font::Weight::MEDIUM));
@@ -162,10 +161,8 @@ void SuggestionView::SetSuggestionText(const base::string16& text,
 
   // TODO(crbug/1099146): Add tests to check view's height and width with
   // confirmed length.
-  // StyleRanged may cause the label to split into multi-line, passing 0 to
-  // SizeToFit allows layout to be calculated with maximum int to ensure the
-  // text is on one line.
-  suggestion_label_->SizeToFit(0);
+  // Maximum width for suggestion.
+  suggestion_label_->SizeToFit(448);
 }
 
 void SuggestionView::SetHighlighted(bool highlighted) {
@@ -212,8 +209,7 @@ void SuggestionView::Layout() {
     int annotation_left = left + suggestion_width_ + kPadding;
     int right = bounds().right();
     annotation_label_->SetBounds(annotation_left, kAnnotationPaddingHeight,
-                                 right - annotation_left - kPadding / 2,
-                                 height() - 2 * kAnnotationPaddingHeight);
+                                 right - annotation_left - kPadding / 2, 16);
   }
 }
 

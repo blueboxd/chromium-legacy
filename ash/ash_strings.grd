@@ -894,6 +894,17 @@ This file contains the strings for ash.
         Previous menu
       </message>
 
+      <!-- Holding space tray-->
+      <message name="IDS_ASH_HOLDING_SPACE_PINNED_TITLE" desc="Title of the pinned files area in the holding space bubble.">
+        Pinned
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_RECENT_DOWNLOADS_TITLE" desc="Title of the recent downloads area in the holding space bubble.">
+        Recent downloads
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_SCREENSHOTS_TITLE" desc="Title of the screenshots area in the holding space bubble.">
+        Screenshots
+      </message>
+
       <message name="IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_ACTION" desc="Title of the capture region action in the stylus tools (a pop-up panel next to the status tray). This causes a partial screenshot to be taken (the user selects an area of the screen to take a screenshot of).">
         Capture region
       </message>

@@ -21,6 +21,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -255,7 +256,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
     // Create a layer so that the layer for FocusRing stays in this view's
     // layer. Without it, the layer for FocusRing goes above the
     // NativeViewHost and may steal events.
-    SetPaintToLayer();
+    SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   }
 
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);

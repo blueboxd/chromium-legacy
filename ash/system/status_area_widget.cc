@@ -5,6 +5,7 @@
 #include "ash/system/status_area_widget.h"
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
@@ -14,6 +15,7 @@
 #include "ash/shell.h"
 #include "ash/system/accessibility/dictation_button_tray.h"
 #include "ash/system/accessibility/select_to_speak_tray.h"
+#include "ash/system/holding_space/holding_space_tray.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
@@ -81,6 +83,11 @@ void StatusAreaWidget::Initialize() {
   overflow_button_tray_ =
       std::make_unique<StatusAreaOverflowButtonTray>(shelf_);
   AddTrayButton(overflow_button_tray_.get());
+
+  if (features::IsTemporaryHoldingSpaceEnabled()) {
+    holding_space_tray_ = std::make_unique<HoldingSpaceTray>(shelf_);
+    AddTrayButton(holding_space_tray_.get());
+  }
 
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
   AddTrayButton(logout_button_tray_.get());

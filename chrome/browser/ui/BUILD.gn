@@ -2124,6 +2124,8 @@ static_library("ui") {
       "webui/chromeos/drive_internals_ui.h",
       "webui/chromeos/edu_account_login_handler_chromeos.cc",
       "webui/chromeos/edu_account_login_handler_chromeos.h",
+      "webui/chromeos/file_manager/file_manager_ui.cc",
+      "webui/chromeos/file_manager/file_manager_ui.h",
       "webui/chromeos/first_run/first_run_actor.cc",
       "webui/chromeos/first_run/first_run_actor.h",
       "webui/chromeos/first_run/first_run_handler.cc",

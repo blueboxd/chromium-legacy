@@ -157,9 +157,9 @@ void SharesheetService::OnIconLoaded(
     base::OnceCallback<void(std::vector<TargetInfo> targets)> callback,
     apps::mojom::IconValuePtr icon_value) {
   const auto& app_id_and_activity = app_id_and_activities[index];
-  targets.emplace(targets.begin(), TargetType::kApp, icon_value->uncompressed,
-                  base::UTF8ToUTF16(app_id_and_activity.app_id),
-                  base::UTF8ToUTF16(app_id_and_activity.activity_name));
+  targets.emplace_back(TargetType::kApp, icon_value->uncompressed,
+                       base::UTF8ToUTF16(app_id_and_activity.app_id),
+                       base::UTF8ToUTF16(app_id_and_activity.activity_name));
 
   LoadAppIcons(std::move(app_id_and_activities), std::move(targets), index + 1,
                std::move(callback));
@@ -180,9 +180,8 @@ void SharesheetService::ShowBubbleWithDelegate(
   auto& actions = sharesheet_action_cache_->GetShareActions();
   auto iter = actions.begin();
   while (iter != actions.end()) {
-    targets.emplace(targets.begin(), TargetType::kAction,
-                    (*iter)->GetActionIcon(), (*iter)->GetActionName(),
-                    (*iter)->GetActionName());
+    targets.emplace_back(TargetType::kAction, (*iter)->GetActionIcon(),
+                         (*iter)->GetActionName(), (*iter)->GetActionName());
     ++iter;
   }
 

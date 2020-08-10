@@ -240,31 +240,30 @@ class DriveSyncHandlerImpl extends cr.EventTarget {
    * @private
    */
   onDriveSyncError_(event) {
-    window.webkitResolveLocalFileSystemURL(event.fileUrl, entry => {
+    const postError = name => {
       const item = new ProgressCenterItem();
       item.type = ProgressItemType.SYNC;
       item.quiet = true;
       item.state = ProgressItemState.ERROR;
       switch (event.type) {
         case 'delete_without_permission':
-          item.message =
-              strf('SYNC_DELETE_WITHOUT_PERMISSION_ERROR', entry.name);
+          item.message = strf('SYNC_DELETE_WITHOUT_PERMISSION_ERROR', name);
           break;
         case 'service_unavailable':
           item.message = str('SYNC_SERVICE_UNAVAILABLE_ERROR');
           break;
         case 'no_server_space':
-          item.message = strf('SYNC_NO_SERVER_SPACE', entry.name);
-          // This error will reappear every time sync is retried, so we use a
-          // fixed ID to avoid spamming the user.
+          item.message = strf('SYNC_NO_SERVER_SPACE', name);
+          // This error will reappear every time sync is retried, so we use
+          // a fixed ID to avoid spamming the user.
           item.id = DriveSyncHandlerImpl.DRIVE_SYNC_ERROR_PREFIX +
               this.driveErrorIdOutOfQuota_;
           break;
         case 'no_local_space':
-          item.message = strf('DRIVE_OUT_OF_SPACE_HEADER', entry.name);
+          item.message = strf('DRIVE_OUT_OF_SPACE_HEADER', name);
           break;
         case 'misc':
-          item.message = strf('SYNC_MISC_ERROR', entry.name);
+          item.message = strf('SYNC_MISC_ERROR', name);
           break;
       }
       if (!item.id) {
@@ -272,7 +271,16 @@ class DriveSyncHandlerImpl extends cr.EventTarget {
             (this.errorIdCounter_++);
       }
       this.progressCenter_.updateItem(item);
-    });
+    };
+
+    window.webkitResolveLocalFileSystemURL(
+        event.fileUrl,
+        entry => {
+          postError(entry.name);
+        },
+        error => {
+          postError('');
+        });
   }
 
   /**

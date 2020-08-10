@@ -153,6 +153,34 @@ function testErrorDedupe() {
   assertEquals(1, progressCenter.getItemCount());
 }
 
+function testErrorWithoutPath() {
+  const originalStub = window.webkitResolveLocalFileSystemURL;
+  /**
+   * Temporary stub the entry resolving to always fail.
+   *
+   * @param {string} url
+   * @param {function(!Entry)} successCallback
+   * @param {function(!FileError)=} errorCallback
+   */
+  window.webkitResolveLocalFileSystemURL =
+      (url, successCallback, errorCallback) => {
+        errorCallback(/** @type {!FileError} */ ({}));
+      };
+
+  try {
+    // Dispatch an event.
+    mockChrome.fileManagerPrivate.onDriveSyncError.listener_({
+      type: 'service_unavailable',
+      fileUrl: '',
+    });
+
+    // Check that this created one item.
+    assertEquals(1, progressCenter.getItemCount());
+  } finally {
+    window.webkitResolveLocalFileSystemURL = originalStub;
+  }
+}
+
 // Test offline.
 function testOffline() {
   // Start a transfer.

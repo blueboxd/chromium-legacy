@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/dactyloscoper.h"
 
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_token_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -36,6 +37,8 @@ void Dactyloscoper::Record(ExecutionContext* context, WebFeature feature) {
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
                                         IdentifiableToken value) {
+  if (!IdentifiabilityStudySettings::Get()->IsActive())
+    return;
   auto* window = DynamicTo<LocalDOMWindow>(context);
   if (!window)
     return;
@@ -48,6 +51,8 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
                                         String str) {
+  if (!IdentifiabilityStudySettings::Get()->IsActive())
+    return;
   if (str.IsEmpty())
     return;
   Dactyloscoper::RecordDirectSurface(context, feature,
@@ -57,6 +62,8 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
                                         Vector<String> strs) {
+  if (!IdentifiabilityStudySettings::Get()->IsActive())
+    return;
   if (strs.IsEmpty())
     return;
   IdentifiableTokenBuilder builder;

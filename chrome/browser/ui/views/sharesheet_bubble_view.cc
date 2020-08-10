@@ -172,7 +172,7 @@ void SharesheetBubbleView::ShowBubble(std::vector<TargetInfo> targets,
 }
 
 void SharesheetBubbleView::ShowActionView() {
-  main_view_->SetVisible(false);
+  root_view_->SetVisible(false);
   share_action_view_->SetVisible(true);
 }
 
@@ -218,6 +218,8 @@ void SharesheetBubbleView::CreateBubble() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
+  set_margins(gfx::Insets());
+
   auto root_view = std::make_unique<views::View>();
   root_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(kSpacing), 0,
@@ -230,6 +232,6 @@ void SharesheetBubbleView::CreateBubble() {
   auto share_action_view = std::make_unique<views::View>();
   share_action_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0, true));
-  share_action_view_ = root_view_->AddChildView(std::move(share_action_view));
+  share_action_view_ = AddChildView(std::move(share_action_view));
   share_action_view_->SetVisible(false);
 }

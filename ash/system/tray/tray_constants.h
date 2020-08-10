@@ -230,6 +230,10 @@ constexpr int kPrivacyScreenToastSubLabelFontSize = 13;
 constexpr gfx::Insets kPrivacyScreenToastInsets(10, 16);
 constexpr int kPrivacyScreenToastSpacing = 16;
 
+// constants used for holding space tray.
+constexpr gfx::Insets kHoldingSpaceContainerPadding = gfx::Insets(16);
+constexpr int kHoldingSpaceContainerSeparation = 8;
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_

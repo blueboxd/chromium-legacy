@@ -19,6 +19,7 @@ class Window;
 }
 
 namespace ash {
+class HoldingSpaceTray;
 class ImeMenuTray;
 class LogoutButtonTray;
 class StatusAreaOverflowButtonTray;
@@ -115,6 +116,8 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   }
   PaletteTray* palette_tray() { return palette_tray_.get(); }
   ImeMenuTray* ime_menu_tray() { return ime_menu_tray_.get(); }
+  HoldingSpaceTray* holding_space_tray() { return holding_space_tray_.get(); }
+
   SelectToSpeakTray* select_to_speak_tray() {
     return select_to_speak_tray_.get();
   }
@@ -211,6 +214,7 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   std::unique_ptr<VirtualKeyboardTray> virtual_keyboard_tray_;
   std::unique_ptr<ImeMenuTray> ime_menu_tray_;
   std::unique_ptr<SelectToSpeakTray> select_to_speak_tray_;
+  std::unique_ptr<HoldingSpaceTray> holding_space_tray_;
 
   // Vector of the tray buttons above. The ordering is used to determine which
   // tray buttons are hidden when they overflow the available width.

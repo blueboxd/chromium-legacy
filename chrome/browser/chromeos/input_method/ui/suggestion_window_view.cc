@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/input_method/ui/border_factory.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_view.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -182,15 +183,13 @@ SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
   candidate_area_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  // TODO(crbug/1094843): Add localised string.
-  constexpr char kSettingLinkLabel[] = "Why am I seeing this suggestion?";
-  setting_link_ = AddChildView(
-      std::make_unique<views::Link>(base::ASCIIToUTF16(kSettingLinkLabel)));
+  setting_link_ = AddChildView(std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_SUGGESTION_LEARN_MORE)));
   setting_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   // TODO(crbug/1102215): Implement proper UI layout using Insets constant.
   constexpr gfx::Insets insets(0, kPadding, kPadding, kPadding);
   setting_link_->SetBorder(views::CreateEmptyBorder(insets));
-  constexpr int kSettingLinkFontSize = 13;
+  constexpr int kSettingLinkFontSize = 11;
   setting_link_->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::ITALIC,
                                            kSettingLinkFontSize,
                                            gfx::Font::Weight::NORMAL));

@@ -1043,6 +1043,8 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
              base::TimeTicks start_time, const SkBitmap& bitmap) {
             TRACE_EVENT0(
                 "cc", "RenderWidgetHostViewAndroid::CopyFromSurface finished");
+            // TODO(crbug/1110301): Make the Compositing.CopyFromSurfaceTime
+            // histogram obsolete.
             UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
                                 base::TimeTicks::Now() - start_time);
             std::move(callback).Run(bitmap);

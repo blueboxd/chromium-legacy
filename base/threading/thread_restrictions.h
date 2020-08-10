@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/threading/hang_watcher.h"
 
 // -----------------------------------------------------------------------------
 // Usage documentation
@@ -569,6 +570,11 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
 #if DCHECK_IS_ON()
   const bool was_disallowed_;
 #endif
+
+  // Since this object is used to indicate that sync primitives will be used to
+  // wait for an event ignore the current operation for hang watching purposes
+  // since the wait time duration is unknown.
+  base::HangWatchScopeDisabled hang_watch_scope_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAllowBaseSyncPrimitivesOutsideBlockingScope);
 };

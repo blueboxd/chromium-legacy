@@ -375,6 +375,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PRINT_MANAGEMENT_ONGOING_JOB_ARIA_LABEL" desc="The aria label that describes an ongoing print job that includes the print job documenet title, printer name, creation time, and ongoing status. Also notifies users that the ongoing print job can be cancelled with the 'Enter' key. This is only used for ChromeVox voice transcriptions.">
         <ph name="DOCUMENT_TITLE">$1<ex>my_essay.doc</ex></ph>, <ph name="PRINTER_NAME">$2<ex>canon 6450</ex></ph>, <ph name="CREATION_TIME">$3<ex>February 8, 2020</ex></ph>, <ph name="PRINTED_PAGE_NUMBER">$4<ex>5</ex></ph> out of <ph name="TOTAL_PAGE_NUMBER">$5<ex>7</ex></ph>. Press enter to cancel the print job.
       </message>
+      <message name="IDS_PRINT_MANAGEMENT_STOPPED_ONGOING_JOB_ARIA_LABEL" desc="The aria label that describes a stopped print job that includes the print job documenet title, printer name, creation time, and error status. This is a sentence with commas and spaces (minor pause) between placeholders.">
+        <ph name="DOCUMENT_TITLE">$1<ex>my_essay.doc</ex></ph>, <ph name="PRINTER_NAME">$2<ex>canon 6450</ex></ph>, <ph name="CREATION_TIME">$3<ex>February 8, 2020</ex></ph>, <ph name="ERROR_STATUS">$4<ex>Stopped - Out of paper</ex></ph>
+      </message>
       <message name="IDS_PRINT_MANAGEMENT_PAPER_JAM_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because of a printer paper jam.">
         Failed - Paper jam
       </message>
@@ -407,6 +410,30 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PRINT_MANAGEMENT_NO_PRINT_JOBS_IN_PROGRESS_MESSAGE" desc="The message shown to users if they do not have any print jobs in progress i.e. being printed.">
         No print jobs in progress
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PAPER_JAM_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job has stopped because of a printer paper jam.">
+        Stopped - Paper jam
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUT_OF_PAPER_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job has stopped because their printer is out out of paper.">
+        Stopped - Out of paper
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUT_OF_INK_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job has stopped because their printer is out of ink.">
+        Stopped - Out of ink
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_DOOR_OPEN_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job stopped because their printer door is open.">
+        Stopped - Door open
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_TRAY_MISSING_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job stopped because their printer's tray is missing.">
+        Stopped - Tray missing
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUTPUT_FULL_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job stopped because their printer's output is full .">
+        Stopped - Output full
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_GENERIC_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job stopped.">
+        Stopped
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_UNKNOWN_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job stopped due to an unknown error.">
+        Stopped - Unknown error
       </message>
       <message name="IDS_PRINT_MANAGEMENT_CLEAR_ALL_POLICY_PRINT_JOB_INDICATOR_MESSAGE" desc="The message shown to indicate that a user policy is in place to prevent the user from deleting their print job history.">
         This action is managed by your administrator

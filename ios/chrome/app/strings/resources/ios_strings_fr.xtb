@@ -128,7 +128,6 @@
 <translation id="236977714248711277">Les sites ne peuvent pas utiliser de cookies pour améliorer votre expérience de navigation (par exemple, pour maintenir votre connexion ou mémoriser les articles de votre panier).
 
 Ils ne peuvent pas non plus en utiliser pour voir votre activité de navigation sur l'ensemble des différents sites (par exemple, pour personnaliser les annonces).</translation>
-<translation id="2379896346847637748">Ouvrir dans une nouvelle fenêtre</translation>
 <translation id="2381405137052800939">Paramètres de base</translation>
 <translation id="2386793615875593361">1 photo sélectionnée</translation>
 <translation id="2421004566762153674">Blocage des cookies tiers</translation>
@@ -185,7 +184,8 @@ Ils ne peuvent pas non plus en utiliser pour voir votre activité de navigation 
 <translation id="298306318844797842">Ajouter un mode de paiement</translation>
 <translation id="2989805286512600854">Ouvrir dans un nouvel onglet</translation>
 <translation id="3037605927509011580">Aïe aïe aïe</translation>
-<translation id="3081338492074632642">Assurez-vous que le mot de passe que vous enregistrez correspond bien à votre mot de passe <ph name="WEBSITE" /></translation>
+<translation id="3080525922482950719">Vous pouvez enregistrer des pages pour les consulter plus tard ou hors connexion</translation>
+<translation id="3081338492074632642">Assurez-vous que le mot de passe que vous enregistrez correspond bien à celui que vous utilisez pour accéder à <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Marquer…</translation>
 <translation id="3131206671572504478">Tout bloquer</translation>
 <translation id="3153862085237805241">Enregistrer la carte</translation>
@@ -215,7 +215,7 @@ En revanche, lorsque vous êtes en mode navigation privée, les sites ne peuvent
 <translation id="3371831930909698441">La traduction est disponible. Options disponibles au bas de l'écran.</translation>
 <translation id="3393920035788932672">Pop-up autorisés</translation>
 <translation id="3425644765244388016">Pseudo associé à la carte</translation>
-<translation id="3433057996795775706">La suppression de ce mot de passe n'entraînera pas la suppression de votre compte sur <ph name="WEBSITE" />. Modifiez votre mot de passe sur <ph name="WEBSITE" /> pour empêcher d'autres utilisateurs de compromettre la sécurité de votre compte.</translation>
+<translation id="3433057996795775706">La suppression de ce mot de passe n'entraînera pas la suppression de votre compte sur <ph name="WEBSITE" />. Modifiez votre mot de passe sur <ph name="WEBSITE" /> pour maintenir la sécurité de votre compte.</translation>
 <translation id="3443810440409579745">Onglet reçu.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vue fractionnée</translation>
@@ -309,6 +309,7 @@ En revanche, lorsque vous êtes en mode navigation privée, les sites ne peuvent
 <translation id="4619615317237390068">Onglets d'autres appareils</translation>
 <translation id="4620246317052452550">Pages lues</translation>
 <translation id="4630540211544979320">Traduire les pages</translation>
+<translation id="4634124774493850572">Utiliser le mot de passe</translation>
 <translation id="4636930964841734540">Infos</translation>
 <translation id="4659126640776004816">Lorsque vous vous connectez à votre compte Google, cette fonctionnalité est activée.</translation>
 <translation id="4659667755519643272">Lancer le sélecteur d'onglets</translation>
@@ -610,6 +611,7 @@ Ils peuvent également s'en servir pour voir votre activité de navigation sur l
 <translation id="8007420562015504427">Recherche en mode Navigation privée</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8023878949384262191">Développe la section.</translation>
+<translation id="8027581147000338959">Ouvrir dans une nouvelle fenêtre</translation>
 <translation id="804427445359061970">Les onglets ouverts sur d'autres appareils s'afficheront ici</translation>
 <translation id="8059533439631660104">Réduit la section.</translation>
 <translation id="8065292699993359127">Ouvrir les URL dans Chrome en mode navigation privée</translation>

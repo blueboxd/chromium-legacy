@@ -128,7 +128,6 @@
 <translation id="236977714248711277">網站不可使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品。
 
 網站不可使用 Cookie 來查看您在各網站的瀏覽活動，例如放送個人化廣告。</translation>
-<translation id="2379896346847637748">在新視窗中開啟</translation>
 <translation id="2381405137052800939">基本</translation>
 <translation id="2386793615875593361">已選取 1 張</translation>
 <translation id="2421004566762153674">封鎖第三方 Cookie</translation>
@@ -185,6 +184,7 @@
 <translation id="298306318844797842">新增付款方法…</translation>
 <translation id="2989805286512600854">在新分頁中開啟</translation>
 <translation id="3037605927509011580">糟糕！</translation>
+<translation id="3080525922482950719">您可儲存網頁，以便稍後或離線閱讀</translation>
 <translation id="3081338492074632642">請確保您儲存的密碼與 <ph name="WEBSITE" /> 上的密碼相符</translation>
 <translation id="3112556859945124369">標示…</translation>
 <translation id="3131206671572504478">全部封鎖</translation>
@@ -309,6 +309,7 @@
 <translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
 <translation id="4620246317052452550">您已閱讀的網頁</translation>
 <translation id="4630540211544979320">翻譯網頁</translation>
+<translation id="4634124774493850572">使用密碼</translation>
 <translation id="4636930964841734540">資訊</translation>
 <translation id="4659126640776004816">當您登入 Google 帳戶時，系統會啟用此功能</translation>
 <translation id="4659667755519643272">進入分頁切換選項</translation>
@@ -610,6 +611,7 @@
 <translation id="8007420562015504427">無痕搜尋</translation>
 <translation id="802154636333426148">下載失敗</translation>
 <translation id="8023878949384262191">展開這個專區。</translation>
+<translation id="8027581147000338959">在新視窗中開啟</translation>
 <translation id="804427445359061970">您可在此查看從其他裝置開啟過的分頁</translation>
 <translation id="8059533439631660104">收合這個專區。</translation>
 <translation id="8065292699993359127">在 Chrome 中以無痕模式開啟網址</translation>

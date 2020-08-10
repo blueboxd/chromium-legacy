@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">নতুন পাছৱৰ্ড</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" />এ এই ডিভাইচটো পৰিচালনা কৰে আৰু চোৱা ৱেবপৃষ্ঠাসমূহ, পাছৱৰ্ডসমূহ আৰু ইমেইলকে ধৰি ব্যৱহাৰকাৰীৰ সকলো কাৰ্যকলাপ এক্সেছ কৰিব পাৰে।</translation>
 <translation id="4003384961948020559">বিফল হৈছে - আউটপুট ভৰ্তি হৈ গৈছে</translation>
+<translation id="4027485274696301677"><ph name="ENROLLMENT_DOMAIN" />এ এই <ph name="DEVICE_TYPE" /> পৰিচালনা কৰে। প্ৰশাসকসকলে দূৰৰ পৰাই ডিভাইচটো কনফিগাৰ কৰিব পাৰে।</translation>
 <translation id="4034824040120875894">প্ৰিণ্টাৰ</translation>
 <translation id="4227825898293920515">পাছৱর্ডৰ ম্যাদ উকলাৰ সময় <ph name="TIME" /></translation>
 <translation id="4238516577297848345">কোনো প্ৰিণ্টৰ কাম চলি থকা নাই</translation>

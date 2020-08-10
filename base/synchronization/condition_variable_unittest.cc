@@ -58,7 +58,7 @@ class ConditionVariableTest : public PlatformTest {
 // construct an instance of a WorkQueue.  The WorkQueue will spin up some
 // threads and control them throughout their lifetime, as well as maintaining
 // a central repository of the work thread's activity.  Finally, the WorkQueue
-// will command the the worker threads to terminate.  At that point, the test
+// will command the worker threads to terminate.  At that point, the test
 // cases will validate that the WorkQueue has records showing that the desired
 // activities were performed.
 //------------------------------------------------------------------------------

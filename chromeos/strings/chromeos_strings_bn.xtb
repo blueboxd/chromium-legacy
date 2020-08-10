@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">নতুন পাসওয়ার্ড</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> এই ডিভাইস ম্যানেজ করে এবং ব্যবহারকারী দেখেছেন এমন ওয়েবসাইট, পাসওয়ার্ড ও ইমেলে সহ তার সব অ্যাক্টিভিটি সংক্রান্ত ডেটা অ্যাক্সেস করতে পারে।</translation>
 <translation id="4003384961948020559">প্রিন্ট করা যায়নি - আউটপুট বিন ভর্তি হয়ে গেছে</translation>
+<translation id="4027485274696301677"><ph name="ENROLLMENT_DOMAIN" /> এই <ph name="DEVICE_TYPE" /> ম্যানেজ করে। অ্যাডমিনিস্ট্রেটররা অন্য জায়গা থেকে ডিভাইসটি কনফিগার করতে পারেন।</translation>
 <translation id="4034824040120875894">প্রিন্টার</translation>
 <translation id="4227825898293920515">পাসওয়ার্ডের মেয়াদ <ph name="TIME" />-এ শেষ হবে</translation>
 <translation id="4238516577297848345">প্রিন্ট করার কোনও কাজ চালু নেই</translation>

@@ -106,6 +106,7 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
             log_artifact = root_node["artifacts"].pop("log", None)
             if log_artifact:
                 artifact_subpath = self._write_log_artifact(
+                    test_failures.FILENAME_SUFFIX_ACTUAL,
                     results_dir, path_so_far, log_artifact)
                 root_node["artifacts"]["actual_text"] = [artifact_subpath]
 
@@ -116,6 +117,13 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
                     results_dir, path_so_far, screenshot_artifact)
                 for screenshot_key, path in screenshot_paths_dict.items():
                     root_node["artifacts"][screenshot_key] = [path]
+
+            crashlog_artifact = root_node["artifacts"].pop("wpt_crash_log",
+                                                           None)
+            if crashlog_artifact:
+                artifact_subpath = self._write_log_artifact(
+                    test_failures.FILENAME_SUFFIX_CRASH_LOG,
+                    results_dir, path_so_far, crashlog_artifact)
 
             return
 
@@ -128,13 +136,15 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
             self._process_test_leaves(results_dir, delim, root_node[key],
                                       new_path)
 
-    def _write_log_artifact(self, results_dir, test_name, log_artifact):
+    def _write_log_artifact(self, suffix, results_dir, test_name, log_artifact):
         """Writes a log artifact to disk.
 
-        The log artifact contains all the output of a test. It gets written to
-        the -actual.txt file for the test.
+        A log artifact contains some form of output for a test. It is written to
+        a txt file with a suffix generated from the log type.
 
         Args:
+            suffix: str suffix of the artifact to write, e.g.
+                test_failures.FILENAME_SUFFIX_ACTUAL
             results_dir: str path to the directory that results live in
             test_name: str name of the test that this artifact is for
             log_artifact: list of strings, the log entries for this test from
@@ -146,9 +156,7 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
         """
         log_artifact_sub_path = (
             os.path.join("layout-test-results",
-                         self.port.output_filename(
-                             test_name, test_failures.FILENAME_SUFFIX_ACTUAL,
-                             ".txt"))
+                         self.port.output_filename(test_name, suffix, ".txt"))
         )
         log_artifact_full_path = os.path.join(results_dir,
                                               log_artifact_sub_path)

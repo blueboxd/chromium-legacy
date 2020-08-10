@@ -835,7 +835,6 @@ public class ImeAdapterImpl
         return true;
     }
 
-    @VisibleForTesting
     boolean finishComposingText() {
         if (!isValid()) return false;
         ImeAdapterImplJni.get().finishComposingText(mNativeImeAdapterAndroid, ImeAdapterImpl.this);

@@ -98,14 +98,25 @@ void GlanceableInfoView::OnWeatherInfoUpdated() {
 }
 
 void GlanceableInfoView::Show() {
+  AmbientBackendModel* ambient_backend_model =
+      delegate_->GetAmbientBackendModel();
   weather_condition_icon_->SetImage(
-      delegate_->GetAmbientBackendModel()->weather_condition_icon());
+      ambient_backend_model->weather_condition_icon());
 
-  float temperature = delegate_->GetAmbientBackendModel()->temperature();
-  // TODO(b/154046129): handle Celsius format.
-  temperature_->SetText(l10n_util::GetStringFUTF16Int(
+  temperature_->SetText(GetTemperatureText());
+}
+
+base::string16 GlanceableInfoView::GetTemperatureText() const {
+  AmbientBackendModel* ambient_backend_model =
+      delegate_->GetAmbientBackendModel();
+  if (ambient_backend_model->show_celsius()) {
+    return l10n_util::GetStringFUTF16Int(
+        IDS_ASH_AMBIENT_MODE_WEATHER_TEMPERATURE_IN_CELSIUS,
+        static_cast<int>(ambient_backend_model->GetTemperatureInCelsius()));
+  }
+  return l10n_util::GetStringFUTF16Int(
       IDS_ASH_AMBIENT_MODE_WEATHER_TEMPERATURE_IN_FAHRENHEIT,
-      static_cast<int>(temperature)));
+      static_cast<int>(ambient_backend_model->temperature_fahrenheit()));
 }
 
 void GlanceableInfoView::InitLayout() {

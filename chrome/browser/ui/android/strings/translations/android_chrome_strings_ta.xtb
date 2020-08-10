@@ -327,7 +327,7 @@
 <translation id="3566923219790363270">VRருக்காக Chrome இன்னமும் தயார்செய்கிறது. Chromeமைப் பின்னர் மீண்டும் தொடங்கவும்.</translation>
 <translation id="3568688522516854065">உங்கள் பிற சாதனங்களிலிருந்து தாவல்களைப் பெற, உள்நுழைந்து, ஒத்திசைவை இயக்கவும்</translation>
 <translation id="3587482841069643663">அனைத்தும்</translation>
-<translation id="3587596251841506391">பாதுகாப்பை மேம்படுத்த உதவுங்கள்</translation>
+<translation id="3587596251841506391">இணையத்தில் பாதுகாப்பை மேம்படுத்த உதவுங்கள்</translation>
 <translation id="3590487821116122040">முக்கியமில்லை என்று Chrome கருதும் தளச் சேமிப்பகம் (எ.கா: சேமித்த அமைப்புகள் இல்லாத அல்லது நீங்கள் அடிக்கடி பார்க்காத தளங்கள்)</translation>
 <translation id="3594780231884063836">வீடியோவின் ஒலியை முடக்கு</translation>
 <translation id="3599863153486145794">உள்நுழைந்த எல்லாச் சாதனங்களிலிருந்தும் வரலாற்றை அழிக்கும். உங்கள் Google கணக்கு, <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> என்ற இணைப்பில் உலாவல் வரலாறு தொடர்பான பிற தகவல்களைக் கொண்டிருக்கக்கூடும்.</translation>
@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">ஸ்டேக் அன்வைண்டர்</translation>
 <translation id="473775607612524610">புதுப்பி</translation>
 <translation id="4738836084190194332">கடைசியாக ஒத்திசைத்தது: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA பிழை: <ph name="VIOLATED_URL" /> இல் <ph name="ERROR_CODE" /></translation>
 <translation id="4749960740855309258">புதிய தாவலைத் திறக்கும்</translation>
 <translation id="4759238208242260848">பதிவிறக்கங்கள்</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{ஒரு பதிவிறக்கம் முடிந்தது.}other{# பதிவிறக்கங்கள் முடிந்தன.}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">ஆஃப்லைனில் கண்டறியுங்கள்</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">அசலைக் காண்பி</translation>
+<translation id="9148126808321036104">மீண்டும் உள்நுழைக</translation>
 <translation id="9155898266292537608">ஒரு சொல்லைத் தட்டி உடனடியாகவும் தேடலாம்</translation>
 <translation id="9169507124922466868">வழிசெலுத்தல் வரலாறு பாதியளவு திறந்துள்ளது</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{சரிபார்த்தது: 1 நிமிடத்திற்கு முன்பு}other{சரிபார்த்தது: # நிமிடங்களுக்கு முன்பு}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">முகப்பு</translation>
 <translation id="93753284658583800">முகப்புப்பக்கம் மாற்றப்பட்டது</translation>
 <translation id="938850635132480979">பிழை: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">கடவுச்சொற்றொடரை உள்ளிடுக</translation>
 <translation id="95817756606698420">சீனாவில் தேடுவதற்கு, Chromeமில் <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />ஐப் பயன்படுத்தலாம். இதை <ph name="BEGIN_LINK" />அமைப்புகளுக்குச்<ph name="END_LINK" /> சென்று மாற்றலாம்.</translation>
 <translation id="968900484120156207">நீங்கள் பார்க்கும் பக்கங்கள் இங்குத் தோன்றும்</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> நிமிடங்கள் மீதமுள்ளன</translation>

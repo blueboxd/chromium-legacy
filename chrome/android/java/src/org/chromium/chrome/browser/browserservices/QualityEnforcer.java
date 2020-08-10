@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsSessionToken;
@@ -25,7 +26,11 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.net.NetError;
 import org.chromium.ui.widget.Toast;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
 
@@ -44,7 +49,8 @@ public class QualityEnforcer {
     static final String NOTIFY = "quality_enforcement.notify";
     @VisibleForTesting
     static final String CRASH = "quality_enforcement.crash";
-    private static final String KEY_CRASH_REASON = "crash_reason";
+    @VisibleForTesting
+    static final String KEY_CRASH_REASON = "crash_reason";
     private static final String KEY_SUCCESS = "success";
 
     private final ChromeActivity<?> mActivity;
@@ -55,6 +61,17 @@ public class QualityEnforcer {
 
     private boolean mOriginVerified;
 
+    @IntDef({ViolationType.ERROR_404, ViolationType.ERROR_5XX, ViolationType.UNAVAILABLE_OFFLINE,
+            ViolationType.DIGITAL_ASSERTLINKS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ViolationType {
+        int ERROR_404 = 0;
+        int ERROR_5XX = 1;
+        int UNAVAILABLE_OFFLINE = 2;
+        int DIGITAL_ASSERTLINKS = 3;
+        int NUM_ENTRIES = 4;
+    }
+
     private final CustomTabTabObserver mTabObserver = new CustomTabTabObserver() {
         @Override
         public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
@@ -64,11 +81,15 @@ public class QualityEnforcer {
             }
 
             String newUrl = tab.getOriginalUrl();
-            if (isNavigationInScope(newUrl) && navigation.httpStatusCode() == 404) {
-                String message = ContextUtils.getApplicationContext().getString(
-                        R.string.twa_quality_enforcement_violation_error,
-                        navigation.httpStatusCode(), newUrl);
-                trigger(message);
+            if (isNavigationInScope(newUrl)) {
+                if (navigation.httpStatusCode() == 404) {
+                    trigger(ViolationType.ERROR_404, newUrl, navigation.httpStatusCode());
+                } else if (navigation.httpStatusCode() >= 500
+                        && navigation.httpStatusCode() <= 599) {
+                    trigger(ViolationType.ERROR_5XX, newUrl, navigation.httpStatusCode());
+                } else if (navigation.errorCode() == NetError.ERR_INTERNET_DISCONNECTED) {
+                    trigger(ViolationType.UNAVAILABLE_OFFLINE, newUrl, navigation.httpStatusCode());
+                }
             }
         }
 
@@ -93,11 +114,12 @@ public class QualityEnforcer {
         tabObserverRegistrar.registerActivityTabObserver(mTabObserver);
     }
 
-    private void trigger(String message) {
-        showErrorToast(message);
+    private void trigger(@ViolationType int type, String url, int httpStatusCode) {
+        showErrorToast(getToastMessage(type, url, httpStatusCode));
 
+        // Notify the client app.
         Bundle args = new Bundle();
-        args.putString(KEY_CRASH_REASON, message);
+        args.putString(KEY_CRASH_REASON, toTwaCrashMessage(type, url, httpStatusCode));
         if (!ChromeFeatureList.isEnabled(
                     ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT)) {
             mConnection.sendExtraCallbackWithResult(mSessionToken, NOTIFY, args);
@@ -128,5 +150,30 @@ public class QualityEnforcer {
         Promise<Boolean> result = mVerifier.verify(newUrl);
         mOriginVerified = !result.isFulfilled() || result.getResult();
         return wasVerified && mOriginVerified;
+    }
+
+    /* Get the localized string for toast message. */
+    private String getToastMessage(@ViolationType int type, String url, int httpStatusCode) {
+        if (type == ViolationType.ERROR_404 || type == ViolationType.ERROR_5XX) {
+            return ContextUtils.getApplicationContext().getString(
+                    R.string.twa_quality_enforcement_violation_error, httpStatusCode, url);
+        } else if (type == ViolationType.UNAVAILABLE_OFFLINE) {
+            return ContextUtils.getApplicationContext().getString(
+                    R.string.twa_quality_enforcement_violation_offline, url);
+        }
+        return "";
+    }
+
+    /*
+     * Get the string for sending message to TWA client app. We are not using the localized one as
+     * the toast because this is used in TWA's crash message.
+     */
+    private String toTwaCrashMessage(@ViolationType int type, String url, int httpStatusCode) {
+        if (type == ViolationType.ERROR_404 || type == ViolationType.ERROR_5XX) {
+            return httpStatusCode + " on " + url;
+        } else if (type == ViolationType.UNAVAILABLE_OFFLINE) {
+            return "Page unavailable offline: " + url;
+        }
+        return "";
     }
 }

@@ -114,6 +114,12 @@ static const char kDevtoolsGridSettingChangedHistogram[] =
     "DevTools.GridSettingChanged";
 static const char kDevtoolsCSSGridSettingsHistogram[] =
     "DevTools.CSSGridSettings";
+static const char kDevtoolsExperimentEnabledHistogram[] =
+    "DevTools.ExperimentEnabled";
+static const char kDevtoolsExperimentDisabledHistogram[] =
+    "DevTools.ExperimentDisabled";
+static const char kDevtoolsExperimentEnabledAtLaunchHistogram[] =
+    "DevTools.ExperimentEnabledAtLaunch";
 
 static const char kRemotePageActionInspect[] = "inspect";
 static const char kRemotePageActionReload[] = "reload";
@@ -1274,6 +1280,12 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
   else if (name == kDevtoolsGridSettingChangedHistogram)
     base::UmaHistogramExactLinear(name, sample, boundary_value);
   else if (name == kDevtoolsCSSGridSettingsHistogram)
+    base::UmaHistogramExactLinear(name, sample, boundary_value);
+  else if (name == kDevtoolsExperimentEnabledHistogram)
+    base::UmaHistogramExactLinear(name, sample, boundary_value);
+  else if (name == kDevtoolsExperimentDisabledHistogram)
+    base::UmaHistogramExactLinear(name, sample, boundary_value);
+  else if (name == kDevtoolsExperimentEnabledAtLaunchHistogram)
     base::UmaHistogramExactLinear(name, sample, boundary_value);
   else
     frontend_host_->BadMessageRecieved();

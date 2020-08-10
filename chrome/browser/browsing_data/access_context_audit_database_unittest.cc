@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 
 #include "base/files/scoped_temp_dir.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "sql/database.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -458,4 +459,64 @@ TEST_F(AccessContextAuditDatabaseTest, RepeatedAccesses) {
 
   EXPECT_EQ(num_test_cookie_entries, cookie_rows);
   EXPECT_EQ(num_test_storage_entries, storage_api_rows);
+}
+
+TEST_F(AccessContextAuditDatabaseTest, RemoveSessionOnlyRecords) {
+  // Check that records are cleared appropriately by RemoveSessionOnlyRecords
+  // when the provided content settings indicate they should.
+  auto test_records = GetTestRecords();
+  OpenDatabase();
+  database()->AddRecords(test_records);
+  ValidateDatabaseRecords(database(), test_records);
+
+  // Test that default content setting of SESSION_ONLY results in all records
+  // being removed.
+  ContentSettingsForOneType content_settings;
+  content_settings.emplace_back(
+      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
+      base::Value::FromUniquePtrValue(content_settings::ContentSettingToValue(
+          CONTENT_SETTING_SESSION_ONLY)),
+      std::string(), /* incognito */ false);
+
+  database()->RemoveSessionOnlyRecords(content_settings);
+  ValidateDatabaseRecords(database(), {});
+
+  // Check that a more targeted content setting also removes the appropriate
+  // records.
+  content_settings.clear();
+  database()->AddRecords(test_records);
+  ValidateDatabaseRecords(database(), test_records);
+
+  content_settings.emplace_back(
+      ContentSettingsPattern::FromString(kManyContextsCookieDomain),
+      ContentSettingsPattern::Wildcard(),
+      base::Value::FromUniquePtrValue(content_settings::ContentSettingToValue(
+          CONTENT_SETTING_SESSION_ONLY)),
+      std::string(), /* incognito */ false);
+  content_settings.emplace_back(
+      ContentSettingsPattern::FromString(kManyContextsStorageAPIOrigin),
+      ContentSettingsPattern::Wildcard(),
+      base::Value::FromUniquePtrValue(content_settings::ContentSettingToValue(
+          CONTENT_SETTING_SESSION_ONLY)),
+      std::string(), /* incognito */ false);
+  content_settings.emplace_back(
+      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
+      base::Value::FromUniquePtrValue(
+          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+      std::string(), /* incognito */ false);
+  database()->RemoveSessionOnlyRecords(content_settings);
+
+  test_records.erase(
+      std::remove_if(
+          test_records.begin(), test_records.end(),
+          [=](const AccessContextAuditDatabase::AccessRecord& record) {
+            if (record.type ==
+                AccessContextAuditDatabase::StorageAPIType::kCookie) {
+              return record.domain == kManyContextsCookieDomain;
+            }
+            return record.origin ==
+                   url::Origin::Create(GURL(kManyContextsStorageAPIOrigin));
+          }),
+      test_records.end());
+  ValidateDatabaseRecords(database(), test_records);
 }

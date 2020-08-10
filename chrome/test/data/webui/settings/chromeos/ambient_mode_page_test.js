@@ -5,7 +5,7 @@
 // clang-format off
 // #import 'chrome://os-settings/chromeos/os_settings.js';
 
-// #import {AmbientModeBrowserProxyImpl, CrSettingsPrefs} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {AmbientModeTopicSource, AmbientModeTemperatureUnit, AmbientModeBrowserProxyImpl, CrSettingsPrefs, Router} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
 // #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -17,21 +17,27 @@
 class TestAmbientModeBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
-      'requestTopicSource',
+      'requestSettings',
       'requestAlbums',
+      'setSelectedTemperatureUnit',
       'setSelectedTopicSource',
       'setSelectedAlbums',
     ]);
   }
 
   /** @override */
-  requestTopicSource() {
-    this.methodCalled('requestTopicSource');
+  requestSettings() {
+    this.methodCalled('requestSettings');
   }
 
   /** @override */
   requestAlbums(topicSource) {
     this.methodCalled('requestAlbums', [topicSource]);
+  }
+
+  /** @override */
+  setSelectedTemperatureUnit(temperatureUnit) {
+    this.methodCalled('setSelectedTemperatureUnit', [temperatureUnit]);
   }
 
   /** @override */
@@ -115,6 +121,34 @@ suite('AmbientModeHandler', function() {
     assertEquals(enabled, enabled_toggled_twice);
   });
 
+  test('doubleClickTopicSource', () => {
+    // Select the google photos topic source.
+    cr.webUIListenerCallback(
+        'topic-source-changed', AmbientModeTopicSource.GOOGLE_PHOTOS);
+
+    const topicSourceList = ambientModePage.$$('topic-source-list');
+    const ironList = topicSourceList.$$('iron-list');
+    const topicSourceItem =
+        ironList.querySelector('topic-source-item[checked]');
+    const clickableDiv = topicSourceItem.$$('#rowContainer');
+
+    // Verify that the show-albums event is sent when the google photos radio
+    // button is clicked again.
+    let showAlbumEventCalls = 0;
+    topicSourceList.addEventListener('show-albums', (event) => {
+      assertEquals(AmbientModeTopicSource.GOOGLE_PHOTOS, event.detail);
+      showAlbumEventCalls++;
+    });
+
+    clickableDiv.click();
+    assertEquals(1, showAlbumEventCalls);
+
+    // Should navigate to the ambient-mode/photos?topic-source=0 subpage.
+    const router = settings.Router.getInstance();
+    assertEquals('/ambientMode/photos', router.getCurrentRoute().path);
+    assertEquals('topicSource=0', router.getQueryParameters().toString());
+  });
+
   test('hasTopicSourceItems', function() {
     const topicSourceListElement = ambientModePage.$$('topic-source-list');
     const ironList = topicSourceListElement.$$('iron-list');
@@ -141,5 +175,78 @@ suite('AmbientModeHandler', function() {
     assertEquals('id1', checkbox1.dataset.id);
     assertFalse(checkbox1.checked);
     assertEquals('album1', checkbox1.label);
+  });
+
+  test('temperatureUnitRadioButtonsDisabled', () => {
+    // When |selectedTemperatureUnit_| is invalid the radio buttons should be
+    // disabled. This is the initial state.
+    const radioGroup = ambientModePage.$$('#weatherDiv cr-radio-group');
+
+    assertTrue(radioGroup.disabled);
+
+    // When |selectedTemperatureUnit_| is valid the radio buttons should be
+    // enabled.
+    cr.webUIListenerCallback(
+        'temperature-unit-changed', AmbientModeTemperatureUnit.CELSIUS);
+    assertFalse(radioGroup.disabled);
+
+    cr.webUIListenerCallback(
+        'temperature-unit-changed', AmbientModeTemperatureUnit.UNKNOWN);
+    assertTrue(radioGroup.disabled);
+  });
+
+  test('temperatureUnitRadioButtons', async () => {
+    // Simulate C++ setting celsius as the initial temperature unit.
+    cr.webUIListenerCallback(
+        'temperature-unit-changed', AmbientModeTemperatureUnit.CELSIUS);
+
+    const celsiusButton = ambientModePage.$$('cr-radio-button[name=celsius]');
+    const fahrenheitButton =
+        ambientModePage.$$('cr-radio-button[name=fahrenheit]');
+
+    assertTrue(celsiusButton.checked);
+    assertFalse(fahrenheitButton.checked);
+
+    browserProxy.resetResolver('setSelectedTemperatureUnit');
+
+    // Click fahrenheit and expect the fahrenheit radio button to be checked and
+    // the browser proxy to be called with the correct argument.
+    fahrenheitButton.click();
+
+    assertFalse(celsiusButton.checked);
+    assertTrue(fahrenheitButton.checked);
+
+    assertEquals(1, browserProxy.getCallCount('setSelectedTemperatureUnit'));
+    const fahrenheitArgs =
+        await browserProxy.whenCalled('setSelectedTemperatureUnit');
+    assertDeepEquals(['fahrenheit'], fahrenheitArgs);
+
+    browserProxy.resetResolver('setSelectedTemperatureUnit');
+
+    // Click celsius and expect the celsius radio button to be checked and the
+    // browser proxy to be called with the correct argument.
+    celsiusButton.click();
+
+    assertTrue(celsiusButton.checked);
+    assertFalse(fahrenheitButton.checked);
+
+    assertEquals(1, browserProxy.getCallCount('setSelectedTemperatureUnit'));
+    const celsiusArgs =
+        await browserProxy.whenCalled('setSelectedTemperatureUnit');
+    assertDeepEquals(['celsius'], celsiusArgs);
+  });
+
+  test('temperatureUnitRadioButtonsDoubleClick', async () => {
+    // Simulate C++ setting celsius as the default temperature unit.
+    cr.webUIListenerCallback(
+        'temperature-unit-changed', AmbientModeTemperatureUnit.CELSIUS);
+
+    const celsiusButton = ambientModePage.$$('cr-radio-button[name=celsius]');
+
+    browserProxy.resetResolver('setSelectedTemperatureUnit');
+
+    // Nothing should happen.
+    celsiusButton.click();
+    assertEquals(0, browserProxy.getCallCount('setSelectedTemperatureUnit'));
   });
 });

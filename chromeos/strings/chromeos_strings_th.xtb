@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">รหัสผ่านใหม่</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> จัดการอุปกรณ์นี้และมีสิทธิ์เข้าถึงกิจกรรมทั้งหมดของผู้ใช้ ซึ่งรวมถึงหน้าเว็บที่เข้าชม รหัสผ่าน และอีเมล</translation>
 <translation id="4003384961948020559">ไม่สำเร็จ - ถาดกระดาษขาออกเต็ม</translation>
+<translation id="4027485274696301677"><ph name="DEVICE_TYPE" /> นี้ได้รับการจัดการโดย <ph name="ENROLLMENT_DOMAIN" /> ผู้ดูแลระบบอาจกำหนดค่าอุปกรณ์จากระยะไกล</translation>
 <translation id="4034824040120875894">เครื่องพิมพ์</translation>
 <translation id="4227825898293920515">รหัสผ่านจะหมดอายุในอีก <ph name="TIME" /></translation>
 <translation id="4238516577297848345">ไม่มีงานที่กำลังพิมพ์</translation>

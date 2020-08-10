@@ -302,8 +302,11 @@ TEST_F(LocalFrameUkmAggregatorTest, LatencyDataIsPopulated) {
   EXPECT_EQ(metrics_data->style_update.InMillisecondsF(), millisecond_for_step);
   EXPECT_EQ(metrics_data->layout_update.InMillisecondsF(),
             millisecond_for_step);
+  EXPECT_EQ(metrics_data->compositing_inputs.InMillisecondsF(),
+            millisecond_for_step);
   EXPECT_EQ(metrics_data->prepaint.InMillisecondsF(), millisecond_for_step);
-  EXPECT_EQ(metrics_data->composite.InMillisecondsF(), millisecond_for_step);
+  EXPECT_EQ(metrics_data->compositing_assignments.InMillisecondsF(),
+            millisecond_for_step);
   EXPECT_EQ(metrics_data->paint.InMillisecondsF(), millisecond_for_step);
   EXPECT_EQ(metrics_data->scrolling_coordinator.InMillisecondsF(),
             millisecond_for_step);

@@ -516,6 +516,15 @@
   <message name="IDS_OS_SETTINGS_AMBIENT_MODE_ALBUMS_SUBPAGE_PHOTOS_NUM_ONE" desc="1 photo in an album in ambient mode.">
     1 photo
   </message>
+  <message name="IDS_OS_SETTINGS_AMBIENT_MODE_WEATHER_TITLE" desc="Label for the radio button group of weather.">
+    Weather
+  </message>
+  <message name="IDS_OS_SETTINGS_AMBIENT_MODE_TEMPERATURE_UNIT_FAHRENHEIT" desc="Label for the radio button to choose fahrenheit as the preferred temperature unit.">
+    Fahrenheit
+  </message>
+  <message name="IDS_OS_SETTINGS_AMBIENT_MODE_TEMPERATURE_UNIT_CELSIUS" desc="Label for the radio button to choose celsius as the preferred temperature unit.">
+    Celsius
+  </message>
 
   <!-- Search and Assistant section. -->
   <message name="IDS_OS_SETTINGS_SEARCH_ENGINE_LABEL" desc="Label in OS settings describing search engine behavior.">

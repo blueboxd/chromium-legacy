@@ -42,7 +42,7 @@
 <translation id="1283039547216852943">Πατήστε για ανάπτυξη</translation>
 <translation id="1291207594882862231">Διαγραφή ιστορικού, cookie, δεδομένων ιστότοπου, κρυφής μνήμης…</translation>
 <translation id="129553762522093515">Έκλεισαν πρόσφατα</translation>
-<translation id="1298077576058087471">Εξοικονομήστε έως και 60% σε δεδομένα, διαβάστε τις σημερινές ειδήσεις</translation>
+<translation id="1298077576058087471">Εξοικονομήστε έως και το 60% των δεδομένων, διαβάστε τις σημερινές ειδήσεις</translation>
 <translation id="1303339473099049190">Δεν είναι δυνατή η εύρεση αυτού του κωδικού πρόσβασης. Ελέγξτε για τυχόν ορθογραφικά λάθη και δοκιμάστε ξανά.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Στάλθηκε από <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Ομαδοποίηση καρτελών</translation>
@@ -152,6 +152,7 @@
 <translation id="2154710561487035718">Αντιγραφή διεύθυνσης URL</translation>
 <translation id="2156074688469523661">Ιστότοποι που απομένουν (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Για να κοινοποιήσετε κάτι από το τηλέφωνό σας σε μια άλλη συσκευή, ενεργοποιήστε τον συγχρονισμό στις ρυθμίσεις του Chrome και στις δύο συσκευές.</translation>
+<translation id="2158408438301413340">Το Chrome δεν μπόρεσε να ελέγξει όλους τους κωδικούς πρόσβασης.</translation>
 <translation id="2169830938017475061">Τώρα</translation>
 <translation id="2175927920773552910">Κωδικός QR</translation>
 <translation id="218608176142494674">Κοινοποίηση</translation>
@@ -160,6 +161,7 @@
 <translation id="2239812875700136898">Ελέγξτε τις ιστορίες σας από το κουμπί Επιλογές για Discover</translation>
 <translation id="2259659629660284697">Εξαγωγή κωδικών πρόσβασης…</translation>
 <translation id="2268044343513325586">Περιορισμός</translation>
+<translation id="2276696007612801991">Συνδεθείτε στον Λογαριασμό σας Google για να ελέγξετε τους κωδικούς πρόσβασής σας.</translation>
 <translation id="2286841657746966508">Διεύθυνση τιμολόγησης</translation>
 <translation id="230115972905494466">Δεν βρέθηκαν συμβατές συσκευές</translation>
 <translation id="2318045970523081853">Πατήστε για πραγματοποίηση κλήσης</translation>
@@ -262,7 +264,7 @@
 <translation id="305593374596241526">Η Τοποθεσία είναι απενεργοποιημένη. Ενεργοποιήστε την στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Μπορείτε να ενεργοποιήσετε τον συγχρονισμό ανά πάσα στιγμή στις ρυθμίσεις</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> σελιδοδείκτης}other{<ph name="BOOKMARKS_COUNT_MANY" /> σελιδοδείκτες}}</translation>
-<translation id="3062802207422175757">Άρθρα σχετικά με τα ενδιαφέροντά σας στο Chrome</translation>
+<translation id="3062802207422175757">Άρθρα για τα ενδιαφέροντά σας στο Chrome</translation>
 <translation id="3089395242580810162">Άνοιγμα σε καρτ. ανών. περιήγ.</translation>
 <translation id="3114012059975132928">Πρόγραμμα αναπαραγωγής βίντεο</translation>
 <translation id="3114507951000454849">Διαβάστε τις σημερινές ειδήσεις <ph name="NEWS_ICON" /></translation>
@@ -316,6 +318,7 @@
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /> σχετικά με το προτεινόμενο περιεχόμενο</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3507132249039706973">Η Βασική προστασία είναι ενεργή.</translation>
+<translation id="3509330069915219067">Εκτός σύνδεσης. Το Chrome δεν μπορεί να ελέγξει για ενημερώσεις.</translation>
 <translation id="3513704683820682405">Επαυξημένη πραγματικότητα</translation>
 <translation id="3518985090088779359">Αποδοχή και συνέχεια</translation>
 <translation id="3522247891732774234">Διατίθεται μια ενημέρωση. Περισσότερες επιλογές</translation>
@@ -365,6 +368,7 @@
 <translation id="3895926599014793903">Αναγκαστική ενεργοποίηση εστίασης</translation>
 <translation id="3909763690984331376">Έλεγχος ασφαλείας <ph name="BEGIN_NEW" />Νέο<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Εύρεση των καλύτερων στον ιστό…</translation>
+<translation id="3924911262913579434">Η λειτουργία <ph name="SAFE_BROWSING_MODE" /> είναι ενεργή.</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Συνδυασμός των δεδομένων μου</translation>
 <translation id="393697183122708255">Δεν έχει ενεργοποιηθεί φωνητ. αναζήτηση</translation>
@@ -372,6 +376,7 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Το Chrome θα φορτώσει τη σελίδα σας όταν είναι έτοιμη}other{Το Chrome θα φορτώσει τις σελίδες σας όταν είναι έτοιμες}}</translation>
 <translation id="3963007978381181125">Η κρυπτογράφηση με φράση πρόσβασης δεν περιλαμβάνει τρόπους πληρωμής και διευθύνσεις από το Google Pay. Μόνο κάποιος που γνωρίζει τη φράση πρόσβασής σας μπορεί να διαβάσει τα κρυπτογραφημένα δεδομένα σας. Η φράση πρόσβασης δεν αποστέλλεται στην Google ούτε αποθηκεύεται από αυτήν. Εάν ξεχάσετε τη φράση πρόσβασής σας ή θέλετε να αλλάξετε αυτήν τη ρύθμιση, θα πρέπει να επαναφέρετε τον συγχρονισμό. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Ολοκλήρωση λήψης</translation>
+<translation id="3969142555815019568">Το Chrome δεν μπορεί να ελέγξει τους κωδικούς πρόσβασής σας.</translation>
 <translation id="3974987681202239636">Η εφαρμογή <ph name="APP_NAME" /> θα ανοίξει στο Chrome. Εάν συνεχίσετε, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών της Google<ph name="END_LINK1" /> και τους <ph name="BEGIN_LINK2" />Πρόσθετους Όρους Παροχής Υπηρεσιών του Google Chrome και του Chrome OS<ph name="END_LINK2" />. Ισχύει επίσης η <ph name="BEGIN_LINK3" />Σημείωση απορρήτου για Λογαριασμούς Google που διαχειρίζονται από το Family Link<ph name="END_LINK3" />.</translation>
 <translation id="397583555483684758">Ο συγχρονισμός σταμάτησε να λειτουργεί</translation>
 <translation id="3976396876660209797">Κατάργηση και εκ νέου δημιουργία αυτής της συντόμευσης</translation>
@@ -447,6 +452,7 @@
 <translation id="4616150815774728855">Ανοίξτε <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Χρήση κωδικού πρόσβασης</translation>
 <translation id="4650364565596261010">Προεπιλογή συστήματος</translation>
+<translation id="465657074423018424">Η Ασφαλής περιήγηση σας προστατεύει από παραπλανητικούς ιστοτόπους. Εάν την απενεργοποιήσετε, φροντίστε να είστε ιδιαίτερα προσεκτικοί κατά την περιήγηση, ειδικά πριν την εισαγωγή κωδικών πρόσβασης.</translation>
 <translation id="4662373422909645029">Το ψευδών. δεν μπορεί να έχει αριθμούς</translation>
 <translation id="4663756553811254707">Διαγράφηκαν <ph name="NUMBER_OF_BOOKMARKS" /> σελιδοδείκτες</translation>
 <translation id="4665282149850138822">Ο ιστότοπος <ph name="NAME" /> προστέθηκε στην αρχική οθόνη σας</translation>
@@ -462,7 +468,6 @@
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Ενημέρωση</translation>
 <translation id="4738836084190194332">Τελευταίος συγχρονισμός: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">Σφάλμα TWA: <ph name="ERROR_CODE" /> σε <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Άνοιγμα νέας καρτέλας</translation>
 <translation id="4759238208242260848">Λήψεις</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ολοκληρωμένη λήψη.}other{# ολοκληρωμένες λήψεις.}}</translation>
@@ -721,7 +726,7 @@
 <translation id="6573431926118603307">Οι καρτέλες που έχετε ανοίξει στο Chrome στις άλλες συσκευές σας θα εμφανίζονται εδώ.</translation>
 <translation id="6583199322650523874">Προσθήκη σελιδοδείκτη στην τρέχουσα σελίδα</translation>
 <translation id="6588043302623806746">Χρήση ασφαλούς DNS</translation>
-<translation id="6590471736817333463">Εξοικονομήστε έως και 60% σε δεδομένα</translation>
+<translation id="6590471736817333463">Εξοικονομήστε έως και το 60% των δεδομένων</translation>
 <translation id="6593061639179217415">Για υπολογιστή</translation>
 <translation id="6597891566292541626">Τοποθετήστε τον κωδικό QR/γραμμωτό κώδικα σε αυτό το πλαίσιο.</translation>
 <translation id="6600954340915313787">Αντιγράφηκε στο Chrome</translation>
@@ -784,6 +789,7 @@
 <translation id="7071521146534760487">Διαχείριση λογαριασμού</translation>
 <translation id="7077143737582773186">Secure Digital</translation>
 <translation id="7080806333218412752">Στέλνει URL στην Ασφαλή περιήγηση για να τα ελέγξει. Επίσης αποστέλλει ένα μικρό δείγμα σελίδων, λήψεων, δραστηριοτήτων επέκτασης και πληροφοριών συστήματος, για να βοηθήσει στην ανακάλυψη νέων απειλών. Όταν είστε συνδεδεμένοι, συνδέει προσωρινά αυτά τα δεδομένα με τον Λογαριασμό σας Google, για να σας προστατεύσει σε όλες τις εφαρμογές Google.</translation>
+<translation id="7088681679121566888">Το Chrome έχει ενημερωθεί.</translation>
 <translation id="7121362699166175603">Διαγράφει το ιστορικό και τα στοιχεία αυτόματης συμπλήρωσης στη γραμμή διευθύνσεων. Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Δείτε κορυφαίους ιστοτόπους και τις πιο πρόσφατες ειδήσεις κάθε φορά που πατάτε το κουμπί αρχικής οθόνης.</translation>
 <translation id="7138678301420049075">Άλλο</translation>
@@ -805,6 +811,7 @@
 <translation id="7293171162284876153">Για να ξεκινήσετε τον συγχρονισμό, ενεργοποιήστε την επιλογή "Συγχρονισμός των δεδομένων του Chrome".</translation>
 <translation id="729975465115245577">Η συσκευή σας δεν διαθέτει κάποια εφαρμογή για την αποθήκευση του αρχείου κωδικών πρόσβασης.</translation>
 <translation id="7302081693174882195">Λεπτομέρειες: Ταξινομήθηκαν βάσει του όγκου των δεδομένων που αποθηκεύτηκαν</translation>
+<translation id="7304873321153398381">Εκτός σύνδεσης. Το Chrome δεν μπορεί να ελέγξει τους κωδικούς πρόσβασής σας.</translation>
 <translation id="7328017930301109123">Στη λειτουργία Lite, το Chrome φορτώνει σελίδες πιο γρήγορα και χρησιμοποιεί έως και 60 τοις εκατό λιγότερα δεδομένα.</translation>
 <translation id="7333031090786104871">Η προσθήκη του προηγούμενου ιστοτόπου δεν έχει ολοκληρωθεί</translation>
 <translation id="7340958967809483333">Επιλογές για Discover</translation>
@@ -818,6 +825,7 @@
 <translation id="741204030948306876">Ναι, συμφωνώ</translation>
 <translation id="7413229368719586778">Ημερομηνία έναρξης: <ph name="DATE" /></translation>
 <translation id="7431991332293347422">Ελέγξτε τον τρόπο με τον οποίο χρησιμοποιείται το ιστορικό περιήγησής σας για την εξατομίκευση της Αναζήτησης και άλλων λειτουργιών</translation>
+<translation id="7435356471928173109">Απενεργοποιήθηκε από τον διαχειριστή σας.</translation>
 <translation id="7437998757836447326">Αποσύνδεση από το Chrome</translation>
 <translation id="7438641746574390233">Όταν η λειτουργία Lite είναι ενεργοποιημένη, το Chrome χρησιμοποιεί διακομιστές της Google για να επιταχύνει τη φόρτωση των σελίδων. Η λειτουργία Lite επανεγγράφει τις πολύ αργές σελίδες έτσι ώστε να φορτώνεται μόνο το απαραίτητο περιεχόμενο. Η λειτουργία Lite δεν εφαρμόζεται σε καρτέλες ανώνυμης περιήγησης.</translation>
 <translation id="7444811645081526538">Περισσότερες κατηγορίες</translation>
@@ -1033,6 +1041,7 @@
 <translation id="9050666287014529139">Φράση πρόσβασής σας</translation>
 <translation id="9063523880881406963">Απενεργοποίηση αιτήματος ιστότοπου για υπολογιστές</translation>
 <translation id="9065203028668620118">Επεξεργασία</translation>
+<translation id="9069543557624799859">Η λήψη θα ξεκινήσει στις <ph name="TIME" />.</translation>
 <translation id="9070377983101773829">Έναρξη φωνητικής αναζήτησης</translation>
 <translation id="9074336505530349563">Για λήψη εξατομικευμένου περιεχομένου που προτείνεται από την Google, συνδεθείτε και ενεργοποιήστε τον συγχρονισμό</translation>
 <translation id="9086302186042011942">Συγχρονισμός</translation>
@@ -1047,6 +1056,7 @@
 <translation id="9133397713400217035">Εξερεύνηση εκτός σύνδεσης</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Εμφάνιση πρωτοτύπου</translation>
+<translation id="9148126808321036104">Συνδεθείτε ξανά</translation>
 <translation id="9155898266292537608">Επίσης, μπορείτε να κάνετε αναζήτηση με ένα γρήγορο πάτημα σε μια λέξη</translation>
 <translation id="9169507124922466868">Το ιστορικό πλοήγησης έχει ανοίξει κατά το ήμισυ</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Ελέγχθηκε πριν από ένα λεπτό}other{Ελέγχθηκε πριν από # λεπτά}}</translation>
@@ -1055,10 +1065,11 @@
 <translation id="9209888181064652401">Δεν είναι δυνατή η πραγματοποίηση κλήσεων</translation>
 <translation id="9219103736887031265">Εικόνες</translation>
 <translation id="926205370408745186">Κατάργηση της δραστηριότητάς σας στο Chrome από το Digital Wellbeing</translation>
-<translation id="927968626442779827">Χρησιμοποιήστε τη Λειτουργία Lite στο Google Chrome.</translation>
+<translation id="927968626442779827">Χρησιμοποιήστε τη λειτουργία Lite στο Google Chrome.</translation>
 <translation id="932327136139879170">Αρχική σελίδα</translation>
 <translation id="93753284658583800">Η αρχική σελίδα άλλαξε.</translation>
 <translation id="938850635132480979">Σφάλμα: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Εισαγωγή φράσης πρόσβασης</translation>
 <translation id="95817756606698420">Το Chrome μπορεί να χρησιμοποιήσει το <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> για την αναζήτηση στην Κίνα. Μπορείτε να αλλάξετε αυτήν την επιλογή στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Εδώ εμφανίζονται οι σελίδες που επισκέπτεστε</translation>
 <translation id="970715775301869095">Απομένουν <ph name="MINUTES" /> λεπτά</translation>

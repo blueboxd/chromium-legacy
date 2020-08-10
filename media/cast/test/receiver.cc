@@ -49,6 +49,7 @@
 #include "media/cast/test/utility/input_builder.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
 #include "net/base/ip_address.h"
+#include "ui/base/ui_base_features.h"
 
 #if defined(USE_X11)
 #include "media/cast/test/linux_output_window.h"
@@ -424,7 +425,8 @@ class NaivePlayer : public InProcessReceiver,
     if (!video_playout_queue_.empty()) {
       const scoped_refptr<VideoFrame> video_frame = PopOneVideoFrame(false);
 #if defined(USE_X11)
-      render_.RenderFrame(*video_frame);
+      if (!features::IsUsingOzonePlatform())
+        render_.RenderFrame(*video_frame);
 #endif  // defined(USE_X11)
     }
     ScheduleVideoPlayout();
@@ -595,7 +597,8 @@ int main(int argc, char** argv) {
   int window_width = 0;
   int window_height = 0;
 #if defined(USE_X11)
-  media::cast::GetWindowSize(&window_width, &window_height);
+  if (!features::IsUsingOzonePlatform())
+    media::cast::GetWindowSize(&window_width, &window_height);
 #endif  // defined(USE_X11)
   media::cast::NaivePlayer player(cast_environment,
                                   local_end_point,

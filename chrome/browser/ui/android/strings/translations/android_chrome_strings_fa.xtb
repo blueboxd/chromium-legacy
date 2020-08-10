@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">گره‌گشای پشته</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="4738836084190194332">آخرین همگام‌سازی: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">‏خطای TWA: <ph name="ERROR_CODE" /> در <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">باز کردن برگه جدید</translation>
 <translation id="4759238208242260848">بارگیری‌ها</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{۱ بارگیری کامل شد.}one{# بارگیری کامل شد.}other{# بارگیری کامل شد.}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">کاوش درحالت آفلاین</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
+<translation id="9148126808321036104">ورود مجدد به سیستم</translation>
 <translation id="9155898266292537608">می‌توانید با ضربه‌ای سریع روی کلمه نیز جستجو کنید</translation>
 <translation id="9169507124922466868">سابقه «پیمایش» نیمه‌باز است</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{آخرین بررسی: ۱ دقیقه قبل}one{آخرین بررسی: # دقیقه قبل}other{آخرین بررسی: # دقیقه قبل}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">منزل</translation>
 <translation id="93753284658583800">صفحه اصلی تغییر کرد</translation>
 <translation id="938850635132480979">خطا: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">عبارت ورود را وارد کنید</translation>
 <translation id="95817756606698420">‏Chrome می‌تواند از <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> برای جستجو در چین استفاده کند. در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> می‌توانید این را تغییر دهید.</translation>
 <translation id="968900484120156207">صفحاتی را که بازدید کرده‌اید، اینجا نمایش داده می‌شوند</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> دقیقه باقی‌مانده است</translation>

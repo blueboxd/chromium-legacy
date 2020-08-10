@@ -72,28 +72,6 @@ PolicyValue& PolicyValue::operator=(const PolicyValue& rhs) {
   return *this;
 }
 
-// static
-PolicyValue PolicyValue::Combine(const PolicyValue& lhs,
-                                 const PolicyValue& rhs) {
-  PolicyValue result = lhs;
-  result.Combine(rhs);
-  return result;
-}
-
-void PolicyValue::Combine(const PolicyValue& rhs) {
-  DCHECK_EQ(type_, rhs.Type());
-  switch (type_) {
-    case mojom::PolicyValueType::kBool:
-      SetBoolValue(bool_value_ && rhs.BoolValue());
-      break;
-    case mojom::PolicyValueType::kDecDouble:
-      SetDoubleValue(std::min(double_value_, rhs.DoubleValue()), type_);
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 bool operator==(const PolicyValue& lhs, const PolicyValue& rhs) {
   if (lhs.Type() != rhs.Type())
     return false;

@@ -597,6 +597,20 @@ TEST_F(NGLineBreakerTest, TableCellWidthCalculationQuirkOutOfFlow) {
   // Pass if |ComputeMinMaxSize| doesn't hit DCHECK failures.
 }
 
+TEST_F(NGLineBreakerTest, RewindPositionedFloat) {
+  SetBodyInnerHTML(R"HTML(
+<div style="float: left">
+  &#xe49d;oB&#xfb45;|&#xf237;&#xfefc;
+  )&#xe2c9;&#xea7a;0{r
+  6
+  <span style="float: left">
+    <span style="border-right: solid green 2.166621530302065e+19in"></span>
+  </span>
+</div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+}
+
 // crbug.com/1091359
 TEST_F(NGLineBreakerTest, RewindRubyRun) {
   NGInlineNode node = CreateInlineNode(R"HTML(

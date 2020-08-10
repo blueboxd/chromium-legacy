@@ -3578,6 +3578,24 @@
             ]
         }
     ],
+    "IOSRequestDesktopByDefault": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "DesktopEverywhere",
+                    "enable_features": [
+                        "UseDefaultUserAgentInWebClient"
+                    ],
+                    "disable_features": [
+                        "MobileGoogleSRP"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSSSLCommittedInterstitials": [
         {
             "platforms": [
@@ -7217,9 +7235,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Emabled5_v1",
+                    "name": "Enabled3_v1",
                     "params": {
-                        "limit": "5"
+                        "limit": "3"
                     },
                     "enable_features": [
                         "ThrottleInstallingServiceWorker"

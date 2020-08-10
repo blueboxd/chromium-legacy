@@ -1212,21 +1212,22 @@ TEST_P(CompositingSimTest, SafeOpaqueBackgroundColorGetsSet) {
 
   auto* grouped_mapping =
       GetElementById("topleft")->GetLayoutBox()->Layer()->GroupedMapping();
-  auto* squashed_layer =
+  ASSERT_TRUE(grouped_mapping);
+  ASSERT_TRUE(grouped_mapping->NonScrollingSquashingLayer());
+  auto& squashing_layer =
       grouped_mapping->NonScrollingSquashingLayer()->CcLayer();
-  ASSERT_NE(nullptr, squashed_layer);
 
   // Top left and bottom right are squashed.
   // This squashed layer should not be opaque, as it is squashing two squares
   // with some gaps between them.
-  EXPECT_FALSE(squashed_layer->contents_opaque());
+  EXPECT_FALSE(squashing_layer.contents_opaque());
   // This shouldn't DCHECK.
-  squashed_layer->SafeOpaqueBackgroundColor();
+  squashing_layer.SafeOpaqueBackgroundColor();
   // Because contents_opaque is false, the SafeOpaqueBackgroundColor() getter
   // will return SK_ColorTRANSPARENT. So we need to grab the actual color,
   // to make sure it's right.
   SkColor squashed_bg_color =
-      squashed_layer->ActualSafeOpaqueBackgroundColorForTesting();
+      squashing_layer.ActualSafeOpaqueBackgroundColorForTesting();
   // The squashed layer should have a non-transparent safe opaque background
   // color, that isn't blue. Exactly which color it is depends on heuristics,
   // but it should be one of the two colors of the elements that created it.

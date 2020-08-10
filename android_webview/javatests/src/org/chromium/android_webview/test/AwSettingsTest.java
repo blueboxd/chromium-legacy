@@ -39,10 +39,12 @@ import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.Callback;
 import org.chromium.base.FileUtils;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -72,6 +74,7 @@ import java.util.regex.Pattern;
 @RunWith(AwJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1",
         "enable-features=WebViewOriginCheckForStreamReader"})
+@Batch(Batch.PER_CLASS)
 public class AwSettingsTest {
     @Rule
     public AwActivityTestRule mActivityTestRule =
@@ -2851,6 +2854,7 @@ public class AwSettingsTest {
         }
     }
 
+    @RequiresRestart("Enabling appcache is global and cannot be reversed.")
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences", "AppCache"})
@@ -2884,6 +2888,7 @@ public class AwSettingsTest {
         }
     }
 
+    @RequiresRestart("Enabling appcache is global and cannot be reversed.")
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences", "AppCache"})

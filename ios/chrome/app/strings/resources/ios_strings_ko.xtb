@@ -128,7 +128,6 @@
 <translation id="236977714248711277">사이트에서 사용자의 로그인 상태를 유지하거나 장바구니에 담긴 상품을 기억하는 등 탐색 환경을 개선하는 데 쿠키를 사용할 수 없습니다.
 
 사이트에서 사용자의 다양한 사이트 탐색 활동 정보를 이용해 광고 맞춤설정 등의 작업을 하는 데 쿠키를 사용할 수 없습니다.</translation>
-<translation id="2379896346847637748">새 창에서 열기</translation>
 <translation id="2381405137052800939">기본설정</translation>
 <translation id="2386793615875593361">1장 선택됨</translation>
 <translation id="2421004566762153674">타사 쿠키 차단</translation>
@@ -185,6 +184,7 @@
 <translation id="298306318844797842">결제 수단 추가...</translation>
 <translation id="2989805286512600854">새 탭에서 열기</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
+<translation id="3080525922482950719">페이지를 저장하여 나중에 읽거나 오프라인 상태에서 읽을 수 있습니다.</translation>
 <translation id="3081338492074632642">저장하려는 비밀번호가 <ph name="WEBSITE" />의 비밀번호와 일치하는지 확인하세요.</translation>
 <translation id="3112556859945124369">표시…</translation>
 <translation id="3131206671572504478">모두 차단</translation>
@@ -309,6 +309,7 @@
 <translation id="4619615317237390068">다른 기기의 탭</translation>
 <translation id="4620246317052452550">내가 읽은 페이지</translation>
 <translation id="4630540211544979320">페이지 번역</translation>
+<translation id="4634124774493850572">비밀번호 사용</translation>
 <translation id="4636930964841734540">정보</translation>
 <translation id="4659126640776004816">Google 계정에 로그인하면 이 기능이 사용 설정됩니다.</translation>
 <translation id="4659667755519643272">탭 전환 실행</translation>
@@ -610,6 +611,7 @@
 <translation id="8007420562015504427">시크릿 검색</translation>
 <translation id="802154636333426148">다운로드 실패</translation>
 <translation id="8023878949384262191">섹션을 확장합니다.</translation>
+<translation id="8027581147000338959">새 창에서 열기</translation>
 <translation id="804427445359061970">여기에서 다른 기기의 탭을 확인할 수 있습니다</translation>
 <translation id="8059533439631660104">섹션을 접습니다.</translation>
 <translation id="8065292699993359127">Chrome에서 시크릿 모드로 URL 열기</translation>

@@ -20,6 +20,7 @@ Where the sequence of parameters to join is the relative path from your source
 file to the build directory.
 """
 
+import json
 import os
 import re
 import sys
@@ -27,6 +28,7 @@ import sys
 
 _CHROMIUM_ROOT = os.path.join(os.path.dirname(__file__), os.pardir)
 
+BUILD_VARS_FILENAME = 'build_vars.json'
 IMPORT_RE = re.compile(r'^import\("//(\S+)"\)')
 
 
@@ -496,3 +498,9 @@ class GNValueParser(object):
       self.cur = end
       return True
     return False
+
+
+def ReadBuildVars(output_directory):
+  """Parses $output_directory/build_vars.json into a dict."""
+  with open(os.path.join(output_directory, BUILD_VARS_FILENAME)) as f:
+    return json.load(f)

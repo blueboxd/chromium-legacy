@@ -97,12 +97,45 @@ interface ConnectionLifecycleListener {
 // packets is not part of the NearbyConnections library and is done in a
 // separate interface.
 interface NearbyConnections {
+  // Starts advertising an endpoint with the specified service ID. Only one
+  // advertisement can be active at a time and calling StartAdvertising() while
+  // advertising will fail and return Status::kAlreadyAdvertising.
+  //
+  // endpoint_info - The local info to be broadcasted. May contain a human
+  //                 readable name to appear on other devices if broadcasting
+  //                 in high visibility mode.
+  // service_id    - An identifier to advertise your app to other endpoints.
+  //                 This can be an arbitrary string, so long as it uniquely
+  //                 identifies your service. A good default is to use your
+  //                 app's package name.
+  // options       - The options for advertising.
+  // listener      - An interface notified when remote endpoints request a
+  //                 connection to this endpoint.
+  // Possible return values include:
+  //   Status::kSuccess if advertising started successfully.
+  //   Status::kAlreadyAdvertising if the app is already advertising.
+  //   Status::kOutOfOrderApiCall if the app is currently connected to remote
+  //       endpoints; call StopAllEndpoints first.
+  StartAdvertising(array<uint8> endpoint_info, string service_id,
+                   AdvertisingOptions options,
+                   pending_remote<ConnectionLifecycleListener> listener)
+      => (Status status);
+
+  // Stops advertising the local endpoint. Should be called after calling
+  // StartAdvertising, as soon as the application no longer needs to advertise
+  // itself or goes inactive. Payloads can still be sent to connected
+  // endpoints after advertising ends.
+  //
+  // Possible return values include:
+  //   Status::kSuccess returned after advertising got stopped.
+  StopAdvertising() => (Status status);
+
   // Starts discovery for remote endpoints with the specified service ID.
   //
   // service_id - The ID for the service to be discovered, as specified in
   //              the corresponding call to StartAdvertising.
   // options    - The options for discovery.
-  // listener   - A callback notified when a remote endpoint is discovered.
+  // listener   - An interface notified when a remote endpoint is discovered.
   // Possible status codes include:
   //   Status::kSuccess if discovery started successfully.
   //   Status::kAlreadyDiscovering if the app is already
@@ -130,7 +163,7 @@ interface NearbyConnections {
   //                 connection request will be sent. Should match the value
   //                 provided in a call to
   //                 EndpointDiscoveryListener::OnEndpointFound().
-  // listener      - A callback notified when the remote endpoint sends a
+  // listener      - An interface notified when the remote endpoint sends a
   //                 response to the connection request.
   // Possible return values include:
   //   Status::kSuccess if the connection request was sent.

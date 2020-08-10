@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Uusi salasana</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää tätä laitetta ja pääsee näkemään kaiken käyttäjätoiminnan, kuten avatut verkkosivustot, salasanat ja sähköpostit.</translation>
 <translation id="4003384961948020559">Epäonnistui – Syöte täynnä</translation>
+<translation id="4027485274696301677">Laitetta (<ph name="DEVICE_TYPE" />) ylläpitää <ph name="ENROLLMENT_DOMAIN" />. Järjestelmänvalvojat voivat määrittää laitteen etänä.</translation>
 <translation id="4034824040120875894">Tulostin</translation>
 <translation id="4227825898293920515">Salasana vanhenee: <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Ei tulostustöitä käynnissä</translation>

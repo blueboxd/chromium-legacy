@@ -4,9 +4,11 @@
 
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
 
+#include "base/environment.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
 
 class OmniboxPedalProviderTest : public testing::Test {
  protected:

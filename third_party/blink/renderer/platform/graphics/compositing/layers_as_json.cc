@@ -25,48 +25,48 @@ String PointerAsString(const void* ptr) {
 }  // namespace
 
 // Create a JSON version of the specified |layer|.
-std::unique_ptr<JSONObject> CCLayerAsJSON(const cc::Layer* layer,
+std::unique_ptr<JSONObject> CCLayerAsJSON(const cc::Layer& layer,
                                           LayerTreeFlags flags) {
   auto json = std::make_unique<JSONObject>();
 
   if (flags & kLayerTreeIncludesDebugInfo) {
-    json->SetString("this", PointerAsString(layer));
-    json->SetInteger("ccLayerId", layer->id());
+    json->SetString("this", PointerAsString(&layer));
+    json->SetInteger("ccLayerId", layer.id());
   }
 
-  json->SetString("name", String(layer->DebugName().c_str()));
+  json->SetString("name", String(layer.DebugName().c_str()));
 
-  if (layer->offset_to_transform_parent() != gfx::Vector2dF()) {
+  if (layer.offset_to_transform_parent() != gfx::Vector2dF()) {
     json->SetArray(
         "position",
-        PointAsJSONArray(FloatPoint(layer->offset_to_transform_parent())));
+        PointAsJSONArray(FloatPoint(layer.offset_to_transform_parent())));
   }
 
   // This is testing against gfx::Size(), *not* whether the size is empty.
-  if (layer->bounds() != gfx::Size())
-    json->SetArray("bounds", SizeAsJSONArray(IntSize(layer->bounds())));
+  if (layer.bounds() != gfx::Size())
+    json->SetArray("bounds", SizeAsJSONArray(IntSize(layer.bounds())));
 
-  if (layer->contents_opaque())
+  if (layer.contents_opaque())
     json->SetBoolean("contentsOpaque", true);
-  else if (layer->contents_opaque_for_text())
+  else if (layer.contents_opaque_for_text())
     json->SetBoolean("contentsOpaqueForText", true);
 
-  if (!layer->DrawsContent())
+  if (!layer.DrawsContent())
     json->SetBoolean("drawsContent", false);
 
-  if (layer->should_check_backface_visibility())
+  if (layer.should_check_backface_visibility())
     json->SetString("backfaceVisibility", "hidden");
 
-  if (Color(layer->background_color()).Alpha()) {
+  if (Color(layer.background_color()).Alpha()) {
     json->SetString("backgroundColor",
-                    Color(layer->background_color()).NameForLayoutTreeAsText());
+                    Color(layer.background_color()).NameForLayoutTreeAsText());
   }
 
   if (flags &
       (kLayerTreeIncludesDebugInfo | kLayerTreeIncludesCompositingReasons)) {
-    if (layer->debug_info()) {
+    if (layer.debug_info()) {
       auto compositing_reasons_json = std::make_unique<JSONArray>();
-      for (const char* name : layer->debug_info()->compositing_reasons)
+      for (const char* name : layer.debug_info()->compositing_reasons)
         compositing_reasons_json->PushString(name);
       json->SetArray("compositingReasons", std::move(compositing_reasons_json));
     }
@@ -138,7 +138,7 @@ void LayersAsJSON::AddLayer(const cc::Layer& layer,
        layer.DebugName() == "Scrolling Contents Layer"))
     return;
 
-  auto layer_json = CCLayerAsJSON(&layer, flags_);
+  auto layer_json = CCLayerAsJSON(layer, flags_);
   if (json_client) {
     json_client->AppendAdditionalInfoAsJSON(flags_, layer, *(layer_json.get()));
   }

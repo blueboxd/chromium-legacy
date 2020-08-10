@@ -1011,6 +1011,10 @@ This file contains the strings for ash.
         Collapse status area
       </message>
 
+      <message name="IDS_ASH_STATUS_AREA_STOP_RECORDING_BUTTON_ACCESSIBLE_NAME" desc="The accessible name for the capture mode recording button in the system tray.">
+        Stop screen recording
+      </message>
+
       <!-- Overview Mode -->
       <message name="IDS_ASH_OVERVIEW_BUTTON_ACCESSIBLE_NAME" desc="The accessible name for the Overview button in the system tray.">
         Toggle window overview
@@ -2590,6 +2594,9 @@ Here are some things you can try to get started.
       <!-- Ambient Mode-->
       <message name="IDS_ASH_AMBIENT_MODE_WEATHER_TEMPERATURE_IN_FAHRENHEIT" desc="Text of the weather temperature in Fahrenheit.">
         <ph name="TEMPERATURE_F">$1<ex>81</ex></ph>° F
+      </message>
+      <message name="IDS_ASH_AMBIENT_MODE_WEATHER_TEMPERATURE_IN_CELSIUS" desc="Text of the weather temperature in Celsius.">
+        <ph name="TEMPERATURE_C">$1<ex>25</ex></ph>° C
       </message>
     </messages>
   </release>

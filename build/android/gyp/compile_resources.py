@@ -197,7 +197,9 @@ def _ParseArgs(args):
       '--optimized-proto-path',
       help='Output for `aapt2 optimize` for proto format (enables the step).')
   input_opts.add_argument(
-      '--resources-config-path', help='Path to aapt2 resources config file.')
+      '--resources-config-paths',
+      default='[]',
+      help='GN list of paths to aapt2 resources config files.')
 
   output_opts.add_argument(
       '--info-path', help='Path to output info file for the partial apk.')
@@ -244,6 +246,8 @@ def _ParseArgs(args):
       options.values_filter_rules)
   options.extra_main_r_text_files = build_utils.ParseGnList(
       options.extra_main_r_text_files)
+  options.resources_config_paths = build_utils.ParseGnList(
+      options.resources_config_paths)
 
   if options.optimized_proto_path and not options.proto_path:
     # We could write to a temp file, but it's simpler to require it.
@@ -879,6 +883,14 @@ def _PackageApk(options, build):
   return desired_manifest_package_name
 
 
+def _CombineResourceConfigs(resources_config_paths, out_config_path):
+  with open(out_config_path, 'w') as out_config:
+    for config_path in resources_config_paths:
+      with open(config_path) as config:
+        out_config.write(config.read())
+        out_config.write('\n')
+
+
 def _OptimizeApk(output, options, temp_dir, unoptimized_path, r_txt_path):
   """Optimize intermediate .ap_ file with aapt2.
 
@@ -900,17 +912,13 @@ def _OptimizeApk(output, options, temp_dir, unoptimized_path, r_txt_path):
   # Optimize the resources.arsc file by obfuscating resource names and only
   # allow usage via R.java constant.
   if options.strip_resource_names:
-    # Resources of type ID are references to UI elements/views. They are used by
-    # UI automation testing frameworks. They are kept in so that they dont break
-    # tests, even though they may not actually be used during runtime. See
-    # https://crbug.com/900993
-    id_resources = _ExtractIdResources(r_txt_path)
+    no_collapse_resources = _ExtractNonCollapsableResources(r_txt_path)
     gen_config_path = os.path.join(temp_dir, 'aapt2.config')
-    if options.resources_config_path:
-      shutil.copyfile(options.resources_config_path, gen_config_path)
-    with open(gen_config_path, 'a+') as config:
-      for resource in id_resources:
-        config.write('{}#no_obfuscate\n'.format(resource))
+    if options.resources_config_paths:
+      _CombineResourceConfigs(options.resources_config_paths, gen_config_path)
+    with open(gen_config_path, 'a') as config:
+      for resource in no_collapse_resources:
+        config.write('{}#no_collapse\n'.format(resource))
 
     optimize_command += [
         '--collapse-resource-names',
@@ -930,21 +938,30 @@ def _OptimizeApk(output, options, temp_dir, unoptimized_path, r_txt_path):
       optimize_command, print_stdout=False, print_stderr=False)
 
 
-def _ExtractIdResources(rtxt_path):
-  """Extract resources of type ID from the R.txt file
+def _ExtractNonCollapsableResources(rtxt_path):
+  """Extract resources that should not be collapsed from the R.txt file
+
+  Resources of type ID are references to UI elements/views. They are used by
+  UI automation testing frameworks. They are kept in so that they don't break
+  tests, even though they may not actually be used during runtime. See
+  https://crbug.com/900993
+  App icons (aka mipmaps) are sometimes referenced by other apps by name so must
+  be keps as well. See https://b/161564466
 
   Args:
     rtxt_path: Path to R.txt file with all the resources
   Returns:
-    List of id resources in the form of id/<resource_name>
+    List of resources in the form of <resource_type>/<resource_name>
   """
-  id_resources = []
+  resources = []
+  _NO_COLLAPSE_TYPES = ['id', 'mipmap']
   with open(rtxt_path) as rtxt:
     for line in rtxt:
-      if ' id ' in line:
-        resource_name = line.split()[2]
-        id_resources.append('id/{}'.format(resource_name))
-  return id_resources
+      for resource_type in _NO_COLLAPSE_TYPES:
+        if ' {} '.format(resource_type) in line:
+          resource_name = line.split()[2]
+          resources.append('{}/{}'.format(resource_type, resource_name))
+  return resources
 
 
 @contextlib.contextmanager
@@ -1098,12 +1115,11 @@ def main(args):
   depfile_deps = (options.dependencies_res_zips +
                   options.extra_main_r_text_files + options.include_resources)
 
-  possible_input_paths = depfile_deps + [
+  possible_input_paths = depfile_deps + options.resources_config_paths + [
       options.aapt2_path,
       options.android_manifest,
       options.expected_file,
       options.expected_file_base,
-      options.resources_config_path,
       options.shared_resources_allowlist,
       options.use_resource_ids_path,
       options.webp_binary,

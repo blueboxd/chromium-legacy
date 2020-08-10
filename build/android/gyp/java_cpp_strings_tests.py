@@ -73,7 +73,7 @@ const char kInvalidLineBreak[] =
     "invalid-line-break";
 """.split('\n')
     strings = java_cpp_strings.StringFileParser(test_data).Parse()
-    self.assertEqual(5, len(strings))
+    self.assertEqual(6, len(strings))
     self.assertEqual('A_STRING', strings[0].name)
     self.assertEqual('"a-value"', strings[0].value)
     self.assertEqual('NO_COMMENT', strings[1].name)
@@ -90,6 +90,20 @@ const char kInvalidLineBreak[] =
                      strings[5].name)
     self.assertEqual('"a-string-with-a-very-long-name-that-will-have-to-wrap2"',
                      strings[5].value)
+
+  def testTreatWebViewLikeOneWord(self):
+    test_data = """
+const char kSomeWebViewSwitch[] = "some-webview-switch";
+const char kWebViewOtherSwitch[] = "webview-other-switch";
+const char kSwitchWithPluralWebViews[] = "switch-with-plural-webviews";
+""".split('\n')
+    strings = java_cpp_strings.StringFileParser(test_data).Parse()
+    self.assertEqual('SOME_WEBVIEW_SWITCH', strings[0].name)
+    self.assertEqual('"some-webview-switch"', strings[0].value)
+    self.assertEqual('WEBVIEW_OTHER_SWITCH', strings[1].name)
+    self.assertEqual('"webview-other-switch"', strings[1].value)
+    self.assertEqual('SWITCH_WITH_PLURAL_WEBVIEWS', strings[2].name)
+    self.assertEqual('"switch-with-plural-webviews"', strings[2].value)
 
   def testTemplateParsing(self):
     test_data = """

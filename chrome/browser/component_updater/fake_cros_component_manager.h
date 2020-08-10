@@ -51,6 +51,9 @@ class FakeCrOSComponentManager : public CrOSComponentManager {
   void set_supported_components(const std::set<std::string>& components) {
     supported_components_ = components;
   }
+  void set_unload_component_result(bool result) {
+    unload_component_result_ = result;
+  }
   void SetRegisteredComponents(const std::set<std::string>& components);
 
   // Finishes a queued component load request. Should be used only if
@@ -129,6 +132,8 @@ class FakeCrOSComponentManager : public CrOSComponentManager {
   // When this is set, component load requests should be completed using
   // FinishLoadRequest().
   bool queue_load_requests_ = false;
+
+  bool unload_component_result_ = true;
 
   // Set of components that can be handled by this component manager.
   std::set<std::string> supported_components_;

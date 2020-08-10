@@ -21,6 +21,7 @@ import android.widget.FrameLayout;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -127,6 +128,61 @@ public class FeedStreamTest {
         mLayoutManager.addChildToPosition(0, view);
 
         assertThat(mFeedStream.getChildTopAt(0)).isEqualTo(view.getTop());
+    }
+
+    @Test
+    public void testSurfaceNotOpenedInitially() {
+        Assert.assertFalse(mFeedStream.mFeedStreamSurface.isOpened());
+    }
+
+    @Test
+    public void testSurfaceOpenedAfterSetStreamContentVisibility() {
+        mFeedStream.onShow();
+        mFeedStream.setStreamContentVisibility(true);
+
+        Assert.assertTrue(mFeedStream.mFeedStreamSurface.isOpened());
+    }
+
+    @Test
+    public void testSurfaceNotOpenedAfterSetStreamContentVisibilityIfNotShow() {
+        mFeedStream.setStreamContentVisibility(true);
+
+        Assert.assertFalse(mFeedStream.mFeedStreamSurface.isOpened());
+    }
+
+    @Test
+    public void testSurfaceOpenedOnShow() {
+        mFeedStream.setStreamContentVisibility(true);
+        mFeedStream.onShow();
+
+        Assert.assertTrue(mFeedStream.mFeedStreamSurface.isOpened());
+    }
+
+    @Test
+    public void testSurfaceNotOnShowIfStreamContentNotVisible() {
+        mFeedStream.onShow();
+
+        Assert.assertFalse(mFeedStream.mFeedStreamSurface.isOpened());
+    }
+
+    @Test
+    public void testSurfaceClosedOnHide() {
+        mFeedStream.setStreamContentVisibility(true);
+        mFeedStream.onShow();
+
+        mFeedStream.onHide();
+
+        Assert.assertFalse(mFeedStream.mFeedStreamSurface.isOpened());
+    }
+
+    @Test
+    public void testSurfaceClosedOnContentNotVisible() {
+        mFeedStream.setStreamContentVisibility(true);
+        mFeedStream.onShow();
+
+        mFeedStream.setStreamContentVisibility(false);
+
+        Assert.assertFalse(mFeedStream.mFeedStreamSurface.isOpened());
     }
 
     @Test

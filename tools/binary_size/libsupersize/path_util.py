@@ -6,6 +6,7 @@
 
 import abc
 import distutils.spawn
+import json
 import logging
 import os
 
@@ -134,11 +135,11 @@ class ToolPrefixFinder(_PathFinder):
 
 
 def _LoadBuildVars(output_directory):
-  build_vars_path = os.path.join(output_directory, 'build_vars.txt')
+  build_vars_path = os.path.join(output_directory, 'build_vars.json')
   if os.path.exists(build_vars_path):
     with open(build_vars_path) as f:
-      return dict(l.rstrip().split('=', 1) for l in f if '=' in l)
-  return dict()
+      return json.load(f)
+  return {}
 
 
 def GetSrcRootFromOutputDirectory(output_directory):

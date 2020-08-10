@@ -42,6 +42,11 @@ const CGFloat kClearButtonSize = 28.0f;
 
 }  // namespace
 
+#if defined(__IPHONE_14_0)
+@interface OmniboxViewController (Scribble) <UIScribbleInteractionDelegate>
+@end
+#endif  // defined(__IPHONE14_0)
+
 @interface OmniboxViewController () <OmniboxTextFieldDelegate> {
   // Weak, acts as a delegate
   OmniboxTextChangeDelegate* _textChangeDelegate;
@@ -122,6 +127,13 @@ const CGFloat kClearButtonSize = 28.0f;
 
   SetA11yLabelAndUiAutomationName(self.textField, IDS_ACCNAME_LOCATION,
                                   @"Address");
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+  if (@available(iOS 14, *)) {
+    [self.textField
+        addInteraction:[[UIScribbleInteraction alloc] initWithDelegate:self]];
+  }
+#endif  // defined(__IPHONE_14_0)
 }
 
 - (void)viewDidLoad {
@@ -225,6 +237,17 @@ const CGFloat kClearButtonSize = 28.0f;
 
 - (OmniboxTextFieldIOS*)textField {
   return self.view.textField;
+}
+
+- (void)prepareOmniboxForScribble {
+  [self.textField exitPreEditState];
+  [self.textField setText:[[NSAttributedString alloc] initWithString:@""]
+           userTextLength:0];
+  self.textField.placeholder = nil;
+}
+
+- (void)cleanupOmniboxAfterScribble {
+  self.textField.placeholder = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
 }
 
 #pragma mark - OmniboxTextFieldDelegate
@@ -587,5 +610,30 @@ const CGFloat kClearButtonSize = 28.0f;
         });
       }));
 }
+
+#pragma mark - UIScribbleInteractionDelegate
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+
+- (void)scribbleInteractionWillBeginWriting:(UIScribbleInteraction*)interaction
+    API_AVAILABLE(ios(14.0)) {
+  if (self.textField.isPreEditing) {
+    [self.textField exitPreEditState];
+    [self.textField setText:[[NSAttributedString alloc] initWithString:@""]
+             userTextLength:0];
+  }
+
+  [self.textField clearAutocompleteText];
+}
+
+- (void)scribbleInteractionDidFinishWriting:(UIScribbleInteraction*)interaction
+    API_AVAILABLE(ios(14.0)) {
+  [self cleanupOmniboxAfterScribble];
+
+  // Dismiss any inline autocomplete. The user expectation is to not have it.
+  [self.textField clearAutocompleteText];
+}
+
+#endif  // defined(__IPHONE_14_0)
 
 @end

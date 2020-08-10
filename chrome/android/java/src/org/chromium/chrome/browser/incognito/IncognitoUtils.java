@@ -18,6 +18,8 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
+import org.chromium.chrome.browser.tabmodel.IncognitoTabHost;
+import org.chromium.chrome.browser.tabmodel.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 

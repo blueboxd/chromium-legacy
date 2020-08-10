@@ -217,6 +217,7 @@
 /swiftshader/
 /syzygy
 /syzygy/binaries
+/text-fragments-polyfill/src
 /tint/src
 /tsan/
 /turbine/src

@@ -128,7 +128,7 @@ crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/same-origin/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin-when-cross-origin/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin/worker-module.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/same-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/same-origin/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/strict-origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
 
 # Sheriff 2020-04-20
@@ -168,7 +168,6 @@ crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer-when-downgrade/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/unsafe-url/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unset/worker-classic.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/cors/external/wpt/referrer-policy/gen/worker-classic.http-rp/same-origin/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/cors/external/wpt/referrer-policy/gen/worker-classic.http-rp/strict-origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/cors/external/wpt/referrer-policy/gen/worker-classic.http-rp/unset/worker-classic.http.html [ Pass Timeout ]
 

@@ -462,7 +462,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Жаңарту</translation>
 <translation id="4738836084190194332">Соңғы синхрондалған уақыты: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA қатесі: <ph name="VIOLATED_URL" /> бетінде <ph name="ERROR_CODE" /> қатесі пайда болды.</translation>
 <translation id="4749960740855309258">Жаңа қойынды ашу</translation>
 <translation id="4759238208242260848">Жүктеп алынғандар</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 файл жүктеп алынды.}other{# файл жүктеп алынды.}}</translation>
@@ -1047,6 +1046,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="9133397713400217035">Офлайн режимде</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Түпнұсқаны көрсету</translation>
+<translation id="9148126808321036104">Қайта кіру</translation>
 <translation id="9155898266292537608">Сонымен қатар сөзді түрту арқылы іздеуге болады</translation>
 <translation id="9169507124922466868">Навигация тарихы жартылай ашық.</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 минут бұрын тексерілді.}other{# минут бұрын тексерілді.}}</translation>
@@ -1059,6 +1059,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="932327136139879170">Негізгі бет</translation>
 <translation id="93753284658583800">Негізгі бет өзгертілді.</translation>
 <translation id="938850635132480979">Қате: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Құпия фразаны енгізу</translation>
 <translation id="95817756606698420">Chrome браузері <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> жүйесін Қытайда іздеу үшін пайдалана алады. Мұны <ph name="BEGIN_LINK" />Параметрлер<ph name="END_LINK" /> бөлімінен өзгертуге болады.</translation>
 <translation id="968900484120156207">Кірген беттеріңіз осы жерде көрсетіледі.</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> мин қалды</translation>

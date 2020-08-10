@@ -133,7 +133,8 @@ class OopPixelTest : public testing::Test,
     SkColor background_color = SK_ColorBLACK;
     int msaa_sample_count = 0;
     bool use_lcd_text = false;
-    bool use_oopr_image_provider = false;
+    PlaybackImageProvider::RasterMode image_provider_raster_mode =
+        PlaybackImageProvider::RasterMode::kSoftware;
     gfx::Size resource_size;
     gfx::Size content_size;
     gfx::Rect full_raster_rect;
@@ -163,7 +164,7 @@ class OopPixelTest : public testing::Test,
 
     base::Optional<PlaybackImageProvider::Settings> settings;
     settings.emplace(PlaybackImageProvider::Settings());
-    settings->use_oop_raster = options.use_oopr_image_provider;
+    settings->raster_mode = options.image_provider_raster_mode;
     PlaybackImageProvider image_provider(
         oop_image_cache_.get(), options.color_space, std::move(settings));
 
@@ -895,6 +896,13 @@ class TestMailboxBacking : public TextureBacking {
   gpu::Mailbox GetMailbox() const override { return mailbox_; }
   sk_sp<SkImage> GetAcceleratedSkImage() override { return nullptr; }
   sk_sp<SkImage> GetSkImageViaReadback() override { return nullptr; }
+  bool readPixels(const SkImageInfo& dstInfo,
+                  void* dstPixels,
+                  size_t dstRowBytes,
+                  int srcX,
+                  int srcY) override {
+    return false;
+  }
 
  private:
   gpu::Mailbox mailbox_;
@@ -904,7 +912,7 @@ class TestMailboxBacking : public TextureBacking {
 
 TEST_F(OopPixelTest, DrawMailboxBackedImage) {
   RasterOptions options(gfx::Size(16, 16));
-  options.use_oopr_image_provider = true;
+  options.image_provider_raster_mode = PlaybackImageProvider::RasterMode::kOop;
   SkImageInfo backing_info = SkImageInfo::MakeN32Premul(
       options.resource_size.width(), options.resource_size.height());
 

@@ -5,6 +5,8 @@
 source_set("activity_services") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "activity_params.h",
+    "activity_params.mm",
     "activity_scenario.h",
     "activity_service_coordinator.h",
     "activity_service_coordinator.mm",

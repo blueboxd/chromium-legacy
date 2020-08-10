@@ -26,6 +26,45 @@
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/layout/fill_layout.h"
 
+// A delegate used to intercept the creation of new WebContents by the HaTS
+// Next dialog.
+class HatsNextWebDialog::WebContentsDelegate
+    : public content::WebContentsDelegate {
+ public:
+  explicit WebContentsDelegate(Browser* browser) : browser_(browser) {}
+
+  bool IsWebContentsCreationOverridden(
+      content::SiteInstance* source_site_instance,
+      content::mojom::WindowContainerType window_container_type,
+      const GURL& opener_url,
+      const std::string& frame_name,
+      const GURL& target_url) override {
+    return true;
+  }
+
+  content::WebContents* CreateCustomWebContents(
+      content::RenderFrameHost* opener,
+      content::SiteInstance* source_site_instance,
+      bool is_new_browsing_instance,
+      const GURL& opener_url,
+      const std::string& frame_name,
+      const GURL& target_url,
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace) override {
+    // The HaTS Next WebDialog runs with a non-primary OTR profile. This profile
+    // cannot open new browser windows, so they are instead opened in the
+    // regular browser that initiated the HaTS survey.
+    browser_->OpenURL(
+        content::OpenURLParams(target_url, content::Referrer(),
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                               ui::PAGE_TRANSITION_LINK, false));
+    return nullptr;
+  }
+
+ private:
+  Browser* browser_;
+};
+
 // A thin wrapper that forwards the reference part of the URL associated with
 // navigation events to the enclosing web dialog.
 class HatsNextWebDialog::WebContentsObserver
@@ -130,10 +169,10 @@ HatsNextWebDialog::HatsNextWebDialog(Browser* browser,
                                views::BubbleBorder::TOP_RIGHT),
       otr_profile_(browser->profile()->GetOffTheRecordProfile(
           Profile::OTRProfileID::CreateUnique("HaTSNext:WebDialog"))),
+      browser_(browser),
       trigger_id_(trigger_id),
       hats_survey_url_(hats_survey_url),
-      timeout_(timeout),
-      close_bubble_helper_(this, browser) {
+      timeout_(timeout) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   otr_profile_->AddObserver(this);
   set_close_on_deactivate(false);
@@ -141,13 +180,16 @@ HatsNextWebDialog::HatsNextWebDialog(Browser* browser,
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  auto* web_view = AddChildView(std::make_unique<views::WebDialogView>(
+  web_view_ = AddChildView(std::make_unique<views::WebDialogView>(
       otr_profile_, this, std::make_unique<ChromeWebContentsHandler>(),
       /* use_dialog_frame */ true));
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
 
   web_contents_observer_ =
-      std::make_unique<WebContentsObserver>(web_view->web_contents(), this);
+      std::make_unique<WebContentsObserver>(web_view_->web_contents(), this);
+
+  web_contents_delegate_ = std::make_unique<WebContentsDelegate>(browser_);
+  web_view_->web_contents()->SetDelegate(web_contents_delegate_.get());
 
   loading_timer_.Start(FROM_HERE, timeout_,
                        base::BindOnce(&HatsNextWebDialog::CloseWidget,
@@ -160,6 +202,9 @@ HatsNextWebDialog::~HatsNextWebDialog() {
     otr_profile_->RemoveObserver(this);
     ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile_);
   }
+  // Explicitly clear the delegate to ensure it is not invalid between now and
+  // when the web contents is destroyed in the base class.
+  web_view_->web_contents()->SetDelegate(nullptr);
 }
 
 void HatsNextWebDialog::OnSurveyStateUpdateReceived(std::string state) {

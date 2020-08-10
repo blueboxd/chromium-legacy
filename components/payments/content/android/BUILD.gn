@@ -78,6 +78,7 @@ android_library("java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   sources = [
     "java/src/org/chromium/components/payments/Address.java",
+    "java/src/org/chromium/components/payments/BrowserPaymentRequest.java",
     "java/src/org/chromium/components/payments/CanMakePaymentQuery.java",
     "java/src/org/chromium/components/payments/ComponentPaymentRequestImpl.java",
     "java/src/org/chromium/components/payments/CurrencyFormatter.java",

@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Parolă nouă</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gestionează acest dispozitiv și are acces la toată activitatea utilizatorului, inclusiv la paginile web accesate, parole și e-mail.</translation>
 <translation id="4003384961948020559">Nereușită – Tavă de ieșire plină</translation>
+<translation id="4027485274696301677">Acest <ph name="DEVICE_TYPE" /> este gestionat de <ph name="ENROLLMENT_DOMAIN" />. Administratorii pot să configureze dispozitivul de la distanță.</translation>
 <translation id="4034824040120875894">Imprimantă</translation>
 <translation id="4227825898293920515">Parola expiră în <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nicio sarcină de printare în desfășurare</translation>

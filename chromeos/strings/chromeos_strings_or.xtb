@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">ନୂଆ ପାସ୍‌ୱାର୍ଡ</translation>
 <translation id="4003259559679196451">ଏହି ଡିଭାଇସ୍‍କୁ <ph name="ENROLLMENT_DOMAIN" /> ପରିଚାଳନା କରିଥାଏ ଏବଂ ଏହା ପାଖରେ ଯାଇଥିବା ୱେବ୍‍ପୃଷ୍ଠାଗୁଡ଼ିକ, ପାସ୍‌ୱାର୍ଡଗୁଡ଼ିକ ଏବଂ ଇମେଲ୍ ସହ ସମସ୍ତ ଉପଯୋଗକର୍ତ୍ତା କାର୍ଯ୍ୟକଳାପକୁ ଆକ୍ସେସ୍ ଅଛି।</translation>
 <translation id="4003384961948020559">ବିଫଳ ହୋଇଛି - ଆଉଟପୁଟ୍ ଟ୍ରେ ପୂର୍ଣ୍ଣ ଅଛି</translation>
+<translation id="4027485274696301677"><ph name="ENROLLMENT_DOMAIN" /> ଦ୍ୱାରା ଏହି <ph name="DEVICE_TYPE" />ପରିଚାଳିତ ହେଉଛି। ଆଡମିନିଷ୍ଟ୍ରେଟରମାନେ ଡିଭାଇସଟିକୁ ରିମୋଟ୍ ଭାବେ କନଫିଗର୍ କରିପାରନ୍ତି।</translation>
 <translation id="4034824040120875894">ପ୍ରିଣ୍ଟର୍‌</translation>
 <translation id="4227825898293920515"><ph name="TIME" />ରେ ପାସ୍‌ୱାର୍ଡର ମିଆଦ ଶେଷ ହେଉଛି</translation>
 <translation id="4238516577297848345">କୌଣସି ପ୍ରିଣ୍ଟ କାର୍ଯ୍ୟ ଚାଲୁ ନାହିଁ</translation>

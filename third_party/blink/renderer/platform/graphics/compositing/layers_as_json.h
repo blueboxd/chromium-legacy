@@ -67,7 +67,7 @@ class PLATFORM_EXPORT LayersAsJSON {
 };
 
 PLATFORM_EXPORT std::unique_ptr<JSONObject> CCLayerAsJSON(
-    const cc::Layer* layer,
+    const cc::Layer& layer,
     LayerTreeFlags flags);
 
 }  // namespace blink

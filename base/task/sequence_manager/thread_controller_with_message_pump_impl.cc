@@ -184,12 +184,13 @@ void ThreadControllerWithMessagePumpImpl::InitializeThreadTaskRunnerHandle() {
   power_monitor_.BindToCurrentThread();
 }
 
-void ThreadControllerWithMessagePumpImpl::MaybeStartHangWatchScope() {
+void ThreadControllerWithMessagePumpImpl::MaybeStartHangWatchScopeEnabled() {
   // Nested runloops are covered by the parent loop hang watch scope.
   // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
   // scope deadline.
   if (main_thread_only().runloop_count == 1 && base::HangWatcher::IsEnabled()) {
-    hang_watch_scope_.emplace(base::HangWatchScope::kDefaultHangWatchTime);
+    hang_watch_scope_.emplace(
+        base::HangWatchScopeEnabled::kDefaultHangWatchTime);
   }
 }
 
@@ -225,7 +226,7 @@ ThreadControllerWithMessagePumpImpl::GetAssociatedThread() const {
 }
 
 void ThreadControllerWithMessagePumpImpl::BeforeDoInternalWork() {
-  MaybeStartHangWatchScope();
+  MaybeStartHangWatchScopeEnabled();
   work_id_provider_->IncrementWorkId();
 }
 
@@ -244,7 +245,7 @@ void ThreadControllerWithMessagePumpImpl::BeforeWait() {
 
 MessagePump::Delegate::NextWorkInfo
 ThreadControllerWithMessagePumpImpl::DoWork() {
-  MaybeStartHangWatchScope();
+  MaybeStartHangWatchScopeEnabled();
 
   work_deduplicator_.OnWorkStarted();
   LazyNow continuation_lazy_now(time_source_);
@@ -367,7 +368,7 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
 
 bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
   TRACE_EVENT0("sequence_manager", "SequenceManager::DoIdleWork");
-  MaybeStartHangWatchScope();
+  MaybeStartHangWatchScopeEnabled();
 
   work_id_provider_->IncrementWorkId();
 #if defined(OS_WIN)

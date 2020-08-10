@@ -266,9 +266,9 @@ void CanvasCaptureHandler::ReadARGBPixelsSync(
     scoped_refptr<StaticBitmapImage> image) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
 
-  sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
+  PaintImage paint_image = image->PaintImageForCurrentFrame();
   const base::TimeTicks timestamp = base::TimeTicks::Now();
-  const gfx::Size image_size(sk_image->width(), sk_image->height());
+  const gfx::Size image_size(paint_image.width(), paint_image.height());
   scoped_refptr<VideoFrame> temp_argb_frame = frame_pool_.CreateFrame(
       media::PIXEL_FORMAT_ARGB, image_size, gfx::Rect(image_size), image_size,
       base::TimeDelta());
@@ -276,15 +276,15 @@ void CanvasCaptureHandler::ReadARGBPixelsSync(
     DLOG(ERROR) << "Couldn't allocate video frame";
     return;
   }
-  const bool is_opaque = sk_image->isOpaque();
+  const bool is_opaque = paint_image.IsOpaque();
   SkImageInfo image_info = SkImageInfo::MakeN32(
       image_size.width(), image_size.height(),
       is_opaque ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
-  if (!sk_image->readPixels(
+  if (!paint_image.readPixels(
           image_info, temp_argb_frame->visible_data(VideoFrame::kARGBPlane),
           temp_argb_frame->stride(VideoFrame::kARGBPlane), 0 /*srcX*/,
           0 /*srcY*/)) {
-    DLOG(ERROR) << "Couldn't read SkImage using readPixels()";
+    DLOG(ERROR) << "Couldn't read pixels from PaintImage";
     return;
   }
   SendFrame(

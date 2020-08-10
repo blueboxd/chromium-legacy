@@ -413,7 +413,10 @@ std::unique_ptr<RTLookupRequest> RealTimeUrlLookupServiceBase::FillRequestProto(
   auto request = std::make_unique<RTLookupRequest>();
   request->set_url(SanitizeURL(url).spec());
   request->set_lookup_type(RTLookupRequest::NAVIGATION);
-  request->set_dm_token(GetDMTokenString());
+  base::Optional<std::string> dm_token_string = GetDMTokenString();
+  if (dm_token_string.has_value()) {
+    request->set_dm_token(dm_token_string.value());
+  }
 
   ChromeUserPopulation* user_population = request->mutable_population();
   user_population->set_user_population(

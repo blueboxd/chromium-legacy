@@ -642,7 +642,7 @@ struct InvokeHelper<false, ReturnType> {
 template <typename ReturnType>
 struct InvokeHelper<true, ReturnType> {
   // WeakCalls are only supported for functions with a void return type.
-  // Otherwise, the function result would be undefined if the the WeakPtr<>
+  // Otherwise, the function result would be undefined if the WeakPtr<>
   // is invalidated.
   static_assert(std::is_void<ReturnType>::value,
                 "weak_ptrs can only bind to methods without return values");

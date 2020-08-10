@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Contraseña nueva</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gestiona este dispositivo y tiene acceso a toda la actividad del usuario, incluidas las páginas web visitadas, sus contraseñas y su correo electrónico.</translation>
 <translation id="4003384961948020559">No se ha podido imprimir - Salida llena</translation>
+<translation id="4027485274696301677">El administrador de este <ph name="DEVICE_TYPE" /> es <ph name="ENROLLMENT_DOMAIN" />. Los administradores pueden configurar de forma remota el dispositivo.</translation>
 <translation id="4034824040120875894">Impresora</translation>
 <translation id="4227825898293920515">La contraseña caducará dentro de <ph name="TIME" /></translation>
 <translation id="4238516577297848345">No hay ningún trabajo de impresión en curso</translation>

@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Sandi baru</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> mengelola perangkat ini dan memiliki akses ke semua aktivitas pengguna, termasuk halaman yang dikunjungi, sandi, dan email.</translation>
 <translation id="4003384961948020559">Gagal - Baki hasil cetak penuh</translation>
+<translation id="4027485274696301677"><ph name="DEVICE_TYPE" /> ini dikelola oleh <ph name="ENROLLMENT_DOMAIN" />. Administrator dapat mengonfigurasi perangkat dari jarak jauh.</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Sandi kedaluwarsa dalam <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Tidak ada tugas pencetakan yang sedang berlangsung</translation>

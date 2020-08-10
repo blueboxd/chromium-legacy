@@ -311,6 +311,10 @@ AvailabilityProber::~AvailabilityProber() {
     network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
+base::WeakPtr<AvailabilityProber> AvailabilityProber::AsWeakPtr() const {
+  return weak_factory_.GetWeakPtr();
+}
+
 // static
 void AvailabilityProber::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   for (int i = static_cast<int>(

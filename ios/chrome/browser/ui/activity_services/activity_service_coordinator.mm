@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_mediator.h"
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 #import "ios/chrome/browser/ui/activity_services/data/chrome_activity_image_source.h"
@@ -23,6 +24,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -47,8 +49,8 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 @property(nonatomic, strong) UIActivityViewController* viewController;
 
-// Current sharing scenario.
-@property(nonatomic, readonly, assign) ActivityScenario scenario;
+// Parameters determining the activity flow and values.
+@property(nonatomic, strong) ActivityParams* params;
 
 @end
 
@@ -56,10 +58,11 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 - (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
                                    browser:(Browser*)browser
-                                  scenario:(ActivityScenario)scenario {
+                                    params:(ActivityParams*)params {
+  DCHECK(params);
   if (self = [super initWithBaseViewController:baseViewController
                                        browser:browser]) {
-    _scenario = scenario;
+    _params = params;
   }
   return self;
 }
@@ -79,10 +82,12 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
                                            prefService:browserState->GetPrefs()
                                          bookmarkModel:bookmarkModel];
 
-  [self.mediator shareStartedWithScenario:self.scenario];
+  [self.mediator shareStartedWithScenario:self.params.scenario];
 
-  if (self.image) {
+  if (self.params.image) {
     [self shareImage];
+  } else if (!self.params.URL.is_empty()) {
+    [self shareURL];
   } else {
     [self shareCurrentPage];
   }
@@ -128,7 +133,7 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
     }
 
     // Delegate post-activity processing to the mediator.
-    [strongSelf.mediator shareFinishedWithScenario:strongSelf.scenario
+    [strongSelf.mediator shareFinishedWithScenario:strongSelf.params.scenario
                                       activityType:activityType
                                          completed:completed];
 
@@ -143,6 +148,8 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 #pragma mark - Private Methods: Current Page
 
+// Fetches the current tab's URL, configures activities and items, and shows
+// an activity view.
 - (void)shareCurrentPage {
   self.sharePageStartTime = base::TimeTicks::Now();
 
@@ -176,13 +183,31 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 #pragma mark - Private Methods: Share Image
 
+// Configures activities and items for an image and its title, and shows
+// an activity view.
 - (void)shareImage {
-  ShareImageData* data = [[ShareImageData alloc] initWithImage:self.image
-                                                         title:self.title];
+  ShareImageData* data =
+      [[ShareImageData alloc] initWithImage:self.params.image
+                                      title:self.params.title];
 
   NSArray<ChromeActivityImageSource*>* items =
       [self.mediator activityItemsForImageData:data];
   NSArray* activities = [self.mediator applicationActivitiesForImageData:data];
+
+  [self shareItems:items activities:activities];
+}
+
+#pragma mark - Private Methods: Share URL
+
+// Configures activities and items for a URL and its title, and shows
+// an activity view.
+- (void)shareURL {
+  ShareToData* data =
+      activity_services::ShareToDataForURL(self.params.URL, self.params.title);
+
+  NSArray<ChromeActivityURLSource*>* items =
+      [self.mediator activityItemsForData:data];
+  NSArray* activities = [self.mediator applicationActivitiesForData:data];
 
   [self shareItems:items activities:activities];
 }

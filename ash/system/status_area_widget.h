@@ -29,6 +29,7 @@ class PaletteTray;
 class SelectToSpeakTray;
 class Shelf;
 class StatusAreaWidgetDelegate;
+class StopRecordingButtonTray;
 class UnifiedSystemTray;
 class TrayBackgroundView;
 class VirtualKeyboardTray;
@@ -115,6 +116,9 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
     return overview_button_tray_.get();
   }
   PaletteTray* palette_tray() { return palette_tray_.get(); }
+  StopRecordingButtonTray* stop_recording_button_tray() {
+    return stop_recording_button_tray_.get();
+  }
   ImeMenuTray* ime_menu_tray() { return ime_menu_tray_.get(); }
   HoldingSpaceTray* holding_space_tray() { return holding_space_tray_.get(); }
 
@@ -211,6 +215,7 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   std::unique_ptr<UnifiedSystemTray> unified_system_tray_;
   std::unique_ptr<LogoutButtonTray> logout_button_tray_;
   std::unique_ptr<PaletteTray> palette_tray_;
+  std::unique_ptr<StopRecordingButtonTray> stop_recording_button_tray_;
   std::unique_ptr<VirtualKeyboardTray> virtual_keyboard_tray_;
   std::unique_ptr<ImeMenuTray> ime_menu_tray_;
   std::unique_ptr<SelectToSpeakTray> select_to_speak_tray_;

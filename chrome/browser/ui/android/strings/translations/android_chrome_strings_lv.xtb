@@ -462,7 +462,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4732120983431207637">Steka atbrīvotājs</translation>
 <translation id="473775607612524610">Atjaunināt</translation>
 <translation id="4738836084190194332">Pēdējoreiz sinhronizēts: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA kļūda: <ph name="ERROR_CODE" /> vietnē <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Atvērt jaunu cilni</translation>
 <translation id="4759238208242260848">Lejupielādes</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 lejupielāde ir pabeigta.}zero{# lejupielādes ir pabeigtas.}one{# lejupielāde ir pabeigta.}other{# lejupielādes ir pabeigtas.}}</translation>
@@ -1047,6 +1046,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="9133397713400217035">Izpētīt bezsaisti</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
+<translation id="9148126808321036104">Pierakstieties vēlreiz</translation>
 <translation id="9155898266292537608">Varat arī meklēt, ātri pieskaroties vārdam</translation>
 <translation id="9169507124922466868">Navigācijas vēsture ir atvērta līdz pusei.</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Pārbaudīts: pirms 1 minūtes}zero{Pārbaudīts: pirms # minūtēm}one{Pārbaudīts: pirms # minūtes}other{Pārbaudīts: pirms # minūtēm}}</translation>
@@ -1059,6 +1059,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="932327136139879170">Sākums</translation>
 <translation id="93753284658583800">Sākumlapa nomainīta</translation>
 <translation id="938850635132480979">Kļūda: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Ievadiet ieejas frāzi</translation>
 <translation id="95817756606698420">Pārlūkā Chrome var izmantot meklētājprogrammu <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />, lai veiktu meklēšanu Ķīnā. Varat to mainīt sadaļā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Šeit tiek rādītas jūsu apmeklētās lapas</translation>
 <translation id="970715775301869095">Atlikušas <ph name="MINUTES" /> min</translation>

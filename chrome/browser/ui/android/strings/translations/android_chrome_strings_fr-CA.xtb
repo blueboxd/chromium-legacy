@@ -462,7 +462,6 @@ D'autres formes d'historique de navigation, telles que les recherches et l'activ
 <translation id="4732120983431207637">Dérouleur de pile</translation>
 <translation id="473775607612524610">Mise à jour</translation>
 <translation id="4738836084190194332">Dernière synchronisation : <ph name="WHEN" /></translation>
-<translation id="474698142248234220">Erreur TWA : <ph name="ERROR_CODE" /> sur <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Ouvrir un nouvel onglet</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 téléchargement terminé.}one{# téléchargement terminé.}other{# téléchargements terminés.}}</translation>
@@ -1047,6 +1046,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="9133397713400217035">Explorer hors ligne</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
+<translation id="9148126808321036104">Connectez-vous de nouveau</translation>
 <translation id="9155898266292537608">Vous pouvez également effectuer une recherche d'un simple toucher sur un mot</translation>
 <translation id="9169507124922466868">L'historique de navigation est ouvert à moitié</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Dernière vérification : il y a 1 minute}one{Dernière vérification : il y a # minute}other{Dernière vérification : il y a # minutes}}</translation>
@@ -1059,6 +1059,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="932327136139879170">Accueil</translation>
 <translation id="93753284658583800">La page d'accueil a été modifiée</translation>
 <translation id="938850635132480979">Erreur : <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Entrer la phrase de passe</translation>
 <translation id="95817756606698420">Google Chrome peut faire appel à <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> pour effectuer des recherches en Chine. Vous pouvez modifier cette option dans les <ph name="BEGIN_LINK" />Paramètres<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Les pages que vous visitez s'affichent ici</translation>
 <translation id="970715775301869095">Il reste <ph name="MINUTES" /> minutes</translation>

@@ -676,13 +676,6 @@
       'mac-archive-rel',
     ],
   },
-  'chrome_all_tast_tests': {
-    'modifications': {
-      'chromeos-eve-arc-r-chrome': {
-        'experiment_percentage': 100,  # https://crbug.com/1092973
-      },
-    },
-  },
   'chrome_java_test_pagecontroller_tests': {
     'remove_from': [
       'android-pie-arm64-rel',  # https://crbug.com/924194
@@ -1144,7 +1137,7 @@
   'cros_browser_sanity_test': {
     'modifications': {
       'chromeos-eve-arc-r-chrome': {
-        'experiment_percentage': 100,  # https://crbug.com/1092973
+        'experiment_percentage': 100,  # https://crbug.com/1114741
       },
     },
   },

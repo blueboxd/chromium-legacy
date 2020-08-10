@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">സ്‌റ്റാക്ക് അൺവൈൻഡർ</translation>
 <translation id="473775607612524610">അപ്ഡേറ്റ് ചെയ്യുക</translation>
 <translation id="4738836084190194332">അവസാനം സമന്വയിപ്പിച്ചത്: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA പിശക്: <ph name="VIOLATED_URL" /> എന്നതിലെ <ph name="ERROR_CODE" /></translation>
 <translation id="4749960740855309258">പുതിയൊരു ടാബ് തുറക്കുക</translation>
 <translation id="4759238208242260848">ഡൌണ്‍ലോഡുകള്‍</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{ഒരു ഡൗൺലോഡ് പൂർത്തിയായി.}other{# ഡൗൺലോഡുകൾ പൂർത്തിയായി.}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">ഓഫ്‍ലൈൻ ഉള്ളടക്കങ്ങൾ അടുത്തറിയൂ</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">യഥാര്‍ത്ഥമായത് കാണിക്കുക</translation>
+<translation id="9148126808321036104">വീണ്ടും പ്രവേശിക്കുക</translation>
 <translation id="9155898266292537608">ഒരു വാക്കിൽ പെട്ടെന്ന് ടാപ്പ് ചെയ്‌തും നിങ്ങൾക്ക് തിരയാൻ കഴിയും</translation>
 <translation id="9169507124922466868">നാവിഗേഷൻ ചരിത്രം പകുതിയായി തുറന്നിരിക്കുന്നു</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{ഒരു മിനിറ്റ് മുമ്പ് പരിശോധിച്ചു}other{# മിനിറ്റ് മുമ്പ് പരിശോധിച്ചു}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">ഹോം</translation>
 <translation id="93753284658583800">ഹോംപേജ് മാറ്റി</translation>
 <translation id="938850635132480979">പിശക്: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">പാസ്ഫ്രെയ്‍സ് നല്‍കുക</translation>
 <translation id="95817756606698420"><ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> ഉപയോഗിച്ച് Chrome-ന് ചൈനയിൽ തിരയാനാവും. നിങ്ങൾക്കിത്‌ <ph name="BEGIN_LINK" />ക്രമീകരണത്തിൽ<ph name="END_LINK" /> മാറ്റാനാവും.</translation>
 <translation id="968900484120156207">നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകൾ ഇവിടെ ദൃശ്യമാകും</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> മിനിറ്റ് ശേഷിക്കുന്നു</translation>

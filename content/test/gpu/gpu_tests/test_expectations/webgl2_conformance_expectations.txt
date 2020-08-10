@@ -134,6 +134,7 @@ crbug.com/angleproject/4417 [ win d3d11 ] conformance2/rendering/framebuffer-ren
 
 # Intel flaky issues
 crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
+crbug.com/1114780 [ win intel ] deqp/functional/gles3/multisample.html [ RetryOnFailure ]
 # Flakily times out on driver 26.20.100.8141.
 crbug.com/1093482 [ win10 intel-0x3e92 ] deqp/functional/gles3/shadermatrix/div_dynamic.html [ RetryOnFailure ]
 crbug.com/1093482 [ win10 intel-0x5912 ] deqp/functional/gles3/shadermatrix/div_dynamic.html [ RetryOnFailure ]

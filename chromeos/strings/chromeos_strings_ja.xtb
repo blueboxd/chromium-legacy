@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">新しいパスワード</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> はこのデバイスを管理しており、閲覧したウェブページ、パスワード、メールなど、すべてのユーザー アクティビティにアクセスできます。</translation>
 <translation id="4003384961948020559">失敗 - 出力がいっぱいです</translation>
+<translation id="4027485274696301677">この <ph name="DEVICE_TYPE" /> は <ph name="ENROLLMENT_DOMAIN" /> によって管理されています。管理者がこのデバイスをリモートで設定している可能性があります。</translation>
 <translation id="4034824040120875894">プリンタ</translation>
 <translation id="4227825898293920515">パスワードの有効期限はあと <ph name="TIME" />です</translation>
 <translation id="4238516577297848345">実行中の印刷ジョブはありません</translation>

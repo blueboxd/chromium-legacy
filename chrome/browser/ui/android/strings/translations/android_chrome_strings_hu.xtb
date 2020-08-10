@@ -462,7 +462,6 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="4738836084190194332">Utolsó szinkronizálás: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA-hiba: <ph name="ERROR_CODE" />, itt: <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Új lap megnyitása</translation>
 <translation id="4759238208242260848">Letöltések</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 letöltés befejeződött.}other{# letöltés befejeződött.}}</translation>
@@ -1047,6 +1046,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="9133397713400217035">Offline felfedezés</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
+<translation id="9148126808321036104">Jelentkezzen be újra</translation>
 <translation id="9155898266292537608">Úgy is végrehajthat keresést, hogy gyorsan rákoppint valamelyik szóra</translation>
 <translation id="9169507124922466868">Félmagasságban megnyitott navigációs előzmények</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 perce ellenőrizve}other{# perce ellenőrizve}}</translation>
@@ -1059,6 +1059,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="932327136139879170">Főoldal</translation>
 <translation id="93753284658583800">Kezdőlap módosítva</translation>
 <translation id="938850635132480979">Hiba: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Összetett jelszó megadása</translation>
 <translation id="95817756606698420">A Chrome igénybe veheti a <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> keresőszolgáltatást, hogy Kínában kereshessen. Ezt a <ph name="BEGIN_LINK" />Beállításokban<ph name="END_LINK" /> módosíthatja.</translation>
 <translation id="968900484120156207">Itt jelennek meg a felkeresett oldalak</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> perc van hátra</translation>

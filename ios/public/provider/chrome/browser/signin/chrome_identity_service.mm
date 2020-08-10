@@ -62,33 +62,66 @@ ChromeIdentityService::CreateChromeIdentityInteractionManager(
 }
 
 bool ChromeIdentityService::IsValidIdentity(ChromeIdentity* identity) const {
+  return IsValidIdentityTemporary(identity);
+}
+
+bool ChromeIdentityService::IsValidIdentityTemporary(
+    ChromeIdentity* identity) const {
   return false;
 }
 
 ChromeIdentity* ChromeIdentityService::GetIdentityWithEmail(
+    const std::string& email) const {
+  return GetIdentityWithEmailTemporary(email);
+}
+
+ChromeIdentity* ChromeIdentityService::GetIdentityWithEmailTemporary(
     const std::string& email) const {
   return nil;
 }
 
 ChromeIdentity* ChromeIdentityService::GetIdentityWithGaiaID(
     const std::string& gaia_id) const {
+  return GetIdentityWithGaiaIDTemporary(gaia_id);
+}
+
+ChromeIdentity* ChromeIdentityService::GetIdentityWithGaiaIDTemporary(
+    const std::string& gaia_id) const {
   return nil;
 }
 
 std::vector<std::string>
 ChromeIdentityService::GetCanonicalizeEmailsForAllIdentities() const {
+  return GetCanonicalizeEmailsForAllIdentitiesTemporary();
+}
+
+std::vector<std::string>
+ChromeIdentityService::GetCanonicalizeEmailsForAllIdentitiesTemporary() const {
   return std::vector<std::string>();
 }
 
 bool ChromeIdentityService::HasIdentities() const {
+  return HasIdentitiesTemporary();
+}
+
+bool ChromeIdentityService::HasIdentitiesTemporary() const {
   return false;
 }
 
 NSArray* ChromeIdentityService::GetAllIdentities() const {
+  return GetAllIdentitiesTemporary();
+}
+
+NSArray* ChromeIdentityService::GetAllIdentitiesTemporary() const {
   return nil;
 }
 
 NSArray* ChromeIdentityService::GetAllIdentitiesSortedForDisplay() const {
+  return GetAllIdentitiesSortedForDisplayTemporary();
+}
+
+NSArray* ChromeIdentityService::GetAllIdentitiesSortedForDisplayTemporary()
+    const {
   return nil;
 }
 

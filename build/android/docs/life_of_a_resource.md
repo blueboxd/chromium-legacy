@@ -174,7 +174,7 @@ id/toolbar#no_obfuscate
 ```
 
 The aapt2 config file is passed to the ninja target through the
-`resources_config_path` variable. To add a resource to the whitelist, check
+`resources_config_paths` variable. To add a resource to the whitelist, check
 where the config is for your target and add a new line for your resource. If
 none exist, create a new config file and pass its path in your target.
 

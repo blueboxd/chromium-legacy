@@ -80,6 +80,17 @@ group("absl_component_deps") {
     "//third_party/abseil-cpp/absl/types:span",
     "//third_party/abseil-cpp/absl/types:variant",
   ]
+
+  # The following dependencies currently don't build with NaCl.
+  # TODO(https://crbug.com/1114625): Fix build errors and remove this section.
+  if (is_nacl) {
+    public_deps -= [
+      "//third_party/abseil-cpp/absl/container:flat_hash_map",
+      "//third_party/abseil-cpp/absl/container:flat_hash_set",
+      "//third_party/abseil-cpp/absl/debugging:failure_signal_handler",
+    ]
+  }
+
   visibility = [ ":absl" ]
 }
 

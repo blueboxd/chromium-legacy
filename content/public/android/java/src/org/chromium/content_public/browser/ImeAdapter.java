@@ -19,7 +19,6 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public interface ImeAdapter {
     /** Composition key code sent when user either hit a key or hit a selection. */
-    @VisibleForTesting
     static final int COMPOSITION_KEY_CODE = 229;
 
     /**

@@ -53,7 +53,8 @@ class ASH_EXPORT AmbientBackendModel {
   // Updates the weather information and notifies observers if the icon image is
   // not null.
   void UpdateWeatherInfo(const gfx::ImageSkia& weather_condition_icon,
-                         float temperature);
+                         float temperature_fahrenheit,
+                         bool show_celsius);
 
   // Returns the cached condition icon. Will return a null image if it has not
   // been set yet.
@@ -62,7 +63,12 @@ class ASH_EXPORT AmbientBackendModel {
   }
 
   // Returns the cached temperature value in Fahrenheit.
-  float temperature() const { return temperature_; }
+  float temperature_fahrenheit() const { return temperature_fahrenheit_; }
+
+  // Calculate the temperature in celsius.
+  float GetTemperatureInCelsius() const;
+
+  bool show_celsius() const { return show_celsius_; }
 
  private:
   friend class AmbientBackendModelTest;
@@ -80,10 +86,10 @@ class ASH_EXPORT AmbientBackendModel {
   // The index of currently shown image.
   int current_image_index_ = 0;
 
-  // Current weather information. The temperature is in Fahrenheit by default
-  // (b/154046129).
+  // Current weather information.
   gfx::ImageSkia weather_condition_icon_;
-  float temperature_ = 0.0f;
+  float temperature_fahrenheit_ = 0.0f;
+  bool show_celsius_ = false;
 
   // The interval to refresh photos.
   base::TimeDelta photo_refresh_interval_;

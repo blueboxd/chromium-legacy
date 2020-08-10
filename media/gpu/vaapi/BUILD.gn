@@ -166,6 +166,7 @@ source_set("common") {
   deps = [
     ":libva_stubs",
     "//third_party/libyuv",
+    "//ui/base:features",
     "//ui/gfx:memory_buffer",
     "//ui/gl",
   ]

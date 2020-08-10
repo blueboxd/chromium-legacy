@@ -126,7 +126,9 @@ class FaviconHandler {
         FaviconDriverObserver::NotificationIconType notification_icon_type) = 0;
   };
 
-  // |service| and |delegate| must not be nullptr and must outlive this class.
+  // |service| may be null (which means favicons are not saved). If |service|
+  // is non-null it must outlive this class. |delegate| must not be nullptr and
+  // must outlive this class.
   FaviconHandler(CoreFaviconService* service,
                  Delegate* delegate,
                  FaviconDriverObserver::NotificationIconType handler_type);
@@ -358,8 +360,7 @@ class FaviconHandler {
   GURL notification_icon_url_;
   favicon_base::IconType notification_icon_type_;
 
-  // The CoreFaviconService which implements favicon operations. May be null
-  // during testing.
+  // The CoreFaviconService which implements favicon operations. May be null.
   CoreFaviconService* service_;
 
   // This handler's delegate.

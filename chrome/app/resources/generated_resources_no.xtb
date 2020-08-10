@@ -723,7 +723,6 @@
 <translation id="1856715684130786728">Legg til plassering</translation>
 <translation id="1858585891038687145">Stol på dette sertifikatet for identifisering av programvareprodusenter.</translation>
 <translation id="1861262398884155592">Denne mappen er tom</translation>
-<translation id="1862231313113525466"><ph name="DOMAIN" /> krever at du sikkerhetskopierer dataene dine og leverer tilbake denne enheten innen én uke.<ph name="LINK_BEGIN" />Se detaljer<ph name="LINK_END" /></translation>
 <translation id="1863182668524159459">Fant ingen serielle porter</translation>
 <translation id="1863316578636157783">«<ph name="EXTENSION_NAME" />» er deaktivert fordi den inneholder skadelig programvare</translation>
 <translation id="1864111464094315414">Pålogging</translation>
@@ -754,9 +753,7 @@
 <translation id="1887442540531652736">Påloggingsfeil</translation>
 <translation id="1887597546629269384">Si «Hey Google» igjen</translation>
 <translation id="1887850431809612466">Maskinvareversjon</translation>
-<translation id="1888523338879380247">{0,plural, =1{Siste dag for oppdatering av enheten}other{Oppdater enheten innen # dager}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
-<translation id="1891760696839073783">Mottar <ph name="ATTACHMENTS" /> fra <ph name="DEVICE_NAME" /></translation>
 <translation id="189210018541388520">Åpne fullskjerm</translation>
 <translation id="1892341345406963517">Hei, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Andre språk</translation>
@@ -1236,7 +1233,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2489918096470125693">Legg til &amp;mappe</translation>
 <translation id="2490481887078769936">Fjernet «<ph name="FILE_NAME" />» fra listen</translation>
 <translation id="249113932447298600">Beklager, men enheten <ph name="DEVICE_LABEL" /> støttes foreløpig ikke.</translation>
-<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> deler <ph name="ATTACHMENTS" /> med deg.</translation>
 <translation id="2492461744635776704">Forbereder forespørsel om sertifikatsignering</translation>
 <translation id="249303669840926644">Kunne ikke fullføre registreringen</translation>
 <translation id="2495777824269688114">Oppdag flere funksjoner eller få svar. Velg «?» for å få hjelp.</translation>
@@ -1300,7 +1296,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> kan ikke koble til <ph name="NETWORK_ID" />. Velg et annet nettverk eller prøv på nytt senere.</translation>
 <translation id="2553440850688409052">Skjul dette programtillegget</translation>
 <translation id="2554553592469060349">Den valgte filen er for stor (maksimal størrelse: 3 MB).</translation>
-<translation id="255668164821384692"><ph name="DOMAIN" /> krever at du sikkerhetskopierer dataene dine og leverer tilbake denne enheten i dag.<ph name="LINK_BEGIN" />Se detaljer<ph name="LINK_END" /></translation>
 <translation id="2558896001721082624">Vis alltid alternativene for tilgjengelighet i systemmenyen</translation>
 <translation id="2562743677925229011">Ikke logget på <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2564520396658920462">Kjøring av JavaScript gjennom AppleScript er slått av. For å slå det på, gå til menylinjen og velg Vis &gt; Utvikler &gt; Tillat JavaScript fra Apple Events. For mer informasjon, se: https://support.google.com/chrome/?p=applescript</translation>
@@ -1372,7 +1367,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="265390580714150011">Feltverdi</translation>
 <translation id="2654166010170466751">Tillat at nettsteder installerer betalingsbehandlere</translation>
 <translation id="2654553774144920065">Utskriftsforespørsel</translation>
-<translation id="2658146916497053494"><ph name="DOMAIN" /> krever at du kobler til Wi-Fi i dag og laster ned en oppdatering. Eller last ned via en tilkobling med datamåling (kostnader kan påløpe).</translation>
 <translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Funksjonene varierer fra enhet til enhet</translation>
 <translation id="2659971421398561408">Endre diskstørrelsen for Crostini</translation>
 <translation id="2660779039299703961">Aktivitet</translation>
@@ -1633,7 +1627,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="296026337010986570">Ferdig! Skadelig programvare er fjernet. For å slå på utvidelser igjen, gå til &lt;a href="chrome://extensions"&gt;Utvidelser&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (fra utvidelse)</translation>
 <translation id="2961695502793809356">Klikk for å gå fremover – hold for å se logg</translation>
-<translation id="2961724270791352705">Velg <ph name="TOPIC_SOURCE" /></translation>
 <translation id="2962131322798295505">Bakgrunnsvelger</translation>
 <translation id="2963151496262057773">Følgende programtillegg svarer ikke: <ph name="PLUGIN_NAME" />Vil du stoppe det?</translation>
 <translation id="2964193600955408481">Deaktiver Wi-Fi</translation>
@@ -1644,7 +1637,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2979520980928493164">Gjør Chrome friskere og gladere</translation>
 <translation id="2979639724566107830">Åpne i nytt vindu</translation>
 <translation id="2981113813906970160">Vis stor musepeker</translation>
-<translation id="2982970937345031">Rapporér anonymt</translation>
 <translation id="2985348301114641460">Vil du sende en forespørsel til administratoren om å installere «<ph name="EXTENSION_NAME" />»?</translation>
 <translation id="2986010903908656993">Full kontroll over MIDI-enheter er blokkert for denne siden.</translation>
 <translation id="2987620471460279764">En annen enhet har delt tekst</translation>
@@ -1656,7 +1648,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2993517869960930405">Appinformasjon</translation>
 <translation id="2996286169319737844">Data er kryptert med passordfrasen din for synkronisering. Dette inkluderer ikke betalingsmåter og adresser fra Google Pay.</translation>
 <translation id="2996722619877761919">Rotér til langsiden</translation>
-<translation id="2996737538616721100">{0,plural, =1{Må leveres tilbake umiddelbart}other{Levér enheten tilbake innen # dager}}</translation>
 <translation id="3000461861112256445">Monolyd</translation>
 <translation id="3001144475369593262">Barnekontoer</translation>
 <translation id="3003144360685731741">Foretrukne nettverk</translation>
@@ -1845,6 +1836,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3254715652085014625">Åpne Chrome på Android-telefonen din, gå til «Innstillinger &gt; Passord &gt; Bruk telefonen som sikkerhetsnøkkel», og følg instruksjonene der.</translation>
 <translation id="3255355328033513170">Alle data som er lagret av <ph name="SITE_GROUP_NAME" /> og eventuelle underordnede nettsteder, blir slettet. Dette omfatter også informasjonskapsler. Du blir logget av disse nettstedene – inkludert i åpne faner.</translation>
 <translation id="3259723213051400722">Prøv på nytt.</translation>
+<translation id="3261268979727295785">For eldre barn kan du slå på foreldrekontroll når du er ferdig med konfigureringen. Du finner informasjon om foreldrekontroll i Utforsk-appen.</translation>
 <translation id="3264544094376351444">Uten seriffer</translation>
 <translation id="3264582393905923483">Kontekst</translation>
 <translation id="3265459715026181080">Lukk vindu</translation>
@@ -1944,7 +1936,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="338583716107319301">Skillelinje</translation>
 <translation id="338691029516748599">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – <ph name="SECURITY_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> % – administreres av administratoren din – koble til</translation>
 <translation id="3387614642886316601">Bruk forbedret stavekontroll</translation>
-<translation id="3388763036782654406">Chrome lager automatisk engelsk teksting med Direkteteksting</translation>
 <translation id="3388788256054548012">Denne filen er kryptert. Spør eieren om å dekryptere den.</translation>
 <translation id="3390013585654699824">Informasjon om appen</translation>
 <translation id="3390741581549395454">Linux-apper og -filer er sikkerhetskopiert. Oppgraderingen begynner straks.</translation>
@@ -2037,6 +2028,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3487007233252413104">anonym funksjon</translation>
 <translation id="348780365869651045">Venter på AppCache …</translation>
 <translation id="3488065109653206955">Delvis aktivert</translation>
+<translation id="3491669675709357988">Kontoen til barnet ditt er ikke konfigurert for foreldrekontroll med Family Link. Du kan slå på foreldrekontroll når du er ferdig med konfigureringen. Du finner informasjon om foreldrekontroll i Utforsk-appen.</translation>
 <translation id="3492788708641132712">Synkroniseringen fungerer ikke. Prøv å logge på igjen.</translation>
 <translation id="3493486281776271508">Internettilkobling kreves</translation>
 <translation id="3493881266323043047">Gyldighet</translation>
@@ -2391,7 +2383,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3882165008614329320">Eksisterende video fra kamera eller fil</translation>
 <translation id="3886446263141354045">Forespørselen din om å få tilgang til dette nettstedet er sendt til <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Tar notater med <ph name="LOCK_SCREEN_APP_NAME" /></translation>
-<translation id="3891563564777705449">{0,plural, =1{Oppdater enheten innen 1 uke}other{Oppdater enheten innen # uker}}</translation>
 <translation id="3892414795099177503">Legg til OpenVPN/L2TP</translation>
 <translation id="3893536212201235195">lese og endre innstillingene for tilgjengelighet</translation>
 <translation id="3893630138897523026">ChromeVox (muntlig tilbakemelding)</translation>
@@ -2749,7 +2740,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4364830672918311045">Vis varsler</translation>
 <translation id="437004882363131692">Få tips om, tilbud på og oppdateringer for <ph name="DEVICE_TYPE" />, og gi tilbakemeldinger. Du kan avslutte abonnementet når som helst.</translation>
 <translation id="4370975561335139969">E-posten og passordet du skrev inn, stemmer ikke overens.</translation>
-<translation id="4372659832698344773"><ph name="DOMAIN" /> krever at du sikkerhetskopierer dataene dine og leverer tilbake denne enheten i dag.</translation>
 <translation id="4374831787438678295">Linux-installasjonsprogram</translation>
 <translation id="4375035964737468845">åpne nedlastede filer</translation>
 <translation id="4377363674125277448">Det oppsto et problem med sertifikatet til tjeneren.</translation>
@@ -2818,7 +2808,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4451479197788154834">Passordet er lagret på denne enheten og i Google-kontoen din</translation>
 <translation id="4451757071857432900">Blokkert på nettsteder som viser forstyrrende eller villedende annonser (anbefales)</translation>
 <translation id="4453946976636652378">Søk i <ph name="SEARCH_ENGINE_NAME" /> eller skriv inn en nettadresse</translation>
-<translation id="4456630844127311743"><ph name="ATTACHMENTS" /> mottatt fra <ph name="DEVICE_NAME" /></translation>
 <translation id="4459169140545916303">Aktiv for <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dager siden</translation>
 <translation id="4460014764210899310">Fjern gruppering</translation>
 <translation id="4462159676511157176">Egendefinerte navnetjenere</translation>
@@ -2952,6 +2941,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4619615317237390068">Faner fra andre enheter</translation>
 <translation id="4620809267248568679">Denne innstillingen håndheves av en utvidelse.</translation>
 <translation id="4623189117674524348">Systemet kunne ikke godkjenne API-tilgang for denne enheten.</translation>
+<translation id="4624190781974168453">Spør ved oppstart</translation>
 <translation id="4625078469366263107">Slå på appen</translation>
 <translation id="4627427111733173920">Informasjonskapsler er blokkert</translation>
 <translation id="4627442949885028695">Fortsett på en annen enhet</translation>
@@ -3016,7 +3006,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4699172675775169585">Bufrede bilder og filer</translation>
 <translation id="4699357559218762027">(automatisk oppstart)</translation>
 <translation id="4701025263201366865">Pålogging av forelder</translation>
-<translation id="4703523551945129413"><ph name="DOMAIN" /> krever at du sikkerhetskopierer dataene dine og leverer tilbake denne enheten innen <ph name="DAYS_COUNT" /> dager.<ph name="LINK_BEGIN" />Se detaljer<ph name="LINK_END" /></translation>
 <translation id="4707302005824653064">Administratoren (<ph name="CUSTODIAN_EMAIL" />) kan gå gjennom bruken og loggen på chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + brukersertifikat</translation>
 <translation id="4708794300267213770">Vis låseskjermen ved oppvåkning etter hvilemodus</translation>
@@ -3058,6 +3047,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Butikk</translation>
 <translation id="4777943778632837590">Konfigurer navnetjenere for nettverket</translation>
+<translation id="4778644898150334464">Bruk et annet passord</translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4779136857077979611">Onigiri</translation>
 <translation id="4780321648949301421">L&amp;agre side som</translation>
@@ -3876,6 +3866,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5804241973901381774">Tillatelser</translation>
 <translation id="5805697420284793859">Window Manager</translation>
 <translation id="5806773519584576205">0° (standard)</translation>
+<translation id="5810809306422959727">Denne kontoen er ikke kvalifisert for foreldrekontroll</translation>
 <translation id="5812674658566766066">Vis alle</translation>
 <translation id="5814126672212206791">Tilkoblingstype</translation>
 <translation id="5815645614496570556">X.400-adresse</translation>
@@ -3942,7 +3933,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5889282057229379085">Maksimalt antall mellomliggende sertifiseringsinstanser: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5891688036610113830">Foretrukne Wi-Fi-nettverk</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
-<translation id="5895613446346678902">Sender <ph name="ATTACHMENTS" /> til <ph name="DEVICE_NAME" /></translation>
 <translation id="5900302528761731119">Google-profilbilde</translation>
 <translation id="5900358982890952556">Oppgrader Linux (beta)</translation>
 <translation id="5901494423252125310">Skriverdekselet er åpent</translation>
@@ -4194,7 +4184,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6209908325007204267">En Chrome Enterprise-oppgradering følger med enheten din, men brukernavnet ditt er ikke knyttet til noen bedriftskonto. Opprett en bedriftskonto ved å besøke g.co/ChromeEnterpriseAccount på en annen enhet.</translation>
 <translation id="6211495400987308581"><ph name="PROFILE_NAME" />: Synkroniseringen fungerer ikke</translation>
 <translation id="6212039847102026977">Vis avanserte nettverksegenskaper</translation>
-<translation id="621215966665094453">Kunne ikke motta <ph name="ATTACHMENTS" /> fra <ph name="DEVICE_NAME" /></translation>
 <translation id="6212168817037875041">Slå av skjermen</translation>
 <translation id="6212752530110374741">Send linken på e-post</translation>
 <translation id="6213230117190778270">Motta</translation>
@@ -4371,12 +4360,10 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="642469772702851743">Denne enheten (SN: <ph name="SERIAL_NUMBER" />) ble låst av eieren.</translation>
 <translation id="6425556984042222041">Hastighet for tekst til tale</translation>
 <translation id="6426200009596957090">Åpne innstillingene for ChromeVox</translation>
-<translation id="6428450836711225518">Bekreft telefonnummeret ditt</translation>
 <translation id="6428982734197629783">Behandler bildet</translation>
 <translation id="6429384232893414837">Oppdateringsfeil</translation>
 <translation id="6430814529589430811">Base64-kodede ASCII, enkelt sertifikat</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> velger automatiske oppdateringer for alle brukerne på datamaskinen.</translation>
-<translation id="6433095543510643909">Kunne ikke sende <ph name="ATTACHMENTS" /> til <ph name="DEVICE_NAME" /></translation>
 <translation id="6434309073475700221">Forkast</translation>
 <translation id="6434325376267409267">Enheten må oppdateres før du kan bruke <ph name="APP_NAME" />.</translation>
 <translation id="6436164536244065364">Se i Nettmarked</translation>
@@ -4451,7 +4438,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6528513914570774834">La andre brukere av denne enheten bruke dette nettverket</translation>
 <translation id="652948702951888897">Chrome-logg</translation>
 <translation id="6530186581263215931">Disse innstillingene håndheves av administratoren din</translation>
-<translation id="6530972340914163124"><ph name="TOPIC_SOURCE" /> er valgt – trykk på Enter for å velge <ph name="TOPIC_SOURCE" />-album</translation>
 <translation id="6531282281159901044">Behold den farlige filen</translation>
 <translation id="6532101170117367231">Lagre i Google Disk</translation>
 <translation id="6532106788206463496">Lagre endringene</translation>
@@ -4463,7 +4449,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6538635548667167211">Gjeldende innstilling for databruk er Data</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Merk:<ph name="END_BOLD" /> Ettersom innsamling av data kan redusere ytelsen bør du bare aktivere dette hvis du vet hva du gjør eller har blitt bedt om å gjøre dette.</translation>
 <translation id="6541638731489116978">Dette nettstedet er blokkert fra å få tilgang til bevegelsessensorene dine.</translation>
-<translation id="6545407738986370057">{0,plural, =1{Levér enheten tilbake innen 1 uke}other{Levér enheten tilbake innen # uker}}</translation>
 <translation id="6545665334409411530">Gjentakelsesfrekvens</translation>
 <translation id="6545864417968258051">Bluetooth-skanning</translation>
 <translation id="6545867563032584178">Mikrofonen er slått av i Mac-systemvalgene</translation>
@@ -4510,6 +4495,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6602956230557165253">Bruk venstre og høyre piltast for å navigere.</translation>
 <translation id="6605847144724004692">Ikke vurdert av noen brukere ennå.</translation>
 <translation id="6607831829715835317">Flere verktøy</translation>
+<translation id="6607890859198268021"><ph name="USER_EMAIL" /> administreres allerede av <ph name="DOMAIN" />. For å bruke foreldrekontroll med en annen Google-konto, logg ut etter konfigureringen og velg «Legg til person» på påloggingsskjermen.</translation>
 <translation id="6611972847767394631">Se fanene dine her</translation>
 <translation id="6612358246767739896">Beskyttet innhold</translation>
 <translation id="6615455863669487791">Vis meg</translation>
@@ -4594,7 +4580,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6721678857435001674">se merket og modellen til sikkerhetsnøkkelen din</translation>
 <translation id="6721972322305477112">&amp;Fil</translation>
 <translation id="672213144943476270">Du må låse opp profilen din før du kan surfe som gjest.</translation>
-<translation id="6723354935081862304">Skriv ut til Google Dokumenter og andre destinasjoner i nettskyen. <ph name="BEGIN_LINK" />Logg på<ph name="END_LINK" /> for å skrive ut med Google Cloud Print.</translation>
 <translation id="6723661294526996303">Importér bokmerker og innstillinger...</translation>
 <translation id="6723839937902243910">Strøm</translation>
 <translation id="6725073593266469338">UI-tjeneste</translation>
@@ -4765,7 +4750,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6930321203306643451">Oppgraderingen er fullført</translation>
 <translation id="6935286146439255109">En papirskuff mangler</translation>
 <translation id="693807610556624488">Skriveoperasjonen til den følgende enheten overskrider den maksimale attributtlengden: «<ph name="DEVICE_NAME" />».</translation>
-<translation id="6938381444925658529"><ph name="DOMAIN" /> krever at du laster ned en oppdatering før tidsfristen. Oppdateringen blir lastet ned automatisk når du kobler til internett.</translation>
 <translation id="6938386202199793006">Du har 1 lagret skriver.</translation>
 <translation id="6938789263968032501">Personer</translation>
 <translation id="6939815295902433669">Gjennomgå enhetsprogramvaren</translation>
@@ -4875,7 +4859,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7062222374113411376">Tillat at nylig lukkede nettsteder fullfører sending og mottak av data (anbefales)</translation>
 <translation id="7063129466199351735">Behandler snarveier …</translation>
 <translation id="7063311912041006059">Nettadresse med <ph name="SPECIAL_SYMBOL" /> i stedet for søket</translation>
-<translation id="7063957500469387217">Konfigurer eller administrer skrivere i Google Cloud Print.</translation>
 <translation id="7064734931812204395">Konfigurerer Linux-beholderen. Dette kan ta opptil 30 minutter.</translation>
 <translation id="7065223852455347715">Denne enheten er låst i en modus som forhindrer bedriftsregistrering. Hvis du vil registrere enheten, må du du gjenopprette enheten først.</translation>
 <translation id="7065534935986314333">Om systemet</translation>
@@ -4905,7 +4888,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
     <ph name="BEGIN_BOLD" />Vær oppmerksom på dette:<ph name="END_BOLD" /> Lignende stemmer eller opptak av stemmen din kan kanskje også brukes for å få tilgang til assistenten din. Du kan fjerne Voice Match-tillatelsen senere ved å slå den av i Assistent-innstillingene.</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Utveksle data med enhetene <ph name="HOSTNAMES" /></translation>
-<translation id="7094434674404953373">Enheten starter på nytt når oppdateringene er fullført.</translation>
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
 <translation id="7098447629416471489">Andre lagrede søkemotorer vises her</translation>
 <translation id="7099337801055912064">Kan ikke laste inn stor PPD. Maksimal størrelse er 250 kB.</translation>
@@ -5178,7 +5160,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="744366959743242014">Laster inn data. Dette kan ta noen sekunder.</translation>
 <translation id="7443806024147773267">Få tilgang til passordene dine når du er logget på Google-kontoen</translation>
 <translation id="7444983668544353857">Slå av <ph name="NETWORKDEVICE" /></translation>
-<translation id="7447064098781211730"><ph name="DOMAIN" /> krever at du kobler til Wi-Fi og laster ned en oppdatering før tidsfristen. Eller last ned via en tilkobling med datamåling (kostnader kan påløpe).</translation>
 <translation id="7448430327655618736">installere apper automatisk</translation>
 <translation id="7449752890690775568">Vil du fjerne passordet?</translation>
 <translation id="7450761244949417357">Åpnes i <ph name="ALTERNATIVE_BROWSER_NAME" /> nå</translation>
@@ -5253,7 +5234,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7543525346216957623">Spør forelderen din</translation>
 <translation id="7547317915858803630">Advarsel: <ph name="PRODUCT_NAME" />-innstillingene dine lagres på en nettverksdisk. Dette kan forårsake forsinkelser, krasjer og til og med tap av data.</translation>
 <translation id="7548856833046333824">Limonade</translation>
-<translation id="755047330066644486"><ph name="ATTACHMENTS" /> ble sendt til <ph name="DEVICE_NAME" /></translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432"><ph name="FILE_NAME" /> ble ikke lastet ned</translation>
 <translation id="7551643184018910560">Fest til hyllen</translation>
@@ -5376,7 +5356,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7698408911093959127">{COUNT,plural, =1{1 element i bokmerkelisten}other{# elementer i bokmerkelisten}}</translation>
 <translation id="7699968112832915395">Kan ikke legge til kontoen</translation>
 <translation id="7701040980221191251">Ingen</translation>
-<translation id="770157826141786566">Tidsfristen for å returnere denne enheten er utløpt.</translation>
 <translation id="7701869757853594372">BRUKEREN håndterer</translation>
 <translation id="7701928712056789451">Disse elementene kan være farlige</translation>
 <translation id="7702574632857388784">Fjern <ph name="FILE_NAME" /> fra listen</translation>
@@ -5547,7 +5526,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Se konto</translation>
 <translation id="7882358943899516840">Leverandørtype</translation>
-<translation id="7883262476066478211">Enheten er blokkert</translation>
 <translation id="78851824530736377">Slå på passiv modus</translation>
 <translation id="7885253890047913815">Nylige destinasjoner</translation>
 <translation id="7887334752153342268">Dupliser</translation>
@@ -6104,7 +6082,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8591783563402255548">1 sekund</translation>
 <translation id="8592141010104017453">Ikke vis varsler i det hele tatt</translation>
 <translation id="8593121833493516339">Send bruks- og diagnostikkdata. Hjelp til med å gjøre Android-opplevelsen bedre for barnet ditt ved å sende diagnostikk-, enhets- og appbruksdata til Google automatisk. Disse dataene brukes ikke til å identifisere barnet ditt, men bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Hvis du har slått på annen nett- og appaktivitet for barnet ditt, kan disse dataene bli lagret i barnets Google-konto. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
-<translation id="8593903446113782255"><ph name="DOMAIN" /> krever at du laster ned en oppdatering i dag. Oppdateringen blir lastet ned automatisk når du kobler til internett.</translation>
 <translation id="8594908476761052472">Spill inn video</translation>
 <translation id="8596540852772265699">Egendefinerte filer</translation>
 <translation id="8597845839771543242">Områdeformat:</translation>
@@ -6187,6 +6164,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8688579245973331962">Ser du ikke navnet ditt?</translation>
 <translation id="8688591111840995413">Feil passord</translation>
 <translation id="8688672835843460752">Tilgjengelig</translation>
+<translation id="8695139659682234808">Slå på foreldrekontroll etter konfigureringen</translation>
 <translation id="8695825812785969222">Åpne p&amp;lassering ...</translation>
 <translation id="8698269656364382265">For å gå tilbake til det forrige skjermbildet, sveip fra venstre side.</translation>
 <translation id="869884720829132584">Programmeny</translation>
@@ -6230,13 +6208,13 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8736288397686080465">Dette nettstedet har blitt oppdatert i bakgrunnen.</translation>
 <translation id="8737685506611670901">åpne linker til <ph name="PROTOCOL" /> i stedet for <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> er koden din for <ph name="ORIGIN" /></translation>
 <translation id="8742998548129056176">Dette er generell informasjon om enheten din og hvordan du bruker den (for eksempel batterinivå, system- og appaktivitet og feil). Dataene brukes til å gjøre Android bedre, og noen aggregerte data hjelper også Google-apper og partnere, for eksempel Android-utviklere, med å gjøre apper og produkter bedre.</translation>
 <translation id="8743390665131937741">Zoomnivå i fullskjermmodus:</translation>
 <translation id="8743864605301774756">Oppdatert for 1 t siden</translation>
 <translation id="8746654918629346731">Du har allerede forespurt «<ph name="EXTENSION_NAME" />»</translation>
 <translation id="874689135111202667">{0,plural, =1{Vil du laste opp en fil til dette nettstedet?}other{Vil du laste opp # filer til dette nettstedet?}}</translation>
 <translation id="8749556627204742888">Du deler dette nettverket med andre brukere av denne enheten.</translation>
+<translation id="8749805710397399240">Kunne ikke caste skjermen din. Kontroller Skjermopptak-tillatelsen i Systemvalg.</translation>
 <translation id="8749863574775030885">Les USB-enheter fra en ukjent leverandør</translation>
 <translation id="8750133148106010815">Før du kan starte Google Play, krever <ph name="ORGANIZATION_NAME" /> at du sikkerhetskopierer dataene dine og tilbakestiller Chromebook til fabrikkstandard.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> vil koble til en seriell port</translation>
@@ -6662,7 +6640,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Program}other{Programmer}}</translation>
 <translation id="964790508619473209">Skjermoppsett</translation>
 <translation id="965211523698323809">Send og motta SMS-er fra <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
-<translation id="965237416448221058"><ph name="DOMAIN" /> krever at du sikkerhetskopierer dataene dine og leverer tilbake denne enheten før tidsfristen.</translation>
 <translation id="967398046773905967">Ikke gi noen nettsteder tilgang til HID-enheter</translation>
 <translation id="967624055006145463">Lagrede data</translation>
 <translation id="968000525894980488">Slå på Google Play Tjenester.</translation>

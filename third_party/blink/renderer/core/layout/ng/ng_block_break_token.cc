@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -20,24 +21,30 @@ ASSERT_SIZE(NGBlockBreakToken, SameSizeAsNGBlockBreakToken);
 
 }  // namespace
 
-NGBlockBreakToken::NGBlockBreakToken(
-    PassKey key,
-    NGLayoutInputNode node,
-    LayoutUnit consumed_block_size,
-    unsigned sequence_number,
-    const NGBreakTokenVector& child_break_tokens,
-    NGBreakAppeal break_appeal,
-    bool has_seen_all_children,
-    bool is_at_block_end)
-    : NGBreakToken(kBlockBreakToken, kUnfinished, node),
-      consumed_block_size_(consumed_block_size),
-      sequence_number_(sequence_number),
-      num_children_(child_break_tokens.size()) {
-  break_appeal_ = break_appeal;
-  has_seen_all_children_ = has_seen_all_children;
-  is_at_block_end_ = is_at_block_end;
-  for (wtf_size_t i = 0; i < child_break_tokens.size(); ++i) {
-    child_break_tokens_[i] = child_break_tokens[i].get();
+scoped_refptr<NGBlockBreakToken> NGBlockBreakToken::Create(
+    const NGBoxFragmentBuilder& builder) {
+  // We store the children list inline in the break token as a flexible
+  // array. Therefore, we need to make sure to allocate enough space for that
+  // array here, which requires a manual allocation + placement new.
+  void* data = ::WTF::Partitions::FastMalloc(
+      sizeof(NGBlockBreakToken) +
+          builder.child_break_tokens_.size() * sizeof(NGBreakToken*),
+      ::WTF::GetStringWithTypeName<NGBlockBreakToken>());
+  new (data) NGBlockBreakToken(PassKey(), builder);
+  return base::AdoptRef(static_cast<NGBlockBreakToken*>(data));
+}
+
+NGBlockBreakToken::NGBlockBreakToken(PassKey key,
+                                     const NGBoxFragmentBuilder& builder)
+    : NGBreakToken(kBlockBreakToken, kUnfinished, builder.node_),
+      consumed_block_size_(builder.consumed_block_size_),
+      sequence_number_(builder.sequence_number_),
+      num_children_(builder.child_break_tokens_.size()) {
+  break_appeal_ = builder.break_appeal_;
+  has_seen_all_children_ = builder.has_seen_all_children_;
+  is_at_block_end_ = builder.is_at_block_end_;
+  for (wtf_size_t i = 0; i < builder.child_break_tokens_.size(); ++i) {
+    child_break_tokens_[i] = builder.child_break_tokens_[i].get();
     child_break_tokens_[i]->AddRef();
   }
 }

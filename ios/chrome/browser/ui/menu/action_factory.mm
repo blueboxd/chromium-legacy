@@ -59,12 +59,13 @@
 }
 
 - (UIAction*)actionToCopyURL:(const GURL)URL {
-  return [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_COPY_ACTION_TITLE)
-                         image:[UIImage systemImageNamed:@"doc.on.doc"]
-                          type:MenuActionType::Copy
-                         block:^{
-                           StoreURLInPasteboard(URL);
-                         }];
+  return
+      [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY)
+                      image:[UIImage imageNamed:@"copy_link_url"]
+                       type:MenuActionType::Copy
+                      block:^{
+                        StoreURLInPasteboard(URL);
+                      }];
 }
 
 - (UIAction*)actionToDeleteWithBlock:(ProceduralBlock)block {
@@ -113,12 +114,11 @@
 }
 
 - (UIAction*)actionToOpenInNewIncognitoTabWithBlock:(ProceduralBlock)block {
-  return
-      [self actionWithTitle:l10n_util::GetNSString(
-                                IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)
-                      image:nil
-                       type:MenuActionType::OpenInNewIncognitoTab
-                      block:block];
+  return [self actionWithTitle:l10n_util::GetNSString(
+                                   IDS_IOS_OPEN_IN_INCOGNITO_ACTION_TITLE)
+                         image:nil
+                          type:MenuActionType::OpenInNewIncognitoTab
+                         block:block];
 }
 
 - (UIAction*)actionToOpenInNewWindowWithURL:(const GURL)URL

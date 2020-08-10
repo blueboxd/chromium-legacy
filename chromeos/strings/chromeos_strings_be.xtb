@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Новы пароль</translation>
 <translation id="4003259559679196451">Дамен "<ph name="ENROLLMENT_DOMAIN" />" кіруе гэтай прыладай і мае доступ да ўсіх дзеянняў карыстальніка, у тым ліку да гісторыі наведаных вэб-старонак, да пароляў і электроннай пошты.</translation>
 <translation id="4003384961948020559">Збой: выхадны латок запоўнены</translation>
+<translation id="4027485274696301677"><ph name="DEVICE_TYPE" /> знаходзіцца пад кіраваннем дамена <ph name="ENROLLMENT_DOMAIN" />. Адміністратары могуць аддалена задаваць налады прылады.</translation>
 <translation id="4034824040120875894">Прынтар</translation>
 <translation id="4227825898293920515">Тэрмін дзеяння пароля заканчваецца праз <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Няма дзеючых заданняў друку</translation>

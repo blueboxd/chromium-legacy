@@ -506,6 +506,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="6972754398087986839">Rozpocznij</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="698231206551913481">Usunięcie tego użytkownika spowoduje trwałe usunięcie wszystkich związanych z nim plików i danych lokalnych.</translation>
+<translation id="7007983414944123363">Nie udało się zweryfikować Twojego kodu PIN ani hasła. Spróbuj ponownie.</translation>
 <translation id="7015766095477679451">Możesz wrócić o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Połącz urządzenie <ph name="DEVICE_NAME" /> z telefonem</translation>
 <translation id="7026338066939101231">Zmniejsz</translation>
@@ -551,6 +552,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="7568294522609223312">Wyłączanie automatycznych kliknięć</translation>
 <translation id="7568637526529101738">Gdy klikniesz prawym przyciskiem lub przytrzymasz zaznaczony na ekranie fragment, Asystent poda Ci związane z nim informacje, takie jak definicja lub przeliczenie jednostek.</translation>
 <translation id="7569509451529460200">Włączono Braille'a i ChromeVox</translation>
+<translation id="7579778809502851308">Zrzut ekranu</translation>
 <translation id="7593891976182323525">Szukaj lub Shift</translation>
 <translation id="7600875258240007829">Zobacz wszystkie powiadomienia</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -669,6 +671,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="8841375032071747811">Przycisk Wstecz</translation>
 <translation id="8843682306134542540">Włącz lub wyłącz blokadę obracania. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Szukaj+Esc</translation>
+<translation id="8853703225951107899">Nadal nie udało się zweryfikować Twojego hasła ani kodu PIN. Uwaga: jeśli Twoje hasło zostało ostatnio zmienione, użyj starego hasła. Nowe hasło zacznie obowiązywać, gdy się wylogujesz.</translation>
 <translation id="8870509716567206129">Aplikacja nie obsługuje dzielonego ekranu.</translation>
 <translation id="8874184842967597500">Brak połączenia</translation>
 <translation id="8877788021141246043">Ustaw przypomnienie</translation>

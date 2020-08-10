@@ -609,10 +609,12 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       }
 
       # Resources config for blocklisting resource names from obfuscation
-      if (defined(invoker.resources_config_path)) {
-        resources_config_path = invoker.resources_config_path
-      } else {
-        resources_config_path = "//android_webview/aapt2.config"
+      resources_config_paths = [
+        "//android_webview/aapt2.config",
+        "//chrome/android/aapt2.config",
+      ]
+      if (defined(invoker.resources_config_paths)) {
+        resources_config_paths += invoker.resources_config_paths
       }
 
       if (defined(invoker.never_incremental)) {
@@ -702,7 +704,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       "no_xml_namespaces",
       "product_config_java_packages",
       "proguard_configs",
-      "resources_config_path",
+      "resources_config_paths",
       "secondary_abi_loadable_modules",
       "secondary_abi_shared_libraries",
       "secondary_native_lib_placeholders",

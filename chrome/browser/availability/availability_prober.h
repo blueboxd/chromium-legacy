@@ -163,6 +163,8 @@ class AvailabilityProber
   // Clears the prefs used in this class.
   static void ClearData(PrefService* pref_service);
 
+  base::WeakPtr<AvailabilityProber> AsWeakPtr() const;
+
   // Sends a probe now if the prober is currently inactive. If the probe is
   // active (i.e.: there are probes in flight), this is a no-op. If
   // |send_only_in_foreground| is set, the probe will only be sent when the app

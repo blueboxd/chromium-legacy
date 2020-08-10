@@ -201,9 +201,6 @@ Still reading?
     <!-- We no longer supply class files to lint. -->
     <ignore regexp="No `.class` files were found in project"/>
   </issue>
-  <!-- We use the same baseline for all our targets. Since some targets run less
-       code than other targets, there will always be unused suppressions. -->
-  <issue id="LintBaseline" severity="ignore"/>
   <issue id="LogConditional" severity="ignore"/>
   <issue id="LongLogTag" severity="ignore"/>
   <issue id="MergeRootFrame" severity="Error">

@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">ตัวคลายสแต็ก</translation>
 <translation id="473775607612524610">อัปเดต</translation>
 <translation id="4738836084190194332">ซิงค์ครั้งล่าสุด: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">ข้อผิดพลาด TWA: <ph name="ERROR_CODE" /> ใน <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">เปิดแท็บใหม่</translation>
 <translation id="4759238208242260848">ดาวน์โหลด</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{การดาวน์โหลด 1 รายการเสร็จสมบูรณ์}other{การดาวน์โหลด # รายการเสร็จสมบูรณ์}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">สำรวจแบบออฟไลน์</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
+<translation id="9148126808321036104">ลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="9155898266292537608">หรือคุณจะค้นหาด้วยการแตะอย่างรวดเร็วที่คำๆ หนึ่งก็ได้เช่นกัน</translation>
 <translation id="9169507124922466868">ประวัติการนำทางเปิดอยู่ครึ่งเดียว</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{ตรวจสอบเมื่อ 1 นาทีที่ผ่านมา}other{ตรวจสอบเมื่อ # นาทีที่ผ่านมา}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="93753284658583800">เปลี่ยนหน้าแรกแล้ว</translation>
 <translation id="938850635132480979">ข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">ป้อนข้อความรหัสผ่าน</translation>
 <translation id="95817756606698420">Chrome สามารถใช้ <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> สำหรับการค้นหาในประเทศจีน คุณสามารถเปลี่ยนเครื่องมือค้นหาเริ่มต้นนี้ได้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="968900484120156207">หน้าที่คุณเข้าชมจะปรากฏที่นี่</translation>
 <translation id="970715775301869095">เหลือ <ph name="MINUTES" /> นาที</translation>

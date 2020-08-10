@@ -129,11 +129,12 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
   void OnPhotoDecoded(const gfx::ImageSkia& image);
 
   void StartDownloadingWeatherConditionIcon(
-      const ash::ScreenUpdate& screen_update);
+      const base::Optional<WeatherInfo>& weather_info);
 
   // Invoked upon completion of the weather icon download, |icon| can be a null
   // image if the download attempt from the url failed.
-  void OnWeatherConditionIconDownloaded(base::Optional<float> temp_f,
+  void OnWeatherConditionIconDownloaded(float temp_f,
+                                        bool show_celsius,
                                         const gfx::ImageSkia& icon);
 
   void set_url_loader_for_testing(

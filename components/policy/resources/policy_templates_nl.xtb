@@ -186,7 +186,7 @@
       Als dit beleid is ingesteld op 'waar', is de functie ingeschakeld en kunnen gebruikers het wijzigen.
       Dit beleid is standaard ingesteld op 'onwaar'. Er worden geen suggesties voor emoji's weergegeven en gebruikers kunnen dit niet overschrijven.</translation>
 <translation id="1243570869342663665">SafeSites-filters voor content voor volwassenen beheren.</translation>
-<translation id="1252536192437793850">Sites toestaan om gebruikers toestemming te vragen voor een seriële poort</translation>
+<translation id="1252536192437793850">Sites toestaan om gebruikers toestemming te vragen voor toegang tot een seriële poort</translation>
 <translation id="1257550411839719984">Standaardmap voor downloads instellen</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
 <translation id="127264587838521316">Hiermee worden installatieverzoeken voor <ph name="PRODUCT_NAME" />-extensies ingeschakeld</translation>
@@ -220,7 +220,7 @@
 
       Als je het beleid niet instelt, is <ph name="DEFAULT_SENSORS_SETTING_POLICY_NAME" />, indien ingesteld, van toepassing op alle sites. Zo niet, dan gelden de persoonlijke instellingen van de gebruiker.
 
-      Als hetzelfde URL-patroon zowel bestaat in dit beleid als het beleid <ph name="SENSORS_BLOCKED_FOR_URLS_POLICY_NAME" />, krijgt het tweede beleid voorrang en wordt de toegang tot bewegings- of lichtsensoren geblokkeerd.
+      Als hetzelfde URL-patroon zowel in dit beleid als in het beleid <ph name="SENSORS_BLOCKED_FOR_URLS_POLICY_NAME" /> bestaat, krijgt het tweede beleid voorrang en wordt de toegang tot bewegings- of lichtsensoren geblokkeerd.
 
       Ga naar https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns voor gedetailleerde informatie over geldige <ph name="URL_LABEL" />-patronen.</translation>
 <translation id="1354424209129232709">Maximum:</translation>
@@ -1170,7 +1170,7 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 
       Als je het beleid niet instelt, is <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" />, indien ingesteld, van toepassing op alle sites. Zo niet, dan gelden de persoonlijke instellingen van gebruikers.
 
-      Als URL-patronen niet overeenkomen met het beleid, krijgen <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" /> (als er een overeenkomst is), <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (indien ingesteld) of de persoonlijke instellingen van de gebruikers voorrang, in die volgorde.
+      Als URL-patronen niet overeenkomen met het beleid <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" /> (als er een overeenkomst is), krijgen <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (indien ingesteld) of de persoonlijke instellingen van de gebruikers voorrang, in die volgorde.
 
       URL-patronen mogen geen conflict vormen met <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" />. Geen van beide beleidsregels krijgt voorrang als een URL met beide overeenkomt.
 
@@ -1212,7 +1212,7 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 
       Als je het beleid niet instelt, is <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" />, indien ingesteld, van toepassing op alle sites. Zo niet, dan gelden de persoonlijke instellingen van de gebruiker.
 
-      Als URL-patronen niet overeenkomen met het beleid, krijgen <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME" /> (als er een overeenkomst is), <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (indien ingesteld) of de persoonlijke instellingen van de gebruikers voorrang, in die volgorde.
+      Als URL-patronen niet overeenkomen met het beleid <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME" /> (als er een overeenkomst is), krijgen <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (indien ingesteld) of de persoonlijke instellingen van de gebruikers voorrang, in die volgorde.
 
       URL-patronen mogen geen conflict vormen met <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME" />. Geen van beide beleidsregels krijgt voorrang als een URL met beide overeenkomt.
 
@@ -1222,14 +1222,20 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="2787774054174244402">Als je het beleid instelt op 'True', kunnen gebruikers niets naar externe opslagapparaten schrijven.
 
       Als je 'ExternalStorageReadOnly' instelt op 'False' of niet instelt, kunnen gebruikers bestanden voor externe opslagapparaten met schrijffunctie maken en wijzigen, tenzij de externe opslag is geblokkeerd. (Je kunt externe opslag blokkeren door 'ExternalStorageDisable' in te stellen op 'True'.)</translation>
+<translation id="2796714419743648316">Toelatingslijst voor tijdslimieten per app</translation>
+<translation id="2796896367838042659">Dit beleid geeft aan welke apps en URL's op de witte lijst voor gebruiksbeperkingen per app moeten worden gezet.
+        De geconfigureerde witte lijst wordt toegepast op de apps die zijn geïnstalleerd in <ph name="PRODUCT_OS_NAME" /> voor de betreffende gebruiker met tijdslimieten per app.
+        De geconfigureerde witte lijst kan alleen worden toegepast op onderliggende gebruikersaccounts en wordt van kracht als het beleid <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> is ingesteld.
+        De geconfigureerde witte lijst wordt toegepast op apps en URL's zodat ze niet worden geblokkeerd door tijdslimieten per app.
+        Toegang tot URL's op de witte lijst telt niet mee voor de Chrome-tijdslimiet.
+        Voeg reguliere expressies voor URL's toe aan |url_list| om URL's op de witte lijst te zetten die overeenkomen met een of meer van de reguliere expressies op de lijst.
+        Voeg een app met de bijbehorende |app_id| en |app_type| aan |app_list| toe om de app op de witte lijst te zetten.
+
+        Dit beleid is verouderd. Gebruik in plaats daarvan <ph name="PER_APP_TIME_LIMITS_ALLOWLIST" />.
+        </translation>
 <translation id="2799297758492717491">Automatisch afspelen van media toestaan op een witte lijst met URL-patronen</translation>
 <translation id="2801065672151277034">Instellingen voor certificaatbeheer</translation>
 <translation id="2801155097555584385">Een custom startpunt voor batterijoplading opgeven in procenten</translation>
-<translation id="2802085784857530815">Hiermee kun je bepalen of gebruikers toegang hebben tot printers die niet van het bedrijf zijn.
-
-      Als het beleid is ingesteld op 'True' of helemaal niet is ingesteld, kunnen gebruikers zelf systeemeigen printers toevoegen, configureren en ermee afdrukken.
-
-      Als het beleid is ingesteld op 'False', kunnen gebruikers niet zelf systeemeigen printers toevoegen, configureren en ermee afdrukken. Ook kunnen ze niet afdrukken met eventuele eerder ingestelde systeemeigen printers.</translation>
 <translation id="2805707493867224476">Alle sites toestaan pop-ups weer te geven</translation>
 <translation id="2808013382476173118">Maakt het gebruik van STUN-servers mogelijk wanneer externe clients verbinding proberen te maken met dit apparaat.
 
@@ -2390,6 +2396,10 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als de waarde van dit beleid 0 is, wordt de standaardcachegrootte gebruikt, maar kan de gebruiker deze niet wijzigen.
 
       Als dit beleid niet is ingesteld, wordt de standaardgrootte gebruikt en kan de gebruiker deze overschrijven met de markering --media-cache-size.</translation>
+<translation id="4508084713148633492">Hiermee kun je in- of uitschakelen dat er een melding wordt weergegeven bij weinig schijfruimte. Dit is van toepassing op alle gebruikers op het apparaat.
+      Als er precies één gebruikersaccount is op een beheerd apparaat, wordt de melding altijd weergegeven, ongeacht de waarde van dit beleid.
+      Als er meerdere gebruikersaccount zijn op een beheerd apparaat, wordt de melding alleen weergeven als het beleid is ingesteld op 'True'.
+      Op niet-beheerde apparaten wordt de melding altijd weergegeven.</translation>
 <translation id="4510923771103268849">De gebruiker heeft toestemming voor roottoegang tot Crostini-containers</translation>
 <translation id="4515404363392014383">'Safe Browsing' inschakelen voor vertrouwde bronnen</translation>
 <translation id="4517928394515633751">Gebruikersdownloads scannen met Safe Browsing</translation>
@@ -3393,6 +3403,29 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als het beleid is ingesteld op 'False' of niet is ingesteld, heeft <ph name="PLUGIN_VM_NAME" /> geen toestemming om gegevens te verzamelen.
       Als het is ingesteld op 'True', kan <ph name="PLUGIN_VM_NAME" /> gebruiksgegevens verzamelen van <ph name="PLUGIN_VM_NAME" /> die daarna worden gecombineerd en grondig geanalyseerd om het gebruik van <ph name="PLUGIN_VM_NAME" /> te verbeteren.</translation>
+<translation id="5875873062228321803">Hiermee configureer je de vereiste voor de minimaal toegestane versie van <ph name="PRODUCT_OS_NAME" />.
+
+      Als dit beleid is ingesteld op een niet-lege lijst:
+      Als geen van de items een <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> hoger dan de huidige versie van het apparaat heeft, worden er geen beperkingen toegepast en worden bestaande beperkingen ingetrokken.
+      Als ten minste één van de items een <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> hoger dan de huidige versie van het apparaat heeft, wordt het item gekozen waarvan de versie het dichtst in de buurt van de huidige versie komt.
+      In geval van een conflict wordt de voorkeur gegeven aan het item met de kortere <ph name="WARNING_PERIOD_PROPERTY_NAME" /> of <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> en wordt het beleid toegepast met dat item.
+
+      Als de huidige versie verouderd raakt tijdens een gebruikerssessie en automatische updates door het huidige netwerk worden beperkt, wordt er een melding op het scherm weergegeven dat de gebruiker het apparaat moet updaten binnen de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> in de melding.
+      Er worden geen meldingen weergegeven als automatische updates door het huidige netwerk zijn toegestaan en het apparaat moet worden geüpdatet binnen de <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
+      De <ph name="WARNING_PERIOD_PROPERTY_NAME" /> start vanaf het moment dat het beleid wordt toegepast.
+      Als het apparaat niet wordt geüpdatet voordat de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, wordt de gebruiker uitgelogd van de sessie.
+      Als blijkt dat de huidige versie verouderd is op het moment dat de gebruiker inlogt terwijl de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, moet de gebruiker het apparaat updaten voordat hij of zij inlogt.
+
+      Als de huidige versie verouderd raakt tijdens een gebruikerssessie en het apparaat de vervaldatum voor automatische updates heeft bereikt, wordt er een melding op het scherm weergegeven dat de gebruiker het apparaat moet retourneren binnen de <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
+      Als het apparaat de vervaldatum voor het checken op automatische updates heeft bereikt op het moment dat de gebruiker inlogt en de <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, wordt het apparaat geblokkeerd zodat gebruikers niet kunnen inloggen.
+
+      Bij onbeheerde gebruikerssessies krijgen gebruikers geen meldingen en worden ze uitgelogd als <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> niet is ingesteld of is ingesteld op 'False'.
+
+      Als dit beleid niet is ingesteld of is ingesteld op een lege waarde, worden er geen beperkingen toegepast, worden bestaande beperkingen ingetrokken en kan de gebruiker inloggen ongeacht de versie van <ph name="PRODUCT_OS_NAME" />.
+
+      <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> kan in dit geval een exacte versie zijn (zoals '13305.0.0') of een versievoorvoegsel (zoals '13305').
+      De <ph name="WARNING_PERIOD_PROPERTY_NAME" /> en <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> zijn optionele waarden die worden gespecificeerd als een aantal dagen. De standaardwaarde is 0 dagen, wat inhoudt dat er geen waarschuwingsperiode is.
+      De <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> is een optionele property met 'False' als standaardwaarde.</translation>
 <translation id="5879014913445067283">Bepaalt de detectiemethode van 'Network File Shares' via <ph name="NETBIOS_NAME" /></translation>
 <translation id="588135807064822874">'Tikken om te zoeken' toestaan</translation>
 <translation id="5882345429632338713">Vertraging voor starten van alternatieve browser (in milliseconden)</translation>
@@ -3453,6 +3486,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als je deze instelling uitschakelt of geen waarde instelt, wordt SafeSearch Zoeken niet afgedwongen voor Google Zoeken.</translation>
 <translation id="5946082169633555022">Bètakanaal</translation>
 <translation id="5946329690214660966">Custom planning instellen om te controleren op updates</translation>
+<translation id="5951418260805607969">Melding weergeven bij weinig schrijfruimte</translation>
 <translation id="5961137303188584693">MAC-adres van ingebouwde NIC van apparaat</translation>
 <translation id="5966615072639944554">Extensies die toestemming hebben de API voor externe bevestiging te gebruiken</translation>
 <translation id="5983708779415553259">Standaardgedrag voor sites die zich niet in een inhoudspakket bevinden</translation>
@@ -3683,6 +3717,14 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           De beleidswaarde moet worden gespecificeerd in milliseconden. De opgegeven waarden moeten kleiner dan of gelijk zijn aan de inactieve vertraging.
 
           Het waarschuwingsbericht wordt alleen weergegeven als de inactieve actie 'uitloggen' of 'afsluiten' is.</translation>
+<translation id="6334330017384340264">Dit beleid geeft aan welke apps en URL's worden toegestaan voor gebruiksbeperkingen per app moeten worden gezet.
+        De geconfigureerde toelatingslijst wordt toegepast op de apps die zijn geïnstalleerd in <ph name="PRODUCT_OS_NAME" /> voor de betreffende gebruiker met tijdslimieten per app.
+        De geconfigureerde toelatingslijst kan alleen worden toegepast op onderliggende gebruikersaccounts en wordt van kracht als het beleid <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> is ingesteld.
+        De geconfigureerde toelatingslijst wordt toegepast op apps en URL's zodat ze niet worden geblokkeerd door tijdslimieten per app.
+        Toegang tot URL's op de toelatingslijst telt niet mee voor de Chrome-tijdslimiet.
+        Voeg reguliere expressies voor URL's toe aan |url_list| om URL's op de toelatingslijst te zetten die overeenkomen met een of meer van de reguliere expressies op de lijst.
+        Voeg een app met de bijbehorende |app_id| en |app_type| aan |app_list| toe om de app op de toelatingslijst te zetten.
+       </translation>
 <translation id="6337782882143073193">Dit beleid is verouderd. Gebruik in plaats daarvan <ph name="URL_BLOCKLIST_POLICY_NAME" />.
 
       Hiermee worden de vermelde protocolschema's uitgeschakeld in <ph name="PRODUCT_NAME" />.
@@ -3751,6 +3793,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="6467613372414922590">Hosts voor native berichten op gebruikersniveau toestaan (geïnstalleerd zonder beheerdersrechten)</translation>
 <translation id="6468980648680553776">Dit beleid is beëindigd. Gebruik in plaats daarvan RemoteAccessHostClientDomainList.</translation>
 <translation id="6473623140202114570">Configureer de lijst met domeinen waar Safe Browsing geen waarschuwingen activeert.</translation>
+<translation id="647698599569353771">Sta toe dat 'Dichtbij delen' wordt ingeschakeld.</translation>
 <translation id="6491139795995924304">Bluetooth toestaan op apparaat</translation>
 <translation id="6491872498385040936">Dit beleid is beëindigd. Overweeg <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" /> te gebruiken, dat voorrang krijgt op dit beleid en waarmee gedetailleerdere afstelling kan plaatsvinden.
 
@@ -4022,6 +4065,11 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Hiermee worden de markeringen gespecificeerd die bij het starten moeten worden toegepast op <ph name="PRODUCT_NAME" />. De opgegeven markeringen worden alleen toegepast op het inlogscherm. Markeringen die worden ingesteld via dit beleid, worden niet doorgevoerd in gebruikerssessies.</translation>
 <translation id="685769593149966548">Strenge 'Beperkte modus' voor YouTube afdwingen</translation>
 <translation id="686079137349561371">Microsoft Windows 7 of later</translation>
+<translation id="6863342574191774334">Als deze instelling is ingeschakeld, kunnen gebruikers zich aanmelden voor 'Dichtbij delen'. Daarmee kunnen ze bestanden sturen naar en ontvangen van mensen in de buurt.
+
+      Als deze instelling is uitgeschakeld, kunnen gebruikers zich niet aanmelden voor 'Dichtbij delen'.
+
+      Als je dit beleid niet instelt, is de standaardoptie toegestaan voor zowel zakelijk beheerde gebruikers als niet-beheerde gebruikers.</translation>
 <translation id="6864244339257535116">Uploads en downloads van bestanden met wachtwoordbeveiliging toestaan</translation>
 <translation id="6870295914868104867">Als je het beleid instelt, wordt een lijst met apps en extensies gespecificeerd die op de achtergrond worden geïnstalleerd zonder interactie met de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door gebruikers. Rechten worden impliciet verleend, waaronder voor de extensie-API's enterprise.deviceAttributes en enterprise.platformKeys. (Deze twee API's zijn niet beschikbaar voor apps en extensies die niet afgedwongen geïnstalleerd zijn.)
 

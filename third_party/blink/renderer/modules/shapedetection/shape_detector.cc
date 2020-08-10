@@ -84,11 +84,10 @@ ScriptPromise ShapeDetector::detect(
     return promise;
   }
 
-  // makeNonTextureImage() will make a raster copy of
-  // PaintImageForCurrentFrame() if needed, otherwise returning the original
-  // SkImage.
+  // GetSwSkImage() will make a raster copy of PaintImageForCurrentFrame()
+  // if needed, otherwise returning the original SkImage.
   const sk_sp<SkImage> sk_image =
-      image->PaintImageForCurrentFrame().GetSkImage()->makeNonTextureImage();
+      image->PaintImageForCurrentFrame().GetSwSkImage();
 
   SkBitmap sk_bitmap;
   if (!sk_image->asLegacyBitmap(&sk_bitmap)) {

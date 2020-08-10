@@ -18,6 +18,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsUtils;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsVisibilityManager;
@@ -33,9 +34,10 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
+import org.chromium.chrome.browser.compositor.overlays.toolbar.TopToolbarOverlayCoordinator;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
-import org.chromium.chrome.browser.compositor.scene_layer.ToolbarSceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.SadTab;
@@ -81,6 +83,12 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     /** The {@link LayoutManagerHost}, who is responsible for showing the active {@link Layout}. */
     protected final LayoutManagerHost mHost;
 
+    /**
+     * A means of notifying features that the browser controls' android view is being forced to
+     * hide.
+     */
+    private final ObservableSupplierImpl<Boolean> mAndroidViewShownSupplier;
+
     /** The last X coordinate of the last {@link MotionEvent#ACTION_DOWN} event. */
     protected int mLastTapX;
 
@@ -119,7 +127,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     private boolean mUpdateRequested;
     private ContextualSearchPanel mContextualSearchPanel;
     private final OverlayPanelManager mOverlayPanelManager;
-    private ToolbarSceneLayer mToolbarOverlay;
+    private TopToolbarOverlayCoordinator mToolbarOverlay;
     private SceneOverlay mStatusIndicatorSceneOverlay;
 
     /** A delegate for interacting with the Contextual Search manager. */
@@ -149,7 +157,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * TabModelObserver#didCloseTab is triggered for Toolbar overlay to have a chance
      * to retrieve the right textbox color from it.
      */
-    private Tab mCurrentTab;
+    private ObservableSupplierImpl<Tab> mCurrentTabSupplier;
 
     private final ObservableSupplierImpl<TabModelSelector> mTabModelSelectorSupplier =
             new ObservableSupplierImpl<>();
@@ -170,7 +178,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             } else if (tab.getId() != lastId) {
                 tabSelected(tab.getId(), lastId, tab.isIncognito());
             }
-            mCurrentTab = tab;
+            mCurrentTabSupplier.set(tab);
         }
 
         @Override
@@ -213,8 +221,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         @Override
         public void didCloseTab(int tabId, boolean incognito) {
             tabClosed(tabId, incognito, false);
-            mCurrentTab =
-                    getTabModelSelector() != null ? getTabModelSelector().getCurrentTab() : null;
+            mCurrentTabSupplier.set(
+                    getTabModelSelector() != null ? getTabModelSelector().getCurrentTab() : null);
         }
 
         @Override
@@ -240,6 +248,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     public LayoutManager(LayoutManagerHost host) {
         mHost = host;
         mPxToDp = 1.f / mHost.getContext().getResources().getDisplayMetrics().density;
+        mAndroidViewShownSupplier = new ObservableSupplierImpl<>();
+        mAndroidViewShownSupplier.set(true);
+        mCurrentTabSupplier = new ObservableSupplierImpl<>();
 
         mContext = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
@@ -411,11 +422,19 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
-        mToolbarOverlay = new ToolbarSceneLayer(mContext, this, renderHost, controlContainer,
-                () -> mCurrentTab, getBrowserControlsManager(),
-                () -> getActiveLayout() != null
-                        ? getActiveLayout().getViewportMode()
-                        : Layout.ViewportMode.USE_PREVIOUS_BROWSER_CONTROLS_STATE);
+        mCurrentTabSupplier.set(selector.getCurrentTab());
+
+        // If fullscreen is disabled, don't bother creating this overlay; only the android view will
+        // ever be shown.
+        if (DeviceClassManager.enableFullscreen()) {
+            Supplier<Integer> viewportModeSupplier = ()
+                    -> getActiveLayout() != null ? getActiveLayout().getViewportMode()
+                                                 : Layout.ViewportMode.ALWAYS_FULLSCREEN;
+            mToolbarOverlay = new TopToolbarOverlayCoordinator(mContext, mFrameRequestSupplier,
+                    this, controlContainer, mCurrentTabSupplier, getBrowserControlsManager(),
+                    viewportModeSupplier, mAndroidViewShownSupplier,
+                    () -> renderHost.getResourceManager());
+        }
 
         // Initialize Layouts
         mStaticLayout.onFinishNativeInitialization();
@@ -456,7 +475,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     public void setTabModelSelector(TabModelSelector selector) {
         mTabModelSelector = selector;
         mTabModelSelectorSupplier.set(selector);
-        mCurrentTab = selector.getCurrentTab();
+        mCurrentTabSupplier.set(selector.getCurrentTab());
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
@@ -504,6 +523,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * Cleans up and destroys this object.  It should not be used after this.
      */
     public void destroy() {
+        if (mToolbarOverlay != null) mToolbarOverlay.destroy();
         mAnimationHandler.destroy();
         mSceneChangeObservers.clear();
         if (mStaticLayout != null) mStaticLayout.destroy();
@@ -516,7 +536,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             getTabModelSelector().getTabModelFilterProvider().removeTabModelFilterObserver(
                     mTabModelFilterObserver);
         }
-        mCurrentTab = null;
+        mCurrentTabSupplier.set(null);
     }
 
     /**
@@ -552,8 +572,10 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         if (mActiveLayout.forceHideBrowserControlsAndroidView()) {
             mControlsHidingToken = controlsVisibilityManager.hideAndroidControlsAndClearOldToken(
                     mControlsHidingToken);
+            mAndroidViewShownSupplier.set(false);
         } else {
             controlsVisibilityManager.releaseAndroidControlsHidingToken(mControlsHidingToken);
+            mAndroidViewShownSupplier.set(true);
         }
     }
 

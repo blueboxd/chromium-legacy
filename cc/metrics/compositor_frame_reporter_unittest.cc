@@ -47,19 +47,20 @@ class CompositorFrameReporterTest : public testing::Test {
 
   std::unique_ptr<BeginMainFrameMetrics> BuildBlinkBreakdown() {
     auto breakdown = std::make_unique<BeginMainFrameMetrics>();
-    breakdown->handle_input_events = base::TimeDelta::FromMicroseconds(10);
-    breakdown->animate = base::TimeDelta::FromMicroseconds(9);
-    breakdown->style_update = base::TimeDelta::FromMicroseconds(8);
-    breakdown->layout_update = base::TimeDelta::FromMicroseconds(7);
+    breakdown->handle_input_events = base::TimeDelta::FromMicroseconds(11);
+    breakdown->animate = base::TimeDelta::FromMicroseconds(10);
+    breakdown->style_update = base::TimeDelta::FromMicroseconds(9);
+    breakdown->layout_update = base::TimeDelta::FromMicroseconds(8);
+    breakdown->compositing_inputs = base::TimeDelta::FromMicroseconds(7);
     breakdown->prepaint = base::TimeDelta::FromMicroseconds(6);
-    breakdown->composite = base::TimeDelta::FromMicroseconds(5);
+    breakdown->compositing_assignments = base::TimeDelta::FromMicroseconds(5);
     breakdown->paint = base::TimeDelta::FromMicroseconds(4);
     breakdown->scrolling_coordinator = base::TimeDelta::FromMicroseconds(3);
     breakdown->composite_commit = base::TimeDelta::FromMicroseconds(2);
     breakdown->update_layers = base::TimeDelta::FromMicroseconds(1);
 
     // Advance now by the sum of the breakdowns.
-    AdvanceNowByMs(10 + 9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1);
+    AdvanceNowByMs(11 + 10 + 9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1);
 
     return breakdown;
   }
@@ -360,10 +361,13 @@ TEST_F(CompositorFrameReporterTest,
        blink_breakdown_copy.style_update},
       {"EventLatency.TouchPressed.SendBeginMainFrameToCommit.LayoutUpdate",
        blink_breakdown_copy.layout_update},
+      {"EventLatency.TouchPressed.SendBeginMainFrameToCommit.CompositingInputs",
+       blink_breakdown_copy.compositing_inputs},
       {"EventLatency.TouchPressed.SendBeginMainFrameToCommit.Prepaint",
        blink_breakdown_copy.prepaint},
-      {"EventLatency.TouchPressed.SendBeginMainFrameToCommit.Composite",
-       blink_breakdown_copy.composite},
+      {"EventLatency.TouchPressed.SendBeginMainFrameToCommit"
+       ".CompositingAssignments",
+       blink_breakdown_copy.compositing_assignments},
       {"EventLatency.TouchPressed.SendBeginMainFrameToCommit.Paint",
        blink_breakdown_copy.paint},
       {"EventLatency.TouchPressed.SendBeginMainFrameToCommit."

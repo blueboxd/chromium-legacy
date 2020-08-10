@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -49,15 +50,9 @@ class SharingCoordinatorTest : public PlatformTest {
   SharingCoordinatorTest()
       : base_view_controller_([[UIViewController alloc] init]),
         browser_(std::make_unique<TestBrowser>()),
-        fake_origin_view_([[UIView alloc] init]) {
+        fake_origin_view_([[UIView alloc] init]),
+        test_scenario_(ActivityScenario::TabShareButton) {
     [scoped_key_window_.Get() setRootViewController:base_view_controller_];
-  }
-
-  SharingCoordinator* GetCoordinator() {
-    return [[SharingCoordinator alloc]
-        initWithBaseViewController:base_view_controller_
-                           browser:browser_.get()
-                        originView:fake_origin_view_];
   }
 
   void AppendNewWebState(std::unique_ptr<web::TestWebState> web_state) {
@@ -71,6 +66,7 @@ class SharingCoordinatorTest : public PlatformTest {
   UIViewController* base_view_controller_;
   std::unique_ptr<TestBrowser> browser_;
   UIView* fake_origin_view_;
+  ActivityScenario test_scenario_;
 };
 
 // Tests that the start method shares the current page and ends up presenting
@@ -92,7 +88,14 @@ TEST_F(SharingCoordinatorTest, Start_ShareCurrentPage) {
 
   AppendNewWebState(std::move(test_web_state));
 
-  SharingCoordinator* coordinator = GetCoordinator();
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithScenario:test_scenario_];
+
+  SharingCoordinator* coordinator = [[SharingCoordinator alloc]
+      initWithBaseViewController:base_view_controller_
+                         browser:browser_.get()
+                          params:params
+                      originView:fake_origin_view_];
 
   // Pointer to allow us to grab the VC instance in our validation callback.
   __block UIActivityViewController* activityViewController;
@@ -132,7 +135,13 @@ TEST_F(SharingCoordinatorTest, Start_ShareCurrentPage) {
 
 // Tests that the coordinator handles the QRGenerationCommands protocol.
 TEST_F(SharingCoordinatorTest, GenerateQRCode) {
-  SharingCoordinator* coordinator = GetCoordinator();
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithScenario:test_scenario_];
+  SharingCoordinator* coordinator = [[SharingCoordinator alloc]
+      initWithBaseViewController:base_view_controller_
+                         browser:browser_.get()
+                          params:params
+                      originView:fake_origin_view_];
 
   id vc_partial_mock = OCMPartialMock(base_view_controller_);
   [[vc_partial_mock expect] presentViewController:[OCMArg any]
@@ -149,6 +158,41 @@ TEST_F(SharingCoordinatorTest, GenerateQRCode) {
   [[vc_partial_mock expect] dismissViewControllerAnimated:YES completion:nil];
 
   [handler hideQRCode];
+
+  [vc_partial_mock verify];
+}
+
+// Tests that the start method shares the given URL and ends up presenting
+// a UIActivityViewController.
+TEST_F(SharingCoordinatorTest, Start_ShareURL) {
+  GURL testURL = GURL("https://example.com");
+  NSString* testTitle = @"Some title";
+  ActivityParams* params = [[ActivityParams alloc] initWithURL:testURL
+                                                         title:testTitle
+                                                      scenario:test_scenario_];
+  SharingCoordinator* coordinator = [[SharingCoordinator alloc]
+      initWithBaseViewController:base_view_controller_
+                         browser:browser_.get()
+                          params:params
+                      originView:fake_origin_view_];
+
+  // Pointer to allow us to grab the VC instance in our validation callback.
+  __block UIActivityViewController* activityViewController;
+
+  id vc_partial_mock = OCMPartialMock(base_view_controller_);
+  [[vc_partial_mock expect]
+      presentViewController:[OCMArg checkWithBlock:^BOOL(
+                                        UIViewController* viewController) {
+        if ([viewController isKindOfClass:[UIActivityViewController class]]) {
+          activityViewController = (UIActivityViewController*)viewController;
+          return YES;
+        }
+        return NO;
+      }]
+                   animated:YES
+                 completion:nil];
+
+  [coordinator start];
 
   [vc_partial_mock verify];
 }

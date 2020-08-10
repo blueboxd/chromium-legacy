@@ -1961,7 +1961,7 @@ TEST_F(PartitionAllocTest, PreferActiveOverEmpty) {
   allocator.root()->Free(ptr3);
   EXPECT_EQ(page1, bucket->active_pages_head);
 
-  // Empty the the first page in the active list -- also the current page.
+  // Empty the first page in the active list -- also the current page.
   allocator.root()->Free(ptr1);
 
   // A good choice here is to re-fill the third page since the first two are

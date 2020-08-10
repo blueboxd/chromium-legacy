@@ -146,6 +146,7 @@ public class AccountPickerBottomSheetTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { ChromeNightModeTestUtils.setUpNightModeForChromeActivity(true); });
         mRenderTestRule.setNightModeEnabled(true);
+        mActivityTestRule.startMainActivityOnBlankPage();
         buildAndShowCollapsedBottomSheet();
         mRenderTestRule.render(
                 mCoordinator.getBottomSheetViewForTesting(), "collapsed_sheet_with_account_dark");
@@ -296,6 +297,8 @@ public class AccountPickerBottomSheetTest {
             return !bottomSheetView.findViewById(R.id.account_picker_continue_as_button).isShown();
         });
         verify(mAccountPickerDelegateMock).signIn(PROFILE_DATA1.getAccountName());
+        onView(withText(R.string.signin_account_picker_bottom_sheet_signin_title))
+                .check(matches(isDisplayed()));
         onView(withId(R.id.account_picker_bottom_sheet_subtitle))
                 .check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
@@ -308,9 +311,14 @@ public class AccountPickerBottomSheetTest {
     public void testSignInAnotherAccount() {
         buildAndShowExpandedBottomSheet();
         onView(withText(PROFILE_DATA2.getAccountName())).perform(click());
-        String continueAsText = mActivityTestRule.getActivity().getString(
-                R.string.signin_promo_continue_as, PROFILE_DATA2.getAccountName());
-        onView(withText(continueAsText)).perform(click());
+        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        CriteriaHelper.pollUiThread(
+                bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::isShown);
+        ThreadUtils.runOnUiThread(
+                bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::performClick);
+        CriteriaHelper.pollUiThread(() -> {
+            return !bottomSheetView.findViewById(R.id.account_picker_continue_as_button).isShown();
+        });
         verify(mAccountPickerDelegateMock).signIn(PROFILE_DATA2.getAccountName());
     }
 
@@ -393,7 +401,8 @@ public class AccountPickerBottomSheetTest {
             mCoordinator = new AccountPickerBottomSheetCoordinator(mActivityTestRule.getActivity(),
                     getBottomSheetController(), mAccountPickerDelegateMock);
         });
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        CriteriaHelper.pollUiThread(mCoordinator.getBottomSheetViewForTesting().findViewById(
+                R.id.account_picker_continue_as_button)::isShown);
     }
 
     private void buildAndShowExpandedBottomSheet() {

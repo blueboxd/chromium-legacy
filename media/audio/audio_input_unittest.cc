@@ -75,12 +75,6 @@ class AudioInputTest : public testing::Test {
         audio_manager_(AudioManager::CreateForTesting(
             std::make_unique<TestAudioThread>())),
         audio_input_stream_(nullptr) {
-#if defined(OS_LINUX)
-    // Due to problems with PulseAudio failing to start, use a fake audio
-    // stream. https://crbug.com/1047655#c70
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableAudioOutput);
-#endif
     base::RunLoop().RunUntilIdle();
   }
 

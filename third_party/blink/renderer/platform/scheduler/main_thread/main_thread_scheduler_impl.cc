@@ -1479,28 +1479,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       NOTREACHED();
   }
 
-  if (main_thread_only().prioritize_compositing_after_input) {
-    new_policy.compositor_priority() =
-        base::sequence_manager::TaskQueue::QueuePriority::kVeryHighPriority;
-  } else if (scheduling_settings_
-                 .prioritize_compositing_and_loading_during_early_loading &&
-             current_use_case() == UseCase::kEarlyLoading) {
-    new_policy.compositor_priority() =
-        base::sequence_manager::TaskQueue::QueuePriority::kHighPriority;
-    new_policy.should_prioritize_loading_with_compositing() = true;
-  } else {
-    base::Optional<TaskQueue::QueuePriority> computed_compositor_priority =
-        ComputeCompositorPriorityFromUseCase();
-    if (computed_compositor_priority) {
-      new_policy.compositor_priority() = computed_compositor_priority.value();
-    } else if (main_thread_only()
-                   .compositor_priority_experiments.IsExperimentActive()) {
-      new_policy.compositor_priority() =
-          main_thread_only()
-              .compositor_priority_experiments.GetCompositorPriority();
-    }
-  }
-
   // TODO(skyostil): Add an idle state for foreground tabs too.
   if (main_thread_only().renderer_hidden)
     new_policy.rail_mode() = RAILMode::kIdle;
@@ -1520,7 +1498,15 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     new_policy.timer_queue_policy().use_virtual_time = true;
   }
 
+  if (scheduling_settings_
+          .prioritize_compositing_and_loading_during_early_loading &&
+      current_use_case() == UseCase::kEarlyLoading) {
+    new_policy.should_prioritize_loading_with_compositing() = true;
+  }
+
   new_policy.should_disable_throttling() = main_thread_only().use_virtual_time;
+
+  new_policy.compositor_priority() = ComputeCompositorPriority();
 
   new_policy.find_in_page_priority() =
       find_in_page_budget_pool_controller_->CurrentTaskPriority();
@@ -2725,13 +2711,41 @@ void MainThreadSchedulerImpl::SetPrioritizeCompositingAfterInput(
   }
   main_thread_only().prioritize_compositing_after_input =
       prioritize_compositing_after_input;
-  UpdatePolicy();
+  UpdateCompositorPolicy();
 }
 
 void MainThreadSchedulerImpl::
     OnCompositorPriorityExperimentUpdateCompositorPriority() {
-  if (!ComputeCompositorPriorityFromUseCase())
-    UpdatePolicy();
+  UpdateCompositorPolicy();
+}
+
+TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputeCompositorPriority()
+    const {
+  if (main_thread_only().prioritize_compositing_after_input) {
+    return TaskQueue::QueuePriority::kVeryHighPriority;
+  } else if (scheduling_settings_
+                 .prioritize_compositing_and_loading_during_early_loading &&
+             current_use_case() == UseCase::kEarlyLoading) {
+    return TaskQueue::QueuePriority::kHighPriority;
+  } else {
+    base::Optional<TaskQueue::QueuePriority> computed_compositor_priority =
+        ComputeCompositorPriorityFromUseCase();
+    if (computed_compositor_priority) {
+      return computed_compositor_priority.value();
+    } else if (main_thread_only()
+                   .compositor_priority_experiments.IsExperimentActive()) {
+      return main_thread_only()
+          .compositor_priority_experiments.GetCompositorPriority();
+    }
+  }
+  return TaskQueue::QueuePriority::kNormalPriority;
+}
+
+void MainThreadSchedulerImpl::UpdateCompositorPolicy() {
+  main_thread_only().current_policy.compositor_priority() =
+      ComputeCompositorPriority();
+  CompositorTaskQueue()->SetQueuePriority(
+      ComputePriority(CompositorTaskQueue().get()));
 }
 
 base::Optional<TaskQueue::QueuePriority>

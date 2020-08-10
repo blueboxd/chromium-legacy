@@ -169,7 +169,7 @@ static cc::LayerSelectionBound ComputeSelectionBound(
       edge_start_in_layer, layout_object, graphics_layer);
   bound.edge_end = LocalToInvalidationBackingPoint(
       edge_end_in_layer, layout_object, graphics_layer);
-  bound.layer_id = graphics_layer.CcLayer()->id();
+  bound.layer_id = graphics_layer.CcLayer().id();
   bound.hidden =
       !IsVisible(layout_object, edge_start_in_layer, edge_end_in_layer);
   return bound;

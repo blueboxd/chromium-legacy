@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Neues Passwort</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> verwaltet dieses Gerät und hat Zugriff auf alle Nutzeraktivitäten, einschließlich besuchter Webseiten, Passwörter und E-Mails.</translation>
 <translation id="4003384961948020559">Fehlgeschlagen – Ausgabefach ist voll</translation>
+<translation id="4027485274696301677">Dieses <ph name="DEVICE_TYPE" /> wird von <ph name="ENROLLMENT_DOMAIN" /> verwaltet. Administratoren können das Gerät per Remotezugriff konfigurieren.</translation>
 <translation id="4034824040120875894">Drucker</translation>
 <translation id="4227825898293920515">Passwort läuft in <ph name="TIME" /> ab</translation>
 <translation id="4238516577297848345">Keine laufenden Druckaufträge</translation>

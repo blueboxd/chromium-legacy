@@ -17,11 +17,15 @@ namespace {
 constexpr AmbientModeTopicSource kTopicSource =
     AmbientModeTopicSource::kGooglePhotos;
 
+constexpr AmbientModeTemperatureUnit kTemperatureUnit =
+    AmbientModeTemperatureUnit::kCelsius;
+
 constexpr char kFakeUrl[] = "chrome://ambient";
 
 AmbientSettings CreateFakeSettings() {
   AmbientSettings settings;
   settings.topic_source = kTopicSource;
+  settings.temperature_unit = kTemperatureUnit;
 
   ArtSetting art_setting0;
   art_setting0.album_id = "0";
@@ -68,6 +72,7 @@ void FakeAmbientBackendControllerImpl::FetchScreenUpdateInfo(
   ash::WeatherInfo weather_info;
   weather_info.temp_f = .0f;
   weather_info.condition_icon_url = kFakeUrl;
+  weather_info.show_celsius = true;
 
   ash::ScreenUpdate update;
   update.next_topics.emplace_back(topic);

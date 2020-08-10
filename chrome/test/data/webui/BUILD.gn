@@ -189,6 +189,7 @@ if (include_js_tests) {
     ]
     data = [
       "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cr_policy_network_behavior_mojo_tests.m.js",
+      "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cr_policy_network_indicator_mojo_tests.m.js",
       "$root_gen_dir/chrome/test/data/webui/cr_components/managed_footnote_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_button_tests.m.js",
       "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_container_shadow_behavior_test.m.js",

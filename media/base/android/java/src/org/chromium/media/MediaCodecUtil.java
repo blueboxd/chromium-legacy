@@ -553,7 +553,7 @@ class MediaCodecUtil {
             case HWEncoder.MediatekH264:
                 return BitrateAdjuster.Type.FRAMERATE_ADJUSTMENT;
         }
-        return -1;
+        throw new IllegalArgumentException("Invalid HWEncoder decoder parameter.");
     }
 
     /**

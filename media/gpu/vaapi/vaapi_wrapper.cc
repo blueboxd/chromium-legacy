@@ -37,6 +37,7 @@
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "ui/base/ui_base_features.h"
 
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
@@ -380,13 +381,13 @@ VADisplayState::VADisplayState()
 bool VADisplayState::Initialize() {
   base::AutoLock auto_lock(va_lock_);
 
-  if (!IsVaInitialized() ||
+  bool libraries_initialized = IsVaInitialized() && IsVa_drmInitialized();
 #if defined(USE_X11)
-      !IsVa_x11Initialized() ||
+  if (!features::IsUsingOzonePlatform())
+    libraries_initialized = libraries_initialized && IsVa_x11Initialized();
 #endif
-      !IsVa_drmInitialized()) {
+  if (!libraries_initialized)
     return false;
-  }
 
   // Manual refcounting to ensure the rest of the method is called only once.
   if (refcount_++ > 0)
@@ -409,7 +410,8 @@ bool VADisplayState::InitializeOnce() {
       break;
     case gl::kGLImplementationDesktopGL:
 #if defined(USE_X11)
-      va_display_ = vaGetDisplay(gfx::GetXDisplay());
+      if (!features::IsUsingOzonePlatform())
+        va_display_ = vaGetDisplay(gfx::GetXDisplay());
 #else
       LOG(WARNING) << "VAAPI video acceleration not available without "
                       "DesktopGL (GLX).";
@@ -418,9 +420,11 @@ bool VADisplayState::InitializeOnce() {
     // Cannot infer platform from GL, try all available displays
     case gl::kGLImplementationNone:
 #if defined(USE_X11)
-      va_display_ = vaGetDisplay(gfx::GetXDisplay());
-      if (vaDisplayIsValid(va_display_))
-        break;
+      if (!features::IsUsingOzonePlatform()) {
+        va_display_ = vaGetDisplay(gfx::GetXDisplay());
+        if (vaDisplayIsValid(va_display_))
+          break;
+      }
 #endif  // USE_X11
       va_display_ = vaGetDisplayDRM(drm_fd_.get());
       break;
@@ -1770,6 +1774,7 @@ bool VaapiWrapper::ExecuteAndDestroyPendingBuffers(VASurfaceID va_surface_id) {
 bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
                                         Pixmap x_pixmap,
                                         gfx::Size dest_size) {
+  DCHECK(!features::IsUsingOzonePlatform());
   base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
@@ -2143,7 +2148,8 @@ void VaapiWrapper::PreSandboxInitialization() {
   paths[kModuleVa].push_back(std::string("libva.so.") + va_suffix);
   paths[kModuleVa_drm].push_back(std::string("libva-drm.so.") + va_suffix);
 #if defined(USE_X11)
-  paths[kModuleVa_x11].push_back(std::string("libva-x11.so.") + va_suffix);
+  if (!features::IsUsingOzonePlatform())
+    paths[kModuleVa_x11].push_back(std::string("libva-x11.so.") + va_suffix);
 #endif
 
   // InitializeStubs dlopen() VA-API libraries

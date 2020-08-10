@@ -48,6 +48,8 @@ class ASH_EXPORT CaptureModeController {
   // Stops an existing capture session.
   void Stop();
 
+  void EndVideoRecording();
+
  private:
   std::unique_ptr<CaptureModeDelegate> delegate_;
 

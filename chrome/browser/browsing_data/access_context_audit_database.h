@@ -104,10 +104,10 @@ class AccessContextAuditDatabase
   void RemoveAllRecordsForTopFrameOrigins(
       const std::vector<url::Origin>& origins);
 
-  // Removes all records for cookie domains and API origins that match session
-  // only entries in |settings|
+  // Removes all records for which the result of inspecting |content_settings|
+  // for the storage origin or cookie domain is a content setting of
+  // CLEAR_ON_EXIT.
   void RemoveSessionOnlyRecords(
-      scoped_refptr<content_settings::CookieSettings> cookie_settings,
       const ContentSettingsForOneType& content_settings);
 
  protected:

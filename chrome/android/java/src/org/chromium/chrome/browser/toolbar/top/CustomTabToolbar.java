@@ -562,17 +562,6 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     }
 
     @Override
-    void showAppMenuUpdateBadge(boolean animate) {}
-
-    @Override
-    boolean isShowingAppMenuUpdateBadge() {
-        return false;
-    }
-
-    @Override
-    void removeAppMenuUpdateBadge(boolean animate) {}
-
-    @Override
     View getMenuButtonWrapper() {
         // This class has no menu button wrapper, so return the menu button instead.
         return getMenuButton();
@@ -584,8 +573,8 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     }
 
     @Override
-    void disableMenuButton() {
-        super.disableMenuButton();
+    void onMenuButtonDisabled() {
+        super.onMenuButtonDisabled();
         mMenuButton = null;
         // In addition to removing the menu button, we also need to remove the margin on the custom
         // action button.

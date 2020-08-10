@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -6006,6 +6007,189 @@ TEST_F(LegacySWPictureLayerImplTest,
   EXPECT_FALSE(pending_layer()->contents_opaque_for_text());
   EXPECT_EQ(LCDTextDisallowedReason::kContentsNotOpaque,
             pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+}
+
+enum {
+  kCanUseLCDText = 1 << 0,
+  kLayersAlwaysAllowedLCDText = 1 << 1,
+};
+
+class LCDTextTest : public PictureLayerImplTest,
+                    public testing::WithParamInterface<unsigned> {
+ protected:
+  LayerTreeSettings CreateSettings() override {
+    auto settings = PictureLayerImplTest::CreateSettings();
+    settings.can_use_lcd_text = GetParam() & kCanUseLCDText;
+    settings.layers_always_allowed_lcd_text =
+        GetParam() & kLayersAlwaysAllowedLCDText;
+    return settings;
+  }
+
+  void SetUp() override {
+    PictureLayerImplTest::SetUp();
+
+    SetupDefaultTreesWithInvalidation(gfx::Size(200, 200), Region());
+    tree_ = host_impl()->pending_tree();
+    root_ = tree_->root_layer();
+    child_ = AddLayer<PictureLayerImpl>(tree_);
+    grand_child_ = AddLayer<PictureLayerImpl>(tree_);
+    tree_->SetElementIdsForTesting();
+
+    root_->SetContentsOpaque(true);
+    child_->SetContentsOpaque(true);
+    grand_child_->SetContentsOpaque(true);
+
+    root_->SetDrawsContent(true);
+    child_->SetDrawsContent(true);
+    grand_child_->SetDrawsContent(true);
+
+    root_->SetBounds(gfx::Size(1, 1));
+    child_->SetBounds(gfx::Size(1, 1));
+    grand_child_->SetBounds(gfx::Size(1, 1));
+
+    CopyProperties(root_, child_);
+    CreateTransformNode(child_);
+    CreateEffectNode(child_).render_surface_reason = RenderSurfaceReason::kTest;
+    CopyProperties(child_, grand_child_);
+    CreateTransformNode(grand_child_);
+    CreateEffectNode(grand_child_);
+  }
+
+  void CheckCanUseLCDText(LCDTextDisallowedReason expected_disallowed_reason,
+                          PictureLayerImpl* layer = nullptr) {
+    UpdateDrawProperties(tree_);
+
+    if (GetParam() & kLayersAlwaysAllowedLCDText)
+      expected_disallowed_reason = LCDTextDisallowedReason::kNone;
+    else if (!(GetParam() & kCanUseLCDText))
+      expected_disallowed_reason = LCDTextDisallowedReason::kSetting;
+
+    if (layer) {
+      EXPECT_EQ(expected_disallowed_reason,
+                layer->ComputeLCDTextDisallowedReasonForTesting());
+    } else {
+      EXPECT_EQ(expected_disallowed_reason,
+                child_->ComputeLCDTextDisallowedReasonForTesting());
+      EXPECT_EQ(expected_disallowed_reason,
+                grand_child_->ComputeLCDTextDisallowedReasonForTesting());
+    }
+  }
+
+  LayerTreeImpl* tree_ = nullptr;
+  LayerImpl* root_ = nullptr;
+  PictureLayerImpl* child_ = nullptr;
+  PictureLayerImpl* grand_child_ = nullptr;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         LCDTextTest,
+                         testing::Values(0,
+                                         kCanUseLCDText,
+                                         kLayersAlwaysAllowedLCDText,
+                                         kCanUseLCDText |
+                                             kLayersAlwaysAllowedLCDText));
+
+TEST_P(LCDTextTest, IdentityTransform) {
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+}
+
+TEST_P(LCDTextTest, IntegralTransform) {
+  gfx::Transform integral_translation;
+  integral_translation.Translate(1.0, 2.0);
+  SetTransform(child_, integral_translation);
+
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+}
+
+TEST_P(LCDTextTest, NonIntegralTranslation) {
+  // Non-integral translation.
+  gfx::Transform non_integral_translation;
+  non_integral_translation.Translate(1.5, 2.5);
+  SetTransform(child_, non_integral_translation);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation);
+
+  SetTransform(child_, gfx::Transform());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+}
+
+TEST_P(LCDTextTest, NonTranslation) {
+  // Rotation.
+  gfx::Transform rotation;
+  rotation.Rotate(10.0);
+  SetTransform(child_, rotation);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation);
+
+  // Scale.
+  gfx::Transform scale;
+  scale.Scale(2.0, 2.0);
+  SetTransform(child_, scale);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation);
+
+  // Skew.
+  gfx::Transform skew;
+  skew.Skew(10.0, 0.0);
+  SetTransform(child_, skew);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation);
+
+  SetTransform(child_, gfx::Transform());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+}
+
+TEST_P(LCDTextTest, Opacity) {
+  // LCD-text is allowed with opacity paint property.
+  SetOpacity(child_, 0.5f);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+  SetOpacity(child_, 1.f);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+}
+
+TEST_P(LCDTextTest, ContentsNotOpaque) {
+  // Non-opaque content and opaque background.
+  child_->SetContentsOpaque(false);
+  child_->SetBackgroundColor(SK_ColorGREEN);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kContentsNotOpaque, child_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
+
+  // Non-opaque content and non-opaque background.
+  child_->SetBackgroundColor(SkColorSetARGB(128, 255, 255, 255));
+  CheckCanUseLCDText(LCDTextDisallowedReason::kBackgroundColorNotOpaque,
+                     child_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
+
+  child_->SetContentsOpaque(true);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+}
+
+TEST_P(LCDTextTest, WillChangeTransform) {
+  child_->SetHasWillChangeTransformHint(true);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kWillChangeTransform, child_);
+  // TODO(crbug.com/1114504): will-change:transform should apply to descendants.
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
+
+  child_->SetHasWillChangeTransformHint(false);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+}
+
+TEST_P(LCDTextTest, Filter) {
+  FilterOperations blur_filter;
+  blur_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
+  SetFilter(child_, blur_filter);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kLayerHasFilterEffect, child_);
+  // TODO(crbug.com/1114504): will-change:transform should apply to descendants.
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
+
+  SetFilter(child_, FilterOperations());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+}
+
+TEST_P(LCDTextTest, ContentsOpaqueForText) {
+  child_->SetContentsOpaque(false);
+  child_->SetBackgroundColor(SK_ColorGREEN);
+  child_->SetContentsOpaqueForText(true);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, child_);
+
+  child_->SetContentsOpaqueForText(false);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kContentsNotOpaque, child_);
 }
 
 }  // namespace

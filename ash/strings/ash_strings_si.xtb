@@ -506,6 +506,7 @@
 <translation id="6972754398087986839">අරඹන්න</translation>
 <translation id="6981982820502123353">ප්‍රවේශ්‍යතාව</translation>
 <translation id="698231206551913481">මෙම පරිශීලකයා ඉවත් කළ විට මෙම පරිශීලක හා සම්බන්ධිත සියලු ගොනු සහ ස්ථානීය දත්ත ස්ථිරවම මකනු ඇත.</translation>
+<translation id="7007983414944123363">ඔබගේ PIN හෝ මුරපදය සත්‍යාපනය කළ නොහැකි විය. නැවත උත්සාහ කරන්න.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> හිදී ආපසු එන්න.</translation>
 <translation id="7025533177575372252">ඔබේ <ph name="DEVICE_NAME" /> ඔබේ දුරකථනය සමඟ සබඳින්න</translation>
 <translation id="7026338066939101231">අඩු වීම</translation>
@@ -551,6 +552,7 @@
 <translation id="7568294522609223312">ස්වයංක්‍රීය ක්ලික් කිරීම් අක්‍රිය කරන්න</translation>
 <translation id="7568637526529101738">දකුණු-ක්ලික් කිරීමකින් හෝ දිගු එබුමකින් සහායක ඔබේ තේරීම සඳහා අර්ථ දැක්වීම හෝ ඒකක පරිවර්තනය වැනි තොරතුරු පෙන්වයි.</translation>
 <translation id="7569509451529460200">බ්‍රේල් සහ ChromeVox සබලයි</translation>
+<translation id="7579778809502851308">තිර ග්‍රහණය</translation>
 <translation id="7593891976182323525">Search හෝ Shift</translation>
 <translation id="7600875258240007829">සියලු දැනුම්දීම් බලන්න</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -669,6 +671,7 @@
 <translation id="8841375032071747811">ආපසු බොත්තම</translation>
 <translation id="8843682306134542540">කරකැවීමේ අගුල මාරු කරන්න. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">ඔබගේ PIN හෝ මුරපදය තවම සත්‍යාපනය කළ නොහැකි විය. සටහන: ඔබ මෑතකදී ඔබගේ මුරපදය වෙනස් කළේ නම්, ඔබගේ පැරණි මුරපදය භාවිතා කරන්න. ඔබ ඉවත් වූ පසු ඔබගේ නව මුරපදය අදාළ වේ.</translation>
 <translation id="8870509716567206129">යෙදුම බෙදුණු-තිරයට සහාය නොදක්වයි.</translation>
 <translation id="8874184842967597500">සබඳවී නොමැත</translation>
 <translation id="8877788021141246043">මතක් කිරීමක් සකසන්න</translation>

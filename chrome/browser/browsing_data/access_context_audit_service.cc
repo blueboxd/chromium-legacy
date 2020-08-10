@@ -192,6 +192,5 @@ void AccessContextAuditService::ClearSessionOnlyRecords() {
   database_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AccessContextAuditDatabase::RemoveSessionOnlyRecords,
-                     database_, CookieSettingsFactory::GetForProfile(profile_),
-                     std::move(settings)));
+                     database_, std::move(settings)));
 }

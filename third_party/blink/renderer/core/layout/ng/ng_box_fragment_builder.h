@@ -585,6 +585,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool block_size_is_for_all_fragments_ = false;
 #endif
 
+  friend class NGBlockBreakToken;
   friend class NGPhysicalBoxFragment;
   friend class NGLayoutResult;
 };

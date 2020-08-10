@@ -65,13 +65,14 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
-import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
+import org.chromium.chrome.browser.toolbar.menu_button.MenuButton;
+import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
@@ -1798,13 +1799,13 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     @Override
-    public void setTabSwitcherMode(
-            boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
+    public void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar,
+            boolean delayAnimation, MenuButtonCoordinator menuButtonCoordinator) {
         setTabSwitcherMode(inTabSwitcherMode, showToolbar, delayAnimation, true);
     }
 
     /**
-     * See {@link #setTabSwitcherMode(boolean, boolean, boolean)}.
+     * See {@link #setTabSwitcherMode(boolean, boolean, boolean, MenuButtonCoordinator)}.
      */
     public void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar,
             boolean delayAnimation, boolean animate) {
@@ -2549,12 +2550,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     @Override
     public LocationBar getLocationBar() {
         return mLocationBar;
-    }
-
-    @Override
-    void removeAppMenuUpdateBadge(boolean animate) {
-        if (getMenuBadge() == null) return;
-        super.removeAppMenuUpdateBadge(animate);
     }
 
     @Override

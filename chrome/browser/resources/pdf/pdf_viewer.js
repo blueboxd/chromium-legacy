@@ -944,7 +944,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     chrome.fileSystem.chooseEntry(
         {
           type: 'saveFile',
-          accepts: [{extensions: ['pdf']}],
+          accepts: [{description: '*.pdf', extensions: ['pdf']}],
           suggestedName: fileName
         },
         entry => {

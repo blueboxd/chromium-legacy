@@ -41,10 +41,11 @@ public class FeedStream implements Stream {
     static final int LOAD_MORE_TRIGGER_SCROLL_DISTANCE_DP = 100;
 
     private final Activity mActivity;
-    private final FeedStreamSurface mFeedStreamSurface;
+    @VisibleForTesting
+    final FeedStreamSurface mFeedStreamSurface;
     private final ObserverList<ScrollListener> mScrollListeners =
             new ObserverList<ScrollListener>();
-
+    private boolean mShown;
     private RecyclerView mRecyclerView;
     // setStreamContentVisibility() is always called once after onCreate(). So we can assume the
     // stream content is hidden initially and it can be made visible later when
@@ -52,6 +53,8 @@ public class FeedStream implements Stream {
     private boolean mIsStreamContentVisible;
     // For loading more content.
     private int mAccumulatedDySinceLastLoadMore;
+
+    private String mSavedScrollStateOnHide;
 
     public FeedStream(Activity activity, boolean isBackgroundDark, SnackbarManager snackbarManager,
             NativePageNavigationDelegate nativePageNavigationDelegate,
@@ -71,10 +74,25 @@ public class FeedStream implements Stream {
     }
 
     @Override
-    public void onShow() {}
+    public void onShow() {
+        mShown = true;
+        if (mIsStreamContentVisible && !mFeedStreamSurface.isOpened()) {
+            mFeedStreamSurface.surfaceOpened();
+            if (mSavedScrollStateOnHide != null) {
+                restoreScrollState(mSavedScrollStateOnHide);
+                mSavedScrollStateOnHide = null;
+            }
+        }
+    }
 
     @Override
-    public void onHide() {}
+    public void onHide() {
+        if (mFeedStreamSurface.isOpened()) {
+            mSavedScrollStateOnHide = getSavedInstanceStateString();
+            mFeedStreamSurface.surfaceClosed();
+        }
+        mShown = false;
+    }
 
     @Override
     public void onDestroy() {
@@ -129,9 +147,11 @@ public class FeedStream implements Stream {
         mIsStreamContentVisible = visible;
 
         if (visible) {
-            mFeedStreamSurface.surfaceOpened();
+            if (mShown) mFeedStreamSurface.surfaceOpened();
         } else {
-            mFeedStreamSurface.surfaceClosed();
+            if (mFeedStreamSurface.isOpened()) {
+                mFeedStreamSurface.surfaceClosed();
+            }
         }
     }
 

@@ -462,7 +462,6 @@ Google-kontoen din kan ha andre former for nettleserlogger, for eksempel søk og
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="4738836084190194332">Sist synkronisert: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA-feil: <ph name="ERROR_CODE" /> på <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Åpne en ny fane</translation>
 <translation id="4759238208242260848">Nedlastinger</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 nedlasting er fullført.}other{# nedlastinger er fullført.}}</translation>
@@ -1047,6 +1046,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="9133397713400217035">Utforsk uten nett</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Vis original</translation>
+<translation id="9148126808321036104">Logg på igjen</translation>
 <translation id="9155898266292537608">Du kan også søke med et kjapt trykk på et ord</translation>
 <translation id="9169507124922466868">Navigasjonshistorikken er halvveis åpnet</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Sjekket for ett minutt siden}other{Sjekket for # minutter siden}}</translation>
@@ -1059,6 +1059,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="932327136139879170">Gå til startsiden</translation>
 <translation id="93753284658583800">Startsiden er endret</translation>
 <translation id="938850635132480979">Feil: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Angi en passordfrase</translation>
 <translation id="95817756606698420">Chrome kan bruke <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> for søk i Kina. Du kan endre dette i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Sider du besøker, vises her</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minutter igjen</translation>

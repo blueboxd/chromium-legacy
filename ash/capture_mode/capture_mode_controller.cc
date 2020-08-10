@@ -70,4 +70,8 @@ void CaptureModeController::Stop() {
   capture_mode_session_.reset();
 }
 
+void CaptureModeController::EndVideoRecording() {
+  // TODO(afakhry): Fill in here.
+}
+
 }  // namespace ash

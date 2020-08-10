@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Mật khẩu mới</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> quản lý thiết bị này và có quyền truy cập vào tất cả hoạt động của người dùng, bao gồm cả các trang web đã truy cập, mật khẩu và email.</translation>
 <translation id="4003384961948020559">Không thành công – Khay đầu ra đã đầy</translation>
+<translation id="4027485274696301677"><ph name="DEVICE_TYPE" /> này do <ph name="ENROLLMENT_DOMAIN" /> quản lý. Quản trị viên có thể định cấu hình từ xa thiết bị này.</translation>
 <translation id="4034824040120875894">Máy in</translation>
 <translation id="4227825898293920515">Mật khẩu sẽ hết hạn sau <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Không có lệnh in nào đang xử lý</translation>

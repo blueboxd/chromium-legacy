@@ -42,7 +42,7 @@
 <translation id="1283039547216852943">I-tap upang palawakin</translation>
 <translation id="1291207594882862231">I-clear ang history, cookies, site data, cache…</translation>
 <translation id="129553762522093515">Kamakailang isinara</translation>
-<translation id="1298077576058087471">Makatipid ng hanggang 60% data, basahin ang balita ngayong araw</translation>
+<translation id="1298077576058087471">Magtipid ng hanggang 60% data, basahin ang balita ngayong araw</translation>
 <translation id="1303339473099049190">Hindi mahanap ang password na iyon. Tingnan ang iyong spelling at subukan ulit.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Ipinadala mula sa <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Igrupo ang mga tab</translation>
@@ -462,7 +462,6 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">I-update</translation>
 <translation id="4738836084190194332">Huling na-sync: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">Error sa TWA: <ph name="ERROR_CODE" /> sa <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Magbukas ng bagong tab</translation>
 <translation id="4759238208242260848">Mga Download </translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Tapos na ang 1 pag-download.}one{Tapos na ang # pag-download.}other{Tapos na ang # na pag-download.}}</translation>
@@ -721,7 +720,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6573431926118603307">Dito lalabas ang mga nabuksan mong tab sa Chrome sa iba mo pang mga device.</translation>
 <translation id="6583199322650523874">I-bookmark ang kasalukuyang page</translation>
 <translation id="6588043302623806746">Gamitin ang secure na DNS</translation>
-<translation id="6590471736817333463">Makatipid ng hanggang 60% data</translation>
+<translation id="6590471736817333463">Magtipid ng hanggang 60% data</translation>
 <translation id="6593061639179217415">Desktop site</translation>
 <translation id="6597891566292541626">Iposisyon ang QR/barcode sa frame na ito.</translation>
 <translation id="6600954340915313787">Kinopya sa Chrome</translation>
@@ -1047,6 +1046,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="9133397713400217035">I-explore Offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
+<translation id="9148126808321036104">Muling mag-sign in</translation>
 <translation id="9155898266292537608">Makakapaghanap ka rin gamit ang mabilisang pag-tap sa isang salita</translation>
 <translation id="9169507124922466868">Nakabukas nang kalahati ang history ng pag-navigate</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Nagsuri 1 minuto ang nakalipas}one{Nagsuri # minuto ang nakalipas}other{Nagsuri # na minuto ang nakalipas}}</translation>
@@ -1059,6 +1059,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="932327136139879170">Home</translation>
 <translation id="93753284658583800">Binago ang homepage</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Ilagay ang passphrase</translation>
 <translation id="95817756606698420">Maaaring gamitin ng Chrome ang <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para sa paghahanap sa China. Maaari mo itong baguhin sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Lalabas dito ang mga page na binibisita mo</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> (na) minuto na lang ang natitira</translation>

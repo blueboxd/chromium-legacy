@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="4738836084190194332">آخر مزامنة: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">‏خطأ TWA: <ph name="ERROR_CODE" /> في <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">فتح علامة تبويب جديدة</translation>
 <translation id="4759238208242260848">الملفات التي تم تنزيلها</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{اكتملت عملية تنزيل واحدة.}zero{اكتملت # عملية تنزيل.}two{اكتملت عمليتا تنزيل (#).}few{اكتملت # عمليات تنزيل.}many{اكتملت # عملية تنزيل.}other{اكتملت # عملية تنزيل.}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">الاطّلاع بلا اتصال بالإنترنت</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
+<translation id="9148126808321036104">تسجيل الدخول مرة أخرى</translation>
 <translation id="9155898266292537608">يمكنك أيضًا البحث بنقرة سريعة على كلمة</translation>
 <translation id="9169507124922466868">سجلّ التنقل مفتوح جزئيًا</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{تمّ إجراء عملية التحقُّق قبل دقيقة واحدة.}zero{تمّ إجراء عملية التحقُّق قبل # دقيقة.}two{تمّ إجراء عملية التحقُّق قبل دقيقتَين.}few{تمّ إجراء عملية التحقُّق قبل # دقائق.}many{تمّ إجراء عملية التحقُّق قبل # دقيقة.}other{تمّ إجراء عملية التحقُّق قبل # دقيقة.}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="93753284658583800">تم تغيير الصفحة الرئيسية.</translation>
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">إدخال عبارة المرور</translation>
 <translation id="95817756606698420">‏يمكن لـ Chrome استخدام <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> للبحث في الصين. ويمكنك تغيير هذا في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">يتم عرض الصفحات التي تزورها هنا.</translation>
 <translation id="970715775301869095">عدد الدقائق المتبقية: <ph name="MINUTES" /></translation>

@@ -128,7 +128,6 @@
 <translation id="236977714248711277">Saytlar sahifalarni kezishingizni yaxshilash, jumladan, kirish axborotingiz yoki xarid qutingizni eslab qolish uchun cookie fayllardan foydalana olmaydi.
 
 Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi.</translation>
-<translation id="2379896346847637748">Yangi oynada ochish</translation>
 <translation id="2381405137052800939">Asosiy</translation>
 <translation id="2386793615875593361">1 ta belgilandi</translation>
 <translation id="2421004566762153674">Tashqi cookie fayllarni bloklash</translation>
@@ -185,6 +184,7 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 <translation id="298306318844797842">Toʻlov usulini kiriting</translation>
 <translation id="2989805286512600854">Yangi varaqda ochish</translation>
 <translation id="3037605927509011580">Ana xolos!</translation>
+<translation id="3080525922482950719">Sahifalarni keyinroq yoki oflayn mutolaa qilish uchun saqlashingiz mumkin</translation>
 <translation id="3081338492074632642">Saqlayotgan parolingiz <ph name="WEBSITE" /> uchun mos kelishini tekshiring</translation>
 <translation id="3112556859945124369">Belgilash…</translation>
 <translation id="3131206671572504478">Hammasini bloklash</translation>
@@ -309,6 +309,7 @@ Inkognito rejimida cookie fayllaringiz yopiq boʻladi va saytlar reklamalarni si
 <translation id="4619615317237390068">Boshqa qurilmalardan sinxronlangan varaqlar</translation>
 <translation id="4620246317052452550">Siz o‘qigan sahifalar</translation>
 <translation id="4630540211544979320">Sahifalarni tarjima qilish</translation>
+<translation id="4634124774493850572">Paroldan foydalanish</translation>
 <translation id="4636930964841734540">Ma’lumot</translation>
 <translation id="4659126640776004816">Bu funksiya Google hisobingizga kirganingizda yoqiladi.</translation>
 <translation id="4659667755519643272">Sahifalarni tezkor almashtirish funksiyasini yoqish</translation>

@@ -462,7 +462,6 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4732120983431207637">Desenrollado de pila</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4738836084190194332">Última sincronización: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">Error de TWA: <ph name="ERROR_CODE" /> en <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Abre una pestaña nueva</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Se ha completado 1 descarga.}other{Se han completado # descargas.}}</translation>
@@ -1047,6 +1046,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="9133397713400217035">Explorar sin conexión</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
+<translation id="9148126808321036104">Volver a iniciar sesión</translation>
 <translation id="9155898266292537608">También puedes tocar rápidamente una palabra para hacer búsquedas</translation>
 <translation id="9169507124922466868">El historial de navegación está medio abierto</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Comprobado hace 1 minuto}other{Comprobado hace # minutos}}</translation>
@@ -1059,6 +1059,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="932327136139879170">Página principal</translation>
 <translation id="93753284658583800">Página principal cambiada</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Introducir frase de contraseña</translation>
 <translation id="95817756606698420">Chrome puede utilizar <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para hacer búsquedas en China. Puedes cambiar esta opción en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Las páginas que visites aparecerán aquí.</translation>
 <translation id="970715775301869095">Quedan <ph name="MINUTES" /> minutos</translation>

@@ -77,7 +77,8 @@ policy::DMToken ChromeEnterpriseRealTimeUrlLookupService::GetDMToken() const {
   return ::safe_browsing::GetDMToken(profile_);
 }
 
-std::string ChromeEnterpriseRealTimeUrlLookupService::GetDMTokenString() const {
+base::Optional<std::string>
+ChromeEnterpriseRealTimeUrlLookupService::GetDMTokenString() const {
   DCHECK(GetDMToken().is_valid())
       << "Get a dm token string only if the dm token is valid.";
   return GetDMToken().value();

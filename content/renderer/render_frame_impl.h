@@ -1493,6 +1493,74 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<blink::WebURLLoaderFactoryForTest>
       web_url_loader_factory_override_for_test_;
 
+  // When the browser asks the renderer to commit a navigation, it should always
+  // result in a committed navigation reported via DidCommitProvisionalLoad().
+  // This is important because DidCommitProvisionalLoad() is responsible for
+  // swapping in the provisional local frame during a cross-process navigation.
+  // Since this involves updating state in both the browser process and the
+  // renderer process, this assert ensures that the state remains synchronized
+  // between the two processes.
+  //
+  // Note: there is one exception that can result in no commit happening.
+  // Committing a navigation runs unload handlers, which can detach |this|. In
+  // that case, it doesn't matter that the navigation never commits, since the
+  // logical node for |this| has been removed from the DOM.
+  enum class NavigationCommitState {
+    // Represents the initial empty document. This is represented separately
+    // from |kNone| because Blink does not report the commit of the initial
+    // empty document in a newly created frame. However, note that there are
+    // some surprising quirks:
+    //
+    //   <iframe></iframe>
+    //
+    // will *not* be in the |kInitialEmptyDocument| state: while it initially
+    // starts at the initial empty document, the initial empty document is then
+    // synchronously replaced with a navigation to about:blank. In contrast:
+    //
+    //   <iframe src="https://slow.example.com"></iframe>
+    //
+    // will be in |kInitialEmptyDocument| until the navigation to
+    // https://slow.example.com commits.
+    kInitialEmptyDocument,
+    // No commit in progress. This state also implies that the frame is not
+    // displaying the initial empty document.
+    kNone,
+    // Marks that an active commit attempt is on the stack.
+    kWillCommit,
+    // Marks an active commit attempt as successful.
+    kDidCommit,
+  };
+
+  enum MayReplaceInitialEmptyDocumentTag {
+    kMayReplaceInitialEmptyDocument,
+  };
+
+  class CONTENT_EXPORT AssertNavigationCommits {
+   public:
+    // Construct a new scoper to verify that a navigation commit attempt
+    // succeeds. Asserts that:
+    // - no navigation is in progress
+    // - the frame is not displaying the initial empty document.
+    explicit AssertNavigationCommits(RenderFrameImpl* frame);
+
+    // Similar to the previous constructor but allows transitions from the
+    // initial empty document.
+    explicit AssertNavigationCommits(RenderFrameImpl* frame,
+                                     MayReplaceInitialEmptyDocumentTag);
+
+    ~AssertNavigationCommits();
+
+   private:
+    explicit AssertNavigationCommits(
+        RenderFrameImpl* frame,
+        bool allow_transition_from_initial_empty_document);
+
+    const base::WeakPtr<RenderFrameImpl> frame_;
+  };
+
+  NavigationCommitState navigation_commit_state_ =
+      NavigationCommitState::kInitialEmptyDocument;
+
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);

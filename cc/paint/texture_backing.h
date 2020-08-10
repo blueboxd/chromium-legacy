@@ -38,6 +38,13 @@ class CC_PAINT_EXPORT TextureBacking : public SkRefCnt {
   // Gets SkImage via a readback from GPU memory. Use this when actual SkImage
   // pixel data is required in software.
   virtual sk_sp<SkImage> GetSkImageViaReadback() = 0;
+
+  // Read texture's pixels into caller owned |dstPixels|.
+  virtual bool readPixels(const SkImageInfo& dst_info,
+                          void* dst_pixels,
+                          size_t dst_row_bytes,
+                          int src_x,
+                          int src_y) = 0;
 };
 
 }  // namespace cc

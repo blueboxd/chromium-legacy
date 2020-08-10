@@ -128,7 +128,6 @@
 <translation id="236977714248711277">Siteler size daha iyi bir göz atma deneyimi sunmak, örneğin, oturumunuzu açık tutmak veya alışveriş sepetinizdeki ürünleri hatırlamak için çerez kullanamaz.
 
 Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde tarama etkinliğinizi görmek için çerez kullanamaz.</translation>
-<translation id="2379896346847637748">Yeni Pencerede Aç</translation>
 <translation id="2381405137052800939">Temel ayarlar</translation>
 <translation id="2386793615875593361">1 fotoğraf seçildi</translation>
 <translation id="2421004566762153674">Üçüncü taraf çerezler engelleniyor</translation>
@@ -185,6 +184,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="298306318844797842">Ödeme Yöntemi Ekle...</translation>
 <translation id="2989805286512600854">Yeni Sekmede Aç</translation>
 <translation id="3037605927509011580">Hay aksi!</translation>
+<translation id="3080525922482950719">Sayfaları daha sonra veya çevrimdışı okumak için kaydedebilirsiniz</translation>
 <translation id="3081338492074632642">Kaydettiğiniz şifrenin <ph name="WEBSITE" /> için kullandığınız şifreyle eşleştiğinden emin olun</translation>
 <translation id="3112556859945124369">İşaretle…</translation>
 <translation id="3131206671572504478">Tümünü Engelle</translation>
@@ -309,6 +309,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="4619615317237390068">Diğer cihazlardan sekmeler</translation>
 <translation id="4620246317052452550">Okumuş Olduğunuz Sayfalar</translation>
 <translation id="4630540211544979320">Sayfaları Çevir</translation>
+<translation id="4634124774493850572">Şifre kullan</translation>
 <translation id="4636930964841734540">Bilgi</translation>
 <translation id="4659126640776004816">Google Hesabınızda oturum açtığınızda bu özellik devreye girer.</translation>
 <translation id="4659667755519643272">Sekme Değiştirici'ye Geç</translation>
@@ -610,9 +611,10 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="8007420562015504427">Gizli Arama</translation>
 <translation id="802154636333426148">İndirilemedi</translation>
 <translation id="8023878949384262191">Seçimi genişletir.</translation>
+<translation id="8027581147000338959">Yeni Pencerede Aç</translation>
 <translation id="804427445359061970">Diğer cihazlarınızdaki sekmeleri burada bulabilirsiniz</translation>
 <translation id="8059533439631660104">Bölümü daraltır.</translation>
-<translation id="8065292699993359127">Chrome'da URL'leri Gizli modda aç</translation>
+<translation id="8065292699993359127">URL'leri Chrome'da Gizli modda aç</translation>
 <translation id="806745655614357130">Verilerimi ayrı tut</translation>
 <translation id="8073670137947914548">İndirme tamamlandı</translation>
 <translation id="8073872304774253879">Aramaları ve Göz Atmayı Daha İyi Yap</translation>

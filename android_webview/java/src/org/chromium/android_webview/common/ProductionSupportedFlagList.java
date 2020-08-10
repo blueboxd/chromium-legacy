@@ -51,7 +51,7 @@ public final class ProductionSupportedFlagList {
                     "Forces WebView's metrics reporting to be enabled. This overrides user "
                             + "settings and capacity sampling, but does not override the app's "
                             + "choice to opt-out."),
-            Flag.commandLine("webview-log-js-console-messages",
+            Flag.commandLine(AwSwitches.WEBVIEW_LOG_JS_CONSOLE_MESSAGES,
                     "Mirrors JavaScript console messages to system logs."),
             Flag.commandLine(AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH,
                     "Used for turning on Breakpad crash reporting in a debug environment where "

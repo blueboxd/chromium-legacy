@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.browserservices;
 
+import static org.junit.Assert.assertEquals;
+
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.createSession;
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.spoofVerification;
 
@@ -29,11 +31,14 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.net.test.EmbeddedTestServerRule;
 
 import java.util.concurrent.TimeoutException;
@@ -43,6 +48,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@DisableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT)
 public class QualityEnforcerTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     // A not exist test page to triger 404.
@@ -62,6 +68,7 @@ public class QualityEnforcerTest {
     private String mTestPage;
     private String mTestPage404;
 
+    private String mErrorMessage;
     CallbackHelper mCallbackHelper = new CallbackHelper();
 
     CustomTabsCallback mCallback = new CustomTabsCallback() {
@@ -69,6 +76,7 @@ public class QualityEnforcerTest {
         public Bundle extraCallbackWithResult(String callbackName, Bundle args) {
             if (callbackName.equals(QualityEnforcer.NOTIFY)) {
                 mCallbackHelper.notifyCalled();
+                mErrorMessage = args.getString(QualityEnforcer.KEY_CRASH_REASON);
             }
             return Bundle.EMPTY;
         }
@@ -89,6 +97,7 @@ public class QualityEnforcerTest {
     public void notifiedWhenLaunch404() throws TimeoutException {
         launch(mTestPage404);
         mCallbackHelper.waitForFirst();
+        assertEquals(mErrorMessage, "404 on " + mTestPage404);
     }
 
     @Test
@@ -97,6 +106,17 @@ public class QualityEnforcerTest {
         launch(mTestPage);
         mCustomTabActivityTestRule.loadUrl(mTestPage404);
         mCallbackHelper.waitForFirst();
+        assertEquals(mErrorMessage, "404 on " + mTestPage404);
+    }
+
+    @Test
+    @MediumTest
+    @DisabledTest(message = "This test only works when device is running offline.")
+    // TODO(eirage): Figure out how to make it work on local device without changing network.
+    public void notifiedOffline() throws TimeoutException {
+        launch("https://example.com/");
+        mCallbackHelper.waitForFirst();
+        assertEquals(mErrorMessage, "Page unavailable offline: https://example.com/");
     }
 
     public void launch(String testPage) throws TimeoutException {

@@ -120,14 +120,15 @@ bool StaticBitmapImage::CopyToByteArray(
   SkImageInfo info = SkImageInfo::Make(
       rect.Width(), rect.Height(), color_type, kUnpremul_SkAlphaType,
       color_params.GetSkColorSpaceForSkSurfaces());
-  sk_sp<SkImage> sk_image = src_image->PaintImageForCurrentFrame().GetSkImage();
-  if (!sk_image)
-    return false;
-  bool read_pixels_successful = sk_image->readPixels(
-      info, dst.data(), info.minRowBytes(), rect.X(), rect.Y());
+  bool read_pixels_successful =
+      src_image->PaintImageForCurrentFrame().readPixels(
+          info, dst.data(), info.minRowBytes(), rect.X(), rect.Y());
   DCHECK(read_pixels_successful ||
-         !sk_image->bounds().intersect(SkIRect::MakeXYWH(
-             rect.X(), rect.Y(), info.width(), info.height())));
+         !src_image->PaintImageForCurrentFrame()
+              .GetSkImageInfo()
+              .bounds()
+              .intersect(SkIRect::MakeXYWH(rect.X(), rect.Y(), info.width(),
+                                           info.height())));
   return true;
 }
 

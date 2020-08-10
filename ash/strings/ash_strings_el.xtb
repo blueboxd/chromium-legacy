@@ -506,6 +506,7 @@
 <translation id="6972754398087986839">Έναρξη</translation>
 <translation id="6981982820502123353">Προσβασιμότητα</translation>
 <translation id="698231206551913481">Όλα τα αρχεία και τα τοπικά δεδομένα που σχετίζονται με τον χρήστη θα διαγραφούν οριστικά μόλις καταργηθεί ο χρήστης.</translation>
+<translation id="7007983414944123363">Δεν ήταν δυνατή η επαλήθευση του PIN ή του κωδικού πρόσβασής σας. Δοκιμάστε ξανά.</translation>
 <translation id="7015766095477679451">Επιστρέψτε ξανά στις <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Συνδέστε τη συσκευή <ph name="DEVICE_NAME" /> με το τηλέφωνό σας</translation>
 <translation id="7026338066939101231">Μείωση</translation>
@@ -551,6 +552,7 @@
 <translation id="7568294522609223312">Απενεργοποίηση αυτόματων κλικ</translation>
 <translation id="7568637526529101738">Με δεξί κλικ ή παρατεταμένο πάτημα, ο Βοηθός σάς εμφανίζει πληροφορίες όπως τον ορισμό ή μια μετατροπή μονάδων για την επιλογή σας.</translation>
 <translation id="7569509451529460200">Το Braille και το ChromeVox ενεργοποιήθηκαν</translation>
+<translation id="7579778809502851308">Λήψη οθόνης</translation>
 <translation id="7593891976182323525">Search ή Shift</translation>
 <translation id="7600875258240007829">Δείτε όλες τις ειδοποιήσεις</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -669,6 +671,7 @@
 <translation id="8841375032071747811">Κουμπί "Πίσω"</translation>
 <translation id="8843682306134542540">Εναλλαγή κλειδώματος περιστροφής. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Πλήκτρο αναζήτησης+Esc</translation>
+<translation id="8853703225951107899">Η επαλήθευση του PIN ή του κωδικού πρόσβασής σας εξακολουθεί να μην είναι δυνατή. Σημείωση: Εάν πρόσφατα αλλάξατε τον κωδικό πρόσβασής σας, χρησιμοποιήστε τον παλιό κωδικό πρόσβασης. Ο νέος κωδικός πρόσβασης θα εφαρμοστεί αφού αποσυνδεθείτε.</translation>
 <translation id="8870509716567206129">Η εφαρμογή δεν υποστηρίζει διαχωρισμό οθόνης.</translation>
 <translation id="8874184842967597500">Καμία σύνδεση</translation>
 <translation id="8877788021141246043">Ορισμός υπενθύμισης</translation>

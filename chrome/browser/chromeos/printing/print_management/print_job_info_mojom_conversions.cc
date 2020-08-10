@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
+#include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -91,6 +92,34 @@ mojom::PrinterErrorCode PrinterErrorCodeProtoToMojom(
   return mojom::PrinterErrorCode::kUnknownError;
 }
 
+mojom::PrinterErrorCode PrinterErrorCodeToMojom(PrinterErrorCode error_code) {
+  switch (error_code) {
+    case PrinterErrorCode::NO_ERROR:
+      return mojom::PrinterErrorCode::kNoError;
+    case PrinterErrorCode::PAPER_JAM:
+      return mojom::PrinterErrorCode::kPaperJam;
+    case PrinterErrorCode::OUT_OF_PAPER:
+      return mojom::PrinterErrorCode::kOutOfPaper;
+    case PrinterErrorCode::OUT_OF_INK:
+      return mojom::PrinterErrorCode::kOutOfInk;
+    case PrinterErrorCode::DOOR_OPEN:
+      return mojom::PrinterErrorCode::kDoorOpen;
+    case PrinterErrorCode::PRINTER_UNREACHABLE:
+      return mojom::PrinterErrorCode::kPrinterUnreachable;
+    case PrinterErrorCode::TRAY_MISSING:
+      return mojom::PrinterErrorCode::kTrayMissing;
+    case PrinterErrorCode::OUTPUT_FULL:
+      return mojom::PrinterErrorCode::kOutputFull;
+    case PrinterErrorCode::STOPPED:
+      return mojom::PrinterErrorCode::kStopped;
+    case PrinterErrorCode::FILTER_FAILED:
+      return mojom::PrinterErrorCode::kFilterFailed;
+    case PrinterErrorCode::UNKNOWN_ERROR:
+      return mojom::PrinterErrorCode::kUnknownError;
+  }
+  return mojom::PrinterErrorCode::kUnknownError;
+}
+
 }  // namespace
 
 mojom::PrintJobInfoPtr PrintJobProtoToMojom(
@@ -100,8 +129,6 @@ mojom::PrintJobInfoPtr PrintJobProtoToMojom(
 
   completed_info_mojom->completion_status =
       PrintJobStatusProtoToMojom(print_job_info_proto.status());
-  completed_info_mojom->printer_error_code =
-      PrinterErrorCodeProtoToMojom(print_job_info_proto.printer_error_code());
 
   mojom::PrintJobInfoPtr print_job_mojom = mojom::PrintJobInfo::New();
   print_job_mojom->id = print_job_info_proto.id();
@@ -112,6 +139,8 @@ mojom::PrintJobInfoPtr PrintJobProtoToMojom(
   print_job_mojom->printer_name =
       base::UTF8ToUTF16(print_job_info_proto.printer().name());
   print_job_mojom->printer_uri = GURL(print_job_info_proto.printer().uri());
+  print_job_mojom->printer_error_code =
+      PrinterErrorCodeProtoToMojom(print_job_info_proto.printer_error_code());
   print_job_mojom->completed_info = std::move(completed_info_mojom);
   return print_job_mojom;
 }
@@ -133,6 +162,8 @@ mojom::PrintJobInfoPtr CupsPrintJobToMojom(const CupsPrintJob& job) {
   print_job_mojom->printer_name =
       base::UTF8ToUTF16(job.printer().display_name());
   print_job_mojom->printer_uri = GURL(job.printer().uri().GetNormalized());
+  print_job_mojom->printer_error_code =
+      PrinterErrorCodeToMojom(job.error_code());
   return print_job_mojom;
 }
 

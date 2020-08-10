@@ -34,22 +34,49 @@ sk_sp<SkImage> MailboxTextureBacking::GetAcceleratedSkImage() {
 }
 
 sk_sp<SkImage> MailboxTextureBacking::GetSkImageViaReadback() {
-  if (!context_provider_wrapper_)
-    return nullptr;
-  // TODO(jochin): Consider doing some caching and using discardable memory.
-  sk_sp<SkData> image_pixels =
-      TryAllocateSkData(sk_image_info_.computeMinByteSize());
-  if (!image_pixels)
-    return nullptr;
-  uint8_t* writable_pixels =
-      static_cast<uint8_t*>(image_pixels->writable_data());
-  gpu::raster::RasterInterface* ri =
-      context_provider_wrapper_->ContextProvider()->RasterInterface();
-  ri->ReadbackImagePixels(mailbox_, sk_image_info_,
-                          sk_image_info_.minRowBytes(), 0, 0, writable_pixels);
+  if (!mailbox_.IsZero()) {
+    if (!context_provider_wrapper_)
+      return nullptr;
+    // TODO(jochin): Consider doing some caching and using discardable memory.
+    sk_sp<SkData> image_pixels =
+        TryAllocateSkData(sk_image_info_.computeMinByteSize());
+    if (!image_pixels)
+      return nullptr;
+    uint8_t* writable_pixels =
+        static_cast<uint8_t*>(image_pixels->writable_data());
+    gpu::raster::RasterInterface* ri =
+        context_provider_wrapper_->ContextProvider()->RasterInterface();
+    ri->ReadbackImagePixels(mailbox_, sk_image_info_,
+                            sk_image_info_.minRowBytes(), 0, 0,
+                            writable_pixels);
 
-  return SkImage::MakeRasterData(sk_image_info_, std::move(image_pixels),
-                                 sk_image_info_.minRowBytes());
+    return SkImage::MakeRasterData(sk_image_info_, std::move(image_pixels),
+                                   sk_image_info_.minRowBytes());
+  } else if (sk_image_) {
+    return sk_image_->makeNonTextureImage();
+  }
+  return nullptr;
+}
+
+bool MailboxTextureBacking::readPixels(const SkImageInfo& dst_info,
+                                       void* dst_pixels,
+                                       size_t dst_row_bytes,
+                                       int src_x,
+                                       int src_y) {
+  if (!mailbox_.IsZero()) {
+    if (!context_provider_wrapper_)
+      return false;
+
+    gpu::raster::RasterInterface* ri =
+        context_provider_wrapper_->ContextProvider()->RasterInterface();
+    ri->ReadbackImagePixels(mailbox_, dst_info, dst_info.minRowBytes(), src_x,
+                            src_y, dst_pixels);
+    return true;
+  } else if (sk_image_) {
+    return sk_image_->readPixels(dst_info, dst_pixels, dst_row_bytes, src_x,
+                                 src_y);
+  }
+  return false;
 }
 
 }  // namespace blink

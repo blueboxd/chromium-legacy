@@ -8,8 +8,11 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.components.autofill.EditableOption;
+import org.chromium.content_public.browser.RenderFrameHost;
+import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.PaymentDetails;
+import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequest;
@@ -25,45 +28,30 @@ import java.util.List;
  * org.chromium.chrome.browser.payments.PaymentRequestImpl.
  */
 public class ComponentPaymentRequestImpl implements PaymentRequest {
-    private final ComponentPaymentRequestDelegate mDelegate;
+    private static PaymentRequestServiceObserverForTest sObserverForTest;
     private static NativeObserverForTest sNativeObserverForTest;
+    private final BrowserPaymentRequestFactory mBrowserPaymentRequestFactory;
+    private final RenderFrameHost mRenderFrameHost;
+    private boolean mSkipUiForNonUrlPaymentMethodIdentifiers;
+    private BrowserPaymentRequest mBrowserPaymentRequest;
     private PaymentRequestClient mClient;
+    private boolean mIsOffTheRecord;
     private PaymentRequestLifecycleObserver mPaymentRequestLifecycleObserver;
 
-    /**
-     * The delegate of {@link ComponentPaymentRequestImpl}.
-     */
-    public interface ComponentPaymentRequestDelegate {
-        // The implementation of the same methods in {@link PaymentRequest).
-        void init(PaymentMethodData[] methodData, PaymentDetails details, PaymentOptions options,
-                boolean googlePayBridgeEligible);
-        void show(boolean isUserGesture, boolean waitForUpdatedDetails);
-        void updateWith(PaymentDetails details);
-        void onPaymentDetailsNotUpdated();
-        void abort();
-        void complete(int result);
-        void retry(PaymentValidationErrors errors);
-        void hasEnrolledInstrument(boolean perMethodQuota);
-        void canMakePayment();
-        void close();
-        void onConnectionError(MojoException e);
-
+    /** The factory that creates an instance of {@link BrowserPaymentRequest}. */
+    public interface BrowserPaymentRequestFactory {
         /**
-         * Set a weak reference to the client of this delegate.
-         * @param componentPaymentRequestImpl The client of this delegate.
+         * Create an instance of {@link BrowserPaymentRequest}, and have it working together with an
+         * instance of {@link ComponentPaymentRequestImpl}.
+         * @param componentPaymentRequestImpl The ComponentPaymentRequestImpl to work together with
+         *         the BrowserPaymentRequest instance.
+         * @param isOffTheRecord Whether the merchant page is in a OffTheRecord (e.g., incognito,
+         *         guest mode) Tab.
+         * @param journeyLogger The logger that records the user journey of PaymentRequest.
          */
-        void setComponentPaymentRequestImpl(
-                ComponentPaymentRequestImpl componentPaymentRequestImpl);
-
-        /**
-         * @return The JourneyLogger of PaymentRequestImpl.
-         */
-        JourneyLogger getJourneyLogger();
-
-        /**
-         * Delegate to the same method of PaymentRequestImpl.
-         */
-        void disconnectFromClientWithDebugMessage(String debugMessage);
+        BrowserPaymentRequest createBrowserPaymentRequest(
+                ComponentPaymentRequestImpl componentPaymentRequestImpl, boolean isOffTheRecord,
+                JourneyLogger journeyLogger);
     }
 
     /**
@@ -78,8 +66,7 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
         void onCanMakePaymentReturned();
         void onHasEnrolledInstrumentCalled();
         void onHasEnrolledInstrumentReturned();
-        void onAppListReady(@Nullable List<EditableOption> paymentApps,
-                org.chromium.payments.mojom.PaymentItem total);
+        void onAppListReady(@Nullable List<EditableOption> paymentApps, PaymentItem total);
         void onNotSupportedError();
         void onConnectionTerminated();
         void onAbortCalled();
@@ -88,12 +75,100 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
     }
 
     /**
-     * Build an instance of the PaymentRequest implementation.
-     * @param delegate A delegate of the instance.
+     * A test-only observer for the PaymentRequest service implementation.
      */
-    public ComponentPaymentRequestImpl(ComponentPaymentRequestDelegate delegate) {
-        mDelegate = delegate;
-        mDelegate.setComponentPaymentRequestImpl(this);
+    public interface PaymentRequestServiceObserverForTest {
+        /**
+         * Called after an instance of {@link ComponentPaymentRequestImpl} has been created.
+         *
+         * @param componentPaymentRequest The newly created instance of ComponentPaymentRequestImpl.
+         */
+        void onPaymentRequestCreated(ComponentPaymentRequestImpl componentPaymentRequest);
+
+        /**
+         * Called when an abort request was denied.
+         */
+        void onPaymentRequestServiceUnableToAbort();
+
+        /**
+         * Called when the controller is notified of billing address change, but does not alter the
+         * editor UI.
+         */
+        void onPaymentRequestServiceBillingAddressChangeProcessed();
+
+        /**
+         * Called when the controller is notified of an expiration month change.
+         */
+        void onPaymentRequestServiceExpirationMonthChange();
+
+        /**
+         * Called when a show request failed. This can happen when:
+         * <ul>
+         *   <li>The merchant requests only unsupported payment methods.</li>
+         *   <li>The merchant requests only payment methods that don't have corresponding apps and
+         *   are not able to add a credit card from PaymentRequest UI.</li>
+         * </ul>
+         */
+        void onPaymentRequestServiceShowFailed();
+
+        /**
+         * Called when the canMakePayment() request has been responded to.
+         */
+        void onPaymentRequestServiceCanMakePaymentQueryResponded();
+
+        /**
+         * Called when the hasEnrolledInstrument() request has been responded to.
+         */
+        void onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
+
+        /**
+         * Called when the payment response is ready.
+         */
+        void onPaymentResponseReady();
+
+        /**
+         * Called when the browser acknowledges the renderer's complete call, which indicates that
+         * the browser UI has closed.
+         */
+        void onCompleteReplied();
+
+        /**
+         * Called when the renderer is closing the mojo connection (e.g. upon show promise
+         * rejection).
+         */
+        void onRendererClosedMojoConnection();
+    }
+
+    /**
+     * Build an instance of the PaymentRequest implementation.
+     * @param renderFrameHost The RenderFrameHost of the merchant page.
+     * @param isOffTheRecord Whether the merchant page is in a OffTheRecord (e.g., incognito, guest
+     *         mode) Tab.
+     * @param skipUiForBasicCard True if the PaymentRequest UI should be skipped when the request
+     *         only supports basic-card methods.
+     * @param browserPaymentRequestFactory The factory that generates an instance of
+     *         BrowserPaymentRequest to work with this ComponentPaymentRequestImpl instance.
+     */
+    public static ComponentPaymentRequestImpl create(RenderFrameHost renderFrameHost,
+            boolean isOffTheRecord, boolean skipUiForBasicCard,
+            BrowserPaymentRequestFactory browserPaymentRequestFactory) {
+        ComponentPaymentRequestImpl instance = new ComponentPaymentRequestImpl(
+                renderFrameHost, isOffTheRecord, skipUiForBasicCard, browserPaymentRequestFactory);
+        instance.onCreated();
+        return instance;
+    }
+
+    private ComponentPaymentRequestImpl(RenderFrameHost renderFrameHost, boolean isOffTheRecord,
+            boolean skipUiForBasicCard, BrowserPaymentRequestFactory browserPaymentRequestFactory) {
+        mBrowserPaymentRequestFactory = browserPaymentRequestFactory;
+        mIsOffTheRecord = isOffTheRecord;
+        mSkipUiForNonUrlPaymentMethodIdentifiers = skipUiForBasicCard;
+        mRenderFrameHost = renderFrameHost;
+    }
+
+    private void onCreated() {
+        if (sObserverForTest == null) return;
+        sObserverForTest.onPaymentRequestCreated(this);
     }
 
     /**
@@ -115,75 +190,78 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
     @Override
     public void init(PaymentRequestClient client, PaymentMethodData[] methodData,
             PaymentDetails details, PaymentOptions options, boolean googlePayBridgeEligible) {
+        JourneyLogger journeyLogger = new JourneyLogger(
+                mIsOffTheRecord, WebContentsStatics.fromRenderFrameHost(mRenderFrameHost));
+        mBrowserPaymentRequest = mBrowserPaymentRequestFactory.createBrowserPaymentRequest(
+                this, mIsOffTheRecord, journeyLogger);
+        assert mBrowserPaymentRequest != null;
         if (mClient != null) {
-            mDelegate.getJourneyLogger().setAborted(
-                    org.chromium.components.payments.AbortReason.INVALID_DATA_FROM_RENDERER);
-            mDelegate.disconnectFromClientWithDebugMessage(
-                    org.chromium.components.payments.ErrorStrings.ATTEMPTED_INITIALIZATION_TWICE);
+            mBrowserPaymentRequest.getJourneyLogger().setAborted(
+                    AbortReason.INVALID_DATA_FROM_RENDERER);
+            mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(
+                    ErrorStrings.ATTEMPTED_INITIALIZATION_TWICE);
             return;
         }
 
         if (client == null) {
-            mDelegate.getJourneyLogger().setAborted(
-                    org.chromium.components.payments.AbortReason.INVALID_DATA_FROM_RENDERER);
-            mDelegate.disconnectFromClientWithDebugMessage(
-                    org.chromium.components.payments.ErrorStrings.INVALID_STATE);
+            journeyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_STATE);
             return;
         }
 
         mClient = client;
 
-        mDelegate.init(methodData, details, options, googlePayBridgeEligible);
+        mBrowserPaymentRequest.init(methodData, details, options, googlePayBridgeEligible);
     }
 
     @Override
     public void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
-        mDelegate.show(isUserGesture, waitForUpdatedDetails);
+        mBrowserPaymentRequest.show(isUserGesture, waitForUpdatedDetails);
     }
 
     @Override
     public void updateWith(PaymentDetails details) {
-        mDelegate.updateWith(details);
+        mBrowserPaymentRequest.updateWith(details);
     }
 
     @Override
     public void onPaymentDetailsNotUpdated() {
-        mDelegate.onPaymentDetailsNotUpdated();
+        mBrowserPaymentRequest.onPaymentDetailsNotUpdated();
     }
 
     @Override
     public void abort() {
-        mDelegate.abort();
+        mBrowserPaymentRequest.abort();
     }
 
     @Override
     public void complete(int result) {
-        mDelegate.complete(result);
+        mBrowserPaymentRequest.complete(result);
     }
 
     @Override
     public void retry(PaymentValidationErrors errors) {
-        mDelegate.retry(errors);
+        mBrowserPaymentRequest.retry(errors);
     }
 
     @Override
     public void canMakePayment() {
-        mDelegate.canMakePayment();
+        mBrowserPaymentRequest.canMakePayment();
     }
 
     @Override
     public void hasEnrolledInstrument(boolean perMethodQuota) {
-        mDelegate.hasEnrolledInstrument(perMethodQuota);
+        mBrowserPaymentRequest.hasEnrolledInstrument(perMethodQuota);
     }
 
     @Override
     public void close() {
-        mDelegate.close();
+        mBrowserPaymentRequest.close();
     }
 
     @Override
     public void onConnectionError(MojoException e) {
-        mDelegate.onConnectionError(e);
+        mBrowserPaymentRequest.onConnectionError(e);
     }
 
     /**
@@ -216,5 +294,31 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
     /** @return The observer for the PaymentRequest lifecycle. */
     public PaymentRequestLifecycleObserver getPaymentRequestLifecycleObserver() {
         return mPaymentRequestLifecycleObserver;
+    }
+
+    /** @return An observer for the payment request service, if any; otherwise, null. */
+    @Nullable
+    public static PaymentRequestServiceObserverForTest getObserverForTest() {
+        return sObserverForTest;
+    }
+
+    /** Set an observer for the payment request service, cannot be null. */
+    @VisibleForTesting
+    public static void setObserverForTest(PaymentRequestServiceObserverForTest observerForTest) {
+        assert observerForTest != null;
+        sObserverForTest = observerForTest;
+    }
+
+    /**
+     * @return True when skip UI is available for non-url based payment method identifiers (e.g.
+     * basic-card).
+     */
+    public boolean skipUiForNonUrlPaymentMethodIdentifiers() {
+        return mSkipUiForNonUrlPaymentMethodIdentifiers;
+    }
+
+    @VisibleForTesting
+    public void setSkipUiForNonUrlPaymentMethodIdentifiersForTest() {
+        mSkipUiForNonUrlPaymentMethodIdentifiers = true;
     }
 }

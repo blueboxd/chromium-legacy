@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Bagong password</translation>
 <translation id="4003259559679196451">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang device na ito at mayroon itong access sa lahat ng aktibidad ng user, kabilang ang mga webpage na binisita, mga password, at email.</translation>
 <translation id="4003384961948020559">Hindi na-print - Puno ang output</translation>
+<translation id="4027485274696301677">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang <ph name="DEVICE_TYPE" /> na ito. Puwedeng i-configure ng mga administrator ang device sa remote na paraan.</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Mag-e-expire ang password sa loob ng <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Walang kasalukuyang pag-print</translation>

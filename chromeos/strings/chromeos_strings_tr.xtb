@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Yeni şifre</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> bu cihazı yönetiyor ve ziyaret edilen web siteleri, şifreler ve e-postalar dahil olmak üzere tüm kullanıcı etkinliklerine erişimi var.</translation>
 <translation id="4003384961948020559">İşlem başarısız - Çıkış dolu</translation>
+<translation id="4027485274696301677">Bu <ph name="DEVICE_TYPE" />, <ph name="ENROLLMENT_DOMAIN" /> tarafından yönetiliyor. Yöneticiler bu cihazı uzaktan yapılandırabilir.</translation>
 <translation id="4034824040120875894">Yazıcı</translation>
 <translation id="4227825898293920515">Şifrenin süresi <ph name="TIME" /> içinde doluyor</translation>
 <translation id="4238516577297848345">Devam eden bir yazdırma işi yok</translation>

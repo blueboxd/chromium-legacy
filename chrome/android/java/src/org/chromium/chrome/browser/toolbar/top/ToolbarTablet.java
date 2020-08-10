@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
+import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.UiUtils;
@@ -484,21 +485,20 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    void setTabSwitcherMode(
-            boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
-
+    void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation,
+            MenuButtonCoordinator menuButtonCoordinator) {
         if (mShowTabStack && inTabSwitcherMode) {
             mIsInTabSwitcherMode = true;
             mBackButton.setEnabled(false);
             mForwardButton.setEnabled(false);
             mReloadButton.setEnabled(false);
             mLocationBar.getContainerView().setVisibility(View.INVISIBLE);
-            setAppMenuUpdateBadgeSuppressed(true);
+            menuButtonCoordinator.setAppMenuUpdateBadgeSuppressed(true);
         } else {
             mIsInTabSwitcherMode = false;
             mLocationBar.getContainerView().setVisibility(View.VISIBLE);
 
-            setAppMenuUpdateBadgeSuppressed(false);
+            menuButtonCoordinator.setAppMenuUpdateBadgeSuppressed(false);
         }
     }
 

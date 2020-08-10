@@ -22,6 +22,12 @@ bool CheckCSPSource(const mojom::CSPSourcePtr& source,
                     CSPContext* context,
                     bool has_followed_redirect = false);
 
+// Check if |source_a| subsumes |source_b| according to
+// https://w3c.github.io/webappsec-cspee/#subsume-source-expressions
+COMPONENT_EXPORT(NETWORK_CPP)
+bool CSPSourceSubsumes(const mojom::CSPSourcePtr& source_a,
+                       const mojom::CSPSourcePtr& source_b);
+
 // Serialize the CSPSource |source| as a string. This is used for reporting
 // violations.
 COMPONENT_EXPORT(NETWORK_CPP)

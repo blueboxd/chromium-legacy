@@ -254,7 +254,7 @@ std::unique_ptr<GraphicsLayer> CompositedLayerMapping::CreateGraphicsLayer(
     owner = &GetLayoutObject().GetDocument();
   }
   if (owner) {
-    graphics_layer->CcLayer()->SetFrameElementId(
+    graphics_layer->CcLayer().SetFrameElementId(
         CompositorElementIdFromUniqueObjectId(
             DOMNodeIds::IdForNode(owner),
             CompositorElementIdNamespace::kDOMNodeId));
@@ -301,7 +301,7 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
     // Determine whether the external texture layer covers the whole graphics
     // layer. This may not be the case if there are box decorations or
     // shadows.
-    if (layer && layer->bounds() == graphics_layer_->CcLayer()->bounds()) {
+    if (layer && layer->bounds() == graphics_layer_->CcLayer().bounds()) {
       // Determine whether the rendering context's external texture layer is
       // opaque.
       if (!context->CreationAttributes().alpha) {
@@ -361,11 +361,11 @@ void CompositedLayerMapping::UpdateRasterizationPolicy() {
   bool transformed_rasterization_allowed =
       !(owning_layer_.GetCompositingReasons() &
         CompositingReason::kComboTransformedRasterizationDisallowedReasons);
-  graphics_layer_->CcLayer()->SetTransformedRasterizationAllowed(
+  graphics_layer_->CcLayer().SetTransformedRasterizationAllowed(
       transformed_rasterization_allowed);
   if (non_scrolling_squashing_layer_) {
     non_scrolling_squashing_layer_->CcLayer()
-        ->SetTransformedRasterizationAllowed(true);
+        .SetTransformedRasterizationAllowed(true);
   }
 }
 
@@ -1085,7 +1085,7 @@ bool CompositedLayerMapping::UpdateOverflowControlsLayers(
 
     if (scrolling_contents_layer_ &&
         scrollable_area->NeedsShowScrollbarLayers()) {
-      scrolling_contents_layer_->CcLayer()->ShowScrollbars();
+      scrolling_contents_layer_->CcLayer().ShowScrollbars();
       scrollable_area->DidShowScrollbarLayers();
     }
   }
@@ -1248,7 +1248,7 @@ bool CompositedLayerMapping::UpdateMaskLayer(bool needs_mask_layer) {
           CompositorElementIdNamespace::kEffectMask);
       mask_layer_->SetElementId(element_id);
       if (GetLayoutObject().HasNonInitialBackdropFilter())
-        mask_layer_->CcLayer()->SetIsBackdropFilterMask(true);
+        mask_layer_->CcLayer().SetIsBackdropFilterMask(true);
       mask_layer_->SetHitTestable(true);
       layer_changed = true;
     }

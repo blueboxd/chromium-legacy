@@ -89,7 +89,7 @@ class BrowserTestWinTest(_BrowserTestTestCaseMixin,
 class BrowserTestMacTest(_BrowserTestTestCaseMixin,
                          port_testcase.PortTestCase):
     os_name = 'mac'
-    os_version = 'mac10.11'
+    os_version = 'mac10.14'
     port_name = 'mac'
     port_maker = browser_test.BrowserTestMacPort
     driver_name_endswith = 'browser_tests'

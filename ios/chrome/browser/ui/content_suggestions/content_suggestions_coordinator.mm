@@ -467,7 +467,7 @@
   }
   // TODO(crbug.com/1085419): Track number of cards from protocol instead of
   // height to determine whether or not we should fetch more cards.
-  if (currentHeight > self.discoverFeedHeight) {
+  if (currentHeight != self.discoverFeedHeight) {
     ios::GetChromeBrowserProvider()
         ->GetDiscoverFeedProvider()
         ->LoadMoreFeedArticles();

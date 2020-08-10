@@ -16,6 +16,7 @@
 <translation id="1104948393051856124">Chấp nhận và tiếp tục</translation>
 <translation id="1112015203684611006">In không thành công.</translation>
 <translation id="1125564390852150847">Tạo thẻ mới.</translation>
+<translation id="1134509371063488162">Mở ${urls} ở chế độ Ẩn danh</translation>
 <translation id="1145536944570833626">Xóa dữ liệu hiện có.</translation>
 <translation id="1165039591588034296">Lỗi</translation>
 <translation id="1172898394251786223">Trường tiếp theo</translation>
@@ -127,7 +128,6 @@
 <translation id="236977714248711277">Các trang web không thể dùng cookie để cải thiện trải nghiệm duyệt web của bạn, chẳng hạn như để duy trì trạng thái đăng nhập hoặc ghi nhớ các mặt hàng có trong giỏ hàng.
 
 Các trang web không thể dùng cookie để giám sát hoạt động duyệt web của bạn trên nhiều trang web, chẳng hạn như để điều chỉnh quảng cáo cho phù hợp với bạn.</translation>
-<translation id="2379896346847637748">Mở trong cửa sổ mới</translation>
 <translation id="2381405137052800939">Thông tin cơ bản</translation>
 <translation id="2386793615875593361">Đã chọn 1</translation>
 <translation id="2421004566762153674">Chặn cookie của bên thứ ba</translation>
@@ -184,7 +184,8 @@ Các trang web không thể dùng cookie để giám sát hoạt động duyệt
 <translation id="298306318844797842">Thêm phương thức thanh toán...</translation>
 <translation id="2989805286512600854">Mở bằng Thẻ Mới</translation>
 <translation id="3037605927509011580">Ôi, hỏng! </translation>
-<translation id="3081338492074632642">Đảm bảo mật khẩu bạn đang lưu khớp với mật khẩu của <ph name="WEBSITE" /></translation>
+<translation id="3080525922482950719">Bạn có thể lưu các trang để đọc vào lúc khác hoặc khi không có kết nối mạng</translation>
+<translation id="3081338492074632642">Đảm bảo mật khẩu bạn đang lưu khớp với mật khẩu dùng cho <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Đánh dấu...</translation>
 <translation id="3131206671572504478">Chặn tất cả</translation>
 <translation id="3153862085237805241">Lưu thẻ</translation>
@@ -214,7 +215,7 @@ Các trang web không thể dùng cookie để giám sát hoạt động duyệt
 <translation id="3371831930909698441">Có tính năng dịch. Các tùy chọn nằm ở gần cuối màn hình.</translation>
 <translation id="3393920035788932672">Cửa sổ bật lên được cho phép</translation>
 <translation id="3425644765244388016">Biệt hiệu của thẻ</translation>
-<translation id="3433057996795775706">Thao tác xóa mật khẩu này sẽ không xóa tài khoản của bạn trên <ph name="WEBSITE" />. Hãy đổi mật khẩu của bạn trên <ph name="WEBSITE" /> để bảo vệ mật khẩu đó.</translation>
+<translation id="3433057996795775706">Thao tác xóa mật khẩu này sẽ không xóa tài khoản của bạn trên <ph name="WEBSITE" />. Hãy đổi mật khẩu của bạn trên <ph name="WEBSITE" /> để giữ an toàn cho tài khoản của bạn.</translation>
 <translation id="3443810440409579745">Đã nhận thẻ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> phút</translation>
 <translation id="3448016392200048164">Chế độ xem phân tách</translation>
@@ -243,6 +244,7 @@ Các trang web không thể dùng cookie để giám sát hoạt động duyệt
 <translation id="3638472932233958418">Tải trước trang web</translation>
 <translation id="3670030362669914947">Số</translation>
 <translation id="3691593122358196899">Đã đánh dấu trang vào <ph name="FOLDER_TITLE" /></translation>
+<translation id="3740397331642243698">Mở các URL đã nhập trong Google Chrome ở chế độ Ẩn danh.</translation>
 <translation id="3771033907050503522">Thẻ ẩn danh</translation>
 <translation id="3775743491439407556">Tính năng đồng bộ hóa hiện không hoạt động</translation>
 <translation id="3779810277399252432">Không có kết nối Internet.</translation>
@@ -307,6 +309,7 @@ Các trang web không thể dùng cookie để giám sát hoạt động duyệt
 <translation id="4619615317237390068">Thẻ từ các thiết bị khác</translation>
 <translation id="4620246317052452550">Các trang bạn đã đọc</translation>
 <translation id="4630540211544979320">Dịch trang</translation>
+<translation id="4634124774493850572">Sử dụng mật khẩu</translation>
 <translation id="4636930964841734540">Thông tin</translation>
 <translation id="4659126640776004816">Khi bạn đăng nhập vào Tài khoản Google của mình, tính năng này sẽ được bật.</translation>
 <translation id="4659667755519643272">Vào Trình chuyển đổi thẻ</translation>
@@ -608,8 +611,10 @@ Các trang web có thể dùng cookie để giám sát hoạt động duyệt we
 <translation id="8007420562015504427">Tìm kiếm ẩn danh</translation>
 <translation id="802154636333426148">Tải xuống không thành công</translation>
 <translation id="8023878949384262191">Mở rộng phần.</translation>
+<translation id="8027581147000338959">Mở bằng Cửa sổ Mới</translation>
 <translation id="804427445359061970">Tại đây, bạn sẽ thấy các thẻ mà bạn mở trên những thiết bị khác</translation>
 <translation id="8059533439631660104">Thu gọn phần.</translation>
+<translation id="8065292699993359127">Mở URL trong Chrome ở chế độ Ẩn danh</translation>
 <translation id="806745655614357130">Giữ dữ liệu của tôi riêng biệt</translation>
 <translation id="8073670137947914548">Đã hoàn tất tải xuống</translation>
 <translation id="8073872304774253879">Cải thiện tính năng tìm kiếm và duyệt web</translation>

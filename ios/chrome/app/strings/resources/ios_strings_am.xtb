@@ -128,7 +128,6 @@
 <translation id="236977714248711277">ጣቢያዎች የአሰሳዎን ተሞክሮ ለማሻሻል፣ ለምሳሌ እርስዎ በመለያ እንደገቡ ማቆየት ወይም በግዢ ጋሪዎ ውስጥ ንጥሎችን ለማስታወስ፣ ኩኪዎችን መጠቀም አይችሉም።
 
 ጣቢያዎች በተለያዩ ጣቢያዎች ላይ የእርስዎን የአሰሳ እንቅስቃሴ ለመመልከት፣ ለምሳሌ ማስታወቂያዎችን ግላዊነት ለማላበስ፣ ኩኪዎችን መጠቀም አይችሉም።</translation>
-<translation id="2379896346847637748">በአዲስ መስኮት ክፈት</translation>
 <translation id="2381405137052800939">መሠረታዊ ነገሮች</translation>
 <translation id="2386793615875593361">1 ተመርጧል</translation>
 <translation id="2421004566762153674">የሶስተኛ ወገን ኩኪዎችን ማገድ</translation>
@@ -310,6 +309,7 @@
 <translation id="4619615317237390068">ከሌሎች መሣሪያዎች የመጡ ትሮች</translation>
 <translation id="4620246317052452550">እርስዎ ያነበቧቸው ገጾች</translation>
 <translation id="4630540211544979320">ገጾችን ያስተርጉሙ</translation>
+<translation id="4634124774493850572">የይለፍ ቃል ይጠቀሙ</translation>
 <translation id="4636930964841734540">መረጃ</translation>
 <translation id="4659126640776004816">ወደ የእርስዎ የ Google መለያ ሲገቡ፣ ይህ ባህሪ ይበራል።</translation>
 <translation id="4659667755519643272">የትር መቀያየሪያን ያስገቡ</translation>
@@ -611,9 +611,10 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="8007420562015504427">ማንነት የማያሳውቅ ፍለጋ</translation>
 <translation id="802154636333426148">ማውረድ አልተሳካም</translation>
 <translation id="8023878949384262191">ክፍሉን ይዘረጋዋል።</translation>
+<translation id="8027581147000338959">በአዲስ መስኮት ክፈት</translation>
 <translation id="804427445359061970">የእርስዎን ትሮች ከሌሎች መሣሪያዎች እዚህ ያገኛሉ</translation>
 <translation id="8059533439631660104">ክፍሉን ይሰበስባል።</translation>
-<translation id="8065292699993359127">ዩአርሎችን በChrome ውስጥ ማንነት በማያሳውቅ ሁነታ ይክፈቱ</translation>
+<translation id="8065292699993359127">ዩአርኤሎችን በChrome ውስጥ ማንነት በማያሳውቅ ሁነታ ይክፈቱ</translation>
 <translation id="806745655614357130">የእኔን ውሂብ ለብቻው አቆይ</translation>
 <translation id="8073670137947914548">ማውረድ ተጠናቅቋል</translation>
 <translation id="8073872304774253879">ፍለጋዎችን እና አሰሳን የተሻለ ያድርጉ</translation>

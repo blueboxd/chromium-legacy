@@ -318,6 +318,22 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
   return (nsts == NERR_Success ? S_OK : HRESULT_FROM_WIN32(nsts));
 }
 
+HRESULT OSUserManager::SetDefaultPasswordChangePolicies(
+    const wchar_t* domain,
+    const wchar_t* username) {
+  USER_INFO_1008 info1008;
+  DWORD error;
+  memset(&info1008, 0, sizeof(info1008));
+  info1008.usri1008_flags =
+      UF_PASSWD_CANT_CHANGE | UF_DONT_EXPIRE_PASSWD | UF_NORMAL_ACCOUNT;
+  NET_API_STATUS nsts = ::NetUserSetInfo(
+      domain, username, 1008, reinterpret_cast<LPBYTE>(&info1008), &error);
+  if (nsts != NERR_Success) {
+    LOGFN(ERROR) << "NetUserSetInfo(set password policies) nsts=" << nsts;
+  }
+  return HRESULT_FROM_WIN32(nsts);
+}
+
 HRESULT OSUserManager::ChangeUserPassword(const wchar_t* domain,
                                           const wchar_t* username,
                                           const wchar_t* old_password,

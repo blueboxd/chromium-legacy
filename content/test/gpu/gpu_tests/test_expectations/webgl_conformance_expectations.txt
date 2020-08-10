@@ -582,7 +582,7 @@ crbug.com/965387 [ android qualcomm-adreno-(tm)-418 ] conformance/textures/image
 crbug.com/891456 [ android qualcomm-adreno-(tm)-418 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/934545 [ android android-chromium qualcomm-adreno-(tm)-418 ] conformance/textures/misc/texture-npot-video.html [ RetryOnFailure ]
 crbug.com/610951 [ android qualcomm-adreno-(tm)-418 ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
-crbug.com/914631 [ android qualcomm-adreno-(tm)-418 passthrough ] conformance/limits/gl-max-texture-dimensions.html [ RetryOnFailure ]
+crbug.com/1043431 [ android qualcomm-adreno-(tm)-418 ] conformance/limits/gl-max-texture-dimensions.html [ RetryOnFailure ]
 crbug.com/951628 [ android qualcomm-adreno-(tm)-418 no-passthrough no-swiftshader-gl ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1083320 [ android qualcomm-adreno-(tm)-418 ] conformance/misc/uninitialized-test.html [ Skip ]
 crbug.com/1056830 [ android qualcomm-adreno-(tm)-418 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]

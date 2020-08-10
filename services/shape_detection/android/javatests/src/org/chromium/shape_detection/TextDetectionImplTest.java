@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.shape_detection.mojom.TextDetection;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
  * Test suite for TextDetectionImpl.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 public class TextDetectionImplTest {
     private static final String[] DETECTION_EXPECTED_TEXT = {
             "The quick brown fox jumped over the lazy dog.", "Helvetica Neue 36."};

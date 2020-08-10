@@ -6,8 +6,6 @@
  * @fileoverview Polymer element for indicating policies based on network
  * properties.
  */
-(function() {
-'use strict';
 
 Polymer({
   is: 'cr-policy-network-indicator-mojo',
@@ -80,4 +78,3 @@ Polymer({
     return this.getIndicatorTooltip(this.indicatorType, '', matches);
   }
 });
-})();

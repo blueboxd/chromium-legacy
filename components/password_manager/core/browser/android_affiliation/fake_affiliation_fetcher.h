@@ -21,9 +21,8 @@ class FakeAffiliationFetcher : public AffiliationFetcher {
  public:
   FakeAffiliationFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::vector<FacetURI>& facet_ids,
       AffiliationFetcherDelegate* delegate);
-  ~FakeAffiliationFetcher();
+  ~FakeAffiliationFetcher() override;
 
   // Simulates successful completion of the request with |fake_result|. Note
   // that the consumer may choose to destroy |this| from within this call.
@@ -66,7 +65,6 @@ class ScopedFakeAffiliationFetcherFactory
   // AffiliationFetcherFactory:
   AffiliationFetcher* CreateInstance(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::vector<FacetURI>& facet_ids,
       AffiliationFetcherDelegate* delegate) override;
 
  private:

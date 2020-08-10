@@ -8986,7 +8986,10 @@ class LayerTreeHostTestDelegatedInkMetadataOnAndOff
 
   void DidCommitAndDrawFrame() override {
     // Cause a redraw to occur.
-    layer_->SetNeedsDisplay();
+    if (set_needs_display_) {
+      layer_->SetNeedsDisplay();
+      set_needs_display_ = false;
+    }
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
@@ -9014,8 +9017,6 @@ class LayerTreeHostTestDelegatedInkMetadataOnAndOff
     }
   }
 
-  void AfterTest() override {}
-
   // RenderFrameMetadataObserver implementation.
   void BindToCurrentThread() override {}
   void OnRenderFrameSubmission(
@@ -9030,6 +9031,7 @@ class LayerTreeHostTestDelegatedInkMetadataOnAndOff
   base::Optional<viz::DelegatedInkMetadata> expected_metadata_;
   FakeContentLayerClient client_;
   scoped_refptr<Layer> layer_;
+  bool set_needs_display_ = true;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDelegatedInkMetadataOnAndOff);

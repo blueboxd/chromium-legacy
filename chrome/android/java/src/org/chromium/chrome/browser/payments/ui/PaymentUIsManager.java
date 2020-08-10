@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.chrome.browser.payments.CardEditor;
 import org.chromium.chrome.browser.payments.ContactEditor;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl;
-import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
@@ -197,15 +196,6 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
         mCurrencyFormatterMap = new HashMap<>();
         mIsOffTheRecord = isOffTheRecord;
         mPaymentAppComparator = new PaymentAppComparator(/*params=*/mParams);
-    }
-
-    /**
-     * Set an observer for test.
-     * @param observerForTest An observer for test.
-     */
-    @VisibleForTesting
-    public static void setObserverForTest(PaymentRequestServiceObserverForTest observerForTest) {
-        CardEditor.setObserverForTest(observerForTest);
     }
 
     /** @return The PaymentRequestUI. */

@@ -758,7 +758,23 @@ class VideoTextureBacking : public cc::TextureBacking {
   }
   gpu::Mailbox GetMailbox() const override { return mailbox_; }
   sk_sp<SkImage> GetAcceleratedSkImage() override { return sk_image_; }
-  sk_sp<SkImage> GetSkImageViaReadback() override { return nullptr; }
+  sk_sp<SkImage> GetSkImageViaReadback() override {
+    if (sk_image_) {
+      return sk_image_->makeNonTextureImage();
+    }
+    return nullptr;
+  }
+  bool readPixels(const SkImageInfo& dst_info,
+                  void* dst_pixels,
+                  size_t dst_row_bytes,
+                  int src_x,
+                  int src_y) override {
+    if (sk_image_) {
+      return sk_image_->readPixels(dst_info, dst_pixels, dst_row_bytes, src_x,
+                                   src_y);
+    }
+    return false;
+  }
 
  private:
   const sk_sp<SkImage> sk_image_;

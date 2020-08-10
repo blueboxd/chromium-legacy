@@ -462,7 +462,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Updaten</translation>
 <translation id="4738836084190194332">Laatst gesynchroniseerd: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA-fout: <ph name="ERROR_CODE" /> op <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Een nieuw tabblad openen</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download voltooid.}other{# downloads voltooid.}}</translation>
@@ -1047,6 +1046,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="9133397713400217035">Offline ontdekken</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
+<translation id="9148126808321036104">Opnieuw inloggen</translation>
 <translation id="9155898266292537608">Je kunt ook zoeken door kort op een woord te tikken</translation>
 <translation id="9169507124922466868">Navigatiegeschiedenis is half geopend</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 minuut geleden gecheckt}other{# minuten geleden gecheckt}}</translation>
@@ -1059,6 +1059,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="932327136139879170">Homepage</translation>
 <translation id="93753284658583800">Homepage gewijzigd</translation>
 <translation id="938850635132480979">Fout: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Wachtwoordzin opgeven</translation>
 <translation id="95817756606698420">Chrome kan <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> gebruiken voor zoekopdrachten in China. Je kunt dit wijzigen in <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Pagina's die je bezoekt, worden hier weergegeven</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minuten resterend</translation>

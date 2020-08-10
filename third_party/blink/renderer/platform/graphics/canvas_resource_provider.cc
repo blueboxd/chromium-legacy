@@ -87,8 +87,7 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
                       cc::ImageDecodeCache* cache_f16,
                       const gfx::ColorSpace& target_color_space,
                       SkColorType target_color_type,
-                      bool is_hardware_decode_cache,
-                      bool use_oop_raster);
+                      cc::PlaybackImageProvider::RasterMode raster_mode);
   ~CanvasImageProvider() override = default;
 
   // cc::ImageProvider implementation.
@@ -100,8 +99,9 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
  private:
   void CanUnlockImage(ScopedResult);
   void CleanupLockedImages();
+  bool IsHardwareDecodeCache() const;
 
-  bool is_hardware_decode_cache_;
+  cc::PlaybackImageProvider::RasterMode raster_mode_;
   bool cleanup_task_pending_ = false;
   Vector<ScopedResult> locked_images_;
   base::Optional<cc::PlaybackImageProvider> playback_image_provider_n32_;
@@ -968,12 +968,11 @@ CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
     cc::ImageDecodeCache* cache_f16,
     const gfx::ColorSpace& target_color_space,
     SkColorType canvas_color_type,
-    bool is_hardware_decode_cache,
-    bool use_oop_raster)
-    : is_hardware_decode_cache_(is_hardware_decode_cache) {
+    cc::PlaybackImageProvider::RasterMode raster_mode)
+    : raster_mode_(raster_mode) {
   base::Optional<cc::PlaybackImageProvider::Settings> settings =
       cc::PlaybackImageProvider::Settings();
-  settings->use_oop_raster = use_oop_raster;
+  settings->raster_mode = raster_mode_;
 
   playback_image_provider_n32_.emplace(cache_n32, target_color_space,
                                        std::move(settings));
@@ -982,7 +981,7 @@ CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
   if (canvas_color_type == kRGBA_F16_SkColorType) {
     DCHECK(cache_f16);
     settings = cc::PlaybackImageProvider::Settings();
-    settings->use_oop_raster = use_oop_raster;
+    settings->raster_mode = raster_mode_;
     playback_image_provider_f16_.emplace(cache_f16, target_color_space,
                                          std::move(settings));
   }
@@ -1015,7 +1014,7 @@ CanvasResourceProvider::CanvasImageProvider::GetRasterContent(
   // decode cache has its own limit.  In the software case, just unlock
   // immediately and let the discardable system manage the cache logic
   // behind the scenes.
-  if (!scoped_decoded_image.needs_unlock() || !is_hardware_decode_cache_) {
+  if (!scoped_decoded_image.needs_unlock() || !IsHardwareDecodeCache()) {
     return scoped_decoded_image;
   }
 
@@ -1036,7 +1035,7 @@ CanvasResourceProvider::CanvasImageProvider::GetRasterContent(
 void CanvasResourceProvider::CanvasImageProvider::CanUnlockImage(
     ScopedResult image) {
   // We should early out and avoid calling this function for software decodes.
-  DCHECK(is_hardware_decode_cache_);
+  DCHECK(IsHardwareDecodeCache());
 
   // Because these image decodes are being done in javascript calling into
   // canvas code, there's no obvious time to do the cleanup.  To handle this,
@@ -1054,6 +1053,11 @@ void CanvasResourceProvider::CanvasImageProvider::CanUnlockImage(
 void CanvasResourceProvider::CanvasImageProvider::CleanupLockedImages() {
   cleanup_task_pending_ = false;
   ReleaseLockedImages();
+}
+
+bool CanvasResourceProvider::CanvasImageProvider::IsHardwareDecodeCache()
+    const {
+  return raster_mode_ != cc::PlaybackImageProvider::RasterMode::kSoftware;
 }
 
 CanvasResourceProvider::CanvasResourceProvider(
@@ -1120,10 +1124,16 @@ CanvasResourceProvider::GetOrCreateCanvasImageProvider() {
     cc::ImageDecodeCache* cache_f16 = nullptr;
     if (ColorParams().GetSkColorType() == kRGBA_F16_SkColorType)
       cache_f16 = ImageDecodeCacheF16();
+
+    auto raster_mode = cc::PlaybackImageProvider::RasterMode::kSoftware;
+    if (UseHardwareDecodeCache()) {
+      raster_mode = UseOopRasterization()
+                        ? cc::PlaybackImageProvider::RasterMode::kOop
+                        : cc::PlaybackImageProvider::RasterMode::kGpu;
+    }
     canvas_image_provider_ = std::make_unique<CanvasImageProvider>(
         ImageDecodeCacheRGBA8(), cache_f16, gfx::ColorSpace::CreateSRGB(),
-        color_params_.GetSkColorType(), UseHardwareDecodeCache(),
-        UseOopRasterization());
+        color_params_.GetSkColorType(), raster_mode);
   }
   return canvas_image_provider_.get();
 }

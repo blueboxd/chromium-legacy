@@ -62,7 +62,8 @@ class NearbySharingServiceImpl
       NotificationDisplayService* notification_display_service,
       Profile* profile,
       std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager,
-      NearbyProcessManager* process_manager);
+      NearbyProcessManager* process_manager,
+      std::unique_ptr<NearbyShareCertificateManager> certificate_manager);
   ~NearbySharingServiceImpl() override;
 
   // NearbySharingService:
@@ -164,9 +165,18 @@ class NearbySharingServiceImpl
       base::Optional<ShareTargetDiscoveredCallback*> discovery_callback);
   void StartScanning();
   StatusCodes StopScanning();
+  void OnIncomingAdvertisementDecoded(
+      const std::string& endpoint_id,
+      NearbyConnection* connection,
+      sharing::mojom::AdvertisementPtr advertisement);
   void OnIncomingTransferUpdate(const ShareTarget& share_target,
                                 TransferMetadata metadata);
   void CloseConnection(const ShareTarget& share_target);
+  void OnIncomingDecryptedCertificate(
+      const std::string& endpoint_id,
+      NearbyConnection* connection,
+      sharing::mojom::AdvertisementPtr advertisement,
+      base::Optional<NearbyShareDecryptedPublicCertificate> certificate);
   void ReceiveIntroduction(ShareTarget share_target,
                            base::Optional<std::string> token);
   void OnReceivedIntroduction(
@@ -182,6 +192,11 @@ class NearbySharingServiceImpl
   bool IsOutOfStorage(const ShareTarget& share_target);
 
   void OnIncomingMutualAcceptanceTimeout(const ShareTarget& share_target);
+  base::Optional<ShareTarget> CreateShareTarget(
+      const std::string& endpoint_id,
+      const sharing::mojom::AdvertisementPtr& advertisement,
+      base::Optional<NearbyShareDecryptedPublicCertificate> certificate,
+      bool is_incoming);
 
   IncomingShareTargetInfo& GetIncomingShareTargetInfo(
       const ShareTarget& share_target);
@@ -193,10 +208,6 @@ class NearbySharingServiceImpl
   void SetAttachmentPayloadId(const Attachment& attachment, int64_t payload_id);
   base::Optional<int64_t> GetAttachmentPayloadId(
       const base::UnguessableToken& attachment_id);
-  base::Optional<ShareTarget> CreateShareTarget(
-      const std::string& endpoint_id,
-      sharing::mojom::AdvertisementPtr advertisement,
-      bool is_incoming);
   void UnregisterShareTarget(const ShareTarget& share_target);
 
   Profile* profile_;

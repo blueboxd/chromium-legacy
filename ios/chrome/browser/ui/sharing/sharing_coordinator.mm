@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 
-#import "ios/chrome/browser/ui/activity_services/activity_scenario.h"
+#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_coordinator.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
@@ -19,11 +19,12 @@
 @interface SharingCoordinator () <ActivityServicePositioner,
                                   ActivityServicePresentation,
                                   QRGenerationCommands>
-
 @property(nonatomic, strong)
     ActivityServiceCoordinator* activityServiceCoordinator;
 
 @property(nonatomic, strong) QRGeneratorCoordinator* qrGeneratorCoordinator;
+
+@property(nonatomic, strong) ActivityParams* params;
 
 @property(nonatomic, weak) UIView* originView;
 
@@ -33,9 +34,12 @@
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
+                                    params:(ActivityParams*)params
                                 originView:(UIView*)originView {
+  DCHECK(params);
   if (self = [super initWithBaseViewController:viewController
                                        browser:browser]) {
+    _params = params;
     _originView = originView;
   }
   return self;
@@ -47,7 +51,7 @@
   self.activityServiceCoordinator = [[ActivityServiceCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                          browser:self.browser
-                        scenario:ActivityScenario::TabShareButton];
+                          params:self.params];
 
   self.activityServiceCoordinator.positionProvider = self;
   self.activityServiceCoordinator.presentationProvider = self;

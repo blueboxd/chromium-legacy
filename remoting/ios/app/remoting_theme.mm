@@ -338,7 +338,8 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"ic_help"];
+    icon = [[UIImage imageNamed:@"ic_help"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   });
   return icon;
 }
@@ -347,7 +348,8 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"ic_feedback"];
+    icon = [[UIImage imageNamed:@"ic_feedback"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   });
   return icon;
 }

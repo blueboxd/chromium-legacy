@@ -1228,6 +1228,13 @@ interface Permissions
     method request
     method requestAll
     method revoke
+interface Plane
+    attribute @@toStringTag
+    getter length
+    getter rows
+    getter stride
+    method constructor
+    method readInto
 interface Profiler
     attribute @@toStringTag
     getter sampleInterval

@@ -162,7 +162,7 @@ public class PseudoTab {
      * @return The title
      */
     public String getTitle() {
-        if (mTab != null && mTab.get() != null) {
+        if (mTab != null && mTab.get() != null && mTab.get().isInitialized()) {
             return mTab.get().getTitle();
         }
         assert mTabId != null;

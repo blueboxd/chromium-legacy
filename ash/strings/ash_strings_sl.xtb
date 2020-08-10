@@ -506,6 +506,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="6972754398087986839">Začnite</translation>
 <translation id="6981982820502123353">Dostopnost</translation>
 <translation id="698231206551913481">Vse datoteke in lokalni podatki, povezani s tem uporabnikom, bodo trajno izbrisani, ko odstranite uporabnika.</translation>
+<translation id="7007983414944123363">Vaše kode PIN ali gesla ni bilo mogoče preveriti. Poskusite znova.</translation>
 <translation id="7015766095477679451">Vrnite se ob <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Povežite napravo <ph name="DEVICE_NAME" /> s telefonom</translation>
 <translation id="7026338066939101231">Pomanjšava</translation>
@@ -551,6 +552,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="7568294522609223312">Izklop samodejnih klikov</translation>
 <translation id="7568637526529101738">Če kliknete z desnim gumbom ali pridržite, vam Pomočnik pokaže informacije, kot je definicija ali pretvorba enot za izbor.</translation>
 <translation id="7569509451529460200">Omogočena sta braillova pisava in ChromeVox</translation>
+<translation id="7579778809502851308">Zajemanje slike</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
 <translation id="7600875258240007829">Ogled vseh obvestil</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
@@ -669,6 +671,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="8841375032071747811">Gumb za nazaj</translation>
 <translation id="8843682306134542540">Preklop zaklepanja zasuka. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Iskanje + Esc</translation>
+<translation id="8853703225951107899">Vaše kode PIN ali gesla še vedno ni bilo mogoče preveriti. Opomba: Če ste nedavno spremenili geslo, uporabite staro. Novo geslo se bo uporabilo, ko se odjavite.</translation>
 <translation id="8870509716567206129">Aplikacija ne podpira načina razdeljenega zaslona.</translation>
 <translation id="8874184842967597500">Ni povezano</translation>
 <translation id="8877788021141246043">Nastavi opomnik</translation>

@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 
 #include "base/logging.h"
+#include "net/cookies/cookie_util.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/recovery.h"
@@ -70,6 +71,25 @@ bool DeleteNonPersistentCookies(sql::Database* db) {
   remove.append(kCookieTableName);
   remove.append(" WHERE is_persistent != 1");
   return db->Execute(remove.c_str());
+}
+
+bool IsContentSettingSessionOnly(
+    const GURL& url,
+    const ContentSettingsForOneType& content_settings) {
+  // ContentSettingsForOneType are in order of decreasing specificity, such
+  // that the first matching entry defines the effective content setting.
+  for (const auto& setting : content_settings) {
+    // A match is performed against both primary and secondary patterns. This
+    // aligns with the behavior in CookieSettingsBase::ShouldDeleteCookieOnExit,
+    // which is used by the cookie store.
+    if (setting.primary_pattern.Matches(url) &&
+        setting.secondary_pattern.Matches(url)) {
+      return setting.GetContentSetting() ==
+             ContentSetting::CONTENT_SETTING_SESSION_ONLY;
+    }
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace
@@ -339,51 +359,70 @@ void AccessContextAuditDatabase::RemoveAllRecordsForTimeRange(base::Time begin,
 }
 
 void AccessContextAuditDatabase::RemoveSessionOnlyRecords(
-    scoped_refptr<content_settings::CookieSettings> cookie_settings,
     const ContentSettingsForOneType& content_settings) {
+  // ContentSettingsForOneType is a list of settings in decreasing specificity
+  // for origins, ending with a setting that matches all and is the default.
+  DCHECK(content_settings.size());
+  if (content_settings.size() == 1) {
+    DCHECK_EQ(content_settings[0].primary_pattern,
+              ContentSettingsPattern::Wildcard());
+    DCHECK_EQ(content_settings[0].secondary_pattern,
+              ContentSettingsPattern::Wildcard());
+    if (content_settings[0].GetContentSetting() ==
+        ContentSetting::CONTENT_SETTING_SESSION_ONLY) {
+      RemoveAllRecords();
+    }
+    // As only the default content setting is set, there is no need to inspect
+    // any individual records.
+    return;
+  }
+
   sql::Transaction transaction(&db_);
   if (!transaction.Begin())
     return;
 
-  // Extract the set of all domains from the cookies table.
+  // Extract the set of all domains from the cookies table, determine the
+  // effective content setting, and store for removal if appropriate.
   std::string select = "SELECT DISTINCT domain FROM ";
   select.append(kCookieTableName);
   sql::Statement select_cookie_domains(
       db_.GetCachedStatement(SQL_FROM_HERE, select.c_str()));
 
-  std::vector<std::string> cookie_domains;
+  std::vector<std::string> cookie_domains_for_removal;
   while (select_cookie_domains.Step()) {
-    cookie_domains.emplace_back(select_cookie_domains.ColumnString(0));
+    auto domain = select_cookie_domains.ColumnString(0);
+    GURL url = net::cookie_util::CookieOriginToURL(domain,
+                                                   /* is_https */ false);
+    GURL secure_url = net::cookie_util::CookieOriginToURL(domain,
+                                                          /* is_https */ true);
+    if (IsContentSettingSessionOnly(url, content_settings) ||
+        IsContentSettingSessionOnly(secure_url, content_settings)) {
+      cookie_domains_for_removal.emplace_back(std::move(domain));
+    }
   }
 
-  // Extract the set of all origins from the storage API table.
+  // Repeat the above, but for the origin keyed storage API table.
   select = "SELECT DISTINCT origin FROM ";
   select.append(kStorageAPITableName);
   sql::Statement select_storage_origins(
       db_.GetCachedStatement(SQL_FROM_HERE, select.c_str()));
 
-  std::vector<url::Origin> storage_origins;
+  std::vector<std::string> storage_origins_for_removal;
   while (select_storage_origins.Step()) {
-    storage_origins.emplace_back(
-        url::Origin::Create(GURL(select_storage_origins.ColumnString(0))));
+    auto origin = select_storage_origins.ColumnString(0);
+    if (IsContentSettingSessionOnly(GURL(origin), content_settings))
+      storage_origins_for_removal.emplace_back(origin);
   }
 
-  // Remove records for all cookie domains and storage origins for which the
-  // provided settings indicate should be cleared on exit.
+  // Remove entries belonging to cookie domains and origins identified as having
+  // a SESSION_ONLY content setting.
   std::string remove = "DELETE FROM ";
   remove.append(kCookieTableName);
   remove.append(" WHERE domain = ?");
   sql::Statement remove_cookies(
       db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
 
-  for (const auto& domain : cookie_domains) {
-    if (!cookie_settings->ShouldDeleteCookieOnExit(content_settings, domain,
-                                                   true) &&
-        !cookie_settings->ShouldDeleteCookieOnExit(content_settings, domain,
-                                                   false)) {
-      continue;
-    }
-
+  for (const auto& domain : cookie_domains_for_removal) {
     remove_cookies.BindString(0, domain);
     if (!remove_cookies.Run())
       return;
@@ -396,13 +435,8 @@ void AccessContextAuditDatabase::RemoveSessionOnlyRecords(
   sql::Statement remove_storage_apis(
       db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
 
-  for (const auto& origin : storage_origins) {
-    // TODO(crbug.com/1099164): Rename IsCookieSessionOnly to better convey
-    //                          its actual functionality.
-    if (!cookie_settings->IsCookieSessionOnly(origin.GetURL()))
-      continue;
-
-    remove_storage_apis.BindString(0, origin.Serialize());
+  for (const auto& origin : storage_origins_for_removal) {
+    remove_storage_apis.BindString(0, origin);
     if (!remove_storage_apis.Run())
       return;
     remove_storage_apis.Reset(true);

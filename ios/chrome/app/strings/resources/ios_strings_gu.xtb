@@ -16,6 +16,7 @@
 <translation id="1104948393051856124">સ્વીકારો અને ચાલુ રાખો</translation>
 <translation id="1112015203684611006">છાપવાનું નિષ્ફળ થયું.</translation>
 <translation id="1125564390852150847">નવું ટૅબ બનાવો.</translation>
+<translation id="1134509371063488162">છૂપા મોડમાં ${urls} ખોલો</translation>
 <translation id="1145536944570833626">અસ્તિત્વમાંના ડેટાને ડિલીટ કરો.</translation>
 <translation id="1165039591588034296">ભૂલ</translation>
 <translation id="1172898394251786223">આગલું ફીલ્ડ</translation>
@@ -127,7 +128,6 @@
 <translation id="236977714248711277">સાઇટ તમને વધુ સારો બ્રાઉઝિંગ અનુભવ આપવા માટે, ઉદાહરણ તરીકે, તમને સાઇન ઇન કરીને રાખવા અથવા તમારા શૉપિંગ કાર્ટની આઇટમ યાદ રાખવા માટે, કુકીનો ઉપયોગ કરી શકતી નથી.
 
 વિભિન્ન સાઇટ પરની તમારી બ્રાઉઝિંગ પ્રવૃત્તિ જોવા માટે, સાઇટ તમારી કુકીનો ઉપયોગ કરી શકતી નથી, ઉદાહરણ તરીકે, મનગમતી જાહેરાતો બનાવવા માટે.</translation>
-<translation id="2379896346847637748">નવી વિંડોમાં ખોલો</translation>
 <translation id="2381405137052800939">મૂળભૂત</translation>
 <translation id="2386793615875593361">1 પસંદ કર્યું છે</translation>
 <translation id="2421004566762153674">ત્રીજા પક્ષની કુકી બ્લૉક કરી રહ્યાં છીએ</translation>
@@ -184,6 +184,7 @@
 <translation id="298306318844797842">ચુકવણીની પદ્ધતિ ઉમેરો…</translation>
 <translation id="2989805286512600854">નવા ટૅબમાં ખોલો</translation>
 <translation id="3037605927509011580">અરર કંઇક ભુલ થઇ!</translation>
+<translation id="3080525922482950719">તમે પછીથી અથવા ઑફલાઇન વાંચવા માટે પેજ સાચવી શકો છો</translation>
 <translation id="3081338492074632642"><ph name="WEBSITE" /> માટેના તમારા પાસવર્ડ સાથે, તમે સાચવી રહ્યાં છો તે પાસવર્ડ મેળ ખાતો હોવાની ખાતરી કરો</translation>
 <translation id="3112556859945124369">ચિહ્નિત કરો…</translation>
 <translation id="3131206671572504478">બધી બ્લૉક કરો</translation>
@@ -243,6 +244,7 @@
 <translation id="3638472932233958418">વેબપૃષ્ઠો પહેલાથી લોડ કરો</translation>
 <translation id="3670030362669914947">નંબર</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> પર બુકમાર્ક કર્યું</translation>
+<translation id="3740397331642243698">ઇનપુટ કરેલા URLsને Google Chrome છૂપા મોડમાં ખોલે છે.</translation>
 <translation id="3771033907050503522">છૂપા ટેબ્સ</translation>
 <translation id="3775743491439407556">સિંક કાર્ય કરી રહ્યું નથી</translation>
 <translation id="3779810277399252432">કોઈ ઇન્ટરનેટ કનેક્શન નથી.</translation>
@@ -307,6 +309,7 @@
 <translation id="4619615317237390068">અન્ય ઉપકરણોમાંથી ટૅબ્સ</translation>
 <translation id="4620246317052452550">તમે વાંચેલા પૃષ્ઠો</translation>
 <translation id="4630540211544979320">પેજનો અનુવાદ કરો</translation>
+<translation id="4634124774493850572">પાસવર્ડનો ઉપયોગ કરો</translation>
 <translation id="4636930964841734540">માહિતી</translation>
 <translation id="4659126640776004816">જ્યારે તમે તમારા Google એકાઉન્ટમાં સાઇન ઇન કરો છો, ત્યારે આ સુવિધા ચાલુ કરવામાં આવે છે.</translation>
 <translation id="4659667755519643272">ટેબ સ્વિચરમાં દાખલ થાઓ</translation>
@@ -608,8 +611,10 @@
 <translation id="8007420562015504427">છૂપી શોધ</translation>
 <translation id="802154636333426148">ડાઉનલોડ નિષ્ફળ થયું</translation>
 <translation id="8023878949384262191">વિભાગને વિસ્તૃત કરે છે.</translation>
+<translation id="8027581147000338959">નવી વિંડોમાં ખોલો</translation>
 <translation id="804427445359061970">તમને અન્ય ડિવાઇસમાંની તમારી ટૅબ અહીં મળશે</translation>
 <translation id="8059533439631660104">વિભાગને સંકુચિત કરે છે.</translation>
+<translation id="8065292699993359127">છૂપા મોડમાં Chromeમાં URLs ખોલો</translation>
 <translation id="806745655614357130">મારા ડેટાને અલગ રાખો</translation>
 <translation id="8073670137947914548">ડાઉનલોડ સમાપ્ત</translation>
 <translation id="8073872304774253879">શોધ અને બ્રાઉઝિંગ વધુ સારું બનાવો</translation>

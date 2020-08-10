@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Жаңа құпия сөз</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> осы құрылғыны басқарады және пайдаланушының барлық әрекетін (мысалы, кірген веб-сайттары, құпия сөздері және электрондық поштасы) көре алады.</translation>
 <translation id="4003384961948020559">Сәтсіз: шығыс науа толып кеткен</translation>
+<translation id="4027485274696301677"><ph name="DEVICE_TYPE" /> құрылғысын <ph name="ENROLLMENT_DOMAIN" /> басқарады. Әкімшілер құрылғыны қашықтан конфигурациялай алады.</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Құпия сөздің мерзімі <ph name="TIME" /> өткен соң аяқталады.</translation>
 <translation id="4238516577297848345">Ешқандай баспа жұмысы орындалып жатқан жоқ.</translation>

@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Fjalëkalimi i ri</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> menaxhon këtë pajisje dhe ka qasje te i gjithë aktiviteti i përdoruesit, duke përfshirë faqet e uebit të vizituara, fjalëkalimet dhe email-i.</translation>
 <translation id="4003384961948020559">Dështoi - Dalja është plot</translation>
+<translation id="4027485274696301677">Kjo pajisje <ph name="DEVICE_TYPE" /> menaxhohet nga <ph name="ENROLLMENT_DOMAIN" />. Administratorët mund ta konfigurojnë në distancë pajisjen.</translation>
 <translation id="4034824040120875894">Printeri</translation>
 <translation id="4227825898293920515">Fjalëkalimi skadon për <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nuk ka printime në vazhdim</translation>

@@ -83,22 +83,14 @@ class BaselineOptimizerTest(unittest.TestCase):
                 'port_name': 'mac-mac10.12',
                 'specifiers': ['Mac10.12', 'Release']
             },
-            'Fake Test Mac10.11': {
-                'port_name': 'mac-mac10.11',
-                'specifiers': ['Mac10.11', 'Release']
-            },
-            'Fake Test Mac10.10': {
-                'port_name': 'mac-mac10.10',
-                'specifiers': ['Mac10.10', 'Release']
-            },
         })
         # Note: this is a pre-assumption of the tests in this file. If this
         # assertion fails, port configurations are likely changed, and the
         # tests need to be adjusted accordingly.
         self.assertEqual(
             sorted(self.host.port_factory.all_port_names()), [
-                'linux-trusty', 'mac-mac10.10', 'mac-mac10.11', 'mac-mac10.12',
-                'mac-mac10.13', 'mac-mac10.14', 'mac-mac10.15', 'win-win10'
+                'linux-trusty', 'mac-mac10.12', 'mac-mac10.13', 'mac-mac10.14',
+                'mac-mac10.15', 'win-win10'
             ])
 
     def _assert_optimization(self,
@@ -201,18 +193,18 @@ class BaselineOptimizerTest(unittest.TestCase):
         self._assert_optimization({
             'platform/mac': '1',
             'platform/linux': '1',
-            'platform/mac-mac10.11': '1',
+            'platform/mac-mac10.14': '1',
         }, {
             'platform/mac': '1',
             'platform/linux': '1',
         })
 
     def test_local_optimization_skipping_a_port_in_the_middle(self):
-        # mac-mac10.10 -> mac-mac10.11 -> mac
+        # mac-mac10.13 -> mac-mac10.14 -> mac
         self._assert_optimization({
             'platform/mac': '1',
             'platform/linux': '1',
-            'platform/mac-mac10.10': '1',
+            'platform/mac-mac10.13': '1',
         }, {
             'platform/mac': '1',
             'platform/linux': '1',

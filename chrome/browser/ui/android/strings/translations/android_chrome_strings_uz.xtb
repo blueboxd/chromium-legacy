@@ -462,7 +462,6 @@ Google hisobingiz orqali amalga oshirgan qidiruvlaringiz, brauzer tarixi va bosh
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Yangilash</translation>
 <translation id="4738836084190194332">Oxirgi sinxronizatsiya: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA xatosi: <ph name="ERROR_CODE" /> – <ph name="VIOLATED_URL" /> sahifasida</translation>
 <translation id="4749960740855309258">Yangi varaq ochish</translation>
 <translation id="4759238208242260848">Yuklanmalar</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ta fayl yuklab olindi.}other{# ta fayl yuklab olindi.}}</translation>
@@ -1047,6 +1046,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="9133397713400217035">Oflayn kontent</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Asl tilda ko‘rsatish</translation>
+<translation id="9148126808321036104">Qaytadan kiring</translation>
 <translation id="9155898266292537608">Shuningdek so‘z ustiga bosib qidirish mumkin</translation>
 <translation id="9169507124922466868">Sahifalar tarixi yarim hajmda ochildi</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 daqiqa oldin tekshirilgan}other{# daqiqa oldin tekshirilgan}}</translation>
@@ -1059,6 +1059,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="932327136139879170">Bosh sahifa</translation>
 <translation id="93753284658583800">Bosh sahifa oʻzgartirildi</translation>
 <translation id="938850635132480979">Xato: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Kodli iborani kiriting</translation>
 <translation id="95817756606698420">Chrome Xitoyda <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> qidiruv tizimidan foydalanishi mumkin. Asosiy qidiruv tizimini <ph name="BEGIN_LINK" />Sozlamalar<ph name="END_LINK" /> orqali tayinlash mumkin.</translation>
 <translation id="968900484120156207">Siz kirgan sahifalar shu yerda chiqadi</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> daqiqa qoldi</translation>

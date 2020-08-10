@@ -196,6 +196,15 @@ Polymer({
     },
 
     /**
+     * Empty if there is no ongoing error.
+     * @private
+     */
+    ongoingErrorStatus_: {
+      type: String,
+      computed: 'getOngoingErrorStatus_(jobEntry.printerErrorCode)',
+    },
+
+    /**
      * A representation in fraction form of pages printed versus total number
      * of pages to be printed. E.g. 5/7 (5 pages printed / 7 total pages to
      * print).
@@ -336,7 +345,7 @@ Polymer({
       case chromeos.printing.printingManager.mojom.PrintJobCompletionStatus
            .kFailed:
         return this.getFailedStatusString_(
-            this.jobEntry.completedInfo.printerErrorCode);
+            this.jobEntry.printerErrorCode);
       case chromeos.printing.printingManager.mojom.PrintJobCompletionStatus
            .kCanceled:
         return loadTimeData.getString('completionStatusCanceled');
@@ -379,6 +388,11 @@ Polymer({
     if (this.isCompletedPrintJob_()) {
       return loadTimeData.getStringF('completePrintJobLabel', this.jobTitle_,
           this.printerName_, this.creationTime_, this.completionStatus_);
+    }
+    if (this.ongoingErrorStatus_) {
+      return loadTimeData.getStringF('stoppedOngoingPrintJobLabel',
+          this.jobTitle_, this.printerName_, this.creationTime_,
+          this.ongoingErrorStatus_);
     }
     return loadTimeData.getStringF('ongoingPrintJobLabel', this.jobTitle_,
         this.printerName_, this.creationTime_,
@@ -462,6 +476,43 @@ Polymer({
       default:
         assertNotReached();
         return loadTimeData.getString('unknownPrinterError');
+    }
+  },
+
+  /**
+   * @param {number} mojoPrinterErrorCode
+   * @return {string}
+   * @private
+   */
+  getOngoingErrorStatus_(mojoPrinterErrorCode) {
+    if (this.isCompletedPrintJob_()) {
+      return '';
+    }
+
+    switch (mojoPrinterErrorCode) {
+      case chromeos.printing.printingManager.mojom.PrinterErrorCode.kNoError:
+        return '';
+      case chromeos.printing.printingManager.mojom.PrinterErrorCode.kPaperJam:
+        return loadTimeData.getString('paperJamStopped');
+      case chromeos.printing.printingManager.mojom.PrinterErrorCode.kOutOfPaper:
+        return loadTimeData.getString('outOfPaperStopped');
+      case chromeos.printing.printingManager.mojom.PrinterErrorCode.kOutOfInk:
+        return loadTimeData.getString('outOfInkStopped');
+      case chromeos.printing.printingManager.mojom.PrinterErrorCode.kDoorOpen:
+        return loadTimeData.getString('doorOpenStopped');
+      case chromeos.printing.printingManager.mojom.PrinterErrorCode
+          .kTrayMissing:
+        return loadTimeData.getString('trayMissingStopped');
+      case chromeos.printing.printingManager.mojom.PrinterErrorCode.kOutputFull:
+        return loadTimeData.getString('outputFullStopped');
+      case chromeos.printing.printingManager.mojom.PrinterErrorCode.kStopped:
+        return loadTimeData.getString('stoppedGeneric');
+      case chromeos.printing.printingManager.mojom.PrinterErrorCode
+          .kUnknownError:
+        return loadTimeData.getString('unknownPrinterErrorStopped');
+      default:
+        assertNotReached();
+        return loadTimeData.getString('unknownPrinterErrorStopped');
     }
   },
 });

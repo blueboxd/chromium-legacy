@@ -339,7 +339,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2297722699537546652">B5 (kuvert)</translation>
 <translation id="2300306941146563769">Inte uppladdad</translation>
 <translation id="2310021320168182093">Chou2 (kuvert)</translation>
-<translation id="2315864634253056100">Webbplatsens namn liknar <ph name="LOOKALIKE_DOMAIN" />. Ibland försöker hackare efterlikna webbplatser genom att göra svårupptäckta ändringar i webbadressen.</translation>
 <translation id="2316887270356262533">Frigör mindre än 1 MB. Vissa webbplatser kan läsas in långsammare nästa gång du besöker dem.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> kräver användarnamn och lösenord.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" /> upphör att gälla den <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -545,7 +544,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="3229041911291329567">Versionsinformation om enhet och webbläsare</translation>
 <translation id="323107829343500871">Ange CVC-koden för <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Upptäck alltid viktigt innehåll på den här webbplatsen</translation>
-<translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> liknar <ph name="SUGGESTED_DOMAIN" />. Ibland försöker hackare efterlikna webbplatser genom att använda liknande webbadresser.</translation>
 <translation id="3270847123878663523">&amp;Ångra Ändra ordning</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
 <translation id="3282497668470633863">Lägg till namnet på kortet</translation>
@@ -1189,7 +1187,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="5869405914158311789">Webbplatsen kan inte nås</translation>
 <translation id="5869522115854928033">Sparade lösenord</translation>
 <translation id="5887400589839399685">Kortet har sparats</translation>
-<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> kräver att du säkerhetskopierar din data och returnerar enheten.</translation>
 <translation id="5895138241574237353">Starta om</translation>
 <translation id="5895187275912066135">Utfärdat</translation>
 <translation id="5901630391730855834">Gul</translation>
@@ -1322,6 +1319,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="6423385022588644828">Verifiera kreditkort snabbare genom att använda Touch ID från och med nu</translation>
 <translation id="6425092077175753609">Material</translation>
 <translation id="6427730057873428458">Fönsterfalsning</translation>
+<translation id="6428450836711225518">Bekräfta ditt telefonnummer</translation>
 <translation id="6433490469411711332">Redigera kontaktuppgifter</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avvisade anslutningen.</translation>
 <translation id="6434309073475700221">Släng</translation>
@@ -1377,7 +1375,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="6687335167692595844">Teckenstorlek begärd</translation>
 <translation id="6689249931105087298">Relativ med svartpunktskomprimering</translation>
 <translation id="6689271823431384964">Chrome ger möjlighet att spara dina kort i ditt Google-konto eftersom du är inloggad. Du kan ändra detta i inställningarna. Kortinnehavarens namn hämtas från ditt konto.</translation>
-<translation id="6704582573942289642">Är det här rätt webbplats?</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="6710594484020273272">&lt;Ange sökterm&gt;</translation>
 <translation id="671076103358959139">Registreringstoken:</translation>
@@ -1689,7 +1686,7 @@ Mer information.
 <translation id="7947285636476623132">Kontrollera utgångsår och försök igen</translation>
 <translation id="7951415247503192394">(32 bitar)</translation>
 <translation id="7953569069500808819">Kanthäftning högst upp</translation>
-<translation id="7954523986259449736">Din information blir synlig för andra eftersom webbplatsens anslutning inte är helt säkert.</translation>
+<translation id="7954523986259449736">Din information blir synlig för andra eftersom webbplatsens anslutning inte är helt säker.</translation>
 <translation id="7956713633345437162">Bokmärken i mobilen</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7966803981046576691">Kontotyp för utskriften</translation>
@@ -1858,6 +1855,7 @@ Mer information:
 <translation id="8730621377337864115">Klart</translation>
 <translation id="8738058698779197622">Om du vill upprätta en säker anslutning måste klockan vara rätt inställd. Det beror på att certifikaten som webbplatserna använder för att identifiera sig endast är giltiga under vissa tidsperioder. Chromium kan inte verifiera certifikaten eftersom klockan på enheten inte stämmer.</translation>
 <translation id="8740359287975076522">Det gick inte att hitta <ph name="HOST_NAME" />s &lt;abbr id="dnsDefinition"&gt;DNS-adress&lt;/abbr&gt;. Diagnostiserar problemet.</translation>
+<translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> är din kod för <ph name="ORIGIN" /></translation>
 <translation id="874918643257405732">Bokmärk den här fliken</translation>
 <translation id="8751426954251315517">Försök igen senare</translation>
 <translation id="8759274551635299824">Kortets giltighetstid har löpt ut</translation>

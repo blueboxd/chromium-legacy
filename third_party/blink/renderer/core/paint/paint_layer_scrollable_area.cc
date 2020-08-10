@@ -284,7 +284,7 @@ SmoothScrollSequencer* PaintLayerScrollableArea::GetSmoothScrollSequencer()
 
 cc::Layer* PaintLayerScrollableArea::LayerForScrolling() const {
   if (auto* graphics_layer = GraphicsLayerForScrolling())
-    return graphics_layer->CcLayer();
+    return &graphics_layer->CcLayer();
   return nullptr;
 }
 
@@ -302,7 +302,7 @@ cc::Layer* PaintLayerScrollableArea::LayerForVerticalScrollbar() const {
 
 cc::Layer* PaintLayerScrollableArea::LayerForScrollCorner() const {
   if (auto* graphics_layer = GraphicsLayerForScrollCorner())
-    return graphics_layer->CcLayer();
+    return &graphics_layer->CcLayer();
   return nullptr;
 }
 

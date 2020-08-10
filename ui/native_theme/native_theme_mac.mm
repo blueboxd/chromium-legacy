@@ -168,8 +168,7 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
   // once NativeTheme.cc handles kColorProviderReirection and
   // kPlatformHighContrast both being on.
   if ((base::FeatureList::IsEnabled(features::kColorProviderRedirection) &&
-       color_scheme != ColorScheme::kPlatformHighContrast) ||
-      should_only_use_dark_colors_)
+       color_scheme != ColorScheme::kPlatformHighContrast))
     return NativeTheme::GetSystemColor(color_id, color_scheme);
 
   if (UsesHighContrastColors()) {
@@ -577,8 +576,7 @@ void NativeThemeMac::PaintMenuItemBackground(
 
 NativeThemeMac::NativeThemeMac(bool configure_web_instance,
                                bool should_only_use_dark_colors)
-    : NativeThemeBase(should_only_use_dark_colors),
-      should_only_use_dark_colors_(should_only_use_dark_colors) {
+    : NativeThemeBase(should_only_use_dark_colors) {
   if (!should_only_use_dark_colors)
     InitializeDarkModeStateAndObserver();
 

@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class NGBoxFragmentBuilder;
 class NGInlineBreakToken;
 
 // Represents a break token for a block node.
@@ -24,27 +25,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   //
   // The node is NGBlockNode, or any other NGLayoutInputNode that produces
   // anonymous box.
-  static scoped_refptr<NGBlockBreakToken> Create(
-      NGLayoutInputNode node,
-      LayoutUnit consumed_block_size,
-      unsigned sequence_number,
-      const NGBreakTokenVector& child_break_tokens,
-      NGBreakAppeal break_appeal,
-      bool has_seen_all_children,
-      bool is_at_block_end) {
-    // We store the children list inline in the break token as a flexible
-    // array. Therefore, we need to make sure to allocate enough space for
-    // that array here, which requires a manual allocation + placement new.
-    void* data = ::WTF::Partitions::FastMalloc(
-        sizeof(NGBlockBreakToken) +
-            child_break_tokens.size() * sizeof(NGBreakToken*),
-        ::WTF::GetStringWithTypeName<NGBlockBreakToken>());
-    new (data)
-        NGBlockBreakToken(PassKey(), node, consumed_block_size, sequence_number,
-                          child_break_tokens, break_appeal,
-                          has_seen_all_children, is_at_block_end);
-    return base::AdoptRef(static_cast<NGBlockBreakToken*>(data));
-  }
+  static scoped_refptr<NGBlockBreakToken> Create(const NGBoxFragmentBuilder&);
 
   // Creates a break token for a node that needs to produce its first fragment
   // in the next fragmentainer. In this case we create a break token for a node
@@ -145,14 +126,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
 
   // Must only be called from Create(), because it assumes that enough space
   // has been allocated in the flexible array to store the children.
-  NGBlockBreakToken(PassKey,
-                    NGLayoutInputNode node,
-                    LayoutUnit consumed_block_size,
-                    unsigned sequence_number,
-                    const NGBreakTokenVector& child_break_tokens,
-                    NGBreakAppeal break_appeal,
-                    bool has_seen_all_children,
-                    bool is_at_block_end);
+  NGBlockBreakToken(PassKey, const NGBoxFragmentBuilder&);
 
   explicit NGBlockBreakToken(PassKey, NGLayoutInputNode node);
 

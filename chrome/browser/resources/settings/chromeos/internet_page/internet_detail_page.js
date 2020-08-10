@@ -490,6 +490,11 @@ Polymer({
         // Update just the scanning state to avoid interrupting other parts of
         // the UI (e.g. custom IP addresses or nameservers).
         this.deviceState_.scanning = newDeviceState.scanning;
+        // Cellular properties are not updated while scanning (since they
+        // may be invalid), so request them on scan completion.
+        if (type === mojom.NetworkType.kCellular) {
+          shouldGetNetworkDetails = true;
+        }
       }
       if (shouldGetNetworkDetails) {
         this.getNetworkDetails_();
@@ -669,6 +674,14 @@ Polymer({
    */
   updateManagedProperties_(properties) {
     this.applyingChanges_ = true;
+    if (this.managedProperties_ &&
+        this.managedProperties_.type === mojom.NetworkType.kCellular &&
+        this.deviceState_ && this.deviceState_.scanning) {
+      // Cellular properties may be invalid while scanning, so keep the existing
+      // properties instead.
+      properties.typeProperties.cellular =
+          this.managedProperties_.typeProperties.cellular;
+    }
     this.managedProperties_ = properties;
     Polymer.RenderStatus.afterNextRender(
         this, () => this.applyingChanges_ = false);

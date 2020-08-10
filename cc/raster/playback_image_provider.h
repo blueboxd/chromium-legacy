@@ -18,6 +18,7 @@ class ImageDecodeCache;
 // decoded images for raster from the ImageDecodeCache.
 class CC_EXPORT PlaybackImageProvider : public ImageProvider {
  public:
+  enum class RasterMode { kSoftware, kGpu, kOop };
   struct CC_EXPORT Settings {
     Settings();
     Settings(const Settings&) = delete;
@@ -34,9 +35,8 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
     // the frame index provided in the PaintImage will be used.
     base::flat_map<PaintImage::Id, size_t> image_to_current_frame_index;
 
-    // Indicates that the consumer of decoded images is paint serialization
-    // for OOP raster.
-    bool use_oop_raster = false;
+    // Indicates the raster backend that will be consuming the decoded images.
+    RasterMode raster_mode = RasterMode::kSoftware;
   };
 
   // If no settings are provided, all images are skipped during rasterization.

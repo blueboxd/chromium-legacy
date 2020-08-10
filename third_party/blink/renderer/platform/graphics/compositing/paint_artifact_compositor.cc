@@ -118,7 +118,7 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
       if (display_item.IsGraphicsLayerWrapper()) {
         const GraphicsLayerDisplayItem& graphics_layer_display_item =
             static_cast<const GraphicsLayerDisplayItem&>(display_item);
-        layer = graphics_layer_display_item.GetGraphicsLayer().CcLayer();
+        layer = &graphics_layer_display_item.GetGraphicsLayer().CcLayer();
         json_client = &graphics_layer_display_item.GetGraphicsLayer();
       } else {
         DCHECK(display_item.IsForeignLayer());
@@ -176,7 +176,7 @@ static scoped_refptr<cc::Layer> CcLayerForPaintChunk(
       DCHECK(RuntimeEnabledFeatures::CompositeSVGEnabled());
       return nullptr;
     }
-    layer = graphics_layer.CcLayer();
+    layer = &graphics_layer.CcLayer();
     layer_offset = FloatPoint(graphics_layer_display_item.GetGraphicsLayer()
                                   .GetOffsetFromTransformNode());
   } else {
@@ -363,7 +363,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
 }
 
 void PaintArtifactCompositor::UpdateTouchActionRects(
-    cc::Layer* layer,
+    cc::Layer& layer,
     const gfx::Vector2dF& layer_offset,
     const PropertyTreeState& layer_state,
     const PaintChunkSubset& paint_chunks) {
@@ -386,11 +386,11 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
           (gfx::Rect)EnclosingIntRect(rect.Rect()));
     }
   }
-  layer->SetTouchActionRegion(std::move(touch_action_in_layer_space));
+  layer.SetTouchActionRegion(std::move(touch_action_in_layer_space));
 }
 
 void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
-    cc::Layer* layer,
+    cc::Layer& layer,
     const gfx::Vector2dF& layer_offset,
     const PropertyTreeState& layer_state,
     const PaintChunkSubset& paint_chunks,
@@ -410,7 +410,7 @@ void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
       if (const auto* scroll_translation = hit_test_data->scroll_translation) {
         const auto& scroll_node = *scroll_translation->ScrollNode();
         auto scroll_element_id = scroll_node.GetCompositorElementId();
-        if (layer->element_id() == scroll_element_id)
+        if (layer.element_id() == scroll_element_id)
           continue;
         // Ensure the cc scroll node to prepare for possible descendant nodes
         // referenced by later composited layers. This can't be done by ensuring
@@ -436,7 +436,7 @@ void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
     non_fast_scrollable_regions_in_layer_space.Union(
         EnclosingIntRect(rect.Rect()));
   }
-  layer->SetNonFastScrollableRegion(non_fast_scrollable_regions_in_layer_space);
+  layer.SetNonFastScrollableRegion(non_fast_scrollable_regions_in_layer_space);
 }
 
 bool PaintArtifactCompositor::HasComposited(
@@ -1310,10 +1310,10 @@ void PaintArtifactCompositor::Update(
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       auto paint_chunks = paint_artifact->GetPaintChunkSubset(
           pending_layer.paint_chunk_indices);
-      UpdateTouchActionRects(layer.get(), layer->offset_to_transform_parent(),
+      UpdateTouchActionRects(*layer, layer->offset_to_transform_parent(),
                              property_state, paint_chunks);
       UpdateNonFastScrollableRegions(
-          layer.get(), layer->offset_to_transform_parent(), property_state,
+          *layer, layer->offset_to_transform_parent(), property_state,
           paint_chunks, &property_tree_manager);
     }
 

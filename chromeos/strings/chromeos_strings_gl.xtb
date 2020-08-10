@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Novo contrasinal</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> xestiona este dispositivo e ten acceso a toda a actividade dos usuarios, como as páxinas web visitadas, os contrasinais e o correo electrónico.</translation>
 <translation id="4003384961948020559">Produciuse un erro: a saída da impresora está chea</translation>
+<translation id="4027485274696301677">Este dispositivo (<ph name="DEVICE_TYPE" />) está xestionado por <ph name="ENROLLMENT_DOMAIN" />. Os administradores poden configuralo de forma remota.</translation>
 <translation id="4034824040120875894">Impresora</translation>
 <translation id="4227825898293920515">O contrasinal caduca en <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Non hai ningunha tarefa de impresión en curso</translation>

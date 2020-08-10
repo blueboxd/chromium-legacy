@@ -506,6 +506,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="6972754398087986839">Get Started</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="698231206551913481">All files and local data associated with this user will be permanently deleted once this user is removed.</translation>
+<translation id="7007983414944123363">Your PIN or password couldn't be verified. Try again.</translation>
 <translation id="7015766095477679451">Come back at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Connect your <ph name="DEVICE_NAME" /> with your phone</translation>
 <translation id="7026338066939101231">Decrement</translation>
@@ -551,6 +552,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="7568294522609223312">Turn off automatic clicks</translation>
 <translation id="7568637526529101738">With a right-click or a long press, Assistant shows info such as the definition or unit conversion for your selection.</translation>
 <translation id="7569509451529460200">Braille and ChromeVox are enabled</translation>
+<translation id="7579778809502851308">Screen capture</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7600875258240007829">See all notifications</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -669,6 +671,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="8841375032071747811">Back button</translation>
 <translation id="8843682306134542540">Toggle rotation lock. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">Your PIN or password still couldn't be verified. Note: If you recently changed your password, use your old password. Your new password will be applied once you've signed out.</translation>
 <translation id="8870509716567206129">App does not support split-screen.</translation>
 <translation id="8874184842967597500">Not connected</translation>
 <translation id="8877788021141246043">Set a reminder</translation>

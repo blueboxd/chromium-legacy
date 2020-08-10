@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">گذرواژه جدید</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> این دستگاه را مدیریت می‌کند و به همه فعالیت‌های کاربر، ازجمله صفحه‌های وب بازدیدشده، گذرواژه‌ها، و ایمیل دسترسی دارد.</translation>
 <translation id="4003384961948020559">انجام نشد - خروجی پُر است</translation>
+<translation id="4027485274696301677"><ph name="ENROLLMENT_DOMAIN" /> این <ph name="DEVICE_TYPE" /> را مدیریت می‌کند. سرپرست‌ها می‌توانند این دستگاه را ازراه‌دور پیکربندی کنند.</translation>
 <translation id="4034824040120875894">چاپگر</translation>
 <translation id="4227825898293920515">گذرواژه <ph name="TIME" /> دیگر منقضی می‌شود</translation>
 <translation id="4238516577297848345">هیچ کار چاپی درحال انجام نیست</translation>

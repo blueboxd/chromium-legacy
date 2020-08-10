@@ -258,7 +258,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     /**
      * Set the delegate that will handle android permissions requests.
      */
-    @VisibleForTesting
     public void setAndroidPermissionDelegate(AndroidPermissionDelegate delegate) {
         mPermissionDelegate = delegate;
     }
@@ -731,7 +730,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         return mApplicationBottomInsetProvider;
     }
 
-    @VisibleForTesting
     public void setKeyboardDelegate(KeyboardVisibilityDelegate keyboardDelegate) {
         mKeyboardVisibilityDelegate = keyboardDelegate;
         // TODO(fhorschig): Remove - every caller should use the window to get the delegate.

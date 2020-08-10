@@ -97,7 +97,6 @@ final class CursorAnchorInfoController {
                 });
     }
 
-    @VisibleForTesting
     public void setInputMethodManagerWrapper(InputMethodManagerWrapper inputMethodManagerWrapper) {
         mInputMethodManagerWrapper = inputMethodManagerWrapper;
     }

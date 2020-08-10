@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">スタック アンワインダー</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4738836084190194332">最終同期: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA エラー: <ph name="ERROR_CODE" />（<ph name="VIOLATED_URL" />）</translation>
 <translation id="4749960740855309258">新しいタブを開く</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 件のダウンロードが完了しました。}other{# 件のダウンロードが完了しました。}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">オフライン コンテンツ</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />（<ph name="ITEM_ID" />）</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
+<translation id="9148126808321036104">もう一度ログインする</translation>
 <translation id="9155898266292537608">単語をタップするだけでも検索できます</translation>
 <translation id="9169507124922466868">ナビゲーション履歴が半分開いています</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{前回の確認: 1 分前}other{前回の確認: # 分前}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">ホーム</translation>
 <translation id="93753284658583800">ホームページを変更しました</translation>
 <translation id="938850635132480979">エラー: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">パスフレーズを入力</translation>
 <translation id="95817756606698420">中国のユーザーは Chrome での検索に <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> を使用できます。この設定は [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で変更可能です。</translation>
 <translation id="968900484120156207">アクセスしたページがここに表示されます</translation>
 <translation id="970715775301869095">残り <ph name="MINUTES" /> 分</translation>

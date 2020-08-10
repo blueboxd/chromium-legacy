@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Nuwe wagwoord</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> bestuur hierdie toestel en het toegang tot alle gebruikeraktiwiteit, insluitend webblaaie wat besoek is, wagwoorde en e-pos.</translation>
 <translation id="4003384961948020559">Misluk – Uitvoer is vol</translation>
+<translation id="4027485274696301677">Hierdie <ph name="DEVICE_TYPE" /> word bestuur deur <ph name="ENROLLMENT_DOMAIN" />. Administrateurs kan die toestel oor 'n afstand opstel.</translation>
 <translation id="4034824040120875894">Drukker</translation>
 <translation id="4227825898293920515">Wagwoord verval oor <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Geen druktake aan die gang nie</translation>

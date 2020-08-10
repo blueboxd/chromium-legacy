@@ -49,6 +49,10 @@ struct ASH_PUBLIC_EXPORT WeatherInfo {
 
   // Weather temperature in Fahrenheit.
   base::Optional<float> temp_f;
+
+  // If the temperature should be displayed in celsius. Conversion must happen
+  // before the value in temp_f is displayed.
+  bool show_celsius = false;
 };
 
 // Trimmed-down version of |backdrop::ScreenUpdate| proto from the backdrop

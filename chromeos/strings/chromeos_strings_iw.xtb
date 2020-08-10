@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">סיסמה חדשה</translation>
 <translation id="4003259559679196451">הניהול של המכשיר הזה מתבצע מהדומיין<ph name="ENROLLMENT_DOMAIN" /> ואפשר לגשת ממנו אל כל המידע על הפעילות של המשתמשים, כולל דפי אינטרנט שנכנסת אליהם, סיסמאות ואימייל.</translation>
 <translation id="4003384961948020559">נכשלה – מגש הפלט מלא</translation>
+<translation id="4027485274696301677"><ph name="DEVICE_TYPE" /> זה מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" />. מנהלי מערכת עשויים להגדיר את המכשיר הזה מרחוק.</translation>
 <translation id="4034824040120875894">מדפסת</translation>
 <translation id="4227825898293920515">תוקף הסיסמה יפוג בעוד <ph name="TIME" /></translation>
 <translation id="4238516577297848345">אין משימות הדפסה שמתבצעות כרגע</translation>

@@ -43,6 +43,7 @@ import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.url.GURL;
 
 import java.util.List;
 
@@ -97,6 +98,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
         Mockito.when(mUserPrefsNatives.get(mProfile)).thenReturn(mPrefService);
         Mockito.when(mTabProvider.get()).thenReturn(mTab);
         Mockito.when(mTab.getWebContents()).thenReturn(mWebContents);
+        Mockito.when(mTab.getUrl()).thenReturn(new GURL(URL));
         Mockito.when(mWebContents.isIncognito()).thenReturn(false);
         mActivity = mActivityTestRule.getActivity();
     }
@@ -257,7 +259,8 @@ public class ChromeProvidedSharingOptionsProviderTest {
                 new ChromeShareExtras.Builder().setImageSrcUrl(URL).build();
 
         assertEquals("URL should be imageSrcUrl.",
-                ChromeProvidedSharingOptionsProvider.getUrlToShare(shareParams, chromeShareExtras),
+                ChromeProvidedSharingOptionsProvider.getUrlToShare(
+                        shareParams, chromeShareExtras, ""),
                 URL);
     }
 
@@ -269,7 +272,21 @@ public class ChromeProvidedSharingOptionsProviderTest {
                 new ChromeShareExtras.Builder().setImageSrcUrl("").build();
 
         assertEquals("URL should be ShareParams URL.",
-                ChromeProvidedSharingOptionsProvider.getUrlToShare(shareParams, chromeShareExtras),
+                ChromeProvidedSharingOptionsProvider.getUrlToShare(
+                        shareParams, chromeShareExtras, ""),
+                URL);
+    }
+
+    @Test
+    @MediumTest
+    public void getUrlToShare_noShareParamsUrl_noImageUrl() {
+        ShareParams shareParams = new ShareParams.Builder(null, /*title=*/"", /*url=*/"").build();
+        ChromeShareExtras chromeShareExtras =
+                new ChromeShareExtras.Builder().setImageSrcUrl("").build();
+
+        assertEquals("URL should be ShareParams URL.",
+                ChromeProvidedSharingOptionsProvider.getUrlToShare(
+                        shareParams, chromeShareExtras, URL),
                 URL);
     }
 

@@ -37,7 +37,8 @@ const base::Feature kDefaultEnableGpuRasterization{
 
 // Enable out of process rasterization by default.  This can still be overridden
 // by --enable-oop-rasterization or --disable-oop-rasterization.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_MAC)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
+    defined(OS_WIN) || defined(OS_FUCHSIA)
 const base::Feature kDefaultEnableOopRasterization{
     "DefaultEnableOopRasterization", base::FEATURE_ENABLED_BY_DEFAULT};
 #else

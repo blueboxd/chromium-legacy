@@ -626,8 +626,7 @@ void Scheduler::BeginImplFrame(const viz::BeginFrameArgs& args,
     begin_impl_frame_tracker_.Start(args);
     state_machine_.OnBeginImplFrame(args.frame_id, args.animate_only);
     devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
-    compositor_timing_history_->WillBeginImplFrame(
-        args, state_machine_.NewActiveTreeLikely(), now);
+    compositor_timing_history_->WillBeginImplFrame(args, now);
     bool has_damage =
         client_->WillBeginImplFrame(begin_impl_frame_tracker_.Current());
 

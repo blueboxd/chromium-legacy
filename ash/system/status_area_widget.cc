@@ -4,6 +4,7 @@
 
 #include "ash/system/status_area_widget.h"
 
+#include "ash/capture_mode/stop_recording_button_tray.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -103,6 +104,12 @@ void StatusAreaWidget::Initialize() {
 
   virtual_keyboard_tray_ = std::make_unique<VirtualKeyboardTray>(shelf_);
   AddTrayButton(virtual_keyboard_tray_.get());
+
+  if (features::IsCaptureModeEnabled()) {
+    stop_recording_button_tray_ =
+        std::make_unique<StopRecordingButtonTray>(shelf_);
+    AddTrayButton(stop_recording_button_tray_.get());
+  }
 
   palette_tray_ = std::make_unique<PaletteTray>(shelf_);
   AddTrayButton(palette_tray_.get());

@@ -190,7 +190,8 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
   // necessary.
   image_ = image_->MakeUnaccelerated();
 
-  sk_sp<SkImage> skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
+  sk_sp<SkImage> skia_image =
+      image_->PaintImageForCurrentFrame().GetSwSkImage();
   DCHECK(skia_image);
   DCHECK(!skia_image->isTextureBacked());
 

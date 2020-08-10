@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">नयाँ पासवर्ड</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" />ले यस यन्त्रको व्यवस्थापन गर्छ र भ्रमण गरिएका वेब पृष्ठ, पासवर्ड र इमेललगायत प्रयोगकर्ताका सबै क्रियाकलापमाथि यसको पहुँच छ।</translation>
 <translation id="4003384961948020559">प्रिन्ट गर्न सकिएन - ट्रे भरियो</translation>
+<translation id="4027485274696301677"><ph name="ENROLLMENT_DOMAIN" /> ले यो <ph name="DEVICE_TYPE" /> व्यवस्थापन गर्छ। एड्मिनहरू टाढैबाट यो यन्त्र कन्फिगर गर्न सक्छन्।</translation>
 <translation id="4034824040120875894">प्रिन्टर</translation>
 <translation id="4227825898293920515">पासवर्डको म्याद <ph name="TIME" /> मा सकिन्छ</translation>
 <translation id="4238516577297848345">प्रिन्टसम्बन्धी कुनै पनि काम भइरहेको छैन</translation>

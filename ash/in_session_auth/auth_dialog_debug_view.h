@@ -18,6 +18,9 @@ class LabelButton;
 
 namespace ash {
 
+class LoginPasswordView;
+class LoginPinView;
+
 // Contains the debug views that allows the developer to interact with the
 // AuthDialogController.
 class AuthDialogDebugView : public views::View, public views::ButtonListener {
@@ -37,6 +40,15 @@ class AuthDialogDebugView : public views::View, public views::ButtonListener {
   // Add a view for the prompt message.
   void AddPromptView();
 
+  // Add a view for password input field.
+  void AddPasswordView();
+
+  // Add a PIN pad view.
+  void AddPinView();
+
+  // Initializes password input field functionality.
+  void InitPasswordView();
+
   // Add a vertical spacing view.
   void AddVerticalSpacing(int height);
 
@@ -47,6 +59,9 @@ class AuthDialogDebugView : public views::View, public views::ButtonListener {
   views::LabelButton* AddButton(const std::string& text,
                                 int id,
                                 views::View* container);
+
+  // Called when the user submits password or PIN.
+  void OnAuthSubmit(const base::string16& password);
 
   // Debug container which holds the entire debug UI.
   views::View* container_ = nullptr;
@@ -59,6 +74,12 @@ class AuthDialogDebugView : public views::View, public views::ButtonListener {
 
   // Prompt message to the user.
   views::Label* prompt_ = nullptr;
+
+  // Password input field for password and PIN.
+  LoginPasswordView* password_view_ = nullptr;
+
+  // PIN pad view.
+  LoginPinView* pin_view_ = nullptr;
 
   // Show other authentication mechanisms if more than one.
   views::LabelButton* more_options_button_ = nullptr;

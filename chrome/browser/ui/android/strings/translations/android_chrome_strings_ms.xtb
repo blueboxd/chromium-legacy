@@ -327,7 +327,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="3566923219790363270">Chrome masih bersiap bersedia untuk VR. Mulakan semula Chrome kemudian.</translation>
 <translation id="3568688522516854065">Log masuk dan hidupkan penyegerakan untuk mendapatkan tab daripada peranti anda yang lain</translation>
 <translation id="3587482841069643663">Semua</translation>
-<translation id="3587596251841506391">Bantu tingkatkan keselamatan di web</translation>
+<translation id="3587596251841506391">Tingkatkan keselamatan pada web</translation>
 <translation id="3590487821116122040">Storan tapak yang Chrome anggap tidak penting (misalnya tapak yang tiada tetapan yang disimpan atau yang jarang anda lawati)</translation>
 <translation id="3594780231884063836">Redam video</translation>
 <translation id="3599863153486145794">Mengosongkan sejarah daripada semua peranti yang dilog masuk. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -462,7 +462,6 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4732120983431207637">Pengurai Tindanan</translation>
 <translation id="473775607612524610">Kemas kini</translation>
 <translation id="4738836084190194332">Kali terakhir disegerakkan: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">Ralat TWA: <ph name="ERROR_CODE" /> pada <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Buka tab baharu</translation>
 <translation id="4759238208242260848">Muat turun</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 muat turun selesai.}other{# muat turun selesai.}}</translation>
@@ -1047,6 +1046,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="9133397713400217035">Teroka Luar Talian</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Paparkan asal</translation>
+<translation id="9148126808321036104">Log masuk semula</translation>
 <translation id="9155898266292537608">Anda juga boleh mencari dengan mengetik pantas pada perkataan</translation>
 <translation id="9169507124922466868">Sejarah navigasi separa terbuka</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Disemak 1 minit yang lalu}other{Disemak # minit yang lalu}}</translation>
@@ -1059,6 +1059,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="932327136139879170">Laman Utama</translation>
 <translation id="93753284658583800">Halaman utama ditukar</translation>
 <translation id="938850635132480979">Ralat: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Masukkan frasa laluan</translation>
 <translation id="95817756606698420">Chrome boleh menggunakan <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> untuk melakukan carian di China. Anda boleh menukarnya dalam <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Halaman yang anda lawati dipaparkan di sini</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minit lagi</translation>

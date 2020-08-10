@@ -9,6 +9,7 @@
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
@@ -67,58 +68,9 @@ VideoFrame::VideoFrame(scoped_refptr<media::VideoFrame> frame)
   DCHECK(frame_);
 }
 
-scoped_refptr<media::VideoFrame> VideoFrame::frame() {
-  return frame_;
-}
-
-scoped_refptr<const media::VideoFrame> VideoFrame::frame() const {
-  return frame_;
-}
-
-uint64_t VideoFrame::timestamp() const {
-  if (!frame_)
-    return 0;
-  return frame_->timestamp().InMicroseconds();
-}
-
-base::Optional<uint64_t> VideoFrame::duration() const {
-  if (frame_ && frame_->metadata()->frame_duration.has_value())
-    return frame_->metadata()->frame_duration->InMicroseconds();
-
-  return base::Optional<uint64_t>();
-}
-
-uint32_t VideoFrame::codedWidth() const {
-  if (!frame_)
-    return 0;
-  return frame_->coded_size().width();
-}
-
-uint32_t VideoFrame::codedHeight() const {
-  if (!frame_)
-    return 0;
-  return frame_->coded_size().height();
-}
-
-uint32_t VideoFrame::visibleWidth() const {
-  if (!frame_)
-    return 0;
-  return frame_->visible_rect().width();
-}
-
-uint32_t VideoFrame::visibleHeight() const {
-  if (!frame_)
-    return 0;
-  return frame_->visible_rect().height();
-}
-
-void VideoFrame::close() {
-  frame_.reset();
-}
-
 // static
-VideoFrame* VideoFrame::Create(VideoFrameInit* init,
-                               ImageBitmap* source,
+VideoFrame* VideoFrame::Create(ImageBitmap* source,
+                               VideoFrameInit* init,
                                ExceptionState& exception_state) {
   if (!source) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
@@ -211,6 +163,89 @@ VideoFrame* VideoFrame::Create(VideoFrameInit* init,
   return result;
 }
 
+String VideoFrame::format() const {
+  // TODO(sandersd): Look up on |frame_|.
+  return String();
+}
+
+HeapVector<Member<Plane>> VideoFrame::planes() const {
+  // TODO(sandersd): Should probably be extrated and cached.
+  return HeapVector<Member<Plane>>();
+}
+
+uint32_t VideoFrame::codedWidth() const {
+  if (!frame_)
+    return 0;
+  return frame_->coded_size().width();
+}
+
+uint32_t VideoFrame::codedHeight() const {
+  if (!frame_)
+    return 0;
+  return frame_->coded_size().height();
+}
+
+uint32_t VideoFrame::cropLeft() const {
+  if (!frame_)
+    return 0;
+  return frame_->visible_rect().x();
+}
+
+uint32_t VideoFrame::cropTop() const {
+  if (!frame_)
+    return 0;
+  return frame_->visible_rect().y();
+}
+
+uint32_t VideoFrame::cropWidth() const {
+  if (!frame_)
+    return 0;
+  return frame_->visible_rect().width();
+}
+
+uint32_t VideoFrame::cropHeight() const {
+  if (!frame_)
+    return 0;
+  return frame_->visible_rect().height();
+}
+
+uint32_t VideoFrame::displayWidth() const {
+  if (!frame_)
+    return 0;
+  return frame_->natural_size().width();
+}
+
+uint32_t VideoFrame::displayHeight() const {
+  if (!frame_)
+    return 0;
+  return frame_->natural_size().height();
+}
+
+base::Optional<uint64_t> VideoFrame::timestamp() const {
+  if (!frame_ || frame_->timestamp() == media::kNoTimestamp)
+    return base::nullopt;
+  return frame_->timestamp().InMicroseconds();
+}
+
+base::Optional<uint64_t> VideoFrame::duration() const {
+  // TODO(sandersd): Can a duration be kNoTimestamp?
+  if (!frame_ || !frame_->metadata()->frame_duration.has_value())
+    return base::nullopt;
+  return frame_->metadata()->frame_duration->InMicroseconds();
+}
+
+void VideoFrame::close() {
+  frame_.reset();
+}
+
+scoped_refptr<media::VideoFrame> VideoFrame::frame() {
+  return frame_;
+}
+
+scoped_refptr<const media::VideoFrame> VideoFrame::frame() const {
+  return frame_;
+}
+
 ScriptPromise VideoFrame::createImageBitmap(ScriptState* script_state,
                                             const ImageBitmapOptions* options,
                                             ExceptionState& exception_state) {
@@ -219,7 +254,8 @@ ScriptPromise VideoFrame::createImageBitmap(ScriptState* script_state,
 }
 
 IntSize VideoFrame::BitmapSourceSize() const {
-  return IntSize(visibleWidth(), visibleHeight());
+  // TODO(crbug.com/1096724): Should be scaled to display size.
+  return IntSize(cropWidth(), cropHeight());
 }
 
 bool VideoFrame::preferAcceleratedImageBitmap() const {
@@ -245,8 +281,8 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
     }
 
     if (!preferAcceleratedImageBitmap()) {
-      size_t bytes_per_row = sizeof(SkColor) * visibleWidth();
-      size_t image_pixels_size = bytes_per_row * visibleHeight();
+      size_t bytes_per_row = sizeof(SkColor) * cropWidth();
+      size_t image_pixels_size = bytes_per_row * cropHeight();
 
       sk_sp<SkData> image_pixels = TryAllocateSkData(image_pixels_size);
       if (!image_pixels) {
@@ -258,7 +294,7 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
           frame_.get(), image_pixels->writable_data(), bytes_per_row);
 
       SkImageInfo info =
-          SkImageInfo::Make(visibleWidth(), visibleHeight(), kN32_SkColorType,
+          SkImageInfo::Make(cropWidth(), cropHeight(), kN32_SkColorType,
                             kUnpremul_SkAlphaType, std::move(sk_color_space));
       sk_sp<SkImage> skImage =
           SkImage::MakeRasterData(info, image_pixels, bytes_per_row);

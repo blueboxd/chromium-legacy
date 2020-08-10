@@ -602,6 +602,7 @@ TEST_F(RealTimeUrlLookupServiceTest,
       url,
       base::BindOnce(
           [](std::unique_ptr<RTLookupRequest> request, std::string token) {
+            EXPECT_FALSE(request->has_dm_token());
             // Check token is attached.
             EXPECT_EQ("access_token_string", token);
           }),

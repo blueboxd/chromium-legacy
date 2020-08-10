@@ -942,7 +942,9 @@ Animation::AnimationPlayState Animation::CalculateAnimationPlayState() const {
   //    * animation does not have either a pending play task or a pending pause
   //      task,
   //    then idle.
-  if (!CurrentTimeInternal() && !start_time_ && !PendingInternal())
+  // https://github.com/w3c/csswg-drafts/issues/5400
+  if (!CurrentTimeInternal() && (!start_time_ || !timeline_) &&
+      !PendingInternal())
     return kIdle;
 
   // 2. Either of the following conditions are true:

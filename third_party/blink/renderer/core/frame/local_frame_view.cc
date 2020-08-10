@@ -2803,7 +2803,7 @@ static void UpdateLayerDebugInfoRecursively(const GraphicsLayer& root) {
       root,
       [](const GraphicsLayer& layer) {
         PaintArtifactCompositor::UpdateLayerDebugInfo(
-            *layer.CcLayer(),
+            layer.CcLayer(),
             PaintChunk::Id(layer, DisplayItem::kGraphicsLayerWrapper),
             layer.GetCompositingReasons(),
             layer.GetRasterInvalidationTracking());

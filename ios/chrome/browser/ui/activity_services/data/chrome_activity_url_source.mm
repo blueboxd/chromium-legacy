@@ -15,7 +15,6 @@
 
 @interface ChromeActivityURLSource () {
   NSString* _subject;
-  ChromeActivityItemThumbnailGenerator* _thumbnailGenerator;
 }
 
 // URL to be shared with share extensions.
@@ -25,18 +24,13 @@
 
 @implementation ChromeActivityURLSource
 
-- (instancetype)initWithShareURL:(NSURL*)shareURL
-                         subject:(NSString*)subject
-              thumbnailGenerator:
-                  (ChromeActivityItemThumbnailGenerator*)thumbnailGenerator {
+- (instancetype)initWithShareURL:(NSURL*)shareURL subject:(NSString*)subject {
   DCHECK(shareURL);
   DCHECK(subject);
-  DCHECK(thumbnailGenerator);
   self = [super init];
   if (self) {
     _shareURL = shareURL;
     _subject = [subject copy];
-    _thumbnailGenerator = thumbnailGenerator;
   }
   return self;
 }
@@ -79,7 +73,7 @@
                 (UIActivityViewController*)activityViewController
      thumbnailImageForActivityType:(UIActivityType)activityType
                      suggestedSize:(CGSize)size {
-  return [_thumbnailGenerator thumbnailWithSize:size];
+  return [self.thumbnailGenerator thumbnailWithSize:size];
 }
 
 @end

@@ -173,7 +173,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   const IntRect& ContentsRect() const { return contents_rect_; }
 
   // For hosting this GraphicsLayer in a native layer hierarchy.
-  cc::PictureLayer* CcLayer() const;
+  cc::PictureLayer& CcLayer() const { return *layer_; }
 
   void UpdateTrackingRasterInvalidations();
   void ResetTrackedRasterInvalidations();

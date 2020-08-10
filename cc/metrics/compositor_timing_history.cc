@@ -25,7 +25,6 @@ class CompositorTimingHistory::UMAReporter {
   virtual ~UMAReporter() = default;
 
   // Throughput measurements
-  virtual void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) = 0;
   virtual void AddDrawInterval(base::TimeDelta interval) = 0;
 
   // Latency measurements
@@ -36,7 +35,6 @@ class CompositorTimingHistory::UMAReporter {
       base::TimeDelta duration,
       TreePriority priority) = 0;
   virtual void AddPrepareTilesDuration(base::TimeDelta duration) = 0;
-  virtual void AddActivateDuration(base::TimeDelta duration) = 0;
   virtual void AddDrawDuration(base::TimeDelta duration) = 0;
   virtual void AddSubmitToAckLatency(base::TimeDelta duration) = 0;
 
@@ -293,11 +291,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
  public:
   ~RendererUMAReporter() override = default;
 
-  void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Renderer.BeginMainFrameIntervalCritical", interval);
-  }
-
   void AddDrawInterval(base::TimeDelta interval) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED("Scheduling.Renderer.DrawInterval",
                                              interval);
@@ -335,11 +328,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Renderer.PrepareTilesDuration", duration);
   }
 
-  void AddActivateDuration(base::TimeDelta duration) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Renderer.ActivateDuration",
-                                        duration);
-  }
-
   void AddDrawDuration(base::TimeDelta duration) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Renderer.DrawDuration",
                                         duration);
@@ -354,10 +342,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
 class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
  public:
   ~BrowserUMAReporter() override = default;
-
-  // BeginMainFrameIntervalCritical is not meaningful to measure on browser
-  // side because browser rendering fps is not at 60.
-  void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {}
 
   // DrawInterval is not meaningful to measure on browser side because
   // browser rendering fps is not at 60.
@@ -391,8 +375,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Browser.PrepareTilesDuration", duration);
   }
 
-  void AddActivateDuration(base::TimeDelta duration) override {}
-
   void AddDrawDuration(base::TimeDelta duration) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Browser.DrawDuration",
                                         duration);
@@ -407,7 +389,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
 class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
  public:
   ~NullUMAReporter() override = default;
-  void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {}
   void AddDrawInterval(base::TimeDelta interval) override {}
   void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta inverval) override {}
@@ -418,7 +399,6 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
       base::TimeDelta duration,
       TreePriority priority) override {}
   void AddPrepareTilesDuration(base::TimeDelta duration) override {}
-  void AddActivateDuration(base::TimeDelta duration) override {}
   void AddDrawDuration(base::TimeDelta duration) override {}
   void AddSubmitToAckLatency(base::TimeDelta duration) override {}
 };
@@ -434,7 +414,6 @@ CompositorTimingHistory::CompositorTimingHistory(
           using_synchronous_renderer_compositor),
       enabled_(false),
       did_send_begin_main_frame_(false),
-      begin_main_frame_needed_continuously_(false),
       compositor_drawing_continuously_(false),
       begin_main_frame_queue_duration_history_(kDurationHistorySize),
       begin_main_frame_queue_duration_critical_history_(kDurationHistorySize),
@@ -492,13 +471,6 @@ base::TimeTicks CompositorTimingHistory::Now() const {
 
 void CompositorTimingHistory::SetRecordingEnabled(bool enabled) {
   enabled_ = enabled;
-}
-
-void CompositorTimingHistory::SetBeginMainFrameNeededContinuously(bool active) {
-  if (active == begin_main_frame_needed_continuously_)
-    return;
-  begin_main_frame_end_time_prev_ = base::TimeTicks();
-  begin_main_frame_needed_continuously_ = active;
 }
 
 void CompositorTimingHistory::SetCompositorDrawingContinuously(bool active) {
@@ -571,22 +543,11 @@ void CompositorTimingHistory::DidCreateAndInitializeLayerTreeFrameSink() {
 
 void CompositorTimingHistory::WillBeginImplFrame(
     const viz::BeginFrameArgs& args,
-    bool new_active_tree_is_likely,
     base::TimeTicks now) {
   viz::BeginFrameArgs::BeginFrameArgsType frame_type = args.type;
   base::TimeTicks frame_time = args.frame_time;
 
   compositor_frame_reporting_controller_->WillBeginImplFrame(args);
-
-  // The check for whether a BeginMainFrame was sent anytime between two
-  // BeginImplFrames protects us from not detecting a fast main thread that
-  // does all it's work and goes idle in between BeginImplFrames.
-  // For example, this may happen if an animation is being driven with
-  // setInterval(17) or if input events just happen to arrive in the
-  // middle of every frame.
-  if (!new_active_tree_is_likely && !did_send_begin_main_frame_) {
-    SetBeginMainFrameNeededContinuously(false);
-  }
 
   if (frame_type == viz::BeginFrameArgs::NORMAL)
     uma_reporter_->AddBeginImplFrameLatency(now - frame_time);
@@ -603,7 +564,6 @@ void CompositorTimingHistory::WillFinishImplFrame(bool needs_redraw,
 }
 
 void CompositorTimingHistory::BeginImplFrameNotExpectedSoon() {
-  SetBeginMainFrameNeededContinuously(false);
   SetCompositorDrawingContinuously(false);
   compositor_frame_reporting_controller_->OnStoppedRequestingBeginFrames();
 }
@@ -618,7 +578,6 @@ void CompositorTimingHistory::WillBeginMainFrame(
   begin_main_frame_sent_time_ = Now();
 
   did_send_begin_main_frame_ = true;
-  SetBeginMainFrameNeededContinuously(true);
 }
 
 void CompositorTimingHistory::BeginMainFrameStarted(
@@ -695,16 +654,6 @@ void CompositorTimingHistory::DidBeginMainFrame(
       begin_main_frame_queue_duration_not_critical_history_.InsertSample(
           begin_main_frame_queue_duration);
     }
-  }
-
-  if (begin_main_frame_needed_continuously_) {
-    if (!begin_main_frame_end_time_prev_.is_null()) {
-      base::TimeDelta commit_interval =
-          begin_main_frame_end_time - begin_main_frame_end_time_prev_;
-      if (begin_main_frame_on_critical_path_)
-        uma_reporter_->AddBeginMainFrameIntervalCritical(commit_interval);
-    }
-    begin_main_frame_end_time_prev_ = begin_main_frame_end_time;
   }
 
   begin_main_frame_sent_time_ = base::TimeTicks();
@@ -784,7 +733,6 @@ void CompositorTimingHistory::DidActivate() {
   compositor_frame_reporting_controller_->DidActivate();
   base::TimeDelta activate_duration = Now() - activate_start_time_;
 
-  uma_reporter_->AddActivateDuration(activate_duration);
   if (enabled_)
     activate_duration_history_.InsertSample(activate_duration);
 

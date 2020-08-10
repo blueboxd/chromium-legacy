@@ -27,6 +27,15 @@ Polymer({
       value: AmbientModeTopicSource,
     },
 
+    /**
+     * Used to refer to the enum values in the HTML.
+     * @private {!Object<string, AmbientModeTemperatureUnit>}
+     */
+    AmbientModeTemperatureUnit_: {
+      type: Object,
+      value: AmbientModeTemperatureUnit,
+    },
+
     // TODO(b/160632748): Dynamically generate topic source of Google Photos.
     /** @private {!Array<!AmbientModeTopicSource>} */
     topicSources_: {
@@ -40,6 +49,13 @@ Polymer({
     selectedTopicSource_: {
       type: AmbientModeTopicSource,
       value: AmbientModeTopicSource.UNKNOWN,
+    },
+
+    /** @private {!AmbientModeTemperatureUnit} */
+    selectedTemperatureUnit_: {
+      type: AmbientModeTemperatureUnit,
+      value: AmbientModeTemperatureUnit.UNKNOWN,
+      observer: 'onSelectedTemperatureUnitChanged_'
     },
   },
 
@@ -58,9 +74,18 @@ Polymer({
 
   /** @override */
   ready() {
-    this.addWebUIListener('topic-source-changed', (topicSource) => {
-      this.selectedTopicSource_ = topicSource;
-    });
+    this.addWebUIListener(
+        'topic-source-changed',
+        (/** @type {!AmbientModeTopicSource} */ topicSource) => {
+          this.selectedTopicSource_ = topicSource;
+        },
+    );
+    this.addWebUIListener(
+        'temperature-unit-changed',
+        (/** @type {!AmbientModeTemperatureUnit} */ temperatureUnit) => {
+          this.selectedTemperatureUnit_ = temperatureUnit;
+        },
+    );
   },
 
   /**
@@ -73,7 +98,7 @@ Polymer({
       return;
     }
 
-    this.browserProxy_.requestTopicSource();
+    this.browserProxy_.requestSettings();
   },
 
   /**
@@ -86,12 +111,34 @@ Polymer({
   },
 
   /**
+   * @param {!AmbientModeTemperatureUnit} temperatureUnit
+   * @return {boolean}
+   * @private
+   */
+  isValidTemperatureUnit_(temperatureUnit) {
+    return temperatureUnit === AmbientModeTemperatureUnit.FAHRENHEIT ||
+        temperatureUnit === AmbientModeTemperatureUnit.CELSIUS;
+  },
+
+  /**
    * @param {number} topicSource
    * @return {boolean}
    * @private
    */
   isValidTopicSource_(topicSource) {
     return topicSource !== AmbientModeTopicSource.UNKNOWN;
+  },
+
+  /**
+   * @param {!AmbientModeTemperatureUnit} newValue
+   * @param {!AmbientModeTemperatureUnit} oldValue
+   * @private
+   */
+  onSelectedTemperatureUnitChanged_(newValue, oldValue) {
+    if (newValue && newValue !== AmbientModeTemperatureUnit.UNKNOWN &&
+        newValue !== oldValue) {
+      this.browserProxy_.setSelectedTemperatureUnit(newValue);
+    }
   },
 
   /**

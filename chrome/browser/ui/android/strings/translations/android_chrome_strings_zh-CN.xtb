@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">堆栈展开程序</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4738836084190194332">上次同步时间：<ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA 错误：<ph name="VIOLATED_URL" /> 上发生了 <ph name="ERROR_CODE" /> 错误</translation>
 <translation id="4749960740855309258">打开新标签页</translation>
 <translation id="4759238208242260848">下载内容</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{已完成 1 项下载。}other{已完成 # 项下载。}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">离线浏览</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
+<translation id="9148126808321036104">重新登录</translation>
 <translation id="9155898266292537608">您也可以通过快速点按某个字词进行搜索</translation>
 <translation id="9169507124922466868">导航历史记录在下半屏中显示</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 分钟前检查过}other{# 分钟前检查过}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">首页</translation>
 <translation id="93753284658583800">主页已更改</translation>
 <translation id="938850635132480979">错误：<ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">请输入密码</translation>
 <translation id="95817756606698420">在中国，Chrome 可以使用<ph name="BEGIN_BOLD" />搜狗<ph name="END_BOLD" />作为搜索引擎。如果需要，您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中进行更改。</translation>
 <translation id="968900484120156207">您访问的网页会显示在此处</translation>
 <translation id="970715775301869095">还剩 <ph name="MINUTES" /> 分钟</translation>

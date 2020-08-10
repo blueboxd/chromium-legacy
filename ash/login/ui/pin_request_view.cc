@@ -333,13 +333,13 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
 
   // Pin keyboard. Note that the keyboard's own submit button is disabled via
   // passing a null |on_submit| callback.
-  pin_keyboard_view_ =
-      new LoginPinView(LoginPinView::Style::kAlphanumeric,
-                       base::BindRepeating(&AccessCodeInput::InsertDigit,
-                                           base::Unretained(access_code_view_)),
-                       base::BindRepeating(&AccessCodeInput::Backspace,
-                                           base::Unretained(access_code_view_)),
-                       /*on_submit=*/LoginPinView::OnPinSubmit());
+  pin_keyboard_view_ = new LoginPinView(
+      LoginPinView::Style::kAlphanumeric, CreateDefaultLoginPalette(),
+      base::BindRepeating(&AccessCodeInput::InsertDigit,
+                          base::Unretained(access_code_view_)),
+      base::BindRepeating(&AccessCodeInput::Backspace,
+                          base::Unretained(access_code_view_)),
+      /*on_submit=*/LoginPinView::OnPinSubmit());
   // Backspace key is always enabled and |access_code_| field handles it.
   pin_keyboard_view_->OnPasswordTextChanged(false);
   AddChildView(pin_keyboard_view_);

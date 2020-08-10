@@ -137,7 +137,7 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
                               RTLookupResponseCallback response_callback) = 0;
 
   // Gets a dm token string to be set in a request proto.
-  virtual std::string GetDMTokenString() const = 0;
+  virtual base::Optional<std::string> GetDMTokenString() const = 0;
 
   // Suffix for logging metrics.
   virtual std::string GetMetricSuffix() const = 0;

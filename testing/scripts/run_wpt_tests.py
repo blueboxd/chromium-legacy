@@ -43,6 +43,7 @@ class WPTTestAdapter(wpt_common.BaseWptScriptAdapter):
             "--binary-arg=--enable-experimental-web-platform-features",
             "--binary-arg=--enable-blink-features=MojoJS,MojoJSTest",
             "--webdriver-binary=../../out/Release/chromedriver",
+            "--webdriver-arg=--enable-chrome-logs",
             "--headless",
             "--no-capture-stdio",
             "--no-manifest-download",

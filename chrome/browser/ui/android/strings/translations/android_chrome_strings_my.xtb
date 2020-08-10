@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">တည်းဖြတ်မှုကို နောက်ပြန်ဆုတ်သည့်စနစ်</translation>
 <translation id="473775607612524610">အပ်ဒိတ်လုပ်ရန်</translation>
 <translation id="4738836084190194332">နောက်ဆုံး စင့်က် လုပ်ခဲ့မှု- <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA အမှား - <ph name="VIOLATED_URL" /> ရှိ <ph name="ERROR_CODE" /></translation>
 <translation id="4749960740855309258">တဘ်အသစ်တစ်ခု ဖွင့်ရန်</translation>
 <translation id="4759238208242260848">ဒေါင်းလုဒ်များ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{ဒေါင်းလုဒ် ၁ ခု လုပ်ပြီးပါပြီ။}other{ဒေါင်းလုဒ် # ခု လုပ်ပြီးပါပြီ။}}</translation>
@@ -1046,6 +1045,7 @@
 <translation id="9133397713400217035">အော့ဖ်လိုင်းတွင် စူးစမ်းလေ့လာရန်</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">မူရင်းအား ပြ</translation>
+<translation id="9148126808321036104">ထပ်ပြီး လက်မှတ်ထိုး ဝင်ရန်</translation>
 <translation id="9155898266292537608">စာလုံးပေါ်ကို အမြန်တို့၍လည်း ရှာနိုင်သည်</translation>
 <translation id="9169507124922466868">လမ်းညွှန်မှု မှတ်တမ်း တစ်ဝက်ဖွင့်ထားသည်</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{လွန်ခဲ့သော ၁ မိနစ်က စစ်ဆေးခဲ့သည်}other{လွန်ခဲ့သော # မိနစ်က စစ်ဆေးခဲ့သည်}}</translation>
@@ -1058,6 +1058,7 @@
 <translation id="932327136139879170">ပင်မ</translation>
 <translation id="93753284658583800">ပင်မစာမျက်နှာ ပြောင်းလိုက်သည်</translation>
 <translation id="938850635132480979">အမှား- <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">စကားစုဝှက်ကို ရိုက်ထည့်ရန်</translation>
 <translation id="95817756606698420">Chrome သည် တရုတ်ပြည်တွင် ရှာဖွေရန် <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> ကို အသုံးပြုနိုင်ပါသည်။ ၎င်းကို <ph name="BEGIN_LINK" />ဆက်တင်များ<ph name="END_LINK" /> ထဲတွင် ပြောင်းလဲနိုင်သည်။</translation>
 <translation id="968900484120156207">သင်ဝင်ကြည့်သည့် စာမျက်နှာများကို ဤနေရာတွင် တွေ့ရပါမည်</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> မိနစ် ကျန်သည်</translation>

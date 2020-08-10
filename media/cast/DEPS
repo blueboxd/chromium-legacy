@@ -4,5 +4,6 @@ include_rules = [
   "+net",
   "+third_party/libyuv",
   "+third_party/zlib",
+  "+ui/base",
   "+ui/gfx",
 ]

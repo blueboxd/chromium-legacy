@@ -39,9 +39,6 @@ enum PrinterErrorCode {
 struct CompletedPrintJobInfo {
   // Corresponds to the status of the print job after it has completed.
   PrintJobCompletionStatus completion_status;
-
-  // Corresponds to the error code reported by the printer.
-  PrinterErrorCode printer_error_code;
 };
 
 // Enumeration of ongoing print job status.
@@ -85,6 +82,9 @@ struct PrintJobInfo {
 
   // The URI of the printer the print job was requested to.
   url.mojom.Url printer_uri;
+
+  // Corresponds to the error code reported by the printer.
+  PrinterErrorCode printer_error_code;
 
   // Information of a completed print job. Null struct if the print job is
   // currently being printed.

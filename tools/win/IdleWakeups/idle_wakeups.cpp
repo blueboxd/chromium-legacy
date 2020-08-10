@@ -54,7 +54,19 @@ T GetMedian(ResultVector* results, T (*getter)(const Result&)) {
   }
 }
 
-// This class holds the app state and constains a number of utilities for
+// Count newly created processes: those in |processes| but not
+// |previous_processes|.
+size_t GetNumProcessesCreated(const ProcessDataMap& previous_processes,
+                              const ProcessDataMap& processes) {
+  size_t num_processes_created = 0;
+  for (auto& process : processes) {
+    if (previous_processes.find(process.first) == previous_processes.end())
+      num_processes_created++;
+  }
+  return num_processes_created;
+}
+
+// This class holds the app state and contains a number of utilities for
 // collecting and diffing snapshots of data, handling processes, etc.
 class IdleWakeups {
  public:
@@ -279,11 +291,15 @@ int wmain(int argc, wchar_t* argv[]) {
       system_information_sampler.TakeSnapshot();
 
   the_app.OpenProcesses(*previous_snapshot);
+  const size_t initial_number_of_processes =
+      previous_snapshot->processes.size();
+  size_t final_number_of_processes = initial_number_of_processes;
 
   ULONG cumulative_idle_wakeups_per_sec = 0;
   double cumulative_cpu_usage = 0.0;
   ULONGLONG cumulative_working_set = 0;
   double cumulative_energy = 0.0;
+  size_t cumulative_processes_created = 0;
 
   ResultVector results;
 
@@ -300,6 +316,10 @@ int wmain(int argc, wchar_t* argv[]) {
     std::unique_ptr<ProcessDataSnapshot> snapshot =
         system_information_sampler.TakeSnapshot();
     size_t number_of_processes = snapshot->processes.size();
+    final_number_of_processes = number_of_processes;
+
+    cumulative_processes_created += GetNumProcessesCreated(
+        previous_snapshot->processes, snapshot->processes);
 
     Result result = the_app.DiffSnapshots(*previous_snapshot, *snapshot);
     previous_snapshot = std::move(snapshot);
@@ -344,6 +364,11 @@ int wmain(int argc, wchar_t* argv[]) {
   printf("             Median" RESULT_FORMAT_STRING,
          median_result.idle_wakeups_per_sec, median_result.cpu_usage, '%',
          median_result.working_set / 1024.0, median_result.power);
+
+  printf("\nProcesses created:   %zu\n", cumulative_processes_created);
+  printf("Processes destroyed: %zu\n", initial_number_of_processes +
+                                           cumulative_processes_created -
+                                           final_number_of_processes);
 
   return 0;
 }

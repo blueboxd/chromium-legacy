@@ -6,6 +6,7 @@
 
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/picture.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gl/gl_bindings.h"
 
 #if defined(USE_X11)
@@ -20,23 +21,18 @@
 
 namespace media {
 
-namespace {
-
-const struct {
-  gl::GLImplementation gl_impl;
-  VaapiPictureFactory::VaapiImplementation va_impl;
-} kVaapiImplementationPairs[] = {{gl::kGLImplementationEGLGLES2,
-                                  VaapiPictureFactory::kVaapiImplementationDrm}
+VaapiPictureFactory::VaapiPictureFactory() {
+  vaapi_impl_pairs_.insert(
+      std::make_pair(gl::kGLImplementationEGLGLES2,
+                     VaapiPictureFactory::kVaapiImplementationDrm));
 #if defined(USE_X11)
-                                 ,
-                                 {gl::kGLImplementationDesktopGL,
-                                  VaapiPictureFactory::kVaapiImplementationX11}
-#endif  // USE_X11
-};
-
-}  // namespace
-
-VaapiPictureFactory::VaapiPictureFactory() = default;
+  if (!features::IsUsingOzonePlatform()) {
+    vaapi_impl_pairs_.insert(
+        std::make_pair(gl::kGLImplementationDesktopGL,
+                       VaapiPictureFactory::kVaapiImplementationX11));
+  }
+#endif
+}
 
 VaapiPictureFactory::~VaapiPictureFactory() = default;
 
@@ -60,56 +56,23 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
           ? picture_buffer.service_texture_ids()[0]
           : 0;
 
-  std::unique_ptr<VaapiPicture> picture;
-
   // Select DRM(egl) / TFP(glx) at runtime with --use-gl=egl / --use-gl=desktop
-  switch (GetVaapiImplementation(gl::GetGLImplementation())) {
+
 #if defined(USE_OZONE)
-    // We can be called without GL initialized, which is valid if we use Ozone.
-    case kVaapiImplementationNone:
-      FALLTHROUGH;
-    case kVaapiImplementationDrm:
-      picture.reset(new VaapiPictureNativePixmapOzone(
-          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
-          picture_buffer.id(), picture_buffer.size(), visible_size,
-          service_texture_id, client_texture_id,
-          picture_buffer.texture_target()));
-      break;
-#elif defined(USE_EGL)
-    case kVaapiImplementationDrm:
-      picture.reset(new VaapiPictureNativePixmapEgl(
-          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
-          picture_buffer.id(), picture_buffer.size(), visible_size,
-          service_texture_id, client_texture_id,
-          picture_buffer.texture_target()));
-      break;
+  if (features::IsUsingOzonePlatform())
+    return CreateVaapiPictureNativeForOzone(
+        vaapi_wrapper, make_context_current_cb, bind_image_cb, picture_buffer,
+        visible_size, client_texture_id, service_texture_id);
 #endif
-
-#if defined(USE_X11)
-    case kVaapiImplementationX11:
-      picture.reset(new VaapiTFPPicture(
-          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
-          picture_buffer.id(), picture_buffer.size(), visible_size,
-          service_texture_id, client_texture_id,
-          picture_buffer.texture_target()));
-      break;
-#endif  // USE_X11
-
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-
-  return picture;
+  return CreateVaapiPictureNative(vaapi_wrapper, make_context_current_cb,
+                                  bind_image_cb, picture_buffer, visible_size,
+                                  client_texture_id, service_texture_id);
 }
 
 VaapiPictureFactory::VaapiImplementation
 VaapiPictureFactory::GetVaapiImplementation(gl::GLImplementation gl_impl) {
-  for (const auto& implementation_pair : kVaapiImplementationPairs) {
-    if (gl_impl == implementation_pair.gl_impl)
-      return implementation_pair.va_impl;
-  }
-
+  if (base::Contains(vaapi_impl_pairs_, gl_impl))
+    return vaapi_impl_pairs_[gl_impl];
   return kVaapiImplementationNone;
 }
 
@@ -127,6 +90,75 @@ gfx::BufferFormat VaapiPictureFactory::GetBufferFormat() {
 #else
   return gfx::BufferFormat::RGBX_8888;
 #endif
+}
+
+#if defined(USE_OZONE)
+std::unique_ptr<VaapiPicture>
+VaapiPictureFactory::CreateVaapiPictureNativeForOzone(
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb,
+    const PictureBuffer& picture_buffer,
+    const gfx::Size& visible_size,
+    uint32_t client_texture_id,
+    uint32_t service_texture_id) {
+  DCHECK(features::IsUsingOzonePlatform());
+  switch (GetVaapiImplementation(gl::GetGLImplementation())) {
+    // We can be called without GL initialized, which is valid if we use Ozone.
+    case kVaapiImplementationNone:
+      FALLTHROUGH;
+    case kVaapiImplementationDrm:
+      return std::make_unique<VaapiPictureNativePixmapOzone>(
+          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
+          picture_buffer.id(), picture_buffer.size(), visible_size,
+          service_texture_id, client_texture_id,
+          picture_buffer.texture_target());
+      break;
+
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+
+  return nullptr;
+}
+#endif  // USE_OZONE
+
+std::unique_ptr<VaapiPicture> VaapiPictureFactory::CreateVaapiPictureNative(
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb,
+    const PictureBuffer& picture_buffer,
+    const gfx::Size& visible_size,
+    uint32_t client_texture_id,
+    uint32_t service_texture_id) {
+  switch (GetVaapiImplementation(gl::GetGLImplementation())) {
+#if defined(USE_EGL)
+    case kVaapiImplementationDrm:
+      return std::make_unique<VaapiPictureNativePixmapEgl>(
+          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
+          picture_buffer.id(), picture_buffer.size(), visible_size,
+          service_texture_id, client_texture_id,
+          picture_buffer.texture_target());
+#endif  // USE_EGL
+
+#if defined(USE_X11)
+    case kVaapiImplementationX11:
+      DCHECK(!features::IsUsingOzonePlatform());
+      return std::make_unique<VaapiTFPPicture>(
+          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
+          picture_buffer.id(), picture_buffer.size(), visible_size,
+          service_texture_id, client_texture_id,
+          picture_buffer.texture_target());
+      break;
+#endif  // USE_X11
+
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+
+  return nullptr;
 }
 
 }  // namespace media

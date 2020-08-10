@@ -13,7 +13,6 @@ class SharedURLLoaderFactory;
 
 namespace password_manager {
 
-class FacetURI;
 class AffiliationFetcherDelegate;
 
 // Interface for a factory to be used by AffiliationFetcher::Create() in tests
@@ -27,7 +26,6 @@ class TestAffiliationFetcherFactory {
   // to the |delegate| on the same thread that creates the instance.
   virtual AffiliationFetcher* CreateInstance(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::vector<FacetURI>& facet_ids,
       AffiliationFetcherDelegate* delegate) = 0;
 
  protected:

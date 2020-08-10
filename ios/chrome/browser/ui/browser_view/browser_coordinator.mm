@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
+#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
@@ -553,9 +554,13 @@
   UIView* shareButton =
       [self.viewController.activityServicePositioner shareButtonView];
 
+  ActivityParams* params = [[ActivityParams alloc]
+      initWithScenario:ActivityScenario::TabShareButton];
+
   self.sharingCoordinator =
       [[SharingCoordinator alloc] initWithBaseViewController:self.viewController
                                                      browser:self.browser
+                                                      params:params
                                                   originView:shareButton];
   [self.sharingCoordinator start];
 }

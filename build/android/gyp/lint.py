@@ -98,10 +98,8 @@ def _GenerateProjectFile(android_manifest,
   return project
 
 
-def _GenerateAndroidManifest(original_manifest_path,
-                             min_sdk_version,
-                             manifest_package=None):
-  # Set minSdkVersion and package in the manifest to the correct values.
+def _GenerateAndroidManifest(original_manifest_path, min_sdk_version):
+  # Set minSdkVersion in the manifest to the correct value.
   doc, manifest, _ = manifest_utils.ParseManifest(original_manifest_path)
   uses_sdk = manifest.find('./uses-sdk')
   if uses_sdk is None:
@@ -109,8 +107,6 @@ def _GenerateAndroidManifest(original_manifest_path,
     manifest.insert(0, uses_sdk)
   uses_sdk.set('{%s}minSdkVersion' % manifest_utils.ANDROID_NAMESPACE,
                min_sdk_version)
-  if manifest_package:
-    manifest.set('package', manifest_package)
   return doc
 
 
@@ -133,7 +129,6 @@ def _RunLint(lint_binary_path,
              android_sdk_version,
              srcjars,
              min_sdk_version,
-             manifest_package,
              resource_sources,
              resource_zips,
              android_sdk_root,
@@ -166,8 +161,7 @@ def _RunLint(lint_binary_path,
 
   logging.info('Generating Android manifest file')
   android_manifest_tree = _GenerateAndroidManifest(manifest_path,
-                                                   min_sdk_version,
-                                                   manifest_package)
+                                                   min_sdk_version)
   # Include the rebased manifest_path in the lint generated path so that it is
   # clear in error messages where the original AndroidManifest.xml came from.
   lint_android_manifest_path = os.path.join(lint_gen_dir,
@@ -282,8 +276,6 @@ def _ParseArgs(argv):
                       help='If set, some checks like UnusedResources will be '
                       'disabled since they are not helpful for test '
                       'targets.')
-  parser.add_argument('--manifest-package',
-                      help='Package name of the AndroidManifest.xml.')
   parser.add_argument('--warnings-as-errors',
                       action='store_true',
                       help='Treat all warnings as errors.')
@@ -347,7 +339,6 @@ def main():
            args.android_sdk_version,
            args.srcjars,
            args.min_sdk_version,
-           args.manifest_package,
            resource_sources,
            args.resource_zips,
            args.android_sdk_root,

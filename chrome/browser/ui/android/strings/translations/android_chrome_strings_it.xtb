@@ -462,7 +462,6 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4732120983431207637">Rimozione dello stack</translation>
 <translation id="473775607612524610">Aggiorna</translation>
 <translation id="4738836084190194332">Ultima sincronizzazione: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">Errore TWA: <ph name="ERROR_CODE" /> su <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Apri una nuova scheda</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download completato.}other{# download completati.}}</translation>
@@ -1047,6 +1046,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="9133397713400217035">Esplora offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostra originale</translation>
+<translation id="9148126808321036104">Esegui di nuovo l'accesso</translation>
 <translation id="9155898266292537608">Per eseguire una ricerca, basta un rapido tocco su una parola</translation>
 <translation id="9169507124922466868">La cronologia di navigazione è aperta fino a metà</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Eseguito 1 minuto fa}other{Eseguito # minuti fa}}</translation>
@@ -1059,6 +1059,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="932327136139879170">Home page</translation>
 <translation id="93753284658583800">Pagina iniziale modificata</translation>
 <translation id="938850635132480979">Errore: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Inserisci passphrase</translation>
 <translation id="95817756606698420">Chrome può usare <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> per le ricerche in Cina. Puoi modificare questa preferenza nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Le pagine visitate saranno mostrate qui</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> min rimanenti</translation>

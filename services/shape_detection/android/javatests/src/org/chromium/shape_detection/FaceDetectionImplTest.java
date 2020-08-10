@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.shape_detection.mojom.FaceDetection;
 import org.chromium.shape_detection.mojom.FaceDetectionResult;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
  * Test suite for FaceDetectionImpl.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 public class FaceDetectionImplTest {
     private static final org.chromium.skia.mojom.Bitmap MONA_LISA_BITMAP =
             TestUtils.mojoBitmapFromFile("mona_lisa.jpg");

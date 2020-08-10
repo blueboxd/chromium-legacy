@@ -462,7 +462,6 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="4732120983431207637">Stellaj Açıcı</translation>
 <translation id="473775607612524610">Güncəlləşdirin</translation>
 <translation id="4738836084190194332">Sonuncu dəfə sinxronizasiya olunub: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA xətası: <ph name="VIOLATED_URL" /> bölməsində <ph name="ERROR_CODE" /></translation>
 <translation id="4749960740855309258">Yeni panel açın</translation>
 <translation id="4759238208242260848">Endirmələr</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 endirmə tamamlandı.}other{# endirmə tamamlandı.}}</translation>
@@ -1045,6 +1044,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="9133397713400217035">Oflayn araşdırın</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Originalı göstərin</translation>
+<translation id="9148126808321036104">Yenidən daxil olun</translation>
 <translation id="9155898266292537608">Sözün üzərində klikləməklə axtarış edə bilərsiniz</translation>
 <translation id="9169507124922466868">Naviqasiya tarixçəsi yarı açıqdır</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 dəqiqə əvvəl yoxlanılıb}other{# dəqiqə əvvəl yoxlanılıb}}</translation>
@@ -1057,6 +1057,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="932327136139879170">Ev</translation>
 <translation id="93753284658583800">Əsas səhifə dəyişdirilib</translation>
 <translation id="938850635132480979">Xəta: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Parol daxil edin</translation>
 <translation id="95817756606698420">Chrome, Çində axtarış üçün <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> istifadə edə bilər. Bunu <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" /> bölməsindən dəyişə bilərsiniz.</translation>
 <translation id="968900484120156207">Girdiyiniz səhifələr burada görünəcək</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> dəqiqə qaldı</translation>

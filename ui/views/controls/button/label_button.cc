@@ -188,6 +188,11 @@ void LabelButton::SetIsDefault(bool is_default) {
   if (GetIsDefault() == is_default)
     return;
   is_default_ = is_default;
+
+  // The default button has an accelerator for VKEY_RETURN, which clicks it.
+  // Note that if PlatformStyle::kReturnClicksFocusedControl is true and another
+  // button is focused, that button's VKEY_RETURN handler will take precedence.
+  // See Button::GetKeyClickActionForEvent().
   ui::Accelerator accel(ui::VKEY_RETURN, ui::EF_NONE);
   if (is_default)
     AddAccelerator(accel);

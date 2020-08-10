@@ -471,7 +471,8 @@ class LocalDeviceInstrumentationTestRun(
     batched_tests = dict()
     other_tests = []
     for test in tests:
-      if 'Batch' in test['annotations']:
+      if 'Batch' in test['annotations'] and 'RequiresRestart' not in test[
+          'annotations']:
         batch_name = test['annotations']['Batch']['value']
         if not batch_name:
           batch_name = test['class']

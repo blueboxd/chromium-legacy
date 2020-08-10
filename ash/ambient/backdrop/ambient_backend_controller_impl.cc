@@ -97,14 +97,20 @@ ash::ScreenUpdate ToScreenUpdate(
 
   // Parse |WeatherInfo|.
   if (backdrop_screen_update.has_weather_info()) {
-    backdrop::WeatherInfo backdrop_weather_info =
-        backdrop_screen_update.weather_info();
+    const auto& backdrop_weather_info = backdrop_screen_update.weather_info();
     ash::WeatherInfo weather_info;
-    if (backdrop_weather_info.has_condition_icon_url())
+
+    if (backdrop_weather_info.has_condition_icon_url()) {
       weather_info.condition_icon_url =
           backdrop_weather_info.condition_icon_url();
+    }
+
     if (backdrop_weather_info.has_temp_f())
       weather_info.temp_f = backdrop_weather_info.temp_f();
+
+    if (backdrop_weather_info.has_show_celsius())
+      weather_info.show_celsius = backdrop_weather_info.show_celsius();
+
     screen_update.weather_info = weather_info;
   }
   return screen_update;

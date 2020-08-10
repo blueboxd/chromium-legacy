@@ -158,11 +158,17 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeNotFound) {
   EXPECT_TRUE(main_document->is_mhtml_document());
   EXPECT_FALSE(sub_document->is_mhtml_document());
 
-  // TODO(arthursonzogni): When the document is not found, the navigation never
-  // commit, even if we wait longer. Find out why.
-  EXPECT_FALSE(iframe_navigation_observer.has_committed());
+  // This should commit as a failed navigation, but the browser side doesn't
+  // have enough information to make that determination. On the renderer side,
+  // there's no existing way to turn `CommitNavigation()` into
+  // `CommitFailedNavigation()`.
+  // TODO(https://crbug.com/1112965): Fix this by implementing a MHTML
+  // URLLoaderFactory; then failure to find the resource can use the standard
+  // error handling path.
+  EXPECT_TRUE(iframe_navigation_observer.has_committed());
   EXPECT_FALSE(iframe_navigation_observer.is_error());
-  EXPECT_EQ(GURL(), sub_document->GetLastCommittedURL());
+  EXPECT_EQ(GURL("http://example.com/not_found.html"),
+            sub_document->GetLastCommittedURL());
 }
 
 // An MHTML document with an iframe using a data-URL. The data-URL is not
@@ -268,6 +274,8 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeAboutBlankNotFound) {
   MhtmlArchive mhtml_archive;
   mhtml_archive.AddHtmlDocument(GURL("http://example.com"),
                                 "<iframe src=\"about:blank\"></iframe>"
+                                // Note: this is actually treated as a
+                                // same-document navigation!
                                 "<iframe src=\"about:blank#fragment\"></iframe>"
                                 "<iframe src=\"about:blank?query\"></iframe>");
   GURL mhtml_url = mhtml_archive.Write("index.mhtml");
@@ -280,8 +288,32 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeAboutBlankNotFound) {
         ->current_frame_host()
         ->GetLastCommittedURL();
   };
+
+  // about:blank in MHTML has some very unusual behavior. When navigating to
+  // about:blank in the context of a MHTML archive, the renderer-side MHTML
+  // handler actually attempts to look up the resource for about:blank<...>" in
+  // the MHTML archive.
+  //
+  // Prior to https://crrev.com/c/2335323, failing to find the resource in the
+  // MHTML archive usually led to the commit being silently dropped (see
+  // `IframeNotFound` and `IframeContentIdNotFound`). However, about:blank
+  // behaved differently, due to a special case in frame_loader.cc's
+  // `ShouldNavigate()` for URLs that will load as an empty document.
+  //
+  // However, after https://crrev.com/c/23335323, loading about:blank without a
+  // corresponding resource in the MHTML archive will be treated as loading
+  // static data rather than loading an empty document. This affects the timing
+  // of load completion; loading an empty document synchronously completes
+  // during `CommitNavigation()`, while loading static data (even if the data is
+  // empty) completes "later".
   EXPECT_EQ(iframe_url(0), GURL("about:blank"));
-  EXPECT_EQ(iframe_url(1), GURL());  // TODO(arthursonzogni): Why is this empty?
+  // Note: unlike the other two subframe navigations, this navigation actually
+  // succeeds as a same-document navigation...
+  // Note 2: this same-document navigation is performed asynchronously. Prior to
+  // https://crrev.com/c/23335323, the test would consider the page as loaded
+  // before the fragment navigation completed, resulting in an empty last
+  // committed URL.
+  EXPECT_EQ(iframe_url(1), GURL("about:blank#fragment"));
   EXPECT_EQ(iframe_url(2), GURL("about:blank?query"));
 }
 
@@ -406,8 +438,15 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeContentIdNotFound) {
   RenderFrameHostImpl* sub_document =
       main_document->child_at(0)->current_frame_host();
 
-  EXPECT_EQ(GURL(""), sub_document->GetLastCommittedURL());
-  EXPECT_FALSE(iframe_navigation.has_committed());
+  // This should commit as a failed navigation, but the browser side doesn't
+  // have enough information to make that determination. On the renderer side,
+  // there's no existing way to turn `CommitNavigation()` into
+  // `CommitFailedNavigation()`.
+  // TODO(https://crbug.com/1112965): Fix this by implementing a MHTML
+  // URLLoaderFactory; then failure to find the resource can use the standard
+  // error handling path.
+  EXPECT_EQ(GURL("cid:iframe"), sub_document->GetLastCommittedURL());
+  EXPECT_TRUE(iframe_navigation.has_committed());
   EXPECT_FALSE(iframe_navigation.is_error());
 }
 

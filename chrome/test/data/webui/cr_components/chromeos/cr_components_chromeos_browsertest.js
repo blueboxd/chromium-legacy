@@ -9,14 +9,25 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "content/public/test/browser_test.h"');
 
+// Tests are flaky on ChromeOS, debug (crbug.com/1114675).
+GEN('#if defined(OS_CHROMEOS) && !defined(NDEBUG)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+
 // Polymer 2 test list format:
 //
 // ['ModuleNameTest', 'module.js',
 //   [<module.js dependency source list>]
 // ]
+// clang-format off
 [
   ['CrPolicyNetworkBehaviorMojo', 'cr_policy_network_behavior_mojo_tests.js',
     ['../../cr_elements/cr_policy_strings.js']
+  ],
+  ['CrPolicyNetworkIndicatorMojo', 'cr_policy_network_indicator_mojo_tests.js',
+    [ '../../cr_elements/cr_policy_strings.js' ]
   ],
   ['NetworkConfig', 'network_config_test.js',
     [
@@ -27,19 +38,15 @@ GEN('#include "content/public/test/browser_test.h"');
       '../../chromeos/fake_network_config_mojom.js',
     ]
   ],
-  ['PolicyNetworkIndicatorMojo', 'cr_policy_network_indicator_mojo_tests.js',
-    [
-      '../../cr_elements/cr_policy_strings.js',
-    ]
-  ],
 ].forEach(test => registerTest(...test));
+// clang-format on
 
 function registerTest(testName, module, deps) {
   const className = `CrComponents${testName}Test`;
   this[className] = class extends PolymerTest {
     /** @override */
     get browsePreload() {
-      return `chrome://os-settings/test_loader.html?module=settings/chromeos/${module}`;
+      return `chrome://os-settings/test_loader.html?module=cr_components/chromeos/${module}`;
     }
 
     /** @override */
@@ -48,5 +55,5 @@ function registerTest(testName, module, deps) {
     }
   };
 
-  TEST_F(className, 'All', () => mocha.run());
+  TEST_F(className, 'MAYBE_All', () => mocha.run());
 }

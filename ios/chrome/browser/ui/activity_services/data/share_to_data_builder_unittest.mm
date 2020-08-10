@@ -126,3 +126,22 @@ TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandlingNoShareUrl) {
 TEST_F(ShareToDataBuilderTest, TestReturnsNilWhenClosing) {
   EXPECT_EQ(nil, activity_services::ShareToDataForWebState(nullptr, GURL()));
 }
+
+// Tests that the ShareToDataForURL function creates a ShareToData instance with
+// valid properties.
+TEST_F(ShareToDataBuilderTest, ShareToDataForURL) {
+  GURL testURL = GURL("http://www.testurl.com/");
+  NSString* testTitle = @"Some Title";
+
+  ShareToData* data = activity_services::ShareToDataForURL(testURL, testTitle);
+
+  EXPECT_EQ(testURL, data.shareURL);
+  EXPECT_EQ(testURL, data.visibleURL);
+  EXPECT_EQ(testTitle, data.title);
+  EXPECT_TRUE(data.isOriginalTitle);
+  EXPECT_FALSE(data.isPagePrintable);
+  EXPECT_FALSE(data.isPageSearchable);
+  EXPECT_FALSE(data.canSendTabToSelf);
+  EXPECT_EQ(web::UserAgentType::NONE, data.userAgent);
+  EXPECT_FALSE(data.thumbnailGenerator);
+}

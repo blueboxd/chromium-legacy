@@ -16,24 +16,28 @@
     <div class="property-box">
       <div class="start">[[i18n('networkAccessPoint')]]</div>
       <select id="selectApn" class="md-select" on-change="onSelectApnChange_"
+          value="[[selectedApn_]]"
+          disabled="[[isDisabled_(selectedApn_)]]"
           aria-label="[[i18n('networkAccessPoint')]]">
         <template is="dom-repeat" items="[[apnSelectList_]]">
-          <option value="[[item.accessPointName]]"
-                  selected$="[[isApnItemSelected_(item, selectedApn_)]]">[[apnDesc_(item)]]</option>
+          <option value="[[item.name]]">
+            [[apnDesc_(item)]]
+          </option>
         </template>
       </select>
     </div>
 
-    <div class="property-box single-column indented"
-        hidden$="[[!isOtherSelected_(selectedApn_, managedProperties)]]">
-      <network-property-list-mojo on-property-change="onOtherApnChange_"
-          fields="[[otherApnFields_]]" property-dict="[[otherApn_]]"
-          edit-field-types="[[otherApnEditTypes_]]" prefix="cellular.apn.">
-      </network-property-list-mojo>
-      <cr-button class="action-button" on-click="onSaveOtherTap_">
-        [[i18n('save')]]
-      </cr-button>
-    </div>
+    <template is="dom-if" if="[[showOtherApn_(selectedApn_)]]">    
+      <div class="property-box single-column indented">
+        <network-property-list-mojo on-property-change="onOtherApnChange_"
+            fields="[[otherApnFields_]]" property-dict="[[otherApn_]]"
+            edit-field-types="[[otherApnEditTypes_]]" prefix="cellular.apn.">
+        </network-property-list-mojo>
+        <cr-button class="action-button" on-click="onSaveOtherTap_">
+          [[i18n('save')]]
+        </cr-button>
+      </div>
+    </template>
   </template>
   <script src="network_apnlist.js"></script>
 </dom-module>

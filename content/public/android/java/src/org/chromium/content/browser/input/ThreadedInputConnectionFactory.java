@@ -99,7 +99,6 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
                 containerView.getContext(), handler, containerView, this);
     }
 
-    @VisibleForTesting
     @Override
     public void setTriggerDelayedOnCreateInputConnection(boolean trigger) {
         mTriggerDelayedOnCreateInputConnection = trigger;

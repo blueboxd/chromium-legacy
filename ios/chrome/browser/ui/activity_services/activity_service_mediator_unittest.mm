@@ -195,9 +195,8 @@ TEST_F(ActivityServiceMediatorTest, ActivitiesForImageData) {
 // Tests that computing the list of excluded activities works for one item.
 TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes_SingleItem) {
   ChromeActivityURLSource* activityURLSource = [[ChromeActivityURLSource alloc]
-        initWithShareURL:[NSURL URLWithString:@"https://example.com"]
-                 subject:@"Does not matter"
-      thumbnailGenerator:mocked_thumbnail_generator_];
+      initWithShareURL:[NSURL URLWithString:@"https://example.com"]
+               subject:@"Does not matter"];
 
   NSSet* computedExclusion =
       [mediator_ excludedActivityTypesForItems:@[ activityURLSource ]];
@@ -209,9 +208,8 @@ TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes_SingleItem) {
 // Tests that computing the list of excluded activities works for two item.
 TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes_TwoItems) {
   ChromeActivityURLSource* activityURLSource = [[ChromeActivityURLSource alloc]
-        initWithShareURL:[NSURL URLWithString:@"https://example.com"]
-                 subject:@"Does not matter"
-      thumbnailGenerator:mocked_thumbnail_generator_];
+      initWithShareURL:[NSURL URLWithString:@"https://example.com"]
+               subject:@"Does not matter"];
   ChromeActivityImageSource* activityImageSource =
       [[ChromeActivityImageSource alloc] initWithImage:[[UIImage alloc] init]
                                                  title:@"something"];

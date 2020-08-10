@@ -128,7 +128,6 @@
 <translation id="236977714248711277">Les sites ne peuvent pas utiliser de témoins pour améliorer votre expérience de navigation, par exemple en vous permettant de rester connecté ou en mémorisant des articles de votre panier d'achats.
 
 Les sites ne peuvent pas utiliser de témoins pour voir votre activité de navigation sur différents sites (par exemple, pour personnaliser les annonces).</translation>
-<translation id="2379896346847637748">Ouvrir dans une nouvelle fenêtre</translation>
 <translation id="2381405137052800939">Paramètres de base</translation>
 <translation id="2386793615875593361">1 sélectionné</translation>
 <translation id="2421004566762153674">Blocage des témoins tiers</translation>
@@ -185,6 +184,7 @@ Les sites ne peuvent pas utiliser de témoins pour voir votre activité de navig
 <translation id="298306318844797842">Ajouter un mode de paiement…</translation>
 <translation id="2989805286512600854">Ouvrir dans un nouvel onglet</translation>
 <translation id="3037605927509011580">Aïe aïe aïe!</translation>
+<translation id="3080525922482950719">Vous pouvez enregistrer des pages afin de les lire plus tard ou hors ligne</translation>
 <translation id="3081338492074632642">Assurez-vous que le mot de passe que vous enregistrez correspond à celui pour <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Marquer…</translation>
 <translation id="3131206671572504478">Tout bloquer</translation>
@@ -309,6 +309,7 @@ Lorsque vous êtes en mode de navigation privée, les sites ne peuvent pas utili
 <translation id="4619615317237390068">Onglets ouverts sur d'autres appareils</translation>
 <translation id="4620246317052452550">Pages que vous avez lues</translation>
 <translation id="4630540211544979320">Traduire les pages</translation>
+<translation id="4634124774493850572">Utiliser le mot de passe</translation>
 <translation id="4636930964841734540">Renseignements</translation>
 <translation id="4659126640776004816">Lorsque vous vous connecterez à votre compte Google, cette fonctionnalité sera activée.</translation>
 <translation id="4659667755519643272">Accéder au gestionnaire d’onglets</translation>

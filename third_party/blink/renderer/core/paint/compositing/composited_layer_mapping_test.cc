@@ -1343,7 +1343,7 @@ TEST_F(CompositedLayerMappingTest,
         target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
     ASSERT_TRUE(target_graphics_layer);
     EXPECT_FALSE(
-        target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
+        target_graphics_layer->CcLayer().transformed_rasterization_allowed());
   }
   {
     LayoutObject* target = GetLayoutObjectByElementId("target2");
@@ -1353,7 +1353,7 @@ TEST_F(CompositedLayerMappingTest,
         target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
     ASSERT_TRUE(target_graphics_layer);
     EXPECT_FALSE(
-        target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
+        target_graphics_layer->CcLayer().transformed_rasterization_allowed());
   }
 }
 
@@ -1376,7 +1376,7 @@ TEST_F(CompositedLayerMappingTest, TransformedRasterizationForInlineTransform) {
       target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
   ASSERT_TRUE(target_graphics_layer);
   EXPECT_TRUE(
-      target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
+      target_graphics_layer->CcLayer().transformed_rasterization_allowed());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -1399,7 +1399,7 @@ TEST_F(CompositedLayerMappingTest,
       target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
   ASSERT_TRUE(target_graphics_layer);
   EXPECT_TRUE(
-      target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
+      target_graphics_layer->CcLayer().transformed_rasterization_allowed());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -1417,7 +1417,7 @@ TEST_F(CompositedLayerMappingTest,
       target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
   ASSERT_TRUE(target_graphics_layer);
   EXPECT_TRUE(
-      target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
+      target_graphics_layer->CcLayer().transformed_rasterization_allowed());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -1433,7 +1433,7 @@ TEST_F(CompositedLayerMappingTest,
       target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
   ASSERT_TRUE(target_graphics_layer);
   EXPECT_TRUE(
-      target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
+      target_graphics_layer->CcLayer().transformed_rasterization_allowed());
 }
 
 TEST_F(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
@@ -1676,15 +1676,15 @@ TEST_F(CompositedLayerMappingTest, TouchActionRectsWithoutContent) {
   auto* box = ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"));
   auto* mapping = box->Layer()->GetCompositedLayerMapping();
 
-  const auto* layer = mapping->MainGraphicsLayer()->CcLayer();
+  const auto& layer = mapping->MainGraphicsLayer()->CcLayer();
   auto expected = gfx::Rect(0, 0, 100, 100);
-  EXPECT_EQ(layer->touch_action_region().GetAllRegions().bounds(), expected);
+  EXPECT_EQ(layer.touch_action_region().GetAllRegions().bounds(), expected);
 
   EXPECT_TRUE(mapping->MainGraphicsLayer()->PaintsHitTest());
 
   // The only painted content for the main graphics layer is the touch-action
   // rect which is not sent to cc, so the cc::layer should not draw content.
-  EXPECT_FALSE(layer->DrawsContent());
+  EXPECT_FALSE(layer.DrawsContent());
   EXPECT_FALSE(mapping->MainGraphicsLayer()->DrawsContent());
 }
 
@@ -1886,10 +1886,10 @@ TEST_F(CompositedLayerMappingTest, FrameAttribution) {
   Element* child = GetDocument().getElementById("child");
   PaintLayer* child_paint_layer =
       ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
-  auto* child_layer = child_paint_layer->GraphicsLayerBacking()->CcLayer();
-  EXPECT_TRUE(child_layer->frame_element_id());
+  auto& child_layer = child_paint_layer->GraphicsLayerBacking()->CcLayer();
+  EXPECT_TRUE(child_layer.frame_element_id());
 
-  EXPECT_EQ(child_layer->frame_element_id(),
+  EXPECT_EQ(child_layer.frame_element_id(),
             CompositorElementIdFromUniqueObjectId(
                 DOMNodeIds::IdForNode(&GetDocument()),
                 CompositorElementIdNamespace::kDOMNodeId));
@@ -1901,11 +1901,11 @@ TEST_F(CompositedLayerMappingTest, FrameAttribution) {
   EXPECT_TRUE(subframe);
   PaintLayer* subframe_paint_layer =
       ToLayoutBoxModelObject(subframe->GetLayoutObject())->Layer();
-  auto* subframe_layer =
+  auto& subframe_layer =
       subframe_paint_layer->GraphicsLayerBacking()->CcLayer();
-  EXPECT_TRUE(subframe_layer->frame_element_id());
+  EXPECT_TRUE(subframe_layer.frame_element_id());
 
-  EXPECT_EQ(subframe_layer->frame_element_id(),
+  EXPECT_EQ(subframe_layer.frame_element_id(),
             CompositorElementIdFromUniqueObjectId(
                 DOMNodeIds::IdForNode(subframe->contentDocument()),
                 CompositorElementIdNamespace::kDOMNodeId));

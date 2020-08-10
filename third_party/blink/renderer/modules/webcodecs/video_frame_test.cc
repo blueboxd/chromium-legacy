@@ -40,20 +40,20 @@ TEST_F(VideoFrameTest, ConstructorAndAttributes) {
       gfx::Size(100, 200) /* visible_size */);
   VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
 
-  EXPECT_EQ(1000u, blink_frame->timestamp());
+  EXPECT_EQ(1000u, blink_frame->timestamp().value());
   EXPECT_EQ(112u, blink_frame->codedWidth());
   EXPECT_EQ(208u, blink_frame->codedHeight());
-  EXPECT_EQ(100u, blink_frame->visibleWidth());
-  EXPECT_EQ(200u, blink_frame->visibleHeight());
+  EXPECT_EQ(100u, blink_frame->cropWidth());
+  EXPECT_EQ(200u, blink_frame->cropHeight());
   EXPECT_EQ(media_frame, blink_frame->frame());
 
   blink_frame->close();
 
-  EXPECT_EQ(0u, blink_frame->timestamp());
+  EXPECT_FALSE(blink_frame->timestamp().has_value());
   EXPECT_EQ(0u, blink_frame->codedWidth());
   EXPECT_EQ(0u, blink_frame->codedHeight());
-  EXPECT_EQ(0u, blink_frame->visibleWidth());
-  EXPECT_EQ(0u, blink_frame->visibleHeight());
+  EXPECT_EQ(0u, blink_frame->cropWidth());
+  EXPECT_EQ(0u, blink_frame->cropHeight());
   EXPECT_EQ(nullptr, blink_frame->frame());
 }
 

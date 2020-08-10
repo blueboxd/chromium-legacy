@@ -462,7 +462,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="4732120983431207637">Ороосун ачуу</translation>
 <translation id="473775607612524610">Жаңыртуу</translation>
 <translation id="4738836084190194332">Акыркы жолу качан шайкештирилген: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA катасы: <ph name="ERROR_CODE" /> – <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Жаңы өтмөк ачуу</translation>
 <translation id="4759238208242260848">Жүктөлүп алынгандар</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 жүктөп алуу аяктады.}other{# жүктөп алуу аяктады.}}</translation>
@@ -1047,6 +1046,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="9133397713400217035">Оффлайн режиминде изилдөө</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Түпверсиясын көрсөтүү</translation>
+<translation id="9148126808321036104">Кайра кириңиз</translation>
 <translation id="9155898266292537608">Ошондой эле сөзду таптап коюп, издесеңиз болот</translation>
 <translation id="9169507124922466868">Чабыттоо таржымалынын жарымы жабык</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 мүнөт мурда текшерилди}other{# мүнөт мурда текшерилди}}</translation>
@@ -1059,6 +1059,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="932327136139879170">Башкы</translation>
 <translation id="93753284658583800">Башкы бет өзгөртүлдү</translation>
 <translation id="938850635132480979">Ката: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Купуя сөз айкашын киргизиңиз</translation>
 <translation id="95817756606698420">Chrome Кытай жергесинде издөө үчүн <ph name="BEGIN_BOLD" />Sogou'ду<ph name="END_BOLD" /> колдоно алат. Аны <ph name="BEGIN_LINK" />Жөндөөлөрдөн<ph name="END_LINK" /> өзгөртүп койсоңуз болот.</translation>
 <translation id="968900484120156207">Сиз баш баккан барактар ушул жерде көрүнөт</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> мүн. калды</translation>

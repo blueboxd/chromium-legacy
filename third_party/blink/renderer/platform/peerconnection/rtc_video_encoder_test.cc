@@ -42,18 +42,15 @@ class EncodedImageCallbackWrapper : public webrtc::EncodedImageCallback {
  public:
   using EncodedCallback = base::OnceCallback<void(
       const webrtc::EncodedImage& encoded_image,
-      const webrtc::CodecSpecificInfo* codec_specific_info,
-      const webrtc::RTPFragmentationHeader* fragmentation)>;
+      const webrtc::CodecSpecificInfo* codec_specific_info)>;
 
   EncodedImageCallbackWrapper(EncodedCallback encoded_callback)
       : encoded_callback_(std::move(encoded_callback)) {}
 
   Result OnEncodedImage(
       const webrtc::EncodedImage& encoded_image,
-      const webrtc::CodecSpecificInfo* codec_specific_info,
-      const webrtc::RTPFragmentationHeader* fragmentation) override {
-    std::move(encoded_callback_)
-        .Run(encoded_image, codec_specific_info, fragmentation);
+      const webrtc::CodecSpecificInfo* codec_specific_info) override {
+    std::move(encoded_callback_).Run(encoded_image, codec_specific_info);
     return Result(Result::OK);
   }
 
@@ -261,8 +258,7 @@ class RTCVideoEncoderTest
   void VerifyTimestamp(uint32_t rtp_timestamp,
                        int64_t capture_time_ms,
                        const webrtc::EncodedImage& encoded_image,
-                       const webrtc::CodecSpecificInfo* codec_specific_info,
-                       const webrtc::RTPFragmentationHeader* fragmentation) {
+                       const webrtc::CodecSpecificInfo* codec_specific_info) {
     DVLOG(3) << __func__;
     EXPECT_EQ(rtp_timestamp, encoded_image.Timestamp());
     EXPECT_EQ(capture_time_ms, encoded_image.capture_time_ms_);

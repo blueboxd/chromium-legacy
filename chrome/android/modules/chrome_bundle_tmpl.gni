@@ -88,7 +88,6 @@ template("chrome_bundle") {
                              "lint_min_sdk_version",
                              "lint_suppressions_dep",
                              "lint_suppressions_file",
-                             "manifest_package",
                              "min_sdk_version",
                              "proguard_android_sdk_dep",
                              "sign_bundle",
@@ -102,6 +101,12 @@ template("chrome_bundle") {
     extra_modules = _extra_modules
     system_image_locale_allowlist = android_apk_locales
     is_multi_abi = _is_multi_abi
+
+    # Use a consistent baseline so that it is easy to regenerate by deleting the
+    # file and re-building the "android_lint" target.
+    if (defined(invoker.enable_lint) && invoker.enable_lint) {
+      lint_baseline_file = "//chrome/android/expectations/lint-baseline.xml"
+    }
 
     # List of DFMs that are installed by default by wrapper scripts, to make
     # testing easier. This removes the need to manually specify, e.g.,

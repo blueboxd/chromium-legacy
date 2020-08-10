@@ -128,7 +128,6 @@
 <translation id="236977714248711277">Site-urile nu pot folosi cookie-uri pentru a-ți îmbunătăți experiența de navigare, de exemplu, pentru a te menține conectat(ă) sau pentru a reține articolele din coșul de cumpărături.
 
 Site-urile nu pot folosi cookie-uri pentru a-ți vedea activitatea de navigare de pe diferite site-uri, de exemplu, pentru a personaliza anunțurile.</translation>
-<translation id="2379896346847637748">Deschide într-o fereastră nouă</translation>
 <translation id="2381405137052800939">Setări de bază</translation>
 <translation id="2386793615875593361">1 selectată</translation>
 <translation id="2421004566762153674">Blocarea cookie-urilor terță parte</translation>
@@ -185,6 +184,7 @@ Site-urile nu pot folosi cookie-uri pentru a-ți vedea activitatea de navigare d
 <translation id="298306318844797842">Adaugă o metodă de plată...</translation>
 <translation id="2989805286512600854">Deschideți într-o filă nouă</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
+<translation id="3080525922482950719">Poți să salvezi pagini ca să le citești offline sau mai târziu</translation>
 <translation id="3081338492074632642">Asigură-te că parola pe care o salvezi este aceeași cu parola pentru <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Marchează…</translation>
 <translation id="3131206671572504478">Blochează-le pe toate</translation>
@@ -309,6 +309,7 @@ Site-urile nu pot folosi cookie-uri pentru a-ți vedea activitatea de navigare d
 <translation id="4619615317237390068">File de pe alte dispozitive</translation>
 <translation id="4620246317052452550">Paginile citite</translation>
 <translation id="4630540211544979320">Tradu paginile</translation>
+<translation id="4634124774493850572">Folosește parola</translation>
 <translation id="4636930964841734540">Informații</translation>
 <translation id="4659126640776004816">Când te conectezi la Contul Google, această funcție este activată.</translation>
 <translation id="4659667755519643272">Accesează comutatorul de file</translation>
@@ -610,6 +611,7 @@ Site-urile pot folosi cookie-uri pentru a vedea activitatea ta de navigare de pe
 <translation id="8007420562015504427">Căutare incognito</translation>
 <translation id="802154636333426148">Descărcarea nu a reușit</translation>
 <translation id="8023878949384262191">Extinde secțiunea.</translation>
+<translation id="8027581147000338959">Deschideți într-o fereastră nouă</translation>
 <translation id="804427445359061970">Aici vei vedea filele tale de pe alte dispozitive</translation>
 <translation id="8059533439631660104">Restrânge secțiunea.</translation>
 <translation id="8065292699993359127">Deschide adrese URL în Chrome în modul incognito</translation>

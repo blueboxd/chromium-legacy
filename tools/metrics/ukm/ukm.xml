@@ -1795,12 +1795,12 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Compositing">
+    <obsolete>
+      Obsolete as of http://crrev.com/794384 and M86.
+    </obsolete>
     <summary>
       The time spent in main thread compositing, between navigation and First
       Contentful Paint, in microseconds.
-
-      TODO(crbug.com/1100711): This is being replaced soon by CompositingInputs
-      + CompositingAssignments (== Compositing).
     </summary>
   </metric>
   <metric name="CompositingAssignments">
@@ -2013,12 +2013,12 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Compositing">
+    <obsolete>
+      Obsolete as of http://crrev.com/794384.
+    </obsolete>
     <summary>
       The time taken by the compositing phase in microseconds during the sampled
       frame.
-
-      TODO(crbug.com/1100711): This is being replaced soon by CompositingInputs
-      + CompositingAssignments (== Compositing).
     </summary>
     <aggregation>
       <history>

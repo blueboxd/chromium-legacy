@@ -12,7 +12,6 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -30,8 +29,8 @@ import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel.EditorFi
 import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel.EditorValueIconGenerator;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorModel;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.DropdownKeyValue;
-import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.components.payments.ComponentPaymentRequestImpl;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -109,9 +108,6 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
     /** Used for verifying billing address completeness and also editing billing addresses. */
     private final AddressEditor mAddressEditor;
-
-    /** An optional observer used by tests. */
-    private static PaymentRequestServiceObserverForTest sObserverForTest;
 
     /**
      * A mapping from all card issuer networks recognized in Chrome to information about these
@@ -266,15 +262,6 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
-    }
-
-    /**
-     * Set an observer for test.
-     * @param observerForTest An observer for test.
-     */
-    @VisibleForTesting
-    public static void setObserverForTest(PaymentRequestServiceObserverForTest observerForTest) {
-        sObserverForTest = observerForTest;
     }
 
     private boolean isCardNumberLengthMaximum(@Nullable CharSequence value) {
@@ -552,11 +539,12 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                           R.string.payments_card_expiration_invalid_validation_message));
             mMonthField.setIsFullLine(false);
 
-            if (sObserverForTest != null) {
+            if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
                 mMonthField.setDropdownCallback(new Callback<Pair<String, Runnable>>() {
                     @Override
                     public void onResult(final Pair<String, Runnable> eventData) {
-                        sObserverForTest.onPaymentRequestServiceExpirationMonthChange();
+                        ComponentPaymentRequestImpl.getObserverForTest()
+                                .onPaymentRequestServiceExpirationMonthChange();
                     }
                 });
             }
@@ -683,8 +671,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                 final boolean isSelectingIncompleteAddress =
                         mIncompleteProfilesForBillingAddress.containsKey(eventData.first);
                 if (!isAddingNewAddress && !isSelectingIncompleteAddress) {
-                    if (sObserverForTest != null) {
-                        sObserverForTest.onPaymentRequestServiceBillingAddressChangeProcessed();
+                    if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+                        ComponentPaymentRequestImpl.getObserverForTest()
+                                .onPaymentRequestServiceBillingAddressChangeProcessed();
                     }
                     return;
                 }

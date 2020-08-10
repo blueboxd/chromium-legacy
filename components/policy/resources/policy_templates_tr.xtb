@@ -292,7 +292,7 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 <translation id="1486021504508098388">Arka ışık bilgilerini raporla</translation>
 <translation id="1487916040416013623">Politikanın ayarlanması, entegre kimlik doğrulama için hangi sunuculara izin verileceğini belirtir. Entegre kimlik doğrulaması yalnızca <ph name="PRODUCT_NAME" /> bir proxy veya söz konusu izin verilenler listesindeki bir sunucudan kimlik doğrulaması daveti aldığında etkinleşir.
 
-      Politika ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" />, sunucunun intranette olup olmadığını saptamaya çalışır. Ancak buna göre IWA isteklerini yanıtlar. Sunucunun internette olduğu saptanırsa sunucudan gelen IWA istekleri <ph name="PRODUCT_NAME" /> tarafından yok sayılır.
+      Politika ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" />, sunucunun intranette olup olmadığını saptamaya çalışır. Yalnızca intranetteyse IWA isteklerini yanıtlar. Sunucunun internette olduğu saptanırsa sunucudan gelen IWA istekleri <ph name="PRODUCT_NAME" /> tarafından yok sayılır.
 
       Not: Birden fazla sunucu adını virgülle ayırın. Joker karakterlere (<ph name="WILDCARD_VALUE" />) izin verilir.</translation>
 <translation id="1488406778491620405"><ph name="PRODUCT_NAME" /> erişilebilirlik özelliği, görme engelli ekran okuyucu kullanıcılarının web'deki etiketsiz resimlerin açıklamalarını almalarını sağlar. Bu özelliği etkinleştirmeyi seçen kullanıcıların, web'de karşılaştıkları etiketlenmemiş resimlerin otomatik olarak açıklamalarını sağlayacak anonim bir Google hizmetini kullanma seçenekleri olur.
@@ -854,7 +854,7 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 
       Bu politika False (Yanlış) değerine ayarlanırsa <ph name="PRODUCT_NAME" /> bu güvenlik korumalarını yerel olarak yüklenmiş CA sertifikalarıyla kimliği doğrulanan bağlantılar için devre dışı bırakır. Bu korumalar, herkes tarafından güvenilen CA sertifikaları ile kimliği doğrulanan bağlantılar için her zaman etkinleştirilir.
 
-      Önceden false (yanlış) olan bu politikanın varsayılan değeri, <ph name="PRODUCT_NAME" /> 81 sürümünde true (doğru) olarak değiştirildi. Etkilenen proxy'lerin ERR_TLS13_DOWNGRADE_DETECTED hata kodu göstererek bağlantı kuramaması beklenir. Etkilenen proxy'leri yeni sürüme geçirmek için daha fazla zaman ihtiyacı olan yöneticiler, bu politikayı kullanarak bu güvenlik özelliğini geçici olarak devre dışı bırakabilirler. Bu politika sürüm 86'da kaldırıldı.
+      Önceden false (yanlış) olan bu politikanın varsayılan değeri, <ph name="PRODUCT_NAME" /> 81 sürümünde true (doğru) olarak değiştirildi. Etkilenen proxy'lerin ERR_TLS13_DOWNGRADE_DETECTED hata kodu göstererek bağlantı kuramaması beklenir. Etkilenen proxy'leri yeni sürüme geçirmek için daha fazla zamana ihtiyacı olan yöneticiler, bu politikayı kullanarak bu güvenlik özelliğini geçici olarak devre dışı bırakabilirler. Bu politika sürüm 86'da kaldırıldı.
       </translation>
 <translation id="2333763898098246468"><ph name="PRODUCT_NAME" /> öğesinin Windows üzerinde nasıl yazdırdığını kontrol eder.
 
@@ -1208,15 +1208,20 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 <translation id="2787774054174244402">Politikanın Doğru (True) değerine ayarlanması kullanıcıların harici depolama cihazlarına yazmalarını engeller.
 
       Harici depolama engellenmedikçe ExternalStorageReadOnly politikasını Yanlış (False) değerine ayarlarsanız veya ayarlamadan bırakırsanız, kullanıcılar fiziksel olarak yazılabilir harici depolama cihazlarının dosyalarını oluşturup değiştirebilirler. (ExternalStorageDisable politikasını Doğru (True) değerine ayarlayarak harici depolamayı engelleyebilirsiniz.)</translation>
+<translation id="2796714419743648316">Uygulama Başına Süre Sınırları İzin Verilenler Listesi</translation>
+<translation id="2796896367838042659">Bu politika, uygulama başına kullanım kısıtlamaları için hangi uygulamaların ve URL'lerin beyaz listeye eklenmesi gerektiğini belirtir.
+        Yapılandırılmış beyaz liste, uygulama başına süre sınırlamalarına sahip belirtilen kullanıcı için <ph name="PRODUCT_OS_NAME" /> üzerinde yüklü uygulamalara uygulanır.
+        Yapılandırılmış beyaz liste, yalnızca alt kullanıcı hesaplarına uygulanabilir ve <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> politikası ayarlandığında geçerli olur.
+        Yapılandırılmış beyaz liste, uygulama başına zaman sınırlamaları tarafından engellenmemesi için uygulamalara ve URL'lere uygulanır.
+        Beyaz listeye eklenen URL'lere erişmek için harcanan zaman, Chrome zaman sınırından düşülmez.
+        Listedeki normal ifadelerden herhangi biriyle eşleşen URL'leri beyaz listeye eklemek için URL normal ifadelerini |url_list|'e ekleyin.
+        Bir uygulamayı beyaz listeye dahil etmek için uygulamayı |app_id| ve |app_type| ile |app_list|'e ekleyin.
+
+        Bu politika kullanımdan kaldırıldı, lütfen bunun yerine <ph name="PER_APP_TIME_LIMITS_ALLOWLIST" /> politikasını kullanın.
+        </translation>
 <translation id="2799297758492717491">URL kalıpları beyaz listesinde medyanın otomatik olarak oynatılmasına izin ver</translation>
 <translation id="2801065672151277034">Sertifika yönetim ayarları</translation>
 <translation id="2801155097555584385">Pil şarjı için özel şarj başlatma değerini yüzde olarak ayarla</translation>
-<translation id="2802085784857530815">Kullanıcıların kuruma ait olmayan yazıcılara erişip erişemeyeceklerini kontrol etmenize olanak tanır
-
-      Bu politika Doğru değerine ayarlanırsa veya hiç ayarlanmazsa kullanıcılar kendi yerel yazıcılarını kullanarak ekleme, yapılandırma ve yazdırma işlemleri yapabilirler.
-
-      Bu politika Yanlış değerine ayarlanırsa kullanıcılar kendi yerel yazıcılarını ekleyemez ve yapılandıramazlar. Ayrıca kullanıcılar önceden yapılandırılmış yerel yazıcıları kullanarak da yazdırma işlemi yapamazlar.
-      </translation>
 <translation id="2805707493867224476">Tüm sitelerin pop-up göstermesine izin ver</translation>
 <translation id="2808013382476173118">Uzak istemciler bu makineyle bağlantı kurmaya çalıştığında STUN sunucularının kullanılabilmesini sağlar.
 
@@ -2379,6 +2384,10 @@ politikayı geçersiz kılamaz.
       Bu politikanın değeri 0 olursa varsayılan önbellek boyutu kullanılır, ancak kullanıcı bu değeri değiştiremez.
 
       Bu politika ayarlanmazsa varsayılan boyut kullanılır ve kullanıcı --media-cache-size bayrağıyla bu değeri geçersiz kılabilir.</translation>
+<translation id="4508084713148633492">Disk alanı azaldığında bir bildirimin etkinleştirilmesini veya devre dışı bırakılmasını sağlar. Bu, bu cihazdaki tüm kullanıcılar için geçerlidir.
+      Yönetilen bir cihazda tam olarak bir kullanıcı hesabı varsa bildirim bu politikanın değerinden bağımsız olarak her zaman gösterilir.
+      Yönetilen bir cihazda birden fazla kullanıcı hesabı varsa politika yalnızca True (Doğru) değerine ayarlandığında bildirim gösterilir.
+      Bildirim, yönetilmeyen cihazlarda her zaman gösterilir.</translation>
 <translation id="4510923771103268849">Kullanıcının, Crostini kapsayıcılarına root erişimi olmasına izin verilir</translation>
 <translation id="4515404363392014383">Güvenilen kaynaklar için Güvenli Tarama'yı etkinleştir</translation>
 <translation id="4517928394515633751">Kullanıcıların indirdiklerini Güvenli Tarama ile tara</translation>
@@ -3251,7 +3260,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Politikanın ayarlanması, entegre kimlik doğrulama için hangi sunuculara izin verileceğini belirtir. Entegre kimlik doğrulaması yalnızca <ph name="PRODUCT_NAME" /> bir proxy veya söz konusu izin verilenler listesindeki bir sunucudan kimlik doğrulaması daveti aldığında etkinleşir.
 
-      Politika ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" />, sunucunun intranette olup olmadığını saptamaya çalışır. Ancak buna göre IWA isteklerini yanıtlar. Sunucunun internette olduğu saptanırsa sunucudan gelen IWA istekleri <ph name="PRODUCT_NAME" /> tarafından yok sayılır.
+      Politika ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" />, sunucunun intranette olup olmadığını saptamaya çalışır. Yalnızca intranetteyse IWA isteklerini yanıtlar. Sunucunun internette olduğu saptanırsa sunucudan gelen IWA istekleri <ph name="PRODUCT_NAME" /> tarafından yok sayılır.
 
       Not: Birden fazla sunucu adını virgülle ayırın. Joker karakterlere (<ph name="WILDCARD_VALUE" />) izin verilir.</translation>
 <translation id="5645779841392247734">Bu sitelerde çerezlere izin ver</translation>
@@ -3386,6 +3395,29 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Politika yanlış değerine ayarlanırsa veya ayarlanmadan bırakılırsa <ph name="PLUGIN_VM_NAME" /> eklentisinin veri toplamasına izin verilmez.
       Politika doğru değerine ayarlanırsa <ph name="PLUGIN_VM_NAME" /> eklentisi <ph name="PLUGIN_VM_NAME" /> kullanım verilerini toplayabilir. Ardından <ph name="PLUGIN_VM_NAME" /> deneyimini iyileştirmek için veriler birleştirilir ve kapsamlı bir şekilde analiz edilir.</translation>
+<translation id="5875873062228321803">İzin verilen minimum <ph name="PRODUCT_OS_NAME" /> sürümü gereksinimini yapılandırır.
+
+      Bu politika boş olmayan bir listeye ayarlandığında:
+      Girişlerin hiçbirinin <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> sürümü cihazın mevcut sürümünden yüksek değilse herhangi bir kısıtlama uygulanmaz ve mevcut kısıtlamalar iptal edilir.
+      Girişlerden en az birinin <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> sürümü cihazın mevcut sürümünden yüksekse en yüksek ve mevcut sürüme en yakın olan giriş seçilir.
+      İhtilaf olması durumunda, daha düşük <ph name="WARNING_PERIOD_PROPERTY_NAME" /> veya <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> sürümlü giriş tercih edilir ve politika, bu giriş kullanılarak uygulanır.
+
+      Kullanıcı oturumu esnasında mevcut sürüm geçersiz hale gelirse ve mevcut ağ otomatik güncellemelere izin vermiyorsa cihazın belirtilen <ph name="WARNING_PERIOD_PROPERTY_NAME" /> içinde güncellenmesi için bir ekran bildirimi gösterilir.
+      Mevcut ağ otomatik güncellemelere izin veriyorsa herhangi bir bildirim gösterilmez ve cihazın <ph name="WARNING_PERIOD_PROPERTY_NAME" /> içinde güncellenmesi gerekir.
+      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> politika uygulandığı zaman başlar.
+      Cihaz <ph name="WARNING_PERIOD_PROPERTY_NAME" /> sona erene kadar güncellenmezse kullanıcının oturumu kapatılır.
+      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> sona erdikten sonra giriş yapıldığında mevcut sürüm eskiyse kullanıcının tekrar oturum açmadan önce güncelleme yapması gerekir.
+
+      Kullanıcı oturumu esnasında mevcut sürüm geçersiz hale gelirse ve cihaz otomatik güncelleme süresinin sonuna ulaştıysa cihazın <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> içinde geri verilmesi için bir ekran bildirimi gösterilir.
+      <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> sona erdikten sonra giriş yapıldığında cihaz otomatik güncelleme süresinin sonuna ulaştıysa cihazda herhangi bir kullanıcının oturum açması engellenir.
+
+      <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> ayarlanmaz ya da False (Yanlış) değerine ayarlanırsa yönetilmeyen kullanıcı oturumları bildirim almaz ve zorla çıkış yapar.
+
+      Bu politika ayarlanmaz veya boş olarak ayarlanırsa hiçbir kısıtlama uygulanmaz, mevcut kısıtlamalar iptal edilir ve kullanıcı, <ph name="PRODUCT_OS_NAME" /> sürümüne bakılmaksızın oturum açabilir.
+
+      Burada <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> ile kastedilen, "13305.0.0" gibi bir tam sürüm veya "13305" gibi bir sürüm öneki olabilir.
+      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> ve <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />, gün sayısı şeklinde belirtilen isteğe bağlı değerlerdir. Bunlar için varsayılan değer 0 gündür ve uyarı süresi olmadığı anlamına gelir.
+      <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" />, varsayılan değeri False (Yanlış) olan isteğe bağlı bir özelliktir.</translation>
 <translation id="5879014913445067283"><ph name="NETBIOS_NAME" /> aracılığıyla Ağ Üzerinde Dosya Paylaşımı keşfini kontrol et</translation>
 <translation id="588135807064822874">Dokun ve Ara'yı etkinleştir</translation>
 <translation id="5882345429632338713">Alternatif tarayıcı açılmadan önce geçecek süre (milisaniye)</translation>
@@ -3445,6 +3477,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Bu ayarı devre dışı bırakırsanız veya bir değer ayarlamazsanız, Google Arama'da Güvenli Arama uygulanmaz.</translation>
 <translation id="5946082169633555022">Beta kanalı</translation>
 <translation id="5946329690214660966">Güncellemeleri kontrol etmek için özel bir program belirle</translation>
+<translation id="5951418260805607969">Disk alanı azaldığında bildirim göster</translation>
 <translation id="5961137303188584693">Cihazın dahili NIC MAC adresi</translation>
 <translation id="5966615072639944554">Uzaktan doğrulama API'sını kullanmasına izin verilen uzantılar</translation>
 <translation id="5983708779415553259">Hiçbir içerik paketinde bulunmayan siteler için varsayılan davranış</translation>
@@ -3675,6 +3708,14 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
           Politika değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma gecikmesinin altında veya o gecikmeye eşit olacak şekilde ayarlanır.
 
           Uyarı mesajı yalnızca boşta kalma işlemi, çıkış yapma veya cihazı kapatma olduğunda gösterilir.</translation>
+<translation id="6334330017384340264">Bu politika, uygulama başına kullanım kısıtlamaları için hangi uygulamalara ve URL'lere izin verilmesi gerektiğini belirtir.
+        Yapılandırılmış izin verilenler listesi, uygulama başına süre sınırlarına sahip belirtilen kullanıcı için <ph name="PRODUCT_OS_NAME" /> üzerinde yüklü uygulamalara uygulanır.
+        Yapılandırılmış izin verilenler listesi, yalnızca alt kullanıcı hesaplarına uygulanabilir ve <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> politikası ayarlandığında geçerli olur.
+        Yapılandırılmış izin verilenler listesi, uygulama başına zaman sınırlamaları tarafından engellenmemesi için uygulamalara ve URL'lere uygulanır.
+        İzin verilenler listesine eklenen URL'lere erişmek için harcanan zaman, Chrome zaman sınırından düşülmez.
+        Listedeki normal ifadelerden herhangi biriyle eşleşen URL'lere izin vermek için |url_list|'e URL normal ifadelerini ekleyin.
+        Bir uygulamaya izin vermek için uygulamayı |app_id| ve |app_type| ile |app_list|'e ekleyin.
+       </translation>
 <translation id="6337782882143073193">Bu politika kullanımdan kaldırıldı, lütfen bunun yerine <ph name="URL_BLOCKLIST_POLICY_NAME" /> politikasını kullanın.
 
       <ph name="PRODUCT_NAME" /> içinde listelenmiş protokol şemalarını devre dışı bırakır.
@@ -3743,6 +3784,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="6467613372414922590">Kullanıcı düzeyinde Yerel Mesajlaşma ana makinelerine izin ver (yönetici şifreleri olmadan yüklenir)</translation>
 <translation id="6468980648680553776">Bu politika kullanımdan kaldırılmıştır. Lütfen bunun yerine RemoteAccessHostClientDomainList politikasını kullanın.</translation>
 <translation id="6473623140202114570">Güvenli Tarama'nın uyarıları tetiklemeyeceği alan adlarının listesini yapılandırır.</translation>
+<translation id="647698599569353771">Yakındakilerle Paylaş'ın etkinleştirilmesine izin verin.</translation>
 <translation id="6491139795995924304">Cihazda Bluetooth'a izin ver</translation>
 <translation id="6491872498385040936">Bu politika kullanımdan kaldırılmıştır. Bu politikayı geçersiz kılan ve daha ayrıntılı ayarlamaya olanak tanıyan <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" /> politikasını kullanma seçeneğini değerlendirin.
 
@@ -4015,6 +4057,11 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Başlatıldığında <ph name="PRODUCT_NAME" /> ürününe uygulanacak işaretleri belirtir. Belirtilen işaretler, yalnızca giriş ekranında uygulanır. Bu politika aracılığıyla ayarlanan işaretler, kullanıcı oturumlarına yayılmaz.</translation>
 <translation id="685769593149966548">YouTube için Yüksek Düzey Kısıtlı Mod'u zorunlu kıl</translation>
 <translation id="686079137349561371">Microsoft Windows 7 veya sonraki sürümler</translation>
+<translation id="6863342574191774334">Bu ayar etkinleştirilirse kullanıcıların Yakındakilerle Paylaş özelliğini etkinleştirmesine izin verilir. Böylece kullanıcılar yakınlardaki kişilere dosya gönderip bu kişilerden dosya alabilirler.
+
+      Bu ayar devre dışı bırakılırsa kullanıcıların Yakındakilerle Paylaş özelliğini etkinleştirmelerine izin verilmez.
+
+      Bu politika ayarlanmadan bırakılırsa hem kurumsal olarak yönetilen kullanıcılar hem de yönetilmeyen kullanıcılar için varsayılana izin verilir.</translation>
 <translation id="6864244339257535116">Şifre korumalı dosyaların hem yüklenmesine hem de indirilmesine izin ver</translation>
 <translation id="6870295914868104867">Politikanın ayarlanması, kullanıcı etkileşimi olmadan sessizce yüklenen, kullanıcı tarafından yüklemesi kaldırılamayan veya kapatılamayan uygulamaların ve uzantıların bir listesini belirtir. İzinler, enterprise.deviceAttributes ve enterprise.platformKeys uzantı API'leri için dolaylı olarak verilir. (Bu iki API zorunlu olarak yüklenmemiş uygulamalar ve uzantılar tarafından kullanılamaz.)
 
@@ -4572,7 +4619,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
           Not: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> belirtilmişse bu politikayı geçersiz kılar.</translation>
 <translation id="7632724434767231364">GSSAPI kitaplığı adı</translation>
-<translation id="7642890175637942277">Varsayılan olarak CCT/PWA ilk çalıştırıldığında Hizmet Şartları gösterilir. Bu politikayı Devre dışı değerine ayarlamak Hizmet Şartları iletişim kutusunun ilk çalıştırma deneyiminde ya sonraki çalıştırmalarda görünmemesine sebep olur. Bu politikayı Etkin değerine ayarlamak veya ayarlamadan bırakmak Hizmet Şartları iletişim kutusunun ilk çalıştırma deneyiminde görünmesini sağlar. Dikkat edilmesi gereken diğer noktalar:
+<translation id="7642890175637942277">Varsayılan olarak CCT/PWA ilk çalıştırıldığında Hizmet Şartları gösterilir. Bu politikayı Devre dışı değerine ayarlamak Hizmet Şartları iletişim kutusunun ilk çalıştırma deneyiminde veya sonraki çalıştırmalarda görünmemesine sebep olur. Bu politikayı Etkin değerine ayarlamak veya ayarlamadan bırakmak Hizmet Şartları iletişim kutusunun ilk çalıştırma deneyiminde görünmesini sağlar. Dikkat edilmesi gereken diğer noktalar:
 
       - Bu politika Birleşik Uç Nokta Yönetimi tedarikçilerinin yapılandırabildiği, yalnızca tümüyle yönetilen Android cihazlarda çalışır.
 
@@ -4767,7 +4814,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="7902040092815978832">Şifre için sayısal klavyeyi gösterir</translation>
 <translation id="7904177352786629708">Politika Etkin değerine ayarlanırsa CNAME araması atlanır. Kerberos SPN oluşturulurken sunucu adı girildiği şekliyle kullanılır.
 
-      Politika Devre dışı değerine ayarlanır ya ayarlanmadan bırakılırsa CNAME araması, Kerberos SPN'i oluşturulurken sunucunun standart adını belirler.</translation>
+      Politika Devre dışı değerine ayarlanır veya ayarlanmadan bırakılırsa CNAME araması, Kerberos SPN'i oluşturulurken sunucunun standart adını belirler.</translation>
 <translation id="7912255076272890813">İzin verilen uygulama/uzantı türlerini yapılandır</translation>
 <translation id="7922358664346625612">Chrome'da son sekmeyi açık tut.</translation>
 <translation id="793134539373873765">OS güncelleme yükleri için p2p'nin kullanılıp kullanılmayacağını belirtir. Doğru seçeneğine ayarlanırsa, cihazlar LAN üzerindeki yükleri paylaşır ve kullanmaya çalışır, bu da İnternet bant genişliği kullanımını ve tıkanıklığını potansiyel olarak azaltır. Güncelleme yükü LAN'da kullanılamıyorsa, cihaz bir güncelleme sunucusundan indirme işlemine geçer. Yanlış seçeneğine ayarlanırsa veya yapılandırılmazsa p2p kullanılmaz.</translation>

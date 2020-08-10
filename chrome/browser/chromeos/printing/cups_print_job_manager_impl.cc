@@ -153,10 +153,12 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
         print_job->set_state(State::STATE_ERROR);
       } else {
         print_job->set_state(State::STATE_STARTED);
+        print_job->set_error_code(PrinterErrorCode::NO_ERROR);
       }
       break;
     case ::printing::CupsJob::COMPLETED:
       DCHECK_GE(job.current_pages, print_job->total_page_number());
+      print_job->set_error_code(PrinterErrorCode::NO_ERROR);
       print_job->set_state(State::STATE_DOCUMENT_DONE);
       break;
     case ::printing::CupsJob::STOPPED:
@@ -165,6 +167,7 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
         print_job->set_error_code(PrinterErrorCode::FILTER_FAILED);
         print_job->set_state(State::STATE_FAILED);
       } else {
+        print_job->set_error_code(PrinterErrorCode::NO_ERROR);
         print_job->set_state(ConvertState(job.state));
       }
       break;

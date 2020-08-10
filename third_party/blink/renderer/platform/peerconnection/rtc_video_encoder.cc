@@ -308,28 +308,6 @@ webrtc::VideoCodecType ProfileToWebRtcVideoCodecType(
   return webrtc::kVideoCodecGeneric;
 }
 
-// Populates struct webrtc::RTPFragmentationHeader for H264 codec.
-// Each entry specifies the offset and length (excluding start code) of a NALU.
-// Returns true if successful.
-bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
-                                   const uint8_t* data,
-                                   uint32_t length) {
-  std::vector<media::H264NALU> nalu_vector;
-  if (!media::H264Parser::ParseNALUs(data, length, &nalu_vector)) {
-    // H264Parser::ParseNALUs() has logged the errors already.
-    return false;
-  }
-
-  // TODO(zijiehe): Find a right place to share the following logic between
-  // //content and //remoting.
-  header->VerifyAndAllocateFragmentationHeader(nalu_vector.size());
-  for (size_t i = 0; i < nalu_vector.size(); ++i) {
-    header->fragmentationOffset[i] = nalu_vector[i].data - data;
-    header->fragmentationLength[i] = static_cast<size_t>(nalu_vector[i].size);
-  }
-  return true;
-}
-
 void RecordInitEncodeUMA(int32_t init_retval,
                          media::VideoCodecProfile profile) {
   UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoEncoderInitEncodeSuccess",
@@ -1292,31 +1270,7 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
   if (!encoded_image_callback_)
     return;
 
-  webrtc::RTPFragmentationHeader header;
-  memset(&header, 0, sizeof(header));
-  switch (video_codec_type_) {
-    case webrtc::kVideoCodecVP8:
-    case webrtc::kVideoCodecVP9:
-      // Generate a header describing a single fragment.
-      header.VerifyAndAllocateFragmentationHeader(1);
-      header.fragmentationOffset[0] = 0;
-      header.fragmentationLength[0] = image.size();
-      break;
-    case webrtc::kVideoCodecH264:
-      if (!GetRTPFragmentationHeaderH264(&header, image.data(), image.size())) {
-        DLOG(ERROR) << "Failed to get RTP fragmentation header for H264";
-        NotifyError(
-            (media::VideoEncodeAccelerator::Error)WEBRTC_VIDEO_CODEC_ERROR);
-        return;
-      }
-      break;
-    default:
-      NOTREACHED() << "Invalid video codec type";
-      return;
-  }
-
-  const auto result =
-      encoded_image_callback_->OnEncodedImage(image, &info, &header);
+  const auto result = encoded_image_callback_->OnEncodedImage(image, &info);
   if (result.error != webrtc::EncodedImageCallback::Result::OK) {
     DVLOG(2)
         << "ReturnEncodedImage(): webrtc::EncodedImageCallback::Result.error = "

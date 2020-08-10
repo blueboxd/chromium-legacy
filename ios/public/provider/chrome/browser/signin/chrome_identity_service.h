@@ -154,30 +154,40 @@ class ChromeIdentityService {
   // Returns YES if |identity| is valid and if the service has it in its list of
   // identitites.
   virtual bool IsValidIdentity(ChromeIdentity* identity) const;
+  virtual bool IsValidIdentityTemporary(ChromeIdentity* identity) const;
 
   // Returns the chrome identity having the email equal to |email| or |nil| if
   // no matching identity is found.
   virtual ChromeIdentity* GetIdentityWithEmail(const std::string& email) const;
+  virtual ChromeIdentity* GetIdentityWithEmailTemporary(
+      const std::string& email) const;
 
   // Returns the chrome identity having the gaia ID equal to |gaia_id| or |nil|
   // if no matching identity is found.
   virtual ChromeIdentity* GetIdentityWithGaiaID(
       const std::string& gaia_id) const;
+  virtual ChromeIdentity* GetIdentityWithGaiaIDTemporary(
+      const std::string& gaia_id) const;
 
   // Returns the canonicalized emails for all identities.
   virtual std::vector<std::string> GetCanonicalizeEmailsForAllIdentities()
       const;
+  virtual std::vector<std::string>
+  GetCanonicalizeEmailsForAllIdentitiesTemporary() const;
 
   // Returns true if there is at least one identity.
   virtual bool HasIdentities() const;
+  virtual bool HasIdentitiesTemporary() const;
 
   // Returns all ChromeIdentity objects in an array.
   virtual NSArray* GetAllIdentities() const;
+  virtual NSArray* GetAllIdentitiesTemporary() const;
 
   // Returns all ChromeIdentity objects sorted by the ordering used in the
   // account manager, which is typically based on the keychain ordering of
   // accounts.
   virtual NSArray* GetAllIdentitiesSortedForDisplay() const;
+  virtual NSArray* GetAllIdentitiesSortedForDisplayTemporary() const;
 
   // Forgets the given identity on the device. This method logs the user out.
   // It is asynchronous because it needs to contact the server to revoke the

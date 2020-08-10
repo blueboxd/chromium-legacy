@@ -76,7 +76,9 @@ class CrostiniUninstallerViewBrowserTest : public CrostiniDialogBrowserTest {
   bool HasCancelButton() { return ActiveView()->GetCancelButton() != nullptr; }
 
   void WaitForViewDestroyed() {
-    base::RunLoop().RunUntilIdle();
+    base::RunLoop run_loop;
+    ActiveView()->set_destructor_callback_for_testing(run_loop.QuitClosure());
+    run_loop.Run();
     EXPECT_EQ(nullptr, ActiveView());
   }
 

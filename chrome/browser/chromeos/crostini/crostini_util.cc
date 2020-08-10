@@ -66,6 +66,13 @@ const char kCrostiniDefaultImageServerUrl[] =
     "https://storage.googleapis.com/cros-containers/%d";
 const char kCrostiniStretchImageAlias[] = "debian/stretch";
 const char kCrostiniBusterImageAlias[] = "debian/buster";
+const char kCrostiniDlcName[] = "termina-dlc";
+
+const char kCrostiniKernel[] = "vm_kernel";
+const char kCrostiniRootfs[] = "vm_rootfs.img";
+const char kCrostiniToolfs[] = "vm_tools.img";
+const char kCrostiniToolfsMountPath[] = "/opt/google/cros-containers";
+const char kCrostiniToolfsType[] = "ext4";
 
 const base::FilePath::CharType kHomeDirectory[] = FILE_PATH_LITERAL("/home");
 
@@ -383,8 +390,7 @@ void LaunchCrostiniApp(Profile* profile,
 
   // At this point, we know that Crostini UI is allowed.
   if (app_id == kCrostiniTerminalSystemAppId &&
-      (!crostini_manager->IsCrosTerminaInstalled() ||
-       !CrostiniFeatures::Get()->IsEnabled(profile))) {
+      !CrostiniFeatures::Get()->IsEnabled(profile)) {
     crostini::CrostiniInstaller::GetForProfile(profile)->ShowDialog(
         CrostiniUISurface::kAppList);
     return std::move(callback).Run(false, "Crostini not installed");

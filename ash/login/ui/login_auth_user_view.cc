@@ -827,7 +827,9 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       callbacks.on_remove_warning_shown, callbacks.on_remove);
   user_view_ = user_view.get();
 
-  auto password_view = std::make_unique<LoginPasswordView>();
+  const LoginPalette palette = CreateDefaultLoginPalette();
+
+  auto password_view = std::make_unique<LoginPasswordView>(palette);
   password_view_ = password_view.get();
   password_view->SetPaintToLayer();  // Needed for opacity animation.
   password_view->layer()->SetFillsBoundsOpaquely(false);
@@ -835,7 +837,7 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       user.show_display_password_button);
 
   auto pin_view = std::make_unique<LoginPinView>(
-      LoginPinView::Style::kAlphanumeric,
+      LoginPinView::Style::kAlphanumeric, palette,
       base::BindRepeating(&LoginPasswordView::InsertNumber,
                           base::Unretained(password_view.get())),
       base::BindRepeating(&LoginPasswordView::Backspace,

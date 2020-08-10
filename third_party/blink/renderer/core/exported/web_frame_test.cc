@@ -6223,7 +6223,7 @@ class CompositedSelectionBoundsTest
     ASSERT_TRUE(layer_owner_node_for_start);
     EXPECT_EQ(GetExpectedLayerForSelection(layer_owner_node_for_start)
                   ->CcLayer()
-                  ->id(),
+                  .id(),
               selection.start.layer_id);
 
     EXPECT_EQ(start_edge_start_in_layer_x, selection.start.edge_start.x());
@@ -6236,7 +6236,7 @@ class CompositedSelectionBoundsTest
 
     ASSERT_TRUE(layer_owner_node_for_end);
     EXPECT_EQ(
-        GetExpectedLayerForSelection(layer_owner_node_for_end)->CcLayer()->id(),
+        GetExpectedLayerForSelection(layer_owner_node_for_end)->CcLayer().id(),
         selection.end.layer_id);
 
     EXPECT_EQ(end_edge_start_in_layer_x, selection.end.edge_start.x());

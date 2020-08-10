@@ -8,8 +8,11 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "content/public/test/browser_test.h"');
 
+// clang-format off
 [['CrPolicyNetworkBehaviorMojo', 'cr_policy_network_behavior_mojo_tests.m.js'],
+ ['CrPolicyNetworkIndicatorMojo', 'cr_policy_network_indicator_mojo_tests.m.js'],
 ].forEach(test => registerTest(...test));
+// clang-format on
 
 function registerTest(testName, module, caseName) {
   const className = `CrComponents${testName}TestV3`;

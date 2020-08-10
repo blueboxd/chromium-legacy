@@ -45,7 +45,7 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(const GraphicsLayer* layer,
                    PointAsJSONArray(layer->GetOffsetFromTransformNode()));
   }
 
-  layer->AppendAdditionalInfoAsJSON(flags, *layer->CcLayer(), *json.get());
+  layer->AppendAdditionalInfoAsJSON(flags, layer->CcLayer(), *json.get());
 
   return json;
 }

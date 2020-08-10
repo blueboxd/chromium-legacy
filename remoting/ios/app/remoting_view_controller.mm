@@ -15,6 +15,12 @@
 #import <MaterialComponents/MaterialSnackbar.h>
 
 #import "base/bind.h"
+#include "base/mac/scoped_cftyperef.h"
+#include "base/strings/sys_string_conversions.h"
+#include "remoting/base/oauth_token_getter.h"
+#include "remoting/base/string_resources.h"
+#include "remoting/client/connect_to_host_info.h"
+#import "remoting/ios/app/account_manager.h"
 #import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/client_connection_view_controller.h"
 #import "remoting/ios/app/host_collection_view_controller.h"
@@ -23,17 +29,11 @@
 #import "remoting/ios/app/host_setup_view_controller.h"
 #import "remoting/ios/app/host_view_controller.h"
 #import "remoting/ios/app/refresh_control_provider.h"
-#import "remoting/ios/app/remoting_menu_view_controller.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/view_utils.h"
 #import "remoting/ios/domain/client_session_details.h"
-#import "remoting/ios/facade/remoting_service.h"
-#include "base/mac/scoped_cftyperef.h"
-#include "base/strings/sys_string_conversions.h"
-#include "remoting/base/oauth_token_getter.h"
-#include "remoting/base/string_resources.h"
-#include "remoting/client/connect_to_host_info.h"
 #include "remoting/ios/facade/host_list_service.h"
+#import "remoting/ios/facade/remoting_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -142,14 +142,6 @@ using remoting::HostListService;
     self.navigationItem.title =
         l10n_util::GetNSString(IDS_PRODUCT_NAME).lowercaseString;
 
-    UIBarButtonItem* menuButton =
-        [[UIBarButtonItem alloc] initWithImage:RemotingTheme.menuIcon
-                                         style:UIBarButtonItemStyleDone
-                                        target:self
-                                        action:@selector(didSelectMenu)];
-    remoting::SetAccessibilityInfoFromImage(menuButton);
-    self.navigationItem.leftBarButtonItem = menuButton;
-
     _appBarViewController.headerView.backgroundColor =
         RemotingTheme.hostListBackgroundColor;
     _appBarViewController.navigationBar.backgroundColor =
@@ -196,15 +188,37 @@ using remoting::HostListService;
   [self.view sendSubviewToBack:imageView];
 
   imageView.translatesAutoresizingMaskIntoConstraints = NO;
+
+  [self.view addSubview:_appBarViewController.view];
+  [_appBarViewController didMoveToParentViewController:self];
+
+  UIViewController* accountParticleDiscViewController =
+      remoting::ios::AccountManager::GetInstance()
+          ->CreateAccountParticleDiscViewController();
+  accountParticleDiscViewController.view
+      .translatesAutoresizingMaskIntoConstraints = NO;
+  [self addChildViewController:accountParticleDiscViewController];
+  [self.view addSubview:accountParticleDiscViewController.view];
+  [accountParticleDiscViewController didMoveToParentViewController:self];
+
   [NSLayoutConstraint activateConstraints:@[
     [[imageView widthAnchor]
         constraintGreaterThanOrEqualToAnchor:[self.view widthAnchor]],
     [[imageView heightAnchor]
         constraintGreaterThanOrEqualToAnchor:[self.view heightAnchor]],
-  ]];
 
-  [self.view addSubview:_appBarViewController.view];
-  [_appBarViewController didMoveToParentViewController:self];
+    [accountParticleDiscViewController.view.topAnchor
+        constraintEqualToAnchor:_appBarViewController.navigationBar.topAnchor],
+    [accountParticleDiscViewController.view.trailingAnchor
+        constraintEqualToAnchor:_appBarViewController.navigationBar
+                                    .trailingAnchor],
+    [accountParticleDiscViewController.view.widthAnchor
+        constraintEqualToConstant:accountParticleDiscViewController
+                                      .preferredContentSize.width],
+    [accountParticleDiscViewController.view.heightAnchor
+        constraintEqualToConstant:accountParticleDiscViewController
+                                      .preferredContentSize.height],
+  ]];
 
   __weak __typeof(self) weakSelf = self;
   _hostListStateSubscription =
@@ -316,10 +330,6 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   _hostListService->RequestFetch();
 }
 
-- (void)didSelectMenu {
-  [AppDelegate.instance showMenuAnimated:YES];
-}
-
 - (void)refreshContent {
   if (_hostListService->state() == HostListService::State::FETCHING) {
     // We don't need to show the fetching view when either the host list or the
@@ -379,10 +389,11 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   // Pull-to-refresh is not available. We need to show a dedicated view to allow
   // user to retry.
 
-  // Dismiss snackbars and hide the SSO menu so that the accessibility focus
-  // can shift into the label.
+  // Dismiss snackbars and so that the accessibility focus can shift into the
+  // label.
+  // TODO(yuweih): See if we really need to hide the account menu in this case,
+  // since it requires nontrivial changes.
   [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:nil];
-  [AppDelegate.instance hideMenuAnimated:YES];
 
   _fetchingErrorViewController.label.text = errorText;
   remoting::SetAccessibilityFocusElement(_fetchingErrorViewController.label);

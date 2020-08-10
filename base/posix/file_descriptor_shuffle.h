@@ -19,7 +19,7 @@
 //   file_descriptor_map.push_back(base::InjectionArc(pipe[1], 1, true));
 //   base::ShuffleFileDescriptors(file_descriptor_map);
 //
-// and trust the the Right Thing will get done.
+// and trust the Right Thing will get done.
 
 #include <vector>
 

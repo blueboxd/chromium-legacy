@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">새 비밀번호</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" />에서 이 기기를 관리하고 방문한 웹페이지, 비밀번호, 이메일을 비롯한 모든 사용자 활동에 액세스합니다.</translation>
 <translation id="4003384961948020559">실패 - 출력 가득 참</translation>
+<translation id="4027485274696301677">이 <ph name="DEVICE_TYPE" />은(는) <ph name="ENROLLMENT_DOMAIN" />에서 관리합니다. 관리자가 기기를 원격으로 구성할 수 있습니다.</translation>
 <translation id="4034824040120875894">프린터</translation>
 <translation id="4227825898293920515">비밀번호가 <ph name="TIME" /> 후에 만료됨</translation>
 <translation id="4238516577297848345">진행 중인 인쇄 작업 없음</translation>

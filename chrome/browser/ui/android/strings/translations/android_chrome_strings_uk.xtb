@@ -418,7 +418,7 @@
 <translation id="4404568932422911380">Немає закладок</translation>
 <translation id="4405224443901389797">Перемістити в папку…</translation>
 <translation id="4411535500181276704">Спрощений режим</translation>
-<translation id="4415276339145661267">Керуйте обліковим записом Google</translation>
+<translation id="4415276339145661267">Керувати обліковим записом Google</translation>
 <translation id="4440958355523780886">Спрощену сторінку надає Google. Натисніть, щоб завантажити оригінал.</translation>
 <translation id="4452411734226507615">Закрити вкладку <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Закладку збережено в папці "<ph name="FOLDER_NAME" />"</translation>
@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Оновити</translation>
 <translation id="4738836084190194332">Остання синхронізація: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">Помилка TWA: <ph name="ERROR_CODE" /> на сайті <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Відкрити нову вкладку</translation>
 <translation id="4759238208242260848">Завантаження</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 файл завантажено.}one{# файл завантажено.}few{# файли завантажено.}many{# файлів завантажено.}other{# файлу завантажено.}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">Перегляд у режимі офлайн</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
+<translation id="9148126808321036104">Увійти знову</translation>
 <translation id="9155898266292537608">Можете також шукати, швидко торкнувшись слова</translation>
 <translation id="9169507124922466868">Історію навігації відкрито на половину висоти</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Перевірено 1 хвилину тому}one{Перевірено # хвилину тому}few{Перевірено # хвилини тому}many{Перевірено # хвилин тому}other{Перевірено # хвилини тому}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">Домашня сторінка</translation>
 <translation id="93753284658583800">Домашню сторінку змінено</translation>
 <translation id="938850635132480979">Помилка: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Ввести парольну фразу</translation>
 <translation id="95817756606698420">Chrome може використовувати <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> для пошуку в Китаї. Це можна змінити в <ph name="BEGIN_LINK" />Налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Відвідані сторінки з'являються тут</translation>
 <translation id="970715775301869095">Залишилося <ph name="MINUTES" /> хв</translation>

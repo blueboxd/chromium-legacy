@@ -231,11 +231,18 @@ class CC_PAINT_EXPORT PaintImage {
                  SkYUVAIndex* plane_indices) const;
 
   // Returns the SkImage associated with this PaintImage. If PaintImage is
-  // texture backed, this API may do a readback from GPU to CPU memory.
-  // Avoid using this API unless actual pixels are needed.
-  // For other cases, prefer using PaintImage APIs directly or use
-  // GetSkImageInfo() for metadata about the SkImage.
-  sk_sp<SkImage> GetRasterSkImage() const;
+  // texture backed, this API will always do a readback from GPU to CPU memory,
+  // so avoid using it unless actual pixels are needed. For other cases, prefer
+  // using PaintImage APIs directly or use GetSkImageInfo() for metadata about
+  // the SkImage.
+  sk_sp<SkImage> GetSwSkImage() const;
+
+  // Reads this image's pixels into caller-owned |dst_pixels|
+  bool readPixels(const SkImageInfo& dst_info,
+                  void* dst_pixels,
+                  size_t dst_row_bytes,
+                  int src_x,
+                  int src_y) const;
 
   SkImageInfo GetSkImageInfo() const;
 
@@ -323,6 +330,10 @@ class CC_PAINT_EXPORT PaintImage {
   friend class ScopedRasterFlags;
   friend class PaintOpReader;
 
+  friend class PlaybackImageProvider;
+  friend class DrawImageRectOp;
+  friend class DrawImageOp;
+
   bool DecodeFromGenerator(void* memory,
                            SkImageInfo* info,
                            sk_sp<SkColorSpace> color_space,
@@ -334,6 +345,9 @@ class CC_PAINT_EXPORT PaintImage {
                          size_t frame_index,
                          GeneratorClientId client_id) const;
   void CreateSkImage();
+
+  // Only supported in non-OOPR contexts by friend callers.
+  sk_sp<SkImage> GetAcceleratedSkImage() const;
 
   sk_sp<SkImage> sk_image_;
   sk_sp<PaintRecord> paint_record_;

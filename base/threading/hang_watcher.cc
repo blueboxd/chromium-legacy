@@ -36,7 +36,7 @@ constexpr base::FeatureParam<bool> kHangWatchIOThread{
 constexpr base::FeatureParam<bool> kHangWatchThreadPool{
     &kEnableHangWatcher, "hang_watch_threadpool", false};
 
-constexpr base::TimeDelta HangWatchScope::kDefaultHangWatchTime =
+constexpr base::TimeDelta HangWatchScopeEnabled::kDefaultHangWatchTime =
     base::TimeDelta::FromSeconds(10);
 
 namespace {
@@ -56,44 +56,70 @@ constexpr const char* kThreadName = "HangWatcher";
 // hangs but present unacceptable overhead.
 const base::TimeDelta kMonitoringPeriod = base::TimeDelta::FromSeconds(10);
 
-HangWatchScope::HangWatchScope(TimeDelta timeout) {
+HangWatchScopeEnabled::HangWatchScopeEnabled(TimeDelta timeout) {
   internal::HangWatchState* current_hang_watch_state =
       internal::HangWatchState::GetHangWatchStateForCurrentThread()->Get();
 
   DCHECK(timeout >= base::TimeDelta()) << "Negative timeouts are invalid.";
 
-  // TODO(crbug.com/1034046): Remove when all threads using HangWatchScope are
-  // monitored. Thread is not monitored, noop.
-  if (!current_hang_watch_state) {
+  // TODO(crbug.com/1034046): Remove when all threads using
+  // HangWatchScopeEnabled are monitored. Thread is not monitored, noop.
+  if (!current_hang_watch_state)
     return;
-  }
 
   DCHECK(current_hang_watch_state)
-      << "A scope can only be used on a thread that "
+      << "HangWatchScopeEnabled can only be used on a thread that "
          "registered for hang watching with HangWatcher::RegisterThread.";
 
 #if DCHECK_IS_ON()
-  previous_scope_ = current_hang_watch_state->GetCurrentHangWatchScope();
-  current_hang_watch_state->SetCurrentHangWatchScope(this);
+  previous_hang_watch_scope_enable_ =
+      current_hang_watch_state->GetCurrentHangWatchScopeEnabled();
+  current_hang_watch_state->SetCurrentHangWatchScopeEnabled(this);
 #endif
 
-  // TODO(crbug.com/1034046): Check whether we are over deadline already for the
-  // previous scope here by issuing only one TimeTicks::Now() and resuing the
-  // value.
+  uint64_t old_flags;
+  base::TimeTicks old_deadline;
+  std::tie(old_flags, old_deadline) =
+      current_hang_watch_state->GetFlagsAndDeadline();
 
-  previous_deadline_ = current_hang_watch_state->GetDeadline();
+  const bool hangs_ignored_for_current_scope =
+      internal::HangWatchDeadline::IsFlagSet(
+          internal::HangWatchDeadline::Flag::
+              kIgnoreCurrentHangWatchScopeEnabled,
+          old_flags);
+
+  const bool has_active_hang_watch_disabled =
+      internal::HangWatchDeadline::IsFlagSet(
+          internal::HangWatchDeadline::Flag::kHasActiveHangWatchScopeDisabled,
+          old_flags);
+
+  // If the current HangWatchScopeEnabled is ignored but there are no active
+  // HangWatchScopeDisabled instances, temporarely reactivate hang watching for
+  // this newly created HangWatchScopeEnabled. On exiting hang watching is
+  // suspended again to return to the original state.
+  if (hangs_ignored_for_current_scope && !has_active_hang_watch_disabled) {
+    current_hang_watch_state->UnsetIgnoreCurrentHangWatchScopeEnabled();
+    set_hangs_ignored_on_exit_ = true;
+  }
+
+  // TODO(crbug.com/1034046): Check whether we are over deadline already for the
+  // previous HangWatchScopeEnabled here by issuing only one TimeTicks::Now()
+  // and resuing the value.
+
+  previous_deadline_ = old_deadline;
   TimeTicks deadline = TimeTicks::Now() + timeout;
   current_hang_watch_state->SetDeadline(deadline);
+  current_hang_watch_state->IncrementNestingLevel();
 }
 
-HangWatchScope::~HangWatchScope() {
+HangWatchScopeEnabled::~HangWatchScopeEnabled() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   internal::HangWatchState* current_hang_watch_state =
       internal::HangWatchState::GetHangWatchStateForCurrentThread()->Get();
 
-  // TODO(crbug.com/1034046): Remove when all threads using HangWatchScope are
-  // monitored. Thread is not monitored, noop.
+  // TODO(crbug.com/1034046): Remove when all threads using
+  // HangWatchScopeEnabled are monitored. Thread is not monitored, noop.
   if (!current_hang_watch_state) {
     return;
   }
@@ -106,16 +132,62 @@ HangWatchScope::~HangWatchScope() {
 
 #if DCHECK_IS_ON()
   // Verify that no Scope was destructed out of order.
-  DCHECK_EQ(this, current_hang_watch_state->GetCurrentHangWatchScope());
-  current_hang_watch_state->SetCurrentHangWatchScope(previous_scope_);
+  DCHECK_EQ(this, current_hang_watch_state->GetCurrentHangWatchScopeEnabled());
+  current_hang_watch_state->SetCurrentHangWatchScopeEnabled(
+      previous_hang_watch_scope_enable_);
 #endif
 
-  // Reset the deadline to the value it had before entering this scope.
+  // If a HangWatchScopeDisabled suspended hang watching during the
+  // lifetime of this or any nested HangWatchScopeEnabled it can now safely be
+  // reactivated by clearing the ignore bit since this is the outer-most scope.
+  // See HangWatchScopeDisabled class comments where this represents the
+  // destruction of |scope_1|.
+  if (current_hang_watch_state->nesting_level() == 1)
+    current_hang_watch_state->UnsetIgnoreCurrentHangWatchScopeEnabled();
+  // Return to ignoring hangs since this was the previous state before hang
+  // watching was temporarily enabled for this HangWatchScopeEnabled only in the
+  // constructor. See HangWatchScopeDisabled class comments where the next line
+  // of code is part of the destruction of |scope_4|.
+  else if (set_hangs_ignored_on_exit_)
+    current_hang_watch_state->SetIgnoreCurrentHangWatchScopeEnabled();
+
+  // Reset the deadline to the value it had before entering this
+  // HangWatchScopeEnabled.
   current_hang_watch_state->SetDeadline(previous_deadline_);
-  // TODO(crbug.com/1034046): Log when a HangWatchScope exits after its deadline
-  // and that went undetected by the HangWatcher.
+  // TODO(crbug.com/1034046): Log when a HangWatchScopeEnabled exits after its
+  // deadline and that went undetected by the HangWatcher.
+
+  current_hang_watch_state->DecrementNestingLevel();
 }
 
+HangWatchScopeDisabled::HangWatchScopeDisabled() {
+  internal::HangWatchState* current_hang_watch_state =
+      internal::HangWatchState::GetHangWatchStateForCurrentThread()->Get();
+
+  if (!current_hang_watch_state) {
+    return;
+  }
+
+  current_hang_watch_state->SetIgnoreCurrentHangWatchScopeEnabled();
+  current_hang_watch_state->SetHasActiveHangWatchScopeDisabled();
+}
+
+HangWatchScopeDisabled::~HangWatchScopeDisabled() {
+  internal::HangWatchState* current_hang_watch_state =
+      internal::HangWatchState::GetHangWatchStateForCurrentThread()->Get();
+
+  if (!current_hang_watch_state)
+    return;
+
+  // If this instance outlived all HangWatchScopeEnabled instances watching
+  // needs to be reactivated.
+  if (current_hang_watch_state->nesting_level() == 0)
+    current_hang_watch_state->UnsetIgnoreCurrentHangWatchScopeEnabled();
+
+  current_hang_watch_state->UnsetHasActiveHangWatchScopeDisabled();
+}
+
+// static
 void HangWatcher::InitializeOnMainThread() {
   DCHECK(!g_use_hang_watcher);
   DCHECK(!g_hang_watch_workers);
@@ -207,15 +279,15 @@ void HangWatcher::Wait() {
     if (!wait_was_normal) {
       // If the time spent waiting was too high it might indicate the machine is
       // very slow or that that it went to sleep. In any case we can't trust the
-      // hang watch scopes that are currently live. Update the ignore threshold
-      // to make sure they don't trigger a hang on subsequent monitors then keep
-      // waiting.
+      // HangWatchScopeEnableds that are currently live. Update the ignore
+      // threshold to make sure they don't trigger a hang on subsequent monitors
+      // then keep waiting.
 
       base::AutoLock auto_lock(watch_state_lock_);
 
       // Find the latest deadline among the live watch states. They might change
       // atomically while iterating but that's fine because if they do that
-      // means the new HangWatchScope was constructed very soon after the
+      // means the new HangWatchScopeEnabled was constructed very soon after the
       // abnormal sleep happened and might be affected by the root cause still.
       // Ignoring it is cautious and harmless.
       base::TimeTicks latest_deadline;
@@ -303,7 +375,7 @@ HangWatcher::WatchStateSnapShot::WatchStateSnapShot(
     // Only copy hung threads.
     if (deadline <= snapshot_time) {
       // Attempt to mark the thread as needing to stay within its current
-      // HangWatchScope until capture is complete.
+      // HangWatchScopeEnabled until capture is complete.
       bool thread_marked = watch_state->SetShouldBlockOnHang(flags, deadline);
 
       // If marking some threads already failed the snapshot won't be kept so
@@ -397,8 +469,14 @@ void HangWatcher::Monitor() {
   bool any_thread_hung = std::any_of(
       watch_states_.cbegin(), watch_states_.cend(),
       [this, now](const std::unique_ptr<internal::HangWatchState>& state) {
-        base::TimeTicks deadline = state->GetDeadline();
-        return deadline > deadline_ignore_threshold_ && deadline < now;
+        uint64_t flags;
+        base::TimeTicks deadline;
+        std::tie(flags, deadline) = state->GetFlagsAndDeadline();
+        return !internal::HangWatchDeadline::IsFlagSet(
+                   internal::HangWatchDeadline::Flag::
+                       kIgnoreCurrentHangWatchScopeEnabled,
+                   flags) &&
+               deadline > deadline_ignore_threshold_ && deadline < now;
       });
 
   // If at least a thread is hung we need to capture.
@@ -530,7 +608,10 @@ constexpr uint64_t kMaximumFlag = 0x8000000000000000u;
 // Use as a mask to keep persistent flags and the deadline.
 constexpr uint64_t kPersistentFlagsAndDeadlineMask =
     kOnlyDeadlineMask |
-    static_cast<uint64_t>(HangWatchDeadline::Flag::kIgnoreHangs);
+    static_cast<uint64_t>(
+        HangWatchDeadline::Flag::kIgnoreCurrentHangWatchScopeEnabled) |
+    static_cast<uint64_t>(
+        HangWatchDeadline::Flag::kHasActiveHangWatchScopeDisabled);
 }  // namespace
 
 // Flag binary representation assertions.
@@ -617,12 +698,20 @@ bool HangWatchDeadline::SetShouldBlockOnHang(uint64_t old_flags,
                                      std::memory_order_relaxed);
 }
 
-void HangWatchDeadline::SetIgnoreHangs() {
-  SetPersistentFlag(Flag::kIgnoreHangs);
+void HangWatchDeadline::SetHasActiveHangWatchScopeDisabled() {
+  SetPersistentFlag(Flag::kHasActiveHangWatchScopeDisabled);
 }
 
-void HangWatchDeadline::UnsetIgnoreHangs() {
-  ClearPersistentFlag(Flag::kIgnoreHangs);
+void HangWatchDeadline::UnsetHasActiveHangWatchScopeDisabled() {
+  ClearPersistentFlag(Flag::kHasActiveHangWatchScopeDisabled);
+}
+
+void HangWatchDeadline::SetIgnoreCurrentHangWatchScopeEnabled() {
+  SetPersistentFlag(Flag::kIgnoreCurrentHangWatchScopeEnabled);
+}
+
+void HangWatchDeadline::UnsetIgnoreCurrentHangWatchScopeEnabled() {
+  ClearPersistentFlag(Flag::kIgnoreCurrentHangWatchScopeEnabled);
 }
 
 void HangWatchDeadline::SetPersistentFlag(Flag flag) {
@@ -700,8 +789,8 @@ HangWatchState::~HangWatchState() {
 
 #if DCHECK_IS_ON()
   // Destroying the HangWatchState should not be done if there are live
-  // HangWatchScopes.
-  DCHECK(!current_hang_watch_scope_);
+  // HangWatchScopeEnableds.
+  DCHECK(!current_hang_watch_scope_enable_);
 #endif
 }
 
@@ -737,6 +826,22 @@ bool HangWatchState::IsOverDeadline() const {
   return TimeTicks::Now() > deadline_.GetDeadline();
 }
 
+void HangWatchState::SetHasActiveHangWatchScopeDisabled() {
+  deadline_.SetHasActiveHangWatchScopeDisabled();
+}
+
+void HangWatchState::UnsetHasActiveHangWatchScopeDisabled() {
+  deadline_.UnsetHasActiveHangWatchScopeDisabled();
+}
+
+void HangWatchState::SetIgnoreCurrentHangWatchScopeEnabled() {
+  deadline_.SetIgnoreCurrentHangWatchScopeEnabled();
+}
+
+void HangWatchState::UnsetIgnoreCurrentHangWatchScopeEnabled() {
+  deadline_.UnsetIgnoreCurrentHangWatchScopeEnabled();
+}
+
 bool HangWatchState::SetShouldBlockOnHang(uint64_t old_flags,
                                           TimeTicks old_deadline) {
   return deadline_.SetShouldBlockOnHang(old_flags, old_deadline);
@@ -747,19 +852,28 @@ bool HangWatchState::IsFlagSet(HangWatchDeadline::Flag flag) {
 }
 
 #if DCHECK_IS_ON()
-void HangWatchState::SetCurrentHangWatchScope(HangWatchScope* scope) {
+void HangWatchState::SetCurrentHangWatchScopeEnabled(
+    HangWatchScopeEnabled* current_hang_watch_scope_enable) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  current_hang_watch_scope_ = scope;
+  current_hang_watch_scope_enable_ = current_hang_watch_scope_enable;
 }
 
-HangWatchScope* HangWatchState::GetCurrentHangWatchScope() {
+HangWatchScopeEnabled* HangWatchState::GetCurrentHangWatchScopeEnabled() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return current_hang_watch_scope_;
+  return current_hang_watch_scope_enable_;
 }
 #endif
 
 HangWatchDeadline* HangWatchState::GetHangWatchDeadlineForTesting() {
   return &deadline_;
+}
+
+void HangWatchState::IncrementNestingLevel() {
+  ++nesting_level_;
+}
+
+void HangWatchState::DecrementNestingLevel() {
+  --nesting_level_;
 }
 
 // static

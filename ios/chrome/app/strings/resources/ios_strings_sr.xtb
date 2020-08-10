@@ -128,7 +128,6 @@
 <translation id="236977714248711277">Сајтови не могу да користе колачиће за побољшање доживљаја прегледања, на пример, да бисте остали пријављени или да би ставке у вашој корпи за куповину остале сачуване.
 
 Сајтови не могу да користе колачиће да би видели ваше активности прегледања на различитим сајтовима, на пример, за персонализацију огласа.</translation>
-<translation id="2379896346847637748">Отвори у новом прозору</translation>
 <translation id="2381405137052800939">Основе</translation>
 <translation id="2386793615875593361">Изабрана је 1 слика</translation>
 <translation id="2421004566762153674">Блокира колачиће треће стране</translation>
@@ -310,6 +309,7 @@
 <translation id="4619615317237390068">Картице са других уређаја</translation>
 <translation id="4620246317052452550">Прочитане странице</translation>
 <translation id="4630540211544979320">Преводи странице</translation>
+<translation id="4634124774493850572">Користи лозинку</translation>
 <translation id="4636930964841734540">Информације</translation>
 <translation id="4659126640776004816">Ова функција се укључује када се пријавите на Google налог.</translation>
 <translation id="4659667755519643272">Уђи у пребацивач картица</translation>
@@ -393,6 +393,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="5614553682702429503">Желите ли да сачувате лозинку?</translation>
 <translation id="5626245204502895507">Тренутно није могуће преузети датотеку.</translation>
 <translation id="5631164295104953411">Додај начина плаћања</translation>
+<translation id="5653058065071344726">Овим управља организација. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="5659593005791499971">Имејл</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Верзија <ph name="PRODUCT_VERSION" /></translation>
@@ -437,6 +438,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6108923351542677676">Подешавање је у току...</translation>
 <translation id="6119050551270742952">Актуелна веб-страница је у режиму без архивирања</translation>
 <translation id="6122191549521593678">Онлајн</translation>
+<translation id="6125339936101702016">Овим управља <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Уклонили сте ставку</translation>
 <translation id="6136914049981179737">Малопре</translation>
 <translation id="616831107264507309">Прочитајте касније</translation>
@@ -611,6 +613,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8007420562015504427">Претрага без архивирања</translation>
 <translation id="802154636333426148">Преузимање није успело</translation>
 <translation id="8023878949384262191">Проширује одељак.</translation>
+<translation id="8027581147000338959">Отвори у новом прозору</translation>
 <translation id="804427445359061970">Овде ћете пронаћи картице са других уређаја</translation>
 <translation id="8059533439631660104">Скупља одељак.</translation>
 <translation id="8065292699993359127">Отворите URL-ове у Chrome-у у режиму без архивирања</translation>

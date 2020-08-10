@@ -116,6 +116,9 @@ const int64_t kTestValidityOffsetMillis = 1800000;  // 30 minutes
 
 }  // namespace
 
+const char kTestMetadataFullName[] = "full_name";
+const char kTestMetadataIconUrl[] = "icon_url";
+
 std::unique_ptr<crypto::ECPrivateKey> GetNearbyShareTestP256KeyPair() {
   return crypto::ECPrivateKey::CreateFromPrivateKeyInfo(kTestPrivateKeyBytes);
 }
@@ -186,8 +189,8 @@ const nearbyshare::proto::EncryptedMetadata& GetNearbyShareTestMetadata() {
       metadata([] {
         nearbyshare::proto::EncryptedMetadata metadata;
         metadata.set_device_name("device_name");
-        metadata.set_full_name("full_name");
-        metadata.set_icon_url("icon_url");
+        metadata.set_full_name(kTestMetadataFullName);
+        metadata.set_icon_url(kTestMetadataIconUrl);
         metadata.set_bluetooth_mac_address("bluetooth_mac_address");
         return metadata;
       }());

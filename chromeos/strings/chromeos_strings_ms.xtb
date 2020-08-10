@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Kata laluan baharu</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> mengurus peranti ini dan mempunyai akses kepada semua aktiviti pengguna, termasuk halaman web yang dilawati, kata laluan dan e-mel.</translation>
 <translation id="4003384961948020559">Gagal - Output penuh</translation>
+<translation id="4027485274696301677"><ph name="DEVICE_TYPE" /> ini diurus oleh <ph name="ENROLLMENT_DOMAIN" />. Pentadbir boleh mengkonfigurasi peranti dari jauh.</translation>
 <translation id="4034824040120875894">Pencetak</translation>
 <translation id="4227825898293920515">Kata laluan tamat tempoh dalam <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Tiada tugas cetak yang sedang dijalankan</translation>

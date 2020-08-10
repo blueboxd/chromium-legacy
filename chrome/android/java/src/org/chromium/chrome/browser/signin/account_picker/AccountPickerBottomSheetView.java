@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -28,6 +29,7 @@ import org.chromium.ui.widget.ButtonCompat;
 class AccountPickerBottomSheetView implements BottomSheetContent {
     private final Context mContext;
     private final View mContentView;
+    private final TextView mAccountPickerTitle;
     private final RecyclerView mAccountListView;
     private final View mSelectedAccountView;
     private final ButtonCompat mContinueAsButton;
@@ -36,6 +38,7 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
         mContext = context;
         mContentView = LayoutInflater.from(mContext).inflate(
                 R.layout.account_picker_bottom_sheet_view, null);
+        mAccountPickerTitle = mContentView.findViewById(R.id.account_picker_bottom_sheet_title);
         mAccountListView = mContentView.findViewById(R.id.account_picker_account_list);
         mAccountListView.setLayoutManager(new LinearLayoutManager(
                 mAccountListView.getContext(), LinearLayoutManager.VERTICAL, false));
@@ -113,9 +116,7 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
      * Sets up the sign-in in progress view.
      */
     void setUpSignInInProgressView() {
-        // TODO(https://crbug.com/1102784):
-        //  - Setup the sign-in string |Signing in...|
-        //  - Add signing in progress spinner
+        mAccountPickerTitle.setText(R.string.signin_account_picker_bottom_sheet_signin_title);
         mContentView.findViewById(R.id.account_picker_bottom_sheet_subtitle)
                 .setVisibility(View.GONE);
         mSelectedAccountView.setVisibility(View.GONE);

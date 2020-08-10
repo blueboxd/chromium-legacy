@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.util.SparseArray;
 
-import org.chromium.chrome.browser.incognito.IncognitoTabHost;
-import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**

@@ -427,7 +427,7 @@ public class PseudoTabUnitTest {
     }
 
     @Test
-    public void testTabDestroyed() {
+    public void testTabDestroyedRootId() {
         Tab tab = new MockTab(TAB4_ID, false);
         PseudoTab pseudoTab = PseudoTab.fromTab(tab);
         tab.destroy();
@@ -435,5 +435,16 @@ public class PseudoTabUnitTest {
         // pseudoTab.getRootId() would crash here with
         // UnsupportedOperationException
         Assert.assertEquals(Tab.INVALID_TAB_ID, pseudoTab.getRootId());
+    }
+
+    @Test
+    public void testTabDestroyedTitle() {
+        Tab tab = new MockTab(TAB4_ID, false);
+        PseudoTab pseudoTab = PseudoTab.fromTab(tab);
+        tab.destroy();
+        // Title was not set. Without the isInitialized() check,
+        // pseudoTab.getTitle() would crash here with
+        // UnsupportedOperationException
+        Assert.assertEquals("", pseudoTab.getTitle());
     }
 }

@@ -14,6 +14,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneShotCallback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -64,6 +65,7 @@ class BottomToolbarCoordinator {
     private final Supplier<Boolean> mShowStartSurfaceCallable;
     private ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
     private Callback<OverviewModeBehavior> mOverviewModeBehaviorSupplierObserver;
+    private AppMenuButtonHelper mMenuButtonHelper;
 
     /**
      * Build the coordinator that manages the bottom toolbar.
@@ -77,13 +79,15 @@ class BottomToolbarCoordinator {
      * @param openHomepageAction The action that opens the homepage.
      * @param setUrlBarFocusAction The function that sets Url bar focus. The first argument is
      * @param overviewModeBehaviorSupplier Supplier for the overview mode manager.
+     * @param menuButtonHelperSupplier
      */
     BottomToolbarCoordinator(ViewStub stub, ActivityTabProvider tabProvider,
             OnLongClickListener tabsSwitcherLongClickListner, ThemeColorProvider themeColorProvider,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             Supplier<Boolean> showStartSurfaceCallable, Runnable openHomepageAction,
             Callback<Integer> setUrlBarFocusAction,
-            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
+            ObservableSupplier<AppMenuButtonHelper> menuButtonHelperSupplier) {
         View root = stub.inflate();
 
         mOverviewModeBehaviorSupplierObserver = this::setOverviewModeBehavior;
@@ -118,6 +122,13 @@ class BottomToolbarCoordinator {
         mShareDelegateSupplier = shareDelegateSupplier;
         mShareDelegateSupplierCallback = this::onShareDelegateAvailable;
         mShareDelegateSupplier.addObserver(mShareDelegateSupplierCallback);
+
+        new OneShotCallback<>(menuButtonHelperSupplier, (menuButtonHelper) -> {
+            if (menuButtonHelper != null) {
+                mMenuButtonHelper = menuButtonHelper;
+                mMenuButtonHelper.setOnClickRunnable(() -> recordBottomToolbarUseForIPH());
+            }
+        });
     }
 
     /**
@@ -129,8 +140,6 @@ class BottomToolbarCoordinator {
      *                            tab switcher button is clicked.
      * @param newTabClickListener An {@link OnClickListener} that is triggered when the
      *                            new tab button is clicked.
-     * @param menuButtonHelper An {@link AppMenuButtonHelper} that is triggered when the
-     *                         menu button is clicked.
      * @param tabCountProvider Updates the tab count number in the tab switcher button and in the
      *                         incognito toggle tab layout.
      * @param incognitoStateProvider Notifies components when incognito mode is entered or exited.
@@ -138,9 +147,9 @@ class BottomToolbarCoordinator {
      * @param closeAllTabsAction The runnable that closes all tabs in the current tab model.
      */
     void initializeWithNative(OnClickListener tabSwitcherListener,
-            OnClickListener newTabClickListener, AppMenuButtonHelper menuButtonHelper,
-            TabCountProvider tabCountProvider, IncognitoStateProvider incognitoStateProvider,
-            ViewGroup topToolbarRoot, Runnable closeAllTabsAction) {
+            OnClickListener newTabClickListener, TabCountProvider tabCountProvider,
+            IncognitoStateProvider incognitoStateProvider, ViewGroup topToolbarRoot,
+            Runnable closeAllTabsAction) {
         final OnClickListener closeTabsClickListener = v -> {
             recordBottomToolbarUseForIPH();
             final boolean isIncognito = incognitoStateProvider.isIncognitoSelected();
@@ -153,17 +162,14 @@ class BottomToolbarCoordinator {
             closeAllTabsAction.run();
         };
 
-        if (menuButtonHelper != null) {
-            menuButtonHelper.setOnClickRunnable(() -> recordBottomToolbarUseForIPH());
-        }
 
         newTabClickListener = wrapBottomToolbarClickListenerForIPH(newTabClickListener);
         tabSwitcherListener = wrapBottomToolbarClickListenerForIPH(tabSwitcherListener);
         mBrowsingModeCoordinator.initializeWithNative(newTabClickListener, tabSwitcherListener,
-                menuButtonHelper, tabCountProvider, mThemeColorProvider, incognitoStateProvider);
+                mMenuButtonHelper, tabCountProvider, mThemeColorProvider, incognitoStateProvider);
         mTabSwitcherModeCoordinator = new TabSwitcherBottomToolbarCoordinator(mTabSwitcherModeStub,
                 topToolbarRoot, incognitoStateProvider, mThemeColorProvider, newTabClickListener,
-                closeTabsClickListener, menuButtonHelper, tabCountProvider);
+                closeTabsClickListener, mMenuButtonHelper, tabCountProvider);
 
         // Do not change bottom bar if StartSurface Single Pane is enabled and HomePage is not
         // customized.

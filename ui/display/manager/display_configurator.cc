@@ -44,31 +44,14 @@ struct DisplayState {
   const DisplayMode* mirror_mode = nullptr;
 };
 
-// This is used for calling either SetColorMatrix() or SetGammaCorrection()
-// depending on the given |color_correction_closure| which is run synchronously.
-// If |reset_color_space_on_success| is true and running
-// |color_correction_closure| returns true, then the color space of the display
-// with |display_id| will be reset.
-bool RunColorCorrectionClosureSync(
+// Returns whether |display_id| can be found in |display_list|,
+bool IsDisplayIdInDisplayStateList(
     int64_t display_id,
-    const DisplayConfigurator::DisplayStateList& cached_displays,
-    bool reset_color_space_on_success,
-    base::OnceCallback<bool(void)> color_correction_closure) {
-  for (DisplaySnapshot* display : cached_displays) {
-    if (display->display_id() != display_id)
-      continue;
-
-    const bool success = std::move(color_correction_closure).Run();
-
-    // Nullify the |display|s ColorSpace to avoid correcting colors twice, if
-    // we have successfully configured something.
-    if (success && reset_color_space_on_success)
-      display->reset_color_space();
-
-    return success;
-  }
-
-  return false;
+    const DisplayConfigurator::DisplayStateList& display_list) {
+  return std::find_if(display_list.begin(), display_list.end(),
+                      [display_id](DisplaySnapshot* display) {
+                        return display->display_id() == display_id;
+                      }) != display_list.end();
 }
 
 // Returns true if a platform native |mode| is equal to a |managed_mode|.
@@ -761,25 +744,19 @@ void DisplayConfigurator::ForceInitialConfigure() {
 bool DisplayConfigurator::SetColorMatrix(
     int64_t display_id,
     const std::vector<float>& color_matrix) {
-  return RunColorCorrectionClosureSync(
-      display_id, cached_displays_,
-      !color_matrix.empty() /* reset_color_space_on_success */,
-      base::BindOnce(&NativeDisplayDelegate::SetColorMatrix,
-                     base::Unretained(native_display_delegate_.get()),
-                     display_id, color_matrix));
+  if (!IsDisplayIdInDisplayStateList(display_id, cached_displays_))
+    return false;
+  return native_display_delegate_->SetColorMatrix(display_id, color_matrix);
 }
 
 bool DisplayConfigurator::SetGammaCorrection(
     int64_t display_id,
     const std::vector<GammaRampRGBEntry>& degamma_lut,
     const std::vector<GammaRampRGBEntry>& gamma_lut) {
-  const bool reset_color_space_on_success =
-      !degamma_lut.empty() || !gamma_lut.empty();
-  return RunColorCorrectionClosureSync(
-      display_id, cached_displays_, reset_color_space_on_success,
-      base::BindOnce(&NativeDisplayDelegate::SetGammaCorrection,
-                     base::Unretained(native_display_delegate_.get()),
-                     display_id, degamma_lut, gamma_lut));
+  if (!IsDisplayIdInDisplayStateList(display_id, cached_displays_))
+    return false;
+  return native_display_delegate_->SetGammaCorrection(display_id, degamma_lut,
+                                                      gamma_lut);
 }
 
 void DisplayConfigurator::SetPrivacyScreen(int64_t display_id, bool enabled) {

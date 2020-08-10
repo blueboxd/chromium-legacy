@@ -506,6 +506,7 @@
 <translation id="6972754398087986839">Започнимо</translation>
 <translation id="6981982820502123353">Приступачност</translation>
 <translation id="698231206551913481">Све датотеке и локални подаци повезани са овим корисником ће бити трајно избрисани када уклоните овог корисника.</translation>
+<translation id="7007983414944123363">Верификација PIN-а или лозинке није успела. Пробајте поново.</translation>
 <translation id="7015766095477679451">Вратите се у <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Повежите <ph name="DEVICE_NAME" /> са телефоном</translation>
 <translation id="7026338066939101231">Смањење</translation>
@@ -551,6 +552,7 @@
 <translation id="7568294522609223312">Искључите аутоматске кликове</translation>
 <translation id="7568637526529101738">Када кликнете десним тастером на неку ставку или је дуго притиснете, Помоћник приказује информације као што су дефиниције или конверзије јединице за оно што сте изабрали.</translation>
 <translation id="7569509451529460200">Брајева азбука и ChromeVox су омогућени</translation>
+<translation id="7579778809502851308">Снимање екрана</translation>
 <translation id="7593891976182323525">Тастер за претрагу или Shift</translation>
 <translation id="7600875258240007829">Погледајте сва обавештења</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -669,6 +671,7 @@
 <translation id="8841375032071747811">Дугме Назад</translation>
 <translation id="8843682306134542540">Укључите/искључите закључавање ротације. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">Верификација PIN-а или лозинке још увек није успела. Напомена: Ако сте недавно променили лозинку, користите стару. Нова лозинка ће бити примењена када се одјавите.</translation>
 <translation id="8870509716567206129">Апликација не подржава подељени екран.</translation>
 <translation id="8874184842967597500">Није повезано</translation>
 <translation id="8877788021141246043">Подеси подсетник</translation>

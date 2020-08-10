@@ -27,6 +27,11 @@ class MailboxTextureBacking : public TextureBacking {
   gpu::Mailbox GetMailbox() const override;
   sk_sp<SkImage> GetAcceleratedSkImage() override;
   sk_sp<SkImage> GetSkImageViaReadback() override;
+  bool readPixels(const SkImageInfo& dst_info,
+                  void* dst_pixels,
+                  size_t dst_row_bytes,
+                  int src_x,
+                  int src_y) override;
 
  private:
   const sk_sp<SkImage> sk_image_;

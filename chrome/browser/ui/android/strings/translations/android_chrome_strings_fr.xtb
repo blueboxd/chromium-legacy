@@ -42,7 +42,7 @@
 <translation id="1283039547216852943">Appuyer pour développer</translation>
 <translation id="1291207594882862231">Efface l'historique, vider le cache, supprimer les cookies et les données de site…</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
-<translation id="1298077576058087471">Économisez jusqu'à 60 % de données, découvrez les actualités du jour</translation>
+<translation id="1298077576058087471">Économisez jusqu'à 60 % de données mobiles, découvrez les actualités du jour</translation>
 <translation id="1303339473099049190">Ce mot de passe est introuvable. Vérifiez l'orthographe, puis réessayez.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> (envoyé depuis <ph name="DEVICE_NAME" />)</translation>
 <translation id="1310482092992808703">Regrouper les onglets</translation>
@@ -462,7 +462,6 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4732120983431207637">Dérouleur de pile</translation>
 <translation id="473775607612524610">Mettre à jour</translation>
 <translation id="4738836084190194332">Dernière synchronisation : <ph name="WHEN" /></translation>
-<translation id="474698142248234220">Erreur TWA : <ph name="ERROR_CODE" /> sur <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Ouvrir un nouvel onglet</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 téléchargement terminé.}one{# téléchargement terminé.}other{# téléchargements terminés.}}</translation>
@@ -721,7 +720,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6573431926118603307">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils s'affichent ici.</translation>
 <translation id="6583199322650523874">Marquer la page actuelle en tant que favori</translation>
 <translation id="6588043302623806746">Utiliser un DNS sécurisé</translation>
-<translation id="6590471736817333463">Économisez jusqu'à 60 % de données</translation>
+<translation id="6590471736817333463">Économisez jusqu'à 60 % de données mobiles</translation>
 <translation id="6593061639179217415">Version pour ordinateur</translation>
 <translation id="6597891566292541626">Positionnez le code-barres/code QR dans ce cadre.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
@@ -1047,6 +1046,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="9133397713400217035">Consulter hors connexion</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
+<translation id="9148126808321036104">Nouvelle connexion</translation>
 <translation id="9155898266292537608">Vous pouvez également effectuer une recherche en appuyant brièvement sur un mot</translation>
 <translation id="9169507124922466868">L'historique de navigation est ouvert à moitié</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Vérification effectuée il y a 1 minute}one{Vérification effectuée il y a # minute}other{Vérification effectuée il y a # minutes}}</translation>
@@ -1059,6 +1059,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="932327136139879170">Accueil</translation>
 <translation id="93753284658583800">Page d'accueil modifiée</translation>
 <translation id="938850635132480979">Erreur <ph name="ERROR_CODE" />.</translation>
+<translation id="939598580284253335">Saisir la phrase secrète</translation>
 <translation id="95817756606698420">Chrome peut utiliser <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> pour les recherches effectuées en Chine. Vous pouvez modifier cette option dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Les pages que vous consultez sont répertoriées ici</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minutes restantes</translation>

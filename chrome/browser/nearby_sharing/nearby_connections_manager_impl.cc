@@ -9,12 +9,40 @@
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
 #include "crypto/random.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "net/base/network_change_notifier.h"
 
 namespace {
 
 const char kServiceId[] = "NearbySharing";
 const location::nearby::connections::mojom::Strategy kStrategy =
     location::nearby::connections::mojom::Strategy::kP2pPointToPoint;
+
+bool ShouldEnableWebRtc(bool is_advertising,
+                        DataUsage data_usage,
+                        PowerLevel power_level) {
+  // We won't use internet if the user requested we don't.
+  if (data_usage == DataUsage::kOffline)
+    return false;
+
+  // We won't use internet in a low power mode.
+  if (power_level == PowerLevel::kLowPower)
+    return false;
+
+  net::NetworkChangeNotifier::ConnectionType connection_type =
+      net::NetworkChangeNotifier::GetConnectionType();
+
+  // Verify that this network has an internet connection.
+  if (connection_type == net::NetworkChangeNotifier::CONNECTION_NONE)
+    return false;
+
+  // If the user wants to limit WebRTC, then only use it on unmetered networks.
+  if (data_usage == DataUsage::kWifiOnly)
+    return !net::NetworkChangeNotifier::IsConnectionCellular(connection_type);
+
+  // We're online, the user hasn't disabled WebRTC, let's use it!
+  return true;
+}
 
 }  // namespace
 
@@ -39,17 +67,38 @@ void NearbyConnectionsManagerImpl::StartAdvertising(
     PowerLevel power_level,
     DataUsage data_usage,
     ConnectionsCallback callback) {
+  DCHECK(listener);
+  DCHECK(!incoming_connection_listener_);
+
   if (!BindNearbyConnections()) {
     std::move(callback).Run(ConnectionsStatus::kError);
     return;
   }
 
-  // TOOD(crbug/1076008): nearby_connections_->StartAdvertising
+  bool is_high_power = power_level == PowerLevel::kHighPower;
+  auto allowed_mediums = MediumSelection::New(
+      /*bluetooth=*/is_high_power,
+      ShouldEnableWebRtc(/*is_advertising=*/true, data_usage, power_level),
+      /*wifi_lan=*/is_high_power);
+
+  mojo::PendingRemote<ConnectionLifecycleListener> lifecycle_listener;
+  connection_lifecycle_listeners_.Add(
+      this, lifecycle_listener.InitWithNewPipeAndPassReceiver());
+
+  incoming_connection_listener_ = listener;
+  nearby_connections_->StartAdvertising(
+      endpoint_info, kServiceId,
+      AdvertisingOptions::New(kStrategy, std::move(allowed_mediums),
+                              /*auto_upgrade_bandwidth=*/is_high_power,
+                              /*enforce_topology_constraints=*/true),
+      std::move(lifecycle_listener), std::move(callback));
 }
 
 void NearbyConnectionsManagerImpl::StopAdvertising() {
-  if (!nearby_connections_)
-    return;
+  if (nearby_connections_)
+    nearby_connections_->StopAdvertising(base::DoNothing());
+
+  incoming_connection_listener_ = nullptr;
 }
 
 void NearbyConnectionsManagerImpl::StartDiscovery(
@@ -91,10 +140,13 @@ void NearbyConnectionsManagerImpl::Connect(
     return;
   }
 
+  mojo::PendingRemote<ConnectionLifecycleListener> lifecycle_listener;
+  connection_lifecycle_listeners_.Add(
+      this, lifecycle_listener.InitWithNewPipeAndPassReceiver());
+
   // TODO(crbug/10706008): Add MediumSelector and bluetooth_mac_address.
   nearby_connections_->RequestConnection(
-      endpoint_info, endpoint_id,
-      connection_lifecycle_listener_.BindNewPipeAndPassRemote(),
+      endpoint_info, endpoint_id, std::move(lifecycle_listener),
       base::BindOnce(&NearbyConnectionsManagerImpl::OnConnectionRequested,
                      weak_ptr_factory_.GetWeakPtr(), endpoint_id,
                      std::move(callback)));
@@ -260,7 +312,17 @@ void NearbyConnectionsManagerImpl::OnConnectionAccepted(
     return;
 
   if (it->second->is_incoming_connection) {
-    // TOOD(crbug/1076008): Handle incoming connection.
+    if (!incoming_connection_listener_) {
+      // Not in advertising mode.
+      Disconnect(endpoint_id);
+      return;
+    }
+
+    auto result = connections_.emplace(
+        endpoint_id, std::make_unique<NearbyConnectionImpl>(this, endpoint_id));
+    DCHECK(result.second);
+    incoming_connection_listener_->OnIncomingConnection(
+        endpoint_id, it->second->endpoint_info, result.first->second.get());
   } else {
     auto it = pending_outgoing_connections_.find(endpoint_id);
     if (it == pending_outgoing_connections_.end()) {
@@ -324,5 +386,6 @@ void NearbyConnectionsManagerImpl::Reset() {
   nearby_connections_ = nullptr;
   discovered_endpoints_.clear();
   discovery_listener_ = nullptr;
+  incoming_connection_listener_ = nullptr;
   endpoint_discovery_listener_.reset();
 }

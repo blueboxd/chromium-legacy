@@ -1302,8 +1302,9 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
 
   // Check that the pixel at (3, 3) is red.
   uint8_t pixel[4] = {};
-  sk_sp<SkImage> new_image =
-      new_image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
+  sk_sp<SkImage> new_image = new_image_bitmap->BitmapImage()
+                                 ->PaintImageForCurrentFrame()
+                                 .GetSwSkImage();
   ASSERT_TRUE(new_image->readPixels(
       SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kPremul_SkAlphaType),
       &pixel, 4, 3, 3));

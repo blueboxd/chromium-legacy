@@ -859,7 +859,6 @@ public class VrShellDelegate
                 ContextUtils.getApplicationContext(), GVR_KEYBOARD_PACKAGE_ID);
     }
 
-    @VisibleForTesting
     protected boolean isVrBrowsingEnabled() {
         return isVrBrowsingEnabled(mActivity, VrCoreInstallUtils.getVrSupportLevel());
     }

@@ -128,7 +128,6 @@
 <translation id="236977714248711277">Spletna mesta ne smejo uporabljati piškotkov za izboljšanje izkušnje brskanja, na primer tako, da poskrbijo, da ostanete prijavljeni, ali si zapomnijo izdelke v nakupovalnem vozičku.
 
 Spletna mesta ne smejo uporabljati piškotkov za ogled dejavnosti brskanja na različnih spletnih mestih, na primer za osebno prilagajanje oglasov.</translation>
-<translation id="2379896346847637748">Odpri v novem oknu</translation>
 <translation id="2381405137052800939">Basics</translation>
 <translation id="2386793615875593361">1 izbrana</translation>
 <translation id="2421004566762153674">Blokiranje piškotkov drugih spletnih mest</translation>
@@ -310,6 +309,7 @@ Ko uporabljate način brez beleženja dejavnosti, spletna mesta ne smejo uporabl
 <translation id="4619615317237390068">Zavihki iz drugih naprav</translation>
 <translation id="4620246317052452550">Prebrane strani</translation>
 <translation id="4630540211544979320">Prevajanje strani</translation>
+<translation id="4634124774493850572">Uporabi geslo</translation>
 <translation id="4636930964841734540">Informacije</translation>
 <translation id="4659126640776004816">Ko se prijavite v račun Google, se ta funkcija vklopi.</translation>
 <translation id="4659667755519643272">Enter Tab Switcher</translation>
@@ -393,6 +393,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5614553682702429503">Želite shraniti geslo?</translation>
 <translation id="5626245204502895507">Datoteke trenutno ni mogoče prenesti.</translation>
 <translation id="5631164295104953411">Dodajanje plačilnega sredstva</translation>
+<translation id="5653058065071344726">Upravlja vaša organizacija. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Različica <ph name="PRODUCT_VERSION" /></translation>
@@ -437,6 +438,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6108923351542677676">Poteka nastavitev …</translation>
 <translation id="6119050551270742952">Trenutna spletna stran je v načinu brez beleženja dejavnosti</translation>
 <translation id="6122191549521593678">Dosegljiv</translation>
+<translation id="6125339936101702016">Brskalnik upravlja podjetje <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Element odstranjen</translation>
 <translation id="6136914049981179737">Pred sek.</translation>
 <translation id="616831107264507309">Poznejše branje</translation>
@@ -611,6 +613,7 @@ Spletna mesta lahko uporabljajo piškotke za ogled dejavnosti brskanja na razli�
 <translation id="8007420562015504427">Iskanje brez beleženja zgodovine</translation>
 <translation id="802154636333426148">Prenos ni uspel</translation>
 <translation id="8023878949384262191">Razširi razdelek.</translation>
+<translation id="8027581147000338959">Odpri v novem oknu</translation>
 <translation id="804427445359061970">Tu bodo prikazani zavihki iz drugih naprav</translation>
 <translation id="8059533439631660104">Strni razdelek.</translation>
 <translation id="8065292699993359127">Odprite URL-je v Chromu v načinu brez beleženja dejavnosti</translation>

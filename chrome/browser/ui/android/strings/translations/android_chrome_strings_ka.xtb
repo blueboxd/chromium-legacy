@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">სტეკის დამშლელი</translation>
 <translation id="473775607612524610">განახლება</translation>
 <translation id="4738836084190194332">ბოლო სინქრონიზაცია: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA შეცდომა: <ph name="ERROR_CODE" />, <ph name="VIOLATED_URL" />-ზე</translation>
 <translation id="4749960740855309258">ახალ ჩანართში გახსნა</translation>
 <translation id="4759238208242260848">ჩამოტვირთვები</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ჩამოტვირთვა დასრულდა.}other{# ჩამოტვირთვა დასრულდა.}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">ხაზგარეშე რეჟიმში გაცნობა</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">ორიგინალის ჩვენება</translation>
+<translation id="9148126808321036104">ხელახლა შედით</translation>
 <translation id="9155898266292537608">ძიება სიტყვაზე სწრაფად შეხებითაც შეგიძლიათ</translation>
 <translation id="9169507124922466868">ნავიგაციის ისტორია ნახევრადგახსნილია</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{შემოწმდა 1 წუთის წინ}other{შემოწმდა # წუთის წინ}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">საწყისი გვერდი</translation>
 <translation id="93753284658583800">მთავარი გვერდი შეიცვალა</translation>
 <translation id="938850635132480979">შეცდომა: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">შეიყვანეთ საიდუმლო ფრაზა</translation>
 <translation id="95817756606698420">ჩინეთის ტერიტორიაზე ძიების განსახორციელებლად, Chrome-ს <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />-ს გამოყენება შეუძლია. ამის შეცვლა <ph name="BEGIN_LINK" />პარამეტრებიდან<ph name="END_LINK" /> შეგიძლიათ.</translation>
 <translation id="968900484120156207">აქ გამოჩნდება თქვენ მიერ მონახულებული გვერდები</translation>
 <translation id="970715775301869095">დარჩენილია <ph name="MINUTES" /> წთ</translation>

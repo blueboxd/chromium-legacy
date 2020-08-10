@@ -74,11 +74,17 @@ gfx::ImageSkia AmbientBackendModel::GetNextImage() const {
   return current_image_;
 }
 
+float AmbientBackendModel::GetTemperatureInCelsius() const {
+  return (temperature_fahrenheit_ - 32) * 5 / 9;
+}
+
 void AmbientBackendModel::UpdateWeatherInfo(
     const gfx::ImageSkia& weather_condition_icon,
-    float temperature) {
+    float temperature_fahrenheit,
+    bool show_celsius) {
   weather_condition_icon_ = weather_condition_icon;
-  temperature_ = temperature;
+  temperature_fahrenheit_ = temperature_fahrenheit;
+  show_celsius_ = show_celsius;
 
   if (!weather_condition_icon.isNull())
     NotifyWeatherInfoUpdated();

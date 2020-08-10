@@ -47,9 +47,9 @@ class AmbientModeHandlerTest : public testing::Test {
         std::make_unique<ash::FakeAmbientBackendControllerImpl>();
   }
 
-  void RequestTopicSource() {
+  void RequestSettings() {
     base::ListValue args;
-    handler_->HandleRequestTopicSource(&args);
+    handler_->HandleRequestSettings(&args);
   }
 
   void RequestAlbums(int topic_source) {
@@ -58,19 +58,32 @@ class AmbientModeHandlerTest : public testing::Test {
     handler_->HandleRequestAlbums(&args);
   }
 
-  void VerifyTopicSourceSent(base::RunLoop* run_loop) {
-    EXPECT_EQ(1U, web_ui_->call_data().size());
+  std::string BoolToString(bool x) { return x ? "true" : "false"; }
 
-    const content::TestWebUI::CallData& call_data =
-        *web_ui_->call_data().back();
+  void VerifySettingsSent(base::RunLoop* run_loop) {
+    EXPECT_EQ(2U, web_ui_->call_data().size());
 
     // The call is structured such that the function name is the "web callback"
     // name and the first argument is the name of the message being sent.
-    EXPECT_EQ(kWebCallbackFunctionName, call_data.function_name());
-    EXPECT_EQ("topic-source-changed", call_data.arg1()->GetString());
+    const auto& topic_source_call_data = *web_ui_->call_data().front();
+    const auto& temperature_unit_call_data = *web_ui_->call_data().back();
+
+    // Topic Source
+    EXPECT_EQ(kWebCallbackFunctionName, topic_source_call_data.function_name());
+    EXPECT_EQ("topic-source-changed",
+              topic_source_call_data.arg1()->GetString());
     // In FakeAmbientBackendControllerImpl, the |topic_source| is
     // kGooglePhotos.
-    EXPECT_EQ(0, call_data.arg2()->GetInt());
+    EXPECT_EQ(0, topic_source_call_data.arg2()->GetInt());
+
+    // Temperature Unit
+    EXPECT_EQ(kWebCallbackFunctionName,
+              temperature_unit_call_data.function_name());
+    EXPECT_EQ("temperature-unit-changed",
+              temperature_unit_call_data.arg1()->GetString());
+    // In FakeAmbientBackendControllerImpl, the |temperature_unit| is kCelsius.
+    EXPECT_EQ("celsius", temperature_unit_call_data.arg2()->GetString());
+
     run_loop->Quit();
   }
 
@@ -128,13 +141,13 @@ class AmbientModeHandlerTest : public testing::Test {
   std::unique_ptr<TestAmbientModeHandler> handler_;
 };
 
-TEST_F(AmbientModeHandlerTest, TestSendTopicSource) {
-  RequestTopicSource();
+TEST_F(AmbientModeHandlerTest, TestSendTemperatureUnitAndTopicSource) {
+  RequestSettings();
 
   base::RunLoop run_loop;
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&AmbientModeHandlerTest::VerifyTopicSourceSent,
+      base::BindOnce(&AmbientModeHandlerTest::VerifySettingsSent,
                      base::Unretained(this), &run_loop),
       base::TimeDelta::FromSeconds(1));
   run_loop.Run();

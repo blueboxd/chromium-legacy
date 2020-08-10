@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">స్టాక్ అన్‌వైండర్</translation>
 <translation id="473775607612524610">అప్‌డేట్‌</translation>
 <translation id="4738836084190194332">చివరిగా సమకాలీకరించినది: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA ఎర్రర్: <ph name="VIOLATED_URL" />లో <ph name="ERROR_CODE" /> ఉంది</translation>
 <translation id="4749960740855309258">కొత్త ట్యాబ్‌ను తెరవండి</translation>
 <translation id="4759238208242260848">డౌన్‌లోడ్‌లు</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 డౌన్‌లోడ్ పూర్తయింది.}other{# డౌన్‌లోడ్‌లు పూర్తయ్యాయి.}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">ఆఫ్‌లైన్‌లో అన్వేషించండి</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">అసలును చూపించు</translation>
+<translation id="9148126808321036104">మళ్ళీ సైన్ ఇన్ చేయండి</translation>
 <translation id="9155898266292537608">ఒక పదంపై నొక్కడం ద్వారా కూడా మీరు త్వరగా వెతకవచ్చు</translation>
 <translation id="9169507124922466868">నావిగేషన్ చరిత్ర సగం తెరిచి ఉంది</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 నిమిషం క్రితం తనిఖీ చేసింది}other{# నిమిషాల క్రితం తనిఖీ చేసింది}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">హోమ్</translation>
 <translation id="93753284658583800">హోమ్ పేజీ మార్చబడింది</translation>
 <translation id="938850635132480979">ఎర్రర్: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">రహస్య పదబంధాన్ని నమోదు చేయండి</translation>
 <translation id="95817756606698420">చైనాలో వెతకడానికి <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />ను Chrome ఉపయోగించవచ్చు. మీరు దీనిని <ph name="BEGIN_LINK" />సెట్టింగ్‌ల<ph name="END_LINK" />లో మార్చవచ్చు.</translation>
 <translation id="968900484120156207">మీరు సందర్శించే పేజీలు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> నిమిషాలు మిగిలి ఉంది</translation>

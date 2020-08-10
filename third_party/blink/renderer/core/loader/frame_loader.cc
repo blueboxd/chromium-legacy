@@ -893,6 +893,14 @@ static void FillStaticResponseIfNeeded(WebNavigationParams* params,
           params, archive_resource->MimeType(),
           archive_resource->TextEncoding(),
           base::make_span(archive_data->Data(), archive_data->size()));
+    } else {
+      // The requested archive resource does not exist. In an ideal world, this
+      // would commit as a failed navigation, but the browser doesn't know
+      // anything about what resources are available in the archive. Just
+      // synthesize an empty document so that something commits still.
+      // TODO(https://crbug.com/1112965): remove these special cases by adding
+      // an URLLoaderFactory implementation for MHTML archives.
+      WebNavigationParams::FillStaticResponse(params, "text/html", "UTF-8", "");
     }
   }
 }

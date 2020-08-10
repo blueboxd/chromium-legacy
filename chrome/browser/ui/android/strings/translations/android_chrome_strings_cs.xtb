@@ -327,7 +327,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="3566923219790363270">Chrome se na virtuální realitu stále připravuje. Restartujte Chrome později.</translation>
 <translation id="3568688522516854065">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, zapněte synchronizaci</translation>
 <translation id="3587482841069643663">Vše</translation>
-<translation id="3587596251841506391">Pomáhat zlepšovat bezpečnost na webu</translation>
+<translation id="3587596251841506391">Zlepšovat bezpečnost na webu</translation>
 <translation id="3590487821116122040">Úložiště webů, které Chrome považuje za nedůležité (např. weby bez uložených nastavení nebo weby, které nenavštěvujete často)</translation>
 <translation id="3594780231884063836">Vypnout zvuk videa</translation>
 <translation id="3599863153486145794">Vymaže historii ze všech zařízení, na kterých jste přihlášeni. Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
@@ -462,7 +462,6 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4732120983431207637">Rozbalovač zásobníku</translation>
 <translation id="473775607612524610">Aktualizovat</translation>
 <translation id="4738836084190194332">Poslední synchronizace: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">Chyba TWA: <ph name="ERROR_CODE" /> na adrese <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Otevření nové karty</translation>
 <translation id="4759238208242260848">Stažené soubory</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Stažení 1 souboru bylo dokončeno.}few{Stažení # souborů bylo dokončeno.}many{Stažení # souboru bylo dokončeno.}other{Stažení # souborů bylo dokončeno.}}</translation>
@@ -1047,6 +1046,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="9133397713400217035">Prozkoumat offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>
+<translation id="9148126808321036104">Znovu přihlásit</translation>
 <translation id="9155898266292537608">Hledat můžete také rychlým klepnutím na slovo</translation>
 <translation id="9169507124922466868">Historie navigace je otevřená na půlce</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Zkontrolováno před 1 minutou}few{Zkontrolováno před # minutami}many{Zkontrolováno před # minuty}other{Aktualizováno před # minutami}}</translation>
@@ -1059,6 +1059,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="932327136139879170">Domovská stránka</translation>
 <translation id="93753284658583800">Domovská stránka se změnila</translation>
 <translation id="938850635132480979">Chyba: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Zadat heslovou frázi</translation>
 <translation id="95817756606698420">Chrome může v Číně k vyhledávání používat službu <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />. Tuto volbu můžete změnit v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Zde se zobrazují navštívené stránky</translation>
 <translation id="970715775301869095">Zbývá: <ph name="MINUTES" /> min</translation>

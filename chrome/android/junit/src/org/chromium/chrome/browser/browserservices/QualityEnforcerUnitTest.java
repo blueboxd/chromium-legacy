@@ -44,6 +44,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.net.NetError;
 
 /**
  * Tests for {@link QualityEnforcer}.
@@ -96,34 +97,34 @@ public class QualityEnforcerUnitTest {
 
     @Test
     public void trigger_navigateTo404() {
-        navigateToUrl(TRUSTED_ORIGIN_PAGE, HTTP_ERROR_NOT_FOUND);
+        navigateToUrlNotFound(TRUSTED_ORIGIN_PAGE);
         verifyTriggered404();
     }
 
     @Test
     public void notTrigger_navigationSuccess() {
-        navigateToUrl(TRUSTED_ORIGIN_PAGE, HTTP_STATUS_SUCCESS);
+        navigateToUrlNoError(TRUSTED_ORIGIN_PAGE);
         verifyNotTriggered();
     }
 
     @Test
     public void notTrigger_navigateTo404NotVerifiedSite() {
-        navigateToUrl(UNTRUSTED_PAGE, HTTP_ERROR_NOT_FOUND);
+        navigateToUrlNotFound(UNTRUSTED_PAGE);
         verifyNotTriggered();
     }
 
     @Test
     public void notTrigger_navigateFromNotVerifiedToVerified404() {
-        navigateToUrl(UNTRUSTED_PAGE, HTTP_STATUS_SUCCESS);
-        navigateToUrl(TRUSTED_ORIGIN_PAGE, HTTP_ERROR_NOT_FOUND);
+        navigateToUrlNoError(UNTRUSTED_PAGE);
+        navigateToUrlNotFound(TRUSTED_ORIGIN_PAGE);
         verifyNotTriggered();
     }
 
     @Test
     public void trigger_notVerifiedToVerifiedThen404() {
-        navigateToUrl(UNTRUSTED_PAGE, HTTP_STATUS_SUCCESS);
-        navigateToUrl(TRUSTED_ORIGIN_PAGE, HTTP_STATUS_SUCCESS);
-        navigateToUrl(TRUSTED_ORIGIN_PAGE, HTTP_ERROR_NOT_FOUND);
+        navigateToUrlNoError(UNTRUSTED_PAGE);
+        navigateToUrlNoError(TRUSTED_ORIGIN_PAGE);
+        navigateToUrlNotFound(TRUSTED_ORIGIN_PAGE);
         verifyTriggered404();
     }
 
@@ -136,7 +137,7 @@ public class QualityEnforcerUnitTest {
                      any(), eq(QualityEnforcer.CRASH), any()))
                 .thenReturn(result);
 
-        navigateToUrl(TRUSTED_ORIGIN_PAGE, HTTP_ERROR_NOT_FOUND);
+        navigateToUrlNotFound(TRUSTED_ORIGIN_PAGE);
         verify(mActivity).finish();
     }
 
@@ -149,8 +150,14 @@ public class QualityEnforcerUnitTest {
                      any(), eq(QualityEnforcer.CRASH), any()))
                 .thenReturn(result);
 
-        navigateToUrl(TRUSTED_ORIGIN_PAGE, HTTP_ERROR_NOT_FOUND);
+        navigateToUrlNotFound(TRUSTED_ORIGIN_PAGE);
         verify(mActivity, never()).finish();
+    }
+
+    @Test
+    public void trigger_offline() {
+        navigateToUrlInternet(TRUSTED_ORIGIN_PAGE);
+        verifyTriggeredOffline();
     }
 
     private void verifyTriggered404() {
@@ -162,12 +169,33 @@ public class QualityEnforcerUnitTest {
                 .sendExtraCallbackWithResult(any(), eq(QualityEnforcer.NOTIFY), any());
     }
 
+    private void verifyTriggeredOffline() {
+        Assert.assertEquals(
+                ContextUtils.getApplicationContext().getString(
+                        R.string.twa_quality_enforcement_violation_offline, TRUSTED_ORIGIN_PAGE),
+                ShadowToast.getTextOfLatestToast());
+        verify(mCustomTabsConnection)
+                .sendExtraCallbackWithResult(any(), eq(QualityEnforcer.NOTIFY), any());
+    }
+
     private void verifyNotTriggered() {
         verify(mCustomTabsConnection, never())
                 .sendExtraCallbackWithResult(any(), eq(QualityEnforcer.NOTIFY), any());
     }
 
-    private void navigateToUrl(String url, int httpStatusCode) {
+    private void navigateToUrlNoError(String url) {
+        navigateToUrl(url, HTTP_STATUS_SUCCESS, NetError.OK);
+    }
+
+    private void navigateToUrlNotFound(String url) {
+        navigateToUrl(url, HTTP_ERROR_NOT_FOUND, NetError.OK);
+    }
+
+    private void navigateToUrlInternet(String url) {
+        navigateToUrl(url, HTTP_STATUS_SUCCESS, NetError.ERR_INTERNET_DISCONNECTED);
+    }
+
+    private void navigateToUrl(String url, int httpStatusCode, @NetError int errorCode) {
         when(mTab.getOriginalUrl()).thenReturn(url);
 
         NavigationHandle navigation =
@@ -175,7 +203,7 @@ public class QualityEnforcerUnitTest {
                         false /* isSameDocument */, false /* isRendererInitiated */);
         navigation.didFinish(url, false /* isErrorPage */, true /* hasCommitted */,
                 false /* isFragmentNavigation */, false /* isDownload */,
-                false /* isValidSearchFormUrl */, 0 /* pageTransition */, 0 /* errorCode*/,
+                false /* isValidSearchFormUrl */, 0 /* pageTransition */, errorCode,
                 httpStatusCode);
         for (CustomTabTabObserver tabObserver : mTabObserverCaptor.getAllValues()) {
             tabObserver.onDidFinishNavigation(mTab, navigation);

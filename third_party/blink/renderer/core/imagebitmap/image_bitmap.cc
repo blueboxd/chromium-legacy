@@ -197,8 +197,8 @@ Vector<uint8_t> CopyImageData(const scoped_refptr<StaticBitmapImage>& input,
                               const unsigned y = 0) {
   if (info.isEmpty())
     return {};
-  sk_sp<SkImage> sk_image = input->PaintImageForCurrentFrame().GetSkImage();
-  if (sk_image->bounds().isEmpty())
+  PaintImage paint_image = input->PaintImageForCurrentFrame();
+  if (paint_image.GetSkImageInfo().isEmpty())
     return {};
 
   wtf_size_t byte_length =
@@ -206,7 +206,7 @@ Vector<uint8_t> CopyImageData(const scoped_refptr<StaticBitmapImage>& input,
   Vector<uint8_t> dst_buffer(byte_length);
 
   bool read_pixels_successful =
-      sk_image->readPixels(info, dst_buffer.data(), info.minRowBytes(), x, y);
+      paint_image.readPixels(info, dst_buffer.data(), info.minRowBytes(), x, y);
   DCHECK(read_pixels_successful);
   if (!read_pixels_successful)
     return {};
@@ -294,8 +294,8 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
     if (info.isEmpty())
       return nullptr;
 
-    sk_sp<SkImage> sk_image = input->PaintImageForCurrentFrame().GetSkImage();
-    if (sk_image->bounds().isEmpty())
+    PaintImage paint_image = input->PaintImageForCurrentFrame();
+    if (paint_image.GetSkImageInfo().isEmpty())
       return nullptr;
 
     sk_sp<SkData> image_pixels = TryAllocateSkData(info.computeMinByteSize());
@@ -306,7 +306,7 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
         static_cast<uint8_t*>(image_pixels->writable_data());
     size_t image_row_bytes = static_cast<size_t>(info.minRowBytes64());
     bool read_successful =
-        sk_image->readPixels(info, writable_pixels, image_row_bytes, 0, 0);
+        paint_image.readPixels(info, writable_pixels, image_row_bytes, 0, 0);
     DCHECK(read_successful);
 
     for (int i = 0; i < info.height() / 2; i++) {
@@ -351,10 +351,10 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
   SkAlphaType alpha_type = (alpha_disposition == kPremultiplyAlpha)
                                ? kPremul_SkAlphaType
                                : kUnpremul_SkAlphaType;
-  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
-  if (!skia_image)
+  PaintImage paint_image = image->PaintImageForCurrentFrame();
+  if (!paint_image)
     return nullptr;
-  if (skia_image->alphaType() == alpha_type)
+  if (paint_image.GetAlphaType() == alpha_type)
     return std::move(image);
 
   SkImageInfo info = GetSkImageInfo(image.get()).makeAlphaType(alpha_type);
@@ -376,7 +376,7 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
 
   // To unpremul, read back the pixels.
 
-  if (skia_image->bounds().isEmpty())
+  if (paint_image.GetSkImageInfo().isEmpty())
     return nullptr;
 
   sk_sp<SkData> dst_pixels = TryAllocateSkData(info.computeMinByteSize());
@@ -386,7 +386,7 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
   uint8_t* writable_pixels = static_cast<uint8_t*>(dst_pixels->writable_data());
   size_t image_row_bytes = static_cast<size_t>(info.minRowBytes64());
   bool read_successful =
-      skia_image->readPixels(info, writable_pixels, image_row_bytes, 0, 0);
+      paint_image.readPixels(info, writable_pixels, image_row_bytes, 0, 0);
   DCHECK(read_successful);
   return StaticBitmapImage::Create(std::move(dst_pixels), info,
                                    image->CurrentFrameOrientation());

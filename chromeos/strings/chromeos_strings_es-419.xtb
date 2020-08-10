@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Nueva contraseña</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> administra este dispositivo y tiene acceso a toda la actividad del usuario, incluso las páginas web que visitó, su correo electrónico y sus contraseñas.</translation>
 <translation id="4003384961948020559">Error: La bandeja de salida está llena</translation>
+<translation id="4027485274696301677"><ph name="ENROLLMENT_DOMAIN" /> administra el dispositivo <ph name="DEVICE_TYPE" />. Los administradores pueden configurarlo de forma remota.</translation>
 <translation id="4034824040120875894">Impresora</translation>
 <translation id="4227825898293920515">La contraseña caduca en <ph name="TIME" /></translation>
 <translation id="4238516577297848345">No hay trabajos de impresión en curso</translation>

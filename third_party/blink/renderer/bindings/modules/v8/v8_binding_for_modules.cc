@@ -320,7 +320,8 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
     } else {
       // A sub-array; push onto the stack and start processing it.
       v8::Local<v8::Array> array = item.As<v8::Array>();
-      if (seen.Contains(array) || stack.size() >= kMaximumDepth) {
+      if (seen.Contains(array) || stack.size() >= kMaximumDepth ||
+          array->Length() > kMaximumArraySize) {
         return IDBKey::CreateInvalid();
       }
 

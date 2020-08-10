@@ -256,9 +256,8 @@ bool AffiliationBackend::OnCanSendNetworkRequest() {
   if (requested_facet_uris.empty())
     return false;
 
-  fetcher_.reset(AffiliationFetcher::Create(url_loader_factory_,
-                                            requested_facet_uris, this));
-  fetcher_->StartRequest();
+  fetcher_.reset(AffiliationFetcher::Create(url_loader_factory_, this));
+  fetcher_->StartRequest(requested_facet_uris);
   ReportStatistics(requested_facet_uris.size());
   return true;
 }

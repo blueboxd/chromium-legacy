@@ -42,7 +42,7 @@
 <translation id="1283039547216852943">پھیلانے کیلئے تھپتھپائیں</translation>
 <translation id="1291207594882862231">سرگزشت، کوکیز، سائٹ ڈیٹا، کیش کو صاف کریں…</translation>
 <translation id="129553762522093515">حال ہی میں بند کردہ</translation>
-<translation id="1298077576058087471">60 فیصد تک ڈیٹا کی بچت کریں، آج کی خبریں پڑھیں</translation>
+<translation id="1298077576058087471">60 فیصد تک ڈیٹا محفوظ کریں، آج کی خبریں پڑھیں</translation>
 <translation id="1303339473099049190">وہ پاس ورڈ تلاش نہیں کیا جا سکا۔ اپنے ہجے چیک کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> سے ارسال کردہ</translation>
 <translation id="1310482092992808703">گروپ ٹیبز</translation>
@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">‏انبار Unwinder</translation>
 <translation id="473775607612524610">اپ ڈيٹ کریں</translation>
 <translation id="4738836084190194332">آخری مطابقت پذیری: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">‏TWA خرابی: <ph name="VIOLATED_URL" /> پر <ph name="ERROR_CODE" /></translation>
 <translation id="4749960740855309258">ایک نیا ٹیب کھولیں</translation>
 <translation id="4759238208242260848">ڈاؤن لوڈز</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ڈاؤن لوڈ مکمل ہو گیا۔}other{# ڈاؤن لوڈز مکمل ہو گئے۔}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">آف لائن دریافت کریں</translation>
 <translation id="9133703968756164531">‎<ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)‎</translation>
 <translation id="9137013805542155359">اصل دکھائیں</translation>
+<translation id="9148126808321036104">دوبارہ سائن ان کریں</translation>
 <translation id="9155898266292537608">آپ کسی لفظ پر فوری تھپتھپاہٹ سے بھی تلاش کر سکتے ہیں</translation>
 <translation id="9169507124922466868">نیویگیشن کی سرگزشت آدھی کھلی ہوئی ہے</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 منٹ پہلے چیک کیا گيا}other{# منٹ پہلے چیک کیا گیا}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">ھوم</translation>
 <translation id="93753284658583800">ہوم صفحہ کو تبدیل کر دیا گیا</translation>
 <translation id="938850635132480979">خرابی: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">پاس فریز درج کریں</translation>
 <translation id="95817756606698420">‏Chrome چین میں تلاش کرنے کیلئے <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> کا استعمال کر سکتا ہے۔ آپ اسے <ph name="BEGIN_LINK" />ترتیبات<ph name="END_LINK" /> میں تبدیل کر سکتے ہیں۔</translation>
 <translation id="968900484120156207">آپ کے ملاحظہ کردہ صفحات یہاں دکھائی دیتے ہیں</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> منٹ باقی</translation>

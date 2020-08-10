@@ -85,6 +85,7 @@ public class BottomControlsCoordinator {
             FullscreenManager fullscreenManager, ViewStub stub, ActivityTabProvider tabProvider,
             OnLongClickListener tabSwitcherLongclickListener, ThemeColorProvider themeColorProvider,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
+            ObservableSupplier<AppMenuButtonHelper> menuButtonHelperSupplier,
             Supplier<Boolean> showStartSurfaceCallable, Runnable openHomepageAction,
             Callback<Integer> setUrlBarFocusAction,
             ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
@@ -119,11 +120,11 @@ public class BottomControlsCoordinator {
                     root.findViewById(R.id.bottom_container_slot), themeColorProvider,
                     scrimCoordinator);
         } else {
-            mBottomToolbarCoordinator =
-                    new BottomToolbarCoordinator(root.findViewById(R.id.bottom_toolbar_stub),
-                            tabProvider, tabSwitcherLongclickListener, themeColorProvider,
-                            shareDelegateSupplier, showStartSurfaceCallable, openHomepageAction,
-                            setUrlBarFocusAction, overviewModeBehaviorSupplier);
+            mBottomToolbarCoordinator = new BottomToolbarCoordinator(
+                    root.findViewById(R.id.bottom_toolbar_stub), tabProvider,
+                    tabSwitcherLongclickListener, themeColorProvider, shareDelegateSupplier,
+                    showStartSurfaceCallable, openHomepageAction, setUrlBarFocusAction,
+                    overviewModeBehaviorSupplier, menuButtonHelperSupplier);
         }
 
         Toast.setGlobalExtraYOffset(root.getResources().getDimensionPixelSize(
@@ -144,8 +145,6 @@ public class BottomControlsCoordinator {
      *                            bottom toolbar's tab switcher button is clicked.
      * @param newTabClickListener An {@link OnClickListener} that is triggered when the
      *                            bottom toolbar's new tab button is clicked.
-     * @param menuButtonHelper An {@link AppMenuButtonHelper} that is triggered when the
-     *                         bottom toolbar's menu button is clicked.
      * @param windowAndroid A {@link WindowAndroid} for watching keyboard visibility events.
      * @param tabCountProvider Updates the tab count number in the tab switcher button and in the
      *                         incognito toggle tab layout.
@@ -155,18 +154,16 @@ public class BottomControlsCoordinator {
      */
     public void initializeWithNative(ChromeActivity chromeActivity, ResourceManager resourceManager,
             LayoutManager layoutManager, OnClickListener tabSwitcherListener,
-            OnClickListener newTabClickListener, AppMenuButtonHelper menuButtonHelper,
-            WindowAndroid windowAndroid, TabCountProvider tabCountProvider,
-            IncognitoStateProvider incognitoStateProvider, ViewGroup topToolbarRoot,
-            Runnable closeAllTabsAction) {
+            OnClickListener newTabClickListener, WindowAndroid windowAndroid,
+            TabCountProvider tabCountProvider, IncognitoStateProvider incognitoStateProvider,
+            ViewGroup topToolbarRoot, Runnable closeAllTabsAction) {
         mMediator.setLayoutManager(layoutManager);
         mMediator.setResourceManager(resourceManager);
         mMediator.setWindowAndroid(windowAndroid);
 
         if (mBottomToolbarCoordinator != null) {
             mBottomToolbarCoordinator.initializeWithNative(tabSwitcherListener, newTabClickListener,
-                    menuButtonHelper, tabCountProvider, incognitoStateProvider, topToolbarRoot,
-                    closeAllTabsAction);
+                    tabCountProvider, incognitoStateProvider, topToolbarRoot, closeAllTabsAction);
         }
 
         if (mTabGroupUi != null) {

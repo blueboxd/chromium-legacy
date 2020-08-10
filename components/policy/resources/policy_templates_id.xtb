@@ -246,7 +246,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 <translation id="1428945832940687828">Jika kebijakan disetel ke Aktif, sinkronisasi <ph name="GOOGLE_DRIVE_NAME" /> di aplikasi File <ph name="PRODUCT_OS_NAME" /> akan dinonaktifkan. Tidak ada data yang diupload ke Drive.
 
       Jika kebijakan disetel ke Nonaktif atau tidak disetel, pengguna akan dapat mentransfer file ke Drive.</translation>
-<translation id="1430105709759941952">Jika menyetel kebijakan, Anda akan dapat menetapkan daftar pola URL yang menentukan situs mana yang tidak dapat mengakses sensor seperti sensor gerakan dan cahaya.
+<translation id="1430105709759941952">Jika menyetel kebijakan ini, Anda akan dapat menetapkan daftar pola URL yang menentukan situs mana yang tidak dapat mengakses sensor seperti sensor gerakan dan cahaya.
 
       Tidak menyetel kebijakan berarti <ph name="DEFAULT_SENSORS_SETTING_POLICY_NAME" /> akan berlaku untuk semua situs, jika disetel. Jika tidak, setelan pribadi pengguna akan digunakan.
 
@@ -583,7 +583,7 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 
       Kebijakan perujuk default Chrome sedang diperkuat dari nilainya saat ini, yaitu no-referrer-when-downgrade, ke strict-origin-when-cross-origin yang lebih aman melalui peluncuran bertahap yang menargetkan Chrome 85 stabil.
 
-      Sebelum peluncuran, kebijakan perusahaan tidak akan berlaku. Setelah peluncuran, ketika kebijakan perusahaan ini diaktifkan, kebijakan perujuk default Chrome akan disetel ke nilai sebelumnya, yaitu no-referrer-when-downgrade.
+      Sebelum peluncuran, kebijakan perusahaan ini tidak akan berlaku. Setelah peluncuran, ketika kebijakan perusahaan ini diaktifkan, kebijakan perujuk default Chrome akan disetel ke nilai sebelumnya, yaitu no-referrer-when-downgrade.
 
       Kebijakan perusahaan ini dinonaktifkan secara default.</translation>
 <translation id="1956493342242507974">Mengonfigurasi pengelolaan daya di layar masuk pada <ph name="PRODUCT_OS_NAME" />.
@@ -1019,7 +1019,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
       Jika kebijakan ini disetel ke "Filter konten khusus dewasa dari situs level teratas", situs yang diklasifikasikan sebagai pornografi akan difilter.</translation>
 <translation id="2498238926436517902">Selalu sembunyikan rak secara otomatis</translation>
-<translation id="2502467045153796624">Perilaku downgrade saluran</translation>
+<translation id="2502467045153796624">Perilaku downgrade saluran rilis</translation>
 <translation id="250670737672448119">Mengaktifkan fitur aksesibilitas sorotan tanda sisipan.
 
           Fitur ini berfungsi untuk menyoroti area yang dikelilingi tanda sisipan selama mengedit.
@@ -1171,11 +1171,11 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
       Tata letak keyboard yang sudah otomatis dipilih selalu menjadi tata letak terpopuler yang cocok dengan lokal yang sudah otomatis dipilih. Pengguna selalu dapat memilih lokal apa pun yang didukung oleh <ph name="PRODUCT_OS_NAME" /> untuk sesi mereka.</translation>
 <translation id="2693108589792503178">Mengonfigurasi URL ubah sandi.</translation>
-<translation id="269354856249562998">Jika menyetel kebijakan, Anda akan dapat menyetel daftar pola URL yang menentukan situs mana yang dapat meminta izin kepada pengguna untuk mengakses port serial.
+<translation id="269354856249562998">Jika kebijakan ini disetel, Anda akan dapat menyetel daftar pola URL yang menentukan situs mana yang dapat meminta izin kepada pengguna untuk mengakses port serial.
 
       Tidak menyetel kebijakan berarti <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> akan berlaku untuk semua situs, jika disetel. Jika tidak, setelan pribadi pengguna akan berlaku.
 
-      Untuk pola URL yang tidak cocok dengan kebijakan <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" /> (jika ada kecocokan), <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (jika disetel) atau setelan pribadi pengguna akan diutamakan dalam urutan tersebut.
+      Untuk pola URL yang tidak cocok dengan kebijakan <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" /> (jika ada kecocokan), maka <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (jika disetel) atau setelan pribadi pengguna akan diutamakan dalam urutan tersebut.
 
       Pola URL tidak boleh bertentangan dengan <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" />. Tidak ada kebijakan yang diprioritaskan jika URL cocok dengan keduanya.
 
@@ -1213,11 +1213,11 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Kebijakan perusahaan ini berlaku untuk adaptasi jangka pendek dan akan dihapus di Chrome 88.</translation>
 <translation id="2759224876420453487">Mengontrol perilaku pengguna pada sesi multiprofil</translation>
 <translation id="2761483219396643566">Menunda peringatan waktu menganggur saat menggunakan daya baterai</translation>
-<translation id="2765601181281280493">Jika menyetel kebijakan, Anda akan dapat menyetel daftar pola URL yang menentukan situs mana yang tidak dapat meminta izin pengguna untuk mengakses port serial.
+<translation id="2765601181281280493">Jika menyetel kebijakan ini, Anda akan dapat menyetel daftar pola URL yang menentukan situs mana yang tidak dapat meminta izin pengguna untuk mengakses port serial.
 
       Tidak menyetel kebijakan berarti <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> akan berlaku untuk semua situs, jika disetel. Jika tidak, setelan pribadi pengguna akan digunakan.
 
-      Untuk pola URL yang tidak cocok dengan kebijakan <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME" /> (jika ada kecocokan), <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (jika disetel) atau setelan pribadi pengguna akan diutamakan dalam urutan tersebut.
+      Untuk pola URL yang tidak cocok dengan kebijakan <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME" /> (jika ada kecocokan), maka <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (jika disetel) atau setelan pribadi pengguna akan diutamakan dalam urutan tersebut.
 
       Pola URL tidak boleh bertentangan dengan <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME" />. Tidak ada kebijakan yang diprioritaskan jika URL cocok dengan keduanya.
 
@@ -1227,15 +1227,20 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 <translation id="2787774054174244402">Jika kebijakan ditetapkan ke Benar (True), pengguna tidak akan dapat menulis ke perangkat penyimpanan eksternal.
 
       Jika ExternalStorageReadOnly ditetapkan ke Salah (False) atau tidak ditetapkan, pengguna dapat membuat dan memodifikasi file perangkat penyimpanan eksternal yang dapat ditulis secara fisik, kecuali penyimpanan eksternal diblokir. (Anda dapat memblokir penyimpanan eksternal dengan menetapkan ExternalStorageDisable ke Benar (True).)</translation>
+<translation id="2796714419743648316">Daftar yang Diizinkan terkait Batas Waktu per Aplikasi</translation>
+<translation id="2796896367838042659">Kebijakan ini akan menentukan aplikasi dan URL mana yang harus diizinkan untuk batasan penggunaan per aplikasi.
+        Daftar yang diizinkan dan dikonfigurasi akan diterapkan ke aplikasi yang diinstal pada <ph name="PRODUCT_OS_NAME" /> untuk pengguna tertentu dengan batas waktu per aplikasi.
+        Daftar yang diizinkan dan dikonfigurasi hanya dapat diterapkan ke akun pengguna anak dan aktif saat kebijakan <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> disetel.
+        Daftar yang diizinkan dan dikonfigurasi akan diterapkan ke aplikasi dan URL sehingga tidak diblokir oleh batas waktu per aplikasi.
+        Mengakses URL yang diizinkan tidak akan memengaruhi batas waktu Chrome.
+        Tambahkan ekspresi reguler URL ke |url_list| untuk mengizinkan URL yang cocok dengan ekspresi reguler mana pun yang ada dalam daftar.
+        Tambahkan aplikasi menggunakan |app_id| dan |app_type|-nya ke |app_list| untuk mengizinkan aplikasi tersebut.
+
+        Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan <ph name="PER_APP_TIME_LIMITS_ALLOWLIST" />.
+        </translation>
 <translation id="2799297758492717491">Izinkan pemutaran otomatis media pada pola URL yang diizinkan</translation>
 <translation id="2801065672151277034">Setelan pengelolaan sertifikat</translation>
 <translation id="2801155097555584385">Menetapkan nilai awal pengisian daya baterai kustom dalam persen</translation>
-<translation id="2802085784857530815">Memungkinkan Anda mengontrol jika pengguna dapat mengakses printer yang bukan milik perusahaan
-
-      Jika kebijakan disetel ke True, atau tidak disetel, pengguna dapat menambahkan, mengonfigurasi, dan mencetak menggunakan printer native mereka sendiri.
-
-      Jika kebijakan disetel ke False, pengguna tidak dapat menambahkan dan mengonfigurasi printer native mereka sendiri. Pengguna juga tidak dapat mencetak menggunakan printer native apa pun yang telah dikonfigurasikan sebelumnya.
-      </translation>
 <translation id="2805707493867224476">Izinkan semua situs menampilkan pop-up</translation>
 <translation id="2808013382476173118">Memungkinkan penggunaan server STUN saat klien jarak jauh mencoba untuk membuat koneksi ke komputer ini.
 
@@ -2393,6 +2398,10 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika nilai kebijakan ini 0, ukuran cache default akan digunakan namun pengguna tidak akan dapat mengubahnya.
 
       Jika kebijakan ini tidak disetel, ukuran default akan digunakan dan pengguna dapat menimpanya dengan tanda --media-cache-size.</translation>
+<translation id="4508084713148633492">Mengizinkan pengaktifan atau penonaktifan notifikasi saat ruang penyimpanan hampir penuh. Ini berlaku untuk semua pengguna pada perangkat.
+      Jika hanya ada satu akun pengguna di perangkat terkelola, notifikasi akan selalu ditampilkan, apa pun nilai kebijakan ini.
+      Jika ada beberapa akun pengguna di perangkat terkelola, notifikasi hanya akan ditampilkan saat kebijakan ini disetel ke Benar (True).
+      Notifikasi selalu ditampilkan di perangkat yang tidak terkelola.</translation>
 <translation id="4510923771103268849">Pengguna diizinkan untuk memiliki akses root ke penampung Crostini</translation>
 <translation id="4515404363392014383">Aktifkan Safe Browsing untuk sumber tepercaya</translation>
 <translation id="4517928394515633751">Memindai download pengguna dengan Safe Browsing</translation>
@@ -2879,15 +2888,15 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5212810195096589189">Tentukan izin CLI VM</translation>
 <translation id="5213038356678567351">Situs yang seharusnya tidak pernah memicu pengalihan browser.</translation>
 <translation id="5219844027738217407">Untuk aplikasi Android, kebijakan ini hanya memengaruhi mikrofon. Jika kebijakan disetel ke true, mikrofon akan dibisukan untuk semua aplikasi Android, tanpa pengecualian.</translation>
-<translation id="5227647876065695164">Kebijakan ini akan menentukan perilaku downgrade saluran di perangkat yang terdaftar. Yang kami maksud downgrade saluran adalah mengubah ke saluran yang lebih stabil, misalnya dari beta ke stabil.
+<translation id="5227647876065695164">Kebijakan ini akan menentukan perilaku downgrade saluran rilis di perangkat yang terdaftar. Yang kami maksud downgrade saluran rilis adalah mengubah ke saluran yang lebih stabil, misalnya dari beta ke stabil.
 
-      Nilai kebijakan ini akan memengaruhi downgrade saluran yang dimulai pengguna dan yang dimulai admin.
+      Nilai kebijakan ini akan memengaruhi downgrade saluran rilis yang dimulai pengguna dan yang dimulai admin.
 
-      Saat downgrade saluran, perangkat dapat me-roll back versinya dan mereset, atau menunggu versi saat ini (atau yang lebih tinggi) tersedia di saluran dan tidak menerima update sampai tersedia.
+      Saat downgrade saluran rilis, perangkat dapat me-roll back versinya dan mereset, atau menunggu versi saat ini (atau yang lebih tinggi) tersedia di saluran rilis dan tidak menerima update sampai tersedia.
 
-      Jika pengguna yang terdaftar memulai downgrade saluran, mereka dapat menentukan apakah akan mereset atau menunggu. Jika tidak, pilihan tersebut akan dibuat berdasarkan nilai kebijakan ini. Jika admin memulai downgrade saluran lewat setelan <ph name="CHROME_OS_RELEASE_CHANNEL_POLICY_NAME" />, perangkat di-roll back pada pemeriksaan update selanjutnya asalkan rollback telah dipilih. Jika tidak, perangkat akan menunggu saluran target juga diupdate ke versi saat ini.
+      Jika pengguna yang terdaftar memulai downgrade saluran rilis, mereka dapat menentukan apakah akan mereset atau menunggu. Jika tidak, pilihan tersebut akan dibuat berdasarkan nilai kebijakan ini. Jika admin memulai downgrade saluran rilis lewat setelan <ph name="CHROME_OS_RELEASE_CHANNEL_POLICY_NAME" />, perangkat di-roll back pada pemeriksaan update selanjutnya asalkan rollback telah dipilih. Jika tidak, perangkat akan menunggu saluran target juga diupdate ke versi saat ini.
 
-      Jika tidak disetel atau tidak valid, perilaku diartikan sama dengan "Tunggu saluran target juga mengalami downgrade saluran".</translation>
+      Jika tidak disetel atau tidak valid, perilaku akan sama dengan "Tunggu saluran target juga mengalami downgrade saluran rilis".</translation>
 <translation id="523505283826916779">Setelan aksesibilitas</translation>
 <translation id="5236882091572996759">Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, pengguna tidak dianggap menganggur selama audio diputar. Hal ini mencegah tercapainya waktu tunggu menganggur dan mencegah diambilnya tindakan menganggur. Namun, peredupan layar, penonaktifan layar, dan penguncian layar akan dilakukan setelah waktu tunggu yang dikonfigurasi tercapai, tanpa mempertimbangkan aktivitas audio.
 
@@ -3401,6 +3410,29 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ditetapkan ke salah (false) atau tidak ditetapkan, <ph name="PLUGIN_VM_NAME" /> tidak diizinkan mengumpulkan data.
       Jika ditetapkan ke benar (true), <ph name="PLUGIN_VM_NAME" /> dapat mengumpulkan data penggunaan <ph name="PLUGIN_VM_NAME" /> yang kemudian digabungkan dan dianalisis secara menyeluruh untuk membuat pengalaman <ph name="PLUGIN_VM_NAME" /> jadi lebih baik.</translation>
+<translation id="5875873062228321803">Mengonfigurasi persyaratan versi minimum <ph name="PRODUCT_OS_NAME" /> yang diizinkan.
+
+      Jika kebijakan ini disetel ke daftar tidak kosong:
+      Jika tidak ada entri yang memiliki <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> yang lebih baru daripada versi di perangkat saat ini, tidak ada batasan yang akan diterapkan dan batasan yang telah diterapkan akan dicabut.
+      Jika setidaknya salah satu entri memiliki <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> yang lebih baru daripada versi saat ini, entri yang memiliki versi lebih baru dan paling dekat dengan versi saat ini akan dipilih.
+      Jika terjadi konflik, preferensi akan diberikan ke entri dengan <ph name="WARNING_PERIOD_PROPERTY_NAME" /> atau <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> yang lebih singkat dan kebijakan diterapkan menggunakan entri tersebut.
+
+      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung dan jaringan saat ini membatasi update otomatis, akan muncul notifikasi pada layar untuk mengupdate perangkat dalam <ph name="WARNING_PERIOD_PROPERTY_NAME" /> yang ditampilkan di notifikasi.
+      Tidak ada notifikasi yang ditampilkan jika jaringan saat ini mengizinkan update otomatis dan perangkat harus diupdate dalam <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
+      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> akan dimulai dari saat kebijakan diterapkan.
+      Jika perangkat tidak diupdate hingga <ph name="WARNING_PERIOD_PROPERTY_NAME" /> berakhir, pengguna akan dipaksa logout dari sesi.
+      Jika diketahui bahwa versi saat ini tidak terpakai saat login ketika <ph name="WARNING_PERIOD_PROPERTY_NAME" /> berakhir, pengguna harus mengupdate perangkat sebelum login.
+
+      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung dan perangkat telah mencapai batas akhir update otomatis, akan muncul notifikasi pada layar untuk mengembalikan perangkat dalam <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
+      Jika diketahui bahwa perangkat telah mencapai batas akhir update otomatis saat login ketika <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> berakhir, perangkat akan diblokir bagi siapa pun yang ingin login.
+
+      Sesi pengguna yang tidak terkelola tidak akan menerima notifikasi dan otomatis logout jika <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> tidak disetel atau disetel ke Salah (False).
+
+      Jika kebijakan ini tidak disetel atau dibiarkan kosong, tidak ada batasan yang akan diterapkan, batasan yang ada akan dicabut, dan pengguna dapat login, berapa pun versi <ph name="PRODUCT_OS_NAME" />.
+
+      <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> di sini bisa merupakan versi yang tepat seperti '13305.0.0' atau awalan versi, seperti '13305'.
+      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> dan <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> adalah nilai opsional yang ditentukan dalam jumlah hari. Nilai defaultnya adalah 0 hari, yang artinya tidak ada periode peringatan.
+      <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> adalah properti opsional dengan nilai default sebagai Salah (False).</translation>
 <translation id="5879014913445067283">Mengontrol penemuan Berbagi File Jaringan melalui <ph name="NETBIOS_NAME" /></translation>
 <translation id="588135807064822874">Mengaktifkan Sentuh untuk Menelusuri</translation>
 <translation id="5882345429632338713">Penundaan sebelum meluncurkan browser alternatif (milidetik)</translation>
@@ -3461,6 +3493,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika Anda menonaktifkan setelan ini atau tidak menyetel suatu nilai, SafeSearch di Google Penelusuran tidak akan diterapkan.</translation>
 <translation id="5946082169633555022">Saluran beta</translation>
 <translation id="5946329690214660966">Menetapkan jadwal kustom untuk memeriksa update</translation>
+<translation id="5951418260805607969">Menampilkan notifikasi saat ruang penyimpanan hampir penuh</translation>
 <translation id="5961137303188584693">Alamat MAC NIC bawaan perangkat</translation>
 <translation id="5966615072639944554">Ekstensi yang diizinkan untuk menggunakan API pengesahan jarak jauh</translation>
 <translation id="5983708779415553259">Perilaku default untuk situs tidak ada dalam paket konten mana pun</translation>
@@ -3694,6 +3727,14 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
           Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci ke kurang dari atau sama dengan penundaan waktu tidak ada aktivitas.
 
           Pesan peringatan hanya ditampilkan jika tindakan tidak ada aktivitas adalah logout atau matikan.</translation>
+<translation id="6334330017384340264">Kebijakan ini akan menentukan aplikasi dan URL mana yang harus diizinkan untuk batasan penggunaan per aplikasi.
+        Daftar yang diizinkan dan dikonfigurasi akan diterapkan ke aplikasi yang diinstal pada <ph name="PRODUCT_OS_NAME" /> untuk pengguna tertentu dengan batas waktu per aplikasi.
+        Daftar yang diizinkan dan dikonfigurasi hanya dapat diterapkan ke akun pengguna anak dan aktif saat kebijakan <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> disetel.
+        Daftar yang diizinkan dan dikonfigurasi akan diterapkan ke aplikasi dan URL sehingga tidak diblokir oleh batas waktu per aplikasi.
+        Mengakses URL yang diizinkan tidak akan memengaruhi batas waktu Chrome.
+        Tambahkan ekspresi reguler URL ke |url_list| untuk mengizinkan URL yang cocok dengan ekspresi reguler mana pun yang ada dalam daftar.
+        Tambahkan aplikasi menggunakan |app_id| dan |app_type|-nya ke |app_list| untuk mengizinkan aplikasi tersebut.
+       </translation>
 <translation id="6337782882143073193">Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan <ph name="URL_BLOCKLIST_POLICY_NAME" />.
 
       Menonaktifkan skema protokol yang tercantum di <ph name="PRODUCT_NAME" />.
@@ -3762,6 +3803,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6467613372414922590">Mengizinkan host Native Messaging level pengguna (diinstal tanpa izin admin)</translation>
 <translation id="6468980648680553776">Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan RemoteAccessHostClientDomainList.</translation>
 <translation id="6473623140202114570">Mengonfigurasi daftar domain tempat Safe Browsing tidak akan memicu peringatan.</translation>
+<translation id="647698599569353771">Mengizinkan pengaktifan Berbagi Langsung.</translation>
 <translation id="6491139795995924304">Izinkan bluetooth di perangkat</translation>
 <translation id="6491872498385040936">Kebijakan ini tidak digunakan lagi. Pertimbangkan untuk menggunakan kebijakan <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />, yang mengganti kebijakan ini dan memungkinkan penyelarasan yang lebih mendetail.
 
@@ -3790,7 +3832,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci agar kurang dari penundaan waktu tidak ada aktivitas.</translation>
 <translation id="6515357889978918016">Gambar <ph name="PLUGIN_VM_NAME" /></translation>
-<translation id="6518102411616460786">Tunggu saluran target juga mengalami downgrade saluran</translation>
+<translation id="6518102411616460786">Tunggu saluran target juga mengalami downgrade saluran rilis</translation>
 <translation id="6520802717075138474">Impor mesin telusur dari browser default saat pertama kali dijalankan</translation>
 <translation id="6532026122543921610">Kecuali kebijakan <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> menonaktifkan deteksi zona waktu otomatis, menetapkan kebijakan akan menguraikan metode deteksi zona waktu otomatis, yang tidak dapat diubah pengguna.
 
@@ -4034,6 +4076,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Menentukan tanda yang harus diterapkan ke <ph name="PRODUCT_NAME" /> saat dimulai. Tanda yang ditentukan hanya diterapkan di layar login. Tanda yang disetel melalui kebijakan ini tidak diterapkan ke dalam sesi pengguna.</translation>
 <translation id="685769593149966548">Terapkan Mode Terbatas Ketat untuk YouTube</translation>
 <translation id="686079137349561371">Microsoft Windows 7 atau lebih baru</translation>
+<translation id="6863342574191774334">Jika setelan ini diaktifkan, pengguna akan diizinkan memilih untuk menggunakan Berbagi Langsung yang memungkinkan mereka mengirim dan menerima file dari pengguna terdekat.
+
+      Jika setelan ini dinonaktifkan, pengguna tidak diizinkan memilih untuk menggunakan Berbagi Langsung.
+
+      Jika kebijakan ini tidak disetel, secara default pengguna yang dikelola perusahaan dan pengguna yang tidak dikelola akan diizinkan.</translation>
 <translation id="6864244339257535116">Izinkan upload dan download file yang dilindungi sandi</translation>
 <translation id="6870295914868104867">Menyetel kebijakan akan menentukan daftar aplikasi dan ekstensi yang diinstal otomatis, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan pengguna. Izin akan diberikan secara implisit, termasuk untuk API ekstensi enterprise.deviceAttributes dan enterprise.platformKeys. (Dua API ini tidak tersedia untuk aplikasi dan ekstensi yang tidak diinstal otomatis.)
 
@@ -4054,7 +4101,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       dikuantisasi dan tingkat pembaruan dibatasi karena alasan keamanan. Untuk memperoleh data akurat dalam waktu nyata,
       silakan gunakan alat seperti Telemetri.</translation>
 <translation id="68798513449385583">Tunda download hingga mengetahui hasil pemindaian</translation>
-<translation id="6889123056995503704">Pengguna akan menentukan perilaku downgrade saluran</translation>
+<translation id="6889123056995503704">Pengguna akan menentukan perilaku downgrade saluran rilis</translation>
 <translation id="6894178810167845842">URL halaman Tab Baru</translation>
 <translation id="6899705656741990703">Mendeteksi setelan proxy secara otomatis</translation>
 <translation id="6902561336084511004">Memberikan konfigurasi server cetak yang tersedia.
@@ -5220,7 +5267,7 @@ Kebijakan akan dihapus pada M75.</translation>
 <translation id="8569734380847633643">
           Jika kebijakan ini ditetapkan ke False, <ph name="PRODUCT_OS_NAME" /> akan menonaktifkan Wi-Fi dan pengguna tidak dapat mengaktifkannya kembali.
           Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, pengguna akan dapat mengaktifkan atau menonaktifkan Wi-Fi kapan saja.</translation>
-<translation id="8571314270766672278">Roll back dan reset perangkat saat downgrade saluran, coba pertahankan pendaftaran</translation>
+<translation id="8571314270766672278">Roll back dan reset perangkat saat downgrade saluran rilis, coba pertahankan pendaftaran</translation>
 <translation id="857369585509260201">Kebijakan ini tidak digunakan lagi. Pertimbangkan untuk menggunakan BrowserSignin.
 
       Jika kebijakan ini ditetapkan ke true, pengguna harus login ke <ph name="PRODUCT_NAME" /> dengan profilnya sebelum menggunakan browser. Nilai default BrowserGuestModeEnabled akan ditetapkan ke false. Harap diperhatikan bahwa profil yang ada dan belum ditandatangani akan dikunci dan tidak dapat diakses setelah kebijakan ini diaktifkan. Untuk informasi selengkapnya, lihat artikel pusat bantuan.

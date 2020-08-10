@@ -95,6 +95,7 @@
 <translation id="4677944499843243528">Izgleda da neki drugi proces Chromiuma (<ph name="PROCESS_ID" />) na nekom drugom računalu (<ph name="HOST_NAME" />) upotrebljava taj profil. Chromium je zaključao profil da se profil ne bi promijenio. Ako ste sigurni da nijedan drugi proces ne upotrebljava taj profil, možete ga otključati i ponovo pokrenuti Chromium.</translation>
 <translation id="469338717132742108">Potraži pomoć za upotrebu OS-a Chromium</translation>
 <translation id="4708774505295300557">Netko se prethodno prijavio na Chromium na ovom računalu kao <ph name="ACCOUNT_EMAIL_LAST" />. Izradite novog korisnika Chromiuma kako bi vaši podaci bili odvojeni.</translation>
+<translation id="4745225042341419983">Podaci o pregledavanju ovog prostora izbrisat će se s ovog uređaja. Da biste vratili te podatke, prijavite se na Chromium kao</translation>
 <translation id="4746050847053251315">Želite li ipak zatvoriti Chromium?</translation>
 <translation id="4748217263233248895">Upravo je primijenjeno posebno sigurnosno ažuriranje za Chromium. Ponovo pokrenite sustav i vratit ćemo vaše kartice.</translation>
 <translation id="4750035648288509542">Ažuriranje je skoro gotovo! Ponovo pokrenite Chromium da biste završili ažuriranje. Anonimni prozori neće se ponovno otvoriti.</translation>

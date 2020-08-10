@@ -132,8 +132,10 @@ class ReaderModeIconViewBrowserTestWithSettings
   DISALLOW_COPY_AND_ASSIGN(ReaderModeIconViewBrowserTestWithSettings);
 };
 
-IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTestWithSettings,
-                       IconVisibilityDependsOnSettingIfExperimentEnabled) {
+// Flaky on Linux Win ChromeOS: crbug.com/1054641
+IN_PROC_BROWSER_TEST_F(
+    ReaderModeIconViewBrowserTestWithSettings,
+    DISABLED_IconVisibilityDependsOnSettingIfExperimentEnabled) {
   SetOfferReaderModeSetting(false);
 
   dom_distiller::TestDistillabilityObserver observer(

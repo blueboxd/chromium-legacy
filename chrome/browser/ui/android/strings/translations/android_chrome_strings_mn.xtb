@@ -462,7 +462,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Шинэчлэх</translation>
 <translation id="4738836084190194332">Хамгийн сүүлд синк хийсэн: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA алдаа: <ph name="VIOLATED_URL" /> дээрх <ph name="ERROR_CODE" /></translation>
 <translation id="4749960740855309258">Шинэ чихтэй хуудас нээх</translation>
 <translation id="4759238208242260848">Таталтууд:</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 таталт дууссан.}other{# таталт дууссан.}}</translation>
@@ -1046,6 +1045,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="9133397713400217035">Офлайн горимд судлах</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Эх хувийг харуулах</translation>
+<translation id="9148126808321036104">Дансандаа дахин нэвтрэх</translation>
 <translation id="9155898266292537608">Мөн та үгийг хурдан товшоод хайх боломжтой</translation>
 <translation id="9169507124922466868">Навигацын түүхийг хагас нээлээ</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 минутын өмнө шалгасан}other{# минутын өмнө шалгасан}}</translation>
@@ -1058,6 +1058,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="932327136139879170">Нүүр хуудас</translation>
 <translation id="93753284658583800">Нүүр хуудсыг өөрчилсөн</translation>
 <translation id="938850635132480979">Алдаа: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Нэвтрэх үгүүдийг оруулна уу</translation>
 <translation id="95817756606698420">Chrome Хятадад хайлт хийхдээ <ph name="BEGIN_BOLD" />Sogou-г<ph name="END_BOLD" /> ашиглах боломжтой. Та үүнийг <ph name="BEGIN_LINK" />Тохиргоо<ph name="END_LINK" /> хэсэгт өөрчлөх боломжтой.</translation>
 <translation id="968900484120156207">Таны зочилдог хуудас энд харагдана</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> минут үлдсэн</translation>

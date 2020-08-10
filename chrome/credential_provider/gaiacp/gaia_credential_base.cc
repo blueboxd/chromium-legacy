@@ -308,6 +308,7 @@ HRESULT GetUserAndDomainInfo(
     std::vector<base::string16> filtered_local_account_names_no_sn;
 
     for (auto local_account_name : local_account_names) {
+      LOGFN(VERBOSE) << "CD local account name : " << local_account_name;
       // The format for local_account_name custom attribute is
       // "un:abcd,sn:1234" where "un:abcd" would always exist and "sn:1234" is
       // optional.
@@ -315,12 +316,16 @@ HRESULT GetUserAndDomainInfo(
       std::string serial_number;
       // Note: "?:" is used to signify non-capturing groups. For more details,
       // look at https://github.com/google/re2/wiki/Syntax link.
-      re2::RE2::FullMatch(local_account_name, "un:([^,]+)(?:,sn:(\\w+))?",
+      re2::RE2::FullMatch(local_account_name, "un:([^,]+)(?:,sn:([^,]+))?",
                           &username, &serial_number);
+
+      LOGFN(VERBOSE) << "RE2 username : " << username;
+      LOGFN(VERBOSE) << "RE2 serial_number : " << serial_number;
 
       if (!username.empty() && !serial_number.empty()) {
         std::string device_serial_number =
             base::UTF16ToUTF8(GetSerialNumber().c_str());
+        LOGFN(VERBOSE) << "Device serial_number : " << device_serial_number;
         if (base::EqualsCaseInsensitiveASCII(serial_number,
                                              device_serial_number))
           filtered_local_account_names.push_back(base::UTF8ToUTF16(username));
@@ -2325,6 +2330,14 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
         if (FAILED(hr))
           LOGFN(ERROR) << "SetUserFullname hr=" << putHR(hr);
       }
+
+      // Set disable password change policy here as well. This flow would
+      // make sure password change is disabled even if any end user tries
+      // to enable it via registry after user create or association flow.
+      // Note: We donot fail the login flow if password policies were not
+      // applied for unknown reasons.
+      OSUserManager::Get()->SetDefaultPasswordChangePolicies(found_domain,
+                                                             found_username);
     } else {
       LOGFN(ERROR) << "GetUserFullname hr=" << putHR(hr);
     }

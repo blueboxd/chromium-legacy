@@ -103,6 +103,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final HelpAndFeedback mHelpAndFeedback;
     private final ScrollReporter mScrollReporter = new ScrollReporter();
 
+    private boolean mOpened;
     private int mHeaderCount;
     private BottomSheetContent mBottomSheetContent;
     // If the bottom sheet was opened in response to an action on a slice, this is the slice ID.
@@ -781,6 +782,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * the content is available, onStreamUpdated will be called.
      */
     public void surfaceOpened() {
+        mOpened = true;
         trackSurface(this);
         if (sStartupCalled) {
             FeedStreamSurfaceJni.get().surfaceOpened(
@@ -803,6 +805,11 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
             FeedStreamSurfaceJni.get().surfaceClosed(
                     mNativeFeedStreamSurface, FeedStreamSurface.this);
         }
+        mOpened = false;
+    }
+
+    public boolean isOpened() {
+        return mOpened;
     }
 
     private void openUrl(String url, int disposition) {

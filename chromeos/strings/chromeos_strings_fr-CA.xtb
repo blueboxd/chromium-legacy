@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Nouveau mot de passe</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gère cet appareil et a accès à toutes les activités, y compris les pages Web que vous visitez, vos mots de passe et vos courriels.</translation>
 <translation id="4003384961948020559">Échec : bac de sortie plein</translation>
+<translation id="4027485274696301677">Cet appareil <ph name="DEVICE_TYPE" /> est géré par <ph name="ENROLLMENT_DOMAIN" />. Les administrateurs peuvent configurer l'appareil à distance.</translation>
 <translation id="4034824040120875894">Imprimante</translation>
 <translation id="4227825898293920515">Le mot de passe expire dans <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Aucune tâche d'impression en cours</translation>

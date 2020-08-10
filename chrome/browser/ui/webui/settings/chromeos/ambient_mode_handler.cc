@@ -25,6 +25,32 @@ namespace {
 constexpr int kBannerWidth = 512;
 constexpr int kBannerHeight = 512;
 
+// Strings for converting to and from AmbientModeTemperatureUnit enum.
+constexpr char kCelsius[] = "celsius";
+constexpr char kFahrenheit[] = "fahrenheit";
+
+ash::AmbientModeTemperatureUnit ExtractTemperatureUnit(
+    const base::ListValue* args) {
+  auto temperature_unit = args->GetList()[0].GetString();
+  if (temperature_unit == kCelsius) {
+    return ash::AmbientModeTemperatureUnit::kCelsius;
+  } else if (temperature_unit == kFahrenheit) {
+    return ash::AmbientModeTemperatureUnit::kFahrenheit;
+  }
+  NOTREACHED() << "Unknown temperature unit";
+  return ash::AmbientModeTemperatureUnit::kFahrenheit;
+}
+
+std::string TemperatureUnitToString(
+    ash::AmbientModeTemperatureUnit temperature_unit) {
+  switch (temperature_unit) {
+    case ash::AmbientModeTemperatureUnit::kFahrenheit:
+      return kFahrenheit;
+    case ash::AmbientModeTemperatureUnit::kCelsius:
+      return kCelsius;
+  }
+}
+
 ash::AmbientModeTopicSource ExtractTopicSource(const base::Value& value) {
   ash::AmbientModeTopicSource topic_source =
       static_cast<ash::AmbientModeTopicSource>(value.GetInt());
@@ -47,8 +73,8 @@ AmbientModeHandler::~AmbientModeHandler() = default;
 
 void AmbientModeHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "requestTopicSource",
-      base::BindRepeating(&AmbientModeHandler::HandleRequestTopicSource,
+      "requestSettings",
+      base::BindRepeating(&AmbientModeHandler::HandleRequestSettings,
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -62,6 +88,11 @@ void AmbientModeHandler::RegisterMessages() {
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
+      "setSelectedTemperatureUnit",
+      base::BindRepeating(&AmbientModeHandler::HandleSetSelectedTemperatureUnit,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       "setSelectedAlbums",
       base::BindRepeating(&AmbientModeHandler::HandleSetSelectedAlbums,
                           base::Unretained(this)));
@@ -72,7 +103,7 @@ void AmbientModeHandler::OnJavascriptDisallowed() {
   ui_update_weak_factory_.InvalidateWeakPtrs();
 }
 
-void AmbientModeHandler::HandleRequestTopicSource(const base::ListValue* args) {
+void AmbientModeHandler::HandleRequestSettings(const base::ListValue* args) {
   CHECK(args);
   CHECK(args->empty());
 
@@ -103,10 +134,21 @@ void AmbientModeHandler::HandleRequestAlbums(const base::ListValue* args) {
       ui_update_weak_factory_.GetWeakPtr(), ExtractTopicSource(args)));
 }
 
+void AmbientModeHandler::HandleSetSelectedTemperatureUnit(
+    const base::ListValue* args) {
+  DCHECK(settings_);
+  CHECK_EQ(1U, args->GetSize());
+
+  settings_->temperature_unit = ExtractTemperatureUnit(args);
+  UpdateSettings();
+}
+
 void AmbientModeHandler::HandleSetSelectedTopicSource(
     const base::ListValue* args) {
-  ash::AmbientModeTopicSource topic_source = ExtractTopicSource(args);
-  settings_->topic_source = topic_source;
+  DCHECK(settings_);
+  CHECK_EQ(1U, args->GetSize());
+
+  settings_->topic_source = ExtractTopicSource(args);
   UpdateSettings();
 }
 
@@ -154,6 +196,13 @@ void AmbientModeHandler::HandleSetSelectedAlbums(const base::ListValue* args) {
   }
 
   UpdateSettings();
+}
+
+void AmbientModeHandler::SendTemperatureUnit() {
+  DCHECK(settings_);
+  FireWebUIListener(
+      "temperature-unit-changed",
+      base::Value(TemperatureUnitToString(settings_->temperature_unit)));
 }
 
 void AmbientModeHandler::SendTopicSource() {
@@ -237,6 +286,7 @@ void AmbientModeHandler::OnSettingsAndAlbumsFetched(
   }
 
   SendTopicSource();
+  SendTemperatureUnit();
 }
 
 }  // namespace settings

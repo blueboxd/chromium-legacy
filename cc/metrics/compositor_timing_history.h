@@ -74,7 +74,6 @@ class CC_EXPORT CompositorTimingHistory {
 
   // Events to be timed.
   void WillBeginImplFrame(const viz::BeginFrameArgs& args,
-                          bool new_active_tree_is_likely,
                           base::TimeTicks now);
   void WillFinishImplFrame(bool needs_redraw, const viz::BeginFrameId& id);
   void BeginImplFrameNotExpectedSoon();
@@ -121,7 +120,6 @@ class CC_EXPORT CompositorTimingHistory {
  protected:
   void DidBeginMainFrame(base::TimeTicks begin_main_frame_end_time);
 
-  void SetBeginMainFrameNeededContinuously(bool active);
   void SetCompositorDrawingContinuously(bool active);
 
   static std::unique_ptr<UMAReporter> CreateUMAReporter(UMACategory category);
@@ -132,9 +130,7 @@ class CC_EXPORT CompositorTimingHistory {
 
   // Used to calculate frame rates of Main and Impl threads.
   bool did_send_begin_main_frame_;
-  bool begin_main_frame_needed_continuously_;
   bool compositor_drawing_continuously_;
-  base::TimeTicks begin_main_frame_end_time_prev_;
   base::TimeTicks new_active_tree_draw_end_time_prev_;
   base::TimeTicks draw_end_time_prev_;
 

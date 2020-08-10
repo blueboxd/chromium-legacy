@@ -53,9 +53,9 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvi
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.page_info.CertificateChainHelper;
 import org.chromium.components.payments.AbortReason;
+import org.chromium.components.payments.BrowserPaymentRequest;
 import org.chromium.components.payments.CanMakePaymentQuery;
 import org.chromium.components.payments.ComponentPaymentRequestImpl;
-import org.chromium.components.payments.ComponentPaymentRequestImpl.ComponentPaymentRequestDelegate;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.ErrorMessageUtil;
 import org.chromium.components.payments.ErrorStrings;
@@ -121,10 +121,9 @@ import java.util.Set;
  * living in {@link ComponentPaymentRequestImpl}.
  */
 public class PaymentRequestImpl
-        implements ComponentPaymentRequestDelegate, PaymentRequestUI.Client,
-                   PaymentAppFactoryDelegate, PaymentAppFactoryParams,
-                   PaymentRequestUpdateEventListener, PaymentApp.AbortCallback,
-                   PaymentApp.InstrumentDetailsCallback,
+        implements BrowserPaymentRequest, PaymentRequestUI.Client, PaymentAppFactoryDelegate,
+                   PaymentAppFactoryParams, PaymentRequestUpdateEventListener,
+                   PaymentApp.AbortCallback, PaymentApp.InstrumentDetailsCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate,
                    NormalizedAddressRequestDelegate, PaymentDetailsConverter.MethodChecker,
                    PaymentUIsManager.Delegate {
@@ -136,9 +135,9 @@ public class PaymentRequestImpl
      */
     public interface Delegate {
         /**
-         * Returns whether the ChromeActivity is currently showing an OffTheRecord tab.
+         * Returns whether the WebContents is currently showing an off-the-record tab.
          */
-        boolean isOffTheRecord(ChromeActivity activity);
+        boolean isOffTheRecord(WebContents webContents);
         /**
          * Returns a non-null string if there is an invalid SSL certificate on the currently
          * loaded page.
@@ -165,89 +164,15 @@ public class PaymentRequestImpl
         String getTwaPackageName(@Nullable ChromeActivity activity);
     }
 
-    /**
-     * A test-only observer for the PaymentRequest service implementation.
-     */
-    public interface PaymentRequestServiceObserverForTest {
-        /**
-         * Called after an instance of PaymentRequestImpl has been created.
-         *
-         * @param paymentRequest The newly created instance of PaymentRequestImpl.
-         */
-        void onPaymentRequestCreated(PaymentRequestImpl paymentRequest);
-
-        /**
-         * Called when an abort request was denied.
-         */
-        void onPaymentRequestServiceUnableToAbort();
-
-        /**
-         * Called when the controller is notified of billing address change, but does not alter the
-         * editor UI.
-         */
-        void onPaymentRequestServiceBillingAddressChangeProcessed();
-
-        /**
-         * Called when the controller is notified of an expiration month change.
-         */
-        void onPaymentRequestServiceExpirationMonthChange();
-
-        /**
-         * Called when a show request failed. This can happen when:
-         * <ul>
-         *   <li>The merchant requests only unsupported payment methods.</li>
-         *   <li>The merchant requests only payment methods that don't have corresponding apps and
-         *   are not able to add a credit card from PaymentRequest UI.</li>
-         * </ul>
-         */
-        void onPaymentRequestServiceShowFailed();
-
-        /**
-         * Called when the canMakePayment() request has been responded to.
-         */
-        void onPaymentRequestServiceCanMakePaymentQueryResponded();
-
-        /**
-         * Called when the hasEnrolledInstrument() request has been responded to.
-         */
-        void onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
-
-        /**
-         * Called when the payment response is ready.
-         */
-        void onPaymentResponseReady();
-
-        /**
-         * Called when the browser acknowledges the renderer's complete call, which indicates that
-         * the browser UI has closed.
-         */
-        void onCompleteReplied();
-
-        /**
-         * Called when the renderer is closing the mojo connection (e.g. upon show promise
-         * rejection).
-         */
-        void onRendererClosedMojoConnection();
-    }
-
     private static final String TAG = "PaymentRequest";
-
-    private ComponentPaymentRequestImpl mComponentPaymentRequestImpl;
-
-    private PaymentOptions mPaymentOptions;
-    private boolean mRequestShipping;
-    private boolean mRequestPayerName;
-    private boolean mRequestPayerPhone;
-    private boolean mRequestPayerEmail;
-
-    private static PaymentRequestServiceObserverForTest sObserverForTest;
     private static boolean sIsLocalCanMakePaymentQueryQuotaEnforcedForTest;
-
     /**
      * Hold the currently showing PaymentRequest. Used to prevent showing more than one
      * PaymentRequest UI per browser process.
      */
     private static PaymentRequestImpl sShowingPaymentRequest;
+
+    private final ComponentPaymentRequestImpl mComponentPaymentRequestImpl;
 
     /** Monitors changes in the TabModelSelector. */
     private final TabModelSelectorObserver mSelectorObserver = new EmptyTabModelSelectorObserver() {
@@ -291,6 +216,14 @@ public class PaymentRequestImpl
     private final JourneyLogger mJourneyLogger;
     private final boolean mIsOffTheRecord;
 
+    private final PaymentUIsManager mPaymentUIsManager;
+
+    private PaymentOptions mPaymentOptions;
+    private boolean mRequestShipping;
+    private boolean mRequestPayerName;
+    private boolean mRequestPayerPhone;
+    private boolean mRequestPayerEmail;
+
     private boolean mIsCanMakePaymentResponsePending;
     private boolean mIsHasEnrolledInstrumentResponsePending;
     private boolean mHasEnrolledInstrumentUsesPerMethodQuota;
@@ -328,7 +261,6 @@ public class PaymentRequestImpl
     private int mShippingType;
     private boolean mIsFinishedQueryingPaymentApps;
     private List<PaymentApp> mPendingApps = new ArrayList<>();
-    private final PaymentUIsManager mPaymentUIsManager;
     private MinimalUICoordinator mMinimalUi;
     private PaymentApp mInvokedPaymentApp;
     private boolean mHideServerAutofillCards;
@@ -404,54 +336,40 @@ public class PaymentRequestImpl
     private SkipToGPayHelper mSkipToGPayHelper;
 
     /**
-     * When true skip UI is available for non-url based payment method identifiers (e.g.
-     * basic-card).
-     */
-    private boolean mSkipUiForNonUrlPaymentMethodIdentifiers;
-
-    /**
      * Builds the PaymentRequest service implementation.
      *
      * @param renderFrameHost The host of the frame that has invoked the PaymentRequest API.
+     * @param componentPaymentRequestImpl The component side of the PaymentRequest implementation.
+     * @param isOffTheRecord Whether the merchant page is shown in an off-the-record tab.
+     * @param journeyLogger The JourneyLogger that records the user journey of using the
+     *         PaymentRequest service.
+     * @param delegate The delegate of this class.
      */
-    public PaymentRequestImpl(RenderFrameHost renderFrameHost, Delegate delegate) {
+    public PaymentRequestImpl(RenderFrameHost renderFrameHost,
+            ComponentPaymentRequestImpl componentPaymentRequestImpl, boolean isOffTheRecord,
+            JourneyLogger journeyLogger, Delegate delegate) {
         assert renderFrameHost != null;
+        assert componentPaymentRequestImpl != null;
+        assert delegate != null;
 
         mRenderFrameHost = renderFrameHost;
         mDelegate = delegate;
         mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
-
         mPaymentRequestOrigin =
                 UrlFormatter.formatUrlForSecurityDisplay(mRenderFrameHost.getLastCommittedURL());
         mPaymentRequestSecurityOrigin = mRenderFrameHost.getLastCommittedOrigin();
         mTopLevelOrigin =
                 UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl());
-
         mMerchantName = mWebContents.getTitle();
-
         mCertificateChain = CertificateChainHelper.getCertificateChain(mWebContents);
-
-        mIsOffTheRecord = mDelegate.isOffTheRecord(ChromeActivity.fromWebContents(mWebContents));
-
-        mJourneyLogger = new JourneyLogger(mIsOffTheRecord, mWebContents);
-
-        mSkipUiForNonUrlPaymentMethodIdentifiers = mDelegate.skipUiForBasicCard();
-
-        if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
+        mIsOffTheRecord = isOffTheRecord;
+        mJourneyLogger = journeyLogger;
         mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this,
                 /*params=*/this, mWebContents, mIsOffTheRecord, mJourneyLogger);
-    }
-
-    // Implement ComponentPaymentRequestDelegate:
-    @Override
-    public void setComponentPaymentRequestImpl(
-            ComponentPaymentRequestImpl componentPaymentRequestImpl) {
-        assert mComponentPaymentRequestImpl == null;
-        assert componentPaymentRequestImpl != null;
         mComponentPaymentRequestImpl = componentPaymentRequestImpl;
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     /**
      * Called by the merchant website to initialize the payment request data.
      */
@@ -606,7 +524,7 @@ public class PaymentRequestImpl
                 // This excludes AutofillPaymentInstrument as its UI is rendered inline in
                 // the payment request UI, thus can't be skipped.
                 && (mURLPaymentMethodIdentifiersSupported
-                        || mSkipUiForNonUrlPaymentMethodIdentifiers)
+                        || mComponentPaymentRequestImpl.skipUiForNonUrlPaymentMethodIdentifiers())
                 && mPaymentUIsManager.getPaymentMethodsSection().getSize() >= 1
                 && mPaymentUIsManager.onlySingleAppCanProvideAllRequiredInformation()
                 // Skip to payment app only if it can be pre-selected.
@@ -637,7 +555,10 @@ public class PaymentRequestImpl
         if (!mDelegate.isWebContentsActive(activity)) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
             disconnectFromClientWithDebugMessage(ErrorStrings.CANNOT_SHOW_IN_BACKGROUND_TAB);
-            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+            if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+                ComponentPaymentRequestImpl.getObserverForTest()
+                        .onPaymentRequestServiceShowFailed();
+            }
             return false;
         }
 
@@ -651,8 +572,9 @@ public class PaymentRequestImpl
             if (mOverviewModeBehavior.overviewVisible()) {
                 mJourneyLogger.setNotShown(NotShownReason.OTHER);
                 disconnectFromClientWithDebugMessage(ErrorStrings.TAB_OVERVIEW_MODE);
-                if (sObserverForTest != null) {
-                    sObserverForTest.onPaymentRequestServiceShowFailed();
+                if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+                    ComponentPaymentRequestImpl.getObserverForTest()
+                            .onPaymentRequestServiceShowFailed();
                 }
                 return false;
             }
@@ -712,7 +634,7 @@ public class PaymentRequestImpl
         return true;
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     /**
      * Called by the merchant website to show the payment request to the user.
      */
@@ -736,7 +658,10 @@ public class PaymentRequestImpl
             mJourneyLogger.setNotShown(NotShownReason.CONCURRENT_REQUESTS);
             disconnectFromClientWithDebugMessage(
                     ErrorStrings.ANOTHER_UI_SHOWING, PaymentErrorReason.ALREADY_SHOWING);
-            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+            if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+                ComponentPaymentRequestImpl.getObserverForTest()
+                        .onPaymentRequestServiceShowFailed();
+            }
             return;
         }
 
@@ -752,7 +677,10 @@ public class PaymentRequestImpl
         if (chromeActivity == null) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
             disconnectFromClientWithDebugMessage(ErrorStrings.ACTIVITY_NOT_FOUND);
-            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+            if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+                ComponentPaymentRequestImpl.getObserverForTest()
+                        .onPaymentRequestServiceShowFailed();
+            }
             return;
         }
 
@@ -1089,7 +1017,7 @@ public class PaymentRequestImpl
                 && mInvokedPaymentApp.isValidForPaymentMethodData(methodName, null);
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     /**
      * Called by merchant to update the shipping options and line items after the user has selected
      * their shipping address or shipping option.
@@ -1193,7 +1121,7 @@ public class PaymentRequestImpl
         }
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     /**
      * Called when the merchant received a new shipping address, shipping option, or payment method
      * info, but did not update the payment details in response.
@@ -1545,7 +1473,7 @@ public class PaymentRequestImpl
         disconnectFromClientWithDebugMessage(ErrorStrings.USER_CANCELLED);
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     // This method is not supposed to be used outside this class and
     // ComponentPaymentRequestImpl.
     @Override
@@ -1564,7 +1492,7 @@ public class PaymentRequestImpl
         }
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     /**
      * Called by the merchant website to abort the payment.
      */
@@ -1590,14 +1518,17 @@ public class PaymentRequestImpl
             mJourneyLogger.setAborted(AbortReason.ABORTED_BY_MERCHANT);
             closeUIAndDestroyNativeObjects();
         } else {
-            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceUnableToAbort();
+            if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+                ComponentPaymentRequestImpl.getObserverForTest()
+                        .onPaymentRequestServiceUnableToAbort();
+            }
         }
         if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
             ComponentPaymentRequestImpl.getNativeObserverForTest().onAbortCalled();
         }
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     /**
      * Called when the merchant website has processed the payment.
      */
@@ -1639,7 +1570,7 @@ public class PaymentRequestImpl
         closeUIAndDestroyNativeObjects();
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     @Override
     public void retry(PaymentValidationErrors errors) {
         if (getClient() == null) return;
@@ -1731,7 +1662,7 @@ public class PaymentRequestImpl
         settingsLauncher.launchSettingsActivity(context);
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     /** Called by the merchant website to check if the user has complete payment apps. */
     @Override
     public void canMakePayment() {
@@ -1760,15 +1691,16 @@ public class PaymentRequestImpl
 
         mJourneyLogger.setCanMakePaymentValue(response || mIsOffTheRecord);
 
-        if (sObserverForTest != null) {
-            sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
+        if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getObserverForTest()
+                    .onPaymentRequestServiceCanMakePaymentQueryResponded();
         }
         if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
             ComponentPaymentRequestImpl.getNativeObserverForTest().onCanMakePaymentReturned();
         }
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     /** Called by the merchant website to check if the user has complete payment instruments. */
     @Override
     public void hasEnrolledInstrument(boolean perMethodQuota) {
@@ -1808,8 +1740,9 @@ public class PaymentRequestImpl
 
         mJourneyLogger.setHasEnrolledInstrumentValue(response || mIsOffTheRecord);
 
-        if (sObserverForTest != null) {
-            sObserverForTest.onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
+        if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getObserverForTest()
+                    .onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
         }
         if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
             ComponentPaymentRequestImpl.getNativeObserverForTest()
@@ -1830,7 +1763,7 @@ public class PaymentRequestImpl
                 || sIsLocalCanMakePaymentQueryQuotaEnforcedForTest;
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     /**
      * Called when the renderer closes the Mojo connection.
      */
@@ -1839,14 +1772,16 @@ public class PaymentRequestImpl
         if (getClient() == null) return;
         closeClient();
         mJourneyLogger.setAborted(AbortReason.MOJO_RENDERER_CLOSING);
-        if (sObserverForTest != null) sObserverForTest.onRendererClosedMojoConnection();
+        if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getObserverForTest().onRendererClosedMojoConnection();
+        }
         closeUIAndDestroyNativeObjects();
         if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
             ComponentPaymentRequestImpl.getNativeObserverForTest().onConnectionTerminated();
         }
     }
 
-    // Implement ComponentPaymentRequestDelegate:
+    // Implement BrowserPaymentRequest:
     /**
      * Called when the Mojo connection encounters an error.
      */
@@ -2056,7 +1991,10 @@ public class PaymentRequestImpl
         if (chromeActivity == null) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
             disconnectFromClientWithDebugMessage(ErrorStrings.ACTIVITY_NOT_FOUND);
-            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+            if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+                ComponentPaymentRequestImpl.getObserverForTest()
+                        .onPaymentRequestServiceShowFailed();
+            }
             return;
         }
 
@@ -2162,7 +2100,10 @@ public class PaymentRequestImpl
                                                 : " " + mRejectShowErrorMessage),
                         PaymentErrorReason.NOT_SUPPORTED);
             }
-            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+            if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+                ComponentPaymentRequestImpl.getObserverForTest()
+                        .onPaymentRequestServiceShowFailed();
+            }
             return true;
         }
 
@@ -2186,7 +2127,9 @@ public class PaymentRequestImpl
             return false;
         }
 
-        if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+        if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getObserverForTest().onPaymentRequestServiceShowFailed();
+        }
         mRejectShowErrorMessage = ErrorStrings.STRICT_BASIC_CARD_SHOW_REJECT;
         disconnectFromClientWithDebugMessage(
                 ErrorMessageUtil.getNotSupportedErrorMessage(mMethodData.keySet()) + " "
@@ -2239,7 +2182,9 @@ public class PaymentRequestImpl
         if (client == null) return;
         client.onPaymentResponse(response);
         mPaymentResponseHelper = null;
-        if (sObserverForTest != null) sObserverForTest.onPaymentResponseReady();
+        if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+            ComponentPaymentRequestImpl.getObserverForTest().onPaymentResponseReady();
+        }
     }
 
     /** Called if unable to retrieve payment details. */
@@ -2275,7 +2220,10 @@ public class PaymentRequestImpl
         if (chromeActivity == null) {
             mJourneyLogger.setAborted(AbortReason.OTHER);
             disconnectFromClientWithDebugMessage(ErrorStrings.ACTIVITY_NOT_FOUND);
-            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+            if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+                ComponentPaymentRequestImpl.getObserverForTest()
+                        .onPaymentRequestServiceShowFailed();
+            }
             return;
         }
 
@@ -2319,7 +2267,9 @@ public class PaymentRequestImpl
             mPaymentUIsManager.getPaymentRequestUI().close();
             PaymentRequestClient client = getClient();
             if (client != null) {
-                if (sObserverForTest != null) sObserverForTest.onCompleteReplied();
+                if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
+                    ComponentPaymentRequestImpl.getObserverForTest().onCompleteReplied();
+                }
                 client.onComplete();
                 closeClient();
             }
@@ -2415,19 +2365,8 @@ public class PaymentRequestImpl
     }
 
     @VisibleForTesting
-    public static void setObserverForTest(PaymentRequestServiceObserverForTest observerForTest) {
-        sObserverForTest = observerForTest;
-        PaymentUIsManager.setObserverForTest(sObserverForTest);
-    }
-
-    @VisibleForTesting
     public static void setIsLocalCanMakePaymentQueryQuotaEnforcedForTest() {
         sIsLocalCanMakePaymentQueryQuotaEnforcedForTest = true;
-    }
-
-    @VisibleForTesting
-    /* package */ void setSkipUIForNonURLPaymentMethodIdentifiersForTest() {
-        mSkipUiForNonUrlPaymentMethodIdentifiers = true;
     }
 
     @Nullable

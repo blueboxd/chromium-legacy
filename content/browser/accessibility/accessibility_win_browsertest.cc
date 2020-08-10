@@ -2714,6 +2714,94 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetSelectionRanges) {
   ranges = nullptr;
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestSetSelectionRangesIFrame) {
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<!doctype html><html><body>"
+      "Text before iframe"
+      "<iframe src='data:text/html,"
+      "<!doctype html><html><body>"
+      "<button>Text in iframe</button></body></html>"
+      "'></iframe>"
+      "<button>Text after iframe</button>"
+      "</body></html>");
+  ASSERT_TRUE(NavigateToURL(shell(), url));
+  waiter.WaitForNotification();
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Text in iframe");
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.Get());
+  ASSERT_EQ(1u, document_children.size());
+  Microsoft::WRL::ComPtr<IAccessible2> body_iaccessible2;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
+          .Get(),
+      &body_iaccessible2));
+
+  std::vector<base::win::ScopedVariant> body_children =
+      GetAllAccessibleChildren(body_iaccessible2.Get());
+  ASSERT_EQ(3u, body_children.size());
+
+  Microsoft::WRL::ComPtr<IAccessible2> iframe;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), body_children[1].AsInput())
+          .Get(),
+      &iframe));
+
+  std::vector<base::win::ScopedVariant> iframe_children =
+      GetAllAccessibleChildren(iframe.Get());
+  ASSERT_EQ(1u, iframe_children.size());
+
+  Microsoft::WRL::ComPtr<IAccessible2> iframe_body;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), iframe_children[0].AsInput())
+          .Get(),
+      &iframe_body));
+
+  std::vector<base::win::ScopedVariant> iframe_body_children =
+      GetAllAccessibleChildren(iframe_body.Get());
+  ASSERT_EQ(1u, iframe_body_children.size());
+
+  Microsoft::WRL::ComPtr<IAccessible2> text_in_iframe;
+  ASSERT_HRESULT_SUCCEEDED(
+      QueryIAccessible2(GetAccessibleFromVariant(
+                            document.Get(), iframe_body_children[0].AsInput())
+                            .Get(),
+                        &text_in_iframe));
+
+  Microsoft::WRL::ComPtr<IAccessible2> text_after_iframe;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), body_children[2].AsInput())
+          .Get(),
+      &text_after_iframe));
+
+  Microsoft::WRL::ComPtr<IAccessible2_4> text_after_iframe_iaccessible2_4;
+  ASSERT_HRESULT_SUCCEEDED(
+      text_after_iframe.As(&text_after_iframe_iaccessible2_4));
+
+  LONG n_ranges = 1;
+  IA2Range* ranges =
+      reinterpret_cast<IA2Range*>(CoTaskMemAlloc(sizeof(IA2Range)));
+  ranges[0].anchor = text_in_iframe.Get();
+  ranges[0].anchorOffset = 0;
+  ranges[0].active = text_after_iframe.Get();
+  ranges[0].activeOffset = 2;
+
+  // This is expected to fail because the anchor and focus nodes are in
+  // different trees, which Blink doesn't support.
+  EXPECT_HRESULT_FAILED(
+      text_after_iframe_iaccessible2_4->setSelectionRanges(n_ranges, ranges));
+
+  CoTaskMemFree(ranges);
+  ranges = nullptr;
+}
+
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestMultiLineSetSelection) {
   Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);

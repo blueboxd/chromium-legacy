@@ -15,6 +15,7 @@
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 class Profile;
 
@@ -63,6 +64,9 @@ class NearbyConnectionsManagerImpl
   void UpgradeBandwidth(const std::string& endpoint_id) override;
 
  private:
+  using AdvertisingOptions =
+      location::nearby::connections::mojom::AdvertisingOptions;
+  using MediumSelection = location::nearby::connections::mojom::MediumSelection;
   using DiscoveryOptions =
       location::nearby::connections::mojom::DiscoveryOptions;
   using EndpointDiscoveryListener =
@@ -106,6 +110,7 @@ class NearbyConnectionsManagerImpl
 
   NearbyProcessManager* process_manager_;
   Profile* profile_;
+  IncomingConnectionListener* incoming_connection_listener_ = nullptr;
   DiscoveryListener* discovery_listener_ = nullptr;
   base::flat_set<std::string> discovered_endpoints_;
   // A map of endpoint_id to NearbyConnectionCallback.
@@ -120,8 +125,8 @@ class NearbyConnectionsManagerImpl
   ScopedObserver<NearbyProcessManager, NearbyProcessManager::Observer>
       nearby_process_observer_{this};
   mojo::Receiver<EndpointDiscoveryListener> endpoint_discovery_listener_{this};
-  mojo::Receiver<ConnectionLifecycleListener> connection_lifecycle_listener_{
-      this};
+  mojo::ReceiverSet<ConnectionLifecycleListener>
+      connection_lifecycle_listeners_;
 
   location::nearby::connections::mojom::NearbyConnections* nearby_connections_ =
       nullptr;

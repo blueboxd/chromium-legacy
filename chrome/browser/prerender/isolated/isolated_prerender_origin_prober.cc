@@ -7,9 +7,12 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/availability/availability_prober.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/host_port_pair.h"
@@ -98,6 +101,16 @@ OriginProbeDelegate* GetOriginProbeDelegate() {
   return delegate.get();
 }
 
+// Allows probing to start after a delay so that browser start isn't slowed.
+void StartCanaryCheck(base::WeakPtr<AvailabilityProber> canary_checker) {
+  // If there is no previously cached result for this network then one should be
+  // started. If the previous result is stale, the prober will start a probe
+  // during |LastProbeWasSuccessful|.
+  if (!canary_checker->LastProbeWasSuccessful().has_value()) {
+    canary_checker->SendNowIfInactive(false);
+  }
+}
+
 }  // namespace
 
 IsolatedPrerenderOriginProber::IsolatedPrerenderOriginProber(Profile* profile)
@@ -148,12 +161,12 @@ IsolatedPrerenderOriginProber::IsolatedPrerenderOriginProber(Profile* profile)
       traffic_annotation, 10 /* max_cache_entries */,
       IsolatedPrerenderCanaryCheckCacheLifetime());
 
-  // If there is no previously cached result for this network then one should be
-  // started. If the previous result is stale, the prober will start a probe
-  // during |LastProbeWasSuccessful|.
-  if (!canary_check_->LastProbeWasSuccessful().has_value()) {
-    canary_check_->SendNowIfInactive(false);
-  }
+  // This code is running at browser startup. Start the canary check when we get
+  // the chance, but there's no point in it being ready for the first navigation
+  // since the check won't be done by then anyways.
+  content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&StartCanaryCheck, canary_check_->AsWeakPtr()));
 }
 
 IsolatedPrerenderOriginProber::~IsolatedPrerenderOriginProber() = default;

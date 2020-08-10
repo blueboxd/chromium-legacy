@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_DATA_SHARE_TO_DATA_BUILDER_H_
 #define IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_DATA_SHARE_TO_DATA_BUILDER_H_
 
+#import <UIKit/UIKit.h>
+
 class GURL;
 
 @class ShareToData;
@@ -21,6 +23,10 @@ namespace activity_services {
 // nil. Function may return nil.
 ShareToData* ShareToDataForWebState(web::WebState* web_state,
                                     const GURL& share_url);
+
+// Returns a ShareToData object for a single |URL|, and its page's |title|,
+// which is not associated to a WebState.
+ShareToData* ShareToDataForURL(const GURL& URL, NSString* title);
 
 }  // namespace activity_services
 

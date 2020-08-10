@@ -131,12 +131,6 @@ class Port(object):
     CONTENT_SHELL_NAME = 'content_shell'
 
     ALL_SYSTEMS = (
-        # FIXME: We treat Retina (High-DPI) devices as if they are running a different
-        # a different operating system version. This isn't accurate, but will
-        # work until we need to test and support baselines across multiple OS versions.
-        ('retina', 'x86'),
-        ('mac10.10', 'x86'),
-        ('mac10.11', 'x86'),
         ('mac10.12', 'x86'),
         ('mac10.13', 'x86'),
         ('mac10.14', 'x86'),
@@ -151,8 +145,7 @@ class Port(object):
 
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac':
-        ['retina', 'mac10.10', 'mac10.11', 'mac10.12', 'mac10.13', 'mac10.14',
-         'mac10.15'],
+        ['mac10.12', 'mac10.13', 'mac10.14', 'mac10.15'],
         'win': ['win7', 'win10'],
         'linux': ['trusty'],
         'fuschia': ['fuchsia'],

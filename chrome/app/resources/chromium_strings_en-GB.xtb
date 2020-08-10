@@ -97,6 +97,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4677944499843243528">The profile appears to be in use by another Chromium process (<ph name="PROCESS_ID" />) on another computer (<ph name="HOST_NAME" />). Chromium has locked the profile so that it doesn't get corrupted. If you are sure that no other processes are using this profile, you can unlock the profile and relaunch Chromium.</translation>
 <translation id="469338717132742108">Get help with Chromium OS</translation>
 <translation id="4708774505295300557">Someone previously signed in to Chromium on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. Please create a new Chromium user to keep your information separate.</translation>
+<translation id="4745225042341419983">This space’s browsing data will be deleted from this device. To recover the data, sign in to Chromium as</translation>
 <translation id="4746050847053251315">Quit Chromium anyway?</translation>
 <translation id="4748217263233248895">A special security update for Chromium was just applied. Restart now and we'll restore your tabs.</translation>
 <translation id="4750035648288509542">Nearly up to date! Relaunch Chromium to finish updating. Incognito windows won't reopen.</translation>

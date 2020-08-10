@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
 // #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
-// #import {AmbientModeTopicSource, AmbientModeSettings} from './constants.m.js';
+// #import {AmbientModeTopicSource, AmbientModeTemperatureUnit, AmbientModeSettings} from './constants.m.js';
+// clang-format on
 
 /**
  * @fileoverview A helper object used from the ambient mode section to interact
@@ -14,10 +16,11 @@ cr.define('settings', function() {
   /** @interface */
   /* #export */ class AmbientModeBrowserProxy {
     /**
-     * Retrieves the AmbientModeTopicSource from server. As a response, the C++
-     * sends the 'topic-source-changed' event.
+     * Retrieves the AmbientModeTopicSource and AmbientModeTemperatureUnit from
+     * server. As a response, the C++ sends the 'topic-source-changed' and
+     * 'temperature-unit-changed' events.
      */
-    requestTopicSource() {}
+    requestSettings() {}
 
     /**
      * Retrieves the albums from server. As a response, the C++ sends either the
@@ -26,6 +29,12 @@ cr.define('settings', function() {
      *     the albums requested.
      */
     requestAlbums(topicSource) {}
+
+    /**
+     * Updates the selected temperature unit to server.
+     * @param {!AmbientModeTemperatureUnit} temperatureUnit
+     */
+    setSelectedTemperatureUnit(temperatureUnit) {}
 
     /**
      * Updates the selected topic source to server.
@@ -43,13 +52,18 @@ cr.define('settings', function() {
   /** @implements {settings.AmbientModeBrowserProxy} */
   /* #export */ class AmbientModeBrowserProxyImpl {
     /** @override */
-    requestTopicSource() {
-      chrome.send('requestTopicSource');
+    requestSettings() {
+      chrome.send('requestSettings');
     }
 
     /** @override */
     requestAlbums(topicSource) {
       chrome.send('requestAlbums', [topicSource]);
+    }
+
+    /** @override */
+    setSelectedTemperatureUnit(temperatureUnit) {
+      chrome.send('setSelectedTemperatureUnit', [temperatureUnit]);
     }
 
     /** @override */

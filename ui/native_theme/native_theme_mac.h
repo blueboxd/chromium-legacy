@@ -160,8 +160,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   std::unique_ptr<NativeTheme::ColorSchemeNativeThemeObserver>
       color_scheme_observer_;
 
-  bool should_only_use_dark_colors_;
-
   DISALLOW_COPY_AND_ASSIGN(NativeThemeMac);
 };
 

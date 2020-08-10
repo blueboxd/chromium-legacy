@@ -27,9 +27,6 @@ const bool kEnableTouchIcon = false;
 
 FaviconDriverImpl::FaviconDriverImpl(CoreFaviconService* favicon_service)
     : favicon_service_(favicon_service) {
-  if (!favicon_service_)
-    return;
-
   if (kEnableTouchIcon) {
     handlers_.push_back(std::make_unique<FaviconHandler>(
         favicon_service_, this, FaviconDriverObserver::NON_TOUCH_LARGEST));

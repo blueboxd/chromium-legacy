@@ -647,11 +647,17 @@ android_library("common_crash_java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
+java_cpp_strings("common_java_switches_srcjar") {
+  # External code should depend on "common_java" instead.
+  visibility = [ ":*" ]
+  sources = [ "common/aw_switches.cc" ]
+  template = "java/src/org/chromium/android_webview/common/AwSwitches.java.tmpl"
+}
+
 android_library("common_java") {
   sources = [
     "java/src/org/chromium/android_webview/common/AwFeatures.java",
     "java/src/org/chromium/android_webview/common/AwResource.java",
-    "java/src/org/chromium/android_webview/common/AwSwitches.java",
     "java/src/org/chromium/android_webview/common/CommandLineUtil.java",
     "java/src/org/chromium/android_webview/common/DeveloperModeUtils.java",
     "java/src/org/chromium/android_webview/common/Flag.java",
@@ -664,6 +670,7 @@ android_library("common_java") {
     "//components/metrics:metrics_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
+  srcjar_deps = [ ":common_java_switches_srcjar" ]
 }
 
 android_aidl("common_aidl") {

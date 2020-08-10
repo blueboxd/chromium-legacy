@@ -26,6 +26,7 @@ export {PageStatus, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncS
 export {CrSettingsPrefs} from '../prefs/prefs_types.m.js';
 export {Route, Router} from '../router.m.js';
 export {AmbientModeBrowserProxyImpl} from './ambient_mode_page/ambient_mode_browser_proxy.m.js';
+export {AmbientModeTemperatureUnit, AmbientModeTopicSource} from './ambient_mode_page/constants.m.js';
 export {bluetoothApis} from './bluetooth_page/bluetooth_page.m.js';
 export {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_page/multidevice_browser_proxy.m.js';
 export {MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, SmartLockSignInEnabledState} from './multidevice_page/multidevice_constants.m.js';

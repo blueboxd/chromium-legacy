@@ -79,14 +79,13 @@ TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
     <div id="target"></div>
   )HTML");
   auto* target = GetDocument().getElementById("target");
-  auto* cc_layer =
+  auto& cc_layer =
       RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
-          ? GetDocument()
-                .View()
-                ->GetPaintArtifactCompositor()
-                ->RootLayer()
-                ->children()[1]
-                .get()
+          ? *GetDocument()
+                 .View()
+                 ->GetPaintArtifactCompositor()
+                 ->RootLayer()
+                 ->children()[1]
           : GetLayoutView().Layer()->GraphicsLayerBacking()->CcLayer();
 
   {
@@ -94,20 +93,20 @@ TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
 
     target->setAttribute(html_names::kStyleAttr, "height: 200px");
     UpdateAllLifecyclePhasesForTest();
-    ASSERT_TRUE(cc_layer->debug_info());
-    EXPECT_EQ(1u, cc_layer->debug_info()->invalidations.size());
+    ASSERT_TRUE(cc_layer.debug_info());
+    EXPECT_EQ(1u, cc_layer.debug_info()->invalidations.size());
 
     target->setAttribute(html_names::kStyleAttr, "height: 200px; width: 200px");
     UpdateAllLifecyclePhasesForTest();
-    ASSERT_TRUE(cc_layer->debug_info());
-    EXPECT_EQ(2u, cc_layer->debug_info()->invalidations.size());
+    ASSERT_TRUE(cc_layer.debug_info());
+    EXPECT_EQ(2u, cc_layer.debug_info()->invalidations.size());
   }
 
   target->setAttribute(html_names::kStyleAttr, "height: 300px; width: 300px");
   UpdateAllLifecyclePhasesForTest();
-  ASSERT_TRUE(cc_layer->debug_info());
+  ASSERT_TRUE(cc_layer.debug_info());
   // No new invalidations tracked.
-  EXPECT_EQ(2u, cc_layer->debug_info()->invalidations.size());
+  EXPECT_EQ(2u, cc_layer.debug_info()->invalidations.size());
 }
 
 TEST_P(PaintAndRasterInvalidationTest, IncrementalInvalidationExpand) {

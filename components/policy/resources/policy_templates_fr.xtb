@@ -262,7 +262,7 @@
 
       Si cette règle n'est pas configurée, la règle <ph name="DEFAULT_SENSORS_SETTING_POLICY_NAME" /> s'applique pour tous les sites, à condition qu'elle soit définie. Si ce n'est pas le cas, le paramètre défini par l'utilisateur s'applique.
 
-      Si un même format d'URL est spécifié à la fois dans cette règle et dans la règle <ph name="SENSORS_ALLOWED_FOR_URLS_POLICY_NAME" />, celle-ci est prioritaire et l'accès aux capteurs de mouvement ou de lumière est bloqué.
+      Si un même format d'URL est spécifié à la fois dans cette règle et dans la règle <ph name="SENSORS_ALLOWED_FOR_URLS_POLICY_NAME" />, la première prévaut, et l'accès aux capteurs de mouvement ou de lumière est bloqué.
 
       Pour en savoir plus sur les formats <ph name="URL_LABEL" /> valides, veuillez consulter la page https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
@@ -602,7 +602,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 
       La règle par défaut de Chrome concernant l'URL de provenance est renforcée. L'objectif est de favoriser une transition progressive de sa valeur actuelle (no-referrer-when-downgrade) à une nouvelle valeur plus sécurisée (strict-origin-when-cross-origin) afin d'obtenir une version Chrome 85 stable.
 
-      Avant le déploiement, cette règle n'a aucun d'effet. Après le déploiement, lorsque cette règle est activée, la règle par défaut de Chrome concernant l'URL de provenance reprend sa valeur précédente (no-referrer-when-downgrade).
+      Avant le déploiement, cette règle n'a aucun effet. Après le déploiement, lorsque cette règle est activée, la règle par défaut de Chrome concernant l'URL de provenance reprend sa valeur précédente (no-referrer-when-downgrade).
 
       Cette règle est désactivée par défaut.</translation>
 <translation id="1956493342242507974">Configurer la gestion de l'alimentation sur l'écran de connexion dans <ph name="PRODUCT_OS_NAME" />.
@@ -886,7 +886,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si le modèle URI contient une variable <ph name="HTTP_VARIABLE_DNS" />, les requêtes envoyées au résolveur utilisent la méthode <ph name="HTTP_METHOD_GET" />. Sinon, elles utilisent la méthode <ph name="HTTP_METHOD_POST" />.
 
       Les modèles dont le format est incorrect sont ignorés.</translation>
-<translation id="2333228572393176330">Permet de configurer une fonctionnalité de sécurité TLS 1.3 qui protège les connexions contre les attaques par déclassement. Cette règle est rétrocompatible, et elle n'affecte pas les connexions à des serveurs ou proxys conformes aux normes TLS 1.2. Toutefois, les versions plus anciennes de certains proxys interceptant les paramètres TLS sont incompatibles en raison de défauts d'intégration.
+<translation id="2333228572393176330">Permet de configurer une fonctionnalité de sécurité TLS 1.3 qui protège les connexions contre les attaques par déclassement. Cette règle est rétrocompatible, et elle n'affecte pas les connexions à des serveurs ou proxys conformes à la norme TLS 1.2. Toutefois, les versions plus anciennes de certains proxys interceptant les paramètres TLS sont incompatibles en raison de défauts d'intégration.
 
       Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, <ph name="PRODUCT_NAME" /> active ces protections de sécurité pour toutes les connexions.
 
@@ -1060,13 +1060,13 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 
           Toutefois, cette fonctionnalité peut entraîner des dysfonctionnements pour certains sites Web
           qui ne s'attendent pas à ce que leurs pages soient mises en cache, en particulier ceux
-          qui reposent sur l'activation de gestionnaires de déchargement en cas de changement de page.
+          qui reposent sur le déclenchement de gestionnaires de déchargement en cas de changement de page.
           En fait, le déchargement n'est pas coordonné avec le changement de page ici, et la page
-          que l'utilisateur a quitté est enregistrée dans le cache des pages précédentes et suivantes.
+          que l'utilisateur a quittée est enregistrée dans le cache des pages précédentes et suivantes.
 
           Si cette règle est activée ou qu'elle n'est pas configurée, la fonctionnalité <ph name="PRODUCT_NAME" /> est activée.
 
-          Si cette règle est désactivée, la fonctionnalité est désactivée de façon forcée.
+          Si cette règle est désactivée, la fonctionnalité fait l'objet d'une désactivation forcée.
           </translation>
 <translation id="2516600974234263142">Active les fonctionnalités d'impression pour <ph name="PRODUCT_NAME" /> et interdit à l'utilisateur de changer ce paramètre.
 
@@ -1198,7 +1198,7 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 
       Si cette règle n'est pas configurée, la règle <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> s'applique pour tous les sites, à condition qu'elle soit définie. Si ce n'est pas le cas, les paramètres spécifiés par les utilisateurs s'appliquent.
 
-      Si le format d'URL ne correspond pas à <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" /> (si une correspondance existe), la règle <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (si elle est définie) ou les paramètres personnels de l'utilisateur prévaudront, dans cet ordre.
+      Si le format d'URL ne correspond pas à celui défini dans cette règle, les règles suivantes s'appliquent, selon l'ordre de priorité suivant : <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" /> (si une correspondance existe), <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (si elle est définie) ou les paramètres personnels de l'utilisateur.
 
       Les formats d'URL ne doivent pas entrer en conflit avec <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" />. Aucune règle ne prévaut dans le cas où une URL correspondrait à un format défini dans les deux règles.
 
@@ -1240,7 +1240,7 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 
       Si cette règle n'est pas configurée, la règle <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> s'applique pour tous les sites, à condition qu'elle soit définie. Si ce n'est pas le cas, le paramètre défini par l'utilisateur s'applique.
 
-      Si le format d'URL ne correspond pas à <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME" /> (si une correspondance existe), la règle <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (si elle est définie) ou les paramètres personnels de l'utilisateur prévaudront, dans cet ordre.
+      Si le format d'URL ne correspond pas à celui défini dans cette règle, les règles suivantes s'appliquent, selon l'ordre de priorité suivant : <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME" /> (si une correspondance existe), <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> (si elle est définie) ou les paramètres personnels de l'utilisateur.
 
       Les formats d'URL ne peuvent pas entrer en conflit avec <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME" />. Aucune règle ne prévaut dans le cas où une URL correspondrait à un format défini dans les deux règles.
 
@@ -1250,15 +1250,20 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 <translation id="2787774054174244402">Si vous définissez cette règle sur "True", les utilisateurs ne peuvent pas modifier les fichiers stockés sur les périphériques de stockage externes.
 
       À moins que les supports de stockage externes ne soient bloqués, si vous définissez la règle ExternalStorageReadOnly sur "False" ou qu'elle n'est pas configurée, les utilisateurs peuvent créer et modifier des fichiers sur les périphériques de stockage externes accessibles en écriture. (Vous pouvez bloquer les supports de stockage externes en définissant la règle ExternalStorageDisable sur "True".)</translation>
+<translation id="2796714419743648316">Liste d'autorisation des restrictions temporelles spécifiques à chaque application</translation>
+<translation id="2796896367838042659">Cette règle détermine les applications et URL qui doivent être ajoutées à la liste blanche concernant les restrictions d'utilisation spécifiques pour chaque application.
+        La liste blanche configurée est appliquée aux applications installées sur <ph name="PRODUCT_OS_NAME" /> pour l'utilisateur concerné avec des restrictions temporelles spécifiques à chaque application.
+        La liste blanche configurée ne peut être appliquée qu'aux comptes utilisateur enfants et prend effet lorsque la règle <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> est définie.
+        La liste blanche configurée est appliquée aux applications et aux URL afin d'éviter tout blocage par des restrictions temporelles spécifiques à chaque application.
+        L'accès aux URL figurant sur liste blanche n'est pas comptabilisé dans la limite de temps de Chrome.
+        Ajoutez des expressions régulières d'URL à |url_list| pour ajouter à la liste blanche les URL correspondant à une expression régulière de la liste.
+        Pour placer une application sur la liste blanche, ajoutez-la à |app_list| en indiquant son |app_id| et son |app_type|.
+
+        Cette règle est obsolète. Veuillez utiliser la règle <ph name="PER_APP_TIME_LIMITS_ALLOWLIST" /> à la place.
+        </translation>
 <translation id="2799297758492717491">Autoriser la lecture automatique des contenus multimédias pour les formats d'URL sur liste blanche</translation>
 <translation id="2801065672151277034">Paramètres de gestion des certificats</translation>
 <translation id="2801155097555584385">Personnaliser le pourcentage auquel la batterie doit commencer à être rechargée</translation>
-<translation id="2802085784857530815">Permet de contrôler si les utilisateurs peuvent accéder aux imprimantes n'appartenant pas à l'entreprise.
-
-      Si cette règle est définie sur "True", ou n'est pas configurée, les utilisateurs pourront ajouter et configurer leurs propres imprimantes en natif, et les utiliser pour lancer des impressions.
-
-      Si cette règle est définie sur "False", les utilisateurs ne pourront pas ajouter ni configurer leurs propres imprimantes en natif. Ils ne pourront pas non plus utiliser d'imprimante préalablement configurée en natif pour lancer des impressions.
-      </translation>
 <translation id="2805707493867224476">Autoriser tous les sites à afficher des fenêtres pop-up</translation>
 <translation id="2808013382476173118">Permet l'utilisation de serveurs STUN lorsque les clients distants tentent d'établir une connexion avec ce poste.
 
@@ -2417,6 +2422,10 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si la valeur de cette règle est définie sur 0, la taille du cache par défaut est utilisée, mais l'utilisateur n'est pas en mesure de la modifier.
 
       Si cette règle n'est pas définie, la taille par défaut est utilisée, et l'utilisateur est en mesure de la remplacer à l'aide de l'indicateur "--media-cache-size".</translation>
+<translation id="4508084713148633492">Permet d'activer ou de désactiver une notification lorsque l'espace disque est faible. Cette règle s'applique à l'ensemble des utilisateurs de l'appareil.
+      Si un seul compte utilisateur est configuré sur un appareil géré, la notification est toujours affichée, quelle que soit la valeur de cette règle.
+      Si plusieurs comptes utilisateur sont configurés sur un appareil géré, la notification ne s'affiche que lorsque cette règle est définie sur "True".
+      La notification est toujours affichée sur les appareils non gérés.</translation>
 <translation id="4510923771103268849">L'utilisateur est autorisé à accéder à la racine des conteneurs Crostini</translation>
 <translation id="4515404363392014383">Activer la navigation sécurisée pour les sources fiables</translation>
 <translation id="4517928394515633751">Analyser les téléchargements des utilisateurs avec la navigation sécurisée</translation>
@@ -2524,7 +2533,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4665897631924472251">Paramètres de gestion des extensions</translation>
 <translation id="4666930704271463612">Permet de spécifier le sous-ensemble des serveurs d'impression qui sont interrogés pour accéder aux imprimantes disponibles qui y sont associées.
 
-      Si cette règle est configurée, seules les imprimantes de serveur dont l'ID correspond aux valeurs définies dans cette règle sont proposées aux utilisateurs.
+      Si cette règle est configurée, seules les imprimantes de serveur dont l'ID correspond aux valeurs définies dans celle-ci sont proposées aux utilisateurs.
 
       Cet ID doit correspondre à celui du champ "id" qui figure dans le fichier spécifié dans la règle <ph name="EXTERNAL_PRINT_SERVERS_POLICY" />.
 
@@ -2908,7 +2917,7 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les opti
 
       Si un utilisateur enregistré revient à une version antérieure, il peut décider de réinitialiser l'appareil ou d'attendre. Le choix peut également être imposé suivant la valeur de cette règle. Si un administrateur lance un retour à une version antérieure via le paramètre <ph name="CHROME_OS_RELEASE_CHANNEL_POLICY_NAME" /> et que l'option de rollback de l'appareil a été sélectionnée, celui-ci est effectué lors de la prochaine vérification de mise à jour. Dans le cas contraire, l'appareil attend que la version cible rattrape sa version actuelle.
 
-      Si cette règle n'est pas configurée ou si elle n'est pas valide, le comportement adopté sera le même que pour l'option "Attendre que la version stable sélectionnée soit disponible".</translation>
+      Si cette règle n'est pas configurée ou qu'elle n'est pas valide, le comportement adopté sera le même que pour l'option "Attendre que la version sélectionnée rattrape la version installée lors du retour à une version antérieure".</translation>
 <translation id="523505283826916779">Paramètres d'accessibilité</translation>
 <translation id="5236882091572996759">Lorsque cette règle est définie sur "True" ou si elle n'est pas définie, l'utilisateur n'est pas considéré comme inactif pendant la lecture audio. Le délai d'inactivité ne peut ainsi pas être atteint, et l'action à effectuer en cas d'inactivité n'est pas appliquée. L'assombrissement, l'arrêt et le verrouillage de l'écran sont toutefois appliqués au terme des délais configurés, indépendamment de l'activité audio.
 
@@ -3421,6 +3430,29 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si la règle est définie sur "false" ou n'est pas configurée, <ph name="PLUGIN_VM_NAME" /> n'est pas autorisé à collecter les données.
       Si elle est définie sur "true", <ph name="PLUGIN_VM_NAME" /> peut collecter les données d'utilisation de <ph name="PLUGIN_VM_NAME" />. Elles sont ensuite combinées et analysées en détail afin d'améliorer l'expérience des utilisateurs de <ph name="PLUGIN_VM_NAME" />.</translation>
+<translation id="5875873062228321803">Permet de configurer la version minimale autorisée requise de <ph name="PRODUCT_OS_NAME" />.
+
+      Lorsque cette règle est définie sur des entrées de la liste :
+      Si aucune des entrées de la liste ne possède une <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> ultérieure à la version actuelle de l'appareil, aucune restriction n'est alors appliquée, et les restrictions existantes sont révoquées.
+      Si au moins une entrée possède une <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> ultérieure à la version actuelle, l'entrée choisie est celle dont la version est supérieure et la plus proche de la version actuelle.
+      En cas de conflit, la préférence est donnée à celle dont la <ph name="WARNING_PERIOD_PROPERTY_NAME" /> ou la <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> est la plus réduite. De plus, la règle est appliquée avec cette entrée.
+
+      Si la version actuelle devient obsolète pendant la session utilisateur et que le réseau actuel limite les mises à jour automatiques, une notification s'affiche à l'écran pour inviter l'utilisateur à mettre à jour l'appareil dans la <ph name="WARNING_PERIOD_PROPERTY_NAME" /> qui lui est indiquée.
+      En revanche, si le réseau actuel autorise les mises à jour automatiques et que l'appareil doit être mis à jour dans la <ph name="WARNING_PERIOD_PROPERTY_NAME" /> définie, aucune notification ne s'affiche.
+      La <ph name="WARNING_PERIOD_PROPERTY_NAME" /> commence à partir de l'application de la règle.
+      Si l'appareil n'est pas mis à jour avant la fin de la <ph name="WARNING_PERIOD_PROPERTY_NAME" />, l'utilisateur est déconnecté de la session.
+      Si la version actuelle s'avère obsolète au moment de la connexion et que la <ph name="WARNING_PERIOD_PROPERTY_NAME" /> est arrivée à expiration, l'utilisateur doit mettre à jour l'appareil avant de se connecter.
+
+      Si la version actuelle devient obsolète pendant la session utilisateur et que la date d'expiration des mises à jour automatiques associée à l'appareil est atteinte, une notification s'affiche à l'écran pour appliquer de nouveau la <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> à l'appareil.
+      Si la date d'expiration des mises à jour automatiques associée à l'appareil est atteinte au moment de la connexion et que la <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> est arrivée à expiration, aucun utilisateur ne peut se connecter à l'appareil.
+
+      Les sessions utilisateur non gérées ne reçoivent pas de notification et forcent la déconnexion si la règle <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> n'est pas configurée, ou si elle est définie sur "False".
+
+      Si cette règle n'est pas configurée ou si aucune entrée ne figure dans la liste, aucune restriction n'est appliquée, les restrictions existantes sont révoquées, et l'utilisateur peut se connecter quelle que soit la version de <ph name="PRODUCT_OS_NAME" />.
+
+      Dans le cas présent, <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> peut désigner une version exacte comme "13305.0.0" ou le préfixe d'une version tel que "13305".
+      La <ph name="WARNING_PERIOD_PROPERTY_NAME" /> et la <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> sont des valeurs facultatives exprimées en nombre de jours. Elles sont définies par défaut sur 0 jour, ce qui signifie qu'il n'y a pas de période d'avertissement.
+      <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> est une propriété facultative dont la valeur par défaut est "False".</translation>
 <translation id="5879014913445067283">Contrôler la détection des partages de fichiers sur le réseau via <ph name="NETBIOS_NAME" /></translation>
 <translation id="588135807064822874">Activer la fonctionnalité Appuyer pour rechercher</translation>
 <translation id="5882345429632338713">Délai avant le lancement du navigateur secondaire (en millisecondes)</translation>
@@ -3483,6 +3515,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Si vous désactivez ce paramètre ou ne définissez pas de valeur, SafeSearch n'est pas activé dans la recherche Google.</translation>
 <translation id="5946082169633555022">Version bêta</translation>
 <translation id="5946329690214660966">Planifier de manière personnalisée la recherche de mises à jour</translation>
+<translation id="5951418260805607969">Afficher une notification lorsque l'espace disque est faible</translation>
 <translation id="5961137303188584693">Adresse MAC de la carte d'interface réseau intégrée de l'appareil</translation>
 <translation id="5966615072639944554">Extensions autorisées à utiliser l'API d'attestation à distance</translation>
 <translation id="5983708779415553259">Comportement par défaut des sites ne figurant dans aucun pack de contenu</translation>
@@ -3712,6 +3745,14 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
           La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'inactivité.
 
           Le message d'avertissement ne s'affiche que si le dépassement du délai d'inactivité entraîne une déconnexion ou l'arrêt de l'appareil.</translation>
+<translation id="6334330017384340264">Cette règle détermine les applications et URL qui doivent être autorisées pour les restrictions d'utilisation spécifiques pour chaque application.
+        La liste d'autorisation configurée est destinée aux applications installées sur <ph name="PRODUCT_OS_NAME" /> pour l'utilisateur concerné avec des restrictions temporelles spécifiques à chaque application.
+        La liste d'autorisation configurée ne peut être appliquée qu'aux comptes utilisateur enfants et prend effet lorsque la règle <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> est définie.
+        La liste d'autorisation configurée est destinée aux applications et aux URL afin d'éviter tout blocage par des restrictions temporelles spécifiques à chaque application.
+        L'accès aux URL autorisés n'est pas comptabilisé dans la limite de temps de Chrome.
+        Ajoutez des expressions régulières d'URL à |url_list| pour autoriser les URL correspondant à une des expressions régulières de la liste.
+        Pour autoriser une application, ajoutez-la à |app_list| en indiquant son |app_id| et son |app_type|.
+       </translation>
 <translation id="6337782882143073193">Cette règle est obsolète (veuillez utiliser à la place la règle <ph name="URL_BLOCKLIST_POLICY_NAME" />).
 
       Elle permet de désactiver les schémas de protocoles répertoriés dans <ph name="PRODUCT_NAME" />.
@@ -3780,6 +3821,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="6467613372414922590">Autoriser les hôtes de messagerie natifs au niveau de l'utilisateur (installés sans l'autorisation d'un administrateur)</translation>
 <translation id="6468980648680553776">Cette règle est obsolète. Veuillez utiliser RemoteAccessHostClientDomainList.</translation>
 <translation id="6473623140202114570">Configurez la liste des domaines sur lesquels la navigation sécurisée ne déclenchera aucun avertissement.</translation>
+<translation id="647698599569353771">Autorisez l'activation du Partage à proximité.</translation>
 <translation id="6491139795995924304">Autoriser le Bluetooth sur l'appareil</translation>
 <translation id="6491872498385040936">Cette règle est obsolète. Utilisez plutôt <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />, qui est prioritaire sur cette règle et permet des réglages plus fins.
 
@@ -3808,7 +3850,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
           La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure au délai d'inactivité.</translation>
 <translation id="6515357889978918016">Fichier image <ph name="PLUGIN_VM_NAME" /></translation>
-<translation id="6518102411616460786">Attendre que la version stable sélectionnée soit disponible</translation>
+<translation id="6518102411616460786">Attendre que la version sélectionnée rattrape la version installée lors du retour à une version antérieure</translation>
 <translation id="6520802717075138474">Importer les moteurs de recherche du navigateur par défaut à la première exécution</translation>
 <translation id="6532026122543921610">Permet de définir le mode de détection automatique du fuseau horaire, sauf si la règle <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> désactive cette détection automatique. Notez que les utilisateurs ne peuvent pas modifier ce mode.
 
@@ -4051,6 +4093,11 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Spécifie les indicateurs à appliquer à <ph name="PRODUCT_NAME" /> au démarrage. Ceux-ci ne sont appliqués que sur l'écran de connexion. Les indicateurs définis par cette règle ne sont pas répercutés dans les sessions utilisateur.</translation>
 <translation id="685769593149966548">Appliquer le mode restreint strict sur YouTube</translation>
 <translation id="686079137349561371">Microsoft Windows 7 ou version ultérieure</translation>
+<translation id="6863342574191774334">Si ce paramètre est activé, les utilisateurs seront autorisés à activer le Partage à proximité, qui leur permet d'envoyer des fichiers aux personnes à proximité et d'en recevoir.
+
+      Si ce paramètre est désactivé, les utilisateurs ne seront pas autorisés à activer le Partage à proximité.
+
+      Si cette règle n'est pas définie, le Partage à proximité est autorisé par défaut pour les utilisateurs gérés par une entreprise et pour les utilisateurs non gérés.</translation>
 <translation id="6864244339257535116">Autoriser l'importation et le téléchargement de fichiers protégés par un mot de passe</translation>
 <translation id="6870295914868104867">Permet d'établir la liste des applications et des extensions qui s'installent de manière autonome, sans aucune intervention de l'utilisateur, et que celui-ci ne peut pas désinstaller ni désactiver. Les autorisations sont accordées implicitement, y compris pour les API d'extension enterprise.deviceAttributes et enterprise.platformKeys (ces deux API ne sont pas disponibles pour les applications et extensions qui ne sont pas installées d'office).
 
@@ -4601,7 +4648,7 @@ On attend de cette règle qu'elle soit utilisée dans le cadre de la modificatio
 
           Remarque : <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> remplace cette règle si l'ancienne est définie.</translation>
 <translation id="7632724434767231364">Nom de la bibliothèque GSSAPI</translation>
-<translation id="7642890175637942277">Par défaut, les conditions d'utilisation sont affichées à la première utilisation d'onglets personnalisés Chrome et de progressive web apps. Si cette règle est désactivée, la boîte de dialogue des conditions d'utilisation ne s'affiche ni à la première utilisation, ni aux suivantes. Si cette règle est activée ou qu'elle n'est pas configurée, la boîte de dialogue des conditions d'utilisation s'affiche à la première utilisation. Notez également les points suivants :
+<translation id="7642890175637942277">Par défaut, les conditions d'utilisation sont affichées la première fois que des onglets personnalisés Chrome et des progressive web apps sont exécutés. Si cette règle est désactivée, la boîte de dialogue des conditions d'utilisation ne s'affiche ni à la première exécution, ni lors des suivantes. Si cette règle est activée ou qu'elle n'est pas configurée, la boîte de dialogue des conditions d'utilisation s'affiche à la première exécution. Notez également les points suivants :
 
       - Cette règle ne peut être appliquée que sur des appareils Android entièrement gérés qui peuvent être configurés par des fournisseurs UEM (Unified Endpoint Management, gestion unifiée des points de terminaison).
 
@@ -5670,7 +5717,7 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
 <translation id="9105265795073104888">Les applications Android n'ont accès qu'à un sous-ensemble d'options de configuration du proxy. Elles peuvent avoir été volontairement conçues pour utiliser le proxy, mais vous ne pouvez pas les forcer à effectuer cette opération.</translation>
 <translation id="9106865192244721694">Autoriser WebUSB sur ces sites</translation>
-<translation id="9109086856618439290">Activer les conditions d'utilisation à la première utilisation des onglets personnalisés Chrome et des progressive web apps</translation>
+<translation id="9109086856618439290">Activer les conditions d'utilisation à la première exécution des onglets personnalisés Chrome et des progressive web apps</translation>
 <translation id="9112727953998243860">Fichier de configuration des imprimantes d'entreprise</translation>
 <translation id="9117826695152538214">Définissez cette règle sur "True" pour maintenir les touches persistantes activées. Définissez cette règle sur "False" pour les maintenir désactivées.
 

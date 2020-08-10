@@ -87,9 +87,7 @@ static bool VerifyCustomHandlerURLSecurity(const LocalDOMWindow& window,
 static bool VerifyCustomHandlerURL(const LocalDOMWindow& window,
                                    const String& user_url,
                                    ExceptionState& exception_state) {
-  String new_url = user_url;
-  new_url.Remove(user_url.Find(kToken), base::size(kToken) - 1);
-  KURL full_url = window.CompleteURL(new_url);
+  KURL full_url = window.CompleteURL(user_url);
   KURL base_url = window.BaseURL();
   String error_message;
 

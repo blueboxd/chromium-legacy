@@ -2125,6 +2125,7 @@ public class StartSurfaceLayoutTest {
     }
 
     private int getCaptureCount() {
+        // TODO(crbug/1110961): Find a replacement for depending on Compositing.CopyFromSurfaceTime.
         return RecordHistogram.getHistogramTotalCountForTesting("Compositing.CopyFromSurfaceTime");
     }
 

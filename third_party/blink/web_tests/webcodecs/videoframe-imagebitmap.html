@@ -47,9 +47,9 @@
 
     return createImageBitmap(canvas, imageBitmapOptions)
       .then((fromImageBitmap) => {
-        let videoFrame = new VideoFrame({
+        let videoFrame = new VideoFrame(fromImageBitmap, {
           timestamp: 0
-        }, fromImageBitmap);
+        });
         return videoFrame.createImageBitmap(imageBitmapOptions);
       })
       .then((toImageBitmap) => {
@@ -112,9 +112,9 @@
     ctx.fillRect(0, 0, width, height);
 
     return createImageBitmap(canvas).then((fromImageBitmap) => {
-      let videoFrame = new VideoFrame({
+      let videoFrame = new VideoFrame(fromImageBitmap, {
         timestamp: 0
-      }, fromImageBitmap);
+      });
       return new Promise((resolve, reject) => {
         let processVideoFrame = (frame) => {
           frame.createImageBitmap().then((toImageBitmap) => {

@@ -16,11 +16,14 @@
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
+#include "chrome/browser/component_updater/fake_cros_component_manager.h"
+#include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -114,9 +117,21 @@ class CrostiniInstallerTest : public testing::Test {
 
   CrostiniInstallerTest()
       : local_state_(std::make_unique<ScopedTestingLocalState>(
-            TestingBrowserProcess::GetGlobal())) {}
+            TestingBrowserProcess::GetGlobal())),
+        browser_part_(g_browser_process->platform_part()) {}
 
   void SetUp() override {
+    component_manager_ =
+        base::MakeRefCounted<component_updater::FakeCrOSComponentManager>();
+    component_manager_->set_supported_components({"cros-termina"});
+    component_manager_->ResetComponentState(
+        "cros-termina",
+        component_updater::FakeCrOSComponentManager::ComponentInfo(
+            component_updater::CrOSComponentManager::Error::NONE,
+            base::FilePath("/install/path"), base::FilePath("/mount/path")));
+    browser_part_.InitializeCrosComponentManager(component_manager_);
+
+    chromeos::DlcserviceClient::InitializeFake();
     waiting_fake_concierge_client_ = new WaitingFakeConciergeClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetConciergeClient(
         base::WrapUnique(waiting_fake_concierge_client_));
@@ -147,6 +162,10 @@ class CrostiniInstallerTest : public testing::Test {
 
     chromeos::disks::MockDiskMountManager::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
+    chromeos::DlcserviceClient::Shutdown();
+
+    browser_part_.ShutdownCrosComponentManager();
+    component_manager_.reset();
   }
 
   void Install() {
@@ -182,6 +201,8 @@ class CrostiniInstallerTest : public testing::Test {
 
  private:
   std::unique_ptr<ScopedTestingLocalState> local_state_;
+  scoped_refptr<component_updater::FakeCrOSComponentManager> component_manager_;
+  BrowserProcessPlatformPartTestApi browser_part_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniInstallerTest);
 };

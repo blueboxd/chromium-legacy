@@ -17,6 +17,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,6 +41,7 @@ using Status = location::nearby::connections::mojom::Status;
 using DiscoveredEndpointInfo =
     location::nearby::connections::mojom::DiscoveredEndpointInfo;
 using ConnectionInfo = location::nearby::connections::mojom::ConnectionInfo;
+using MediumSelection = location::nearby::connections::mojom::MediumSelection;
 
 class MockDiscoveryListener
     : public NearbyConnectionsManager::DiscoveryListener {
@@ -52,6 +54,17 @@ class MockDiscoveryListener
   MOCK_METHOD(void,
               OnEndpointLost,
               (const std::string& endpoint_id),
+              (override));
+};
+
+class MockIncomingConnectionListener
+    : public NearbyConnectionsManager::IncomingConnectionListener {
+ public:
+  MOCK_METHOD(void,
+              OnIncomingConnection,
+              (const std::string& endpoint_id,
+               const std::vector<uint8_t>& endpoint_info,
+               NearbyConnection* connection),
               (override));
 };
 
@@ -83,6 +96,33 @@ class NearbyConnectionsManagerImplTest : public testing::Test {
     EXPECT_CALL(callback, Run(testing::Eq(Status::kSuccess)));
     nearby_connections_manager_.StartDiscovery(&discovery_listener,
                                                callback.Get());
+  }
+
+  void StartAdvertising(
+      mojo::Remote<ConnectionLifecycleListener>& listener_remote,
+      testing::NiceMock<MockIncomingConnectionListener>&
+          incoming_connection_listener) {
+    const std::vector<uint8_t> local_endpoint_info(std::begin(kEndpointInfo),
+                                                   std::end(kEndpointInfo));
+    EXPECT_CALL(nearby_connections_, StartAdvertising)
+        .WillOnce(
+            [&](const std::vector<uint8_t>& endpoint_info,
+                const std::string& service_id, AdvertisingOptionsPtr options,
+                mojo::PendingRemote<ConnectionLifecycleListener> listener,
+                NearbyConnectionsMojom::StartAdvertisingCallback callback) {
+              EXPECT_EQ(local_endpoint_info, endpoint_info);
+              EXPECT_EQ(kServiceId, service_id);
+              EXPECT_EQ(kStrategy, options->strategy);
+              EXPECT_TRUE(options->enforce_topology_constraints);
+
+              listener_remote.Bind(std::move(listener));
+              std::move(callback).Run(Status::kSuccess);
+            });
+    base::MockCallback<NearbyConnectionsManager::ConnectionsCallback> callback;
+    EXPECT_CALL(callback, Run(testing::Eq(Status::kSuccess)));
+    nearby_connections_manager_.StartAdvertising(
+        local_endpoint_info, &incoming_connection_listener,
+        PowerLevel::kHighPower, DataUsage::kOnline, callback.Get());
   }
 
   enum class ConnectionResponse { kAccepted, kRejceted, kDisconnected };
@@ -145,6 +185,8 @@ class NearbyConnectionsManagerImplTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
+  std::unique_ptr<net::test::MockNetworkChangeNotifier> network_notifier_ =
+      net::test::MockNetworkChangeNotifier::Create();
   testing::NiceMock<MockNearbyConnections> nearby_connections_;
   testing::NiceMock<MockNearbyProcessManager> nearby_process_manager_;
   NearbyConnectionsManagerImpl nearby_connections_manager_{
@@ -254,7 +296,7 @@ TEST_F(NearbyConnectionsManagerImplTest, ConnectRejected) {
       nearby_connections_manager_.GetRawAuthenticationToken(kRemoteEndpointId));
 }
 
-TEST_F(NearbyConnectionsManagerImplTest, ConnectDisconnted) {
+TEST_F(NearbyConnectionsManagerImplTest, ConnectDisconnected) {
   // StartDiscovery will succeed.
   mojo::Remote<EndpointDiscoveryListener> discovery_listener_remote;
   testing::NiceMock<MockDiscoveryListener> discovery_listener;
@@ -480,4 +522,118 @@ TEST_F(NearbyConnectionsManagerImplTest, ConnectClosedByClient) {
 
   EXPECT_FALSE(
       nearby_connections_manager_.GetRawAuthenticationToken(kRemoteEndpointId));
+}
+
+TEST_F(NearbyConnectionsManagerImplTest, StartAdvertising) {
+  mojo::Remote<ConnectionLifecycleListener> listener_remote;
+  testing::NiceMock<MockIncomingConnectionListener>
+      incoming_connection_listener;
+  StartAdvertising(listener_remote, incoming_connection_listener);
+
+  const std::vector<uint8_t> remote_endpoint_info(
+      std::begin(kRemoteEndpointInfo), std::end(kRemoteEndpointInfo));
+  const std::vector<uint8_t> raw_authentication_token(
+      std::begin(kRawAuthenticationToken), std::end(kRawAuthenticationToken));
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(
+      incoming_connection_listener,
+      OnIncomingConnection(kRemoteEndpointId, remote_endpoint_info, testing::_))
+      .WillOnce([&](const std::string&, const std::vector<uint8_t>&,
+                    NearbyConnection* connection) {
+        EXPECT_TRUE(connection);
+        run_loop.Quit();
+      });
+
+  listener_remote->OnConnectionInitiated(
+      kRemoteEndpointId,
+      ConnectionInfo::New(kAuthenticationToken, raw_authentication_token,
+                          remote_endpoint_info,
+                          /*is_incoming_connection=*/true));
+
+  listener_remote->OnConnectionAccepted(kRemoteEndpointId);
+
+  run_loop.Run();
+
+  EXPECT_EQ(
+      raw_authentication_token,
+      nearby_connections_manager_.GetRawAuthenticationToken(kRemoteEndpointId));
+}
+
+using MediumsTestParam = std::
+    tuple<PowerLevel, DataUsage, net::NetworkChangeNotifier::ConnectionType>;
+class NearbyConnectionsManagerImplTestMediums
+    : public NearbyConnectionsManagerImplTest,
+      public testing::WithParamInterface<MediumsTestParam> {};
+
+TEST_P(NearbyConnectionsManagerImplTestMediums,
+       StartAdvertising_MediumSelection) {
+  const MediumsTestParam& param = GetParam();
+  PowerLevel power_level = std::get<0>(param);
+  DataUsage data_usage = std::get<1>(param);
+  net::NetworkChangeNotifier::ConnectionType connection_type =
+      std::get<2>(param);
+
+  network_notifier_->SetConnectionType(connection_type);
+  bool should_use_web_rtc =
+      data_usage != DataUsage::kOffline &&
+      power_level != PowerLevel::kLowPower &&
+      connection_type != net::NetworkChangeNotifier::CONNECTION_NONE &&
+      (data_usage != DataUsage::kWifiOnly ||
+       !net::NetworkChangeNotifier::IsConnectionCellular(connection_type));
+
+  bool is_high_power = power_level == PowerLevel::kHighPower;
+  auto expected_mediums = MediumSelection::New(
+      /*bluetooth=*/is_high_power,
+      /*web_rtc=*/should_use_web_rtc,
+      /*wifi_lan=*/is_high_power);
+
+  const std::vector<uint8_t> local_endpoint_info(std::begin(kEndpointInfo),
+                                                 std::end(kEndpointInfo));
+  base::MockCallback<NearbyConnectionsManager::ConnectionsCallback> callback;
+  testing::NiceMock<MockIncomingConnectionListener>
+      incoming_connection_listener;
+
+  EXPECT_CALL(nearby_connections_, StartAdvertising)
+      .WillOnce([&](const std::vector<uint8_t>& endpoint_info,
+                    const std::string& service_id,
+                    AdvertisingOptionsPtr options,
+                    mojo::PendingRemote<ConnectionLifecycleListener> listener,
+                    NearbyConnectionsMojom::StartAdvertisingCallback callback) {
+        EXPECT_EQ(is_high_power, options->auto_upgrade_bandwidth);
+        EXPECT_EQ(expected_mediums, options->allowed_mediums);
+        std::move(callback).Run(Status::kSuccess);
+      });
+  EXPECT_CALL(callback, Run(testing::Eq(Status::kSuccess)));
+
+  nearby_connections_manager_.StartAdvertising(
+      local_endpoint_info, &incoming_connection_listener, power_level,
+      data_usage, callback.Get());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    NearbyConnectionsManagerImplTestMediums,
+    NearbyConnectionsManagerImplTestMediums,
+    testing::Combine(
+        testing::Values(PowerLevel::kLowPower, PowerLevel::kHighPower),
+        testing::Values(DataUsage::kWifiOnly,
+                        DataUsage::kOffline,
+                        DataUsage::kOnline),
+        testing::Values(net::NetworkChangeNotifier::CONNECTION_NONE,
+                        net::NetworkChangeNotifier::CONNECTION_WIFI,
+                        net::NetworkChangeNotifier::CONNECTION_3G)));
+
+TEST_F(NearbyConnectionsManagerImplTest, StopAdvertising_BeforeStart) {
+  EXPECT_CALL(nearby_connections_, StopAdvertising).Times(0);
+  nearby_connections_manager_.StopAdvertising();
+}
+
+TEST_F(NearbyConnectionsManagerImplTest, StopAdvertising) {
+  mojo::Remote<ConnectionLifecycleListener> listener_remote;
+  testing::NiceMock<MockIncomingConnectionListener>
+      incoming_connection_listener;
+  StartAdvertising(listener_remote, incoming_connection_listener);
+
+  EXPECT_CALL(nearby_connections_, StopAdvertising);
+  nearby_connections_manager_.StopAdvertising();
 }

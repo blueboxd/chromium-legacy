@@ -71,10 +71,10 @@ ImageLayerBridge::~ImageLayerBridge() {
 void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
   if (disposed_)
     return;
-  // There could be the case that the current SkImage (encapsulated in the image
-  // parameter of the function) is null, that means that something went wrong
-  // during the creation of the image and we should not try and setImage with it
-  if (image && !image->PaintImageForCurrentFrame().GetSkImage())
+  // There could be the case that the current PaintImage is null, meaning
+  // that something went wrong during the creation of the image and we should
+  // not try and setImage with it
+  if (image && !image->PaintImageForCurrentFrame())
     return;
 
   image_ = std::move(image);
@@ -173,7 +173,8 @@ bool ImageLayerBridge::PrepareTransferableResource(
     if (!image_)
       return false;
 
-    sk_sp<SkImage> sk_image = image_->PaintImageForCurrentFrame().GetSkImage();
+    sk_sp<SkImage> sk_image =
+        image_->PaintImageForCurrentFrame().GetSwSkImage();
     if (!sk_image)
       return false;
 

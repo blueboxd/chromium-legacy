@@ -82,6 +82,9 @@ _desugar_jdk_libs_json = "//third_party/r8/desugar_jdk_libs.json"
 _desugar_jdk_libs_jar = "//third_party/android_deps/libs/com_android_tools_desugar_jdk_libs/desugar_jdk_libs-1.0.5.jar"
 _desugar_runtime_jar = "$root_build_dir/obj/third_party/bazel/desugar/Desugar_runtime.processed.jar"
 
+# Where to write failed expectations for bots to read.
+_expectations_failure_dir = "$root_build_dir/failed_expectations"
+
 _dexdump_path = "$android_sdk_build_tools/dexdump"
 _dexlayout_path = "//third_party/android_build_tools/art/dexlayout"
 _profman_path = "//third_party/android_build_tools/art/profman"
@@ -1044,14 +1047,13 @@ if (enable_java_templates) {
         args += [ "--warnings-as-errors" ]
       }
 
-      _stamp_path = "$target_out_dir/$target_name/build.lint.stamp"
       if (defined(invoker.create_cache) && invoker.create_cache) {
-        args += [ "--silent" ]
-
         # Putting the stamp file in the cache dir allows us to depend on ninja
         # to create the cache dir for us.
         _stamp_path = "$_cache_dir/build.lint.stamp"
+        args += [ "--silent" ]
       } else {
+        _stamp_path = "$target_out_dir/$target_name/build.lint.stamp"
         deps += [
           "//build/android:prepare_android_lint_cache",
           invoker.build_config_dep,
@@ -1059,17 +1061,6 @@ if (enable_java_templates) {
         inputs += [ invoker.build_config ]
         _rebased_build_config =
             rebase_path(invoker.build_config, root_build_dir)
-
-        # TODO(wnwen): Remove this baseline once it is empty.
-        _baseline = "//build/android/lint/baseline.xml"
-        _rebased_baseline = rebase_path(_baseline, root_build_dir)
-
-        if (compute_inputs_for_analyze) {
-          # The baseline file is included in lint.py as a depfile dep. Since
-          # removing it regenerates the file, it is useful to not have this as
-          # a gn input during local development. Add it only for bots' analyze.
-          inputs += [ _baseline ]
-        }
 
         args += [
           "--manifest-path=@FileArg($_rebased_build_config:deps_info:lint_android_manifest)",
@@ -1081,14 +1072,25 @@ if (enable_java_templates) {
           "--resource-sources=@FileArg($_rebased_build_config:deps_info:lint_resource_sources)",
           "--resource-zips=@FileArg($_rebased_build_config:deps_info:lint_resource_zips)",
 
-          # Baseline allows us to turn on lint warnings without fixing all the
-          # pre-existing issues. This stops the flood of new issues while the
-          # existing ones are being fixed.
-          "--baseline=$_rebased_baseline",
-
           # The full classpath is required for annotation checks like @IntDef.
           "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
         ]
+
+        if (defined(invoker.lint_baseline_file)) {
+          if (compute_inputs_for_analyze) {
+            # The baseline file is included in lint.py as a depfile dep. Since
+            # removing it regenerates the file, it is useful to not have this as
+            # a gn input during local development. Add it only for bots' analyze.
+            inputs += [ invoker.lint_baseline_file ]
+          }
+          args += [
+            # Baseline allows us to turn on lint warnings without fixing all the
+            # pre-existing issues. This stops the flood of new issues while the
+            # existing ones are being fixed.
+            "--baseline",
+            rebase_path(invoker.lint_baseline_file, root_build_dir),
+          ]
+        }
       }
 
       outputs = [ _stamp_path ]
@@ -1262,7 +1264,7 @@ if (enable_java_templates) {
         ]
         _actual_file = "$target_gen_dir/$target_name.proguard_configs"
         _failure_file =
-            "$android_configuration_failure_dir/" +
+            "$_expectations_failure_dir/" +
             string_replace(invoker.expected_proguard_config, "/", "_")
         outputs = [ _actual_file ]
         args = _args + [
@@ -2457,12 +2459,11 @@ if (enable_java_templates) {
         rebase_path(invoker.optimized_proto_output, root_build_dir),
       ]
     }
-    if (defined(invoker.resources_config_path)) {
-      _inputs += [ invoker.resources_config_path ]
-      _args += [
-        "--resources-config-path",
-        rebase_path(invoker.resources_config_path, root_build_dir),
-      ]
+    if (defined(invoker.resources_config_paths)) {
+      _inputs += invoker.resources_config_paths
+      _rebased_resource_configs =
+          rebase_path(invoker.resources_config_paths, root_build_dir)
+      _args += [ "--resources-config-paths=${_rebased_resource_configs}" ]
     }
     if (defined(invoker.short_resource_paths) && invoker.short_resource_paths) {
       _args += [ "--short-resource-paths" ]
@@ -2641,7 +2642,7 @@ if (enable_java_templates) {
       action_with_pydeps(_expectations_target) {
         _actual_file = "${invoker.android_manifest}.normalized"
         _failure_file =
-            "$android_configuration_failure_dir/" +
+            "$_expectations_failure_dir/" +
             string_replace(invoker.expected_android_manifest, "/", "_")
         inputs = [
           invoker.android_manifest,
@@ -2920,7 +2921,7 @@ if (enable_java_templates) {
       action_with_pydeps(_expectations_target) {
         _actual_file = "$target_gen_dir/$target_name.libs_and_assets"
         _failure_file =
-            "$android_configuration_failure_dir/" +
+            "$_expectations_failure_dir/" +
             string_replace(invoker.expected_libs_and_assets, "/", "_")
         inputs = [
           invoker.build_config,
@@ -4140,7 +4141,7 @@ template("create_android_app_bundle_module") {
     _expectations_target = "${invoker.top_target_name}_validate_libs_and_assets"
     action_with_pydeps(_expectations_target) {
       _actual_file = "$target_gen_dir/$target_name.libs_and_assets"
-      _failure_file = "$android_configuration_failure_dir/" +
+      _failure_file = "$_expectations_failure_dir/" +
                       string_replace(invoker.expected_libs_and_assets, "/", "_")
       inputs = [
         invoker.expected_libs_and_assets,

@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Yeni parol</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> bu cihazı idarə edir və giriş edilən veb səhifə, parol və e-poçt daxil olmaqla bütün istifadəçi fəaliyyətinə girişi var.</translation>
 <translation id="4003384961948020559">Alınmadı - Çap xidməti doludur</translation>
+<translation id="4027485274696301677">Bu <ph name="DEVICE_TYPE" /> <ph name="ENROLLMENT_DOMAIN" /> tərəfindən idarə olunur. Administratorlar cihazı məsafədən konfiqurasiya edə bilər.</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Parolun vaxtı <ph name="TIME" /> ərzində başa çatır</translation>
 <translation id="4238516577297848345">Hazırda davam edən çap işləri yoxdur</translation>

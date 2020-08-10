@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Новий пароль</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> керує цим пристроєм і має доступ до всіх дій користувача, зокрема відвіданих сторінок, паролів і електронних листів.</translation>
 <translation id="4003384961948020559">Не надруковано – вихідний лоток заповнений</translation>
+<translation id="4027485274696301677">Цим пристроєм <ph name="DEVICE_TYPE" /> керує домен <ph name="ENROLLMENT_DOMAIN" />. Адміністратори можуть віддалено налаштовувати його.</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Термін дії пароля закінчиться через <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Немає активних завдань друку</translation>

@@ -96,8 +96,9 @@ TEST_F(ActionFactoryTest, CopyAction) {
         [[ActionFactory alloc] initWithBrowser:test_browser_.get()
                                       scenario:kTestMenuScenario];
 
-    UIImage* expectedImage = [UIImage systemImageNamed:@"doc.on.doc"];
-    NSString* expectedTitle = l10n_util::GetNSString(IDS_IOS_COPY_ACTION_TITLE);
+    UIImage* expectedImage = [UIImage imageNamed:@"copy_link_url"];
+    NSString* expectedTitle =
+        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY);
 
     GURL testURL = GURL("https://example.com");
 
@@ -162,7 +163,7 @@ TEST_F(ActionFactoryTest, OpenInNewIncognitoTabAction_URL) {
     GURL testURL = GURL("https://example.com");
 
     NSString* expectedTitle =
-        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
+        l10n_util::GetNSString(IDS_IOS_OPEN_IN_INCOGNITO_ACTION_TITLE);
 
     UIAction* actionWithURL =
         [factory actionToOpenInNewIncognitoTabWithURL:testURL completion:nil];

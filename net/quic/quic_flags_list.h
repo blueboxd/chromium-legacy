@@ -301,11 +301,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_support_handshake_done_in_t050,
           true)
 
-// If true, save user agent into in QuicSession.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_save_user_agent_in_quic_session,
-          true)
-
 // When true, QUIC_CRYPTO versions of QUIC will not send the max ACK delay
 // unless it is configured to a non-default value.
 QUIC_FLAG(bool,

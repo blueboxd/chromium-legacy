@@ -28,6 +28,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/idle/idle.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -127,6 +128,32 @@ std::string ConnectionsStatusToString(
   }
 }
 
+base::Optional<std::string> GetDeviceName(
+    const sharing::mojom::AdvertisementPtr& advertisement,
+    const base::Optional<NearbyShareDecryptedPublicCertificate>& certificate) {
+  DCHECK(advertisement);
+
+  // Device name is always included when visible to everyone.
+  if (advertisement->device_name)
+    return *(advertisement->device_name);
+
+  // For contacts only advertisements, we can't do anything without the
+  // certificate.
+  if (!certificate || !certificate->unencrypted_metadata().has_device_name())
+    return base::nullopt;
+
+  return certificate->unencrypted_metadata().device_name();
+}
+
+std::string GetDeviceId(
+    const std::string& endpoint_id,
+    const base::Optional<NearbyShareDecryptedPublicCertificate>& certificate) {
+  if (!certificate || certificate->id().empty())
+    return endpoint_id;
+
+  return std::string(certificate->id().begin(), certificate->id().end());
+}
+
 }  // namespace
 
 NearbySharingServiceImpl::NearbySharingServiceImpl(
@@ -134,7 +161,8 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
     NotificationDisplayService* notification_display_service,
     Profile* profile,
     std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager,
-    NearbyProcessManager* process_manager)
+    NearbyProcessManager* process_manager,
+    std::unique_ptr<NearbyShareCertificateManager> certificate_manager)
     : profile_(profile),
       settings_(prefs),
       nearby_connections_manager_(std::move(nearby_connections_manager)),
@@ -148,10 +176,10 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
               prefs,
               http_client_factory_.get())),
       contact_manager_(NearbyShareContactManagerImpl::Factory::Create()),
-      certificate_manager_(
-          NearbyShareCertificateManagerImpl::Factory::Create()) {
+      certificate_manager_(std::move(certificate_manager)) {
   DCHECK(profile_);
   DCHECK(nearby_connections_manager_);
+  DCHECK(certificate_manager_);
 
   nearby_process_observer_.Add(process_manager_);
 
@@ -489,18 +517,13 @@ void NearbySharingServiceImpl::OnIncomingConnection(
     NearbyConnection* connection) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(connection);
-  // TODO(crbug/1085068): Handle incoming connection; use CertificateManager
-  // TODO(himanshujaju) - Update placeholder implementation
-  ShareTarget share_target;
-  share_target.is_incoming = true;
 
-  incoming_share_target_info_map_[share_target.id].set_connection(connection);
-  incoming_share_target_info_map_[share_target.id].set_endpoint_id(endpoint_id);
-  connection->SetDisconnectionListener(
-      base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
-                     weak_ptr_factory_.GetWeakPtr(), share_target));
-
-  ReceiveIntroduction(std::move(share_target), /*token=*/base::nullopt);
+  process_manager_->GetOrStartNearbySharingDecoder(profile_)
+      ->DecodeAdvertisement(
+          endpoint_info,
+          base::BindOnce(
+              &NearbySharingServiceImpl::OnIncomingAdvertisementDecoded,
+              weak_ptr_factory_.GetWeakPtr(), endpoint_id, connection));
 }
 
 void NearbySharingServiceImpl::OnEndpointDiscovered(
@@ -545,9 +568,10 @@ void NearbySharingServiceImpl::OnOutgoingAdvertisementDecoded(
   // Once get the advertisement, first thing to do is to decrypt its device name
   // based on its visibility and create a ShareTarget to represent this remote
   // device.
-  base::Optional<ShareTarget> share_target =
-      CreateShareTarget(endpoint_id, std::move(advertisement),
-                        /*is_incoming=*/false);
+  // TODO(nmusgrave): Use valid certificate from certificate manager.
+  base::Optional<ShareTarget> share_target = CreateShareTarget(
+      endpoint_id, std::move(advertisement), /*certificate=*/base::nullopt,
+      /*is_incoming=*/false);
   if (!share_target) {
     NS_LOG(VERBOSE) << __func__
                     << ": Failed to convert advertisement to share target from "
@@ -1248,6 +1272,61 @@ void NearbySharingServiceImpl::CloseConnection(
   connection->Close();
 }
 
+void NearbySharingServiceImpl::OnIncomingAdvertisementDecoded(
+    const std::string& endpoint_id,
+    NearbyConnection* connection,
+    sharing::mojom::AdvertisementPtr advertisement) {
+  if (!advertisement) {
+    NS_LOG(VERBOSE) << __func__
+                    << "Failed to parse incoming connection from endpoint - "
+                    << endpoint_id << ", disconnecting.";
+    connection->Close();
+    return;
+  }
+
+  std::vector<uint8_t> encrypted_metadata = advertisement->encrypted_metadata;
+  std::vector<uint8_t> salt = advertisement->salt;
+
+  GetCertificateManager()->GetDecryptedPublicCertificate(
+      std::move(encrypted_metadata), std::move(salt),
+      base::BindOnce(&NearbySharingServiceImpl::OnIncomingDecryptedCertificate,
+                     weak_ptr_factory_.GetWeakPtr(), endpoint_id, connection,
+                     std::move(advertisement)));
+}
+
+void NearbySharingServiceImpl::OnIncomingDecryptedCertificate(
+    const std::string& endpoint_id,
+    NearbyConnection* connection,
+    sharing::mojom::AdvertisementPtr advertisement,
+    base::Optional<NearbyShareDecryptedPublicCertificate> certificate) {
+  base::Optional<ShareTarget> share_target = CreateShareTarget(
+      endpoint_id, advertisement, std::move(certificate), /*is_incoming=*/true);
+
+  if (!share_target) {
+    NS_LOG(VERBOSE) << __func__
+                    << "Failed to convert advertisement to share target for "
+                       "incoming connection, disconnecting";
+    connection->Close();
+    return;
+  }
+
+  NS_LOG(VERBOSE) << __func__ << "Received incoming connection from "
+                  << share_target->device_name;
+
+  IncomingShareTargetInfo& share_target_info =
+      GetIncomingShareTargetInfo(*share_target);
+  share_target_info.set_connection(connection);
+  share_target_info.set_endpoint_id(endpoint_id);
+
+  connection->SetDisconnectionListener(
+      base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
+                     weak_ptr_factory_.GetWeakPtr(), *share_target));
+
+  // TODO(himanshujaju) - Implement RunPairedKeyVerification.
+
+  ReceiveIntroduction(std::move(*share_target), /*token=*/base::nullopt);
+}
+
 void NearbySharingServiceImpl::ReceiveIntroduction(
     ShareTarget share_target,
     base::Optional<std::string> token) {
@@ -1434,8 +1513,7 @@ void NearbySharingServiceImpl::HandleCertificateInfoFrame(
     const sharing::mojom::CertificateInfoFramePtr& certificate_frame) {
   DCHECK(certificate_frame);
 
-  // TODO(himanshujaju) - Convert all certificates to PublicShare proto and add
-  // to certificate manager
+  // TODO(crbug.com/1113858): Allow saving certificates from remote devices.
 }
 
 void NearbySharingServiceImpl::OnIncomingConnectionDisconnected(
@@ -1468,6 +1546,53 @@ void NearbySharingServiceImpl::OnIncomingMutualAcceptanceTimeout(
   Fail(share_target, TransferMetadata::Status::kTimedOut);
 }
 
+base::Optional<ShareTarget> NearbySharingServiceImpl::CreateShareTarget(
+    const std::string& endpoint_id,
+    const sharing::mojom::AdvertisementPtr& advertisement,
+    base::Optional<NearbyShareDecryptedPublicCertificate> certificate,
+    bool is_incoming) {
+  DCHECK(advertisement);
+
+  if (!advertisement->device_name && !certificate) {
+    NS_LOG(VERBOSE) << __func__
+                    << ": Failed to retrieve public certificate for contact "
+                       "only advertisement.";
+    return base::nullopt;
+  }
+
+  base::Optional<std::string> device_name =
+      GetDeviceName(advertisement, certificate);
+  if (!device_name) {
+    NS_LOG(VERBOSE) << __func__
+                    << ": Failed to retrieve device name for advertisement.";
+    return base::nullopt;
+  }
+
+  ShareTarget target;
+  target.device_name = std::move(*device_name);
+  target.is_incoming = is_incoming;
+  target.device_id = GetDeviceId(endpoint_id, certificate);
+
+  if (certificate) {
+    if (certificate->unencrypted_metadata().has_full_name())
+      target.full_name = certificate->unencrypted_metadata().full_name();
+
+    if (certificate->unencrypted_metadata().has_icon_url())
+      target.image_url = GURL(certificate->unencrypted_metadata().icon_url());
+
+    target.is_known = true;
+
+    if (is_incoming)
+      GetIncomingShareTargetInfo(target).set_certificate(
+          std::move(*certificate));
+    else
+      GetOrCreateOutgoingShareTargetInfo(target, endpoint_id)
+          .set_certificate(std::move(*certificate));
+  }
+
+  return target;
+}
+
 IncomingShareTargetInfo& NearbySharingServiceImpl::GetIncomingShareTargetInfo(
     const ShareTarget& share_target) {
   return incoming_share_target_info_map_[share_target.id];
@@ -1492,23 +1617,6 @@ void NearbySharingServiceImpl::ClearOutgoingShareTargetInfoMap() {
   // TODO(crbug.com/1085068) close file payloads
   outgoing_share_target_info_map_.clear();
   outgoing_share_target_map_.clear();
-}
-
-base::Optional<ShareTarget> NearbySharingServiceImpl::CreateShareTarget(
-    const std::string& endpoint_id,
-    sharing::mojom::AdvertisementPtr advertisement,
-    bool is_incoming) {
-  if (!advertisement->device_name) {
-    // TODO(crbug/1085068): Handle incoming connection; relies upon
-    // CertificateManager
-    return base::nullopt;
-  }
-
-  return ShareTarget(*advertisement->device_name, /* image_url= */ GURL(),
-                     nearby_share::mojom::ShareTargetType::kUnknown,
-                     std::vector<TextAttachment>(),
-                     std::vector<FileAttachment>(), is_incoming,
-                     /* full_name= */ base::nullopt, /* is_known= */ false);
 }
 
 void NearbySharingServiceImpl::UnregisterShareTarget(

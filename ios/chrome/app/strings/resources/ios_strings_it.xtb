@@ -128,7 +128,6 @@
 <translation id="236977714248711277">I siti non possono utilizzare i cookie per migliorare la tua esperienza di navigazione, ad esempio per mantenere l'accesso o memorizzare gli articoli aggiunti al carrello.
 
 I siti non possono utilizzare i cookie per conoscere la tua attività di navigazione su siti diversi, ad esempio per personalizzare gli annunci.</translation>
-<translation id="2379896346847637748">Apri in un'altra finestra</translation>
 <translation id="2381405137052800939">Opzioni di base</translation>
 <translation id="2386793615875593361">Una selezionata</translation>
 <translation id="2421004566762153674">Blocco dei cookie di terze parti</translation>
@@ -185,6 +184,7 @@ I siti non possono utilizzare i cookie per conoscere la tua attività di navigaz
 <translation id="298306318844797842">Aggiungi il metodo di pagamento…</translation>
 <translation id="2989805286512600854">Apri in un'altra scheda</translation>
 <translation id="3037605927509011580">Uffa!</translation>
+<translation id="3080525922482950719">Puoi salvare le pagine da leggere in un secondo momento o quando sei offline</translation>
 <translation id="3081338492074632642">Assicurati che la password che stai salvando corrisponda a quella di <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Segna come…</translation>
 <translation id="3131206671572504478">Blocca tutti</translation>
@@ -309,6 +309,7 @@ In modalità di navigazione in incognito, i siti non possono utilizzare i cookie
 <translation id="4619615317237390068">Schede di altri dispositivi</translation>
 <translation id="4620246317052452550">Pagine che hai letto</translation>
 <translation id="4630540211544979320">Traduci pagine</translation>
+<translation id="4634124774493850572">Utilizza password</translation>
 <translation id="4636930964841734540">Info</translation>
 <translation id="4659126640776004816">Questa funzionalità viene attivata quando accedi al tuo Account Google.</translation>
 <translation id="4659667755519643272">Apri selettore di schede</translation>
@@ -610,6 +611,7 @@ I siti possono utilizzare i cookie per conoscere la tua attività di navigazione
 <translation id="8007420562015504427">Ricerca in incognito</translation>
 <translation id="802154636333426148">Download non riuscito</translation>
 <translation id="8023878949384262191">Viene espansa la sezione.</translation>
+<translation id="8027581147000338959">Apri in un'altra finestra</translation>
 <translation id="804427445359061970">Qui troverai le tue schede aperte su altri dispositivi</translation>
 <translation id="8059533439631660104">Viene compressa la sezione.</translation>
 <translation id="8065292699993359127">Apri gli URL in Chrome nella modalità in incognito</translation>

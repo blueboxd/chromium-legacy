@@ -38,6 +38,16 @@ const char kAuthenticationToken[] = "authentication_token";
 const char kRawAuthenticationToken[] = {0x00, 0x05, 0x04, 0x03, 0x02};
 const int32_t kQuality = 5201314;
 
+mojom::AdvertisingOptionsPtr CreateAdvertisingOptions() {
+  auto allowed_mediums = mojom::MediumSelection::New(/*bluetooth=*/true,
+                                                     /*web_rtc=*/true,
+                                                     /*wifi_lan=*/true);
+  return mojom::AdvertisingOptions::New(mojom::Strategy::kP2pPointToPoint,
+                                        std::move(allowed_mediums),
+                                        /*auto_upgrade_bandwidth=*/true,
+                                        /*enforce_topology_constraints=*/true);
+}
+
 }  // namespace
 
 class FakeEndpointDiscoveryListener : public mojom::EndpointDiscoveryListener {
@@ -404,6 +414,139 @@ TEST_F(NearbyConnectionsTest, RequestConnection) {
 
   // DisconnectFromEndpoint is also called when Core is destroyed.
   EXPECT_CALL(*service_controller_ptr_, DisconnectFromEndpoint).Times(1);
+}
+
+TEST_F(NearbyConnectionsTest, StartAdvertising) {
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  ClientProxy* client_proxy;
+  ConnectionListener connections_listener;
+
+  EXPECT_CALL(*service_controller_ptr_, StartAdvertising)
+      .WillOnce([&](ClientProxy* client, const std::string& service_id,
+                    const ConnectionOptions& options,
+                    const ConnectionRequestInfo& info) {
+        EXPECT_EQ(kServiceId, service_id);
+        EXPECT_EQ(Strategy::kP2pPointToPoint, options.strategy);
+        EXPECT_TRUE(options.allowed.bluetooth);
+        EXPECT_TRUE(options.allowed.web_rtc);
+        EXPECT_TRUE(options.allowed.wifi_lan);
+        EXPECT_TRUE(options.auto_upgrade_bandwidth);
+        EXPECT_TRUE(options.enforce_topology_constraints);
+        EXPECT_EQ(
+            std::string(std::begin(kEndpointInfo), std::end(kEndpointInfo)),
+            info.name);
+
+        client_proxy = client;
+        connections_listener = info.listener;
+
+        return Status{Status::kSuccess};
+      });
+
+  base::RunLoop start_advertising_run_loop;
+  nearby_connections_->StartAdvertising(
+      std::vector<uint8_t>(std::begin(kEndpointInfo), std::end(kEndpointInfo)),
+      kServiceId, CreateAdvertisingOptions(),
+      fake_connection_life_cycle_listener.receiver.BindNewPipeAndPassRemote(),
+      base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        start_advertising_run_loop.Quit();
+      }));
+  start_advertising_run_loop.Run();
+
+  base::RunLoop initiated_run_loop;
+  fake_connection_life_cycle_listener.initiated_cb = base::BindLambdaForTesting(
+      [&](const std::string& endpoint_id, mojom::ConnectionInfoPtr info) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        EXPECT_EQ(kAuthenticationToken, info->authentication_token);
+        EXPECT_EQ(std::vector<uint8_t>(std::begin(kRawAuthenticationToken),
+                                       std::end(kRawAuthenticationToken)),
+                  info->raw_authentication_token);
+        EXPECT_EQ(std::vector<uint8_t>(std::begin(kRemoteEndpointInfo),
+                                       std::end(kRemoteEndpointInfo)),
+                  info->endpoint_info);
+        EXPECT_FALSE(info->is_incoming_connection);
+        initiated_run_loop.Quit();
+      });
+  client_proxy->OnConnectionInitiated(
+      kRemoteEndpointId,
+      {.authentication_token = kAuthenticationToken,
+       .raw_authentication_token =
+           ByteArray(kRawAuthenticationToken, sizeof(kRawAuthenticationToken)),
+       .endpoint_info =
+           ByteArray(kRemoteEndpointInfo, sizeof(kRemoteEndpointInfo)),
+       .is_incoming_connection = false},
+      connections_listener);
+  initiated_run_loop.Run();
+
+  base::RunLoop rejected_run_loop;
+  fake_connection_life_cycle_listener.rejected_cb = base::BindLambdaForTesting(
+      [&](const std::string& endpoint_id, mojom::Status status) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        EXPECT_EQ(mojom::Status::kConnectionRejected, status);
+        rejected_run_loop.Quit();
+      });
+  client_proxy->OnConnectionRejected(kRemoteEndpointId,
+                                     {Status::kConnectionRejected});
+  rejected_run_loop.Run();
+
+  // Initiate connection again to test accepted flow.
+  base::RunLoop initiated_run_loop_2;
+  fake_connection_life_cycle_listener.initiated_cb = base::BindLambdaForTesting(
+      [&](const std::string& endpoint_id, mojom::ConnectionInfoPtr info) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        EXPECT_FALSE(info->is_incoming_connection);
+        initiated_run_loop_2.Quit();
+      });
+  client_proxy->OnConnectionInitiated(kRemoteEndpointId,
+                                      {.is_incoming_connection = false},
+                                      connections_listener);
+  initiated_run_loop_2.Run();
+
+  base::RunLoop accepted_run_loop;
+  fake_connection_life_cycle_listener.accepted_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        accepted_run_loop.Quit();
+      });
+  client_proxy->OnConnectionAccepted(kRemoteEndpointId);
+  accepted_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsTest, StopAdvertising) {
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+
+  EXPECT_CALL(*service_controller_ptr_, StartAdvertising)
+      .WillOnce([](ClientProxy* client, const std::string& service_id,
+                   const ConnectionOptions& options,
+                   const ConnectionRequestInfo& info) {
+        client->StartedAdvertising(service_id, options.strategy, info.listener,
+                                   /*mediums=*/{});
+        return Status{Status::kSuccess};
+      });
+
+  base::RunLoop start_advertising_run_loop;
+  nearby_connections_->StartAdvertising(
+      std::vector<uint8_t>(std::begin(kEndpointInfo), std::end(kEndpointInfo)),
+      kServiceId, CreateAdvertisingOptions(), mojo::NullRemote(),
+      base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        start_advertising_run_loop.Quit();
+      }));
+  start_advertising_run_loop.Run();
+
+  EXPECT_CALL(*service_controller_ptr_, StopAdvertising)
+      .WillOnce([](ClientProxy* client) { client->StoppedAdvertising(); });
+
+  base::RunLoop stop_advertising_run_loop;
+  nearby_connections_->StopAdvertising(
+      base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        stop_advertising_run_loop.Quit();
+      }));
+  stop_advertising_run_loop.Run();
+
+  // Expect one more call during shutdown.
+  EXPECT_CALL(*service_controller_ptr_, StopAdvertising);
 }
 
 }  // namespace connections

@@ -573,9 +573,9 @@ Se você desativar a política, essa rolagem será desativada.</translation>
 <translation id="1930127294345368978">Número máximo de páginas permitidas para um único trabalho de impressão</translation>
 <translation id="193259052151668190">Lista de permissões de dispositivos USB removíveis</translation>
 <translation id="1933378685401357864">Imagem do plano de fundo</translation>
-<translation id="1945994447126139909">Esta política visa a adaptação a curto prazo e será removida na versão 88 do <ph name="PRODUCT_NAME" />.
+<translation id="1945994447126139909">Esta política visa à adaptação a curto prazo e será removida na versão 88 do <ph name="PRODUCT_NAME" />.
 
-      A política do referenciador padrão do Chrome está sendo fortalecida do valor atual de no-referrer-when-downgrade para a mais segura, strict-origin-when-cross-origin, por meio do lançamento gradual voltado à versão 85 estável do Chrome.
+      A política do referenciador padrão do Chrome está sendo fortalecida do valor atual de no-referrer-when-downgrade para o valor strict-origin-when-cross-origin, que é mais seguro, por meio do lançamento gradual voltado à versão 85 estável do Chrome.
 
       Esta política comercial não terá efeito antes do lançamento. Após o lançamento, quando esta política for ativada, a política do referenciador padrão do Chrome será definida com o valor anterior, no-referrer-when-downgrade.
 
@@ -1233,12 +1233,6 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="2799297758492717491">Permitir reprodução automática de mídia em uma lista de permissões de padrões de URL</translation>
 <translation id="2801065672151277034">Configurações de gerenciamento do certificado</translation>
 <translation id="2801155097555584385">Configurar o início do carregamento personalizado da bateria, em porcentagem</translation>
-<translation id="2802085784857530815">Permite controlar se os usuários podem acessar impressoras que não sejam de empresas
-
-      Se esta política estiver definida como verdadeira ou não estiver definida, os usuários poderão adicionar, configurar e imprimir usando as próprias impressoras nativas.
-
-      Se a política estiver definida como falsa, os usuários não poderão adicionar e configurar as próprias impressoras nativas. Eles também não poderão imprimir usando impressoras nativas configuradas anteriormente.
-      </translation>
 <translation id="2805707493867224476">Permitir que todos os sites exibam pop-ups</translation>
 <translation id="2808013382476173118">Permite o uso de servidores STUN quando clientes remotos estiverem tentando estabelecer uma conexão com a máquina.
 
@@ -1479,7 +1473,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
       Se esta política não for definida ou o valor depois da substituição não for um nome de host válido, nenhum nome de host será definido na solicitação de DHCP. </translation>
 <translation id="3051089299923124309">Definir a política como "Ativada" permite que o subconteúdo de terceiros em uma página abra uma janela pop-up de autenticação HTTP básica.
 
-       Definir a política como "Desativada" ou deixá-la sem definição faz com que o subconteúdo de terceiros não possa abra uma janela pop-up de autenticação HTTP básica.
+       Definir a política como "Desativada" ou deixá-la sem definição faz com que o subconteúdo de terceiros não possa abrir uma janela pop-up de autenticação HTTP básica.
 
       Normalmente, essa política fica desativada como defesa contra phishing.</translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
@@ -3655,7 +3649,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
         Se uma política não estiver na lista, caso haja algum conflito entre as fontes, escopos e/ou níveis, a política com a maior prioridade será aplicada.</translation>
 <translation id="6261643884958898336">Reportar informações de identificação da máquina</translation>
-<translation id="6265892395051519509">Permitir acesso a sensores nesses sites</translation>
+<translation id="6265892395051519509">Permite acesso a sensores nesses sites</translation>
 <translation id="6273015149273504999">
       Especifica uma lista de apps e extensões que são instalados silenciosamente na tela de login, sem qualquer interação do usuário e sem permitir a desinstalação nem a desativação feita por ele.
 
@@ -3682,7 +3676,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6315673513957120120">O Chrome mostra uma página de aviso quando os usuários navegam para sites que têm erros de SSL. Por padrão ou quando esta política é definida como "true", os usuários têm permissão para clicar nessas páginas de aviso.
       A definição desta política como "false" não permite que os usuários cliquem em qualquer página de aviso.</translation>
 <translation id="6319198883324703402">Definir o horário da primeira notificação de reinicialização para o usuário</translation>
-<translation id="6330882599388782338">Permitir que os sites acessem sensores</translation>
+<translation id="6330882599388782338">Permite que os sites acessem sensores</translation>
 <translation id="6331167725613770725">Esta política está obsoleta e será removida na versão 85 do <ph name="PRODUCT_OS_NAME" />. Por isso, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Especifica o tempo sem entrada do usuário para que uma caixa de diálogo de aviso seja mostrada enquanto o dispositivo estiver funcionando com energia CA.

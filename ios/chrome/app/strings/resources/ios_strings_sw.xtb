@@ -128,7 +128,6 @@
 <translation id="236977714248711277">Tovuti haziwezi kutumia vidakuzi ili kuboresha hali yako ya kuvinjari, kwa mfano, ili kufanya ubaki ukiwa umeingia katika akaunti au kukumbuka bidhaa zilizo kwenye kikapu chako cha ununuzi.
 
 Tovuti haziwezi kutumia vidakuzi kuona shughuli zako za kuvinjari kwenye tovuti mbalimbali, kwa mfano, kukuonyesha matangazo yanayokufaa zaidi.</translation>
-<translation id="2379896346847637748">Fungua Katika Dirisha Jipya</translation>
 <translation id="2381405137052800939">Mambo ya Msingi</translation>
 <translation id="2386793615875593361">1 iliyochaguliwa</translation>
 <translation id="2421004566762153674">Kuzuia vidakuzi vya tovuti nyingine</translation>
@@ -310,6 +309,7 @@ Katika hali fiche, tovuti haziwezi kutumia vidakuzi kuona shughuli zako za kuvin
 <translation id="4619615317237390068">Vichupo kutoka kwenye vifaa vingine</translation>
 <translation id="4620246317052452550">Kurasa Ulizosoma</translation>
 <translation id="4630540211544979320">Tafsiri Kurasa</translation>
+<translation id="4634124774493850572">Tumia nenosiri</translation>
 <translation id="4636930964841734540">Maelezo</translation>
 <translation id="4659126640776004816">Ukiingia katika Akaunti ya Google, kipengele hiki kitawashwa.</translation>
 <translation id="4659667755519643272">Weka Kibadilishaji cha Kichupo</translation>
@@ -611,6 +611,7 @@ Tovuti zinaweza kutumia vidakuzi kuona shughuli zako za kuvinjari kwenye tovuti 
 <translation id="8007420562015504427">Utafutaji Fiche</translation>
 <translation id="802154636333426148">Haikuweza kupakua</translation>
 <translation id="8023878949384262191">Hupanua sehemu.</translation>
+<translation id="8027581147000338959">Fungua Katika Dirisha Jipya</translation>
 <translation id="804427445359061970">Utapata vichupo vyako kwenye vifaa vingine hapa</translation>
 <translation id="8059533439631660104">Hukunja sehemu.</translation>
 <translation id="8065292699993359127">Fungua URL kwenye Chrome katika Hali Fiche</translation>

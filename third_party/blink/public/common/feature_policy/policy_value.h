@@ -48,10 +48,6 @@ class BLINK_COMMON_EXPORT PolicyValue {
 
   // Operater overrides
   PolicyValue& operator=(const PolicyValue& rhs);
-  // Combine a new PolicyValue to self, by taking the stricter value of the two.
-  void Combine(const PolicyValue& value);
-  // Combine two PolicyValue_s together by taking the stricter value of the two.
-  static PolicyValue Combine(const PolicyValue& lhs, const PolicyValue& rhs);
 
   void SetToMax();
   void SetToMin();

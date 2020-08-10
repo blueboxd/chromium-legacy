@@ -114,8 +114,8 @@ void VideoEncoder::encode(VideoFrame* frame,
                                       "Encoder is not configured yet.");
     return;
   }
-  if (frame->visibleWidth() != uint32_t{frame_size_.width()} ||
-      frame->visibleHeight() != uint32_t{frame_size_.height()}) {
+  if (frame->cropWidth() != uint32_t{frame_size_.width()} ||
+      frame->cropHeight() != uint32_t{frame_size_.height()}) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kOperationError,
         "Frame size doesn't match initial encoder parameters.");

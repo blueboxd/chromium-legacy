@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "chromecast/chromecast_buildflags.h"
 
-class TtsController;
 class PrefService;
 
 namespace net {
@@ -76,7 +75,6 @@ class CastBrowserProcess {
   void SetConnectivityChecker(
       scoped_refptr<ConnectivityChecker> connectivity_checker);
   void SetNetLog(net::NetLog* net_log);
-  void SetTtsController(std::unique_ptr<TtsController> tts_controller);
   void SetWebViewFactory(CastWebViewFactory* web_view_factory);
 
   CastContentBrowserClient* browser_client() const {
@@ -108,7 +106,6 @@ class CastBrowserProcess {
     return remote_debugging_server_.get();
   }
   net::NetLog* net_log() const { return net_log_; }
-  TtsController* tts_controller() const { return tts_controller_.get(); }
   CastWebViewFactory* web_view_factory() const { return web_view_factory_; }
 
  private:
@@ -132,7 +129,6 @@ class CastBrowserProcess {
   CastWebViewFactory* web_view_factory_;
   CastContentBrowserClient* cast_content_browser_client_;
   net::NetLog* net_log_;
-  std::unique_ptr<TtsController> tts_controller_;
 
   // Note: CastService must be destroyed before others.
   std::unique_ptr<CastService> cast_service_;

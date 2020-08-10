@@ -86,7 +86,7 @@ TEST(PrintJobInfoMojomConversionsTest, PrintJobProtoToMojom) {
   EXPECT_EQ(mojom::PrintJobCompletionStatus::kPrinted,
             print_job_mojo->completed_info->completion_status);
   EXPECT_EQ(mojom::PrinterErrorCode::kNoError,
-            print_job_mojo->completed_info->printer_error_code);
+            print_job_mojo->printer_error_code);
 }
 
 TEST(PrintJobInfoMojomConversionsTest, CupsPrintJobToMojom) {
@@ -104,6 +104,8 @@ TEST(PrintJobInfoMojomConversionsTest, CupsPrintJobToMojom) {
             print_job_mojo->active_print_job_info->printed_pages);
   EXPECT_EQ(mojom::ActivePrintJobState::kStarted,
             print_job_mojo->active_print_job_info->active_state);
+  EXPECT_EQ(mojom::PrinterErrorCode::kNoError,
+            print_job_mojo->printer_error_code);
 }
 
 }  // namespace chromeos

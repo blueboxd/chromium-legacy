@@ -41,11 +41,14 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
  private:
   friend class AmbientModeHandlerTest;
 
-  // WebUI call to request topic source related data.
-  void HandleRequestTopicSource(const base::ListValue* args);
+  // WebUI call to request topic source and temperature unit related data.
+  void HandleRequestSettings(const base::ListValue* args);
 
   // WebUI call to request albums related data.
   void HandleRequestAlbums(const base::ListValue* args);
+
+  // WebUI call to sync temperature unit with server.
+  void HandleSetSelectedTemperatureUnit(const base::ListValue* args);
 
   // WebUI call to sync topic source with server.
   void HandleSetSelectedTopicSource(const base::ListValue* args);
@@ -53,8 +56,11 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
   // WebUI call to sync albums with server.
   void HandleSetSelectedAlbums(const base::ListValue* args);
 
-  // Send the "topic-source-changed" WebUIListener event when the initial
-  // settings is retrieved.
+  // Send the "temperature-unit-changed" WebUIListener event to update the
+  // WebUI.
+  void SendTemperatureUnit();
+
+  // Send the "topic-source-changed" WebUIListener event to update the WebUI.
   void SendTopicSource();
 
   // Send the "albums-changed" WebUIListener event with albums info

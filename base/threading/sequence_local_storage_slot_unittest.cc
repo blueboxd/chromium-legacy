@@ -83,7 +83,7 @@ TEST_F(SequenceLocalStorageSlotTest, GetEmplaceMultipleSlots) {
   EXPECT_EQ(*slot1, 6);
 }
 
-// Verify that changing the the value returned by Get() changes the value
+// Verify that changing the value returned by Get() changes the value
 // in sequence local storage.
 TEST_F(SequenceLocalStorageSlotTest, GetReferenceModifiable) {
   SequenceLocalStorageSlot<bool> slot;

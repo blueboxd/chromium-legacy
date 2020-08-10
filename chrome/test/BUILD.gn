@@ -4271,6 +4271,7 @@ test("unit_tests") {
       "../browser/ui/manifest_web_app_browser_controller_unittest.cc",
       "../browser/ui/omnibox/chrome_omnibox_navigation_observer_unittest.cc",
       "../browser/ui/omnibox/clipboard_utils_unittest.cc",
+      "../browser/ui/omnibox/omnibox_pedals_unittest.cc",
       "../browser/ui/page_info/permission_menu_model_unittest.cc",
       "../browser/ui/passwords/account_storage_auth_helper_unittest.cc",
       "../browser/ui/passwords/bubble_controllers/auto_sign_in_bubble_controller_unittest.cc",

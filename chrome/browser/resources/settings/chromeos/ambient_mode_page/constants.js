@@ -13,6 +13,13 @@
   ART_GALLERY: 1,
 };
 
+/** @enum {string} */
+/* #export */ const AmbientModeTemperatureUnit = {
+  UNKNOWN: 'unknown',
+  FAHRENHEIT: 'fahrenheit',
+  CELSIUS: 'celsius',
+};
+
 /**
  * Album metadata for UI.
  *

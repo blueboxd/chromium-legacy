@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Jaunā parole</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> pārvalda šo ierīci un tam ir piekļuve visām lietotāja darbībām, tostarp tīmekļa lapām, kuras apmeklējāt, parolēm un e-pastam.</translation>
 <translation id="4003384961948020559">Neizdevās — izvades paliktnis pilns</translation>
+<translation id="4027485274696301677">Šī <ph name="DEVICE_TYPE" /> ierīce tiek pārvaldīta domēnā <ph name="ENROLLMENT_DOMAIN" />. Administratori var attālināti konfigurēt ierīci.</translation>
 <translation id="4034824040120875894">Printeris</translation>
 <translation id="4227825898293920515">Paroles derīguma termiņš: <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nenotiek neviens drukas darbs</translation>

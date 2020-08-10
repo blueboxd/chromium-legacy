@@ -174,7 +174,7 @@ class Buffer {
   // |count_| will also be incremented by the number of bytes that were meant
   // to be emitted. The |pad| character is typically either a ' ' space
   // or a '0' zero, but other non-NUL values are legal.
-  // Returns "false", iff the the |buffer_| filled up (i.e. |count_|
+  // Returns "false", iff the |buffer_| filled up (i.e. |count_|
   // overflowed |size_|) at any time during padding.
   inline bool Pad(char pad, size_t padding, size_t len) {
     DEBUG_CHECK(pad);

@@ -384,7 +384,7 @@ class Vector
  private:
   ~Vector() override {
     // Handlers should not outlive the Vector. Furthermore, they must ensure
-    // they are unregistered before the the handler is destroyed. This implies
+    // they are unregistered before the handler is destroyed. This implies
     // there should be no handlers left when the Vector is destructed.
     DCHECK(handlers_.empty());
   }

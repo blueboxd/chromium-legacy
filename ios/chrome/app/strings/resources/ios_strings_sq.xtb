@@ -128,7 +128,6 @@
 <translation id="236977714248711277">Sajtet nuk mund t'i përdorin kukit për të përmirësuar përvojën e shfletimit, për shembull për të të mbajtur të identifikuar ose për të kujtuar artikujt në karrocën e blerjeve.
 
 Sajtet nuk mund t'i përdorin kukit për të parë aktivitetin tënd të shfletimit nëpër sajte të ndryshme, për shembull për t'i personalizuar reklamat.</translation>
-<translation id="2379896346847637748">Hape në dritare të re</translation>
 <translation id="2381405137052800939">Bazat</translation>
 <translation id="2386793615875593361">1 e përzgjedhur</translation>
 <translation id="2421004566762153674">Bllokimi i kukive të palëve të treta</translation>
@@ -185,6 +184,7 @@ Sajtet nuk mund t'i përdorin kukit për të parë aktivitetin tënd të shfleti
 <translation id="298306318844797842">Shto mënyrën e pagesës...</translation>
 <translation id="2989805286512600854">Hape në skedë të re</translation>
 <translation id="3037605927509011580">Ndërprerje aksidentale!</translation>
+<translation id="3080525922482950719">Mund t'i ruash faqet për t'i lexuar më vonë ose jashtë linje</translation>
 <translation id="3081338492074632642">Sigurohu që fjalëkalimi që po ruan përputhet me fjalëkalimin tënd për <ph name="WEBSITE" />.</translation>
 <translation id="3112556859945124369">Shëno...</translation>
 <translation id="3131206671572504478">Bllokoji të gjitha</translation>
@@ -309,6 +309,7 @@ Në modalitetin "i fshehtë", sajtet nuk mund t'i përdorin kukit për të parë
 <translation id="4619615317237390068">Skedat nga pajisjet e tjera</translation>
 <translation id="4620246317052452550">Faqet që ke lexuar</translation>
 <translation id="4630540211544979320">Përkthe faqet</translation>
+<translation id="4634124774493850572">Përdor fjalëkalimin</translation>
 <translation id="4636930964841734540">Informacion</translation>
 <translation id="4659126640776004816">Kur identifikohesh në "Llogarinë tënde të Google", kjo veçori është e aktivizuar.</translation>
 <translation id="4659667755519643272">Futu te "Ndërruesi i skedave"</translation>

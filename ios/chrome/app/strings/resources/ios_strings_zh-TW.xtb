@@ -16,6 +16,7 @@
 <translation id="1104948393051856124">接受並繼續</translation>
 <translation id="1112015203684611006">列印失敗。</translation>
 <translation id="1125564390852150847">新增分頁。</translation>
+<translation id="1134509371063488162">在無痕模式中開啟 ${urls}</translation>
 <translation id="1145536944570833626">刪除現有資料。</translation>
 <translation id="1165039591588034296">錯誤</translation>
 <translation id="1172898394251786223">下一個欄位</translation>
@@ -127,7 +128,6 @@
 <translation id="236977714248711277">網站無法使用 Cookie 改善瀏覽體驗，例如讓你保持登入狀態，或記住購物車中的商品。
 
 網站無法使用 Cookie 查看你在各網站的瀏覽活動，也無法提供個人化廣告等服務。</translation>
-<translation id="2379896346847637748">在新視窗中開啟</translation>
 <translation id="2381405137052800939">基本</translation>
 <translation id="2386793615875593361">已選取 1 張</translation>
 <translation id="2421004566762153674">封鎖第三方 Cookie</translation>
@@ -184,6 +184,7 @@
 <translation id="298306318844797842">新增付款方式...</translation>
 <translation id="2989805286512600854">在新分頁中開啟</translation>
 <translation id="3037605927509011580">糟糕！</translation>
+<translation id="3080525922482950719">你可以儲存頁面以便稍後閱讀或離線閱讀</translation>
 <translation id="3081338492074632642">請確認要儲存的密碼與 <ph name="WEBSITE" /> 上的密碼相符</translation>
 <translation id="3112556859945124369">標示…</translation>
 <translation id="3131206671572504478">全部封鎖</translation>
@@ -243,6 +244,7 @@
 <translation id="3638472932233958418">預先載入網頁</translation>
 <translation id="3670030362669914947">號碼</translation>
 <translation id="3691593122358196899">已將書籤加入「<ph name="FOLDER_TITLE" />」</translation>
+<translation id="3740397331642243698">在無痕模式中透過 Google Chrome 開啟輸入的網址。</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3775743491439407556">同步功能無法正常運作</translation>
 <translation id="3779810277399252432">沒有網際網路連線。</translation>
@@ -307,6 +309,7 @@
 <translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
 <translation id="4620246317052452550">你看過的網頁</translation>
 <translation id="4630540211544979320">翻譯網頁</translation>
+<translation id="4634124774493850572">使用密碼</translation>
 <translation id="4636930964841734540">資訊</translation>
 <translation id="4659126640776004816">當你登入 Google 帳戶時，系統會啟用這項功能。</translation>
 <translation id="4659667755519643272">進入分頁切換選項</translation>
@@ -608,8 +611,10 @@
 <translation id="8007420562015504427">無痕搜尋</translation>
 <translation id="802154636333426148">下載失敗</translation>
 <translation id="8023878949384262191">展開這個專區。</translation>
+<translation id="8027581147000338959">在新視窗中開啟</translation>
 <translation id="804427445359061970">這裡會顯示你在其他裝置上查看的分頁</translation>
 <translation id="8059533439631660104">收合這個專區。</translation>
+<translation id="8065292699993359127">在無痕模式中透過 Chrome 開啟網址</translation>
 <translation id="806745655614357130">分開保留我的資料</translation>
 <translation id="8073670137947914548">下載完成</translation>
 <translation id="8073872304774253879">改善搜尋和瀏覽體驗</translation>

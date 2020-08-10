@@ -142,8 +142,8 @@ class PasswordCheckBridge {
      */
     void destroy() {
         if (mNativePasswordCheckBridge != 0) {
-            mNativePasswordCheckBridge = 0;
             PasswordCheckBridgeJni.get().destroy(mNativePasswordCheckBridge);
+            mNativePasswordCheckBridge = 0;
         }
     }
 

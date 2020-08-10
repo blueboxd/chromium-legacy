@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">스택 언와인더</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="4738836084190194332">마지막 동기화 시간: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA 오류: <ph name="VIOLATED_URL" />의 <ph name="ERROR_CODE" /> 오류</translation>
 <translation id="4749960740855309258">새 탭 열기</translation>
 <translation id="4759238208242260848">다운로드</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{다운로드 1개 완료}other{다운로드 #개 완료}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">오프라인 탐색</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />(<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">원본 보기</translation>
+<translation id="9148126808321036104">다시 로그인</translation>
 <translation id="9155898266292537608">단어를 살짝 탭하여 검색할 수도 있습니다</translation>
 <translation id="9169507124922466868">탐색 기록이 절반 높이로 열림</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1분 전에 확인됨}other{#분 전에 확인됨}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">홈</translation>
 <translation id="93753284658583800">홈페이지 변경됨</translation>
 <translation id="938850635132480979">오류: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">암호 입력</translation>
 <translation id="95817756606698420">중국에서 검색할 때 Chrome에서 <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />를 사용할 수 있습니다. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 변경할 수 있습니다.</translation>
 <translation id="968900484120156207">방문한 페이지가 여기에 표시됩니다.</translation>
 <translation id="970715775301869095"><ph name="MINUTES" />분 남음</translation>

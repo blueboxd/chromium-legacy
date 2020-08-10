@@ -25445,6 +25445,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Tray_StopRecording">
+  <owner>afakhry@chromium.org</owner>
+  <owner>sammiequon@chromium.org</owner>
+  <description>
+    Records when the user presses the stop recording button in the Ash system
+    tray to stop the current screen recording session.
+  </description>
+</action>
+
 <action name="Tray_SwipeToClose_Successful">
   <obsolete>
     No longer needed since swipe on the tray bubble to close it has been

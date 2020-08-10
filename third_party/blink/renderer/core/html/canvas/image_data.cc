@@ -323,8 +323,8 @@ static SkImageInfo GetImageInfo(scoped_refptr<StaticBitmapImage> image) {
 
 ImageData* ImageData::Create(scoped_refptr<StaticBitmapImage> image,
                              AlphaDisposition alpha_disposition) {
-  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
-  DCHECK(skia_image);
+  PaintImage paint_image = image->PaintImageForCurrentFrame();
+  DCHECK(paint_image);
   SkImageInfo image_info = GetImageInfo(image);
   CanvasColorParams color_params(image_info);
   if (image_info.alphaType() != kOpaque_SkAlphaType) {
@@ -346,7 +346,7 @@ ImageData* ImageData::Create(scoped_refptr<StaticBitmapImage> image,
     if (!image_data)
       return nullptr;
     image_info = image_info.makeColorType(kRGBA_8888_SkColorType);
-    skia_image->readPixels(image_info, image_data->data()->Data(),
+    paint_image.readPixels(image_info, image_data->data()->Data(),
                            image_info.minRowBytes(), 0, 0);
     return image_data;
   }
@@ -362,7 +362,7 @@ ImageData* ImageData::Create(scoped_refptr<StaticBitmapImage> image,
   if (!f32_array)
     return nullptr;
   image_info = image_info.makeColorType(kRGBA_F32_SkColorType);
-  skia_image->readPixels(image_info, f32_array->Data(),
+  paint_image.readPixels(image_info, f32_array->Data(),
                          image_info.minRowBytes(), 0, 0);
   ImageDataColorSettings* color_settings =
       CanvasColorParamsToImageDataColorSettings(color_params);

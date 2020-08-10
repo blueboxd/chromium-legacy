@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">新密码</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> 管理此设备并可查看所有用户活动（包括访问过的网页、密码和电子邮件）。</translation>
 <translation id="4003384961948020559">失败 - 出纸盘已满</translation>
+<translation id="4027485274696301677">此 <ph name="DEVICE_TYPE" /> 由 <ph name="ENROLLMENT_DOMAIN" /> 管理。管理员可以远程配置此设备。</translation>
 <translation id="4034824040120875894">打印机</translation>
 <translation id="4227825898293920515">密码将于 <ph name="TIME" />后到期</translation>
 <translation id="4238516577297848345">没有正在进行的打印任务</translation>

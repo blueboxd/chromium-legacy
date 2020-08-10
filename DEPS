@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'cac17649682942b91425cdbc788379995aef3034',
+  'skia_revision': 'ea8be2120ee65e35d053baa6925eb9413751ad44',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd5099cc1545ff4af95dce68f1bec4fc05ce54a01',
+  'angle_revision': '8956bfb9c99d9d810022b6054486ed3811f99cb5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'd44592935782afe9e69818fa4b6438004d674f95',
+  'devtools_frontend_revision': '7b17f160f76a9a8b4db043ad44ddb1a972a44b33',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,11 +318,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1662e97f324ef120cf097ba38d63a69cad83593c',
+  'dawn_revision': 'ccf01e74ec70fc0b5edc9a0dd87f902b6388afce',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'db0253c93b9b0d15c859744cd242df4a7e4f6e09',
+  'quiche_revision': '13ebfa60c3f2970e5d7f05e85ccf29ce3c1304ba',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -875,7 +875,7 @@ deps = {
 
   # Build tools for Chrome OS.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'fb57bbd19358a5c2f1bb50e8417bd478f83588f9',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'a1d5ae72b241aea42dc26e65be8061b68981ce9d',
       'condition': 'checkout_chromeos',
   },
 
@@ -895,7 +895,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '0fa91d0f3563276834b632b21d03fc327eff6c9c',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '03b15131d393affdbe7af9987c72de79a224f5b0',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1400,6 +1400,11 @@ deps = {
   'src/third_party/swiftshader':
     Var('swiftshader_git') + '/SwiftShader.git' + '@' +  Var('swiftshader_revision'),
 
+  'src/third_party/text-fragments-polyfill/src': {
+    'url': Var('chromium_git') + '/external/github.com/GoogleChromeLabs/text-fragments-polyfill.git' + '@' + 'f12d4cb5c2fe4d106d8310603c8481a732daaa40',
+    'condition': 'checkout_ios',
+  },
+
   'src/third_party/turbine': {
       'packages': [
           {
@@ -1537,7 +1542,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@623cf68b45ca2991d1cf3add9ea088ac325037ae',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c92cc9537f569a4dc5a64c7953278ac38f3fbaff',
     'condition': 'checkout_src_internal',
   },
 
@@ -1545,7 +1550,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'sQ-pH6rZbDHAmfK-kjBe53-R0rfRl9r_ObSKY2g81kUC',
+        'version': 'IVemt3pOQOKoaDEDMgqmUBfRju4WJsHWYff7SymNScAC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

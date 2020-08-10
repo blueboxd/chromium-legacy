@@ -19,6 +19,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.ColorRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -41,12 +42,13 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.HomeButton;
-import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarProgressBar;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
+import org.chromium.chrome.browser.toolbar.menu_button.MenuButton;
+import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -213,17 +215,10 @@ public abstract class ToolbarLayout
     void onBottomToolbarVisibilityChanged(boolean isVisible) {}
 
     /**
-     * Disable the menu button. This removes the view from the hierarchy and nulls the related
-     * instance vars.
+     * TODO comment
      */
-    void disableMenuButton() {
-        UiUtils.removeViewFromParent(getMenuButtonWrapper());
-
-        if (mMenuButtonWrapper != null) {
-            mMenuButtonWrapper.destroy();
-            mMenuButtonWrapper = null;
-        }
-    }
+    @CallSuper
+    void onMenuButtonDisabled() {}
 
     @Override
     protected void onFinishInflate() {
@@ -355,9 +350,6 @@ public abstract class ToolbarLayout
     FrameLayout.LayoutParams getFrameLayoutParams(View view) {
         return ((FrameLayout.LayoutParams) view.getLayoutParams());
     }
-
-    /** Notified that the menu was shown. */
-    void onMenuShown() {}
 
     /**
      *  This function handles native dependent initialization for this class.
@@ -670,8 +662,8 @@ public abstract class ToolbarLayout
      *                       finished (which can be detected by a call to
      *                       {@link #onTabSwitcherTransitionFinished()}).
      */
-    void setTabSwitcherMode(
-            boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {}
+    void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation,
+            MenuButtonCoordinator menuButtonCoordinator) {}
 
     /**
      * Gives inheriting classes the chance to update their state when the TabSwitcher transition has
@@ -861,31 +853,6 @@ public abstract class ToolbarLayout
             getLocationBar().setUrlBarFocus(false, null, LocationBar.OmniboxFocusReason.UNFOCUS);
         }
         if (mToolbarTabController != null) mToolbarTabController.openHomepage();
-    }
-
-    void setMenuButtonHighlight(boolean highlight) {
-        if (mMenuButtonWrapper == null) return;
-        mMenuButtonWrapper.setMenuButtonHighlight(highlight);
-    }
-
-    void showAppMenuUpdateBadge(boolean animate) {
-        if (mMenuButtonWrapper == null) return;
-        mMenuButtonWrapper.showAppMenuUpdateBadgeIfAvailable(animate);
-    }
-
-    void setAppMenuUpdateBadgeSuppressed(boolean suppress) {
-        if (mMenuButtonWrapper == null) return;
-        mMenuButtonWrapper.setAppMenuUpdateBadgeSuppressed(suppress);
-    }
-
-    boolean isShowingAppMenuUpdateBadge() {
-        if (mMenuButtonWrapper == null) return false;
-        return mMenuButtonWrapper.isShowingAppMenuUpdateBadge();
-    }
-
-    void removeAppMenuUpdateBadge(boolean animate) {
-        if (mMenuButtonWrapper == null) return;
-        mMenuButtonWrapper.removeAppMenuUpdateBadge(animate);
     }
 
     /**

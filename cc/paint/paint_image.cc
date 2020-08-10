@@ -114,12 +114,33 @@ const sk_sp<SkImage>& PaintImage::GetSkImage() const {
   return cached_sk_image_;
 }
 
-sk_sp<SkImage> PaintImage::GetRasterSkImage() const {
-  if (cached_sk_image_)
-    return cached_sk_image_;
-  else if (texture_backing_)
+sk_sp<SkImage> PaintImage::GetSwSkImage() const {
+  if (texture_backing_) {
     return texture_backing_->GetSkImageViaReadback();
-  return nullptr;
+  } else if (cached_sk_image_ && cached_sk_image_->isTextureBacked()) {
+    return cached_sk_image_->makeNonTextureImage();
+  }
+  return cached_sk_image_;
+}
+
+sk_sp<SkImage> PaintImage::GetAcceleratedSkImage() const {
+  DCHECK(!cached_sk_image_ || cached_sk_image_->isTextureBacked());
+  return cached_sk_image_;
+}
+
+bool PaintImage::readPixels(const SkImageInfo& dst_info,
+                            void* dst_pixels,
+                            size_t dst_row_bytes,
+                            int src_x,
+                            int src_y) const {
+  if (texture_backing_) {
+    return texture_backing_->readPixels(dst_info, dst_pixels, dst_row_bytes,
+                                        src_x, src_y);
+  } else if (cached_sk_image_) {
+    return cached_sk_image_->readPixels(dst_info, dst_pixels, dst_row_bytes,
+                                        src_x, src_y);
+  }
+  return false;
 }
 
 SkImageInfo PaintImage::GetSkImageInfo() const {
@@ -364,13 +385,13 @@ sk_sp<SkImage> PaintImage::GetSkImageForFrame(
   // perform lazy decoding and can be multi-frame.
   if (!paint_image_generator_) {
     DCHECK_EQ(index, kDefaultFrameIndex);
-    return GetRasterSkImage();
+    return GetSwSkImage();
   }
 
   // The internally cached SkImage is constructed using the default frame index
   // and GeneratorClientId. Avoid creating a new SkImage.
   if (index == kDefaultFrameIndex && client_id == kDefaultGeneratorClientId)
-    return GetRasterSkImage();
+    return GetSwSkImage();
 
   sk_sp<SkImage> image =
       SkImage::MakeFromGenerator(std::make_unique<SkiaPaintImageGenerator>(

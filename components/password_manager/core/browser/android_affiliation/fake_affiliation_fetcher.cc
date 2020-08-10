@@ -11,9 +11,8 @@ namespace password_manager {
 
 password_manager::FakeAffiliationFetcher::FakeAffiliationFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const std::vector<FacetURI>& facet_ids,
     AffiliationFetcherDelegate* delegate)
-    : AffiliationFetcher(std::move(url_loader_factory), facet_ids, delegate) {}
+    : AffiliationFetcher(std::move(url_loader_factory), delegate) {}
 
 password_manager::FakeAffiliationFetcher::~FakeAffiliationFetcher() = default;
 
@@ -50,10 +49,9 @@ FakeAffiliationFetcher* ScopedFakeAffiliationFetcherFactory::PeekNextFetcher() {
 
 AffiliationFetcher* ScopedFakeAffiliationFetcherFactory::CreateInstance(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const std::vector<FacetURI>& facet_ids,
     AffiliationFetcherDelegate* delegate) {
-  FakeAffiliationFetcher* fetcher = new FakeAffiliationFetcher(
-      std::move(url_loader_factory), facet_ids, delegate);
+  FakeAffiliationFetcher* fetcher =
+      new FakeAffiliationFetcher(std::move(url_loader_factory), delegate);
   pending_fetchers_.push(fetcher);
   return fetcher;
 }

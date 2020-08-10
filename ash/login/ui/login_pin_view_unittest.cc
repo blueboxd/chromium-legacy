@@ -29,7 +29,7 @@ class LoginPinViewTest : public LoginTestBase {
   // in a widget.
   void CreateLoginPinViewWithStyle(LoginPinView::Style style) {
     view_ =
-        new LoginPinView(style,
+        new LoginPinView(style, CreateDefaultLoginPalette(),
                          base::BindRepeating(&LoginPinViewTest::OnPinKey,
                                              base::Unretained(this)),
                          base::BindRepeating(&LoginPinViewTest::OnPinBackspace,

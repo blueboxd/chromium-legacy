@@ -70,11 +70,11 @@
 - (NSArray<ChromeActivityURLSource*>*)activityItemsForData:(ShareToData*)data {
   // The provider object ChromeActivityURLSource supports the public.url UTType
   // for Share Extensions (e.g. Facebook, Twitter).
-  ChromeActivityURLSource* urlActivitySource = [[ChromeActivityURLSource alloc]
-        initWithShareURL:data.shareNSURL
-                 subject:data.title
-      thumbnailGenerator:data.thumbnailGenerator];
-  return @[ urlActivitySource ];
+  ChromeActivityURLSource* activityURLSource =
+      [[ChromeActivityURLSource alloc] initWithShareURL:data.shareNSURL
+                                                subject:data.title];
+  activityURLSource.thumbnailGenerator = data.thumbnailGenerator;
+  return @[ activityURLSource ];
 }
 
 - (NSArray*)applicationActivitiesForData:(ShareToData*)data {

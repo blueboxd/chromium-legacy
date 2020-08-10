@@ -1916,7 +1916,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
       NOTREACHED();
     } else {
       image_data->decode.SetBitmapImage(
-          draw_image.paint_image().GetRasterSkImage());
+          draw_image.paint_image().GetSwSkImage());
     }
     return;
   }
@@ -2081,7 +2081,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
 
       // Get the encoded data in a contiguous form.
       sk_sp<SkData> encoded_data =
-          draw_image.paint_image().GetRasterSkImage()->refEncodedData();
+          draw_image.paint_image().GetSwSkImage()->refEncodedData();
       DCHECK(encoded_data);
       const uint32_t transfer_cache_id =
           ClientImageTransferCacheEntry::GetNextId();

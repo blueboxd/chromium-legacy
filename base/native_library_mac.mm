@@ -23,7 +23,7 @@ static NativeLibraryObjCStatus GetObjCStatusForImage(
   if (!dladdr(function_pointer, &info))
     return OBJC_UNKNOWN;
 
-  // See if the the image contains an "ObjC image info" segment. This method
+  // See if the image contains an "ObjC image info" segment. This method
   // of testing is used in _CFBundleGrokObjcImageInfoFromFile in
   // CF-744/CFBundle.c, around lines 2447-2474.
   //

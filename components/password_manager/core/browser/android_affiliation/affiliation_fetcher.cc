@@ -44,10 +44,8 @@ static TestAffiliationFetcherFactory* g_testing_factory = nullptr;
 
 AffiliationFetcher::AffiliationFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const std::vector<FacetURI>& facet_uris,
     AffiliationFetcherDelegate* delegate)
     : url_loader_factory_(std::move(url_loader_factory)),
-      requested_facet_uris_(facet_uris),
       delegate_(delegate) {
   for (const FacetURI& uri : requested_facet_uris_) {
     DCHECK(uri.is_valid());
@@ -59,14 +57,12 @@ AffiliationFetcher::~AffiliationFetcher() = default;
 // static
 AffiliationFetcher* AffiliationFetcher::Create(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const std::vector<FacetURI>& facet_uris,
     AffiliationFetcherDelegate* delegate) {
   if (g_testing_factory) {
     return g_testing_factory->CreateInstance(std::move(url_loader_factory),
-                                             facet_uris, delegate);
+                                             delegate);
   }
-  return new AffiliationFetcher(std::move(url_loader_factory), facet_uris,
-                                delegate);
+  return new AffiliationFetcher(std::move(url_loader_factory), delegate);
 }
 
 // static
@@ -75,8 +71,9 @@ void AffiliationFetcher::SetFactoryForTesting(
   g_testing_factory = factory;
 }
 
-void AffiliationFetcher::StartRequest() {
+void AffiliationFetcher::StartRequest(const std::vector<FacetURI>& facet_uris) {
   DCHECK(!simple_url_loader_);
+  requested_facet_uris_ = facet_uris;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("affiliation_lookup", R"(
@@ -123,6 +120,14 @@ void AffiliationFetcher::StartRequest() {
       url_loader_factory_.get(),
       base::BindOnce(&AffiliationFetcher::OnSimpleLoaderComplete,
                      base::Unretained(this)));
+}
+
+const std::vector<FacetURI>& AffiliationFetcher::GetRequestedFacetURIs() const {
+  return requested_facet_uris_;
+}
+
+AffiliationFetcherDelegate* AffiliationFetcher::delegate() const {
+  return delegate_;
 }
 
 // static

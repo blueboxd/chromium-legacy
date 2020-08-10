@@ -35,12 +35,23 @@
 
       /* Set padding on children instead of the container itself to ensure that
        * separator lines can fill the entire width of the page. */
-      #topicSourceListDiv > * {
+      #topicSourceListDiv > *,
+      #weatherDiv > * {
         /* Padded to the right to allow space for a ripple */
         padding-inline-end: calc(var(--cr-section-padding) -
             var(--cr-icon-ripple-padding));
         padding-inline-start: var(--cr-section-padding);
       }
+
+      #weatherTitle {
+        padding-bottom: 16px;
+        padding-top: 16px;
+      }
+
+      .list-item {
+        padding-inline-start: var(--cr-section-padding);
+      }
+
     </style>
     <h2 id="pageDescription">
       $i18n{ambientModePageDescription}
@@ -59,6 +70,29 @@
             selected-item="[[selectedTopicSource_]]"
             disabled="[[!isValidTopicSource_(selectedTopicSource_)]]">
         </topic-source-list>
+      </div>
+      <div id="weatherDiv" class="layout vertical flex">
+        <h2 id="weatherTitle" aria-hidden="true">
+          $i18n{ambientModeWeatherTitle}
+        </h2>
+        <div class="list-frame">
+          <cr-radio-group
+              id="ambientTemperatureUnit"
+              selected="{{selectedTemperatureUnit_}}"
+              disabled$="[[!isValidTemperatureUnit_(selectedTemperatureUnit_)]]"
+              aria-labelledby="weatherTitle">
+            <cr-radio-button
+                name="[[AmbientModeTemperatureUnit_.FAHRENHEIT]]"
+                class="list-item underbar"
+                label="$i18n{ambientModeTemperatureUnitFahrenheit}">
+            </cr-radio-button>
+            <cr-radio-button
+                name="[[AmbientModeTemperatureUnit_.CELSIUS]]"
+                class="list-item"
+                label="$i18n{ambientModeTemperatureUnitCelsius}">
+            </cr-radio-button>
+          </cr-radio-group>
+        </div>
       </div>
     </template>
   </template>

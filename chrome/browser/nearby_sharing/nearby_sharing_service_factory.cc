@@ -10,6 +10,7 @@
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager_impl.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
@@ -73,7 +74,8 @@ KeyedService* NearbySharingServiceFactory::BuildServiceInstanceFor(
   NS_LOG(VERBOSE) << __func__ << ": creating NearbySharingService.";
   return new NearbySharingServiceImpl(
       pref_service, notification_display_service, profile,
-      std::move(nearby_connections_manager), &process_manager);
+      std::move(nearby_connections_manager), &process_manager,
+      NearbyShareCertificateManagerImpl::Factory::Create());
 }
 
 content::BrowserContext* NearbySharingServiceFactory::GetBrowserContextToUse(

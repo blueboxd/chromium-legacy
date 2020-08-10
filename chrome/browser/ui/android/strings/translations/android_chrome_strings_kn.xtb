@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">ಸ್ಟ್ಯಾಕ್ ಅನ್‌ವೈಂಡರ್</translation>
 <translation id="473775607612524610">ಅಪ್‌ಡೇಟ್‌‌</translation>
 <translation id="4738836084190194332">ಕೊನೆಯದಾಗಿ ಸಿಂಕ್ ಮಾಡಿರುವ ಸಮಯ: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA ದೋಷ: <ph name="ERROR_CODE" />, <ph name="VIOLATED_URL" /> ನಲ್ಲಿದೆ</translation>
 <translation id="4749960740855309258">ಹೊಸ ಟ್ಯಾಬ್ ತೆರೆಯಿರಿ</translation>
 <translation id="4759238208242260848">ಡೌನ್‌ಲೋಡ್‌ಗಳು</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ಡೌನ್‌ಲೋಡ್‌‌ ಪೂರ್ಣಗೊಂಡಿದೆ.}one{# ಡೌನ್‌ಲೋಡ್‌ಗಳು ಪೂರ್ಣಗೊಂಡಿವೆ.}other{# ಡೌನ್‌ಲೋಡ್‌ಗಳು ಪೂರ್ಣಗೊಂಡಿವೆ.}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಮಾಡಿ</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">ಮೂಲವನ್ನು ತೋರಿಸಿ</translation>
+<translation id="9148126808321036104">ಪುನಃ ಸೈನ್ ಇನ್  ಆಗಿ</translation>
 <translation id="9155898266292537608">ನೀವು ಪದವನ್ನು ಕ್ಷಿಪ್ರವಾಗಿ ಟ್ಯಾಪ್ ಮಾಡುವ ಮೂಲಕವೂ ಹುಡುಕಬಹುದು</translation>
 <translation id="9169507124922466868">ನ್ಯಾವಿಗೇಷನ್ ಇತಿಹಾಸವು ಅರ್ಧ-ತೆರೆದಿದೆ</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 ನಿಮಿಷದ ಹಿಂದೆ ಪರಿಶೀಲಿಸಲಾಗಿದೆ}one{# ನಿಮಿಷಗಳ ಹಿಂದೆ ಪರಿಶೀಲಿಸಲಾಗಿದೆ}other{# ನಿಮಿಷಗಳ ಹಿಂದೆ ಪರಿಶೀಲಿಸಲಾಗಿದೆ}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">ಹೋಮ್</translation>
 <translation id="93753284658583800">ಮುಖಪುಟವನ್ನು ಬದಲಿಸಲಾಗಿದೆ</translation>
 <translation id="938850635132480979">ದೋಷ: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="95817756606698420">Chrome ಚೀನಾದಲ್ಲಿ ಹುಡುಕಲು <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> ಬಳಸಬಹುದು. ನೀವು ಇದನ್ನು <ph name="BEGIN_LINK" />ಸೆಟ್ಟಿಂಗ್‌ಗಳು<ph name="END_LINK" /> ನಲ್ಲಿ ಬದಲಾಯಿಸಬಹುದು.</translation>
 <translation id="968900484120156207">ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> ನಿಮಿಷಗಳು ಉಳಿದಿವೆ</translation>

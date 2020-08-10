@@ -462,7 +462,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Uppdatera</translation>
 <translation id="4738836084190194332">Synkroniserades senast: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA-fel: <ph name="ERROR_CODE" /> på <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Öppna en ny flik</translation>
 <translation id="4759238208242260848">Nedladdningar</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 nedladdning har slutförts.}other{# nedladdningar har slutförts.}}</translation>
@@ -1047,6 +1046,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="9133397713400217035">Utforska offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Visa original</translation>
+<translation id="9148126808321036104">Logga in igen</translation>
 <translation id="9155898266292537608">Du kan även söka med ett snabbt tryck eller ett ord</translation>
 <translation id="9169507124922466868">Navigeringshistoriken visas på halva skärmen</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Genomsöktes för 1 minut sedan}other{Genomsöktes för # minuter sedan}}</translation>
@@ -1059,6 +1059,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="932327136139879170">Startsida</translation>
 <translation id="93753284658583800">Startsidan har ändrats</translation>
 <translation id="938850635132480979">Fel: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Ange lösenfras</translation>
 <translation id="95817756606698420">Chrome kan använda <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> som sökmotor i Kina. Du kan ändra detta i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Sidor som du besöker visas här</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minuter kvar</translation>

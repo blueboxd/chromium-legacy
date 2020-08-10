@@ -39,11 +39,11 @@ TEST(JSONWriterTest, BasicTypes) {
   EXPECT_TRUE(JSONWriter::Write(Value(1.0), &output_js));
   EXPECT_EQ("1.0", output_js);
 
-  // Test Real values in the the range (-1, 1) must have leading zeros
+  // Test Real values in the range (-1, 1) must have leading zeros
   EXPECT_TRUE(JSONWriter::Write(Value(0.2), &output_js));
   EXPECT_EQ("0.2", output_js);
 
-  // Test Real values in the the range (-1, 1) must have leading zeros
+  // Test Real values in the range (-1, 1) must have leading zeros
   EXPECT_TRUE(JSONWriter::Write(Value(-0.8), &output_js));
   EXPECT_EQ("-0.8", output_js);
 

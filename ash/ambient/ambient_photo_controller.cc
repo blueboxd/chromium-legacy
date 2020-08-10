@@ -323,7 +323,7 @@ void AmbientPhotoController::OnScreenUpdateInfoFetched(
   }
 
   ambient_backend_model_.AppendTopics(screen_update.next_topics);
-  StartDownloadingWeatherConditionIcon(screen_update);
+  StartDownloadingWeatherConditionIcon(screen_update.weather_info);
 }
 
 void AmbientPhotoController::TryReadPhotoRawData() {
@@ -416,9 +416,20 @@ void AmbientPhotoController::OnPhotoDecoded(const gfx::ImageSkia& image) {
 }
 
 void AmbientPhotoController::StartDownloadingWeatherConditionIcon(
-    const ash::ScreenUpdate& screen_update) {
-  if (!screen_update.weather_info.has_value()) {
+    const base::Optional<WeatherInfo>& weather_info) {
+  if (!weather_info) {
     LOG(WARNING) << "No weather info included in the response.";
+    return;
+  }
+
+  if (!weather_info->temp_f.has_value()) {
+    LOG(WARNING) << "No temperature included in weather info.";
+    return;
+  }
+
+  if (weather_info->condition_icon_url.value_or(std::string()).empty()) {
+    LOG(WARNING) << "No value found for condition icon url in the weather info "
+                    "response.";
     return;
   }
 
@@ -427,30 +438,23 @@ void AmbientPhotoController::StartDownloadingWeatherConditionIcon(
   // frequently during the day.
   // TODO(meilinw): avoid repeated downloading by caching the last N url hashes,
   // where N should depend on the icon image size.
-  const std::string& icon_url =
-      screen_update.weather_info->condition_icon_url.value_or(std::string());
-  if (icon_url.empty()) {
-    LOG(ERROR) << "No value found for condition icon url in the weather info "
-                  "response.";
-    return;
-  }
-
   DownloadImageFromUrl(
-      icon_url,
+      weather_info->condition_icon_url.value(),
       base::BindOnce(&AmbientPhotoController::OnWeatherConditionIconDownloaded,
-                     weak_factory_.GetWeakPtr(),
-                     screen_update.weather_info->temp_f));
+                     weak_factory_.GetWeakPtr(), weather_info->temp_f.value(),
+                     weather_info->show_celsius));
 }
 
 void AmbientPhotoController::OnWeatherConditionIconDownloaded(
-    base::Optional<float> temp_f,
+    float temp_f,
+    bool show_celsius,
     const gfx::ImageSkia& icon) {
   // For now we only show the weather card when both fields have values.
   // TODO(meilinw): optimize the behavior with more specific error handling.
-  if (icon.isNull() || !temp_f.has_value())
+  if (icon.isNull())
     return;
 
-  ambient_backend_model_.UpdateWeatherInfo(icon, temp_f.value());
+  ambient_backend_model_.UpdateWeatherInfo(icon, temp_f, show_celsius);
 }
 
 }  // namespace ash

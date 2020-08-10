@@ -26,7 +26,8 @@ struct ShareTarget {
               std::vector<FileAttachment> file_attachments,
               bool is_incoming,
               base::Optional<std::string> full_name,
-              bool is_known);
+              bool is_known,
+              base::Optional<std::string> device_id);
   ShareTarget(const ShareTarget&);
   ShareTarget(ShareTarget&&);
   ShareTarget& operator=(const ShareTarget&);
@@ -51,6 +52,7 @@ struct ShareTarget {
   base::Optional<std::string> full_name;
   // True if local device has the PublicCertificate this target is advertising.
   bool is_known = false;
+  base::Optional<std::string> device_id;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_SHARE_TARGET_H_

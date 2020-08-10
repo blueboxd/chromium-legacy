@@ -42,7 +42,7 @@
 <translation id="1283039547216852943">Нажмите, чтобы развернуть</translation>
 <translation id="1291207594882862231">Удалить файлы cookie и данные сайтов, очистить историю и кеш</translation>
 <translation id="129553762522093515">Недавно закрытые</translation>
-<translation id="1298077576058087471">Экономьте до 60 % трафика и читайте ежедневные новости.</translation>
+<translation id="1298077576058087471">Экономьте до 60 % трафика и читайте ежедневные новости</translation>
 <translation id="1303339473099049190">Пароль не найден. Убедитесь, что он указан правильно, и повторите попытку.</translation>
 <translation id="1303507811548703290">Домен: <ph name="DOMAIN" />. Отправлено с устройства "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1310482092992808703">Сгруппировать вкладки</translation>
@@ -262,7 +262,7 @@
 <translation id="305593374596241526">Определение местоположения отключено. Включите его в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Ее можно включить в настройках в любой момент.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> закладка}one{<ph name="BOOKMARKS_COUNT_MANY" /> закладка}few{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}many{<ph name="BOOKMARKS_COUNT_MANY" /> закладок}other{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}}</translation>
-<translation id="3062802207422175757">Статьи на интересующие вас темы в Chrome.</translation>
+<translation id="3062802207422175757">Мы будем предлагать вам в Chrome статьи, подобранные на основе ваших интересов.</translation>
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
 <translation id="3114012059975132928">Видеопроигрыватель</translation>
 <translation id="3114507951000454849">Читайте ежедневные новости <ph name="NEWS_ICON" /></translation>
@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Обновить</translation>
 <translation id="4738836084190194332">Последняя синхронизация: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">Ошибка TWA: код <ph name="ERROR_CODE" />, URL <ph name="VIOLATED_URL" />.</translation>
 <translation id="4749960740855309258">Открыть новую вкладку</translation>
 <translation id="4759238208242260848">Скачанные файлы</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Скачивание 1 файла завершено.}one{Скачивание # файла завершено.}few{Скачивание # файлов завершено.}many{Скачивание # файлов завершено.}other{Скачивание # файла завершено.}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">Офлайн-контент</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
+<translation id="9148126808321036104">Повторите вход</translation>
 <translation id="9155898266292537608">Также можно выполнить поиск, нажав на слово.</translation>
 <translation id="9169507124922466868">История переходов открыта наполовину</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Проверено 1 минуту назад.}one{Проверено # минуту назад.}few{Проверено # минуты назад.}many{Проверено # минут назад.}other{Проверено # минуты назад.}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="93753284658583800">Главная страница изменена.</translation>
 <translation id="938850635132480979">Ошибка <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Введите кодовую фразу</translation>
 <translation id="95817756606698420">В Китае Chrome может использовать для поиска <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />. Это можно изменить в <ph name="BEGIN_LINK" />Настройках<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Здесь будут страницы, которые вы посещали.</translation>
 <translation id="970715775301869095">Осталось <ph name="MINUTES" /> мин.</translation>

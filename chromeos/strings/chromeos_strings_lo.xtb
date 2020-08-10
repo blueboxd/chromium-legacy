@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">ລະຫັດຜ່ານໃໝ່</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> ຈັດການອຸປະກອນນີ້ ແລະ ເຂົ້າເຖິງການເຄື່ອນໄຫວຜູ້ໃຊ້ທັງໝົດ, ຮວມທັງໜ້າເວັບທີ່ເຂົ້າເບິ່ງ, ລະຫັດຜ່ານ ແລະ ອີເມວ.</translation>
 <translation id="4003384961948020559">ບໍ່ສຳເລັດ, ເອົ້າພຸດເຕັມ</translation>
+<translation id="4027485274696301677"><ph name="DEVICE_TYPE" /> ນີ້ຈັດການໂດຍ <ph name="ENROLLMENT_DOMAIN" />. ຜູ້ເບິ່ງແຍງລະບົບອາດຈະຕັ້ງຄ່າອຸປະກອນຈາກທາງໄກໄດ້.</translation>
 <translation id="4034824040120875894">ເຄື່ອງພິມ</translation>
 <translation id="4227825898293920515">ລະຫັດຜ່ານໝົດອາຍຸໃນ <ph name="TIME" /></translation>
 <translation id="4238516577297848345">ບໍ່ມີວຽກການພິມທີ່ພວມດຳເນີນຢູ່</translation>

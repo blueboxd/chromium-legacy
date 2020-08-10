@@ -2688,7 +2688,7 @@ void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
 
   bool use_msaa = !caps.msaa_is_slow && !caps.avoid_stencil_buffers;
 
-  if (use_oop_rasterization_) {
+  if (can_use_oop_rasterization_) {
     *gpu_rasterization_supported = true;
     *supports_disable_msaa = caps.multisample_compatibility;
     // For OOP raster, the gpu service side will disable msaa if the
@@ -3414,7 +3414,7 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   if (use_gpu_rasterization_) {
     image_decode_cache_ = std::make_unique<GpuImageDecodeCache>(
         layer_tree_frame_sink_->worker_context_provider(),
-        use_oop_rasterization_,
+        can_use_oop_rasterization_,
         viz::ResourceFormatToClosestSkColorType(/*gpu_compositing=*/true,
                                                 tile_format),
         settings_.decoded_image_working_set_budget_bytes, max_texture_size_,
@@ -3439,7 +3439,7 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
 
   tile_manager_.SetResources(resource_pool_.get(), image_decode_cache_.get(),
                              task_graph_runner, raster_buffer_provider_.get(),
-                             use_gpu_rasterization_);
+                             use_gpu_rasterization_, use_oop_rasterization());
   tile_manager_.SetCheckerImagingForceDisabled(
       settings_.only_checker_images_with_gpu_raster && !use_gpu_rasterization_);
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
@@ -3470,7 +3470,7 @@ LayerTreeHostImpl::CreateRasterBufferProvider() {
         settings_.resource_settings.use_gpu_memory_buffer_resources,
         tile_format, settings_.max_gpu_raster_tile_size,
         settings_.unpremultiply_and_dither_low_bit_depth_tiles,
-        use_oop_rasterization_);
+        can_use_oop_rasterization_);
   }
 
   bool use_zero_copy = settings_.use_zero_copy;
@@ -3698,9 +3698,10 @@ bool LayerTreeHostImpl::InitializeFrameSink(
   auto* context = layer_tree_frame_sink_->worker_context_provider();
   if (context) {
     viz::RasterContextProvider::ScopedRasterContextLock hold(context);
-    use_oop_rasterization_ = context->ContextCapabilities().supports_oop_raster;
+    can_use_oop_rasterization_ =
+        context->ContextCapabilities().supports_oop_raster;
   } else {
-    use_oop_rasterization_ = false;
+    can_use_oop_rasterization_ = false;
   }
 
   // Since the new context may support GPU raster or be capable of MSAA, update

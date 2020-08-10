@@ -183,10 +183,6 @@ LocalFrameUkmAggregator::GetBeginMainFrameMetrics() {
   metrics_data->prepaint =
       main_frame_percentage_records_[static_cast<unsigned>(MetricId::kPrePaint)]
           .interval_duration;
-  metrics_data->composite =
-      main_frame_percentage_records_[static_cast<unsigned>(
-                                         MetricId::kCompositing)]
-          .interval_duration;
   metrics_data->compositing_assignments =
       main_frame_percentage_records_[static_cast<unsigned>(
                                          MetricId::kCompositingAssignments)]
@@ -419,7 +415,6 @@ void LocalFrameUkmAggregator::ReportPreFCPEvent() {
     }
 
     switch (static_cast<MetricId>(i)) {
-      CASE_FOR_ID(Compositing);
       CASE_FOR_ID(CompositingAssignments);
       CASE_FOR_ID(CompositingCommit);
       CASE_FOR_ID(CompositingInputs);
@@ -466,7 +461,6 @@ void LocalFrameUkmAggregator::ReportUpdateTimeEvent() {
   builder.SetMainFrameReasons(current_sample_.trackers);
   for (unsigned i = 0; i < static_cast<unsigned>(kCount); ++i) {
     switch (static_cast<MetricId>(i)) {
-      CASE_FOR_ID(Compositing, i);
       CASE_FOR_ID(CompositingAssignments, i);
       CASE_FOR_ID(CompositingCommit, i);
       CASE_FOR_ID(CompositingInputs, i);

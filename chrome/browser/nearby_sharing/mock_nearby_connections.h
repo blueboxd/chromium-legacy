@@ -11,6 +11,8 @@
 
 using NearbyConnectionsMojom =
     location::nearby::connections::mojom::NearbyConnections;
+using AdvertisingOptionsPtr =
+    location::nearby::connections::mojom::AdvertisingOptionsPtr;
 using DiscoveryOptionsPtr =
     location::nearby::connections::mojom::DiscoveryOptionsPtr;
 using EndpointDiscoveryListener =
@@ -26,27 +28,32 @@ class MockNearbyConnections : public NearbyConnectionsMojom {
   ~MockNearbyConnections() override;
 
   MOCK_METHOD(void,
+              StartAdvertising,
+              (const std::vector<uint8_t>& endpoint_info,
+               const std::string& service_id,
+               AdvertisingOptionsPtr,
+               mojo::PendingRemote<ConnectionLifecycleListener>,
+               StartDiscoveryCallback),
+              (override));
+  MOCK_METHOD(void, StopAdvertising, (StopAdvertisingCallback), (override));
+  MOCK_METHOD(void,
               StartDiscovery,
               (const std::string& service_id,
                DiscoveryOptionsPtr,
                mojo::PendingRemote<EndpointDiscoveryListener>,
-               StartDiscoveryCallback callback),
+               StartDiscoveryCallback),
               (override));
-  MOCK_METHOD(void,
-              StopDiscovery,
-              (StopDiscoveryCallback callback),
-              (override));
+  MOCK_METHOD(void, StopDiscovery, (StopDiscoveryCallback), (override));
   MOCK_METHOD(void,
               RequestConnection,
               (const std::vector<uint8_t>& endpoint_info,
                const std::string& endpoint_id,
-               mojo::PendingRemote<ConnectionLifecycleListener> listener,
-               RequestConnectionCallback callback),
+               mojo::PendingRemote<ConnectionLifecycleListener>,
+               RequestConnectionCallback),
               (override));
   MOCK_METHOD(void,
               DisconnectFromEndpoint,
-              (const std::string& endpoint_id,
-               DisconnectFromEndpointCallback callback),
+              (const std::string& endpoint_id, DisconnectFromEndpointCallback),
               (override));
 };
 

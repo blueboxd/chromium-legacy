@@ -448,12 +448,7 @@ TEST_F(AccessContextAuditServiceTest, TimeRangeHistoryDeletion) {
   CheckContainsStorageAPIRecord(kOrigin1, kTestStorageType2, kOrigin1, records);
 }
 
-#if defined(THREAD_SANITIZER)
-#define MAYBE_SessionOnlyRecords DISABLED_SessionOnlyRecords
-#else
-#define MAYBE_SessionOnlyRecords SessionOnlyRecords
-#endif
-TEST_F(AccessContextAuditServiceTest, MAYBE_SessionOnlyRecords) {
+TEST_F(AccessContextAuditServiceTest, SessionOnlyRecords) {
   // Check that data for cookie domains and storage origins are cleared on
   // service shutdown when the associated content settings indicate they should.
   const GURL kTestPersistentURL("https://persistent.com");
@@ -516,4 +511,13 @@ TEST_F(AccessContextAuditServiceTest, MAYBE_SessionOnlyRecords) {
                             kTopFrameOrigin, records);
   CheckContainsStorageAPIRecord(url::Origin::Create(GURL(kTestPersistentURL)),
                                 kTestStorageType, kTopFrameOrigin, records);
+
+  // Update the default content setting to SESSION_ONLY and ensure that all
+  // records are cleared.
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->SetDefaultContentSetting(ContentSettingsType::COOKIES,
+                                 ContentSetting::CONTENT_SETTING_SESSION_ONLY);
+  service()->ClearSessionOnlyRecords();
+  records = GetAllAccessRecords();
+  ASSERT_EQ(0u, records.size());
 }

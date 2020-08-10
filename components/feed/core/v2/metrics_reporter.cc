@@ -173,6 +173,15 @@ void MetricsReporter::ContentSliceViewed(SurfaceId surface_id,
                                 index_in_stream, kMaxSuggestionsTotal);
   if (load_latencies_) {
     load_latencies_->StepComplete(LoadLatencyTimes::kStreamViewed);
+
+    // Log latencies for debugging.
+    if (VLOG_IS_ON(2)) {
+      for (const LoadLatencyTimes::Step& step : load_latencies_->steps()) {
+        DVLOG(2) << "LoadStepLatency." << LoadLatencyStepName(step.kind)
+                 << " = " << step.latency;
+      }
+    }
+
     if (!load_latencies_recorded_) {
       // Use |load_latencies_recorded_| to only report load latencies once.
       // This generally will be the worst-case, since caches are likely to be
@@ -181,6 +190,7 @@ void MetricsReporter::ContentSliceViewed(SurfaceId surface_id,
       load_latencies_recorded_ = true;
       ReportLoadLatencies(std::move(load_latencies_));
     }
+    load_latencies_ = nullptr;
   }
   ReportOpenFeedIfNeeded(surface_id, true);
 }

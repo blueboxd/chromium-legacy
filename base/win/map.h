@@ -399,7 +399,7 @@ class Map
  private:
   ~Map() override {
     // Handlers should not outlive the Map. Furthermore, they must ensure
-    // they are unregistered before the the handler is destroyed. This implies
+    // they are unregistered before the handler is destroyed. This implies
     // there should be no handlers left when the Map is destructed.
     DCHECK(handlers_.empty());
   }

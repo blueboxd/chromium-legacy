@@ -772,6 +772,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // trigger a priority update.
   bool ShouldUpdateTaskQueuePriorities(Policy new_policy) const;
 
+  // Computes compositor priority based on various experiments and
+  // the use case. Defaults to kNormalPriority.
+  TaskQueue::QueuePriority ComputeCompositorPriority() const;
+
+  // Used to update the compositor policy on the main thread when there is a
+  // change in the compositor priority.
+  void UpdateCompositorPolicy();
+
   // Computes the priority for compositing based on the current use case.
   // Returns nullopt if the use case does not need to set the priority.
   base::Optional<TaskQueue::QueuePriority>

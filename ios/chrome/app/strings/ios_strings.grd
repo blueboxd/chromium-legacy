@@ -357,11 +357,11 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_AUTOFILL_SET_UP_SCREENLOCK_CONTENT" desc="Message informing the user that in order to use the password, a screen lock needs to be set up on the device. This is shown as an alert message after the user tries to view or copy the password from a settings page. [CHAR_LIMIT=100]">
         To use passwords, you must first set a passcode on your device.
       </message>
-      <message name="IDS_IOS_COPY_ACTION_TITLE" desc="Title of the action used to copy the selected piece of content to the clipboard. Targeted content type includes URL or image. [iOS only]">
-        Copy
-      </message>
       <message name="IDS_IOS_DELETE_ACTION_TITLE" desc="Title of the action used to delete a selected item. Item types include, for example, a Bookmark or an History Entry. [iOS only]">
         Delete
+      </message>
+      <message name="IDS_IOS_OPEN_IN_INCOGNITO_ACTION_TITLE" desc="Title of the action used to open an URL in a new Incognito tab. [iOS only]">
+        Open in Incognito
       </message>
       <message name="IDS_IOS_BADGE_INCOGNITO_HINT" desc="Button displayed when the user is in Incognito mode. [iOS only]">
         Current Webpage is on Incognito
@@ -616,7 +616,7 @@ locale.  The strings in this file are specific to iOS.
         Open
       </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW" desc="The iOS menu item for opening a link in a new window. [iOS only]">
-        Open In New Window
+        Open in New Window
       </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_OPENIMAGE" desc="The name of the Open Image command in the content area context menu">
         Open Image

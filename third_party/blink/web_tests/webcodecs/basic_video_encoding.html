@@ -24,7 +24,7 @@ async function generateBitmap(width, height, text) {
 
 async function createFrame(width, height, ts) {
   let imageBitmap = await generateBitmap(width, height, ts.toString());
-  return new VideoFrame({ timestamp: ts }, imageBitmap);
+  return new VideoFrame(imageBitmap, { timestamp: ts });
 }
 
 async function encode_test(codec, profile, acc) {

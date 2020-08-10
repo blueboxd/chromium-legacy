@@ -145,9 +145,9 @@ RealTimeUrlLookupService::GetTrafficAnnotationTag() const {
         })");
 }
 
-std::string RealTimeUrlLookupService::GetDMTokenString() const {
+base::Optional<std::string> RealTimeUrlLookupService::GetDMTokenString() const {
   // DM token should only be set for enterprise requests.
-  return "";
+  return base::nullopt;
 }
 
 std::string RealTimeUrlLookupService::GetMetricSuffix() const {

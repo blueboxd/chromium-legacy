@@ -7,10 +7,15 @@
 #include <memory>
 #include <utility>
 
+#include "ash/login/ui/login_password_view.h"
+#include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/in_session_auth_dialog_controller.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
@@ -35,7 +40,7 @@ const char kCancelButtonText[] = "Cancel";
 const int kContainerPreferredWidth = 512;
 const int kTopVerticalSpacing = 24;
 const int kVerticalSpacingBetweenTitleAndPrompt = 16;
-const int kVerticalSpacingBetweenPromptAndButtons = 32;
+const int kVerticalSpacingBetweenPasswordAndPINKeyboard = 16;
 const int kBottomVerticalSpacing = 20;
 const int kButtonSpacing = 8;
 
@@ -61,9 +66,16 @@ AuthDialogDebugView::AuthDialogDebugView() {
   AddTitleView();
   AddVerticalSpacing(kVerticalSpacingBetweenTitleAndPrompt);
   AddPromptView();
-  AddVerticalSpacing(kVerticalSpacingBetweenPromptAndButtons);
+  // TODO(b/156258540): Add proper spacing once all elements are determined.
+  AddPasswordView();
+  AddPinView();
+  AddVerticalSpacing(kVerticalSpacingBetweenPasswordAndPINKeyboard);
+  // TODO(b/156258540): Add fingerprint icon view and proper spacing.
   AddActionButtonsView();
   AddVerticalSpacing(kBottomVerticalSpacing);
+
+  // Deferred because it needs the pin_view_ pointer.
+  InitPasswordView();
 }
 
 AuthDialogDebugView::~AuthDialogDebugView() = default;
@@ -94,11 +106,48 @@ void AuthDialogDebugView::AddPromptView() {
   prompt_->SetFontList(base_font_list.Derive(kPromptFontSize,
                                              gfx::Font::FontStyle::NORMAL,
                                              gfx::Font::Weight::NORMAL));
-  // TODO(yichengli): Use a different prompt if the board has no fingerprint
+  // TODO(b/156258540): Use a different prompt if the board has no fingerprint
   // sensor.
   prompt_->SetText(base::UTF8ToUTF16(kFingerprintPrompt));
   prompt_->SetMaximumWidth(kContainerPreferredWidth);
   prompt_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
+}
+
+void AuthDialogDebugView::AddPasswordView() {
+  password_view_ = container_->AddChildView(
+      std::make_unique<LoginPasswordView>(CreateInSessionAuthPalette()));
+
+  password_view_->SetPaintToLayer();
+  password_view_->layer()->SetFillsBoundsOpaquely(false);
+  password_view_->SetDisplayPasswordButtonVisible(true);
+  password_view_->SetEnabled(true);
+  password_view_->SetEnabledOnEmptyPassword(false);
+  password_view_->SetFocusEnabledForChildViews(true);
+  password_view_->SetVisible(true);
+
+  // TODO(b/156258540): Set this text according to "has PIN or not".
+  password_view_->SetPlaceholderText(
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER));
+}
+
+void AuthDialogDebugView::AddPinView() {
+  pin_view_ = container_->AddChildView(std::make_unique<LoginPinView>(
+      LoginPinView::Style::kAlphanumeric, CreateInSessionAuthPalette(),
+      base::BindRepeating(&LoginPasswordView::InsertNumber,
+                          base::Unretained(password_view_)),
+      base::BindRepeating(&LoginPasswordView::Backspace,
+                          base::Unretained(password_view_)),
+      base::BindRepeating(&LoginPasswordView::SubmitPassword,
+                          base::Unretained(password_view_))));
+  pin_view_->SetVisible(true);
+}
+
+void AuthDialogDebugView::InitPasswordView() {
+  password_view_->Init(base::BindRepeating(&AuthDialogDebugView::OnAuthSubmit,
+                                           base::Unretained(this)),
+                       base::BindRepeating(&LoginPinView::OnPasswordTextChanged,
+                                           base::Unretained(pin_view_)),
+                       base::DoNothing(), base::DoNothing());
 }
 
 void AuthDialogDebugView::AddVerticalSpacing(int height) {
@@ -130,7 +179,7 @@ void AuthDialogDebugView::ButtonPressed(views::Button* sender,
     InSessionAuthDialogController::Get()->DestroyAuthenticationDialog();
   }
 
-  // TODO(yichengli): Enable more options button when we have both fingerprint
+  // TODO(b/156258540): Enable more options button when we have both fingerprint
   // view and password input view.
 }
 
@@ -146,6 +195,10 @@ views::LabelButton* AuthDialogDebugView::AddButton(const std::string& text,
   container->AddChildView(
       login_views_utils::WrapViewForPreferredSize(std::move(button)));
   return view;
+}
+
+void AuthDialogDebugView::OnAuthSubmit(const base::string16& password) {
+  // TODO(b/156258540): Call InSessionAuthDialogController to authenticate user.
 }
 
 }  // namespace ash

@@ -16,6 +16,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.OneShotCallback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.Invalidator;
@@ -28,11 +29,12 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
-import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarProgressBar;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
+import org.chromium.chrome.browser.toolbar.menu_button.MenuButton;
+import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
@@ -43,7 +45,6 @@ import java.util.List;
  * A coordinator for the top toolbar component.
  */
 public class TopToolbarCoordinator implements Toolbar {
-
     /**
      * Observes toolbar URL expansion percentage change.
      */
@@ -78,6 +79,8 @@ public class TopToolbarCoordinator implements Toolbar {
 
     private Callback<OverviewModeBehavior> mOverviewModeBehaviorSupplierObserver;
     private ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
+    private MenuButtonCoordinator mMenuButtonCoordinator;
+    private ObservableSupplier<AppMenuButtonHelper> mAppMenuButtonHelperSupplier;
 
     private HomepageManager.HomepageStateListener mHomepageStateListener =
             new HomepageManager.HomepageStateListener() {
@@ -106,9 +109,12 @@ public class TopToolbarCoordinator implements Toolbar {
             UserEducationHelper userEducationHelper, List<ButtonDataProvider> buttonDataProviders,
             ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             ThemeColorProvider normalThemeColorProvider,
-            ThemeColorProvider overviewThemeColorProvider) {
+            ThemeColorProvider overviewThemeColorProvider,
+            MenuButtonCoordinator menuButtonCoordinator,
+            ObservableSupplier<AppMenuButtonHelper> appMenuButtonHelperSupplier) {
         mToolbarLayout = toolbarLayout;
         mIdentityDiscController = identityDiscController;
+        mMenuButtonCoordinator = menuButtonCoordinator;
         mOptionalButtonController = new OptionalBrowsingModeButtonController(buttonDataProviders,
                 userEducationHelper, mToolbarLayout, () -> toolbarDataProvider.getTab());
 
@@ -137,6 +143,8 @@ public class TopToolbarCoordinator implements Toolbar {
             menuButtonWrapper.setThemeColorProvider(normalThemeColorProvider);
         }
         mToolbarLayout.setThemeColorProvider(normalThemeColorProvider);
+        mAppMenuButtonHelperSupplier = appMenuButtonHelperSupplier;
+        new OneShotCallback<>(mAppMenuButtonHelperSupplier, this::setAppMenuButtonHelper);
     }
 
     /**
@@ -240,16 +248,16 @@ public class TopToolbarCoordinator implements Toolbar {
             mOptionalButtonController.destroy();
             mOptionalButtonController = null;
         }
+
+        if (mAppMenuButtonHelperSupplier != null) {
+            mAppMenuButtonHelperSupplier = null;
+        }
     }
 
     @Override
     public void disableMenuButton() {
-        mToolbarLayout.disableMenuButton();
-    }
-
-    /** Notified that the menu was shown. */
-    public void onMenuShown() {
-        mToolbarLayout.onMenuShown();
+        mMenuButtonCoordinator.disableMenuButton();
+        mToolbarLayout.onMenuButtonDisabled();
     }
 
     /**
@@ -491,7 +499,8 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void setTabSwitcherMode(
             boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
-        mToolbarLayout.setTabSwitcherMode(inTabSwitcherMode, showToolbar, delayAnimation);
+        mToolbarLayout.setTabSwitcherMode(
+                inTabSwitcherMode, showToolbar, delayAnimation, mMenuButtonCoordinator);
         if (mTabSwitcherModeCoordinatorPhone != null) {
             mTabSwitcherModeCoordinatorPhone.setTabSwitcherMode(inTabSwitcherMode);
         } else if (mStartSurfaceToolbarCoordinator != null) {
@@ -596,26 +605,6 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public LocationBar getLocationBar() {
         return mToolbarLayout.getLocationBar();
-    }
-
-    @Override
-    public void setMenuButtonHighlight(boolean highlight) {
-        mToolbarLayout.setMenuButtonHighlight(highlight);
-    }
-
-    @Override
-    public void showAppMenuUpdateBadge() {
-        mToolbarLayout.showAppMenuUpdateBadge(true);
-    }
-
-    @Override
-    public boolean isShowingAppMenuUpdateBadge() {
-        return mToolbarLayout.isShowingAppMenuUpdateBadge();
-    }
-
-    @Override
-    public void removeAppMenuUpdateBadge(boolean animate) {
-        mToolbarLayout.removeAppMenuUpdateBadge(animate);
     }
 
     /**

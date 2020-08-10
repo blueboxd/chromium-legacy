@@ -191,6 +191,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
+#include "chrome/browser/notifications/chime/android/features.h"
 #include "components/browser_ui/site_settings/android/features.h"
 #include "components/external_intents/android/external_intents_feature_list.h"
 #else  // OS_ANDROID
@@ -5502,6 +5503,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"usage-stats", flag_descriptions::kUsageStatsName,
      flag_descriptions::kUsageStatsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kUsageStatsFeature)},
+
+    {"use-chime-android-sdk", flag_descriptions::kUseChimeAndroidSdkName,
+     flag_descriptions::kUseChimeAndroidSdkDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(notifications::features::kUseChimeAndroidSdk)},
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

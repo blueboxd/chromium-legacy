@@ -190,20 +190,21 @@ IconBundle GetEasyUnlockResources(EasyUnlockIconId id) {
 // show/hide password modes.
 class LoginPasswordView::LoginTextfield : public views::Textfield {
  public:
-  LoginTextfield(base::RepeatingClosure on_focus_closure,
+  LoginTextfield(const LoginPalette& palette,
+                 base::RepeatingClosure on_focus_closure,
                  base::RepeatingClosure on_blur_closure)
       : on_focus_closure_(std::move(on_focus_closure)),
         on_blur_closure_(std::move(on_blur_closure)) {
-    SetTextColor(SK_ColorWHITE);
+    SetTextColor(palette.password_text_color);
     SetFontList(views::Textfield::GetDefaultFontList().Derive(
         kPasswordFontDeltaSize, gfx::Font::FontStyle::NORMAL,
         gfx::Font::Weight::NORMAL));
     SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
     set_placeholder_font_list(views::Textfield::GetDefaultFontList());
-    set_placeholder_text_color(login_constants::kAuthMethodsTextColor);
+    set_placeholder_text_color(palette.password_placeholder_text_color);
     SetObscuredGlyphSpacing(kPasswordGlyphSpacing);
     SetBorder(nullptr);
-    SetBackgroundColor(SK_ColorTRANSPARENT);
+    SetBackgroundColor(palette.password_background_color);
   }
   LoginTextfield(const LoginTextfield&) = delete;
   LoginTextfield& operator=(const LoginTextfield&) = delete;
@@ -386,17 +387,18 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
 class LoginPasswordView::DisplayPasswordButton
     : public views::ToggleImageButton {
  public:
-  explicit DisplayPasswordButton(views::ButtonListener* listener)
+  DisplayPasswordButton(const LoginPalette& palette,
+                        views::ButtonListener* listener)
       : ToggleImageButton(listener) {
     const gfx::ImageSkia invisible_icon = gfx::CreateVectorIcon(
         kLockScreenPasswordInvisibleIcon, kDisplayPasswordButtonSizeDp,
-        login_constants::kButtonEnabledColor);
+        palette.button_enabled_color);
     const gfx::ImageSkia visible_icon = gfx::CreateVectorIcon(
         kLockScreenPasswordVisibleIcon, kDisplayPasswordButtonSizeDp,
-        login_constants::kButtonEnabledColor);
+        palette.button_enabled_color);
     const gfx::ImageSkia visible_icon_disabled = gfx::CreateVectorIcon(
         kLockScreenPasswordVisibleIcon, kDisplayPasswordButtonSizeDp,
-        SkColorSetA(login_constants::kButtonEnabledColor,
+        SkColorSetA(palette.button_enabled_color,
                     login_constants::kButtonDisabledAlpha));
     SetImage(views::Button::STATE_NORMAL, visible_icon);
     SetImage(views::Button::STATE_DISABLED, visible_icon_disabled);
@@ -467,11 +469,12 @@ void LoginPasswordView::TestApi::SetTimers(
   view_->SetDisplayPasswordButtonVisible(true);
 }
 
-LoginPasswordView::LoginPasswordView()
+LoginPasswordView::LoginPasswordView(const LoginPalette& palette)
     : is_display_password_feature_enabled_(
           chromeos::features::IsLoginDisplayPasswordButtonEnabled()),
       clear_password_timer_(std::make_unique<base::RetainingOneShotTimer>()),
-      hide_password_timer_(std::make_unique<base::RetainingOneShotTimer>()) {
+      hide_password_timer_(std::make_unique<base::RetainingOneShotTimer>()),
+      palette_(palette) {
   Shell::Get()->ime_controller()->AddObserver(this);
 
   // Contains the password layout on the left and the submit button on the
@@ -520,6 +523,7 @@ LoginPasswordView::LoginPasswordView()
   // Password textfield. We control the textfield size by sizing the parent
   // view, as the textfield will expand to fill it.
   auto textfield = std::make_unique<LoginTextfield>(
+      palette_,
       // Highlight on focus. Remove highlight on blur.
       base::BindRepeating(
           &LoginPasswordView::SetSeparatorAndCapsLockHighlighted,
@@ -541,7 +545,7 @@ LoginPasswordView::LoginPasswordView()
 
   if (is_display_password_feature_enabled_) {
     display_password_button_ = password_row_->AddChildView(
-        std::make_unique<DisplayPasswordButton>(this));
+        std::make_unique<DisplayPasswordButton>(palette_, this));
   }
 
   // Separator on bottom.
@@ -800,7 +804,7 @@ void LoginPasswordView::SubmitPassword() {
 }
 
 void LoginPasswordView::SetSeparatorAndCapsLockHighlighted(bool highlight) {
-  SkColor color = login_constants::kButtonEnabledColor;
+  SkColor color = palette_.button_enabled_color;
   if (!highlight)
     color = SkColorSetA(color, login_constants::kButtonDisabledAlpha);
   separator_->SetColor(color);

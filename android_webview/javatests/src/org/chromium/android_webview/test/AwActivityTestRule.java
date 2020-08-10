@@ -60,6 +60,8 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
 
     private static final Pattern MAYBE_QUOTED_STRING = Pattern.compile("^(\"?)(.*)\\1$");
 
+    private static boolean sBrowserProcessStarted;
+
     /**
      * An interface to call onCreateWindow(AwContents).
      */
@@ -98,6 +100,9 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         }
         if (needsBrowserProcessStarted()) {
             startBrowserProcess();
+        } else {
+            assert !sBrowserProcessStarted
+                : "needsBrowserProcessStarted false and @Batch are incompatible";
         }
     }
 
@@ -171,7 +176,10 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
     public void startBrowserProcess() {
         // The Activity must be launched in order for proper webview statics to be setup.
         launchActivity();
-        TestThreadUtils.runOnUiThreadBlocking(() -> AwBrowserProcess.start());
+        if (!sBrowserProcessStarted) {
+            sBrowserProcessStarted = true;
+            TestThreadUtils.runOnUiThreadBlocking(() -> AwBrowserProcess.start());
+        }
         if (mBrowserContext != null) {
             TestThreadUtils.runOnUiThreadBlocking(
                     () -> mBrowserContext.setNativePointer(

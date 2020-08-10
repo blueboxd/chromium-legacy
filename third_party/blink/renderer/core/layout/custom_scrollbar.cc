@@ -133,10 +133,16 @@ CustomScrollbar::GetScrollbarPseudoElementStyle(ScrollbarPart part_type,
   Element* element = StyleSource();
   DCHECK(element);
   Document& document = element->GetDocument();
-  // This method may be called as part of style recalc. Don't re-enter into
-  // updating style for those cases.
-  if (!document.InStyleRecalc())
-    document.UpdateStyleAndLayoutTreeForNode(element);
+  if (!document.InStyleRecalc()) {
+    // We are currently querying style for custom scrollbars on a style-dirty
+    // tree outside style recalc. Update active style to make sure we don't
+    // crash on null RuleSets.
+    // TODO(crbug.com/1114644): We should not compute style for a dirty tree
+    // outside the lifecycle update. Instead we should mark the originating
+    // element for style recalc and let the next lifecycle update compute the
+    // scrollbar styles.
+    document.GetStyleEngine().UpdateActiveStyle();
+  }
   if (!element->GetLayoutObject())
     return nullptr;
   const ComputedStyle* source_style = element->GetLayoutObject()->Style();

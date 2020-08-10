@@ -30,7 +30,7 @@
 class MockPlatformInfo(object):
     def __init__(self,
                  os_name='mac',
-                 os_version='mac10.10',
+                 os_version='mac10.14',
                  linux_distribution=None,
                  is_highdpi=False):
         self.os_name = os_name

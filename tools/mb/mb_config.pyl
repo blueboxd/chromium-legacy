@@ -494,7 +494,6 @@
       'ios-simulator': 'ios_simulator_debug_static_rbe_bot',
       'ios-simulator-full-configs': 'ios_simulator_debug_static_bot',
       'ios-simulator-noncq': 'ios_simulator_debug_static_rbe_bot',
-      'mac-arm64': 'mac_arm64_release_bot',
       'mac-arm64-rel': 'mac_arm64_release_bot',
     },
 

@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">ახალი პაროლი</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> მართავს ამ მოწყობილობას და აქვს წვდომა მომხმარებლების ნებისმიერ აქტივობაზე, მათ შორის, მონახულებულ ვებგვერდებზე, პაროლებსა და ელფოსტაზე.</translation>
 <translation id="4003384961948020559">ვერ მოხერხდა — გამომტანი სავსეა</translation>
+<translation id="4027485274696301677">ეს <ph name="DEVICE_TYPE" /> იმართება <ph name="ENROLLMENT_DOMAIN" />-ის მიერ. ადმინისტრატორებს შეუძლიათ ამ მოწყობილობის დისტანციურად კონფიგურაცია.</translation>
 <translation id="4034824040120875894">პრინტერი</translation>
 <translation id="4227825898293920515">პაროლი ძალაშია <ph name="TIME" /></translation>
 <translation id="4238516577297848345">ბეჭდვის მიმდინარე დავალებები არ არის</translation>

@@ -58,6 +58,13 @@ class NearbyConnections : public mojom::NearbyConnections {
   sharing::mojom::WebRtcSignalingMessenger* GetWebRtcSignalingMessenger();
 
   // mojom::NearbyConnections:
+  void StartAdvertising(
+      const std::vector<uint8_t>& endpoint_info,
+      const std::string& service_id,
+      mojom::AdvertisingOptionsPtr options,
+      mojo::PendingRemote<mojom::ConnectionLifecycleListener> listener,
+      StartAdvertisingCallback callback) override;
+  void StopAdvertising(StopAdvertisingCallback callback) override;
   void StartDiscovery(
       const std::string& service_id,
       mojom::DiscoveryOptionsPtr options,

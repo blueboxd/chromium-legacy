@@ -119,14 +119,13 @@ class SignInTestObserver : public IdentityManager::Observer,
       return;
     }
 
-    bool has_valid_primary_sync_account = HasValidPrimarySyncAccount();
     switch (primary_sync_account_wait_) {
       case PrimarySyncAccountWait::kWaitForAdded:
-        if (!has_valid_primary_sync_account)
+        if (!HasValidPrimarySyncAccount())
           return;
         break;
       case PrimarySyncAccountWait::kWaitForCleared:
-        if (has_valid_primary_sync_account)
+        if (identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync))
           return;
         break;
       case PrimarySyncAccountWait::kNotWait:
@@ -179,6 +178,8 @@ class SignInTestObserver : public IdentityManager::Observer,
 };
 
 // Live tests for SignIn.
+// These tests can be run with:
+// browser_tests --gtest_filter=LiveSignInTest.* --run-live-tests --run-manual
 class LiveSignInTest : public signin::test::LiveTest {
  public:
   LiveSignInTest() = default;
@@ -405,6 +406,31 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_TurnOffSync) {
       identity_manager()->GetAccountsInCookieJar();
   EXPECT_TRUE(accounts_in_cookie_jar_2.accounts_are_fresh);
   ASSERT_TRUE(accounts_in_cookie_jar_2.signed_in_accounts.empty());
+  EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+}
+
+// In "Sync paused" state, when the primary account is invalid, turns off sync
+// from settings. Checks that the account is removed from Chrome.
+// Regression test for https://crbug.com/1114646
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_TurnOffSyncWhenPaused) {
+  TestAccount test_account_1;
+  CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account_1));
+  TurnOnSync(test_account_1, 0);
+
+  // Get in sync paused state.
+  SignOutFromWeb();
+
+  const CoreAccountInfo& primary_account =
+      identity_manager()->GetPrimaryAccountInfo();
+  EXPECT_FALSE(primary_account.IsEmpty());
+  EXPECT_TRUE(gaia::AreEmailsSame(test_account_1.user, primary_account.email));
+  EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account.account_id));
+
+  TurnOffSync();
   EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
 }

@@ -462,7 +462,6 @@
 <translation id="4732120983431207637">מודול התרת מחסניות</translation>
 <translation id="473775607612524610">עדכן</translation>
 <translation id="4738836084190194332">סונכרן לאחרונה: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">‏שגיאת TWA: <ph name="ERROR_CODE" /> ב-<ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">פתח כרטיסייה חדשה</translation>
 <translation id="4759238208242260848">הורדות</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{הורדה אחת הושלמה.}two{# הורדות הושלמו.}many{# הורדות הושלמו.}other{# הורדות הושלמו.}}</translation>
@@ -1047,6 +1046,7 @@
 <translation id="9133397713400217035">הצעות לתוכן במצב לא מקוון</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
+<translation id="9148126808321036104">היכנס שוב</translation>
 <translation id="9155898266292537608">אפשר גם להתחיל חיפוש על-ידי הקשה קצרה על מילה</translation>
 <translation id="9169507124922466868">היסטוריית הניווט פתוחה למחצה</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{התבצעה בדיקה לפני דקה אחת}two{התבצעה בדיקה לפני # דקות}many{התבצעה בדיקה לפני # דקות}other{התבצעה בדיקה לפני # דקות}}</translation>
@@ -1059,6 +1059,7 @@
 <translation id="932327136139879170">בית</translation>
 <translation id="93753284658583800">דף הבית השתנה</translation>
 <translation id="938850635132480979">שגיאה: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">הזן משפט-סיסמה</translation>
 <translation id="95817756606698420">‏דפדפן Chrome יכול להשתמש ב-<ph name="BEGIN_BOLD" />Sogou‏<ph name="END_BOLD" /> כדי לחפש בסין. אפשר לשנות את ההעדפה הזאת ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">הדפים שבהם ביקרת מופיעים כאן</translation>
 <translation id="970715775301869095">נותרו <ph name="MINUTES" /> דקות</translation>

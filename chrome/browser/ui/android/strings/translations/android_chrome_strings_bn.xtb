@@ -42,7 +42,7 @@
 <translation id="1283039547216852943">প্রসারিত করতে আলতো চাপুন</translation>
 <translation id="1291207594882862231">ইতিহাস, কুকিজ, সাইট ডেটা, ক্যাশে সাফ করে...</translation>
 <translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
-<translation id="1298077576058087471">৬০% পর্যন্ত ডেটা সেভ করুন, আজকের খবর পড়ুন</translation>
+<translation id="1298077576058087471">সর্বাধিক ৬০ শতাংশ ডেটা সাশ্রয় করুন, আজকের খবর পড়ুন</translation>
 <translation id="1303339473099049190">ওই পাসওয়ার্ডটি খুঁজে পাওয়া যায়নি। বানান পরীক্ষা করে আবার চেষ্টা করে দেখুন।</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> থেকে পাঠানো হয়েছে</translation>
 <translation id="1310482092992808703">ট্যাবগুলি গ্রুপ করুন</translation>
@@ -262,7 +262,7 @@
 <translation id="305593374596241526">লোকেশনটি বন্ধ, <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে এটি চালু করুন।</translation>
 <translation id="3058498974290601450">যেকোনও সময় সেটিংস থেকে আপনি সিঙ্ক চালু করতে পারেন</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" />টি বুকমার্ক}one{<ph name="BOOKMARKS_COUNT_MANY" />টি বুকমার্ক}other{<ph name="BOOKMARKS_COUNT_MANY" />টি বুকমার্ক}}</translation>
-<translation id="3062802207422175757">Chrome-এ আপনার পছন্দের নিবন্ধ রয়েছে</translation>
+<translation id="3062802207422175757">Chrome-এ আপনি যেসব নিবন্ধগুলি পড়তে পছন্দ করেন</translation>
 <translation id="3089395242580810162">ছদ্মবেশী ট্যাবে খুলুন</translation>
 <translation id="3114012059975132928">ভিডিও প্লেয়ার</translation>
 <translation id="3114507951000454849">আজকের খবর পড়ুন <ph name="NEWS_ICON" /></translation>
@@ -464,7 +464,6 @@
 <translation id="4732120983431207637">স্ট্যাক আনউইন্ডার</translation>
 <translation id="473775607612524610">আপডেট করুন</translation>
 <translation id="4738836084190194332">সর্বশেষ সিঙ্ক হয়েছে: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA সমস্যা: <ph name="VIOLATED_URL" />-এ <ph name="ERROR_CODE" /></translation>
 <translation id="4749960740855309258">একটি নতুন ট্যাব খুলুন</translation>
 <translation id="4759238208242260848">ডাউনলোড</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{১টি ডাউনলোড হয়ে গেছে।}one{#টি ডাউনলোড হয়ে গেছে।}other{#টি ডাউনলোড হয়ে গেছে।}}</translation>
@@ -723,7 +722,7 @@
 <translation id="6573431926118603307">আপনার অন্য ডিভাইসগুলিতে Chrome এ আপনি যে ট্যাবগুলি খুলেছেন সেগুলি এখানে দেখা যাবে।</translation>
 <translation id="6583199322650523874">বর্তমান পৃষ্ঠাটি বুকমার্ক করুন</translation>
 <translation id="6588043302623806746">নিরাপদ ডিএনএস ব্যবহার করুন</translation>
-<translation id="6590471736817333463">৬০% পর্যন্ত ডেটা সেভ করুন</translation>
+<translation id="6590471736817333463">সর্বাধিক ৬০ শতাংশ ডেটা সাশ্রয় করুন</translation>
 <translation id="6593061639179217415">ডেস্কটপ সাইট</translation>
 <translation id="6597891566292541626">এই ফ্রেমের মধ্যে QR/বার কোড বসান।</translation>
 <translation id="6600954340915313787">Chrome-এ প্রতিলিপি করা হয়েছে</translation>
@@ -932,7 +931,7 @@
 <translation id="8190358571722158785">১ দিন বাকি আছে</translation>
 <translation id="8200772114523450471">আবার চালু করা</translation>
 <translation id="8209050860603202033">ছবি খুলুন</translation>
-<translation id="8218052821161047641">'ফাস্ট পেজ' মোড</translation>
+<translation id="8218052821161047641">অতি দ্রুত লোড হওয়া পৃষ্ঠা</translation>
 <translation id="8218622182176210845">আপনার অ্যাকাউন্ট ম্যানেজ করুন</translation>
 <translation id="8223642481677794647">ফিড কার্ডের মেনু</translation>
 <translation id="8224471946457685718">ওয়াই-ফাই ব্যবহার করে আপনার জন্য নিবন্ধ ডাউনলোড করুন</translation>
@@ -1049,6 +1048,7 @@
 <translation id="9133397713400217035">অফলাইন কন্টেন্ট দেখুন</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">প্রকৃত রূপ দেখান</translation>
+<translation id="9148126808321036104">আবার সাইন-ইন করুন</translation>
 <translation id="9155898266292537608">এছাড়াও কোনও শব্দের উপরে ট্যাপ করেও খুঁজতে পারেন</translation>
 <translation id="9169507124922466868">নেভিগেশনের ইতিহাস অর্ধেক খোলা রয়েছে</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{১ মিনিট আগে চেক করা হয়েছে}one{# মিনিট আগে চেক করা হয়েছে}other{# মিনিট আগে চেক করা হয়েছে}}</translation>
@@ -1057,10 +1057,11 @@
 <translation id="9209888181064652401">কল করা যাচ্ছে না</translation>
 <translation id="9219103736887031265">ছবিগুলি</translation>
 <translation id="926205370408745186">ডিজিটাল ওয়েলবিং থেকে আপনার Chrome অ্যাক্টিভিটি সরিয়ে দিন</translation>
-<translation id="927968626442779827">Google Chrome-এর 'লাইট মোড' ব্যবহার করুন</translation>
+<translation id="927968626442779827">Google Chrome-এ 'লাইট' মোড ব্যবহার করুন</translation>
 <translation id="932327136139879170">হোম</translation>
 <translation id="93753284658583800">হোমপেজ বদলানো হয়েছে</translation>
 <translation id="938850635132480979">ত্রুটি: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">পাসফ্রেজ প্রবেশ করান</translation>
 <translation id="95817756606698420">Chrome, চীনে সার্চের জন্য <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> কে ব্যবহার করতে পারে। আপনি <ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> থেকে এটি পরিবর্তন করতে পারেন।</translation>
 <translation id="968900484120156207">আপনি যে পৃষ্ঠাগুলিতে যান সেগুলি এখানে দেখানো হয়</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> মিনিট বাকি আছে</translation>

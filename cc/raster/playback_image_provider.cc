@@ -58,12 +58,17 @@ ImageProvider::ScopedResult PlaybackImageProvider::GetRasterContent(
 
   DrawImage adjusted_image(draw_image, 1.f, frame_index, target_color_space_);
   if (!cache_->UseCacheForDrawImage(adjusted_image)) {
-    if (settings_->use_oop_raster) {
+    if (settings_->raster_mode == RasterMode::kOop) {
       return ScopedResult(DecodedDrawImage(paint_image.GetMailbox(),
                                            draw_image.filter_quality()));
+    } else if (settings_->raster_mode == RasterMode::kGpu) {
+      return ScopedResult(DecodedDrawImage(
+          paint_image.GetAcceleratedSkImage(), SkSize::Make(0, 0),
+          SkSize::Make(1.f, 1.f), draw_image.filter_quality(),
+          true /* is_budgeted */));
     } else {
       return ScopedResult(
-          DecodedDrawImage(paint_image.GetRasterSkImage(), SkSize::Make(0, 0),
+          DecodedDrawImage(paint_image.GetSwSkImage(), SkSize::Make(0, 0),
                            SkSize::Make(1.f, 1.f), draw_image.filter_quality(),
                            true /* is_budgeted */));
     }

@@ -875,7 +875,7 @@ bool InspectorOverlayAgent::IsInspectorLayer(const cc::Layer* layer) const {
                         frame_overlay_->GetDelegate())
                         ->GetLayer();
   }
-  return layer == frame_overlay_->GetGraphicsLayer()->CcLayer();
+  return layer == &frame_overlay_->GetGraphicsLayer()->CcLayer();
 }
 
 LocalFrame* InspectorOverlayAgent::GetFrame() const {

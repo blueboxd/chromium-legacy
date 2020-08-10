@@ -154,6 +154,7 @@ void DownloadReporter::OnDownloadUpdated(download::DownloadItem* download) {
   download::DownloadDangerType current_danger_type = download->GetDangerType();
 
   if (!DangerTypeIsDangerous(old_danger_type) &&
+      old_danger_type != download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING &&
       DangerTypeIsDangerous(current_danger_type)) {
     ReportDangerousDownloadWarning(download);
   }

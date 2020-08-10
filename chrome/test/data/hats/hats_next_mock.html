@@ -15,6 +15,11 @@
       if (params.get('trigger_id') == "invalid_url_fragment_for_testing") {
         history.pushState('', '', '#foo');
       }
+
+      if (params.get('trigger_id') == "open_new_web_contents_for_testing"){
+        window.open('http://foo.com', '_blank');
+        history.pushState('', '', '#loaded');
+      }
     </script>
   </head>
   <body>

@@ -259,6 +259,10 @@ Button::KeyClickAction Button::GetKeyClickActionForEvent(
     const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE)
     return PlatformStyle::kKeyClickActionOnSpace;
+  // Note that default buttons also have VKEY_RETURN installed as an accelerator
+  // in LabelButton::SetIsDefault(). On platforms where
+  // PlatformStyle::kReturnClicksFocusedControl, the logic here will take
+  // precedence over that.
   if (event.key_code() == ui::VKEY_RETURN &&
       PlatformStyle::kReturnClicksFocusedControl)
     return KeyClickAction::kOnKeyPress;

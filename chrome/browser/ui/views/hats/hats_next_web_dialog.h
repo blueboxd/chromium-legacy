@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_HATS_HATS_NEXT_WEB_DIALOG_H_
 
 #include "chrome/browser/profiles/profile_observer.h"
-#include "chrome/browser/ui/views/close_bubble_on_tab_activation_helper.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
@@ -67,6 +66,7 @@ class HatsNextWebDialog : public ui::WebDialogDelegate,
                     const GURL& hats_survey_url_,
                     const base::TimeDelta& timeout);
 
+  class WebContentsDelegate;
   class WebContentsObserver;
 
   // Fired by the observer when the survey page has pushed state to the window
@@ -95,17 +95,19 @@ class HatsNextWebDialog : public ui::WebDialogDelegate,
   // The off-the-record profile used for browsing to the Chrome HaTS webpage.
   Profile* otr_profile_;
 
+  Browser* browser_;
+
   // The HaTS Next survey trigger ID that is provided to the HaTS webpage.
   const std::string& trigger_id_;
 
+  views::WebDialogView* web_view_ = nullptr;
   views::Widget* widget_ = nullptr;
 
+  std::unique_ptr<WebContentsDelegate> web_contents_delegate_;
   std::unique_ptr<WebContentsObserver> web_contents_observer_;
   GURL hats_survey_url_;
 
   base::TimeDelta timeout_;
-
-  CloseBubbleOnTabActivationHelper close_bubble_helper_;
 
   base::WeakPtrFactory<HatsNextWebDialog> weak_factory_{this};
 };

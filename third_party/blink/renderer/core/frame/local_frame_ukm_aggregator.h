@@ -128,7 +128,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // below. For every metric name added here, add an entry in the
   // metric_strings_ array below.
   enum MetricId {
-    kCompositing,
     kCompositingAssignments,
     kCompositingCommit,
     kCompositingInputs,
@@ -163,7 +162,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // Add an entry in this array every time a new metric is added.
   static base::span<const MetricInitializationData> metrics_data() {
     static const MetricInitializationData data[] = {
-        {"Compositing", true},
         {"CompositingAssignments", true},
         {"CompositingCommit", true},
         {"CompositingInputs", true},

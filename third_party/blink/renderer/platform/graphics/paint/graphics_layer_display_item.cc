@@ -39,7 +39,7 @@ bool GraphicsLayerDisplayItem::Equals(const DisplayItem& other) const {
 #if DCHECK_IS_ON()
 void GraphicsLayerDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
-  json.SetInteger("layer", graphics_layer_.CcLayer()->id());
+  json.SetInteger("layer", graphics_layer_.CcLayer().id());
   FloatPoint offset(graphics_layer_.GetOffsetFromTransformNode());
   json.SetDouble("offset_x", offset.X());
   json.SetDouble("offset_y", offset.Y());
@@ -53,7 +53,7 @@ void RecordGraphicsLayer(GraphicsContext& context,
   // extraneous layers are still attached. In future we will disable all
   // those layer hierarchy code so we won't need this line.
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  graphics_layer.CcLayer()->RemoveAllChildren();
+  graphics_layer.CcLayer().RemoveAllChildren();
 
   PaintController& paint_controller = context.GetPaintController();
 

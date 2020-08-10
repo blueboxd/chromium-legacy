@@ -1219,15 +1219,20 @@
 <translation id="2787774054174244402">このポリシーを True に設定した場合、ユーザーは外部ストレージ デバイスへの書き込みを行えません。
 
       ExternalStorageReadOnly を False に設定するか未設定のままにした場合は、外部ストレージをブロックしていない限り、ユーザーは物理的に書き込みが可能な外部ストレージ デバイスに対してファイルの作成や変更ができます（ExternalStorageDisable を True に設定すると外部ストレージをブロックできます）。</translation>
+<translation id="2796714419743648316">アプリごとの時間制限の許可リスト</translation>
+<translation id="2796896367838042659">このポリシーでは、アプリごとの使用制限のホワイトリストに登録するアプリと URL を指定します。
+        設定したホワイトリストは、<ph name="PRODUCT_OS_NAME" /> にインストールされているアプリに適用され、アプリごとの時間制限が設定されているユーザーが対象になります。
+        設定したホワイトリストは、子ユーザー アカウントにのみ適用でき、<ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> ポリシーが設定されている場合に有効になります。
+        ホワイトリストには、アプリごとの時間制限によってブロックしないアプリと URL を登録します。
+        ホワイトリストに登録した URL へのアクセスは Chrome の時間制限にカウントされません。
+        |url_list| に URL の正規表現を追加すると、リストの正規表現に一致するすべての URL がホワイトリストに登録されます。
+        |app_list| にアプリの |app_id| と |app_type| を追加すると、そのアプリがホワイトリストに登録されます。
+
+        このポリシーはサポートが終了しています。代わりに <ph name="PER_APP_TIME_LIMITS_ALLOWLIST" /> を使用してください。
+        </translation>
 <translation id="2799297758492717491">メディアの自動再生を許可する URL パターンのホワイトリストを指定する</translation>
 <translation id="2801065672151277034">証明書の管理設定</translation>
 <translation id="2801155097555584385">バッテリー充電のカスタムの充電開始設定（%）を行う</translation>
-<translation id="2802085784857530815">ユーザーが企業プリンタ以外のプリンタにアクセスできるかどうかを制御します。
-
-      このポリシーが True に設定されているか未設定の場合、ユーザーは自身のネイティブ プリンタを追加、構成し、そのプリンタを使用して印刷することができます。
-
-      このポリシーが False に設定されている場合、ユーザーは自身のネイティブ プリンタを追加し構成することはできません。また、以前に設定したネイティブ プリンタを使用して印刷することもできません。
-      </translation>
 <translation id="2805707493867224476">すべてのサイトに対してポップアップ表示を許可する</translation>
 <translation id="2808013382476173118">リモート クライアントがこのコンピュータへの接続を試行するときに STUN サーバーを使用できるようにします。
 
@@ -2379,6 +2384,10 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーの値が 0 の場合は、デフォルトのキャッシュ サイズが使用されます。ユーザーはこの値を変更できません。
 
       このポリシーが未設定の場合は、デフォルトのサイズが使用されます。ユーザーは --media-cache-size フラグを使用してこの値をオーバーライドできます。</translation>
+<translation id="4508084713148633492">ディスク容量が少ない場合の通知を有効または無効にします。この設定は、デバイスのすべてのユーザーに適用されます。
+      管理対象デバイスにユーザー アカウントが 1 つしかない場合、このポリシーの値に関係なく、通知は常に表示されます。
+      管理対象デバイスに複数のユーザー アカウントがある場合、このポリシーが True に設定されているときのみ通知が表示されます。
+      管理対象以外のデバイスでは、通知は常に表示されます。</translation>
 <translation id="4510923771103268849">Crostini コンテナへのルートアクセスをユーザーに許可する</translation>
 <translation id="4515404363392014383">信頼できる提供元に対してセーフ ブラウジングを有効にする</translation>
 <translation id="4517928394515633751">ユーザーのダウンロードをセーフ ブラウジングでスキャンする</translation>
@@ -3369,6 +3378,29 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーを false に設定するか未設定のままにした場合、<ph name="PLUGIN_VM_NAME" /> にデータの収集を許可しません。
       このポリシーを true に設定した場合、<ph name="PLUGIN_VM_NAME" /> が <ph name="PLUGIN_VM_NAME" /> 使用状況データを収集し、データは集約した状態で <ph name="PLUGIN_VM_NAME" /> エクスペリエンスを改善するために詳しく分析される可能性があります。</translation>
+<translation id="5875873062228321803">最低限必要な <ph name="PRODUCT_OS_NAME" /> のバージョンを設定します。
+
+      このポリシーで空でないリストを設定した場合、次のように処理されます。
+      デバイスの現在のバージョンより新しい「<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />」のエントリがない場合、制限は適用されず、すでに存在する制限は取り消されます。
+      現在のバージョンより新しい「<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />」のエントリが少なくとも 1 つある場合、現在のバージョンに最も近い新しいバージョンのエントリが選ばれます。
+      競合が発生した場合、「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」か「<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />」の値が小さい方のエントリを使用してポリシーが適用されます。
+
+      ユーザー セッション中に現在のバージョンがサポート終了となり、さらに現在のネットワークで自動更新が制限されている場合、「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」の期限内にデバイスを更新するよう求める通知が画面に表示されます。
+      現在のネットワークで自動更新が許可されていて、「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」の期限内にデバイスが更新されることが確実な場合、通知は表示されません。
+      「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」は、ポリシーを適用した時点からカウントされます。
+      デバイスを「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」の期限内に更新しない場合、ユーザーはセッションからログアウトされます。
+      ログイン時に、現在のバージョンが「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」の期限を過ぎてサポート終了となっていることが検出された場合、ユーザーはデバイスを更新するまでログインできなくなります。
+
+      ユーザー セッション中に現在のバージョンがサポート終了となり、さらにデバイスが自動更新の有効期限に達している場合、「<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />」の期限内にデバイスを返却するよう求める通知が画面に表示されます。
+      ログイン時に、デバイスが「<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />」の期限を過ぎて自動更新の有効期限に達していることが検出された場合、どのユーザーもデバイスにログインできなくなります。
+
+      「<ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" />」を未設定のままにした場合や False に設定した場合、管理されていないユーザー セッションでは通知は表示されず、ログアウトされます。
+
+      このポリシーを設定しないか、空のリストを設定した場合、制限は適用されず、すでに存在する制限は取り消されます。ユーザーは <ph name="PRODUCT_OS_NAME" /> のバージョンに関係なくログインできます。
+
+      「<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />」には、正確なバージョン（13305.0.0 など）かバージョンのプレフィックス（13305 など）を指定できます。
+      「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」と「<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />」には、日数を指定します（省略可）。デフォルトの値は 0 日で、この場合は警告期間がないことを意味します。
+      「<ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" />」は省略可能なプロパティで、デフォルト値は False です。</translation>
 <translation id="5879014913445067283">ネットワーク ファイル共有の検出の際に <ph name="NETBIOS_NAME" /> を有効にするかどうかを設定する</translation>
 <translation id="588135807064822874">タップして検索を有効にする</translation>
 <translation id="5882345429632338713">代替ブラウザ起動までの待機時間（ミリ秒）</translation>
@@ -3429,6 +3461,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       この設定を無効にする場合や値を設定しない場合、Google 検索のセーフサーチは強制されません。</translation>
 <translation id="5946082169633555022">Beta チャンネル</translation>
 <translation id="5946329690214660966">アップデート確認のカスタム スケジュールを設定する</translation>
+<translation id="5951418260805607969">ディスク容量が少ない場合に通知を表示する</translation>
 <translation id="5961137303188584693">デバイスの組み込みの NIC MAC アドレス</translation>
 <translation id="5966615072639944554">Remote Attestation API の使用が許可されている拡張機能</translation>
 <translation id="5983708779415553259">どのコンテンツ パックにもないサイトに対するデフォルトの動作</translation>
@@ -3652,6 +3685,14 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーの値はミリ秒単位とし、アイドル待ちの時間と同じかそれより短い時間を指定できます。
 
           警告メッセージは、アイドル時の操作がログアウトかシャットダウンの場合にのみ表示されます。</translation>
+<translation id="6334330017384340264">このポリシーでは、アプリごとの時間制限を適用しないアプリと URL を指定します。
+        設定した許可リストは、アプリごとの時間制限が設定されているユーザーが <ph name="PRODUCT_OS_NAME" /> にインストールされているアプリを使用する場合に適用されます。
+        設定した許可リストは、子ユーザー アカウントにのみ適用でき、<ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> ポリシーが設定されている場合に有効になります。
+        許可リストでは、アプリごとの時間制限を適用しないアプリと URL を指定します。
+        指定した URL へのアクセスは Chrome の時間制限にカウントされません。
+        |url_list| に URL の正規表現を追加すると、リストの正規表現に一致するすべての URL が許可されます。
+        |app_list| にアプリの |app_id| と |app_type| を追加すると、そのアプリが許可されます。
+       </translation>
 <translation id="6337782882143073193">このポリシーはサポートが終了しています。代わりに <ph name="URL_BLOCKLIST_POLICY_NAME" /> を使用してください。
 
       リストで指定したプロトコル スキームは <ph name="PRODUCT_NAME" /> で無効になります。
@@ -3718,6 +3759,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="6467613372414922590">ユーザーレベルのネイティブ メッセージング ホスト（管理者権限なしでインストールされたホスト）を許可する</translation>
 <translation id="6468980648680553776">このポリシーはサポートを終了しました。代わりに RemoteAccessHostClientDomainList を使用してください。</translation>
 <translation id="6473623140202114570">セーフ ブラウジングによる警告の表示を行わないドメインのリストを設定する。</translation>
+<translation id="647698599569353771">ニアバイシェアを有効にできるようにします。</translation>
 <translation id="6491139795995924304">デバイスで Bluetooth を許可する</translation>
 <translation id="6491872498385040936">このポリシーはサポートを終了しました。このポリシーより優先され、より詳細な設定を行える <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" /> の使用をご検討ください。
 
@@ -3982,6 +4024,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       <ph name="PRODUCT_NAME" /> の起動時に適用するフラグを指定します。指定したフラグはログイン画面にのみ適用されます。このポリシーで設定したフラグはユーザーのセッションには影響しません。</translation>
 <translation id="685769593149966548">YouTube で制限付きモード「強」を強制する</translation>
 <translation id="686079137349561371">Microsoft Windows 7 以降</translation>
+<translation id="6863342574191774334">この設定が有効な場合、ユーザーはニアバイシェアを有効にできます（ニアバイシェアは近くのユーザーとファイルを送受信できる機能です）。
+
+      この設定が無効な場合、ユーザーはニアバイシェアを有効にできません。
+
+      このポリシーを未設定のままにした場合、デフォルトでは、企業で管理されているユーザーと管理されていないユーザーのいずれもニアバイシェアを有効にできます。</translation>
 <translation id="6864244339257535116">パスワードで保護されているファイルのアップロードとダウンロードを許可する</translation>
 <translation id="6870295914868104867">このポリシーを設定することで、ユーザーに操作を求めずにサイレント インストールするアプリと拡張機能のリストを指定します。ユーザーは、ここで指定されたアプリや拡張機能をアンインストールすることも無効化することもできません。権限は、enterprise.deviceAttributes 拡張機能 API と enterprise.platformKeys 拡張機能 API に対するものを含め、暗黙的に付与されます（これら 2 つの API は、強制的にインストールされたアプリや拡張機能以外には利用できません）。
 

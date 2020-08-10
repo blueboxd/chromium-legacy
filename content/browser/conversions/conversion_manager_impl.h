@@ -81,9 +81,6 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
       scoped_refptr<base::SequencedTaskRunner> storage_task_runner);
 
   // |storage_task_runner| should run with base::TaskPriority::BEST_EFFORT.
-  // TODO(https://crbug.com/1080764): The storage task runner is instead run
-  // with base::TaskPriority::USER_VISIBLE to address some timeouts.
-  // Documentation should be updated.
   ConversionManagerImpl(
       StoragePartition* storage_partition,
       const base::FilePath& user_data_directory,

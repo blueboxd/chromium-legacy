@@ -267,3 +267,26 @@ IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, UnknownURLFragment) {
   });
   run_loop.Run();
 }
+
+IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, NewWebContents) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto* dialog = new MockHatsNextWebDialog(
+      browser(), "open_new_web_contents_for_testing",
+      embedded_test_server()->GetURL("/hats/hats_next_mock.html"),
+      base::TimeDelta::FromSeconds(100));
+
+  // The mock hats dialog will push a loaded state after it has attempted to
+  // open another web contents.
+  base::RunLoop run_loop;
+  EXPECT_CALL(*dialog, ShowWidget).WillOnce(testing::Invoke([&run_loop]() {
+    run_loop.Quit();
+  }));
+  run_loop.Run();
+
+  // Check that a tab with http://foo.com (defined in hats_next_mock.html) has
+  // been opened in the regular browser and is active.
+  EXPECT_EQ(
+      GURL("http://foo.com"),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
+}

@@ -1,7 +1,7 @@
 {
   "schema": "pedals_translation_model",
   "schema_version": 1,
-  "time_generated": "2020-08-03T15:51:43.368226490+00:00",
+  "time_generated": "2020-08-04T19:48:33.665131874+00:00",
   "primary_language_code": "en",
   "locales": [
     {
@@ -483,8 +483,13 @@
           "dans",
           "une",
           "des",
+          "les",
           "un",
-          "de"
+          "de",
+          "le",
+          "la",
+          "du",
+          "à"
         ]
       },
       "pedals": [
@@ -498,6 +503,35 @@
                 "google chrome",
                 "navigateur",
                 "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "suppression",
+                "supprimer",
+                "supprime",
+                "effacer",
+                "enlever",
+                "enlève",
+                "efface",
+                "vider",
+                "vide"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "informations",
+                "historique",
+                "navigation",
+                "données",
+                "cookies",
+                "traces",
+                "cache",
+                "infos"
               ]
             }
           ]
@@ -513,6 +547,37 @@
                 "navigateur",
                 "chrome"
               ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "mettre à jour",
+                "configuration",
+                "gestionnaire",
+                "mets à jour",
+                "met à jour",
+                "met à jour",
+                "actualiser",
+                "configurer",
+                "actualise",
+                "modifier",
+                "changer",
+                "modifie",
+                "gérer",
+                "change",
+                "gère"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "informations de connexion",
+                "mots de passe",
+                "mot de passe",
+                "identifiant"
+              ]
             }
           ]
         },
@@ -526,6 +591,50 @@
                 "google chrome",
                 "navigateur",
                 "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "mettre à jour",
+                "mets à jour",
+                "mise à jour",
+                "modification",
+                "met à jour",
+                "enregistrer",
+                "sauvegarder",
+                "actualiser",
+                "changement",
+                "actualise",
+                "modifier",
+                "changer",
+                "modifie",
+                "change"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "informations cartes bancaires",
+                "informations carte bancaire",
+                "informations de paiement",
+                "infos cartes de crédit",
+                "infos carte de crédit",
+                "informations bancaires",
+                "informations de carte",
+                "données de paiement",
+                "cartes de paiement",
+                "données bancaires",
+                "cartes de crédit",
+                "carte de paiement",
+                "mode de paiement",
+                "cartes bancaires",
+                "carte de crédit",
+                "infos bancaires",
+                "carte bancaire",
+                "cartes"
               ]
             }
           ]
@@ -541,6 +650,46 @@
                 "navigateur",
                 "chrome"
               ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "sélectionner",
+                "sélectionne",
+                "démarrer",
+                "naviguer",
+                "démarre",
+                "choisir",
+                "choisis",
+                "choisit",
+                "lancer",
+                "passer",
+                "ouvrir",
+                "lance",
+                "passe",
+                "ouvre"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "navigation confidentielle",
+                "fenêtre confidentielle",
+                "mode confidentialité",
+                "navigation privée",
+                "confidentiellement",
+                "fenêtre privée",
+                "confidentialité",
+                "onglet incognito",
+                "fenetre privée",
+                "mode incognito",
+                "onglet privé",
+                "mode privé",
+                "sans traces",
+                "incognito"
+              ]
             }
           ]
         },
@@ -555,6 +704,30 @@
                 "navigateur",
                 "chrome"
               ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "sélectionner la langue",
+                "sélectionne la langue",
+                "modifier langue",
+                "changer langue",
+                "change langue",
+                "traduire",
+                "traduis",
+                "traduit"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "cette page",
+                "cette page",
+                "page",
+                "site"
+              ]
             }
           ]
         },
@@ -568,6 +741,33 @@
                 "google chrome",
                 "navigateur",
                 "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "mettre à niveau",
+                "mettre à jour",
+                "mets à niveau",
+                "mise à niveau",
+                "met à niveau",
+                "mets à jour",
+                "mise à jour",
+                "installation",
+                "met à jour",
+                "actualiser",
+                "installer",
+                "actualise",
+                "installe"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "dernière version",
+                "version récente"
               ]
             }
           ]

@@ -33,7 +33,7 @@ bool ScopedFakeAffiliationAPI::HasPendingRequest() {
 
 std::vector<FacetURI> ScopedFakeAffiliationAPI::GetNextRequestedFacets() {
   if (fake_fetcher_factory_.has_pending_fetchers())
-    return fake_fetcher_factory_.PeekNextFetcher()->requested_facet_uris();
+    return fake_fetcher_factory_.PeekNextFetcher()->GetRequestedFacetURIs();
   return std::vector<FacetURI>();
 }
 
@@ -46,7 +46,7 @@ void ScopedFakeAffiliationAPI::ServeNextRequest() {
       new AffiliationFetcherDelegate::Result);
   for (const auto& preset_equivalence_class : preset_equivalence_relation_) {
     bool had_intersection_with_request = false;
-    for (const auto& requested_facet_uri : fetcher->requested_facet_uris()) {
+    for (const auto& requested_facet_uri : fetcher->GetRequestedFacetURIs()) {
       if (std::any_of(preset_equivalence_class.begin(),
                       preset_equivalence_class.end(),
                       [&requested_facet_uri](const Facet& facet) {

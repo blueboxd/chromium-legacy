@@ -1205,15 +1205,20 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2787774054174244402">L'impostazione del criterio su True impedisce agli utenti di scrivere su dispositivi di archiviazione esterni.
 
       A meno che lo spazio di archiviazione esterno non sia bloccato, se imposti ExternalStorageReadOnly su False o non lo imposti, gli utenti possono creare e modificare i file dei dispositivi di archiviazione esterni fisicamente scrivibili. Puoi bloccare lo spazio di archiviazione esterno impostando ExternalStorageDisable su True.</translation>
+<translation id="2796714419743648316">Lista consentita limiti di utilizzo per app</translation>
+<translation id="2796896367838042659">Questo criterio consente di specificare le applicazioni e gli URL da autorizzare per i limiti di utilizzo per app.
+        La lista consentita configurata viene applicata alle app installate su <ph name="PRODUCT_OS_NAME" /> per l'utente in questione con limiti di utilizzo per app.
+        La lista consentita configurata può essere applicata soltanto per gli account utente dei bambini e diventa effettiva quando viene impostato il criterio <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" />.
+        La lista consentita configurata viene applicata alle applicazioni e agli URL affinché non vengano bloccati da limiti di utilizzo per app.
+        L'accesso agli URL autorizzati non viene considerato per il limite di utilizzo di Chrome.
+        Aggiungi espressioni regolari degli URL a |url_list| per autorizzare gli URL corrispondenti alle espressioni regolari nell'elenco.
+        Aggiungi all'elenco |app_list| un'applicazione con i relativi valori |app_id| e |app_type| per autorizzare l'applicazione.
+
+        Questo criterio è deprecato. Usa il criterio <ph name="PER_APP_TIME_LIMITS_ALLOWLIST" />.
+        </translation>
 <translation id="2799297758492717491">Consenti la riproduzione automatica dei contenuti multimediali per una whitelist di pattern URL</translation>
 <translation id="2801065672151277034">Impostazioni di gestione dei certificati</translation>
 <translation id="2801155097555584385">Imposta il valore personalizzato espresso in percentuale raggiunto il quale la batteria avvia la ricarica</translation>
-<translation id="2802085784857530815">Ti consente di stabilire se permettere o meno agli utenti di accedere a stampanti non aziendali
-
-      Se la norma viene impostata su True o non viene impostata, gli utenti potranno aggiungere, configurare e usare le proprie stampanti native.
-
-      Se la norma viene impostata su False, gli utenti non potranno aggiungere e configurare le proprie stampanti native. Non potranno neanche stampare con eventuali stampanti native configurate in precedenza.
-      </translation>
 <translation id="2805707493867224476">Consenti la visualizzazione di popup in tutti i siti</translation>
 <translation id="2808013382476173118">Consente di attivare l'utilizzo di server STUN quando i client remoti tentano di stabilire una connessione con questo computer.
 
@@ -2367,6 +2372,10 @@ Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà le dimen
 Se il valore di questa norma è 0, verranno utilizzate le dimensioni della cache predefinite, che l'utente non potrà modificare.
 
 Se questa norma non viene impostata, verranno utilizzate le dimensioni predefinite, che l'utente potrà sostituire con il flag --media-cache-size.</translation>
+<translation id="4508084713148633492">Consente di attivare o di disattivare una notifica quando lo spazio sul disco è in esaurimento. La scelta è valida per tutti gli utenti sul dispositivo.
+      Se su un dispositivo gestito è presente esattamente un account utente, la notifica viene sempre mostrata, indipendentemente dal valore di questo criterio.
+      Se su un dispositivo gestito sono presenti più account, la notifica viene mostrata solo se questo criterio è impostato su Vero.
+      La notifica viene sempre visualizzata sui dispositivi non gestiti.</translation>
 <translation id="4510923771103268849">L'utente può avere accesso root ai contenitori Crostini</translation>
 <translation id="4515404363392014383">Attiva Navigazione sicura per le origini attendibili</translation>
 <translation id="4517928394515633751">Analizza i download degli utenti tramite Navigazione sicura</translation>
@@ -3371,6 +3380,29 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
 
       Se il criterio è impostato su False o se non viene configurato, <ph name="PLUGIN_VM_NAME" /> non è autorizzato a raccogliere i dati.
       Se è impostato su True, <ph name="PLUGIN_VM_NAME" /> potrebbe raccogliere i dati sull'utilizzo di <ph name="PLUGIN_VM_NAME" /> che verranno poi combinati e analizzati nel dettaglio per migliorare l'esperienza di <ph name="PLUGIN_VM_NAME" />.</translation>
+<translation id="5875873062228321803">Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_OS_NAME" />.
+
+      Se per questo criterio viene impostato un elenco non vuoto:
+      Se nessuna voce ha un valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> superiore alla versione corrente del dispositivo, non vengono applicate limitazioni e le limitazioni esistenti vengono revocate.
+      Se almeno una voce ha un valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> superiore alla versione corrente, viene scelta la voce la cui versione è superiore e più simile a quella corrente.
+      In caso di conflitto, si preferisce la voce con il valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> o <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> inferiore e il criterio viene applicato usando tale voce.
+
+      Se la versione corrente diventa obsoleta durante la sessione utente e la rete corrente limita gli aggiornamenti automatici, sullo schermo viene mostrata una notifica che invita l'utente ad aggiornare il dispositivo entro il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> mostrato nella notifica.
+      Se la rete corrente consente gli aggiornamenti automatici, non viene mostrata alcuna notifica e il dispositivo deve essere aggiornato entro il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
+      Il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> parte dal momento in cui viene applicato il criterio.
+      Se il dispositivo non viene aggiornato entro la scadenza del periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" />, l'utente viene disconnesso dalla sessione.
+      Se la versione corrente risulta obsoleta al momento dell'accesso con il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> scaduto, all'utente viene richiesto di aggiornare il dispositivo prima di accedere.
+
+      Se la versione corrente diventa obsoleta durante la sessione utente e il dispositivo ha raggiunto la scadenza dell'aggiornamento automatico, sullo schermo viene mostrata una notifica che invita l'utente a restituire il dispositivo entro il periodo indicato nel valore <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
+      Se risulta che il dispositivo ha raggiunto la scadenza dell'aggiornamento automatico al momento dell'accesso con il periodo indicato nel valore <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> scaduto, il dispositivo viene bloccato e nessun utente può eseguire l'accesso.
+
+      Le sessioni utente non gestite non ricevono notifiche e forzano la disconnessione se il valore <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> non viene configurato o se viene impostato su Falso.
+
+      Se questo criterio non viene configurato o se viene lasciato vuoto, non vengono applicate limitazioni, vengono revocate quelle esistenti e l'utente può accedere qualunque sia la versione di <ph name="PRODUCT_OS_NAME" />.
+
+      Il valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> può essere una versione esatta, ad esempio "13305.0.0" oppure un prefisso di versione, ad esempio "13305".
+      I valori <ph name="WARNING_PERIOD_PROPERTY_NAME" /> e <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> sono facoltativi e specificati in numero di giorni. Il valore predefinito è 0 giorni, a indicare nessun periodo di avviso.
+      Il valore <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> è una proprietà facoltativa, il cui valore predefinito è Falso.</translation>
 <translation id="5879014913445067283">Consente di controllare la funzione Condivisioni file di rete tramite il protocollo <ph name="NETBIOS_NAME" /></translation>
 <translation id="588135807064822874">Attiva la funzione Tocca per cercare</translation>
 <translation id="5882345429632338713">Ritardo prima di avviare il browser alternativo (in millisecondi)</translation>
@@ -3430,6 +3462,7 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
       Se disattivi l'impostazione o non imposti un valore, l'utilizzo di SafeSearch non viene forzato in Ricerca Google.</translation>
 <translation id="5946082169633555022">Canale Beta</translation>
 <translation id="5946329690214660966">Imposta una pianificazione personalizzata per verificare la presenza di aggiornamenti</translation>
+<translation id="5951418260805607969">Mostra una notifica quando lo spazio sul disco è in esaurimento</translation>
 <translation id="5961137303188584693">Indirizzo MAC NIC integrato del dispositivo</translation>
 <translation id="5966615072639944554">Estensioni autorizzate a utilizzare l'API di attestazione da remoto</translation>
 <translation id="5983708779415553259">Comportamento predefinito per i siti non presenti in pacchetti di contenuti</translation>
@@ -3661,6 +3694,14 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Il valore del criterio deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di inattività.
 
           L'avviso viene mostrato solo se l'azione stabilita in caso di inattività è la disconnessione o lo spegnimento.</translation>
+<translation id="6334330017384340264">Questo criterio consente di specificare le applicazioni e gli URL da autorizzare per i limiti di utilizzo per app.
+        La lista consentita configurata viene applicata alle app installate su <ph name="PRODUCT_OS_NAME" /> per l'utente in questione con limiti di utilizzo per app.
+        La lista consentita configurata può essere applicata soltanto per gli account utente dei bambini e diventa effettiva quando viene impostato il criterio <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" />.
+        La lista consentita configurata viene applicata alle applicazioni e agli URL affinché non vengano bloccati da limiti di utilizzo per app.
+        L'accesso agli URL autorizzati non viene considerato per il limite di utilizzo di Chrome.
+        Aggiungi espressioni regolari degli URL a |url_list| per autorizzare gli URL corrispondenti alle espressioni regolari nell'elenco.
+        Aggiungi all'elenco |app_list| un'applicazione con i relativi valori |app_id| e |app_type| per autorizzare l'applicazione.
+       </translation>
 <translation id="6337782882143073193">Questo criterio è deprecato, al suo posto utilizza <ph name="URL_BLOCKLIST_POLICY_NAME" />.
 
       Disattiva in <ph name="PRODUCT_NAME" /> gli schemi di protocollo elencati.
@@ -3727,6 +3768,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6467613372414922590">Consenti host di messaggistica nativi a livello di utente (installati senza privilegi di amministratore)</translation>
 <translation id="6468980648680553776">Questa norma è obsoleta. Al suo posto utilizza RemoteAccessHostClientDomainList.</translation>
 <translation id="6473623140202114570">Configura l'elenco di domini sui quali Navigazione sicura non attiverà avvisi.</translation>
+<translation id="647698599569353771">Consenti l'attivazione di Condivisione nelle vicinanze.</translation>
 <translation id="6491139795995924304">Consenti Bluetooth sul dispositivo</translation>
 <translation id="6491872498385040936">Questa norma è obsoleta. È possibile utilizzare la norma <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />, che sostituisce questa norma e consente un perfezionamento più preciso.
 
@@ -3998,6 +4040,11 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Consente di specificare i flag da applicare all'avvio di <ph name="PRODUCT_NAME" />. I flag specificati vengono applicati soltanto alla schermata di accesso. I flag impostati tramite questa norma non vengono applicati anche alle sessioni utente.</translation>
 <translation id="685769593149966548">Imponi il livello massimo della Modalità con restrizioni per YouTube</translation>
 <translation id="686079137349561371">Microsoft Windows 7 o versioni successive</translation>
+<translation id="6863342574191774334">Se questa impostazione viene attivata, gli utenti possono attivare la funzionalità Condivisione nelle vicinanze, che consente loro di inviare e ricevere file dalle persone nelle vicinanze.
+
+      Se questa impostazione viene disattivata, gli utenti non possono attivare la funzionalità Condivisione nelle vicinanze.
+
+      Se questo criterio non viene configurato, l'impostazione predefinita è consentita sia per gli utenti gestiti a livello aziendale sia per gli utenti non gestiti.</translation>
 <translation id="6864244339257535116">Consenti sia caricamenti sia download di file protetti da password</translation>
 <translation id="6870295914868104867">Se il criterio viene impostato, viene installato in automatico un elenco di app ed estensioni, senza l'interazione dell'utente, ed è implicito quali utenti non possono disinstallarle o disattivarle. Le autorizzazioni vengono concesse implicitamente, incluse le API delle estensioni enterprise.deviceAttributes e enterprise.platformKeys. Queste due API non sono disponibili per le app/estensioni senza installazione forzata.
 
@@ -4978,7 +5025,7 @@ Su Windows è consigliabile configurare le norme tramite Criteri di gruppo, anch
       Se il criterio non viene configurato, viene usato <ph name="BLOCK_PLUGINS_POLICY_NAME" /> e gli utenti possono cambiare l'impostazione.
 
       Nota: la riproduzione automatica è consentita soltanto per i domini espressamente elencati nel criterio <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Per attivare la riproduzione automatica per tutti i siti, aggiungi http://* e https://* a questo elenco.</translation>
-<translation id="8266778278542911985">Se il criterio viene impostato su 3, i siti web possono chiedere l'accesso alle porte seriali. Se il criterio viene impostato su 3, l'accesso alle porte seriali viene negato.
+<translation id="8266778278542911985">Se il criterio viene impostato su 3, i siti web possono chiedere l'accesso alle porte seriali. Se il criterio viene impostato su 2, l'accesso alle porte seriali viene negato.
 
       Se non viene configurato, i siti web possono richiedere l'accesso, ma gli utenti possono modificare l'impostazione.</translation>
 <translation id="8274603902181597201">Cancella la home directory ecryptfs dell'utente e inizia con una nuova home directory criptata tramite ext4</translation>

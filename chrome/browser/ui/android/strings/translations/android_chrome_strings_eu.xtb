@@ -462,7 +462,6 @@ Baliteke Google-ko kontuak arakatze-historiako bestelako datu batzuk (adibidez, 
 <translation id="4732120983431207637">Pila-ezabatzailea</translation>
 <translation id="473775607612524610">Eguneratu</translation>
 <translation id="4738836084190194332">Azken sinkronizazioa: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA errorea: <ph name="ERROR_CODE" /> <ph name="VIOLATED_URL" /> webgunean</translation>
 <translation id="4749960740855309258">Ireki beste fitxa bat</translation>
 <translation id="4759238208242260848">Deskargak</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 deskarga amaitu da.}other{# deskarga amaitu dira.}}</translation>
@@ -512,7 +511,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5040262127954254034">Pribatutasuna</translation>
 <translation id="5087580092889165836">Gehitu txartel bat</translation>
 <translation id="509429900233858213">Errore bat gertatu da.</translation>
-<translation id="5100748015044654621">Partekatu azpimarratutako testurako esteka aplikazio batean</translation>
+<translation id="5100748015044654621">Partekatu nabarmendutako testurako esteka aplikazio batean</translation>
 <translation id="510275257476243843">Ordubete gelditzen da</translation>
 <translation id="5123685120097942451">Ezkutuko moduko fitxa</translation>
 <translation id="5127805178023152808">Sinkronizazioa desaktibatuta dago</translation>
@@ -1047,6 +1046,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="9133397713400217035">Arakatu konexiorik gabeko edukia</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Ikusi jatorrizkoa</translation>
+<translation id="9148126808321036104">Hasi saioa berriro</translation>
 <translation id="9155898266292537608">Hatzarekin ukitu bizkor bat emanda ere egin ditzakezu bilaketak</translation>
 <translation id="9169507124922466868">Nabigazio-historia erdi-irekita dago</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Duela 1 minutu egiaztatu du}other{Duela # minutu egiaztatu du}}</translation>
@@ -1059,6 +1059,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="932327136139879170">Hasiera</translation>
 <translation id="93753284658583800">Aldatu da orri nagusia</translation>
 <translation id="938850635132480979">Errorea: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Idatzi pasaesaldia</translation>
 <translation id="95817756606698420">Txinan, <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> erabil dezake Chrome-k bilatzaile gisa. <ph name="BEGIN_LINK" />Ezarpenak<ph name="END_LINK" /> atalean alda dezakezu hori.</translation>
 <translation id="968900484120156207">Hemen agertuko dira bisitatzen dituzun orriak</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minutu gelditzen dira</translation>

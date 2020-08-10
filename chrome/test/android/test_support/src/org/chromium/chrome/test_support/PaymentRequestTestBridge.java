@@ -50,7 +50,7 @@ public class PaymentRequestTestBridge {
         }
 
         @Override
-        public boolean isOffTheRecord(@Nullable ChromeActivity activity) {
+        public boolean isOffTheRecord(WebContents webContents) {
             return mIsOffTheRecord;
         }
 

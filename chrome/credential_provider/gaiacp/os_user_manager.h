@@ -91,6 +91,10 @@ class [[clang::lto_visibility_public]] OSUserManager {
   virtual HRESULT GetUserFullname(
       const wchar_t* domain, const wchar_t* username, base::string16* fullname);
 
+  // Sets restrictive password change policies for the end user account.
+  virtual HRESULT SetDefaultPasswordChangePolicies(const wchar_t* domain,
+                                                   const wchar_t* username);
+
   // Changes the user's valid access hours to effectively allow or disallow them
   // from signing in to the system. If |allow| is false then the user is not
   // allowed to sign on at any hour of the day. If |allow| is true, then the

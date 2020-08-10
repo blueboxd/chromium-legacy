@@ -128,7 +128,6 @@
 <translation id="236977714248711277">Os sitios non poden utilizar cookies para mellorar a túa experiencia de navegación a través de funcións como manter a sesión iniciada ou lembrar artigos da túa cesta da compra.
 
 Tampouco poden utilizalas para ver a túa actividade de navegación en distintos sitios (por exemplo, co fin de personalizar anuncios).</translation>
-<translation id="2379896346847637748">Abrir nunha ventá nova</translation>
 <translation id="2381405137052800939">Opcións básicas</translation>
 <translation id="2386793615875593361">Seleccionouse un</translation>
 <translation id="2421004566762153674">Bloqueando cookies de terceiros</translation>
@@ -185,6 +184,7 @@ Tampouco poden utilizalas para ver a túa actividade de navegación en distintos
 <translation id="298306318844797842">Engadir método de pago…</translation>
 <translation id="2989805286512600854">Abrir nunha pestana nova</translation>
 <translation id="3037605927509011580">Vaia!</translation>
+<translation id="3080525922482950719">Podes gardar páxinas para lelas máis tarde ou sen conexión</translation>
 <translation id="3081338492074632642">Asegúrate de que o contrasinal que gardas coincida co de <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Marcar como...</translation>
 <translation id="3131206671572504478">Bloquear todas</translation>
@@ -309,6 +309,7 @@ Co modo de incógnito activado, non poden utilizalas para ver a túa actividade 
 <translation id="4619615317237390068">Pestanas doutros dispositivos</translation>
 <translation id="4620246317052452550">Páxinas que liches</translation>
 <translation id="4630540211544979320">Traducir páxinas</translation>
+<translation id="4634124774493850572">Usar contrasinal</translation>
 <translation id="4636930964841734540">Información</translation>
 <translation id="4659126640776004816">Cando inicies sesión na túa Conta de Google, activarase esta función.</translation>
 <translation id="4659667755519643272">Introducir a función de cambio de pestana</translation>

@@ -231,12 +231,11 @@ content::WebUIDataSource* CreateUntrustedWebUIDataSource() {
   untrusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ImgSrc, "img-src * data:;");
   untrusted_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::MediaSrc, "media-src *;");
+      network::mojom::CSPDirectiveName::MediaSrc, "media-src * data:;");
 
-  // Allow access to Google APIs.
+  // Allow access to anywhere using fetch.
   untrusted_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::ConnectSrc,
-      base::StringPrintf("connect-src %s;", backend_url.spec().c_str()));
+      network::mojom::CSPDirectiveName::ConnectSrc, "connect-src *;");
 
   // Add the URL to the backend.
   untrusted_source->AddString("googleApiUrl", backend_url.spec());

@@ -11,6 +11,7 @@
 #import <AVFoundation/AVFoundation.h>
 
 #include "remoting/base/string_resources.h"
+#import "remoting/ios/app/account_manager.h"
 #import "remoting/ios/app/app_initializer.h"
 #import "remoting/ios/app/app_view_controller.h"
 #import "remoting/ios/app/first_launch_view_presenter.h"
@@ -36,7 +37,6 @@ static NSString* const kPrivacyPolicyUrl =
     @"https://policies.google.com/privacy";
 
 @interface AppDelegate ()<FirstLaunchViewControllerDelegate> {
-  AppViewController* _appViewController;
   FirstLaunchViewPresenter* _firstLaunchViewPresenter;
 }
 @end
@@ -90,17 +90,6 @@ static NSString* const kPrivacyPolicyUrl =
 }
 #endif  // ifndef NDEBUG
 
-#pragma mark - Public
-- (void)showMenuAnimated:(BOOL)animated {
-  DCHECK(_appViewController != nil);
-  [_appViewController showMenuAnimated:animated];
-}
-
-- (void)hideMenuAnimated:(BOOL)animated {
-  DCHECK(_appViewController != nil);
-  [_appViewController hideMenuAnimated:animated];
-}
-
 #pragma mark - Properties
 
 + (AppDelegate*)instance {
@@ -116,15 +105,13 @@ static NSString* const kPrivacyPolicyUrl =
   UINavigationController* navController =
       [[UINavigationController alloc] initWithRootViewController:vc];
   navController.navigationBarHidden = true;
-  _appViewController =
-      [[AppViewController alloc] initWithMainViewController:navController];
   _firstLaunchViewPresenter =
       [[FirstLaunchViewPresenter alloc] initWithNavController:navController
                                        viewControllerDelegate:self];
   if (![RemotingService.instance.authentication.user isAuthenticated]) {
     [_firstLaunchViewPresenter presentView];
   }
-  self.window.rootViewController = _appViewController;
+  self.window.rootViewController = navController;
   [self.window makeKeyAndVisible];
   [UserStatusPresenter.instance start];
   remoting::NotificationPresenter::GetInstance()->Start();
@@ -149,20 +136,6 @@ static NSString* const kPrivacyPolicyUrl =
   [self presentOnTopPresentingVC:[[HelpViewController alloc] init]];
 }
 
-- (void)presentTermsOfService {
-  [self presentOnTopPresentingVC:[[WebViewController alloc]
-                                     initWithUrl:kTosUrl
-                                           title:l10n_util::GetNSString(
-                                                     IDS_TERMS_OF_SERVICE)]];
-}
-
-- (void)presentPrivacyPolicy {
-  [self presentOnTopPresentingVC:[[WebViewController alloc]
-                                     initWithUrl:kPrivacyPolicyUrl
-                                           title:l10n_util::GetNSString(
-                                                     IDS_PRIVACY_POLICY)]];
-}
-
 - (void)presentFeedbackFlowWithContext:(NSString*)context {
   [HelpAndFeedback.instance presentFeedbackFlowWithContext:context];
 }
@@ -174,8 +147,7 @@ static NSString* const kPrivacyPolicyUrl =
 #pragma mark - FirstLaunchViewPresenterDelegate
 
 - (void)presentSignInFlow {
-  DCHECK(_appViewController);
-  [_appViewController presentSignInFlow];
+  remoting::ios::AccountManager::GetInstance()->PresentSignInMenu();
 }
 
 @end

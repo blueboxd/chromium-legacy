@@ -232,7 +232,7 @@ void SurfaceUpdater::LoadStreamComplete(bool success,
 
 int SurfaceUpdater::GetSliceIndexFromSliceId(const std::string& slice_id) {
   ContentRevision slice_rev = ToContentRevision(slice_id);
-  if (slice_rev.is_null())
+  if (slice_rev.is_null() || !model_)
     return -1;
   int index = 0;
   for (const ContentRevision& rev : model_->GetContentList()) {

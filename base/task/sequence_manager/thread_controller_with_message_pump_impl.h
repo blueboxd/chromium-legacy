@@ -153,9 +153,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     return main_thread_only_;
   }
 
-  // Instantiate a HangWatchScope to cover the current work if hang
+  // Instantiate a HangWatchScopeEnabled to cover the current work if hang
   // watching is activated via finch and the current loop is not nested.
-  void MaybeStartHangWatchScope();
+  void MaybeStartHangWatchScopeEnabled();
 
   // TODO(altimin): Merge with the one in SequenceManager.
   scoped_refptr<AssociatedThreadId> associated_thread_;
@@ -196,7 +196,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
   // Reset at the start of each unit of work to cover the work itself and then
   // transition to the next one.
-  base::Optional<HangWatchScope> hang_watch_scope_;
+  base::Optional<HangWatchScopeEnabled> hang_watch_scope_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadControllerWithMessagePumpImpl);
 };

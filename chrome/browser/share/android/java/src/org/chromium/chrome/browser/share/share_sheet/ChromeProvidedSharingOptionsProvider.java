@@ -90,7 +90,7 @@ class ChromeProvidedSharingOptionsProvider {
         mOrderedFirstPartyOptions = new ArrayList<>();
         initializeFirstPartyOptionsInOrder();
         mChromeOptionShareCallback = chromeOptionShareCallback;
-        mUrl = getUrlToShare(shareParams, chromeShareExtras);
+        mUrl = getUrlToShare(shareParams, chromeShareExtras, mTabProvider.get().getUrl().getSpec());
     }
 
     /**
@@ -302,8 +302,7 @@ class ChromeProvidedSharingOptionsProvider {
                     recordTimeToShare(mShareStartTime);
                     LinkToTextCoordinator linkToTextCoordinator = new LinkToTextCoordinator(
                             mActivity, mTabProvider.get().getWindowAndroid(),
-                            mChromeOptionShareCallback, mShareParams.getUrl(),
-                            mShareParams.getText());
+                            mChromeOptionShareCallback, mUrl, mShareParams.getText());
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                 });
         return new FirstPartyOption(
@@ -316,13 +315,18 @@ class ChromeProvidedSharingOptionsProvider {
      * <p>This prioritizes the URL in {@link ShareParams}, but if it does not exist, we look for an
      * image source URL from {@link ChromeShareExtras}. The image source URL is not contained in
      * {@link ShareParams#getUrl()} because we do not want to share the image URL with the image
-     * file in third-party app shares.
+     * file in third-party app shares. If both are empty then current tab URL is used. This is
+     * useful for {@link LinkToTextCoordinator} that needs URL but it cannot be provided through
+     * {@link ShareParams}.
      */
-    static String getUrlToShare(ShareParams shareParams, ChromeShareExtras chromeShareExtras) {
+    static String getUrlToShare(
+            ShareParams shareParams, ChromeShareExtras chromeShareExtras, String tabUrl) {
         if (!TextUtils.isEmpty(shareParams.getUrl())) {
             return shareParams.getUrl();
+        } else if (!TextUtils.isEmpty(chromeShareExtras.getImageSrcUrl())) {
+            return chromeShareExtras.getImageSrcUrl();
         }
-        return chromeShareExtras.getImageSrcUrl();
+        return tabUrl;
     }
 
     static void recordTimeToShare(long shareStartTime) {

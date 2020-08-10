@@ -2029,10 +2029,11 @@ TEST_F(GcpGaiaCredentialBaseCloudLocalAccountTest,
 // logged in.
 class GaiaCredentialBaseCloudLocalAccountSuccessTest
     : public GcpGaiaCredentialBaseCloudLocalAccountTest,
-      public ::testing::WithParamInterface<bool> {};
+      public ::testing::WithParamInterface<std::tuple<bool, const wchar_t*>> {};
 
 TEST_P(GaiaCredentialBaseCloudLocalAccountSuccessTest, SerialNumber) {
-  bool set_serial_number = GetParam();
+  bool set_serial_number = std::get<0>(GetParam());
+  const wchar_t* serial_number = std::get<1>(GetParam());
 
   // Add the user as a local user.
   const wchar_t user_name[] = L"local_user";
@@ -2052,7 +2053,6 @@ TEST_P(GaiaCredentialBaseCloudLocalAccountSuccessTest, SerialNumber) {
 
   std::string admin_sdk_response;
   // Set a fake serial number.
-  base::string16 serial_number = L"1234";
   GoogleRegistrationDataForTesting g_registration_data(serial_number);
 
   if (set_serial_number) {
@@ -2061,7 +2061,7 @@ TEST_P(GaiaCredentialBaseCloudLocalAccountSuccessTest, SerialNumber) {
         "{\"customSchemas\": {\"Enhanced_desktop_security\": "
         "{\"Local_Windows_accounts\":"
         "[{ \"value\": \"un:%ls,sn:%ls\"}]}}}",
-        user_name, serial_number.c_str());
+        user_name, serial_number);
   } else {
     // Set valid response from admin sdk.
     admin_sdk_response = base::StringPrintf(
@@ -2108,9 +2108,15 @@ TEST_P(GaiaCredentialBaseCloudLocalAccountSuccessTest, SerialNumber) {
   ASSERT_TRUE(test->IsAuthenticationResultsEmpty());
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         GaiaCredentialBaseCloudLocalAccountSuccessTest,
-                         ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    GaiaCredentialBaseCloudLocalAccountSuccessTest,
+    ::testing::Combine(
+        ::testing::Bool(),
+        ::testing::Values(L"!@#!",        // All non alphanumeric characters
+                          L"serial#123",  // Contains non-alphanumeric chars.
+                          L"serial123!"   // Ends with non alphanumeric chars.
+                          )));
 
 // Existing cloud local account login scenario that was configured incorrectly.
 class GaiaCredentialBaseCDUsernameSuccessTest
@@ -2196,6 +2202,9 @@ TEST_P(GaiaCredentialBaseCDSerialNumberFailureTest, InvalidSerialNumber) {
   ASSERT_EQ(S_OK, hr);
   ASSERT_EQ(0u, error);
 
+  // Set fake serial number.
+  GoogleRegistrationDataForTesting g_registration_data(serial_number);
+
   // Set token result as a valid access token.
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(gaia_urls_->oauth2_token_url().spec().c_str()),
@@ -2232,10 +2241,9 @@ TEST_P(GaiaCredentialBaseCDSerialNumberFailureTest, InvalidSerialNumber) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     GaiaCredentialBaseCDSerialNumberFailureTest,
-    ::testing::Values(L"!@#!",        // All non alphanumeric characters
-                      L"serial#123",  // Contains non-alphanumeric chars.
-                      L"serial123!",  // Ends with non alphanumeric chars.
-                      L""));
+    ::testing::Values(
+        L""  // Except for empty string all other characters are allowed chars.
+        ));
 
 // Tests various sign in scenarios with consumer and non-consumer domains.
 // Parameters are:

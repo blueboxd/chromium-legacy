@@ -32,6 +32,8 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 #import <math.h>
+
+#include "base/bit_cast.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
@@ -59,16 +61,15 @@ static CGFloat toFontWeight(blink::FontSelectionValue font_weight) {
       0x3fe3d70a40000000,  // NSFontWeightBlack
   };
   if (font_weight <= 50 || font_weight >= 950)
-    return ns_font_weights[3];
+    return bit_cast<CGFloat>(ns_font_weights[3]);
 
   size_t select_weight = roundf(font_weight / 100) - 1;
   DCHECK_GE(select_weight, 0ul);
   DCHECK_LE(select_weight, base::size(ns_font_weights));
-  CGFloat* return_weight =
-      reinterpret_cast<CGFloat*>(&ns_font_weights[select_weight]);
-  return *return_weight;
+  return bit_cast<CGFloat>(ns_font_weights[select_weight]);
 }
-}
+
+}  // namespace
 
 namespace blink {
 

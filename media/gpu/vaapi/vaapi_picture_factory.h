@@ -51,6 +51,29 @@ class MEDIA_GPU_EXPORT VaapiPictureFactory {
   // the format decoded frames in VASurfaces are converted into.
   gfx::BufferFormat GetBufferFormat();
 
+#if defined(USE_OZONE)
+  std::unique_ptr<VaapiPicture> CreateVaapiPictureNativeForOzone(
+      scoped_refptr<VaapiWrapper> vaapi_wrapper,
+      const MakeGLContextCurrentCallback& make_context_current_cb,
+      const BindGLImageCallback& bind_image_cb,
+      const PictureBuffer& picture_buffer,
+      const gfx::Size& visible_size,
+      uint32_t client_texture_id,
+      uint32_t service_texture_id);
+#endif
+
+  std::unique_ptr<VaapiPicture> CreateVaapiPictureNative(
+      scoped_refptr<VaapiWrapper> vaapi_wrapper,
+      const MakeGLContextCurrentCallback& make_context_current_cb,
+      const BindGLImageCallback& bind_image_cb,
+      const PictureBuffer& picture_buffer,
+      const gfx::Size& visible_size,
+      uint32_t client_texture_id,
+      uint32_t service_texture_id);
+
+  std::map<gl::GLImplementation, VaapiPictureFactory::VaapiImplementation>
+      vaapi_impl_pairs_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VaapiPictureFactory);
 };

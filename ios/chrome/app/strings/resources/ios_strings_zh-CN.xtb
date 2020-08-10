@@ -128,7 +128,6 @@
 <translation id="236977714248711277">网站无法使用 Cookie 来提升您的浏览体验，例如让您保持登录状态或记住您购物车中的商品。
 
 网站也无法使用 Cookie 查看您在各个不同网站上的浏览活动，因而无法实现某些功能或目的（例如为您展示个性化广告）。</translation>
-<translation id="2379896346847637748">在新窗口中打开</translation>
 <translation id="2381405137052800939">基本</translation>
 <translation id="2386793615875593361">已选择 1 张</translation>
 <translation id="2421004566762153674">阻止第三方 Cookie</translation>
@@ -185,6 +184,7 @@
 <translation id="298306318844797842">添加付款方式…</translation>
 <translation id="2989805286512600854">在新标签页中打开</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
+<translation id="3080525922482950719">您可保存网页以供日后阅读或离线阅读</translation>
 <translation id="3081338492074632642">请确保您要保存的密码与您用来登录 <ph name="WEBSITE" /> 的密码相符</translation>
 <translation id="3112556859945124369">标为…</translation>
 <translation id="3131206671572504478">阻止所有 Cookie</translation>
@@ -309,6 +309,7 @@
 <translation id="4619615317237390068">从其他设备打开的标签页</translation>
 <translation id="4620246317052452550">您浏览过的网页</translation>
 <translation id="4630540211544979320">翻译网页</translation>
+<translation id="4634124774493850572">使用密码</translation>
 <translation id="4636930964841734540">信息</translation>
 <translation id="4659126640776004816">当您登录自己的 Google 帐号后，系统即会启用此功能。</translation>
 <translation id="4659667755519643272">进入标签页切换器</translation>
@@ -610,6 +611,7 @@
 <translation id="8007420562015504427">无痕搜索</translation>
 <translation id="802154636333426148">下载失败</translation>
 <translation id="8023878949384262191">展开此部分。</translation>
+<translation id="8027581147000338959">在新窗口中打开</translation>
 <translation id="804427445359061970">您在其他设备上打开的标签页会显示在此处</translation>
 <translation id="8059533439631660104">合拢此部分。</translation>
 <translation id="8065292699993359127">在 Chrome 中以无痕模式打开网址</translation>

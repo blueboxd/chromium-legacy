@@ -702,10 +702,13 @@ void PeopleHandler::HandleSignout(const base::ListValue* args) {
           delete_profile ? signin_metrics::SignoutDelete::DELETED
                          : signin_metrics::SignoutDelete::KEEPING;
 
-      // Do not remove the accounts: the Gaia logout tab will remove them in a
-      // better way (see http://crbug.com/1068978).
+      // Use ClearAccountsAction::kDefault: if the primary account is still
+      // valid, it will be removed by the Gaia logout tab
+      // (see http://crbug.com/1068978). If the account is already invalid, drop
+      // the token now (because it's already invalid on the web, so the Gaia
+      // logout tab won't affect it, see http://crbug.com/1114646).
       identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-          signin::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
+          signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
           signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, delete_metric);
     } else {
       DCHECK(!delete_profile)

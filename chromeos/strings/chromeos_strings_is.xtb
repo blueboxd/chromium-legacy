@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">Nýtt aðgangsorð</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> stjórnar þessu tæki og hefur aðgang að öllum aðgerðum, þ.m.t. heimsóttum vefsíðum, aðgangsorðum og tölvupósti.</translation>
 <translation id="4003384961948020559">Mistókst – úttakið er fullt</translation>
+<translation id="4027485274696301677"><ph name="DEVICE_TYPE" /> er stjórnað af <ph name="ENROLLMENT_DOMAIN" />. Kerfisstjórar geta stillt tækið í gegnum fjartengingu.</translation>
 <translation id="4034824040120875894">Prentari</translation>
 <translation id="4227825898293920515">Aðgangsorð rennur út eftir <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Engin prentun í gangi</translation>

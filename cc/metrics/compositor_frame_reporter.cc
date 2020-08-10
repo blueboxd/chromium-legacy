@@ -154,9 +154,6 @@ constexpr const char* GetStageName(int stage_type_index,
     case static_cast<int>(BlinkBreakdown::kPrepaint) +
         kBlinkBreakdownInitialIndex:
       return "SendBeginMainFrameToCommit.Prepaint";
-    case static_cast<int>(BlinkBreakdown::kComposite) +
-        kBlinkBreakdownInitialIndex:
-      return "SendBeginMainFrameToCommit.Composite";
     case static_cast<int>(BlinkBreakdown::kCompositingInputs) +
         kBlinkBreakdownInitialIndex:
       return "SendBeginMainFrameToCommit.CompositingInputs";
@@ -950,8 +947,6 @@ void CompositorFrameReporter::PopulateBlinkBreakdownList() {
       blink_breakdown_.layout_update;
   blink_breakdown_list_[static_cast<int>(BlinkBreakdown::kPrepaint)] =
       blink_breakdown_.prepaint;
-  blink_breakdown_list_[static_cast<int>(BlinkBreakdown::kComposite)] =
-      blink_breakdown_.composite;
   blink_breakdown_list_[static_cast<int>(BlinkBreakdown::kCompositingInputs)] =
       blink_breakdown_.compositing_inputs;
   blink_breakdown_list_[static_cast<int>(

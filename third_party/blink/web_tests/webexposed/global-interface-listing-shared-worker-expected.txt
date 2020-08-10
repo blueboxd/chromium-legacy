@@ -1128,6 +1128,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method request
 [Worker]     method requestAll
 [Worker]     method revoke
+[Worker] interface Plane
+[Worker]     attribute @@toStringTag
+[Worker]     getter length
+[Worker]     getter rows
+[Worker]     getter stride
+[Worker]     method constructor
+[Worker]     method readInto
 [Worker] interface Profiler
 [Worker]     attribute @@toStringTag
 [Worker]     getter sampleInterval

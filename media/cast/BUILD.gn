@@ -411,6 +411,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       "//build/win:default_exe_manifest",
       "//media:test_support",
       "//net",
+      "//ui/base:features",
       "//ui/gfx/geometry",
     ]
 

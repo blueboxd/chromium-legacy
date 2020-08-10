@@ -190,7 +190,7 @@ class BASE_EXPORT Value {
   ListView GetList();
   ConstListView GetList() const;
 
-  // Transfers ownership of the the underlying list to the caller. Subsequent
+  // Transfers ownership of the underlying list to the caller. Subsequent
   // calls to GetList() will return an empty list.
   // Note: This CHECKs that type() is Type::LIST.
   ListStorage TakeList();

@@ -100,12 +100,7 @@ bool CopyBytesFromImageBitmapForWebGPU(
       image->IsPremultiplied() ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
       color_params.GetSkColorSpaceForSkSurfaces());
 
-  sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
-
-  if (!sk_image)
-    return false;
-
-  bool read_pixels_successful = sk_image->readPixels(
+  bool read_pixels_successful = image->PaintImageForCurrentFrame().readPixels(
       info, dst.data(), wgpu_info.wgpu_bytes_per_row, rect.X(), rect.Y());
 
   if (!read_pixels_successful) {

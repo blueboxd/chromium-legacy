@@ -27,31 +27,20 @@ class TuneableTest : public ::testing::Test {
     // params[kTuneableInt10] = "10";
 
     // Set some tuneables to fixed values.
-    SetFinchParameters(kTuneableIntSetToNot123, 124, 124);
-    SetFinchParameters(kTuneableInt0, 0, 0);
-    SetFinchParameters(kTuneableInt5, 5, 5);
-    SetFinchParameters(kTuneableInt10, 10, 10);
+    SetFinchParameters(kTuneableIntSetToNot123, 124);
+    SetFinchParameters(kTuneableInt0, 0);
+    SetFinchParameters(kTuneableInt5, 5);
+    SetFinchParameters(kTuneableInt10, 100);
     // TimeDelta should be given in milliseconds.
-    SetFinchParameters(kTuneableTimeDeltaFiveSeconds, 5000, 5000);
-
-    // Let some vary via finch trial.
-    SetFinchParameters(kTuneableInt5To10, 5, 10);
-    // Create 100 identical tuneables, except for their names.
-    for (int i = 0; i < 100; i++) {
-      SetFinchParameters(GetNameForNumberedTuneable(k100Tuneables, i).c_str(),
-                         1, 100);
-    }
+    SetFinchParameters(kTuneableTimeDeltaFiveSeconds, 5000);
 
     scoped_feature_list_.InitAndEnableFeatureWithParameters(kMediaOptimizer,
                                                             params_);
   }
 
   // Set the finch-chosen parameters for tuneable `name`.
-  void SetFinchParameters(const char* name, int min_value, int max_value) {
-    std::string min_name = std::string(name) + "_min";
-    params_[min_name] = base::NumberToString(min_value);
-    std::string max_name = std::string(name) + "_max";
-    params_[max_name] = base::NumberToString(max_value);
+  void SetFinchParameters(const char* name, int value) {
+    params_[name] = base::NumberToString(value);
   }
 
   // Return the tuneable name for the `x`-th numbered tuneable.
@@ -75,11 +64,6 @@ class TuneableTest : public ::testing::Test {
   static constexpr const char* kTuneableInt5 = "t_int_5";
   static constexpr const char* kTuneableInt10 = "t_int_10";
   static constexpr const char* kTuneableTimeDeltaFiveSeconds = "t_time_5s";
-
-  static constexpr const char* kTuneableInt5To10 = "t_int_5to10";
-
-  // Initialize 100 of these with different names.
-  static constexpr const char* k100Tuneables = "XX_tuneable";
 
   DISALLOW_COPY_AND_ASSIGN(TuneableTest);
 };
@@ -143,48 +127,6 @@ TEST_F(TuneableTest, TimeDeltaIsSpecifiedInMilliseconds) {
   Tuneable<base::TimeDelta> t(kTuneableTimeDeltaFiveSeconds, min_value,
                               min_value, max_value);
   EXPECT_EQ(t.value(), base::TimeDelta::FromSeconds(5));
-}
-
-TEST_F(TuneableTest, MultipleTuneablesGetTheSameRandomValue) {
-  // Multiple copies of the same tuneable should get the same value.
-  Tuneable<int> t0(kTuneableInt5To10, 0, 2, 100);
-  Tuneable<int> t1(kTuneableInt5To10, 0, 2, 100);
-  EXPECT_GE(t0.value(), 0);
-  EXPECT_LE(t0.value(), 100);
-  EXPECT_EQ(t0.value(), t1.value());
-}
-
-TEST_F(TuneableTest, DifferentSeedsProduceDifferentValues) {
-  // Also verify that they stay bounded.
-  SetRandomSeedForTuneables(base::UnguessableToken::Create());
-  Tuneable<int> t0(kTuneableInt5To10, 0, 2, 100);
-  bool found_different = false;
-  for (int i = 1; i < 100; i++) {
-    SetRandomSeedForTuneables(base::UnguessableToken::Create());
-    Tuneable<int> t1(kTuneableInt5To10, 0, 2, 100);
-    EXPECT_GE(t1.value(), 0);
-    EXPECT_LE(t1.value(), 100);
-    if (t1.value() != t0.value())
-      found_different = true;
-  }
-  EXPECT_TRUE(found_different);
-}
-
-TEST_F(TuneableTest, DifferentNamesProduceDifferentValues) {
-  // For the same seed, we expect different parameter names to sometimes get
-  // different values.
-  Tuneable<int> t0(GetNameForNumberedTuneable(k100Tuneables, 0).c_str(), 0, 50,
-                   100);
-  bool found_different = false;
-  for (int i = 1; i < 100; i++) {
-    Tuneable<int> t1(GetNameForNumberedTuneable(k100Tuneables, i).c_str(), 0,
-                     50, 100);
-    EXPECT_GE(t1.value(), 0);
-    EXPECT_LE(t1.value(), 100);
-    if (t1.value() != t0.value())
-      found_different = true;
-  }
-  EXPECT_TRUE(found_different);
 }
 
 }  // namespace media

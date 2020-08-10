@@ -328,11 +328,8 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
           child_break_tokens_.push_back(std::move(token));
       }
     }
-    if (DidBreakSelf() || HasChildBreakInside()) {
-      break_token_ = NGBlockBreakToken::Create(
-          node_, consumed_block_size_, sequence_number_, child_break_tokens_,
-          break_appeal_, has_seen_all_children_, is_at_block_end_);
-    }
+    if (DidBreakSelf() || HasChildBreakInside())
+      break_token_ = NGBlockBreakToken::Create(*this);
   }
 
   if (!has_floating_descendants_for_paint_ && items_builder_) {

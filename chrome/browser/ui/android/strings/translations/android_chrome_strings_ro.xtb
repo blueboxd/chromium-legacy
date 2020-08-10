@@ -462,7 +462,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="4732120983431207637">Instrument de derulare a stivei</translation>
 <translation id="473775607612524610">Actualizează</translation>
 <translation id="4738836084190194332">Ultima sincronizare: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">Eroare TWA: <ph name="ERROR_CODE" /> la <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">Deschide o filă nouă</translation>
 <translation id="4759238208242260848">Descărcări</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{O descărcare finalizată.}few{# descărcări finalizate.}other{# de descărcări finalizate.}}</translation>
@@ -1047,6 +1046,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="9133397713400217035">Explorează offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
+<translation id="9148126808321036104">Conectează-te din nou</translation>
 <translation id="9155898266292537608">De asemenea, poți căuta atingând scurt un cuvânt</translation>
 <translation id="9169507124922466868">Istoricul de navigare este pe jumătate deschis</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{A rulat acum un minut}few{A rulat acum # minute}other{A rulat acum # de minute}}</translation>
@@ -1059,6 +1059,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="932327136139879170">Pagina de pornire</translation>
 <translation id="93753284658583800">Pagina de pornire a fost schimbată</translation>
 <translation id="938850635132480979">Eroare: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">Introdu expresia de acces</translation>
 <translation id="95817756606698420">Chrome poate să folosească <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> pentru căutare în China. Poți să schimbi acest lucru din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Paginile pe care le accesezi apar aici</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> min. rămase</translation>

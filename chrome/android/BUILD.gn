@@ -1939,7 +1939,6 @@ template("chrome_public_apk_or_module_tmpl") {
                              "jni_registration_header",
                              "target_type",
                              "enable_multidex",
-                             "lint_min_sdk_version",
                              "lint_suppressions_dep",
                              "lint_suppressions_file",
                            ])
@@ -2955,6 +2954,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/compositor/LayerTitleCache.java",
     "java/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanelContent.java",
     "java/src/org/chromium/chrome/browser/compositor/layouts/content/TabContentManager.java",
+    "java/src/org/chromium/chrome/browser/compositor/overlays/toolbar/TopToolbarSceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/resources/ResourceFactory.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/ContextualSearchSceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/SceneLayer.java",
@@ -2962,7 +2962,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/StaticTabSceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/TabListSceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/TabStripSceneLayer.java",
-    "java/src/org/chromium/chrome/browser/compositor/scene_layer/ToolbarSceneLayer.java",
     "java/src/org/chromium/chrome/browser/consent_auditor/ConsentAuditorBridge.java",
     "java/src/org/chromium/chrome/browser/content/ContentUtils.java",
     "java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java",

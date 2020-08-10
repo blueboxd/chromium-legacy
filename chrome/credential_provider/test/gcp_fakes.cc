@@ -389,6 +389,12 @@ HRESULT FakeOSUserManager::ModifyUserAccessWithLogonHours(
   return S_OK;
 }
 
+HRESULT FakeOSUserManager::SetDefaultPasswordChangePolicies(
+    const wchar_t* domain,
+    const wchar_t* username) {
+  return S_OK;
+}
+
 FakeOSUserManager::UserInfo::UserInfo(const wchar_t* domain,
                                       const wchar_t* password,
                                       const wchar_t* fullname,

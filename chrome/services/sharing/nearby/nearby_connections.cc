@@ -13,6 +13,65 @@ namespace location {
 namespace nearby {
 namespace connections {
 
+namespace {
+
+ConnectionRequestInfo CreateConnectionRequestInfo(
+    const std::vector<uint8_t>& endpoint_info,
+    mojo::PendingRemote<mojom::ConnectionLifecycleListener> listener) {
+  mojo::SharedRemote<mojom::ConnectionLifecycleListener> remote(
+      std::move(listener));
+  return ConnectionRequestInfo{
+      .name = std::string(endpoint_info.begin(), endpoint_info.end()),
+      .listener = {
+          .initiated_cb =
+              [remote](const std::string& endpoint_id,
+                       const ConnectionResponseInfo& info) {
+                if (!remote)
+                  return;
+
+                remote->OnConnectionInitiated(
+                    endpoint_id,
+                    mojom::ConnectionInfo::New(
+                        info.authentication_token,
+                        ByteArrayToMojom(info.raw_authentication_token),
+                        ByteArrayToMojom(info.endpoint_info),
+                        info.is_incoming_connection));
+              },
+          .accepted_cb =
+              [remote](const std::string& endpoint_id) {
+                if (!remote)
+                  return;
+
+                remote->OnConnectionAccepted(endpoint_id);
+              },
+          .rejected_cb =
+              [remote](const std::string& endpoint_id, Status status) {
+                if (!remote)
+                  return;
+
+                remote->OnConnectionRejected(endpoint_id,
+                                             StatusToMojom(status.value));
+              },
+          .disconnected_cb =
+              [remote](const std::string& endpoint_id) {
+                if (!remote)
+                  return;
+
+                remote->OnDisconnected(endpoint_id);
+              },
+          .bandwidth_changed_cb =
+              [remote](const std::string& endpoint_id, std::int32_t quality) {
+                if (!remote)
+                  return;
+
+                remote->OnBandwidthChanged(endpoint_id, quality);
+              },
+      },
+  };
+}
+
+}  // namespace
+
 // Should only be accessed by objects within lifetime of NearbyConnections.
 NearbyConnections* g_instance = nullptr;
 
@@ -128,6 +187,34 @@ NearbyConnections::GetWebRtcSignalingMessenger() {
   return webrtc_signaling_messenger_.get();
 }
 
+void NearbyConnections::StartAdvertising(
+    const std::vector<uint8_t>& endpoint_info,
+    const std::string& service_id,
+    mojom::AdvertisingOptionsPtr options,
+    mojo::PendingRemote<mojom::ConnectionLifecycleListener> listener,
+    StartAdvertisingCallback callback) {
+  BooleanMediumSelector allowed_mediums = {
+      .bluetooth = options->allowed_mediums->bluetooth,
+      .web_rtc = options->allowed_mediums->web_rtc,
+      .wifi_lan = options->allowed_mediums->wifi_lan,
+  };
+  ConnectionOptions connection_options{
+      .strategy = StrategyFromMojom(options->strategy),
+      .allowed = std::move(allowed_mediums),
+      .auto_upgrade_bandwidth = options->auto_upgrade_bandwidth,
+      .enforce_topology_constraints = options->enforce_topology_constraints,
+  };
+
+  core_->StartAdvertising(
+      service_id, std::move(connection_options),
+      CreateConnectionRequestInfo(endpoint_info, std::move(listener)),
+      ResultCallbackFromMojom(std::move(callback)));
+}
+
+void NearbyConnections::StopAdvertising(StopAdvertisingCallback callback) {
+  core_->StopAdvertising(ResultCallbackFromMojom(std::move(callback)));
+}
+
 void NearbyConnections::StartDiscovery(
     const std::string& service_id,
     mojom::DiscoveryOptionsPtr options,
@@ -176,59 +263,10 @@ void NearbyConnections::RequestConnection(
     const std::string& endpoint_id,
     mojo::PendingRemote<mojom::ConnectionLifecycleListener> listener,
     RequestConnectionCallback callback) {
-  mojo::SharedRemote<mojom::ConnectionLifecycleListener> remote(
-      std::move(listener));
-  ConnectionRequestInfo connection_request_info{
-      .name = std::string(endpoint_info.begin(), endpoint_info.end()),
-      .listener = {
-          .initiated_cb =
-              [remote](const std::string& endpoint_id,
-                       const ConnectionResponseInfo& info) {
-                if (!remote)
-                  return;
-
-                remote->OnConnectionInitiated(
-                    endpoint_id,
-                    mojom::ConnectionInfo::New(
-                        info.authentication_token,
-                        ByteArrayToMojom(info.raw_authentication_token),
-                        ByteArrayToMojom(info.endpoint_info),
-                        info.is_incoming_connection));
-              },
-          .accepted_cb =
-              [remote](const std::string& endpoint_id) {
-                if (!remote)
-                  return;
-
-                remote->OnConnectionAccepted(endpoint_id);
-              },
-          .rejected_cb =
-              [remote](const std::string& endpoint_id, Status status) {
-                if (!remote)
-                  return;
-
-                remote->OnConnectionRejected(endpoint_id,
-                                             StatusToMojom(status.value));
-              },
-          .disconnected_cb =
-              [remote](const std::string& endpoint_id) {
-                if (!remote)
-                  return;
-
-                remote->OnDisconnected(endpoint_id);
-              },
-          .bandwidth_changed_cb =
-              [remote](const std::string& endpoint_id, std::int32_t quality) {
-                if (!remote)
-                  return;
-
-                remote->OnBandwidthChanged(endpoint_id, quality);
-              },
-      }};
-  ResultCallback result_callback = ResultCallbackFromMojom(std::move(callback));
-
-  core_->RequestConnection(endpoint_id, std::move(connection_request_info),
-                           std::move(result_callback));
+  core_->RequestConnection(
+      endpoint_id,
+      CreateConnectionRequestInfo(endpoint_info, std::move(listener)),
+      ResultCallbackFromMojom(std::move(callback)));
 }
 
 void NearbyConnections::DisconnectFromEndpoint(

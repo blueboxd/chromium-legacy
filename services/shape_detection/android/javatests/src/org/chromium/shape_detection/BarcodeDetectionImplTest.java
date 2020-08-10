@@ -16,6 +16,7 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.shape_detection.mojom.BarcodeDetection;
 import org.chromium.shape_detection.mojom.BarcodeDetectionProvider;
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
  * Test suite for BarcodeDetectionImpl.
  */
 @RunWith(ParameterizedRunner.class)
+@Batch(Batch.UNIT_TESTS)
 @UseRunnerDelegate(BaseJUnit4RunnerDelegate.class)
 public class BarcodeDetectionImplTest {
     private static final org.chromium.skia.mojom.Bitmap QR_CODE_BITMAP =

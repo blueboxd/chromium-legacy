@@ -315,6 +315,9 @@ if (is_chromeos_device) {
 
       # crbug.com/1114654
       "crostini.Restart.artifact",
+
+      # crbug.com/1114752
+      "arc.ContainerMount",
     ]
   }
 

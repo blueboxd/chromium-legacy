@@ -1001,6 +1001,15 @@ void NGLineBreaker::UpdateShapeResult(const NGLineInfo& line_info,
   item_result->inline_size = item_result->shape_result->SnappedWidth();
 }
 
+void NGLineBreaker::HandleTrailingSpacesIfNeeded(NGLineInfo* line_info) {
+  const Vector<NGInlineItem>& items = Items();
+  if (item_index_ >= items.size())
+    return;
+  const NGInlineItem& item = items[item_index_];
+  if (const ShapeResult* shape_result = item.TextShapeResult())
+    HandleTrailingSpaces(item, *shape_result, line_info);
+}
+
 inline void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item,
                                                 NGLineInfo* line_info) {
   const ShapeResult* shape_result = item.TextShapeResult();
@@ -1887,8 +1896,7 @@ void NGLineBreaker::RewindOverflow(unsigned new_end, NGLineInfo* line_info) {
           // and break there.
           // TODO: optimize more?
           Rewind(index, line_info);
-          DCHECK_EQ(static_cast<unsigned>(&item - items.begin()), item_index_);
-          HandleTrailingSpaces(item, line_info);
+          HandleTrailingSpacesIfNeeded(line_info);
 #if DCHECK_IS_ON()
           item_results.back().CheckConsistency(false);
 #endif

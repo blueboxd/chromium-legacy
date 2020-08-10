@@ -16,6 +16,9 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/symmetric_key.h"
 
+extern const char kTestMetadataFullName[];
+extern const char kTestMetadataIconUrl[];
+
 std::unique_ptr<crypto::ECPrivateKey> GetNearbyShareTestP256KeyPair();
 const std::vector<uint8_t>& GetNearbyShareTestP256PublicKey();
 

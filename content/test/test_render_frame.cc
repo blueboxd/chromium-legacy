@@ -338,6 +338,8 @@ void TestRenderFrame::Unload(
 void TestRenderFrame::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
   if (next_navigation_html_override_.has_value()) {
+    AssertNavigationCommits assert_navigation_commits(
+        this, kMayReplaceInitialEmptyDocument);
     auto navigation_params = blink::WebNavigationParams::CreateWithHTMLString(
         next_navigation_html_override_.value(), info->url_request.Url());
     next_navigation_html_override_ = base::nullopt;
@@ -347,6 +349,8 @@ void TestRenderFrame::BeginNavigation(
   }
   if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab &&
       GetWebFrame()->Parent() && info->form.IsNull()) {
+    AssertNavigationCommits assert_navigation_commits(
+        this, kMayReplaceInitialEmptyDocument);
     // RenderViewTest::LoadHTML immediately commits navigation for the main
     // frame. However if the loaded html has an empty or data subframe,
     // BeginNavigation will be called from Blink and we should avoid

@@ -131,6 +131,9 @@ class FakeOSUserManager : public OSUserManager {
                                          const wchar_t* username,
                                          bool allow) override;
 
+  HRESULT SetDefaultPasswordChangePolicies(const wchar_t* domain,
+                                           const wchar_t* username) override;
+
   bool IsDeviceDomainJoined() override;
 
   void SetIsDeviceDomainJoined(bool is_device_domain_joined) {

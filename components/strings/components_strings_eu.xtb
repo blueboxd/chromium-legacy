@@ -335,7 +335,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="2297722699537546652">B5 (gutun-azala)</translation>
 <translation id="2300306941146563769">Kargatu gabe</translation>
 <translation id="2310021320168182093">Chou2 (gutun-azala)</translation>
-<translation id="2315864634253056100">Webgune honen eta <ph name="LOOKALIKE_DOMAIN" /> webgunearen izenak antzekoak dira. Batzuetan, erasotzaileek beste webgune batzuen plantak egiten dituzte web-helbideari aldaketa oso txikiak eginda.</translation>
 <translation id="2316887270356262533">1 MB baino gutxiago utziko ditu libre. Webgune batzuk mantsoago kargatuko dira bisitatzen dituzun hurrengoan.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> domeinuak erabiltzaile-izena eta pasahitza behar ditu.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" /> (iraungitze-data: <ph name="EXPIRATION_DATE_ABBR" />)</translation>
@@ -536,7 +535,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="3229041911291329567">Gailuaren eta arakatzailearen bertsioari buruzko informazioa</translation>
 <translation id="323107829343500871">Idatzi <ph name="CREDIT_CARD" /> txartelaren CVC kodea</translation>
 <translation id="3234666976984236645">Hauteman beti webgune honetako eduki garrantzitsua</translation>
-<translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> eta <ph name="SUGGESTED_DOMAIN" /> antzekoak dira. Batzuetan, erasotzaileek beste webgune batzuen plantak egiten dituzte antzeko URLak erabilita.</translation>
 <translation id="3270847123878663523">&amp;Desegin berrantolatzea</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
 <translation id="3282497668470633863">Gehitu titularra</translation>
@@ -654,7 +652,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="373042150751172459">B4 (gutun-azala)</translation>
 <translation id="3731873414101415120">Ikusi dituzun webguneak eta seguruak ez diren orrien edukia</translation>
 <translation id="3736520371357197498">Segurtasunari eragiten dioten arriskuak ulertzen badituzu, beharbada <ph name="BEGIN_LINK" />webgune ez-seguru hau bisitatu<ph name="END_LINK" /> nahi izango duzu programa arriskutsuak kendu aurretik.</translation>
-<translation id="3738166223076830879">Zure administratzaileak kudeatzen du arakatzailea</translation>
+<translation id="3738166223076830879">Administratzaileak kudeatzen du arakatzailea.</translation>
 <translation id="3744899669254331632">Une honetan ezin duzu <ph name="SITE" /> bisitatu, webguneak Chromium-ek prozesatu ezin dituen kredentzial nahasiak bidali baititu. Sareko erroreak eta erasoak aldi baterako izan ohi dira eta, beraz, segur aski orriak geroago funtzionatuko du.</translation>
 <translation id="3745099705178523657">Datuok berresten dituzunean, webgune honekin partekatuko dira Google-ko kontuarekin lotutako txartelaren xehetasunak.</translation>
 <translation id="3748148204939282805">Baliteke <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webguneko erasotzaileak zu iruzurtzen saiatzea arriskutsua izan litekeen zerbait egin dezazun; besteak beste, segurua ez den softwarea instalatzea edo informazio pertsonala ezagutaraztea (adibidez, pasahitzak, telefono-zenbakiak edo kreditu-txartelen datuak) izan liteke hori. <ph name="BEGIN_LEARN_MORE_LINK" />Lortu informazio gehiago<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -1174,7 +1172,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5869405914158311789">Ezin gara konektatu webgunera</translation>
 <translation id="5869522115854928033">Gordetako pasahitzak</translation>
 <translation id="5887400589839399685">Gorde da txartela</translation>
-<translation id="589006512797629854">Datuen babeskopia egiteko eta gailua itzultzeko eskatzen du <ph name="ENROLLMENT_DOMAIN" /> domeinuak.</translation>
 <translation id="5895138241574237353">Berrabiarazi</translation>
 <translation id="5895187275912066135">Jaulkitze-data</translation>
 <translation id="5901630391730855834">Horia</translation>
@@ -1306,6 +1303,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="6423385022588644828">Aurrerantzean, berretsi txartelak bizkorrago Touch ID erabilita</translation>
 <translation id="6425092077175753609">Material diseinua</translation>
 <translation id="6427730057873428458">Leiho-erako tolestura</translation>
+<translation id="6428450836711225518">Egiaztatu telefono-zenbakia</translation>
 <translation id="6433490469411711332">Editatu harremanetarako informazioa</translation>
 <translation id="6433595998831338502">Konexioa baztertu du <ph name="HOST_NAME" /> webguneak.</translation>
 <translation id="6434309073475700221">Baztertu</translation>
@@ -1361,7 +1359,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="6687335167692595844">Eskatutako letra-tamaina</translation>
 <translation id="6689249931105087298">Erlatiboa, puntu beltzen konprimaketarekin</translation>
 <translation id="6689271823431384964">Saioa hasita duzunez, txartelak Google-ko kontuan gordetzeko aukera ematen dizu Chrome-k. Aukera hori aldatzeko, joan Ezarpenak atalera. Txartelaren titularraren izena kontutik hartu da.</translation>
-<translation id="6704582573942289642">Hau al da webgunea?</translation>
 <translation id="6710213216561001401">Aurrekoa</translation>
 <translation id="6710594484020273272">&lt;Idatzi bilaketa-hitza&gt;</translation>
 <translation id="671076103358959139">Izena emateko tokena:</translation>
@@ -1841,6 +1838,7 @@ Xehetasun gehiago:
 <translation id="8730621377337864115">Eginda</translation>
 <translation id="8738058698779197622">Konexio segurua ezartzeko, erlojuak behar bezala ezarrita egon behar du, webguneek beren burua identifikatzeko erabiltzen dituzten ziurtagiriek denboraldi jakinetarako bakarrik balio dutelako. Gailuaren erlojua oker ezarrita dagoenez, Chromium-ek ezin ditu ziurtagiri horiek egiaztatu.</translation>
 <translation id="8740359287975076522">Ezin izan da aurkitu <ph name="HOST_NAME" /> webgunearen &lt;abbr id="dnsDefinition"&gt;DNS helbidea&lt;/abbr&gt;. Arazoaren diagnostikoa egiten ari gara.</translation>
+<translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> da <ph name="ORIGIN" /> webgunerako kodea</translation>
 <translation id="874918643257405732">Egin fitxa honen laster-marka</translation>
 <translation id="8751426954251315517">Saiatu berriro geroago</translation>
 <translation id="8759274551635299824">Iraungita dago txartela</translation>

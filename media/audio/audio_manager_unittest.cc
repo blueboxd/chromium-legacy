@@ -335,12 +335,6 @@ class AudioManagerTest : public ::testing::Test {
 
  protected:
   AudioManagerTest() {
-#if defined(OS_LINUX)
-    // Due to problems with PulseAudio failing to start, use a fake audio
-    // stream. https://crbug.com/1047655#c70
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableAudioOutput);
-#endif
     CreateAudioManagerForTesting();
   }
   ~AudioManagerTest() override { audio_manager_->Shutdown(); }

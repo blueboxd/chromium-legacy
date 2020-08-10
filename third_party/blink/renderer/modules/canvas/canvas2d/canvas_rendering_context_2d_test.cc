@@ -791,7 +791,7 @@ static void TestDrawSingleHighBitDepthPNGOnCanvas(
   float* actual_pixels = static_cast<float*>(buffer_view->BaseAddress());
 
   sk_sp<SkImage> decoded_image =
-      resource_content->GetImage()->PaintImageForCurrentFrame().GetSkImage();
+      resource_content->GetImage()->PaintImageForCurrentFrame().GetSwSkImage();
   ASSERT_EQ(kRGBA_F16_SkColorType, decoded_image->colorType());
   sk_sp<SkImage> color_converted_image = decoded_image->makeColorSpace(
       context->ColorParamsForTest().GetSkColorSpaceForSkSurfaces());

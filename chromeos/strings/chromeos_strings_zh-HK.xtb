@@ -34,6 +34,7 @@
 <translation id="3838338534323494292">新密碼</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> 會管理此裝置並可存取所有使用者活動，包括網頁瀏覽記錄、密碼和電郵。</translation>
 <translation id="4003384961948020559">失敗 - 輸出紙匣已滿</translation>
+<translation id="4027485274696301677">此 <ph name="DEVICE_TYPE" /> 由 <ph name="ENROLLMENT_DOMAIN" /> 管理。管理員可能會遠端設定裝置。</translation>
 <translation id="4034824040120875894">打印機</translation>
 <translation id="4227825898293920515">密碼在 <ph name="TIME" />後到期</translation>
 <translation id="4238516577297848345">沒有進行中的列印工作</translation>

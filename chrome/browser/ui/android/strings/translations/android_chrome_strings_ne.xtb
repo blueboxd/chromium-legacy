@@ -461,7 +461,6 @@
 <translation id="4732120983431207637">स्ट्याक Unwinder</translation>
 <translation id="473775607612524610">अपडेट गर्नुहोस्</translation>
 <translation id="4738836084190194332">अन्तिम पटक सिंक गरिएको: <ph name="WHEN" /></translation>
-<translation id="474698142248234220">TWA सम्बन्धी त्रुटि: <ph name="VIOLATED_URL" /> मा <ph name="ERROR_CODE" /></translation>
 <translation id="4749960740855309258">एउटा नयाँ ट्याब खोल्नुहोस्</translation>
 <translation id="4759238208242260848">डाउनलोडहरू</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{१ डाउनलोड सम्पन्न भयो।}other{# डाउनलोडहरू सम्पन्न भए।}}</translation>
@@ -1046,6 +1045,7 @@
 <translation id="9133397713400217035">अफलाइनमा अन्वेषण गर्नुहोस्</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">मूल देखाउनुहोस्</translation>
+<translation id="9148126808321036104">पुन: साइन इन गर्नुहोस्</translation>
 <translation id="9155898266292537608">कुनै शब्दमा द्रुत ट्याप गरेर पनि तपाईं खोज्न सक्नुहुन्छ</translation>
 <translation id="9169507124922466868">नेभिगेसनको इतिहास आधा खुला छ</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{१ मिनेटअघि जाँच गरिएको}other{# मिनेटअघि जाँच गरिएको}}</translation>
@@ -1058,6 +1058,7 @@
 <translation id="932327136139879170">गृहपृष्ठ</translation>
 <translation id="93753284658583800">गृहपृष्ठ परिवर्तन गरियो</translation>
 <translation id="938850635132480979">त्रुटि: <ph name="ERROR_CODE" /></translation>
+<translation id="939598580284253335">पासफ्रेज प्रविष्टि गर्नुहोस्</translation>
 <translation id="95817756606698420">Chrome ले चीनमा खोज गर्नका लागि <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> को प्रयोग गर्न सक्छ। तपाईं <ph name="BEGIN_LINK" />सेटिङहरू<ph name="END_LINK" />मा गई यसलाई बदल्न सक्नुहुन्छ।</translation>
 <translation id="968900484120156207">तपाईंले हेर्नुभएका पृष्ठहरू यहाँ देखिन्छन्</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> मिनेट बाँकी छ</translation>

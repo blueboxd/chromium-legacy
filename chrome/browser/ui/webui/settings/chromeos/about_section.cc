@@ -4,15 +4,14 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/about_section.h"
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
@@ -140,19 +139,6 @@ std::string GetSafetyInfoLink() {
   return std::string();
 }
 
-// Returns true if the device is enterprise managed, false otherwise.
-bool IsEnterpriseManaged() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->IsEnterpriseManaged();
-}
-
-bool IsDeviceManaged() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->IsEnterpriseManaged();
-}
-
 }  // namespace
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -278,7 +264,7 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   if (user_manager::UserManager::IsInitialized()) {
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-    if (!IsDeviceManaged() && !user_manager->IsCurrentUserOwner()) {
+    if (!webui::IsEnterpriseManaged() && !user_manager->IsCurrentUserOwner()) {
       html_source->AddString("ownerEmail",
                              user_manager->GetOwnerAccountId().GetUserEmail());
     }
@@ -315,7 +301,8 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       base::ASCIIToUTF16(chrome::kChromeUICrostiniCreditsURL));
   html_source->AddString("aboutProductOsWithLinuxLicense",
                          os_with_linux_license);
-  html_source->AddBoolean("aboutEnterpriseManaged", IsEnterpriseManaged());
+  html_source->AddBoolean("aboutEnterpriseManaged",
+                          webui::IsEnterpriseManaged());
   html_source->AddBoolean("aboutIsArcEnabled",
                           arc::IsArcPlayStoreEnabledForProfile(profile()));
   html_source->AddBoolean("aboutIsDeveloperMode",

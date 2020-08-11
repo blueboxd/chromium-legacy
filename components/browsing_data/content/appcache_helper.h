@@ -31,6 +31,8 @@ class AppCacheHelper : public base::RefCountedThreadSafe<AppCacheHelper> {
   using FetchCallback =
       base::OnceCallback<void(const std::list<content::StorageUsageInfo>&)>;
 
+  // If appcache_service is null, then StartFetching will return no results
+  // and DeleteAppCaches will silently be a noop.
   explicit AppCacheHelper(content::AppCacheService* appcache_service);
 
   virtual void StartFetching(FetchCallback completion_callback);

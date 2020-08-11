@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_DOWNLOAD_TEST_DOWNLOAD_SHELF_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "content/public/browser/download_manager.h"
@@ -17,6 +16,8 @@ class Profile;
 class TestDownloadShelf : public DownloadShelf {
  public:
   explicit TestDownloadShelf(Profile* profile);
+  TestDownloadShelf(const TestDownloadShelf&) = delete;
+  TestDownloadShelf& operator=(const TestDownloadShelf&) = delete;
   ~TestDownloadShelf() override;
 
   // DownloadShelf:
@@ -37,8 +38,6 @@ class TestDownloadShelf : public DownloadShelf {
  private:
   bool is_showing_;
   bool did_add_download_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDownloadShelf);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_TEST_DOWNLOAD_SHELF_H_

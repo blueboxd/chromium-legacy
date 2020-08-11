@@ -30,9 +30,9 @@ class VIEWS_EXPORT SelectionController {
  public:
   // Describes whether the view managing the delegate was initially focused when
   // the mouse press was received.
-  enum InitialFocusStateOnMousePress {
-    FOCUSED,
-    UNFOCUSED,
+  enum class InitialFocusStateOnMousePress {
+    kFocused,
+    kUnFocused,
   };
 
   // |delegate| must be non-null.

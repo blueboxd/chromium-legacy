@@ -226,13 +226,4 @@ RTCVideoEncoderFactory::GetSupportedFormats() const {
   return GetSupportedFormatsInternal(gpu_factories_).sdp_formats;
 }
 
-webrtc::VideoEncoderFactory::CodecInfo
-RTCVideoEncoderFactory::QueryVideoEncoder(
-    const webrtc::SdpVideoFormat& format) const {
-  CodecInfo info;
-  info.has_internal_source = false;
-  info.is_hardware_accelerated = true;
-  return info;
-}
-
 }  // namespace blink

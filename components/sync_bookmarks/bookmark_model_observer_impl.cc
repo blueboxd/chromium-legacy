@@ -109,8 +109,7 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   const SyncedBookmarkTracker::Entity* entity =
       bookmark_tracker_->GetTombstoneEntityForGuid(node->guid());
   const base::Time creation_time = base::Time::Now();
-  if (entity && base::FeatureList::IsEnabled(
-                    switches::kSyncProcessBookmarkRestoreAfterDeletion)) {
+  if (entity) {
     bookmark_tracker_->UndeleteTombstoneForBookmarkNode(entity, node);
     bookmark_tracker_->Update(entity, entity->metadata()->server_version(),
                               creation_time, unique_position, specifics);

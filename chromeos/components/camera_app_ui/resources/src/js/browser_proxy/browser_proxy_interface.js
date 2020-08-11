@@ -56,17 +56,17 @@ export class BrowserProxy {
 
   /**
    * @param {string} name
-   * @param {!Array<string>|string=} substitutions
+   * @param {...(string|number)} substitutions
    * @return {string}
    * @abstract
    */
-  getI18nMessage(name, substitutions = undefined) {}
+  getI18nMessage(name, ...substitutions) {}
 
   /**
    * @return {!Promise<boolean>}
    * @abstract
    */
-  async isCrashReportingEnabled() {}
+  async isMetricsAndCrashReportingEnabled() {}
 
   /**
    * @param {!AbstractFileEntry} file

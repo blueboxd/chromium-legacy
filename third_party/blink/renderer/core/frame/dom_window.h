@@ -109,7 +109,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
                    ExceptionState&);
 
   // Indexed properties
-  DOMWindow* AnonymousIndexedGetter(uint32_t index) const;
+  DOMWindow* AnonymousIndexedGetter(uint32_t index);
 
   String SanitizedCrossDomainAccessErrorMessage(
       const LocalDOMWindow* accessing_window,

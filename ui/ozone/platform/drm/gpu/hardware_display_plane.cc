@@ -8,6 +8,7 @@
 #include <drm_mode.h>
 
 #include "base/logging.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 
@@ -92,6 +93,14 @@ bool HardwareDisplayPlane::Initialize(DrmDevice* drm) {
   if (properties_.type.id)
     type_ = GetPlaneType(properties_.type.value);
 
+  if (properties_.plane_color_encoding.id) {
+    color_encoding_bt601_ =
+        GetEnumValueForName(drm->get_fd(), properties_.plane_color_encoding.id,
+                            "ITU-R BT.601 YCbCr");
+    color_range_limited_ = GetEnumValueForName(
+        drm->get_fd(), properties_.plane_color_range.id, "YCbCr limited range");
+  }
+
   VLOG(3) << "Initialized plane=" << id_ << " crtc_mask=" << std::hex << "0x"
           << crtc_mask_ << std::dec
           << " supported_formats_count=" << supported_formats_.size()
@@ -168,6 +177,10 @@ void HardwareDisplayPlane::InitializeProperties(DrmDevice* drm) {
   GetDrmPropertyForName(drm, props.get(), "IN_FENCE_FD",
                         &properties_.in_fence_fd);
   GetDrmPropertyForName(drm, props.get(), "PLANE_CTM", &properties_.plane_ctm);
+  GetDrmPropertyForName(drm, props.get(), "COLOR_ENCODING",
+                        &properties_.plane_color_encoding);
+  GetDrmPropertyForName(drm, props.get(), "COLOR_RANGE",
+                        &properties_.plane_color_range);
 }
 
 }  // namespace ui

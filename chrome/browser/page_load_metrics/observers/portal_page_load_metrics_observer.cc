@@ -101,7 +101,7 @@ void PortalPageLoadMetricsObserver::RecordTimingMetrics(
   if (!base::TimeTicks::IsConsistentAcrossProcesses())
     return;
 
-  ukm::builders::Portal_Activate builder(GetDelegate().GetSourceId());
+  ukm::builders::Portal_Activate builder(GetDelegate().GetPageUkmSourceId());
 
   const page_load_metrics::ContentfulPaintTimingInfo&
       main_frame_largest_contentful_paint =

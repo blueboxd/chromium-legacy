@@ -32,6 +32,10 @@ class NearbyShareDecryptedPublicCertificate {
       const NearbyShareEncryptedMetadataKey& encrypted_metadata_key);
 
   NearbyShareDecryptedPublicCertificate(
+      const NearbyShareDecryptedPublicCertificate&);
+  NearbyShareDecryptedPublicCertificate& operator=(
+      const NearbyShareDecryptedPublicCertificate&);
+  NearbyShareDecryptedPublicCertificate(
       NearbyShareDecryptedPublicCertificate&&);
   NearbyShareDecryptedPublicCertificate& operator=(
       NearbyShareDecryptedPublicCertificate&&);

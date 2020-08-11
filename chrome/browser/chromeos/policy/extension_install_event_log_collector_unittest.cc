@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -18,6 +20,8 @@
 #include "chromeos/network/network_handler.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +39,9 @@ constexpr char kWifiServicePath[] = "/service/wifi1";
 constexpr char kExtensionId1[] = "abcdefghijklmnopabcdefghijklmnop";
 
 constexpr char kExtensionName1[] = "name1";
+
+constexpr char kEmailId[] = "test@example.com";
+constexpr char kGaiaId[] = "12345";
 
 class FakeExtensionInstallEventLogCollectorDelegate
     : public ExtensionInstallEventLogCollector::Delegate {
@@ -218,6 +225,18 @@ TEST_F(ExtensionInstallEventLogCollectorTest, NoEventsByDefault) {
 }
 
 TEST_F(ExtensionInstallEventLogCollectorTest, LoginLogout) {
+  chromeos::FakeChromeUserManager* fake_user_manager =
+      new chromeos::FakeChromeUserManager();
+  user_manager::ScopedUserManager scoped_user_manager(
+      base::WrapUnique(fake_user_manager));
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmailId, kGaiaId);
+  user_manager::User* user =
+      fake_user_manager->AddUserWithAffiliationAndTypeAndProfile(
+          account_id, false /*is_affiliated*/, user_manager::USER_TYPE_REGULAR,
+          profile());
+  fake_user_manager->UserLoggedIn(account_id, user->username_hash(),
+                                  false /* browser_restart */,
+                                  false /* is_child */);
   std::unique_ptr<ExtensionInstallEventLogCollector> collector =
       std::make_unique<ExtensionInstallEventLogCollector>(
           registry(), delegate(), profile());
@@ -230,24 +249,26 @@ TEST_F(ExtensionInstallEventLogCollectorTest, LoginLogout) {
             delegate()->last_event().event_type());
   EXPECT_EQ(em::ExtensionInstallReportLogEvent::LOGIN,
             delegate()->last_event().session_state_change_type());
+  EXPECT_EQ(em::ExtensionInstallReportLogEvent::USER_TYPE_REGULAR,
+            delegate()->last_event().user_type());
+  EXPECT_EQ(true, delegate()->last_event().is_new_user());
   EXPECT_TRUE(delegate()->last_event().has_online());
   EXPECT_FALSE(delegate()->last_event().online());
-
-  collector->AddLogoutEvent();
-  EXPECT_EQ(2, delegate()->add_for_all_count());
-  EXPECT_EQ(em::ExtensionInstallReportLogEvent::SESSION_STATE_CHANGE,
-            delegate()->last_event().event_type());
-  EXPECT_EQ(em::ExtensionInstallReportLogEvent::LOGOUT,
-            delegate()->last_event().session_state_change_type());
-  EXPECT_FALSE(delegate()->last_event().has_online());
-
-  collector.reset();
-
-  EXPECT_EQ(2, delegate()->add_for_all_count());
-  EXPECT_EQ(0, delegate()->add_count());
 }
 
 TEST_F(ExtensionInstallEventLogCollectorTest, LoginTypes) {
+  chromeos::FakeChromeUserManager* fake_user_manager =
+      new chromeos::FakeChromeUserManager();
+  user_manager::ScopedUserManager scoped_user_manager(
+      base::WrapUnique(fake_user_manager));
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmailId, kGaiaId);
+  user_manager::User* user =
+      fake_user_manager->AddUserWithAffiliationAndTypeAndProfile(
+          account_id, false /*is_affiliated*/, user_manager::USER_TYPE_REGULAR,
+          profile());
+  fake_user_manager->UserLoggedIn(account_id, user->username_hash(),
+                                  false /* browser_restart */,
+                                  false /* is_child */);
   {
     ExtensionInstallEventLogCollector collector(registry(), delegate(),
                                                 profile());
@@ -257,6 +278,9 @@ TEST_F(ExtensionInstallEventLogCollectorTest, LoginTypes) {
               delegate()->last_event().event_type());
     EXPECT_EQ(em::ExtensionInstallReportLogEvent::LOGIN,
               delegate()->last_event().session_state_change_type());
+    EXPECT_EQ(em::ExtensionInstallReportLogEvent::USER_TYPE_REGULAR,
+              delegate()->last_event().user_type());
+    EXPECT_EQ(true, delegate()->last_event().is_new_user());
     EXPECT_TRUE(delegate()->last_event().has_online());
     EXPECT_FALSE(delegate()->last_event().online());
   }
@@ -318,6 +342,18 @@ TEST_F(ExtensionInstallEventLogCollectorTest, SuspendResume) {
 // Then, pass the captive portal. Verify that a connectivity change is recorded.
 TEST_F(ExtensionInstallEventLogCollectorTest, ConnectivityChanges) {
   SetNetworkState(nullptr, kEthernetServicePath, shill::kStateOnline);
+  chromeos::FakeChromeUserManager* fake_user_manager =
+      new chromeos::FakeChromeUserManager();
+  user_manager::ScopedUserManager scoped_user_manager(
+      base::WrapUnique(fake_user_manager));
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmailId, kGaiaId);
+  user_manager::User* user =
+      fake_user_manager->AddUserWithAffiliationAndTypeAndProfile(
+          account_id, false /*is_affiliated*/, user_manager::USER_TYPE_REGULAR,
+          profile());
+  fake_user_manager->UserLoggedIn(account_id, user->username_hash(),
+                                  false /* browser_restart */,
+                                  false /* is_child */);
 
   std::unique_ptr<ExtensionInstallEventLogCollector> collector =
       std::make_unique<ExtensionInstallEventLogCollector>(
@@ -331,6 +367,9 @@ TEST_F(ExtensionInstallEventLogCollectorTest, ConnectivityChanges) {
             delegate()->last_event().event_type());
   EXPECT_EQ(em::ExtensionInstallReportLogEvent::LOGIN,
             delegate()->last_event().session_state_change_type());
+  EXPECT_EQ(em::ExtensionInstallReportLogEvent::USER_TYPE_REGULAR,
+            delegate()->last_event().user_type());
+  EXPECT_EQ(true, delegate()->last_event().is_new_user());
   EXPECT_TRUE(delegate()->last_event().online());
 
   SetNetworkState(collector.get(), kWifiServicePath, shill::kStateOnline);

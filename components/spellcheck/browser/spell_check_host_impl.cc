@@ -77,15 +77,15 @@ void SpellCheckHostImpl::GetPerLanguageSuggestions(
   // This API requires Chrome-only features.
   std::move(callback).Run(std::vector<std::vector<base::string16>>());
 }
-#endif  // defined(OS_WIN)
 
 void SpellCheckHostImpl::InitializeDictionaries(
     InitializeDictionariesCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   NOTREACHED();
-  std::move(callback).Run();
+  std::move(callback).Run(/*dictionaries=*/{}, /*custom_words=*/{},
+                          /*enable=*/false);
 }
-
+#endif  // defined(OS_WIN)
 #endif  //  BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
         //  !BUILDFLAG(ENABLE_SPELLING_SERVICE)
 

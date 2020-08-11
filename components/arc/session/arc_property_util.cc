@@ -164,6 +164,7 @@ bool IsComment(const std::string& line) {
 bool ExpandPropertyContents(const std::string& content,
                             brillo::CrosConfigInterface* config,
                             std::string* expanded_content,
+                            bool filter_non_ro_props,
                             bool add_native_bridge_64bit_support,
                             bool append_dalvik_isa,
                             const std::string& partition_name) {
@@ -173,8 +174,12 @@ bool ExpandPropertyContents(const std::string& content,
 
   std::string new_properties;
   for (std::string line : lines) {
-    // Chrome only expands ro. properties at runtime.
-    if (!base::StartsWith(line, "ro.", base::CompareCase::SENSITIVE)) {
+    // Since Chrome only expands ro. properties at runtime, skip processing
+    // non-ro lines here for R+. For P, we cannot do that because the
+    // expanded property files will directly replace the original ones via
+    // bind mounts.
+    if (filter_non_ro_props &&
+        !base::StartsWith(line, "ro.", base::CompareCase::SENSITIVE)) {
       if (!IsComment(line) && line.find('{') != std::string::npos) {
         // The non-ro property has substitution(s).
         LOG(ERROR) << "Found substitution(s) in a non-ro property: " << line;
@@ -294,6 +299,7 @@ bool ExpandPropertyFile(const base::FilePath& input,
     return false;
   }
   if (!ExpandPropertyContents(content, config, &expanded,
+                              /*filter_non_ro_props=*/append,
                               add_native_bridge_64bit_support,
                               append_dalvik_isa, partition_name))
     return false;
@@ -356,6 +362,7 @@ bool ExpandPropertyContentsForTesting(const std::string& content,
                                       brillo::CrosConfigInterface* config,
                                       std::string* expanded_content) {
   return ExpandPropertyContents(content, config, expanded_content,
+                                /*filter_non_ro_props=*/true,
                                 /*add_native_bridge_64bit_support=*/false,
                                 false, std::string());
 }

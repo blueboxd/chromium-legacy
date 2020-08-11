@@ -1377,6 +1377,8 @@ source_set("browser") {
     "quota/quota_manager_host.h",
     "renderer_host/agent_metrics_collector.cc",
     "renderer_host/agent_metrics_collector.h",
+    "renderer_host/agent_scheduling_group_host.cc",
+    "renderer_host/agent_scheduling_group_host.h",
     "renderer_host/code_cache_host_impl.cc",
     "renderer_host/code_cache_host_impl.h",
     "renderer_host/cursor_manager.cc",

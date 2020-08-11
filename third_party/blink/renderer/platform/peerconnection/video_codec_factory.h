@@ -15,6 +15,10 @@ class GpuVideoAcceleratorFactories;
 
 namespace blink {
 
+// Creates a factory representing available and enabled hardware encoders.
+PLATFORM_EXPORT std::unique_ptr<webrtc::VideoEncoderFactory>
+CreateHWVideoEncoderFactory(media::GpuVideoAcceleratorFactories* gpu_factories);
+
 PLATFORM_EXPORT std::unique_ptr<webrtc::VideoEncoderFactory>
 CreateWebrtcVideoEncoderFactory(
     media::GpuVideoAcceleratorFactories* gpu_factories);

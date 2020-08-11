@@ -83,9 +83,9 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
   void GetPerLanguageSuggestions(
       const base::string16& word,
       GetPerLanguageSuggestionsCallback callback) override;
-#endif  // defined(OS_WIN)
 
   void InitializeDictionaries(InitializeDictionariesCallback callback) override;
+#endif  // defined(OS_WIN)
 
   // Clears a finished request from |requests_|. Exposed to SpellingRequest.
   void OnRequestFinished(SpellingRequest* request);
@@ -94,6 +94,14 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
   static void CombineResultsForTesting(
       std::vector<SpellCheckResult>* remote_results,
       const std::vector<SpellCheckResult>& local_results);
+
+#if defined(OS_WIN)
+  void OnDictionariesInitialized();
+
+  // Callback passed as argument to InitializeDictionaries, and invoked when
+  // the dictionaries are loaded for the first time.
+  InitializeDictionariesCallback dictionaries_loaded_callback_;
+#endif  // defined(OS_WIN)
 
   // All pending requests.
   std::set<std::unique_ptr<SpellingRequest>, base::UniquePtrComparator>

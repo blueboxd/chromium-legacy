@@ -1365,6 +1365,7 @@ var OSSettingsLanguagesPageTest = class extends OSSettingsBrowserTest {
       BROWSER_SETTINGS_PATH + '../test_util.js',
       'os_languages_page_tests.js',
       'test_os_languages_browser_proxy.js',
+      'test_os_languages_metrics_proxy.js',
     ]);
   }
 };

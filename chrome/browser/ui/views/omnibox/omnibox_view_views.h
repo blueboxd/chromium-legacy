@@ -227,6 +227,9 @@ class OmniboxViewViews : public OmniboxView,
       UnsetAlwaysShowFullURLs);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest,
                            RegistrableDomainRepeated);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+      TabChangeWhenNotEligibleForEliding);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,
                            EmitAccessibilityEvents);
   // TODO(tommycli): Remove the rest of these friends after porting these

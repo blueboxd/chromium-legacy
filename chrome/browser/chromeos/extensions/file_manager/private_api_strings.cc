@@ -55,6 +55,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
                                       chromeos::features::kFilesZipNoNaCl));
   dict->SetBoolean("SHARESHEET_ENABLED",
                    base::FeatureList::IsEnabled(features::kSharesheet));
+  dict->SetBoolean(
+      "FILTERS_IN_RECENTS_ENABLED",
+      base::FeatureList::IsEnabled(chromeos::features::kFiltersInRecents));
 
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
 

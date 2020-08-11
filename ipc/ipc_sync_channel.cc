@@ -667,28 +667,27 @@ void SyncChannel::WaitForReply(mojo::SyncHandleRegistry* registry,
 
   while (true) {
     bool dispatch = false;
-    bool send_done = false;
     bool should_pump_messages = false;
-    base::RepeatingClosure on_send_done_callback =
-        base::BindRepeating(&OnEventReady, &send_done);
-    registry->RegisterEvent(context->GetSendDoneEvent(), on_send_done_callback);
+    {
+      bool send_done = false;
+      mojo::SyncHandleRegistry::EventCallbackSubscription
+          send_done_subscription = registry->RegisterEvent(
+              context->GetSendDoneEvent(),
+              base::BindRepeating(&OnEventReady, &send_done));
 
-    base::RepeatingClosure on_pump_messages_callback;
-    if (pump_messages_event) {
-      on_pump_messages_callback =
-          base::BindRepeating(&OnEventReady, &should_pump_messages);
-      registry->RegisterEvent(pump_messages_event, on_pump_messages_callback);
+      mojo::SyncHandleRegistry::EventCallbackSubscription
+          pump_messages_subsciption;
+      if (pump_messages_event) {
+        pump_messages_subsciption = registry->RegisterEvent(
+            pump_messages_event,
+            base::BindRepeating(&OnEventReady, &should_pump_messages));
+      }
+
+      const bool* stop_flags[] = {&dispatch, &send_done, &should_pump_messages};
+      context->received_sync_msgs()->BlockDispatch(&dispatch);
+      registry->Wait(stop_flags, 3);
+      context->received_sync_msgs()->UnblockDispatch();
     }
-
-    const bool* stop_flags[] = { &dispatch, &send_done, &should_pump_messages };
-    context->received_sync_msgs()->BlockDispatch(&dispatch);
-    registry->Wait(stop_flags, 3);
-    context->received_sync_msgs()->UnblockDispatch();
-
-    registry->UnregisterEvent(context->GetSendDoneEvent(),
-                              on_send_done_callback);
-    if (pump_messages_event)
-      registry->UnregisterEvent(pump_messages_event, on_pump_messages_callback);
 
     if (dispatch) {
       // We're waiting for a reply, but we received a blocking synchronous call.

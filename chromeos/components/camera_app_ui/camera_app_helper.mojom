@@ -61,4 +61,8 @@ interface CameraAppHelper {
   // state. Calling the Update() whenever the screen state changes.
   SetScreenStateMonitor(pending_remote<ScreenStateMonitor> monitor)
       => (ScreenState initial_state);
+
+  // Checks if the logging consent option is enabled. It is only usable for SWA
+  // version. For platform app version, we use Chrome MetricsPrivate API.
+  IsMetricsAndCrashReportingEnabled() => (bool is_enabled);
 };

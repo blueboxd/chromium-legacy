@@ -516,7 +516,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   gpu::gles2::GLES2Interface* ContextGL() const;
 
   const ChildResource* LockForRead(ResourceId id, bool overlay_only);
-  void UnlockForRead(ResourceId id);
+  void UnlockForRead(ResourceId id, bool overlay_only);
 
   void TryReleaseResource(ResourceId id, ChildResource* resource);
   // Binds the given GL resource to a texture target for sampling using the

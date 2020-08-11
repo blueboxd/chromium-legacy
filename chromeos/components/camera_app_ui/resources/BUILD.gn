@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-chrome_camera_app_dir = "$root_out_dir/resources/chromeos/camera"
+import("//chromeos/components/camera_app_ui/camera_app_ui.gni")
 
 group("closure_compile") {
   deps = [ "src/js:closure_compile" ]
@@ -12,7 +12,7 @@ group("chrome_camera_app") {
   # According to crbug.com/855747, we should list all the files we want to copy
   # rather than list only the folders to avoid potential building issue and ease
   # the difficulty to diagnose.
-  deps = [ "src/strings:camera_strings" ]
+  deps = [ "src/strings" ]
 
   data_deps = [
     ":chrome_camera_app_base",
@@ -35,13 +35,13 @@ group("chrome_camera_app") {
 copy("chrome_camera_app_base") {
   sources = [ "src/manifest.json" ]
 
-  outputs = [ "$chrome_camera_app_dir/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_css") {
   sources = [ "src/css/main.css" ]
 
-  outputs = [ "$chrome_camera_app_dir/css/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/css/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_images") {
@@ -87,7 +87,7 @@ copy("chrome_camera_app_images") {
     "src/images/spinner.svg",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/images/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/images/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js") {
@@ -112,7 +112,7 @@ copy("chrome_camera_app_js") {
     "src/js/waitable_event.js",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/js/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/js/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_browser_proxy") {
@@ -122,7 +122,7 @@ copy("chrome_camera_app_js_browser_proxy") {
     "src/js/browser_proxy/browser_proxy_interface.js",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/js/browser_proxy/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/js/browser_proxy/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_device") {
@@ -133,7 +133,7 @@ copy("chrome_camera_app_js_device") {
     "src/js/device/error.js",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/js/device/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/js/device/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_lib") {
@@ -144,7 +144,7 @@ copy("chrome_camera_app_js_lib") {
     "src/js/lib/ffmpeg.wasm",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/js/lib/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/js/lib/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_models") {
@@ -161,7 +161,7 @@ copy("chrome_camera_app_js_models") {
     "src/js/models/video_saver.js",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/js/models/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/js/models/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_mojo") {
@@ -171,7 +171,7 @@ copy("chrome_camera_app_js_mojo") {
     "src/js/mojo/image_capture.js",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/js/mojo/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/js/mojo/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_views") {
@@ -184,7 +184,7 @@ copy("chrome_camera_app_js_views") {
     "src/js/views/warning.js",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/js/views/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/js/views/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_views_camera") {
@@ -198,7 +198,7 @@ copy("chrome_camera_app_js_views_camera") {
     "src/js/views/camera/timertick.js",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/js/views/camera/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/js/views/camera/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_sounds") {
@@ -212,7 +212,7 @@ copy("chrome_camera_app_sounds") {
     "src/sounds/tick_start.ogg",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/sounds/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/sounds/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_views") {
@@ -221,7 +221,7 @@ copy("chrome_camera_app_views") {
     "src/views/main.html",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/views/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/views/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_mojo_generated") {
@@ -247,5 +247,5 @@ copy("chrome_camera_app_mojo_generated") {
     "//third_party/blink/public/mojom:mojom_platform_js",
   ]
 
-  outputs = [ "$chrome_camera_app_dir/js/mojo/{{source_file_part}}" ]
+  outputs = [ "$out_camera_app_dir/js/mojo/{{source_file_part}}" ]
 }

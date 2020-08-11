@@ -5,6 +5,7 @@
 // Custom binding for the fileManagerPrivate API.
 
 // Natives
+var blobNatives = requireNative('blob_natives');
 var fileManagerPrivateNatives = requireNative('file_manager_private');
 
 // Internals
@@ -115,6 +116,39 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('getMimeType', function(entry, callback) {
     var url = getEntryURL(entry);
     fileManagerPrivateInternal.getMimeType(url, callback);
+  });
+
+  apiFunctions.setHandleRequest('getContentMimeType',
+      function(fileBlob, callback) {
+    var uuid = blobNatives.GetBlobUuid(fileBlob);
+
+    if (!fileBlob || !fileBlob.size) {
+      callback(undefined);
+      return;
+    }
+
+    var onGetContentMimeType = function(blob, mimeType) {
+      callback(mimeType ? mimeType : undefined);
+    }.bind(this, fileBlob);  // Bind a blob reference: crbug.com/415792.
+
+    fileManagerPrivateInternal.getContentMimeType(uuid, onGetContentMimeType);
+  });
+
+  apiFunctions.setHandleRequest('getContentMetadata',
+      function(fileBlob, mimeType, type, callback) {
+    var uuid = blobNatives.GetBlobUuid(fileBlob);
+
+    if (!fileBlob || !fileBlob.size) {
+      callback(undefined);
+      return;
+    }
+
+    var onGetContentMetadata = function(blob, metadata) {
+      callback(metadata ? metadata : undefined);
+    }.bind(this, fileBlob);  // Bind a blob reference: crbug.com/415792.
+
+    fileManagerPrivateInternal.getContentMetadata(
+        uuid, mimeType, type, onGetContentMetadata);
   });
 
   apiFunctions.setHandleRequest('pinDriveFile', function(entry, pin, callback) {

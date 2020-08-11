@@ -22,4 +22,8 @@ void GLEGLUtilityX11::ChooseEGLAlphaAndBufferSize(EGLint* alpha_size,
   ChoosePlatformCustomAlphaAndBufferSize(alpha_size, buffer_size);
 }
 
+bool GLEGLUtilityX11::IsTransparentBackgroundSupported() const {
+  return ui::IsTransparentBackgroundSupported();
+}
+
 }  // namespace ui

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 
 #include "base/format_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
@@ -336,9 +337,9 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(
   }
 
   for (auto& record : main_frame_percentage_records_) {
-    unsigned percentage =
-        (unsigned)floor(record.interval_duration.InMicrosecondsF() * 100.0 /
-                        duration.InMicrosecondsF());
+    auto percentage = base::ClampRound<base::HistogramBase::Sample>(
+        record.interval_duration.InMicrosecondsF() * 100.0 /
+        duration.InMicrosecondsF());
     record.uma_counters_per_bucket[bucket_index]->Count(percentage);
   }
 
@@ -390,9 +391,9 @@ void LocalFrameUkmAggregator::UpdateSample(
   for (unsigned i = 0; i < static_cast<unsigned>(kCount); ++i) {
     current_sample_.sub_metrics_durations[i] =
         absolute_metric_records_[i].interval_duration;
-    current_sample_.sub_metric_percentages[i] = static_cast<unsigned>(floor(
+    current_sample_.sub_metric_percentages[i] = base::ClampRound<unsigned>(
         main_frame_percentage_records_[i].interval_duration.InMicrosecondsF() *
-        100.0 / primary_metric_in_microseconds));
+        100.0 / primary_metric_in_microseconds);
   }
   current_sample_.trackers = trackers;
 }

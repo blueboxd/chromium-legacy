@@ -4,9 +4,9 @@
 
 #include "ash/system/audio/mic_gain_slider_controller.h"
 
-#include "ash/shell.h"
 #include "ash/system/audio/mic_gain_slider_view.h"
-#include "base/callback.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -45,7 +45,11 @@ void MicGainSliderController::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
   bool is_muted = !CrasAudioHandler::Get()->IsInputMuted();
 
-  // TODO(amehfooz): Add metrics and logging.
+  if (is_muted) {
+    base::RecordAction(base::UserMetricsAction("StatusArea_Mic_Muted"));
+  } else {
+    base::RecordAction(base::UserMetricsAction("StatusArea_Mic_Unmuted"));
+  }
 
   CrasAudioHandler::Get()->SetMuteForDevice(
       CrasAudioHandler::Get()->GetPrimaryActiveInputNode(), is_muted);
@@ -64,6 +68,8 @@ void MicGainSliderController::SliderValueChanged(
     CrasAudioHandler::Get()->SetMuteForDevice(
         CrasAudioHandler::Get()->GetPrimaryActiveInputNode(), false);
   }
+
+  base::RecordAction(base::UserMetricsAction("StatusArea_Mic_Gain_Changed"));
 
   CrasAudioHandler::Get()->SetInputGainPercent(value * 100);
 }

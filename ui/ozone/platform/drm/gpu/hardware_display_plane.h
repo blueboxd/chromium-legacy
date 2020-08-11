@@ -68,6 +68,8 @@ class HardwareDisplayPlane {
     DrmDevice::Property in_formats;
     DrmDevice::Property in_fence_fd;
     DrmDevice::Property plane_ctm;
+    DrmDevice::Property plane_color_encoding;
+    DrmDevice::Property plane_color_range;
   };
 
   const uint32_t id_;
@@ -81,6 +83,9 @@ class HardwareDisplayPlane {
   Type type_ = kPrimary;
   std::vector<uint32_t> supported_formats_;
   std::vector<drm_format_modifier> supported_format_modifiers_;
+
+  uint64_t color_encoding_bt601_;
+  uint64_t color_range_limited_;
 
  private:
   void InitializeProperties(DrmDevice* drm);

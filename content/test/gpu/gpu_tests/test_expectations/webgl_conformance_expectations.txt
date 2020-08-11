@@ -10,7 +10,8 @@
 #         intel intel-0xa011 intel-0xa2e
 #         nvidia nvidia-0x1cb3 nvidia-0x2184 nvidia-0xfe9
 #         arm-mali-t860
-#         qualcomm qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430 ]
+#         qualcomm qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
+#         google-0xffff ]
 # tags: [ d3d11 d3d9 no-angle opengl opengles vulkan swiftshader ]
 # tags: [ no-passthrough passthrough ]
 # tags: [ swiftshader-gl no-swiftshader-gl ]
@@ -744,6 +745,8 @@ crbug.com/1099959 [ swiftshader-gl no-passthrough ] WebglExtension_EXT_texture_c
 
 # All platforms, Vulkan backend
 crbug.com/1099961 [ swiftshader passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
+crbug.com/1114284 [ win swiftshader passthrough google-0xffff ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ RetryOnFailure ]
+crbug.com/1114284 [ linux swiftshader passthrough google-0xffff ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ RetryOnFailure ]
 
 # Mac. All backends.
 crbug.com/1099960 [ mac swiftshader passthrough ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Failure ]

@@ -91,6 +91,8 @@ class CORE_EXPORT DocumentMarkerController final
   void RemoveSuggestionMarkerByType(
       const EphemeralRangeInFlatTree& range,
       const SuggestionMarker::SuggestionType& type);
+  void RemoveSuggestionMarkerByType(
+      const SuggestionMarker::SuggestionType& type);
   // Removes suggestion marker with |RemoveOnFinishComposing::kRemove|.
   void RemoveSuggestionMarkerInRangeOnFinish(const EphemeralRangeInFlatTree&);
   void RepaintMarkers(
@@ -141,10 +143,11 @@ class CORE_EXPORT DocumentMarkerController final
   // the specified type. If the position is neither at the boundary or inside a
   // word, expands the position to cover the space between the end of the
   // previous and the start of the next words. If such markers exist, this
-  // method will return all of them. Otherwise, this method will return an empty
-  // list.
-  DocumentMarkerVector MarkersAroundPosition(const PositionInFlatTree& position,
-                                             DocumentMarker::MarkerTypes types);
+  // method will return all of them in their corresponding node. Otherwise,
+  // this method will return an empty list.
+  HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>
+  MarkersAroundPosition(const PositionInFlatTree& position,
+                        DocumentMarker::MarkerTypes types);
   // Return all markers of the specified types whose interiors have non-empty
   // overlap with the specified range. Note that the range can be collapsed, in
   // in which case markers containing the position in their interiors are

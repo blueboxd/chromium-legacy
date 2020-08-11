@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/extension_install_event_logger.h"
 
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
@@ -18,6 +20,8 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/value_builder.h"
@@ -38,6 +42,8 @@ constexpr char kExtensionId2[] = "bcdefghijklmnopabcdefghijklmnopa";
 constexpr char kExtensionUpdateUrl[] =
     "https://clients2.google.com/service/update2/crx";  // URL of Chrome Web
                                                         // Store backend.
+constexpr char kEmailId[] = "test@example.com";
+constexpr char kGaiaId[] = "12345";
 
 const int kTimestamp = 123456;
 
@@ -276,6 +282,18 @@ TEST_F(ExtensionInstallEventLoggerTest, AddSetsTimestampAndDiskSpaceInfo) {
 }
 
 TEST_F(ExtensionInstallEventLoggerTest, UpdatePolicy) {
+  chromeos::FakeChromeUserManager* fake_user_manager =
+      new chromeos::FakeChromeUserManager();
+  user_manager::ScopedUserManager scoped_user_manager(
+      base::WrapUnique(fake_user_manager));
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmailId, kGaiaId);
+  user_manager::User* user =
+      fake_user_manager->AddUserWithAffiliationAndTypeAndProfile(
+          account_id, false /*is_affiliated*/, user_manager::USER_TYPE_REGULAR,
+          &profile_);
+  fake_user_manager->UserLoggedIn(account_id, user->username_hash(),
+                                  false /* browser_restart */,
+                                  false /* is_child */);
   CreateLogger();
   SetupForceList();
 

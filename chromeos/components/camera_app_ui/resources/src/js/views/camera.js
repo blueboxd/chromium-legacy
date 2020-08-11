@@ -422,7 +422,7 @@ export class Camera extends View {
    */
   handlingKey(key) {
     if (key === 'Ctrl-R') {
-      toast.show(this.preview_.toString());
+      toast.showDebugMessage(this.preview_.toString());
       return true;
     }
     if ((key === 'AudioVolumeUp' || key === 'AudioVolumeDown') &&
@@ -561,8 +561,7 @@ export class Camera extends View {
               this.activeDeviceId_ = currentId;
               const info = await this.infoUpdater_.getDeviceInfo(currentId);
               if (info !== null) {
-                toast.speak(browserProxy.getI18nMessage(
-                    'status_msg_camera_switched', info.label));
+                toast.speak('status_msg_camera_switched', info.label);
               }
               return;
             }

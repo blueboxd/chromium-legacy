@@ -28,7 +28,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -69,12 +68,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#elif defined(OS_WIN)
-#include "base/enterprise_util.h"
-#endif
 
 #if !BUILDFLAG(OPTIMIZE_WEBUI)
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
@@ -379,15 +372,7 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
   source->AddBoolean("useSystemDefaultPrinter", system_default_printer);
 #endif
 
-  bool enterprise_managed = false;
-#if defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  enterprise_managed = connector->IsEnterpriseManaged();
-#elif defined(OS_WIN)
-  enterprise_managed = base::IsMachineExternallyManaged();
-#endif
-  source->AddBoolean("isEnterpriseManaged", enterprise_managed);
+  source->AddBoolean("isEnterpriseManaged", webui::IsEnterpriseManaged());
 
 #if defined(OS_CHROMEOS)
   source->AddBoolean(

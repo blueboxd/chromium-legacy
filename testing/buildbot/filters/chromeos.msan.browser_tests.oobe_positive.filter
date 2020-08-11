@@ -4,6 +4,7 @@ AccessibilityManagerLoginTest.*
 ActiveDirectoryJoinTest.*
 ActiveDirectoryLoginAutocompleteTest.*
 ActiveDirectoryLoginTest.*
+All/OobeGuestButtonPolicy.*
 AppDownloadingScreenTest.*
 ArcTermsOfServiceScreenTest.*
 AssistantOptInFlowTest.*
@@ -71,7 +72,6 @@ OobeConfigurationRollbackTest.*
 OobeConfigurationTest.*
 OobeConfigurationTestNoHID.*
 OobeDisplayChooserTest.*
-OobeGuestButtonPolicy.*
 OobeInteractiveUITest.*
 OobeLocalizationTest.*
 OobeSpokenFeedbackTest.*

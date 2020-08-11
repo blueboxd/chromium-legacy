@@ -33,7 +33,7 @@ void SetCommonWordDAFSAForTesting(const unsigned char* dafsa, size_t length) {
   g_dafsa_params = {dafsa, length};
 }
 
-void ResetCommonWordDAFSAForTesting(const unsigned char* dafsa, size_t length) {
+void ResetCommonWordDAFSAForTesting() {
   g_dafsa_params = {kDafsa, sizeof(kDafsa)};
 }
 

@@ -179,6 +179,15 @@ export class ChromeHelper {
   }
 
   /**
+   * Checks if the logging consent option is enabled.
+   * @return {!Promise<boolean>}
+   */
+  async isMetricsAndCrashReportingEnabled() {
+    const {isEnabled} = await this.remote_.isMetricsAndCrashReportingEnabled();
+    return isEnabled;
+  }
+
+  /**
    * Creates a new instance of ChromeHelper if it is not set. Returns the
    *     exist instance.
    * @return {!ChromeHelper} The singleton instance.

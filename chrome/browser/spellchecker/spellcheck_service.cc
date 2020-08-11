@@ -378,33 +378,17 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* host) {
   if (SpellcheckServiceFactory::GetForContext(context) != this)
     return;
 
-  const PrefService* prefs = user_prefs::UserPrefs::Get(context);
+  const bool enable = IsSpellcheckEnabled();
+
   std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries;
-
-  bool enable_if_uninitialized = false;
-#if defined(OS_WIN)
-  if (spellcheck::UseBrowserSpellChecker() &&
-      base::FeatureList::IsEnabled(
-          spellcheck::kWinDelaySpellcheckServiceInit)) {
-    // If initialization of the spellcheck service is on-demand, the
-    // renderer-side SpellCheck object needs to start out as enabled in order
-    // for a click on editable content to initialize the spellcheck service.
-    if (!dictionaries_loaded())
-      enable_if_uninitialized = true;
-  }
-#endif  // defined(OS_WIN)
-
-  for (const auto& hunspell_dictionary : hunspell_dictionaries_) {
-    dictionaries.push_back(spellcheck::mojom::SpellCheckBDictLanguage::New(
-        hunspell_dictionary->GetDictionaryFile().Duplicate(),
-        hunspell_dictionary->GetLanguage()));
-  }
-
-  bool enable = prefs->GetBoolean(spellcheck::prefs::kSpellCheckEnable) &&
-                (!dictionaries.empty() || enable_if_uninitialized);
-
   std::vector<std::string> custom_words;
   if (enable) {
+    for (const auto& hunspell_dictionary : hunspell_dictionaries_) {
+      dictionaries.push_back(spellcheck::mojom::SpellCheckBDictLanguage::New(
+          hunspell_dictionary->GetDictionaryFile().Duplicate(),
+          hunspell_dictionary->GetLanguage()));
+    }
+
     custom_words.assign(custom_dictionary_->GetWords().begin(),
                         custom_dictionary_->GetWords().end());
   }
@@ -501,6 +485,26 @@ void SpellcheckService::LoadDictionaries() {
 const std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>&
 SpellcheckService::GetHunspellDictionaries() {
   return hunspell_dictionaries_;
+}
+
+bool SpellcheckService::IsSpellcheckEnabled() const {
+  const PrefService* prefs = user_prefs::UserPrefs::Get(context_);
+
+  bool enable_if_uninitialized = false;
+#if defined(OS_WIN)
+  if (spellcheck::UseBrowserSpellChecker() &&
+      base::FeatureList::IsEnabled(
+          spellcheck::kWinDelaySpellcheckServiceInit)) {
+    // If initialization of the spellcheck service is on-demand, the
+    // renderer-side SpellCheck object needs to start out as enabled in order
+    // for a click on editable content to initialize the spellcheck service.
+    if (!dictionaries_loaded())
+      enable_if_uninitialized = true;
+  }
+#endif  // defined(OS_WIN)
+
+  return prefs->GetBoolean(spellcheck::prefs::kSpellCheckEnable) &&
+         (!hunspell_dictionaries_.empty() || enable_if_uninitialized);
 }
 
 bool SpellcheckService::LoadExternalDictionary(std::string language,

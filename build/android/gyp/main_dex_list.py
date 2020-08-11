@@ -56,6 +56,7 @@ def main():
   args = _ParseArgs()
   proguard_cmd = [
       build_utils.JAVA_PATH,
+      '-Xmx1G',
       '-cp',
       args.r8_path,
       'com.android.tools.r8.R8',

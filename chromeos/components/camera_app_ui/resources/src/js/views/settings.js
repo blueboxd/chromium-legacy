@@ -378,12 +378,11 @@ export class ResolutionSettings extends BaseSettings {
             (findR) => !findR.equals(r) && r.aspectRatioEquals(findR) &&
                 toMegapixel(r) === toMegapixel(findR))) {
       return browserProxy.getI18nMessage(
-          'label_detail_photo_resolution',
-          [r.width / d, r.height / d, r.width, r.height, toMegapixel(r)]);
+          'label_detail_photo_resolution', r.width / d, r.height / d, r.width,
+          r.height, toMegapixel(r));
     } else {
       return browserProxy.getI18nMessage(
-          'label_photo_resolution',
-          [r.width / d, r.height / d, toMegapixel(r)]);
+          'label_photo_resolution', r.width / d, r.height / d, toMegapixel(r));
     }
   }
 
@@ -395,7 +394,7 @@ export class ResolutionSettings extends BaseSettings {
    */
   videoOptTextTempl_(r) {
     return browserProxy.getI18nMessage(
-        'label_video_resolution', [r.height, r.width].map(String));
+        'label_video_resolution', r.height, r.width);
   }
 
   /**

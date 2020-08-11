@@ -487,45 +487,54 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
   const CGFloat centerX = width / 2.0;
   const CGFloat actionsPositionMargin = [self actionsPositionMarginFromCenter];
 
-  [UIView beginAnimations:@"position" context:NULL];
-  [UIView setAnimationDuration:0.1];
-  SetLayerPositionX(self.reloadActionImageView.layer, centerX);
+  [UIView
+      animateWithDuration:0.1
+               animations:^{
+                 SetLayerPositionX(self.reloadActionImageView.layer, centerX);
 
-  const CGFloat addTabPositionX =
-      MapValueToRange({kRefreshThreshold, kFullThreshold},
-                      {centerX - kActionsStartPositionMarginFromCenter,
-                       centerX - actionsPositionMargin},
-                      self.verticalOffset);
-  SetLayerPositionX(self.addTabActionImageView.layer, addTabPositionX);
+                 const CGFloat addTabPositionX = MapValueToRange(
+                     {kRefreshThreshold, kFullThreshold},
+                     {centerX - kActionsStartPositionMarginFromCenter,
+                      centerX - actionsPositionMargin},
+                     self.verticalOffset);
+                 SetLayerPositionX(self.addTabActionImageView.layer,
+                                   addTabPositionX);
 
-  const CGFloat closeTabPositionX =
-      MapValueToRange({kRefreshThreshold, kFullThreshold},
-                      {centerX + kActionsStartPositionMarginFromCenter,
-                       centerX + actionsPositionMargin},
-                      self.verticalOffset);
-  SetLayerPositionX(self.closeTabActionImageView.layer, closeTabPositionX);
+                 const CGFloat closeTabPositionX = MapValueToRange(
+                     {kRefreshThreshold, kFullThreshold},
+                     {centerX + kActionsStartPositionMarginFromCenter,
+                      centerX + actionsPositionMargin},
+                     self.verticalOffset);
+                 SetLayerPositionX(self.closeTabActionImageView.layer,
+                                   closeTabPositionX);
+               }
+               completion:nil];
 
-  [UIView commitAnimations];
+  [UIView animateWithDuration:0.1
+                   animations:^{
+                     self.reloadActionImageView.layer.opacity =
+                         MapValueToRange({kFullThreshold / 2.0, kFullThreshold},
+                                         {0, 1}, self.verticalOffset);
+                     self.addTabActionImageView.layer.opacity =
+                         MapValueToRange({kRefreshThreshold, kFullThreshold},
+                                         {0, 1}, self.verticalOffset);
+                     self.closeTabActionImageView.layer.opacity =
+                         MapValueToRange({kRefreshThreshold, kFullThreshold},
+                                         {0, 1}, self.verticalOffset);
+                   }
+                   completion:nil];
 
-  [UIView beginAnimations:@"opacity" context:NULL];
-  [UIView setAnimationDuration:0.1];
-  self.reloadActionImageView.layer.opacity = MapValueToRange(
-      {kFullThreshold / 2.0, kFullThreshold}, {0, 1}, self.verticalOffset);
-  self.addTabActionImageView.layer.opacity = MapValueToRange(
-      {kRefreshThreshold, kFullThreshold}, {0, 1}, self.verticalOffset);
-  self.closeTabActionImageView.layer.opacity = MapValueToRange(
-      {kRefreshThreshold, kFullThreshold}, {0, 1}, self.verticalOffset);
-  [UIView commitAnimations];
-
-  [UIView beginAnimations:@"transform" context:NULL];
-  [UIView setAnimationDuration:0.1];
-  CATransform3D rotation = CATransform3DMakeRotation(
-      MapValueToRange({kFullThreshold / 2.0, kFullThreshold},
-                      {-base::kPiFloat / 2, base::kPiFloat / 4},
-                      self.verticalOffset),
-      0, 0, 1);
-  self.reloadActionImageView.layer.transform = rotation;
-  [UIView commitAnimations];
+  [UIView
+      animateWithDuration:0.1
+               animations:^{
+                 CATransform3D rotation = CATransform3DMakeRotation(
+                     MapValueToRange({kFullThreshold / 2.0, kFullThreshold},
+                                     {-base::kPiFloat / 2, base::kPiFloat / 4},
+                                     self.verticalOffset),
+                     0, 0, 1);
+                 self.reloadActionImageView.layer.transform = rotation;
+               }
+               completion:nil];
 }
 
 - (void)layoutActionLabels {
@@ -721,19 +730,22 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
       _animatingActionTrigger)
     return;
 
-  [UIView beginAnimations:@"transform" context:NULL];
-  [UIView setAnimationDuration:kSelectionSnappingAnimationDuration];
-  if (self.selectedAction == OverscrollAction::NONE) {
-    if (!_deformationBehaviorEnabled) {
-      // Scale selection down.
-      self.selectionCircleLayer.transform =
-          CATransform3DMakeScale(kSelectionDownScale, kSelectionDownScale, 1);
-    }
-  } else {
-    // Scale selection up.
-    self.selectionCircleLayer.transform = CATransform3DMakeScale(1, 1, 1);
-  }
-  [UIView commitAnimations];
+  [UIView animateWithDuration:kSelectionSnappingAnimationDuration
+                   animations:^{
+                     if (self.selectedAction == OverscrollAction::NONE) {
+                       if (!_deformationBehaviorEnabled) {
+                         // Scale selection down.
+                         self.selectionCircleLayer.transform =
+                             CATransform3DMakeScale(kSelectionDownScale,
+                                                    kSelectionDownScale, 1);
+                       }
+                     } else {
+                       // Scale selection up.
+                       self.selectionCircleLayer.transform =
+                           CATransform3DMakeScale(1, 1, 1);
+                     }
+                   }
+                   completion:nil];
 
   [self.delegate overscrollActionsView:self
                selectedActionDidChange:self.selectedAction];
@@ -796,16 +808,21 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     return;
 
   if (self.overscrollState != OverscrollViewState::NONE) {
-    [UIView beginAnimations:@"opacity" context:NULL];
-    [UIView setAnimationDuration:kSelectionSnappingAnimationDuration];
-    self.selectionCircleLayer.opacity =
-        self.overscrollState == OverscrollViewState::READY ? 1.0 : 0.0;
-    [UIView commitAnimations];
+    [UIView animateWithDuration:kSelectionSnappingAnimationDuration
+                     animations:^{
+                       self.selectionCircleLayer.opacity =
+                           self.overscrollState == OverscrollViewState::READY
+                               ? 1.0
+                               : 0.0;
+                     }
+                     completion:nil];
+
     if (self.overscrollState == OverscrollViewState::PREPARE) {
-      [UIView beginAnimations:@"transform" context:NULL];
-      [UIView setAnimationDuration:kSelectionSnappingAnimationDuration];
-      [self resetSelection];
-      [UIView commitAnimations];
+      [UIView animateWithDuration:kSelectionSnappingAnimationDuration
+                       animations:^{
+                         [self resetSelection];
+                       }
+                       completion:nil];
     } else {
       _didTransitionToReadyState = YES;
     }

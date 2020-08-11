@@ -1276,8 +1276,10 @@ void StoragePartitionImpl::Initialize() {
   service_worker_context_ = new ServiceWorkerContextWrapper(browser_context_);
   service_worker_context_->set_storage_partition(this);
 
-  appcache_service_ = base::MakeRefCounted<ChromeAppCacheService>(
-      quota_manager_proxy.get(), weak_factory_.GetWeakPtr());
+  if (StoragePartition::IsAppCacheEnabled()) {
+    appcache_service_ = base::MakeRefCounted<ChromeAppCacheService>(
+        quota_manager_proxy.get(), weak_factory_.GetWeakPtr());
+  }
 
   dedicated_worker_service_ = std::make_unique<DedicatedWorkerServiceImpl>();
   native_io_context_ = std::make_unique<NativeIOContext>(path);

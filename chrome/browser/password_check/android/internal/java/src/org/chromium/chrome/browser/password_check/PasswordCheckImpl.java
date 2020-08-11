@@ -36,6 +36,7 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
         fragmentArgs.putInt(
                 PasswordCheckFragmentView.PASSWORD_CHECK_REFERRER, passwordCheckReferrer);
         launcher.launchSettingsActivity(context, PasswordCheckFragmentView.class, fragmentArgs);
+        if (passwordCheckReferrer != PasswordCheckReferrer.SAFETY_CHECK) startCheck();
     }
 
     @Override

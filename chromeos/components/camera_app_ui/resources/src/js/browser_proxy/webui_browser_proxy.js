@@ -2,12 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview
+ * strings.m.js is generated when we enable it via UseStringsJs() in webUI
+ * controller. When loading it, it will populate data such as localized strings
+ * into |window.loadTimeData|.
+ * @suppress {moduleLoad}
+ */
+import '/strings.m.js';
+
 // eslint-disable-next-line no-unused-vars
 import {BackgroundOps} from '../background_ops.js';
 import {assert} from '../chrome_util.js';
 import {NotImplementedError} from '../error.js';
 import {Intent} from '../intent.js';
 import {NativeDirectoryEntry} from '../models/native_file_system_entry.js';
+import {ChromeHelper} from '../mojo/chrome_helper.js';
 import {PerfLogger} from '../perf.js';
 
 // eslint-disable-next-line no-unused-vars
@@ -90,17 +100,17 @@ class WebUIBrowserProxy {
 
   /** @override */
   async getBoard() {
-    throw new NotImplementedError();
+    return window.loadTimeData.getString('board_name');
   }
 
   /** @override */
-  getI18nMessage(name, substitutions = undefined) {
-    throw new NotImplementedError();
+  getI18nMessage(name, ...substitutions) {
+    return window.loadTimeData.getStringF(name, ...substitutions);
   }
 
   /** @override */
-  async isCrashReportingEnabled() {
-    throw new NotImplementedError();
+  async isMetricsAndCrashReportingEnabled() {
+    return ChromeHelper.getInstance().isMetricsAndCrashReportingEnabled();
   }
 
   /** @override */

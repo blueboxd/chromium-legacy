@@ -7024,20 +7024,21 @@ void Document::BatterySavingsMetaChanged() {
   auto* root_element = documentElement();
   if (!root_element)
     return;
+
+  WebBatterySavingsFlags savings = 0;
   for (HTMLMetaElement& meta_element :
        Traversal<HTMLMetaElement>::DescendantsOf(*root_element)) {
     if (EqualIgnoringASCIICase(meta_element.GetName(), "battery-savings")) {
       SpaceSplitString split_content(
           AtomicString(meta_element.Content().GetString().LowerASCII()));
-      WebBatterySavingsFlags savings = 0;
       if (split_content.Contains("allow-reduced-framerate"))
         savings |= kAllowReducedFrameRate;
       if (split_content.Contains("allow-reduced-script-speed"))
         savings |= kAllowReducedScriptSpeed;
-      GetPage()->GetChromeClient().BatterySavingsChanged(*GetFrame(), savings);
-      return;
+      break;
     }
   }
+  GetPage()->GetChromeClient().BatterySavingsChanged(*GetFrame(), savings);
 }
 
 static HTMLLinkElement* GetLinkElement(const Document* doc,

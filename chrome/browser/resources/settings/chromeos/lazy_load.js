@@ -20,4 +20,5 @@ import './os_reset_page/os_reset_page.m.js';
 export {LanguagesBrowserProxy, LanguagesBrowserProxyImpl} from '../languages_page/languages_browser_proxy.m.js';
 export {TimeZoneAutoDetectMethod} from './date_time_page/date_time_types.m.js';
 export {TimeZoneBrowserProxyImpl} from './date_time_page/timezone_browser_proxy.m.js';
+export {LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './os_languages_page/languages_metrics_proxy.m.js';
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.m.js';

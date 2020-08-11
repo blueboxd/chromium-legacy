@@ -431,7 +431,7 @@ bool DirectCompositionSurfaceWin::IsDecodeSwapChainSupported() {
   if (base::FeatureList::IsEnabled(
           features::kDirectCompositionUseNV12DecodeSwapChain)) {
     UpdateOverlaySupport();
-    return GetOverlayFormatUsed() == DXGI_FORMAT_NV12;
+    return GetOverlayFormatUsedForSDR() == DXGI_FORMAT_NV12;
   }
   return false;
 }
@@ -490,7 +490,7 @@ gfx::Size DirectCompositionSurfaceWin::GetOverlayMonitorSize() {
 }
 
 // static
-DXGI_FORMAT DirectCompositionSurfaceWin::GetOverlayFormatUsed() {
+DXGI_FORMAT DirectCompositionSurfaceWin::GetOverlayFormatUsedForSDR() {
   return g_overlay_format_used;
 }
 
@@ -516,7 +516,7 @@ void DirectCompositionSurfaceWin::SetOverlayFormatUsedForTesting(
   DCHECK(format == DXGI_FORMAT_NV12 || format == DXGI_FORMAT_YUY2);
   UpdateOverlaySupport();
   g_overlay_format_used = format;
-  DCHECK_EQ(format, GetOverlayFormatUsed());
+  DCHECK_EQ(format, GetOverlayFormatUsedForSDR());
 }
 
 // static

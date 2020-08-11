@@ -57,7 +57,7 @@ class PlayerFrameBitmapPainter {
         int colEnd = (int) Math.ceil((double) mViewPort.right / mTileSize.getWidth());
 
         rowEnd = Math.min(rowEnd, mBitmapMatrix.length);
-        colEnd = Math.min(colEnd, rowEnd > 1 ? mBitmapMatrix[rowEnd - 1].length : 0);
+        colEnd = Math.min(colEnd, rowEnd >= 1 ? mBitmapMatrix[rowEnd - 1].length : 0);
 
         for (int row = rowStart; row < rowEnd; row++) {
             for (int col = colStart; col < colEnd; col++) {

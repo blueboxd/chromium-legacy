@@ -12,6 +12,7 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_TIMESTAMP;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.COMPROMISED_CREDENTIALS_COUNT;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.RESTART_BUTTON_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.UNKNOWN_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
 import static org.chromium.components.embedder_support.util.UrlUtilities.stripScheme;
@@ -178,7 +179,7 @@ class PasswordCheckViewBinder {
         if (key == CHECK_PROGRESS) {
             updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
         } else if (key == CHECK_STATUS) {
-            updateActionButton(view, status);
+            updateActionButton(view, status, model.get(RESTART_BUTTON_ACTION));
             updateStatusIcon(view, status, compromisedCredentialsCount);
             updateStatusIllustration(view, status, compromisedCredentialsCount);
             updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
@@ -190,6 +191,8 @@ class PasswordCheckViewBinder {
             updateStatusIllustration(view, status, compromisedCredentialsCount);
             updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
             updateStatusSubtitle(view, status, compromisedCredentialsCount);
+        } else if (key == RESTART_BUTTON_ACTION) {
+            assert model.get(RESTART_BUTTON_ACTION) != null : "Restart action is always required.";
         } else {
             assert false : "Unhandled update to property:" + key;
         }
@@ -197,15 +200,13 @@ class PasswordCheckViewBinder {
 
     private PasswordCheckViewBinder() {}
 
-    private static void updateActionButton(View view, @PasswordCheckUIStatus int status) {
+    private static void updateActionButton(
+            View view, @PasswordCheckUIStatus int status, Runnable startCheck) {
         ImageButton restartButton = view.findViewById(R.id.check_status_restart_button);
         if (status != PasswordCheckUIStatus.RUNNING) {
             restartButton.setVisibility(View.VISIBLE);
             restartButton.setClickable(true);
-            restartButton.setOnClickListener(unusedView
-                    -> {
-                            // TODO(crbug.com/1109691): Add call to restart the check.
-                    });
+            restartButton.setOnClickListener(unusedView -> startCheck.run());
         } else {
             restartButton.setVisibility(View.GONE);
             restartButton.setClickable(false);
@@ -438,11 +439,15 @@ class PasswordCheckViewBinder {
     private static ListMenu createCredentialMenu(Context context, CompromisedCredential credential,
             PasswordCheckCoordinator.CredentialEventHandler credentialHandler) {
         MVCListAdapter.ModelList menuItems = new MVCListAdapter.ModelList();
+        menuItems.add(BasicListMenu.buildMenuListItem(
+                R.string.password_check_credential_menu_item_edit_button_caption, 0, 0, true));
         menuItems.add(
                 BasicListMenu.buildMenuListItem(org.chromium.chrome.R.string.remove, 0, 0, true));
         ListMenu.Delegate delegate = (listModel) -> {
             int textId = listModel.get(ListMenuItemProperties.TITLE_ID);
-            if (textId == org.chromium.chrome.R.string.remove) {
+            if (textId == R.string.password_check_credential_menu_item_edit_button_caption) {
+                credentialHandler.onEdit(credential);
+            } else if (textId == org.chromium.chrome.R.string.remove) {
                 credentialHandler.onRemove(credential);
             } else {
                 assert false : "No action defined for " + context.getString(textId);

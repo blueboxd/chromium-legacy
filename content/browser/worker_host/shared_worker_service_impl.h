@@ -132,6 +132,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   // |storage_partition_| owns |this|.
   StoragePartitionImpl* const storage_partition_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  // |appcache_service_| may be null.
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override_;
 

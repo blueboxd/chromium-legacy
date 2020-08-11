@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
@@ -26,22 +27,20 @@ void ClassicScript::Trace(Visitor* visitor) const {
 }
 
 void ClassicScript::RunScript(LocalFrame* frame) {
-  frame->GetScriptController().ExecuteScriptInMainWorld(
-      GetScriptSourceCode(), BaseURL(), sanitize_script_errors_,
-      FetchOptions());
+  return RunScript(frame,
+                   ScriptController::kDoNotExecuteScriptWhenScriptsDisabled);
 }
 
 void ClassicScript::RunScript(LocalFrame* frame,
                               ScriptController::ExecuteScriptPolicy policy) {
-  frame->GetScriptController().ExecuteScriptInMainWorld(
-      GetScriptSourceCode(), BaseURL(), sanitize_script_errors_, FetchOptions(),
-      policy);
+  v8::HandleScope handle_scope(frame->DomWindow()->GetIsolate());
+  RunScriptAndReturnValue(frame, policy);
 }
 
 v8::Local<v8::Value> ClassicScript::RunScriptAndReturnValue(
     LocalFrame* frame,
     ScriptController::ExecuteScriptPolicy policy) {
-  return frame->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
+  return frame->GetScriptController().EvaluateScriptInMainWorld(
       GetScriptSourceCode(), BaseURL(), sanitize_script_errors_, FetchOptions(),
       policy);
 }

@@ -7541,6 +7541,7 @@ void RenderFrameHostImpl::GetInterface(
 void RenderFrameHostImpl::CreateAppCacheBackend(
     mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(StoragePartition::IsAppCacheEnabled());
   static auto* crash_key = base::debug::AllocateCrashKeyString(
       "CreateAppCacheBackend-data", base::debug::CrashKeySize::Size64);
   std::string data = base::StringPrintf(
@@ -7552,8 +7553,12 @@ void RenderFrameHostImpl::CreateAppCacheBackend(
 
   auto* storage_partition_impl =
       static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition());
-  storage_partition_impl->GetAppCacheService()->CreateBackend(
-      GetProcess()->GetID(), routing_id_, std::move(receiver));
+  auto* appcache_service = storage_partition_impl->GetAppCacheService();
+  // CreateAppCacheBackend should only be called if AppCache is enabled
+  // (which implies the service exists).
+  DCHECK(appcache_service);
+  appcache_service->CreateBackend(GetProcess()->GetID(), routing_id_,
+                                  std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetAudioContextManager(

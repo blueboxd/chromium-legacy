@@ -3877,9 +3877,17 @@ IN_PROC_BROWSER_TEST_F(
                           result_id)));
 }
 
+// This test is flaky on Linux ASan LSan Tests bot. https://crbug.com/1114226
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit \
+  DISABLED_DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit
+#else
+#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit \
+  DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit
+#endif
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
-    DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit) {
+    MAYBE_DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit) {
   LoadExtension("downloads_split");
   ASSERT_TRUE(StartEmbeddedTestServer());
   std::string download_url = embedded_test_server()->GetURL("/slow?0").spec();

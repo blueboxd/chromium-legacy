@@ -174,10 +174,16 @@ TEST_F('MediaAppUIBrowserTest', 'LaunchFile', async () => {
   await launchWithFiles([await createTestImageFile()]);
   const result =
       await driver.waitForElementInGuest('img[src^="blob:"]', 'naturalWidth');
+  const receivedFiles = await getLoadedFiles();
+  const file = receivedFiles[0];
 
   assertEquals(`${TEST_IMAGE_WIDTH}`, result);
   assertEquals(currentFiles.length, 1);
   assertEquals(await getFileErrors(), '');
+  assertEquals(receivedFiles.length, 1);
+  assertEquals(file.name, 'test_file.png');
+  assertEquals(file.hasDelete, true);
+  assertEquals(file.hasRename, true);
   testDone();
 });
 
@@ -847,13 +853,16 @@ TEST_F('MediaAppUIBrowserTest', 'SaveAsIPC', async () => {
   // via trusted user gestures.
   const newFileHandle = new FakeFileSystemFileHandle('new_file.jpg');
   window.showSaveFilePicker = () => Promise.resolve(newFileHandle);
-  const testImage = await createTestImageFile(10, 10);
-  const testHandle = new FakeFileSystemFileHandle('original_file.jpg');
-  await loadFile(testImage, testHandle);
+
+  const directory = await launchWithFiles(
+      [await createTestImageFile(10, 10, 'original_file.jpg')]);
+
   const originalFileToken = currentFiles[0].token;
   assertEquals(entryIndex, 0);
 
+  const receivedFilesBefore = await getLoadedFiles();
   const result = await sendTestMessage({saveAs: 'foo'});
+  const receivedFilesAfter = await getLoadedFiles();
 
   // Make sure the receivedFile object has the correct state.
   assertEquals(result.testQueryResult, 'new_file.jpg');
@@ -864,7 +873,7 @@ TEST_F('MediaAppUIBrowserTest', 'SaveAsIPC', async () => {
   // Make sure we have created a new file descriptor, and that
   // the original file is still available.
   assertEquals(entryIndex, 1);
-  assertEquals(currentFiles[0].handle, testHandle);
+  assertEquals(currentFiles[0].handle, directory.files[0]);
   assertEquals(currentFiles[0].handle.name, 'original_file.jpg');
   assertNotEquals(currentFiles[0].token, originalFileToken);
   assertEquals(currentFiles[1].handle, newFileHandle);
@@ -872,6 +881,15 @@ TEST_F('MediaAppUIBrowserTest', 'SaveAsIPC', async () => {
   assertEquals(currentFiles[1].token, originalFileToken);
   assertEquals(tokenMap.get(currentFiles[0].token), currentFiles[0].handle);
   assertEquals(tokenMap.get(currentFiles[1].token), currentFiles[1].handle);
+
+  // Currently, files obtained from a file picker can not be deleted or renamed.
+  // TODO(b/163285659): Try to support delete/rename in this case. For now, we
+  // check that the methods go away so that the UI updates to disable buttons.
+  assertEquals(receivedFilesBefore[0].hasRename, true);
+  assertEquals(receivedFilesBefore[0].hasDelete, true);
+  assertEquals(receivedFilesAfter[0].hasRename, false);
+  assertEquals(receivedFilesAfter[0].hasDelete, false);
+
   testDone();
 });
 

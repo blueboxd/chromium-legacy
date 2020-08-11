@@ -229,8 +229,6 @@ class WebAppInstallTask : content::WebContentsObserver {
   void OnOsHooksCreated(bool open_as_window,
                         const AppId& app_id,
                         const OsHooksResults os_hooks_results);
-  void OnRegisteredRunOnOsLogin(const AppId& app_id,
-                                bool registered_run_on_os_login);
 
   // Whether we should just obtain WebApplicationInfo instead of the actual
   // installation.

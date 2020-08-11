@@ -540,15 +540,18 @@ DocumentMarker* DocumentMarkerController::FirstMarkerIntersectingOffsetRange(
   return nullptr;
 }
 
-DocumentMarkerVector DocumentMarkerController::MarkersAroundPosition(
+HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>
+DocumentMarkerController::MarkersAroundPosition(
     const PositionInFlatTree& position,
     DocumentMarker::MarkerTypes types) {
-  DocumentMarkerVector result;
+  HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>
+      node_marker_pairs;
+
   if (position.IsNull())
-    return result;
+    return node_marker_pairs;
 
   if (!PossiblyHasMarkers(types))
-    return result;
+    return node_marker_pairs;
 
   const PositionInFlatTree& start = SearchAroundPositionStart(position);
   const PositionInFlatTree& end = SearchAroundPositionEnd(position);
@@ -556,7 +559,7 @@ DocumentMarkerVector DocumentMarkerController::MarkersAroundPosition(
   if (start > end) {
     // TODO(crbug/1114021): Investigate why this might happen.
     NOTREACHED() << "|start| should be before |end|.";
-    return result;
+    return node_marker_pairs;
   }
 
   const Node* const start_node = start.ComputeContainerNode();
@@ -590,11 +593,14 @@ DocumentMarkerVector DocumentMarkerController::MarkersAroundPosition(
       if (!list)
         continue;
 
-      result.AppendVector(
-          list->MarkersIntersectingRange(start_range_offset, end_range_offset));
+      const DocumentMarkerVector& markers =
+          list->MarkersIntersectingRange(start_range_offset, end_range_offset);
+
+      for (DocumentMarker* marker : markers)
+        node_marker_pairs.push_back(std::make_pair(&To<Text>(node), marker));
     }
   }
-  return result;
+  return node_marker_pairs;
 }
 
 HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>
@@ -919,6 +925,25 @@ void DocumentMarkerController::RemoveSuggestionMarkerByType(
     // one suggestion marker needs to be removed.
     To<SuggestionMarkerListImpl>(list)->RemoveMarkerByType(type);
     InvalidatePaintForNode(text);
+  }
+}
+
+void DocumentMarkerController::RemoveSuggestionMarkerByType(
+    const SuggestionMarker::SuggestionType& type) {
+  if (!PossiblyHasMarkers(DocumentMarker::kSuggestion))
+    return;
+  DCHECK(!markers_.IsEmpty());
+
+  for (const auto& node_markers : markers_) {
+    MarkerLists* markers = node_markers.value;
+    DocumentMarkerList* const list =
+        ListForType(markers, DocumentMarker::kSuggestion);
+    if (!list)
+      continue;
+    if (To<SuggestionMarkerListImpl>(list)->RemoveMarkerByType(type)) {
+      InvalidatePaintForNode(*node_markers.key);
+      return;
+    }
   }
 }
 

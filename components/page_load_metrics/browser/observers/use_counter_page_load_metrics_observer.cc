@@ -209,7 +209,7 @@ void UseCounterPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
                     main_frame_features_recorded_, &ukm_features_recorded_,
-                    GetDelegate().GetSourceId());
+                    GetDelegate().GetPageUkmSourceId());
 }
 
 void UseCounterPageLoadMetricsObserver::OnFailedProvisionalLoad(
@@ -217,7 +217,7 @@ void UseCounterPageLoadMetricsObserver::OnFailedProvisionalLoad(
         failed_provisional_load_info) {
   RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
                     main_frame_features_recorded_, &ukm_features_recorded_,
-                    GetDelegate().GetSourceId());
+                    GetDelegate().GetPageUkmSourceId());
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
@@ -225,7 +225,7 @@ UseCounterPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
                     main_frame_features_recorded_, &ukm_features_recorded_,
-                    GetDelegate().GetSourceId());
+                    GetDelegate().GetPageUkmSourceId());
   return CONTINUE_OBSERVING;
 }
 

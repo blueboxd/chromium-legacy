@@ -815,6 +815,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, BlockScriptInitiatedPrinting) {
   print_render_frame_helper->SetPrintingEnabled(true);
   PrintWithJavaScript();
   VerifyPreviewRequest(true);
+
+  OnClosePrintPreviewDialog();
 }
 
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintWithJavaScript) {
@@ -826,6 +828,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintWithJavaScript) {
   ClickMouseButton(bounds);
 
   VerifyPreviewRequest(true);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Tests that print preview work and sending and receiving messages through
@@ -846,6 +850,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, OnPrintPreview) {
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
@@ -877,6 +883,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Test to verify that print preview ignores print media css when non-default
@@ -900,6 +908,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Test to verify that print preview honor print media size css when
@@ -924,6 +934,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
@@ -1046,6 +1058,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Test to verify that print preview honor print margin css when PRINT_TO_PDF
@@ -1081,6 +1095,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Test to verify that print preview workflow center the html page contents to
@@ -1102,6 +1118,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCenterToFitPage) {
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Test to verify that print preview workflow scale the html page contents to
@@ -1134,6 +1152,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Test to verify that print preview workflow honor the orientation settings
@@ -1157,6 +1177,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Test to verify that print preview workflow honors the orientation settings
@@ -1179,6 +1201,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForMultiplePages) {
@@ -1199,6 +1223,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForMultiplePages) {
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedPages) {
@@ -1234,6 +1260,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedPages) {
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Test to verify that preview generated only for one page.
@@ -1257,6 +1285,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedText) {
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Test to verify that preview generated only for two pages.
@@ -1280,6 +1310,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedText2) {
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Tests that cancelling print preview works.
@@ -1299,6 +1331,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCancel) {
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(false);
   VerifyPagesPrinted(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Tests that when default printer has invalid printer settings, print preview
@@ -1322,6 +1356,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // It should receive the invalid printer settings message only.
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Tests that when the selected printer has invalid page settings, print preview
@@ -1342,6 +1378,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // It should receive the invalid printer settings message only.
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 // Tests that when the selected printer has invalid content settings, print
@@ -1362,6 +1400,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // It should receive the invalid printer settings message only.
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(false);
+
+  OnClosePrintPreviewDialog();
 }
 
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, BasicBeforePrintAfterPrint) {

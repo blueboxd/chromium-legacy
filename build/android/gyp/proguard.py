@@ -256,6 +256,7 @@ def _OptimizeWithR8(options,
     if options.disable_outlining:
       cmd += [' -Dcom.android.tools.r8.disableOutlining=1']
     cmd += [
+        '-Xmx1G',
         '-cp',
         options.r8_path,
         'com.android.tools.r8.R8',

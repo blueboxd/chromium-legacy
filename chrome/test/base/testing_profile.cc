@@ -364,11 +364,11 @@ void TestingProfile::Init() {
       g_browser_process->platform_part()->GetAccountManagerFactory();
   chromeos::AccountManager* account_manager =
       factory->GetAccountManager(profile_path_.value());
-  account_manager->Initialize(
-      profile_path_, GetURLLoaderFactory(),
-      base::BindRepeating(&chromeos::DelayNetworkCall,
-                          base::TimeDelta::FromMilliseconds(
-                              chromeos::kDefaultNetworkRetryDelayMS)));
+  chromeos::AccountManager::DelayNetworkCallRunner immediate_callback_runner =
+      base::BindRepeating(
+          [](base::OnceClosure closure) -> void { std::move(closure).Run(); });
+  account_manager->Initialize(profile_path_, GetURLLoaderFactory(),
+                              immediate_callback_runner);
   account_manager->SetPrefService(GetPrefs());
   if (!chromeos::CrosSettings::IsInitialized()) {
     scoped_cros_settings_test_helper_.reset(

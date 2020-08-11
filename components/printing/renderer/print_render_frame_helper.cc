@@ -1769,11 +1769,23 @@ void PrintRenderFrameHelper::PrintNode(const blink::WebNode& node) {
     // its |context_menu_node_|.
     blink::WebNode duplicate_node(node);
 
-    auto self = weak_ptr_factory_.GetWeakPtr();
+    blink::WebLocalFrame* frame = duplicate_node.GetDocument().GetFrame();
+    if (!frame)
+      return;
+
+    auto weak_this = weak_ptr_factory_.GetWeakPtr();
+    frame->DispatchBeforePrintEvent();
+    if (!weak_this)
+      return;
+
     Print(duplicate_node.GetDocument().GetFrame(), duplicate_node,
           PrintRequestType::kRegular);
     // Check if |this| is still valid.
-    if (!self)
+    if (!weak_this)
+      return;
+
+    frame->DispatchAfterPrintEvent();
+    if (!weak_this)
       return;
   }
 

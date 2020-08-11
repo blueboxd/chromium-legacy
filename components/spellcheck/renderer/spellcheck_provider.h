@@ -137,6 +137,13 @@ class SpellCheckProvider : public content::RenderFrameObserver,
   void RequestTextCheckingFromBrowser(const base::string16& text);
 
 #if defined(OS_WIN)
+  // Callback for when spellcheck service has been initialized on demand.
+  void OnRespondInitializeDictionaries(
+      const base::string16& text,
+      std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries,
+      const std::vector<std::string>& custom_words,
+      bool enable);
+
   // Flag indicating that the spellcheck service has been initialized and
   // the dictionaries have been loaded initially. Used to avoid an unnecessary
   // mojo call to determine this in every text check request.

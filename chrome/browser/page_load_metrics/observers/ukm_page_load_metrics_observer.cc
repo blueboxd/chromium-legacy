@@ -291,7 +291,7 @@ void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
   // UKM, we convert to a positive value here.
   int64_t net_error_code = static_cast<int64_t>(failed_load_info.error) * -1;
   DCHECK_GE(net_error_code, 0);
-  ukm::builders::PageLoad(GetDelegate().GetSourceId())
+  ukm::builders::PageLoad(GetDelegate().GetPageUkmSourceId())
       .SetNet_ErrorCode_OnFailedProvisionalLoad(net_error_code)
       .SetPageTiming_NavigationToFailedProvisionalLoad(
           failed_load_info.time_to_failed_provisional_load.InMilliseconds())
@@ -400,7 +400,7 @@ void UkmPageLoadMetricsObserver::RecordNavigationTimingMetrics() {
   DCHECK_LE(timing.first_loader_callback_time,
             timing.final_loader_callback_time);
 
-  ukm::builders::NavigationTiming builder(GetDelegate().GetSourceId());
+  ukm::builders::NavigationTiming builder(GetDelegate().GetPageUkmSourceId());
 
   // Record the elapsed time from the navigation start milestone.
   builder
@@ -446,7 +446,7 @@ void UkmPageLoadMetricsObserver::RecordNavigationTimingMetrics() {
 
 void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
-  ukm::builders::PageLoad builder(GetDelegate().GetSourceId());
+  ukm::builders::PageLoad builder(GetDelegate().GetPageUkmSourceId());
 
   base::Optional<int64_t> rounded_site_engagement_score =
       GetRoundedSiteEngagementScore();
@@ -615,7 +615,8 @@ void UkmPageLoadMetricsObserver::RecordInternalTimingMetrics(
         all_frames_largest_contentful_paint,
     const page_load_metrics::ContentfulPaintTimingInfo&
         all_frames_experimental_largest_contentful_paint) {
-  ukm::builders::PageLoad_Internal debug_builder(GetDelegate().GetSourceId());
+  ukm::builders::PageLoad_Internal debug_builder(
+      GetDelegate().GetPageUkmSourceId());
   LargestContentState lcp_state = LargestContentState::kNotFound;
   if (all_frames_largest_contentful_paint.ContainsValidTime()) {
     if (WasStartedInForegroundOptionalEventInForeground(
@@ -670,7 +671,7 @@ void UkmPageLoadMetricsObserver::RecordInternalTimingMetrics(
 void UkmPageLoadMetricsObserver::RecordPageLoadMetrics(
     base::TimeTicks app_background_time,
     bool became_hidden) {
-  ukm::builders::PageLoad builder(GetDelegate().GetSourceId());
+  ukm::builders::PageLoad builder(GetDelegate().GetPageUkmSourceId());
   base::Optional<base::TimeDelta> foreground_duration =
       page_load_metrics::GetInitialForegroundDuration(GetDelegate(),
                                                       app_background_time);
@@ -825,7 +826,7 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
 }
 
 void UkmPageLoadMetricsObserver::ReportLayoutStability() {
-  ukm::builders::PageLoad(GetDelegate().GetSourceId())
+  ukm::builders::PageLoad(GetDelegate().GetPageUkmSourceId())
       .SetLayoutInstability_CumulativeShiftScore(
           page_load_metrics::LayoutShiftUkmValue(
               GetDelegate().GetPageRenderData().layout_shift_score))
@@ -885,7 +886,7 @@ void UkmPageLoadMetricsObserver::ReportAbortMetrics(
                             page_load_type);
   PAGE_LOAD_LONG_HISTOGRAM("PageLoad.Experimental.TotalForegroundDuration",
                            total_foreground_duration_);
-  ukm::builders::PageLoad(GetDelegate().GetSourceId())
+  ukm::builders::PageLoad(GetDelegate().GetPageUkmSourceId())
       .SetExperimental_PageLoadType(static_cast<int>(page_load_type))
       .SetExperimental_TotalForegroundDuration(
           ukm::GetExponentialBucketMinForUserTiming(
@@ -894,7 +895,7 @@ void UkmPageLoadMetricsObserver::ReportAbortMetrics(
 }
 
 void UkmPageLoadMetricsObserver::RecordInputTimingMetrics() {
-  ukm::builders::PageLoad(GetDelegate().GetSourceId())
+  ukm::builders::PageLoad(GetDelegate().GetPageUkmSourceId())
       .SetInteractiveTiming_NumInputEvents(
           GetDelegate().GetPageInputTiming().num_input_events)
       .SetInteractiveTiming_TotalInputDelay(

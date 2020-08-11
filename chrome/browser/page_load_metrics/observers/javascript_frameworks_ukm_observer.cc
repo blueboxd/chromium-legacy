@@ -25,7 +25,7 @@ void JavascriptFrameworksUkmObserver::RecordNextJS() {
   }
 
   ukm::builders::JavascriptFrameworkPageLoad builder(
-      GetDelegate().GetSourceId());
+      GetDelegate().GetPageUkmSourceId());
   builder.SetNextJSPageLoad(true);
   nextjs_detected = true;
   builder.Record(ukm::UkmRecorder::Get());

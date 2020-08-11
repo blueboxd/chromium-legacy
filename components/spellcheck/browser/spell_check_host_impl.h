@@ -55,10 +55,9 @@ class SpellCheckHostImpl : public spellcheck::mojom::SpellCheckHost {
   void GetPerLanguageSuggestions(
       const base::string16& word,
       GetPerLanguageSuggestionsCallback callback) override;
-#endif  // defined(OS_WIN)
 
   void InitializeDictionaries(InitializeDictionariesCallback callback) override;
-
+#endif  // defined(OS_WIN)
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
         // !BUILDFLAG(ENABLE_SPELLING_SERVICE)
 

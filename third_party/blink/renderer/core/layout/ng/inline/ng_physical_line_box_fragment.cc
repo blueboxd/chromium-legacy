@@ -96,7 +96,7 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     TextHeightType height_type) const {
   const WritingMode container_writing_mode = container_style.GetWritingMode();
   PhysicalRect overflow;
-  for (const auto& child : Children()) {
+  for (const auto& child : PostLayoutChildren()) {
     PhysicalRect child_scroll_overflow =
         child->ScrollableOverflowForPropagation(container, height_type);
     child_scroll_overflow.offset += child.Offset();

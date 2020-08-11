@@ -69,24 +69,25 @@ bool SyncMessageFilter::Send(Message* message) {
     }
   }
 
-  bool done = false;
-  bool shutdown = false;
-  scoped_refptr<mojo::SyncHandleRegistry> registry =
-      mojo::SyncHandleRegistry::current();
-  auto on_shutdown_callback = base::BindRepeating(&OnEventReady, &shutdown);
-  auto on_done_callback = base::BindRepeating(&OnEventReady, &done);
-  registry->RegisterEvent(shutdown_event_, on_shutdown_callback);
-  registry->RegisterEvent(&done_event, on_done_callback);
+  {
+    bool done = false;
+    bool shutdown = false;
+    scoped_refptr<mojo::SyncHandleRegistry> registry =
+        mojo::SyncHandleRegistry::current();
+    mojo::SyncHandleRegistry::EventCallbackSubscription shutdown_subscription =
+        registry->RegisterEvent(shutdown_event_,
+                                base::BindRepeating(&OnEventReady, &shutdown));
+    mojo::SyncHandleRegistry::EventCallbackSubscription done_subscription =
+        registry->RegisterEvent(&done_event,
+                                base::BindRepeating(&OnEventReady, &done));
 
-  const bool* stop_flags[] = { &done, &shutdown };
-  registry->Wait(stop_flags, 2);
-  if (done) {
-    TRACE_EVENT_FLOW_END0("toplevel.flow", "SyncMessageFilter::Send",
-                          &done_event);
+    const bool* stop_flags[] = {&done, &shutdown};
+    registry->Wait(stop_flags, 2);
+    if (done) {
+      TRACE_EVENT_FLOW_END0("toplevel.flow", "SyncMessageFilter::Send",
+                            &done_event);
+    }
   }
-
-  registry->UnregisterEvent(shutdown_event_, on_shutdown_callback);
-  registry->UnregisterEvent(&done_event, on_done_callback);
 
   {
     base::AutoLock auto_lock(lock_);

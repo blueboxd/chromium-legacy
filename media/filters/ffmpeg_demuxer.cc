@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -1225,7 +1226,7 @@ static int CalculateBitrate(AVFormatContext* format_context,
   // larger than ~1073GB.
   double bytes = filesize_in_bytes;
   double duration_us = duration.InMicroseconds();
-  return bytes * 8000000.0 / duration_us;
+  return base::ClampRound(bytes * 8000000.0 / duration_us);
 }
 
 void FFmpegDemuxer::OnOpenContextDone(bool result) {

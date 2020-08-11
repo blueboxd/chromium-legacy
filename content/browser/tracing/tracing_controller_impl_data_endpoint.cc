@@ -90,14 +90,20 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
 
     // The temporary trace file is produced in the same folder since paths must
     // be on the same volume.
-    file_ = FileToFILE(CreateAndOpenTemporaryFileInDir(file_path_.DirName(),
-                                                       &pending_file_path_),
-                       "w");
-    if (file_ == nullptr) {
-      LOG(ERROR) << "Failed to open " << file_path_.value();
-      return false;
+    base::File temp_file = CreateAndOpenTemporaryFileInDir(file_path_.DirName(),
+                                                           &pending_file_path_);
+    if (temp_file.IsValid()) {
+      file_ = FileToFILE(std::move(temp_file), "w");
+    } else {
+      LOG(WARNING) << "Unable to use temporary file " << pending_file_path_
+                   << ": "
+                   << base::File::ErrorToString(temp_file.error_details());
+      pending_file_path_.clear();
+      file_ = base::OpenFile(file_path_, "w");
+      LOG_IF(ERROR, file_ == nullptr)
+          << "Failed to open " << file_path_.value();
     }
-    return true;
+    return file_ != nullptr;
   }
 
   void CloseOnBlockingThread() {
@@ -106,12 +112,14 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
       file_ = nullptr;
     }
 
-    base::File::Error error;
-    if (!base::ReplaceFile(pending_file_path_, file_path_, &error)) {
-      LOG(ERROR) << "Cannot replace file '" << file_path_
-                 << "' : " << base::File::ErrorToString(error);
-      base::DeleteFile(pending_file_path_);
-      return;
+    if (!pending_file_path_.empty()) {
+      base::File::Error error;
+      if (!base::ReplaceFile(pending_file_path_, file_path_, &error)) {
+        LOG(ERROR) << "Cannot replace file '" << file_path_
+                   << "' : " << base::File::ErrorToString(error);
+        base::DeleteFile(pending_file_path_);
+        return;
+      }
     }
 
     GetUIThreadTaskRunner({})->PostTask(

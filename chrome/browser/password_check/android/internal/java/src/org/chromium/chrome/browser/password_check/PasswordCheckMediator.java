@@ -12,6 +12,7 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_TIMESTAMP;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.COMPROMISED_CREDENTIALS_COUNT;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.RESTART_BUTTON_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.UNKNOWN_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
 
@@ -54,6 +55,7 @@ class PasswordCheckMediator
                         .with(CHECK_STATUS, PasswordCheckUIStatus.RUNNING)
                         .with(CHECK_TIMESTAMP, null)
                         .with(COMPROMISED_CREDENTIALS_COUNT, null)
+                        .with(RESTART_BUTTON_ACTION, this::runCheck)
                         .build()));
         getPasswordCheck().addObserver(this, true);
     }
@@ -71,6 +73,7 @@ class PasswordCheckMediator
             items.add(new ListItem(PasswordCheckProperties.ItemType.HEADER,
                     new PropertyModel.Builder(PasswordCheckProperties.HeaderProperties.ALL_KEYS)
                             .with(CHECK_STATUS, PasswordCheckUIStatus.RUNNING)
+                            .with(RESTART_BUTTON_ACTION, this::runCheck)
                             .build()));
         }
 
@@ -144,6 +147,11 @@ class PasswordCheckMediator
     }
 
     @Override
+    public void onEdit(CompromisedCredential credential) {
+        // TODO(crbug.com/1114720): Implement.
+    }
+
+    @Override
     public void onRemove(CompromisedCredential credential) {
         mModel.set(DELETION_ORIGIN, credential.getOriginUrl());
         mModel.set(
@@ -172,6 +180,10 @@ class PasswordCheckMediator
     public void onChangePasswordWithScriptButtonClick(CompromisedCredential credential) {
         assert credential.hasScript();
         mLaunchCctWithScript.accept(credential);
+    }
+
+    private void runCheck() {
+        getPasswordCheck().startCheck();
     }
 
     private PasswordCheck getPasswordCheck() {

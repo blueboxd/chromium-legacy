@@ -344,37 +344,6 @@ void ScriptController::ExecuteJavaScriptURL(
                                         CommitReason::kJavascriptUrl);
 }
 
-void ScriptController::ExecuteScriptInMainWorld(
-    const String& script,
-    ScriptSourceLocationType source_location_type,
-    ExecuteScriptPolicy policy) {
-  v8::HandleScope handle_scope(GetIsolate());
-  EvaluateScriptInMainWorld(ScriptSourceCode(script, source_location_type),
-                            KURL(), SanitizeScriptErrors::kSanitize,
-                            ScriptFetchOptions(), policy);
-}
-
-void ScriptController::ExecuteScriptInMainWorld(
-    const ScriptSourceCode& source_code,
-    const KURL& base_url,
-    SanitizeScriptErrors sanitize_script_errors,
-    const ScriptFetchOptions& fetch_options,
-    ExecuteScriptPolicy policy) {
-  v8::HandleScope handle_scope(GetIsolate());
-  EvaluateScriptInMainWorld(source_code, base_url, sanitize_script_errors,
-                            fetch_options, policy);
-}
-
-v8::Local<v8::Value> ScriptController::ExecuteScriptInMainWorldAndReturnValue(
-    const ScriptSourceCode& source_code,
-    const KURL& base_url,
-    SanitizeScriptErrors sanitize_script_errors,
-    const ScriptFetchOptions& fetch_options,
-    ExecuteScriptPolicy policy) {
-  return EvaluateScriptInMainWorld(
-      source_code, base_url, sanitize_script_errors, fetch_options, policy);
-}
-
 v8::Local<v8::Value> ScriptController::EvaluateScriptInMainWorld(
     const ScriptSourceCode& source_code,
     const KURL& base_url,

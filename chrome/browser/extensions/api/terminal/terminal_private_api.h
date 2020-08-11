@@ -185,22 +185,6 @@ class TerminalPrivateOpenOptionsPageFunction : public ExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 };
 
-// TODO(crbug.com/1019021): Remove this function after M-83.
-// Be sure to first remove the callsite in the terminal system app.
-class TerminalPrivateGetCroshSettingsFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("terminalPrivate.getCroshSettings",
-                             TERMINALPRIVATE_GETCROSHSETTINGS)
-
- protected:
-  ~TerminalPrivateGetCroshSettingsFunction() override;
-
-  ExtensionFunction::ResponseAction Run() override;
-
- private:
-  void AsyncRunWithStorage(ValueStore* storage);
-};
-
 class TerminalPrivateGetSettingsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.getSettings",

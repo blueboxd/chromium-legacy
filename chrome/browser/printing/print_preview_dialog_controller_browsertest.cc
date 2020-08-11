@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -159,6 +160,12 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
     return dialog_controller->GetPrintPreviewForContents(initiator_);
   }
 
+  void PrintPreviewDone() {
+    auto* print_view_manager =
+        printing::PrintViewManager::FromWebContents(initiator());
+    print_view_manager->PrintPreviewDone();
+  }
+
   void SetAlwaysOpenPdfExternallyForTests() {
     PluginPrefs::GetForProfile(browser()->profile())
         ->SetAlwaysOpenPdfExternallyForTests(true);
@@ -220,6 +227,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   ASSERT_TRUE(preview_dialog);
   ASSERT_NE(initiator(), preview_dialog);
 
+  PrintPreviewDone();
+
   // Navigate in the initiator tab. Make sure navigating destroys the print
   // preview dialog.
   content::WebContentsDestroyedWatcher watcher(preview_dialog);
@@ -234,6 +243,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
   // Check a new preview dialog got created.
   EXPECT_TRUE(new_preview_dialog);
+
+  PrintPreviewDone();
 }
 
 // Test to verify that after reloading the initiator, it creates a new print
@@ -248,6 +259,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   // Check a new print preview dialog got created.
   ASSERT_TRUE(preview_dialog);
   ASSERT_NE(initiator(), preview_dialog);
+
+  PrintPreviewDone();
 
   // Reload the initiator. Make sure reloading destroys the print preview
   // dialog.
@@ -268,6 +281,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   // Create a preview dialog for the initiator tab.
   WebContents* new_preview_dialog = GetPrintPreviewDialog();
   EXPECT_TRUE(new_preview_dialog);
+
+  PrintPreviewDone();
 }
 
 // Test to verify that after print preview works even when the PDF plugin is
@@ -322,6 +337,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   // Make sure all the frames in the dialog has access to the PDF plugin.
   preview_dialog->ForEachFrame(
       base::BindRepeating(&CheckPdfPluginForRenderFrame));
+
+  PrintPreviewDone();
 }
 
 namespace {
@@ -359,6 +376,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
                                expected_prefix,
                                base::CompareCase::INSENSITIVE_ASCII));
 
+  PrintPreviewDone();
+
   // Navigating away from the current page in the current tab for which a print
   // preview is displayed will cancel the print preview and hence the task
   // manger shouldn't show a printing task.
@@ -377,6 +396,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   EXPECT_TRUE(base::StartsWith(title,
                                expected_prefix,
                                base::CompareCase::INSENSITIVE_ASCII));
+  PrintPreviewDone();
 }
 
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
@@ -386,4 +406,6 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   PrintPreview();
   WebContents* preview_dialog = GetPrintPreviewDialog();
   WaitForAccessibilityTreeToContainNodeWithName(preview_dialog, "HelloWorld");
+
+  PrintPreviewDone();
 }

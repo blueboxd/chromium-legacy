@@ -188,7 +188,10 @@ class SpellCheckHostChromeImplWinBrowserTestDelayInit
     RunUntilResultReceived();
   }
 
-  void InitializeDictionariesCallback() {
+  void InitializeDictionariesCallback(
+      std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries,
+      const std::vector<std::string>& custom_words,
+      bool enable) {
     received_result_ = true;
     if (quit_)
       std::move(quit_).Run();

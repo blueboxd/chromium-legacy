@@ -44,7 +44,8 @@ enum class SystemTrayItemUmaType {
   UMA_QUIET_MODE = 27,
   UMA_LOCALE = 28,
   UMA_PRIVACY_SCREEN = 29,
-  UMA_COUNT = 30,
+  UMA_DARK_MODE = 30,
+  UMA_COUNT = 31,
 };
 
 }  // namespace ash

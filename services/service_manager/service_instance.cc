@@ -473,6 +473,7 @@ void ServiceInstance::RegisterServiceInstance(
   if (!service_manager_->RegisterService(identity, std::move(service_remote),
                                          std::move(metadata_receiver))) {
     std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED);
+    return;
   }
 
   std::move(callback).Run(mojom::ConnectResult::SUCCEEDED);

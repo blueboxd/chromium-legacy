@@ -29,6 +29,7 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_TIMESTAMP;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.COMPROMISED_CREDENTIALS_COUNT;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.RESTART_BUTTON_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.UNKNOWN_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.ERROR_NO_PASSWORDS;
@@ -112,6 +113,8 @@ public class PasswordCheckViewTest {
     private PasswordCheckComponentUi mComponentUi;
     @Mock
     private PasswordCheckCoordinator.CredentialEventHandler mMockHandler;
+    @Mock
+    private Runnable mMockStartButtonCallback;
 
     @Rule
     public SettingsActivityTestRule<PasswordCheckFragmentView> mTestRule =
@@ -219,13 +222,15 @@ public class PasswordCheckViewTest {
 
     @Test
     @MediumTest
-    public void testStatusDisplaysRestartAction() {
+    public void testStatusDisplaysClickableRestartAction() {
         Long checkTimestamp = System.currentTimeMillis();
         runOnUiThreadBlocking(
                 () -> { mModel.get(ITEMS).add(buildHeader(IDLE, 0, checkTimestamp)); });
         waitForListViewToHaveLength(1);
         assertThat(getActionButton().getVisibility(), is(View.VISIBLE));
         assertTrue(getActionButton().isClickable());
+        getActionButton().callOnClick();
+        waitForEvent(mMockStartButtonCallback).run();
     }
 
     @Test
@@ -347,7 +352,7 @@ public class PasswordCheckViewTest {
 
     @Test
     @MediumTest
-    public void testStatusDysplaysSubtitleOnIdleNoLeaks() {
+    public void testStatusDisplaysSubtitleOnIdleNoLeaks() {
         Long checkTimestamp = System.currentTimeMillis();
         runOnUiThreadBlocking(
                 () -> { mModel.get(ITEMS).add(buildHeader(IDLE, 0, checkTimestamp)); });
@@ -359,7 +364,7 @@ public class PasswordCheckViewTest {
 
     @Test
     @MediumTest
-    public void testStatusDysplaysSubtitleOnIdleWithLeaks() {
+    public void testStatusDisplaysSubtitleOnIdleWithLeaks() {
         Long checkTimestamp = System.currentTimeMillis();
         runOnUiThreadBlocking(
                 () -> { mModel.get(ITEMS).add(buildHeader(IDLE, LEAKS_COUNT, checkTimestamp)); });
@@ -372,7 +377,7 @@ public class PasswordCheckViewTest {
 
     @Test
     @MediumTest
-    public void testStatusNotDysplaysSubtitle() {
+    public void testStatusNotDisplaysSubtitle() {
         runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildHeader(ERROR_UNKNOWN)); });
         waitForListViewToHaveLength(1);
         assertThat(getHeaderSubtitle().getVisibility(), is(View.GONE));
@@ -455,6 +460,22 @@ public class PasswordCheckViewTest {
 
     @Test
     @MediumTest
+    public void testClickingEditInMoreMenuTriggersHandler() {
+        runOnUiThreadBlocking(() -> mModel.get(ITEMS).add(buildCredentialItem(ANA)));
+        waitForListViewToHaveLength(1);
+
+        TouchCommon.singleClickView(getCredentialMoreButtonAt(0));
+
+        onView(withText(R.string.password_check_credential_menu_item_edit_button_caption))
+                .inRoot(withDecorView(
+                        not(is(mPasswordCheckView.getActivity().getWindow().getDecorView()))))
+                .perform(click());
+
+        verify(mMockHandler).onEdit(eq(ANA));
+    }
+
+    @Test
+    @MediumTest
     public void testClickingDeleteInMoreMenuTriggersHandler() {
         runOnUiThreadBlocking(() -> mModel.get(ITEMS).add(buildCredentialItem(ANA)));
         waitForListViewToHaveLength(1);
@@ -522,6 +543,7 @@ public class PasswordCheckViewTest {
                         .with(CHECK_STATUS, status)
                         .with(CHECK_TIMESTAMP, checkTimestamp)
                         .with(COMPROMISED_CREDENTIALS_COUNT, compromisedCredentialsCount)
+                        .with(RESTART_BUTTON_ACTION, mMockStartButtonCallback)
                         .build());
     }
 

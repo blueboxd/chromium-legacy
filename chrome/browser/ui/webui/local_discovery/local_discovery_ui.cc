@@ -23,14 +23,6 @@
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#elif defined(OS_WIN)
-#include "base/enterprise_util.h"
-#endif
-
 namespace {
 
 content::WebUIDataSource* CreateLocalDiscoveryWarningHTMLSource() {
@@ -41,18 +33,11 @@ content::WebUIDataSource* CreateLocalDiscoveryWarningHTMLSource() {
   source->AddLocalizedString("devicesTitle",
                              IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE);
 
-  bool enterprise_managed = false;
-#if defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  enterprise_managed = connector->IsEnterpriseManaged();
-#elif defined(OS_WIN)
-  enterprise_managed = base::IsMachineExternallyManaged();
-#endif
   source->AddLocalizedString(
       "cloudPrintDeprecationWarning",
-      enterprise_managed ? IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING_ENTERPRISE
-                         : IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING);
+      webui::IsEnterpriseManaged()
+          ? IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING_ENTERPRISE
+          : IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING);
 
   source->DisableDenyXFrameOptions();
 

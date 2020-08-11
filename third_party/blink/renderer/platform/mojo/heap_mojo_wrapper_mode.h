@@ -11,14 +11,17 @@ namespace blink {
 // TODO(crbug.com/1058076) This is just a temporary thing to keep the existing
 // behavior during the release freeze.
 enum class HeapMojoWrapperMode {
-  // Resets the mojo connection when 1) the owner object is garbage-collected
+  // [Recommended] Resets the mojo connection when 1) the owner object is
+  // garbage-collected
   // and 2) the associated ExecutionContext is detached.
   kWithContextObserver,
-  // Resets the mojo connection when the owner object is garbage-collected.
+  // [Deprecated] Resets the mojo connection when the owner object is
+  // garbage-collected.
   // But, it will not reset the mojo connection when the associated
   // ExecutionContext is detached.
   kWithoutContextObserver,
-  // We are now experimenting with deprecating kWithoutContextObserver.
+  // [Deprecated] We are now experimenting with deprecating
+  // kWithoutContextObserver.
   // kWithoutContextObserver is ignored in the Finch experiment. To enforce
   // kWithoutContextObserver, use kForceWithoutContextObserver.
   kForceWithoutContextObserver,

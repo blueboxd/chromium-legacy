@@ -181,6 +181,12 @@ NearbyShareDecryptedPublicCertificate::NearbyShareDecryptedPublicCertificate(
       unencrypted_metadata_(std::move(unencrypted_metadata)) {}
 
 NearbyShareDecryptedPublicCertificate::NearbyShareDecryptedPublicCertificate(
+    const NearbyShareDecryptedPublicCertificate&) = default;
+NearbyShareDecryptedPublicCertificate&
+NearbyShareDecryptedPublicCertificate::operator=(
+    const NearbyShareDecryptedPublicCertificate&) = default;
+
+NearbyShareDecryptedPublicCertificate::NearbyShareDecryptedPublicCertificate(
     NearbyShareDecryptedPublicCertificate&&) = default;
 NearbyShareDecryptedPublicCertificate&
 NearbyShareDecryptedPublicCertificate::operator=(

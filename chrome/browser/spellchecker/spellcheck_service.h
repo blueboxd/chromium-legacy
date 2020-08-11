@@ -137,6 +137,10 @@ class SpellcheckService : public KeyedService,
   const std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>&
   GetHunspellDictionaries();
 
+  // Returns whether spellchecking is enabled in preferences and if there are
+  // dictionaries available.
+  bool IsSpellcheckEnabled() const;
+
   // Load a dictionary from a given path. Format specifies how the dictionary
   // is stored. Return value is true if successful.
   bool LoadExternalDictionary(std::string language,

@@ -158,7 +158,7 @@ void PreviewsUKMObserver::RecordPreviewsTypes() {
     return;
   }
 
-  ukm::builders::Previews builder(GetDelegate().GetSourceId());
+  ukm::builders::Previews builder(GetDelegate().GetPageUkmSourceId());
   if (noscript_seen_)
     builder.Setnoscript(1);
   if (resource_loading_hints_seen_)

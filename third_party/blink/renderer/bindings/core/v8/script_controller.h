@@ -77,29 +77,19 @@ class CORE_EXPORT ScriptController final
     return window_proxy_manager_->WindowProxy(world);
   }
 
-  // Evaluate JavaScript in the main world.
-  void ExecuteScriptInMainWorld(
-      const String& script,
-      ScriptSourceLocationType = ScriptSourceLocationType::kUnknown,
-      ExecuteScriptPolicy = kDoNotExecuteScriptWhenScriptsDisabled);
-  void ExecuteScriptInMainWorld(
-      const ScriptSourceCode&,
-      const KURL& base_url,
-      SanitizeScriptErrors,
-      const ScriptFetchOptions& = ScriptFetchOptions(),
-      ExecuteScriptPolicy = kDoNotExecuteScriptWhenScriptsDisabled);
-  v8::Local<v8::Value> ExecuteScriptInMainWorldAndReturnValue(
-      const ScriptSourceCode&,
-      const KURL& base_url,
-      SanitizeScriptErrors,
-      const ScriptFetchOptions& = ScriptFetchOptions(),
-      ExecuteScriptPolicy = kDoNotExecuteScriptWhenScriptsDisabled);
   v8::Local<v8::Value> ExecuteScriptAndReturnValue(
       v8::Local<v8::Context>,
       const ScriptSourceCode&,
       const KURL& base_url,
       SanitizeScriptErrors,
       const ScriptFetchOptions& = ScriptFetchOptions());
+
+  // Evaluate JavaScript in the main world.
+  v8::Local<v8::Value> EvaluateScriptInMainWorld(const ScriptSourceCode&,
+                                                 const KURL& base_url,
+                                                 SanitizeScriptErrors,
+                                                 const ScriptFetchOptions&,
+                                                 ExecuteScriptPolicy);
 
   // Executes JavaScript in an isolated world. The script gets its own global
   // scope, its own prototypes for intrinsic JavaScript objects (String, Array,
@@ -159,12 +149,6 @@ class CORE_EXPORT ScriptController final
   void SetEvalForWorld(DOMWrapperWorld& world,
                        bool allow_eval,
                        const String& error_message);
-
-  v8::Local<v8::Value> EvaluateScriptInMainWorld(const ScriptSourceCode&,
-                                                 const KURL& base_url,
-                                                 SanitizeScriptErrors,
-                                                 const ScriptFetchOptions&,
-                                                 ExecuteScriptPolicy);
 
   const Member<LocalFrame> frame_;
   const Member<LocalWindowProxyManager> window_proxy_manager_;

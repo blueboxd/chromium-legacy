@@ -6,10 +6,12 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_SYNC_HANDLE_REGISTRY_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
+#include "base/callback_list.h"
 #include "base/component_export.h"
-#include "base/containers/stack_container.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
@@ -26,10 +28,30 @@ namespace mojo {
 class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncHandleRegistry
     : public base::RefCounted<SyncHandleRegistry> {
  public:
-  // Returns a sequence-local object.
-  static scoped_refptr<SyncHandleRegistry> current();
+  using EventCallbackList = base::RepeatingClosureList;
+  using EventCallback = EventCallbackList::CallbackType;
+
+  // Wrapper class that runs a closure after a CallbackList subscription is
+  // destroyed.
+  class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Subscription {
+   public:
+    Subscription(base::OnceClosure remove_closure,
+                 EventCallbackList* callbacks,
+                 EventCallback event_callback);
+    Subscription(Subscription&&);
+    Subscription& operator=(Subscription&&);
+    ~Subscription();
+
+   private:
+    base::ScopedClosureRunner remove_runner_;
+    std::unique_ptr<EventCallbackList::Subscription> subscription_;
+  };
+  using EventCallbackSubscription = std::unique_ptr<Subscription>;
 
   using HandleCallback = base::RepeatingCallback<void(MojoResult)>;
+
+  // Returns a sequence-local object.
+  static scoped_refptr<SyncHandleRegistry> current();
 
   // Registers a |Handle| to be watched for |handle_signals|. If any such
   // signals are satisfied during a Wait(), the Wait() is woken up and
@@ -44,12 +66,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncHandleRegistry
   // Wait() before any handle signals. |event| is not owned, and if it signals
   // during Wait(), |callback| is invoked.  Note that |event| may be registered
   // multiple times with different callbacks.
-  void RegisterEvent(base::WaitableEvent* event,
-                     base::RepeatingClosure callback);
-
-  // Unregisters a specific |event|+|callback| pair.
-  void UnregisterEvent(base::WaitableEvent* event,
-                       base::RepeatingClosure callback);
+  EventCallbackSubscription RegisterEvent(base::WaitableEvent* event,
+                                          EventCallback callback);
 
   // Waits on all the registered handles and events and runs callbacks
   // synchronously for any that become ready.
@@ -61,26 +79,17 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncHandleRegistry
  private:
   friend class base::RefCounted<SyncHandleRegistry>;
 
-  using EventCallbackList = base::StackVector<base::RepeatingClosure, 1>;
-  using EventMap = std::map<base::WaitableEvent*, EventCallbackList>;
-
   SyncHandleRegistry();
   ~SyncHandleRegistry();
 
-  void RemoveInvalidEventCallbacks();
-
   WaitSet wait_set_;
   std::map<Handle, HandleCallback> handles_;
-  EventMap events_;
+  std::map<base::WaitableEvent*, std::unique_ptr<EventCallbackList>> events_;
 
-  // |true| iff this registry is currently dispatching event callbacks in
-  // Wait(). Used to allow for safe event registration/unregistration from event
-  // callbacks.
-  bool is_dispatching_event_callbacks_ = false;
-
-  // Indicates if one or more event callbacks was unregistered during the most
-  // recent event callback dispatch.
-  bool remove_invalid_event_callbacks_after_dispatch_ = false;
+  // True when the registry is dispatching event callbacks in Wait().  This is
+  // used to improve the safety and efficiency of pruning unused entries in
+  // |events_| if Wait() results in reentrancy.
+  bool in_nested_wait_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

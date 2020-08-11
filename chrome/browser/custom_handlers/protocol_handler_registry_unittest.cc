@@ -993,21 +993,18 @@ TEST_F(ProtocolHandlerRegistryTest, TestURIPercentEncoding) {
                                  "url=web%2Bcustom%3A%2F%2Fcustom%2F%3C%3E%60%"
                                  "7B%7D%23%3F%22'%25F0%259F%2598%2582"));
 
-  // C0 characters. GURL constructor encodes U+001F as "%1F" first, because
-  // U+001F is an illegal char. Then the protocol handler translator encodes it
-  // to "%251F" again. That's why the expected result has double-encoded URL.
+  // ASCII characters from the C0 controls percent-encode set.
+  // GURL constructor encodes U+001F and U+007F as "%1F" and "%7F" first,
+  // Then the protocol handler translator encodes them to "%25%1F" and "%25%7F"
+  // again. That's why the expected result has double-encoded URL.
   translated_url = ph.TranslateUrl(GURL("web+custom://custom/\x1fhandler"));
   ASSERT_EQ(
       translated_url,
       GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%2F%251Fhandler"));
-
-  // Control characters.
-  // TODO(crbug.com/809852): Check why non-special URLs don't encode any
-  // characters above U+001F.
   translated_url = ph.TranslateUrl(GURL("web+custom://custom/\x7Fhandler"));
   ASSERT_EQ(
       translated_url,
-      GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%2F%7Fhandler"));
+      GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%2F%257Fhandler"));
 
   // Path percent-encode set.
   translated_url =

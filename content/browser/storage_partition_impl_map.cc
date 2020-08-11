@@ -446,10 +446,12 @@ void StoragePartitionImplMap::PostCreateInitialization(
     InitializeResourceContext(browser_context_);
   }
 
-  partition->GetAppCacheService()->Initialize(
-      in_memory ? base::FilePath()
-                : partition->GetPath().Append(kAppCacheDirname),
-      browser_context_, browser_context_->GetSpecialStoragePolicy());
+  if (StoragePartition::IsAppCacheEnabled()) {
+    partition->GetAppCacheService()->Initialize(
+        in_memory ? base::FilePath()
+                  : partition->GetPath().Append(kAppCacheDirname),
+        browser_context_, browser_context_->GetSpecialStoragePolicy());
+  }
 
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {

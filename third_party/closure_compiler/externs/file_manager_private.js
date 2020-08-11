@@ -267,6 +267,12 @@ chrome.fileManagerPrivate.CrostiniEventType = {
   UNSHARE: 'unshare',
 };
 
+/** @enum {string} */
+chrome.fileManagerPrivate.ContentMetadataType = {
+  METADATATAGSIMAGES: 'metadataTagsImages',
+  METADATATAGS: 'metadataTags',
+};
+
 /**
  * @typedef {{
  *   taskId: string,
@@ -534,6 +540,44 @@ chrome.fileManagerPrivate.CrostiniEvent;
 chrome.fileManagerPrivate.AndroidApp;
 
 /**
+ * @typedef {{
+ *   type: string,
+ *   tags: !Object,
+ * }}
+ */
+chrome.fileManagerPrivate.StreamInfo;
+
+/**
+ * @typedef {{
+ *   data: string,
+ *   type: string,
+ * }}
+ */
+chrome.fileManagerPrivate.AttachedImages;
+
+/**
+ * @typedef {{
+ *   mimeType: string,
+ *   height: (number|undefined),
+ *   width: (number|undefined),
+ *   duration: (number|undefined),
+ *   rotation: (number|undefined),
+ *   album: (string|undefined),
+ *   artist: (string|undefined),
+ *   comment: (string|undefined),
+ *   copyright: (string|undefined),
+ *   disc: (number|undefined),
+ *   genre: (string|undefined),
+ *   language: (string|undefined),
+ *   title: (string|undefined),
+ *   track: (number|undefined),
+ *   rawTags: !Array<!chrome.fileManagerPrivate.StreamInfo>,
+ *   attachedImages: !Array<!chrome.fileManagerPrivate.AttachedImages>,
+ * }}
+ */
+chrome.fileManagerPrivate.MediaMetadata;
+
+/**
  * Logout the current user for navigating to the re-authentication screen for
  * the Google account.
  */
@@ -579,11 +623,31 @@ chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {};
 
 /**
  * Gets the MIME type of a file.
- * @param {!Entry} entry
- * @param {function((string|undefined))} callback Callback that MIME type of the
- *     file is passed.
+ * @param {!Entry} entry The file Entry.
+ * @param {function((string|undefined))} callback The MIME type callback.
  */
 chrome.fileManagerPrivate.getMimeType = function(entry, callback) {};
+
+/**
+ * Gets the content sniffed MIME type of a file.
+ * @param {!Blob} fileBlob Blob created from the file Entry.
+ * @param {function((string|undefined))} callback The MIME type callback.
+ * $(ref:runtime.lastError) will be set if there was an error.
+ */
+chrome.fileManagerPrivate.getContentMimeType = function(fileBlob, callback) {};
+
+/**
+ * Gets the content metadata from an Audio or Video file.
+ * @param {!Blob} fileBlob Blob created from the file Entry.
+ * @param {string} mimeType The content sniffed mimeType of the file.
+ * @param {boolean} includeImages If true, return metadata tags and thumbnail
+ *     images. If false, return metadata tags only.
+ * @param {function((!chrome.fileManagerPrivate.MediaMetadata|undefined))}
+ *     callback The content MediaMetadata callback.
+ * $(ref:runtime.lastError) will be set if there was an error.
+ */
+chrome.fileManagerPrivate.getContentMetadata = function(fileBlob, mimeType,
+    includeImages, callback) {};
 
 /**
  * Gets localized strings and initialization data. |callback|
@@ -663,7 +727,7 @@ chrome.fileManagerPrivate.getEntryProperties = function(entries, names,
 /**
  * Pins/unpins a Drive file in the cache. |entry| Entry of a file to pin/unpin.
  * |pin| Pass true to pin the file. |callback| Completion callback.
- * $(ref:runtime.lastError) will be set if     there was an error.
+ * $(ref:runtime.lastError) will be set if there was an error.
  * @param {!Entry} entry
  * @param {boolean} pin
  * @param {function()} callback Callback that does not take arguments.

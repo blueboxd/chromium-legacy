@@ -46,4 +46,8 @@ void ChoosePlatformCustomAlphaAndBufferSize(EGLint* alpha_size,
   }
 }
 
+bool IsTransparentBackgroundSupported() {
+  return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
+}
+
 }  // namespace ui

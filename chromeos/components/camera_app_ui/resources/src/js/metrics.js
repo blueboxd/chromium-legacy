@@ -31,6 +31,22 @@ let baseDimen = null;
 let ready = null;
 
 /**
+ * @type {boolean}
+ */
+let isMetricsEnabled = false;
+
+/**
+ * Disable metrics sending if either the logging consent option is disabled or
+ * metrics is disabled for current session. (e.g. Running tests)
+ * @return {!Promise}
+ */
+async function disableMetricsIfNotAllowed() {
+  // This value reflects the logging constent option in OS settings.
+  const canSendMetrics = await browserProxy.isMetricsAndCrashReportingEnabled();
+  window[`ga-disable-${GA_ID}`] = !isMetricsEnabled || !canSendMetrics;
+}
+
+/**
  * Send the event to GA backend.
  * @param {!ga.Fields} event The event to send.
  * @param {?Map<number, !Object>=} dimen Optional object contains dimension
@@ -40,6 +56,7 @@ async function sendEvent(event, dimen = null) {
   assert(window.ga !== null);
   assert(ready !== null);
   await ready;
+  await disableMetricsIfNotAllowed();
 
   const assignDimension = (e, d) => {
     d.forEach((value, key) => e[`dimension${key}`] = value);
@@ -60,12 +77,7 @@ async function sendEvent(event, dimen = null) {
  */
 export function setMetricsEnabled(enabled) {
   assert(ready !== null);
-
-  ready.then(async () => {
-    // This value reflects the logging constent option in OS settings.
-    const canSendMetrics = await browserProxy.isCrashReportingEnabled();
-    window[`ga-disable-${GA_ID}`] = !enabled || !canSendMetrics;
-  });
+  isMetricsEnabled = enabled;
 }
 
 /**

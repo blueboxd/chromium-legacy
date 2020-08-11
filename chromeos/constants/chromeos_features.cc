@@ -205,6 +205,10 @@ const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kFilesTransferDetails{"FilesTransferDetails",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables filters in Files app Recents view.
+const base::Feature kFiltersInRecents{"FiltersInRecents",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables new ZIP archive handling in Files App.
 // https://crbug.com/912236
 const base::Feature kFilesZipNoNaCl{"FilesZipNoNaCl",

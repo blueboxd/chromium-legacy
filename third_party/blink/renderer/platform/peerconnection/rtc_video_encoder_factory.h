@@ -31,8 +31,6 @@ class RTCVideoEncoderFactory : public webrtc::VideoEncoderFactory {
   std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(
       const webrtc::SdpVideoFormat& format) override;
   std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override;
-  webrtc::VideoEncoderFactory::CodecInfo QueryVideoEncoder(
-      const webrtc::SdpVideoFormat& format) const override;
 
  private:
   media::GpuVideoAcceleratorFactories* gpu_factories_;

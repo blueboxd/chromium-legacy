@@ -64,9 +64,11 @@ class PasswordCheckProperties {
         static final PropertyModel
                 .WritableObjectPropertyKey<Integer> COMPROMISED_CREDENTIALS_COUNT =
                 new PropertyModel.WritableObjectPropertyKey<>("compromised_credentials_count");
+        static final PropertyModel.ReadableObjectPropertyKey<Runnable> RESTART_BUTTON_ACTION =
+                new PropertyModel.WritableObjectPropertyKey<>("restart_button_action");
 
-        static final PropertyKey[] ALL_KEYS = {
-                CHECK_PROGRESS, CHECK_STATUS, CHECK_TIMESTAMP, COMPROMISED_CREDENTIALS_COUNT};
+        static final PropertyKey[] ALL_KEYS = {CHECK_PROGRESS, CHECK_STATUS, CHECK_TIMESTAMP,
+                COMPROMISED_CREDENTIALS_COUNT, RESTART_BUTTON_ACTION};
 
         static final Pair<Integer, Integer> UNKNOWN_PROGRESS = new Pair<>(-1, -1);
 

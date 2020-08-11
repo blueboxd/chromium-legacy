@@ -136,6 +136,12 @@ const char* DxgiFormatToString(DXGI_FORMAT format) {
       return nullptr;
   }
 }
+
+bool IsYUVSwapChainFormat(DXGI_FORMAT format) {
+  if (format == DXGI_FORMAT_NV12 || format == DXGI_FORMAT_YUY2)
+    return true;
+  return false;
+}
 }  // namespace
 
 SwapChainPresenter::PresentationHistory::PresentationHistory() = default;
@@ -186,19 +192,21 @@ SwapChainPresenter::~SwapChainPresenter() {
   base::PowerMonitor::RemoveObserver(this);
 }
 
-bool SwapChainPresenter::ShouldUseYUVSwapChain(
+DXGI_FORMAT SwapChainPresenter::GetSwapChainFormat(
     gfx::ProtectedVideoType protected_video_type,
     bool content_is_hdr) {
+  DXGI_FORMAT yuv_overlay_format =
+      DirectCompositionSurfaceWin::GetOverlayFormatUsedForSDR();
   // TODO(crbug.com/850799): Assess power/perf impact when protected video
   // swap chain is composited by DWM.
 
   // Always prefer YUV swap chain for hardware protected video for now.
   if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
-    return true;
+    return yuv_overlay_format;
 
-  // Prefer RGB swapchain when playing HDR content.
+  // Prefer RGB10A2 swapchain when playing HDR content.
   if (content_is_hdr)
-    return false;
+    return DXGI_FORMAT_R10G10B10A2_UNORM;
 
   // For software protected video, BGRA swap chain is preferred if hardware
   // overlay is not supported for better power efficiency.
@@ -206,14 +214,14 @@ bool SwapChainPresenter::ShouldUseYUVSwapChain(
   // chain is used when hardware overlay is not supported.
   if (protected_video_type == gfx::ProtectedVideoType::kSoftwareProtected &&
       !DirectCompositionSurfaceWin::AreOverlaysSupported())
-    return false;
+    return DXGI_FORMAT_B8G8R8A8_UNORM;
 
   if (failed_to_create_yuv_swapchain_)
-    return false;
+    return DXGI_FORMAT_B8G8R8A8_UNORM;
 
   // Start out as YUV.
   if (!presentation_history_.Valid())
-    return true;
+    return yuv_overlay_format;
 
   int composition_count = presentation_history_.composed_count();
 
@@ -221,13 +229,16 @@ bool SwapChainPresenter::ShouldUseYUVSwapChain(
   // aren't being used, as otherwise DWM will use the video processor a second
   // time to convert it to BGRA before displaying it on screen.
 
-  if (is_yuv_swapchain_) {
+  if (swap_chain_format_ == yuv_overlay_format) {
     // Switch to BGRA once 3/4 of presents are composed.
-    return composition_count < (PresentationHistory::kPresentsToStore * 3 / 4);
+    if (composition_count >= (PresentationHistory::kPresentsToStore * 3 / 4))
+      return DXGI_FORMAT_B8G8R8A8_UNORM;
   } else {
     // Switch to YUV once 3/4 are using overlays (or unknown).
-    return composition_count < (PresentationHistory::kPresentsToStore / 4);
+    if (composition_count < (PresentationHistory::kPresentsToStore / 4))
+      return yuv_overlay_format;
   }
+  return swap_chain_format_;
 }
 
 Microsoft::WRL::ComPtr<ID3D11Texture2D> SwapChainPresenter::UploadVideoImages(
@@ -495,7 +506,8 @@ bool SwapChainPresenter::TryPresentToDecodeSwapChain(
   auto not_used_reason = DecodeSwapChainNotUsedReason::kFailedToPresent;
 
   bool nv12_supported =
-      (DXGI_FORMAT_NV12 == DirectCompositionSurfaceWin::GetOverlayFormatUsed());
+      (DXGI_FORMAT_NV12 ==
+       DirectCompositionSurfaceWin::GetOverlayFormatUsedForSDR());
   // TODO(sunnyps): Try using decode swap chain for uploaded video images.
   if (nv12_image && nv12_supported && !failed_to_present_decode_swapchain_) {
     D3D11_TEXTURE2D_DESC texture_desc = {};
@@ -686,14 +698,13 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
   last_presented_images_ = ui::DCRendererLayerParams::OverlayImages();
   last_presented_images_[kNV12ImageIndex] = nv12_image;
   swap_chain_size_ = swap_chain_size;
-  if (is_yuv_swapchain_) {
+  if (swap_chain_format_ == DXGI_FORMAT_NV12) {
     frames_since_color_space_change_++;
   } else {
     UMA_HISTOGRAM_COUNTS_1000(
         "GPU.DirectComposition.FramesSinceColorSpaceChange",
         frames_since_color_space_change_);
     frames_since_color_space_change_ = 0;
-    is_yuv_swapchain_ = true;
   }
   RecordPresentationStatistics();
   return true;
@@ -779,19 +790,16 @@ bool SwapChainPresenter::PresentToSwapChain(
   if (swap_chain_resized) {
     presentation_history_.Clear();
   }
-  // TODO(Richard Li): Since we have three distinct swap chain formats: YUV,
-  // BGRA8, and RGB10A2, we need to correct this to track swapchain's current
-  // format in a more explicit way.
-  bool use_yuv_swap_chain =
-      ShouldUseYUVSwapChain(params.protected_video_type, content_is_hdr);
-  bool toggle_yuv_swapchain = use_yuv_swap_chain != is_yuv_swapchain_;
+  DXGI_FORMAT swap_chain_format =
+      GetSwapChainFormat(params.protected_video_type, content_is_hdr);
+  bool swap_chain_format_changed = swap_chain_format != swap_chain_format_;
   bool toggle_protected_video =
       protected_video_type_ != params.protected_video_type;
 
   // Try reallocating swap chain if resizing fails.
-  if (!swap_chain_ || swap_chain_resized || toggle_yuv_swapchain ||
+  if (!swap_chain_ || swap_chain_resized || swap_chain_format_changed ||
       toggle_protected_video) {
-    if (!ReallocateSwapChain(swap_chain_size, use_yuv_swap_chain,
+    if (!ReallocateSwapChain(swap_chain_size, swap_chain_format,
                              params.protected_video_type, params.z_order,
                              content_is_hdr)) {
       ReleaseSwapChainResources();
@@ -903,11 +911,8 @@ void SwapChainPresenter::SetFrameRate(float frame_rate) {
 }
 
 void SwapChainPresenter::RecordPresentationStatistics() {
-  DXGI_FORMAT swap_chain_format =
-      is_yuv_swapchain_ ? DirectCompositionSurfaceWin::GetOverlayFormatUsed()
-                        : DXGI_FORMAT_B8G8R8A8_UNORM;
   base::UmaHistogramSparse("GPU.DirectComposition.SwapChainFormat3",
-                           swap_chain_format);
+                           swap_chain_format_);
 
   VideoPresentationMode presentation_mode;
   if (decode_swap_chain_) {
@@ -925,7 +930,7 @@ void SwapChainPresenter::RecordPresentationStatistics() {
 
   TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
                        "SwapChain::Present", TRACE_EVENT_SCOPE_THREAD,
-                       "PixelFormat", DxgiFormatToString(swap_chain_format),
+                       "PixelFormat", DxgiFormatToString(swap_chain_format_),
                        "ZeroCopy", !!decode_swap_chain_);
   Microsoft::WRL::ComPtr<IDXGISwapChainMedia> swap_chain_media =
       GetSwapChainMedia();
@@ -977,8 +982,9 @@ bool SwapChainPresenter::VideoProcessorBlt(
   Microsoft::WRL::ComPtr<ID3D11VideoProcessor> video_processor =
       layer_tree_->video_processor();
 
-  gfx::ColorSpace output_color_space =
-      is_yuv_swapchain_ ? src_color_space : gfx::ColorSpace::CreateSRGB();
+  gfx::ColorSpace output_color_space = IsYUVSwapChainFormat(swap_chain_format_)
+                                           ? src_color_space
+                                           : gfx::ColorSpace::CreateSRGB();
 
   if (base::FeatureList::IsEnabled(kFallbackBT709VideoToBT601) &&
       (output_color_space == gfx::ColorSpace::CreateREC709())) {
@@ -1000,7 +1006,8 @@ bool SwapChainPresenter::VideoProcessorBlt(
     // Set output color space.
     DXGI_COLOR_SPACE_TYPE output_dxgi_color_space =
         gfx::ColorSpaceWin::GetDXGIColorSpace(
-            output_color_space, is_yuv_swapchain_ /* force_yuv */);
+            output_color_space,
+            IsYUVSwapChainFormat(swap_chain_format_) /* force_yuv */);
 
     if (SUCCEEDED(swap_chain3->SetColorSpace1(output_dxgi_color_space))) {
       context1->VideoProcessorSetOutputColorSpace1(video_processor.Get(),
@@ -1113,10 +1120,12 @@ void SwapChainPresenter::ReleaseSwapChainResources() {
 
 bool SwapChainPresenter::ReallocateSwapChain(
     const gfx::Size& swap_chain_size,
-    bool use_yuv_swap_chain,
+    DXGI_FORMAT swap_chain_format,
     gfx::ProtectedVideoType protected_video_type,
     bool z_order,
     bool content_is_hdr) {
+  bool use_yuv_swap_chain = IsYUVSwapChainFormat(swap_chain_format);
+
   TRACE_EVENT2("gpu", "SwapChainPresenter::ReallocateSwapChain", "size",
                swap_chain_size.ToString(), "yuv", use_yuv_swap_chain);
 
@@ -1124,7 +1133,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
   swap_chain_size_ = swap_chain_size;
 
   // ResizeBuffers can't change YUV flags so only attempt it when size changes.
-  if (swap_chain_ && (is_yuv_swapchain_ == use_yuv_swap_chain) &&
+  if (swap_chain_ && (swap_chain_format_ == swap_chain_format) &&
       (protected_video_type_ == protected_video_type)) {
     output_view_.Reset();
     DXGI_SWAP_CHAIN_DESC1 desc = {};
@@ -1139,13 +1148,12 @@ bool SwapChainPresenter::ReallocateSwapChain(
 
   protected_video_type_ = protected_video_type;
 
-  if (is_yuv_swapchain_ != use_yuv_swap_chain) {
+  if (swap_chain_format_ != swap_chain_format) {
     UMA_HISTOGRAM_COUNTS_1000(
         "GPU.DirectComposition.FramesSinceColorSpaceChange",
         frames_since_color_space_change_);
     frames_since_color_space_change_ = 0;
   }
-  is_yuv_swapchain_ = false;
 
   ReleaseSwapChainResources();
 
@@ -1171,7 +1179,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
   DXGI_SWAP_CHAIN_DESC1 desc = {};
   desc.Width = swap_chain_size_.width();
   desc.Height = swap_chain_size_.height();
-  desc.Format = DirectCompositionSurfaceWin::GetOverlayFormatUsed();
+  desc.Format = swap_chain_format;
   desc.Stereo = FALSE;
   desc.SampleDesc.Count = 1;
   desc.BufferCount = 2;
@@ -1196,42 +1204,38 @@ bool SwapChainPresenter::ReallocateSwapChain(
   const std::string protected_video_type_string =
       ProtectedVideoTypeToString(protected_video_type);
 
-  DXGI_FORMAT format_used = DirectCompositionSurfaceWin::GetOverlayFormatUsed();
   if (use_yuv_swap_chain) {
     TRACE_EVENT1("gpu", "SwapChainPresenter::ReallocateSwapChain::YUV",
-                 "format", DxgiFormatToString(format_used));
+                 "format", DxgiFormatToString(swap_chain_format));
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         &swap_chain_);
-    is_yuv_swapchain_ = SUCCEEDED(hr);
-    failed_to_create_yuv_swapchain_ = !is_yuv_swapchain_;
+    failed_to_create_yuv_swapchain_ = FAILED(hr);
 
     base::UmaHistogramSparse(kSwapChainCreationResultByFormatUmaPrefix +
-                                 DxgiFormatToString(format_used),
+                                 DxgiFormatToString(swap_chain_format),
                              hr);
     base::UmaHistogramSparse(kSwapChainCreationResultByVideoTypeUmaPrefix +
                                  protected_video_type_string,
                              hr);
 
-    if (FAILED(hr)) {
-      DLOG(ERROR) << "Failed to create " << DxgiFormatToString(format_used)
+    if (failed_to_create_yuv_swapchain_) {
+      DLOG(ERROR) << "Failed to create "
+                  << DxgiFormatToString(swap_chain_format)
                   << " swap chain of size " << swap_chain_size.ToString()
                   << " with error 0x" << std::hex << hr
                   << "\nFalling back to BGRA";
+      use_yuv_swap_chain = false;
+      swap_chain_format = DXGI_FORMAT_B8G8R8A8_UNORM;
     }
   }
-  if (!is_yuv_swapchain_) {
-    DXGI_FORMAT dxgi_format;
-    const char* trace_event_text = "";
-    if (content_is_hdr) {
-      dxgi_format = DXGI_FORMAT_R10G10B10A2_UNORM;
-      trace_event_text = "SwapChainPresenter::ReallocateSwapChain::RGB10A2";
-    } else {
-      dxgi_format = DXGI_FORMAT_B8G8R8A8_UNORM;
-      trace_event_text = "SwapChainPresenter::ReallocateSwapChain::BGRA";
-    }
-    TRACE_EVENT0("gpu", trace_event_text);
-    desc.Format = dxgi_format;
+  if (!use_yuv_swap_chain) {
+    std::ostringstream trace_event_stream;
+    trace_event_stream << "SwapChainPresenter::ReallocateSwapChain::"
+                       << DxgiFormatToString(swap_chain_format);
+    TRACE_EVENT0("gpu", trace_event_stream.str().c_str());
+
+    desc.Format = swap_chain_format;
     desc.Flags = 0;
     if (IsProtectedVideo(protected_video_type))
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
@@ -1245,7 +1249,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
         &swap_chain_);
 
     base::UmaHistogramSparse(kSwapChainCreationResultByFormatUmaPrefix +
-                                 DxgiFormatToString(dxgi_format),
+                                 DxgiFormatToString(swap_chain_format),
                              hr);
     base::UmaHistogramSparse(kSwapChainCreationResultByVideoTypeUmaPrefix +
                                  protected_video_type_string,
@@ -1255,12 +1259,15 @@ bool SwapChainPresenter::ReallocateSwapChain(
       // Disable overlay support so dc_layer_overlay will stop sending down
       // overlay frames here and uses GL Composition instead.
       DirectCompositionSurfaceWin::DisableOverlays();
-      DLOG(ERROR) << "Failed to create BGRA swap chain of size "
-                  << swap_chain_size.ToString() << " with error 0x" << std::hex
-                  << hr << ". Disable overlay swap chains";
+      DLOG(ERROR) << "Failed to create "
+                  << DxgiFormatToString(swap_chain_format)
+                  << " swap chain of size " << swap_chain_size.ToString()
+                  << " with error 0x" << std::hex << hr
+                  << ". Disable overlay swap chains";
       return false;
     }
   }
+  swap_chain_format_ = swap_chain_format;
   SetSwapChainPresentDuration();
   return true;
 }

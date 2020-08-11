@@ -76,24 +76,22 @@ TransmissionEncodingInfoHandler* TransmissionEncodingInfoHandler::Instance() {
 // returns software encoder factory only.
 TransmissionEncodingInfoHandler::TransmissionEncodingInfoHandler()
     : TransmissionEncodingInfoHandler(
-          blink::CreateWebrtcVideoEncoderFactory(GetGpuFactories()),
+          blink::CreateHWVideoEncoderFactory(GetGpuFactories()),
           CanCpuEncodeHdSmoothly()) {}
 
 TransmissionEncodingInfoHandler::TransmissionEncodingInfoHandler(
     std::unique_ptr<webrtc::VideoEncoderFactory> video_encoder_factory,
     bool cpu_hd_smooth)
     : cpu_hd_smooth_(cpu_hd_smooth) {
-  std::vector<webrtc::SdpVideoFormat> supported_video_formats =
-      video_encoder_factory->GetSupportedFormats();
-  for (const auto& video_format : supported_video_formats) {
-    const String codec_name = String::FromUTF8(video_format.name).LowerASCII();
-    supported_video_codecs_.insert(codec_name);
-    const auto codec_info =
-        video_encoder_factory->QueryVideoEncoder(video_format);
-    if (codec_info.is_hardware_accelerated)
+  if (video_encoder_factory) {
+    std::vector<webrtc::SdpVideoFormat> supported_video_formats =
+        video_encoder_factory->GetSupportedFormats();
+    for (const auto& video_format : supported_video_formats) {
+      const String codec_name =
+          String::FromUTF8(video_format.name).LowerASCII();
       hardware_accelerated_video_codecs_.insert(codec_name);
+    }
   }
-
   rtc::scoped_refptr<webrtc::AudioEncoderFactory> audio_encoder_factory =
       blink::CreateWebrtcAudioEncoderFactory();
   std::vector<webrtc::AudioCodecSpec> supported_audio_specs =
@@ -103,9 +101,8 @@ TransmissionEncodingInfoHandler::TransmissionEncodingInfoHandler(
         String::FromUTF8(audio_spec.format.name).LowerASCII());
   }
   DVLOG(2) << String::Format(
-      "supported_video_codecs_:[%s] hardware_accelerated_video_codecs_:[%s] "
+      "hardware_accelerated_video_codecs_:[%s] "
       "supported_audio_codecs_:[%s]",
-      StringHashSetToString(supported_video_codecs_).Utf8().c_str(),
       StringHashSetToString(hardware_accelerated_video_codecs_).Utf8().c_str(),
       StringHashSetToString(supported_audio_codecs_).Utf8().c_str());
 }

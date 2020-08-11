@@ -424,11 +424,13 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
                      base::WrapRefCounted(database_tracker)));
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SaveSessionStateOnIOThread,
-                       static_cast<AppCacheServiceImpl*>(
-                           storage_partition->GetAppCacheService())));
+    auto* appcache_service = static_cast<AppCacheServiceImpl*>(
+        storage_partition->GetAppCacheService());
+    if (appcache_service) {
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
+          base::BindOnce(&SaveSessionStateOnIOThread, appcache_service));
+    }
   }
 
   storage_partition->GetCookieManagerForBrowserProcess()

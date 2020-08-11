@@ -18,24 +18,36 @@ function update(message, spoken) {
       assertInstanceof(document.querySelector('#toast'), HTMLElement);
   util.animateCancel(element);  // Cancel the active toast if any.
   element.textContent = '';     // Force to reiterate repeated messages.
-  element.textContent = browserProxy.getI18nMessage(message) || message;
+  element.textContent = message;
 
   element.classList.toggle('spoken', spoken);
   util.animateOnce(element, () => element.textContent = '');
 }
 
 /**
- * Shows a toast message.
+ * Shows a toast with given message which doesn't need i18n.
  * @param {string} message Message to be shown.
  */
-export function show(message) {
+export function showDebugMessage(message) {
   update(message, false);
 }
 
 /**
- * Speaks a toast message.
- * @param {string} message Message to be spoken.
+ * Shows a toast message.
+ * @param {string} label The label of the message to show.
+ * @param {...string} substitutions The substitutions needed for the given
+ *     label.
  */
-export function speak(message) {
-  update(message, true);
+export function show(label, ...substitutions) {
+  update(browserProxy.getI18nMessage(label, ...substitutions), false);
+}
+
+/**
+ * Speaks a toast message.
+ * @param {string} label The label of the message to show.
+ * @param {...string} substitutions The substitutions needed for the given
+ *     label.
+ */
+export function speak(label, ...substitutions) {
+  update(browserProxy.getI18nMessage(label, ...substitutions), true);
 }

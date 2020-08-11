@@ -39,21 +39,21 @@ class ForceInstalledMetrics : public ForceInstalledTracker::Observer {
   // Type of session for current user. This enum is required as UserType enum
   // doesn't support new regular users. See user_manager::UserType enum for
   // description of session types other than new and existing regular users.
-  enum class SessionType {
+  enum class UserType {
     // Session with Regular existing user, which has a user name and password.
-    SESSION_TYPE_REGULAR_EXISTING = 0,
-    SESSION_TYPE_GUEST = 1,
+    USER_TYPE_REGULAR_EXISTING = 0,
+    USER_TYPE_GUEST = 1,
     // Session with Regular new user, which has a user name and password.
-    SESSION_TYPE_REGULAR_NEW = 2,
-    SESSION_TYPE_PUBLIC_ACCOUNT = 3,
-    SESSION_TYPE_SUPERVISED = 4,
-    SESSION_TYPE_KIOSK_APP = 5,
-    SESSION_TYPE_CHILD = 6,
-    SESSION_TYPE_ARC_KIOSK_APP = 7,
-    SESSION_TYPE_ACTIVE_DIRECTORY = 8,
-    SESSION_TYPE_WEB_KIOSK_APP = 9,
+    USER_TYPE_REGULAR_NEW = 2,
+    USER_TYPE_PUBLIC_ACCOUNT = 3,
+    USER_TYPE_SUPERVISED = 4,
+    USER_TYPE_KIOSK_APP = 5,
+    USER_TYPE_CHILD = 6,
+    USER_TYPE_ARC_KIOSK_APP = 7,
+    USER_TYPE_ACTIVE_DIRECTORY = 8,
+    USER_TYPE_WEB_KIOSK_APP = 9,
     // Maximum histogram value.
-    kMaxValue = SESSION_TYPE_WEB_KIOSK_APP
+    kMaxValue = USER_TYPE_WEB_KIOSK_APP
   };
 
   // ForceInstalledTracker::Observer overrides:
@@ -79,11 +79,6 @@ class ForceInstalledMetrics : public ForceInstalledTracker::Observer {
   bool IsMisconfiguration(
       const InstallStageTracker::InstallationData& installation_data,
       const ExtensionId& id);
-
-#if defined(OS_CHROMEOS)
-  // Returns Session Type in case extension fails to install.
-  SessionType GetSessionType();
-#endif  // defined(OS_CHROMEOS)
 
   // Reports disable reasons for the extensions which are installed but not
   // loaded.

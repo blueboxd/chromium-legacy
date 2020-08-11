@@ -186,6 +186,10 @@ class ArcDocumentsProviderRootTest : public testing::Test {
         ArcFileSystemOperationRunner::GetForBrowserContext(profile_.get()),
         kAuthority, kRootSpec.document_id, "", false,
         std::vector<std::string>());
+    read_only_root_ = std::make_unique<ArcDocumentsProviderRoot>(
+        ArcFileSystemOperationRunner::GetForBrowserContext(profile_.get()),
+        kAuthority, kRootSpec.document_id, "read-only", true,
+        std::vector<std::string>());
   }
 
   void TearDown() override {
@@ -206,6 +210,7 @@ class ArcDocumentsProviderRootTest : public testing::Test {
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ArcDocumentsProviderRoot> root_;
+  std::unique_ptr<ArcDocumentsProviderRoot> read_only_root_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcDocumentsProviderRootTest);
@@ -639,6 +644,25 @@ TEST_F(ArcDocumentsProviderRootTest, DeleteDirectory) {
       base::FilePath(FILE_PATH_LITERAL("dir"))));
 }
 
+TEST_F(ArcDocumentsProviderRootTest, DeleteFileOnReadOnlyRoot) {
+  base::RunLoop run_loop;
+  read_only_root_->DeleteFile(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            // An attempt to delete a file on read-only root
+            // should return FILE_ERROR_ACCESS_DENIED error.
+            EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // dir/photo.jpg should not have been removed.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
+}
+
 TEST_F(ArcDocumentsProviderRootTest, CreateFile) {
   // Make sure that dir/new.txt doesn't exist.
   ASSERT_FALSE(fake_file_system_.DocumentExists(
@@ -751,6 +775,25 @@ TEST_F(ArcDocumentsProviderRootTest, CreateFileInReadOnlyDirectory) {
       base::FilePath(FILE_PATH_LITERAL("dir3/photo.jpg"))));
 }
 
+TEST_F(ArcDocumentsProviderRootTest, CreateFileOnReadOnlyRoot) {
+  base::RunLoop run_loop;
+  read_only_root_->CreateFile(
+      base::FilePath(FILE_PATH_LITERAL("dir/new.txt")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            // An attempt to create a file on read-only root should return
+            // FILE_ERROR_ACCESS_DENIED error.
+            EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // The dir/new.txt should not have been created.
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/new.txt"))));
+}
+
 TEST_F(ArcDocumentsProviderRootTest, CreateDirectory) {
   // Make sure that directory "dir2" doesn't exist.
   ASSERT_FALSE(fake_file_system_.DocumentExists(
@@ -819,6 +862,25 @@ TEST_F(ArcDocumentsProviderRootTest, CreateDirectoryParentNotFound) {
   EXPECT_FALSE(fake_file_system_.DocumentExists(
       kAuthority, kRootSpec.document_id,
       base::FilePath(FILE_PATH_LITERAL("dir3/new_dir"))));
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CreateDirectoryOnReadOnlyRoot) {
+  base::RunLoop run_loop;
+  read_only_root_->CreateDirectory(
+      base::FilePath(FILE_PATH_LITERAL("dir2")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            // An attempt to create a directory on read-only root should return
+            // FILE_ERROR_ACCESS_DENIED error.
+            EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // The dir2 should not have been created.
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir2"))));
 }
 
 TEST_F(ArcDocumentsProviderRootTest, CopyFile) {
@@ -893,6 +955,30 @@ TEST_F(ArcDocumentsProviderRootTest, CopyFileDestParentNotFound) {
   run_loop.Run();
 }
 
+TEST_F(ArcDocumentsProviderRootTest, CopyFileOnReadOnlyRoot) {
+  base::RunLoop run_loop;
+  read_only_root_->CopyFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("dir/photo2.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            // An attempt to copy a directory on read-only root should return
+            // FILE_ERROR_ACCESS_DENIED error.
+            EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // dir/photo2.jpg should not be created by the copy.
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo2.jpg"))));
+  // The source file should still be there.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
+}
+
 TEST_F(ArcDocumentsProviderRootTest, RenameFile) {
   base::RunLoop run_loop;
   root_->MoveFileLocal(
@@ -935,6 +1021,30 @@ TEST_F(ArcDocumentsProviderRootTest, RenameFileNotRenamable) {
             // TODO(fukino): Handle this failure in the ArcDocumentsProviderRoot
             // class to avoid unnecessary Mojo calls. crbug.com/956852.
             EXPECT_EQ(base::File::FILE_ERROR_FAILED, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // dir/no-rename.jpg should still be there.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/no-rename.jpg"))));
+  // dir/no-rename2.jpg shouldn't be there".
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/no-rename2.jpg"))));
+}
+
+TEST_F(ArcDocumentsProviderRootTest, RenameFileOnReadOnlyRoot) {
+  base::RunLoop run_loop;
+  read_only_root_->MoveFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("dir/photo2.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            // An attempt to rename a file on read-only root should return
+            // FILE_ERROR_ACCESS_DENIED error.
+            EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, error);
           },
           &run_loop));
   run_loop.Run();
@@ -1030,6 +1140,30 @@ TEST_F(ArcDocumentsProviderRootTest, MoveFileDestParentNotFound) {
           },
           &run_loop));
   run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, MoveFileOnReadOnlyRoot) {
+  base::RunLoop run_loop;
+  read_only_root_->MoveFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("photo.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            // An attempt to move a file on read-only root should return
+            // FILE_ERROR_ACCESS_DENIED error.
+            EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // The destination file should not be created.
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("photo.jpg"))));
+  // The source file should not be gone by move.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
 }
 
 TEST_F(ArcDocumentsProviderRootTest, WatchChanged) {

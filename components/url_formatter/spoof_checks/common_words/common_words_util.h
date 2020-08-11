@@ -18,7 +18,7 @@ bool IsCommonWord(base::StringPiece word);
 void SetCommonWordDAFSAForTesting(const unsigned char* dafsa, size_t length);
 
 // Reset the dafsa used, only for testing.
-void ResetCommonWordDAFSAForTesting(const unsigned char* dafsa, size_t length);
+void ResetCommonWordDAFSAForTesting();
 
 }  // namespace common_words
 

@@ -289,7 +289,7 @@ void IsolatedPrerenderPageLoadMetricsObserver::RecordMetrics() {
 }
 
 void IsolatedPrerenderPageLoadMetricsObserver::RecordPrefetchProxyEvent() {
-  ukm::builders::PrefetchProxy builder(GetDelegate().GetSourceId());
+  ukm::builders::PrefetchProxy builder(GetDelegate().GetPageUkmSourceId());
 
   if (min_days_since_last_visit_to_origin_.has_value()) {
     // The -1 value is a sentinel to signal there was no previous visit. Don't
@@ -339,7 +339,7 @@ void IsolatedPrerenderPageLoadMetricsObserver::RecordAfterSRPEvent() {
       *after_srp_metrics_;
 
   ukm::builders::PrefetchProxy_AfterSRPClick builder(
-      GetDelegate().GetSourceId());
+      GetDelegate().GetPageUkmSourceId());
 
   builder.SetSRPPrefetchEligibleCount(metrics.prefetch_eligible_count_);
 

@@ -2787,11 +2787,14 @@ void NavigationRequest::OnStartChecksComplete(
   if (IsSchemeSupportedForAppCache(common_params_->url)) {
     if (navigating_frame_host->GetOrCreateWebPreferences()
             .application_cache_enabled) {
-      // The final process id won't be available until
-      // NavigationRequest::ReadyToCommitNavigation.
-      appcache_handle_ = std::make_unique<AppCacheNavigationHandle>(
-          static_cast<ChromeAppCacheService*>(partition->GetAppCacheService()),
-          ChildProcessHost::kInvalidUniqueID);
+      auto* appcache_service =
+          static_cast<ChromeAppCacheService*>(partition->GetAppCacheService());
+      if (appcache_service) {
+        // The final process id won't be available until
+        // NavigationRequest::ReadyToCommitNavigation.
+        appcache_handle_ = std::make_unique<AppCacheNavigationHandle>(
+            appcache_service, ChildProcessHost::kInvalidUniqueID);
+      }
     }
   }
 

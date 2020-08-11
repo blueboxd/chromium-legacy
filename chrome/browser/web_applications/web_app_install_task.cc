@@ -804,10 +804,4 @@ void WebAppInstallTask::OnOsHooksCreated(
   CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
 }
 
-void WebAppInstallTask::OnRegisteredRunOnOsLogin(
-    const AppId& app_id,
-    bool registered_run_on_os_login) {
-  CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
-}
-
 }  // namespace web_app

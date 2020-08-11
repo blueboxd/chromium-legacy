@@ -10,8 +10,10 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -69,6 +71,7 @@ class ReadOnlyOriginView : public views::View {
   ReadOnlyOriginView(const base::string16& page_title,
                      const GURL& origin,
                      const SkBitmap* icon_bitmap,
+                     Profile* profile,
                      security_state::SecurityLevel security_level,
                      SkColor background_color,
                      views::ButtonListener* site_settings_listener) {
@@ -113,9 +116,11 @@ class ReadOnlyOriginView : public views::View {
       // Selecting the correct icon based on the SSL certificate state
       // and adding test coverage for this code path.
       auto security_icon = std::make_unique<views::ImageView>();
+      const ui::ThemeProvider& theme_provider =
+          ThemeService::GetThemeProviderForProfile(profile);
       security_icon->SetImage(gfx::CreateVectorIcon(
           location_bar_model::GetSecurityVectorIcon(security_level), 16,
-          gfx::kChromeIconGrey));
+          GetOmniboxSecurityChipColor(&theme_provider, security_level)));
       origin_layout->AddView(std::move(security_icon));
     }
     auto* origin_label = origin_layout->AddView(
@@ -267,7 +272,7 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView(
       GetHeaderBackground(header_view);
   return std::make_unique<ReadOnlyOriginView>(
       GetPaymentHandlerDialogTitle(web_contents()), origin,
-      state()->selected_app()->icon_bitmap(),
+      state()->selected_app()->icon_bitmap(), profile_,
       web_contents() ? SslValidityChecker::GetSecurityLevel(web_contents())
                      : security_state::NONE,
       background->get_color(), this);

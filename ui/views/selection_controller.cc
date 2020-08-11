@@ -76,7 +76,7 @@ bool SelectionController::OnMousePressed(
 
   if (event.IsOnlyRightMouseButton()) {
     if (PlatformStyle::kSelectAllOnRightClickWhenUnfocused &&
-        initial_focus_state == InitialFocusStateOnMousePress::UNFOCUSED) {
+        initial_focus_state == InitialFocusStateOnMousePress::kUnFocused) {
       SelectAll();
     } else if (PlatformStyle::kSelectWordOnRightClick &&
                !render_text->IsPointInSelection(event.location()) &&

@@ -589,9 +589,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
         NOTREACHED();
     }
     [menu setMenuItems:options];
-    [menu setTargetRect:[tableView rectForRowAtIndexPath:indexPath]
-                 inView:tableView];
-    [menu setMenuVisible:YES animated:YES];
+    if (@available(iOS 13, *)) {
+      [menu showMenuFromView:tableView
+                        rect:[tableView rectForRowAtIndexPath:indexPath]];
+    } else {
+      [menu setTargetRect:[tableView rectForRowAtIndexPath:indexPath]
+                   inView:tableView];
+      [menu setMenuVisible:YES animated:YES];
+    }
   }
 }
 

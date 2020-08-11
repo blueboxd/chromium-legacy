@@ -59,9 +59,13 @@
   count += numTasks;
   [_groupCounts setObject:@(count) forKey:group];
   _totalCount += numTasks;
+#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+  // TODO(crbug.com/1115004) remove this code (or file?) or upgrade to custom
+  // indicator.
   if (_totalCount == numTasks) {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
   }
+#endif
 }
 
 - (void)stopNetworkTasks:(NSUInteger)numTasks forGroup:(NSString*)group {
@@ -79,9 +83,11 @@
     [_groupCounts setObject:@(count) forKey:group];
   }
   _totalCount -= numTasks;
+#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
   if (_totalCount == 0) {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
   }
+#endif
 }
 
 - (NSUInteger)clearNetworkTasksForGroup:(NSString*)group {

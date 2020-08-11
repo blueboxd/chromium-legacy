@@ -33,6 +33,9 @@ import org.chromium.ui.widget.ViewRectProvider;
 class AssistantHeaderViewBinder
         implements PropertyModelChangeProcessor.ViewBinder<AssistantHeaderModel,
                 AssistantHeaderViewBinder.ViewHolder, PropertyKey> {
+    /** The amount of space to put between the top of the sheet and the bottom of the bubble.*/
+    private static final int TEXT_BUBBLE_PIXELS_ABOVE_SHEET = 4;
+
     /**
      * A wrapper class that holds the different views of the header.
      */
@@ -190,10 +193,15 @@ class AssistantHeaderViewBinder
             return;
         }
         View poodle = view.mPoodle.getView();
+        ViewRectProvider anchorRectProvider = new ViewRectProvider(poodle);
+        int topOffset = view.mContext.getResources().getDimensionPixelSize(
+                                R.dimen.autofill_assistant_root_view_top_padding)
+                + TEXT_BUBBLE_PIXELS_ABOVE_SHEET;
+        anchorRectProvider.setInsetPx(0, -topOffset, 0, 0);
         view.mTextBubble = new TextBubble(
                 /*context = */ view.mContext, /*rootView = */ poodle, /*contentString = */ message,
                 /*accessibilityString = */ message, /*showArrow = */ true,
-                /*anchorRectProvider = */ new ViewRectProvider(poodle),
+                /*anchorRectProvider = */ anchorRectProvider,
                 ChromeAccessibilityUtil.get().isAccessibilityEnabled());
         view.mTextBubble.setDismissOnTouchInteraction(true);
         view.mTextBubble.show();

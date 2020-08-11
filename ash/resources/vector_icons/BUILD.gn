@@ -281,6 +281,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "unified_menu_bluetooth.icon",
     "unified_menu_brightness.icon",
     "unified_menu_cast.icon",
+    "unified_menu_dark_mode.icon",
     "unified_menu_do_not_disturb.icon",
     "unified_menu_expand.icon",
     "unified_menu_info.icon",

@@ -94,15 +94,15 @@
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86',
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86',
       'android-incremental-dbg': 'android_incremental_debug_bot',
-      'android-lollipop-arm-rel': 'android_release_bot_minimal_symbols_fastbuild_webview_google',
+      'android-lollipop-arm-rel': 'android_release_bot_minimal_symbols_webview_google',
 
       # This bot must use the gpu_tests mixin to match 'Android FYI Release (Nexus 5X)'
       # on the chromium.gpu waterfall, which it mirrors via trybots.pyl.
-      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild',
+      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_bot_minimal_symbols_arm64',
 
       'android-marshmallow-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting_webview_google',
       'android-nougat-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_google',
-      'android-pie-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
+      'android-pie-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_google_fastbuild',
       'android-pie-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
       'android-10-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_google',
     },
@@ -550,10 +550,10 @@
 
     'chromium.dev': {
       # This should be the same with 'android-lollipop-arm-rel'.
-      'android-lollipop-arm-rel-swarming': 'android_release_bot_minimal_symbols_fastbuild_webview_google',
+      'android-lollipop-arm-rel-swarming': 'android_release_bot_minimal_symbols_webview_google',
 
       # This should be the same with 'android-marshmallow-arm64-rel'.
-      'android-marshmallow-arm64-rel-swarming':  'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild',
+      'android-marshmallow-arm64-rel-swarming':  'gpu_tests_android_release_bot_minimal_symbols_arm64',
 
       # These should be the same with 'Linux Builder'.
       'linux-rel-swarming': 'gpu_tests_release_bot',
@@ -707,7 +707,7 @@
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
-      'android-lollipop-arm-rel': 'android_release_trybot_fastbuild_webview_google',
+      'android-lollipop-arm-rel': 'android_release_trybot_webview_google',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage',
       'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_resource_whitelisting_webview_google',
       'android-marshmallow-x86-rel': 'android_release_trybot_x86_fastbuild_resource_whitelisting_webview_google',
@@ -1258,9 +1258,15 @@
       'strip_debug_info', 'webview_google',
     ],
 
-    'android_release_bot_minimal_symbols_fastbuild_webview_google': [
+    'android_release_bot_minimal_symbols_arm64_webview_google_fastbuild': [
+      'android', 'release_bot', 'minimal_symbols', 'arm64',
+      'strip_debug_info', 'webview_google', 'android_fastbuild',
+      'android_no_proguard',
+    ],
+
+    'android_release_bot_minimal_symbols_webview_google': [
       'android', 'release_bot', 'minimal_symbols',
-      'strip_debug_info', 'android_fastbuild', 'webview_google',
+      'strip_debug_info', 'webview_google',
     ],
 
     'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting_webview_google': [
@@ -1302,9 +1308,9 @@
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
-    'android_release_trybot_fastbuild_webview_google': [
-      'android', 'release_trybot', 'strip_debug_info', 'android_fastbuild',
-      'android_no_proguard', 'webview_google',
+    'android_release_trybot_webview_google': [
+      'android', 'release_trybot', 'strip_debug_info', 'android_no_proguard',
+      'webview_google',
     ],
 
     'android_release_trybot_x86_fastbuild_resource_whitelisting_webview_google': [
@@ -1813,10 +1819,9 @@
       'gpu_fyi_tests', 'release_trybot', 'x86',
     ],
 
-    'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild': [
+    'gpu_tests_android_release_bot_minimal_symbols_arm64': [
       'gpu_tests', 'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'resource_whitelisting', 'static_angle', 'android_fastbuild', 'webview_google',
-      'android_no_proguard',
+      'resource_whitelisting', 'static_angle', 'webview_google',
     ],
 
     'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_java_coverage': [
@@ -1848,7 +1853,6 @@
     'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage': [
       'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
       'resource_whitelisting', 'android_fastbuild', 'webview_google',
-      'android_no_proguard',
       'use_java_coverage', 'partial_code_coverage_instrumentation',
     ],
 

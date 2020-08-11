@@ -27,7 +27,6 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -54,7 +53,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
@@ -63,6 +61,7 @@
 #include "chrome/browser/ui/webui/chromeos/image_source.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -117,16 +116,9 @@ base::string16 GetAllowedConnectionTypesMessage() {
   }
 }
 
-// Returns true if the device is enterprise managed, false otherwise.
-bool IsEnterpriseManaged() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->IsEnterpriseManaged();
-}
-
 // Returns true if current user can change channel, false otherwise.
 bool CanChangeChannel(Profile* profile) {
-  if (IsEnterpriseManaged()) {
+  if (webui::IsEnterpriseManaged()) {
     bool value = false;
     // On a managed machine we delegate this setting to the affiliated users
     // only if the policy value is true.

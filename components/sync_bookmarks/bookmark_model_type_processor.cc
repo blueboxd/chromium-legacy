@@ -80,15 +80,6 @@ void LogMissingPermanentNodes(
                             missing_nodes);
 }
 
-// Enables scheduling bookmark model saving only upon changes in entity sync
-// metadata. This would stop persisting changes to the model type state that
-// doesn't involve changes to the entity metadata as well.
-// TODO(crbug.com/945820): This should be removed in M80 if not issues are
-// observed.
-const base::Feature kSyncScheduleForEntityMetadataChangesOnly{
-    "SyncScheduleForEntityMetadataChangesOnly",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 class ScopedRemoteUpdateBookmarks {
  public:
   // |bookmark_model|, |bookmark_undo_service| and |observer| must not be null
@@ -252,8 +243,7 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
   // There are cases when we receive non-empty updates that don't result in
   // model changes (e.g. reflections). In that case, issue a write to persit the
   // progress marker in order to avoid downloading those updates again.
-  if (!updates.empty() || !base::FeatureList::IsEnabled(
-                              kSyncScheduleForEntityMetadataChangesOnly)) {
+  if (!updates.empty()) {
     // Schedule save just in case one is needed.
     schedule_save_closure_.Run();
   }

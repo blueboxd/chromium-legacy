@@ -1281,13 +1281,8 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
 # Fieldset in NG
 #
 
-# A simpified Layout issue
-crbug.com/875235 external/wpt/inert/inert-retargeting-iframe.tentative.html [ Crash Pass ]
-crbug.com/875235 external/wpt/inert/inert-retargeting.tentative.html [ Crash Pass ]
 # Size containment
 crbug.com/875235 external/wpt/css/css-sizing/contain-intrinsic-size/contain-intrinsic-size-014.html [ Failure ]
-# Mask paiting area
-crbug.com/875235 paint/masks/fieldset-mask.html [ Failure ]
 
 
 # ====== LayoutNG-only failures until here ======
@@ -6757,3 +6752,6 @@ crbug.com/1113127 fast/canvas/downsample-quality.html [ Pass Failure Crash ]
 
 # Sheriff 2020-08-06
 crbug.com/1113791 [ Win ] media/video-zoom.html [ Pass Failure ]
+
+# Sheriff 2020-08-11
+crbug.com/1095540 virtual/threaded-prefer-compositing/fast/scrolling/resize-corner-tracking-touch.html [ Pass Failure ]

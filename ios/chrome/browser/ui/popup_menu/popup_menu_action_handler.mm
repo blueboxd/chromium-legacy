@@ -162,21 +162,6 @@ const char kManagementPageURL[] = "chrome://management";
       // No metrics for this item.
       [self.commandHandler navigateToPageForItem:item];
       break;
-    case PopupMenuActionPasteAndGo: {
-      RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
-      NSString* query;
-      ClipboardRecentContent* clipboardRecentContent =
-          ClipboardRecentContent::GetInstance();
-      if (base::Optional<GURL> optional_url =
-              clipboardRecentContent->GetRecentURLFromClipboard()) {
-        query = base::SysUTF8ToNSString(optional_url.value().spec());
-      } else if (base::Optional<base::string16> optional_text =
-                     clipboardRecentContent->GetRecentTextFromClipboard()) {
-        query = base::SysUTF16ToNSString(optional_text.value());
-      }
-      [self.dispatcher loadQuery:query immediately:YES];
-      break;
-    }
     case PopupMenuActionVoiceSearch:
       RecordAction(UserMetricsAction("MobileMenuVoiceSearch"));
       [self.dispatcher startVoiceSearch];
@@ -206,6 +191,36 @@ const char kManagementPageURL[] = "chrome://management";
       clipboardRecentContent->GetRecentImageFromClipboard(
           base::BindOnce(^(base::Optional<gfx::Image> image) {
             [self.dispatcher searchByImage:[image.value().ToUIImage() copy]];
+          }));
+      break;
+    }
+    case PopupMenuActionSearchCopiedText: {
+      RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
+      ClipboardRecentContent* clipboardRecentContent =
+          ClipboardRecentContent::GetInstance();
+      clipboardRecentContent->GetRecentTextFromClipboard(
+          base::BindOnce(^(base::Optional<base::string16> optional_text) {
+            if (!optional_text) {
+              return;
+            }
+            [self.dispatcher
+                  loadQuery:base::SysUTF16ToNSString(optional_text.value())
+                immediately:YES];
+          }));
+      break;
+    }
+    case PopupMenuActionVisitCopiedLink: {
+      RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
+      ClipboardRecentContent* clipboardRecentContent =
+          ClipboardRecentContent::GetInstance();
+      clipboardRecentContent->GetRecentURLFromClipboard(
+          base::BindOnce(^(base::Optional<GURL> optional_url) {
+            if (!optional_url) {
+              return;
+            }
+            [self.dispatcher
+                  loadQuery:base::SysUTF8ToNSString(optional_url.value().spec())
+                immediately:YES];
           }));
       break;
     }

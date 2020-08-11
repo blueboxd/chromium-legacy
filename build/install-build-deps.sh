@@ -250,7 +250,7 @@ common_lib_list="\
   libglib2.0-0
   libgtk-3-0
   libpam0g
-  libpango1.0-0
+  libpango-1.0-0
   libpci3
   libpcre3
   libpixman-1-0
@@ -438,7 +438,7 @@ nacl_list="\
   libncurses5:i386
   lib32ncurses5-dev
   libnss3:i386
-  libpango1.0-0:i386
+  libpango-1.0-0:i386
   libssl-dev:i386
   libtinfo-dev
   libtinfo-dev:i386
@@ -611,7 +611,7 @@ if [ "$do_inst_syms" = "1" ]; then
   if [ "$(dbg_package_name libatk1.0-0)" == "" ]; then
     dbg_list="$dbg_list $(dbg_package_name libatk1.0)"
   fi
-  if [ "$(dbg_package_name libpango1.0-0)" == "" ]; then
+  if [ "$(dbg_package_name libpango-1.0-0)" == "" ]; then
     dbg_list="$dbg_list $(dbg_package_name libpango1.0-dev)"
   fi
 else

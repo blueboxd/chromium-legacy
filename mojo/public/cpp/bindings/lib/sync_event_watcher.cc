@@ -20,8 +20,6 @@ SyncEventWatcher::SyncEventWatcher(base::WaitableEvent* event,
 
 SyncEventWatcher::~SyncEventWatcher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (registered_)
-    registry_->UnregisterEvent(event_, callback_);
   destroyed_->data = true;
 }
 
@@ -34,10 +32,6 @@ bool SyncEventWatcher::SyncWatch(const bool** stop_flags,
                                  size_t num_stop_flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   IncrementRegisterCount();
-  if (!registered_) {
-    DecrementRegisterCount();
-    return false;
-  }
 
   // This object may be destroyed during the Wait() call. So we have to preserve
   // the boolean that Wait uses.
@@ -60,20 +54,14 @@ bool SyncEventWatcher::SyncWatch(const bool** stop_flags,
 }
 
 void SyncEventWatcher::IncrementRegisterCount() {
-  register_request_count_++;
-  if (!registered_) {
-    registry_->RegisterEvent(event_, callback_);
-    registered_ = true;
-  }
+  if (register_request_count_++ == 0)
+    subscription_ = registry_->RegisterEvent(event_, callback_);
 }
 
 void SyncEventWatcher::DecrementRegisterCount() {
   DCHECK_GT(register_request_count_, 0u);
-  register_request_count_--;
-  if (register_request_count_ == 0 && registered_) {
-    registry_->UnregisterEvent(event_, callback_);
-    registered_ = false;
-  }
+  if (--register_request_count_ == 0)
+    subscription_.reset();
 }
 
 }  // namespace mojo

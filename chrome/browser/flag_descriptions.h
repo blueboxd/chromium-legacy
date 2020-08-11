@@ -2322,6 +2322,9 @@ extern const char kFilesTransferDetailsDescription[];
 extern const char kFilesZipNoNaClName[];
 extern const char kFilesZipNoNaClDescription[];
 
+extern const char kFiltersInRecentsName[];
+extern const char kFiltersInRecentsDescription[];
+
 extern const char kFrameThrottleFpsName[];
 extern const char kFrameThrottleFpsDescription[];
 extern const char kFrameThrottleFpsDefault[];
@@ -2421,6 +2424,9 @@ extern const char kReduceDisplayNotificationsDescription[];
 
 extern const char kReleaseNotesName[];
 extern const char kReleaseNotesDescription[];
+
+extern const char kReleaseNotesNotificationName[];
+extern const char kReleaseNotesNotificationDescription[];
 
 extern const char kScanningUIName[];
 extern const char kScanningUIDescription[];

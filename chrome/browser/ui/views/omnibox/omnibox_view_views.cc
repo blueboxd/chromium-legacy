@@ -2455,8 +2455,13 @@ void OmniboxViewViews::ResetToHideOnInteraction() {
   elide_after_web_contents_interaction_animation_.reset();
   hover_elide_or_unelide_animation_ =
       std::make_unique<OmniboxViewViews::ElideAnimation>(this, GetRenderText());
-  if (IsURLEligibleForSimplifiedDomainEliding())
+  if (IsURLEligibleForSimplifiedDomainEliding()) {
     ShowFullURLWithoutSchemeAndTrivialSubdomain();
+  } else {
+    if (!HasFocus() && !model()->user_input_in_progress())
+      GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
+    FitToLocalBounds();
+  }
 }
 
 void OmniboxViewViews::OnShouldPreventElisionChanged() {

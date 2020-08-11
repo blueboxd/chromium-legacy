@@ -61,7 +61,7 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
   void VerifyUpdateEntry(unsigned index,
                          unsigned expected_primary_metric,
                          unsigned expected_sub_metric,
-                         unsigned expected_percentage,
+                         float expected_percentage,
                          unsigned expected_reasons,
                          bool expected_before_fcp) {
     auto entries = recorder().GetEntriesByName("Blink.UpdateTime");
@@ -84,7 +84,7 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
           entry, GetPercentageMetricName(i)));
       const int64_t* metric_percentage = ukm::TestUkmRecorder::GetEntryMetric(
           entry, GetPercentageMetricName(i));
-      EXPECT_NEAR(*metric_percentage, expected_percentage, 0.001);
+      EXPECT_NEAR(*metric_percentage, expected_percentage, 0.5);
     }
     EXPECT_TRUE(
         ukm::TestUkmRecorder::EntryHasMetric(entry, "MainFrameIsBeforeFCP"));
@@ -185,7 +185,7 @@ TEST_F(LocalFrameUkmAggregatorTest, FirstFrameIsRecorded) {
       millisecond_for_step * LocalFrameUkmAggregator::kCount;
   float expected_sub_metric = millisecond_for_step;
   float expected_percentage =
-      floor(100.0 / static_cast<float>(LocalFrameUkmAggregator::kCount));
+      100.0 / static_cast<float>(LocalFrameUkmAggregator::kCount);
 
   VerifyUpdateEntry(0u, expected_primary_metric, expected_sub_metric,
                     expected_percentage, 12, true);
@@ -214,7 +214,7 @@ TEST_F(LocalFrameUkmAggregatorTest, PreAndPostFCPAreRecorded) {
       millisecond_per_step * LocalFrameUkmAggregator::kCount;
   float expected_sub_metric = millisecond_per_step;
   float expected_percentage =
-      floor(100.0 / static_cast<float>(LocalFrameUkmAggregator::kCount));
+      100.0 / static_cast<float>(LocalFrameUkmAggregator::kCount);
 
   VerifyUpdateEntry(0u, expected_primary_metric, expected_sub_metric,
                     expected_percentage, 4, true);
@@ -237,8 +237,8 @@ TEST_F(LocalFrameUkmAggregatorTest, PreAndPostFCPAreRecorded) {
   // been recorded.
   EXPECT_EQ(recorder().entries_count(), 3u);
 
-  expected_percentage = floor(millisecond_per_step * 100.0 /
-                              static_cast<float>(millisecond_per_frame));
+  expected_percentage =
+      millisecond_per_step * 100.0 / static_cast<float>(millisecond_per_frame);
   VerifyUpdateEntry(1u, millisecond_per_frame, millisecond_per_step,
                     expected_percentage, 4, false);
 }

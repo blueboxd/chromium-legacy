@@ -287,7 +287,7 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   SharedWorkerHost* host = insertion_result.first->get();
 
   base::WeakPtr<AppCacheHost> appcache_host;
-  if (base::FeatureList::IsEnabled(blink::features::kAppCache)) {
+  if (appcache_service_) {
     auto appcache_handle = std::make_unique<AppCacheNavigationHandle>(
         appcache_service_.get(), worker_process_host->GetID());
     appcache_host = appcache_handle->host()->GetWeakPtr();

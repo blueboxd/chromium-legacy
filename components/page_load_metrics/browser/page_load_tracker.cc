@@ -926,7 +926,7 @@ PageLoadTracker::GetExperimentalLargestContentfulPaintHandler() const {
   return experimental_largest_contentful_paint_handler_;
 }
 
-ukm::SourceId PageLoadTracker::GetSourceId() const {
+ukm::SourceId PageLoadTracker::GetPageUkmSourceId() const {
   return source_id_;
 }
 

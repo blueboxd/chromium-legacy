@@ -54,6 +54,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/management_ui_handler_chromeos.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
@@ -187,9 +188,7 @@ bool IsProfileManaged(Profile* profile) {
 
 #if defined(OS_CHROMEOS)
 bool IsDeviceManaged() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->IsEnterpriseManaged();
+  return webui::IsEnterpriseManaged();
 }
 #endif  // defined(OS_CHROMEOS)
 

@@ -185,7 +185,7 @@ class DecoderAdapter : public webrtc::VideoDecoderFactory {
 
 }  // namespace
 
-std::unique_ptr<webrtc::VideoEncoderFactory> CreateWebrtcVideoEncoderFactory(
+std::unique_ptr<webrtc::VideoEncoderFactory> CreateHWVideoEncoderFactory(
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   std::unique_ptr<webrtc::VideoEncoderFactory> encoder_factory;
 
@@ -199,7 +199,13 @@ std::unique_ptr<webrtc::VideoEncoderFactory> CreateWebrtcVideoEncoderFactory(
     encoder_factory.reset();
 #endif
 
-  return std::make_unique<EncoderAdapter>(std::move(encoder_factory));
+  return encoder_factory;
+}
+
+std::unique_ptr<webrtc::VideoEncoderFactory> CreateWebrtcVideoEncoderFactory(
+    media::GpuVideoAcceleratorFactories* gpu_factories) {
+  return std::make_unique<EncoderAdapter>(
+      CreateHWVideoEncoderFactory(gpu_factories));
 }
 
 std::unique_ptr<webrtc::VideoDecoderFactory> CreateWebrtcVideoDecoderFactory(

@@ -141,6 +141,10 @@ void ArcDocumentsProviderRoot::ReadDirectory(const base::FilePath& path,
 void ArcDocumentsProviderRoot::DeleteFile(const base::FilePath& path,
                                           StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (read_only_) {
+    std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
+    return;
+  }
   ResolveToDocumentId(
       path,
       base::BindOnce(&ArcDocumentsProviderRoot::DeleteFileWithDocumentId,
@@ -150,6 +154,10 @@ void ArcDocumentsProviderRoot::DeleteFile(const base::FilePath& path,
 void ArcDocumentsProviderRoot::CreateFile(const base::FilePath& path,
                                           StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (read_only_) {
+    std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
+    return;
+  }
   ResolveToDocumentId(
       path, base::BindOnce(
                 &ArcDocumentsProviderRoot::CreateFileAfterConflictCheck,
@@ -159,6 +167,10 @@ void ArcDocumentsProviderRoot::CreateFile(const base::FilePath& path,
 void ArcDocumentsProviderRoot::CreateDirectory(const base::FilePath& path,
                                                StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (read_only_) {
+    std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
+    return;
+  }
   ResolveToDocumentId(
       path, base::BindOnce(
                 &ArcDocumentsProviderRoot::CreateDirectoryAfterConflictCheck,
@@ -169,6 +181,10 @@ void ArcDocumentsProviderRoot::CopyFileLocal(const base::FilePath& src_path,
                                              const base::FilePath& dest_path,
                                              StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (read_only_) {
+    std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
+    return;
+  }
   if (src_path == dest_path) {
     std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
@@ -184,6 +200,10 @@ void ArcDocumentsProviderRoot::MoveFileLocal(const base::FilePath& src_path,
                                              const base::FilePath& dest_path,
                                              StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (read_only_) {
+    std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
+    return;
+  }
   if (src_path.DirName() == dest_path.DirName()) {
     RenameFileInternal(src_path, dest_path.BaseName().value(),
                        std::move(callback));

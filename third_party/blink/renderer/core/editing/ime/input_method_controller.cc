@@ -1779,6 +1779,8 @@ WebTextInputType InputMethodController::TextInputType() const {
 
 void InputMethodController::WillChangeFocus() {
   FinishComposingText(kKeepSelection);
+  GetDocument().Markers().RemoveSuggestionMarkerByType(
+      SuggestionMarker::SuggestionType::kAutocorrect);
 }
 
 void InputMethodController::Trace(Visitor* visitor) const {
@@ -1808,23 +1810,32 @@ WebVector<ui::ImeTextSpan> InputMethodController::GetImeTextSpansAroundPosition(
   // Only queries Suggestion markers for now.
   // This can be expanded when browser needs information for
   // other types of markers.
-  const DocumentMarkerVector& marker_list =
-      GetDocument().Markers().MarkersAroundPosition(
+  const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
+      node_marker_pairs = GetDocument().Markers().MarkersAroundPosition(
           ToPositionInFlatTree(range.StartPosition()),
           DocumentMarker::MarkerTypes::Suggestion());
 
-  for (DocumentMarker* marker : marker_list) {
-    if (marker->GetType() == DocumentMarker::MarkerType::kSuggestion) {
-      ImeTextSpan::Type type = ConvertSuggestionMarkerType(
-          To<SuggestionMarker>(marker)->GetSuggestionType());
-      if (ShouldGetImeTextSpansAroundPosition(type)) {
-        ime_text_spans.emplace_back(
-            ImeTextSpan(type, marker->StartOffset(), marker->EndOffset(),
-                        Color::kTransparent, ImeTextSpanThickness::kNone,
-                        ImeTextSpanUnderlineStyle::kNone, Color::kTransparent,
-                        Color::kTransparent)
-                .ToUiImeTextSpan());
-      }
+  for (const std::pair<Member<const Text>, Member<DocumentMarker>>&
+           node_marker_pair : node_marker_pairs) {
+    SuggestionMarker* marker =
+        To<SuggestionMarker>(node_marker_pair.second.Get());
+    ImeTextSpan::Type type =
+        ConvertSuggestionMarkerType(marker->GetSuggestionType());
+    if (ShouldGetImeTextSpansAroundPosition(type)) {
+      const Text* node = node_marker_pair.first;
+      const EphemeralRange& marker_ephemeral_range =
+          EphemeralRange(Position(node, marker->StartOffset()),
+                         Position(node, marker->EndOffset()));
+      PlainTextRange marker_plain_text_range =
+          PlainTextRangeForEphemeralRange(marker_ephemeral_range).second;
+
+      ime_text_spans.emplace_back(
+          ImeTextSpan(type, marker_plain_text_range.Start(),
+                      marker_plain_text_range.End(), Color::kTransparent,
+                      ImeTextSpanThickness::kNone,
+                      ImeTextSpanUnderlineStyle::kNone, Color::kTransparent,
+                      Color::kTransparent)
+              .ToUiImeTextSpan());
     }
   }
 

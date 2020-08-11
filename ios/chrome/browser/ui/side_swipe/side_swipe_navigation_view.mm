@@ -207,27 +207,31 @@ UIColor* SelectionCircleColor() {
   [_arrowView setTransform:CGAffineTransformScale(rotation, scale, scale)];
 
   // Animate selection bubbles dpending on distance.
-  [UIView beginAnimations:@"transform" context:NULL];
-  [UIView setAnimationDuration:kSelectionSnappingAnimationDuration];
-  if (distance < (width * kSwipeThreshold)) {
-    // Scale selection down.
-    _selectionCircleLayer.transform =
-        CATransform3DMakeScale(kSelectionDownScale, kSelectionDownScale, 1);
-    _selectionCircleLayer.opacity = 0;
-    [_arrowView setAlpha:MapValueToRange({0, 64}, {0, 1}, distance)];
-    _thresholdTriggered = NO;
-  } else {
-    _selectionCircleLayer.transform = CATransform3DMakeScale(1, 1, 1);
-    _selectionCircleLayer.opacity = 1;
-    [_arrowView setAlpha:1];
-    // Trigger a small haptic blip when exceeding the threshold and mark
-    // such that only one blip gets triggered.
-    if (!_thresholdTriggered) {
-      TriggerHapticFeedbackForSelectionChange();
-      _thresholdTriggered = YES;
-    }
-  }
-  [UIView commitAnimations];
+  [UIView animateWithDuration:kSelectionSnappingAnimationDuration
+                   animations:^{
+                     if (distance < (width * kSwipeThreshold)) {
+                       // Scale selection down.
+                       _selectionCircleLayer.transform = CATransform3DMakeScale(
+                           kSelectionDownScale, kSelectionDownScale, 1);
+                       _selectionCircleLayer.opacity = 0;
+                       [_arrowView
+                           setAlpha:MapValueToRange({0, 64}, {0, 1}, distance)];
+                       _thresholdTriggered = NO;
+                     } else {
+                       _selectionCircleLayer.transform =
+                           CATransform3DMakeScale(1, 1, 1);
+                       _selectionCircleLayer.opacity = 1;
+                       [_arrowView setAlpha:1];
+                       // Trigger a small haptic blip when exceeding the
+                       // threshold and mark such that only one blip gets
+                       // triggered.
+                       if (!_thresholdTriggered) {
+                         TriggerHapticFeedbackForSelectionChange();
+                         _thresholdTriggered = YES;
+                       }
+                     }
+                   }
+                   completion:nil];
 }
 
 - (void)explodeSelection:(void (^)(void))block {

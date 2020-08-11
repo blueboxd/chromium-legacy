@@ -99,16 +99,6 @@ chrome.terminalPrivate.openOptionsPage = function(callback) {};
 
 /**
  * Returns an object (DictionaryValue) containing UI settings such as font style
- * and color used by the crosh extension.  This function is called by the
- * terminal system app the first time it is run to migrate any previous
- * settings.
- * @param {function(Object): void} callback Callback that will be called with
- *     settings.
- */
-chrome.terminalPrivate.getCroshSettings = function(callback) {};
-
-/**
- * Returns an object (DictionaryValue) containing UI settings such as font style
  * and colors used by terminal and stored as a syncable pref.  The UI currently
  * has ~70 properties and we wish to allow flexibility for these to change in
  * the UI without updating this API, so we allow any properties.

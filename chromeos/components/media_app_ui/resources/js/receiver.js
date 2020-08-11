@@ -26,6 +26,13 @@ class ReceivedFile {
     this.token = file.token;
     this.error = file.error;
     this.fromClipboard = false;
+    if (file.canDelete) {
+      this.deleteOriginalFile = () => this.deleteOriginalFileImpl();
+    }
+    if (file.canRename) {
+      this.renameOriginalFile = (/** string */ newName) =>
+          this.renameOriginalFileImpl(newName);
+    }
   }
 
   /**
@@ -41,6 +48,10 @@ class ReceivedFile {
     // Note the following are skipped if an exception is thrown above.
     if (result.renamedTo) {
       this.name = result.renamedTo;
+      // Assume a rename could have moved the file to a new folder via a file
+      // picker, which will break rename/delete functionality.
+      delete this.deleteOriginalFile;
+      delete this.renameOriginalFile;
     }
     this.error = result.errorName || '';
     this.blob = blob;
@@ -49,10 +60,9 @@ class ReceivedFile {
   }
 
   /**
-   * @override
    * @return {!Promise<number>}
    */
-  async deleteOriginalFile() {
+  async deleteOriginalFileImpl() {
     const deleteResponse =
         /** @type {!DeleteFileResponse} */ (await parentMessagePipe.sendMessage(
             Message.DELETE_FILE, {token: this.token}));
@@ -60,11 +70,10 @@ class ReceivedFile {
   }
 
   /**
-   * @override
    * @param {string} newName
    * @return {!Promise<number>}
    */
-  async renameOriginalFile(newName) {
+  async renameOriginalFileImpl(newName) {
     const renameResponse =
         /** @type {!RenameFileResponse} */ (await parentMessagePipe.sendMessage(
             Message.RENAME_FILE, {token: this.token, newFilename: newName}));
@@ -86,6 +95,11 @@ class ReceivedFile {
     this.blob = blob;
     this.size = blob.size;
     this.mimeType = blob.type;
+    // Files obtained by a file picker currently can not be renamed/deleted.
+    // TODO(b/163285659): Detect when the new file is in the same folder as an
+    // on-launch file. Those should still be able to be renamed/deleted.
+    delete this.deleteOriginalFile;
+    delete this.renameOriginalFile;
   }
 }
 

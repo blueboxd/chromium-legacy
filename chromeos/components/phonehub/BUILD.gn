@@ -1,0 +1,61 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+assert(is_chromeos, "Phone Hub is Chrome OS only")
+
+static_library("phonehub") {
+  sources = [
+    "feature_status.cc",
+    "feature_status.h",
+    "feature_status_provider.cc",
+    "feature_status_provider.h",
+    "feature_status_provider_impl.cc",
+    "feature_status_provider_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromeos/components/multidevice",
+    "//chromeos/components/multidevice/logging",
+    "//chromeos/services/device_sync/public/cpp",
+    "//chromeos/services/multidevice_setup/public/cpp",
+    "//device/bluetooth",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_feature_status_provider.cc",
+    "fake_feature_status_provider.h",
+  ]
+
+  public_deps = [ ":phonehub" ]
+
+  deps = [ "//base" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "feature_status_provider_impl_unittest.cc" ]
+
+  deps = [
+    ":phonehub",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//chromeos/components/multidevice",
+    "//chromeos/components/multidevice:test_support",
+    "//chromeos/services/device_sync/public/cpp",
+    "//chromeos/services/device_sync/public/cpp:test_support",
+    "//chromeos/services/multidevice_setup/public/cpp",
+    "//chromeos/services/multidevice_setup/public/cpp:test_support",
+    "//device/bluetooth:mocks",
+    "//testing/gtest",
+  ]
+}

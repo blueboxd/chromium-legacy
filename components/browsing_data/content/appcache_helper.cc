@@ -71,14 +71,24 @@ void AppCacheHelper::StartFetching(FetchCallback callback) {
   scoped_refptr<content::AppCacheInfoCollection> info_collection =
       new content::AppCacheInfoCollection();
 
-  appcache_service_->GetAllAppCacheInfo(
-      info_collection.get(),
-      base::BindOnce(&OnAppCacheInfoFetchComplete, std::move(callback),
-                     info_collection));
+  auto complete_callback = base::BindOnce(&OnAppCacheInfoFetchComplete,
+                                          std::move(callback), info_collection);
+  if (appcache_service_) {
+    appcache_service_->GetAllAppCacheInfo(info_collection.get(),
+                                          std::move(complete_callback));
+  } else {
+    // Post this task so that StartFetching consistently does not run the
+    // callback immediately.
+    const int kArbitraryRV = 0;
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(complete_callback), kArbitraryRV));
+  }
 }
 
 void AppCacheHelper::DeleteAppCaches(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!appcache_service_)
+    return;
   appcache_service_->DeleteAppCachesForOrigin(origin,
                                               net::CompletionOnceCallback());
 }

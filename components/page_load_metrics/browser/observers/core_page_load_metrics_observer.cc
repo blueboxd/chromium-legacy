@@ -1230,7 +1230,7 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
   PAGE_RESOURCE_COUNT_HISTOGRAM(internal::kHistogramTotalCompletedResources,
                                 num_cache_resources_ + num_network_resources_);
 
-  click_tracker_.RecordClickBurst(GetDelegate().GetSourceId());
+  click_tracker_.RecordClickBurst(GetDelegate().GetPageUkmSourceId());
 }
 
 void CorePageLoadMetricsObserver::RecordCpuUsageHistograms() {

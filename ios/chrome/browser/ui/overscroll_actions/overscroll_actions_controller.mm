@@ -750,58 +750,66 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 
 - (void)onOverscrollStateChangeWithPreviousState:
     (OverscrollState)previousOverscrollState {
-  [UIView beginAnimations:@"backgroundColor" context:NULL];
-  switch (self.overscrollState) {
-    case OverscrollState::NO_PULL_STARTED: {
-      [self.overscrollActionView removeFromSuperview];
-      SetViewFrameHeight(
-          self.overscrollActionView,
-          self.initialContentInset +
-              [UIApplication sharedApplication].statusBarFrame.size.height,
-          0);
-      self.panPointScreenOrigin = CGPointZero;
-      [[NSNotificationCenter defaultCenter]
-          postNotificationName:kOverscrollActionsDidEnd
-                        object:self];
-      [self resetScrollViewTopContentInset];
-      self.disablingFullscreen = NO;
-      if (_shouldInvalidate) {
-        [self invalidate];
-      }
-    } break;
-    case OverscrollState::STARTED_PULLING: {
-      if (!self.overscrollActionView.superview && self.scrollViewDragged) {
-        UIView* headerView =
-            [self.delegate headerViewForOverscrollActionsController:self];
-        DCHECK(headerView);
-        if (previousOverscrollState == OverscrollState::NO_PULL_STARTED) {
-          UIView* view = [self.delegate
-              toolbarSnapshotViewForOverscrollActionsController:self];
-          [self.overscrollActionView addSnapshotView:view];
-          [[NSNotificationCenter defaultCenter]
-              postNotificationName:kOverscrollActionsWillStart
-                            object:self];
-          self.disablingFullscreen = YES;
-        }
-        [CATransaction begin];
-        [CATransaction setDisableActions:YES];
-        self.overscrollActionView.backgroundView.alpha = 1;
-        [self.overscrollActionView updateWithVerticalOffset:0];
-        [self.overscrollActionView updateWithHorizontalOffset:0];
-        self.overscrollActionView.frame = headerView.bounds;
-        [headerView addSubview:self.overscrollActionView];
-        [CATransaction commit];
-      }
-    } break;
-    case OverscrollState::ACTION_READY: {
-      _didTransitionToActionReady = YES;
-      if (CGPointEqualToPoint(self.panPointScreenOrigin, CGPointZero)) {
-        CGPoint panPointScreen = [self.panGestureRecognizer locationInView:nil];
-        self.panPointScreenOrigin = panPointScreen;
-      }
-    } break;
-  }
-  [UIView commitAnimations];
+  [UIView
+      animateWithDuration:0.2
+               animations:^{
+                 switch (self.overscrollState) {
+                   case OverscrollState::NO_PULL_STARTED: {
+                     [self.overscrollActionView removeFromSuperview];
+                     SetViewFrameHeight(self.overscrollActionView,
+                                        self.initialContentInset +
+                                            [UIApplication sharedApplication]
+                                                .statusBarFrame.size.height,
+                                        0);
+                     self.panPointScreenOrigin = CGPointZero;
+                     [[NSNotificationCenter defaultCenter]
+                         postNotificationName:kOverscrollActionsDidEnd
+                                       object:self];
+                     [self resetScrollViewTopContentInset];
+                     self.disablingFullscreen = NO;
+                     if (_shouldInvalidate) {
+                       [self invalidate];
+                     }
+                   } break;
+                   case OverscrollState::STARTED_PULLING: {
+                     if (!self.overscrollActionView.superview &&
+                         self.scrollViewDragged) {
+                       UIView* headerView = [self.delegate
+                           headerViewForOverscrollActionsController:self];
+                       DCHECK(headerView);
+                       if (previousOverscrollState ==
+                           OverscrollState::NO_PULL_STARTED) {
+                         UIView* view = [self.delegate
+                             toolbarSnapshotViewForOverscrollActionsController:
+                                 self];
+                         [self.overscrollActionView addSnapshotView:view];
+                         [[NSNotificationCenter defaultCenter]
+                             postNotificationName:kOverscrollActionsWillStart
+                                           object:self];
+                         self.disablingFullscreen = YES;
+                       }
+                       [CATransaction begin];
+                       [CATransaction setDisableActions:YES];
+                       self.overscrollActionView.backgroundView.alpha = 1;
+                       [self.overscrollActionView updateWithVerticalOffset:0];
+                       [self.overscrollActionView updateWithHorizontalOffset:0];
+                       self.overscrollActionView.frame = headerView.bounds;
+                       [headerView addSubview:self.overscrollActionView];
+                       [CATransaction commit];
+                     }
+                   } break;
+                   case OverscrollState::ACTION_READY: {
+                     _didTransitionToActionReady = YES;
+                     if (CGPointEqualToPoint(self.panPointScreenOrigin,
+                                             CGPointZero)) {
+                       CGPoint panPointScreen =
+                           [self.panGestureRecognizer locationInView:nil];
+                       self.panPointScreenOrigin = panPointScreen;
+                     }
+                   } break;
+                 }
+               }
+               completion:nil];
 }
 
 - (void)setWebViewInteractionEnabled:(BOOL)enabled {

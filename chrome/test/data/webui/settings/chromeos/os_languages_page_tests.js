@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {LanguagesBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
+// #import {LanguagesBrowserProxyImpl, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from 'chrome://os-settings/chromeos/lazy_load.js';
 // #import {CrSettingsPrefs, Router} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {getFakeLanguagePrefs} from '../fake_language_settings_private.m.js'
 // #import {FakeSettingsPrivate} from '../fake_settings_private.m.js';
 // #import {TestLanguagesBrowserProxy} from './test_os_languages_browser_proxy.m.js';
+// #import {TestLanguagesMetricsProxy} from './test_os_languages_metrics_proxy.m.js';
 // #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 // #import {fakeDataBind} from '../../test_util.m.js';
 // clang-format on
@@ -33,6 +34,8 @@ cr.define('os_languages_page_tests', function() {
     let actionMenu = null;
     /** @type {?settings.LanguagesBrowserProxy} */
     let browserProxy = null;
+    /** @type {!settings.LanguagesMetricsProxy} */
+    let metricsProxy;
 
     // Enabled language pref name for the platform.
     const languagesPref = 'settings.language.preferred_languages';
@@ -57,6 +60,10 @@ cr.define('os_languages_page_tests', function() {
       // Set up test browser proxy.
       browserProxy = new settings.TestLanguagesBrowserProxy();
       settings.LanguagesBrowserProxyImpl.instance_ = browserProxy;
+
+      // Sets up test metrics proxy.
+      metricsProxy = new settings.TestLanguagesMetricsProxy();
+      settings.LanguagesMetricsProxyImpl.instance_ = metricsProxy;
 
       // Set up fake languageSettingsPrivate API.
       const languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
@@ -338,6 +345,83 @@ cr.define('os_languages_page_tests', function() {
             router.getQueryParameters().get('id'),
             '_comp_ime_jkghodnilhceideoidjikpgommlajknkxkb:us::eng');
       });
+    });
+
+    suite('recordMetrics', function() {
+      test('records when adding languages', async () => {
+        languagesPage.$$('#addLanguages').click();
+        Polymer.dom.flush();
+        await metricsProxy.whenCalled('recordAddLanguages');
+      });
+
+      test('records when managing input methods', async () => {
+        languagesPage.$$('#manageInputMethods').click();
+        Polymer.dom.flush();
+        await metricsProxy.whenCalled('recordManageInputMethods');
+      });
+
+      test('records when deactivating show ime menu', async () => {
+        languagesPage.setPrefValue(
+            'settings.language.ime_menu_activated', true);
+        languagesPage.$$('#showImeMenu').click();
+        Polymer.dom.flush();
+
+        assertFalse(await metricsProxy.whenCalled(
+            'recordToggleShowInputOptionsOnShelf'));
+      });
+
+      test('records when activating show ime menu', async () => {
+        languagesPage.setPrefValue(
+            'settings.language.ime_menu_activated', false);
+        languagesPage.$$('#showImeMenu').click();
+        Polymer.dom.flush();
+
+        assertTrue(await metricsProxy.whenCalled(
+            'recordToggleShowInputOptionsOnShelf'));
+      });
+
+      test(
+          'records when switching system language and restarting', async () => {
+            // Adds several languages.
+            for (const language of ['en-CA', 'en-US', 'tk', 'no']) {
+              languageHelper.enableLanguage(language);
+            }
+
+            Polymer.dom.flush();
+
+            const languagesList = languagesPage.$$('#languagesList');
+
+            const menuButtons = languagesList.querySelectorAll(
+                '.list-item cr-icon-button.icon-more-vert');
+
+            // Chooses the second language to switch system language,
+            // as first language is the default language.
+            menuButtons[1].click();
+            const actionMenu = languagesPage.$$('#menu').get();
+            assertTrue(actionMenu.open);
+            const menuItems = actionMenu.querySelectorAll('.dropdown-item');
+            for (const item of menuItems) {
+              if (item.id === 'uiLanguageItem') {
+                assertFalse(item.checked);
+                item.click();
+
+                assertEquals(
+                    LanguagesPageInteraction.SWITCH_SYSTEM_LANGUAGE,
+                    await metricsProxy.whenCalled('recordInteraction'));
+                return;
+              }
+            }
+            actionMenu.close();
+
+            // Chooses restart button after switching system language.
+            const restartButton = languagesPage.$$('#restartButton');
+            assertTrue(!!restartButton);
+            restartButton.click();
+
+            assertEquals(
+                LanguagesPageInteraction.RESTART,
+                await metricsProxy.whenCalled('recordInteraction'));
+          });
     });
   });
 

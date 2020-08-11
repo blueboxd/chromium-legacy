@@ -57,8 +57,6 @@ class PLATFORM_EXPORT TransmissionEncodingInfoHandler {
   bool CanCpuEncodeSmoothly(
       const blink::WebVideoConfiguration& configuration) const;
 
-  // List of supported video codecs.
-  HashSet<String> supported_video_codecs_;
   // List of hardware accelerated codecs.
   HashSet<String> hardware_accelerated_video_codecs_;
   // List of supported audio codecs.

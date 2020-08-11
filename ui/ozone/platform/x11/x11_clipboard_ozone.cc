@@ -241,6 +241,13 @@ bool X11ClipboardOzone::OnSelectionNotify(
           .Run(selection_state.data);
     }
     return true;
+  } else if (static_cast<x11::Atom>(event.property) == x11::Atom::None &&
+             selection_state.request_clipboard_data_callback) {
+    // If the remote peer could not send data in the format we requested,
+    // or failed for any reason, we will send empty data.
+    std::move(selection_state.request_clipboard_data_callback)
+        .Run(selection_state.data);
+    return true;
   }
 
   return false;

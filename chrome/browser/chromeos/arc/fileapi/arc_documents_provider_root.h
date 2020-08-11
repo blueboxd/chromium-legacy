@@ -86,6 +86,9 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
                      ReadDirectoryCallback callback);
 
   // Deletes a file/directory at the given path.
+  //
+  // - File::FILE_ERROR_NOT_FOUND if |path| does not exist.
+  // - File::FILE_ERROR_ACCESS_DENIED if this root is read-only.
   void DeleteFile(const base::FilePath& path, StatusCallback callback);
 
   // Creates a file at the given path.
@@ -93,6 +96,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   // This reports following error code via |callback|:
   // - File::FILE_ERROR_NOT_FOUND if |path|'s parent directory does not exist.
   // - File::FILE_ERROR_EXISTS if a file already exists at |path|.
+  // - File::FILE_ERROR_ACCESS_DENIED if this root is read-only.
   void CreateFile(const base::FilePath& path, StatusCallback callback);
 
   // Creates a directory at the given path.
@@ -100,6 +104,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   // This reports following error code via |callback|:
   // - File::FILE_ERROR_NOT_FOUND if |path|'s parent directory does not exist.
   // - File::FILE_ERROR_EXISTS if a file already exists at |path|.
+  // - File::FILE_ERROR_ACCESS_DENIED if this root is read-only.
   void CreateDirectory(const base::FilePath& path, StatusCallback callback);
 
   // Copies a file from |src_path| to |dest_path| inside this root.
@@ -107,6 +112,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   // This reports following error code via |callback|:
   // - File::FILE_ERROR_NOT_FOUND if |src_path| or the parent directory of
   //   |dest_path| does not exist.
+  // - File::FILE_ERROR_ACCESS_DENIED if this root is read-only.
   void CopyFileLocal(const base::FilePath& src_path,
                      const base::FilePath& dest_path,
                      StatusCallback callback);
@@ -116,6 +122,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   // This reports following error code via |callback|:
   // - File::FILE_ERROR_NOT_FOUND if |src_path| or the parent directory of
   //   |dest_path| does not exist.
+  // - File::FILE_ERROR_ACCESS_DENIED if this root is read-only.
   void MoveFileLocal(const base::FilePath& src_path,
                      const base::FilePath& dest_path,
                      StatusCallback callback);

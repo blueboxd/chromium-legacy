@@ -479,12 +479,27 @@ DisplayResourceProvider::LockForRead(ResourceId id, bool overlay_only) {
       }
       resource->SetLocallyUsed();
     }
-    if (mailbox.IsSharedImage() && enable_shared_images_ &&
-        resource->lock_for_read_count == 0) {
-      gl->BeginSharedImageAccessDirectCHROMIUM(
-          resource->gl_id, overlay_only
-                               ? GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM
-                               : GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+    if (mailbox.IsSharedImage() && enable_shared_images_) {
+      if (overlay_only) {
+        if (resource->lock_for_overlay_count == 0) {
+          // If |lock_for_read_count| > 0, then BeginSharedImageAccess has
+          // already been called with READ, so don't re-lock with OVERLAY.
+          if (resource->lock_for_read_count == 0) {
+            gl->BeginSharedImageAccessDirectCHROMIUM(
+                resource->gl_id, GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM);
+          }
+        }
+      } else {
+        if (resource->lock_for_read_count == 0) {
+          // If |lock_for_overlay_count| > 0, then we have already begun access
+          // for OVERLAY. End this access and "upgrade" it to READ.
+          // See https://crbug.com/1113925 for how this can go wrong.
+          if (resource->lock_for_overlay_count > 0)
+            gl->EndSharedImageAccessDirectCHROMIUM(resource->gl_id);
+          gl->BeginSharedImageAccessDirectCHROMIUM(
+              resource->gl_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+        }
+      }
     }
   }
 
@@ -502,7 +517,10 @@ DisplayResourceProvider::LockForRead(ResourceId id, bool overlay_only) {
     }
   }
 
-  resource->lock_for_read_count++;
+  if (overlay_only)
+    resource->lock_for_overlay_count++;
+  else
+    resource->lock_for_read_count++;
   if (resource->transferable.read_lock_fences_enabled) {
     if (current_read_lock_fence_.get())
       current_read_lock_fence_->Set();
@@ -512,7 +530,7 @@ DisplayResourceProvider::LockForRead(ResourceId id, bool overlay_only) {
   return resource;
 }
 
-void DisplayResourceProvider::UnlockForRead(ResourceId id) {
+void DisplayResourceProvider::UnlockForRead(ResourceId id, bool overlay_only) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = resources_.find(id);
   // TODO(ericrk): We should never fail to find id, but we appear to be
@@ -522,16 +540,23 @@ void DisplayResourceProvider::UnlockForRead(ResourceId id) {
     return;
 
   ChildResource* resource = &it->second;
-  DCHECK_GT(resource->lock_for_read_count, 0);
   if (resource->transferable.mailbox_holder.mailbox.IsSharedImage() &&
-      resource->is_gpu_resource_type() && enable_shared_images_ &&
-      resource->lock_for_read_count == 1) {
-    DCHECK(resource->gl_id);
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    gl->EndSharedImageAccessDirectCHROMIUM(resource->gl_id);
+      resource->is_gpu_resource_type() && enable_shared_images_) {
+    // If this is the last READ or OVERLAY access, then end access.
+    if (resource->lock_for_read_count + resource->lock_for_overlay_count == 1) {
+      DCHECK(resource->gl_id);
+      GLES2Interface* gl = ContextGL();
+      DCHECK(gl);
+      gl->EndSharedImageAccessDirectCHROMIUM(resource->gl_id);
+    }
   }
-  resource->lock_for_read_count--;
+  if (overlay_only) {
+    DCHECK_GT(resource->lock_for_overlay_count, 0);
+    resource->lock_for_overlay_count--;
+  } else {
+    DCHECK_GT(resource->lock_for_read_count, 0);
+    resource->lock_for_read_count--;
+  }
   TryReleaseResource(id, resource);
 }
 
@@ -822,7 +847,7 @@ DisplayResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
 }
 
 DisplayResourceProvider::ScopedReadLockGL::~ScopedReadLockGL() {
-  resource_provider_->UnlockForRead(resource_id_);
+  resource_provider_->UnlockForRead(resource_id_, false /* overlay_only */);
 }
 
 DisplayResourceProvider::ScopedOverlayLockGL::ScopedOverlayLockGL(
@@ -830,7 +855,7 @@ DisplayResourceProvider::ScopedOverlayLockGL::ScopedOverlayLockGL(
     ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const ChildResource* resource =
-      resource_provider->LockForRead(resource_id, true);
+      resource_provider->LockForRead(resource_id, true /* overlay_only */);
   if (!resource)
     return;
 
@@ -838,7 +863,7 @@ DisplayResourceProvider::ScopedOverlayLockGL::ScopedOverlayLockGL(
 }
 
 DisplayResourceProvider::ScopedOverlayLockGL::~ScopedOverlayLockGL() {
-  resource_provider_->UnlockForRead(resource_id_);
+  resource_provider_->UnlockForRead(resource_id_, true /* overlay_only */);
 }
 
 DisplayResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
@@ -916,7 +941,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
 }
 
 DisplayResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
-  resource_provider_->UnlockForRead(resource_id_);
+  resource_provider_->UnlockForRead(resource_id_, false /* overlay_only */);
 }
 
 DisplayResourceProvider::ScopedReadLockSharedImage::ScopedReadLockSharedImage(

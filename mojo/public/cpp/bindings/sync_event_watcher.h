@@ -53,8 +53,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncEventWatcher {
   base::WaitableEvent* const event_;
   const base::RepeatingClosure callback_;
 
-  // Whether |event_| has been registered with SyncHandleRegistry.
-  bool registered_ = false;
+  SyncHandleRegistry::EventCallbackSubscription subscription_;
 
   // If non-zero, |event_| should be registered with SyncHandleRegistry.
   size_t register_request_count_ = 0;

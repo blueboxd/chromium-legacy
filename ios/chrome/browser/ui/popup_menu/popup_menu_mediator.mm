@@ -799,13 +799,15 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
         } else if (matched_types.find(ClipboardContentType::URL) !=
                    matched_types.end()) {
           copiedContentItem = CreateTableViewItem(
-              IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK, PopupMenuActionPasteAndGo,
-              @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
+              IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK,
+              PopupMenuActionVisitCopiedLink, @"popup_menu_paste_and_go",
+              kToolsMenuPasteAndGo);
         } else if (matched_types.find(ClipboardContentType::Text) !=
                    matched_types.end()) {
           copiedContentItem = CreateTableViewItem(
-              IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT, PopupMenuActionPasteAndGo,
-              @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
+              IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT,
+              PopupMenuActionSearchCopiedText, @"popup_menu_paste_and_go",
+              kToolsMenuPasteAndGo);
         }
         if (copiedContentItem) {
           [items addObject:@[ copiedContentItem ]];

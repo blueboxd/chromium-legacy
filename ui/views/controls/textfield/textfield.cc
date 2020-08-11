@@ -71,7 +71,6 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_util.h"  // nogncheck
 #endif
 
@@ -83,6 +82,12 @@
 #if defined(OS_APPLE)
 #include "ui/base/cocoa/defaults_utils.h"
 #include "ui/base/cocoa/secure_password_input.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_gl_egl_utility.h"
 #endif
 
 namespace views {
@@ -272,6 +277,24 @@ bool IsControlKeyModifier(int flags) {
 bool IsValidCharToInsert(const base::char16& ch) {
   // Filter out all control characters, including tab and new line characters.
   return (ch >= 0x20 && ch < 0x7F) || ch > 0x9F;
+}
+
+bool CanUseTransparentBackgroundForDragImage() {
+#if defined(USE_OZONE)
+  if (::features::IsUsingOzonePlatform()) {
+    const auto* const egl_utility =
+        ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility();
+    return egl_utility ? egl_utility->IsTransparentBackgroundSupported()
+                       : false;
+  }
+#endif
+#if defined(USE_X11)
+  // Fallback on the background color if the system doesn't support compositing.
+  return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
+#else
+  // Other platforms allow this.
+  return true;
+#endif
 }
 
 }  // namespace
@@ -764,8 +787,9 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
 
   return selection_controller_.OnMousePressed(
       event, handled,
-      had_focus ? SelectionController::FOCUSED
-                : SelectionController::UNFOCUSED);
+      had_focus
+          ? SelectionController::InitialFocusStateOnMousePress::kFocused
+          : SelectionController::InitialFocusStateOnMousePress::kUnFocused);
 }
 
 bool Textfield::OnMouseDragged(const ui::MouseEvent& event) {
@@ -1263,13 +1287,9 @@ void Textfield::WriteDragDataForView(View* sender,
 
   SkBitmap bitmap;
   float raster_scale = ScaleFactorForDragFromWidget(GetWidget());
-  SkColor color = SK_ColorTRANSPARENT;
-#if defined(USE_X11)
-  // Fallback on the background color if the system doesn't support compositing.
-  if (!::features::IsUsingOzonePlatform() &&
-      !ui::XVisualManager::GetInstance()->ArgbVisualAvailable())
-    color = GetBackgroundColor();
-#endif
+  SkColor color = CanUseTransparentBackgroundForDragImage()
+                      ? SK_ColorTRANSPARENT
+                      : GetBackgroundColor();
   label.Paint(PaintInfo::CreateRootPaintInfo(
       ui::CanvasPainter(&bitmap, label.size(), raster_scale, color,
                         GetWidget()->GetCompositor()->is_pixel_canvas())

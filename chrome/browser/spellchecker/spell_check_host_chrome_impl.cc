@@ -13,6 +13,7 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "components/spellcheck/browser/spellcheck_host_metrics.h"
 #include "components/spellcheck/browser/spellcheck_platform.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -208,23 +209,62 @@ void SpellCheckHostChromeImpl::GetPerLanguageSuggestions(
   spellcheck_platform::GetPerLanguageSuggestions(
       spellcheck->platform_spell_checker(), word, std::move(callback));
 }
-#endif  // defined(OS_WIN)
 
 void SpellCheckHostChromeImpl::InitializeDictionaries(
     InitializeDictionariesCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Initialize the spellcheck service if needed. Initialization must
-  // happen on UI thread.
-  SpellcheckService* spellcheck = GetSpellcheckService();
+  if (base::FeatureList::IsEnabled(
+          spellcheck::kWinDelaySpellcheckServiceInit)) {
+    // Initialize the spellcheck service if needed. Initialization must
+    // happen on UI thread.
+    SpellcheckService* spellcheck = GetSpellcheckService();
 
-  if (!spellcheck) {  // Teardown.
-    std::move(callback).Run();
+    if (!spellcheck) {  // Teardown.
+      std::move(callback).Run(/*dictionaries=*/{}, /*custom_words=*/{},
+                              /*enable=*/false);
+      return;
+    }
+
+    dictionaries_loaded_callback_ = std::move(callback);
+
+    spellcheck->InitializeDictionaries(
+        base::BindOnce(&SpellCheckHostChromeImpl::OnDictionariesInitialized,
+                       weak_factory_.GetWeakPtr()));
     return;
   }
 
-  spellcheck->InitializeDictionaries(std::move(callback));
+  NOTREACHED();
+  std::move(callback).Run(/*dictionaries=*/{}, /*custom_words=*/{},
+                          /*enable=*/false);
 }
+
+void SpellCheckHostChromeImpl::OnDictionariesInitialized() {
+  DCHECK(dictionaries_loaded_callback_);
+  SpellcheckService* spellcheck = GetSpellcheckService();
+
+  const bool enable = spellcheck->IsSpellcheckEnabled();
+
+  std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries;
+  std::vector<std::string> custom_words;
+  if (enable) {
+    for (const auto& hunspell_dictionary :
+         spellcheck->GetHunspellDictionaries()) {
+      dictionaries.push_back(spellcheck::mojom::SpellCheckBDictLanguage::New(
+          hunspell_dictionary->GetDictionaryFile().Duplicate(),
+          hunspell_dictionary->GetLanguage()));
+    }
+
+    SpellcheckCustomDictionary* custom_dictionary =
+        spellcheck->GetCustomDictionary();
+    custom_words.assign(custom_dictionary->GetWords().begin(),
+                        custom_dictionary->GetWords().end());
+  }
+
+  std::move(dictionaries_loaded_callback_)
+      .Run(std::move(dictionaries), custom_words, enable);
+}
+#endif  // defined(OS_WIN)
 
 void SpellCheckHostChromeImpl::OnRequestFinished(SpellingRequest* request) {
   auto iterator = requests_.find(request);

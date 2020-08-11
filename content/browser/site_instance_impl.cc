@@ -17,6 +17,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/isolation_context.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
@@ -96,6 +97,7 @@ SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
       active_frame_count_(0),
       browsing_instance_(browsing_instance),
       process_(nullptr),
+      agent_scheduling_group_(nullptr),
       can_associate_with_spare_process_(true),
       has_site_(false),
       process_reuse_policy_(ProcessReusePolicy::DEFAULT),
@@ -374,6 +376,8 @@ void SiteInstanceImpl::SetProcessInternal(RenderProcessHost* process) {
   CHECK(process);
   process_ = process;
   process_->AddObserver(this);
+  DCHECK(!agent_scheduling_group_);
+  agent_scheduling_group_ = AgentSchedulingGroupHost::Get(*this, *process_);
 
   MaybeSetBrowsingInstanceDefaultProcess();
 
@@ -1207,6 +1211,7 @@ void SiteInstanceImpl::RenderProcessHostDestroyed(RenderProcessHost* host) {
   DCHECK_EQ(process_, host);
   process_->RemoveObserver(this);
   process_ = nullptr;
+  agent_scheduling_group_ = nullptr;
 }
 
 void SiteInstanceImpl::RenderProcessExited(

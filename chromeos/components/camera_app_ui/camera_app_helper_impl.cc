@@ -30,9 +30,11 @@ mojom::ScreenState ToMojoScreenState(ash::ScreenState s) {
 }  // namespace
 
 CameraAppHelperImpl::CameraAppHelperImpl(
+    chromeos::CameraAppUI* camera_app_ui,
     CameraResultCallback camera_result_callback,
     aura::Window* window)
-    : camera_result_callback_(std::move(camera_result_callback)) {
+    : camera_app_ui_(camera_app_ui),
+      camera_result_callback_(std::move(camera_result_callback)) {
   DCHECK(window);
   window->SetProperty(ash::kCanConsumeSystemKeysKey, true);
   ash::TabletMode::Get()->AddObserver(this);
@@ -84,6 +86,13 @@ void CameraAppHelperImpl::SetScreenStateMonitor(
   auto&& mojo_state =
       ToMojoScreenState(ash::ScreenBacklight::Get()->GetScreenState());
   std::move(callback).Run(mojo_state);
+}
+
+void CameraAppHelperImpl::IsMetricsAndCrashReportingEnabled(
+    IsMetricsAndCrashReportingEnabledCallback callback) {
+  DCHECK_NE(camera_app_ui_, nullptr);
+  std::move(callback).Run(
+      camera_app_ui_->delegate()->IsMetricsAndCrashReportingEnabled());
 }
 
 void CameraAppHelperImpl::OnTabletModeStarted() {

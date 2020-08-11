@@ -536,4 +536,15 @@ int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format) {
   }
 }
 
+uint64_t GetEnumValueForName(int fd, int property_id, const char* str) {
+  ScopedDrmPropertyPtr res(drmModeGetProperty(fd, property_id));
+  for (int i = 0; i < res->count_enums; ++i) {
+    if (strcmp(res->enums[i].name, str) == 0) {
+      return res->enums[i].value;
+    }
+  }
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace ui

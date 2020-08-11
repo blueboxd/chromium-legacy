@@ -82,8 +82,11 @@ interface SpellCheckHost {
       (array<array<mojo_base.mojom.String16>> suggestions);
 
   // Completes initialization of the spellcheck service by loading dictionaries.
-  [EnableIf=USE_BROWSER_SPELLCHECKER]
-  InitializeDictionaries() => ();
+  [EnableIf=is_win]
+  InitializeDictionaries() =>
+      (array<SpellCheckBDictLanguage> dictionaries,
+       array<string> custom_words,
+       bool enable);
 };
 
 enum Decoration {

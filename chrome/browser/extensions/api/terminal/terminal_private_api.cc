@@ -35,13 +35,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/api/storage/settings_namespace.h"
-#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/common/extension.h"
 
 namespace terminal_private = extensions::api::terminal_private;
 namespace OnTerminalResize =
@@ -508,38 +505,6 @@ TerminalPrivateOpenOptionsPageFunction::Run() {
   crostini::LaunchTerminalSettings(
       Profile::FromBrowserContext(browser_context()));
   return RespondNow(NoArguments());
-}
-
-TerminalPrivateGetCroshSettingsFunction::
-    ~TerminalPrivateGetCroshSettingsFunction() = default;
-
-ExtensionFunction::ResponseAction
-TerminalPrivateGetCroshSettingsFunction::Run() {
-  const Extension* crosh_extension =
-      TerminalExtensionHelper::GetTerminalExtension(
-          Profile::FromBrowserContext(browser_context()));
-  if (!crosh_extension) {
-    return RespondNow(OneArgument(std::make_unique<base::DictionaryValue>()));
-  }
-
-  StorageFrontend* frontend = StorageFrontend::Get(browser_context());
-  frontend->RunWithStorage(
-      crosh_extension, settings_namespace::SYNC,
-      base::Bind(&TerminalPrivateGetCroshSettingsFunction::AsyncRunWithStorage,
-                 this));
-  return RespondLater();
-}
-
-void TerminalPrivateGetCroshSettingsFunction::AsyncRunWithStorage(
-    ValueStore* storage) {
-  ValueStore::ReadResult result = storage->Get();
-  ExtensionFunction::ResponseValue response =
-      result.status().ok() ? OneArgument(result.PassSettings())
-                           : Error(result.status().message);
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&TerminalPrivateGetCroshSettingsFunction::Respond, this,
-                     std::move(response)));
 }
 
 TerminalPrivateGetSettingsFunction::~TerminalPrivateGetSettingsFunction() =

@@ -230,20 +230,20 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
   [self setTextAlignment:NSTextAlignmentNatural];
 
-  UITextWritingDirection textDirection =
+  NSWritingDirection textDirection =
       [self baseWritingDirectionForPosition:[self beginningOfDocument]
                                 inDirection:UITextStorageDirectionForward];
   NSLocaleLanguageDirection currentLocaleDirection = [NSLocale
       characterDirectionForLanguage:NSLocale.currentLocale.languageCode];
 
-  if ((textDirection == UITextWritingDirectionLeftToRight &&
+  if ((textDirection == NSWritingDirectionLeftToRight &&
        currentLocaleDirection == NSLocaleLanguageDirectionLeftToRight) ||
-      (textDirection == UITextWritingDirectionRightToLeft &&
+      (textDirection == NSWritingDirectionRightToLeft &&
        currentLocaleDirection == NSLocaleLanguageDirectionRightToLeft)) {
     return UISemanticContentAttributeUnspecified;
   }
 
-  return textDirection == UITextWritingDirectionRightToLeft
+  return textDirection == NSWritingDirectionRightToLeft
              ? UISemanticContentAttributeForceRightToLeft
              : UISemanticContentAttributeForceLeftToRight;
 }

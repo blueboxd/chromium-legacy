@@ -29,6 +29,8 @@ struct OfflineItem;
 class DownloadShelf {
  public:
   DownloadShelf(Browser* browser, Profile* profile);
+  DownloadShelf(const DownloadShelf&) = delete;
+  DownloadShelf& operator=(const DownloadShelf&) = delete;
   virtual ~DownloadShelf();
 
   // The browser view needs to know when we are going away to properly return

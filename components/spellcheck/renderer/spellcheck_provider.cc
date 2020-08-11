@@ -143,8 +143,15 @@ void SpellCheckProvider::RequestTextChecking(
       // Initialize the spellcheck service on demand (this spellcheck request
       // could be the result of the first click in editable content), then
       // complete the text check request when the dictionaries are loaded.
+      // The delayed spell check service initialization sequence, starting from
+      // when the user clicks in editable content, is as follows:
+      // - SpellcheckProvider::RequestTextChecking (Renderer, this method)
+      // - SpellCheckHostChromeImpl::InitializeDictionaries (Browser)
+      // - SpellcheckService::InitializeDictionaries (Browser)
+      // - SpellCheckHostChromeImpl::OnDictionariesInitialized (Browser)
+      // - SpellcheckProvider::OnRespondInitializeDictionaries (Renderer)
       GetSpellCheckHost().InitializeDictionaries(
-          base::BindOnce(&SpellCheckProvider::RequestTextCheckingFromBrowser,
+          base::BindOnce(&SpellCheckProvider::OnRespondInitializeDictionaries,
                          weak_factory_.GetWeakPtr(), text));
       return;
     }
@@ -169,7 +176,6 @@ void SpellCheckProvider::RequestTextCheckingFromBrowser(
     const base::string16& text) {
   DCHECK(spellcheck::UseBrowserSpellChecker());
 #if defined(OS_WIN)
-  dictionaries_loaded_ = true;
 
   // Determine whether a hybrid check is needed.
   bool use_hunspell = spellcheck_->EnabledLanguageCount() > 0;
@@ -209,6 +215,27 @@ void SpellCheckProvider::RequestTextCheckingFromBrowser(
       base::BindOnce(&SpellCheckProvider::OnRespondTextCheck,
                      weak_factory_.GetWeakPtr(), last_identifier_, text));
 }
+
+#if defined(OS_WIN)
+void SpellCheckProvider::OnRespondInitializeDictionaries(
+    const base::string16& text,
+    std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries,
+    const std::vector<std::string>& custom_words,
+    bool enable) {
+  DCHECK(!dictionaries_loaded_);
+  dictionaries_loaded_ = true;
+
+  // Because the SpellChecker and SpellCheckHost mojo interfaces use different
+  // channels, there is no guarantee that the SpellChecker::Initialize response
+  // will be received before the SpellCheckHost::InitializeDictionaries
+  // callback. If the order is reversed, no spellcheck will be performed since
+  // the renderer side thinks there are no dictionaries available. Ensure that
+  // the SpellChecker is initialized before performing a spellcheck.
+  spellcheck_->Initialize(std::move(dictionaries), custom_words, enable);
+
+  RequestTextCheckingFromBrowser(text);
+}
+#endif  // defined(OS_WIN)
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 void SpellCheckProvider::FocusedElementChanged(

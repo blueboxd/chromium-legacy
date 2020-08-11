@@ -102,15 +102,15 @@ class SwapChainPresenter : public base::PowerObserver {
   // |use_yuv_swap_chain| is true, or BGRA otherwise.  Sets flags based on
   // |protected_video_type|. Returns true on success.
   bool ReallocateSwapChain(const gfx::Size& swap_chain_size,
-                           bool use_yuv_swap_chain,
+                           DXGI_FORMAT swap_chain_format,
                            gfx::ProtectedVideoType protected_video_type,
                            bool z_order,
                            bool content_is_hdr);
 
-  // Returns true if YUV swap chain should be preferred over BGRA swap chain.
+  // Returns DXGI format that swap chain uses.
   // This changes over time based on stats recorded in |presentation_history|.
-  bool ShouldUseYUVSwapChain(gfx::ProtectedVideoType protected_video_type,
-                             bool content_is_hdr);
+  DXGI_FORMAT GetSwapChainFormat(gfx::ProtectedVideoType protected_video_type,
+                                 bool content_is_hdr);
 
   // Perform a blit using video processor from given input texture to swap chain
   // backbuffer. |input_texture| is the input texture (array), and |input_level|
@@ -172,8 +172,8 @@ class SwapChainPresenter : public base::PowerObserver {
   // Current size of swap chain.
   gfx::Size swap_chain_size_;
 
-  // Whether the current swap chain is using the preferred YUV format.
-  bool is_yuv_swapchain_ = false;
+  // Current swap chain format.
+  DXGI_FORMAT swap_chain_format_;
 
   // Whether the swap chain was reallocated, and next present will be the first.
   bool first_present_ = false;

@@ -4,11 +4,9 @@ PASS cross-origin > w => w.close()
 PASS cross-origin > w => w.closed
 PASS cross-origin > w => w.focus()
 PASS cross-origin > w => w.frames
-FAIL cross-origin > w => w[0] assert_not_equals: Report not received got disallowed value "timeout"
 PASS cross-origin > w => w.length
 PASS cross-origin > w => w.location
 PASS cross-origin > w => w.location = "#"
-FAIL cross-origin > w => w["test"] assert_not_equals: Report not received got disallowed value "timeout"
 PASS cross-origin > w => w.opener
 FAIL cross-origin > w => w.opener = "" assert_not_equals: Report not received got disallowed value "timeout"
 PASS cross-origin > w => w.postMessage("")
@@ -21,11 +19,9 @@ PASS same-site > w => w.close()
 PASS same-site > w => w.closed
 PASS same-site > w => w.focus()
 PASS same-site > w => w.frames
-FAIL same-site > w => w[0] assert_not_equals: Report not received got disallowed value "timeout"
 PASS same-site > w => w.length
 PASS same-site > w => w.location
 PASS same-site > w => w.location = "#"
-FAIL same-site > w => w["test"] assert_not_equals: Report not received got disallowed value "timeout"
 PASS same-site > w => w.opener
 PASS same-site > w => w.opener = ""
 PASS same-site > w => w.postMessage("")

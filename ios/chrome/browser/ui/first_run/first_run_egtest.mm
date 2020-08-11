@@ -81,8 +81,7 @@ id<GREYMatcher> SkipSigninButton() {
 }
 
 // Toggle the UMA checkbox.
-// TODO(crbug.com/1109117): Test is flaky.
-- (void)DISABLED_testToggleMetricsOn {
+- (void)testToggleMetricsOn {
   [FirstRunAppInterface showFirstRunUI];
 
   id<GREYMatcher> metrics =

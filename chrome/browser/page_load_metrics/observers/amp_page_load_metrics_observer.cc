@@ -260,7 +260,7 @@ void AMPPageLoadMetricsObserver::OnLoadingBehaviorObserved(
 }
 
 void AMPPageLoadMetricsObserver::RecordLoadingBehaviorObserved() {
-  ukm::builders::AmpPageLoad builder(GetDelegate().GetSourceId());
+  ukm::builders::AmpPageLoad builder(GetDelegate().GetPageUkmSourceId());
   bool should_record = false;
   if (!observed_amp_main_frame_ &&
       (GetDelegate().GetMainFrameMetadata().behavior_flags &

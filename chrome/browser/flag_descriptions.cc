@@ -332,8 +332,8 @@ const char kAutoScreenBrightnessName[] = "Auto Screen Brightness model";
 const char kAutoScreenBrightnessDescription[] =
     "Uses Auto Screen Brightness ML model (if it exists) to adjust screen "
     "brightness based on ambient light. If disabled, screen brightness "
-    "will be controlled by the heuristic method from power (and only on "
-    "devices that have ambient light sensors).";
+    "will be controlled by the heuristic model provided by powerd (and only "
+    "on devices that have ambient light sensors).";
 
 const char kAvatarToolbarButtonName[] = "Avatar Toolbar Button";
 const char kAvatarToolbarButtonDescription[] =
@@ -3998,6 +3998,11 @@ const char kFilesZipNoNaClName[] = "New ZIP handling in Files App";
 const char kFilesZipNoNaClDescription[] =
     "Enable new ZIP archive handling in Files App which does not rely on NaCl.";
 
+extern const char kFiltersInRecentsName[] = "Enable filters in Recents";
+extern const char kFiltersInRecentsDescription[] =
+    "Enable file-type filters (Audio, Images, Videos) in Files App Recents "
+    "view.";
+
 const char kFrameThrottleFpsName[] = "Set frame throttling fps.";
 const char kFrameThrottleFpsDescription[] =
     "Set the throttle fps for compositor frame submission.";
@@ -4147,6 +4152,10 @@ const char kReleaseNotesName[] = "CrOS Release Notes.";
 const char kReleaseNotesDescription[] =
     "Creates release notes app in settings menu that shows a webview "
     "describing new OS features.";
+
+const char kReleaseNotesNotificationName[] = "Release Notes Notification";
+const char kReleaseNotesNotificationDescription[] =
+    "Enables the release notes notification and suggestion chip";
 
 const char kScanningUIName[] = "Scanning UI";
 const char kScanningUIDescription[] =

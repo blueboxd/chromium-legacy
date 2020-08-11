@@ -26,13 +26,16 @@ void DoCanonicalizePathComponent(const CHAR* source,
     if (separator)
       output->push_back(separator);
     // Copy the path using path URL's more lax escaping rules (think for
-    // javascript:). We convert to UTF-8 and escape non-ASCII, but leave all
-    // ASCII characters alone. This helps readability of JavaStript.
+    // javascript:). We convert to UTF-8 and escape characters from the
+    // C0 control percent-encode set, but leave all other characters alone.
+    // This helps readability of JavaScript.
+    // https://url.spec.whatwg.org/#cannot-be-a-base-url-path-state
+    // https://url.spec.whatwg.org/#c0-control-percent-encode-set
     new_component->begin = output->length();
     int end = component.end();
     for (int i = component.begin; i < end; i++) {
       UCHAR uch = static_cast<UCHAR>(source[i]);
-      if (uch < 0x20 || uch >= 0x80)
+      if (uch < 0x20 || uch > 0x7E)
         AppendUTF8EscapedChar(source, &i, end, output);
       else
         output->push_back(static_cast<char>(uch));

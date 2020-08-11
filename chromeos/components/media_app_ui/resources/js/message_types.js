@@ -51,7 +51,14 @@ let DeleteFileResponse;
 
 /**
  * Representation of a file passed in on the LoadFilesMessage.
- * @typedef {{token: number, file: ?File, name: string, error: string}}
+ * @typedef {{
+ *    token: number,
+ *    file: ?File,
+ *    name: string,
+ *    error: string,
+ *    canDelete: boolean,
+ *    canRename: boolean
+ * }}
  */
 let FileContext;
 

@@ -10,7 +10,7 @@ namespace blink {
 // These are constants for the various keywords allowed for the battery-savings
 // meta element. For instance:
 //
-// <meta name="battery-savings" content="allow-reduced-frame-rate">
+// <meta name="battery-savings" content="allow-reduced-framerate">
 //
 // These constants are bits which can be combined.
 enum WebBatterySavings {

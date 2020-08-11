@@ -65,7 +65,6 @@ MATCHER_P3(MatchesLoginAndRealm, username, password, signon_realm, "") {
 const char kTestUserEmail[] = "user@email.com";
 const char kExampleHostname[] = "www.example.com";
 const char kExamplePslHostname[] = "psl.example.com";
-const char kFakeGaiaHostname[] = "fake.gaia.com";
 
 // Note: This helper applies to ChromeOS too, but is currently unused there. So
 // define it out to prevent a compile error due to the unused function.
@@ -146,14 +145,12 @@ class PasswordManagerSyncTest : public SyncTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Make sure that fake Gaia pages served by the test server match the Gaia
-    // URL (as specified by GaiaUrls::gaia_url()). Note that apart from the
-    // hostname, it's necessary to override the port to the one used by the test
-    // server.
-    // TODO(crbug.com/1112789): Use the real host name "accounts.google.com"
-    // instead of kFakeGaiaHostname.
+    // URL (as specified by GaiaUrls::gaia_url()). Note that even though the
+    // hostname is the same, it's necessary to override the port to the one used
+    // by the test server.
     command_line->AppendSwitchASCII(
         switches::kGaiaUrl,
-        https_test_server()->GetURL(kFakeGaiaHostname, "/").spec());
+        https_test_server()->GetURL("accounts.google.com", "/").spec());
 
     mock_cert_verifier_.SetUpCommandLine(command_line);
   }
@@ -738,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   // Navigate to a Gaia signin form and submit a credential for the primary
   // account.
-  NavigateToFileHttps(web_contents, kFakeGaiaHostname,
+  NavigateToFileHttps(web_contents, "accounts.google.com",
                       "/password/simple_password.html");
   FillAndSubmitPasswordForm(web_contents, kTestUserEmail, "pass");
 
@@ -759,7 +756,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   // Navigate to a Gaia signin form and submit a credential for an account that
   // is *not* the primary one.
-  NavigateToFileHttps(web_contents, kFakeGaiaHostname,
+  NavigateToFileHttps(web_contents, "accounts.google.com",
                       "/password/simple_password.html");
   FillAndSubmitPasswordForm(web_contents, "different-user@gmail.com", "pass");
 
@@ -774,8 +771,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // The password for the primary account is already saved.
-  AddLocalCredential(CreateTestPasswordForm(kTestUserEmail, "pass",
-                                            GetHttpsOrigin(kFakeGaiaHostname)));
+  AddLocalCredential(CreateTestPasswordForm(
+      kTestUserEmail, "pass", GetHttpsOrigin("accounts.google.com")));
 
   SetupSyncTransportWithPasswordAccountStorage();
 
@@ -784,7 +781,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   // Navigate to a Gaia signin form and submit a new password for the primary
   // account.
-  NavigateToFileHttps(web_contents, kFakeGaiaHostname,
+  NavigateToFileHttps(web_contents, "accounts.google.com",
                       "/password/simple_password.html");
   FillAndSubmitPasswordForm(web_contents, kTestUserEmail, "newpass");
 

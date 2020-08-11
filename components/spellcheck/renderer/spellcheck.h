@@ -172,6 +172,15 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
   // Overridden by tests in spellcheck_provider_test.cc (FakeSpellCheck class).
   virtual size_t EnabledLanguageCount();
 
+  // spellcheck::mojom::SpellChecker:
+  // Initialize the SpellCheck object with data provided by the browser process.
+  // Method is public since called directly in
+  // SpellCheckProvider::OnRespondInitializeDictionaries.
+  void Initialize(
+      std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries,
+      const std::vector<std::string>& custom_words,
+      bool enable) override;
+
  private:
    friend class SpellCheckTest;
    friend class FakeSpellCheck;
@@ -180,10 +189,6 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
        RequestSpellCheckMultipleTimesWithoutInitialization);
 
    // spellcheck::mojom::SpellChecker:
-   void Initialize(
-       std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries,
-       const std::vector<std::string>& custom_words,
-       bool enable) override;
    void CustomDictionaryChanged(
        const std::vector<std::string>& words_added,
        const std::vector<std::string>& words_removed) override;

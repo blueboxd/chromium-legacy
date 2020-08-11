@@ -15,26 +15,37 @@ struct KeywordHeuristicTestCase {
   const bool should_trigger;
 };
 
+// Verify behavior of the "Sensitive Keywords" heuristic, which, triggers when
+// it finds a keyword (like a popular brand name) in a hostname unexpectedly.
 TEST(SafetyTipHeuristicsTest, SensitiveKeywordsTest) {
   // These keywords must always be in sorted order.
   const std::vector<const char*> keywords = {"bad", "evil", "keyword"};
 
   const std::vector<KeywordHeuristicTestCase> test_cases = {
       // Verify scheme doesn't affect results.
-      {GURL("http://www.bad.com"), false},
-      {GURL("https://www.bad.com"), false},
-
+      {GURL("http://good-domain.com"), false},
+      {GURL("https://good-domain.com"), false},
       {GURL("http://bad-domain.com"), true},
       {GURL("https://bad-domain.com"), true},
 
-      // We don't really care about sub-domains for this heuristic, verify this
-      // works as expected.
-      {GURL("http://www.evil-domain.safe-domain.com"), false},
-      {GURL("http://www.safe-domain.evil-domain.com"), true},
+      // Verify detection works in subdomains.
+      {GURL("http://www.domain.evil.safe-domain.com"), true},
+      {GURL("http://www.evil-domain.safe-domain.com"), true},
+      {GURL("http://evil.domain.safe-domain.com"), true},
 
+      // e2LDs that are a sensitive keyword themselves should *not* trigger the
+      // heuristic, but they shouldn't prevent the heuristic from triggering for
+      // other reasons.
+      {GURL("http://www.bad.com"), false},
+      {GURL("http://bad.com"), false},
+      {GURL("http://evil.bad.com"), true},
+
+      // Verify keywords still in the e2LD no matter where they fall.
+      {GURL("http://www.good-and-bad.com"), true},
       {GURL("http://www.bad-other.edu"), true},
       {GURL("http://bad-keyword.com"), true},
       {GURL("http://www.evil-and-bad.com"), true},
+      {GURL("http://www.good-evil-neutral.com"), true},
 
       // Make sure heuristic still works, even for really long domains.
       {GURL("http://"
@@ -167,7 +178,7 @@ TEST(SafetyTipHeuristicsTest, SensitiveKeywordsTest) {
               ShouldTriggerSafetyTipFromKeywordInURL(
                   test_case.url, test_case_navigated_domain, keywords.data(),
                   keywords.size()))
-        << "Expected that \"" << test_case.url << "\" should"
+        << "Expected that \"" << test_case.url << "\" would"
         << (test_case.should_trigger ? "" : "n't") << " trigger but it did"
         << (test_case.should_trigger ? "n't" : "");
   }

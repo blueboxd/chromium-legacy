@@ -269,6 +269,7 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/smart_inputs_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_multidevice_browser_proxy.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_languages_browser_proxy.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_languages_metrics_proxy.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_lifetime_browser_proxy.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_reset_browser_proxy.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_sync_browser_proxy.m.js",

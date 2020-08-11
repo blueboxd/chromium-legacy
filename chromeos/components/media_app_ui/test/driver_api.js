@@ -33,10 +33,24 @@ let TestMessageQueryData;
 let TestMessageRunTestCase;
 
 /**
+ * Subset of mediaApp.AbstractFile that can be serialized. The fields
+ * `hasDelete` and `hasRename` indicate whether the methods are defined.
+ * @typedef {{
+ *    blob: !Blob,
+ *    name: string,
+ *    size: number,
+ *    mimeType: string,
+ *    fromClipboard: (boolean|undefined),
+ *    error: (string|undefined),
+ *    hasDelete: boolean,
+ *    hasRename: boolean,
+ * }}
+ */
+let FileSnapshot;
+
+/**
  * Return type of `get-last-loaded-files` used to spy on the files sent to the
- * guest app using `loadFiles()`. We pass `ReceivedFileList.files` since passing
- * `ReceivedFileList` through different contexts prunes methods and fails due to
- * observers.
- * @typedef {{fileList: ?Array<!mediaApp.AbstractFile>}}
+ * guest app using `loadFiles()`.
+ * @typedef {{fileList: ?Array<!FileSnapshot>}}
  */
 let LastLoadedFilesResponse;

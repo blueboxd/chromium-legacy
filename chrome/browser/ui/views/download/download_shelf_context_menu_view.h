@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_shelf_context_menu.h"
 #include "ui/base/ui_base_types.h"
@@ -27,6 +26,9 @@ class Widget;
 class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
  public:
   explicit DownloadShelfContextMenuView(DownloadItemView* download_item_view);
+  DownloadShelfContextMenuView(const DownloadShelfContextMenuView&) = delete;
+  DownloadShelfContextMenuView& operator=(const DownloadShelfContextMenuView&) =
+      delete;
   ~DownloadShelfContextMenuView() override;
 
   base::TimeTicks close_time() const { return close_time_; }
@@ -51,8 +53,6 @@ class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
 
   // Time the menu was closed.
   base::TimeTicks close_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadShelfContextMenuView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_CONTEXT_MENU_VIEW_H_

@@ -31,10 +31,6 @@ const base::Feature kInvalidateBookmarkSyncMetadataIfMismatchingGuid{
     "InvalidateBookmarkSyncMetadataIfMismatchingGuid",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-extern const base::Feature kInvalidateBookmarkSyncMetadataIfClientTagDuplicates{
-    "InvalidateBookmarkSyncMetadataIfClientTagDuplicates",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // TODO(crbug.com/1032052): Enable by default once UMA metric
 // Sync.BookmarkModelMetadataClientTagState suggests that most users have
 // received client tag hashes (final GUIDs).
@@ -581,9 +577,7 @@ SyncedBookmarkTracker::InitEntitiesFromModelAndMetadata(
               bookmark_metadata.metadata().client_tag_hash());
       const bool new_element =
           used_client_tag_hashes.insert(client_tag_hash).second;
-      if (!new_element &&
-          base::FeatureList::IsEnabled(
-              kInvalidateBookmarkSyncMetadataIfClientTagDuplicates)) {
+      if (!new_element) {
         DLOG(ERROR) << "Error when decoding sync metadata: Duplicated client "
                        "tag hash.";
         return CorruptionReason::DUPLICATED_CLIENT_TAG_HASH;

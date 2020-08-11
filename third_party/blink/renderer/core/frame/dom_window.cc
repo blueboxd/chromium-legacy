@@ -165,7 +165,9 @@ void DOMWindow::postMessage(v8::Isolate* isolate,
                 options, incumbent_window, exception_state);
 }
 
-DOMWindow* DOMWindow::AnonymousIndexedGetter(uint32_t index) const {
+DOMWindow* DOMWindow::AnonymousIndexedGetter(uint32_t index) {
+  ReportCoopAccess(window_proxy_manager_->GetIsolate(), "indexed");
+
   if (!GetFrame())
     return nullptr;
 

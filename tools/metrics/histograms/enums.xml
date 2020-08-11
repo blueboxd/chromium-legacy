@@ -24185,6 +24185,8 @@ Called by update_extension_histograms.py.-->
   <int value="1494" label="INPUTMETHODPRIVATE_GETAUTOCORRECTRANGE"/>
   <int value="1495" label="FILEMANAGERPRIVATEINTERNAL_SHARESHEETHASTARGETS"/>
   <int value="1496" label="FILEMANAGERPRIVATEINTERNAL_INVOKESHARESHEET"/>
+  <int value="1497" label="FILEMANAGERPRIVATEINTERNAL_GETCONTENTMIMETYPE"/>
+  <int value="1498" label="FILEMANAGERPRIVATEINTERNAL_GETCONTENTMETADATA"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -40520,6 +40522,7 @@ from previous Chrome versions.
   <int value="-1535758690" label="AutoplayIgnoreWebAudio:disabled"/>
   <int value="-1535694535" label="PageInfoPerformanceHints:enabled"/>
   <int value="-1533258008" label="CalculateNativeWinOcclusion:enabled"/>
+  <int value="-1532645183" label="ReleaseNotesNotification:enabled"/>
   <int value="-1532035450" label="DragTabsInTabletMode:disabled"/>
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1530711962" label="PrivacyElevatedAndroid:disabled"/>
@@ -41609,6 +41612,7 @@ from previous Chrome versions.
   <int value="-400584764" label="ChromeHomeNtpRedesign:enabled"/>
   <int value="-400572959" label="UseDownloadOfflineContentProvider:enabled"/>
   <int value="-400098787" label="QuietNotificationPrompts:enabled"/>
+  <int value="-399333540" label="FiltersInRecents:disabled"/>
   <int value="-398922143" label="IframeOneGoogleBar:enabled"/>
   <int value="-398623652" label="CCTTargetTranslateLanguage:enabled"/>
   <int value="-397959190" label="ClipboardHistory:enabled"/>
@@ -42965,6 +42969,7 @@ from previous Chrome versions.
   <int value="1082054180" label="PersistentWindowBounds:disabled"/>
   <int value="1083020187" label="FractionalScrollOffsets:enabled"/>
   <int value="1083201516" label="PersistentWindowBounds:enabled"/>
+  <int value="1084365949" label="ReleaseNotesNotification:disabled"/>
   <int value="1084972292" label="WebXRAnchors:enabled"/>
   <int value="1085130793" label="LongPressBackForHistory:disabled"/>
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>
@@ -43558,6 +43563,7 @@ from previous Chrome versions.
   <int value="1707283026" label="SyncPseudoUSSExtensions:disabled"/>
   <int value="1708118086" label="TextFragmentAnchor:disabled"/>
   <int value="1711286384" label="ContextMenuCopyImage:disabled"/>
+  <int value="1712880335" label="FiltersInRecents:enabled"/>
   <int value="1713230497" label="ColorCorrectRendering:disabled"/>
   <int value="1714016217" label="EnableHeuristicPalmDetectionFilter:enabled"/>
   <int value="1714922056" label="GlobalMediaControls:disabled"/>

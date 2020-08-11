@@ -905,6 +905,12 @@ void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
           paint_info.context, GetDisplayItemClient(), paint_info.phase))
     return;
 
+  if (physical_box_fragment.IsFieldsetContainer()) {
+    NGFieldsetPainter(box_fragment_)
+        .PaintMask(paint_info, paint_offset, BorderEdges());
+    return;
+  }
+
   // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
   BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
       box_fragment_.GetLayoutObject()));

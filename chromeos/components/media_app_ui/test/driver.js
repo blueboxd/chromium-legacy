@@ -430,7 +430,7 @@ function assertMatch(string, regex, opt_message = undefined) {
 
 /**
  * Returns the files loaded in the most recent call to `loadFiles()`.
- * @return {!Promise<?Array<!mediaApp.AbstractFile>>}
+ * @return {!Promise<?Array<!FileSnapshot>>}
  */
 async function getLoadedFiles() {
   const response = /** @type {!LastLoadedFilesResponse} */ (

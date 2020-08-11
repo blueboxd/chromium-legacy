@@ -72,7 +72,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   static bool AreScaledOverlaysSupported();
 
   // Returns preferred overlay format set when detecting overlay support.
-  static DXGI_FORMAT GetOverlayFormatUsed();
+  static DXGI_FORMAT GetOverlayFormatUsedForSDR();
 
   // Returns monitor size.
   static gfx::Size GetOverlayMonitorSize();

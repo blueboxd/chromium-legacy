@@ -123,8 +123,9 @@ class SelectionControllerTest : public ::testing::Test {
         ui::MouseEvent(ui::ET_MOUSE_PRESSED, location, location,
                        last_event_time_, mouse_flags_, button),
         false,
-        focused ? SelectionController::FOCUSED
-                : SelectionController::UNFOCUSED);
+        focused
+            ? SelectionController::InitialFocusStateOnMousePress::kFocused
+            : SelectionController::InitialFocusStateOnMousePress::kUnFocused);
   }
 
   void ReleaseMouseButton(int button) {

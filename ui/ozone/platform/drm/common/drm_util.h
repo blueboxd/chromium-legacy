@@ -98,6 +98,8 @@ float ModeRefreshRate(const drmModeModeInfo& mode);
 
 bool ModeIsInterlaced(const drmModeModeInfo& mode);
 
+uint64_t GetEnumValueForName(int fd, int property_id, const char* str);
+
 }  // namespace ui
 
 #endif  // UI_OZONE_PLATFORM_DRM_COMMON_DRM_UTIL_H_

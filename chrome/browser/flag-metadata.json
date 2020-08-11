@@ -2441,6 +2441,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "files-filters-in-recents",
+    "owners": [ "fukino", "weifangsun" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "files-ng",
     "owners": [ "adanilo", "noel" ],
     "expiry_milestone": 88
@@ -3770,6 +3775,11 @@
     "name": "release-notes",
     "owners": [ "yulunwu" ],
     "expiry_milestone": 79
+  },
+  {
+    "name": "release-notes-notification",
+    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
+    "expiry_milestone": 90
   },
   {
     "name": "reload-sad-tab",

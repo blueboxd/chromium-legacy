@@ -327,6 +327,27 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP" desc="The label used in the tray popup to tell the user we are casting the desktop.">
         Casting screen to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle the Dark Mode feature (which controls the color temperature of the screen) on or off. [CHAR_LIMIT=14]">
+        Dark Mode
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_TOGGLE_TOOLTIP" desc="The tooltip text used for the button in the status tray to toggle the Dark Mode feature (which controls the color temperature of the screen) on or off.">
+        Toggle Dark Mode. <ph name="STATE_TEXT">$1<ex>Dark Mode is on.</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_ENABLED_STATE_TOOLTIP" desc="The tooltip text indicating the Dark Mode feature is on.">
+        Dark Mode is on.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_DISABLED_STATE_TOOLTIP" desc="The tooltip text indicating the Dark Mode feature is off.">
+        Dark Mode is off.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_SETTINGS_TOOLTIP" desc="The tooltip text used for the button in the status tray to show the Dark Mode feature (which controls the color temperature of the screen) settings.">
+        Show dark mode settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_OFF_STATE" desc="Button label for the Dark Mode feature." meaning="Dark Mode feature is off. [CHAR_LIMIT=14]">
+        Off
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_ON_STATE" desc="Button label for the Dark Mode feature." meaning="Dark Mode feature is on. [CHAR_LIMIT=14]">
+        On
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP_ACCESSIBILITY_STOP" desc="Stop button accessibility label used in the tray popup to tell the user to stop a cast to the desktop.">
         Stop casting screen to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
       </message>

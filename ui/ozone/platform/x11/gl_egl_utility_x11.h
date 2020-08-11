@@ -23,6 +23,7 @@ class GLEGLUtilityX11 : public PlatformGLEGLUtility {
       std::vector<EGLAttrib>* display_attributes) override;
   void ChooseEGLAlphaAndBufferSize(EGLint* alpha_size,
                                    EGLint* buffer_size) override;
+  bool IsTransparentBackgroundSupported() const override;
 };
 
 }  // namespace ui

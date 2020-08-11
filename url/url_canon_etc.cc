@@ -245,10 +245,9 @@ bool DoPort(const CHAR* spec,
 }
 
 // clang-format off
-//   Percent-escape all "C0 controls" (0x00-0x1F)
-//   https://infra.spec.whatwg.org/#c0-control along with the characters ' '
-//   (0x20), '"' (0x22), '<' (0x3C), '>' (0x3E), and '`' (0x60):
-const bool kShouldEscapeCharInRef[0x80] = {
+//   Percent-escape all characters from the fragment percent-encode set
+//   https://url.spec.whatwg.org/#fragment-percent-encode-set
+const bool kShouldEscapeCharInFragment[0x80] = {
 //  Control characters (0x00-0x1F)
     true,  true,  true,  true,  true,  true,  true,  true,
     true,  true,  true,  true,  true,  true,  true,  true,
@@ -276,8 +275,8 @@ const bool kShouldEscapeCharInRef[0x80] = {
     false, false, false, false, false, false, false, false,
 //  p      q      r      s      t      u      v      w
     false, false, false, false, false, false, false, false,
-//  x      y      z      {      |      }      ~
-    false, false, false, false, false, false, false
+//  x      y      z      {      |      }      ~      DELETE
+    false, false, false, false, false, false, false, true
 };
 // clang-format on
 
@@ -307,7 +306,7 @@ void DoCanonicalizeRef(const CHAR* spec,
 
     UCHAR current_char = static_cast<UCHAR>(spec[i]);
     if (current_char < 0x80) {
-      if (kShouldEscapeCharInRef[current_char])
+      if (kShouldEscapeCharInFragment[current_char])
         AppendEscapedChar(static_cast<unsigned char>(spec[i]), output);
       else
         output->push_back(static_cast<char>(spec[i]));

@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/accessible_pane_view.h"
@@ -36,6 +35,8 @@ class DownloadShelfView : public DownloadShelf,
                           public views::MouseWatcherListener {
  public:
   DownloadShelfView(Browser* browser, BrowserView* parent);
+  DownloadShelfView(const DownloadShelfView&) = delete;
+  DownloadShelfView& operator=(const DownloadShelfView&) = delete;
   ~DownloadShelfView() override;
 
   // DownloadShelf:
@@ -108,8 +109,6 @@ class DownloadShelfView : public DownloadShelf,
   BrowserView* parent_;
 
   views::MouseWatcher mouse_watcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadShelfView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_VIEW_H_

@@ -37,7 +37,7 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   container_builder_.SetIsNewFormattingContext(
       physical_fragment.IsFormattingContextRoot());
 
-  if (is_block_flow) {
+  if (is_block_flow && !physical_fragment.IsFieldsetContainer()) {
     container_builder_.SetIsInlineFormattingContext(
         Node().IsInlineFormattingContextRoot());
     container_builder_.SetStyleVariant(physical_fragment.StyleVariant());

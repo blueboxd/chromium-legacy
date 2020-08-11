@@ -249,6 +249,14 @@ enum CrostiniEventType {
   unshare
 };
 
+// Metadata extraction types for getContentMetadata().
+enum ContentMetadataType {
+  // Extract metadata tags and images.
+  metadataTagsImages,
+  // Extract metadata tags only.
+  metadataTags
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -715,6 +723,56 @@ dictionary AndroidApp {
   IconSet? iconSet;
 };
 
+dictionary StreamInfo {
+  // The stream type e.g., "mp3", "h264", "ogg".
+  DOMString type;
+
+  // An unfiltered string->string dictionary of tags from the stream.
+  object tags;
+};
+
+dictionary AttachedImages {
+  // Data encoded as a dataURL.
+  DOMString data;
+
+  // Data type.
+  DOMString type;
+};
+
+dictionary MediaMetadata {
+  // Content mime type.
+  DOMString mimeType;
+
+  // Defined for video. In pixels.
+  long? height;
+  long? width;
+
+  // Defined for audio and video. In seconds.
+  double? duration;
+
+  // Defined for video. In degrees.
+  long? rotation;
+
+  // Defined for audio and video.
+  DOMString? album;
+  DOMString? artist;
+  DOMString? comment;
+  DOMString? copyright;
+  long? disc;
+  DOMString? genre;
+  DOMString? language;
+  DOMString? title;
+  long? track;
+
+  // All the metadata in the media file. For formats with multiple streams,
+  // stream order is preserved. Container metadata is the first stream.
+  StreamInfo[] rawTags;
+
+  // Raw images embedded in the media file. This is most often audio album
+  // art or video thumbnails.
+  AttachedImages[] attachedImages;
+};
+
 // Callback that does not take arguments.
 callback SimpleCallback = void();
 
@@ -729,6 +787,12 @@ callback GetFileTasksCallback = void(FileTask[] tasks);
 
 // |result| Mime type of the file.
 callback GetMimeTypeCallback = void(DOMString result);
+
+// |result| Content sniffed mime type of the file.
+callback GetContentMimeTypeCallback = void(DOMString result);
+
+// |result| Metadata of the Audio or Video file.
+callback GetContentMetadataCallback = void(MediaMetadata result);
 
 // |result| Hash containing the string assets.
 callback GetStringsCallback = void(object result);
@@ -884,6 +948,24 @@ interface Functions {
   [nocompile]
   static void getMimeType([instanceof=Entry] object entry,
                           GetMimeTypeCallback callback);
+
+  // Gets the content sniffed MIME type of a file.
+  // |fileBlob| Blob created from the file.
+  // |callback|
+  [nocompile]
+  static void getContentMimeType([instanceof=Blob] object fileBlob,
+                                 GetContentMimeTypeCallback callback);
+
+  // Gets metadata from an Audio or Video file.
+  // |fileBlob| Blob created from the file.
+  // |mimeType| Content sniffed mimeType of the file.
+  // |type| Content metadata type to extact.
+  // |callback|
+  [nocompile]
+  static void getContentMetadata([instanceof=Blob] object fileBlob,
+                                 DOMString mimeType,
+                                 ContentMetadataType type,
+                                 GetContentMetadataCallback callback);
 
   // Gets localized strings and initialization data.
   // |callback|

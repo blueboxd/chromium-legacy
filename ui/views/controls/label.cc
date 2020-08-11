@@ -731,8 +731,9 @@ bool Label::OnMousePressed(const ui::MouseEvent& event) {
 
   return selection_controller_->OnMousePressed(
       event, false,
-      had_focus ? SelectionController::FOCUSED
-                : SelectionController::UNFOCUSED);
+      had_focus
+          ? SelectionController::InitialFocusStateOnMousePress::kFocused
+          : SelectionController::InitialFocusStateOnMousePress::kUnFocused);
 }
 
 bool Label::OnMouseDragged(const ui::MouseEvent& event) {

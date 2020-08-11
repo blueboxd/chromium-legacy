@@ -185,8 +185,27 @@ function installTestHandlers() {
   parentMessagePipe.registerHandler('get-last-loaded-files', () => {
     //  Note: the `ReceivedFileList` has methods stripped since it gets sent
     //  over a pipe so just send the underlying files.
+    /**
+     * @param {!mediaApp.AbstractFile} file
+     * @return {!FileSnapshot}
+     */
+    function snapshot(file) {
+      const hasDelete = !!file.deleteOriginalFile;
+      const hasRename = !!file.renameOriginalFile;
+      const {blob, name, size, mimeType, fromClipboard, error} = file;
+      return {
+        blob,
+        name,
+        size,
+        mimeType,
+        fromClipboard,
+        error,
+        hasDelete,
+        hasRename
+      };
+    }
     return /** @type {!LastLoadedFilesResponse} */ (
-        {fileList: assertCast(lastReceivedFileList).files});
+        {fileList: assertCast(lastReceivedFileList).files.map(snapshot)});
   });
 
   // Log errors, rather than send them to console.error. This allows the error

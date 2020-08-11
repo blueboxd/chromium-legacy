@@ -167,8 +167,11 @@ void DedicatedWorkerHost::StartScriptLoad(
   const AppCacheNavigationHandle* appcache_handle =
       nearest_ancestor_render_frame_host->GetAppCacheNavigationHandle();
   if (appcache_handle) {
-    appcache_host = storage_partition_impl->GetAppCacheService()->GetHost(
-        appcache_handle->appcache_host_id());
+    auto* appcache_service = storage_partition_impl->GetAppCacheService();
+    if (appcache_service) {
+      appcache_host =
+          appcache_service->GetHost(appcache_handle->appcache_host_id());
+    }
   }
 
   // Set if the subresource loader factories support file URLs so that we can

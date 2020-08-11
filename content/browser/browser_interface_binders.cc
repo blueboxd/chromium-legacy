@@ -48,6 +48,7 @@
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
@@ -490,8 +491,10 @@ void BindVibrationManager(
 
 // Documents/frames
 void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
-  map->Add<blink::mojom::AppCacheBackend>(base::BindRepeating(
-      &RenderFrameHostImpl::CreateAppCacheBackend, base::Unretained(host)));
+  if (StoragePartition::IsAppCacheEnabled()) {
+    map->Add<blink::mojom::AppCacheBackend>(base::BindRepeating(
+        &RenderFrameHostImpl::CreateAppCacheBackend, base::Unretained(host)));
+  }
 
   map->Add<blink::mojom::AudioContextManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetAudioContextManager, base::Unretained(host)));
@@ -914,8 +917,10 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host, mojo::BinderMap* map) {
   // worker host binders
   // base::Unretained(host) is safe because the map is owned by
   // |SharedWorkerHost::broker_|.
-  map->Add<blink::mojom::AppCacheBackend>(base::BindRepeating(
-      &SharedWorkerHost::CreateAppCacheBackend, base::Unretained(host)));
+  if (StoragePartition::IsAppCacheEnabled()) {
+    map->Add<blink::mojom::AppCacheBackend>(base::BindRepeating(
+        &SharedWorkerHost::CreateAppCacheBackend, base::Unretained(host)));
+  }
   map->Add<blink::mojom::QuicTransportConnector>(base::BindRepeating(
       &SharedWorkerHost::CreateQuicTransportConnector, base::Unretained(host)));
   map->Add<blink::mojom::CacheStorage>(base::BindRepeating(

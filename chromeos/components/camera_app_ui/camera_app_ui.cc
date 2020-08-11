@@ -7,9 +7,8 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "chromeos/components/camera_app_ui/camera_app_helper_impl.h"
+#include "chromeos/components/camera_app_ui/resources.h"
 #include "chromeos/components/camera_app_ui/url_constants.h"
-#include "chromeos/grit/chromeos_camera_app_resources.h"
-#include "chromeos/grit/chromeos_camera_app_resources_map.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_context.h"
@@ -23,7 +22,6 @@
 #include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/webui/webui_allowlist.h"
@@ -32,37 +30,8 @@ namespace chromeos {
 
 namespace {
 
-const struct {
-  const char* path;
-  int id;
-} kGritResourceMap[] = {
-    {"src/js/browser_proxy/browser_proxy.js",
-     IDR_CAMERA_WEBUI_BROWSER_PROXY_JS},
-    {"src/js/mojo/camera_intent.mojom-lite.js",
-     IDR_CAMERA_CAMERA_INTENT_MOJOM_LITE_JS},
-    {"src/js/mojo/image_capture.mojom-lite.js",
-     IDR_CAMERA_IMAGE_CAPTURE_MOJOM_LITE_JS},
-    {"src/js/mojo/camera_common.mojom-lite.js",
-     IDR_CAMERA_CAMERA_COMMON_MOJOM_LITE_JS},
-    {"src/js/mojo/camera_metadata.mojom-lite.js",
-     IDR_CAMERA_CAMERA_METADATA_MOJOM_LITE_JS},
-    {"src/js/mojo/camera_metadata_tags.mojom-lite.js",
-     IDR_CAMERA_CAMERA_METADATA_TAGS_MOJOM_LITE_JS},
-    {"src/js/mojo/camera_app.mojom-lite.js",
-     IDR_CAMERA_CAMERA_APP_MOJOM_LITE_JS},
-    {"src/js/mojo/mojo_bindings_lite.js", IDR_MOJO_MOJO_BINDINGS_LITE_JS},
-    {"src/js/mojo/camera_app_helper.mojom-lite.js",
-     IDR_CAMERA_CAMERA_APP_HELPER_MOJOM_LITE_JS},
-    {"src/js/mojo/time.mojom-lite.js", IDR_CAMERA_TIME_MOJOM_LITE_JS},
-    {"src/js/mojo/idle_manager.mojom-lite.js",
-     IDR_CAMERA_IDLE_MANAGER_MOJOM_LITE_JS},
-    {"src/js/mojo/camera_app.mojom-lite.js",
-     IDR_CAMERA_CAMERA_APP_MOJOM_LITE_JS},
-    {"src/js/mojo/geometry.mojom-lite.js", IDR_CAMERA_GEOMETRY_MOJOM_LITE_JS},
-    {"src/js/mojo/range.mojom-lite.js", IDR_CAMERA_RANGE_MOJOM_LITE_JS},
-};
-
-content::WebUIDataSource* CreateCameraAppUIHTMLSource() {
+content::WebUIDataSource* CreateCameraAppUIHTMLSource(
+    CameraAppUIDelegate* delegate) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUICameraAppHost);
 
@@ -76,6 +45,12 @@ content::WebUIDataSource* CreateCameraAppUIHTMLSource() {
 
   for (const auto& res : kGritResourceMap) {
     source->AddResourcePath(res.path, res.id);
+  }
+
+  delegate->PopulateLoadTimeData(source);
+
+  for (const auto& str : kStringResourceMap) {
+    source->AddLocalizedString(str.name, str.id);
   }
 
   source->UseStringsJs();
@@ -141,6 +116,7 @@ CreateCameraAppDeviceProvider(const url::Origin& security_origin,
 }
 
 std::unique_ptr<chromeos_camera::CameraAppHelperImpl> CreateCameraAppHelper(
+    CameraAppUI* camera_app_ui,
     content::BrowserContext* browser_context,
     aura::Window* window) {
   DCHECK_NE(window, nullptr);
@@ -148,7 +124,7 @@ std::unique_ptr<chromeos_camera::CameraAppHelperImpl> CreateCameraAppHelper(
       base::BindRepeating(&HandleCameraResult, browser_context);
 
   return std::make_unique<chromeos_camera::CameraAppHelperImpl>(
-      std::move(handle_result_callback), window);
+      camera_app_ui, std::move(handle_result_callback), window);
 }
 
 }  // namespace
@@ -174,8 +150,9 @@ void CameraAppUI::ConnectToCameraAppHelper(
     content::RenderFrameHost* source,
     mojo::PendingReceiver<chromeos_camera::mojom::CameraAppHelper> receiver) {
   auto* window = source->GetNativeView()->GetToplevelWindow();
-  auto helper =
-      CreateCameraAppHelper(source->GetProcess()->GetBrowserContext(), window);
+  auto helper = CreateCameraAppHelper(
+      /*camera_app_ui=*/nullptr, source->GetProcess()->GetBrowserContext(),
+      window);
   mojo::MakeSelfOwnedReceiver(std::move(helper), std::move(receiver));
 }
 
@@ -207,7 +184,8 @@ CameraAppUI::CameraAppUI(content::WebUI* web_ui,
   delegate_->SetLaunchDirectory();
 
   // Set up the data source.
-  content::WebUIDataSource* source = CreateCameraAppUIHTMLSource();
+  content::WebUIDataSource* source =
+      CreateCameraAppUIHTMLSource(delegate_.get());
   content::WebUIDataSource::Add(browser_context, source);
 }
 
@@ -224,7 +202,7 @@ void CameraAppUI::BindInterface(
 void CameraAppUI::BindInterface(
     mojo::PendingReceiver<chromeos_camera::mojom::CameraAppHelper> receiver) {
   helper_ = CreateCameraAppHelper(
-      web_ui()->GetWebContents()->GetBrowserContext(), window());
+      this, web_ui()->GetWebContents()->GetBrowserContext(), window());
   helper_->Bind(std::move(receiver));
 }
 

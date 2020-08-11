@@ -234,7 +234,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       const override;
   const LargestContentfulPaintHandler&
   GetExperimentalLargestContentfulPaintHandler() const override;
-  ukm::SourceId GetSourceId() const override;
+  ukm::SourceId GetPageUkmSourceId() const override;
   bool IsFirstNavigationInWebContents() const override;
 
   void Redirect(content::NavigationHandle* navigation_handle);

@@ -181,7 +181,7 @@ export function onKeyPressed(event) {
       chrome.app.window.current().minimize();
       break;
     case 'Ctrl-V':
-      toast.show(browserProxy.getAppVersion());
+      toast.showDebugMessage(browserProxy.getAppVersion());
       break;
     case 'Ctrl-Shift-I':
       browserProxy.openInspector('normal');

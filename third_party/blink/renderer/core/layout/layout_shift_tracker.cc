@@ -485,9 +485,10 @@ void LayoutShiftTracker::SubmitPerformanceEntry(double score_delta,
   DCHECK(performance);
 
   double input_timestamp =
-      had_recent_input ? performance->MonotonicTimeToDOMHighResTimeStamp(
-                             most_recent_input_timestamp_)
-                       : 0.0;
+      most_recent_input_timestamp_initialized_
+          ? performance->MonotonicTimeToDOMHighResTimeStamp(
+                most_recent_input_timestamp_)
+          : 0.0;
   LayoutShift* entry =
       LayoutShift::Create(performance->now(), score_delta, had_recent_input,
                           input_timestamp, CreateAttributionList());

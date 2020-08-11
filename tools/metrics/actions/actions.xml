@@ -23533,6 +23533,27 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_Mic_Gain_Changed">
+  <owner>amehfooz@chromium.org tengs@chromium.org</owner>
+  <description>
+    The user changed the slider for mic gain in the audio detailed view.
+  </description>
+</action>
+
+<action name="StatusArea_Mic_Muted">
+  <owner>amehfooz@chromium.org tengs@chromium.org</owner>
+  <description>
+    The user muted the mic by pressing the mic mute button.
+  </description>
+</action>
+
+<action name="StatusArea_Mic_Unmuted">
+  <owner>amehfooz@chromium.org tengs@chromium.org</owner>
+  <description>
+    The user unmuted the mic by pressing the mic mute button
+  </description>
+</action>
+
 <action name="StatusArea_MonoAudioDisabled">
   <owner>minch@chromium.org</owner>
   <description>Ash system menu: Accessibility: Disable mono audio</description>

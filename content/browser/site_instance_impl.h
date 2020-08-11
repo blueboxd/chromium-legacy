@@ -19,6 +19,7 @@
 #include "url/origin.h"
 
 namespace content {
+class AgentSchedulingGroupHost;
 class BrowsingInstance;
 class ProcessLock;
 class RenderProcessHostFactory;
@@ -553,11 +554,16 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // BrowsingInstance to which this SiteInstance belongs.
   scoped_refptr<BrowsingInstance> browsing_instance_;
 
-  // Current RenderProcessHost that is rendering pages for this SiteInstance.
-  // This pointer will only change once the RenderProcessHost is destructed.  It
-  // will still remain the same even if the process crashes, since in that
-  // scenario the RenderProcessHost remains the same.
+  // Current RenderProcessHost that is rendering pages for this SiteInstance,
+  // and AgentSchedulingGroupHost (within the process) this SiteInstance belongs
+  // to. Since AgentSchedulingGroupHost is associated with a specific
+  // RenderProcessHost, these *must be* changed together to avoid UAF!
+  // The |process_| pointer (and hence the |agent_scheduling_group_| pointer as
+  // well) will only change once the RenderProcessHost is destructed. They will
+  // still remain the same even if the process crashes, since in that scenario
+  // the RenderProcessHost remains the same.
   RenderProcessHost* process_;
+  AgentSchedulingGroupHost* agent_scheduling_group_;
 
   // Describes the desired behavior when GetProcess() method needs to find a new
   // process to associate with the current SiteInstanceImpl.  If |false|, then

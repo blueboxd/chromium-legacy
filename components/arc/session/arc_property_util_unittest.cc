@@ -330,18 +330,18 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles) {
   std::string content;
   EXPECT_TRUE(
       base::ReadFileToString(dest_dir.Append("default.prop"), &content));
-  EXPECT_EQ(std::string(kDefaultProp), content);
+  EXPECT_EQ(std::string(kDefaultProp) + "\n", content);
   EXPECT_TRUE(base::ReadFileToString(dest_dir.Append("build.prop"), &content));
-  EXPECT_EQ(std::string(kBuildProp), content);
+  EXPECT_EQ(std::string(kBuildProp) + "\n", content);
   EXPECT_TRUE(
       base::ReadFileToString(dest_dir.Append("vendor_build.prop"), &content));
-  EXPECT_EQ(std::string(kVendorBuildProp), content);
+  EXPECT_EQ(std::string(kVendorBuildProp) + "\n", content);
 
   // Expand it again, verify the previous result is cleared.
   EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_dir, false, false));
   EXPECT_TRUE(
       base::ReadFileToString(dest_dir.Append("default.prop"), &content));
-  EXPECT_EQ(std::string(kDefaultProp), content);
+  EXPECT_EQ(std::string(kDefaultProp) + "\n", content);
 
   // If default.prop does not exist in the source path, it should still process
   // the other files, while also ensuring that default.prop is removed from the
@@ -351,10 +351,10 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles) {
   EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_dir, false, false));
 
   EXPECT_TRUE(base::ReadFileToString(dest_dir.Append("build.prop"), &content));
-  EXPECT_EQ(std::string(kBuildProp), content);
+  EXPECT_EQ(std::string(kBuildProp) + "\n", content);
   EXPECT_TRUE(
       base::ReadFileToString(dest_dir.Append("vendor_build.prop"), &content));
-  EXPECT_EQ(std::string(kVendorBuildProp), content);
+  EXPECT_EQ(std::string(kVendorBuildProp) + "\n", content);
 
   // Finally, test the case where source is valid but the dest is not.
   EXPECT_FALSE(ExpandPropertyFiles(source_dir, base::FilePath("/nonexistent"),
@@ -496,33 +496,36 @@ TEST_F(ArcPropertyUtilTest, TestNativeBridge64Support) {
   EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_dir, false, false));
   EXPECT_TRUE(
       base::ReadFileToString(dest_dir.Append("default.prop"), &content));
-  EXPECT_EQ(std::string(kDefaultProp), content);
+  EXPECT_EQ(std::string(kDefaultProp) + "\n", content);
   EXPECT_TRUE(base::ReadFileToString(dest_dir.Append("build.prop"), &content));
-  EXPECT_EQ(std::string(kBuildProp), content);
+  EXPECT_EQ(std::string(kBuildProp) + "\n", content);
   EXPECT_TRUE(
       base::ReadFileToString(dest_dir.Append("vendor_build.prop"), &content));
-  EXPECT_EQ(std::string(kVendorBuildProp), content);
+  EXPECT_EQ(std::string(kVendorBuildProp) + "\n", content);
 
   // Expand with experiment on, verify properties are added / modified in
   // build.prop but not other files.
   EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_dir, false, true));
   EXPECT_TRUE(
       base::ReadFileToString(dest_dir.Append("default.prop"), &content));
-  EXPECT_EQ(std::string(kDefaultProp), content);
+  EXPECT_EQ(std::string(kDefaultProp) + "\n", content);
   EXPECT_TRUE(base::ReadFileToString(dest_dir.Append("build.prop"), &content));
-  constexpr const char kBuildPropModified[] =
+  constexpr const char kBuildPropModifiedFirst[] =
       "ro.baz=boo\n"
       "ro.product.cpu.abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi\n"
-      "ro.product.cpu.abilist64=x86_64,arm64-v8a\n"
+      "ro.product.cpu.abilist64=x86_64,arm64-v8a\n";
+  constexpr const char kBuildPropModifiedSecond[] =
       "ro.dalvik.vm.isa.arm64=x86_64\n";
-  EXPECT_EQ(std::string(kBuildPropModified), content);
+  EXPECT_EQ(base::StringPrintf("%s\n%s", kBuildPropModifiedFirst,
+                               kBuildPropModifiedSecond),
+            content);
   EXPECT_TRUE(
       base::ReadFileToString(dest_dir.Append("vendor_build.prop"), &content));
   constexpr const char kVendorBuildPropModified[] =
       "ro.a=b\n"
       "ro.vendor.product.cpu.abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi\n"
       "ro.vendor.product.cpu.abilist64=x86_64,arm64-v8a\n";
-  EXPECT_EQ(std::string(kVendorBuildPropModified), content);
+  EXPECT_EQ(std::string(kVendorBuildPropModified) + "\n", content);
 
   // Expand to a single file with experiment on, verify properties are added /
   // modified as expected.
@@ -534,9 +537,10 @@ TEST_F(ArcPropertyUtilTest, TestNativeBridge64Support) {
 
   // Verify the contents.
   EXPECT_TRUE(base::ReadFileToString(dest_prop_file, &content));
-  EXPECT_EQ(base::StringPrintf("%s%s%s", kDefaultProp, kBuildPropModified,
-                               kVendorBuildPropModified),
-            content);
+  EXPECT_EQ(
+      base::StringPrintf("%s%s%s%s", kDefaultProp, kBuildPropModifiedFirst,
+                         kBuildPropModifiedSecond, kVendorBuildPropModified),
+      content);
 
   // Verify that unexpected property values generate an error.
   constexpr const char kBuildPropUnexpected[] =

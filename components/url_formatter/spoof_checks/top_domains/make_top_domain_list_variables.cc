@@ -7,8 +7,8 @@
 // the final Chrome binary.  The input is a list of the top domains. The first
 // output is named kTop500EditDistanceSkeletons,
 // containing the skeletons of the top 500 domains suitable for use in the edit
-// distance heuristic. The second output is named kTop500Keywords,
-// containg the top 500 keywords suitable for use with the keyword matching
+// distance heuristic. The second output is named kTopKeywords,
+// containing the top 500 keywords suitable for use with the keyword matching
 // heuristic (for instance, www.google.com -> google). Both outputs are written
 // to the same file, which will be formatted as c++ source file with valid
 // syntax.
@@ -19,6 +19,7 @@
 // IMPORTANT: This binary asserts that there are at least enough sites in the
 // input file to generate 500 skeletons and 500 keywords.
 
+#include <cctype>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -32,7 +33,9 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/util/ranges/algorithm.h"
 #include "build/build_config.h"
+#include "components/url_formatter/spoof_checks/common_words/common_words_util.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
@@ -40,12 +43,19 @@
 
 namespace {
 
-// The size of the arrays generated in top500-domains-inc.cc. Must match that in
-// top500_domains.h. If the file has fewer than kMaxEntries eligible top-500
-// domains marked (e.g. because some are too short), the generated arrays may be
-// padded with blank entries up to kMaxEntries.
-const size_t kMaxEntries = 500;
+// The size of the top domain array generated in top500-domains-inc.cc. Must
+// match that in top500_domains.h. If the file has fewer than kMaxDomains
+// eligible top-500 domains marked (e.g. because some are too short), the
+// generated array may be padded with blank entries up to kMaxDomains.
+const size_t kMaxDomains = 500;
 const char* kTop500Separator = "###END_TOP_500###";
+
+// Similar to kMaxDomains, but for kTopKeywords. Unlike the top domain array,
+// this array is a fixed length, and we also output a kNumTopKeywords variable.
+const size_t kMaxKeywords = 500;
+
+// The minimum length for a keyword for it to be included.
+const size_t kMinKeywordLength = 3;
 
 void PrintHelp() {
   std::cout << "make_top_domain_list_for_edit_distance <input-file>"
@@ -61,6 +71,10 @@ std::string GetSkeleton(const std::string& domain,
                                   ustr_skeleton, &status);
   std::string skeleton;
   return U_SUCCESS(status) ? ustr_skeleton.toUTF8String(skeleton) : skeleton;
+}
+
+bool ContainsOnlyDigits(const std::string& text) {
+  return util::ranges::all_of(text.begin(), text.end(), ::isdigit);
 }
 
 }  // namespace
@@ -119,7 +133,7 @@ int main(int argc, char* argv[]) {
   std::set<std::string> keywords;
 
   for (std::string line : lines) {
-    if (skeletons.size() >= kMaxEntries && keywords.size() >= kMaxEntries) {
+    if (skeletons.size() >= kMaxDomains && keywords.size() >= kMaxKeywords) {
       break;
     }
     base::TrimWhitespaceASCII(line, base::TRIM_ALL, &line);
@@ -132,7 +146,7 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    if (skeletons.size() < kMaxEntries &&
+    if (skeletons.size() < kMaxDomains &&
         url_formatter::top_domains::IsEditDistanceCandidate(line)) {
       const std::string skeleton = GetSkeleton(line, spoof_checker.get());
       if (skeletons.find(skeleton) == skeletons.end()) {
@@ -140,27 +154,21 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    if (keywords.size() < kMaxEntries) {
-      std::string keywords_for_current_line =
+    if (keywords.size() < kMaxKeywords) {
+      std::string keyword =
           url_formatter::top_domains::HostnameWithoutRegistry(line);
-      CHECK(keywords_for_current_line.find('.') == std::string::npos);
-
-      for (const std::string& keyword : base::SplitString(
-               keywords_for_current_line, "-", base::TRIM_WHITESPACE,
-               base::SPLIT_WANT_NONEMPTY)) {
-        if (keywords.find(keyword) == keywords.end()) {
-          keywords.insert(keyword);
-        }
-
-        if (keywords.size() >= kMaxEntries) {
-          break;
-        }
+      CHECK(keyword.find('.') == std::string::npos);
+      if (keyword.find('-') == std::string::npos &&
+          keyword.length() >= kMinKeywordLength &&
+          !ContainsOnlyDigits(keyword) &&
+          !url_formatter::common_words::IsCommonWord(keyword)) {
+        keywords.insert(keyword);
       }
     }
   }
 
-  CHECK_LE(skeletons.size(), kMaxEntries);
-  CHECK_LE(keywords.size(), kMaxEntries);
+  CHECK_LE(skeletons.size(), kMaxDomains);
+  CHECK_LE(keywords.size(), kMaxKeywords);
 
   std::vector<std::string> sorted_skeletons(skeletons.begin(), skeletons.end());
   std::sort(sorted_skeletons.begin(), sorted_skeletons.end());
@@ -173,7 +181,7 @@ int main(int argc, char* argv[]) {
       R"(#include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
 namespace top500_domains {
 const char* const kTop500EditDistanceSkeletons[)"
-                << kMaxEntries << R"(] = {
+                << kMaxDomains << R"(] = {
 )";
 
   for (const std::string& skeleton : sorted_skeletons) {
@@ -181,23 +189,23 @@ const char* const kTop500EditDistanceSkeletons[)"
     output_stream << ",\n";
   }
   // Pad any remaining array slots with blank entries.
-  for (size_t i = skeletons.size(); i < kMaxEntries; ++i) {
+  for (size_t i = skeletons.size(); i < kMaxDomains; ++i) {
     output_stream << ("\"\",\n");
   }
   output_stream << R"(};
-const char* const kTop500Keywords[)"
-                << kMaxEntries << R"(] = {
+const char* const kTopKeywords[] = {
 )";
 
   for (const std::string& keyword : sorted_keywords) {
     output_stream << ("\"" + keyword + "\"");
     output_stream << ",\n";
   }
-  // Pad any remaining array slots with blank entries.
-  for (size_t i = keywords.size(); i < kMaxEntries; ++i) {
-    output_stream << ("\"\",\n");
-  }
   output_stream << R"(};
+)";
+  output_stream <<
+      R"(
+constexpr size_t kNumTopKeywords = )"
+                << sorted_keywords.size() << R"(;
 }  // namespace top500_domains)";
 
   std::string output = output_stream.str();

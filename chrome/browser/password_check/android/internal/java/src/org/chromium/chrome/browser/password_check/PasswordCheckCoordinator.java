@@ -48,6 +48,12 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
      */
     interface CredentialEventHandler {
         /**
+         * Edits the given Credential in the password store.
+         * @param credential A {@link CompromisedCredential} to be edited.
+         */
+        void onEdit(CompromisedCredential credential);
+
+        /**
          * Removes the given Credential from the password store.
          * @param credential A {@link CompromisedCredential} to be removed.
          */
@@ -82,6 +88,12 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
             PasswordCheckCoordinator.setUpModelChangeProcessors(mModel, mFragmentView);
             mMediator.initialize(mModel, PasswordCheckFactory.getOrCreate());
         }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    public void stopCheck() {
+        PasswordCheck check = PasswordCheckFactory.getPasswordCheckInstance();
+        if (check != null) check.stopCheck();
     }
 
     // TODO(crbug.com/1101256): Move to view code.

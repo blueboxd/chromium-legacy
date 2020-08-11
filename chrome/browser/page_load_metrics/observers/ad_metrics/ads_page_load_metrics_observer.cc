@@ -496,7 +496,7 @@ AdsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   // The browser may come back, but there is no guarantee. To be safe, record
   // what we have now and ignore future changes to this navigation.
   if (GetDelegate().DidCommit()) {
-    RecordHistograms(GetDelegate().GetSourceId());
+    RecordHistograms(GetDelegate().GetPageUkmSourceId());
   }
 
   return STOP_OBSERVING;
@@ -504,7 +504,7 @@ AdsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
 
 void AdsPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
-  RecordHistograms(GetDelegate().GetSourceId());
+  RecordHistograms(GetDelegate().GetPageUkmSourceId());
 }
 
 void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
@@ -610,7 +610,8 @@ void AdsPageLoadMetricsObserver::OnFrameDeleted(
   if (ancestor_data && ancestor_data->root_frame_tree_node_id() ==
                            render_frame_host->GetFrameTreeNodeId()) {
     RecordPerFrameHistograms(*ancestor_data);
-    ancestor_data->RecordAdFrameLoadUkmEvent(GetDelegate().GetSourceId());
+    ancestor_data->RecordAdFrameLoadUkmEvent(
+        GetDelegate().GetPageUkmSourceId());
     DCHECK(id_and_data->second != ad_frames_data_storage_.end());
     ad_frames_data_storage_.erase(id_and_data->second);
     page_ad_density_tracker_.RemoveRect(id_and_data->first);

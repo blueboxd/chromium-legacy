@@ -28,6 +28,10 @@ class CrashesDOMHandler;
 class FlashDOMHandler;
 }
 
+#if defined(OS_CHROMEOS)
+class ChromeCameraAppUIDelegate;
+#endif  // defined(OS_CHROMEOS)
+
 namespace domain_reliability {
 class DomainReliabilityServiceFactory;
 }
@@ -116,6 +120,10 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class NavigationMetricsRecorder;
   friend class ChromeBrowserMainExtraPartsGpu;
   friend class Browser;
+
+#if defined(OS_CHROMEOS)
+  friend class ChromeCameraAppUIDelegate;
+#endif  // defined(OS_CHROMEOS)
 
   // Testing related friends.
   friend class first_run::FirstRunMasterPrefsVariationsSeedTest;

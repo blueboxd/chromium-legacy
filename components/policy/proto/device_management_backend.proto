@@ -2911,6 +2911,29 @@ message ExtensionInstallReportLogEvent {
     COMPLETE = 4;
   };
 
+  // Type of current user. See user_manager::UserType for more details.
+  // user_manager::UserType is the main enum and this is a copy used for
+  // reporting purposes.
+  enum UserType {
+    USER_TYPE_REGULAR = 0;
+
+    USER_TYPE_GUEST = 1;
+
+    USER_TYPE_PUBLIC_ACCOUNT = 2;
+
+    USER_TYPE_SUPERVISED = 3;
+
+    USER_TYPE_KIOSK_APP = 4;
+
+    USER_TYPE_CHILD = 5;
+
+    USER_TYPE_ARC_KIOSK_APP = 6;
+
+    USER_TYPE_ACTIVE_DIRECTORY = 7;
+
+    USER_TYPE_WEB_KIOSK_APP = 8;
+  };
+
   // Current stage of the extension downloading process. See
   // ExtensionDownloaderDelegate::Stage for more details.
   // ExtensionDownloaderDelegate::Stage is the main enum and this is a copy used
@@ -2968,6 +2991,12 @@ message ExtensionInstallReportLogEvent {
   // Type of the extension. Set for event type SUCCESS and sometimes (when
   // possible) for INSTALLATION_FAILED.
   optional Extension.ExtensionType extension_type = 10;
+
+  // Type of the current user.
+  optional UserType user_type = 11;
+
+  // Whether the current user is new.
+  optional bool is_new_user = 12;
 }
 
 // A single entry in the push-install log for an app.

@@ -537,8 +537,12 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
         initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
                action:@selector(searchCopiedText:)]);
 
-    [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
-    [menu setMenuVisible:YES animated:YES];
+    if (@available(iOS 13, *)) {
+      [menu showMenuFromView:self.view rect:self.locationBarSteadyView.frame];
+    } else {
+      [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
+      [menu setMenuVisible:YES animated:YES];
+    }
     // When the menu is manually presented, it doesn't get focused by
     // Voiceover. This notification forces voiceover to select the
     // presented menu.

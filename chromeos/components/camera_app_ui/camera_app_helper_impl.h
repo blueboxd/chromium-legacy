@@ -11,6 +11,7 @@
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "chromeos/components/camera_app_ui/camera_app_helper.mojom.h"
+#include "chromeos/components/camera_app_ui/camera_app_ui.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace aura {
@@ -31,7 +32,8 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
   using TabletModeMonitor = mojom::TabletModeMonitor;
   using ScreenStateMonitor = mojom::ScreenStateMonitor;
 
-  CameraAppHelperImpl(CameraResultCallback camera_result_callback,
+  CameraAppHelperImpl(chromeos::CameraAppUI* camera_app_ui,
+                      CameraResultCallback camera_result_callback,
                       aura::Window* window);
   ~CameraAppHelperImpl() override;
   void Bind(mojo::PendingReceiver<mojom::CameraAppHelper> receiver);
@@ -48,6 +50,8 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
                         SetTabletMonitorCallback callback) override;
   void SetScreenStateMonitor(mojo::PendingRemote<ScreenStateMonitor> monitor,
                              SetScreenStateMonitorCallback callback) override;
+  void IsMetricsAndCrashReportingEnabled(
+      IsMetricsAndCrashReportingEnabledCallback callback) override;
 
  private:
   // ash::TabletModeObserver overrides;
@@ -56,6 +60,12 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
 
   // ash::ScreenBacklightObserver overrides;
   void OnScreenStateChanged(ash::ScreenState screen_state) override;
+
+  // For platform app, we set |camera_app_ui_| to nullptr and should not use
+  // it. For SWA, since CameraAppUI owns CameraAppHelperImpl, it is safe to
+  // assume that the |camera_app_ui_| is always valid during the whole lifetime
+  // of CameraAppHelperImpl.
+  chromeos::CameraAppUI* camera_app_ui_;
 
   CameraResultCallback camera_result_callback_;
 

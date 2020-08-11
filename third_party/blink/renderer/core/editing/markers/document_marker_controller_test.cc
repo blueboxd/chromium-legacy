@@ -382,7 +382,7 @@ TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerByTag) {
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
-TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerByType) {
+TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerByTypeWithRange) {
   SetBodyContent("<div contenteditable>foo</div>");
   Element* div = GetDocument().QuerySelector("div");
   Node* text = div->firstChild();
@@ -394,6 +394,34 @@ TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerByType) {
   MarkerController().RemoveSuggestionMarkerByType(
       ToEphemeralRangeInFlatTree(range), marker->GetSuggestionType());
   EXPECT_EQ(0u, MarkerController().Markers().size());
+}
+
+TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerByType) {
+  SetBodyContent("<div contenteditable>123 456</div>");
+  Element* div = GetDocument().QuerySelector("div");
+  Node* text = div->firstChild();
+
+  // Add an autocorrect marker on "123"
+  MarkerController().AddSuggestionMarker(
+      EphemeralRange(Position(text, 0), Position(text, 3)),
+      SuggestionMarkerProperties::Builder()
+          .SetType(SuggestionMarker::SuggestionType::kAutocorrect)
+          .Build());
+  // Add a misspelling suggestion marker on "123"
+  MarkerController().AddSuggestionMarker(
+      EphemeralRange(Position(text, 0), Position(text, 3)),
+      SuggestionMarkerProperties::Builder()
+          .SetType(SuggestionMarker::SuggestionType::kMisspelling)
+          .Build());
+
+  EXPECT_EQ(2u, MarkerController().Markers().size());
+  MarkerController().RemoveSuggestionMarkerByType(
+      SuggestionMarker::SuggestionType::kAutocorrect);
+
+  EXPECT_EQ(1u, MarkerController().Markers().size());
+  EXPECT_EQ(SuggestionMarker::SuggestionType::kMisspelling,
+            To<SuggestionMarker>(MarkerController().Markers()[0].Get())
+                ->GetSuggestionType());
 }
 
 TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerInRangeOnFinish) {
@@ -494,31 +522,37 @@ TEST_F(DocumentMarkerControllerTest, MarkersAroundPosition) {
       EphemeralRange(Position(text, 4), Position(text, 7)));
 
   // Query for spellcheck markers at the start of "123".
-  const DocumentMarkerVector& list1 = MarkerController().MarkersAroundPosition(
-      PositionInFlatTree(text, 0), DocumentMarker::MarkerTypes::Misspelling());
+  const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
+      result1 = MarkerController().MarkersAroundPosition(
+          PositionInFlatTree(text, 0),
+          DocumentMarker::MarkerTypes::Misspelling());
 
-  EXPECT_EQ(1u, list1.size());
-  EXPECT_EQ(DocumentMarker::kSpelling, list1[0]->GetType());
-  EXPECT_EQ(0u, list1[0]->StartOffset());
-  EXPECT_EQ(3u, list1[0]->EndOffset());
+  EXPECT_EQ(1u, result1.size());
+  EXPECT_EQ(DocumentMarker::kSpelling, result1[0].second->GetType());
+  EXPECT_EQ(0u, result1[0].second->StartOffset());
+  EXPECT_EQ(3u, result1[0].second->EndOffset());
 
   // Query for spellcheck markers in the middle of "123".
-  const DocumentMarkerVector& list2 = MarkerController().MarkersAroundPosition(
-      PositionInFlatTree(text, 3), DocumentMarker::MarkerTypes::Misspelling());
+  const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
+      result2 = MarkerController().MarkersAroundPosition(
+          PositionInFlatTree(text, 3),
+          DocumentMarker::MarkerTypes::Misspelling());
 
-  EXPECT_EQ(1u, list2.size());
-  EXPECT_EQ(DocumentMarker::kSpelling, list2[0]->GetType());
-  EXPECT_EQ(0u, list2[0]->StartOffset());
-  EXPECT_EQ(3u, list2[0]->EndOffset());
+  EXPECT_EQ(1u, result2.size());
+  EXPECT_EQ(DocumentMarker::kSpelling, result2[0].second->GetType());
+  EXPECT_EQ(0u, result2[0].second->StartOffset());
+  EXPECT_EQ(3u, result2[0].second->EndOffset());
 
   // Query for spellcheck markers at the end of "123".
-  const DocumentMarkerVector& list3 = MarkerController().MarkersAroundPosition(
-      PositionInFlatTree(text, 3), DocumentMarker::MarkerTypes::Misspelling());
+  const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
+      result3 = MarkerController().MarkersAroundPosition(
+          PositionInFlatTree(text, 3),
+          DocumentMarker::MarkerTypes::Misspelling());
 
-  EXPECT_EQ(1u, list3.size());
-  EXPECT_EQ(DocumentMarker::kSpelling, list3[0]->GetType());
-  EXPECT_EQ(0u, list3[0]->StartOffset());
-  EXPECT_EQ(3u, list3[0]->EndOffset());
+  EXPECT_EQ(1u, result3.size());
+  EXPECT_EQ(DocumentMarker::kSpelling, result3[0].second->GetType());
+  EXPECT_EQ(0u, result3[0].second->StartOffset());
+  EXPECT_EQ(3u, result3[0].second->EndOffset());
 }
 
 TEST_F(DocumentMarkerControllerTest, MarkersIntersectingRange) {

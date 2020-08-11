@@ -20,6 +20,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/cast/constants.h"
 
@@ -414,8 +415,8 @@ int AdaptiveCongestionControl::GetBitrate(base::TimeTicks playout_time,
   empty_buffer_fraction = std::min(empty_buffer_fraction, 1.0);
   empty_buffer_fraction = std::max(empty_buffer_fraction, 0.0);
 
-  int bits_per_second = static_cast<int>(
-      safe_bitrate * empty_buffer_fraction / kTargetEmptyBufferFraction);
+  int bits_per_second = base::ClampRound(safe_bitrate * empty_buffer_fraction /
+                                         kTargetEmptyBufferFraction);
   VLOG(3) << " FBR:" << (bits_per_second / 1E6)
           << " EBF:" << empty_buffer_fraction
           << " SBR:" << (safe_bitrate / 1E6);

@@ -337,8 +337,11 @@ void SharedWorkerHost::CreateAppCacheBackend(
       worker_process_host_->GetStoragePartition());
   if (!storage_partition_impl)
     return;
-  storage_partition_impl->GetAppCacheService()->CreateBackend(
-      worker_process_host_->GetID(), MSG_ROUTING_NONE, std::move(receiver));
+  auto* appcache_service = storage_partition_impl->GetAppCacheService();
+  if (!appcache_service)
+    return;
+  appcache_service->CreateBackend(worker_process_host_->GetID(),
+                                  MSG_ROUTING_NONE, std::move(receiver));
 }
 
 void SharedWorkerHost::CreateQuicTransportConnector(

@@ -74,7 +74,7 @@ void SessionRestorePageLoadMetricsObserver::OnFirstPaintInPage(
     // is no need to record again in FCP or FMP, because FP comes first.
     ukm::builders::
         TabManager_Experimental_SessionRestore_ForegroundTab_PageLoad(
-            GetDelegate().GetSourceId())
+            GetDelegate().GetPageUkmSourceId())
             .SetSessionRestoreTabCount(
                 g_browser_process->GetTabManager()->restored_tab_count())
             .SetSystemTabCount(

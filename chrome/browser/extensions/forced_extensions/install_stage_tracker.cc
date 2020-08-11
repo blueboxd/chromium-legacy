@@ -6,9 +6,21 @@
 
 #include "base/check_op.h"
 #include "chrome/browser/extensions/forced_extensions/install_stage_tracker_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "net/base/net_errors.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace extensions {
+
+#if defined(OS_CHROMEOS)
+InstallStageTracker::UserInfo::UserInfo(const UserInfo&) = default;
+InstallStageTracker::UserInfo::UserInfo(user_manager::UserType user_type,
+                                        bool is_new_user)
+    : user_type(user_type), is_new_user(is_new_user) {}
+#endif  // defined(OS_CHROMEOS)
 
 // InstallStageTracker::InstallationData implementation.
 
@@ -97,6 +109,19 @@ InstallStageTracker* InstallStageTracker::Get(
   return InstallStageTrackerFactory::GetForBrowserContext(context);
 }
 
+#if defined(OS_CHROMEOS)
+InstallStageTracker::UserInfo InstallStageTracker::GetUserInfo(
+    Profile* profile) {
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  DCHECK(user);
+  bool is_new_user = user_manager::UserManager::Get()->IsCurrentUserNew() ||
+                     profile->IsNewProfile();
+  UserInfo current_user(user->GetType(), is_new_user);
+  return current_user;
+}
+#endif  // defined(OS_CHROMEOS)
+
 void InstallStageTracker::ReportInfoOnNoUpdatesFailure(
     const ExtensionId& id,
     const std::string& info) {
@@ -144,14 +169,15 @@ void InstallStageTracker::ReportDownloadingStage(
     ExtensionDownloaderDelegate::Stage stage) {
   InstallationData& data = installation_data_map_[id];
   data.downloading_stage = stage;
+  const base::TimeTicks current_time = base::TimeTicks::Now();
   if (stage == ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST)
-    data.download_manifest_started_time = base::Time::Now();
+    data.download_manifest_started_time = current_time;
   else if (stage == ExtensionDownloaderDelegate::Stage::MANIFEST_LOADED)
-    data.download_manifest_finish_time = base::Time::Now();
+    data.download_manifest_finish_time = current_time;
   else if (stage == ExtensionDownloaderDelegate::Stage::DOWNLOADING_CRX)
-    data.download_CRX_started_time = base::Time::Now();
+    data.download_CRX_started_time = current_time;
   else if (stage == ExtensionDownloaderDelegate::Stage::FINISHED)
-    data.download_CRX_finish_time = base::Time::Now();
+    data.download_CRX_finish_time = current_time;
 
   for (auto& observer : observers_) {
     observer.OnExtensionDownloadingStageChanged(id, stage);
@@ -164,10 +190,14 @@ void InstallStageTracker::ReportCRXInstallationStage(const ExtensionId& id,
   DCHECK(!id.empty());
   InstallationData& data = installation_data_map_[id];
   data.installation_stage = stage;
+  const base::TimeTicks current_time = base::TimeTicks::Now();
   if (stage == InstallationStage::kVerification)
-    data.verification_started_time = base::Time::Now();
+    data.verification_started_time = current_time;
   else if (stage == InstallationStage::kCopying)
-    data.copying_started_time = base::Time::Now();
+    data.copying_started_time = current_time;
+  else if (stage == InstallationStage::kUnpacking)
+    data.unpacking_started_time = current_time;
+
   for (auto& observer : observers_) {
     observer.OnExtensionDataChangedForTesting(id, browser_context_, data);
   }

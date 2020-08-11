@@ -210,6 +210,7 @@ void V8Window::NamedPropertyGetterCustom(
   // https://html.spec.whatwg.org/C/#document-tree-child-browsing-context-name-property-set
   Frame* child = frame->Tree().ScopedChild(name);
   if (child) {
+    window->ReportCoopAccess(info.GetIsolate(), "named");
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                       WebFeature::kNamedAccessOnWindow_ChildBrowsingContext);
 
@@ -270,6 +271,7 @@ void V8Window::NamedPropertyGetterCustom(
 
   if (!has_named_item && !has_id_item)
     return;
+  window->ReportCoopAccess(info.GetIsolate(), "named");
 
   if (!has_named_item && has_id_item &&
       !doc->ContainsMultipleElementsWithId(name)) {

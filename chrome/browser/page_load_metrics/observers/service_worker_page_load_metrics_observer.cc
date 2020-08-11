@@ -414,7 +414,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadingBehaviorObserved(
     int behavior_flags) {
   if (!IsServiceWorkerControlled() || logged_ukm_event_)
     return;
-  ukm::builders::PageLoad_ServiceWorkerControlled(GetDelegate().GetSourceId())
+  ukm::builders::PageLoad_ServiceWorkerControlled(
+      GetDelegate().GetPageUkmSourceId())
       .Record(ukm::UkmRecorder::Get());
   logged_ukm_event_ = true;
 }

@@ -117,6 +117,12 @@ class CORE_EXPORT InspectorDOMAgent final
       protocol::Maybe<int> depth,
       protocol::Maybe<bool> traverse_frames,
       std::unique_ptr<protocol::DOM::Node>* root) override;
+  protocol::Response getNodesForSubtreeByStyle(
+      int node_id,
+      std::unique_ptr<protocol::Array<protocol::DOM::CSSComputedStyleProperty>>
+          computed_styles,
+      protocol::Maybe<bool> pierce,
+      std::unique_ptr<protocol::Array<int>>* node_ids) override;
   protocol::Response getFlattenedDocument(
       protocol::Maybe<int> depth,
       protocol::Maybe<bool> pierce,

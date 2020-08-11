@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 545 tests; 344 PASS, 201 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 548 tests; 347 PASS, 201 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Parsing: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -555,5 +555,8 @@ FAIL Parsing: <file://­/p> against <about:blank> assert_equals: failure should 
 PASS Parsing: <file://%C2%AD/p> against <about:blank>
 FAIL Parsing: <file://xn--/p> against <about:blank> assert_unreached: Expected URL to fail parsing Reached unreachable code
 PASS Parsing: <#link> against <https://example.org/##link>
+PASS Parsing: <non-special:cannot-be-a-base-url-\0~> against <about:blank>
+PASS Parsing: <https://www.example.com/path{path.html?query'=query#fragment<fragment> against <about:blank>
+PASS Parsing: <https://user:pass[@foo/bar> against <http://example.org>
 Harness: the test ran to completion.
 

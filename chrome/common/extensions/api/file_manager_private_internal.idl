@@ -23,6 +23,9 @@ namespace fileManagerPrivateInternal {
   callback GetCustomActionsCallback = void(fileSystemProvider.Action[] actions);
   callback ComputeChecksumCallback = void(DOMString checksum);
   callback GetMimeTypeCallback = void(DOMString result);
+  callback GetContentMimeTypeCallback = void(DOMString result);
+  callback GetContentMetadataCallback = void(
+      fileManagerPrivate.MediaMetadata result);
   callback ExecuteTaskCallback = void(fileManagerPrivate.TaskResult result);
   callback GetFileTasksCallback = void(fileManagerPrivate.FileTask[] tasks);
   callback GetUrlCallback = void(DOMString url);
@@ -63,6 +66,12 @@ namespace fileManagerPrivateInternal {
                                 ComputeChecksumCallback callback);
     static void getMimeType(DOMString url,
                             GetMimeTypeCallback callback);
+    static void getContentMimeType(DOMString blobUUID,
+                                   GetContentMimeTypeCallback callback);
+    static void getContentMetadata(DOMString blobUUID,
+                                   DOMString mimeType,
+                                   fileManagerPrivate.ContentMetadataType type,
+                                   GetContentMetadataCallback callback);
     static void pinDriveFile(DOMString url,
                              boolean pin,
                              SimpleCallback callback);

@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -55,9 +54,7 @@ class MODULES_EXPORT NavigatorShare final
   void OnConnectionError();
 
   // |NavigatorShare| is not ExecutionContext-associated.
-  HeapMojoRemote<blink::mojom::blink::ShareService,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      service_remote_{nullptr};
+  HeapMojoRemote<blink::mojom::blink::ShareService> service_remote_{nullptr};
 
   HeapHashSet<Member<ShareClientImpl>> clients_;
 };

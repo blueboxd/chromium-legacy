@@ -98,12 +98,12 @@ class ChromeAppBrowserProxy {
   }
 
   /** @override */
-  getI18nMessage(name, substitutions = undefined) {
+  getI18nMessage(name, ...substitutions) {
     return chrome.i18n.getMessage(name, substitutions);
   }
 
   /** @override */
-  isCrashReportingEnabled() {
+  isMetricsAndCrashReportingEnabled() {
     return promisify(chrome.metricsPrivate.getIsCrashReportingEnabled)();
   }
 

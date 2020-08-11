@@ -63,27 +63,20 @@ namespace ui {
 namespace {
 
 constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
-    /*needs_view_token=*/false,
-
     // Supporting server-side decorations requires a support of
     // xdg-decorations. But this protocol has been accepted into the upstream
     // recently, and it will take time before it is taken by compositors. For
     // now, always use custom frames and disallow switching to server-side
     // frames.
     // https://github.com/wayland-project/wayland-protocols/commit/76d1ae8c65739eff3434ef219c58a913ad34e988
-    /*custom_frame_pref_default=*/true,
-    /*use_system_title_bar=*/false,
-
-    /*message_pump_type_for_gpu=*/base::MessagePumpType::DEFAULT,
-
-    /*supports_vulkan_swap_chain=*/false,
+    .custom_frame_pref_default = true,
 
     // Wayland doesn't provide clients with global screen coordinates. Instead,
     // it forces clients to position windows relative to their top level windows
     // if the have child-parent relationship. In case of toplevel windows,
     // clients simply don't know their position on screens and always assume
     // they are located at some arbitrary position.
-    /*ignore_screen_bounds_for_menus=*/true,
+    .ignore_screen_bounds_for_menus = true,
 };
 
 class OzonePlatformWayland : public OzonePlatform {

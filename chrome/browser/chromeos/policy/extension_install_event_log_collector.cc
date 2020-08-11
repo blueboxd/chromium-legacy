@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/enterprise/reporting/extension_info.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -154,6 +155,35 @@ ConvertInstallationStageToProto(extensions::InstallStageTracker::Stage stage) {
   }
 }
 
+// Helper method to convert InstallStageTracker::UserType to the user
+// type proto.
+em::ExtensionInstallReportLogEvent_UserType ConvertUserTypeToProto(
+    user_manager::UserType user_type) {
+  switch (user_type) {
+    case user_manager::USER_TYPE_REGULAR:
+      return em::ExtensionInstallReportLogEvent::USER_TYPE_REGULAR;
+    case user_manager::USER_TYPE_GUEST:
+      return em::ExtensionInstallReportLogEvent::USER_TYPE_GUEST;
+    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+      return em::ExtensionInstallReportLogEvent::USER_TYPE_PUBLIC_ACCOUNT;
+    case user_manager::USER_TYPE_SUPERVISED:
+      return em::ExtensionInstallReportLogEvent::USER_TYPE_SUPERVISED;
+    case user_manager::USER_TYPE_KIOSK_APP:
+      return em::ExtensionInstallReportLogEvent::USER_TYPE_KIOSK_APP;
+    case user_manager::USER_TYPE_CHILD:
+      return em::ExtensionInstallReportLogEvent::USER_TYPE_CHILD;
+    case user_manager::USER_TYPE_ARC_KIOSK_APP:
+      return em::ExtensionInstallReportLogEvent::USER_TYPE_ARC_KIOSK_APP;
+    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+      return em::ExtensionInstallReportLogEvent::USER_TYPE_ACTIVE_DIRECTORY;
+    case user_manager::USER_TYPE_WEB_KIOSK_APP:
+      return em::ExtensionInstallReportLogEvent::USER_TYPE_WEB_KIOSK_APP;
+    case user_manager::NUM_USER_TYPES:
+      NOTREACHED();
+      return em::ExtensionInstallReportLogEvent::USER_TYPE_REGULAR;
+  }
+}
+
 // Helper method to convert ExtensionDownloaderDelegate::Stage to the
 // DownloadingStage proto.
 em::ExtensionInstallReportLogEvent_DownloadingStage
@@ -217,6 +247,12 @@ void ExtensionInstallEventLogCollector::AddLoginEvent() {
   online_ = GetOnlineState();
   std::unique_ptr<em::ExtensionInstallReportLogEvent> event =
       CreateSessionChangeEvent(em::ExtensionInstallReportLogEvent::LOGIN);
+  if (chromeos::ProfileHelper::Get()->GetUserByProfile(profile_)) {
+    extensions::InstallStageTracker::UserInfo user_info =
+        extensions::InstallStageTracker::GetUserInfo(profile_);
+    event->set_user_type(ConvertUserTypeToProto(user_info.user_type));
+    event->set_is_new_user(user_info.is_new_user);
+  }
   event->set_online(online_);
   delegate_->AddForAllExtensions(std::move(event));
 }

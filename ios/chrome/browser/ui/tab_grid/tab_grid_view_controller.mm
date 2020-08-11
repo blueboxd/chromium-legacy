@@ -1284,23 +1284,23 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (NSArray*)keyCommands {
   UIKeyCommand* newWindowShortcut = [UIKeyCommand
-       keyCommandWithInput:@"n"
-             modifierFlags:UIKeyModifierCommand
-                    action:@selector(openNewRegularTabForKeyboardCommand)
-      discoverabilityTitle:l10n_util::GetNSStringWithFixup(
-                               IDS_IOS_TOOLS_MENU_NEW_TAB)];
+      keyCommandWithInput:@"n"
+            modifierFlags:UIKeyModifierCommand
+                   action:@selector(openNewRegularTabForKeyboardCommand)];
+  newWindowShortcut.discoverabilityTitle =
+      l10n_util::GetNSStringWithFixup(IDS_IOS_TOOLS_MENU_NEW_TAB);
   UIKeyCommand* newIncognitoWindowShortcut = [UIKeyCommand
-       keyCommandWithInput:@"n"
-             modifierFlags:UIKeyModifierCommand | UIKeyModifierShift
-                    action:@selector(openNewIncognitoTabForKeyboardCommand)
-      discoverabilityTitle:l10n_util::GetNSStringWithFixup(
-                               IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB)];
+      keyCommandWithInput:@"n"
+            modifierFlags:UIKeyModifierCommand | UIKeyModifierShift
+                   action:@selector(openNewIncognitoTabForKeyboardCommand)];
+  newIncognitoWindowShortcut.discoverabilityTitle =
+      l10n_util::GetNSStringWithFixup(IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB);
   UIKeyCommand* newTabShortcut = [UIKeyCommand
-       keyCommandWithInput:@"t"
-             modifierFlags:UIKeyModifierCommand
-                    action:@selector(openNewTabInCurrentPageForKeyboardCommand)
-      discoverabilityTitle:l10n_util::GetNSStringWithFixup(
-                               IDS_IOS_TOOLS_MENU_NEW_TAB)];
+      keyCommandWithInput:@"t"
+            modifierFlags:UIKeyModifierCommand
+                   action:@selector(openNewTabInCurrentPageForKeyboardCommand)];
+  newTabShortcut.discoverabilityTitle =
+      l10n_util::GetNSStringWithFixup(IDS_IOS_TOOLS_MENU_NEW_TAB);
   return @[ newWindowShortcut, newIncognitoWindowShortcut, newTabShortcut ];
 }
 

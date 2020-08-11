@@ -27,6 +27,10 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformGLEGLUtility {
   // Chooses alpha and buffer size values.
   virtual void ChooseEGLAlphaAndBufferSize(EGLint* alpha_size,
                                            EGLint* buffer_size) = 0;
+
+  // Returns whether the platform supports setting transparent background for
+  // windows.
+  virtual bool IsTransparentBackgroundSupported() const = 0;
 };
 
 }  // namespace ui

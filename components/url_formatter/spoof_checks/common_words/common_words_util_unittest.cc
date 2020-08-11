@@ -18,4 +18,6 @@ TEST(CommonWordsUtilTest, CommonWordsListContainsWhatsExpected) {
 
   EXPECT_TRUE(IsCommonWord("alphabet"));
   EXPECT_FALSE(IsCommonWord("bravo"));
+
+  url_formatter::common_words::ResetCommonWordDAFSAForTesting();
 }

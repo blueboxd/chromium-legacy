@@ -50,4 +50,6 @@
     <dimen name="autofill_assistant_form_line_height_1">48dp</dimen>
     <dimen name="autofill_assistant_form_line_height_2">64dp</dimen>
     <dimen name="autofill_assistant_form_line_height_3">88dp</dimen>
+
+    <dimen name="autofill_assistant_root_view_top_padding">12dp</dimen>
 </resources>

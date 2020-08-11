@@ -20,38 +20,15 @@
 
 namespace blink {
 
-void NGFieldsetPainter::PaintBoxDecorationBackground(
-    const PaintInfo& paint_info,
-    const PhysicalOffset& paint_offset) {
+FieldsetPaintInfo NGFieldsetPainter::CreateFieldsetPaintInfo() const {
   const NGLink* legend = nullptr;
   if (!fieldset_.Children().empty()) {
     const auto& first_child = fieldset_.Children().front();
     if (first_child->IsRenderedLegend())
       legend = &first_child;
   }
-
-  // Paint the fieldset (background, other decorations, and) border, with the
-  // cutout hole for the legend.
-  PaintFieldsetDecorationBackground(legend, paint_info, paint_offset);
-}
-
-void NGFieldsetPainter::PaintFieldsetDecorationBackground(
-    const NGLink* legend,
-    const PaintInfo& paint_info,
-    const PhysicalOffset& paint_offset) {
-  PhysicalSize fieldset_size(fieldset_.Size());
-  PhysicalRect paint_rect(paint_offset, fieldset_size);
+  const PhysicalSize fieldset_size(fieldset_.Size());
   const auto& fragment = fieldset_;
-  BoxDecorationData box_decoration_data(paint_info, fragment);
-  // TODO(crbug.com/786475): Fieldset should not scroll.
-  DCHECK(!box_decoration_data.IsPaintingScrollingBackground());
-  if (!box_decoration_data.ShouldPaint())
-    return;
-
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, *fieldset_.GetLayoutObject(), paint_info.phase))
-    return;
-
   LayoutRectOutsets fieldset_borders = fragment.Borders().ToLayoutRectOutsets();
   const ComputedStyle& style = fieldset_.Style();
   PhysicalRect legend_border_box;
@@ -85,8 +62,29 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
     legend_border_box.offset = legend_logical_offset.ConvertToPhysical(
         writing_direction, fieldset_size, legend_border_box.size);
   }
-  FieldsetPaintInfo fieldset_paint_info(style, fieldset_size, fieldset_borders,
-                                        legend_border_box);
+  return FieldsetPaintInfo(style, fieldset_size, fieldset_borders,
+                           legend_border_box);
+}
+
+// Paint the fieldset (background, other decorations, and) border, with the
+// cutout hole for the legend.
+void NGFieldsetPainter::PaintBoxDecorationBackground(
+    const PaintInfo& paint_info,
+    const PhysicalOffset& paint_offset) {
+  PhysicalSize fieldset_size(fieldset_.Size());
+  PhysicalRect paint_rect(paint_offset, fieldset_size);
+  BoxDecorationData box_decoration_data(paint_info, fieldset_);
+  // TODO(crbug.com/786475): Fieldset should not scroll.
+  DCHECK(!box_decoration_data.IsPaintingScrollingBackground());
+  if (!box_decoration_data.ShouldPaint())
+    return;
+
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, *fieldset_.GetLayoutObject(), paint_info.phase))
+    return;
+
+  const ComputedStyle& style = fieldset_.Style();
+  FieldsetPaintInfo fieldset_paint_info = CreateFieldsetPaintInfo();
   PhysicalRect contracted_rect(paint_rect);
   contracted_rect.Contract(fieldset_paint_info.border_outsets);
 
@@ -126,6 +124,24 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
                                  layout_object->GetDocument(), node, paint_info,
                                  contracted_rect, fieldset_.Style());
   }
+}
+
+void NGFieldsetPainter::PaintMask(const PaintInfo& paint_info,
+                                  const PhysicalOffset& paint_offset,
+                                  const NGBorderEdges& border_edges) {
+  // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
+  const LayoutObject& layout_object = *fieldset_.GetLayoutObject();
+  BackgroundImageGeometry geometry(
+      static_cast<const LayoutBoxModelObject&>(layout_object));
+
+  NGBoxFragmentPainter ng_box_painter(fieldset_);
+  DrawingRecorder recorder(paint_info.context, layout_object, paint_info.phase,
+                           ng_box_painter.VisualRect(paint_offset));
+  PhysicalRect paint_rect(paint_offset, fieldset_.Size());
+  paint_rect.Contract(CreateFieldsetPaintInfo().border_outsets);
+  ng_box_painter.PaintMaskImages(paint_info, paint_rect, layout_object,
+                                 geometry, border_edges.line_left,
+                                 border_edges.line_right);
 }
 
 }  // namespace blink

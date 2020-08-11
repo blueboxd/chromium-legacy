@@ -138,7 +138,11 @@ void PasswordCheckManager::OnStateChanged(State state) {
 void PasswordCheckManager::OnCredentialDone(
     const password_manager::LeakCheckCredential& credential,
     password_manager::IsLeaked is_leaked) {
-  // TODO(crbug.com/1102025): implement this.
+  // TODO(crbug.com/1092444): Advance progress.
+  if (is_leaked) {
+    // TODO(crbug.com/1092444): Trigger single-credential update.
+    compromised_credentials_manager_.SaveCompromisedCredential(credential);
+  }
 }
 
 CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(

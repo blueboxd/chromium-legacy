@@ -36,6 +36,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_file.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/character_data.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
@@ -515,6 +517,77 @@ Response InspectorDOMAgent::getDocument(
   *root = BuildObjectForNode(document_.Get(), sanitized_depth,
                              pierce.fromMaybe(false),
                              document_node_to_id_map_.Get());
+  return Response::Success();
+}
+
+namespace {
+
+bool NodeHasMatchingStyles(
+    const HashMap<CSSPropertyID, HashSet<String>>* properties,
+    Node* node) {
+  if (auto* element = DynamicTo<Element>(node)) {
+    auto* computed_style_info =
+        MakeGarbageCollected<CSSComputedStyleDeclaration>(element, true);
+    for (const auto& property : *properties) {
+      const CSSValue* computed_value =
+          computed_style_info->GetPropertyCSSValue(property.key);
+      if (computed_value &&
+          property.value.Contains(computed_value->CssText())) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
+Response InspectorDOMAgent::getNodesForSubtreeByStyle(
+    int node_id,
+    std::unique_ptr<protocol::Array<protocol::DOM::CSSComputedStyleProperty>>
+        computed_styles,
+    Maybe<bool> pierce,
+    std::unique_ptr<protocol::Array<int>>* node_ids) {
+  if (!enabled_.Get())
+    return Response::ServerError("DOM agent hasn't been enabled");
+
+  if (!document_)
+    return Response::ServerError("Document is not available");
+
+  Node* root_node = nullptr;
+  Response response = AssertNode(node_id, root_node);
+  if (!response.IsSuccess())
+    return response;
+
+  HashMap<CSSPropertyID, HashSet<String>> properties;
+  for (const auto& style : *computed_styles) {
+    base::Optional<CSSPropertyName> property_name = CSSPropertyName::From(
+        document_->GetExecutionContext(), style->getName());
+    if (!property_name)
+      return Response::InvalidParams("Invalid CSS property name");
+    auto property_id = property_name->Id();
+    HashMap<CSSPropertyID, HashSet<String>>::iterator it =
+        properties.find(property_id);
+    if (it != properties.end())
+      it->value.insert(style->getValue());
+    else
+      properties.Set(property_id, HashSet<String>({style->getValue()}));
+  }
+
+  HeapVector<Member<Node>> nodes;
+
+  CollectNodes(
+      root_node, INT_MAX, pierce.fromMaybe(false),
+      WTF::BindRepeating(&NodeHasMatchingStyles, WTF::Unretained(&properties)),
+      &nodes);
+
+  NodeToIdMap* nodes_map = document_node_to_id_map_.Get();
+  *node_ids = std::make_unique<protocol::Array<int>>();
+  for (Node* node : nodes) {
+    int id = PushNodePathToFrontend(node, nodes_map);
+    (*node_ids)->push_back(id);
+  }
+
   return Response::Success();
 }
 

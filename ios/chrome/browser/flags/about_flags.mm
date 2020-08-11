@@ -727,19 +727,23 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     // List the sample policies to enable as experimental. This is necessary for
     // the flag to work on Beta.
     NSArray* experimental_policies = @[
+      base::SysUTF8ToNSString(policy::key::kAutofillAddressEnabled),
       base::SysUTF8ToNSString(policy::key::kAutofillCreditCardEnabled),
       base::SysUTF8ToNSString(policy::key::kChromeVariations),
       base::SysUTF8ToNSString(policy::key::kDefaultPopupsSetting),
       base::SysUTF8ToNSString(policy::key::kDefaultSearchProviderEnabled),
       base::SysUTF8ToNSString(policy::key::kDefaultSearchProviderName),
       base::SysUTF8ToNSString(policy::key::kDefaultSearchProviderSearchURL),
-      base::SysUTF8ToNSString(policy::key::kPasswordManagerEnabled)
+      base::SysUTF8ToNSString(policy::key::kPasswordManagerEnabled),
+      base::SysUTF8ToNSString(policy::key::kTranslateEnabled)
     ];
 
     // Define sample policies to enable.
     NSDictionary* testing_policies = @{
       base::SysUTF8ToNSString(policy::key::kEnableExperimentalPolicies) :
           experimental_policies,
+
+      base::SysUTF8ToNSString(policy::key::kAutofillAddressEnabled) : @NO,
 
       base::SysUTF8ToNSString(policy::key::kAutofillCreditCardEnabled) : @NO,
 
@@ -758,6 +762,8 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
           @"Google",
 
       base::SysUTF8ToNSString(policy::key::kPasswordManagerEnabled) : @NO,
+
+      base::SysUTF8ToNSString(policy::key::kTranslateEnabled) : @NO,
     };
     NSDictionary* registration_defaults =
         @{kPolicyLoaderIOSConfigurationKey : testing_policies};

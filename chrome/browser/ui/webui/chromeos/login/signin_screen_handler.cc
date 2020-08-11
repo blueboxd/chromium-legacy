@@ -55,7 +55,6 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -73,6 +72,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -315,10 +315,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("ownerUserPattern", IDS_LOGIN_POD_OWNER_USER);
   builder->Add("removeUser", IDS_LOGIN_POD_REMOVE_USER);
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   builder->Add("disabledAddUserTooltip",
-               connector->IsEnterpriseManaged()
+               webui::IsEnterpriseManaged()
                    ? IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE
                    : IDS_DISABLED_ADD_USER_TOOLTIP);
 
@@ -1073,9 +1071,7 @@ void SigninScreenHandler::HandleToggleEnrollmentScreen() {
 }
 
 void SigninScreenHandler::HandleToggleKioskEnableScreen() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (delegate_ && !connector->IsEnterpriseManaged() &&
+  if (delegate_ && !webui::IsEnterpriseManaged() &&
       KioskAppManager::IsConsumerKioskEnabled() &&
       LoginDisplayHost::default_host()) {
     delegate_->ShowKioskEnableScreen();
@@ -1083,9 +1079,7 @@ void SigninScreenHandler::HandleToggleKioskEnableScreen() {
 }
 
 void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (delegate_ && !connector->IsEnterpriseManaged())
+  if (delegate_ && !webui::IsEnterpriseManaged())
     delegate_->ShowKioskAutolaunchScreen();
 }
 

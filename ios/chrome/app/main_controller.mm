@@ -1271,7 +1271,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @implementation MainController (TestingOnly)
 
 - (void)setStartupParametersWithURL:(const GURL&)launchURL {
-  DCHECK(!IsSceneStartupSupported());
   NSString* sourceApplication = @"Fake App";
   SceneState* sceneState = self.appState.foregroundActiveScene;
   sceneState.controller.startupParameters = [ChromeAppStartupParameters

@@ -32,6 +32,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -347,7 +348,8 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
   input.set_prefer_keyword(prefer_keyword);
   if (prefer_keyword)
     input.set_keyword_mode_entry_method(metrics::OmniboxEventProto::TAB);
-  input.set_from_omnibox_focus(zero_suggest);
+  input.set_focus_type(zero_suggest ? OmniboxFocusType::ON_FOCUS
+                                    : OmniboxFocusType::DEFAULT);
 
   controller_->Start(input);
 }

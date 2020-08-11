@@ -160,10 +160,8 @@ void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
 void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
     std::unique_ptr<PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
-  PrintMsg_Print_Params params;
-  if (!printer_query || printer_query->last_status() != PrintingContext::OK) {
-    params.Reset();
-  } else {
+  mojom::PrintParams params;
+  if (printer_query && printer_query->last_status() == PrintingContext::OK) {
     RenderParamsFromPrintSettings(printer_query->settings(), &params);
     params.document_cookie = printer_query->cookie();
   }

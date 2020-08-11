@@ -36,7 +36,6 @@ void UsbDeviceMac::Open(OpenCallback callback) {
     std::move(callback).Run(nullptr);
     return;
   }
-
   // IOServiceGetMatchingService consumes a reference to the matching dictionary
   // passed to it.
   base::mac::ScopedIOObject<io_service_t> usb_device(
@@ -60,13 +59,12 @@ void UsbDeviceMac::Open(OpenCallback callback) {
   }
 
   base::mac::ScopedIOPluginInterface<IOUSBDeviceInterface182> device_interface;
-  IOReturn result =
-      (*plugin_interface)
-          ->QueryInterface(
-              plugin_interface.get(),
-              CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID),
-              reinterpret_cast<LPVOID*>(device_interface.InitializeInto()));
-  if (result || !device_interface) {
+  kr = (*plugin_interface)
+           ->QueryInterface(
+               plugin_interface.get(),
+               CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID),
+               reinterpret_cast<LPVOID*>(device_interface.InitializeInto()));
+  if (kr != kIOReturnSuccess || !device_interface) {
     USB_LOG(ERROR) << "Couldn’t create a device interface.";
     std::move(callback).Run(nullptr);
     return;
@@ -83,8 +81,7 @@ void UsbDeviceMac::Open(OpenCallback callback) {
       this, std::move(device_interface));
 
   handles().push_back(device_handle.get());
-
-  std::move(callback).Run(nullptr);
+  std::move(callback).Run(device_handle);
 }
 
 }  // namespace device

@@ -18,7 +18,7 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "pdf/paint_manager.h"
-#include "pdf/pdf_engine.h"
+#include "pdf/pdf_view_plugin_base.h"
 #include "pdf/preview_mode_client.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/cpp/dev/printing_dev.h"
@@ -46,11 +46,11 @@ class Graphics;
 class PaintReadyRect;
 class PDFiumEngine;
 
-class OutOfProcessInstance : public pp::Instance,
+class OutOfProcessInstance : public PdfViewPluginBase,
+                             public pp::Instance,
                              public pp::Find_Private,
                              public pp::Printing_Dev,
                              public PaintManager::Client,
-                             public PDFEngine::Client,
                              public PreviewModeClient::Client {
  public:
   explicit OutOfProcessInstance(PP_Instance instance);
@@ -107,7 +107,7 @@ class OutOfProcessInstance : public pp::Instance,
   void DidOpen(int32_t result);
   void DidOpenPreview(int32_t result);
 
-  // PDFEngine::Client implementation.
+  // PdfViewPluginBase implementation.
   void ProposeDocumentLayout(const DocumentLayout& layout) override;
   void Invalidate(const pp::Rect& rect) override;
   void DidScroll(const gfx::Vector2d& offset) override;
@@ -407,8 +407,6 @@ class OutOfProcessInstance : public pp::Instance,
   };
 
   PrintSettings print_settings_;
-
-  std::unique_ptr<PDFiumEngine> engine_;
 
   // The PreviewModeClient used for print preview. Will be passed to
   // |preview_engine_|.

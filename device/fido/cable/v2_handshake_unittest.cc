@@ -8,11 +8,22 @@
 #include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
+#include "url/gurl.h"
 
 namespace device {
 namespace cablev2 {
 
 namespace {
+
+TEST(CableV2Encoding, TunnelServerURLs) {
+  // Test that a domain name survives an encode-decode round trip.
+  constexpr uint32_t encoded =
+      tunnelserver::EncodeDomain("abcd", tunnelserver::TLD::NET);
+  uint8_t tunnel_id[16] = {0};
+  const GURL url =
+      tunnelserver::GetURL(encoded, tunnelserver::Action::kNew, tunnel_id);
+  EXPECT_TRUE(url.spec().find("//abcd.net/") != std::string::npos) << url;
+}
 
 TEST(CableV2Encoding, PaddedCBOR) {
   cbor::Value::MapValue map;

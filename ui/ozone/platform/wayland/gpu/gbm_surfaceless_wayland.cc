@@ -13,6 +13,7 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
+#include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
 
 namespace ui {
 
@@ -234,13 +235,19 @@ void GbmSurfacelessWayland::MaybeSubmitFrames() {
       return;
     }
 
-    DCHECK_EQ(submitted_frame->planes.size(), 1u);
-    submitted_frame->buffer_id = submitted_frame->planes.back().buffer_id;
-    buffer_manager_->CommitBuffer(widget_,
-                                  submitted_frame->planes.back().buffer_id,
-                                  submitted_frame->damage_region_);
-    submitted_frame->planes.clear();
+    std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr> overlay_configs;
+    for (const auto& plane : submitted_frame->planes) {
+      overlay_configs.push_back(
+          ui::ozone::mojom::WaylandOverlayConfig::From(plane.plane));
+      overlay_configs.back()->buffer_id = plane.buffer_id;
+      if (plane.plane.z_order == 0) {
+        overlay_configs.back()->damage_region = submitted_frame->damage_region_;
+        submitted_frame->buffer_id = plane.buffer_id;
+      }
+    }
+    buffer_manager_->CommitOverlays(widget_, std::move(overlay_configs));
 
+    submitted_frame->planes.clear();
     submitted_frames_.push_back(std::move(submitted_frame));
   }
 }
@@ -250,7 +257,7 @@ EGLSyncKHR GbmSurfacelessWayland::InsertFence(bool implicit) {
                                 EGL_SYNC_PRIOR_COMMANDS_IMPLICIT_EXTERNAL_ARM,
                                 EGL_NONE};
   return eglCreateSyncKHR(GetDisplay(), EGL_SYNC_FENCE_KHR,
-                          implicit ? attrib_list : NULL);
+                          implicit ? attrib_list : nullptr);
 }
 
 void GbmSurfacelessWayland::FenceRetired(PendingFrame* frame) {

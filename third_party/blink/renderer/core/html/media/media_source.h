@@ -34,7 +34,6 @@
 #include <memory>
 #include "third_party/blink/public/platform/web_time_range.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -45,15 +44,19 @@ class HTMLMediaElement;
 class TimeRanges;
 class TrackBase;
 
-class CORE_EXPORT MediaSource : public URLRegistrable,
-                                public GarbageCollectedMixin {
+// Interface for the Media Source Extensions (MSE) API's MediaSource object
+// implementation (see also https://w3.org/TR/media-source/). Web apps can
+// extend an HTMLMediaElement's instance to use the MSE API (also known as
+// "attaching MSE to a media element") by using a Media Source object URL as the
+// media element's src attribute or the src attribute of a <source> inside the
+// media element.
+// TODO(https://crbug.com/878133): Migrate the HTMLME<->MS API communication to
+// be moderated by MediaSourceAttachment. Lifetime management of attached
+// HTMLMediaElement+MSE object groups using Oilpan may also be moved to be
+// moderated by MediaSourceAttachment, hopefully mitigating the need for this
+// interface in core eventually.
+class CORE_EXPORT MediaSource : public GarbageCollectedMixin {
  public:
-  static void SetRegistry(URLRegistry*);
-  static MediaSource* Lookup(const String& url) {
-    return registry_ ? static_cast<MediaSource*>(registry_->Lookup(url))
-                     : nullptr;
-  }
-
   // These two methods are called in sequence when an HTMLMediaElement is
   // attempting to attach to this object.  The WebMediaSource is not available
   // to the element initially, so between the two calls, the attachment could be
@@ -85,12 +88,6 @@ class CORE_EXPORT MediaSource : public URLRegistrable,
   virtual WebTimeRanges SeekableInternal() const = 0;
   virtual TimeRanges* Buffered() const = 0;
   virtual void OnTrackChanged(TrackBase*) = 0;
-
-  // URLRegistrable
-  URLRegistry& Registry() const override { return *registry_; }
-
- private:
-  static URLRegistry* registry_;
 };
 
 }  // namespace blink

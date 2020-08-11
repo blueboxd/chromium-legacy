@@ -24,6 +24,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time_override.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -700,13 +702,8 @@ ChromiumEnv::ChromiumEnv(const std::string& name)
 
 ChromiumEnv::ChromiumEnv(const std::string& name,
                          std::unique_ptr<storage::FilesystemProxy> filesystem)
-    : filesystem_(std::move(filesystem)),
-      name_(name),
-      bgsignal_(&mu_),
-      started_bgthread_(false) {
+    : filesystem_(std::move(filesystem)), name_(name) {
   DCHECK(filesystem_);
-
-  bgsignal_.declare_only_used_while_idle();
 
   size_t max_open_files = base::GetMaxFds();
   if (base::FeatureList::IsEnabled(kLevelDBFileHandleEviction) &&
@@ -1041,46 +1038,9 @@ class Thread : public base::PlatformThread::Delegate {
 };
 
 void ChromiumEnv::Schedule(ScheduleFunc* function, void* arg) {
-  mu_.Acquire();
-
-  // Start background thread if necessary
-  if (!started_bgthread_) {
-    started_bgthread_ = true;
-    StartThread(&ChromiumEnv::BGThreadWrapper, this);
-  }
-
-  // If the queue is currently empty, the background thread may currently be
-  // waiting.
-  if (queue_.empty()) {
-    bgsignal_.Signal();
-  }
-
-  // Add to priority queue
-  queue_.push_back(BGItem());
-  queue_.back().function = function;
-  queue_.back().arg = arg;
-
-  mu_.Release();
-}
-
-void ChromiumEnv::BGThread() {
-  base::PlatformThread::SetName(name_.c_str());
-
-  while (true) {
-    // Wait until there is an item that is ready to run
-    mu_.Acquire();
-    while (queue_.empty()) {
-      bgsignal_.Wait();
-    }
-
-    void (*function)(void*) = queue_.front().function;
-    void* arg = queue_.front().arg;
-    queue_.pop_front();
-
-    mu_.Release();
-    TRACE_EVENT0("leveldb", "ChromiumEnv::BGThread-Task");
-    (*function)(arg);
-  }
+  base::ThreadPool::PostTask(FROM_HERE,
+                             {base::MayBlock(), base::WithBaseSyncPrimitives()},
+                             base::BindOnce(function, arg));
 }
 
 void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {

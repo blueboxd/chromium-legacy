@@ -18,7 +18,8 @@ namespace features {
 
 extern const base::Feature kClosedTabCache;
 
-extern const base::Feature kEnablePromoBrowserCommands;
+extern const base::Feature kPromoBrowserCommands;
+extern const char kPromoBrowserCommandIdParam[];
 
 #if defined(OS_CHROMEOS)
 extern const base::Feature kDoubleTapToZoomInTabletMode;

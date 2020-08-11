@@ -7,9 +7,10 @@ module ui.ozone.mojom;
 import "mojo/public/mojom/base/file_path.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/accelerated_widget.mojom";
+import "ui/gfx/mojom/buffer_types.mojom";
 import "ui/gfx/mojom/presentation_feedback.mojom";
 import "ui/gfx/mojom/swap_result.mojom";
-import "ui/gfx/mojom/buffer_types.mojom";
+import "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom";
 
 // Used by the GPU for communication with the WaylandBufferManagerHost in
 // the browser process.
@@ -75,6 +76,11 @@ interface WaylandBufferManagerHost {
   // the ones on the gpu process.
   CommitBuffer(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id,
                gfx.mojom.Rect damage_region);
+
+  // Send overlay configurations for a frame to a WaylandWindow with the
+  // following |widget|.
+  CommitOverlays(gfx.mojom.AcceleratedWidget widget,
+                 array<WaylandOverlayConfig> overlays);
 };
 
 
@@ -92,7 +98,7 @@ interface WaylandBufferManagerGpu {
   Initialize(pending_remote<WaylandBufferManagerHost> remote_host,
              map<gfx.mojom.BufferFormat,
                  array<uint64>> buffer_formats_with_modifiers,
-            bool supports_dma_buf);
+             bool supports_dma_buf);
 
   // Signals about swap completion.
   OnSubmission(gfx.mojom.AcceleratedWidget widget,

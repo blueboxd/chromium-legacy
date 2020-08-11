@@ -306,9 +306,11 @@ void DragWindowFromShelfController::CancelDrag() {
   ReshowHiddenWindowsOnDragEnd();
 
   window_drag_result_ = ShelfWindowDragResult::kDragCanceled;
+  // When the drag is cancelled, the window should restore to its original snap
+  // position.
   OnDragEnded(previous_location_in_screen_,
               /*should_drop_window_in_overview=*/false,
-              /*snap_position=*/SplitViewController::NONE);
+              /*snap_position=*/initial_snap_position_);
   WindowState::Get(window_)->DeleteDragDetails();
 }
 
@@ -376,6 +378,11 @@ void DragWindowFromShelfController::OnDragStarted(
   // to be detached from splitview before start dragging.
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  // Preserve initial snap position
+  if (split_view_controller->IsWindowInSplitView(window_)) {
+    initial_snap_position_ =
+        split_view_controller->GetPositionOfSnappedWindow(window_);
+  }
   split_view_controller->OnWindowDragStarted(window_);
   // Note SplitViewController::OnWindowDragStarted() may open overview.
   if (Shell::Get()->overview_controller()->InOverviewSession())
@@ -569,10 +576,14 @@ DragWindowFromShelfController::GetSnapPositionOnDragEnd(
     const gfx::PointF& location_in_screen,
     base::Optional<float> velocity_y) const {
   if (!Shell::Get()->overview_controller()->InOverviewSession() ||
-      ShouldRestoreToOriginalBounds(location_in_screen) ||
       ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
     return SplitViewController::NONE;
   }
+
+  // When dragging ends but restore to original bounds, we should restore
+  // window's initial snap position
+  if (ShouldRestoreToOriginalBounds(location_in_screen))
+    return initial_snap_position_;
 
   return GetSnapPosition(location_in_screen);
 }

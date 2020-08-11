@@ -240,7 +240,7 @@ std::unique_ptr<WebApp> WebAppMigrationManager::MigrateBookmarkApp(
 
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu)) {
-    web_app->SetShortcutInfos(
+    web_app->SetShortcutsMenuItemInfos(
         bookmark_app_registrar_.GetAppShortcutInfos(app_id));
     web_app->SetDownloadedShortcutsMenuIconsSizes(
         bookmark_app_registrar_.GetAppDownloadedShortcutsMenuIconsSizes(

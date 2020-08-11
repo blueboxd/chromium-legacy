@@ -208,7 +208,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   void SkipQueuedDrawCommands();
   void SetRestoreClipStackCallback(RestoreMatrixClipStackCb);
   bool needs_flush() const { return needs_flush_; }
-  void RestoreBackBuffer(const cc::PaintImage&);
+  virtual void RestoreBackBuffer(const cc::PaintImage&);
 
   ResourceProviderType GetType() const { return type_; }
   bool HasRecordedDrawOps() const;

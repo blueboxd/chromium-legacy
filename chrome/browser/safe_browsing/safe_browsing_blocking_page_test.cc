@@ -46,6 +46,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/google/core/common/google_util.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
@@ -92,6 +93,16 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// Delayed warnings feature checks if the Suspicious Site Reporter extension
+// is installed. These includes are to fake-install this extension.
+#include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
+#include "chrome/browser/extensions/crx_installer.h"
+#include "extensions/browser/notification_types.h"
+#include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/extension.h"
+#endif
 
 using chrome_browser_interstitials::SecurityInterstitialIDNTest;
 using content::BrowserThread;
@@ -1845,6 +1856,8 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
+    SafeBrowsingUserInteractionObserver::
+        ResetSuspiciousSiteReporterExtensionIdForTesting();
   }
 
   void CreatedBrowserMainParts(
@@ -1971,6 +1984,34 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
   }
 
  protected:
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Installs an extension and returns its ID.
+  std::string InstallTestExtension() {
+    base::FilePath path = ui_test_utils::GetTestFilePath(
+        base::FilePath().AppendASCII("extensions"),
+        base::FilePath().AppendASCII("theme.crx"));
+    extensions::ExtensionService* service =
+        extensions::ExtensionSystem::Get(browser()->profile())
+            ->extension_service();
+    scoped_refptr<extensions::CrxInstaller> installer =
+        extensions::CrxInstaller::CreateSilent(service);
+
+    extensions::ChromeExtensionTestNotificationObserver observer(browser());
+    observer.Watch(extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+                   content::Source<extensions::CrxInstaller>(installer.get()));
+
+    installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
+    installer->set_install_immediately(true);
+    installer->set_allow_silent_install(true);
+    installer->set_off_store_install_allow_reason(
+        extensions::CrxInstaller::OffStoreInstallAllowedInTest);
+    installer->set_creation_flags(extensions::Extension::FROM_WEBSTORE);
+    installer->InstallCrx(path);
+    observer.Wait();
+    return observer.last_loaded_extension_id();
+  }
+#endif
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
@@ -2045,6 +2086,57 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   histograms.ExpectBucketCount(kDelayedWarningsHistogram,
                                DelayedWarningEvent::kPageLoaded, 1);
   histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kWarningShownOnKeypress, 1);
+}
+
+// Same as KeyPress_WarningShown, but user disabled URL elision by enabling
+// "Always Show Full URLs" option. A separate histogram must be recorded.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       KeyPress_WarningShown_UrlElisionDisabled) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      omnibox::kPreventUrlElisionsInOmnibox, true);
+
+  base::HistogramTester histograms;
+  NavigateAndAssertNoInterstitial();
+
+  // Type something. An interstitial should be shown.
+  EXPECT_TRUE(TypeAndWaitForInterstitial(browser()));
+
+  EXPECT_TRUE(ClickAndWaitForDetach(browser(), "primary-button"));
+  AssertNoInterstitial(browser(), false);  // Assert the interstitial is gone
+  EXPECT_EQ(GURL(url::kAboutBlankURL),     // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  histograms.ExpectTotalCount(kDelayedWarningsWithElisionDisabledHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsWithElisionDisabledHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsWithElisionDisabledHistogram,
+                               DelayedWarningEvent::kWarningShownOnKeypress, 1);
+}
+
+// Same as KeyPress_WarningShown_UrlElisionDisabled, but user disabled URL
+// elision by installing Suspicious Site Reporter extension.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       KeyPress_WarningShown_UrlElisionDisabled_Extension) {
+  const std::string extension_id = InstallTestExtension();
+  SafeBrowsingUserInteractionObserver::
+      SetSuspiciousSiteReporterExtensionIdForTesting(extension_id.c_str());
+
+  base::HistogramTester histograms;
+  NavigateAndAssertNoInterstitial();
+
+  // Type something. An interstitial should be shown.
+  EXPECT_TRUE(TypeAndWaitForInterstitial(browser()));
+
+  EXPECT_TRUE(ClickAndWaitForDetach(browser(), "primary-button"));
+  AssertNoInterstitial(browser(), false);  // Assert the interstitial is gone
+  EXPECT_EQ(GURL(url::kAboutBlankURL),     // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  histograms.ExpectTotalCount(kDelayedWarningsWithElisionDisabledHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsWithElisionDisabledHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsWithElisionDisabledHistogram,
                                DelayedWarningEvent::kWarningShownOnKeypress, 1);
 }
 

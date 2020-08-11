@@ -121,10 +121,10 @@ TEST_F(PromoBrowserCommandHandlerTest, SupportedCommands) {
 TEST_F(PromoBrowserCommandHandlerTest, DisableHandlingCommands) {
   base::HistogramTester histogram_tester;
 
-  // Disabling features::kEnablePromoBrowserCommands prevents the commands from
-  // being executed.
+  // Disabling features::kPromoBrowserCommands prevents the commands from being
+  // executed.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kEnablePromoBrowserCommands);
+  feature_list.InitAndDisableFeature(features::kPromoBrowserCommands);
 
   // The PromoBrowserCommandHandler instance needs to be recreated for the
   // feature to take effect.

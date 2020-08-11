@@ -312,6 +312,9 @@ extern const char kDebugShortcutsDescription[];
 extern const char kDeviceDiscoveryNotificationsName[];
 extern const char kDeviceDiscoveryNotificationsDescription[];
 
+extern const char kForceEnableDevicesPageName[];
+extern const char kForceEnableDevicesPageDescription[];
+
 extern const char kDisableBestEffortTasksName[];
 extern const char kDisableBestEffortTasksDescription[];
 
@@ -1102,6 +1105,9 @@ extern const char kSafetyCheckAndroidDescription[];
 
 extern const char kProminentDarkModeActiveTabTitleName[];
 extern const char kProminentDarkModeActiveTabTitleDescription[];
+
+extern const char kPromoBrowserCommandsName[];
+extern const char kPromoBrowserCommandsDescription[];
 
 extern const char kPullToRefreshName[];
 extern const char kPullToRefreshDescription[];

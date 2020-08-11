@@ -762,4 +762,9 @@ void CupsPrintersManager::RegisterProfilePrefs(
   PrintServersProvider::RegisterProfilePrefs(registry);
 }
 
+// static
+void CupsPrintersManager::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  PrintServersProvider::RegisterLocalStatePrefs(registry);
+}
+
 }  // namespace chromeos

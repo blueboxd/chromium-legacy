@@ -161,7 +161,7 @@ ResourceCheck CanUseExistingResource(
   // Record the max age / expiry value on this entry in days.
   net::HttpResponseHeaders::FreshnessLifetimes lifetimes =
       http_info->headers->GetFreshnessLifetimes(response_time);
-  base::UmaHistogramCounts10000("appcache.UpdateJobResourceFreshness",
+  base::UmaHistogramCounts10000("appcache.UpdateJob.ResourceFreshness",
                                 lifetimes.freshness.InDays());
 
   // Check HTTP caching semantics based on max-age and expiration headers.

@@ -21,6 +21,7 @@
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "url/gurl.h"
@@ -302,7 +303,7 @@ TEST_F(BuiltinProviderTest, DoesNotSupportMatchesOnFocus) {
   AutocompleteInput input(ASCIIToUTF16("chrome://m"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->matches().empty());
 }

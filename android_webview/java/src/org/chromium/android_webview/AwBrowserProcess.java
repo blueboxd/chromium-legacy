@@ -27,6 +27,7 @@ import org.chromium.android_webview.metrics.AwNonembeddedUmaReplayer;
 import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord;
 import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
+import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -185,7 +186,7 @@ public final class AwBrowserProcess {
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped(
                      "AwBrowserProcess.handleMinidumpsAndSetMetricsConsent")) {
             final boolean enableMinidumpUploadingForTesting = CommandLine.getInstance().hasSwitch(
-                    AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+                    BaseSwitches.ENABLE_CRASH_REPORTER_FOR_TESTING);
             if (enableMinidumpUploadingForTesting) {
                 handleMinidumps(true /* enabled */);
             }

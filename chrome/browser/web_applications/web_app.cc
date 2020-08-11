@@ -209,8 +209,9 @@ void WebApp::SetProtocolHandlers(
   protocol_handlers_ = std::move(handlers);
 }
 
-void WebApp::SetShortcutInfos(std::vector<WebApplicationShortcutsMenuItemInfo>
-                                  shortcuts_menu_item_infos) {
+void WebApp::SetShortcutsMenuItemInfos(
+    std::vector<WebApplicationShortcutsMenuItemInfo>
+        shortcuts_menu_item_infos) {
   shortcuts_menu_item_infos_ = std::move(shortcuts_menu_item_infos);
 }
 

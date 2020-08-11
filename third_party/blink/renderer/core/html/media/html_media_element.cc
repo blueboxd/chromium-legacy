@@ -75,6 +75,7 @@
 #include "third_party/blink/renderer/core/html/media/media_error.h"
 #include "third_party/blink/renderer/core/html/media/media_fragment_uri_parser.h"
 #include "third_party/blink/renderer/core/html/media/media_source.h"
+#include "third_party/blink/renderer/core/html/media/media_source_attachment.h"
 #include "third_party/blink/renderer/core/html/time_ranges.h"
 #include "third_party/blink/renderer/core/html/track/audio_track.h"
 #include "third_party/blink/renderer/core/html/track/audio_track_list.h"
@@ -1193,7 +1194,7 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
 
   bool attempt_load = true;
 
-  media_source_ = MediaSource::Lookup(url.GetString());
+  media_source_ = MediaSourceAttachment::LookupMediaSource(url.GetString());
   if (media_source_) {
     if (media_source_->StartAttachingToMediaElement(this)) {
       // If the associated feature is enabled, auto-revoke the MediaSource

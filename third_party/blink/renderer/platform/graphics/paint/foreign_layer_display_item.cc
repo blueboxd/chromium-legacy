@@ -16,55 +16,22 @@
 
 namespace blink {
 
-namespace {
-
-// It uses DebugName and OwnerNodeId of the input DisplayItemClient, while
-// calculate VisualRect from the layer's offset and bounds.
-class ForeignLayerDisplayItemClient final : public DisplayItemClient {
- public:
-  ForeignLayerDisplayItemClient(const DisplayItemClient& client,
-                                scoped_refptr<cc::Layer> layer)
-      : client_(client), layer_(std::move(layer)) {
-    DCHECK(layer_);
-    Invalidate(PaintInvalidationReason::kUncacheable);
-  }
-
-  String DebugName() const final { return client_.DebugName(); }
-  DOMNodeId OwnerNodeId() const final { return client_.OwnerNodeId(); }
-
-  cc::Layer* GetLayer() const { return layer_.get(); }
-
- private:
-  const DisplayItemClient& client_;
-  scoped_refptr<cc::Layer> layer_;
-};
-
-}  // anonymous namespace
-
 ForeignLayerDisplayItem::ForeignLayerDisplayItem(
     const DisplayItemClient& client,
     Type type,
     scoped_refptr<cc::Layer> layer,
     const IntPoint& offset)
-    : DisplayItem(*new ForeignLayerDisplayItemClient(client, layer),
+    : DisplayItem(client,
                   type,
                   sizeof(*this),
                   IntRect(offset, IntSize(layer->bounds()))),
-      offset_(offset) {
+      offset_(offset),
+      layer_(std::move(layer)) {
   DCHECK(IsForeignLayerType(type));
-  DCHECK(!IsCacheable());
-}
-
-ForeignLayerDisplayItem::~ForeignLayerDisplayItem() {
-  delete &Client();
-}
-
-cc::Layer* ForeignLayerDisplayItem::GetLayer() const {
-  return static_cast<const ForeignLayerDisplayItemClient&>(Client()).GetLayer();
 }
 
 bool ForeignLayerDisplayItem::Equals(const DisplayItem& other) const {
-  return GetType() == other.GetType() &&
+  return DisplayItem::Equals(other) &&
          GetLayer() ==
              static_cast<const ForeignLayerDisplayItem&>(other).GetLayer();
 }

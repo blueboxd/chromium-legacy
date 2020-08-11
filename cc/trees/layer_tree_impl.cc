@@ -2388,11 +2388,6 @@ bool LayerTreeImpl::PointHitsNonFastScrollableRegion(
                          layer.non_fast_scrollable_region(), &layer);
 }
 
-struct HitTestFramedVisibleScrollableOrTouchableFunctor {
-  bool operator()(LayerImpl* layer) const {
-    return layer->HitTestable() && layer->frame_element_id();
-  }
-};
 
 ElementId LayerTreeImpl::FindFrameElementIdAtPoint(
     const gfx::PointF& screen_space_point) {
@@ -2402,10 +2397,18 @@ ElementId LayerTreeImpl::FindFrameElementIdAtPoint(
     return {};
   FindClosestMatchingLayerState state;
   FindClosestMatchingLayer(screen_space_point, layer_list_[0].get(),
-                           HitTestFramedVisibleScrollableOrTouchableFunctor(),
+                           HitTestVisibleScrollableOrTouchableFunctor(),
                            &state);
 
   if (auto* layer = state.closest_match) {
+    ElementId frame_element_id;
+    auto* node =
+        property_trees()->transform_tree.Node(layer->transform_tree_index());
+    while (node && !frame_element_id) {
+      frame_element_id = node->frame_element_id;
+      node = property_trees()->transform_tree.parent(node);
+    }
+
     // TODO(https://crbug.com/1058870): Permit hit testing only if the framed
     // element hit has a simple mask/clip. We don't have enough information
     // about complex masks/clips on the impl-side to do accurate hit testing.
@@ -2414,7 +2417,7 @@ ElementId LayerTreeImpl::FindFrameElementIdAtPoint(
             layer->effect_tree_index());
 
     if (!layer_hit_test_region_is_masked)
-      return layer->frame_element_id();
+      return frame_element_id;
   }
   return {};
 }

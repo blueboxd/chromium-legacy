@@ -174,9 +174,12 @@ class UserScript {
   bool match_about_blank() const { return match_about_blank_; }
   void set_match_about_blank(bool val) { match_about_blank_ = val; }
 
-  // Whether to match data:-scheme URLs.
-  bool match_data_urls() const { return match_data_urls_; }
-  void set_match_data_urls(bool val) { match_data_urls_ = val; }
+  // Whether to match on the origin if an appropriate URL cannot be found for
+  // the frame.
+  bool match_origin_as_fallback() const { return match_origin_as_fallback_; }
+  void set_match_origin_as_fallback(bool val) {
+    match_origin_as_fallback_ = val;
+  }
 
   // The globs, if any, that determine which pages this script runs against.
   // These are only used with "standalone" Greasemonkey-like user scripts.
@@ -237,7 +240,7 @@ class UserScript {
   // Returns true if the script should be applied to the given
   // |effective_document_url|. It is the caller's responsibility to calculate
   // |effective_document_url| based on match_about_blank() and
-  // match_data_urls().
+  // match_origin_as_fallback().
   bool MatchesDocument(const GURL& effective_document_url,
                        bool is_subframe) const;
 
@@ -330,9 +333,11 @@ class UserScript {
   // Defaults to false.
   bool match_about_blank_;
 
-  // Whether the user script should run in data:-scheme frames.
-  // Defaults to false.
-  bool match_data_urls_;
+  // Whether the user script should run in frames whose initiator / precursor
+  // origin matches a match pattern, if an appropriate URL cannot be found for
+  // the frame for matching purposes, such as in the case of about:, data:, and
+  // other schemes.
+  bool match_origin_as_fallback_;
 
   // True if the script should be injected into an incognito tab.
   bool incognito_enabled_;

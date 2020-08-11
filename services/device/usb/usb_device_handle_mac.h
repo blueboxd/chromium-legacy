@@ -12,22 +12,36 @@
 #include <IOKit/IOReturn.h>
 #include <IOKit/usb/IOUSBLib.h>
 
+#include <memory>
 #include <vector>
 
+#include "base/containers/flat_set.h"
+#include "base/containers/unique_ptr_adapters.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioplugininterface.h"
-#include "base/memory/ref_counted.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
+
+namespace base {
+class RefCountedBytes;
+}
 
 namespace device {
 
 class UsbDeviceMac;
+struct Transfer;
 
 class UsbDeviceHandleMac : public UsbDeviceHandle {
  public:
-  UsbDeviceHandleMac(const UsbDeviceHandleMac&) = delete;
-  UsbDeviceHandleMac& operator=(const UsbDeviceHandleMac&) = delete;
+  using ScopedIOUSBDeviceInterface =
+      base::mac::ScopedIOPluginInterface<IOUSBDeviceInterface182>;
+  using ScopedIOUSBInterfaceInterface =
+      base::mac::ScopedIOPluginInterface<IOUSBInterfaceInterface182>;
 
   // UsbDeviceHandle implementation:
+  UsbDeviceHandleMac(scoped_refptr<UsbDeviceMac> device,
+                     ScopedIOUSBDeviceInterface device_interface);
+  UsbDeviceHandleMac(const UsbDeviceHandleMac&) = delete;
+  UsbDeviceHandleMac& operator=(const UsbDeviceHandleMac&) = delete;
   scoped_refptr<UsbDevice> GetDevice() const override;
   void Close() override;
   void SetConfiguration(int configuration_value,
@@ -67,17 +81,64 @@ class UsbDeviceHandleMac : public UsbDeviceHandle {
   const mojom::UsbInterfaceInfo* FindInterfaceByEndpoint(
       uint8_t endpoint_address) override;
 
-  UsbDeviceHandleMac(scoped_refptr<UsbDeviceMac> device,
-                     base::mac::ScopedIOPluginInterface<IOUSBDeviceInterface182>
-                         device_interface);
-
  protected:
   ~UsbDeviceHandleMac() override;
-  friend class UsbDeviceMac;
 
  private:
-  base::mac::ScopedIOPluginInterface<IOUSBDeviceInterface182> device_interface_;
+  struct EndpointMapValue {
+    const mojom::UsbInterfaceInfo* interface;
+    const mojom::UsbEndpointInfo* endpoint;
+    uint8_t pipe_reference;
+  };
+
+  void BulkIn(const ScopedIOUSBInterfaceInterface& interface_interface,
+              uint8_t pipe_reference,
+              scoped_refptr<base::RefCountedBytes> buffer,
+              uint32_t timeout,
+              std::unique_ptr<Transfer> transfer);
+  void BulkOut(const ScopedIOUSBInterfaceInterface& interface_interface,
+               uint8_t pipe_reference,
+               scoped_refptr<base::RefCountedBytes> buffer,
+               uint32_t timeout,
+               std::unique_ptr<Transfer> transfer);
+  void InterruptIn(const ScopedIOUSBInterfaceInterface& interface_interface,
+                   uint8_t pipe_reference,
+                   scoped_refptr<base::RefCountedBytes> buffer,
+                   std::unique_ptr<Transfer> transfer);
+  void InterruptOut(const ScopedIOUSBInterfaceInterface& interface_interface,
+                    uint8_t pipe_reference,
+                    scoped_refptr<base::RefCountedBytes> buffer,
+                    std::unique_ptr<Transfer> transfer);
+  // Refresh endpoint_map_ after ClaimInterface, ReleaseInterface and
+  // SetInterfaceAlternateSetting. It is needed so that endpoints can be mapped
+  // to their respective mojom Interface.
+  void RefreshEndpointMap();
+
+  void ReportIsochronousTransferError(
+      UsbDeviceHandle::IsochronousTransferCallback callback,
+      std::vector<uint32_t> packet_lengths,
+      mojom::UsbTransferStatus status);
+
+  void Clear();
+
+  void OnAsyncGeneric(IOReturn result, size_t size, Transfer* transfer);
+  void OnAsyncIsochronous(IOReturn result, size_t size, Transfer* transfer);
+  static void AsyncIoCallback(void* refcon, IOReturn result, void* arg0);
+
+  // A map from the endpoint indices to its corresponding EndpointMapValue,
+  // which contains the Interface and Endpoint Mojo structures.
+  using EndpointMap = base::flat_map<int, EndpointMapValue>;
+  EndpointMap endpoint_map_;
+
+  base::flat_set<std::unique_ptr<Transfer>, base::UniquePtrComparator>
+      transfers_;
+
+  ScopedIOUSBDeviceInterface device_interface_;
   scoped_refptr<UsbDeviceMac> device_;
+
+  // Both maps take the interface number in as the respective key.
+  base::flat_map<uint8_t, ScopedIOUSBInterfaceInterface> interfaces_;
+  base::flat_map<uint8_t, base::ScopedCFTypeRef<CFRunLoopSourceRef>> sources_;
 };
 
 }  // namespace device

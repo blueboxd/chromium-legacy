@@ -8,14 +8,25 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 
-namespace safe_browsing {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+namespace {
+// Id for extension that enables users to report sites to Safe Browsing.
+const char kPreventElisionExtensionId[] = "jknemblkbdhdcpllfgbfekkdciegfboi";
+}  // namespace
+
+namespace safe_browsing {
 // If true, a delayed warning will be shown when the user clicks on the page.
 // If false, the warning won't be shown, but a metric will be recorded on the
 // first click.
@@ -24,15 +35,35 @@ const base::FeatureParam<bool> kEnableMouseClicks{&kDelayedWarnings, "mouse",
 
 const char kDelayedWarningsHistogram[] = "SafeBrowsing.DelayedWarnings.Event";
 
+const char kDelayedWarningsWithElisionDisabledHistogram[] =
+    "SafeBrowsing.DelayedWarnings.Event_UrlElisionDisabled";
+
 namespace {
 const char kWebContentsUserDataKey[] =
     "web_contents_safe_browsing_user_interaction_observer";
 
-void RecordUMA(DelayedWarningEvent event) {
-  base::UmaHistogramEnumeration(kDelayedWarningsHistogram, event);
+bool IsUrlElisionDisabled(Profile* profile,
+                          const char* suspicious_site_reporter_extension_id) {
+  if (profile &&
+      profile->GetPrefs()->GetBoolean(omnibox::kPreventUrlElisionsInOmnibox)) {
+    return true;
+  }
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  DCHECK(suspicious_site_reporter_extension_id);
+  if (profile && extensions::ExtensionRegistry::Get(profile)
+                     ->enabled_extensions()
+                     .Contains(suspicious_site_reporter_extension_id)) {
+    return true;
+  }
+#endif
+  return false;
 }
 
 }  // namespace
+
+// static
+const char* SafeBrowsingUserInteractionObserver::
+    suspicious_site_reporter_extension_id_ = kPreventElisionExtensionId;
 
 SafeBrowsingUserInteractionObserver::SafeBrowsingUserInteractionObserver(
     content::WebContents* web_contents,
@@ -222,6 +253,29 @@ void SafeBrowsingUserInteractionObserver::OnPasswordSaveOrAutofillDenied() {
 void SafeBrowsingUserInteractionObserver::OnDesktopCaptureRequest() {
   ShowInterstitial(DelayedWarningEvent::kWarningShownOnDesktopCaptureRequest);
   // DO NOT add code past this point. |this| is destroyed.
+}
+
+// static
+void SafeBrowsingUserInteractionObserver::
+    SetSuspiciousSiteReporterExtensionIdForTesting(const char* extension_id) {
+  suspicious_site_reporter_extension_id_ = extension_id;
+}
+
+// static
+void SafeBrowsingUserInteractionObserver::
+    ResetSuspiciousSiteReporterExtensionIdForTesting() {
+  suspicious_site_reporter_extension_id_ = kPreventElisionExtensionId;
+}
+
+void SafeBrowsingUserInteractionObserver::RecordUMA(DelayedWarningEvent event) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  if (IsUrlElisionDisabled(profile, suspicious_site_reporter_extension_id_)) {
+    base::UmaHistogramEnumeration(kDelayedWarningsWithElisionDisabledHistogram,
+                                  event);
+  } else {
+    base::UmaHistogramEnumeration(kDelayedWarningsHistogram, event);
+  }
 }
 
 bool SafeBrowsingUserInteractionObserver::HandleKeyPress(

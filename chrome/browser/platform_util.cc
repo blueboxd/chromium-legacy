@@ -55,6 +55,10 @@ void DisableShellOperationsForTesting() {
   shell_operations_allowed = false;
 }
 
+bool AreShellOperationsAllowed() {
+  return shell_operations_allowed;
+}
+
 }  // namespace internal
 
 void OpenItem(Profile* profile,

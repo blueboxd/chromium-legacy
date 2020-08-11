@@ -678,13 +678,11 @@ void UiControllerAndroid::UpdateActions(
   JNIEnv* env = AttachCurrentThread();
 
   bool has_close_or_cancel = false;
-  auto jchips = Java_AutofillAssistantUiController_createChipList(env);
-  auto jsticky_chips = Java_AutofillAssistantUiController_createChipList(env);
+  auto chips = Java_AutofillAssistantUiController_createChipList(env);
   int user_action_count = static_cast<int>(user_actions.size());
   for (int i = 0; i < user_action_count; i++) {
     const auto& action = user_actions[i];
     const Chip& chip = action.chip();
-    base::android::ScopedJavaLocalRef<jobject> jchip;
     switch (chip.type) {
       default:  // Ignore actions with other chip types or with no chips.
         break;
@@ -694,17 +692,16 @@ void UiControllerAndroid::UpdateActions(
         // can hide all the chips except for the cancel chip when the keyboard
         // is showing.
         // TODO(b/149543425): Find a better way to do this.
-        jchip =
-            Java_AutofillAssistantUiController_createHighlightedActionButton(
-                env, java_object_, chip.icon,
-                base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-                !action.enabled(), chip.sticky,
-                base::android::ConvertUTF8ToJavaString(env, ""));
+        Java_AutofillAssistantUiController_addHighlightedActionButton(
+            env, java_object_, chips, chip.icon,
+            base::android::ConvertUTF8ToJavaString(env, chip.text), i,
+            !action.enabled(), chip.sticky,
+            base::android::ConvertUTF8ToJavaString(env, ""));
         break;
 
       case NORMAL_ACTION:
-        jchip = Java_AutofillAssistantUiController_createActionButton(
-            env, java_object_, chip.icon,
+        Java_AutofillAssistantUiController_addActionButton(
+            env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
             !action.enabled(), chip.sticky,
             base::android::ConvertUTF8ToJavaString(env, ""));
@@ -713,8 +710,8 @@ void UiControllerAndroid::UpdateActions(
       case CANCEL_ACTION:
         // A Cancel button sneaks in an UNDO snackbar before executing the
         // action, while a close button behaves like a normal button.
-        jchip = Java_AutofillAssistantUiController_createCancelButton(
-            env, java_object_, chip.icon,
+        Java_AutofillAssistantUiController_addCancelButton(
+            env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
             !action.enabled(), chip.sticky,
             base::android::ConvertUTF8ToJavaString(env, kCancelChipIdentifier));
@@ -722,8 +719,8 @@ void UiControllerAndroid::UpdateActions(
         break;
 
       case CLOSE_ACTION:
-        jchip = Java_AutofillAssistantUiController_createActionButton(
-            env, java_object_, chip.icon,
+        Java_AutofillAssistantUiController_addActionButton(
+            env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
             !action.enabled(), chip.sticky,
             base::android::ConvertUTF8ToJavaString(env, ""));
@@ -731,50 +728,33 @@ void UiControllerAndroid::UpdateActions(
         break;
 
       case DONE_ACTION:
-        jchip =
-            Java_AutofillAssistantUiController_createHighlightedActionButton(
-                env, java_object_, chip.icon,
-                base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-                !action.enabled(), chip.sticky,
-                base::android::ConvertUTF8ToJavaString(env, ""));
+        Java_AutofillAssistantUiController_addHighlightedActionButton(
+            env, java_object_, chips, chip.icon,
+            base::android::ConvertUTF8ToJavaString(env, chip.text), i,
+            !action.enabled(), chip.sticky,
+            base::android::ConvertUTF8ToJavaString(env, ""));
         has_close_or_cancel = true;
         break;
-    }
-    if (jchip) {
-      Java_AutofillAssistantUiController_appendChipToList(env, jchips, jchip);
-      if (chip.sticky) {
-        Java_AutofillAssistantUiController_appendChipToList(env, jsticky_chips,
-                                                            jchip);
-      }
     }
   }
 
   if (!has_close_or_cancel) {
-    base::android::ScopedJavaLocalRef<jobject> jcancel_chip;
     if (ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
-      jcancel_chip = Java_AutofillAssistantUiController_createCloseButton(
-          env, java_object_, ICON_CLEAR,
+      Java_AutofillAssistantUiController_addCloseButton(
+          env, java_object_, chips, ICON_CLEAR,
           base::android::ConvertUTF8ToJavaString(env, ""),
           /* disabled= */ false, /* sticky= */ true,
           base::android::ConvertUTF8ToJavaString(env, ""));
     } else if (ui_delegate_->GetState() != AutofillAssistantState::INACTIVE) {
-      jcancel_chip = Java_AutofillAssistantUiController_createCancelButton(
-          env, java_object_, ICON_CLEAR,
+      Java_AutofillAssistantUiController_addCancelButton(
+          env, java_object_, chips, ICON_CLEAR,
           base::android::ConvertUTF8ToJavaString(env, ""), -1,
           /* disabled= */ false, /* sticky= */ true,
           base::android::ConvertUTF8ToJavaString(env, kCancelChipIdentifier));
     }
-    if (jcancel_chip) {
-      Java_AutofillAssistantUiController_appendChipToList(env, jchips,
-                                                          jcancel_chip);
-      Java_AutofillAssistantUiController_appendChipToList(env, jsticky_chips,
-                                                          jcancel_chip);
-    }
   }
 
-  Java_AutofillAssistantUiController_setActions(env, java_object_, jchips);
-  Java_AssistantHeaderModel_setChips(AttachCurrentThread(), GetHeaderModel(),
-                                     jsticky_chips);
+  Java_AutofillAssistantUiController_setActions(env, java_object_, chips);
 }
 
 void UiControllerAndroid::OnUserActionsChanged(

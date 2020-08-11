@@ -971,6 +971,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_PREFS_SAFE_BROWSING_SUMMARY" desc="Summary for the Safe Browsing preferences.">
         <ph name="SAFE_BROWSING_MODE">%1$s<ex>Enhanced protection</ex></ph> is on
       </message>
+      <message name="IDS_PREFS_SAFE_BROWSING_NO_PROTECTION_SUMMARY" desc="Summary for the Safe Browsing preferences when Safe Browsing is off.">
+        Safe Browsing is off
+      </message>
       <message name="IDS_PREFS_SECTION_SAFE_BROWSING_TITLE" desc="Title for the Safe Browsing section. [CHAR-LIMIT=32]">
         Safe Browsing
       </message>
@@ -1023,7 +1026,7 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_BULLET_TWO" desc="Second bullet point under the Safe Browsing standard protection mode.">
         Checks URLs with a list of unsafe sites stored in Chrome. If a site tries to steal your password, or when you download a harmful file, Chrome may also send URLs, including bits of page content, to Safe Browsing.
       </message>
-      <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_EXTENDED_REPORTING_TITLE" desc="Title for Safe Browsing extended reporting. [CHAR-LIMIT=32]">
+      <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_EXTENDED_REPORTING_TITLE" desc="Title for Safe Browsing extended reporting.">
         Help improve security on the web
       </message>
       <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_EXTENDED_REPORTING_SUMMARY" desc="Summary for Safe Browsing extended reporting.">

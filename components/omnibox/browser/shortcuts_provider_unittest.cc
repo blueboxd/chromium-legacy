@@ -30,6 +30,7 @@
 #include "components/omnibox/browser/in_memory_url_index.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
 #include "components/omnibox/browser/shortcuts_provider_test_util.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
@@ -574,7 +575,7 @@ TEST_F(ShortcutsProviderTest, DoesNotProvideOnFocus) {
   AutocompleteInput input(ASCIIToUTF16("about:o"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->matches().empty());
 }

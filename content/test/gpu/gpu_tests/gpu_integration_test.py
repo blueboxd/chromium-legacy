@@ -289,7 +289,8 @@ class GpuIntegrationTest(
         # TODO(https://crbug.com/1061298): Remove this special case once we've
         # determined whether the test is only failing because of the expected
         # crash check.
-        if (test_name == 'Pixel_Video_Context_Loss_VP9'
+        if ((test_name == 'Pixel_Video_Context_Loss_VP9'
+             or test_name == 'Pixel_Video_Context_Loss_MP4')
             and sys.platform == 'win32'):
           pass
         elif not actual_and_expected_crashes_match:

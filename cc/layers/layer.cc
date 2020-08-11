@@ -52,7 +52,6 @@ struct SameSizeAsLayer : public base::RefCounted<SameSizeAsLayer> {
     Region non_fast_scrollable_region;
     TouchActionRegion touch_action_region;
     ElementId element_id;
-    ElementId frame_element_id;
   } inputs;
   void* layer_tree_inputs;
   int int_fields[6];
@@ -1355,7 +1354,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   layer->UnionUpdateRect(inputs_.update_rect);
   layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
-  layer->SetFrameElementId(inputs_.frame_element_id);
   layer->SetNeedsPushProperties();
 
   // debug_info_->invalidations, if exist, will be cleared in the function.
@@ -1462,13 +1460,6 @@ void Layer::SetHasWillChangeTransformHint(bool has_will_change) {
   if (inputs_.has_will_change_transform_hint == has_will_change)
     return;
   inputs_.has_will_change_transform_hint = has_will_change;
-  SetNeedsCommit();
-}
-
-void Layer::SetFrameElementId(ElementId frame_element_id) {
-  if (inputs_.frame_element_id == frame_element_id)
-    return;
-  inputs_.frame_element_id = frame_element_id;
   SetNeedsCommit();
 }
 

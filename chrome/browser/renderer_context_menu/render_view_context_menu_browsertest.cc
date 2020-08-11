@@ -42,6 +42,7 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -92,6 +93,13 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/window_pin_type.h"
@@ -387,6 +395,34 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SAVELINKAS));
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SAVELINKAS));
 }
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       SaveLinkAsEntryIsDisabledForUrlsNotAccessibleForChild) {
+  // Set up child user profile.
+  Profile* profile = browser()->profile();
+  browser()->profile()->GetPrefs()->SetString(
+      prefs::kSupervisedUserId, supervised_users::kChildAccountSUID);
+
+  // Block access to http://www.google.com/ in the URL filter.
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile);
+  SupervisedUserURLFilter* url_filter = supervised_user_service->GetURLFilter();
+  std::map<std::string, bool> hosts;
+  hosts["www.google.com"] = false;
+  url_filter->SetManualHosts(std::move(hosts));
+
+  base::RunLoop().RunUntilIdle();
+
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      CreateContextMenuMediaTypeNone(GURL("http://www.google.com/"),
+                                     GURL("http://www.google.com/"));
+
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SAVELINKAS));
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SAVELINKAS));
+}
+
+#endif
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,

@@ -76,8 +76,7 @@ AutocompleteInput::AutocompleteInput()
       prefer_keyword_(false),
       allow_exact_keyword_match_(true),
       keyword_mode_entry_method_(metrics::OmniboxEventProto::INVALID),
-      want_asynchronous_matches_(true),
-      from_omnibox_focus_(false) {}
+      want_asynchronous_matches_(true) {}
 
 AutocompleteInput::AutocompleteInput(
     const base::string16& text,
@@ -591,7 +590,7 @@ void AutocompleteInput::Clear() {
   prefer_keyword_ = false;
   allow_exact_keyword_match_ = false;
   want_asynchronous_matches_ = true;
-  from_omnibox_focus_ = false;
+  focus_type_ = OmniboxFocusType::DEFAULT;
   terms_prefixed_by_http_or_https_.clear();
   query_tile_id_.reset();
 }

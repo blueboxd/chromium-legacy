@@ -5871,7 +5871,12 @@
     "policy_pref_mapping_test": [
       {
         "policies": { "DeviceExternalPrintServersAllowlist": ["id4", "id7", "id10"]},
-        "prefs": { "cros.device.external_print_servers_allowlist": {} }
+        "prefs": {
+          "native_printing.device_external_print_servers_allowlist": {
+            "local_state": true,
+            "value": ["id4", "id7", "id10"]
+          }
+        }
       }
     ]
   },

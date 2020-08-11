@@ -197,30 +197,12 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env {
  private:
   void RemoveBackupFiles(const base::FilePath& dir);
 
-  // BGThread() is the body of the background thread
-  void BGThread();
-  static void BGThreadWrapper(void* arg) {
-    reinterpret_cast<ChromiumEnv*>(arg)->BGThread();
-  }
-
-
   const std::unique_ptr<storage::FilesystemProxy> filesystem_;
 
-  base::FilePath test_directory_;
+  base::Lock mu_;
+  base::FilePath test_directory_ GUARDED_BY(mu_);
 
   std::string name_;
-
-  base::Lock mu_;
-  base::ConditionVariable bgsignal_;
-  bool started_bgthread_;
-
-  // Entry per Schedule() call
-  struct BGItem {
-    void* arg;
-    void (*function)(void*);
-  };
-  using BGQueue = base::circular_deque<BGItem>;
-  BGQueue queue_;
   std::unique_ptr<leveldb::Cache> file_cache_;
 };
 

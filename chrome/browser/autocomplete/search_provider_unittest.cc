@@ -42,6 +42,7 @@
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_terms_data.h"
@@ -3788,7 +3789,7 @@ TEST_F(SearchProviderTest, DoesNotProvideOnFocus) {
                           metrics::OmniboxEventProto::OTHER,
                           ChromeAutocompleteSchemeClassifier(&profile_));
   input.set_prefer_keyword(true);
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->matches().empty());
 }
@@ -3820,7 +3821,7 @@ TEST_P(SearchProviderWarmUpTest, SendsWarmUpRequestOnFocus) {
                           metrics::OmniboxEventProto::OTHER,
                           ChromeAutocompleteSchemeClassifier(&profile_));
   input.set_prefer_keyword(true);
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
   if (!GetParam()) {  // The warm-up feature ought to be disabled.
     // The provider immediately terminates with no matches.

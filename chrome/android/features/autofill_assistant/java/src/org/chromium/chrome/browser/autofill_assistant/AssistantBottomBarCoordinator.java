@@ -151,8 +151,6 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         // We don't want to animate the carousels children views as they are already animated by the
         // recyclers ItemAnimator, so we exclude them to avoid a clash between the animations.
         mLayoutTransition.excludeChildren(mActionsCoordinator.getView(), /* exclude= */ true);
-        mLayoutTransition.excludeChildren(
-                mHeaderCoordinator.getCarouselView(), /* exclude= */ true);
 
         // do not animate the contents of the payment method section inside the section choice list,
         // since the animation is not required and causes a rendering crash.
@@ -192,11 +190,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         controller.addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetStateChanged(int newState) {
-                // Note: recycler view updates while the bottom sheet is SCROLLING result in a
-                // BottomSheet assertion.
-                if (newState != BottomSheetController.SheetState.SCROLLING) {
-                    maybeShowHeaderChips();
-                }
+                maybeShowHeaderChip();
             }
 
             @Override
@@ -262,8 +256,10 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     }
 
     private void setupAnimations(AssistantModel model, ViewGroup rootView) {
+        // Animate when the chip in the header changes.
         model.getHeaderModel().addObserver((source, propertyKey) -> {
-            if (propertyKey == AssistantHeaderModel.CHIPS_VISIBLE) {
+            if (propertyKey == AssistantHeaderModel.CHIP
+                    || propertyKey == AssistantHeaderModel.CHIP_VISIBLE) {
                 animateChildren(rootView);
             }
         });
@@ -299,12 +295,12 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         TransitionManager.beginDelayedTransition(rootView, mLayoutTransition);
     }
 
-    private void maybeShowHeaderChips() {
-        boolean showChips =
+    private void maybeShowHeaderChip() {
+        boolean showChip =
                 mBottomSheetController.getSheetState() == BottomSheetController.SheetState.PEEK
                 && mPeekHeightCoordinator.getPeekMode()
                         == AssistantPeekHeightCoordinator.PeekMode.HANDLE_HEADER;
-        mModel.getHeaderModel().set(AssistantHeaderModel.CHIPS_VISIBLE, showChips);
+        mModel.getHeaderModel().set(AssistantHeaderModel.CHIP_VISIBLE, showChip);
     }
 
     /**
@@ -354,7 +350,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     /** Set the peek mode. */
     void setPeekMode(@AssistantPeekHeightCoordinator.PeekMode int peekMode) {
         mPeekHeightCoordinator.setPeekMode(peekMode);
-        maybeShowHeaderChips();
+        maybeShowHeaderChip();
     }
 
     /** Expand the bottom sheet. */

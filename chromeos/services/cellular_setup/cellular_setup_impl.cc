@@ -31,7 +31,7 @@ void CellularSetupImpl::StartActivation(
       OtaActivatorImpl::Factory::Create(
           std::move(delegate),
           base::BindOnce(&CellularSetupImpl::OnActivationAttemptFinished,
-                         base::Unretained(this), request_id),
+                         weak_ptr_factory_.GetWeakPtr(), request_id),
           network_handler->network_state_handler(),
           network_handler->network_connection_handler(),
           network_handler->network_activation_handler());

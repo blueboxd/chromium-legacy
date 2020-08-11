@@ -65,6 +65,8 @@ class CONTENT_EXPORT PropertyNode final {
   // be called for.
   std::vector<base::string16> line_indexes;
 
+  bool IsMatching(const base::string16& pattern) const;
+
   // Argument conversion methods.
   bool IsArray() const;
   bool IsDict() const;
@@ -151,11 +153,13 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   // Overridden by platform subclasses.
   //
 
-  // Returns a property node struct built for a matching property filter,
-  // which includes a property name and invocation parameters if any.
-  // If no matching property filter, then empty property node is returned.
-  PropertyNode GetMatchingPropertyNode(const base::string16& line_index,
-                                       const base::string16& property_name);
+  // Returns property nodes complying to the line index filter for all
+  // allow/allow_empty property filters.
+  std::vector<PropertyNode> PropertyFilterNodesFor(
+      const base::string16& line_index) const;
+
+  // Return true if match-all filter is present.
+  bool HasMatchAllPropertyFilter() const;
 
   // Process accessibility tree with filters for output.
   // Given a dictionary that contains a platform-specific dictionary

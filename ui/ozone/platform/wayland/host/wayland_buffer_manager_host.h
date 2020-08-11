@@ -143,6 +143,20 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   void CommitBuffer(gfx::AcceleratedWidget widget,
                     uint32_t buffer_id,
                     const gfx::Rect& damage_region) override;
+  // Called by the GPU and asks to configure the surface/subsurfaces and attach
+  // wl_buffers to WaylandWindow with the specified |widget|. Calls OnSubmission
+  // and OnPresentation on successful swap and pixels presented.
+  void CommitOverlays(
+      gfx::AcceleratedWidget widget,
+      std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr> overlays) override;
+
+  // Called by the WaylandWindow and asks to attach a wl_buffer with a
+  // |buffer_id| to a WaylandSurface.
+  // Calls OnSubmission and OnPresentation on successful swap and pixels
+  // presented.
+  bool CommitBufferInternal(WaylandSurface* wayland_surface,
+                            uint32_t buffer_id,
+                            const gfx::Rect& damage_region);
 
   // When a surface is hidden, the client may want to detach the buffer attached
   // to the surface to ensure Wayland does not present those contents and do not

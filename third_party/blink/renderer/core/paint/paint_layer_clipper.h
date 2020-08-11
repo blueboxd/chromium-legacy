@@ -87,6 +87,7 @@ class ClipRectsContext {
   ClipRectsCacheSlot CacheSlot() const { return cache_slot_; }
 
   bool ShouldRespectRootLayerClip() const;
+  bool ShouldIgnoreRootLayerClipAndScroll() const;
 
   const PaintLayer* root_layer;
   const FragmentData* root_fragment;

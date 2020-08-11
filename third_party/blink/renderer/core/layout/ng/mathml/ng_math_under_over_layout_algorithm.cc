@@ -166,8 +166,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
       block_offset += over_fragment.BlockSize();
       block_offset += parameters.over_gap_min;
     } else {
-      LayoutUnit over_ascent =
-          over_fragment.Baseline().value_or(over_fragment.BlockSize());
+      LayoutUnit over_ascent = over_fragment.BaselineOrSynthesize();
       block_offset +=
           std::max(over_fragment.BlockSize() + parameters.over_gap_min,
                    over_ascent + parameters.over_shift_min);
@@ -211,8 +210,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
     if (parameters.use_under_over_bar_fallback) {
       block_offset += parameters.under_gap_min;
     } else {
-      LayoutUnit under_ascent =
-          under_fragment.Baseline().value_or(under_fragment.BlockSize());
+      LayoutUnit under_ascent = under_fragment.BaselineOrSynthesize();
       block_offset += std::max(parameters.under_gap_min,
                                parameters.under_shift_min - under_ascent);
     }
@@ -230,8 +228,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
     block_offset += under_margins.block_end;
   }
 
-  LayoutUnit base_ascent =
-      base_fragment.Baseline().value_or(base_fragment.BlockSize());
+  LayoutUnit base_ascent = base_fragment.BaselineOrSynthesize();
   container_builder_.SetBaseline(base_offset.block_offset + base_ascent);
 
   block_offset += BorderScrollbarPadding().block_end;

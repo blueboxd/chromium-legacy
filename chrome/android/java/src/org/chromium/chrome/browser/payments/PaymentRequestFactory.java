@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.components.payments.ComponentPaymentRequestImpl;
 import org.chromium.components.payments.ErrorStrings;
@@ -117,8 +118,15 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
 
         @Override
         public boolean isOffTheRecord(WebContents webContents) {
+            // To be conservative, a request which we don't know its profile is considered
+            // off-the-record, and thus user data would not be recorded in this case.
             ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
-            return activity != null && activity.getCurrentTabModel().getProfile().isOffTheRecord();
+            if (activity == null) return true;
+            TabModel tabModel = activity.getCurrentTabModel();
+            assert tabModel != null;
+            Profile profile = tabModel.getProfile();
+            if (profile == null) return true;
+            return profile.isOffTheRecord();
         }
 
         @Override

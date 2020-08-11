@@ -29,6 +29,7 @@
 #include "components/omnibox/browser/verbatim_match.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
@@ -142,7 +143,7 @@ void ClipboardProvider::Start(const AutocompleteInput& input,
   field_trial_triggered_ = false;
 
   // If the user started typing, do not offer clipboard based match.
-  if (!input.from_omnibox_focus())
+  if (input.focus_type() == OmniboxFocusType::DEFAULT)
     return;
 
   // Image matched was kicked off asynchronously, so proceed when that ends.

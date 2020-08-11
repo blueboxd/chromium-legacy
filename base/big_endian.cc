@@ -12,17 +12,19 @@
 namespace base {
 
 BigEndianReader::BigEndianReader(const char* buf, size_t len)
-    : ptr_(buf), end_(ptr_ + len) {}
+    : ptr_(buf), end_(ptr_ + len) {
+  CHECK_LE(ptr_, end_);
+}
 
 bool BigEndianReader::Skip(size_t len) {
-  if (ptr_ + len > end_)
+  if (len > remaining())
     return false;
   ptr_ += len;
   return true;
 }
 
 bool BigEndianReader::ReadBytes(void* out, size_t len) {
-  if (ptr_ + len > end_)
+  if (len > remaining())
     return false;
   memcpy(out, ptr_, len);
   ptr_ += len;
@@ -30,7 +32,7 @@ bool BigEndianReader::ReadBytes(void* out, size_t len) {
 }
 
 bool BigEndianReader::ReadPiece(base::StringPiece* out, size_t len) {
-  if (ptr_ + len > end_)
+  if (len > remaining())
     return false;
   *out = base::StringPiece(ptr_, len);
   ptr_ += len;
@@ -39,7 +41,7 @@ bool BigEndianReader::ReadPiece(base::StringPiece* out, size_t len) {
 
 template<typename T>
 bool BigEndianReader::Read(T* value) {
-  if (ptr_ + sizeof(T) > end_)
+  if (sizeof(T) > remaining())
     return false;
   ReadBigEndian<T>(ptr_, value);
   ptr_ += sizeof(T);
@@ -86,17 +88,19 @@ bool BigEndianReader::ReadU16LengthPrefixed(base::StringPiece* out) {
 }
 
 BigEndianWriter::BigEndianWriter(char* buf, size_t len)
-    : ptr_(buf), end_(ptr_ + len) {}
+    : ptr_(buf), end_(ptr_ + len) {
+  CHECK_LE(ptr_, end_);
+}
 
 bool BigEndianWriter::Skip(size_t len) {
-  if (ptr_ + len > end_)
+  if (len > remaining())
     return false;
   ptr_ += len;
   return true;
 }
 
 bool BigEndianWriter::WriteBytes(const void* buf, size_t len) {
-  if (ptr_ + len > end_)
+  if (len > remaining())
     return false;
   memcpy(ptr_, buf, len);
   ptr_ += len;
@@ -105,7 +109,7 @@ bool BigEndianWriter::WriteBytes(const void* buf, size_t len) {
 
 template<typename T>
 bool BigEndianWriter::Write(T value) {
-  if (ptr_ + sizeof(T) > end_)
+  if (sizeof(T) > remaining())
     return false;
   WriteBigEndian<T>(ptr_, value);
   ptr_ += sizeof(T);

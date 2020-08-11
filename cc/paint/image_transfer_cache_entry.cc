@@ -574,7 +574,7 @@ sk_sp<SkImage> ServiceImageTransferCacheEntry::MakeSkImage(
     if (!original)
       return nullptr;
     if (target_color_space) {
-      image = original->makeColorSpace(target_color_space);
+      image = original->makeColorSpace(target_color_space, nullptr);
       // If color space conversion is a noop, use original data.
       if (image == original)
         image = SkImage::MakeRasterCopy(pixmap);

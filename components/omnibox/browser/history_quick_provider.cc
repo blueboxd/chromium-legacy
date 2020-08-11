@@ -29,6 +29,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -47,7 +48,7 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
   TRACE_EVENT0("omnibox", "HistoryQuickProvider::Start");
   matches_.clear();
-  if (disabled_ || input.from_omnibox_focus())
+  if (disabled_ || input.focus_type() != OmniboxFocusType::DEFAULT)
     return;
 
   // Don't bother with INVALID.

@@ -137,6 +137,9 @@ static_library("device_sync") {
     "sync_scheduler.h",
     "sync_scheduler_impl.cc",
     "sync_scheduler_impl.h",
+    "synced_bluetooth_address_tracker.h",
+    "synced_bluetooth_address_tracker_impl.cc",
+    "synced_bluetooth_address_tracker_impl.h",
     "value_string_encoding.cc",
     "value_string_encoding.h",
   ]
@@ -162,6 +165,7 @@ static_library("device_sync") {
     "//chromeos/services/device_sync/public/mojom",
     "//components/gcm_driver",
     "//components/prefs",
+    "//device/bluetooth",
     "//net",
     "//third_party/securemessage/proto",
   ]
@@ -222,6 +226,8 @@ static_library("test_support") {
     "fake_remote_device_v2_loader.h",
     "fake_software_feature_manager.cc",
     "fake_software_feature_manager.h",
+    "fake_synced_bluetooth_address_tracker.cc",
+    "fake_synced_bluetooth_address_tracker.h",
     "mock_cryptauth_client.cc",
     "mock_cryptauth_client.h",
     "mock_sync_scheduler.cc",
@@ -277,6 +283,7 @@ source_set("unit_tests") {
     "remote_device_v2_loader_impl_unittest.cc",
     "software_feature_manager_impl_unittest.cc",
     "sync_scheduler_impl_unittest.cc",
+    "synced_bluetooth_address_tracker_impl_unittest.cc",
   ]
 
   deps = [
@@ -300,6 +307,7 @@ source_set("unit_tests") {
     "//components/gcm_driver:test_support",
     "//components/prefs:test_support",
     "//components/signin/public/identity_manager:test_support",
+    "//device/bluetooth:mocks",
     "//net/traffic_annotation:test_support",
     "//services/network:test_support",
     "//testing/gmock",

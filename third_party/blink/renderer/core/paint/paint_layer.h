@@ -462,7 +462,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // paintsWithTransform() is true.
   enum CalculateBoundsOptions {
     kMaybeIncludeTransformForAncestorLayer,
-    kNeverIncludeTransformForAncestorLayer,
     kIncludeTransformsAndCompositedChildLayers,
   };
 
@@ -470,9 +469,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PhysicalRect PhysicalBoundingBox(
       const PhysicalOffset& offset_from_root) const;
   PhysicalRect PhysicalBoundingBox(const PaintLayer* ancestor_layer) const;
-  PhysicalRect PhysicalBoundingBoxIncludingStackingChildren(
-      const PhysicalOffset& offset_from_root,
-      CalculateBoundsOptions = kMaybeIncludeTransformForAncestorLayer) const;
   PhysicalRect FragmentsBoundingBox(const PaintLayer* ancestor_layer) const;
 
   PhysicalRect BoundingBoxForCompositingOverlapTest() const;

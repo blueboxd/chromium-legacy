@@ -118,7 +118,9 @@
 #include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
+#include "chrome/browser/ui/views/tab_search/tab_search_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_groups_iph_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -2565,6 +2567,11 @@ views::Widget* BrowserView::GetWidget() {
 
 const views::Widget* BrowserView::GetWidget() const {
   return View::GetWidget();
+}
+
+void BrowserView::CreateTabSearchBubble() {
+  TabSearchBubbleView::CreateTabSearchBubble(browser_->profile(),
+                                             tabstrip_->tab_search_button());
 }
 
 void BrowserView::RevealTabStripIfNeeded() {

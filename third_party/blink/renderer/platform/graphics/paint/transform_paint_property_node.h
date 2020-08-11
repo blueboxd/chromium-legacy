@@ -171,6 +171,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
+    CompositorElementId frame_element_id;
 
     PaintPropertyChangeType ComputeChange(
         const State& other,
@@ -188,7 +189,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
           backface_visibility != other.backface_visibility ||
           rendering_context_id != other.rendering_context_id ||
           compositor_element_id != other.compositor_element_id ||
-          scroll != other.scroll || !StickyConstraintEquals(other)) {
+          scroll != other.scroll || !StickyConstraintEquals(other) ||
+          frame_element_id != other.frame_element_id) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
 
@@ -415,6 +417,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 
   const CompositorElementId& GetCompositorElementId() const {
     return state_.compositor_element_id;
+  }
+
+  const CompositorElementId& GetFrameElementId() const {
+    return state_.frame_element_id;
   }
 
   bool DelegatesToParentForBackface() const {

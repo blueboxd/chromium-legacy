@@ -4,7 +4,6 @@
 
 package org.chromium.components.payments;
 
-import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
@@ -68,18 +67,15 @@ public interface BrowserPaymentRequest {
     /** The browser part of the {@link PaymentRequest#canMakePayment} implementation. */
     void canMakePayment();
 
-    /** The browser part of the {@link PaymentRequest#close} implementation. */
-    void close();
-
-    /**
-     * The browser part of the {@link PaymentRequest#onConnectionError} implementation.
-     * @param e The detail of the error.
-     */
-    void onConnectionError(MojoException e);
-
     /** @return The JourneyLogger of PaymentRequestImpl. */
     JourneyLogger getJourneyLogger();
 
     /** Delegate to the same method of PaymentRequestImpl. */
     void disconnectFromClientWithDebugMessage(String debugMessage);
+
+    /**
+     * Close this instance. The callers of this method should stop referencing this instance upon
+     * calling it. This method can be called within itself without causing infinite loop.
+     */
+    void close();
 }

@@ -1159,13 +1159,15 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                                  tests_included=True)
         self.assertIn('Retrying', err.getvalue())
 
-    def test_missing_and_unexpected_results(self):
+    def test_results_json(self):
         # Test that we update expectations in place. If the expectation
         # is missing, update the expected generic location.
         host = MockHost()
         details, _, _ = logging_run([
-            '--no-show-results', 'failures/unexpected/missing_text.html',
-            'failures/unexpected/text-image-checksum.html'
+            '--no-show-results',
+            'failures/unexpected/missing_text.html',
+            'failures/unexpected/text-image-checksum.html',
+            'passes/slow.html',
         ],
                                     tests_included=True,
                                     host=host)
@@ -1194,6 +1196,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                 'is_regression': True,
                 'is_missing_text': True,
             })
+        self.assertEqual(results['tests']['passes']['slow.html'], {
+            'expected': 'PASS',
+            'actual': 'PASS',
+            'is_slow_test': True,
+        })
+        self.assertEqual(results['num_passes'], 1)
         self.assertEqual(results['num_regressions'], 2)
         self.assertEqual(results['num_flaky'], 0)
 

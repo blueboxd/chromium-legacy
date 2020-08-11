@@ -12,6 +12,7 @@
 
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
@@ -219,17 +220,13 @@ class AutocompleteInput {
     want_asynchronous_matches_ = want_asynchronous_matches;
   }
 
-  // Returns whether this input query was triggered due to the omnibox being
-  // focused.
-  bool from_omnibox_focus() const { return from_omnibox_focus_; }
-  // |from_omnibox_focus| should be true when input is created as a result
-  // of the omnibox being focused, instead of due to user input changes.
-  // Most providers should not provide matches in this case.  Providers
-  // which want to display matches on focus can use this flag to know when
-  // they can do so.
-  void set_from_omnibox_focus(bool from_omnibox_focus) {
-    from_omnibox_focus_ = from_omnibox_focus;
-  }
+  // Returns the type of UI interaction that started this autocomplete query.
+  OmniboxFocusType focus_type() const { return focus_type_; }
+  // |focus_type| should specify the UI interaction that started autocomplete.
+  // Generally, this should be left alone as DEFAULT. Most providers only
+  // provide results for DEFAULT focus type. Providers (like ZeroSuggest) that
+  // only want to display matches on-focus or on-clobber will look at this flag.
+  void set_focus_type(OmniboxFocusType focus_type) { focus_type_ = focus_type; }
 
   // Returns the terms in |text_| that start with http:// or https:// plus
   // at least one more character, stored without the scheme.  Used in
@@ -284,7 +281,7 @@ class AutocompleteInput {
   bool allow_exact_keyword_match_;
   metrics::OmniboxEventProto::KeywordModeEntryMethod keyword_mode_entry_method_;
   bool want_asynchronous_matches_;
-  bool from_omnibox_focus_;
+  OmniboxFocusType focus_type_ = OmniboxFocusType::DEFAULT;
   std::vector<base::string16> terms_prefixed_by_http_or_https_;
   base::Optional<std::string> query_tile_id_;
 };

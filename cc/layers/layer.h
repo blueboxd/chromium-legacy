@@ -557,9 +557,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.has_will_change_transform_hint;
   }
 
-  void SetFrameElementId(ElementId frame_element_id);
-  ElementId frame_element_id() const { return inputs_.frame_element_id; }
-
   // For layer tree mode only.
   // Sets or gets if trilinear filtering should be used to scaling the contents
   // of this layer and its subtree. When set the layer and its subtree will be
@@ -857,8 +854,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     TouchActionRegion touch_action_region;
 
     ElementId element_id;
-    // ElementId of the document that this layer was created by.
-    ElementId frame_element_id;
   };
 
   // These inputs are used in layer tree mode (ui compositor) only. Most of them

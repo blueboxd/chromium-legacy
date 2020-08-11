@@ -605,7 +605,7 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
       action = SpareProcessMaybeTakeAction::kNoSparePresent;
     else if (browser_context != spare_render_process_host_->GetBrowserContext())
       action = SpareProcessMaybeTakeAction::kMismatchedBrowserContext;
-    else if (site_storage != spare_render_process_host_->GetStoragePartition())
+    else if (!spare_render_process_host_->InSameStoragePartition(site_storage))
       action = SpareProcessMaybeTakeAction::kMismatchedStoragePartition;
     else if (!embedder_allows_spare_usage)
       action = SpareProcessMaybeTakeAction::kRefusedByEmbedder;
@@ -620,7 +620,7 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
     RenderProcessHost* returned_process = nullptr;
     if (spare_render_process_host_ &&
         browser_context == spare_render_process_host_->GetBrowserContext() &&
-        site_storage == spare_render_process_host_->GetStoragePartition() &&
+        spare_render_process_host_->InSameStoragePartition(site_storage) &&
         !site_instance->IsGuest() && embedder_allows_spare_usage &&
         site_instance_allows_spare_usage) {
       CHECK(spare_render_process_host_->HostHasNotBeenUsed());

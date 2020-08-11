@@ -978,7 +978,15 @@ void Surface::UpdateResource(FrameSinkResourceManager* resource_manager) {
             state_.only_visible_on_secure_output, &current_resource_)) {
       current_resource_has_alpha_ =
           FormatHasAlpha(current_buffer_.buffer()->GetFormat());
-      current_resource_.color_space = state_.color_space;
+      // Planar buffers are sampled as RGB. Technically, the driver is supposed
+      // to preserve the colorspace, so we could still pass the primaries and
+      // transfer function.  However, we don't actually pass the colorspace
+      // to the driver, and it's unclear what drivers would actually do if we
+      // did. So in effect, the colorspace is undefined.
+      if (NumberOfPlanesForLinearBufferFormat(
+              current_buffer_.buffer()->GetFormat()) > 1) {
+        current_resource_.color_space = state_.color_space;
+      }
     } else {
       current_resource_.id = 0;
       // Use the buffer's size, so the AppendContentsToFrame() will append

@@ -63,6 +63,8 @@
         android:id="@+id/learn_more"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minHeight="@dimen/min_touch_target_size"
+        android:gravity="center_vertical"
         android:text="@string/learn_more"
         android:textAppearance="@style/TextAppearance.IncognitoNewTabLearnMoreLinkModern"
         app:leading="@dimen/text_size_medium_leading" />
@@ -74,7 +76,6 @@
         android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
         android:padding="16dp">
 
         <ImageView

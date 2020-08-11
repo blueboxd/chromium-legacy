@@ -20,15 +20,14 @@
 
 namespace printing {
 
-void PrintRenderFrameHelper::PrintPageInternal(
-    const PrintMsg_Print_Params& params,
-    int page_number,
-    int page_count,
-    double scale_factor,
-    blink::WebLocalFrame* frame,
-    MetafileSkia* metafile,
-    gfx::Size* page_size_in_dpi,
-    gfx::Rect* content_rect_in_dpi) {
+void PrintRenderFrameHelper::PrintPageInternal(const mojom::PrintParams& params,
+                                               int page_number,
+                                               int page_count,
+                                               double scale_factor,
+                                               blink::WebLocalFrame* frame,
+                                               MetafileSkia* metafile,
+                                               gfx::Size* page_size_in_dpi,
+                                               gfx::Rect* content_rect_in_dpi) {
   double css_scale_factor = scale_factor;
   mojom::PageSizeMargins page_layout_in_points;
   ComputePageLayoutInPointsForCss(frame, page_number, params,

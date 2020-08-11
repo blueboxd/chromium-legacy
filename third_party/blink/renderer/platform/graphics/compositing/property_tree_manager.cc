@@ -500,6 +500,8 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     }
   }
 
+  compositor_node.frame_element_id = transform_node.GetFrameElementId();
+
   transform_node.SetCcNodeId(new_sequence_number_, id);
   GetTransformTree().set_needs_update(true);
 

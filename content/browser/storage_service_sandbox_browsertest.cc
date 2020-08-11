@@ -19,6 +19,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 
 namespace content {
 namespace {
@@ -106,6 +107,15 @@ IN_PROC_BROWSER_TEST_F(StorageServiceSandboxBrowserTest, DomStorage) {
   EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "empty.html")));
   EXPECT_EQ("42",
             EvalJs(shell()->web_contents(), R"(window.localStorage.yeet)"));
+}
+
+IN_PROC_BROWSER_TEST_F(StorageServiceSandboxBrowserTest, CompactDatabase) {
+  // Tests that the sandboxed service can execute a LevelDB database compaction
+  // operation without crashing. If the service crashes, the sync call below
+  // will return false.
+  mojo::ScopedAllowSyncCallForTesting allow_sync_calls;
+  EXPECT_TRUE(
+      GetTestApi()->ForceLeveldbDatabaseCompaction("CompactDatabaseTestDb"));
 }
 
 }  // namespace

@@ -1582,4 +1582,57 @@ TEST_P(CompositingSimTest, ImplSideScrollSkipsCommit) {
   EXPECT_FALSE(Compositor().layer_tree_host()->CommitRequested());
 }
 
+TEST_P(CompositingSimTest, FrameAttribution) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+
+  InitializeWithHTML(R"HTML(
+    <div id='child' style='will-change: transform;'>test</div>
+    <iframe id='iframe' sandbox></iframe>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  // Ensure that we correctly attribute child layers in the main frame to their
+  // containing document.
+  auto* child_layer = CcLayerByDOMElementId("child");
+  ASSERT_TRUE(child_layer);
+
+  auto* child_transform_node = GetTransformNode(child_layer);
+  ASSERT_TRUE(child_transform_node);
+
+  // Iterate the transform tree to gather the parent frame element ID.
+  cc::ElementId frame_element_id;
+  auto* current_transform_node = child_transform_node;
+  while (current_transform_node) {
+    frame_element_id = current_transform_node->frame_element_id;
+    if (frame_element_id)
+      break;
+    current_transform_node =
+        GetPropertyTrees()->transform_tree.parent(current_transform_node);
+  }
+
+  EXPECT_EQ(frame_element_id, CompositorElementIdFromUniqueObjectId(
+                                  DOMNodeIds::IdForNode(&GetDocument()),
+                                  CompositorElementIdNamespace::kDOMNodeId));
+
+  // Test that a layerized subframe's frame element ID is that of its
+  // containing document.
+  Document* iframe_doc =
+      To<HTMLFrameOwnerElement>(GetElementById("iframe"))->contentDocument();
+  Node* owner_node = iframe_doc;
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    owner_node = iframe_doc->documentElement();
+  auto* iframe_layer = CcLayerByOwnerNodeId(owner_node);
+  ASSERT_TRUE(iframe_layer);
+  auto* iframe_transform_node = GetTransformNode(iframe_layer);
+  EXPECT_TRUE(iframe_transform_node);
+
+  EXPECT_EQ(iframe_transform_node->frame_element_id,
+            CompositorElementIdFromUniqueObjectId(
+                DOMNodeIds::IdForNode(iframe_doc),
+                CompositorElementIdNamespace::kDOMNodeId));
+}
+
 }  // namespace blink

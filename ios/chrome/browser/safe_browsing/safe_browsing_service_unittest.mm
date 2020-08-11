@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
@@ -37,6 +38,11 @@
 #include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
+#include "net/test/embedded_test_server/default_handlers.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -300,4 +306,113 @@ TEST_F(SafeBrowsingServiceTest, RealTimeSafeAndUnsafePages) {
   client.WaitForResult();
   EXPECT_FALSE(client.result_pending());
   EXPECT_FALSE(client.url_is_unsafe());
+}
+
+// Verifies that cookies are persisted across calls to
+// SafeBrowsingServiceImpl::GetURLLoaderFactory.
+TEST_F(SafeBrowsingServiceTest, PersistentCookies) {
+  net::EmbeddedTestServer server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::test_server::RegisterDefaultHandlers(&server);
+  ASSERT_TRUE(server.Start());
+  std::string cookie = "test=123";
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
+
+  // Set a cookie that expires in an hour.
+  resource_request->url = server.GetURL("/set-cookie?" + cookie +
+                                        ";max-age=3600;SameSite=None;Secure");
+  std::unique_ptr<network::SimpleURLLoader> url_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+  base::RunLoop run_loop1;
+  url_loader->DownloadHeadersOnly(
+      safe_browsing_service_->GetURLLoaderFactory().get(),
+      base::BindLambdaForTesting(
+          [&](scoped_refptr<net::HttpResponseHeaders> headers) {
+            run_loop1.Quit();
+          }));
+  run_loop1.Run();
+
+  // Make another request to the same site, and verify that the cookie is still
+  // set.
+  resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = server.GetURL("/echoheader?Cookie");
+  url_loader = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                TRAFFIC_ANNOTATION_FOR_TESTS);
+  base::RunLoop run_loop2;
+  url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      safe_browsing_service_->GetURLLoaderFactory().get(),
+      base::BindLambdaForTesting([&](std::unique_ptr<std::string> body) {
+        EXPECT_NE(std::string::npos, body->find(cookie));
+        run_loop2.Quit();
+      }));
+  run_loop2.Run();
+}
+
+// Verifies that cookies are cleared when ClearCookies() is called with a
+// time range of all-time, but not otherwise.
+TEST_F(SafeBrowsingServiceTest, ClearCookies) {
+  net::EmbeddedTestServer server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::test_server::RegisterDefaultHandlers(&server);
+  ASSERT_TRUE(server.Start());
+  std::string cookie = "test=123";
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
+
+  // Set a cookie that expires in an hour.
+  resource_request->url = server.GetURL("/set-cookie?" + cookie +
+                                        ";max-age=3600;SameSite=None;Secure");
+  std::unique_ptr<network::SimpleURLLoader> url_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+  base::RunLoop run_loop1;
+  url_loader->DownloadHeadersOnly(
+      safe_browsing_service_->GetURLLoaderFactory().get(),
+      base::BindLambdaForTesting(
+          [&](scoped_refptr<net::HttpResponseHeaders> headers) {
+            run_loop1.Quit();
+          }));
+  run_loop1.Run();
+
+  // Call ClearCookies() with a non-all-time time range, and verify that the
+  // cookie is still set.
+  base::RunLoop run_loop2;
+  safe_browsing_service_->ClearCookies(
+      net::CookieDeletionInfo::TimeRange(base::Time(), base::Time::Now()),
+      base::BindLambdaForTesting([&]() { run_loop2.Quit(); }));
+  run_loop2.Run();
+
+  resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = server.GetURL("/echoheader?Cookie");
+  url_loader = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                TRAFFIC_ANNOTATION_FOR_TESTS);
+  base::RunLoop run_loop3;
+  url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      safe_browsing_service_->GetURLLoaderFactory().get(),
+      base::BindLambdaForTesting([&](std::unique_ptr<std::string> body) {
+        EXPECT_NE(std::string::npos, body->find(cookie));
+        run_loop3.Quit();
+      }));
+  run_loop3.Run();
+
+  // Call ClearCookies() with a time range of all-time, and verify that the
+  // cookie is no longer set.
+  base::RunLoop run_loop4;
+  safe_browsing_service_->ClearCookies(
+      net::CookieDeletionInfo::TimeRange(base::Time(), base::Time::Max()),
+      base::BindLambdaForTesting([&]() { run_loop4.Quit(); }));
+  run_loop4.Run();
+
+  resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = server.GetURL("/echoheader?Cookie");
+  url_loader = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                TRAFFIC_ANNOTATION_FOR_TESTS);
+  base::RunLoop run_loop5;
+  url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      safe_browsing_service_->GetURLLoaderFactory().get(),
+      base::BindLambdaForTesting([&](std::unique_ptr<std::string> body) {
+        EXPECT_EQ(std::string::npos, body->find(cookie));
+        run_loop5.Quit();
+      }));
+  run_loop5.Run();
 }

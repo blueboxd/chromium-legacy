@@ -35,6 +35,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
@@ -507,7 +508,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
 
   matches_.clear();
 
-  if (input.from_omnibox_focus() ||
+  if (input.focus_type() != OmniboxFocusType::DEFAULT ||
       (input.type() == metrics::OmniboxInputType::EMPTY))
     return;
 

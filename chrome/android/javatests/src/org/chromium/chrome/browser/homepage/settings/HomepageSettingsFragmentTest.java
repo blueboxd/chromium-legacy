@@ -12,7 +12,6 @@ import androidx.test.filters.SmallTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
@@ -93,9 +92,6 @@ public class HomepageSettingsFragmentTest {
 
     @Rule
     public HomepageTestRule mHomepageTestRule = new HomepageTestRule();
-
-    @Rule
-    public TestRule mFeatureProcessor = new Features.InstrumentationProcessor();
 
     private ChromeSwitchPreference mSwitch;
     private RadioButtonGroupHomepagePreference mRadioGroupPreference;

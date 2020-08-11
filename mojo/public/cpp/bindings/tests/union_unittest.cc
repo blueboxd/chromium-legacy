@@ -1229,5 +1229,11 @@ TEST(UnionTest, UnionInInterface) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST(UnionTest, InlineUnionAllocationWithNonPODFirstField) {
+  // Regression test for https://crbug.com/1114366. Should not crash.
+  UnionWithStringForFirstFieldPtr u;
+  u = UnionWithStringForFirstField::NewS("hey");
+}
+
 }  // namespace test
 }  // namespace mojo

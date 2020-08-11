@@ -20,6 +20,7 @@
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -612,7 +613,7 @@ TEST_F(KeywordProviderTest, DoesNotProvideMatchesOnFocus) {
   AutocompleteInput input(ASCIIToUTF16("aaa"),
                           metrics::OmniboxEventProto::OTHER,
                           TestingSchemeClassifier());
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   kw_provider_->Start(input, false);
   ASSERT_TRUE(kw_provider_->matches().empty());
 }

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/printing/print_server.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace user_prefs {
@@ -43,6 +44,7 @@ class PrintServersProvider
   };
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
   static std::unique_ptr<PrintServersProvider> Create();
   virtual ~PrintServersProvider() = default;
 

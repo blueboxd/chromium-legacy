@@ -1154,4 +1154,56 @@ TEST_F(DragWindowFromShelfControllerTest, DropsIntoOverviewAtCorrectPosition) {
                     parent));
 }
 
+// Tests that when dragging a snapped window is cancelled, the window
+// still keep at the original snap position.
+TEST_F(DragWindowFromShelfControllerTest,
+       KeepSplitWindowSnappedAfterRestoreToOriginalBounds) {
+  UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+
+  auto window1 = CreateTestWindow();
+  auto window2 = CreateTestWindow();
+
+  // In splitview mode, the snapped windows will stay visible during dragging.
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  // Try to drag a left snapped window from shelf, but finally restore to
+  // original bounds.
+  StartDrag(window1.get(), shelf_bounds.left_center(), HotseatState::kExtended);
+  Drag(gfx::Point(0, 200), 1.f, 1.f);
+  EndDrag(shelf_bounds.bottom_left(), /*velocity_y=*/base::nullopt);
+  // Ensure that the window still keep its initial snap position.
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
+  EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window1.get()),
+            SplitViewController::LEFT);
+  // Try to drag a right snapped window from shelf, and finally drop to
+  // overview.
+  StartDrag(window2.get(), shelf_bounds.right_center(),
+            HotseatState::kExtended);
+  Drag(gfx::Point(400, 200), 1.f, 1.f);
+  DragWindowFromShelfControllerTestApi().WaitUntilOverviewIsShown(
+      window_drag_controller());
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  OverviewSession* overview_session = overview_controller->overview_session();
+  EndDrag(gfx::Point(200, 200), /*velocity_y=*/base::nullopt);
+  // Ensure that the window is not in splitview but in overview.
+  EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window2.get()));
+  EXPECT_TRUE(overview_session->IsWindowInOverview(window2.get()));
+
+  // Try to drag the left window again within the restore distance.
+  StartDrag(window1.get(), shelf_bounds.left_center(), HotseatState::kExtended);
+  Drag(gfx::Point(0, 200), 1.f, 1.f);
+  EndDrag(shelf_bounds.bottom_left(), /*velocity_y=*/base::nullopt);
+  // Ensure that the left window still keep snapped.
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
+  EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window1.get()),
+            SplitViewController::LEFT);
+  // Ensure that the right window is still in the overview.
+  EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window2.get()));
+  EXPECT_TRUE(overview_session->IsWindowInOverview(window2.get()));
+}
+
 }  // namespace ash

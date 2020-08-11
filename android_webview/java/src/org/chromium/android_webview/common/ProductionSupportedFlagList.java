@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.common;
 
+import org.chromium.base.BaseSwitches;
 import org.chromium.components.metrics.MetricsSwitches;
 
 /**
@@ -53,7 +54,7 @@ public final class ProductionSupportedFlagList {
                             + "choice to opt-out."),
             Flag.commandLine(AwSwitches.WEBVIEW_LOG_JS_CONSOLE_MESSAGES,
                     "Mirrors JavaScript console messages to system logs."),
-            Flag.commandLine(AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH,
+            Flag.commandLine(BaseSwitches.ENABLE_CRASH_REPORTER_FOR_TESTING,
                     "Used for turning on Breakpad crash reporting in a debug environment where "
                             + "crash reporting is typically compiled but disabled."),
             Flag.commandLine("disable-gpu-rasterization",

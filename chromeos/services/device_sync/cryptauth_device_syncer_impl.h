@@ -12,6 +12,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -43,6 +44,7 @@ namespace device_sync {
 class CryptAuthClient;
 class CryptAuthClientFactory;
 class CryptAuthKeyRegistry;
+class SyncedBluetoothAddressTracker;
 
 // An implementation of CryptAuthDeviceSyncer, using instances of
 // CryptAuthClient to make the API calls to CryptAuth. This implementation
@@ -64,6 +66,7 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
         CryptAuthDeviceRegistry* device_registry,
         CryptAuthKeyRegistry* key_registry,
         CryptAuthClientFactory* client_factory,
+        SyncedBluetoothAddressTracker* synced_bluetooth_address_tracker,
         PrefService* pref_service,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
@@ -75,6 +78,7 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
         CryptAuthDeviceRegistry* device_registry,
         CryptAuthKeyRegistry* key_registry,
         CryptAuthClientFactory* client_factory,
+        SyncedBluetoothAddressTracker* synced_bluetooth_address_tracker,
         PrefService* pref_service,
         std::unique_ptr<base::OneShotTimer> timer) = 0;
 
@@ -87,6 +91,7 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
  private:
   enum class State {
     kNotStarted,
+    kWaitingForBluetoothAddress,
     kWaitingForMetadataSync,
     kWaitingForFeatureStatuses,
     kWaitingForEncryptedGroupPrivateKeyProcessing,
@@ -107,12 +112,16 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
   //     and it will read the user key pair and the key used for decrypting the
   //     group private key.
   // |client_factory|: Creates CryptAuthClient instances for making API calls.
+  // |synced_bluetooth_address_tracker|: Used to fetch Bluetooth address and
+  //     track address used for successful syncs.
   // |timer|: Handles timeouts for asynchronous operations.
-  CryptAuthDeviceSyncerImpl(CryptAuthDeviceRegistry* device_registry,
-                            CryptAuthKeyRegistry* key_registry,
-                            CryptAuthClientFactory* client_factory,
-                            PrefService* pref_service,
-                            std::unique_ptr<base::OneShotTimer> timer);
+  CryptAuthDeviceSyncerImpl(
+      CryptAuthDeviceRegistry* device_registry,
+      CryptAuthKeyRegistry* key_registry,
+      CryptAuthClientFactory* client_factory,
+      SyncedBluetoothAddressTracker* synced_bluetooth_address_tracker,
+      PrefService* pref_service,
+      std::unique_ptr<base::OneShotTimer> timer);
 
   // CryptAuthDeviceSyncer:
   void OnAttemptStarted(
@@ -124,6 +133,9 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
 
   // Controls the logical flow of the class.
   void AttemptNextStep();
+
+  void GetBluetoothAddress();
+  void OnBluetoothAddress(const std::string& bluetooth_address);
 
   void SyncMetadata();
   void OnSyncMetadataFinished(
@@ -208,8 +220,11 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
   CryptAuthDeviceRegistry* device_registry_ = nullptr;
   CryptAuthKeyRegistry* key_registry_ = nullptr;
   CryptAuthClientFactory* client_factory_ = nullptr;
+  SyncedBluetoothAddressTracker* synced_bluetooth_address_tracker_ = nullptr;
   PrefService* pref_service_ = nullptr;
   std::unique_ptr<base::OneShotTimer> timer_;
+
+  base::WeakPtrFactory<CryptAuthDeviceSyncerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthDeviceSyncerImpl);
 };

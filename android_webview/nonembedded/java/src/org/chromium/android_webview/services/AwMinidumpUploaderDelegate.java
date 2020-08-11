@@ -9,9 +9,9 @@ import android.net.ConnectivityManager;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.crash.SystemWideCrashDirectories;
+import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -108,7 +108,7 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
                 // on the main thread, but before the current worker thread started - so this thread
                 // will have seen the initialization of the CommandLine.
                 return CommandLine.getInstance().hasSwitch(
-                        AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+                        BaseSwitches.ENABLE_CRASH_REPORTER_FOR_TESTING);
             }
         };
     }

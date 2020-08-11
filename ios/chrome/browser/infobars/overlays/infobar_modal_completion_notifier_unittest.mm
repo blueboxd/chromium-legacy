@@ -60,7 +60,7 @@ TEST_F(InfobarModalCompletionNotifierTest, ModalCompletion) {
   // Add a detail sheet request for |infobar_|.
   std::unique_ptr<OverlayRequest> detail_sheet_request =
       OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-          &infobar_, InfobarOverlayType::kDetailSheet);
+          &infobar_, InfobarOverlayType::kDetailSheet, false);
   std::unique_ptr<FakeOverlayRequestCancelHandler>
       passed_detail_sheet_cancel_handler =
           std::make_unique<FakeOverlayRequestCancelHandler>(
@@ -72,7 +72,7 @@ TEST_F(InfobarModalCompletionNotifierTest, ModalCompletion) {
   // Add a modal request for |infobar_|.
   std::unique_ptr<OverlayRequest> modal_request =
       OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-          &infobar_, InfobarOverlayType::kModal);
+          &infobar_, InfobarOverlayType::kModal, false);
   std::unique_ptr<FakeOverlayRequestCancelHandler> passed_modal_cancel_handler =
       std::make_unique<FakeOverlayRequestCancelHandler>(modal_request.get(),
                                                         queue());

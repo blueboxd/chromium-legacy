@@ -47,5 +47,8 @@ std::unique_ptr<infobars::InfoBar> CreateHighPriorityConfirmInfoBar(
                  badgeSupport:NO
                          type:InfobarType::kInfobarTypeConfirm];
   coordinator.highPriorityPresentation = YES;
-  return std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
+  std::unique_ptr<InfoBarIOS> infobar =
+      std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
+  infobar->set_high_priority(true);
+  return infobar;
 }

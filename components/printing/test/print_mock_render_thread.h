@@ -29,7 +29,6 @@ struct PrintHostMsg_DidPrintDocument_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_ScriptedPrint_Params;
 struct PrintMsg_PrintPages_Params;
-struct PrintMsg_Print_Params;
 
 // Extends content::MockRenderThread to know about printing
 class PrintMockRenderThread : public content::MockRenderThread {
@@ -70,7 +69,7 @@ class PrintMockRenderThread : public content::MockRenderThread {
 
 #if BUILDFLAG(ENABLE_PRINTING)
   // PrintRenderFrameHelper expects default print settings.
-  void OnGetDefaultPrintSettings(PrintMsg_Print_Params* setting);
+  void OnGetDefaultPrintSettings(printing::mojom::PrintParams* setting);
 
   // PrintRenderFrameHelper expects final print settings from the user.
   void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& params,

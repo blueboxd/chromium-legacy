@@ -11,12 +11,15 @@ import org.chromium.components.autofill.EditableOption;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.payments.mojom.PayerDetail;
+import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.payments.mojom.PaymentRequestClient;
+import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentValidationErrors;
 
 import java.util.List;
@@ -33,10 +36,12 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
     private final BrowserPaymentRequestFactory mBrowserPaymentRequestFactory;
     private final RenderFrameHost mRenderFrameHost;
     private boolean mSkipUiForNonUrlPaymentMethodIdentifiers;
-    private BrowserPaymentRequest mBrowserPaymentRequest;
     private PaymentRequestClient mClient;
     private boolean mIsOffTheRecord;
     private PaymentRequestLifecycleObserver mPaymentRequestLifecycleObserver;
+    private boolean mHasTorndown;
+    @Nullable
+    private BrowserPaymentRequest mBrowserPaymentRequest;
 
     /** The factory that creates an instance of {@link BrowserPaymentRequest}. */
     public interface BrowserPaymentRequestFactory {
@@ -216,82 +221,108 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
 
     @Override
     public void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.show(isUserGesture, waitForUpdatedDetails);
     }
 
     @Override
     public void updateWith(PaymentDetails details) {
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.updateWith(details);
     }
 
     @Override
     public void onPaymentDetailsNotUpdated() {
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.onPaymentDetailsNotUpdated();
     }
 
     @Override
     public void abort() {
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.abort();
     }
 
     @Override
     public void complete(int result) {
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.complete(result);
     }
 
     @Override
     public void retry(PaymentValidationErrors errors) {
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.retry(errors);
     }
 
     @Override
     public void canMakePayment() {
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.canMakePayment();
     }
 
     @Override
     public void hasEnrolledInstrument(boolean perMethodQuota) {
+        if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.hasEnrolledInstrument(perMethodQuota);
     }
 
+    // This should be called by the renderer only. The closing triggered by other classes should
+    // call {@link #teardown} instead.
     @Override
     public void close() {
-        mBrowserPaymentRequest.close();
+        if (mBrowserPaymentRequest == null) return;
+        mBrowserPaymentRequest.getJourneyLogger().setAborted(
+                org.chromium.components.payments.AbortReason.MOJO_RENDERER_CLOSING);
+        teardown();
+        if (sObserverForTest != null) {
+            sObserverForTest.onRendererClosedMojoConnection();
+        }
+        if (sNativeObserverForTest != null) {
+            sNativeObserverForTest.onConnectionTerminated();
+        }
     }
 
     @Override
     public void onConnectionError(MojoException e) {
-        mBrowserPaymentRequest.onConnectionError(e);
+        if (mBrowserPaymentRequest == null) return;
+        mBrowserPaymentRequest.getJourneyLogger().setAborted(
+                org.chromium.components.payments.AbortReason.MOJO_CONNECTION_ERROR);
+        teardown();
+        if (sNativeObserverForTest != null) {
+            sNativeObserverForTest.onConnectionTerminated();
+        }
     }
 
     /**
-     * Get the PaymentRequestClient. To close the client, the caller should call {@link
-     * #closeClient()} instead of calling {@link PaymentRequest#close()} directly.
-     * @return The client.
+     * Close this instance and release all of the retained resources. The external callers of this
+     * method should stop referencing this instance upon calling. This method can be called within
+     * itself without causing dead loops.
      */
-    @Nullable
-    public PaymentRequestClient getClient() {
-        return mClient;
-    }
+    public void teardown() {
+        if (mHasTorndown) return;
+        mHasTorndown = true;
 
-    /**
-     * Close the PaymentRequestClient.
-     */
-    public void closeClient() {
+        if (mBrowserPaymentRequest == null) return;
+        mBrowserPaymentRequest.close();
+        mBrowserPaymentRequest = null;
+
         if (mClient != null) mClient.close();
         mClient = null;
     }
 
     /**
      * Register an observer for the PaymentRequest lifecycle.
-     * @param paymentRequestLifecycleObserver The observer.
+     * @param paymentRequestLifecycleObserver The observer, cannot be null.
      */
     public void registerPaymentRequestLifecycleObserver(
             PaymentRequestLifecycleObserver paymentRequestLifecycleObserver) {
+        assert paymentRequestLifecycleObserver != null;
         mPaymentRequestLifecycleObserver = paymentRequestLifecycleObserver;
     }
 
-    /** @return The observer for the PaymentRequest lifecycle. */
+    /** @return The observer for the PaymentRequest lifecycle, can be null. */
+    @Nullable
     public PaymentRequestLifecycleObserver getPaymentRequestLifecycleObserver() {
         return mPaymentRequestLifecycleObserver;
     }
@@ -320,5 +351,93 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
     @VisibleForTesting
     public void setSkipUiForNonUrlPaymentMethodIdentifiersForTest() {
         mSkipUiForNonUrlPaymentMethodIdentifiers = true;
+    }
+
+    /** Invokes {@link PaymentRequest.onPaymentMethodChange}. */
+    public void onPaymentMethodChange(String methodName, String stringifiedDetails) {
+        // Every caller should stop referencing this class once teardown() is called.
+        assert mClient != null;
+
+        mClient.onPaymentMethodChange(methodName, stringifiedDetails);
+    }
+
+    /** Invokes {@link PaymentRequest.onShippingAddressChange}. */
+    public void onShippingAddressChange(PaymentAddress address) {
+        // Every caller should stop referencing this class once teardown() is called.
+        assert mClient != null;
+
+        mClient.onShippingAddressChange(address);
+    }
+
+    /** Invokes {@link PaymentRequest.onShippingOptionChange}. */
+    public void onShippingOptionChange(String shippingOptionId) {
+        // Every caller should stop referencing this class once teardown() is called.
+        assert mClient != null;
+
+        mClient.onShippingOptionChange(shippingOptionId);
+    }
+
+    /** Invokes {@link PaymentRequest.onPayerDetailChange}. */
+    public void onPayerDetailChange(PayerDetail detail) {
+        // Every caller should stop referencing this class once teardown() is called.
+        assert mClient != null;
+
+        mClient.onPayerDetailChange(detail);
+    }
+
+    /** Invokes {@link PaymentRequest.onPaymentResponse}. */
+    public void onPaymentResponse(PaymentResponse response) {
+        // Every caller should stop referencing this class once teardown() is called.
+        assert mClient != null;
+
+        mClient.onPaymentResponse(response);
+    }
+
+    /** Invokes {@link PaymentRequest.onError}. */
+    public void onError(int error, String errorMessage) {
+        // Every caller should stop referencing this class once teardown() is called.
+        assert mClient != null;
+
+        mClient.onError(error, errorMessage);
+    }
+
+    /** Invokes {@link PaymentRequest.onComplete}. */
+    public void onComplete() {
+        // Every caller should stop referencing this class once teardown() is called.
+        assert mClient != null;
+
+        mClient.onComplete();
+    }
+
+    /** Invokes {@link PaymentRequest.onAbort}. */
+    public void onAbort(boolean abortedSuccessfully) {
+        // Every caller should stop referencing this class once teardown() is called.
+        assert mClient != null;
+
+        mClient.onAbort(abortedSuccessfully);
+    }
+
+    /** Invokes {@link PaymentRequest.onCanMakePayment}. */
+    public void onCanMakePayment(int result) {
+        // Every caller should stop referencing this class once teardown() is called.
+        assert mClient != null;
+
+        mClient.onCanMakePayment(result);
+    }
+
+    /** Invokes {@link PaymentRequest.onHasEnrolledInstrument}. */
+    public void onHasEnrolledInstrument(int result) {
+        // Every caller should stop referencing this class once teardown() is called.
+        assert mClient != null;
+
+        mClient.onHasEnrolledInstrument(result);
+    }
+
+    /** Invokes {@link PaymentRequest.warnNoFavicon}. */
+    public void warnNoFavicon() {
+        // Every caller should stop referencing this class once teardown() is called.
+        assert mClient != null;
+
+        mClient.warnNoFavicon();
     }
 }

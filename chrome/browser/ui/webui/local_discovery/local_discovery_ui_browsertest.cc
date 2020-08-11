@@ -29,6 +29,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -355,8 +356,9 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     // presence of a valid DualMediaSinkService.
     // TODO(crbug.com/1028753): Enable the Media Route Provider features.
     feature_list_.InitWithFeatures(
-        {}, /* disabled_features */ {media_router::kDialMediaRouteProvider,
-                                     media_router::kCastMediaRouteProvider});
+        /* enabled_features */ {features::kForceEnableDevicesPage},
+        /* disabled_features */ {media_router::kDialMediaRouteProvider,
+                                 media_router::kCastMediaRouteProvider});
     WebUIBrowserTest::SetUp();
   }
 

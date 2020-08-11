@@ -423,7 +423,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     }
     shortcuts_menu_item_infos.emplace_back(std::move(shortcut_info));
   }
-  web_app->SetShortcutInfos(std::move(shortcuts_menu_item_infos));
+  web_app->SetShortcutsMenuItemInfos(std::move(shortcuts_menu_item_infos));
 
   std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes;
   for (const auto& shortcuts_icon_sizes_proto :

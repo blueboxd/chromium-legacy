@@ -5,14 +5,18 @@
 #include "weblayer/browser/favicon/favicon_fetcher_impl.h"
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "ui/gfx/image/image.h"
+#include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/favicon/favicon_fetcher_impl.h"
 #include "weblayer/browser/favicon/favicon_service_impl.h"
 #include "weblayer/browser/favicon/favicon_service_impl_factory.h"
 #include "weblayer/browser/favicon/favicon_service_impl_observer.h"
 #include "weblayer/browser/favicon/test_favicon_fetcher_delegate.h"
+#include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
+#include "weblayer/public/browser.h"
 #include "weblayer/public/favicon_fetcher_delegate.h"
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/shell/browser/shell.h"
@@ -132,5 +136,31 @@ IN_PROC_BROWSER_TEST_F(FaviconFetcherBrowserTest,
   fetcher_delegate.WaitForFavicon();
   EXPECT_FALSE(fetcher_delegate.last_image().IsEmpty());
 }
+
+// This test creates a Browser and Tab, which doesn't work well with Java when
+// driven from native code.
+#if !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(FaviconFetcherBrowserTest, OffTheRecord) {
+  auto otr_profile = Profile::Create(std::string());
+  ProfileImpl* otr_profile_impl = static_cast<ProfileImpl*>(otr_profile.get());
+  EXPECT_TRUE(otr_profile_impl->GetBrowserContext()->IsOffTheRecord());
+  auto otr_browser = Browser::Create(otr_profile.get(), nullptr);
+  Tab* tab = otr_browser->CreateTab();
+
+  // There is no FaviconService for off the record profiles. FaviconService
+  // writes to disk, which is not appropriate for off the record mode.
+  EXPECT_EQ(nullptr,
+            FaviconServiceImplFactory::GetForProfile(otr_profile_impl));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  TestFaviconFetcherDelegate fetcher_delegate;
+  auto fetcher = tab->CreateFaviconFetcher(&fetcher_delegate);
+  NavigateAndWaitForCompletion(
+      embedded_test_server()->GetURL("/simple_page_with_favicon.html"), tab);
+  fetcher_delegate.WaitForFavicon();
+  EXPECT_FALSE(fetcher_delegate.last_image().IsEmpty());
+  EXPECT_EQ(fetcher_delegate.last_image(), fetcher->GetFavicon());
+  EXPECT_EQ(1, fetcher_delegate.on_favicon_changed_call_count());
+}
+#endif
 
 }  // namespace weblayer

@@ -71,7 +71,7 @@ bool PrintMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 #if BUILDFLAG(ENABLE_PRINTING)
 
 void PrintMockRenderThread::OnGetDefaultPrintSettings(
-    PrintMsg_Print_Params* params) {
+    printing::mojom::PrintParams* params) {
   printer_->GetDefaultPrintSettings(params);
 }
 

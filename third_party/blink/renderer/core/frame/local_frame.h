@@ -500,6 +500,7 @@ class CORE_EXPORT LocalFrame final
 
   void WasHidden();
   void WasShown();
+  bool IsHidden() const { return hidden_; }
 
   // Whether the frame clips its content to the frame's size.
   bool ClipsContent() const;
@@ -763,22 +764,22 @@ class CORE_EXPORT LocalFrame final
   // FrameLoaderStateMachine if a real load has committed. Unfortunately, the
   // internal state tracked there is incorrect today. See
   // https://crbug.com/778318.
-  bool should_send_resource_timing_info_to_parent_ = true;
-
-  float page_zoom_factor_;
-  float text_zoom_factor_;
-
-  bool in_view_source_mode_;
-
+  unsigned should_send_resource_timing_info_to_parent_ : 1;
+  unsigned in_view_source_mode_ : 1;
   // Whether this frame is frozen or not. This is a copy of Page::IsFrozen()
   // and is stored here to ensure that we do not dispatch onfreeze() twice
   // in a row and every onfreeze() has a single corresponding onresume().
-  bool frozen_ = false;
-
+  unsigned frozen_ : 1;
   // Whether this frame is paused or not. This is a copy of Page::IsPaused()
   // and is stored here to ensure that we do not call SetContextPaused() twice
   // in a row with the same argument.
-  bool paused_ = false;
+  unsigned paused_ : 1;
+  // Whether this frame is known to be completely occluded by other opaque
+  // OS-level windows.
+  unsigned hidden_ : 1;
+
+  float page_zoom_factor_;
+  float text_zoom_factor_;
 
   Member<CoreProbeSink> probe_sink_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;

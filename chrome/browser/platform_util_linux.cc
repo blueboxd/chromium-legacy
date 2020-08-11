@@ -85,6 +85,11 @@ class ShowItemHelper : public content::NotificationObserver {
         {"file://" + full_path.value()});  // List of file(s) to highlight.
     writer.AppendString({});               // startup-id
 
+    // Skip opening the folder during browser tests, to avoid leaving an open
+    // file explorer window behind.
+    if (!internal::AreShellOperationsAllowed())
+      return;
+
     filemanager_proxy_->CallMethod(
         &show_items_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&ShowItemHelper::ShowItemInFolderResponse,

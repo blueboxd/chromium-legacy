@@ -7,7 +7,10 @@
 
 // For search requests, this enum specifies how the user last interacted with
 // the UI control. This is used for both the omnibox and NTP realbox.
-// It's called OmniboxFocusType so this enum matches the "oft" GET param.
+//
+// At this point, it's a bit of a misnomer to call it OmniboxFocusType, since
+// the enum now covers UI interactions unrelated to focus. But we are keeping
+// the old name to match the "oft" GET param.
 //
 // These values are used as HTTP GET parameter values. Entries should not be
 // renumbered and numeric values should never be reused.
@@ -24,7 +27,8 @@ enum class OmniboxFocusType {
   // omnibox permanent text at once, i.e. user is on "https://example.com",
   // does Ctrl+L which selects the whole URL, then presses Backspace.
   //
-  // This value does not apply in these circumstances:
+  // Note, DELETED_PERMANENT_TEXT only applies in fairly limited circumstances.
+  // For example, these cases would NOT qualify, are instead marked DEFAULT:
   //  - User deletes their own typed text.
   //  - User deletes the permanent text one character at a time.
   //  - User uses Cut (Ctrl+X) to delete the permanent text.

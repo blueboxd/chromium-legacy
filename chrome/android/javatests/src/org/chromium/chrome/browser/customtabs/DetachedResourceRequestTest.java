@@ -25,7 +25,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
@@ -65,8 +64,6 @@ import java.util.concurrent.TimeoutException;
 public class DetachedResourceRequestTest {
     @Rule
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
-    @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     private CustomTabsConnection mConnection;
     private Context mContext;

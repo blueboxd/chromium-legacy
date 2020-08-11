@@ -21,5 +21,6 @@ FakeInfobarOverlayRequestFactory::CreateInfobarRequest(
     infobars::InfoBar* infobar,
     InfobarOverlayType type) {
   return OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-      static_cast<InfoBarIOS*>(infobar), type);
+      static_cast<InfoBarIOS*>(infobar), type,
+      static_cast<InfoBarIOS*>(infobar)->high_priority());
 }

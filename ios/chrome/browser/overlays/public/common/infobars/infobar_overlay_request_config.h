@@ -25,17 +25,21 @@ class InfobarOverlayRequestConfig
   InfobarType infobar_type() const { return infobar_type_; }
   // Whether |infobar_| has a badge.
   bool has_badge() const { return has_badge_; }
+  // Whether the |infobar_| banner should be presented for a longer time.
+  bool is_high_priority() const { return is_high_priority_; }
   // The overlay type for this infobar OverlayRequest.
   InfobarOverlayType overlay_type() const { return overlay_type_; }
 
  private:
   OVERLAY_USER_DATA_SETUP(InfobarOverlayRequestConfig);
   explicit InfobarOverlayRequestConfig(InfoBarIOS* infobar,
-                                       InfobarOverlayType overlay_type);
+                                       InfobarOverlayType overlay_type,
+                                       bool is_high_priority);
 
   base::WeakPtr<InfoBarIOS> infobar_ = nullptr;
   InfobarType infobar_type_;
   bool has_badge_ = false;
+  bool is_high_priority_ = false;
   InfobarOverlayType overlay_type_;
 };
 

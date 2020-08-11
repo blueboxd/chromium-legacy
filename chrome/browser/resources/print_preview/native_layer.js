@@ -380,7 +380,7 @@ export class NativeLayerImpl {
 
   /** @override */
   signIn() {
-    chrome.send('signIn', [true]);
+    chrome.send('signIn');
   }
 
   // <if expr="chromeos">

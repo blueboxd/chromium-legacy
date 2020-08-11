@@ -1188,9 +1188,8 @@ void NGFlexLayoutAlgorithm::PropagateBaselineFromChild(
     return;
 
   LayoutUnit baseline_offset =
-      block_offset +
-      (Node().IsButton() ? fragment.FirstBaseline() : fragment.Baseline())
-          .value_or(fragment.BlockSize());
+      block_offset + (Node().IsButton() ? fragment.FirstBaselineOrSynthesize()
+                                        : fragment.BaselineOrSynthesize());
 
   // We prefer a baseline from a child with baseline alignment, and no
   // auto-margins in the cross axis (even if we have to synthesize the

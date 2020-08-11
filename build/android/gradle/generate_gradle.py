@@ -587,29 +587,39 @@ def _IsTestDir(path):
 
 # Example: //chrome/android:monochrome
 def _GetNative(relative_func, target_names):
+  """Returns an object containing native c++ sources list and its included path
+
+  Iterate through all target_names and their deps to get the list of included
+  paths and sources."""
   out_dir = constants.GetOutDirectory()
   with open(os.path.join(out_dir, 'project.json'), 'r') as project_file:
     projects = json.load(project_file)
   project_targets = projects['targets']
   root_dir = projects['build_settings']['root_path']
-  targets = {}
   includes = set()
+  processed_target = set()
+  targets_stack = list(target_names)
+  sources = []
+
+  while targets_stack:
+    target_name = targets_stack.pop()
+    if target_name in processed_target:
+      continue
+    processed_target.add(target_name)
+    target = project_targets[target_name]
+    includes.update(target.get('include_dirs', []))
+    targets_stack.extend(target.get('deps', []))
+    # Ignore generated files
+    sources.extend(f for f in target.get('sources', [])
+                   if f.endswith('.cc') and not f.startswith('//out'))
+
   def process_paths(paths):
     # Ignores leading //
     return relative_func(
         sorted(os.path.join(root_dir, path[2:]) for path in paths))
-  for target_name in target_names:
-    target = project_targets[target_name]
-    includes.update(target.get('include_dirs', []))
-    sources = [f for f in target.get('sources', []) if f.endswith('.cc')]
-    if sources:
-      # CMake does not like forward slashes or colons for the target name.
-      filtered_name = target_name.replace('/', '.').replace(':', '-')
-      targets[filtered_name] = {
-          'sources': process_paths(sources),
-      }
+
   return {
-      'targets': targets,
+      'sources': process_paths(sources),
       'includes': process_paths(includes),
   }
 

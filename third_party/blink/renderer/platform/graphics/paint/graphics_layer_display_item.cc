@@ -30,7 +30,7 @@ GraphicsLayerDisplayItem::GraphicsLayerDisplayItem(
       graphics_layer_(graphics_layer) {}
 
 bool GraphicsLayerDisplayItem::Equals(const DisplayItem& other) const {
-  return GetType() == other.GetType() &&
+  return DisplayItem::Equals(other) &&
          GetGraphicsLayer() ==
              static_cast<const GraphicsLayerDisplayItem&>(other)
                  .GetGraphicsLayer();

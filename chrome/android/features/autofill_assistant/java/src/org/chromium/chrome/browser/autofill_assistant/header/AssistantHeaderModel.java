@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.autofill_assistant.header;
 
-import android.support.annotation.VisibleForTesting;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
@@ -20,9 +18,6 @@ import java.util.List;
  */
 @JNINamespace("autofill_assistant")
 public class AssistantHeaderModel extends PropertyModel {
-    public static final WritableObjectPropertyKey<List<AssistantChip>> CHIPS =
-            new WritableObjectPropertyKey<>();
-
     public static final WritableObjectPropertyKey<String> STATUS_MESSAGE =
             new WritableObjectPropertyKey<>();
 
@@ -50,7 +45,10 @@ public class AssistantHeaderModel extends PropertyModel {
     public static final WritableObjectPropertyKey<Runnable> FEEDBACK_BUTTON_CALLBACK =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableBooleanPropertyKey CHIPS_VISIBLE = new WritableBooleanPropertyKey();
+    public static final WritableObjectPropertyKey<AssistantChip> CHIP =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableBooleanPropertyKey CHIP_VISIBLE = new WritableBooleanPropertyKey();
 
     public static final WritableBooleanPropertyKey DISABLE_ANIMATIONS_FOR_TESTING =
             new WritableBooleanPropertyKey();
@@ -58,8 +56,7 @@ public class AssistantHeaderModel extends PropertyModel {
     public AssistantHeaderModel() {
         super(STATUS_MESSAGE, BUBBLE_MESSAGE, PROGRESS, PROGRESS_ACTIVE_STEP, PROGRESS_BAR_ERROR,
                 PROGRESS_VISIBLE, USE_STEP_PROGRESS_BAR, STEP_PROGRESS_BAR_ICONS, SPIN_POODLE,
-                FEEDBACK_BUTTON_CALLBACK, CHIPS, CHIPS_VISIBLE, DISABLE_ANIMATIONS_FOR_TESTING);
-        set(CHIPS, new ArrayList<>());
+                FEEDBACK_BUTTON_CALLBACK, CHIP, CHIP_VISIBLE, DISABLE_ANIMATIONS_FOR_TESTING);
     }
 
     @CalledByNative
@@ -129,17 +126,5 @@ public class AssistantHeaderModel extends PropertyModel {
     @CalledByNative
     private void setDisableAnimations(boolean disableAnimations) {
         set(DISABLE_ANIMATIONS_FOR_TESTING, disableAnimations);
-    }
-
-    @CalledByNative
-    @VisibleForTesting
-    public void setChips(List<AssistantChip> chips) {
-        // Move last chip (cancel) to first position. For legacy reasons, native builds this list
-        // such that the cancel chip is last, but the regular carousel will show it in the left-most
-        // position and the header should mirror this.
-        if (chips.size() > 1) {
-            chips.add(0, chips.remove(chips.size() - 1));
-        }
-        set(CHIPS, chips);
     }
 }

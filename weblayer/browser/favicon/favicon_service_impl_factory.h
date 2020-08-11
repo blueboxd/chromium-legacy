@@ -20,6 +20,7 @@ class FaviconServiceImplFactory : public BrowserContextKeyedServiceFactory {
   FaviconServiceImplFactory& operator=(const FaviconServiceImplFactory&) =
       delete;
 
+  // Off the record profiles do not have a FaviconServiceImpl.
   static FaviconServiceImpl* GetForProfile(ProfileImpl* profile);
 
   // Returns the FaviconServiceFactory singleton.

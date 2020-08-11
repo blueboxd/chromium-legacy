@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/audio_track_list.h"
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
-#include "third_party/blink/renderer/modules/mediasource/media_source_registry.h"
 #include "third_party/blink/renderer/modules/mediasource/source_buffer_track_base_supplement.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -137,8 +136,7 @@ MediaSourceImpl::MediaSourceImpl(ExecutionContext* context)
       active_source_buffers_(
           MakeGarbageCollected<SourceBufferList>(GetExecutionContext(),
                                                  async_event_queue_.Get())),
-      live_seekable_range_(MakeGarbageCollected<TimeRanges>()),
-      added_to_registry_counter_(0) {
+      live_seekable_range_(MakeGarbageCollected<TimeRanges>()) {
   DVLOG(1) << __func__ << " this=" << this;
 
   DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled() ||
@@ -411,17 +409,6 @@ void MediaSourceImpl::CompleteAttachingToMediaElement(
   DCHECK(attached_element_);
   web_media_source_ = std::move(web_media_source);
   SetReadyState(OpenKeyword());
-}
-
-void MediaSourceImpl::AddedToRegistry() {
-  ++added_to_registry_counter_;
-  // Ensure there's no counter overflow.
-  CHECK_GT(added_to_registry_counter_, 0);
-}
-
-void MediaSourceImpl::RemovedFromRegistry() {
-  DCHECK_GT(added_to_registry_counter_, 0);
-  --added_to_registry_counter_;
 }
 
 double MediaSourceImpl::duration() const {
@@ -874,8 +861,7 @@ bool MediaSourceImpl::HasPendingActivity() const {
   // further motivation for apps to properly revokeObjectUrl and for the MSE
   // spec, implementations and API users to transition to using HTMLME srcObject
   // for MSE attachment instead of objectUrl.
-  return async_event_queue_->HasPendingEvents() ||
-         added_to_registry_counter_ > 0;
+  return async_event_queue_->HasPendingEvents();
 }
 
 void MediaSourceImpl::ContextDestroyed() {
@@ -930,10 +916,6 @@ void MediaSourceImpl::ScheduleEvent(const AtomicString& event_name) {
   event->SetTarget(this);
 
   async_event_queue_->EnqueueEvent(FROM_HERE, *event);
-}
-
-URLRegistry& MediaSourceImpl::Registry() const {
-  return MediaSourceRegistry::Registry();
 }
 
 }  // namespace blink

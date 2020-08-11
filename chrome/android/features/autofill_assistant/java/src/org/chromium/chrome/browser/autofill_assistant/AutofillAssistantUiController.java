@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip.Type;
+import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -282,56 +283,55 @@ public class AutofillAssistantUiController {
     }
 
     /**
-     * Creates an action button which executes the action {@code actionIndex}.
+     * Adds an action button to the chip list, which executes the action {@code actionIndex}.
      */
     @CalledByNative
-    private AssistantChip createActionButton(int icon, String text, int actionIndex,
+    private void addActionButton(List<AssistantChip> chips, int icon, String text, int actionIndex,
             boolean disabled, boolean sticky, String identifier) {
-        return new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled, sticky,
-                identifier, () -> safeNativeOnUserActionSelected(actionIndex));
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
+                sticky, identifier, () -> safeNativeOnUserActionSelected(actionIndex)));
     }
 
     /**
-     * Creates a highlighted action button which executes the action {@code actionIndex}.
+     * Adds a highlighted action button to the chip list, which executes the action {@code
+     * actionIndex}.
      */
     @CalledByNative
-    private AssistantChip createHighlightedActionButton(int icon, String text, int actionIndex,
-            boolean disabled, boolean sticky, String identifier) {
-        return new AssistantChip(Type.BUTTON_FILLED_BLUE, icon, text, disabled, sticky, identifier,
-                () -> safeNativeOnUserActionSelected(actionIndex));
+    private void addHighlightedActionButton(List<AssistantChip> chips, int icon, String text,
+            int actionIndex, boolean disabled, boolean sticky, String identifier) {
+        chips.add(new AssistantChip(Type.BUTTON_FILLED_BLUE, icon, text, disabled, sticky,
+                identifier, () -> safeNativeOnUserActionSelected(actionIndex)));
     }
 
     /**
-     * Creates a cancel action button. If the keyboard is currently shown, it dismisses the
-     * keyboard. Otherwise, it shows the snackbar and then executes {@code actionIndex}, or shuts
-     * down Autofill Assistant if {@code actionIndex} is {@code -1}.
+     * Adds a cancel action button to the chip list. If the keyboard is currently shown, it
+     * dismisses the keyboard. Otherwise, it shows the snackbar and then executes
+     * {@code actionIndex}, or shuts down Autofill Assistant if {@code actionIndex} is {@code -1}.
      */
     @CalledByNative
-    private AssistantChip createCancelButton(int icon, String text, int actionIndex,
+    private void addCancelButton(List<AssistantChip> chips, int icon, String text, int actionIndex,
             boolean disabled, boolean sticky, String identifier) {
-        return new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled, sticky,
-                identifier, () -> safeNativeOnCancelButtonClicked(actionIndex));
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
+                sticky, identifier, () -> safeNativeOnCancelButtonClicked(actionIndex)));
     }
 
     /**
      * Adds a close action button to the chip list, which shuts down Autofill Assistant.
      */
     @CalledByNative
-    private AssistantChip createCloseButton(
-            int icon, String text, boolean disabled, boolean sticky, String identifier) {
-        return new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled, sticky,
-                identifier, this::safeNativeOnCloseButtonClicked);
-    }
-
-    @CalledByNative
-    private static void appendChipToList(List<AssistantChip> chips, AssistantChip chip) {
-        chips.add(chip);
+    private void addCloseButton(List<AssistantChip> chips, int icon, String text, boolean disabled,
+            boolean sticky, String identifier) {
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
+                sticky, identifier, this::safeNativeOnCloseButtonClicked));
     }
 
     @CalledByNative
     private void setActions(List<AssistantChip> chips) {
-        // TODO(b/144075373): Move this to AssistantCarouselModel.
-        getModel().getActionsModel().setChips(chips);
+        // TODO(b/144075373): Move this to AssistantCarouselModel and AssistantHeaderModel. Move
+        // header chip logic to native.
+        AssistantCarouselModel model = getModel().getActionsModel();
+        model.setChips(chips);
+        setHeaderChip(chips);
     }
 
     @CalledByNative
@@ -356,6 +356,19 @@ public class AutofillAssistantUiController {
             }
         }
         model.setChips(newChips);
+    }
+
+    private void setHeaderChip(List<AssistantChip> chips) {
+        // The header chip is the first sticky chip found in the actions.
+        AssistantChip headerChip = null;
+        for (AssistantChip chip : chips) {
+            if (chip.isSticky()) {
+                headerChip = chip;
+                break;
+            }
+        }
+
+        getModel().getHeaderModel().set(AssistantHeaderModel.CHIP, headerChip);
     }
 
     @CalledByNative

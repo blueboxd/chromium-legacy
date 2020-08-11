@@ -417,8 +417,8 @@ void X11EventSource::PostDispatchEvent(x11::Event* x11_event) {
 
   auto* crossing = x11_event->As<x11::CrossingEvent>();
   if (crossing && crossing->opcode == x11::CrossingEvent::EnterNotify &&
-      crossing->detail == x11::NotifyDetail::Inferior &&
-      crossing->mode == x11::NotifyMode::Ungrab) {
+      crossing->detail != x11::NotifyDetail::Inferior &&
+      crossing->mode != x11::NotifyMode::Ungrab) {
     // Clear stored scroll data
     ui::DeviceDataManagerX11::GetInstance()->InvalidateScrollClasses(
         DeviceDataManagerX11::kAllDevices);

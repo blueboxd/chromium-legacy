@@ -26,9 +26,8 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem : public DisplayItem {
                           Type,
                           scoped_refptr<cc::Layer>,
                           const IntPoint& offset);
-  ~ForeignLayerDisplayItem() override;
 
-  cc::Layer* GetLayer() const;
+  cc::Layer* GetLayer() const { return layer_.get(); }
 
   // DisplayItem
   bool Equals(const DisplayItem&) const final;
@@ -40,6 +39,7 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem : public DisplayItem {
 
  private:
   IntPoint offset_;
+  scoped_refptr<cc::Layer> layer_;
 };
 
 // When a foreign layer's debug name is a literal string, define a instance of

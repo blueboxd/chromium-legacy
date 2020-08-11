@@ -35,7 +35,8 @@ class Adapter : public mojom::Adapter,
                        ConnectToDeviceCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
   void GetInfo(GetInfoCallback callback) override;
-  void SetClient(mojo::PendingRemote<mojom::AdapterClient> client) override;
+  void SetClient(mojo::PendingRemote<mojom::AdapterClient> client,
+                 SetClientCallback callback) override;
   void StartDiscoverySession(StartDiscoverySessionCallback callback) override;
   void ConnectToServiceInsecurely(
       const std::string& address,

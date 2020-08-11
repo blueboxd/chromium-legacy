@@ -122,8 +122,9 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // Returns the number of workers in this thread group.
   size_t NumberOfWorkersForTesting() const;
 
-  // Returns |max_tasks_|.
+  // Returns |max_tasks_|/|max_best_effort_tasks_|.
   size_t GetMaxTasksForTesting() const;
+  size_t GetMaxBestEffortTasksForTesting() const;
 
   // Returns the number of workers that are idle (i.e. not running tasks).
   size_t NumberOfIdleWorkersForTesting() const;
@@ -138,6 +139,8 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   friend class ThreadGroupImplMayBlockTest;
   FRIEND_TEST_ALL_PREFIXES(ThreadGroupImplBlockingTest,
                            ThreadBlockUnblockPremature);
+  FRIEND_TEST_ALL_PREFIXES(ThreadGroupImplBlockingTest,
+                           ThreadBlockUnblockPrematureBestEffort);
 
   // ThreadGroup:
   void UpdateSortKey(TaskSource::Transaction transaction) override;
@@ -211,12 +214,13 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   void IncrementTasksRunningLockRequired(TaskPriority priority)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Increments/decrements the number of tasks that can run in this thread
-  // group.  May only be called in a scope where a task is running with
-  // |priority|.
-  void DecrementMaxTasksLockRequired(TaskPriority priority)
+  // Increments/decrements the number of [best effort] tasks that can run in
+  // this thread group.
+  void DecrementMaxTasksLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void IncrementMaxTasksLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void DecrementMaxBestEffortTasksLockRequired()
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  void IncrementMaxTasksLockRequired(TaskPriority priority)
+  void IncrementMaxBestEffortTasksLockRequired()
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Values set at Start() and never modified afterwards.
@@ -244,7 +248,6 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     WorkerThreadObserver* worker_thread_observer = nullptr;
 
     bool may_block_without_delay;
-    bool fixed_max_best_effort_tasks;
 
     // Threshold after which the max tasks is increased to compensate for a
     // worker that is within a MAY_BLOCK ScopedBlockingCall.

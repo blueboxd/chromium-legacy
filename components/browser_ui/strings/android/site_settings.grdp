@@ -489,7 +489,7 @@
   <!-- Storage -->
 
   <message name="IDS_WEBSITE_SETTINGS_STORAGE" desc="Title for Storage settings which show how much data websites are storing on the user's device. [CHAR-LIMIT=32]">
-    Storage
+    Data stored
   </message>
   <message name="IDS_NO_SAVED_WEBSITE_SETTINGS" desc="Text to display when there are no saved website settings.">
     Files saved by websites appear here
@@ -498,7 +498,7 @@
     <ph name="STORAGE_AMOUNT">%1$s<ex>2 MB</ex></ph> stored data
   </message>
   <message name="IDS_STORAGE_CLEAR_BUTTON_TITLE" desc="Title of a button in the storage UI used to clear all storage data. [CHAR-LIMIT=24]">
-    Clear site storage
+    Clear all data
   </message>
 
   <!-- USB -->

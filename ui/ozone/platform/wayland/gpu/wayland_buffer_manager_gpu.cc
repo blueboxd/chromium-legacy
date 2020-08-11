@@ -11,6 +11,30 @@
 #include "base/task/current_thread.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
+#include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
+#include "ui/ozone/public/overlay_plane.h"
+
+namespace mojo {
+// static
+ui::ozone::mojom::WaylandOverlayConfigPtr
+TypeConverter<ui::ozone::mojom::WaylandOverlayConfigPtr,
+              ui::OverlayPlane>::Convert(const ui::OverlayPlane& input) {
+  ui::ozone::mojom::WaylandOverlayConfigPtr wayland_overlay_config{
+      ui::ozone::mojom::WaylandOverlayConfig::New()};
+  wayland_overlay_config->z_order = input.z_order;
+  wayland_overlay_config->transform = input.plane_transform;
+  wayland_overlay_config->bounds_rect = input.display_bounds;
+  wayland_overlay_config->crop_rect = input.crop_rect;
+  wayland_overlay_config->enable_blend = input.enable_blend;
+  wayland_overlay_config->access_fence_handle =
+      !input.gpu_fence || input.gpu_fence->GetGpuFenceHandle().is_null()
+          ? base::Optional<gfx::GpuFenceHandle>()
+          : base::Optional<gfx::GpuFenceHandle>(
+                gfx::CloneHandleForIPC(input.gpu_fence->GetGpuFenceHandle()));
+
+  return wayland_overlay_config;
+}
+}  // namespace mojo
 
 namespace ui {
 
@@ -167,6 +191,22 @@ void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
                      base::Unretained(this), widget, buffer_id, damage_region));
 }
 
+void WaylandBufferManagerGpu::CommitOverlays(
+    gfx::AcceleratedWidget widget,
+    std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays) {
+  if (!remote_host_) {
+    LOG(ERROR) << "Interface is not bound. Can't request "
+                  "WaylandBufferManagerHost to create/commit/destroy buffers.";
+    return;
+  }
+
+  // Do the mojo call on the IO child thread.
+  io_thread_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WaylandBufferManagerGpu::CommitOverlaysInternal,
+                     base::Unretained(this), widget, std::move(overlays)));
+}
+
 void WaylandBufferManagerGpu::DestroyBuffer(gfx::AcceleratedWidget widget,
                                             uint32_t buffer_id) {
   if (!remote_host_) {
@@ -232,6 +272,13 @@ void WaylandBufferManagerGpu::CommitBufferInternal(
     const gfx::Rect& damage_region) {
   DCHECK(io_thread_runner_->BelongsToCurrentThread());
   remote_host_->CommitBuffer(widget, buffer_id, damage_region);
+}
+
+void WaylandBufferManagerGpu::CommitOverlaysInternal(
+    gfx::AcceleratedWidget widget,
+    std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays) {
+  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+  remote_host_->CommitOverlays(widget, std::move(overlays));
 }
 
 void WaylandBufferManagerGpu::DestroyBufferInternal(

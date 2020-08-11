@@ -23,8 +23,11 @@
 using base::StringPrintf;
 using base::SysNSStringToUTF8;
 using base::SysNSStringToUTF16;
+using base::SysUTF16ToNSString;
 using std::string;
 using content::a11y::LineIndexesMap;
+using content::a11y::OptionalNSObject;
+using content::a11y::AttributeInvoker;
 
 namespace content {
 
@@ -43,34 +46,6 @@ const char kSetKeyPrefixDictAttr[] = "_setkey_";
 const char kConstValuePrefix[] = "_const_";
 const char kNULLValue[] = "_const_NULL";
 const char kFailedToParseArgsError[] = "_const_ERROR:FAILED_TO_PARSE_ARGS";
-
-#define INT_FAIL(propnode, msg)                                  \
-  LOG(ERROR) << "Failed to parse " << propnode.original_property \
-             << " to Int: " << msg;                              \
-  return nil;
-
-#define INTARRAY_FAIL(propnode, msg)                             \
-  LOG(ERROR) << "Failed to parse " << propnode.original_property \
-             << " to IntArray: " << msg;                         \
-  return nil;
-
-#define NSRANGE_FAIL(propnode, msg)                              \
-  LOG(ERROR) << "Failed to parse " << propnode.original_property \
-             << " to NSRange: " << msg;                          \
-  return nil;
-
-#define UIELEMENT_FAIL(propnode, msg)                            \
-  LOG(ERROR) << "Failed to parse " << propnode.original_property \
-             << " to UIElement: " << msg;                        \
-  return nil;
-
-#define TEXTMARKER_FAIL(propnode, msg)                                         \
-  LOG(ERROR) << "Failed to parse " << propnode.original_property               \
-             << " to AXTextMarker: " << msg                                    \
-             << ". Expected format: {anchor, offset, affinity}, where anchor " \
-                "is :line_num, offset is integer, affinity is either down, "   \
-                "up or none";                                                  \
-  return nil;
 
 }  // namespace
 
@@ -108,41 +83,11 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
                      const LineIndexesMap& line_indexes_map,
                      base::Value* dict);
 
-  // Helper class used to compute a parameter for a parameterized attribute
-  // call. Can be either id or error. Similar to base::Optional, but allows nil
-  // id as a valid value.
-  class IdOrError {
-   public:
-    IdOrError() : value(nil), error(false) {}
-
-    IdOrError& operator=(id other_value) {
-      error = !other_value;
-      value = other_value;
-      return *this;
-    }
-
-    bool IsError() const { return error; }
-    bool IsNotNil() const { return !!value; }
-    constexpr const id& operator*() const& { return value; }
-
-   private:
-    id value;
-    bool error;
-  };
-
-  IdOrError ParamByPropertyNode(const PropertyNode&,
-                                const LineIndexesMap&) const;
-  NSNumber* PropertyNodeToInt(const PropertyNode&) const;
-  NSArray* PropertyNodeToIntArray(const PropertyNode&) const;
-  NSValue* PropertyNodeToRange(const PropertyNode&) const;
-  gfx::NativeViewAccessible PropertyNodeToUIElement(
-      const PropertyNode&,
-      const LineIndexesMap&) const;
-
-  id DictNodeToTextMarker(const PropertyNode&, const LineIndexesMap&) const;
-  id PropertyNodeToTextMarker(const PropertyNode&, const LineIndexesMap&) const;
-  id PropertyNodeToTextMarkerRange(const PropertyNode&,
-                                   const LineIndexesMap&) const;
+  // Invokes an attributes by a property node.
+  OptionalNSObject InvokeAttributeFor(
+      const BrowserAccessibilityCocoa* cocoa_node,
+      const PropertyNode& property_node,
+      const LineIndexesMap& line_indexes_map) const;
 
   base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
   base::Value PopulatePosition(const BrowserAccessibilityCocoa*) const;
@@ -259,232 +204,39 @@ void AccessibilityTreeFormatterMac::AddProperties(
   BrowserAccessibility* node = [cocoa_node owner];
   dict->SetKey("id", base::Value(base::NumberToString16(node->GetId())));
 
+  // Dump all attributes if match-all filter is specified.
+  if (HasMatchAllPropertyFilter()) {
+    for (NSString* attribute : [cocoa_node accessibilityAttributeNames]) {
+      dict->SetPath(
+          SysNSStringToUTF8(attribute),
+          PopulateObject([cocoa_node accessibilityAttributeValue:attribute],
+                         line_indexes_map));
+    }
+    return;
+  }
+
+  // Otherwise dump attributes matching allow filters only.
   base::string16 line_index =
       base::UTF8ToUTF16(line_indexes_map.IndexBy(cocoa_node));
 
-  // Attributes
-  for (NSString* supportedAttribute in
-       [cocoa_node accessibilityAttributeNames]) {
-    if (GetMatchingPropertyNode(line_index,
-                                SysNSStringToUTF16(supportedAttribute))) {
-      id value = [cocoa_node accessibilityAttributeValue:supportedAttribute];
-      if (value != nil) {
-        dict->SetPath(SysNSStringToUTF8(supportedAttribute),
-                      PopulateObject(value, line_indexes_map));
-      }
+  for (const PropertyNode& property_node : PropertyFilterNodesFor(line_index)) {
+    AttributeInvoker invoker(cocoa_node, line_indexes_map);
+    OptionalNSObject value = invoker.Invoke(property_node);
+    if (value.IsNotApplicable()) {
+      continue;
     }
-  }
-
-  // Parameterized attributes
-  for (NSString* supportedAttribute in
-       [cocoa_node accessibilityParameterizedAttributeNames]) {
-    auto propnode = GetMatchingPropertyNode(
-        line_index, SysNSStringToUTF16(supportedAttribute));
-    IdOrError param = ParamByPropertyNode(propnode, line_indexes_map);
-    if (param.IsError()) {
-      dict->SetPath(base::UTF16ToUTF8(propnode.original_property),
+    if (value.IsError()) {
+      dict->SetPath(base::UTF16ToUTF8(property_node.original_property),
                     base::Value(kFailedToParseArgsError));
       continue;
     }
-
-    if (param.IsNotNil()) {
-      id value = [cocoa_node accessibilityAttributeValue:supportedAttribute
-                                            forParameter:*param];
-      dict->SetPath(base::UTF16ToUTF8(propnode.original_property),
-                    PopulateObject(value, line_indexes_map));
-    }
+    dict->SetPath(base::UTF16ToUTF8(property_node.original_property),
+                  PopulateObject(*value, line_indexes_map));
   }
 
   // Position and size
   dict->SetPath(kPositionDictAttr, PopulatePosition(cocoa_node));
   dict->SetPath(kSizeDictAttr, PopulateSize(cocoa_node));
-}
-
-AccessibilityTreeFormatterMac::IdOrError
-AccessibilityTreeFormatterMac::ParamByPropertyNode(
-    const PropertyNode& property_node,
-    const LineIndexesMap& line_indexes_map) const {
-  IdOrError param;
-  std::string property_name = base::UTF16ToASCII(property_node.name_or_value);
-
-  if (property_name == "AXLineForIndex") {  // Int
-    param = PropertyNodeToInt(property_node);
-  } else if (property_name == "AXCellForColumnAndRow") {  // IntArray
-    param = PropertyNodeToIntArray(property_node);
-  } else if (property_name == "AXStringForRange") {  // NSRange
-    param = PropertyNodeToRange(property_node);
-  } else if (property_name == "AXIndexForChildUIElement") {  // UIElement
-    param = PropertyNodeToUIElement(property_node, line_indexes_map);
-  } else if (property_name == "AXIndexForTextMarker") {  // TextMarker
-    param = PropertyNodeToTextMarker(property_node, line_indexes_map);
-  } else if (property_name ==
-             "AXStringForTextMarkerRange") {  // TextMarkerRange
-    param = PropertyNodeToTextMarkerRange(property_node, line_indexes_map);
-  }
-
-  return param;
-}
-
-// NSNumber. Format: integer.
-NSNumber* AccessibilityTreeFormatterMac::PropertyNodeToInt(
-    const PropertyNode& propnode) const {
-  if (propnode.parameters.size() != 1) {
-    INT_FAIL(propnode, "single argument is expected")
-  }
-
-  const auto& intnode = propnode.parameters[0];
-  base::Optional<int> param = intnode.AsInt();
-  if (!param) {
-    INT_FAIL(propnode, "not a number")
-  }
-  return [NSNumber numberWithInt:*param];
-}
-
-// NSArray of two NSNumber. Format: [integer, integer].
-NSArray* AccessibilityTreeFormatterMac::PropertyNodeToIntArray(
-    const PropertyNode& propnode) const {
-  if (propnode.parameters.size() != 1) {
-    INTARRAY_FAIL(propnode, "single argument is expected")
-  }
-
-  const auto& arraynode = propnode.parameters[0];
-  if (arraynode.name_or_value != base::ASCIIToUTF16("[]")) {
-    INTARRAY_FAIL(propnode, "not array")
-  }
-
-  NSMutableArray* array =
-      [[NSMutableArray alloc] initWithCapacity:arraynode.parameters.size()];
-  for (const auto& paramnode : arraynode.parameters) {
-    base::Optional<int> param = paramnode.AsInt();
-    if (!param) {
-      INTARRAY_FAIL(propnode, paramnode.name_or_value +
-                                  base::UTF8ToUTF16(" is not a number"))
-    }
-    [array addObject:@(*param)];
-  }
-  return array;
-}
-
-// NSRange. Format: {loc: integer, len: integer}.
-NSValue* AccessibilityTreeFormatterMac::PropertyNodeToRange(
-    const PropertyNode& propnode) const {
-  if (propnode.parameters.size() != 1) {
-    NSRANGE_FAIL(propnode, "single argument is expected")
-  }
-
-  const auto& dictnode = propnode.parameters[0];
-  if (!dictnode.IsDict()) {
-    NSRANGE_FAIL(propnode, "dictionary is expected")
-  }
-
-  base::Optional<int> loc = dictnode.FindIntKey("loc");
-  if (!loc) {
-    NSRANGE_FAIL(propnode, "no loc or loc is not a number")
-  }
-
-  base::Optional<int> len = dictnode.FindIntKey("len");
-  if (!len) {
-    NSRANGE_FAIL(propnode, "no len or len is not a number")
-  }
-
-  return [NSValue valueWithRange:NSMakeRange(*loc, *len)];
-}
-
-// UIElement. Format: :line_num.
-gfx::NativeViewAccessible
-AccessibilityTreeFormatterMac::PropertyNodeToUIElement(
-    const PropertyNode& propnode,
-    const LineIndexesMap& line_indexes_map) const {
-  if (propnode.parameters.size() != 1) {
-    UIELEMENT_FAIL(propnode, "single argument is expected")
-  }
-
-  gfx::NativeViewAccessible uielement = line_indexes_map.NodeBy(
-      base::UTF16ToUTF8(propnode.parameters[0].name_or_value));
-  if (!uielement) {
-    UIELEMENT_FAIL(propnode, "no corresponding UIElement was found in the tree")
-  }
-  return uielement;
-}
-
-id AccessibilityTreeFormatterMac::DictNodeToTextMarker(
-    const PropertyNode& dictnode,
-    const LineIndexesMap& line_indexes_map) const {
-  if (!dictnode.IsDict()) {
-    TEXTMARKER_FAIL(dictnode, "dictionary is expected")
-  }
-  if (dictnode.parameters.size() != 3) {
-    TEXTMARKER_FAIL(dictnode, "wrong number of dictionary elements")
-  }
-
-  BrowserAccessibilityCocoa* anchor_cocoa = line_indexes_map.NodeBy(
-      base::UTF16ToUTF8(dictnode.parameters[0].name_or_value));
-  if (!anchor_cocoa) {
-    TEXTMARKER_FAIL(dictnode, "1st argument: wrong anchor")
-  }
-
-  base::Optional<int> offset = dictnode.parameters[1].AsInt();
-  if (!offset) {
-    TEXTMARKER_FAIL(dictnode, "2nd argument: wrong offset")
-  }
-
-  ax::mojom::TextAffinity affinity;
-  const base::string16& affinity_str = dictnode.parameters[2].name_or_value;
-  if (affinity_str == base::UTF8ToUTF16("none")) {
-    affinity = ax::mojom::TextAffinity::kNone;
-  } else if (affinity_str == base::UTF8ToUTF16("down")) {
-    affinity = ax::mojom::TextAffinity::kDownstream;
-  } else if (affinity_str == base::UTF8ToUTF16("up")) {
-    affinity = ax::mojom::TextAffinity::kUpstream;
-  } else {
-    TEXTMARKER_FAIL(dictnode, "3rd argument: wrong affinity")
-  }
-
-  return content::AXTextMarkerFrom(anchor_cocoa, *offset, affinity);
-}
-
-id AccessibilityTreeFormatterMac::PropertyNodeToTextMarker(
-    const PropertyNode& propnode,
-    const LineIndexesMap& line_indexes_map) const {
-  if (propnode.parameters.size() != 1) {
-    TEXTMARKER_FAIL(propnode, "single argument is expected")
-  }
-  return DictNodeToTextMarker(propnode.parameters[0], line_indexes_map);
-}
-
-id AccessibilityTreeFormatterMac::PropertyNodeToTextMarkerRange(
-    const PropertyNode& propnode,
-    const LineIndexesMap& line_indexes_map) const {
-  if (propnode.parameters.size() != 1) {
-    TEXTMARKER_FAIL(propnode, "single argument is expected")
-  }
-
-  const auto& rangenode = propnode.parameters[0];
-  if (!rangenode.IsDict()) {
-    TEXTMARKER_FAIL(propnode, "dictionary is expected")
-  }
-
-  const PropertyNode* anchornode = rangenode.FindKey("anchor");
-  if (!anchornode) {
-    TEXTMARKER_FAIL(propnode, "no anchor")
-  }
-
-  id anchor_textmarker = DictNodeToTextMarker(*anchornode, line_indexes_map);
-  if (!anchor_textmarker) {
-    TEXTMARKER_FAIL(propnode, "failed to parse anchor")
-  }
-
-  const PropertyNode* focusnode = rangenode.FindKey("focus");
-  if (!focusnode) {
-    TEXTMARKER_FAIL(propnode, "no focus")
-  }
-
-  id focus_textmarker = DictNodeToTextMarker(*focusnode, line_indexes_map);
-  if (!focus_textmarker) {
-    TEXTMARKER_FAIL(propnode, "failed to parse focus")
-  }
-
-  return content::AXTextMarkerRangeFrom(anchor_textmarker, focus_textmarker);
 }
 
 base::Value AccessibilityTreeFormatterMac::PopulateSize(
@@ -503,8 +255,8 @@ base::Value AccessibilityTreeFormatterMac::PopulatePosition(
   DCHECK(root_manager);
 
   // The NSAccessibility position of an object is in global coordinates and
-  // based on the lower-left corner of the object. To make this easier and less
-  // confusing, convert it to local window coordinates using the top-left
+  // based on the lower-left corner of the object. To make this easier and
+  // less confusing, convert it to local window coordinates using the top-left
   // corner when dumping the position.
   BrowserAccessibility* root = root_manager->GetRoot();
   BrowserAccessibilityCocoa* cocoa_root = ToBrowserAccessibilityCocoa(root);

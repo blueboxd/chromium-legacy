@@ -37,7 +37,6 @@ FaviconServiceImplFactory::~FaviconServiceImplFactory() = default;
 
 KeyedService* FaviconServiceImplFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  // TODO(sky): figure out best way to support incognito.
   DCHECK(!context->IsOffTheRecord());
   std::unique_ptr<FaviconServiceImpl> service =
       std::make_unique<FaviconServiceImpl>();

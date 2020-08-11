@@ -66,8 +66,7 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
         ComputeMarginsFor(child_space, child_style, ConstraintSpace());
     inline_offset += margins.inline_start;
 
-    LayoutUnit ascent = margins.block_start +
-                        fragment.Baseline().value_or(fragment.BlockSize());
+    LayoutUnit ascent = margins.block_start + fragment.BaselineOrSynthesize();
     *max_row_block_baseline = std::max(*max_row_block_baseline, ascent);
 
     // TODO(rbuis): Operators can add lspace and rspace.

@@ -14,12 +14,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "components/printing/common/print.mojom-forward.h"
 #include "printing/image.h"
 #include "printing/mojom/print.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-struct PrintMsg_Print_Params;
 struct PrintMsg_PrintPages_Params;
 struct PrintHostMsg_DidPrintDocument_Params;
 
@@ -71,13 +71,13 @@ class MockPrinter {
 
   // Functions that changes settings of a pseudo printer.
   void ResetPrinter();
-  void SetDefaultPrintSettings(const PrintMsg_Print_Params& params);
+  void SetDefaultPrintSettings(const printing::mojom::PrintParams& params);
   void UseInvalidSettings();
   void UseInvalidPageSize();
   void UseInvalidContentSize();
 
   // Functions that handles IPC events.
-  void GetDefaultPrintSettings(PrintMsg_Print_Params* params);
+  void GetDefaultPrintSettings(printing::mojom::PrintParams* params);
   void ScriptedPrint(int cookie,
                      int expected_pages_count,
                      bool has_selection,
@@ -112,7 +112,7 @@ class MockPrinter {
 
  private:
   // Helper function to fill the fields in |params|.
-  void SetPrintParams(PrintMsg_Print_Params* params);
+  void SetPrintParams(printing::mojom::PrintParams* params);
 
   // In pixels according to dpi_x and dpi_y.
   gfx::Size page_size_;

@@ -10,48 +10,39 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 
-import android.content.Context;
-import android.support.test.rule.ActivityTestRule;
+import android.app.Activity;
 
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.Robolectric;
 
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.test.util.DummyUiActivity;
 
 /**
  * Tests for {@link LinkToTextCoordinator}.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 public class LinkToTextCoordinatorTest {
-    @Rule
-    public ActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new ActivityTestRule<>(DummyUiActivity.class);
-
     @Mock
     private ChromeOptionShareCallback mShareCallback;
-
     @Mock
     private WindowAndroid mWindow;
 
-    private Context mContext;
+    private Activity mAcivity;
     private static final String SELECTED_TEXT = "selection";
     private static final String VISIBLE_URL = "www.example.com";
 
     @Before
-    public void setUp() {
-        mContext = mActivityTestRule.getActivity();
-
+    public void setUpTest() {
+        mAcivity = Robolectric.setupActivity(Activity.class);
         MockitoAnnotations.initMocks(this);
         doNothing()
                 .when(mShareCallback)
@@ -60,32 +51,29 @@ public class LinkToTextCoordinatorTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1111408")
     public void getTextToShareTest() {
         String selector = "selector";
         String expectedTextToShare = "\"selection\"\nwww.example.com:~:text=selector";
         LinkToTextCoordinator coordinator = new LinkToTextCoordinator(
-                mContext, mWindow, mShareCallback, VISIBLE_URL, SELECTED_TEXT);
+                mAcivity, mWindow, mShareCallback, VISIBLE_URL, SELECTED_TEXT);
         Assert.assertEquals(expectedTextToShare, coordinator.getTextToShare(selector));
     }
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1111408")
     public void getTextToShareTest_EmptySelector() {
         String selector = "";
         String expectedTextToShare = "\"selection\"\nwww.example.com";
         LinkToTextCoordinator coordinator = new LinkToTextCoordinator(
-                mContext, mWindow, mShareCallback, VISIBLE_URL, SELECTED_TEXT);
+                mAcivity, mWindow, mShareCallback, VISIBLE_URL, SELECTED_TEXT);
         Assert.assertEquals(expectedTextToShare, coordinator.getTextToShare(selector));
     }
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1111408")
     public void onSelectorReadyTest() {
         LinkToTextCoordinator coordinator = new LinkToTextCoordinator(
-                mContext, mWindow, mShareCallback, VISIBLE_URL, SELECTED_TEXT);
+                mAcivity, mWindow, mShareCallback, VISIBLE_URL, SELECTED_TEXT);
         // OnSelectorReady should call back the share sheet.
         verify(mShareCallback)
                 .showThirdPartyShareSheetWithMessage(anyString(), any(), any(), anyLong());

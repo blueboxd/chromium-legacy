@@ -63,6 +63,11 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   // should be skipped but not the badge and subsequent modals.
   bool skip_banner() const { return skip_banner_; }
 
+  // Whether or not the banner should be shown for a longer time and be
+  // presented immediately.
+  bool high_priority() const { return high_priority_; }
+  void set_high_priority(bool high_priority);
+
   // Returns the InfobarUIDelegate associated to this Infobar.
   id<InfobarUIDelegate> InfobarUIDelegate();
 
@@ -86,6 +91,7 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   InfobarType infobar_type_;
   bool accepted_ = false;
   bool skip_banner_ = false;
+  bool high_priority_ = false;
   base::WeakPtrFactory<InfoBarIOS> weak_factory_{this};
 };
 

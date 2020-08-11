@@ -36,7 +36,6 @@
 #include "third_party/blink/public/platform/web_media_source.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/core/html/media/media_source.h"
 #include "third_party/blink/renderer/core/html/time_ranges.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -114,19 +113,12 @@ class MediaSourceImpl final : public EventTargetWithInlineData,
   // ExecutionContextLifecycleObserver interface
   void ContextDestroyed() override;
 
-  // URLRegistrable interface
-  URLRegistry& Registry() const override;
-
   // Used by SourceBuffer.
   void OpenIfInEndedState();
   bool IsOpen() const;
   void SetSourceBufferActive(SourceBuffer*, bool);
   HTMLMediaElement* MediaElement() const;
   void EndOfStreamAlgorithm(const WebMediaSource::EndOfStreamStatus);
-
-  // Used by MediaSourceRegistry.
-  void AddedToRegistry();
-  void RemovedFromRegistry();
 
   void Trace(Visitor*) const override;
 
@@ -161,8 +153,6 @@ class MediaSourceImpl final : public EventTargetWithInlineData,
   Member<SourceBufferList> active_source_buffers_;
 
   Member<TimeRanges> live_seekable_range_;
-
-  int added_to_registry_counter_;
 };
 
 }  // namespace blink

@@ -68,6 +68,14 @@
                       }];
 }
 
+- (UIAction*)actionToShareWithBlock:(ProceduralBlock)block {
+  return
+      [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_SHARE_BUTTON_LABEL)
+                      image:[UIImage systemImageNamed:@"square.and.arrow.up"]
+                       type:MenuActionType::Share
+                      block:block];
+}
+
 - (UIAction*)actionToDeleteWithBlock:(ProceduralBlock)block {
   UIAction* action =
       [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE)

@@ -794,10 +794,7 @@ void PrintPreviewHandler::HandlePrinterSetup(const base::ListValue* args) {
                      weak_factory_.GetWeakPtr(), callback_id, printer_name));
 }
 
-void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
-  bool add_account = false;
-  CHECK(args->GetBoolean(0, &add_account));
-
+void PrintPreviewHandler::HandleSignin(const base::ListValue* /*args*/) {
   Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(profile);
 
@@ -806,20 +803,15 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
     // Chrome OS Account Manager is enabled on this Profile and hence, all
     // account management flows will go through native UIs and not through a
     // tabbed browser window.
-    if (add_account) {
-      chromeos::InlineLoginDialogChromeOS::Show(
-          chromeos::InlineLoginDialogChromeOS::Source::kPrintPreviewDialog);
-    } else {
-      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-          profile, chromeos::settings::mojom::kMyAccountsSubpagePath);
-    }
+    chromeos::InlineLoginDialogChromeOS::Show(
+        chromeos::InlineLoginDialogChromeOS::Source::kPrintPreviewDialog);
     return;
   }
 #endif
 
   chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   CreateCloudPrintSigninTab(
-      displayer.browser(), add_account,
+      displayer.browser(),
       base::BindOnce(&PrintPreviewHandler::OnSignInTabClosed,
                      weak_factory_.GetWeakPtr()));
 }

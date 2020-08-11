@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "url/gurl.h"
 
@@ -53,7 +54,7 @@ void OmniboxProvider::Start(const base::string16& query) {
   // Sets the |from_omnibox_focus| flag to enable ZeroSuggestProvider to process
   // the requests from app_list.
   if (is_zero_state_enabled_ && input.text().empty()) {
-    input.set_from_omnibox_focus(true);
+    input.set_focus_type(OmniboxFocusType::ON_FOCUS);
     is_zero_state_input_ = true;
   } else {
     is_zero_state_input_ = false;

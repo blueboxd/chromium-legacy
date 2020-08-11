@@ -69,7 +69,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.params.ParameterAnnotations;
@@ -122,9 +121,6 @@ public class TabGridDialogTest {
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus().build();
-
-    @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Rule
     public IntentsTestRule<ChromeActivity> mShareActivityTestRule =

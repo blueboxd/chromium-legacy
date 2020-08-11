@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_clear_browsing_data_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_mediator.h"
@@ -21,6 +22,7 @@
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
+#import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
@@ -53,6 +55,9 @@
 // The coordinator that will present Clear Browsing Data.
 @property(nonatomic, strong)
     HistoryClearBrowsingDataCoordinator* historyClearBrowsingDataCoordinator;
+
+// Coordinator in charge of handling sharing use cases.
+@property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
 @end
 
 @implementation HistoryCoordinator
@@ -123,6 +128,9 @@
 
 // This method should always execute the |completionHandler|.
 - (void)stopWithCompletion:(ProceduralBlock)completionHandler {
+  [self.sharingCoordinator stop];
+  self.sharingCoordinator = nil;
+
   if (self.historyNavigationController) {
     void (^dismissHistoryNavigation)(void) = ^void() {
       // Make sure to stop
@@ -225,6 +233,10 @@
 
     [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
 
+    [menuElements addObject:[actionFactory actionToShareWithBlock:^{
+                    [weakSelf shareURL:item.URL title:item.text fromView:view];
+                  }]];
+
     [menuElements addObject:[actionFactory actionToDeleteWithBlock:^{
                     [historyItemDelegate historyEntryItemDidRequestDelete:item];
                   }]];
@@ -256,6 +268,23 @@
   [self stopWithCompletion:^{
     [weakSelf.presentationDelegate showActiveIncognitoTabFromHistory];
   }];
+}
+
+// Triggers the URL sharing flow for the given |URL| and |title|, with the
+// origin |view| representing the UI component for that URL.
+- (void)shareURL:(const GURL&)URL
+           title:(NSString*)title
+        fromView:(UIView*)view {
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithURL:URL
+                                    title:title
+                                 scenario:ActivityScenario::HistoryEntry];
+  self.sharingCoordinator = [[SharingCoordinator alloc]
+      initWithBaseViewController:self.historyTableViewController
+                         browser:self.browser
+                          params:params
+                      originView:view];
+  [self.sharingCoordinator start];
 }
 
 @end

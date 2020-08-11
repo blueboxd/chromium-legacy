@@ -66,6 +66,11 @@ void ShowItemInFolderOnWorkerThread(const base::FilePath& full_path) {
 
   const ITEMIDLIST* highlight[] = {file_item};
 
+  // Skip opening the folder during browser tests, to avoid leaving an open
+  // file explorer window behind.
+  if (!platform_util::internal::AreShellOperationsAllowed())
+    return;
+
   hr =
       SHOpenFolderAndSelectItems(dir_item, base::size(highlight), highlight, 0);
   if (FAILED(hr)) {

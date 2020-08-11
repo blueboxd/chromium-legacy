@@ -214,8 +214,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void HandleShowSystemDialog(const base::ListValue* args);
 #endif
 
-  // Opens a new tab to allow the user to sign into cloud print. |args| holds
-  // a boolean indicating whether the user is adding an account.
+  // Opens a new tab to allow the user to add an account to sign into cloud
+  // print. |args| is unused.
   void HandleSignin(const base::ListValue* args);
 
   // Called when the tab opened by HandleSignIn() is closed.

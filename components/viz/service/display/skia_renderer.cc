@@ -2136,11 +2136,11 @@ void SkiaRenderer::ScheduleOverlays() {
   if (current_frame()->overlay_list.empty())
     return;
 
-#if defined(OS_ANDROID)
-  // For Android, only SurfaceControl uses this code path. Android classic has
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // CrOS and Android SurfaceControl use this code path. Android classic has
   // switched over to OverlayProcessor.
-  // TODO(weiliangc): Remove this when Android SurfaceControl switches to
-  // OverlayProcessor as well.
+  // TODO(weiliangc): Remove this when CrOS and Android SurfaceControl switch
+  // to OverlayProcessor as well.
   DCHECK(output_surface_->capabilities().supports_surfaceless);
   auto& locks = pending_overlay_locks_.back();
   std::vector<gpu::SyncToken> sync_tokens;

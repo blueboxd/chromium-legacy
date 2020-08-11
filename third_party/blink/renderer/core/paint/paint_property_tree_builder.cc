@@ -543,6 +543,9 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         full_context_.direct_compositing_reasons &
         CompositingReason::kDirectReasonsForPaintOffsetTranslationProperty;
     state.rendering_context_id = context_.current.rendering_context_id;
+    state.frame_element_id = CompositorElementIdFromUniqueObjectId(
+        DOMNodeIds::IdForNode(&object_.GetDocument()),
+        CompositorElementIdNamespace::kDOMNodeId);
     OnUpdate(properties_->UpdatePaintOffsetTranslation(
         *context_.current.transform, std::move(state)));
     context_.current.transform = properties_->PaintOffsetTranslation();
@@ -574,6 +577,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
       state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
           box_model.UniqueId(),
           CompositorElementIdNamespace::kStickyTranslation);
+      state.frame_element_id = CompositorElementIdFromUniqueObjectId(
+          DOMNodeIds::IdForNode(&object_.GetDocument()),
+          CompositorElementIdNamespace::kDOMNodeId);
 
       auto* layer = box_model.Layer();
       const auto* scroller_properties = layer->AncestorOverflowLayer()
@@ -717,6 +723,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild(
             context_.current.should_flatten_inherited_transform;
         state.compositor_element_id = GetCompositorElementId(
             CompositorElementIdNamespace::kPrimaryTransform);
+        state.frame_element_id = CompositorElementIdFromUniqueObjectId(
+            DOMNodeIds::IdForNode(&object_.GetDocument()),
+            CompositorElementIdNamespace::kDOMNodeId);
       }
 
       TransformPaintPropertyNode::AnimationState animation_state;
@@ -888,6 +897,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
               : TransformPaintPropertyNode::BackfaceVisibility::kVisible;
       state.compositor_element_id = GetCompositorElementId(
           CompositorElementIdNamespace::kPrimaryTransform);
+      state.frame_element_id = CompositorElementIdFromUniqueObjectId(
+          DOMNodeIds::IdForNode(&object_.GetDocument()),
+          CompositorElementIdNamespace::kDOMNodeId);
 
       TransformPaintPropertyNode::AnimationState animation_state;
       animation_state.is_running_animation_on_compositor =
@@ -1780,6 +1792,9 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
       state.flags.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
       state.rendering_context_id = context_.current.rendering_context_id;
+      state.frame_element_id = CompositorElementIdFromUniqueObjectId(
+          DOMNodeIds::IdForNode(&object_.GetDocument()),
+          CompositorElementIdNamespace::kDOMNodeId);
       OnUpdate(properties_->UpdatePerspective(*context_.current.transform,
                                               std::move(state)));
     } else {
@@ -1836,6 +1851,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
                                                false);
       state.flags.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
+      state.frame_element_id = CompositorElementIdFromUniqueObjectId(
+          DOMNodeIds::IdForNode(&object_.GetDocument()),
+          CompositorElementIdNamespace::kDOMNodeId);
       OnUpdate(properties_->UpdateReplacedContentTransform(
           *context_.current.transform, std::move(state)));
     } else {
@@ -2043,6 +2061,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           object_.StyleRef().BackfaceVisibility() ==
               EBackfaceVisibility::kHidden)
         state.flags.delegates_to_parent_for_backface = true;
+      state.frame_element_id = CompositorElementIdFromUniqueObjectId(
+          DOMNodeIds::IdForNode(&object_.GetDocument()),
+          CompositorElementIdNamespace::kDOMNodeId);
       auto effective_change_type = properties_->UpdateScrollTranslation(
           *context_.current.transform, std::move(state));
       if (effective_change_type ==

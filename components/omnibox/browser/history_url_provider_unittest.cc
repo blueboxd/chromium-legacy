@@ -28,6 +28,7 @@
 #include "components/omnibox/browser/history_quick_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/default_search_manager.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
@@ -970,7 +971,7 @@ TEST_F(HistoryURLProviderTest, DoesNotProvideMatchesOnFocus) {
   AutocompleteInput input(ASCIIToUTF16("foo"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   autocomplete_->Start(input, false);
   EXPECT_TRUE(autocomplete_->matches().empty());
 }

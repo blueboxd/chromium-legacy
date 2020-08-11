@@ -252,7 +252,8 @@ class WebAppDatabaseTest : public WebAppTest {
     }
     app->SetAdditionalSearchTerms(std::move(additional_search_terms));
 
-    app->SetShortcutInfos(CreateShortcutInfos(base_url, random.next_uint()));
+    app->SetShortcutsMenuItemInfos(
+        CreateShortcutInfos(base_url, random.next_uint()));
     app->SetDownloadedShortcutsMenuIconsSizes(
         CreateDownloadedShortcutsMenuIconsSizes());
 

@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/base/features.h"
+#include "net/base/parse_number.h"
 #include "net/base/url_util.h"
 
 namespace net {
@@ -364,11 +365,11 @@ bool HttpUtil::ParseContentRangeHeaderFor206(
 bool HttpUtil::ParseRetryAfterHeader(const std::string& retry_after_string,
                                      base::Time now,
                                      base::TimeDelta* retry_after) {
-  int seconds;
+  uint32_t seconds;
   base::Time time;
   base::TimeDelta interval;
 
-  if (base::StringToInt(retry_after_string, &seconds)) {
+  if (net::ParseUint32(retry_after_string, &seconds)) {
     interval = base::TimeDelta::FromSeconds(seconds);
   } else if (base::Time::FromUTCString(retry_after_string.c_str(), &time)) {
     interval = time - now;

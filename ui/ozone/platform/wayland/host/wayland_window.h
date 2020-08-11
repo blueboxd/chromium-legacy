@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_WINDOW_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_WINDOW_H_
 
+#include <list>
 #include <memory>
 #include <set>
 #include <vector>
@@ -18,6 +19,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
+#include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom-forward.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -71,6 +73,12 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // Creates a WaylandSubsurface to put into |wayland_subsurfaces_|. Called if
   // more subsurfaces are needed when a frame arrives.
   bool RequestSubsurface();
+  // Re-arrange the |subsurface_stack_above_| and |subsurface_stack_below_| s.t.
+  // subsurface_stack_above_.size() >= above and
+  // subsurface_stack_below_.size() >= below.
+  bool ArrangeSubsurfaceStack(size_t above, size_t below);
+  bool CommitOverlays(
+      std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr>& overlays);
 
   // Set whether this window has pointer focus and should dispatch mouse events.
   void SetPointerFocus(bool focus);
@@ -221,6 +229,13 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   std::unique_ptr<WaylandSurface> root_surface_;
   WidgetSubsurfaceSet wayland_subsurfaces_;
+
+  // The stack of sub-surfaces to take effect when Commit() is called.
+  // |subsurface_stack_above_| refers to subsurfaces that are stacked above the
+  // parent.
+  // Subsurface at the front of the list is the closest to the parent.
+  std::list<WaylandSubsurface*> subsurface_stack_above_;
+  std::list<WaylandSubsurface*> subsurface_stack_below_;
 
   // The current cursor bitmap (immutable).
   scoped_refptr<BitmapCursorOzone> bitmap_;

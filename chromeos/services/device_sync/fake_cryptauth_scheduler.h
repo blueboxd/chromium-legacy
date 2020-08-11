@@ -31,6 +31,9 @@ class FakeCryptAuthScheduler : public CryptAuthScheduler {
   FakeCryptAuthScheduler();
   ~FakeCryptAuthScheduler() override;
 
+  size_t num_enrollment_requests() const { return num_enrollment_requests_; }
+  size_t num_sync_requests() const { return num_sync_requests_; }
+
   const std::vector<CryptAuthEnrollmentResult>& handled_enrollment_results()
       const {
     return handled_enrollment_results_;
@@ -116,6 +119,8 @@ class FakeCryptAuthScheduler : public CryptAuthScheduler {
   base::Optional<base::TimeDelta> time_to_next_enrollment_request_ =
       kDefaultTimeToNextEnrollmentRequest;
   base::Optional<base::TimeDelta> time_to_next_device_sync_request_;
+  size_t num_enrollment_requests_ = 0u;
+  size_t num_sync_requests_ = 0u;
   size_t num_consecutive_enrollment_failures_ = 0u;
   size_t num_consecutive_device_sync_failures_ = 0u;
   bool is_waiting_for_enrollment_result_ = false;

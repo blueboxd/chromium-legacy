@@ -56,9 +56,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     layout_object_ = layout_object;
   }
 
-  NGBoxFragmentBuilder(const NGBoxFragmentBuilder& other)
-      : NGContainerFragmentBuilder(other) {}
-
   void SetInitialFragmentGeometry(
       const NGFragmentGeometry& initial_fragment_geometry) {
     initial_fragment_geometry_ = &initial_fragment_geometry;

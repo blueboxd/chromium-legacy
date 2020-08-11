@@ -30,6 +30,7 @@ namespace device_sync {
 class CryptAuthClientFactory;
 class CryptAuthDeviceSyncer;
 class CryptAuthKeyRegistry;
+class SyncedBluetoothAddressTracker;
 
 // Implementation of CryptAuthV2DeviceManager that considers three sources of
 // DeviceSync requests:
@@ -107,6 +108,8 @@ class CryptAuthV2DeviceManagerImpl
   void OnDeviceSyncFinished(CryptAuthDeviceSyncResult device_sync_result);
 
   base::Optional<cryptauthv2::ClientMetadata> current_client_metadata_;
+  std::unique_ptr<SyncedBluetoothAddressTracker>
+      synced_bluetooth_address_tracker_;
   std::unique_ptr<CryptAuthDeviceSyncer> device_syncer_;
 
   cryptauthv2::ClientAppMetadata client_app_metadata_;

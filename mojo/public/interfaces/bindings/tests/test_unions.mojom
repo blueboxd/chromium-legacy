@@ -114,3 +114,8 @@ struct ImportedUnionStruct {
 union ImportedUnionUnion {
   imported.PointOrShape point_or_shape;
 };
+
+union UnionWithStringForFirstField {
+  string s;
+  int32 i;
+};

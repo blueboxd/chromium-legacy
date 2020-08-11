@@ -57,8 +57,14 @@ enum class DelayedWarningEvent {
   kMaxValue = kWarningShownOnPaste,
 };
 
-// Name of the histogram.
+// Name of the recorded histogram when the user did not disable URL elision via
+// "Always Show Full URLs" menu option or by installing Suspicious Site Reporter
+// extension.
 extern const char kDelayedWarningsHistogram[];
+
+// Same as kDelayedWarningsHistogram but only recorded if the user disabled
+// URL elision.
+extern const char kDelayedWarningsWithElisionDisabledHistogram[];
 
 // Observes user interactions and shows an interstitial if necessary.
 // Only created when an interstitial was about to be displayed but was delayed
@@ -114,7 +120,13 @@ class SafeBrowsingUserInteractionObserver
   // a desktop capture. Shows the delayed interstitial immediately.
   void OnDesktopCaptureRequest();
 
+  static void SetSuspiciousSiteReporterExtensionIdForTesting(
+      const char* extension_id);
+  static void ResetSuspiciousSiteReporterExtensionIdForTesting();
+
  private:
+  void RecordUMA(DelayedWarningEvent event);
+
   bool HandleKeyPress(const content::NativeWebKeyboardEvent& event);
   bool HandleMouseEvent(const blink::WebMouseEvent& event);
 
@@ -137,6 +149,9 @@ class SafeBrowsingUserInteractionObserver
   // However, this hook is also called for the initial navigation, so we ignore
   // it the first time the hook is called.
   bool initial_navigation_finished_ = false;
+
+  // Id of the Suspicious Site Reporter extension. Only set in tests.
+  static const char* suspicious_site_reporter_extension_id_;
 };
 
 }  // namespace safe_browsing

@@ -291,9 +291,6 @@ ObfuscatedFileUtil::ObfuscatedFileUtil(
 }
 
 ObfuscatedFileUtil::~ObfuscatedFileUtil() {
-  // Destruction can happen on any sequence.
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-
   DropDatabases();
 }
 

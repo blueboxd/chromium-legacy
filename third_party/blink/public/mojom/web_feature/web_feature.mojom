@@ -2671,6 +2671,8 @@ enum WebFeature {
   kInlineOverflowScrollWithInlineEndPadding = 3336,
   kCSSSelectorPseudoWebKitDetailsMarker = 3337,
   kSerialPortGetInfo = 3338,
+  // The above items are available in M85 branch.
+
   kFileSystemPickerMethod = 3339,
   kV8Window_ShowOpenFilePicker_Method = 3340,
   kV8Window_ShowSaveFilePicker_Method = 3341,
@@ -2699,6 +2701,7 @@ enum WebFeature {
   kConversionRegistration = 3367,
   kWebSharePolicyAllow = 3368,
   kWebSharePolicyDisallow = 3369,
+  kFormAssociatedCustomElement = 3370,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

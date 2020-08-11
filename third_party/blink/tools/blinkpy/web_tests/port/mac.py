@@ -39,13 +39,6 @@ class MacPort(base.Port):
                           'mac10.16', 'mac11.0')
     port_name = 'mac'
 
-    # FIXME: We treat Retina (High-DPI) devices as if they are running a
-    # different operating system version. This is lame and should be fixed.
-    # Note that the retina versions fallback to the non-retina versions and so
-    # no baselines are shared between retina versions; this keeps the fallback
-    # graph as a tree and maximizes the number of baselines we can share that
-    # way. We also currently only support Retina on 10.13.
-
     FALLBACK_PATHS = {}
 
     FALLBACK_PATHS['mac11.0'] = ['mac']
@@ -63,14 +56,17 @@ class MacPort(base.Port):
     def determine_full_port_name(cls, host, options, port_name):
         if port_name.endswith('mac'):
             version = host.platform.os_version
-            if host.platform.is_highdpi():
-                version = 'retina'
             return port_name + '-' + version
         return port_name
 
     def __init__(self, host, port_name, **kwargs):
         super(MacPort, self).__init__(host, port_name, **kwargs)
         self._version = port_name[port_name.index('mac-') + len('mac-'):]
+        # TODO(crbug.com/1114885): This is to workaround the failure of
+        # blink_python_tests on mac10.10 and 10.11 waterfall bots. Remove this
+        # when we remove the step from the bots.
+        if self._version == 'mac10.10' or self._version == 'mac10.11':
+            self._version = 'mac10.12'
         assert self._version in self.SUPPORTED_VERSIONS
 
     def check_build(self, needs_http, printer):

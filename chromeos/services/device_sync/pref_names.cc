@@ -86,6 +86,11 @@ const char kCryptAuthLastSyncedGroupPublicKey[] =
 const char kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata[] =
     "cryptauth.device_sync.last_synced_unencrypted_local_device_metadata";
 
+// (CryptAuth v2) The Bluetooth address provided during the most recent
+// DeviceSync attempt.
+const char kCryptAuthBluetoothAddressProvidedDuringLastSync[] =
+    "cryptauth.device_sync.last_bluetooth_address";
+
 // (CryptAuth v2) The most recent ClientDirective sent to the
 // CryptAuthScheduler.
 const char kCryptAuthSchedulerClientDirective[] =

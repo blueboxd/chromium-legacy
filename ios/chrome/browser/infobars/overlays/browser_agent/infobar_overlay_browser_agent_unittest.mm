@@ -129,7 +129,7 @@ class InfobarOverlayBrowserAgentTest
   // that has the same InfobarOverlayType as the test fixture.
   std::unique_ptr<OverlayRequest> CreateRequest() {
     return OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-        &infobar_, GetParam());
+        &infobar_, GetParam(), false);
   }
 
   OverlayModality modality() {

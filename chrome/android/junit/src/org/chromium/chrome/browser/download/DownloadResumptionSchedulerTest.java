@@ -58,7 +58,7 @@ public class DownloadResumptionSchedulerTest {
     public MockitoRule mockitoRule = MockitoJUnit.rule();
 
     @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
+    public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Before
     public void setUp() {

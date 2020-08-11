@@ -240,26 +240,6 @@ std::unique_ptr<GraphicsLayer> CompositedLayerMapping::CreateGraphicsLayer(
         static_cast<int>(DOMNodeIds::IdForNode(owning_node)));
   }
 
-  // Attempt to associate each layer with the frame owner's element ID.
-  Document* owner = nullptr;
-  if (GetLayoutObject().IsLayoutEmbeddedContent()) {
-    auto& embedded = ToLayoutEmbeddedContent(GetLayoutObject());
-    if (auto* frame_view =
-            DynamicTo<LocalFrameView>(embedded.GetEmbeddedContentView())) {
-      owner = frame_view->GetFrame().GetDocument();
-    } else {
-      // Ignore remote and plugin frames.
-    }
-  } else {
-    owner = &GetLayoutObject().GetDocument();
-  }
-  if (owner) {
-    graphics_layer->CcLayer().SetFrameElementId(
-        CompositorElementIdFromUniqueObjectId(
-            DOMNodeIds::IdForNode(owner),
-            CompositorElementIdNamespace::kDOMNodeId));
-  }
-
   return graphics_layer;
 }
 

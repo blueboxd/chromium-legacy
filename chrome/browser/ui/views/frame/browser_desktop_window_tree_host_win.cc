@@ -65,8 +65,6 @@ class VirtualDesktopHelper
 
   void SetInitialWorkspaceRemembered(bool remembered);
 
-  base::WeakPtr<VirtualDesktopHelper> AsWeakPtr();
-
  private:
   friend class base::RefCountedDeleteOnSequence<VirtualDesktopHelper>;
   friend class base::DeleteHelper<VirtualDesktopHelper>;
@@ -136,7 +134,7 @@ void VirtualDesktopHelper::UpdateWindowDesktopId(
       FROM_HERE,
       base::BindOnce(&VirtualDesktopHelper::GetWindowDesktopIdImpl, hwnd,
                      virtual_desktop_manager_),
-      base::BindOnce(&VirtualDesktopHelper::SetWorkspace, AsWeakPtr(),
+      base::BindOnce(&VirtualDesktopHelper::SetWorkspace, this,
                      base::Passed(std::move(callback))));
 }
 
@@ -146,10 +144,6 @@ bool VirtualDesktopHelper::GetInitialWorkspaceRemembered() const {
 
 void VirtualDesktopHelper::SetInitialWorkspaceRemembered(bool remembered) {
   initial_workspace_remembered_ = remembered;
-}
-
-base::WeakPtr<VirtualDesktopHelper> VirtualDesktopHelper::AsWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 void VirtualDesktopHelper::SetWorkspace(WorkspaceChangedCallback callback,

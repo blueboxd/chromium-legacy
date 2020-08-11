@@ -22,7 +22,7 @@ import java.util.List;
 public class AssistantChipAdapter extends RecyclerView.Adapter<AssistantChipViewHolder> {
     private final List<AssistantChip> mChips = new ArrayList<>();
 
-    public void setChips(List<AssistantChip> chips) {
+    void setChips(List<AssistantChip> chips) {
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
             public int getOldListSize() {

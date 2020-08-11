@@ -39,6 +39,7 @@
 #include "chromeos/services/device_sync/public/cpp/gcm_device_info_provider.h"
 #include "chromeos/services/device_sync/remote_device_provider_impl.h"
 #include "chromeos/services/device_sync/software_feature_manager_impl.h"
+#include "chromeos/services/device_sync/synced_bluetooth_address_tracker_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/consent_level.h"
@@ -338,6 +339,7 @@ void DeviceSyncImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   if (features::ShouldUseV2DeviceSync()) {
     CryptAuthDeviceRegistryImpl::RegisterPrefs(registry);
     CryptAuthMetadataSyncerImpl::RegisterPrefs(registry);
+    SyncedBluetoothAddressTrackerImpl::RegisterPrefs(registry);
   }
 }
 

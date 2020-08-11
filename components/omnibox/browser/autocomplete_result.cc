@@ -29,6 +29,7 @@
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_fixer.h"
@@ -67,7 +68,7 @@ struct MatchGURLHash {
 };
 
 // static
-size_t AutocompleteResult::GetMaxMatches(bool input_from_omnibox_focus) {
+size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
 #if (defined(OS_ANDROID))
   constexpr size_t kDefaultMaxAutocompleteMatches = 5;
 #elif defined(OS_IOS)  // !defined(OS_ANDROID)
@@ -86,7 +87,7 @@ size_t AutocompleteResult::GetMaxMatches(bool input_from_omnibox_focus) {
 
   // If we're interested in the zero suggest match limit, and one has been
   // specified, return it.
-  if (input_from_omnibox_focus) {
+  if (is_zero_suggest) {
     size_t field_trial_value = base::GetFieldTrialParamByFeatureAsInt(
         omnibox::kMaxZeroSuggestMatches,
         OmniboxFieldTrial::kMaxZeroSuggestMatchesParam, 0);
@@ -258,16 +259,17 @@ void AutocompleteResult::SortAndCull(
 
   // Limit URL matches per OmniboxMaxURLMatches.
   size_t max_url_count = 0;
+  bool is_zero_suggest = input.focus_type() != OmniboxFocusType::DEFAULT;
   if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
       (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
-    LimitNumberOfURLsShown(GetMaxMatches(input.from_omnibox_focus()),
-                           max_url_count, comparing_object);
+    LimitNumberOfURLsShown(GetMaxMatches(is_zero_suggest), max_url_count,
+                           comparing_object);
 
   // Limit total matches accounting for suggestions score <= 0, sub matches, and
   // feature configs such as OmniboxUIExperimentMaxAutocompleteMatches,
   // OmniboxMaxZeroSuggestMatches, and OmniboxDynamicMaxAutocomplete.
-  const size_t num_matches = CalculateNumMatches(input.from_omnibox_focus(),
-                                                 matches_, comparing_object);
+  const size_t num_matches =
+      CalculateNumMatches(is_zero_suggest, matches_, comparing_object);
   matches_.resize(num_matches);
 
 #if defined(OS_ANDROID)
@@ -573,17 +575,17 @@ void AutocompleteResult::DiscourageTopMatchFromBeingSearchEntity(
 
 // static
 size_t AutocompleteResult::CalculateNumMatches(
-    bool input_from_omnibox_focus,
+    bool is_zero_suggest,
     const ACMatches& matches,
     const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
   // Use alternative CalculateNumMatchesPerUrlCount if applicable.
-  if (!input_from_omnibox_focus &&
+  if (!is_zero_suggest &&
       base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures) &&
       base::FeatureList::IsEnabled(omnibox::kDynamicMaxAutocomplete))
     return CalculateNumMatchesPerUrlCount(matches, comparing_object);
   // In the process of trimming, drop all matches with a demoted relevance
   // score of 0.
-  size_t max_matches_by_policy = GetMaxMatches(input_from_omnibox_focus);
+  size_t max_matches_by_policy = GetMaxMatches(is_zero_suggest);
   size_t num_matches = 0;
   while (num_matches < matches.size() &&
          comparing_object.GetDemotedRelevance(matches[num_matches]) > 0) {
@@ -657,6 +659,7 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
              : GURL();
 }
 
+// static
 void AutocompleteResult::DeduplicateMatches(ACMatches* matches) {
   // Group matches by stripped URL and whether it's a calculator suggestion.
   std::unordered_map<std::pair<GURL, bool>, std::vector<ACMatches::iterator>,

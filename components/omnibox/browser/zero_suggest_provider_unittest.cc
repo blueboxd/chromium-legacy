@@ -25,6 +25,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
@@ -327,18 +328,18 @@ TEST_F(ZeroSuggestProviderTest, TestStartWillStopForSomeInput) {
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_current_url(GURL(input_url));
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
   provider_->Start(input, false);
   EXPECT_FALSE(provider_->done_);
 
   // Make sure input stops the provider.
-  input.set_from_omnibox_focus(false);
+  input.set_focus_type(OmniboxFocusType::DEFAULT);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done_);
 
   // Make sure invalid input stops the provider.
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   provider_->Start(input, false);
   EXPECT_FALSE(provider_->done_);
   AutocompleteInput input2;
@@ -355,7 +356,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_current_url(GURL(current_url));
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   history::MostVisitedURLList urls;
   history::MostVisitedURL url(GURL("http://foo.com/"),
                               base::ASCIIToUTF16("Foo"));
@@ -402,7 +403,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_current_url(GURL(current_url));
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   history::MostVisitedURLList urls;
   history::MostVisitedURL url(GURL("http://foo.com/"),
                               base::ASCIIToUTF16("Foo"));
@@ -418,7 +419,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
       metrics::OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT,
       TestSchemeClassifier());
   srp_input.set_current_url(GURL(search_url));
-  srp_input.set_from_omnibox_focus(true);
+  srp_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
   provider_->Start(srp_input, false);
   EXPECT_TRUE(provider_->matches().empty());
@@ -442,7 +443,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_current_url(GURL(url));
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
   provider_->Start(input, false);
 
@@ -479,7 +480,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_current_url(GURL(url));
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"
@@ -540,7 +541,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_current_url(GURL(url));
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"

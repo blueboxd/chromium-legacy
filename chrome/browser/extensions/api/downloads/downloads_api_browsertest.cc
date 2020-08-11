@@ -1200,6 +1200,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, FileExistenceCheckAfterSearch) {
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadsShowFunction) {
+  platform_util::internal::DisableShellOperationsForTesting();
   ScopedCancellingItem item(CreateFirstSlowTestDownload());
   ASSERT_TRUE(item.get());
 

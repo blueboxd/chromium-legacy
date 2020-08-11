@@ -1873,44 +1873,6 @@ TEST_F(CompositedLayerMappingTest, IsolationClippingContainer) {
   EXPECT_EQ(squash_container_a_layer->ClippingContainer(), isolation_a_object);
 }
 
-TEST_F(CompositedLayerMappingTest, FrameAttribution) {
-  SetBodyInnerHTML(R"HTML(
-    <div id='child' style='will-change: transform;'></div>
-    <iframe id='subframe' style='will-change: transform;'></iframe>
-  )HTML");
-
-  UpdateAllLifecyclePhasesForTest();
-
-  // Ensure that we correctly attribute child layers in the main frame to their
-  // containing document.
-  Element* child = GetDocument().getElementById("child");
-  PaintLayer* child_paint_layer =
-      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
-  auto& child_layer = child_paint_layer->GraphicsLayerBacking()->CcLayer();
-  EXPECT_TRUE(child_layer.frame_element_id());
-
-  EXPECT_EQ(child_layer.frame_element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                DOMNodeIds::IdForNode(&GetDocument()),
-                CompositorElementIdNamespace::kDOMNodeId));
-
-  // Test that a layerized subframe's element ID is that of its containing
-  // document.
-  auto* subframe =
-      To<HTMLFrameOwnerElement>(GetDocument().getElementById("subframe"));
-  EXPECT_TRUE(subframe);
-  PaintLayer* subframe_paint_layer =
-      ToLayoutBoxModelObject(subframe->GetLayoutObject())->Layer();
-  auto& subframe_layer =
-      subframe_paint_layer->GraphicsLayerBacking()->CcLayer();
-  EXPECT_TRUE(subframe_layer.frame_element_id());
-
-  EXPECT_EQ(subframe_layer.frame_element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                DOMNodeIds::IdForNode(subframe->contentDocument()),
-                CompositorElementIdNamespace::kDOMNodeId));
-}
-
 TEST_F(CompositedLayerMappingTest, SquashIntoScrollingContents) {
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);

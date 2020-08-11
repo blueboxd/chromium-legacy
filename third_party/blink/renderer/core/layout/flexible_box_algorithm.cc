@@ -160,13 +160,12 @@ LayoutUnit FlexItem::MarginBoxAscent() const {
   }
 
   DCHECK(layout_result);
-  base::Optional<LayoutUnit> baseline =
-      NGBoxFragment(
-          algorithm->StyleRef().GetWritingMode(),
-          algorithm->StyleRef().Direction(),
-          To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()))
-          .Baseline();
-  return baseline.value_or(cross_axis_size) + FlowAwareMarginBefore();
+  return FlowAwareMarginBefore() +
+         NGBoxFragment(
+             algorithm->StyleRef().GetWritingMode(),
+             algorithm->StyleRef().Direction(),
+             To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()))
+             .BaselineOrSynthesize();
 }
 
 LayoutUnit FlexItem::AvailableAlignmentSpace() const {

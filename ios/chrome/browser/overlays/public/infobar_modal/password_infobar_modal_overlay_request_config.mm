@@ -44,6 +44,6 @@ PasswordInfobarModalOverlayRequestConfig::
 
 void PasswordInfobarModalOverlayRequestConfig::CreateAuxiliaryData(
     base::SupportsUserData* user_data) {
-  InfobarOverlayRequestConfig::CreateForUserData(user_data, infobar_,
-                                                 InfobarOverlayType::kModal);
+  InfobarOverlayRequestConfig::CreateForUserData(
+      user_data, infobar_, InfobarOverlayType::kModal, false);
 }

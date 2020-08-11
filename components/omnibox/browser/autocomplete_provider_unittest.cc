@@ -34,6 +34,7 @@
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/open_from_clipboard/fake_clipboard_recent_content.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -141,7 +142,7 @@ void TestProvider::Start(const AutocompleteInput& input, bool minimal_changes) {
 
   matches_.clear();
 
-  if (input.from_omnibox_focus())
+  if (input.focus_type() != OmniboxFocusType::DEFAULT)
     return;
 
   // Generate 4 results synchronously, the rest later.

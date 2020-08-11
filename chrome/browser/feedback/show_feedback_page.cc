@@ -115,7 +115,7 @@ void ShowFeedbackPage(const GURL& page_url,
   api->RequestFeedbackForFlow(
       description_template, description_placeholder_text, category_tag,
       extra_diagnostics, page_url, flow, source == kFeedbackSourceAssistant,
-      include_bluetooth_logs);
+      include_bluetooth_logs, source == kFeedbackSourceKaleidoscope);
 }
 
 }  // namespace chrome

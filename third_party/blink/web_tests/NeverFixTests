@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12
 #         Mac10.13 Win Win7 Win10 ]
 # tags: [ Release Debug ]
 # results: [ Skip Pass ]
@@ -56,13 +56,12 @@ fast/harness/results.html [ Skip ]
 [ Linux ] fast/dom/partial-layout-overlay-scrollbars.html [ Skip ]
 
 # Tests trak table support / letter spacing specific to Mac system font
-# Only maintain this for the latest macOS (and Retina is currently 10.12).
+# Only maintain this for the latest macOS.
 [ Win ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
 [ Linux ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
 [ Mac10.10 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
 [ Mac10.11 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
 [ Mac10.12 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
-[ Retina ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
 
  # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ Skip ]
@@ -1991,7 +1990,6 @@ external/wpt/payment-request/billing-address-changed-manual.https.html [ Skip ]
 external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-event-manual.html [ Skip ]
 external/wpt/payment-request/payment-response/retry-method-warnings-manual.https.html [ Skip ]
 external/wpt/payment-request/payment-response/payerdetailschange-updateWith-manual.https.html [ Skip ]
-[ Retina ] external/wpt/pointerevents/pointerevent_touch-action-span-test_touch-manual.html [ Skip ]
 external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-x_touch-manual.html [ Skip ]
 external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-y_touch-manual.html [ Skip ]
 external/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch-manual.html [ Skip ]

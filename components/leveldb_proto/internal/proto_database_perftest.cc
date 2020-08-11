@@ -23,6 +23,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/leveldb_proto/internal/leveldb_database.h"
@@ -558,7 +559,7 @@ class ProtoDBPerfTest : public testing::Test {
 
   std::map<std::string, std::unique_ptr<ScopedTempDir>> temp_dirs_;
   std::map<std::string, std::unique_ptr<TestDatabase>> dbs_;
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 

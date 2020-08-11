@@ -148,11 +148,6 @@
         ],
         'test': 'webview_instrumentation_test_apk',
       },
-      'webview_instrumentation_test_apk': {
-        'swarming': {
-          'shards': 7,
-        },
-      },
     },
 
     'android_modern_smoke_tests': {

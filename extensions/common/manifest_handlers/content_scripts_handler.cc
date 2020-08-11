@@ -127,19 +127,19 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
     result->set_match_about_blank(match_about_blank->GetBool());
   }
 
-  // match data urls
+  // match origin as fallback
   if (base::FeatureList::IsEnabled(
-          extensions_features::kContentScriptsOnDataUrls)) {
-    const base::Value* match_data_urls =
-        content_script.FindKey(keys::kMatchDataUrls);
-    if (match_data_urls) {
-      if (!match_data_urls->is_bool()) {
+          extensions_features::kContentScriptsMatchOriginAsFallback)) {
+    const base::Value* match_origin_as_fallback =
+        content_script.FindKey(keys::kMatchOriginAsFallback);
+    if (match_origin_as_fallback) {
+      if (!match_origin_as_fallback->is_bool()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidMatchDataUrls,
+            errors::kInvalidMatchOriginAsFallback,
             base::NumberToString(definition_index));
         return nullptr;
       }
-      result->set_match_data_urls(match_data_urls->GetBool());
+      result->set_match_origin_as_fallback(match_origin_as_fallback->GetBool());
     }
   }
 

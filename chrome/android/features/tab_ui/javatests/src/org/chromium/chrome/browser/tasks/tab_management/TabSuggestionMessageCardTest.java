@@ -24,7 +24,6 @@ import androidx.test.filters.MediumTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -61,9 +60,6 @@ public class TabSuggestionMessageCardTest {
             + "Study.Group:baseline_tab_suggestions/true";
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-
-    @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     private final TabSelectionEditorTestingRobot mTabSelectionEditorTestingRobot =
             new TabSelectionEditorTestingRobot();

@@ -132,7 +132,8 @@ bool AddName(CBB* cbb, base::StringPiece name) {
         !CBB_add_asn1(&rdn, &attr, CBS_ASN1_SEQUENCE) ||
         !CBB_add_asn1(&attr, &type, CBS_ASN1_OBJECT) ||
         !CBB_add_bytes(&type, type_bytes.data(), type_bytes.size()) ||
-        !CBB_add_asn1(&attr, &value, CBS_ASN1_UTF8STRING) ||
+        !CBB_add_asn1(&attr, &value, type_string == "C" ?
+                          CBS_ASN1_PRINTABLESTRING : CBS_ASN1_UTF8STRING) ||
         !CBB_add_bytes(&value,
                        reinterpret_cast<const uint8_t*>(value_string.data()),
                        value_string.size()) ||

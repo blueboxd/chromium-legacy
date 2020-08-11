@@ -28,11 +28,16 @@ namespace chrome_pdf {
 
 PdfViewWebPlugin::PdfViewWebPlugin(const blink::WebPluginParams& params) {}
 
-PdfViewWebPlugin::~PdfViewWebPlugin() = default;
+PdfViewWebPlugin::~PdfViewWebPlugin() {
+  // Explicitly destroy the PDFEngine during destruction as it may call back
+  // into this object.
+  DestroyEngine();
+}
 
 bool PdfViewWebPlugin::Initialize(blink::WebPluginContainer* container) {
   DCHECK_EQ(container->Plugin(), this);
   container_ = container;
+  InitializeEngine(/*enable_javascript=*/false);
   return true;
 }
 

@@ -212,6 +212,11 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
   NameIdMap::AddResult result = name_id_map_.insert(descriptor.GetName(), id);
   CHECK(result.is_new_entry);
 
+  if (definition->IsFormAssociated()) {
+    if (Document* document = owner_->document())
+      UseCounter::Count(*document, WebFeature::kFormAssociatedCustomElement);
+  }
+
   HeapVector<Member<Element>> candidates;
   CollectCandidates(descriptor, &candidates);
   for (Element* candidate : candidates)

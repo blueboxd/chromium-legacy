@@ -140,6 +140,16 @@ const char kEnableReachedCodeProfiler[] = "enable-reached-code-profiler";
 // Specifies the profiling interval in microseconds for reached code profiler.
 const char kReachedCodeSamplingIntervalUs[] =
     "reached-code-sampling-interval-us";
+
+// Default country code to be used for search engine localization.
+const char kDefaultCountryCodeAtInstall[] = "default-country-code";
+
+// Adds additional thread idle time information into the trace event output.
+const char kEnableIdleTracing[] = "enable-idle-tracing";
+
+// The field trial parameters and their values when testing changes locally.
+const char kForceFieldTrialParams[] = "force-fieldtrial-params";
+
 #endif
 
 #if defined(OS_LINUX)

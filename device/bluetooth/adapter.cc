@@ -78,8 +78,10 @@ void Adapter::GetInfo(GetInfoCallback callback) {
   std::move(callback).Run(std::move(adapter_info));
 }
 
-void Adapter::SetClient(mojo::PendingRemote<mojom::AdapterClient> client) {
+void Adapter::SetClient(mojo::PendingRemote<mojom::AdapterClient> client,
+                        SetClientCallback callback) {
   client_.Bind(std::move(client));
+  std::move(callback).Run();
 }
 
 void Adapter::StartDiscoverySession(StartDiscoverySessionCallback callback) {

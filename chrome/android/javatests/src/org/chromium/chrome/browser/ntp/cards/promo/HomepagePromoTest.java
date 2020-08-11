@@ -36,7 +36,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -110,8 +109,6 @@ public class HomepagePromoTest {
             new BasePartnerBrowserCustomizationIntegrationTestRule();
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-    @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Mock
     private Tracker mTracker;

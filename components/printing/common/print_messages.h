@@ -31,42 +31,6 @@
 #ifndef INTERNAL_COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 #define INTERNAL_COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 
-struct PrintMsg_Print_Params {
-  PrintMsg_Print_Params();
-  PrintMsg_Print_Params(const PrintMsg_Print_Params& other);
-  ~PrintMsg_Print_Params();
-
-  // Resets the members of the struct to 0.
-  void Reset();
-
-  gfx::Size page_size;
-  gfx::Size content_size;
-  gfx::Rect printable_area;
-  int margin_top;
-  int margin_left;
-  printing::mojom::PageOrientation page_orientation;
-  gfx::Size dpi;
-  double scale_factor;
-  bool rasterize_pdf;
-  int document_cookie;
-  bool selection_only;
-  bool supports_alpha_blend;
-  int32_t preview_ui_id;
-  int preview_request_id;
-  bool is_first_request;
-  printing::mojom::PrintScalingOption print_scaling_option;
-  bool print_to_pdf;
-  bool display_header_footer;
-  base::string16 title;
-  base::string16 url;
-  base::string16 header_template;
-  base::string16 footer_template;
-  bool should_print_backgrounds;
-  printing::mojom::SkiaDocumentType printed_doc_type;
-  bool prefer_css_page_size;
-  int pages_per_sheet;
-};
-
 struct PrintMsg_PrintPages_Params {
   PrintMsg_PrintPages_Params();
   PrintMsg_PrintPages_Params(const PrintMsg_PrintPages_Params& other);
@@ -75,7 +39,7 @@ struct PrintMsg_PrintPages_Params {
   // Resets the members of the struct to 0.
   void Reset();
 
-  PrintMsg_Print_Params params;
+  printing::mojom::PrintParams params;
   std::vector<int> pages;
 };
 
@@ -104,13 +68,15 @@ struct PrintHostMsg_PreviewIds {
 
 #define IPC_MESSAGE_START PrintMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(printing::mojom::PageOrientation,
+                          printing::mojom::PageOrientation::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(printing::mojom::PrintScalingOption,
                           printing::mojom::PrintScalingOption::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(printing::mojom::SkiaDocumentType,
                           printing::mojom::SkiaDocumentType::kMaxValue)
 
 // Parameters for a render request.
-IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
+IPC_STRUCT_TRAITS_BEGIN(printing::mojom::PrintParams)
   // Physical size of the page, including non-printable margins,
   // in pixels according to dpi.
   IPC_STRUCT_TRAITS_MEMBER(page_size)
@@ -126,6 +92,9 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
 
   // The x-offset of the printable area, in pixels according to dpi.
   IPC_STRUCT_TRAITS_MEMBER(margin_left)
+
+  // Specifies the page orientation.
+  IPC_STRUCT_TRAITS_MEMBER(page_orientation)
 
   // Specifies dots per inch in the x and y direction.
   IPC_STRUCT_TRAITS_MEMBER(dpi)
@@ -353,7 +322,7 @@ IPC_MESSAGE_ROUTED2(PrintHostMsg_AccessibilityTree,
 
 // The renderer wants to know the default print settings.
 IPC_SYNC_MESSAGE_ROUTED0_1(PrintHostMsg_GetDefaultPrintSettings,
-                           PrintMsg_Print_Params /* default_settings */)
+                           printing::mojom::PrintParams /* default_settings */)
 
 // The renderer wants to update the current print settings with new
 // |job_settings|.

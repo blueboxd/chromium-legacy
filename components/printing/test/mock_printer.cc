@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "printing/metafile_skia.h"
@@ -21,7 +22,9 @@
 
 namespace {
 
-void UpdateMargins(int margins_type, int dpi, PrintMsg_Print_Params* params) {
+void UpdateMargins(int margins_type,
+                   int dpi,
+                   printing::mojom::PrintParams* params) {
   if (margins_type == printing::NO_MARGINS) {
     params->content_size.SetSize(static_cast<int>((8.5 * dpi)),
                                  static_cast<int>((11.0 * dpi)));
@@ -42,7 +45,7 @@ void UpdateMargins(int margins_type, int dpi, PrintMsg_Print_Params* params) {
 
 void UpdatePageSizeAndScaling(const gfx::Size& page_size,
                               int scale_factor,
-                              PrintMsg_Print_Params* params) {
+                              printing::mojom::PrintParams* params) {
   params->page_size = page_size;
   params->scale_factor = static_cast<double>(scale_factor) / 100.0;
 }
@@ -97,18 +100,20 @@ void MockPrinter::ResetPrinter() {
   document_cookie_ = -1;
 }
 
-void MockPrinter::GetDefaultPrintSettings(PrintMsg_Print_Params* params) {
+void MockPrinter::GetDefaultPrintSettings(
+    printing::mojom::PrintParams* params) {
   // Verify this printer is not processing a job.
   // Sorry, this mock printer is very fragile.
   EXPECT_EQ(-1, document_cookie_);
 
   // Assign a unit document cookie and set the print settings.
   document_cookie_ = CreateDocumentCookie();
-  params->Reset();
+  *params = printing::mojom::PrintParams();
   SetPrintParams(params);
 }
 
-void MockPrinter::SetDefaultPrintSettings(const PrintMsg_Print_Params& params) {
+void MockPrinter::SetDefaultPrintSettings(
+    const printing::mojom::PrintParams& params) {
   // Use the same logic as in printing/print_settings.h
   dpi_ = std::max(params.dpi.width(), params.dpi.height());
   selection_only_ = params.selection_only;
@@ -125,7 +130,7 @@ void MockPrinter::SetDefaultPrintSettings(const PrintMsg_Print_Params& params) {
 
 void MockPrinter::UseInvalidSettings() {
   use_invalid_settings_ = true;
-  PrintMsg_Print_Params empty_param;
+  printing::mojom::PrintParams empty_param;
   SetDefaultPrintSettings(empty_param);
 }
 
@@ -282,7 +287,7 @@ int MockPrinter::CreateDocumentCookie() {
   return use_invalid_settings_ ? 0 : ++current_document_cookie_;
 }
 
-void MockPrinter::SetPrintParams(PrintMsg_Print_Params* params) {
+void MockPrinter::SetPrintParams(printing::mojom::PrintParams* params) {
   params->dpi = gfx::Size(dpi_, dpi_);
   params->selection_only = selection_only_;
   params->should_print_backgrounds = should_print_backgrounds_;

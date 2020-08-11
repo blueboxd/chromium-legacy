@@ -85,10 +85,6 @@ public class AccountPickerBottomSheetTest {
                     /* fullName= */ null, /* givenName= */ null);
 
     @Rule
-    public final Features.InstrumentationProcessor mProcessor =
-            new Features.InstrumentationProcessor();
-
-    @Rule
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(0).build();
 

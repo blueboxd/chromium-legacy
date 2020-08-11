@@ -18,5 +18,4 @@ export {BackgroundSelectionType} from './customize_dialog.js';
 export {dummyDescriptor} from './modules/dummy/module.js';
 export {ModuleRegistry} from './modules/module_registry.js';
 export {PromoBrowserCommandProxy} from './promo_browser_command_proxy.js';
-export {NO_SUGGESTION_GROUP_ID} from './realbox_dropdown.js';
 export {$$, createScrollBorders, decodeString16, hexColorToSkColor, mojoString16, skColorToRgba} from './utils.js';

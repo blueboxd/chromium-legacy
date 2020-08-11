@@ -34,6 +34,7 @@ extern const char kCryptAuthLastEnrolledClientAppMetadataHash[];
 extern const char kCryptAuthLastSyncedEncryptedLocalDeviceMetadata[];
 extern const char kCryptAuthLastSyncedGroupPublicKey[];
 extern const char kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata[];
+extern const char kCryptAuthBluetoothAddressProvidedDuringLastSync[];
 extern const char kCryptAuthSchedulerClientDirective[];
 extern const char kCryptAuthSchedulerNextEnrollmentRequestClientMetadata[];
 extern const char kCryptAuthSchedulerNextDeviceSyncRequestClientMetadata[];

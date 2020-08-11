@@ -1373,11 +1373,16 @@ const char kUserDataSnapshotRetentionLimit[] =
 #endif  // !OS_CHROMEOS && !OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-// List of print servers ids that are allowed. List of strings. Note that this
+// List of print servers ids that are allowed in the user policy. List of strings. Note that this
 // used to be `kExternalPrintServersWhitelist`, hence the difference between the
 // variable name and the string value.
 const char kExternalPrintServersAllowlist[] =
     "native_printing.external_print_servers_whitelist";
+
+// List of print servers ids that are allowed in the device policy. List of
+// strings.
+const char kDeviceExternalPrintServersAllowlist[] =
+    "native_printing.device_external_print_servers_allowlist";
 
 // List of printers configured by policy.
 const char kRecommendedNativePrinters[] =

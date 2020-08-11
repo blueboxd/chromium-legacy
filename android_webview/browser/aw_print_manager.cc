@@ -83,7 +83,7 @@ void AwPrintManager::OnGetDefaultPrintSettings(
     IPC::Message* reply_msg) {
   // Unlike the printing_message_filter, we do process this in UI thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PrintMsg_Print_Params params;
+  printing::mojom::PrintParams params;
   printing::RenderParamsFromPrintSettings(*settings_, &params);
   params.document_cookie = cookie_;
   PrintHostMsg_GetDefaultPrintSettings::WriteReplyParams(reply_msg, params);

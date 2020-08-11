@@ -81,6 +81,7 @@ class FakeCryptAuthDeviceSyncerFactory
       CryptAuthDeviceRegistry* device_registry,
       CryptAuthKeyRegistry* key_registry,
       CryptAuthClientFactory* client_factory,
+      SyncedBluetoothAddressTracker* synced_bluetooth_address_tracker,
       PrefService* pref_service,
       std::unique_ptr<base::OneShotTimer> timer) override;
 
@@ -88,6 +89,8 @@ class FakeCryptAuthDeviceSyncerFactory
   CryptAuthDeviceRegistry* last_device_registry_ = nullptr;
   CryptAuthKeyRegistry* last_key_registry_ = nullptr;
   CryptAuthClientFactory* last_client_factory_ = nullptr;
+  SyncedBluetoothAddressTracker* last_synced_bluetooth_address_tracker_ =
+      nullptr;
   PrefService* last_pref_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthDeviceSyncerFactory);

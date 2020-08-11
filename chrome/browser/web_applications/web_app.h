@@ -179,8 +179,9 @@ class WebApp {
   // Performs sorting of |sizes| vector. Must be called rarely.
   void SetDownloadedIconSizes(std::vector<SquareSizePx> sizes);
   void SetIsGeneratedIcon(bool is_generated_icon);
-  void SetShortcutInfos(std::vector<WebApplicationShortcutsMenuItemInfo>
-                            shortcuts_menu_item_infos);
+  void SetShortcutsMenuItemInfos(
+      std::vector<WebApplicationShortcutsMenuItemInfo>
+          shortcuts_menu_item_infos);
   void SetDownloadedShortcutsMenuIconsSizes(
       std::vector<std::vector<SquareSizePx>> icon_sizes);
   void SetFileHandlers(apps::FileHandlers file_handlers);

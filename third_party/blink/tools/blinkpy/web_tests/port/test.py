@@ -135,7 +135,7 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 174
+TOTAL_TESTS = 176
 TOTAL_WONTFIX = 3
 TOTAL_SKIPS = 26 + TOTAL_WONTFIX
 TOTAL_CRASHES = 78
@@ -306,6 +306,7 @@ layer at (0,0) size 800x34
         actual_checksum=None,
         expected_checksum=None)
     tests.add('passes/platform_image.html')
+    tests.add('passes/slow.html')
     tests.add(
         'passes/checksum_in_image.html',
         expected_image='tEXtchecksum\x00checksum_in_image-checksum')
@@ -481,6 +482,13 @@ failures/expected/device_failure.html [ Skip ]
 virtual/virtual_failures/failures/expected/keyboard.html [ Skip ]
 virtual/virtual_failures/failures/expected/exception.html [ Skip ]
 virtual/virtual_failures/failures/expected/device_failure.html [ Skip ]
+""")
+
+    if not filesystem.exists(WEB_TEST_DIR + '/SlowTests'):
+        filesystem.write_text_file(
+            WEB_TEST_DIR + '/SlowTests', """
+# results: [ Slow ]
+passes/slow.html [ Slow ]
 """)
 
     # FIXME: This test was only being ignored because of missing a leading '/'.

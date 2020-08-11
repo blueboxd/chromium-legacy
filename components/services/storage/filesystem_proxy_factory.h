@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
 
 namespace storage {
@@ -16,6 +17,7 @@ namespace storage {
 // must be safe to call from any thread.
 using FilesystemProxyFactory =
     base::RepeatingCallback<std::unique_ptr<FilesystemProxy>()>;
+COMPONENT_EXPORT(FILESYSTEM_PROXY_FACTORY)
 void SetFilesystemProxyFactory(FilesystemProxyFactory factory);
 
 // Produces a new FilesystemProxy suitable for use in the service's current
@@ -24,6 +26,7 @@ void SetFilesystemProxyFactory(FilesystemProxyFactory factory);
 // access any path. If the service is sandboxed, this will produce a restricted
 // FilesystemProxy which can only traverse a limited scope of filesystem, and
 // only through IPC to a more privileged process.
+COMPONENT_EXPORT(FILESYSTEM_PROXY_FACTORY)
 std::unique_ptr<FilesystemProxy> CreateFilesystemProxy();
 
 }  // namespace storage

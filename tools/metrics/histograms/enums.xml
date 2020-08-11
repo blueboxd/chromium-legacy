@@ -28693,6 +28693,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3367" label="ConversionRegistration"/>
   <int value="3368" label="WebSharePolicyAllow"/>
   <int value="3369" label="WebSharePolicyDisallow"/>
+  <int value="3370" label="FormAssociatedCustomElement"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -30662,6 +30663,43 @@ Called by update_feature_policy_enum.py.-->
   <int value="0" label="Succeeded anonymously"/>
   <int value="1" label="Succeeded with credentials"/>
   <int value="2" label="Failed / credentials rejected"/>
+</enum>
+
+<enum name="FuseZipError">
+  <int value="0" label="Success">Hardcoded in fuse-zip</int>
+  <int value="11" label="Multipart ZIP">
+    ZIP_ER_BASE from fuse-zip + ZIP_ER_MULTIDISK from libzip
+  </int>
+  <int value="15" label="Cannot read">
+    ZIP_ER_BASE from fuse-zip + ZIP_ER_READ from libzip
+  </int>
+  <int value="21" label="Cannot open">
+    ZIP_ER_BASE from fuse-zip + ZIP_ER_OPEN from libzip
+  </int>
+  <int value="29" label="Not a ZIP">
+    ZIP_ER_BASE from fuse-zip + ZIP_ER_NOZIP from libzip
+  </int>
+  <int value="36" label="Missing password">
+    ZIP_ER_BASE from fuse-zip + ZIP_ER_NOPASSWD from libzip
+  </int>
+  <int value="37" label="Bad password">
+    ZIP_ER_BASE from fuse-zip + ZIP_ER_WRONGPASSWD from libzip
+  </int>
+  <int value="132" label="Terminated by SIGILL">
+    MINIJAIL_ERR_SIG_BASE + SIGILL from libminijail
+  </int>
+  <int value="134" label="Terminated by SIGABRT">
+    MINIJAIL_ERR_SIG_BASE + SIGABRT from libminijail
+  </int>
+  <int value="139" label="Terminated by SIGSEGV">
+    MINIJAIL_ERR_SIG_BASE + SIGSEGV from libminijail
+  </int>
+  <int value="251" label="Cannot mount file in mount namespace">
+    MINIJAIL_ERR_MOUNT from libminijail
+  </int>
+  <int value="253" label="Seccomp violation">
+    MINIJAIL_ERR_JAIL from libminijail
+  </int>
 </enum>
 
 <enum name="GaiaPasswordHashChange">
@@ -37131,6 +37169,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="IOSActivityScenario">
   <int value="0" label="Tab Share Button"/>
   <int value="1" label="QR Code Image"/>
+  <int value="2" label="History Entry"/>
 </enum>
 
 <enum name="IOSContentSizeCategory">
@@ -37244,6 +37283,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Open in New Window"/>
   <int value="5" label="Remove"/>
   <int value="6" label="Edit"/>
+  <int value="7" label="Share"/>
 </enum>
 
 <enum name="IOSMenuScenario">
@@ -40444,6 +40484,7 @@ from previous Chrome versions.
   <int value="-1567727398" label="DesktopPWAsWithoutExtensions:disabled"/>
   <int value="-1564232131"
       label="OmniboxOnDeviceHeadProviderNonIncognito:enabled"/>
+  <int value="-1562065709" label="ForceEnableDevicesPage:enabled"/>
   <int value="-1561360053" label="LauncherSettingsSearch:disabled"/>
   <int value="-1561252720" label="AutofillCreditCardUploadFeedback:disabled"/>
   <int value="-1560729847" label="AutofillCacheQueryResponses:enabled"/>
@@ -40453,6 +40494,7 @@ from previous Chrome versions.
   <int value="-1557527869" label="LoadingWithMojo:disabled"/>
   <int value="-1555510175" label="PasswordImport:enabled"/>
   <int value="-1553477903" label="ash-disable-text-filtering-in-overview-mode"/>
+  <int value="-1553280810" label="PromoBrowserCommands:enabled"/>
   <int value="-1552898031" label="SingleTabMode:enabled"/>
   <int value="-1550760918" label="PipRoundedCorners:disabled"/>
   <int value="-1550541457" label="DisplayIdentification:disabled"/>
@@ -41489,6 +41531,7 @@ from previous Chrome versions.
   <int value="-491546546" label="MeteredShowToggle:enabled"/>
   <int value="-491131428" label="OmniboxNewAnswerLayout:disabled"/>
   <int value="-488779992" label="blink-settings"/>
+  <int value="-488744544" label="PromoBrowserCommands:disabled"/>
   <int value="-488449930" label="SafetyCheckAndroid:enabled"/>
   <int value="-482494879"
       label="OmniboxHistoryQuickProviderAllowMidwordContinuations:disabled"/>
@@ -43235,6 +43278,7 @@ from previous Chrome versions.
   <int value="1393722373" label="SaveEditedPDFForm:disabled"/>
   <int value="1397069250" label="NetworkService:disabled"/>
   <int value="1398148960" label="LanguageSettingsUpdate:disabled"/>
+  <int value="1398333721" label="ForceEnableDevicesPage:disabled"/>
   <int value="1399950951" label="AutofillTokenPrefixMatching:disabled"/>
   <int value="1403195370" label="ArcCupsApi:enabled"/>
   <int value="1405459667" label="enable-fast-text-autosizing"/>
@@ -50102,7 +50146,7 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NetworkServiceError">
-  <int value="0" label="UNKNOWN"/>
+  <int value="0" label="NONE"/>
   <int value="1" label="AAA_FAILED"/>
   <int value="2" label="ACTIVATION_FAILED"/>
   <int value="3" label="BAD_PASSPHRASE"/>
@@ -50123,6 +50167,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="18" label="OUT_OF_RANGE"/>
   <int value="19" label="PPP_AUTH_FAILED"/>
   <int value="20" label="PIN_MISSING"/>
+  <int value="21" label="UNKNOWN"/>
+  <int value="22" label="NOT_ASSOCIATED"/>
+  <int value="23" label="NOT_AUTHENTICATED"/>
+  <int value="24" label="TOO_MANY_STAS"/>
 </enum>
 
 <enum name="NetworkStatus">
@@ -59243,6 +59291,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </int>
   <int value="139" label="Terminated by SIGSEGV">
     MINIJAIL_ERR_SIG_BASE + SIGSEGV from libminijail
+  </int>
+  <int value="251" label="Cannot mount file in mount namespace">
+    MINIJAIL_ERR_MOUNT from libminijail
   </int>
   <int value="253" label="Seccomp violation">
     MINIJAIL_ERR_JAIL from libminijail

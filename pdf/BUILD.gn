@@ -98,6 +98,8 @@ if (enable_pdf) {
       "pdf_init.h",
       "pdf_transform.cc",
       "pdf_transform.h",
+      "pdf_view_plugin_base.cc",
+      "pdf_view_plugin_base.h",
       "pdfium/pdfium_api_string_buffer_adapter.cc",
       "pdfium/pdfium_api_string_buffer_adapter.h",
       "pdfium/pdfium_document.cc",

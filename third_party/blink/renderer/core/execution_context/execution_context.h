@@ -375,6 +375,8 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
  protected:
   explicit ExecutionContext(v8::Isolate* isolate, Agent*);
+  ExecutionContext(const ExecutionContext&) = delete;
+  ExecutionContext& operator=(const ExecutionContext&) = delete;
   ~ExecutionContext() override;
 
   // Resetting the Agent is only necessary for a special case related to the
@@ -443,8 +445,6 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // context as to the FeaturePolicyProposalWouldChangeBehaviour
   // histogram, in order not to overcount.
   mutable Vector<bool> feature_policy_behaviour_change_counted_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExecutionContext);
 };
 
 }  // namespace blink

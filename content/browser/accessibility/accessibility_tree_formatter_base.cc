@@ -46,7 +46,10 @@ PropertyNode PropertyNode::FromPropertyFilter(
   Parse(&root, filter.property_str.begin(), filter.property_str.end());
 
   PropertyNode* node = &root.parameters[0];
-  node->original_property = filter.property_str;
+
+  // Expel a trailing wildcard if any.
+  node->original_property =
+      filter.property_str.substr(0, filter.property_str.find_last_of('*'));
 
   // Line indexes filter: filter_str expected format is
   // :line_num_1, ... :line_num_N, a comma separated list of line indexes
@@ -81,6 +84,13 @@ PropertyNode& PropertyNode::operator=(PropertyNode&& o) {
 
 PropertyNode::operator bool() const {
   return !name_or_value.empty();
+}
+
+bool PropertyNode::IsMatching(const base::string16& pattern) const {
+  // Looking for exact property match. Expel a trailing whildcard from
+  // the property filter to handle filters like AXRole*.
+  return name_or_value.compare(0, name_or_value.find_last_of('*'), pattern) ==
+         0;
 }
 
 bool PropertyNode::IsArray() const {
@@ -439,14 +449,14 @@ AccessibilityTreeFormatterBase::GetVersionSpecificExpectedFileSuffix() {
   return FILE_PATH_LITERAL("");
 }
 
-PropertyNode AccessibilityTreeFormatterBase::GetMatchingPropertyNode(
-    const base::string16& line_index,
-    const base::string16& property_name) {
-  // Find the first allow-filter matching the line index and the property name.
+std::vector<PropertyNode>
+AccessibilityTreeFormatterBase::PropertyFilterNodesFor(
+    const base::string16& line_index) const {
+  std::vector<PropertyNode> list;
   for (const auto& filter : property_filters_) {
     PropertyNode property_node = PropertyNode::FromPropertyFilter(filter);
 
-    // Skip if the line index filter doesn't matched (if specified).
+    // Filter out if doesn't match line index (if specified).
     if (!property_node.line_indexes.empty() &&
         std::find(property_node.line_indexes.begin(),
                   property_node.line_indexes.end(),
@@ -454,23 +464,28 @@ PropertyNode AccessibilityTreeFormatterBase::GetMatchingPropertyNode(
       continue;
     }
 
-    // The filter should be either an exact property match or a wildcard
-    // matching to support filter collections like AXRole* which matches
-    // AXRoleDescription.
-    if (property_name == property_node.name_or_value ||
-        base::MatchPattern(property_name, property_node.name_or_value)) {
-      switch (filter.type) {
-        case PropertyFilter::ALLOW_EMPTY:
-        case PropertyFilter::ALLOW:
-          return property_node;
-        case PropertyFilter::DENY:
-          break;
-        default:
-          break;
-      }
+    switch (filter.type) {
+      case PropertyFilter::ALLOW_EMPTY:
+      case PropertyFilter::ALLOW:
+        list.push_back(std::move(property_node));
+        break;
+      case PropertyFilter::DENY:
+        break;
+      default:
+        break;
     }
   }
-  return PropertyNode();
+  return list;
+}
+
+bool AccessibilityTreeFormatterBase::HasMatchAllPropertyFilter() const {
+  for (const auto& filter : property_filters_) {
+    if (filter.type == PropertyFilter::ALLOW &&
+        filter.match_str == base::ASCIIToUTF16("*")) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool AccessibilityTreeFormatterBase::MatchesPropertyFilters(

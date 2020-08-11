@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -282,9 +283,10 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
                                 ->GetMockGestureTapHighlightsEnabled() &&
                            !object->FirstFragment().NextFragment();
 
-  size_t index = 0;
+  wtf_size_t index = 0;
   for (const auto* fragment = &object->FirstFragment(); fragment;
        fragment = fragment->NextFragment(), ++index) {
+    ScopedDisplayItemFragment scoped_fragment(context, index);
     auto rects = object->OutlineRects(
         fragment->PaintOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
     if (rects.size() > 1)

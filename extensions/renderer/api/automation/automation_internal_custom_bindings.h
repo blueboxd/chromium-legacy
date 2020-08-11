@@ -161,7 +161,8 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
                        AutomationAXTreeWrapper* tree_wrapper,
                        ui::AXNode* node,
                        int start,
-                       int end));
+                       int end,
+                       bool clipped));
   void RouteNodeIDPlusStringBoolFunction(
       const std::string& name,
       std::function<void(v8::Isolate* isolate,

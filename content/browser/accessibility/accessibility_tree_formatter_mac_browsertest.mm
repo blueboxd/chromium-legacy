@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
-                       LineIndexFilter) {
+                       Filters_LineIndex) {
   TestAndCheck(R"~~(data:text/html,
                     <input class='input_at_3rd_line'>
                     <input class='input_at_4th_line'>
@@ -323,6 +323,17 @@ IN_PROC_BROWSER_TEST_F(
        "{anchor: {2, 1, down}, focus: {2, 1, down}}"},
       ":1;AXStringForTextMarkerRange(Argument)=*",
       R"~~(AXWebArea AXStringForTextMarkerRange(Argument)=ERROR:FAILED_TO_PARSE_ARGS
+++AXGroup
+++++AXStaticText AXValue='Text'
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       NestedCalls_Attributes) {
+  TestAndCheck(R"~~(data:text/html,
+                    <p>Text</p>)~~",
+               {":1;AXIndexForTextMarker(AXTextMarkerForIndex(0))"},
+               R"~~(AXWebArea AXIndexForTextMarker(AXTextMarkerForIndex(0))=0
 ++AXGroup
 ++++AXStaticText AXValue='Text'
 )~~");

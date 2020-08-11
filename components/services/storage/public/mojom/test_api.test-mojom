@@ -9,4 +9,9 @@ module storage.mojom;
 interface TestApi {
   // Tells the service to crash its process immediately.
   CrashNow();
+
+  // Tells the service to create a new LevelDB database and force a compaction.
+  // This exercises an interesting code path in the sandboxed service which we
+  // want tests to cover.
+  [Sync] ForceLeveldbDatabaseCompaction(string name) => ();
 };

@@ -35,6 +35,7 @@
 #include "chromeos/services/device_sync/fake_cryptauth_group_private_key_sharer.h"
 #include "chromeos/services/device_sync/fake_cryptauth_metadata_syncer.h"
 #include "chromeos/services/device_sync/fake_ecies_encryption.h"
+#include "chromeos/services/device_sync/fake_synced_bluetooth_address_tracker.h"
 #include "chromeos/services/device_sync/mock_cryptauth_client.h"
 #include "chromeos/services/device_sync/network_request_error.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
@@ -112,7 +113,9 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
         fake_cryptauth_feature_status_getter_factory_(
             std::make_unique<FakeCryptAuthFeatureStatusGetterFactory>()),
         fake_cryptauth_group_private_key_sharer_factory_(
-            std::make_unique<FakeCryptAuthGroupPrivateKeySharerFactory>()) {
+            std::make_unique<FakeCryptAuthGroupPrivateKeySharerFactory>()),
+        fake_synced_bluetooth_address_tracker_(
+            std::make_unique<FakeSyncedBluetoothAddressTracker>()) {
     CryptAuthKeyRegistryImpl::RegisterPrefs(pref_service_.registry());
     key_registry_ = CryptAuthKeyRegistryImpl::Factory::Create(&pref_service_);
     CryptAuthDeviceRegistryImpl::RegisterPrefs(pref_service_.registry());
@@ -138,7 +141,8 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
 
     syncer_ = CryptAuthDeviceSyncerImpl::Factory::Create(
         device_registry_.get(), key_registry_.get(), client_factory_.get(),
-        &pref_service_, std::move(mock_timer));
+        fake_synced_bluetooth_address_tracker_.get(), &pref_service_,
+        std::move(mock_timer));
 
     std::string local_user_public_key =
         GetLocalDeviceForTest().better_together_device_metadata->public_key();
@@ -371,6 +375,16 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
     ASSERT_TRUE(device_sync_result_);
     EXPECT_EQ(expected_result, *device_sync_result_);
 
+    if (expected_result.IsSuccess()) {
+      EXPECT_EQ(kDefaultLocalDeviceBluetoothAddress,
+                fake_synced_bluetooth_address_tracker_
+                    ->last_synced_bluetooth_address());
+    } else {
+      EXPECT_TRUE(fake_synced_bluetooth_address_tracker_
+                      ->last_synced_bluetooth_address()
+                      .empty());
+    }
+
     CryptAuthDeviceRegistry::InstanceIdToDeviceMap expected_registry;
     for (const CryptAuthDevice& device : expected_devices_in_registry) {
       expected_registry.insert_or_assign(device.instance_id(), device);
@@ -416,6 +430,8 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<CryptAuthKeyRegistry> key_registry_;
   std::unique_ptr<CryptAuthDeviceRegistry> device_registry_;
+  std::unique_ptr<FakeSyncedBluetoothAddressTracker>
+      fake_synced_bluetooth_address_tracker_;
   base::MockOneShotTimer* timer_;
 
   base::Optional<CryptAuthDeviceSyncResult> device_sync_result_;

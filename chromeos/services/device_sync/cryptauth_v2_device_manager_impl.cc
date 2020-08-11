@@ -9,10 +9,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_device_syncer_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry.h"
 #include "chromeos/services/device_sync/proto/cryptauth_logging.h"
+#include "chromeos/services/device_sync/synced_bluetooth_address_tracker_impl.h"
 
 namespace chromeos {
 
@@ -73,7 +75,10 @@ CryptAuthV2DeviceManagerImpl::CryptAuthV2DeviceManagerImpl(
     CryptAuthGCMManager* gcm_manager,
     CryptAuthScheduler* scheduler,
     PrefService* pref_service)
-    : client_app_metadata_(client_app_metadata),
+    : synced_bluetooth_address_tracker_(
+          SyncedBluetoothAddressTrackerImpl::Factory::Create(scheduler,
+                                                             pref_service)),
+      client_app_metadata_(client_app_metadata),
       device_registry_(device_registry),
       key_registry_(key_registry),
       client_factory_(client_factory),
@@ -138,7 +143,8 @@ void CryptAuthV2DeviceManagerImpl::OnDeviceSyncRequested(
 
   PA_LOG(VERBOSE) << "Starting CryptAuth v2 DeviceSync.";
   device_syncer_ = CryptAuthDeviceSyncerImpl::Factory::Create(
-      device_registry_, key_registry_, client_factory_, pref_service_);
+      device_registry_, key_registry_, client_factory_,
+      synced_bluetooth_address_tracker_.get(), pref_service_);
   device_syncer_->Sync(
       *current_client_metadata_, client_app_metadata_,
       base::BindOnce(&CryptAuthV2DeviceManagerImpl::OnDeviceSyncFinished,

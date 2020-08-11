@@ -467,14 +467,14 @@ GURL ScriptContext::GetEffectiveDocumentURLForInjection(
     blink::WebLocalFrame* frame,
     const GURL& document_url,
     bool match_about_blank,
-    bool match_data_urls) {
+    bool match_origin_as_fallback) {
   // We explicitly allow inaccessible parents here. Extensions should still be
   // able to inject into a sandboxed iframe if it has access to the embedding
   // origin.
   int flags = kAllowInaccessibleParents;
   if (match_about_blank)
     flags |= kAllowAboutFrames;
-  if (match_data_urls)
+  if (match_origin_as_fallback)
     flags |= kAllowDataFrames;
 
   return GetEffectiveDocumentURL(frame, document_url, flags);

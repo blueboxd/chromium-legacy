@@ -109,6 +109,25 @@ TEST_F(ActionFactoryTest, CopyAction) {
   }
 }
 
+// Tests that the share action has the right title and image.
+TEST_F(ActionFactoryTest, ShareAction) {
+  if (@available(iOS 13.0, *)) {
+    ActionFactory* factory =
+        [[ActionFactory alloc] initWithBrowser:test_browser_.get()
+                                      scenario:kTestMenuScenario];
+
+    UIImage* expectedImage = [UIImage systemImageNamed:@"square.and.arrow.up"];
+    NSString* expectedTitle =
+        l10n_util::GetNSString(IDS_IOS_SHARE_BUTTON_LABEL);
+
+    UIAction* action = [factory actionToShareWithBlock:^{
+    }];
+
+    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+    EXPECT_EQ(expectedImage, action.image);
+  }
+}
+
 // Tests that the delete action has the right title and image.
 TEST_F(ActionFactoryTest, DeleteAction) {
   if (@available(iOS 13.0, *)) {
@@ -125,6 +144,7 @@ TEST_F(ActionFactoryTest, DeleteAction) {
 
     EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
     EXPECT_EQ(expectedImage, action.image);
+    EXPECT_EQ(UIMenuElementAttributesDestructive, action.attributes);
   }
 }
 

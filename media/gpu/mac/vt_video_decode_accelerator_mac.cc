@@ -155,7 +155,13 @@ bool CreateVideoToolboxSession(const uint8_t* sps,
   const size_t data_sizes[] = {sps_size, pps_size};
 
   base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
-OSStatus status=-1;
+  OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSets(
+      kCFAllocatorDefault,
+      2,                  // parameter_set_count
+      data_ptrs,          // &parameter_set_pointers
+      data_sizes,         // &parameter_set_sizes
+      kNALUHeaderLength,  // nal_unit_header_length
+      format.InitializeInto());
   if (status) {
     OSSTATUS_DLOG(WARNING, status)
         << "Failed to create CMVideoFormatDescription";
@@ -514,7 +520,13 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
 
   // Construct a new format description from the parameter sets.
   format_.reset();
-OSStatus status=-1;
+  OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSets(
+      kCFAllocatorDefault,
+      nalu_data_ptrs.size(),     // parameter_set_count
+      &nalu_data_ptrs.front(),   // &parameter_set_pointers
+      &nalu_data_sizes.front(),  // &parameter_set_sizes
+      kNALUHeaderLength,         // nal_unit_header_length
+      format_.InitializeInto());
   if (status) {
     NOTIFY_STATUS("CMVideoFormatDescriptionCreateFromH264ParameterSets()",
                   status, SFT_PLATFORM_ERROR);
@@ -541,7 +553,7 @@ OSStatus status=-1;
   // VideoToolbox scales the visible rect to the output size, so we set the
   // output size for a 1:1 ratio. (Note though that VideoToolbox does not handle
   // top or left crops correctly.) We expect the visible rect to be integral.
-  CGRect visible_rect;
+  CGRect visible_rect = CMVideoFormatDescriptionGetCleanAperture(format_, true);
   CMVideoDimensions visible_dimensions = {visible_rect.size.width,
                                           visible_rect.size.height};
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(

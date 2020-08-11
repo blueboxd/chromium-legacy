@@ -24,5 +24,6 @@ per-file *.gn*=file://build/android/OWNERS
 # Translation artifacts:
 per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 
-# COMPONENT: Mobile
+# COMPONENT: UI>Browser>Mobile
+# TEAM: clank-dev@google.com
 # OS: Android

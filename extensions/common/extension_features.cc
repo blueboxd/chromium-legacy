@@ -43,9 +43,10 @@ const base::Feature kAllowWithholdingExtensionPermissionsOnInstall{
     "AllowWithholdingExtensionPermissionsOnInstall",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables content scripts on data URLs.
-const base::Feature kContentScriptsOnDataUrls{
-    "ContentScriptsOnDataUrls", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables support for the "match_origin_as_fallback" property in content
+// scripts.
+const base::Feature kContentScriptsMatchOriginAsFallback{
+    "ContentScriptsMatchOriginAsFallback", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Reports Extensions.WebRequest.KeepaliveRequestFinished when enabled.
 const base::Feature kReportKeepaliveUkm{"ReportKeepaliveUkm",

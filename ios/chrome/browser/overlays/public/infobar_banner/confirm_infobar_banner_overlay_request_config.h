@@ -32,6 +32,9 @@ class ConfirmBannerRequestConfig
   // The infobar's icon image.
   gfx::Image icon_image() const { return icon_image_; }
 
+  // Whether to present the Infobar's banner for a longer amount of time.
+  bool is_high_priority() const { return is_high_priority_; }
+
  private:
   OVERLAY_USER_DATA_SETUP(ConfirmBannerRequestConfig);
   explicit ConfirmBannerRequestConfig(infobars::InfoBar* infobar);
@@ -45,6 +48,8 @@ class ConfirmBannerRequestConfig
   base::string16 message_text_;
   base::string16 button_label_text_;
   gfx::Image icon_image_;
+  // True if the infobar's banner should be presented for a longer time.
+  bool is_high_priority_ = false;
 };
 
 }  // namespace confirm_infobar_overlays

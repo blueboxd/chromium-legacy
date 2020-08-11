@@ -52,7 +52,7 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
             safeBrowsingStateString =
                     context.getString(R.string.safe_browsing_standard_protection_title);
         } else if (safeBrowsingState == SafeBrowsingState.NO_SAFE_BROWSING) {
-            safeBrowsingStateString = context.getString(R.string.safe_browsing_no_protection_title);
+            return context.getString(R.string.prefs_safe_browsing_no_protection_summary);
         } else {
             assert false : "Should not be reached";
         }

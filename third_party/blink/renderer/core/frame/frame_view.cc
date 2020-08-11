@@ -31,12 +31,13 @@ Frame& FrameView::GetFrame() const {
 bool FrameView::CanThrottleRenderingForPropagation() const {
   if (CanThrottleRendering())
     return true;
-  LocalFrame* parent_frame = DynamicTo<LocalFrame>(GetFrame().Tree().Parent());
-  if (!parent_frame)
-    return false;
   Frame& frame = GetFrame();
-  LayoutEmbeddedContent* owner = frame.OwnerLayoutObject();
-  return !owner && frame.IsCrossOriginToMainFrame();
+  if (!frame.IsCrossOriginToMainFrame())
+    return false;
+  if (frame.IsLocalFrame() && To<LocalFrame>(frame).IsHidden())
+    return true;
+  LocalFrame* parent_frame = DynamicTo<LocalFrame>(GetFrame().Tree().Parent());
+  return (parent_frame && !frame.OwnerLayoutObject());
 }
 
 bool FrameView::DisplayLockedInParentFrame() {

@@ -25,12 +25,12 @@ class ScriptContextTest : public ChromeRenderViewTest {
   GURL GetEffectiveDocumentURLForInjection(WebLocalFrame* frame) {
     return ScriptContext::GetEffectiveDocumentURLForInjection(
         frame, frame->GetDocument().Url(),
-        /*match_about_blank=*/true, /*match_data_urls=*/true);
+        /*match_about_blank=*/true, /*match_origin_as_fallback=*/true);
   }
   GURL GetEffectiveURLForInjectionWithoutMatchingData(WebLocalFrame* frame) {
     return ScriptContext::GetEffectiveDocumentURLForInjection(
         frame, frame->GetDocument().Url(),
-        /*match_about_blank=*/true, /*match_data_urls=*/false);
+        /*match_about_blank=*/true, /*match_origin_as_fallback=*/false);
   }
 };
 

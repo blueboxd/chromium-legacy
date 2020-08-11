@@ -1647,7 +1647,7 @@ SkColor NativeThemeBase::GetControlColor(ControlColorId color_id,
 
 SkColor NativeThemeBase::GetDarkModeControlColor(
     ControlColorId color_id) const {
-    switch (color_id) {
+  switch (color_id) {
     case kAccent:
       return SkColorSetRGB(0x99, 0xC8, 0xFF);
     case kHoveredAccent:
@@ -1659,7 +1659,7 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     case kProgressValue:
       return SkColorSetRGB(0x63, 0xAD, 0xE5);
     case kFill:
-      return SkColorSetRGB(0x6B, 0x6B, 0x6B);
+      return SkColorSetRGB(0x3B, 0x3B, 0x3B);
     case kLightenLayer:
     case kAutoCompleteBackground:
     case kBackground:
@@ -1667,15 +1667,15 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     case kBorder:
       return SkColorSetRGB(0x85, 0x85, 0x85);
     case kSlider:
-      return SkColorSetRGB(0xC3, 0xC3, 0xC3);
+      return SkColorSetRGB(0x99, 0xC8, 0xFF);
     case kHoveredSlider:
-      return SkColorSetRGB(0xD8, 0xD8, 0xD8);
+      return SkColorSetRGB(0xD1, 0xE6, 0xFF);
     case kPressedSlider:
-      return SkColorSetRGB(0xB9, 0xB9, 0xB9);
+      return SkColorSetRGB(0x61, 0xA9, 0xFF);
     case kDisabledSlider:
-      return SkColorSetRGB(0x70, 0x70, 0x70);
+      return SkColorSetRGB(0x75, 0x75, 0x75);
     case kDisabledBackground:
-      return SkColorSetARGB(0x4D, 0x3B, 0x3B, 0x3B);
+      return SkColorSetRGB(0x3B, 0x3B, 0x3B);
     case kHoveredBorder:
       return SkColorSetRGB(0xAC, 0xAC, 0xAC);
     case kPressedBorder:
@@ -1683,11 +1683,11 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     case kDisabledBorder:
       return SkColorSetRGB(0x62, 0x62, 0x62);
     case kHoveredFill:
-      return SkColorSetRGB(0x7B, 0x7B, 0x7B);
+      return SkColorSetRGB(0x3B, 0x3B, 0x3B);
     case kPressedFill:
-      return SkColorSetRGB(0x61, 0x61, 0x61);
+      return SkColorSetRGB(0x3B, 0x3B, 0x3B);
     case kDisabledFill:
-      return SkColorSetRGB(0x5B, 0x5B, 0x5B);
+      return SkColorSetRGB(0x36, 0x36, 0x36);
     case kScrollbarArrowBackground:
       return SkColorSetRGB(0x42, 0x42, 0x42);
     case kScrollbarArrowBackgroundHovered:
@@ -1706,7 +1706,7 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     case kScrollbarThumbPressed:
     case kScrollbarThumb:
       return SK_ColorWHITE;
-    }
+  }
   NOTREACHED();
   return gfx::kPlaceholderColor;
 }

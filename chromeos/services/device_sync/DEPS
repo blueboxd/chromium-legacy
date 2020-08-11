@@ -3,6 +3,7 @@ include_rules = [
   "+components/proximity_auth/logging",
   "+components/signin/public",
   "+components/version_info",
+  "+device/bluetooth",
   "+google_apis/gaia",
   "+mojo/public/cpp",
   "+services/network/public",

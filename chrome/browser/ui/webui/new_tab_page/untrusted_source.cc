@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
@@ -19,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
@@ -31,6 +33,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/url_util.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 #include "url/url_util.h"
@@ -317,9 +320,21 @@ void UntrustedSource::OnPromoDataUpdated() {
   const auto& data = promo_service_->promo_data();
   std::string html;
   if (data.has_value() && !data->promo_html.empty()) {
+    std::string promo_html = data->promo_html;
+
+    // Replace the promo URL with "command:<id>" if such a command ID is set
+    // via the feature params.
+    const std::string command_id = base::GetFieldTrialParamValueByFeature(
+        features::kPromoBrowserCommands, features::kPromoBrowserCommandIdParam);
+    if (!command_id.empty()) {
+      re2::RE2::GlobalReplace(&promo_html, re2::RE2("href=\"([^\\s]+)\""),
+                              "href=\"command:" + command_id + "\"");
+    }
+
     ui::TemplateReplacements replacements;
     replacements["textdirection"] = base::i18n::IsRTL() ? "rtl" : "ltr";
-    replacements["data"] = data->promo_html;
+    replacements["data"] = promo_html;
+
     html = FormatTemplate(IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_HTML, replacements);
   }
   for (auto& callback : promo_callbacks_) {

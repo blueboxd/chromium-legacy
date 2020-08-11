@@ -12,8 +12,10 @@ source_set("test_api") {
 
   deps = [
     "//base",
+    "//components/services/storage:filesystem_proxy_factory",
     "//components/services/storage:test_api_stubs",
     "//components/services/storage/public/mojom:test_api",
     "//mojo/public/cpp/bindings",
+    "//third_party/leveldatabase",
   ]
 }

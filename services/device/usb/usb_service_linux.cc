@@ -149,8 +149,9 @@ void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceAdded(
     return;
 
   std::unique_ptr<UsbDeviceDescriptor> descriptor(new UsbDeviceDescriptor());
-  if (!descriptor->Parse(std::vector<uint8_t>(descriptors_str.begin(),
-                                              descriptors_str.end()))) {
+  if (!descriptor->Parse(base::make_span(
+          reinterpret_cast<const uint8_t*>(descriptors_str.data()),
+          descriptors_str.size()))) {
     return;
   }
 

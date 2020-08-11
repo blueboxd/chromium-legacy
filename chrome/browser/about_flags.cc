@@ -1385,6 +1385,13 @@ const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
     {"(mark with a grey triangle icon)", kMarkHttpAsDangerWarning,
      base::size(kMarkHttpAsDangerWarning), nullptr}};
 
+const FeatureEntry::FeatureParam kPromoBrowserCommandUnknownCommandParam[] = {
+    {features::kPromoBrowserCommandIdParam, "0"}};
+const FeatureEntry::FeatureVariation kPromoBrowserCommandsVariations[] = {
+    {"- Unknown Command", kPromoBrowserCommandUnknownCommandParam,
+     base::size(kPromoBrowserCommandUnknownCommandParam),
+     "t4237555" /* variation_id */}};
+
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishHeuristic[] = {
     {language::kOverrideModelKey, language::kOverrideModelHeuristicValue},
@@ -2770,6 +2777,10 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableDeviceDiscoveryNotifications,
                                switches::kDisableDeviceDiscoveryNotifications)},
 #endif  // BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
+    {"force-enable-devices-page",
+     flag_descriptions::kForceEnableDevicesPageName,
+     flag_descriptions::kForceEnableDevicesPageDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kForceEnableDevicesPage)},
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
     {"enable-webgl2-compute-context",
      flag_descriptions::kWebGL2ComputeContextName,
@@ -4050,6 +4061,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kProminentDarkModeActiveTabTitleDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kProminentDarkModeActiveTabTitle)},
 
+    {"promo-browser-commands", flag_descriptions::kPromoBrowserCommandsName,
+     flag_descriptions::kPromoBrowserCommandsDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kPromoBrowserCommands,
+                                    kPromoBrowserCommandsVariations,
+                                    "PromoBrowserCommands")},
 #if defined(OS_ANDROID)
     {"enable-reader-mode-in-cct", flag_descriptions::kReaderModeInCCTName,
      flag_descriptions::kReaderModeInCCTDescription, kOsAndroid,

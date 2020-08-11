@@ -29,7 +29,7 @@ TEST_F(InfobarOverlayUtilTest, GetOverlayRequestInfobar) {
 
   auto infobar_request =
       OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-          &infobar, InfobarOverlayType::kBanner);
+          &infobar, InfobarOverlayType::kBanner, infobar.high_priority());
   EXPECT_EQ(&infobar, GetOverlayRequestInfobar(infobar_request.get()));
 
   auto non_infobar_request =
@@ -42,14 +42,16 @@ TEST_F(InfobarOverlayUtilTest, GetOverlayRequestInfobarType) {
   FakeInfobarIOS confirm_infobar;
   auto confirm_infobar_request =
       OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-          &confirm_infobar, InfobarOverlayType::kBanner);
+          &confirm_infobar, InfobarOverlayType::kBanner,
+          confirm_infobar.high_priority());
   EXPECT_EQ(InfobarType::kInfobarTypeConfirm,
             GetOverlayRequestInfobarType(confirm_infobar_request.get()));
 
   FakeInfobarIOS translate_infobar(InfobarType::kInfobarTypeTranslate);
   auto translate_infobar_request =
       OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-          &translate_infobar, InfobarOverlayType::kBanner);
+          &translate_infobar, InfobarOverlayType::kBanner,
+          translate_infobar.high_priority());
   EXPECT_EQ(InfobarType::kInfobarTypeTranslate,
             GetOverlayRequestInfobarType(translate_infobar_request.get()));
 }
@@ -60,13 +62,13 @@ TEST_F(InfobarOverlayUtilTest, GetOverlayRequestInfobarOverlayType) {
   FakeInfobarIOS infobar;
   auto banner_request =
       OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-          &infobar, InfobarOverlayType::kBanner);
+          &infobar, InfobarOverlayType::kBanner, infobar.high_priority());
   EXPECT_EQ(InfobarOverlayType::kBanner,
             GetOverlayRequestInfobarOverlayType(banner_request.get()));
 
   auto modal_request =
       OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-          &infobar, InfobarOverlayType::kModal);
+          &infobar, InfobarOverlayType::kModal, infobar.high_priority());
   EXPECT_EQ(InfobarOverlayType::kModal,
             GetOverlayRequestInfobarOverlayType(modal_request.get()));
 }
@@ -83,13 +85,13 @@ TEST_F(InfobarOverlayUtilTest, GetInfobarOverlayRequestIndex) {
       OverlayRequestQueue::FromWebState(&web_state, OverlayModality::kTesting);
   queue->AddRequest(
       OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-          &infobar0, InfobarOverlayType::kBanner));
+          &infobar0, InfobarOverlayType::kBanner, infobar0.high_priority()));
   queue->AddRequest(
       OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-          &infobar1, InfobarOverlayType::kBanner));
+          &infobar1, InfobarOverlayType::kBanner, infobar1.high_priority()));
   queue->AddRequest(
       OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-          &infobar2, InfobarOverlayType::kBanner));
+          &infobar2, InfobarOverlayType::kBanner, infobar2.high_priority()));
 
   size_t index = 0;
   EXPECT_TRUE(GetInfobarOverlayRequestIndex(queue, &infobar0, &index));

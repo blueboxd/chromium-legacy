@@ -6,12 +6,14 @@
 
 #include "base/optional.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/task_environment.h"
 #include "chromeos/services/device_sync/cryptauth_device_registry_impl.h"
 #include "chromeos/services/device_sync/cryptauth_device_syncer_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
 #include "chromeos/services/device_sync/fake_cryptauth_device_syncer.h"
 #include "chromeos/services/device_sync/fake_cryptauth_gcm_manager.h"
 #include "chromeos/services/device_sync/fake_cryptauth_scheduler.h"
+#include "chromeos/services/device_sync/fake_synced_bluetooth_address_tracker.h"
 #include "chromeos/services/device_sync/mock_cryptauth_client.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_v2_test_util.h"
@@ -75,6 +77,9 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
         std::make_unique<FakeCryptAuthDeviceSyncerFactory>();
     CryptAuthDeviceSyncerImpl::Factory::SetFactoryForTesting(
         fake_device_syncer_factory_.get());
+
+    SyncedBluetoothAddressTrackerImpl::Factory::SetFactoryForTesting(
+        &fake_synced_bluetooth_address_tracker_factory_);
   }
 
   // testing::Test:
@@ -279,6 +284,8 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
         device_registry_changed_count);
   }
 
+  base::test::TaskEnvironment task_environment_;
+
   std::vector<cryptauthv2::ClientMetadata> expected_client_metadata_list_;
   std::vector<CryptAuthDeviceSyncResult> expected_device_sync_results_;
 
@@ -293,6 +300,8 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
   std::unique_ptr<CryptAuthDeviceRegistry> device_registry_;
   std::unique_ptr<CryptAuthKeyRegistry> key_registry_;
   std::unique_ptr<FakeCryptAuthDeviceSyncerFactory> fake_device_syncer_factory_;
+  FakeSyncedBluetoothAddressTrackerFactory
+      fake_synced_bluetooth_address_tracker_factory_;
 
   std::unique_ptr<CryptAuthV2DeviceManager> device_manager_;
 };

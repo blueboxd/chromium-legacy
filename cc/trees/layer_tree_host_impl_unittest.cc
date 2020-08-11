@@ -17528,5 +17528,98 @@ TEST_F(UnifiedScrollingTest, CompositedWithSquashedLayerMutatesTransform) {
   ScrollEnd();
 }
 
+TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestSimple) {
+  SetupDefaultRootLayer(gfx::Size(100, 100));
+
+  LayerImpl* frame_layer = AddLayer();
+  frame_layer->SetBounds(gfx::Size(50, 50));
+  frame_layer->SetDrawsContent(true);
+  frame_layer->SetHitTestable(true);
+  CopyProperties(root_layer(), frame_layer);
+  CreateTransformNode(frame_layer).frame_element_id = ElementId(0x10);
+
+  UpdateDrawProperties(host_impl_->active_tree());
+
+  EXPECT_EQ(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(10, 10)),
+            ElementId(0x10));
+}
+
+TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlap) {
+  SetupDefaultRootLayer(gfx::Size(100, 100));
+
+  LayerImpl* frame_layer = AddLayer();
+  frame_layer->SetBounds(gfx::Size(50, 50));
+  frame_layer->SetHitTestable(true);
+  CopyProperties(root_layer(), frame_layer);
+  CreateTransformNode(frame_layer).frame_element_id = ElementId(0x10);
+
+  LayerImpl* occluding_frame_layer = AddLayer();
+  occluding_frame_layer->SetBounds(gfx::Size(50, 50));
+  occluding_frame_layer->SetHitTestable(true);
+  CopyProperties(root_layer(), occluding_frame_layer);
+  CreateTransformNode(occluding_frame_layer).frame_element_id = ElementId(0x20);
+  occluding_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  UpdateDrawProperties(host_impl_->active_tree());
+
+  EXPECT_EQ(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(30, 30)),
+            ElementId(0x20));
+}
+
+TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlapSimpleClip) {
+  SetupDefaultRootLayer(gfx::Size(100, 100));
+
+  LayerImpl* frame_layer = AddLayer();
+  frame_layer->SetBounds(gfx::Size(50, 50));
+  frame_layer->SetHitTestable(true);
+  CopyProperties(root_layer(), frame_layer);
+  CreateTransformNode(frame_layer).frame_element_id = ElementId(0x10);
+
+  LayerImpl* clipped_frame_layer = AddLayer();
+  clipped_frame_layer->SetBounds(gfx::Size(50, 50));
+  clipped_frame_layer->SetHitTestable(true);
+  CopyProperties(root_layer(), clipped_frame_layer);
+  CreateTransformNode(clipped_frame_layer).frame_element_id = ElementId(0x20);
+  clipped_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  // Create a clip excluding the overlapped region.
+  auto& clip_node = CreateClipNode(clipped_frame_layer);
+  clip_node.clip = gfx::RectF(40, 40, 10, 10);
+
+  UpdateDrawProperties(host_impl_->active_tree());
+
+  // Ensure that the overlapping (clipped) layer isn't targeted.
+  EXPECT_EQ(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(30, 30)),
+            ElementId(0x10));
+}
+
+TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlapRoundedCorners) {
+  SetupDefaultRootLayer(gfx::Size(100, 100));
+
+  LayerImpl* frame_layer = AddLayer();
+  frame_layer->SetBounds(gfx::Size(50, 50));
+  frame_layer->SetHitTestable(true);
+  CopyProperties(root_layer(), frame_layer);
+  CreateTransformNode(frame_layer).frame_element_id = ElementId(0x10);
+
+  LayerImpl* rounded_frame_layer = AddLayer();
+  rounded_frame_layer->SetBounds(gfx::Size(50, 50));
+  rounded_frame_layer->SetHitTestable(true);
+  CopyProperties(root_layer(), rounded_frame_layer);
+  CreateTransformNode(rounded_frame_layer).frame_element_id = ElementId(0x20);
+  rounded_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  // Add rounded corners to the layer, which are unable to be hit tested by the
+  // simple quad-based logic.
+  CreateEffectNode(rounded_frame_layer).rounded_corner_bounds =
+      gfx::RRectF(25, 25, 50, 50, 5);
+
+  UpdateDrawProperties(host_impl_->active_tree());
+
+  // The lookup should bail out in the presence of a complex clip/mask on the
+  // target chain.
+  EXPECT_FALSE(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(30, 30)));
+}
+
 }  // namespace
 }  // namespace cc

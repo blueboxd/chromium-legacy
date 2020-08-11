@@ -32,8 +32,10 @@
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/media/media_source_attachment.h"
 #include "third_party/blink/renderer/core/url/dom_url.h"
 #include "third_party/blink/renderer/modules/mediasource/media_source_impl.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_registry_impl.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -43,15 +45,41 @@ namespace blink {
 String URLMediaSource::createObjectURL(ScriptState* script_state,
                                        MediaSourceImpl* source) {
   // Since WebWorkers cannot obtain MediaSource objects (yet), we should be on
-  // the main thread. TODO(wolenetz): Let DedicatedWorkers create MediaSource
-  // object URLs. See https://crbug.com/878133.
+  // the main thread.
+  // TODO(https://crbug.com/878133): Let DedicatedWorkers create MediaSource
+  // object URLs.
   DCHECK(IsMainThread());
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
   DCHECK(source);
 
   UseCounter::Count(execution_context, WebFeature::kCreateObjectURLMediaSource);
-  return DOMURL::CreatePublicURL(execution_context, source);
+
+  // This creation of a ThreadSafeRefCounted object should have a refcount of 1
+  // immediately. It will be adopted into a scoped_refptr in
+  // MediaSourceRegistryImpl::RegisterURL. See also MediaSourceAttachment (and
+  // usage in HTMLMediaElement, MediaSourceRegistry{Impl}, and
+  // MediaSource{Impl}) for further detail.
+  MediaSourceAttachment* attachment = new MediaSourceAttachment(source);
+  DCHECK(attachment->HasOneRef());
+
+  // Ensure the MediaSourceRegistryImpl singleton is constructed, such that the
+  // URLRegistrable implementation of ::Registry() in MediaSourceAttachment is
+  // available prior to MediaSourceAttachment's public URL creation, which uses
+  // it.
+  // TODO(https://crbug.com/878133): Remove this priming of the registry in
+  // favor of initialization of the registry singleton from the modules
+  // initializer.
+  MediaSourceRegistryImpl::EnsureRegistry();  // Ignore the return value.
+
+  String url = DOMURL::CreatePublicURL(execution_context, attachment);
+
+  // If attachment's registration failed, release its start-at-one reference to
+  // let it be destructed.
+  if (url.IsEmpty())
+    attachment->Release();
+
+  return url;
 }
 
 }  // namespace blink

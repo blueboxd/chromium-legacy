@@ -28,6 +28,7 @@ ConfirmBannerRequestConfig::ConfirmBannerRequestConfig(
   button_label_text_ =
       delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK);
   icon_image_ = delegate->GetIcon();
+  is_high_priority_ = static_cast<InfoBarIOS*>(infobar)->high_priority();
 }
 
 ConfirmBannerRequestConfig::~ConfirmBannerRequestConfig() = default;
@@ -36,7 +37,7 @@ void ConfirmBannerRequestConfig::CreateAuxiliaryData(
     base::SupportsUserData* user_data) {
   InfobarOverlayRequestConfig::CreateForUserData(
       user_data, static_cast<InfoBarIOS*>(infobar_),
-      InfobarOverlayType::kBanner);
+      InfobarOverlayType::kBanner, is_high_priority_);
 }
 
 }  // namespace confirm_infobar_overlays

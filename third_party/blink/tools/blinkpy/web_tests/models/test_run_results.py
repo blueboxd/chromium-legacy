@@ -292,6 +292,9 @@ def summarize_results(port_obj,
         if rounded_run_time:
             test_dict['time'] = rounded_run_time
 
+        if exp.is_slow_test:
+            test_dict['is_slow_test'] = True
+
         if has_stderr:
             test_dict['has_stderr'] = True
 

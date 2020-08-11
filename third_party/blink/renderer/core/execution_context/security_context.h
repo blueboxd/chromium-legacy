@@ -74,6 +74,8 @@ class CORE_EXPORT SecurityContext {
 
  public:
   explicit SecurityContext(ExecutionContext*);
+  SecurityContext(const SecurityContext&) = delete;
+  SecurityContext& operator=(const SecurityContext&) = delete;
   virtual ~SecurityContext();
 
   void Trace(Visitor*) const;
@@ -184,7 +186,6 @@ class CORE_EXPORT SecurityContext {
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_ = false;
   SecureContextMode secure_context_mode_ = SecureContextMode::kInsecureContext;
-  DISALLOW_COPY_AND_ASSIGN(SecurityContext);
 };
 
 }  // namespace blink

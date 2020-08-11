@@ -5,7 +5,7 @@
 #ifndef PDF_PDF_VIEW_WEB_PLUGIN_H_
 #define PDF_PDF_VIEW_WEB_PLUGIN_H_
 
-#include "pdf/pdf_engine.h"
+#include "pdf/pdf_view_plugin_base.h"
 #include "third_party/blink/public/web/web_plugin.h"
 
 namespace blink {
@@ -16,8 +16,8 @@ struct WebPluginParams;
 namespace chrome_pdf {
 
 // Skeleton for a `blink::WebPlugin` to replace `OutOfProcessInstance`.
-class PdfViewWebPlugin final : public blink::WebPlugin,
-                               public PDFEngine::Client {
+class PdfViewWebPlugin final : public PdfViewPluginBase,
+                               public blink::WebPlugin {
  public:
   explicit PdfViewWebPlugin(const blink::WebPluginParams& params);
   PdfViewWebPlugin(const PdfViewWebPlugin& other) = delete;
@@ -43,7 +43,7 @@ class PdfViewWebPlugin final : public blink::WebPlugin,
   void DidFinishLoading() override;
   void DidFailLoading(const blink::WebURLError& error) override;
 
-  // PDFEngine::Client:
+  // PdfViewPluginBase:
   void ProposeDocumentLayout(const DocumentLayout& layout) override;
   void Invalidate(const pp::Rect& rect) override;
   void DidScroll(const gfx::Vector2d& offset) override;

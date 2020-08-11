@@ -30,6 +30,10 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
     return To<NGPhysicalBoxFragment>(physical_fragment_).Baseline();
   }
 
+  LayoutUnit FirstBaselineOrSynthesize() const {
+    return FirstBaseline().value_or(BlockSize());
+  }
+
   // Returns the baseline for this fragment wrt. the parent writing mode. Will
   // return a null baseline if:
   //  - The fragment has no baseline.
@@ -43,6 +47,10 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
       return last_baseline;
 
     return To<NGPhysicalBoxFragment>(physical_fragment_).Baseline();
+  }
+
+  LayoutUnit BaselineOrSynthesize() const {
+    return Baseline().value_or(BlockSize());
   }
 
   // Compute baseline metrics (ascent/descent) for this box.

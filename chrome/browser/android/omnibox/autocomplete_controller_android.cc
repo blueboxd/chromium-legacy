@@ -55,6 +55,7 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/prefs/pref_service.h"
 #include "components/query_tiles/android/tile_conversion_bridge.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/url_formatter/url_formatter.h"
@@ -137,7 +138,7 @@ ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
   AutocompleteInput input(base::string16(), metrics::OmniboxEventProto::NTP,
                           ChromeAutocompleteSchemeClassifier(profile));
   input.set_current_url(GURL(chrome::kChromeUINewTabURL));
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   controller_->Start(input);
   // Delete ourselves after 10s. This is enough time to cache results or
   // give up if the results haven't been received.
@@ -248,7 +249,7 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
       ChromeAutocompleteSchemeClassifier(profile_));
   input_.set_current_url(current_url);
   input_.set_current_title(current_title);
-  input_.set_from_omnibox_focus(true);
+  input_.set_focus_type(OmniboxFocusType::ON_FOCUS);
   is_query_started_from_tiles_ = false;
   autocomplete_controller_->Start(input_);
 }
@@ -307,7 +308,8 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
   OmniboxLog log(
       // For zero suggest, record an empty input string instead of the
       // current URL.
-      input_.from_omnibox_focus() ? base::string16() : input_.text(),
+      input_.focus_type() != OmniboxFocusType::DEFAULT ? base::string16()
+                                                       : input_.text(),
       false,                /* don't know */
       input_.type(), false, /* not keyword mode */
       OmniboxEventProto::INVALID, true, selected_index,

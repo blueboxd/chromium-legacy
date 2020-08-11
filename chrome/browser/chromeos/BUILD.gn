@@ -3320,6 +3320,7 @@ source_set("unit_tests") {
     "policy/extension_install_event_log_uploader_unittest.cc",
     "policy/extension_install_event_logger_unittest.cc",
     "policy/external_data_handlers/device_native_printers_external_data_handler_unittest.cc",
+    "policy/external_data_handlers/device_print_servers_external_data_handler_unittest.cc",
     "policy/fake_affiliated_invalidation_service_provider.cc",
     "policy/fake_affiliated_invalidation_service_provider.h",
     "policy/heartbeat_scheduler_unittest.cc",

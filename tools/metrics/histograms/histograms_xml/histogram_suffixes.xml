@@ -1,0 +1,100 @@
+<!--
+Copyright 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<!--
+This file is used to generate a comprehensive list of Chrome histograms along
+with a detailed description for each histogram.
+
+For best practices on writing histogram descriptions, see
+https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
+
+For brief details on how to modify this file to add your description, see
+https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/one-pager.md
+
+Please pretty-print and validate your edits by running the pretty_print.py
+and validate_format.py scripts in the same directory as this file before
+uploading your change for review.
+
+Please send CLs to chromium-metrics-reviews@google.com rather than to specific
+individuals. These CLs will be automatically reassigned to a reviewer within
+about 5 minutes. This approach helps the metrics team to load-balance incoming
+reviews. Googlers can read more about this at go/gwsq-gerrit.
+-->
+
+<histogram-configuration>
+
+<histogram_suffixes_list>
+
+<histogram_suffixes name="PersistentMemoryAllocs" separator="."
+    ordering="prefix,2">
+  <obsolete>
+    Removed 2/2017 for Issue 689315 which indicated they weren't being used.
+  </obsolete>
+  <suffix name="BrowserMetrics" label="For browser process metrics."/>
+  <suffix name="FieldTrialAllocator" label="For field-trial allocator."/>
+  <suffix name="GpuMetrics" label="For GPU process metrics."/>
+  <suffix name="NotificationHelperMetrics"
+      label="For notification_helper process metrics."/>
+  <suffix name="PpapiBrokerMetrics"
+      label="For &quot;PPAPI broker&quot; process metrics."/>
+  <suffix name="PpapiPluginMetrics"
+      label="For &quot;PPAPI plugin&quot; process metrics."/>
+  <suffix name="RendererMetrics" label="For renderer process metrics."/>
+  <suffix name="SandboxHelperMetrics"
+      label="For &quot;sandbox helper&quot; process metrics."/>
+  <suffix name="SetupMetrics" label="For setup metrics."/>
+  <suffix name="UtilityMetrics"
+      label="For &quot;utility&quot; process metrics."/>
+  <suffix name="ZygoteMetrics" label="For &quot;zygote&quot; process metrics."/>
+  <affected-histogram name="UMA.PersistentAllocator.Allocs"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PersistentMemoryErrors" separator="."
+    ordering="prefix,2">
+  <suffix name="BrowserMetrics" label="For browser process metrics."/>
+  <suffix name="CrashpadMetrics" label="For metrics from Crashpad."/>
+  <suffix name="FieldTrialAllocator" label="For field-trial allocator."/>
+  <suffix name="GpuMetrics" label="For GPU process metrics."/>
+  <suffix name="NotificationHelperMetrics"
+      label="For notification_helper process metrics."/>
+  <suffix name="PpapiBrokerMetrics"
+      label="For &quot;PPAPI broker&quot; process metrics."/>
+  <suffix name="PpapiPluginMetrics"
+      label="For &quot;PPAPI plugin&quot; process metrics."/>
+  <suffix name="RendererMetrics" label="For renderer process metrics."/>
+  <suffix name="SandboxHelperMetrics"
+      label="For &quot;sandbox helper&quot; process metrics."/>
+  <suffix name="SetupMetrics" label="For setup metrics."/>
+  <suffix name="UtilityMetrics"
+      label="For &quot;utility&quot; process metrics."/>
+  <suffix name="ZygoteMetrics" label="For &quot;zygote&quot; process metrics."/>
+  <affected-histogram name="UMA.PersistentAllocator.Errors"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PersistentMemoryUsedPct" separator="."
+    ordering="prefix,2">
+  <suffix name="BrowserMetrics" label="For browser process metrics."/>
+  <suffix name="FieldTrialAllocator" label="For field-trial allocator."/>
+  <suffix name="GpuMetrics" label="For GPU process metrics."/>
+  <suffix name="NotificationHelperMetrics"
+      label="For notification_helper process metrics."/>
+  <suffix name="PpapiBrokerMetrics"
+      label="For &quot;PPAPI broker&quot; process metrics."/>
+  <suffix name="PpapiPluginMetrics"
+      label="For &quot;PPAPI plugin&quot; process metrics."/>
+  <suffix name="RendererMetrics" label="For renderer process metrics."/>
+  <suffix name="SandboxHelperMetrics"
+      label="For &quot;sandbox helper&quot; process metrics."/>
+  <suffix name="SetupMetrics" label="For setup metrics."/>
+  <suffix name="UtilityMetrics"
+      label="For &quot;utility&quot; process metrics."/>
+  <suffix name="ZygoteMetrics" label="For &quot;zygote&quot; process metrics."/>
+  <affected-histogram name="UMA.PersistentAllocator.UsedPct"/>
+</histogram_suffixes>
+
+</histogram_suffixes_list>
+
+</histogram-configuration>

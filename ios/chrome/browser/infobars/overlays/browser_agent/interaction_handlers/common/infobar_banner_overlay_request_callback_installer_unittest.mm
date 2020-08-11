@@ -31,7 +31,7 @@ class InfobarBannerOverlayRequestCallbackInstallerTest : public PlatformTest {
                    &mock_handler_) {
     std::unique_ptr<OverlayRequest> request =
         OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
-            &infobar_, InfobarOverlayType::kBanner);
+            &infobar_, InfobarOverlayType::kBanner, infobar_.high_priority());
     request_ = request.get();
     queue()->AddRequest(std::move(request));
     installer_.InstallCallbacks(request_);

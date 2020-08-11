@@ -37,6 +37,10 @@ API_AVAILABLE(ios(13.0))
 // pasteboard.
 - (UIAction*)actionToCopyURL:(const GURL)URL;
 
+// Creates a UIAction instance configured for sharing which will invoke
+// the given |block| upon execution.
+- (UIAction*)actionToShareWithBlock:(ProceduralBlock)block;
+
 // Creates a UIAction instance configured for deletion which will invoke
 // the given delete |block| when executed.
 - (UIAction*)actionToDeleteWithBlock:(ProceduralBlock)block;

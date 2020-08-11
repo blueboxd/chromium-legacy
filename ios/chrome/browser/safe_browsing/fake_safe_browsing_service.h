@@ -32,6 +32,8 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
       web::WebState* web_state) override;
   bool CanCheckUrl(const GURL& url) const override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  void ClearCookies(const net::CookieDeletionInfo::TimeRange& creation_range,
+                    base::OnceClosure callback) override;
 
  protected:
   ~FakeSafeBrowsingService() override;

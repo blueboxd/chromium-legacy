@@ -6,6 +6,7 @@
 
 #include <wayland-client.h>
 
+#include <algorithm>
 #include <memory>
 
 #include "base/bind.h"
@@ -22,6 +23,17 @@
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
+#include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
+
+namespace {
+
+bool OverlayStackOrderCompare(
+    const ui::ozone::mojom::WaylandOverlayConfigPtr& i,
+    const ui::ozone::mojom::WaylandOverlayConfigPtr& j) {
+  return i->z_order < j->z_order;
+}
+
+}  // namespace
 
 namespace ui {
 
@@ -481,8 +493,132 @@ bool WaylandWindow::RequestSubsurface() {
     return false;
   connection_->wayland_window_manager()->AddSubsurface(GetWidget(),
                                                        subsurface.get());
+  subsurface_stack_above_.push_back(subsurface.get());
   auto result = wayland_subsurfaces_.emplace(std::move(subsurface));
   DCHECK(result.second);
+  return true;
+}
+
+bool WaylandWindow::ArrangeSubsurfaceStack(size_t above, size_t below) {
+  while (wayland_subsurfaces_.size() < above + below) {
+    if (!RequestSubsurface())
+      return false;
+  }
+
+  DCHECK(subsurface_stack_below_.size() + subsurface_stack_above_.size() >=
+         above + below);
+
+  if (subsurface_stack_above_.size() < above) {
+    auto splice_start = subsurface_stack_below_.begin();
+    for (size_t i = 0; i < below; ++i)
+      ++splice_start;
+    subsurface_stack_above_.splice(subsurface_stack_above_.end(),
+                                   subsurface_stack_below_, splice_start,
+                                   subsurface_stack_below_.end());
+
+  } else if (subsurface_stack_below_.size() < below) {
+    auto splice_start = subsurface_stack_above_.end();
+    for (size_t i = 0; i < below - subsurface_stack_below_.size(); ++i)
+      --splice_start;
+    subsurface_stack_below_.splice(subsurface_stack_below_.end(),
+                                   subsurface_stack_above_, splice_start,
+                                   subsurface_stack_above_.end());
+  }
+
+  DCHECK(subsurface_stack_below_.size() >= below);
+  DCHECK(subsurface_stack_above_.size() >= above);
+  return true;
+}
+
+bool WaylandWindow::CommitOverlays(
+    std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr>& overlays) {
+  // |overlays| is sorted from bottom to top.
+  std::sort(overlays.begin(), overlays.end(), OverlayStackOrderCompare);
+
+  // Find the location where z_oder becomes non-negative.
+  ozone::mojom::WaylandOverlayConfigPtr value =
+      ozone::mojom::WaylandOverlayConfig::New();
+  auto split = std::lower_bound(overlays.begin(), overlays.end(), value,
+                                OverlayStackOrderCompare);
+  CHECK((*split)->z_order >= 0);
+  size_t num_primary_planes = (*split)->z_order == 0 ? 1 : 0;
+
+  size_t above = (overlays.end() - split) - num_primary_planes;
+  size_t below = split - overlays.begin();
+  // Re-arrange the list of subsurfaces to fit the |overlays|. Request extra
+  // subsurfaces if needed.
+  if (!ArrangeSubsurfaceStack(above, below))
+    return false;
+
+  {
+    // Iterate through |subsurface_stack_below_|, setup subsurfaces and place
+    // them in corresponding order. Commit wl_buffers once a subsurface is
+    // configured.
+    auto overlay_iter = split - 1;
+    for (auto iter = subsurface_stack_below_.begin();
+         iter != subsurface_stack_below_.end(); ++iter, --overlay_iter) {
+      if (overlay_iter >= overlays.begin()) {
+        WaylandSurface* reference_above = nullptr;
+        if (overlay_iter == split - 1) {
+          // It's possible that |overlays| does not contain primary plane, we
+          // still want to place relative to the surface with z_order=0.
+          reference_above = root_surface();
+        } else {
+          reference_above = (*std::next(iter))->wayland_surface();
+        }
+        (*iter)->ConfigureAndShowSurface(
+            (*overlay_iter)->transform, (*overlay_iter)->bounds_rect,
+            (*overlay_iter)->enable_blend, nullptr, reference_above);
+        connection_->buffer_manager_host()->CommitBufferInternal(
+            (*iter)->wayland_surface(), (*overlay_iter)->buffer_id,
+            gfx::Rect());
+      } else {
+        // If there're more subsurfaces requested that we don't need at the
+        // moment, hide them.
+        (*iter)->Hide();
+      }
+    }
+
+    // Iterate through |subsurface_stack_above_|, setup subsurfaces and place
+    // them in corresponding order. Commit wl_buffers once a subsurface is
+    // configured.
+    overlay_iter = split + num_primary_planes;
+    for (auto iter = subsurface_stack_above_.begin();
+         iter != subsurface_stack_above_.end(); ++iter, ++overlay_iter) {
+      if (overlay_iter < overlays.end()) {
+        WaylandSurface* reference_below = nullptr;
+        if (overlay_iter == split + num_primary_planes) {
+          // It's possible that |overlays| does not contain primary plane, we
+          // still want to place relative to the surface with z_order=0.
+          reference_below = root_surface();
+        } else {
+          reference_below = (*std::prev(iter))->wayland_surface();
+        }
+        (*iter)->ConfigureAndShowSurface(
+            (*overlay_iter)->transform, (*overlay_iter)->bounds_rect,
+            (*overlay_iter)->enable_blend, reference_below, nullptr);
+        connection_->buffer_manager_host()->CommitBufferInternal(
+            (*iter)->wayland_surface(), (*overlay_iter)->buffer_id,
+            gfx::Rect());
+      } else {
+        // If there're more subsurfaces requested that we don't need at the
+        // moment, hide them.
+        (*iter)->Hide();
+      }
+    }
+  }
+
+  if (num_primary_planes) {
+    // TODO: forward fence.
+    connection_->buffer_manager_host()->CommitBufferInternal(
+        root_surface(), (*split)->buffer_id, (*split)->damage_region);
+  } else {
+    // Subsurfaces are set to desync, above operations will only take effects
+    // when root_surface is committed.
+    root_surface()->Commit();
+  }
+
+  // commit all;
   return true;
 }
 

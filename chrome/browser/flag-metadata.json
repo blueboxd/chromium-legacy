@@ -2503,6 +2503,11 @@
     "expiry_milestone": 89
   },
   {
+    "name": "force-enable-devices-page",
+    "owners": [ "thestig", "rbpotter", "dhoss" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "force-preferred-interval-for-video",
     "owners": [ "khushalsagar" ],
     "expiry_milestone": 89
@@ -3673,6 +3678,11 @@
     "name": "prominent-dark-mode-active-tab-title",
     "owners": [ "dfried" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "promo-browser-commands",
+    "owners": ["mahmadi", "chrome-desktop-ntp" ],
+    "expiry_milestone": 90
   },
   {
     "name": "pull-to-refresh",

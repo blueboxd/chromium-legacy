@@ -198,6 +198,12 @@
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
+#endif
+
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -2549,6 +2555,18 @@ bool RenderViewContextMenu::IsSaveLinkAsEnabled() const {
       policy::URLBlocklist::URLBlocklistState::URL_IN_BLOCKLIST) {
     return false;
   }
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  Profile* const profile = Profile::FromBrowserContext(browser_context_);
+  if (profile->IsChild()) {
+    SupervisedUserService* supervised_user_service =
+        SupervisedUserServiceFactory::GetForProfile(profile);
+    SupervisedUserURLFilter* url_filter = supervised_user_service->GetURLFilter();
+    if (url_filter->GetFilteringBehaviorForURL(params_.link_url) !=
+        SupervisedUserURLFilter::FilteringBehavior::ALLOW)
+      return false;
+  }
+#endif
 
   return params_.link_url.is_valid() &&
       ProfileIOData::IsHandledProtocol(params_.link_url.scheme());

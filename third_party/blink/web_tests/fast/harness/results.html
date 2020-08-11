@@ -615,7 +615,7 @@ const Report = {
         statusClass += key == "PASS" ? " unexpected-pass" : " unexpected-failure";
       statusMap.set(key, statusClass);
     });
-    let status = "";
+    let status = test.is_slow_test ? "Slow" : "";
     statusMap.forEach((value, key) => {
       status += ` <span class="${value}">${TestResultInformation[key].text}</span>`;
     });

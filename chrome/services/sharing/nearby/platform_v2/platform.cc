@@ -10,6 +10,7 @@
 #include "chrome/services/sharing/nearby/platform_v2/atomic_boolean.h"
 #include "chrome/services/sharing/nearby/platform_v2/atomic_uint32.h"
 #include "chrome/services/sharing/nearby/platform_v2/bluetooth_adapter.h"
+#include "chrome/services/sharing/nearby/platform_v2/bluetooth_classic_medium.h"
 #include "chrome/services/sharing/nearby/platform_v2/condition_variable.h"
 #include "chrome/services/sharing/nearby/platform_v2/count_down_latch.h"
 #include "chrome/services/sharing/nearby/platform_v2/log_message.h"
@@ -122,7 +123,17 @@ std::unique_ptr<LogMessage> ImplementationPlatform::CreateLogMessage(
 std::unique_ptr<BluetoothClassicMedium>
 ImplementationPlatform::CreateBluetoothClassicMedium(
     api::BluetoothAdapter& adapter) {
-  return nullptr;
+  // Ignore the provided |adapter| argument. It provides no interface useful
+  // to implement chrome::BluetoothClassicMedium.
+
+  auto& connections = connections::NearbyConnections::GetInstance();
+  bluetooth::mojom::Adapter* bluetooth_adapter =
+      connections.GetBluetoothAdapter();
+
+  if (!bluetooth_adapter)
+    return nullptr;
+
+  return std::make_unique<chrome::BluetoothClassicMedium>(bluetooth_adapter);
 }
 
 std::unique_ptr<BleMedium> ImplementationPlatform::CreateBleMedium(

@@ -38,13 +38,6 @@ namespace enterprise.reportingPrivate {
   callback GetDeviceInfoCallback = void(DeviceInfo deviceInfo);
 
   interface Functions {
-
-    // Uploads the status of Chrome browser to the admin console by sending
-    // request to the DMServer. Sets $(ref:runtime.lastError) on failure.
-    static void uploadChromeDesktopReport(
-        object report,
-        optional DoneCallback callback);
-
     // Gets the identity of device that Chrome browser is running on. The ID is
     // retrieved from the local device and used by the Google admin console.
     static void getDeviceId(optional GetDeviceIdCallback callback);

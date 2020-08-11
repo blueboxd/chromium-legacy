@@ -11,11 +11,8 @@ class Browser;
 
 namespace printing {
 
-// Creates a tab with Google 'sign in' or 'add account' page, based on
-// passed |add_account| value.
-void CreateCloudPrintSigninTab(Browser* browser,
-                               bool add_account,
-                               base::OnceClosure callback);
+// Creates a tab with Google 'add account' page.
+void CreateCloudPrintSigninTab(Browser* browser, base::OnceClosure callback);
 
 }  // namespace printing
 

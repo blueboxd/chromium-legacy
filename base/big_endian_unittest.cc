@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <limits>
+
 #include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -128,6 +130,20 @@ TEST(BigEndianReaderTest, RespectsLength) {
   EXPECT_EQ(0u, reader.remaining());
 }
 
+TEST(BigEndianReaderTest, SafePointerMath) {
+  char data[] = "foo";
+  BigEndianReader reader(data, sizeof(data));
+  // The test should fail without ever dereferencing the |dummy_buf| pointer.
+  char* dummy_buf = reinterpret_cast<char*>(0xdeadbeef);
+  // Craft an extreme length value that would cause |reader.data() + len| to
+  // overflow.
+  size_t extreme_length = std::numeric_limits<size_t>::max() - 1;
+  base::StringPiece piece;
+  EXPECT_FALSE(reader.Skip(extreme_length));
+  EXPECT_FALSE(reader.ReadBytes(dummy_buf, extreme_length));
+  EXPECT_FALSE(reader.ReadPiece(&piece, extreme_length));
+}
+
 TEST(BigEndianWriterTest, WritesValues) {
   char expected[] = { 0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE,
                       0xF, 0x1A, 0x2B, 0x3C };
@@ -169,6 +185,18 @@ TEST(BigEndianWriterTest, RespectsLength) {
   // 0 left
   EXPECT_FALSE(writer.WriteU8(u8));
   EXPECT_EQ(0u, writer.remaining());
+}
+
+TEST(BigEndianWriterTest, SafePointerMath) {
+  char data[3];
+  BigEndianWriter writer(data, sizeof(data));
+  // The test should fail without ever dereferencing the |dummy_buf| pointer.
+  const char* dummy_buf = reinterpret_cast<const char*>(0xdeadbeef);
+  // Craft an extreme length value that would cause |reader.data() + len| to
+  // overflow.
+  size_t extreme_length = std::numeric_limits<size_t>::max() - 1;
+  EXPECT_FALSE(writer.Skip(extreme_length));
+  EXPECT_FALSE(writer.WriteBytes(dummy_buf, extreme_length));
 }
 
 }  // namespace base

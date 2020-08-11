@@ -770,7 +770,9 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ChromeOSMetricsProvider::RegisterPrefs(registry);
   chromeos::ArcKioskAppManager::RegisterPrefs(registry);
   chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
+  chromeos::cert_provisioning::RegisterLocalStatePrefs(registry);
   chromeos::ChromeUserManagerImpl::RegisterPrefs(registry);
+  chromeos::CupsPrintersManager::RegisterLocalStatePrefs(registry);
   chromeos::DemoModeDetector::RegisterPrefs(registry);
   chromeos::DemoModeResourcesRemover::RegisterLocalStatePrefs(registry);
   chromeos::DemoSession::RegisterLocalStatePrefs(registry);
@@ -831,7 +833,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::SystemFeaturesDisableListPolicyHandler::RegisterPrefs(registry);
   quirks::QuirksManager::RegisterPrefs(registry);
   UpgradeDetectorChromeos::RegisterPrefs(registry);
-  chromeos::cert_provisioning::RegisterLocalStatePrefs(registry);
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MAC)

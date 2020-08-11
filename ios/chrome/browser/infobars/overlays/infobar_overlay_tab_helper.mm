@@ -46,15 +46,21 @@ InfobarOverlayTabHelper::OverlayRequestScheduler::~OverlayRequestScheduler() =
 
 void InfobarOverlayTabHelper::OverlayRequestScheduler::OnInfoBarAdded(
     InfoBar* infobar) {
+  InfoBarIOS* ios_infobar = static_cast<InfoBarIOS*>(infobar);
   // Skip showing banner if it was requested. Badge and modals will keep
   // showing.
-  if (static_cast<InfoBarIOS*>(infobar)->skip_banner())
+  if (ios_infobar->skip_banner())
     return;
-  InsertParams params(static_cast<InfoBarIOS*>(infobar));
+  InsertParams params(ios_infobar);
   params.overlay_type = InfobarOverlayType::kBanner;
-  params.insertion_index = OverlayRequestQueue::FromWebState(
-                               web_state_, OverlayModality::kInfobarBanner)
-                               ->size();
+  // If the Infobar high priority, then insert it into the front of the banner
+  // queue.
+  params.insertion_index =
+      ios_infobar->high_priority()
+          ? 0
+          : OverlayRequestQueue::FromWebState(web_state_,
+                                              OverlayModality::kInfobarBanner)
+                ->size();
   params.source = InfobarOverlayInsertionSource::kInfoBarManager;
   tab_helper_->request_inserter()->InsertOverlayRequest(params);
 }

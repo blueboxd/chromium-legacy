@@ -44,6 +44,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -461,7 +462,7 @@ void DocumentProvider::Start(const AutocompleteInput& input,
 
   // There should be no document suggestions fetched for on-focus suggestion
   // requests, or if the input is empty.
-  if (input.from_omnibox_focus() ||
+  if (input.focus_type() != OmniboxFocusType::DEFAULT ||
       input.type() == metrics::OmniboxInputType::EMPTY) {
     return;
   }

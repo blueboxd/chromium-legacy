@@ -25,7 +25,7 @@ NGLineHeightMetrics NGBoxFragment::BaselineMetrics(
                                margins.line_under);
   }
 
-  if (base::Optional<LayoutUnit> baseline = Baseline()) {
+  if (const base::Optional<LayoutUnit> baseline = Baseline()) {
     NGLineHeightMetrics metrics =
         IsFlippedLinesWritingMode(GetWritingMode())
             ? NGLineHeightMetrics(BlockSize() - *baseline, *baseline)

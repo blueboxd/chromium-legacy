@@ -1105,8 +1105,9 @@ class ContentScriptRelatedFrameTest : public ContentScriptApiTest {
 
   void SetUpOnMainThread() override;
 
-  // Whether the extension's content script should also match data: URLs.
-  virtual bool IncludeMatchDataUrls() { return false; }
+  // Whether the extension's content script should specify
+  // match_origin_as_fallback as true.
+  virtual bool IncludeMatchOriginAsFallback() { return false; }
 
   // Returns true if the extension's content script executed in the specified
   // |frame|.
@@ -1198,8 +1199,8 @@ void ContentScriptRelatedFrameTest::SetUpOnMainThread() {
            }]
          })";
   const char* extra_property = "";
-  if (IncludeMatchDataUrls())
-    extra_property = R"("match_data_urls": true,)";
+  if (IncludeMatchOriginAsFallback())
+    extra_property = R"("match_origin_as_fallback": true,)";
   std::string manifest = base::StringPrintf(kManifest, extra_property);
   test_extension_dir_.WriteManifest(manifest);
 
@@ -1368,11 +1369,11 @@ class ContentScriptDataURLTest : public ContentScriptRelatedFrameTest {
  public:
   ContentScriptDataURLTest() {
     feature_list_.InitAndEnableFeature(
-        extensions_features::kContentScriptsOnDataUrls);
+        extensions_features::kContentScriptsMatchOriginAsFallback);
   }
   ~ContentScriptDataURLTest() override = default;
 
-  bool IncludeMatchDataUrls() override { return true; }
+  bool IncludeMatchOriginAsFallback() override { return true; }
 
  private:
   base::test::ScopedFeatureList feature_list_;

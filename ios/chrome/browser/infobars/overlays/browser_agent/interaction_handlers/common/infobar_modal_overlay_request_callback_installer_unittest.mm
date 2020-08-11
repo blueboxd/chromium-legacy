@@ -39,7 +39,8 @@ class InfobarModalOverlayRequestCallbackInstallerTest : public PlatformTest {
   InfobarModalOverlayRequestCallbackInstallerTest()
       : request_(OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
             &infobar_,
-            InfobarOverlayType::kModal)),
+            InfobarOverlayType::kModal,
+            infobar_.high_priority())),
         installer_(&mock_handler_) {
     installer_.InstallCallbacks(request_.get());
   }

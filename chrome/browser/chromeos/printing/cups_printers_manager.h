@@ -15,6 +15,7 @@
 #include "chromeos/printing/uri.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class PrefRegistrySimple;
 class PrefService;
 class Profile;
 
@@ -76,8 +77,11 @@ class CupsPrintersManager : public PrinterInstallationManager,
       PrinterEventTracker* event_tracker,
       PrefService* pref_service);
 
-  // Register the printing preferences with the |registry|.
+  // Register the profile printing preferences with the |registry|.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Register the printing preferences with the |registry|.
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   ~CupsPrintersManager() override = default;
 

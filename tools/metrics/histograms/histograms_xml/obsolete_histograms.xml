@@ -1,0 +1,896 @@
+<!--
+Copyright 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<!--
+This file is used to generate a comprehensive list of Chrome histograms along
+with a detailed description for each histogram.
+
+For best practices on writing histogram descriptions, see
+https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
+
+For brief details on how to modify this file to add your description, see
+https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/one-pager.md
+
+Please pretty-print and validate your edits by running the pretty_print.py
+and validate_format.py scripts in the same directory as this file before
+uploading your change for review.
+
+Please send CLs to chromium-metrics-reviews@google.com rather than to specific
+individuals. These CLs will be automatically reassigned to a reviewer within
+about 5 minutes. This approach helps the metrics team to load-balance incoming
+reviews. Googlers can read more about this at go/gwsq-gerrit.
+-->
+
+<histogram-configuration>
+
+<histograms>
+
+<histogram name="UMA.ClientIdMigrated" enum="BooleanMigrated"
+    expires_after="2015-06-01">
+  <obsolete>
+    Removed in M45.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Recorded when the one-time UMA client id reset was performed (and the client
+    id of this user was migrated).
+  </summary>
+</histogram>
+
+<histogram name="UMA.CollectExternalEventsTime" units="ms"
+    expires_after="2015-08-07">
+  <obsolete>
+    Removed as of August 2015. The histogram showed no unexpected slowness, and
+    a profiler is a better tool for identifying any future issues.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The time to run the external metrics collection task (Chrome OS).
+  </summary>
+</histogram>
+
+<histogram name="UMA.ComputeCurrentSigninStatus"
+    enum="ComputeCurrentSigninStatus" expires_after="2016-06-14">
+  <obsolete>
+    Removed as of Jun 2016. The histogram was added for debugging purpose and is
+    not needed anymore.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>yiyaoliu@chromium.org</owner>
+  <summary>
+    Records attempts to compute the current the signin status and error
+    encountered when computing.
+  </summary>
+</histogram>
+
+<histogram name="UMA.CreatePersistentHistogram.Result"
+    enum="CreatePersistentHistogramResult" expires_after="2018-04-12">
+  <obsolete>
+    Removed April, 2018 as the information has never shown any problems.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records attempts to create histograms in presistent space and any errors
+    encountered when doing so.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUpAsyncTaskDuration"
+    units="ms" expires_after="M77">
+  <obsolete>
+    No longer useful or monitored, removed 2020-01-06.
+  </obsolete>
+  <owner>wnwen@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Measures how much time it took to complete all async deferred startup tasks
+    on the background thread. Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUpCompleteTime"
+    units="ms" expires_after="M77">
+  <obsolete>
+    No longer useful or monitored, removed 2020-01-06.
+  </obsolete>
+  <owner>wnwen@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Measures how much time since application was first in foreground till all
+    deferred tasks are done. Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUpDuration"
+    units="ms" expires_after="M77">
+  <obsolete>
+    No longer useful or monitored, removed 2020-01-06.
+  </obsolete>
+  <owner>wnwen@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Measures how much time it took to complete deferred startup tasks on the UI
+    thread. Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUpDurationAsync"
+    units="ms" expires_after="2017-01-24">
+  <obsolete>
+    Removed 01/2017 for
+    UMA.Debug.EnableCrashUpload.DeferredStartupAsyncTaskDuration.
+  </obsolete>
+  <owner>wnwen@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time it took to complete async deferred startup tasks on
+    the background thread. Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUpMaxTaskDuration"
+    units="ms" expires_after="2020-02-16">
+  <obsolete>
+    No longer useful or monitored, removed 2020-01-06.
+  </obsolete>
+  <owner>wnwen@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Measures the maximum amount of time a single deferred startup task took.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUptime" units="ms"
+    expires_after="2016-08-08">
+  <obsolete>
+    Replaced by UMA.Debug.EnableCrashUpload.DeferredStartUptime2
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since start up it took for onDeferredStartup() to be
+    called, which schedules enablePotentialCrashUploading() to be executed on an
+    async task. Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUptime2" units="ms"
+    expires_after="2017-06-28">
+  <obsolete>
+    Removed 2017. No longer tracked.
+  </obsolete>
+  <owner>wnwen@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since application was first in foreground till
+    deferred tasks are initialized and queued on the idle handler. Only logged
+    on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.PostDeferredStartUptime"
+    units="ms" expires_after="2016-08-08">
+  <obsolete>
+    Replaced by UMA.Debug.EnableCrashUpload.PostDeferredStartUptime2
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since start up it took before ChromeActivity's
+    postDeferredStartupIfNeeded() was called. Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.PostDeferredStartUptime2"
+    units="ms" expires_after="2017-06-28">
+  <obsolete>
+    Removed 2017. No longer tracked.
+  </obsolete>
+  <owner>wnwen@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since application was first in foreground till
+    ChromeActivity's postDeferredStartupIfNeeded() was called exactly once. Only
+    logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.Uptime" units="ms"
+    expires_after="2016-05-16">
+  <obsolete>
+    Replaced by UMA.Debug.EnableCrashUpload.Uptime2
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since start up it took before crash reporting was
+    enabled via enablePotentialCrashUploading() as part of deferred start up.
+    Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.Uptime2" units="ms"
+    expires_after="2016-08-08">
+  <obsolete>
+    Replaced by UMA.Debug.EnableCrashUpload.Uptime3
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since start up it took before crash reporting was
+    enabled via enablePotentialCrashUploading() as part of deferred start up.
+    Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.Uptime3" units="ms"
+    expires_after="2017-06-28">
+  <obsolete>
+    Removed 2017. No longer tracked.
+  </obsolete>
+  <owner>wnwen@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since application was first in foreground till crash
+    reporting was enabled as part of deferred start up. Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Discarded Log Events" units="units"
+    expires_after="2017-06-05">
+  <obsolete>
+    Replaced by UMA.Truncate* metrics.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The number of events that would be discarded at log transmission time
+    because the event count was already too large. Note that this doesn't
+    measure actual discards - in case the UMAThrottleEvents feature is disabled,
+    the discards won't occur.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FieldTrialAllocator.Size" units="bytes"
+    expires_after="2016-11-09">
+  <obsolete>
+    Removed 11/2016 for UMA.FieldTrialAllocator.Used
+  </obsolete>
+  <owner>lawrencewu@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Size, before padding, of objects allocated from persistent memory in the
+    browser process for field trials. Updated on each subprocess launch.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FieldTrialsEnabledBenchmarking" enum="BooleanUsage"
+    expires_after="2014-10-15">
+  <obsolete>
+    Removed 2012. No longer tracked.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Log whether the --enable-benchmarking flag was set, which causes field
+    trials to only use the default group.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.DeletedFiles" units="units"
+    expires_after="2018-04-12">
+  <obsolete>
+    Removed April, 2018 as the information it provides is no longer useful.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    The number of old metrics files for which a delete was attempted. This is
+    logged once with each upload operation. Values greater than 1 indicate that
+    the files are not deletable by the browser and must be cleaned up by
+    whatever process is creating them.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.DirectoryFiles" units="units"
+    expires_after="2018-04-12">
+  <obsolete>
+    Removed April, 2018 as no problems were ever indicated.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    The number of metrics files in a directory that need to be uploaded. This is
+    logged once with each upload operation.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.EmbeddedProfile.DroppedFileAge"
+    units="minutes" expires_after="2017-07-08">
+  <obsolete>
+    Removed 07/2017. Was only for short-term analysis. About 95% of dropped
+    files were less than 1 day old.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records the last-modified age of a file that was dropped for lack of an
+    embedded profile.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.EmbeddedProfile.DroppedHistogramCount"
+    units="units" expires_after="M75">
+  <obsolete>
+    Removed 2019/04 with the resolution of https://crbug.com/695880
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records the number of histograms present in a file that was dropped for lack
+    of an embedded profile.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.EmbeddedProfile.RecordTime" units="ms"
+    expires_after="M71">
+  <obsolete>
+    Removed 2019/04 as times are small, consistent, and now on a background
+    thread.
+  </obsolete>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Tracks the time used to record all histograms from a file with an embedded
+    profile.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.EmbeddedProfileResult"
+    enum="FileMetricsProviderEmbeddedProfileResult" expires_after="M75">
+  <obsolete>
+    Removed 2019/04 with the resolution of https://crbug.com/695880
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records attempts to upload metrics from files with embedded system profiles.
+    Counts are not necessarily mutually exclusive.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.Happening"
+    enum="FileMetricsProviderHappening" expires_after="2018-02-09">
+  <obsolete>
+    This metrics was to provide information for crbug/760317 which has been
+    resolved. Removed February, 2018.
+  </obsolete>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records various happenings within the FileMetricsProvider for debugging
+    purposes.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.InitialCheckTime.File" units="ms"
+    expires_after="M77">
+  <obsolete>
+    Access times are consistently on the order of a few ms. Removed 2019/06.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent checking and mapping an initial metrics
+    file on disk.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.InitialCheckTime.Total" units="ms"
+    expires_after="2018-04-12">
+  <obsolete>
+    Removed April, 2018 as the information it provides is no longer useful.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent checking and mapping initial metrics
+    from all files on disk.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.InitialSnapshotTime.File" units="ms"
+    expires_after="M80">
+  <obsolete>
+    Access times are consistently on the order of a few ms. Removed 2019/06.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent collecting initial stability metrics
+    from a file on disk.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.InitialSnapshotTime.Total" units="ms"
+    expires_after="2018-04-12">
+  <obsolete>
+    Removed April, 2018 as the information it provides is no longer useful.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent collecting initial stability metrics
+    from all files on disk.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.SnapshotTime.File" units="ms"
+    expires_after="M80">
+  <obsolete>
+    Access times are consistently on the order of a few ms. Removed 2019/06.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent collecting metrics from a file on disk.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.SnapshotTime.Total" units="ms"
+    expires_after="2018-04-12">
+  <obsolete>
+    Removed April, 2018 as the information it provides is no longer useful.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent collecting metrics from all files on
+    disk.
+  </summary>
+</histogram>
+
+<histogram name="UMA.GeneratedLowEntropySource" enum="Boolean"
+    expires_after="2015-08-07">
+  <obsolete>
+    Removed as of August 2015. No longer tracked.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    For each attempt to generate the low entropy source, log whether or not the
+    load required generating a new low entropy source.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Histograms.Activity" enum="HistogramActivityReport"
+    expires_after="2017-10-16">
+  <obsolete>
+    Removed as of October 2017. No longer tracked.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Type and flags of every histogram created plus other activities. Counts are
+    not mutually-exclusive except for the different types.
+  </summary>
+</histogram>
+
+<histogram name="UMA.JavaCachingRecorder.DroppedSampleCount" units="samples"
+    expires_after="2020-03-31">
+  <obsolete>
+    Removed on 2020-03-18. Renamed to
+    UMA.JavaCachingRecorder.DroppedHistogramSampleCount and reports also
+    histogram samples dropped due to a limit of the number of cached histograms.
+  </obsolete>
+  <owner>bttk@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Number of histogram samples that were not recorded when flushing due to a
+    per-histogram sample count limit in the Java in-memory cache.
+  </summary>
+</histogram>
+
+<histogram name="UMA.JavaCachingRecorder.FullHistogramCount" units="histograms"
+    expires_after="2020-03-31">
+  <obsolete>
+    Removed on 2020-03-18 to reduce the number of histograms emitted by the
+    cache.
+  </obsolete>
+  <owner>bttk@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Number of histograms for which not all samples may have been recorded when
+    flushing the Java in-memory cache due to a per-histogram sample count limit.
+  </summary>
+</histogram>
+
+<histogram name="UMA.JavaCachingRecorder.HistogramLimitDroppedSampleCount"
+    units="samples" expires_after="2020-03-31">
+  <obsolete>
+    Removed on 2020-03-18 to reduce the number of histograms emitted by the
+    cache. UMA.JavaCachingRecorder.DroppedHistogramSampleCount includes
+    histogram samples that were reported in this histogram.
+  </obsolete>
+  <owner>bttk@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Number of samples that were not recorded when flushing the Java in-memory
+    cache due to a histogram count limit.
+  </summary>
+</histogram>
+
+<histogram name="UMA.JavaCachingRecorder.InputSampleCount" units="samples"
+    expires_after="2020-03-31">
+  <obsolete>
+    Removed on 2020-03-18. Renamed to
+    UMA.JavaCachingRecorder.InputHistogramSampleCount.
+  </obsolete>
+  <owner>bttk@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Number of histogram samples seen by the time the Java in-memory cache was
+    flushed. This is a sum of DroppedSampleCount and FlushedHistogramCount.
+  </summary>
+</histogram>
+
+<histogram name="UMA.JavaCachingRecorder.RemainingHistogramLimit"
+    units="histograms" expires_after="2020-03-31">
+  <obsolete>
+    Removed on 2020-03-18 to reduce the number of histograms emitted by the
+    cache.
+  </obsolete>
+  <owner>bttk@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    The remaining histogram count limit when flushing in the Java in-memory
+    cache.
+  </summary>
+</histogram>
+
+<histogram name="UMA.JavaCachingRecorder.RemainingSampleLimit"
+    units="histograms" expires_after="2020-03-31">
+  <obsolete>
+    Removed on 2020-03-18 to reduce the number of histograms emitted by the
+    cache.
+  </obsolete>
+  <owner>bttk@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    The smallest remaining sample count limit in metrics flushed from the Java
+    in-memory cache.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Large Accumulated Log Not Persisted" units="bytes"
+    expires_after="2018-08-30">
+  <obsolete>
+    Removed 2020-04
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Number of bytes in an excessively large log that was discarded at shutdown
+    instead of being saved to disk to retry during next chrome run.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Large Rejected Log was Discarded" units="bytes"
+    expires_after="2018-08-30">
+  <obsolete>
+    Removed 2020-04
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Number of bytes in a log was was rejected by server, and then discarded.
+  </summary>
+</histogram>
+
+<histogram name="UMA.LoadLogsTime" units="ms" expires_after="2015-08-05">
+  <obsolete>
+    Removed as of August 2015. The histograms showed no unexpected slowness, and
+    a profiler is a better tool for identifying any future issues.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The time spent to load (de-serialize) unsent logs from local state, recorded
+    during the MetricsService startup sequence.
+  </summary>
+</histogram>
+
+<histogram name="UMA.LogLoadComplete called" units="units"
+    expires_after="2016-04-09">
+  <obsolete>
+    No longer tracked.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Simple counter of the number of times LogLoadComplete was called (bug
+    demonstration, as we're called more often than once per page load :-/ )
+  </summary>
+</histogram>
+
+<histogram name="UMA.LogUpload.ConnetionType" enum="NetworkConnectionType"
+    expires_after="2016-04-11">
+  <obsolete>
+    Used for analyzing UMA log uploads on cellular connection, but necessary
+    after the analysis is finished.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>gayane@chromium.org</owner>
+  <summary>
+    The network connection type for each successful metrics log upload.
+  </summary>
+</histogram>
+
+<histogram name="UMA.LogUploader.UploadSize" units="bytes"
+    expires_after="2019-01-22">
+  <obsolete>
+    Removed in favor of UMA.LogSize.OnSuccess
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>holte@chromium.org</owner>
+  <summary>
+    Reports total upload length in bytes when the UMA service type is used.
+  </summary>
+</histogram>
+
+<histogram name="UMA.MetricsService.DeletedDirectorySize.Failure" units="KB"
+    expires_after="2018-02-09">
+  <obsolete>
+    This metrics was to provide information for crbug/760317 which has been
+    resolved. Removed February, 2018.
+  </obsolete>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records the size of the metrics directory size, after failing to be deleted.
+    This is a temporary metric that will be removed in M63 or M64.
+  </summary>
+</histogram>
+
+<histogram name="UMA.MetricsService.DeletedDirectorySize.Success" units="KB"
+    expires_after="2018-02-09">
+  <obsolete>
+    This metrics was to provide information for crbug/760317 which has been
+    resolved. Removed February, 2018.
+  </obsolete>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records the size of the metrics directory size, after being successfully
+    deleted. This should always be zero unless there is a bug in the return
+    code. This is a temporary metric that will be removed in M63 or M64.
+  </summary>
+</histogram>
+
+<histogram name="UMA.MetricsService.RecordCurrentHistograms.Time" units="ms"
+    expires_after="2018-02-07">
+  <obsolete>
+    Removed February, 2018 because persistent metrics are fully launched with no
+    observable change in operation time.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent merging, taking snapshots, and
+    recording histograms for reporting to UMA.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Perf.GetData" enum="GetPerfDataOutcome"
+    expires_after="2019-01-14">
+  <obsolete>
+    Removed 01/2019 in b/110205489 being split into ChromeOS.CWP.CollectPerf and
+    ChromeOS.CWP.UploadPerf.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    A count of successes and various failure modes related to collecting and
+    processing performance data obtained through &quot;perf&quot; on Chrome OS.
+  </summary>
+</histogram>
+
+<histogram base="true" name="UMA.PersistentAllocator.Allocs" units="bytes"
+    expires_after="2017-02-16">
+  <obsolete>
+    Removed 2/2017 for Issue 689315 which indicated they weren't being used.
+  </obsolete>
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Size, before padding, of objects allocated from persistent memory. This is
+    updated with every allocation.
+  </summary>
+</histogram>
+
+<histogram name="UMA.PersistentHistograms.TmpRemovals" units="units"
+    expires_after="M77">
+  <obsolete>
+    Data showed many files being deleted during rollout and then tapering off to
+    near zero. Removed 2019/07.
+  </obsolete>
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Number of old .tmp files of the kind that Windows creates and leaves around
+    when trying to rename a file to another one that already exists. See
+    https://crbug.com/934164
+  </summary>
+</histogram>
+
+<histogram name="UMA.ProfilesCount.AfterErase" units="units"
+    expires_after="2016-06-14">
+  <obsolete>
+    Removed as of Jun 2016. The histogram was added for debugging purpose and is
+    not needed anymore.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>yiyaoliu@chromium.org</owner>
+  <summary>
+    Record the number of loaded profiles when a profile is erased from the
+    profiles map kept by profile manager.
+  </summary>
+</histogram>
+
+<histogram name="UMA.ProtoGzipped" enum="Boolean" expires_after="2013-09-13">
+  <obsolete>
+    Removed as of Sep, 2013. Gzipping protobufs is now the default.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>Was the UMA protobuf uploaded earlier compressed or not.</summary>
+</histogram>
+
+<histogram name="UMA.ProtoGzippedKBSaved" units="KB" expires_after="2015-08-06">
+  <obsolete>
+    Removed as of August 2015. See UMA.ProtoCompressionRatio instead.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Kilobytes saved from gzipping the protobufs before uploading them.
+  </summary>
+</histogram>
+
+<histogram name="UMA.StoreLogsTime" units="ms" expires_after="2015-08-05">
+  <obsolete>
+    Removed as of August 2015. The histograms showed no unexpected slowness, and
+    a profiler is a better tool for identifying any future issues.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The time spent to store unsent logs to local state, which is done
+    periodically and also during start up if there was an initial stability log.
+  </summary>
+</histogram>
+
+<histogram name="UMA.SubprocessMetricsProvider.SubprocessCount"
+    units="subprocesses" expires_after="2020-04-05">
+  <obsolete>
+    Removed 2020/04
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    The number of subprocesses from which persistent metrics were collected,
+    logged once with every reporting cycle.
+  </summary>
+</histogram>
+
+<histogram name="UMA.SubprocessMetricsProvider.UntrackedProcesses"
+    enum="SubprocessType" expires_after="M77">
+  <obsolete>
+    Removed 2019/06 after not reporting anything in years.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    The number of subprocesses, by type, from which persistent metrics are NOT
+    collected because there is no information about this (likely new) process
+    type. Process numbers 1000 or greater are &quot;custom&quot; processes used
+    by embedders.
+  </summary>
+</histogram>
+
+<histogram name="UMA.SyntheticTrials.Count" units="units"
+    expires_after="2015-08-06">
+  <obsolete>
+    Removed as of August 2015.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The number of synthetic field trials added to the UMA log when the system
+    profile is recorded. Since this is done prior to capturing the histograms
+    from the current process, this will generally be logged once per UMA log.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Unacceptable_Log_Discarded" units="units"
+    expires_after="2013-07-11">
+  <obsolete>
+    Removed as of May, 2012 (i.e. Chrome 21+). Replaced by the
+    UMA.UploadResponseStatus.XML and UMA.UploadResponseStatus.Protobuf
+    histograms.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>The server returned a 400 code, and we discarded a log.</summary>
+  <details>
+    This tends to indicate that a syntax error is present in a log, such as
+    would appear when a bogus XML tag is included, or the XML is not balanced
+    and well structured.
+  </details>
+</histogram>
+
+<histogram name="UMA.UploadCreation" enum="BooleanSuccess"
+    expires_after="2015-08-06">
+  <obsolete>
+    Removed as of August 2015. This failure case no longer exists.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    For each attempted UMA upload, log whether the upload was successfully
+    constructed. An upload might fail to be constructed, for example, if we try
+    to upload before the system is fully initialized; or if serialization of the
+    data fails.
+  </summary>
+</histogram>
+
+<histogram name="UMA.UploadResponseStatus.Protobuf"
+    enum="UmaUploadResponseStatus" expires_after="2017-04-04">
+  <obsolete>
+    Replaced by UMA.LogUpload.ResponseOrErrorCode
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    For each upload to the protocol buffer (v2) UMA server, log whether the
+    upload was successful, or whether there was an error.
+  </summary>
+</histogram>
+
+<histogram name="UMA.UploadResponseStatus.XML" enum="UmaUploadResponseStatus"
+    expires_after="2014-10-15">
+  <obsolete>
+    Removed 2013. No longer tracked.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    For each upload to the XML (v1) UMA server, log whether the upload was
+    successful, or whether there was an error.
+  </summary>
+</histogram>
+
+<histogram name="UMA.UsedResetVariationsFlag" enum="BooleanUsage"
+    expires_after="2016-04-09">
+  <obsolete>
+    No longer tracked.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Log whether the --reset-variation-state flag was set before the low entropy
+    source was requested.
+  </summary>
+</histogram>
+
+<histogram name="UMA.XMLNodeDumpTime" units="ms" expires_after="2014-10-15">
+  <obsolete>
+    Removed 2013. No longer tracked.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The time spent in converting the XML tree into a character buffer when
+    closing a metrics log (Chrome OS).
+  </summary>
+</histogram>
+
+<histogram name="UMA.XMLWriterDestructionTime" units="ms"
+    expires_after="2014-10-15">
+  <obsolete>
+    Removed 2013. No longer tracked.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The time spent in freeing the XML writer and tree when closing a metrics log
+    (Chrome OS).
+  </summary>
+</histogram>
+
+</histograms>
+
+</histogram-configuration>

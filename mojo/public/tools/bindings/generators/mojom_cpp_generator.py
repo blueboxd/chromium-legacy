@@ -180,9 +180,7 @@ def ShouldInlineStruct(struct):
 
 
 def ShouldInlineUnion(union):
-  return not any(
-      mojom.IsReferenceKind(field.kind) and not mojom.IsStringKind(field.kind)
-           for field in union.fields)
+  return not any(mojom.IsReferenceKind(field.kind) for field in union.fields)
 
 
 def HasPackedMethodOrdinals(interface):

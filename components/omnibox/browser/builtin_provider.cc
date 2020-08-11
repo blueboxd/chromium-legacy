@@ -15,6 +15,7 @@
 #include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/history_provider.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/url_formatter/url_fixer.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 
@@ -29,7 +30,7 @@ BuiltinProvider::BuiltinProvider(AutocompleteProviderClient* client)
 void BuiltinProvider::Start(const AutocompleteInput& input,
                             bool minimal_changes) {
   matches_.clear();
-  if (input.from_omnibox_focus() ||
+  if (input.focus_type() != OmniboxFocusType::DEFAULT ||
       (input.type() == metrics::OmniboxInputType::EMPTY) ||
       (input.type() == metrics::OmniboxInputType::QUERY))
     return;

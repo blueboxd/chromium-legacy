@@ -67,6 +67,10 @@ bool ClipRectsContext::ShouldRespectRootLayerClip() const {
   return respect_overflow_clip == kRespectOverflowClip;
 }
 
+bool ClipRectsContext::ShouldIgnoreRootLayerClipAndScroll() const {
+  return respect_overflow_clip == kIgnoreOverflowClipAndScroll;
+}
+
 static void AdjustClipRectsForChildren(
     const LayoutBoxModelObject& layout_object,
     ClipRects& clip_rects) {
@@ -458,6 +462,9 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
       context.root_fragment->LocalBorderBoxProperties();
   if (context.ShouldRespectRootLayerClip()) {
     destination_property_tree_state.SetClip(context.root_fragment->PreClip());
+  } else if (context.ShouldIgnoreRootLayerClipAndScroll()) {
+    destination_property_tree_state =
+        context.root_fragment->ContentsProperties();
   } else {
     destination_property_tree_state.SetClip(
         context.root_fragment->PostOverflowClip());

@@ -227,8 +227,8 @@ Do not use `auto` when the type would be deduced to be a pointer type; this can
 cause confusion. Instead, specify the "pointer" part outside of `auto`:
 
 ```cpp
-auto item = new Item();  // BAD: auto deduces to Item*, type of |item| is Item*
-auto* item = new Item(); // GOOD: auto deduces to Item, type of |item| is Item*
+auto item = new Item();  // BAD: auto deduces to Item*, type of `item` is Item*
+auto* item = new Item(); // GOOD: auto deduces to Item, type of `item` is Item*
 ```
 
 ## Use `const` correctly

@@ -106,8 +106,8 @@ class WebKioskTest : public OobeBaseTest {
   void WaitNetworkConfigureScreenAndContinueWithOnlineState(
       bool require_network,
       bool auto_close = false) {
-    SetOnline(false);
     OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+    SetOnline(false);
     // Unblock app launch after the network configure screen is shown.
     SetBlockAppLaunch(false);
     test::OobeJS().ExpectPathDisplayed(!require_network,
@@ -187,9 +187,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskTest, AlreadyInstalledOffline) {
 // Presses a network configure dialog accelerator during app launch which will
 // interrupt the startup. We expect this dialog not to require network since the
 // app have not yet been installed.
-// TODO(https://crbug.com/1109651) Flaky test.
-IN_PROC_BROWSER_TEST_F(WebKioskTest,
-                       DISABLED_LaunchWithConfigureAcceleratorPressed) {
+IN_PROC_BROWSER_TEST_F(WebKioskTest, LaunchWithConfigureAcceleratorPressed) {
   SetOnline(true);
   PrepareAppLaunch();
   LaunchApp();

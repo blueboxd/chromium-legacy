@@ -12,7 +12,6 @@ namespace blink {
 
 class NGTableBorders;
 class NGBlockNode;
-class NGBoxFragment;
 
 // Table size distribution algorithms.
 class NGTableAlgorithmUtils {
@@ -25,8 +24,6 @@ class NGTableAlgorithmUtils {
            align == EVerticalAlign::kTextBottom ||
            align == EVerticalAlign::kLength;
   }
-
-  static LayoutUnit CellBaselineFromFragment(const NGBoxFragment& fragment);
 
   static void ComputeColumnInlineConstraints(
       const Vector<NGBlockNode>& columns,

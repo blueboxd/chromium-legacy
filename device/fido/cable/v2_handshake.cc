@@ -6,6 +6,7 @@
 
 #include "base/bits.h"
 #include "base/numerics/safe_math.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
@@ -21,6 +22,7 @@
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -46,6 +48,36 @@ bool ConstructNonce(uint32_t counter, base::span<uint8_t, 12> out_nonce) {
 
 namespace device {
 namespace cablev2 {
+
+namespace tunnelserver {
+GURL GetURL(uint32_t domain, Action action, base::span<const uint8_t, 16> id) {
+  std::string ret = "wss://";
+
+  static const char kBase32Chars[33] = "abcdefghijklmnopqrstuvwxyz234567";
+  ret.push_back(kBase32Chars[(domain >> 17) & 0x1f]);
+  ret.push_back(kBase32Chars[(domain >> 12) & 0x1f]);
+  ret.push_back(kBase32Chars[(domain >> 7) & 0x1f]);
+  ret.push_back(kBase32Chars[(domain >> 2) & 0x1f]);
+  ret.push_back('.');
+
+  static const char kTLDs[4][5] = {"com", "org", "net", "info"};
+  ret += kTLDs[domain & 3];
+
+  switch (action) {
+    case Action::kNew:
+      ret += "/cable/new/";
+      break;
+    case Action::kConnect:
+      ret += "/cable/connect/";
+      break;
+  }
+
+  ret += base::HexEncode(id);
+  const GURL url(ret);
+  DCHECK(url.is_valid());
+  return url;
+}
+}  // namespace tunnelserver
 
 base::Optional<std::vector<uint8_t>> EncodePaddedCBORMap(
     cbor::Value::MapValue map) {

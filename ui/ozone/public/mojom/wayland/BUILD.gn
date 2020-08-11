@@ -5,7 +5,10 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("wayland_mojom") {
-  sources = [ "wayland_buffer_manager.mojom" ]
+  sources = [
+    "wayland_buffer_manager.mojom",
+    "wayland_overlay_config.mojom",
+  ]
 
   public_deps = [
     "//mojo/public/mojom/base",

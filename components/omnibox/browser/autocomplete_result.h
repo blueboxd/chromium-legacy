@@ -32,11 +32,11 @@ class AutocompleteResult {
   typedef ACMatches::iterator iterator;
   using MatchDedupComparator = std::pair<GURL, bool>;
 
-  // Max number of matches we'll show from the various providers. This limit may
-  // be different for zero suggest (i.e. when |input_from_omnibox_focus| is
-  // true) and non zero suggest. Does not take into account the boost
-  // conditionally provided by the omnibox::kDynamicMaxAutocomplete feature.
-  static size_t GetMaxMatches(bool input_from_omnibox_focus = false);
+  // Max number of matches we'll show from the various providers. This limit
+  // may be different for zero suggest and non zero suggest. Does not take into
+  // account the boost conditionally provided by the
+  // omnibox::kDynamicMaxAutocomplete feature.
+  static size_t GetMaxMatches(bool is_zero_suggest = false);
   // Defaults to GetMaxMatches if omnibox::kDynamicMaxAutocomplete is disabled;
   // otherwise returns the boosted dynamic limit.
   static size_t GetDynamicMaxMatches();
@@ -122,7 +122,7 @@ class AutocompleteResult {
   // matches to keep, with respect to configured maximums, URL limits,
   // and relevancies.
   static size_t CalculateNumMatches(
-      bool input_from_omnibox_focus,
+      bool is_zero_suggest,
       const ACMatches& matches,
       const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
   // Determines how many matches to keep depending on how many URLs would be
@@ -162,6 +162,7 @@ class AutocompleteResult {
   size_t EstimateMemoryUsage() const;
 
   // Get a list of comparators used for deduping for the matches in this result.
+  // This is only used for logging.
   std::vector<MatchDedupComparator> GetMatchDedupComparators() const;
 
   // Gets the header string associated with |suggestion_group_id|. Returns an

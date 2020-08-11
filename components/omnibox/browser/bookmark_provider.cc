@@ -21,6 +21,7 @@
 #include "components/omnibox/browser/titled_url_match_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/query_parser/snippet.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/url_constants.h"
 
@@ -40,7 +41,7 @@ void BookmarkProvider::Start(const AutocompleteInput& input,
   TRACE_EVENT0("omnibox", "BookmarkProvider::Start");
   matches_.clear();
 
-  if (input.from_omnibox_focus() || input.text().empty())
+  if (input.focus_type() != OmniboxFocusType::DEFAULT || input.text().empty())
     return;
 
   DoAutocomplete(input);

@@ -50,7 +50,9 @@ extern const char kEnableCrashReporterForTesting[];
 #if defined(OS_ANDROID)
 extern const char kEnableReachedCodeProfiler[];
 extern const char kReachedCodeSamplingIntervalUs[];
-extern const char kOrderfileMemoryOptimization[];
+extern const char kDefaultCountryCodeAtInstall[];
+extern const char kEnableIdleTracing[];
+extern const char kForceFieldTrialParams[];
 #endif
 
 #if defined(OS_LINUX)

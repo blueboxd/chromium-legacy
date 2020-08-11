@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserProxy, decodeString16, mojoString16, NO_SUGGESTION_GROUP_ID} from 'chrome://new-tab-page/new_tab_page.js';
+import {BrowserProxy, decodeString16, mojoString16} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {assertStyle, createTestProxy, createTheme} from 'chrome://test/new_tab_page/test_support.js';
@@ -99,7 +99,7 @@ function createAutocompleteMatch() {
     isSearchType: false,
     swapContentsAndDescription: false,
     supportsDeletion: false,
-    suggestionGroupId: NO_SUGGESTION_GROUP_ID,
+    suggestionGroupId: -1,  // Indicates a missing suggestion group Id.
     contents: mojoString16(''),
     contentsClass: [{offset: 0, style: 0}],
     description: mojoString16(''),
@@ -2006,7 +2006,7 @@ suite('NewTabPageRealboxTest', () => {
 
     await testProxy.handler.whenCalled('toggleSuggestionGroupIdVisibility')
         .then((args) => {
-          assertEquals('100', args.suggestionGroupId);
+          assertEquals(100, args.suggestionGroupId);
         });
     assertEquals(
         1, testProxy.handler.getCallCount('toggleSuggestionGroupIdVisibility'));
@@ -2023,7 +2023,7 @@ suite('NewTabPageRealboxTest', () => {
 
     await testProxy.handler.whenCalled('toggleSuggestionGroupIdVisibility')
         .then((args) => {
-          assertEquals('100', args.suggestionGroupId);
+          assertEquals(100, args.suggestionGroupId);
         });
     assertEquals(
         1, testProxy.handler.getCallCount('toggleSuggestionGroupIdVisibility'));
@@ -2039,7 +2039,7 @@ suite('NewTabPageRealboxTest', () => {
     headerEl.click();
     await testProxy.handler.whenCalled('toggleSuggestionGroupIdVisibility')
         .then((args) => {
-          assertEquals('100', args.suggestionGroupId);
+          assertEquals(100, args.suggestionGroupId);
         });
     assertEquals(
         1, testProxy.handler.getCallCount('toggleSuggestionGroupIdVisibility'));

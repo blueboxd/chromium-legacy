@@ -6,7 +6,18 @@
 
 #include <utility>
 
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/printing/print_servers_provider.h"
+#include "chrome/browser/chromeos/printing/print_servers_provider_factory.h"
 #include "components/policy/policy_constants.h"
+
+namespace {
+
+base::WeakPtr<chromeos::PrintServersProvider> GetDevicePrintServersProvider() {
+  return chromeos::PrintServersProviderFactory::Get()->GetForDevice();
+}
+
+}  // namespace
 
 namespace policy {
 
@@ -21,16 +32,21 @@ DevicePrintServersExternalDataHandler::DevicePrintServersExternalDataHandler(
 DevicePrintServersExternalDataHandler::
     ~DevicePrintServersExternalDataHandler() = default;
 
+void DevicePrintServersExternalDataHandler::OnDeviceExternalDataSet(
+    const std::string& policy) {
+  GetDevicePrintServersProvider()->ClearData();
+}
+
 void DevicePrintServersExternalDataHandler::OnDeviceExternalDataCleared(
     const std::string& policy) {
-  // TODO(b/123933434): Handle when data is cleared.
+  GetDevicePrintServersProvider()->ClearData();
 }
 
 void DevicePrintServersExternalDataHandler::OnDeviceExternalDataFetched(
     const std::string& policy,
     std::unique_ptr<std::string> data,
     const base::FilePath& file_path) {
-  // TODO(b/123933434): Handle |data|.
+  GetDevicePrintServersProvider()->SetData(std::move(data));
 }
 
 void DevicePrintServersExternalDataHandler::Shutdown() {

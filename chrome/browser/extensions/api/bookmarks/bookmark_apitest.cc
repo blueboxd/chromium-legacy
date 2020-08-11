@@ -45,17 +45,14 @@ class BookmarksApiTest : public ExtensionApiTest,
 INSTANTIATE_TEST_SUITE_P(EventPage,
                          BookmarksApiTest,
                          ::testing::Values(ContextType::kEventPage));
+// Flaky on all platforms but Mac.  https://crbug.com/1112903
+#if defined(OS_MAC)
 INSTANTIATE_TEST_SUITE_P(ServiceWorker,
                          BookmarksApiTest,
                          ::testing::Values(ContextType::kServiceWorker));
-
-// Flaky on all platforms but Mac.  https://crbug.com/1112903
-#if defined(OS_MAC)
-#define MAYBE_Bookmarks Bookmarks
-#else
-#define MAYBE_Bookmarks DISABLED_Bookmarks
 #endif
-IN_PROC_BROWSER_TEST_P(BookmarksApiTest, MAYBE_Bookmarks) {
+
+IN_PROC_BROWSER_TEST_P(BookmarksApiTest, Bookmarks) {
   // Add test managed bookmarks to verify that the bookmarks API can read them
   // and can't modify them.
   Profile* profile = browser()->profile();

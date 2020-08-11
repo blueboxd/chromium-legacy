@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
@@ -275,7 +274,6 @@ ChromePasswordManagerClient::~ChromePasswordManagerClient() {
     VLOG(1) << "wc->GetRenderViewHost(): "
             << web_contents()->GetRenderViewHost();
   }
-  VLOG(1) << base::debug::StackTrace();
 #endif
 }
 
@@ -1237,7 +1235,6 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   VLOG(1) << __FUNCTION__ << ": this: " << this;
   VLOG(1) << "wc: " << web_contents();
   VLOG(1) << "wc->GetRenderViewHost(): " << web_contents()->GetRenderViewHost();
-  VLOG(1) << base::debug::StackTrace();
 #endif
   AddToWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
@@ -1268,7 +1265,6 @@ void ChromePasswordManagerClient::WebContentsDestroyed() {
   VLOG(1) << __FUNCTION__ << ": this: " << this;
   VLOG(1) << "wc: " << web_contents();
   VLOG(1) << "wc->GetRenderViewHost(): " << web_contents()->GetRenderViewHost();
-  VLOG(1) << base::debug::StackTrace();
 #endif
   RemoveFromWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
@@ -1281,7 +1277,6 @@ void ChromePasswordManagerClient::OnPaste() {
   VLOG(1) << __FUNCTION__ << ": this: " << this;
   VLOG(1) << "wc: " << web_contents();
   VLOG(1) << "wc->GetRenderViewHost(): " << web_contents()->GetRenderViewHost();
-  VLOG(1) << base::debug::StackTrace();
 #endif
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
@@ -1300,7 +1295,6 @@ void ChromePasswordManagerClient::RenderFrameCreated(
   VLOG(1) << __FUNCTION__ << ": this: " << this;
   VLOG(1) << "rfh: " << render_frame_host;
   VLOG(1) << "rfh->GetView(): " << render_frame_host->GetView();
-  VLOG(1) << base::debug::StackTrace();
 #endif
 
   // TODO(drubery): We should handle input events on subframes separately, so
@@ -1318,7 +1312,6 @@ void ChromePasswordManagerClient::RenderFrameDeleted(
   VLOG(1) << __FUNCTION__ << ": this: " << this;
   VLOG(1) << "rfh: " << render_frame_host;
   VLOG(1) << "rfh->GetView(): " << render_frame_host->GetView();
-  VLOG(1) << base::debug::StackTrace();
 #endif
 
   if (!render_frame_host->GetView())

@@ -916,15 +916,20 @@ class ThreadGroupImplBlockingTest
   // Saturates the thread group with a task that first blocks, waits to be
   // unblocked, then exits.
   void SaturateWithBlockingTasks(
-      const NestedBlockingType& nested_blocking_type) {
+      const NestedBlockingType& nested_blocking_type,
+      TaskPriority priority = TaskPriority::USER_BLOCKING) {
     TestWaitableEvent threads_running;
+
+    const scoped_refptr<TaskRunner> task_runner = test::CreatePooledTaskRunner(
+        {MayBlock(), WithBaseSyncPrimitives(), priority},
+        &mock_pooled_task_runner_delegate_);
 
     RepeatingClosure threads_running_barrier = BarrierClosure(
         kMaxTasks,
         BindOnce(&TestWaitableEvent::Signal, Unretained(&threads_running)));
 
     for (size_t i = 0; i < kMaxTasks; ++i) {
-      task_runner_->PostTask(
+      task_runner->PostTask(
           FROM_HERE, BindLambdaForTesting([this, &threads_running_barrier,
                                            nested_blocking_type]() {
             NestedScopedBlockingCall nested_scoped_blocking_call(
@@ -938,15 +943,20 @@ class ThreadGroupImplBlockingTest
 
   // Saturates the thread group with a task that waits for other tasks without
   // entering a ScopedBlockingCall, then exits.
-  void SaturateWithBusyTasks() {
+  void SaturateWithBusyTasks(
+      TaskPriority priority = TaskPriority::USER_BLOCKING) {
     TestWaitableEvent threads_running;
+
+    const scoped_refptr<TaskRunner> task_runner = test::CreatePooledTaskRunner(
+        {MayBlock(), WithBaseSyncPrimitives(), priority},
+        &mock_pooled_task_runner_delegate_);
 
     RepeatingClosure threads_running_barrier = BarrierClosure(
         kMaxTasks,
         BindOnce(&TestWaitableEvent::Signal, Unretained(&threads_running)));
     // Posting these tasks should cause new workers to be created.
     for (size_t i = 0; i < kMaxTasks; ++i) {
-      task_runner_->PostTask(
+      task_runner->PostTask(
           FROM_HERE, BindLambdaForTesting([this, &threads_running_barrier]() {
             threads_running_barrier.Run();
             busy_threads_continue_.Wait();
@@ -1012,6 +1022,30 @@ TEST_P(ThreadGroupImplBlockingTest, ThreadBlockedUnblocked) {
   UnblockBlockingTasks();
   task_tracker_.FlushForTesting();
   EXPECT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
+}
+
+// Verify that SaturateWithBlockingTasks() of BEST_EFFORT tasks causes max best
+// effort tasks to increase and creates a worker if needed. Also verify that
+// UnblockBlockingTasks() decreases max best effort tasks after an increase.
+TEST_P(ThreadGroupImplBlockingTest, ThreadBlockedUnblockedBestEffort) {
+  CreateAndStartThreadGroup();
+
+  ASSERT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
+  ASSERT_EQ(thread_group_->GetMaxBestEffortTasksForTesting(), kMaxTasks);
+
+  SaturateWithBlockingTasks(GetParam(), TaskPriority::BEST_EFFORT);
+
+  // Forces |kMaxTasks| extra workers to be instantiated by posting tasks. This
+  // should not block forever.
+  SaturateWithBusyTasks(TaskPriority::BEST_EFFORT);
+
+  EXPECT_EQ(thread_group_->NumberOfWorkersForTesting(), 2 * kMaxTasks);
+
+  UnblockBusyTasks();
+  UnblockBlockingTasks();
+  task_tracker_.FlushForTesting();
+  EXPECT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
+  EXPECT_EQ(thread_group_->GetMaxBestEffortTasksForTesting(), kMaxTasks);
 }
 
 // Verify that flooding the thread group with more BEST_EFFORT tasks than
@@ -1284,6 +1318,37 @@ TEST_F(ThreadGroupImplBlockingTest, ThreadBlockUnblockPremature) {
   UnblockBlockingTasks();
   task_tracker_.FlushForTesting();
   EXPECT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
+}
+
+// Verify that if a BEST_EFFORT task enters the scope of a WILL_BLOCK
+// ScopedBlockingCall, but exits the scope before the MayBlock threshold is
+// reached, that the max best effort tasks does not increase.
+TEST_F(ThreadGroupImplBlockingTest, ThreadBlockUnblockPrematureBestEffort) {
+  // Create a thread group with an infinite MayBlock threshold so that a
+  // MAY_BLOCK ScopedBlockingCall never increases the max tasks.
+  CreateAndStartThreadGroup(TimeDelta::Max(),  // |suggested_reclaim_time|
+                            kMaxTasks,         // |max_tasks|
+                            kMaxTasks,         // |max_best_effort_tasks|
+                            nullptr,           // |worker_observer|
+                            TimeDelta::Max()   // |may_block_threshold|
+  );
+  ASSERT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
+  ASSERT_EQ(thread_group_->GetMaxBestEffortTasksForTesting(), kMaxTasks);
+
+  SaturateWithBlockingTasks(NestedBlockingType(BlockingType::WILL_BLOCK,
+                                               OptionalBlockingType::NO_BLOCK,
+                                               BlockingType::WILL_BLOCK),
+                            TaskPriority::BEST_EFFORT);
+  PlatformThread::Sleep(
+      2 * thread_group_->blocked_workers_poll_period_for_testing());
+  EXPECT_GE(thread_group_->NumberOfWorkersForTesting(), kMaxTasks);
+  EXPECT_EQ(thread_group_->GetMaxTasksForTesting(), 2 * kMaxTasks);
+  EXPECT_EQ(thread_group_->GetMaxBestEffortTasksForTesting(), kMaxTasks);
+
+  UnblockBlockingTasks();
+  task_tracker_.FlushForTesting();
+  EXPECT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
+  EXPECT_EQ(thread_group_->GetMaxBestEffortTasksForTesting(), kMaxTasks);
 }
 
 // Verify that if max tasks is incremented because of a MAY_BLOCK

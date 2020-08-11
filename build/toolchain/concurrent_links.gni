@@ -45,21 +45,30 @@ if (concurrent_links == -1) {
     } else {
       _args = [ "--mem_per_link_gb=4" ]
     }
-  } else if (is_android && !is_component_build && symbol_level == 2) {
-    # Full debug symbols require large memory for link.
-    _args = [ "--mem_per_link_gb=25" ]
-  } else if (is_android && !is_debug && !using_sanitizer && is_java_debug &&
-             disable_android_lint && symbol_level < 2) {
+  } else if (is_android) {
     # The link pool is also shared with:
-    # * ProGuard / R8
+    # * R8
+    #   * 10gb per run for 72-core machine MonochromePublic.apk, Aug 2020.
+    #   * 4.5gb per run for 8-core machine MonochromePublic.apk, Aug 2020.
     # * Android Lint
-    # Increase the number of concurrent links for release bots that have
-    # ProGuard and Lint disabled, and that do not enable sanitizers (which use a
-    # lot of RAM).
-    if (symbol_level == 1) {
-      _args = [ "--mem_per_link_gb=6" ]
+    #   * 2gb per run for MonochromePublic.apk, Aug 2020.
+    if (!is_component_build && symbol_level == 2) {
+      # Full debug symbols require large memory for link.
+      _args = [ "--mem_per_link_gb=25" ]
+    } else if (!is_java_debug) {
+      # R8 requires more ram than linker.
+      # TODO(crbug.com/1098333): Do not decrease on bots with low CPU counts.
+      _args = [ "--mem_per_link_gb=10" ]
+    } else if (!is_debug && !using_sanitizer && symbol_level < 2) {
+      # Increase the number of concurrent links for release bots that have
+      # ProGuard and sanitizers disabled (which use a lot of RAM).
+      if (symbol_level == 1) {
+        _args = [ "--mem_per_link_gb=6" ]
+      } else {
+        _args = [ "--mem_per_link_gb=4" ]
+      }
     } else {
-      _args = [ "--mem_per_link_gb=4" ]
+      _args = []
     }
   } else if (is_linux && !is_chromeos && symbol_level == 0) {
     # Memory consumption on link without debug symbols is low on linux.

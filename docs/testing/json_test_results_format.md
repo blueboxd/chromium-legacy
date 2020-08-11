@@ -125,6 +125,7 @@ then is retried and passes, both `is_regression` and `is_unexpected` will be fal
 |  `is_missing_text` | bool | **Optional, web test specific.** If present and true, the test was supposed to have a text baseline to compare against, and we didn't find one.  |
 |  `is_missing_video` | bool | **Optional, web test specific.** If present and true, the test was supposed to have an image baseline to compare against and we didn't find one. |
 |  `is_testharness_test` | bool | **Optional, web test specific.** If present, indicates that the layout test was written using the w3c's test harness and we don't necessarily have any baselines to compare against. |
+|  `is_slow_test` | bool | **Optional, web test specific.** If present and true, the test is expected to take longer than normal to run. |
 |  `reftest_type` | string | **Optional, web test specific.** If present, one of `==` or `!=` to indicate that the test is a "reference test" and the results were expected to match the reference or not match the reference, respectively (only used in layout tests). |
 
 ## Test result types

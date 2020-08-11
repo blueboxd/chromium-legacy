@@ -107,7 +107,7 @@ input[type="password" i]::-internal-reveal:focus {
 }
 
 input[type="range" i] {
-  color: #101010;
+  color: -internal-light-dark(#101010, #ffffff);
 }
 
 input[type="range" i]:disabled {

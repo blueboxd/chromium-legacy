@@ -1295,9 +1295,13 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
       event_handler_(MakeGarbageCollected<EventHandler>(*this)),
       console_(MakeGarbageCollected<FrameConsole>(*this)),
       navigation_disable_count_(0),
+      should_send_resource_timing_info_to_parent_(true),
+      in_view_source_mode_(false),
+      frozen_(false),
+      paused_(false),
+      hidden_(false),
       page_zoom_factor_(ParentPageZoomFactor(this)),
       text_zoom_factor_(ParentTextZoomFactor(this)),
-      in_view_source_mode_(false),
       inspector_task_runner_(InspectorTaskRunner::Create(
           GetTaskRunner(TaskType::kInternalInspector))),
       interface_registry_(interface_registry
@@ -1747,23 +1751,45 @@ WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
 }
 
 void LocalFrame::WasHidden() {
-  intersection_state_ = ViewportIntersectionState();
-  // The initial value of occlusion_state is kUnknown, and if we leave that
-  // value intact then IntersectionObserver will abort processing. The frame is
-  // hidden, so for the purpose of computing visibility, kPossiblyOccluded will
-  // give the desired behavior (i.e., nothing in the iframe will be visible).
-  intersection_state_.occlusion_state = FrameOcclusionState::kPossiblyOccluded;
+  if (hidden_)
+    return;
+  hidden_ = true;
+
   // An iframe may get a "was hidden" notification before it has been attached
-  // to the frame tree; in that case, skip running IntersectionObserver.
-  if (!Owner() || IsProvisional() || !GetDocument() ||
-      !GetDocument()->IsActive()) {
+  // to the frame tree; in that case, skip further processing.
+  if (!Owner() || IsProvisional())
+    return;
+
+  // Mark intersections as dirty, so that child frames will reevaluate their
+  // render throttling status on the next lifecycle update.
+  LocalFrameView* frame_view = View();
+  if (frame_view)
+    frame_view->SetIntersectionObservationState(LocalFrameView::kDesired);
+
+  // If we are tracking occlusion for this frame, and it was not previously
+  // known to be occluded, then we need to force "not visible" notifications to
+  // be sent, since it's unknown whether this frame will run lifecycle updates.
+
+  // Frame was already occluded, nothing more to do.
+  if (intersection_state_.occlusion_state ==
+      FrameOcclusionState::kPossiblyOccluded) {
     return;
   }
-  if (LocalFrameView* frame_view = View())
-    frame_view->ForceUpdateViewportIntersections();
+
+  Document* document = GetDocument();
+  if (frame_view && document && document->IsActive()) {
+    if (auto* controller = GetDocument()->GetIntersectionObserverController()) {
+      if (controller->NeedsOcclusionTracking()) {
+        View()->ForceUpdateViewportIntersections();
+      }
+    }
+  }
 }
 
 void LocalFrame::WasShown() {
+  if (!hidden_)
+    return;
+  hidden_ = false;
   if (LocalFrameView* frame_view = View())
     frame_view->ScheduleAnimation();
 }
@@ -1851,6 +1877,8 @@ void LocalFrame::SetOpener(Frame* opener_frame) {
 }
 
 FrameOcclusionState LocalFrame::GetOcclusionState() const {
+  if (hidden_)
+    return FrameOcclusionState::kPossiblyOccluded;
   // TODO(dcheng): Get rid of this branch for the main frame.
   if (IsMainFrame())
     return FrameOcclusionState::kGuaranteedNotOccluded;

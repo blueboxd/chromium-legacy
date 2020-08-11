@@ -340,6 +340,12 @@ void PrintServersProvider::RegisterProfilePrefs(
 }
 
 // static
+void PrintServersProvider::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kDeviceExternalPrintServersAllowlist);
+}
+
+// static
 std::unique_ptr<PrintServersProvider> PrintServersProvider::Create() {
   return std::make_unique<PrintServersProviderImpl>();
 }

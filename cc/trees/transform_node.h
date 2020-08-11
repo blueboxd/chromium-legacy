@@ -121,6 +121,9 @@ struct CC_EXPORT TransformNode {
   float maximum_animation_scale;
   float starting_animation_scale;
 
+  // Element ID of the document containing this node.
+  ElementId frame_element_id;
+
   bool operator==(const TransformNode& other) const;
 
   void set_to_parent(const gfx::Transform& transform) {

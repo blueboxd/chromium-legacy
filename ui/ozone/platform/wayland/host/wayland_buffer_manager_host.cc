@@ -757,6 +757,27 @@ void WaylandBufferManagerHost::CreateShmBasedBuffer(mojo::PlatformHandle shm_fd,
   connection_->ScheduleFlush();
 }
 
+bool WaylandBufferManagerHost::CommitBufferInternal(
+    WaylandSurface* wayland_surface,
+    uint32_t buffer_id,
+    const gfx::Rect& damage_region) {
+  DCHECK(base::CurrentUIThread::IsSet());
+
+  Surface* surface = GetSurface(wayland_surface);
+  if (!surface || !ValidateBufferIdFromGpu(buffer_id))
+    return false;
+
+  if (!surface->CommitBuffer(buffer_id, damage_region)) {
+    error_message_ =
+        base::StrCat({"Buffer with ", NumberToString(buffer_id),
+                      " id does not exist or failed to be created."});
+  }
+
+  if (!error_message_.empty())
+    TerminateGpuProcess();
+  return true;
+}
+
 void WaylandBufferManagerHost::CommitBuffer(gfx::AcceleratedWidget widget,
                                             uint32_t buffer_id,
                                             const gfx::Rect& damage_region) {
@@ -769,23 +790,28 @@ void WaylandBufferManagerHost::CommitBuffer(gfx::AcceleratedWidget widget,
 
   if (widget == gfx::kNullAcceleratedWidget) {
     error_message_ = "Invalid widget.";
-  } else if (ValidateBufferIdFromGpu(buffer_id)) {
+    TerminateGpuProcess();
+  } else {
     auto* window = connection_->wayland_window_manager()->GetWindow(widget);
     if (!window)
       return;
-    Surface* surface = GetSurface(window->root_surface());
-    if (!surface)
-      return;
-
-    if (!surface->CommitBuffer(buffer_id, damage_region)) {
-      error_message_ =
-          base::StrCat({"Buffer with ", NumberToString(buffer_id),
-                        " id does not exist or failed to be created."});
-    }
+    CommitBufferInternal(window->root_surface(), buffer_id, damage_region);
   }
+}
 
-  if (!error_message_.empty())
-    TerminateGpuProcess();
+void WaylandBufferManagerHost::CommitOverlays(
+    gfx::AcceleratedWidget widget,
+    std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr> overlays) {
+  DCHECK(base::CurrentUIThread::IsSet());
+
+  TRACE_EVENT0("wayland", "WaylandBufferManagerHost::CommitOverlays");
+
+  DCHECK(error_message_.empty());
+  WaylandWindow* window =
+      connection_->wayland_window_manager()->GetWindow(widget);
+  DCHECK(window);
+
+  window->CommitOverlays(overlays);
 }
 
 void WaylandBufferManagerHost::DestroyBuffer(gfx::AcceleratedWidget widget,

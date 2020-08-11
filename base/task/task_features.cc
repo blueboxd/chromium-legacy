@@ -17,9 +17,6 @@ const Feature kNoDetachBelowInitialCapacity = {
 const Feature kMayBlockWithoutDelay = {"MayBlockWithoutDelay",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-const Feature kFixedMaxBestEffortTasks = {"FixedMaxBestEffortTasks",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_WIN) || defined(OS_APPLE)
 const Feature kUseNativeThreadPool = {"UseNativeThreadPool",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

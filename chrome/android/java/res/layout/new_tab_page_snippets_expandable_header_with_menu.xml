@@ -24,7 +24,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
+        android:textAppearance="@style/TextAppearance.TextAccentMediumThick.Secondary"
         android:textDirection="locale" />
 
     <org.chromium.components.browser_ui.widget.listmenu.ListMenuButton

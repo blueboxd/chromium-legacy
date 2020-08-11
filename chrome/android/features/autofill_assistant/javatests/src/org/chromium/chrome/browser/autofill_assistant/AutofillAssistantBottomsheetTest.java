@@ -409,6 +409,7 @@ public class AutofillAssistantBottomsheetTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky test.  crbug.com/1114818")
     public void testBottomSheetAutoCollapseAndExpand() {
         ArrayList<ActionProto> list = new ArrayList<>();
         // Prompt.

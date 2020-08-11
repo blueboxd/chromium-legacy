@@ -42,7 +42,6 @@ import org.hamcrest.core.AllOf;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
@@ -120,9 +119,6 @@ public class InstantStartTest {
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-
-    @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =

@@ -40,6 +40,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
@@ -211,7 +212,8 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
 
   current_page_classification_ = input.current_page_classification();
 
-  if (input.from_omnibox_focus() && IsNTPPage(current_page_classification_)) {
+  if (input.focus_type() != OmniboxFocusType::DEFAULT &&
+      IsNTPPage(current_page_classification_)) {
     LogOmniboxRemoteNoUrlEligibilityOnNTP(current_page_classification_, false,
                                           client());
   }
@@ -609,7 +611,7 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
   const auto page_class = input.current_page_classification();
   const auto input_type = input.type();
 
-  if (!input.from_omnibox_focus())
+  if (input.focus_type() == OmniboxFocusType::DEFAULT)
     return false;
 
   if (client()->IsOffTheRecord())

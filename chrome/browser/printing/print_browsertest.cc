@@ -126,8 +126,8 @@ class NupPrintingTestDelegate : public PrintingMessageFilter::TestDelegate {
   }
 
   // PrintingMessageFilter::TestDelegate:
-  PrintMsg_Print_Params GetPrintParams() override {
-    PrintMsg_Print_Params params;
+  mojom::PrintParams GetPrintParams() override {
+    mojom::PrintParams params;
     params.page_size = gfx::Size(612, 792);
     params.content_size = gfx::Size(540, 720);
     params.printable_area = gfx::Rect(612, 792);

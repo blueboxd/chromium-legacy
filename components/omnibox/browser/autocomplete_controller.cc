@@ -45,6 +45,7 @@
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -364,7 +365,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   const base::string16 old_input_text(input_.text());
   const bool old_allow_exact_keyword_match = input_.allow_exact_keyword_match();
   const bool old_want_asynchronous_matches = input_.want_asynchronous_matches();
-  const bool old_from_omnibox_focus = input_.from_omnibox_focus();
+  const OmniboxFocusType old_focus_type = input_.focus_type();
   input_ = input;
 
   // See if we can avoid rerunning autocomplete when the query hasn't changed
@@ -380,7 +381,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
       (input_.text() == old_input_text) &&
       (input_.allow_exact_keyword_match() == old_allow_exact_keyword_match) &&
       (input_.want_asynchronous_matches() == old_want_asynchronous_matches) &&
-      (input.from_omnibox_focus() == old_from_omnibox_focus);
+      (input_.focus_type() == old_focus_type);
 
   expire_timer_.Stop();
   stop_timer_.Stop();

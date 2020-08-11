@@ -23,12 +23,6 @@ extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
 // instead of waiting for a threshold in the foreground thread group.
 extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
 
-// Under this feature, best effort capacity is never increased.
-// While it's unlikely we'd ship this as-is, this experiment allows us to
-// determine whether blocked worker replacement logic on best-effort tasks has
-// any impact on guardian metrics.
-extern const BASE_EXPORT Feature kFixedMaxBestEffortTasks;
-
 #if defined(OS_WIN) || defined(OS_APPLE)
 #define HAS_NATIVE_THREAD_POOL() 1
 #else

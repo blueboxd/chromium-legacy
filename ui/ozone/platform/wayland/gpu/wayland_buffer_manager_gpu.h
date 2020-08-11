@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/public/mojom/wayland/wayland_buffer_manager.mojom.h"
@@ -33,6 +34,7 @@ namespace ui {
 class WaylandConnection;
 class WaylandSurfaceGpu;
 class WaylandWindow;
+struct OverlayPlane;
 
 // Forwards calls through an associated mojo connection to WaylandBufferManager
 // on the browser process side.
@@ -105,6 +107,12 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
                     uint32_t buffer_id,
                     const gfx::Rect& damage_region);
 
+  // Send overlay configurations for a frame to a WaylandWindow identified by
+  // |widget|.
+  void CommitOverlays(
+      gfx::AcceleratedWidget widget,
+      std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays);
+
   // Asks Wayland to destroy a wl_buffer.
   void DestroyBuffer(gfx::AcceleratedWidget widget, uint32_t buffer_id);
 
@@ -143,6 +151,9 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   void CommitBufferInternal(gfx::AcceleratedWidget widget,
                             uint32_t buffer_id,
                             const gfx::Rect& damage_region);
+  void CommitOverlaysInternal(
+      gfx::AcceleratedWidget widget,
+      std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays);
   void DestroyBufferInternal(gfx::AcceleratedWidget widget, uint32_t buffer_id);
 
   void BindHostInterface(
@@ -213,5 +224,16 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
 };
 
 }  // namespace ui
+
+// This is a specialization of mojo::TypeConverter and has to be in the mojo
+// namespace.
+namespace mojo {
+template <>
+struct TypeConverter<ui::ozone::mojom::WaylandOverlayConfigPtr,
+                     ui::OverlayPlane> {
+  static ui::ozone::mojom::WaylandOverlayConfigPtr Convert(
+      const ui::OverlayPlane& input);
+};
+}  // namespace mojo
 
 #endif  // UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_BUFFER_MANAGER_GPU_H_

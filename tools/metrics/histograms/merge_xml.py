@@ -16,17 +16,19 @@ import histogram_configuration_model
 import populate_enums
 
 
-def GetElementsByTagName(trees, tag):
+def GetElementsByTagName(trees, tag, depth=2):
   """Gets all elements with the specified tag from a set of DOM trees.
 
   Args:
     trees: A list of DOM trees.
     tag: The tag of the elements to find.
+    depth: The depth in the trees by which a match should be found.
+
   Returns:
     A list of DOM nodes with the specified tag.
   """
   iterator = extract_histograms.IterElementsWithTag
-  return list(e for t in trees for e in iterator(t, tag, 2))
+  return list(e for t in trees for e in iterator(t, tag, depth))
 
 
 def GetEnumsNodes(doc, trees):
@@ -53,6 +55,28 @@ def GetEnumsNodes(doc, trees):
   for enums in enums_list:
     populate_enums.PopulateEnumsWithUkmEvents(doc, enums, ukm_events)
   return enums_list
+
+
+def CombineHistogramsSorted(doc, trees):
+  """Sorts <histogram> nodes by name and returns a single <histograms> node.
+
+  Args:
+    doc: The document to create the node in.
+    trees: A list of DOM trees.
+
+  Returns:
+    A list containing a single <histograms> node.
+  """
+  combined_histograms = doc.createElement('histograms')
+
+  histogram_nodes = GetElementsByTagName(trees, 'histogram', depth=3)
+  sorted_histograms = sorted(histogram_nodes,
+                             key=lambda node: node.getAttribute('name').lower())
+
+  for histogram in sorted_histograms:
+    combined_histograms.appendChild(histogram)
+
+  return [combined_histograms]
 
 
 def MakeNodeWithChildren(doc, tag, children):
@@ -82,12 +106,16 @@ def MergeTrees(trees):
     A merged DOM tree.
   """
   doc = xml.dom.minidom.Document()
-  doc.appendChild(MakeNodeWithChildren(doc, 'histogram-configuration',
-    # This can result in the merged document having multiple <enums> and
-    # similar sections, but scripts ignore these anyway.
-    GetEnumsNodes(doc, trees) +
-    GetElementsByTagName(trees, 'histograms') +
-    GetElementsByTagName(trees, 'histogram_suffixes_list')))
+  doc.appendChild(
+      MakeNodeWithChildren(
+          doc,
+          'histogram-configuration',
+          # This can result in the merged document having multiple <enums> and
+          # similar sections, but scripts ignore these anyway.
+          GetEnumsNodes(doc, trees) +
+          # Sort the histograms by name and return a single <histograms> node.
+          CombineHistogramsSorted(doc, trees) +
+          GetElementsByTagName(trees, 'histogram_suffixes_list')))
   return doc
 
 

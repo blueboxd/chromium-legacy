@@ -110,9 +110,13 @@
   if (!UIAccessibilityIsVoiceOverRunning()) {
     // Auto-dismiss the banner after timeout if VoiceOver is off (banner should
     // persist until user explicitly swipes it away).
+    NSTimeInterval timeout =
+        config->is_high_priority()
+            ? kInfobarBannerLongPresentationDurationInSeconds
+            : kInfobarBannerDefaultPresentationDurationInSeconds;
     [self performSelector:@selector(dismissBannerIfReady)
                withObject:nil
-               afterDelay:kInfobarBannerDefaultPresentationDurationInSeconds];
+               afterDelay:timeout];
   }
 }
 

@@ -19,8 +19,60 @@
 #include "device/fido/fido_constants.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
+class GURL;
+
 namespace device {
 namespace cablev2 {
+
+namespace tunnelserver {
+
+// Base32Ord converts |c| into its base32 value, as defined in
+// https://tools.ietf.org/html/rfc4648#section-6.
+constexpr uint32_t Base32Ord(char c) {
+  if (c >= 'a' && c <= 'z') {
+    return c - 'a';
+  } else if (c >= '2' && c <= '7') {
+    return 26 + c - '2';
+  } else {
+    __builtin_unreachable();
+  }
+}
+
+// TLD enumerates the set of possible top-level domains that a tunnel server can
+// use.
+enum class TLD {
+  COM = 0,
+  ORG = 1,
+  NET = 2,
+  INFO = 3,
+};
+
+// EncodeDomain converts a domain name, in the form of a four-letter, base32
+// domain plus a TLD, into a 22-bit value.
+constexpr uint32_t EncodeDomain(const char label[5], TLD tld) {
+  const uint32_t tld_value = static_cast<uint32_t>(tld);
+  if (tld_value > 3 || label[4] != 0) {
+    __builtin_unreachable();
+  }
+  return ((Base32Ord(label[0]) << 15 | Base32Ord(label[1]) << 10 |
+           Base32Ord(label[2]) << 5 | Base32Ord(label[3]))
+          << 2) |
+         tld_value;
+}
+
+// Action enumerates the two possible requests that can be made of a tunnel
+// server: to create a new tunnel or to connect to an existing one.
+enum class Action {
+  kNew,
+  kConnect,
+};
+
+// GetURL converts a 22-bit tunnel server domain (as encoded by |EncodeDomain|),
+// an action, and a tunnel ID, into a WebSockets-based URL.
+COMPONENT_EXPORT(DEVICE_FIDO)
+GURL GetURL(uint32_t domain, Action action, base::span<const uint8_t, 16> id);
+
+}  // namespace tunnelserver
 
 // EncodePaddedCBORMap encodes the given map and pads it to 256 bytes in such a
 // way that |DecodePaddedCBORMap| can decode it. The padding is done on the

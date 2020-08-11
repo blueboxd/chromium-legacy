@@ -158,14 +158,13 @@ void UsbServiceMac::AddDevice(io_service_t device) {
   }
 
   base::mac::ScopedIOPluginInterface<IOUSBDeviceInterface182> device_interface;
-  IOReturn result =
-      (*plugin_interface)
-          ->QueryInterface(
-              plugin_interface.get(),
-              CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID),
-              reinterpret_cast<LPVOID*>(device_interface.InitializeInto()));
+  kr = (*plugin_interface)
+           ->QueryInterface(
+               plugin_interface.get(),
+               CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID),
+               reinterpret_cast<LPVOID*>(device_interface.InitializeInto()));
 
-  if (result || !device_interface) {
+  if (kr != kIOReturnSuccess || !device_interface) {
     USB_LOG(ERROR) << "Couldn’t create a device interface.";
     return;
   }

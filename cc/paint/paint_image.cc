@@ -245,7 +245,7 @@ bool PaintImage::DecodeFromSkImage(void* memory,
   auto image = GetSkImageForFrame(frame_index, client_id);
   DCHECK(image);
   if (color_space) {
-    image = image->makeColorSpace(color_space);
+    image = image->makeColorSpace(color_space, nullptr);
     if (!image)
       return false;
   }

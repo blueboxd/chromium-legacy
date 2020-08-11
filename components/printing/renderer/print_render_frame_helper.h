@@ -30,7 +30,6 @@
 #include "third_party/blink/public/web/web_print_params.h"
 #include "ui/gfx/geometry/size.h"
 
-struct PrintMsg_Print_Params;
 struct PrintMsg_PrintPages_Params;
 
 // RenderViewTest-based tests crash on Android
@@ -341,7 +340,7 @@ class PrintRenderFrameHelper
                            const blink::WebNode& node);
 
   // Platform-specific helper function for rendering page(s) to |metafile|.
-  void PrintPageInternal(const PrintMsg_Print_Params& params,
+  void PrintPageInternal(const mojom::PrintParams& params,
                          int page_number,
                          int page_count,
                          double scale_factor,
@@ -373,7 +372,7 @@ class PrintRenderFrameHelper
   static void ComputePageLayoutInPointsForCss(
       blink::WebLocalFrame* frame,
       int page_index,
-      const PrintMsg_Print_Params& default_params,
+      const mojom::PrintParams& default_params,
       bool ignore_css_margins,
       double* scale_factor,
       mojom::PageSizeMargins* page_layout_in_points);
@@ -393,7 +392,7 @@ class PrintRenderFrameHelper
       const blink::WebLocalFrame& source_frame,
       float webkit_scale_factor,
       const mojom::PageSizeMargins& page_layout_in_points,
-      const PrintMsg_Print_Params& params);
+      const mojom::PrintParams& params);
 
   // Script Initiated Printing ------------------------------------------------
 

@@ -330,8 +330,10 @@ const char kAutofillUseImprovedLabelDisambiguationDescription[] =
 
 const char kAutoScreenBrightnessName[] = "Auto Screen Brightness model";
 const char kAutoScreenBrightnessDescription[] =
-    "Uses Auto Screen Brightness model to adjust screen brightness based on "
-    "ambient light";
+    "Uses Auto Screen Brightness ML model (if it exists) to adjust screen "
+    "brightness based on ambient light. If disabled, screen brightness "
+    "will be controlled by the heuristic method from power (and only on "
+    "devices that have ambient light sensors).";
 
 const char kAvatarToolbarButtonName[] = "Avatar Toolbar Button";
 const char kAvatarToolbarButtonDescription[] =
@@ -501,6 +503,12 @@ const char kDeviceDiscoveryNotificationsName[] =
     "Device Discovery Notifications";
 const char kDeviceDiscoveryNotificationsDescription[] =
     "Device discovery notifications on local network.";
+
+const char kForceEnableDevicesPageName[] = "Force enable chrome://devices page";
+const char kForceEnableDevicesPageDescription[] =
+    "With this flag on, the chrome://devices page will show its previous "
+    "content, instead of a warning message. Note: chrome://devices is "
+    "no longer supported, and this flag will be permanently removed in M88.";
 
 const char kDisableBestEffortTasksName[] = "Skip best effort tasks";
 const char kDisableBestEffortTasksDescription[] =
@@ -1904,6 +1912,10 @@ const char kProminentDarkModeActiveTabTitleDescription[] =
     "Makes the active tab title in dark mode bolder so the active tab is "
     "easier "
     "to identify.";
+
+const char kPromoBrowserCommandsName[] = "NTP Promo Browser Commands";
+const char kPromoBrowserCommandsDescription[] =
+    "Enables executing the browser commands sent by the NTP promos";
 
 const char kPullToRefreshName[] = "Pull-to-refresh gesture";
 const char kPullToRefreshDescription[] =

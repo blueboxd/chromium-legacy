@@ -58,12 +58,9 @@ class SignInObserver : public content::WebContentsObserver {
 
 }  // namespace
 
-void CreateCloudPrintSigninTab(Browser* browser,
-                               bool add_account,
-                               base::OnceClosure callback) {
+void CreateCloudPrintSigninTab(Browser* browser, base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  GURL url = add_account ? cloud_devices::GetCloudPrintAddAccountURL()
-                         : cloud_devices::GetCloudPrintSigninURL();
+  GURL url = cloud_devices::GetCloudPrintAddAccountURL();
   content::WebContents* web_contents = browser->OpenURL(content::OpenURLParams(
       google_util::AppendGoogleLocaleParam(
           url, g_browser_process->GetApplicationLocale()),

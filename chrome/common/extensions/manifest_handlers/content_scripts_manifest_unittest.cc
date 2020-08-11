@@ -104,43 +104,44 @@ TEST_F(ContentScriptsManifestTest, FailLoadingNonUTF8Scripts) {
       error.c_str());
 }
 
-TEST_F(ContentScriptsManifestTest, MatchDataURLs_FeatureEnabled) {
+TEST_F(ContentScriptsManifestTest, MatchOriginAsFallback_FeatureEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kContentScriptsOnDataUrls);
+      extensions_features::kContentScriptsMatchOriginAsFallback);
 
   scoped_refptr<const Extension> extension =
-      LoadAndExpectSuccess("content_script_match_data_urls.json");
+      LoadAndExpectSuccess("content_script_match_origin_as_fallback.json");
   ASSERT_TRUE(extension);
   const UserScriptList& user_scripts =
       ContentScriptsInfo::GetContentScripts(extension.get());
   ASSERT_EQ(3u, user_scripts.size());
 
-  // The first script specifies `"match_data_urls": true`.
-  EXPECT_TRUE(user_scripts[0]->match_data_urls());
-  // The second specifies `"match_data_urls": false`.
-  EXPECT_FALSE(user_scripts[1]->match_data_urls());
-  // The third doesn't specify a value for "match_data_urls"; it should
-  // default to false.
-  EXPECT_FALSE(user_scripts[2]->match_data_urls());
+  // The first script specifies `"match_origin_as_fallback": true`.
+  EXPECT_TRUE(user_scripts[0]->match_origin_as_fallback());
+  // The second specifies `"match_origin_as_fallback": false`.
+  EXPECT_FALSE(user_scripts[1]->match_origin_as_fallback());
+  // The third doesn't specify a value for "match_origin_as_fallback"; it
+  // should default to false.
+  EXPECT_FALSE(user_scripts[2]->match_origin_as_fallback());
 }
 
-TEST_F(ContentScriptsManifestTest, MatchDataURLs_FeatureDisabled) {
+TEST_F(ContentScriptsManifestTest, MatchOriginAsFallback_FeatureDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
-      extensions_features::kContentScriptsOnDataUrls);
+      extensions_features::kContentScriptsMatchOriginAsFallback);
 
   scoped_refptr<const Extension> extension =
-      LoadAndExpectSuccess("content_script_match_data_urls.json");
+      LoadAndExpectSuccess("content_script_match_origin_as_fallback.json");
   ASSERT_TRUE(extension);
   const UserScriptList& user_scripts =
       ContentScriptsInfo::GetContentScripts(extension.get());
   ASSERT_EQ(3u, user_scripts.size());
 
-  // Without the feature enabled, match_data_urls should always be false.
-  EXPECT_FALSE(user_scripts[0]->match_data_urls());
-  EXPECT_FALSE(user_scripts[1]->match_data_urls());
-  EXPECT_FALSE(user_scripts[2]->match_data_urls());
+  // Without the feature enabled, match_origin_as_fallback should always be
+  // false.
+  EXPECT_FALSE(user_scripts[0]->match_origin_as_fallback());
+  EXPECT_FALSE(user_scripts[1]->match_origin_as_fallback());
+  EXPECT_FALSE(user_scripts[2]->match_origin_as_fallback());
 }
 
 }  // namespace extensions

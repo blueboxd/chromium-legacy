@@ -11,13 +11,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "components/policy/proto/device_management_backend.pb.h"
-
-class Profile;
-
-namespace base {
-class DictionaryValue;
-}  // namespace base
 
 namespace extensions {
 
@@ -32,12 +25,6 @@ enum class RetrieveDeviceDataStatus {
   // The requested device data record can not be read.
   kDataRecordRetrievalError,
 };
-
-// Transfer the input from Json file to protobuf. Return nullptr if the input
-// is not valid.
-std::unique_ptr<enterprise_management::ChromeDesktopReportRequest>
-GenerateChromeDesktopReportRequest(const base::DictionaryValue& report,
-                                   Profile* profile);
 
 // Override the path where Endpoint Verification data is stored for tests.
 void OverrideEndpointVerificationDirForTesting(const base::FilePath& path);

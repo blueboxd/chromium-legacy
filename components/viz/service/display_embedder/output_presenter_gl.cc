@@ -347,7 +347,7 @@ void OutputPresenterGL::CommitOverlayPlanes(
 std::vector<OutputPresenter::OverlayData> OutputPresenterGL::ScheduleOverlays(
     SkiaOutputSurface::OverlayList overlays) {
   std::vector<OverlayData> pending_overlays;
-#if defined(OS_ANDROID) || defined(OS_APPLE)
+#if defined(OS_ANDROID) || defined(OS_APPLE) || defined(OS_CHROMEOS)
   // Note while reading through this for-loop that |overlay| has different
   // types on different platforms. On Android and Ozone it is an
   // OverlayCandidate, on Windows it is a DCLayerOverlay, and on macOS it is
@@ -380,7 +380,7 @@ std::vector<OutputPresenter::OverlayData> OutputPresenterGL::ScheduleOverlays(
                                     std::move(shared_image_access));
     }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     if (gl_image) {
       DCHECK(!overlay.gpu_fence_id);
       gl_surface_->ScheduleOverlayPlane(
@@ -400,7 +400,7 @@ std::vector<OutputPresenter::OverlayData> OutputPresenterGL::ScheduleOverlays(
         overlay.shared_state->opacity, overlay.filter));
 #endif
   }
-#endif  //  defined(OS_ANDROID) || defined(OS_APPLE)
+#endif  //  defined(OS_ANDROID) || defined(OS_APPLE) || defined(OS_CHROMEOS)
 
   return pending_overlays;
 }

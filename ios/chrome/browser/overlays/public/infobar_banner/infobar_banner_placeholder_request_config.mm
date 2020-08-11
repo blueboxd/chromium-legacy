@@ -27,5 +27,5 @@ void InfobarBannerPlaceholderRequestConfig::CreateAuxiliaryData(
   PlaceholderRequestConfig::CreateForUserData(user_data);
   InfobarOverlayRequestConfig::CreateForUserData(
       user_data, static_cast<InfoBarIOS*>(infobar_),
-      InfobarOverlayType::kBanner);
+      InfobarOverlayType::kBanner, false);
 }

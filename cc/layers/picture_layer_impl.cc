@@ -1207,8 +1207,10 @@ void PictureLayerImpl::UpdateTilingsForRasterScaleAndTranslation(
   gfx::Vector2dF raster_translation =
       CalculateRasterTranslation(raster_contents_scale_);
   if (high_res) {
-    if (high_res->raster_transform().translation() != raster_translation) {
-      // We should recreate the high res tiling with the new raster translation.
+    if (high_res->raster_transform().translation() != raster_translation &&
+        layer_tree_impl()->IsSyncTree()) {
+      // We should recreate the high res tiling with the new raster translation,
+      // which is for the sync tree only to avoid flickering.
       tilings_->Remove(high_res);
       high_res = nullptr;
     } else if (!adjusted_raster_scale) {

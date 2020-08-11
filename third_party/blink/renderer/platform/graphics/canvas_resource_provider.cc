@@ -294,6 +294,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (IsGpuContextLost())
       return false;
 
+    WillDrawInternal(true);
     RasterInterface()->WritePixels(
         GetBackingMailboxForOverwrite(kOrderingBarrier), x, y,
         GetBackingTextureTarget(), row_bytes, orig_info, pixels);
@@ -333,6 +334,24 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       surface_->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess)
           .glTextureParametersModified();
     }
+  }
+
+  void RestoreBackBuffer(const cc::PaintImage& image) override {
+    if (!use_oop_rasterization_) {
+      CanvasResourceProvider::RestoreBackBuffer(image);
+      return;
+    }
+
+    DCHECK_EQ(image.height(), Size().Height());
+    DCHECK_EQ(image.width(), Size().Width());
+
+    auto sk_image = image.GetSwSkImage();
+    DCHECK(sk_image);
+    SkPixmap map;
+    // We know this SkImage is software backed because it's guaranteed by
+    // PaintImage::GetRasterSkImage above
+    sk_image->peekPixels(&map);
+    WritePixels(map.info(), map.addr(), map.rowBytes(), /*x=*/0, /*y=*/0);
   }
 
  protected:

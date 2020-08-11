@@ -6,7 +6,6 @@ package org.chromium.chrome.test.util.browser;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
-import org.chromium.base.Log;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 
@@ -22,7 +21,6 @@ import java.util.Set;
  */
 public class FieldTrials {
     private static FieldTrials sInstance;
-    private final Set<String> mEnabledFeatures = new HashSet<>();
     private final Map<String, Map<String, String>> mTrialToParamValueMap = new HashMap<>();
     private final Map<String, Set<String>> mTrialToFeatureNameMap = new HashMap<>();
     private static final String TAG = "FieldTrials";
@@ -32,42 +30,6 @@ public class FieldTrials {
     public static FieldTrials getInstance() {
         if (sInstance == null) sInstance = new FieldTrials();
         return sInstance;
-    }
-
-    /**
-     * Collects field trial info from the CommandLine.
-     */
-    public void collectFieldTrials() {
-        CommandLine commandLine = CommandLine.getInstance();
-        String forceFieldTrials =
-                commandLine.getSwitchValue(BaseSwitches.FORCE_FIELD_TRIALS_SWITCH);
-        String forceFieldTrialParams =
-                commandLine.getSwitchValue(BaseSwitches.FORCE_FIELD_TRIAL_PARAMS_SWITCH);
-        String enableFeatures = commandLine.getSwitchValue(BaseSwitches.ENABLE_FEATURES);
-
-        Set<String> enableFeaturesSet = new HashSet<>();
-        if (enableFeatures != null) {
-            Collections.addAll(enableFeaturesSet, enableFeatures.split(","));
-            for (String enabledFeature : enableFeaturesSet) {
-                mEnabledFeatures.add(cleanupFeatureName(enabledFeature));
-            }
-        }
-
-        if (forceFieldTrials == null || forceFieldTrialParams == null || enableFeatures == null) {
-            return;
-        }
-
-        try {
-            updateTrialToParamValueMap(forceFieldTrialParams.split(","));
-            updateTrialFeatureMap(forceFieldTrials.split("/"), enableFeaturesSet);
-        } catch (Exception e) {
-            Log.e(TAG,
-                    "The format of field trials parameters declared isn't correct:"
-                            + BaseSwitches.FORCE_FIELD_TRIALS_SWITCH + "=" + forceFieldTrials + ", "
-                            + BaseSwitches.FORCE_FIELD_TRIAL_PARAMS_SWITCH + "="
-                            + forceFieldTrialParams + ".");
-            return;
-        }
     }
 
     private static String cleanupFeatureName(String featureNameWithTrial) {
@@ -145,20 +107,46 @@ public class FieldTrials {
      * in CachedFeatureFlags.
      */
     public void applyFieldTrials() {
-        for (String featureName : mEnabledFeatures) {
-            CachedFeatureFlags.setForTesting(featureName, true);
+        CommandLine commandLine = CommandLine.getInstance();
+        String forceFieldTrials = commandLine.getSwitchValue(BaseSwitches.FORCE_FIELD_TRIALS);
+        String forceFieldTrialParams =
+                commandLine.getSwitchValue(BaseSwitches.FORCE_FIELD_TRIAL_PARAMS);
+        String enableFeatures = commandLine.getSwitchValue(BaseSwitches.ENABLE_FEATURES);
+
+        Set<String> enableFeaturesSet = new HashSet<>();
+        if (enableFeatures != null) {
+            Collections.addAll(enableFeaturesSet, enableFeatures.split(","));
+            for (String enabledFeature : enableFeaturesSet) {
+                CachedFeatureFlags.setForTesting(cleanupFeatureName(enabledFeature), true);
+            }
         }
 
-        for (Map.Entry<String, Map<String, String>> entry : mTrialToParamValueMap.entrySet()) {
-            String trialName = entry.getKey();
-            Set<String> featureSet = mTrialToFeatureNameMap.get(trialName);
-            for (String featureName : featureSet) {
-                Map<String, String> params = entry.getValue();
-                for (Map.Entry<String, String> param : params.entrySet()) {
-                    CachedFieldTrialParameter.setForTesting(
-                            featureName, param.getKey(), param.getValue());
+        if (forceFieldTrials == null || forceFieldTrialParams == null || enableFeatures == null) {
+            return;
+        }
+
+        try {
+            updateTrialToParamValueMap(forceFieldTrialParams.split(","));
+            updateTrialFeatureMap(forceFieldTrials.split("/"), enableFeaturesSet);
+
+            for (Map.Entry<String, Map<String, String>> entry : mTrialToParamValueMap.entrySet()) {
+                String trialName = entry.getKey();
+                Set<String> featureSet = mTrialToFeatureNameMap.get(trialName);
+                if (featureSet == null) continue;
+                for (String featureName : featureSet) {
+                    Map<String, String> params = entry.getValue();
+                    for (Map.Entry<String, String> param : params.entrySet()) {
+                        CachedFieldTrialParameter.setForTesting(
+                                featureName, param.getKey(), param.getValue());
+                    }
                 }
             }
+        } catch (Exception e) {
+            assert false : e.toString() + "\n"
+                    + "The format of field trials parameters declared isn't correct:"
+                    + BaseSwitches.FORCE_FIELD_TRIALS + "=" + forceFieldTrials + ", "
+                    + BaseSwitches.FORCE_FIELD_TRIAL_PARAMS + "=" + forceFieldTrialParams + ", "
+                    + BaseSwitches.ENABLE_FEATURES + "=" + enableFeatures + ".";
         }
     }
 

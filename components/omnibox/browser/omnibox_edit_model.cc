@@ -43,6 +43,7 @@
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -627,7 +628,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     input.set_keyword_mode_entry_method(input_.keyword_mode_entry_method());
     input.set_allow_exact_keyword_match(input_.allow_exact_keyword_match());
     input.set_want_asynchronous_matches(input_.want_asynchronous_matches());
-    input.set_from_omnibox_focus(input_.from_omnibox_focus());
+    input.set_focus_type(input_.focus_type());
     input_ = input;
     AutocompleteMatch url_match(
         autocomplete_controller()->history_url_provider()->SuggestExactInput(
@@ -767,7 +768,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   // dropdown is closed or the user used a paste-and-go action.  (In most
   // cases when this happens, the user never modified the omnibox.)
   const bool popup_open = PopupIsOpen();
-  if (input_.from_omnibox_focus() || !popup_open || !pasted_text.empty()) {
+  if (input_.focus_type() != OmniboxFocusType::DEFAULT || !popup_open ||
+      !pasted_text.empty()) {
     const base::TimeDelta default_time_delta =
         base::TimeDelta::FromMilliseconds(-1);
     elapsed_time_since_user_first_modified_omnibox = default_time_delta;
@@ -789,7 +791,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   fake_single_entry_result.AppendMatches(input_, fake_single_entry_matches);
 
   OmniboxLog log(
-      input_.from_omnibox_focus() ? base::string16() : input_text,
+      input_.focus_type() != OmniboxFocusType::DEFAULT ? base::string16()
+                                                       : input_text,
       just_deleted_text_, input_.type(), is_keyword_selected(),
       keyword_mode_entry_method_, popup_open, dropdown_ignored ? 0 : index,
       disposition, !pasted_text.empty(),
@@ -1116,7 +1119,7 @@ void OmniboxEditModel::StartZeroSuggestRequest(
   input_.set_current_title(client_->GetTitle());
   // TODO(tommycli): Distinguish between on-focus and on-clobber ZeroSuggest
   // requests.
-  input_.set_from_omnibox_focus(true);
+  input_.set_focus_type(OmniboxFocusType::ON_FOCUS);
   autocomplete_controller()->Start(input_);
 }
 

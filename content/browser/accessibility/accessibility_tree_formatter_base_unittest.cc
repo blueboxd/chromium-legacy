@@ -70,6 +70,10 @@ TEST_F(AccessibilityTreeFormatterBaseTest, ParseProperty) {
   ParseAndCheck("Text({dict: [1, 2]})", "Text({}(dict: [](1, 2)))");
   ParseAndCheck("Text({dict: ValueFor(1)})", "Text({}(dict: ValueFor(1)))");
 
+  // Nested arguments
+  ParseAndCheck("AXIndexForTextMarker(AXTextMarkerForIndex(0))",
+                "AXIndexForTextMarker(AXTextMarkerForIndex(0))");
+
   // Line indexes filter.
   ParseAndCheck(":3,:5;AXDOMClassList", ":3,:5;AXDOMClassList");
 

@@ -1538,9 +1538,9 @@ TEST_P(FrameThrottlingTest, NestedFramesInRemoteFrameHiddenAndShown) {
   LocalFrameRoot().FrameWidget()->Resize(WebSize(300, 200));
   LocalFrameRoot().FrameWidget()->SetRemoteViewportIntersection(intersection);
 
-  auto* root_document = LocalFrameRoot().GetFrame()->GetDocument();
+  auto* root_frame = LocalFrameRoot().GetFrame();
   auto* frame_document =
-      To<HTMLIFrameElement>(root_document->getElementById("frame"))
+      To<HTMLIFrameElement>(root_frame->GetDocument()->getElementById("frame"))
           ->contentDocument();
   auto* frame_view = frame_document->View();
   auto* child_document =
@@ -1552,8 +1552,17 @@ TEST_P(FrameThrottlingTest, NestedFramesInRemoteFrameHiddenAndShown) {
   EXPECT_FALSE(frame_view->CanThrottleRendering());
   EXPECT_FALSE(child_view->CanThrottleRendering());
 
-  // Hide the frame without any other change.
+  // Hide the frame without any other change. The new throttling state will not
+  // be computed until the next lifecycle update; but merely hiding the frame
+  // will not schedule an update, so we must force one for the purpose of
+  // testing.
   LocalFrameRoot().WasHidden();
+  root_frame->View()->ScheduleAnimation();
+  CompositeFrame();
+  EXPECT_EQ(root_frame->RemoteViewportIntersection(), IntRect(0, 0, 100, 100));
+  EXPECT_TRUE(root_frame->View()->CanThrottleRenderingForPropagation());
+  EXPECT_EQ(root_frame->GetOcclusionState(),
+            FrameOcclusionState::kPossiblyOccluded);
   EXPECT_TRUE(frame_view->CanThrottleRendering());
   EXPECT_TRUE(child_view->CanThrottleRendering());
   EXPECT_FALSE(Compositor().NeedsBeginFrame());
@@ -1569,6 +1578,10 @@ TEST_P(FrameThrottlingTest, NestedFramesInRemoteFrameHiddenAndShown) {
   LocalFrameRoot().WasShown();
   LocalFrameRoot().FrameWidget()->SetRemoteViewportIntersection(intersection);
   CompositeFrame();
+  EXPECT_EQ(root_frame->RemoteViewportIntersection(), IntRect(0, 0, 100, 100));
+  EXPECT_FALSE(root_frame->View()->CanThrottleRenderingForPropagation());
+  EXPECT_NE(root_frame->GetOcclusionState(),
+            FrameOcclusionState::kPossiblyOccluded);
   EXPECT_FALSE(frame_view->CanThrottleRendering());
   // The child frame's throtting status is not updated because the parent
   // document has pending visual update.

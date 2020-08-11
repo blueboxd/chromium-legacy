@@ -32,7 +32,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
-import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.DeveloperModeUtils;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.crash.CrashInfo;
@@ -40,6 +39,7 @@ import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
 import org.chromium.android_webview.common.crash.CrashUploadUtil;
 import org.chromium.android_webview.devui.util.CrashBugUrlFactory;
 import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
+import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
@@ -145,14 +145,13 @@ public class CrashesListFragment extends DevUiBaseFragment {
     }
 
     private boolean isCrashUploadsEnabledFromCommandLine() {
-        return CommandLine.getInstance().hasSwitch(
-                AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+        return CommandLine.getInstance().hasSwitch(BaseSwitches.ENABLE_CRASH_REPORTER_FOR_TESTING);
     }
 
     private boolean isCrashUploadsEnabledFromFlagsUi() {
         if (DeveloperModeUtils.isDeveloperModeEnabled(mContext.getPackageName())) {
             Boolean flagValue = DeveloperModeUtils.getFlagOverrides(mContext.getPackageName())
-                                        .get(AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+                                        .get(BaseSwitches.ENABLE_CRASH_REPORTER_FOR_TESTING);
             return Boolean.TRUE.equals(flagValue);
         }
         return false;

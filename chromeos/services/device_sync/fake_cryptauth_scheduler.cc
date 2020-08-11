@@ -23,6 +23,7 @@ void FakeCryptAuthScheduler::RequestEnrollment(
     const base::Optional<std::string>& session_id) {
   DCHECK(HasEnrollmentSchedulingStarted());
   is_waiting_for_enrollment_result_ = true;
+  ++num_enrollment_requests_;
 
   cryptauthv2::ClientMetadata client_metadata;
   client_metadata.set_retry_count(num_consecutive_enrollment_failures_);
@@ -39,6 +40,7 @@ void FakeCryptAuthScheduler::RequestDeviceSync(
     const base::Optional<std::string>& session_id) {
   DCHECK(HasDeviceSyncSchedulingStarted());
   is_waiting_for_device_sync_result_ = true;
+  ++num_sync_requests_;
 
   cryptauthv2::ClientMetadata client_metadata;
   client_metadata.set_retry_count(num_consecutive_device_sync_failures_);

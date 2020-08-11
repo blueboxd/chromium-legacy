@@ -1070,21 +1070,21 @@ TEST(HttpUtilTest, ParseRetryAfterHeader) {
     const char* retry_after_string;
     bool expected_return_value;
     base::TimeDelta expected_retry_after;
-  } tests[] = {
-    { "", false, base::TimeDelta() },
-    { "-3", false, base::TimeDelta() },
-    { "-2", false, base::TimeDelta() },
-    { "-1", false, base::TimeDelta() },
-    { "0", true, base::TimeDelta::FromSeconds(0) },
-    { "1", true, base::TimeDelta::FromSeconds(1) },
-    { "2", true, base::TimeDelta::FromSeconds(2) },
-    { "3", true, base::TimeDelta::FromSeconds(3) },
-    { "60", true, base::TimeDelta::FromSeconds(60) },
-    { "3600", true, base::TimeDelta::FromSeconds(3600) },
-    { "86400", true, base::TimeDelta::FromSeconds(86400) },
-    { "Thu, 1 Jan 2015 12:34:56 GMT", true, later - now },
-    { "Mon, 1 Jan 1900 12:34:56 GMT", false, base::TimeDelta() }
-  };
+  } tests[] = {{"", false, base::TimeDelta()},
+               {"-3", false, base::TimeDelta()},
+               {"-2", false, base::TimeDelta()},
+               {"-1", false, base::TimeDelta()},
+               {"+0", false, base::TimeDelta()},
+               {"+1", false, base::TimeDelta()},
+               {"0", true, base::TimeDelta::FromSeconds(0)},
+               {"1", true, base::TimeDelta::FromSeconds(1)},
+               {"2", true, base::TimeDelta::FromSeconds(2)},
+               {"3", true, base::TimeDelta::FromSeconds(3)},
+               {"60", true, base::TimeDelta::FromSeconds(60)},
+               {"3600", true, base::TimeDelta::FromSeconds(3600)},
+               {"86400", true, base::TimeDelta::FromSeconds(86400)},
+               {"Thu, 1 Jan 2015 12:34:56 GMT", true, later - now},
+               {"Mon, 1 Jan 1900 12:34:56 GMT", false, base::TimeDelta()}};
 
   for (size_t i = 0; i < base::size(tests); ++i) {
     base::TimeDelta retry_after;

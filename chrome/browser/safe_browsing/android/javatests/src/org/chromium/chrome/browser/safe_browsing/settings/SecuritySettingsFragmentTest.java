@@ -17,7 +17,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -56,9 +55,6 @@ public class SecuritySettingsFragmentTest {
     @Rule
     public SettingsActivityTestRule<SecuritySettingsFragment> mTestRule =
             new SettingsActivityTestRule<>(SecuritySettingsFragment.class);
-
-    @Rule
-    public TestRule mFeatureProcessor = new Features.InstrumentationProcessor();
 
     @Mock
     private SettingsLauncher mSettingsLauncher;

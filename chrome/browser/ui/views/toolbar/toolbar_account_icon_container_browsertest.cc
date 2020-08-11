@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
+#include "base/auto_reset.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -14,6 +17,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "content/public/test/browser_test.h"
+#include "ui/gfx/animation/animation.h"
+#include "ui/gfx/animation/animation_test_api.h"
 
 // TODO(crbug.com/1061637): Clean this and the same code in ukm_browsertest.
 // Maybe move them to InProcessBrowserTest.
@@ -86,6 +91,10 @@ class ToolbarAccountIconContainerViewBrowserTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
+      animation_mode_reset_ = gfx::AnimationTestApi::SetRichAnimationRenderMode(
+          gfx::Animation::RichAnimationRenderMode::FORCE_DISABLED);
 };
 
 IN_PROC_BROWSER_TEST_F(ToolbarAccountIconContainerViewBrowserTest,

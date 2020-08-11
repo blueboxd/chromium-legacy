@@ -27,7 +27,7 @@ PromoBrowserCommandHandler::PromoBrowserCommandHandler(
     : profile_(profile),
       command_updater_(std::make_unique<CommandUpdaterImpl>(this)),
       page_handler_(this, std::move(pending_page_handler)) {
-  if (!base::FeatureList::IsEnabled(features::kEnablePromoBrowserCommands))
+  if (!base::FeatureList::IsEnabled(features::kPromoBrowserCommands))
     return;
 
   // Explicitly enable supported commands.

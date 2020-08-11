@@ -55,6 +55,7 @@ public class IncognitoDescriptionView extends LinearLayout {
     private static final int BULLETPOINTS_HORIZONTAL_SPACING_DP = 40;
     private static final int CONTENT_WIDTH_DP = 600;
     private static final int WIDE_LAYOUT_THRESHOLD_DP = 720;
+    private static final int COOKIES_CONTROL_MARGIN_TOP_DP = 24;
 
     /** Default constructor needed to inflate via XML. */
     public IncognitoDescriptionView(Context context, AttributeSet attrs) {
@@ -108,7 +109,7 @@ public class IncognitoDescriptionView extends LinearLayout {
         mSubtitle = findViewById(R.id.new_tab_incognito_subtitle);
         mLearnMore = findViewById(R.id.learn_more);
         mParagraphs = new TextView[] {mSubtitle, findViewById(R.id.new_tab_incognito_features),
-                findViewById(R.id.new_tab_incognito_warning), mLearnMore};
+                findViewById(R.id.new_tab_incognito_warning)};
         mBulletpointsContainer = findViewById(R.id.new_tab_incognito_bulletpoints_container);
         mCookieControlsCard = findViewById(R.id.cookie_controls_card);
         mCookieControlsToggle = findViewById(R.id.cookie_controls_card_toggle);
@@ -255,6 +256,20 @@ public class IncognitoDescriptionView extends LinearLayout {
                     .setMargins(0, spacingPx, rightMarginPx, 0);
             paragraph.setLayoutParams(paragraph.getLayoutParams()); // Apply the new layout.
         }
+
+        // Set up margins of learn more link to maintain a constant space between link text
+        // and other views.
+        int innerSpacing = (int) ((getContext().getResources().getDimensionPixelSize(
+                                           R.dimen.min_touch_target_size)
+                                          - mLearnMore.getTextSize())
+                / 2);
+        int learnMoreSpacingTop = spacingPx - innerSpacing;
+        int learnMoreSpacingBottom =
+                dpToPx(getContext(), COOKIES_CONTROL_MARGIN_TOP_DP) - innerSpacing;
+        LinearLayout.LayoutParams params = (LayoutParams) mLearnMore.getLayoutParams();
+        params.setMargins(
+                0, Math.max(learnMoreSpacingTop, 0), 0, Math.max(learnMoreSpacingBottom, 0));
+        mLearnMore.requestLayout();
 
         ((LinearLayout.LayoutParams) mHeader.getLayoutParams()).setMargins(0, spacingPx, 0, 0);
         mHeader.setLayoutParams(mHeader.getLayoutParams()); // Apply the new layout.

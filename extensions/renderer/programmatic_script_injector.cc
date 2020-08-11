@@ -83,7 +83,7 @@ PermissionsData::PageAccess ProgrammaticScriptInjector::CanExecuteOnFrame(
   GURL effective_document_url =
       ScriptContext::GetEffectiveDocumentURLForInjection(
           frame, frame->GetDocument().Url(), params_->match_about_blank,
-          /*match_data_urls=*/false);
+          /*match_origin_as_fallback=*/false);
   if (params_->is_web_view) {
     if (frame->Parent()) {
       // This is a subframe inside <webview>, so allow it.

@@ -43,7 +43,8 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
                               const GURL& page_url,
                               api::feedback_private::FeedbackFlow flow,
                               bool from_assistant = false,
-                              bool include_bluetooth_logs = false);
+                              bool include_bluetooth_logs = false,
+                              bool from_kaleidoscope = false);
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<FeedbackPrivateAPI>*

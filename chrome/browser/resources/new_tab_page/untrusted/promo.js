@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     el.addEventListener('click', (event) => {
       const browserCommandFound =
-          event.target.getAttribute('href').match(/^command:([1-9][0-9]*)$/);
+          event.target.getAttribute('href').match(/^command:(\d+)$/);
       if (browserCommandFound) {
         event.preventDefault();  // Prevent navigation attempt.
         window.parent.postMessage(

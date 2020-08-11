@@ -12,6 +12,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.AnnotationRule;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
@@ -145,16 +146,10 @@ public class Features {
 
     /**
      * Feature processor intended to be used in instrumentation tests with native library, like
-     * {@link ChromeBrowserTestRule}. The collected feature states would be applied to
-     * {@link CommandLine}.
+     * those run with {@link ChromeJUnit4ClassRunner}. The collected feature states would be applied
+     * to {@link CommandLine}.
      */
     public static class InstrumentationProcessor extends Processor {
-        @Override
-        protected void collectFeatures() {
-            super.collectFeatures();
-            FieldTrials.getInstance().collectFieldTrials();
-        }
-
         @Override
         protected void applyFeatures() {
             getInstance().applyForInstrumentation();

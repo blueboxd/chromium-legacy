@@ -28,6 +28,7 @@ class DevicePrintServersExternalDataHandler
   ~DevicePrintServersExternalDataHandler() override;
 
   // DeviceCloudExternalDataPolicyHandler:
+  void OnDeviceExternalDataSet(const std::string& policy) override;
   void OnDeviceExternalDataCleared(const std::string& policy) override;
   void OnDeviceExternalDataFetched(const std::string& policy,
                                    std::unique_ptr<std::string> data,

@@ -52,6 +52,12 @@ void InfoBarIOS::set_accepted(bool accepted) {
   }
 }
 
+void InfoBarIOS::set_high_priority(bool high_priority) {
+  if (high_priority_ == high_priority)
+    return;
+  high_priority_ = high_priority;
+}
+
 id<InfobarUIDelegate> InfoBarIOS::InfobarUIDelegate() {
   DCHECK(ui_delegate_);
   return ui_delegate_;

@@ -2914,25 +2914,6 @@
             ]
         }
     ],
-    "FixedMaxBestEffortTasks": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "FixedMaxBestEffortTasks"
-                    ]
-                }
-            ]
-        }
-    ],
     "FlexNG": [
         {
             "platforms": [
@@ -3543,6 +3524,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IOSLegacyTLSInterstitial"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSLookalikeUrlInterstitial": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IOSLookalikeUrlNavigationSuggestionsUI"
                     ]
                 }
             ]

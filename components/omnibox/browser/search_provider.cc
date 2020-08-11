@@ -35,6 +35,7 @@
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search/search.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -235,7 +236,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
   // Unless warming up the suggest server on focus, SearchProvider doesn't do
   // do anything useful for on-focus inputs or empty inputs.  Exit early.
   if (!base::FeatureList::IsEnabled(omnibox::kSearchProviderWarmUpOnFocus) &&
-      (input.from_omnibox_focus() ||
+      (input.focus_type() != OmniboxFocusType::DEFAULT ||
        input.type() == metrics::OmniboxInputType::EMPTY)) {
     Stop(true, false);
     return;
@@ -279,7 +280,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   providers_.set(default_provider_keyword, keyword_provider_keyword);
 
-  if (input.from_omnibox_focus()) {
+  if (input.focus_type() != OmniboxFocusType::DEFAULT) {
     // Don't display any suggestions for on-focus requests.
     DCHECK(done_);
     ClearAllResults();
@@ -307,7 +308,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   // Don't search the query history database for on-focus inputs; these inputs
   // should only be used to warm up the suggest server.
-  if (!input.from_omnibox_focus()) {
+  if (input.focus_type() == OmniboxFocusType::DEFAULT) {
     DoHistoryQuery(minimal_changes);
     // Answers needs scored history results before any suggest query has been
     // started, since the query for answer-bearing results needs additional
@@ -426,7 +427,7 @@ void SearchProvider::OnURLLoadComplete(
   // that's left to ZeroSuggestProvider and friends.  Furthermore, it's not
   // clear if the suggest server will send back sensible results to the
   // request we're constructing here for on-focus inputs.
-  if (!input_.from_omnibox_focus() && request_succeeded) {
+  if (input_.focus_type() == OmniboxFocusType::DEFAULT && request_succeeded) {
     std::unique_ptr<base::Value> data(
         SearchSuggestionParser::DeserializeJsonData(
             SearchSuggestionParser::ExtractJsonData(source,
@@ -528,7 +529,7 @@ void SearchProvider::UpdateMatches() {
   // enforce constraints about inlinability in this case.  Indeed, most of
   // these steps would be bad, as they'd add a suggestion of some form, thus
   // opening the dropdown (which we do not want to happen).
-  if (!input_.from_omnibox_focus()) {
+  if (input_.focus_type() == OmniboxFocusType::DEFAULT) {
     PersistTopSuggestions(&default_results_);
     PersistTopSuggestions(&keyword_results_);
     ConvertResultsToAutocompleteMatches();
@@ -923,7 +924,8 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
       template_url, search_terms_data, input.current_page_classification(),
       &empty_search_term_args);
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
-      input.from_omnibox_focus() ? empty_search_term_args : search_term_args,
+      input.focus_type() != OmniboxFocusType::DEFAULT ? empty_search_term_args
+                                                      : search_term_args,
       search_terms_data));
   if (!suggest_url.is_valid())
     return nullptr;

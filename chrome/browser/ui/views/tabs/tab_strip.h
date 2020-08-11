@@ -233,6 +233,9 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns the NewTabButton.
   NewTabButton* new_tab_button() { return new_tab_button_; }
 
+  // Returns the TabSearchButton.
+  NewTabButton* tab_search_button() { return tab_search_button_; }
+
   // Returns the index of the specified view in the model coordinate system, or
   // -1 if view is closing or not a tab.
   int GetModelIndexOf(const TabSlotView* view) const;

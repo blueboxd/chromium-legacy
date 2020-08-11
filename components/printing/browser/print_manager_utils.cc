@@ -5,6 +5,7 @@
 #include "components/printing/browser/print_manager_utils.h"
 
 #include "components/printing/browser/print_composite_client.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "printing/mojom/print.mojom.h"
@@ -45,7 +46,7 @@ void CreateCompositeClientIfNeeded(content::WebContents* web_contents,
 }
 
 void RenderParamsFromPrintSettings(const PrintSettings& settings,
-                                   PrintMsg_Print_Params* params) {
+                                   mojom::PrintParams* params) {
   params->page_size = settings.page_setup_device_units().physical_size();
   params->content_size.SetSize(
       settings.page_setup_device_units().content_area().width(),

@@ -26,6 +26,7 @@
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/in_memory_url_index_test_util.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engines_test_util.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -116,7 +117,7 @@ class LocalHistoryZeroSuggestProviderTest
 
   // Creates an input using the provided information and queries the provider.
   void StartProviderAndWaitUntilDone(const std::string& text,
-                                     bool from_omnibox_focus,
+                                     OmniboxFocusType focus_type,
                                      PageClassification page_classification);
 
   // Verifies that provider matches are as expected.
@@ -178,12 +179,12 @@ void LocalHistoryZeroSuggestProviderTest::WaitForHistoryService() {
 
 void LocalHistoryZeroSuggestProviderTest::StartProviderAndWaitUntilDone(
     const std::string& text = "",
-    bool from_omnibox_focus = true,
+    OmniboxFocusType focus_type = OmniboxFocusType::ON_FOCUS,
     PageClassification page_classification =
         metrics::OmniboxEventProto::NTP_REALBOX) {
   AutocompleteInput input(base::ASCIIToUTF16(text), page_classification,
                           TestSchemeClassifier());
-  input.set_from_omnibox_focus(from_omnibox_focus);
+  input.set_focus_type(focus_type);
   provider_->Start(input, false);
   if (!provider_->done()) {
     provider_run_loop_ = std::make_unique<base::RunLoop>();
@@ -230,7 +231,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Input) {
   histogram_tester.ExpectTotalCount(
       "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractionTime", 0);
 
-  StartProviderAndWaitUntilDone(/*text=*/"", /*from_omnibox_focus=*/false);
+  StartProviderAndWaitUntilDone(/*text=*/"", OmniboxFocusType::DEFAULT);
   ExpectMatches({});
 
   // Following histograms should not be logged if zero-prefix suggestions are
@@ -293,7 +294,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, MAYBE_ZeroSuggestVariant) {
       metrics::OmniboxEventProto::OTHER,
       LocalHistoryZeroSuggestProvider::kZeroSuggestLocalVariant);
   StartProviderAndWaitUntilDone(
-      /*text=*/"", /*from_omnibox_focus=*/true,
+      /*text=*/"", OmniboxFocusType::ON_FOCUS,
       /*page_classification=*/metrics::OmniboxEventProto::OTHER);
   ExpectMatches({});
 
@@ -323,7 +324,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, MAYBE_ZeroSuggestVariant) {
 #endif
 
   StartProviderAndWaitUntilDone(
-      /*text=*/"", /*from_omnibox_focus=*/true,
+      /*text=*/"", OmniboxFocusType::ON_FOCUS,
       /*page_classification=*/
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
   ExpectMatches({{"hello world", 500}});
@@ -334,7 +335,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, MAYBE_ZeroSuggestVariant) {
       {omnibox::kReactiveZeroSuggestionsOnNTPOmnibox},
       {omnibox::kNewSearchFeatures});
   StartProviderAndWaitUntilDone(
-      /*text=*/"", /*from_omnibox_focus=*/true,
+      /*text=*/"", OmniboxFocusType::ON_FOCUS,
       /*page_classification=*/
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
 #if defined(OS_ANDROID)  // Enabled by default.
@@ -353,7 +354,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, MAYBE_ZeroSuggestVariant) {
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
       LocalHistoryZeroSuggestProvider::kZeroSuggestLocalVariant);
   StartProviderAndWaitUntilDone(
-      /*text=*/"", /*from_omnibox_focus=*/true,
+      /*text=*/"", OmniboxFocusType::ON_FOCUS,
       /*page_classification=*/
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
   ExpectMatches({{"hello world", 500}});

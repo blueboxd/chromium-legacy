@@ -48,6 +48,7 @@ interface DiscoverySession {
   // whether or not discovery should continue. In this case, a new
   // DiscoverySession should be started to make sure that device discovery
   // continues.
+  [Sync]
   IsActive() => (bool active);
 
   // Requests this discovery session instance to stop. If this instance is
@@ -58,6 +59,7 @@ interface DiscoverySession {
   // disconnecting the message pipe, so that they can respond to the result.
   // Returns true on success. Returns false if this session is inactive or an
   // error occurs while stopping the session.
+  [Sync]
   Stop() => (bool success);
 };
 
@@ -93,10 +95,12 @@ interface Adapter {
   GetInfo() => (AdapterInfo info);
 
   // Sets the client that listens for the adapter's events.
-  SetClient(pending_remote<AdapterClient> client);
+  [Sync]
+  SetClient(pending_remote<AdapterClient> client) => ();
 
   // Requests the adapter to start a new discovery session. Returns null if
   // session not created successfully.
+  [Sync]
   StartDiscoverySession() => (pending_remote<DiscoverySession>? session);
 
   // Attempts to initiate an insecure outgoing L2CAP or RFCOMM connection to the

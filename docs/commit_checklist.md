@@ -48,6 +48,9 @@ your downstream branch, you need to:
 *   Run `git rebase -i @{u}` again to rebase the downstream changes onto the
     upstream branch.
 
+Expect to fix numerous merge conflicts. Use `git rebase --continue` once you're
+done.
+
 ## 3. Make your changes
 
 Do your thing. There's no further advice here about how to write or fix code.

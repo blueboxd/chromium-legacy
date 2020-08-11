@@ -185,8 +185,6 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   // A set containing the list of words extracted from each search string,
   // used to prevent running duplicate searches.
   std::set<String16Vector> seen_search_words;
-  // Likewise, a set of seen history_ids to prevent creating duplicate matches.
-  std::set<HistoryID> seen_history_ids;
   for (const base::string16& search_string : search_strings) {
     // The search string we receive may contain escaped characters. For reducing
     // the index we need individual, lower-cased words, ignoring escapings. For
@@ -215,14 +213,6 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     seen_search_words.insert(lower_words);
 
     HistoryIDVector history_ids = HistoryIDsFromWords(lower_words);
-    // Filter history IDs found previously. Otherwise, we'll end up creating and
-    // pushing duplicate matches into |scored_items|. Besides being wasteful,
-    // this could result in not making full use of max_matches.
-    base::EraseIf(history_ids, [seen_history_ids](const auto& history_id) {
-      return seen_history_ids.count(history_id);
-    });
-    seen_history_ids.insert(history_ids.begin(), history_ids.end());
-
     history_ids_were_trimmed |= TrimHistoryIdsPool(&history_ids);
 
     HistoryIdsToScoredMatches(std::move(history_ids), lower_raw_string,
@@ -231,10 +221,26 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   }
   // Select and sort only the top |max_matches| results.
   if (scored_items.size() > max_matches) {
-    std::partial_sort(scored_items.begin(), scored_items.begin() + max_matches,
-                      scored_items.end(),
-                      ScoredHistoryMatch::MatchScoreGreater);
-    scored_items.resize(max_matches);
+    // Sort the top |max_matches| * 2 matches which is cheaper than sorting all
+    // matches yet likely sufficient to contain |max_matches| unique matches
+    // most of the time.
+    auto first_pass_size = std::min(scored_items.size(), max_matches * 2);
+    std::partial_sort(
+        scored_items.begin(), scored_items.begin() + first_pass_size,
+        scored_items.end(), ScoredHistoryMatch::MatchScoreGreater);
+    scored_items.resize(first_pass_size);
+
+    // Filter unique matches to maximize the use of the |max_matches| capacity.
+    std::set<HistoryID> seen_history_ids;
+    base::EraseIf(scored_items, [&](const auto& scored_item) {
+      HistoryID scored_item_id = scored_item.url_info.id();
+      bool duplicate = seen_history_ids.count(scored_item_id);
+      seen_history_ids.insert(scored_item_id);
+      return duplicate;
+    });
+    if (scored_items.size() > max_matches)
+      scored_items.resize(max_matches);
+
   } else {
     std::sort(scored_items.begin(), scored_items.end(),
               ScoredHistoryMatch::MatchScoreGreater);

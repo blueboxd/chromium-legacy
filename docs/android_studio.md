@@ -93,7 +93,7 @@ invocation of `generate_gradle.py`.
 Example:
 
 ```shell
-build/android/gradle/generate_gradle.py --native-target //chrome/android:monochrome
+build/android/gradle/generate_gradle.py --native-target //chrome/android:libchrome
 ```
 
 ## Tips

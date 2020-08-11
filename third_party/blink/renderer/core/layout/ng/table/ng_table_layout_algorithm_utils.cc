@@ -107,7 +107,7 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
     if (NGTableAlgorithmUtils::IsBaseline(cell_style.VerticalAlign())) {
       if (layout_result->HasDescendantThatDependsOnPercentageBlockSize())
         baseline_depends_on_percentage_block_size_descendant = true;
-      baseline = NGTableAlgorithmUtils::CellBaselineFromFragment(fragment);
+      baseline = fragment.FirstBaselineOrSynthesize();
       max_baseline = std::max(max_baseline.value_or(LayoutUnit()), baseline);
     }
 
@@ -244,11 +244,6 @@ class ColumnConstraintsBuilder {
 };
 
 }  // namespace
-
-LayoutUnit NGTableAlgorithmUtils::CellBaselineFromFragment(
-    const NGBoxFragment& fragment) {
-  return fragment.FirstBaseline().value_or(fragment.BlockSize());
-}
 
 void NGTableAlgorithmUtils::ComputeColumnInlineConstraints(
     const Vector<NGBlockNode>& columns,

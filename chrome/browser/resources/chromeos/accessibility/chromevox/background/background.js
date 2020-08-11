@@ -161,46 +161,46 @@ Background = class extends ChromeVoxState {
     // ChromeVox starts.
     sessionStorage.setItem('darkScreen', 'false');
 
-      // A self-contained class to start and stop progress sounds before any
-      // speech has been generated on startup. This is important in cases where
-      // speech is severely delayed.
-      /** @implements {TtsCapturingEventListener} */
-      const ProgressPlayer = class {
-        constructor() {
-          ChromeVox.tts.addCapturingEventListener(this);
-          ChromeVox.earcons.playEarcon(Earcon.CHROMEVOX_LOADING);
-        }
+    // A self-contained class to start and stop progress sounds before any
+    // speech has been generated on startup. This is important in cases where
+    // speech is severely delayed.
+    /** @implements {TtsCapturingEventListener} */
+    const ProgressPlayer = class {
+      constructor() {
+        ChromeVox.tts.addCapturingEventListener(this);
+        ChromeVox.earcons.playEarcon(Earcon.CHROMEVOX_LOADING);
+      }
 
-        /** @override */
-        onTtsStart() {
-          ChromeVox.earcons.playEarcon(Earcon.CHROMEVOX_LOADED);
-          ChromeVox.tts.removeCapturingEventListener(this);
-        }
+      /** @override */
+      onTtsStart() {
+        ChromeVox.earcons.playEarcon(Earcon.CHROMEVOX_LOADED);
+        ChromeVox.tts.removeCapturingEventListener(this);
+      }
 
-        /** @override */
-        onTtsEnd() {}
-        /** @override */
-        onTtsInterrupted() {}
-      };
-      new ProgressPlayer();
+      /** @override */
+      onTtsEnd() {}
+      /** @override */
+      onTtsInterrupted() {}
+    };
+    new ProgressPlayer();
 
-      chrome.commandLinePrivate.hasSwitch(
-          'enable-experimental-accessibility-chromevox-tutorial', (enabled) => {
-            if (!enabled) {
-              return;
+    chrome.commandLinePrivate.hasSwitch(
+        'enable-experimental-accessibility-chromevox-tutorial', (enabled) => {
+          if (!enabled) {
+            return;
+          }
+
+          chrome.loginState.getSessionState((sessionState) => {
+            // If starting ChromeVox from OOBE, start the ChromeVox tutorial.
+            // Use a timeout to allow ChromeVox to initialize first.
+            if (sessionState ===
+                chrome.loginState.SessionState.IN_OOBE_SCREEN) {
+              setTimeout(() => {
+                (new PanelCommand(PanelCommandType.TUTORIAL)).send();
+              }, 1000);
             }
-
-            chrome.loginState.getSessionState((sessionState) => {
-              // If starting ChromeVox from OOBE, start the ChromeVox tutorial.
-              // Use a timeout to allow ChromeVox to initialize first.
-              if (sessionState ===
-                  chrome.loginState.SessionState.IN_OOBE_SCREEN) {
-                setTimeout(() => {
-                  (new PanelCommand(PanelCommandType.TUTORIAL)).send();
-                }, 1000);
-              }
-            });
           });
+        });
   }
 
   /**

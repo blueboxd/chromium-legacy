@@ -132,7 +132,8 @@ ComputePasswordAccountStorageUsageLevel(
 // password to the account and the user refused this, e.g. by ignoring the
 // bubble that's shown after successful sign-in with a device password. Should
 // only be called if the user is signed-in and not opted-in. |pref_service| and
-// |sync_service| should be non-null.
+// |sync_service| must be non-null.
+// See PasswordFeatureManager::IncrementMoveToAccountRefusedCount().
 void IncrementMoveToAccountRefusedCount(
     PrefService* pref_service,
     const syncer::SyncService* sync_service);
@@ -141,7 +142,8 @@ void IncrementMoveToAccountRefusedCount(
 // password to the account and the user refused this, e.g. by ignoring the
 // bubble that's shown after successful sign-in with a device password. Should
 // only be called if the user is signed-in and not opted-in. |pref_service| and
-// |sync_service| should be non-null.
+// |sync_service| must be non-null.
+// See PasswordFeatureManager::GetMoveToAccountRefusedCount().
 int GetMoveToAccountRefusedCount(const PrefService* pref_service,
                                  const syncer::SyncService* sync_service);
 

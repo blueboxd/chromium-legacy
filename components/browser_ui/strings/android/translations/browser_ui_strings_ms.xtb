@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Navigasi disekat: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Dibenarkan</translation>
 <translation id="429312253194641664">Tapak sedang memainkan media</translation>
+<translation id="4336434711095810371">Kosongkan semua data</translation>
 <translation id="4433925000917964731">Halaman Lite disediakan oleh Google</translation>
 <translation id="4434045419905280838">Tetingkap timbul dan ubah hala</translation>
 <translation id="445467742685312942">Benarkan tapak memainkan kandungan yang dilindungi</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Tab Inkognito</translation>
 <translation id="5300589172476337783">Paparkan</translation>
 <translation id="5301954838959518834">OK, faham</translation>
-<translation id="5307446750509046227">Kosongkan storan tapak</translation>
 <translation id="5313967007315987356">Tambahkan tapak</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5335288049665977812">Benarkan tapak menjalankan JavaScript (disyorkan)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">Sekat JavaScript untuk tapak tertentu.</translation>
 <translation id="8816026460808729765">Sekat tapak daripada mengakses penderia</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Storan</translation>
 <translation id="8926666909099850184">NFC dimatikan untuk peranti ini. Hidupkan dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Tapak ini dibuka dan memberikan respons dengan pantas untuk kebanyakan orang</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">Hidupkan kebenaran untuk <ph name="APP_NAME" /> dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Akses mikrofon anda</translation>
 <translation id="965817943346481315">Sekat jika tapak menyiarkan iklan yang mengganggu atau mengelirukan (disyorkan)</translation>
+<translation id="967624055006145463">Data disimpan</translation>
 </translationbundle>

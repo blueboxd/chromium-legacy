@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">瀏覽網址被封鎖：<ph name="URL" /></translation>
 <translation id="4278390842282768270">已允許</translation>
 <translation id="429312253194641664">網站正在播放媒體</translation>
+<translation id="4336434711095810371">清除所有資料</translation>
 <translation id="4433925000917964731">此簡易版網頁由 Google 提供</translation>
 <translation id="4434045419905280838">彈出式視窗和重新導向</translation>
 <translation id="445467742685312942">允許網站播放受保護的內容</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">無痕式分頁</translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5301954838959518834">好，我知道了</translation>
-<translation id="5307446750509046227">清除網站儲存空間的資料</translation>
 <translation id="5313967007315987356">新增網站</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5335288049665977812">允許網站執行 JavaScript (建議)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">封鎖特定網站執行 JavaScript。</translation>
 <translation id="8816026460808729765">禁止網站存取感應器</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">儲存設備</translation>
 <translation id="8926666909099850184">此裝置的 NFC 已關閉，請在「<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />」中開啟。</translation>
 <translation id="8929372349074745002">對大部分人來說，此網站能快速開啟並作出回應</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 <ph name="APP_NAME" /> 啟用這些權限。</translation>
 <translation id="945632385593298557">存取您的麥克風</translation>
 <translation id="965817943346481315">封鎖顯示滋擾性或誤導廣告網站上的廣告 (建議)</translation>
+<translation id="967624055006145463">已儲存的資料</translation>
 </translationbundle>

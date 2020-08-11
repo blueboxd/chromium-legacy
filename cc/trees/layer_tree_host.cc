@@ -1643,7 +1643,7 @@ void LayerTreeHost::PushSurfaceRangesTo(LayerTreeImpl* tree_impl) {
 
 void LayerTreeHost::PushLayerTreeHostPropertiesTo(
     LayerTreeHostImpl* host_impl) {
-  host_impl->set_external_pinch_gesture_active(
+  host_impl->GetInputHandler().set_external_pinch_gesture_active(
       is_external_pinch_gesture_active_);
   RecordGpuRasterizationHistogram(host_impl);
 

@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Նավարկումն արգելափակված է՝ <ph name="URL" /></translation>
 <translation id="4278390842282768270">Թույլատրված է</translation>
 <translation id="429312253194641664">Կայքում մեդիա ֆայլ է նվագարկվում</translation>
+<translation id="4336434711095810371">Մաքրել բոլոր տվյալները</translation>
 <translation id="4433925000917964731">Էջի Lite տարբերակը տրամադրվել է Google-ի կողմից</translation>
 <translation id="4434045419905280838">Ելնող պատուհաններ և վերահղում</translation>
 <translation id="445467742685312942">Թույլատրել կայքերին նվագարկել պաշտպանված բովանդակություն</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Ինկոգնիտո ներդիր</translation>
 <translation id="5300589172476337783">Ցույց տալ</translation>
 <translation id="5301954838959518834">Պարզ է</translation>
-<translation id="5307446750509046227">Մաքրել կայքերի տվյալները</translation>
 <translation id="5313967007315987356">Ավելացնել կայք</translation>
 <translation id="5317780077021120954">Պահել</translation>
 <translation id="5335288049665977812">Թույլ տալ կայքերին գործարկել JavaScript-ը (խորհուրդ է տրվում)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">Արգելափակել JavaScript-ը նշված կայքի համար:</translation>
 <translation id="8816026460808729765">Արգելել կայքերին օգտագործել տվիչները</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Պահեստ</translation>
 <translation id="8926666909099850184">Սարքի NFC-ն անջատված է։ Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="8929372349074745002">Այս կայքը հիմնականում բեռնվում և արձագանքում է արագ</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">Միացնել <ph name="APP_NAME" />-ի թույլտվությունները <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="945632385593298557">Խոսափողի օգտագործում</translation>
 <translation id="965817943346481315">Արգելափակել, եթե կայքը հոգնեցնող կամ մոլորեցնող գովազդ է ցուցադրում (խորհուրդ է տրվում)</translation>
+<translation id="967624055006145463">Պահված տվյալներ</translation>
 </translationbundle>

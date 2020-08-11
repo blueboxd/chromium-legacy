@@ -431,12 +431,12 @@ SharedImageBackingGLImage::ProduceGLTexturePassthrough(
 std::unique_ptr<SharedImageRepresentationOverlay>
 SharedImageBackingGLImage::ProduceOverlay(SharedImageManager* manager,
                                           MemoryTypeTracker* tracker) {
-#if defined(OS_MAC)
+#if defined(OS_MAC) || defined(USE_OZONE)
   return std::make_unique<SharedImageRepresentationOverlayImpl>(
       manager, this, tracker, image_);
-#else   // defined(OS_MAC)
+#else   // !(defined(OS_MAC) || defined(USE_OZONE))
   return SharedImageBacking::ProduceOverlay(manager, tracker);
-#endif  // !defined(OS_MAC)
+#endif  // defined(OS_MAC) || defined(USE_OZONE)
 }
 
 std::unique_ptr<SharedImageRepresentationDawn>

@@ -8078,6 +8078,12 @@
         "test_id_prefix": "ninja://chrome/browser/password_check/android:password_check_junit_tests/"
       },
       {
+        "name": "password_manager_junit_tests",
+        "swarming": {},
+        "test": "password_manager_junit_tests",
+        "test_id_prefix": "ninja://chrome/browser/password_manager/android:password_manager_junit_tests/"
+      },
+      {
         "name": "services_junit_tests",
         "swarming": {},
         "test": "services_junit_tests",

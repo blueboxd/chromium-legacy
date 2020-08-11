@@ -187,8 +187,6 @@ PaletteTray::PaletteTray(Shelf* shelf)
   tray_container()->AddChildView(icon_);
 
   Shell::Get()->AddShellObserver(this);
-
-  InitializeWithLocalState();
 }
 
 PaletteTray::~PaletteTray() {
@@ -431,6 +429,8 @@ void PaletteTray::AnchorUpdated() {
 void PaletteTray::Initialize() {
   TrayBackgroundView::Initialize();
   ui::DeviceDataManager::GetInstance()->AddObserver(this);
+
+  InitializeWithLocalState();
 }
 
 bool PaletteTray::PerformAction(const ui::Event& event) {

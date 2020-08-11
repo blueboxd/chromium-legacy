@@ -156,6 +156,7 @@ class ProfileOAuth2TokenServiceDelegate {
   }
 
   // Called by subclasses to notify observers.
+  void FireEndBatchChanges();
   void FireRefreshTokenAvailable(const CoreAccountId& account_id);
   void FireRefreshTokenRevoked(const CoreAccountId& account_id);
   // FireRefreshTokensLoaded is virtual and overridden in android implementation

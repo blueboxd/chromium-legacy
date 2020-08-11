@@ -34,8 +34,10 @@ extern NSString* const
     : CollectionViewController <ContentSuggestionsCollectionControlling,
                                 ContentSuggestionsConsumer>
 
+// Inits view controller with |offset| to maintain scroll position if needed.
+// Offset is only required if Discover feed is enabled.
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
-    NS_DESIGNATED_INITIALIZER;
+                       offset:(CGFloat)offset NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
                          style:(CollectionViewControllerStyle)style

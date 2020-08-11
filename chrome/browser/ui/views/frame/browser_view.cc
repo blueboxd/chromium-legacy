@@ -103,7 +103,7 @@
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
-#include "chrome/browser/ui/views/in_product_help/feature_promo_controller.h"
+#include "chrome/browser/ui/views/in_product_help/feature_promo_controller_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -546,7 +546,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       std::make_unique<TabStripRegionView>(std::move(tabstrip)));
 
   feature_promo_controller_ =
-      std::make_unique<FeaturePromoController>(browser_->profile());
+      std::make_unique<FeaturePromoControllerViews>(browser_->profile());
 
   // Must be destroyed before the tab strip and |feature_promo_controller_|.
   tab_groups_iph_controller_ = std::make_unique<TabGroupsIPHController>(

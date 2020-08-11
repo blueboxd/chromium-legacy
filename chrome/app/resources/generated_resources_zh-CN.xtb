@@ -386,7 +386,7 @@
 <translation id="1465827627707997754">披萨片</translation>
 <translation id="1468571364034902819">无法使用这份个人资料</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{向新群组中添加标签页}other{向新群组中添加标签页}}</translation>
-<translation id="1470946456740188591">要开启或关闭光标浏览模式，请使用快捷键 Ctrl+搜索键+7</translation>
+<translation id="1470946456740188591">如需开启或关闭光标浏览模式，请使用快捷键 Ctrl + 搜索键 + 7</translation>
 <translation id="1472675084647422956">显示更多</translation>
 <translation id="1474785664565228650">重新启动 Parallels Desktop 后，对麦克风设置做出的更改才能生效。请重新启动 Parallels Desktop 以继续。</translation>
 <translation id="1475502736924165259">您有一些证书不属于前面的任何类别</translation>
@@ -570,7 +570,7 @@
 <translation id="1680849702532889074">安装 Linux 应用时出错。</translation>
 <translation id="16815041330799488">不允许网站查看复制到剪贴板的文字和图片</translation>
 <translation id="1682548588986054654">打开新的无痕式窗口</translation>
-<translation id="1682867089915960590">开启光标浏览模式？</translation>
+<translation id="1682867089915960590">要开启光标浏览模式吗？</translation>
 <translation id="1686550358074589746">启用滑行输入</translation>
 <translation id="168715261339224929">要想将您的书签同步到您的所有设备上，请开启同步功能。</translation>
 <translation id="1688867105868176567">要清除网站数据吗？</translation>
@@ -1105,7 +1105,6 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947">无法安全地下载“<ph name="FILE_NAME" />”</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> 希望与以下所选设备配对：</translation>
-<translation id="2341476639346994688">打印机已停止运行</translation>
 <translation id="2342740338116612727">书签已添加</translation>
 <translation id="2343747224442182863">聚焦此标签页</translation>
 <translation id="2344686470986284227">正在启动虚拟机控制器</translation>
@@ -1113,7 +1112,7 @@
 <translation id="2347644257713614136">使用环聊和 Cast for Education 时须遵守《Google 隐私权政策》。</translation>
 <translation id="2348176352564285430">应用：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="234889437187286781">加载数据时出错</translation>
-<translation id="2349065708974079577">个性化您的待机界面。在设备充电时让屏幕保持开启。</translation>
+<translation id="2349065708974079577">个性化设置您的待机界面。在设备充电时让屏幕保持开启。</translation>
 <translation id="2349896577940037438">如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。您可在 account.google.com 上查看和删除您的数据以及更改您的帐号设置。</translation>
 <translation id="2350133097354918058">已重新加载</translation>
 <translation id="2350182423316644347">正在初始化应用…</translation>
@@ -1503,7 +1502,7 @@
 <translation id="2805770823691782631">更多详情</translation>
 <translation id="2807517655263062534">您下载的文件会显示在此处</translation>
 <translation id="2809586584051668049">及另外<ph name="NUMBER_ADDITIONAL_DISABLED" />个扩展程序</translation>
-<translation id="2810024255621914659">系统将会使用所选的回忆照片制作幻灯片。要对现有影集进行任何更改，请转至 <ph name="LINK_BEGIN" />Google 相册<ph name="LINK_END" />。</translation>
+<translation id="2810024255621914659">系统将会使用所选的回忆照片制作幻灯片。如需对现有影集进行任何更改，请转至 <ph name="LINK_BEGIN" />Google 相册<ph name="LINK_END" />。</translation>
 <translation id="2810390687497823527">如果您不认识某款扩展程序或者您的浏览器无法按预期运行，您可在此处关闭或自定义扩展程序。</translation>
 <translation id="2812049959647166806">Thunderbolt 不受支持</translation>
 <translation id="2812989263793994277">不显示任何图片</translation>
@@ -3232,7 +3231,7 @@
 <translation id="5015344424288992913">正在解析代理...</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">保存</translation>
-<translation id="5017643436812738274">您可以使用文本光标浏览网页。按 Ctrl+搜索键+7 可关闭。</translation>
+<translation id="5017643436812738274">您可以使用文本光标浏览网页。按 Ctrl + 搜索键 + 7 可关闭。</translation>
 <translation id="5018207570537526145">打开扩展程序网站</translation>
 <translation id="5018526990965779848">发送使用情况数据和诊断数据。自动向 Google 发送诊断数据、设备数据和应用使用情况数据，帮助改善您的 Android 使用体验。这些数据会有助于提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据还会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。</translation>
 <translation id="5021750053540820849">尚未更新</translation>
@@ -3443,7 +3442,6 @@
 <translation id="5283677936944177147">糟糕！系统未能确定设备型号或序列号。</translation>
 <translation id="5284445933715251131">继续下载</translation>
 <translation id="5285635972691565180">显示屏 <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">出纸盘已满</translation>
 <translation id="5286194356314741248">正在扫描</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">您的帐号</translation>
@@ -3664,7 +3662,6 @@
 <translation id="5553089923092577885">证书政策映射</translation>
 <translation id="5554489410841842733">如果该扩展程序可以在当前网页上运行，则会显示此图标。</translation>
 <translation id="5554720593229208774">电子邮件证书授权中心</translation>
-<translation id="5554931805291741487">出纸盘快满了</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5558125320634132440">此网站已被屏蔽，因为它可能含有少儿不宜的内容</translation>
 <translation id="5558129378926964177">放大(&amp;I)</translation>
@@ -4453,7 +4450,7 @@
 <translation id="6545864417968258051">蓝牙扫描</translation>
 <translation id="6545867563032584178">已在 Mac 系统偏好设置中关闭麦克风</translation>
 <translation id="6547354035488017500">请至少释放 512 MB 的空间，否则您的设备将无响应。要释放空间，请将文件从设备存储空间中删除。</translation>
-<translation id="654871471440386944">开启光标浏览模式？</translation>
+<translation id="654871471440386944">要开启光标浏览模式吗？</translation>
 <translation id="6550675742724504774">选项</translation>
 <translation id="6551508934388063976">无法使用命令。请按 Ctrl+N 打开一个新窗口。</translation>
 <translation id="6551612971599078809">此网站正在使用 USB</translation>
@@ -4935,7 +4932,6 @@
 <translation id="7152478047064750137">此扩展程序无需任何特殊权限</translation>
 <translation id="7154130902455071009">将您的初始页更改为：<ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">相机或文件中的现有照片</translation>
-<translation id="7163766494674803047">打印机设备错误</translation>
 <translation id="7165320105431587207">无法配置网络</translation>
 <translation id="716640248772308851">“<ph name="EXTENSION" />”对于选中位置中的图片、视频及声音文件具有读取权限。</translation>
 <translation id="7167486101654761064">总是打开此类文件(&amp;A)</translation>
@@ -5783,7 +5779,7 @@
 <translation id="8198323535106903877">我们将为您安装这 <ph name="NUMBER_OF_APPS" /> 款应用</translation>
 <translation id="8199300056570174101">网络（服务）和设备属性</translation>
 <translation id="8200772114523450471">继续</translation>
-<translation id="8201717382574620700">选择<ph name="TOPIC_SOURCE" />影集</translation>
+<translation id="8201717382574620700">选择 <ph name="TOPIC_SOURCE" />影集</translation>
 <translation id="8202160505685531999">请重新输入密码，以便更新您的<ph name="DEVICE_TYPE" />资料。</translation>
 <translation id="8203732864715032075">向您发送通知，并默认记住这台计算机以便在您收到短信时向其发送通知。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="820568752112382238">最常访问的网站</translation>
@@ -6504,7 +6500,7 @@
 <translation id="9088234649737575428">系统已根据企业政策屏蔽 <ph name="PLUGIN_NAME" /></translation>
 <translation id="9088446193279799727">无法配置 Linux。请连接到互联网，然后重试。</translation>
 <translation id="9088917181875854783">请确认“<ph name="DEVICE_NAME" />”上显示有此密钥：</translation>
-<translation id="9093429538970210897">建议您备份文件，以防升级无法完成。启动升级会导致 Linux（Beta 版）关闭。请先保存打开的文件，然后再继续操作。</translation>
+<translation id="9093429538970210897">建议您备份文件，以防无法完成升级。启动升级会导致 Linux（Beta 版）关闭。请先保存打开的文件，然后再继续操作。</translation>
 <translation id="9094033019050270033">更新密码</translation>
 <translation id="9094038138851891550">用户名无效</translation>
 <translation id="9094982973264386462">移除</translation>

@@ -17,6 +17,10 @@ class DataObject;
 class CORE_EXPORT DraggedIsolatedFileSystem {
  public:
   DraggedIsolatedFileSystem() = default;
+  DraggedIsolatedFileSystem(const DraggedIsolatedFileSystem&) = delete;
+  DraggedIsolatedFileSystem& operator=(const DraggedIsolatedFileSystem&) =
+      delete;
+
   virtual ~DraggedIsolatedFileSystem() = default;
 
   using FileSystemIdPreparationCallback = void (*)(DataObject*);
@@ -27,7 +31,6 @@ class CORE_EXPORT DraggedIsolatedFileSystem {
  private:
   static FileSystemIdPreparationCallback prepare_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(DraggedIsolatedFileSystem);
 };
 
 }  // namespace blink

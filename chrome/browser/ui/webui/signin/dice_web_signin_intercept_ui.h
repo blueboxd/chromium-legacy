@@ -8,12 +8,11 @@
 #include "content/public/browser/web_ui_controller.h"
 
 #include "base/callback.h"
+#include "chrome/browser/signin/dice_web_signin_interceptor.h"
 
 namespace content {
 class WebUI;
 }
-
-struct AccountInfo;
 
 class DiceWebSigninInterceptUI : public content::WebUIController {
  public:
@@ -24,7 +23,8 @@ class DiceWebSigninInterceptUI : public content::WebUIController {
   DiceWebSigninInterceptUI& operator=(const DiceWebSigninInterceptUI&) = delete;
 
   // Initializes the DiceWebSigninInterceptUI.
-  void Initialize(const AccountInfo& account_info,
+  void Initialize(const DiceWebSigninInterceptor::Delegate::BubbleParameters&
+                      bubble_parameters,
                   base::OnceCallback<void(bool)> callback);
 
  private:

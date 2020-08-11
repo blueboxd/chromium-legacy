@@ -86,7 +86,8 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
         if (mModel == null) {
             mModel = PasswordCheckProperties.createDefaultModel();
             PasswordCheckCoordinator.setUpModelChangeProcessors(mModel, mFragmentView);
-            mMediator.initialize(mModel, PasswordCheckFactory.getOrCreate());
+            mMediator.initialize(
+                    mModel, PasswordCheckFactory.getOrCreate(), mFragmentView.getReferrer());
         }
     }
 

@@ -12,6 +12,10 @@
 class Browser;
 enum class UrlLoadStrategy;
 
+namespace synced_sessions {
+class DistantSession;
+}
+
 @protocol ApplicationCommands;
 @protocol RecentTabsMenuProvider;
 @protocol RecentTabsTableViewControllerDelegate;
@@ -50,6 +54,16 @@ enum class UrlLoadStrategy;
 // Initializers.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
+
+// Returns YES if |sectionIdentifier| is a Sessions sectionIdentifier.
+- (BOOL)isSessionSectionIdentifier:(NSInteger)sectionIdentifier;
+
+// Returns Sessions corresponding to the given |sectionIdentifier|.
+- (synced_sessions::DistantSession const*)sessionForSectionIdentifier:
+    (NSInteger)sectionIdentifer;
+
+// Hides Sessions corresponding to the given |sectionIdentifier|.
+- (void)removeSessionAtSessionSectionIdentifier:(NSInteger)sectionIdentifier;
 
 @end
 

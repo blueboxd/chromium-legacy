@@ -444,8 +444,8 @@ class BlockedUrlPolicyAppLauncherTabHelperTest
     web_state_.SetBrowserState(enterprise_policy_helper_->GetBrowserState());
 
     policy::PolicyMap policy_map;
-    auto value = std::make_unique<base::Value>(base::Value::Type::LIST);
-    value->Append("itms-apps://*");
+    base::Value value(base::Value::Type::LIST);
+    value.Append("itms-apps://*");
     policy_map.Set(policy::key::kURLBlocklist, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                    std::move(value), nullptr);

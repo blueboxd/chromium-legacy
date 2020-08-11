@@ -67,7 +67,7 @@ public class WebappDisclosureSnackbarControllerTest {
     }
 
     private WebappDataStorage registerStorageForWebApk(String packageName) {
-        String id = WebappRegistry.webApkIdForPackage(packageName);
+        String id = WebappIntentUtils.getIdForWebApkPackage(packageName);
         WebappRegistry.getInstance().register(id, (storage) -> {});
         return WebappRegistry.getInstance().getWebappDataStorage(id);
     }

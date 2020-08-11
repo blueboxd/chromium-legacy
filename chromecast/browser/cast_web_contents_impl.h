@@ -56,6 +56,7 @@ class CastWebContentsImpl : public CastWebContents,
 
   // CastWebContents implementation:
   int tab_id() const override;
+  int id() const override;
   void AddRendererFeatures(std::vector<RendererFeature> features) override;
   void AllowWebAndMojoWebUiBindings() override;
   void ClearRenderWidgetHostView() override;
@@ -166,6 +167,7 @@ class CastWebContentsImpl : public CastWebContents,
   std::vector<RendererFeature> renderer_features_;
 
   const int tab_id_;
+  const int id_;
   bool is_websql_enabled_;
   bool is_mixer_audio_enabled_;
   base::TimeTicks start_loading_ticks_;

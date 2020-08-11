@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">มีการบล็อกการนำทาง: <ph name="URL" /></translation>
 <translation id="4278390842282768270">อนุญาตแล้ว</translation>
 <translation id="429312253194641664">เว็บไซต์กำลังเล่นสื่อ</translation>
+<translation id="4336434711095810371">ล้างข้อมูลทั้งหมด</translation>
 <translation id="4433925000917964731">หน้าเวอร์ชัน Lite ให้บริการโดย Google</translation>
 <translation id="4434045419905280838">ป๊อปอัปและการเปลี่ยนเส้นทาง</translation>
 <translation id="445467742685312942">อนุญาตให้เว็บไซต์เล่นเนื้อหาที่ได้รับความคุ้มครอง</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="5301954838959518834">ตกลง เข้าใจแล้ว</translation>
-<translation id="5307446750509046227">ล้างพื้นที่เก็บข้อมูลเว็บไซต์</translation>
 <translation id="5313967007315987356">เพิ่มเว็บไซต์</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5335288049665977812">อนุญาตให้เว็บไซต์เรียกใช้ JavaScript (แนะนำ)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">บล็อก JavaScript ในเว็บไซต์ที่ต้องการ</translation>
 <translation id="8816026460808729765">บล็อกไม่ให้เว็บไซต์เข้าถึงเซ็นเซอร์</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">พื้นที่เก็บข้อมูล</translation>
 <translation id="8926666909099850184">NFC ในอุปกรณ์นี้ปิดอยู่ เปิดได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="8929372349074745002">เว็บไซต์นี้เปิดและตอบสนองอย่างรวดเร็วสำหรับผู้คนส่วนใหญ่</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">เปิดการใช้สิทธิ์สำหรับ <ph name="APP_NAME" /> ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="945632385593298557">เข้าถึงไมโครโฟน</translation>
 <translation id="965817943346481315">บล็อกหากเว็บไซต์แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด (แนะนำ)</translation>
+<translation id="967624055006145463">ข้อมูลที่จัดเก็บ</translation>
 </translationbundle>

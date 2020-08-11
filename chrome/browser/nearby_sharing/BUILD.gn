@@ -4,6 +4,7 @@
 
 source_set("share_target") {
   sources = [
+    "attachment.cc",
     "attachment.h",
     "file_attachment.cc",
     "file_attachment.h",

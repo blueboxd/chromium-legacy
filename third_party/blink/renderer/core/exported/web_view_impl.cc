@@ -2525,17 +2525,48 @@ void WebViewImpl::HookBackForwardCacheEviction(bool hook) {
   }
 }
 
-void WebViewImpl::EnableAutoResizeMode(const WebSize& min_size,
-                                       const WebSize& max_size) {
+void WebViewImpl::EnableAutoResizeMode(const gfx::Size& min_size,
+                                       const gfx::Size& max_size) {
   should_auto_resize_ = true;
-  min_auto_size_ = min_size;
-  max_auto_size_ = max_size;
+  min_auto_size_ = IntSize(min_size);
+  max_auto_size_ = IntSize(max_size);
   ConfigureAutoResizeMode();
 }
 
 void WebViewImpl::DisableAutoResizeMode() {
   should_auto_resize_ = false;
   ConfigureAutoResizeMode();
+}
+
+bool WebViewImpl::AutoResizeMode() {
+  return should_auto_resize_;
+}
+
+void WebViewImpl::EnableAutoResizeForTesting(const gfx::Size& min_window_size,
+                                             const gfx::Size& max_window_size) {
+  float scale_factor = 1.f;
+  if (Platform::Current()->IsUseZoomForDSFEnabled()) {
+    scale_factor = MainFrameImpl()
+                       ->FrameWidgetImpl()
+                       ->Client()
+                       ->GetScreenInfo()
+                       .device_scale_factor;
+  }
+  EnableAutoResizeMode(gfx::ScaleToCeiledSize(min_window_size, scale_factor),
+                       gfx::ScaleToCeiledSize(max_window_size, scale_factor));
+}
+
+void WebViewImpl::DisableAutoResizeForTesting(
+    const gfx::Size& new_window_size) {
+  if (!should_auto_resize_)
+    return;
+  DisableAutoResizeMode();
+
+  // The |new_size| is empty when resetting auto resize in between tests. In
+  // this case the current size should just be preserved.
+  if (!new_window_size.IsEmpty()) {
+    MainFrameImpl()->FrameWidgetImpl()->Client()->SetSize(new_window_size);
+  }
 }
 
 void WebViewImpl::SetDefaultPageScaleLimits(float min_scale, float max_scale) {

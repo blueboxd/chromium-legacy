@@ -188,9 +188,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   float ZoomFactorForDeviceScaleFactor() override {
     return zoom_factor_for_device_scale_factor_;
   }
-  void EnableAutoResizeMode(const WebSize& min_size,
-                            const WebSize& max_size) override;
-  void DisableAutoResizeMode() override;
+  bool AutoResizeMode() override;
+  void EnableAutoResizeForTesting(const gfx::Size& min_window_size,
+                                  const gfx::Size& max_window_size) override;
+  void DisableAutoResizeForTesting(const gfx::Size& new_window_size) override;
   WebHitTestResult HitTestResultAt(const gfx::PointF&);
   WebHitTestResult HitTestResultForTap(const gfx::Point&,
                                        const WebSize&) override;
@@ -242,6 +243,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetZoomFactorOverride(float);
   void SetCompositorDeviceScaleFactorOverride(float);
   TransformationMatrix GetDeviceEmulationTransform() const;
+  void EnableAutoResizeMode(const gfx::Size& min_viewport_size,
+                            const gfx::Size& max_viewport_size);
+  void DisableAutoResizeMode();
 
   SkColor BackgroundColor() const;
   Color BaseBackgroundColor() const;

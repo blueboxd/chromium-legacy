@@ -16,22 +16,20 @@ class TextAttachment : public Attachment {
  public:
   using Type = sharing::mojom::TextMetadata::Type;
 
-  TextAttachment(std::string text_body, Type type, int64_t size);
-  ~TextAttachment() override;
+  TextAttachment(Type type, std::string text_body);
+  TextAttachment(int64_t id, Type type, std::string text_title, int64_t size);
   TextAttachment(const TextAttachment&);
   TextAttachment& operator=(const TextAttachment&);
-
-  // Attachment:
-  int64_t size() const override;
-  Attachment::Family family() const override;
+  ~TextAttachment() override;
 
   const std::string& text_body() const { return text_body_; }
+  const std::string& text_title() const { return text_title_; }
   Type type() const { return type_; }
 
  private:
-  std::string text_body_;
   Type type_;
-  int64_t size_;
+  std::string text_title_;
+  std::string text_body_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_TEXT_ATTACHMENT_H_

@@ -346,9 +346,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void SetActiveForWidget(bool active) override;
   bool SupportsMultipleWindowsForWidget() override;
   bool ShouldAckSyntheticInputImmediately() override;
-  void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
-                                      const gfx::Size& max_size) override;
-  void DisableAutoResizeForWidget() override;
+  bool AutoResizeMode() override;
   void ScrollFocusedNodeIntoViewForWidget() override;
   void DidReceiveSetFocusEventForWidget() override;
   void DidCommitCompositorFrameForWidget() override;

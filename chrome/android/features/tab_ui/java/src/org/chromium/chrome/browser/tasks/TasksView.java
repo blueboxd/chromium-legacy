@@ -26,8 +26,6 @@ import com.google.android.material.appbar.AppBarLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.feed.shared.FeedFeatures;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ntp.IncognitoDescriptionView;
 import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
@@ -110,13 +108,11 @@ class TasksView extends CoordinatorLayoutForPointer {
 
     private void setTabCarouselTitleStyle() {
         // Match the tab carousel title style with the feed header.
-        // TODO(crbug.com/1016952): Migrate feature flag checks to use cached flags for instant
-        // start. There are many places checking FeedFeatures.isReportingUserActions, like in
+        // There are many places checking FeedFeatures.isReportingUserActions, like in
         // ExploreSurfaceCoordinator.
         TextView titleDescription = (TextView) findViewById(R.id.tab_switcher_title_description);
         TextView moreTabs = (TextView) findViewById(R.id.more_tabs);
-        if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
-                && FeedFeatures.isReportingUserActions()) {
+        if (FeedFeatures.cachedIsReportingUserActions()) {
             ApiCompatibilityUtils.setTextAppearance(
                     titleDescription, R.style.TextAppearance_TextSmall_Secondary);
             ApiCompatibilityUtils.setTextAppearance(

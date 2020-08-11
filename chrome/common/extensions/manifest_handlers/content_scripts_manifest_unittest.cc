@@ -17,6 +17,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
+#include "extensions/common/script_constants.h"
 #include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -114,15 +115,31 @@ TEST_F(ContentScriptsManifestTest, MatchOriginAsFallback_FeatureEnabled) {
   ASSERT_TRUE(extension);
   const UserScriptList& user_scripts =
       ContentScriptsInfo::GetContentScripts(extension.get());
-  ASSERT_EQ(3u, user_scripts.size());
+  ASSERT_EQ(7u, user_scripts.size());
 
   // The first script specifies `"match_origin_as_fallback": true`.
-  EXPECT_TRUE(user_scripts[0]->match_origin_as_fallback());
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kAlways,
+            user_scripts[0]->match_origin_as_fallback());
   // The second specifies `"match_origin_as_fallback": false`.
-  EXPECT_FALSE(user_scripts[1]->match_origin_as_fallback());
-  // The third doesn't specify a value for "match_origin_as_fallback"; it
-  // should default to false.
-  EXPECT_FALSE(user_scripts[2]->match_origin_as_fallback());
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kNever,
+            user_scripts[1]->match_origin_as_fallback());
+  // The third specifies `"match_about_blank": true`.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kMatchForAboutSchemeAndClimbTree,
+            user_scripts[2]->match_origin_as_fallback());
+  // The fourth specifies `"match_about_blank": false`.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kNever,
+            user_scripts[3]->match_origin_as_fallback());
+  // The fifth specifies `"match_origin_as_fallback": false` *and*
+  // `"match_about_blank": true`. "match_origin_as_fallback" takes precedence.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kNever,
+            user_scripts[4]->match_origin_as_fallback());
+  // The sixth specifies `"match_origin_as_fallback": true` *and*
+  // `"match_about_blank": false`. "match_origin_as_fallback" takes precedence.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kAlways,
+            user_scripts[5]->match_origin_as_fallback());
+  // The seventh and final does not specify a value for either.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kNever,
+            user_scripts[6]->match_origin_as_fallback());
 }
 
 TEST_F(ContentScriptsManifestTest, MatchOriginAsFallback_FeatureDisabled) {
@@ -135,13 +152,33 @@ TEST_F(ContentScriptsManifestTest, MatchOriginAsFallback_FeatureDisabled) {
   ASSERT_TRUE(extension);
   const UserScriptList& user_scripts =
       ContentScriptsInfo::GetContentScripts(extension.get());
-  ASSERT_EQ(3u, user_scripts.size());
+  ASSERT_EQ(7u, user_scripts.size());
 
-  // Without the feature enabled, match_origin_as_fallback should always be
-  // false.
-  EXPECT_FALSE(user_scripts[0]->match_origin_as_fallback());
-  EXPECT_FALSE(user_scripts[1]->match_origin_as_fallback());
-  EXPECT_FALSE(user_scripts[2]->match_origin_as_fallback());
+  // With the feature disabled, match_origin_as_fallback should be ignored.
+
+  // The first script specifies `"match_origin_as_fallback": true`.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kNever,
+            user_scripts[0]->match_origin_as_fallback());
+  // The second specifies `"match_origin_as_fallback": false`.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kNever,
+            user_scripts[1]->match_origin_as_fallback());
+  // The third specifies `"match_about_blank": true`.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kMatchForAboutSchemeAndClimbTree,
+            user_scripts[2]->match_origin_as_fallback());
+  // The fourth specifies `"match_about_blank": false`.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kNever,
+            user_scripts[3]->match_origin_as_fallback());
+  // The fifth specifies `"match_origin_as_fallback": false` *and*
+  // `"match_about_blank": true`.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kMatchForAboutSchemeAndClimbTree,
+            user_scripts[4]->match_origin_as_fallback());
+  // The sixth specifies `"match_origin_as_fallback": true` *and*
+  // `"match_about_blank": false`.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kNever,
+            user_scripts[5]->match_origin_as_fallback());
+  // The seventh and final does not specify a value for either.
+  EXPECT_EQ(MatchOriginAsFallbackBehavior::kNever,
+            user_scripts[6]->match_origin_as_fallback());
 }
 
 }  // namespace extensions

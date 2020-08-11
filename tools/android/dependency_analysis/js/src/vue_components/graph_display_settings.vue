@@ -4,34 +4,36 @@
 
 <template>
   <div id="display-settings">
-    <div>
-      <input
-          id="curve-edges"
-          v-model="displaySettingsData.curveEdges"
-          type="checkbox"
-          @change="displayOptionChanged">
-      <label for="curve-edges">Curve graph edges</label>
-    </div>
-    <div>
-      <input
-          id="color-on-hover"
-          v-model="displaySettingsData.colorOnlyOnHover"
-          type="checkbox"
-          @change="displayOptionChanged">
-      <label for="color-on-hover">Color graph edges only on node hover</label>
-    </div>
-    <label for="graph-edge-color">Graph edge color scheme:</label>
-    <select
-        id="graph-edge-color"
-        v-model="displaySettingsData.graphEdgeColor"
+    <MdField class="display-settings-option">
+      <label for="graph-edge-color">Graph edge color scheme:</label>
+      <MdSelect
+          id="graph-edge-color"
+          v-model="displaySettingsData.graphEdgeColor"
+          @md-selected="displayOptionChanged">
+        <MdOption
+            v-for="edgeColor in GraphEdgeColor"
+            :key="edgeColor"
+            :value="edgeColor">
+          {{ edgeColor }}
+        </MdOption>
+      </MdSelect>
+    </MdField>
+    <MdCheckbox
+        id="curve-edges"
+        v-model="displaySettingsData.curveEdges"
+        class="md-primary display-settings-option"
+        type="checkbox"
         @change="displayOptionChanged">
-      <option
-          v-for="edgeColor in GraphEdgeColor"
-          :key="edgeColor"
-          :value="edgeColor">
-        {{ edgeColor }}
-      </option>
-    </select>
+      Curve graph edges
+    </MdCheckbox>
+    <MdCheckbox
+        id="color-on-hover"
+        v-model="displaySettingsData.colorOnlyOnHover"
+        class="md-primary display-settings-option"
+        type="checkbox"
+        @change="displayOptionChanged">
+      Color graph edges only on node hover
+    </MdCheckbox>
   </div>
 </template>
 
@@ -62,5 +64,9 @@ export default GraphDisplaySettings;
   display: flex;
   flex-direction: column;
   margin-bottom: 10px;
+}
+
+.display-settings-option {
+  margin: 5px 0;
 }
 </style>

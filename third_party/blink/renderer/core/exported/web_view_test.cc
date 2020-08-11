@@ -246,8 +246,8 @@ class WebViewTest : public testing::Test {
         .Utf8();
   }
 
-  void TestAutoResize(const WebSize& min_auto_resize,
-                      const WebSize& max_auto_resize,
+  void TestAutoResize(const gfx::Size& min_auto_resize,
+                      const gfx::Size& max_auto_resize,
                       const std::string& page_width,
                       const std::string& page_height,
                       int expected_width,
@@ -862,8 +862,8 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan) {
 }
 
 void WebViewTest::TestAutoResize(
-    const WebSize& min_auto_resize,
-    const WebSize& max_auto_resize,
+    const gfx::Size& min_auto_resize,
+    const gfx::Size& max_auto_resize,
     const std::string& page_width,
     const std::string& page_height,
     int expected_width,
@@ -908,8 +908,8 @@ void WebViewTest::TestAutoResize(
 }
 
 TEST_F(WebViewTest, AutoResizeMinimumSize) {
-  WebSize min_auto_resize(91, 56);
-  WebSize max_auto_resize(403, 302);
+  gfx::Size min_auto_resize(91, 56);
+  gfx::Size max_auto_resize(403, 302);
   std::string page_width = "91px";
   std::string page_height = "56px";
   int expected_width = 91;
@@ -920,8 +920,8 @@ TEST_F(WebViewTest, AutoResizeMinimumSize) {
 }
 
 TEST_F(WebViewTest, AutoResizeHeightOverflowAndFixedWidth) {
-  WebSize min_auto_resize(90, 95);
-  WebSize max_auto_resize(90, 100);
+  gfx::Size min_auto_resize(90, 95);
+  gfx::Size max_auto_resize(90, 100);
   std::string page_width = "60px";
   std::string page_height = "200px";
   int expected_width = 90;
@@ -932,8 +932,8 @@ TEST_F(WebViewTest, AutoResizeHeightOverflowAndFixedWidth) {
 }
 
 TEST_F(WebViewTest, AutoResizeFixedHeightAndWidthOverflow) {
-  WebSize min_auto_resize(90, 100);
-  WebSize max_auto_resize(200, 100);
+  gfx::Size min_auto_resize(90, 100);
+  gfx::Size max_auto_resize(200, 100);
   std::string page_width = "300px";
   std::string page_height = "80px";
   int expected_width = 200;
@@ -946,8 +946,8 @@ TEST_F(WebViewTest, AutoResizeFixedHeightAndWidthOverflow) {
 // Next three tests disabled for https://bugs.webkit.org/show_bug.cgi?id=92318 .
 // It seems we can run three AutoResize tests, then the next one breaks.
 TEST_F(WebViewTest, AutoResizeInBetweenSizes) {
-  WebSize min_auto_resize(90, 95);
-  WebSize max_auto_resize(200, 300);
+  gfx::Size min_auto_resize(90, 95);
+  gfx::Size max_auto_resize(200, 300);
   std::string page_width = "100px";
   std::string page_height = "200px";
   int expected_width = 100;
@@ -958,8 +958,8 @@ TEST_F(WebViewTest, AutoResizeInBetweenSizes) {
 }
 
 TEST_F(WebViewTest, AutoResizeOverflowSizes) {
-  WebSize min_auto_resize(90, 95);
-  WebSize max_auto_resize(200, 300);
+  gfx::Size min_auto_resize(90, 95);
+  gfx::Size max_auto_resize(200, 300);
   std::string page_width = "300px";
   std::string page_height = "400px";
   int expected_width = 200;
@@ -970,8 +970,8 @@ TEST_F(WebViewTest, AutoResizeOverflowSizes) {
 }
 
 TEST_F(WebViewTest, AutoResizeMaxSize) {
-  WebSize min_auto_resize(90, 95);
-  WebSize max_auto_resize(200, 300);
+  gfx::Size min_auto_resize(90, 95);
+  gfx::Size max_auto_resize(200, 300);
   std::string page_width = "200px";
   std::string page_height = "300px";
   int expected_width = 200;
@@ -4478,7 +4478,7 @@ TEST_F(WebViewTest, AutoResizeSubtreeLayout) {
   std::string url = RegisterMockedHttpURLLoad("subtree-layout.html");
   WebViewImpl* web_view = web_view_helper_.Initialize();
 
-  web_view->EnableAutoResizeMode(WebSize(200, 200), WebSize(200, 200));
+  web_view->EnableAutoResizeMode(gfx::Size(200, 200), gfx::Size(200, 200));
   LoadFrame(web_view->MainFrameImpl(), url);
 
   LocalFrameView* frame_view =

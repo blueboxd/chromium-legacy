@@ -1104,7 +1104,6 @@
 <translation id="2336381494582898602">Үйлдвэрийн тохиргоонд нь буцааж оруулах</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" />-г аюулгүй татах боломжгүй</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> холбогдох хүсэлтэй байна</translation>
-<translation id="2341476639346994688">Хэвлэгч зогссон байна</translation>
 <translation id="2342740338116612727">Хавчуурга нэмсэн</translation>
 <translation id="2343747224442182863">Энэ табын фокусыг тохируулах</translation>
 <translation id="2344686470986284227">Виртуал машины хянагчийг эхлүүлж байна</translation>
@@ -3442,7 +3441,6 @@
 <translation id="5283677936944177147">Уучлаарай! Систем төхөөрөмжийн загвар, эсвэл серийн дугаарыг илрүүлж чадсангүй.</translation>
 <translation id="5284445933715251131">Үргэлжлүүлэн татах</translation>
 <translation id="5285635972691565180">Дэлгэц <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Гаралтын хэсэг дүүрсэн байна</translation>
 <translation id="5286194356314741248">Скан хийж байна</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Таны бүртгэл</translation>
@@ -3663,7 +3661,6 @@
 <translation id="5553089923092577885">Гэрчилгээний бодлогын зураглал</translation>
 <translation id="5554489410841842733">Өргөтгөл нь одоо байгаа хуудсан дээр ажиллаж чадаж байгаа үед энэ дүрс харагдах болно.</translation>
 <translation id="5554720593229208774">Имэйл Certification Authority</translation>
-<translation id="5554931805291741487">Гаралтын хэсэг бараг дүүрсэн байна</translation>
 <translation id="5556459405103347317">Дахин ачаал</translation>
 <translation id="5558125320634132440">Энэ сайт нь насанд хүрэгчдийн контент агуулж болзошгүй тул түүнийг хориглосон</translation>
 <translation id="5558129378926964177">Томруул</translation>
@@ -4934,7 +4931,6 @@
 <translation id="7152478047064750137">Энэ өргөтгөл ямар нэгэн тусгай зөвшөөрөл шаарддаггүй</translation>
 <translation id="7154130902455071009">Өөрийн эхлэх хуудсыг :<ph name="START_PAGE" /> болгож өөрчлөх</translation>
 <translation id="7155171745945906037">Камер эсвэл файлд байгаа зураг</translation>
-<translation id="7163766494674803047">Хэвлэгч төхөөрөмжийн алдаа</translation>
 <translation id="7165320105431587207">Сүлжээг тохируулж чадсангүй</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" нь шалгасан байрлал дахь зураг, видео бичлэг болон дууны файлуудыг уншиж чадна.</translation>
 <translation id="7167486101654761064">&amp; Үргэлж энэ төрлийн файлыг нээх</translation>

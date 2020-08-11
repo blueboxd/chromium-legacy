@@ -76,7 +76,7 @@ public final class FirstRunIntegrationUnitTest {
         mShadowApplication.setSystemService(Context.USER_SERVICE, userManager);
 
         FirstRunStatus.setFirstRunFlowComplete(false);
-        WebApkValidator.disableValidationForTesting();
+        WebApkValidator.setDisableValidationForTesting(true);
     }
 
     /** Checks that the intent component targets the passed-in class. */

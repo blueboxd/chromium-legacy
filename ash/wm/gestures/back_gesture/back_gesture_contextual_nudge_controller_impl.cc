@@ -123,6 +123,9 @@ void BackGestureContextualNudgeControllerImpl::OnShelfConfigUpdated() {
 
   shelf_control_visible_ = updated_shelf_control_visibility;
 
+  if (!nudge_ || !shelf_control_visible_)
+    return;
+
   // Metrics for hiding nudge when exiting tablet mode is handled by
   // OnTabletModeEnded.
   if (tablet_mode && shelf_control_visible_) {
@@ -130,9 +133,6 @@ void BackGestureContextualNudgeControllerImpl::OnShelfConfigUpdated() {
         contextual_tooltip::TooltipType::kBackGesture,
         contextual_tooltip::DismissNudgeReason::kOther);
   }
-
-  if (!nudge_ || !shelf_control_visible_)
-    return;
   nudge_->CancelAnimationOrFadeOutToHide();
 }
 
@@ -218,19 +218,23 @@ void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring(
   }
 }
 
-void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
-  // TODO(crbug/1101105) Reimplement kTimeout metric for back gesture nudge.
+void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished(
+    bool animation_completed) {
   const bool count_as_shown = nudge_->ShouldNudgeCountAsShown();
   // UpdateWindowMonitoring() might attempt to cancel any in-progress nudge,
   // which would switch the nudge into an invalid state. Reset the nudge before
   // window monitoring is updated.
   nudge_.reset();
 
+  if (animation_completed) {
+    DCHECK(count_as_shown);
+    contextual_tooltip::MaybeLogNudgeDismissedMetrics(
+        contextual_tooltip::TooltipType::kBackGesture,
+        contextual_tooltip::DismissNudgeReason::kTimeout);
+  }
   contextual_tooltip::SetBackGestureNudgeShowing(false);
 
   if (count_as_shown) {
-    contextual_tooltip::HandleNudgeShown(
-        GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture);
     UpdateWindowMonitoring(/*can_show_nudge_immediately=*/false);
 
     // Set a timer to monitoring windows and show nudge ui again.

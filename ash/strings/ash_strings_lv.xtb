@@ -506,6 +506,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="6972754398087986839">Sākt darbu</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
 <translation id="698231206551913481">Visi faili un lokālie dati, kas ir saistīti ar šo lietotāju, tiks neatgriezeniski dzēsti, tiklīdz šis lietotājs tiks noņemts.</translation>
+<translation id="7007983414944123363">Nevarēja verificēt jūsu PIN vai paroli. Mēģiniet vēlreiz.</translation>
 <translation id="7015766095477679451">Atgriezieties plkst. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Savienojiet ierīci <ph name="DEVICE_NAME" /> ar tālruni</translation>
 <translation id="7026338066939101231">Samazināt</translation>
@@ -551,6 +552,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="7568294522609223312">Izslēgt automātiskos klikšķus</translation>
 <translation id="7568637526529101738">Ja noklikšķināsiet uz satura ar peles labo pogu vai nospiedīsiet un turēsiet saturu, Asistents parādīs ar atlasi saistītu informāciju, piemēram, definīciju vai citās mērvienībās izteiktu vērtību.</translation>
 <translation id="7569509451529460200">Braila raksts un ChromeVox ir iespējoti</translation>
+<translation id="7579778809502851308">Veidot ekrānuzņēmumu</translation>
 <translation id="7593891976182323525">Meklēt vai Shift</translation>
 <translation id="7600875258240007829">Skatīt visus paziņojumus</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -669,6 +671,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="8841375032071747811">Poga Atpakaļ</translation>
 <translation id="8843682306134542540">Pārslēgt pagriešanas bloķēšanu. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">Joprojām nevarēja verificēt jūsu PIN vai paroli. Piezīme. Ja nesen mainījāt paroli, izmantojiet iepriekšējo paroli. Jaunā parole tiks lietota pēc izrakstīšanās.</translation>
 <translation id="8870509716567206129">Lietotnē netiek atbalstīta ekrāna sadalīšana.</translation>
 <translation id="8874184842967597500">Savienojums nav izveidots</translation>
 <translation id="8877788021141246043">Iestatīt atgādinājumu</translation>

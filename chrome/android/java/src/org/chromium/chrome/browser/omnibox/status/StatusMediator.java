@@ -84,6 +84,7 @@ class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
     private boolean mShouldCancelCustomFavicon;
     private boolean mIsTablet;
 
+    private final int mEndPaddingPixelSizeOnFocusDelta;
     private int mUrlMinWidth;
     private int mSeparatorMinWidth;
     private int mVerboseStatusTextMinWidth;
@@ -130,13 +131,12 @@ class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
         mContext = context;
         mUrlBarEditingTextStateProvider = urlBarEditingTextStateProvider;
 
+        mEndPaddingPixelSizeOnFocusDelta =
+                mResources.getDimensionPixelSize(R.dimen.sei_location_bar_icon_end_padding_focused)
+                - mResources.getDimensionPixelSize(R.dimen.sei_location_bar_icon_end_padding);
         int iconWidth = resources.getDimensionPixelSize(R.dimen.location_bar_status_icon_width);
-        mTextOffsetThreshold = (float) iconWidth
-                / (iconWidth
-                        + resources.getDimensionPixelSize(
-                                R.dimen.sei_location_bar_icon_end_padding_focused)
-                        - resources.getDimensionPixelSize(
-                                R.dimen.sei_location_bar_icon_end_padding));
+        mTextOffsetThreshold =
+                (float) iconWidth / (iconWidth + getEndPaddingPixelSizeOnFocusDelta());
         mTextOffsetAdjustedScale = mTextOffsetThreshold == 1 ? 1 : (1 - mTextOffsetThreshold);
 
         mIsTablet = isTablet;
@@ -230,6 +230,13 @@ class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
      */
     void setSeparatorFieldMinWidth(int width) {
         mSeparatorMinWidth = width;
+    }
+
+    /**
+     * Returns the increase in StatusView end padding, when the Url bar is focused.
+     */
+    int getEndPaddingPixelSizeOnFocusDelta() {
+        return mEndPaddingPixelSizeOnFocusDelta;
     }
 
     /**

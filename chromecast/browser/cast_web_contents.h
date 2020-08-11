@@ -269,6 +269,10 @@ class CastWebContents {
   // same tab ID at any given time.
   virtual int tab_id() const = 0;
 
+  // An identifier for the WebContents, mainly used by platform views service.
+  // IDs may be re-used but are unique among all live CastWebContents.
+  virtual int id() const = 0;
+
   // TODO(seantopping): Hide this, clients shouldn't use WebContents directly.
   virtual content::WebContents* web_contents() const = 0;
   virtual PageState page_state() const = 0;

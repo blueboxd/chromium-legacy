@@ -265,6 +265,7 @@ _CONFIG = [
             'gfx::Rect',
             'gfx::RectF',
             'gfx::RRectF',
+            'gfx::ScaleToCeiledSize',
             'gfx::ScaleVector2d',
             'gfx::Size',
             'gfx::SizeF',

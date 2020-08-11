@@ -15,6 +15,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/script_constants.h"
 #include "extensions/renderer/injection_host.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
@@ -82,8 +83,10 @@ PermissionsData::PageAccess ProgrammaticScriptInjector::CanExecuteOnFrame(
   }
   GURL effective_document_url =
       ScriptContext::GetEffectiveDocumentURLForInjection(
-          frame, frame->GetDocument().Url(), params_->match_about_blank,
-          /*match_origin_as_fallback=*/false);
+          frame, frame->GetDocument().Url(),
+          params_->match_about_blank
+              ? MatchOriginAsFallbackBehavior::kMatchForAboutSchemeAndClimbTree
+              : MatchOriginAsFallbackBehavior::kNever);
   if (params_->is_web_view) {
     if (frame->Parent()) {
       // This is a subframe inside <webview>, so allow it.

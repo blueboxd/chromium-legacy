@@ -382,13 +382,6 @@ class TestRunner(object):
     #  for XCtests and Gtests.
     self.xctest = xctest
 
-    # TODO(crbug.com/1110375): Remove this when WebRTC xctests run with
-    # xcodebuild_runner.
-    webrtc_xctest_names = [
-        'apprtcmobile_tests', 'sdk_unittests', 'sdk_framework_unittests'
-    ]
-    self.webrtc_xctest = self.xctest and self.app_name in webrtc_xctest_names
-
     self.test_results = {}
     self.test_results['version'] = 3
     self.test_results['path_delimiter'] = '.'
@@ -530,10 +523,7 @@ class TestRunner(object):
     """
     result = gtest_utils.GTestResult(cmd)
 
-    if self.webrtc_xctest:
-      parser = xctest_utils.XCTestLogParser()
-    else:
-      parser = gtest_utils.GTestLogParser()
+    parser = gtest_utils.GTestLogParser()
 
     # TODO(crbug.com/812705): Implement test sharding for unit tests.
     # TODO(crbug.com/812712): Use thread pool for DeviceTestRunner as well.
@@ -549,9 +539,6 @@ class TestRunner(object):
     LOGGER.debug('Stdout flushed after test process.')
     returncode = proc.returncode
 
-    if self.webrtc_xctest and parser.SystemAlertPresent():
-      raise SystemAlertPresentError()
-
     LOGGER.debug('Processing test results.')
     for test in parser.FailedTests(include_flaky=True):
       # Test cases are named as <test group>.<test case>. If the test case
@@ -564,9 +551,8 @@ class TestRunner(object):
     result.passed_tests.extend(parser.PassedTests(include_flaky=True))
 
     # Only GTest outputs compiled tests in a json file.
-    if not self.webrtc_xctest:
-      result.disabled_tests_from_compiled_tests_file.extend(
-          parser.DisabledTestsFromCompiledTestsFile())
+    result.disabled_tests_from_compiled_tests_file.extend(
+        parser.DisabledTestsFromCompiledTestsFile())
 
     LOGGER.info('%s returned %s\n', cmd[0], returncode)
 
@@ -579,16 +565,10 @@ class TestRunner(object):
     """Launches the test app."""
     self.set_up()
     destination = 'id=%s' % self.udid
-    if self.webrtc_xctest:
-      test_app = test_apps.EgtestsApp(
-          self.app_path,
-          included_tests=self.test_cases,
-          env_vars=self.env_vars,
-          test_args=self.test_args)
     # When current |launch| method is invoked, this is running a unit test
     # target. For simulators, '--xctest' is passed to test runner scripts to
     # make it run XCTest based unit test.
-    elif self.xctest:
+    if self.xctest:
       test_app = test_apps.SimulatorXCTestUnitTestsApp(
           self.app_path,
           included_tests=self.test_cases,

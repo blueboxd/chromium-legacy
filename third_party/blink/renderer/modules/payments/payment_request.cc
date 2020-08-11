@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/modules/payments/payment_request_update_event.h"
 #include "third_party/blink/renderer/modules/payments/payment_response.h"
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
+#include "third_party/blink/renderer/modules/payments/secure_payment_confirmation_helper.h"
 #include "third_party/blink/renderer/modules/payments/update_payment_details_function.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -411,14 +412,14 @@ void SetAndroidPayMethodData(v8::Isolate* isolate,
     output->api_version = android_pay->apiVersion();
 }
 
-void StringifyAndParseMethodSpecificData(v8::Isolate* isolate,
+void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
                                          const String& supported_method,
                                          const ScriptValue& input,
                                          PaymentMethodDataPtr& output,
                                          ExceptionState& exception_state) {
   PaymentsValidators::ValidateAndStringifyObject(
-      isolate, "Payment method data", input, output->stringified_data,
-      exception_state);
+      execution_context.GetIsolate(), "Payment method data", input,
+      output->stringified_data, exception_state);
   if (exception_state.HadException())
     return;
 
@@ -427,15 +428,21 @@ void StringifyAndParseMethodSpecificData(v8::Isolate* isolate,
   // data asynchronously. Do not throw exceptions here.
   if (supported_method == kGooglePayMethod ||
       supported_method == kAndroidPayMethod) {
-    SetAndroidPayMethodData(isolate, input, output, exception_state);
+    SetAndroidPayMethodData(execution_context.GetIsolate(), input, output,
+                            exception_state);
     if (exception_state.HadException())
       exception_state.ClearException();
   }
 
+  // Parse method data to avoid parsing JSON in the browser.
   if (supported_method == "basic-card") {
-    // Parses basic-card data to avoid parsing JSON in the browser.
     BasicCardHelper::ParseBasiccardData(input, output->supported_networks,
                                         exception_state);
+  } else if (supported_method == "secure-payment-confirmation" &&
+             RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
+                 &execution_context)) {
+    SecurePaymentConfirmationHelper::ParseSecurePaymentConfirmationData(
+        input, exception_state);
   }
 }
 
@@ -480,8 +487,8 @@ void ValidateAndConvertPaymentDetailsModifiers(
 
     if (modifier->hasData() && !modifier->data().IsEmpty()) {
       StringifyAndParseMethodSpecificData(
-          execution_context.GetIsolate(), modifier->supportedMethod(),
-          modifier->data(), output.back()->method_data, exception_state);
+          execution_context, modifier->supportedMethod(), modifier->data(),
+          output.back()->method_data, exception_state);
     } else {
       output.back()->method_data->stringified_data = "";
     }
@@ -677,9 +684,8 @@ void ValidateAndConvertPaymentMethodData(
     if (payment_method_data->hasData() &&
         !payment_method_data->data().IsEmpty()) {
       StringifyAndParseMethodSpecificData(
-          execution_context.GetIsolate(),
-          payment_method_data->supportedMethod(), payment_method_data->data(),
-          output.back(), exception_state);
+          execution_context, payment_method_data->supportedMethod(),
+          payment_method_data->data(), output.back(), exception_state);
       if (exception_state.HadException())
         continue;
 
@@ -1199,8 +1205,9 @@ PaymentRequest::PaymentRequest(
           mojom::blink::ConsoleMessageSource::kJavaScript,
           mojom::blink::ConsoleMessageLevel::kError,
           "Payment method \"" + data->supported_method +
-          "\" cannot be used with \"requestShipping\", \"requestPayerName\", "
-          "\"requestPayerEmail\", or \"requestPayerPhone\"."));
+              "\" cannot be used with \"requestShipping\", "
+              "\"requestPayerName\", "
+              "\"requestPayerEmail\", or \"requestPayerPhone\"."));
     }
   }
 

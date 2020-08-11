@@ -1346,7 +1346,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDisplayNoneWebviewLoad) {
   TestHelper("testDisplayNoneWebviewLoad", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDisplayNoneWebviewRemoveChild) {
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_Shim_TestDisplayNoneWebviewRemoveChild \
+  DISABLED_Shim_TestDisplayNoneWebviewRemoveChild
+#else
+#define MAYBE_Shim_TestDisplayNoneWebviewRemoveChild \
+  Shim_TestDisplayNoneWebviewRemoveChild
+#endif
+// Flaky on Windows & Linux: https://crbug.com/1115106.
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       MAYBE_Shim_TestDisplayNoneWebviewRemoveChild) {
   TestHelper("testDisplayNoneWebviewRemoveChild",
              "web_view/shim", NO_TEST_SERVER);
 }

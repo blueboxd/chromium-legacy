@@ -35,8 +35,8 @@
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/ozone/public/platform_clipboard.h"
-#include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
-#include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
+#include "ui/platform_window/handlers/wm_drag_handler.h"
+#include "ui/platform_window/handlers/wm_drop_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "url/gurl.h"
 

@@ -56,6 +56,7 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
   AXNode::AXID GetAnchorID(AXNode* node) const override;
   AXTreeID GetTreeID(AXNode* node) const override;
 
+  bool IsEmbeddedObjectInParent() const override;
   bool IsInLineBreakingObject() const override;
   ax::mojom::Role GetRole() const override;
   AXNodeTextStyles GetTextStyles() const override;

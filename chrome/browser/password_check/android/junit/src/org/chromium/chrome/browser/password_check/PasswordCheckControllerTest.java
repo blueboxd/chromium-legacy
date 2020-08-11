@@ -10,7 +10,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -91,7 +93,7 @@ public class PasswordCheckControllerTest {
         mMediator = new PasswordCheckMediator(
                 mLaunchCctWithChangePasswordUrlConsumer, mLaunchCctWithScriptConsumer);
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
-        mMediator.initialize(mModel, mDelegate);
+        mMediator.initialize(mModel, mDelegate, PasswordCheckReferrer.PASSWORD_SETTINGS);
     }
 
     @Test
@@ -107,8 +109,18 @@ public class PasswordCheckControllerTest {
     }
 
     @Test
-    public void testInitializeRunningHeader() {
+    public void testInitializeRunningHeaderAndTriggerRunAsSoonAsPossible() {
         assertRunningHeader(mModel.get(ITEMS).get(0), UNKNOWN_PROGRESS);
+        verify(mPasswordCheck).startCheck();
+    }
+
+    @Test
+    public void testInitializeHeaderWithLastStatusWhenComingFromSafetyCheck() {
+        clearInvocations(mPasswordCheck); // Clear invocations from setup code.
+        when(mPasswordCheck.getCheckStatus()).thenReturn(PasswordCheckUIStatus.IDLE);
+        mMediator.initialize(mModel, mDelegate, PasswordCheckReferrer.SAFETY_CHECK);
+        assertIdleHeader(mModel.get(ITEMS).get(0));
+        verify(mPasswordCheck, never()).startCheck();
     }
 
     @Test

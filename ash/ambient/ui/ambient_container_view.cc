@@ -10,6 +10,7 @@
 #include "ash/ambient/ui/ambient_assistant_container_view.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ambient/ui/glanceable_info_view.h"
+#include "ash/ambient/ui/media_string_view.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/ambient/util/ambient_util.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
@@ -40,6 +41,7 @@ using chromeos::assistant::features::IsAmbientAssistantEnabled;
 constexpr int kHorizontalMarginDip = 16;
 constexpr int kVerticalMarginDip = 64;
 constexpr int kAssistantPreferredHeightDip = 128;
+constexpr int kMediaStringTopMarginDip = 25;
 
 // A tolerance threshold used to ignore spurious mouse move.
 constexpr int kMouseMoveErrorTolerancePx = 3;
@@ -132,6 +134,7 @@ void AmbientContainerView::Layout() {
   // Layout child views first to have proper bounds set for children.
   LayoutPhotoView();
   LayoutGlanceableInfoView();
+  LayoutMediaStringView();
   // The assistant view may not exist if |kAmbientAssistant| feature is
   // disabled.
   if (ambient_assistant_container_view_)
@@ -154,6 +157,9 @@ void AmbientContainerView::Init() {
 
   glanceable_info_view_ =
       AddChildView(std::make_unique<GlanceableInfoView>(delegate_));
+
+  media_string_view_ = AddChildView(std::make_unique<MediaStringView>());
+  media_string_view_->SetVisible(false);
 
   if (IsAmbientAssistantEnabled()) {
     ambient_assistant_container_view_ =
@@ -185,6 +191,22 @@ void AmbientContainerView::LayoutAssistantView() {
   int preferred_height = kAssistantPreferredHeightDip;
   ambient_assistant_container_view_->SetBoundsRect(
       gfx::Rect(0, 0, preferred_width, preferred_height));
+}
+
+void AmbientContainerView::LayoutMediaStringView() {
+  const gfx::Size container_size = GetLocalBounds().size();
+  const gfx::Size preferred_size = media_string_view_->GetPreferredSize();
+
+  // The media string view is positioned on the right-top corner of the
+  // container.
+  // TODO(meilinw): without a maximum width limit, media string can grow too
+  // long or even overflow the screen. Revisit here to polish the UI once the
+  // spec is available. See b/163398805.
+  int x =
+      container_size.width() - kHorizontalMarginDip - preferred_size.width();
+  int y = kMediaStringTopMarginDip;
+  media_string_view_->SetBoundsRect(
+      gfx::Rect(x, y, preferred_size.width(), preferred_size.height()));
 }
 
 void AmbientContainerView::HandleEvent() {

@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Навигацијата е блокирана: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Дозволено</translation>
 <translation id="429312253194641664">Сајтот репродуцира аудиовизуелни содржини</translation>
+<translation id="4336434711095810371">Избриши ги сите податоци</translation>
 <translation id="4433925000917964731">Lite-страница овозможена од Google</translation>
 <translation id="4434045419905280838">Скокачки прозорци/пренасочувања</translation>
 <translation id="445467742685312942">Дозволи сајтовите да пуштаат заштитени содржини</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Картичка инкогнито</translation>
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5301954838959518834">Добро, сфатив</translation>
-<translation id="5307446750509046227">Избриши го капацитетот</translation>
 <translation id="5313967007315987356">Додај локација</translation>
 <translation id="5317780077021120954">Зачувај</translation>
 <translation id="5335288049665977812">Дозволи сајтовите да извршуваат JavaScript (се препорачува)</translation>
@@ -228,6 +228,7 @@
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8300705686683892304">Управувани од апликација</translation>
 <translation id="8372893542064058268">Дозволи Синхронизација во заднина за одреден сајт.</translation>
+<translation id="8376384591331888629">Вклучувајќи колачиња од трети страни</translation>
 <translation id="83792324527827022">Сајтот ги користи камерата и микрофонот</translation>
 <translation id="8380167699614421159">Сајтов прикажува нападни или лажни реклами</translation>
 <translation id="8394832520002899662">Допрете за да се вратите на сајтот</translation>
@@ -249,7 +250,6 @@
 <translation id="8801436777607969138">Блокирај JavaScript за одреден сајт.</translation>
 <translation id="8816026460808729765">Блокирајте го пристапот до сензорите за сајтовите</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Склад</translation>
 <translation id="8926666909099850184">NFC е исклучена за уредов. Вклучете ја во <ph name="BEGIN_LINK" />„Поставки за Android“<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Сајтов се отвора и реагира брзо за повеќето луѓе</translation>
 <translation id="8941729603749328384">www.primer.com</translation>
@@ -261,4 +261,5 @@
 <translation id="913657688200966289">Вклучете ги дозволите за <ph name="APP_NAME" /> во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Пристапи до микрофонот</translation>
 <translation id="965817943346481315">Блокирај ако сајтот прикажува нападни или лажни реклами (препорачано)</translation>
+<translation id="967624055006145463">Складирани податоци</translation>
 </translationbundle>

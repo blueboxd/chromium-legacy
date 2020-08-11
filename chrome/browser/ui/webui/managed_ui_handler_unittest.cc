@@ -104,7 +104,7 @@ TEST_F(ManagedUIHandlerTest, ManagedUIBecomesEnabledByProfile) {
   policy::PolicyMap non_empty_map;
   non_empty_map.Set("FakePolicyName", policy::POLICY_LEVEL_MANDATORY,
                     policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                    std::make_unique<base::Value>("fake"), nullptr);
+                    base::Value("fake"), nullptr);
   policy_provider()->UpdateChromePolicy(non_empty_map);
 
   // Source should auto-update.

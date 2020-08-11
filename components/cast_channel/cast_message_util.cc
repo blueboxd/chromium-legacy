@@ -561,10 +561,19 @@ GetAppAvailabilityResult GetAppAvailabilityResultFromResponse(
       .value_or(GetAppAvailabilityResult::kUnknown);
 }
 
-LaunchSessionResponse::LaunchSessionResponse() {}
+LaunchSessionResponse::LaunchSessionResponse() = default;
 LaunchSessionResponse::LaunchSessionResponse(LaunchSessionResponse&& other) =
     default;
+LaunchSessionResponse& LaunchSessionResponse::operator=(
+    LaunchSessionResponse&& other) = default;
 LaunchSessionResponse::~LaunchSessionResponse() = default;
+
+LaunchSessionResponse GetLaunchSessionResponseError(std::string error_msg) {
+  LaunchSessionResponse response;
+  response.result = LaunchSessionResponse::Result::kError;
+  response.error_msg = std::move(error_msg);
+  return response;
+}
 
 LaunchSessionResponse GetLaunchSessionResponse(const base::Value& payload) {
   const Value* type_value = payload.FindKeyOfType("type", Value::Type::STRING);

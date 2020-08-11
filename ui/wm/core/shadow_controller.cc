@@ -264,7 +264,7 @@ void ShadowController::Impl::HandlePossibleShadowVisibilityChange(
   if (shadow) {
     shadow->SetElevation(GetShadowElevationForActiveState(window));
     shadow->layer()->SetVisible(should_show);
-  } else if (should_show && !shadow) {
+  } else if (should_show) {
     CreateShadowForWindow(window);
   }
 }

@@ -193,24 +193,8 @@ void InitRestoredTreeNode(BrowserContext* browser_context,
   // Check that the entry has been already populated with required information.
   DCHECK(frame_entry->page_state().IsValid());
 
-  // For about:blank and data: URLs create a SiteInstance based on the initiator
-  // origin.  See also https://crbug.com/1026474.
-  if (frame_entry->url().IsAboutBlank() ||
-      frame_entry->url().SchemeIs(url::kDataScheme)) {
-    // TODO(lukasza): We should consider also creating a SiteInstance if there
-    // is no initiator origin.  Doing this would allow us to
-    // 1) remove special-casing of data URLs in
-    //    SiteInstanceImpl::GetSiteForURLInternal where sometimes we use the
-    //    whole data URL as a site URL to avoid session restore trouble.
-    // 2) start asserting that an initialized FrameNavigationEntry should always
-    //    have a non-null SiteInstance.
-    if (frame_entry->initiator_origin().has_value()) {
-      url::SchemeHostPort initiator_tuple =
-          frame_entry->initiator_origin()->GetTupleOrPrecursorTupleIfOpaque();
-      frame_entry->set_site_instance(SiteInstanceImpl::CreateForURL(
-          browser_context, initiator_tuple.GetURL()));
-    }
-  }
+  // TODO(lukasza): Finish reverting r719801 and remove this empty function and
+  // its callers.
 }
 
 void RecursivelyInitRestoredTreeNode(BrowserContext* browser_context,

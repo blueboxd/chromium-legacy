@@ -15,8 +15,8 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
-#include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
+#include "ui/platform_window/handlers/wm_drag_handler.h"
+#include "ui/platform_window/handlers/wm_drop_handler.h"
 #include "ui/views/views_export.h"
 
 namespace aura {

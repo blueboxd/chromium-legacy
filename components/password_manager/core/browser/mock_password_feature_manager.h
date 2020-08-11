@@ -31,6 +31,9 @@ class MockPasswordFeatureManager : public PasswordFeatureManager {
 
   MOCK_CONST_METHOD0(ComputePasswordAccountStorageUsageLevel,
                      metrics_util::PasswordAccountStorageUsageLevel());
+
+  MOCK_METHOD0(IncrementMoveToAccountRefusedCount, void());
+  MOCK_CONST_METHOD0(GetMoveToAccountRefusedCount, int());
 };
 
 }  // namespace password_manager

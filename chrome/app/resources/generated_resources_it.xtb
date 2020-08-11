@@ -1108,7 +1108,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947">Impossibile scaricare <ph name="FILE_NAME" /> in modo sicuro</translation>
 <translation id="2340263603246777781">Il sito <ph name="ORIGIN" /> desidera accoppiarsi</translation>
-<translation id="2341476639346994688">La stampante si è interrotta</translation>
 <translation id="2342740338116612727">Preferiti aggiunti</translation>
 <translation id="2343747224442182863">Imposta stato attivo su questa scheda</translation>
 <translation id="2344686470986284227">Avvio del controller della macchina virtuale</translation>
@@ -2030,7 +2029,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3487007233252413104">funzione anonima</translation>
 <translation id="348780365869651045">In attesa di AppCache...</translation>
 <translation id="3488065109653206955">Attivato parzialmente</translation>
-<translation id="3491669675709357988">L'account di tuo figlio non è configurato per la funzionalità Controllo genitori di Family Link. Puoi aggiungere la funzionalità Controllo genitori dopo aver completato la configurazione. Leggi informazioni su questa funzionalità nell'app Esplora.</translation>
+<translation id="3491669675709357988">L'account di tuo figlio non è configurato per la funzionalità Controllo genitori di Family Link. Per aggiungere questa funzionalità, devi completare la configurazione. Leggi informazioni su Controllo genitori nell'app Esplora.</translation>
 <translation id="3492788708641132712">La sincronizzazione non funziona. Riprova ad accedere.</translation>
 <translation id="3493486281776271508">È necessaria una connessione a Internet</translation>
 <translation id="3493881266323043047">Validità</translation>
@@ -3447,7 +3446,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5283677936944177147">Spiacenti, il sistema non è riuscito a stabilire il modello o il numero di serie del dispositivo.</translation>
 <translation id="5284445933715251131">Continua il download</translation>
 <translation id="5285635972691565180">Schermo <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Lo scomparto di uscita è pieno</translation>
 <translation id="5286194356314741248">Ricerca</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">I tuoi account</translation>
@@ -3668,7 +3666,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5553089923092577885">Mapping dei criteri dei certificati</translation>
 <translation id="5554489410841842733">Questa icona sarà visibile quando l'estensione potrà interagire nella pagina corrente.</translation>
 <translation id="5554720593229208774">Autorità di certificazione email</translation>
-<translation id="5554931805291741487">Lo scomparto di uscita è quasi pieno</translation>
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5558125320634132440">Questo sito è bloccato perché potrebbe mostrare contenuti inappropriati per i minori</translation>
 <translation id="5558129378926964177">&amp;Ingrandisci</translation>
@@ -4499,7 +4496,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6602956230557165253">Utilizza i tasti freccia sinistra e destra per spostarti.</translation>
 <translation id="6605847144724004692">Nessuna valutazione disponibile.</translation>
 <translation id="6607831829715835317">A&amp;ltri strumenti</translation>
-<translation id="6607890859198268021">L'indirizzo <ph name="USER_EMAIL" /> è gestito da <ph name="DOMAIN" />. Per utilizzare la funzionalità Controllo genitori con un altro Account Google, esci dopo la configurazione, quindi seleziona "Aggiungi persona" nella schermata di accesso.</translation>
+<translation id="6607890859198268021">L'indirizzo <ph name="USER_EMAIL" /> è già gestito da <ph name="DOMAIN" />. Per utilizzare la funzionalità Controllo genitori con un altro Account Google, esci dopo la configurazione, quindi seleziona "Aggiungi persona" nella schermata di accesso.</translation>
 <translation id="6611972847767394631">Trova le tue schede qui</translation>
 <translation id="6612358246767739896">Contenuti protetti</translation>
 <translation id="6615455863669487791">Mostrami</translation>
@@ -4939,7 +4936,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7152478047064750137">Questa estensione non richiede autorizzazioni speciali</translation>
 <translation id="7154130902455071009">Cambio della pagina iniziale con: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Foto esistente da fotocamera o file</translation>
-<translation id="7163766494674803047">Errore dispositivo stampante</translation>
 <translation id="7165320105431587207">Impossibile configurare la rete</translation>
 <translation id="716640248772308851">L'estensione "<ph name="EXTENSION" />" può leggere file di immagini, video e audio nelle posizioni selezionate.</translation>
 <translation id="7167486101654761064">&amp;Apri sempre file di questo tipo</translation>

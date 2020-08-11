@@ -423,7 +423,15 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(
     result.force = [event pressure];
     NSPoint tilt = [event tilt];
     result.tilt_x = lround(tilt.x * 90);
-    result.tilt_y = lround(tilt.y * 90);
+    // Pointer Events specification states that tiltY is positive when the
+    // pen is tilted towards the user.
+    // By default, in MacOS, the Y coordinate increases going up,
+    // while in Chromium the Y coordinate increases going down.
+    // https://developer.apple.com/library/archive/documentation/General/Conceptual/Devpedia-CocoaApp/CoordinateSystem.html
+    // In this case (if the coordinate system is not flipped) tiltY needs to
+    // be reversed to match Chromium's expectation that tiltY is positive
+    // towards the user
+    result.tilt_y = ([view isFlipped] ? 1 : (-1)) * lround(tilt.y * 90);
     result.tangential_pressure = [event tangentialPressure];
     // NSEvent spec doesn't specify the range of rotation, we make sure that
     // this value is in the range of [0,359].

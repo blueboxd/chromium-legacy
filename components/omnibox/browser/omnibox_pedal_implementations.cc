@@ -25,7 +25,9 @@ class OmniboxPedalClearBrowsingData : public OmniboxPedal {
             LabelStrings(
                 IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
                 IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,
-                IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS),
+                IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS,
+                IDS_ACC_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUFFIX,
+                IDS_ACC_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA),
             GURL("chrome://settings/clearBrowserData")) {}
 };
 
@@ -35,10 +37,11 @@ class OmniboxPedalManagePasswords : public OmniboxPedal {
  public:
   OmniboxPedalManagePasswords()
       : OmniboxPedal(
-            LabelStrings(
-                IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT,
-                IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT_SHORT,
-                IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_SUGGESTION_CONTENTS),
+            LabelStrings(IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT,
+                         IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT_SHORT,
+                         IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_SUGGESTION_CONTENTS,
+                         IDS_ACC_OMNIBOX_PEDAL_MANAGE_PASSWORDS_SUFFIX,
+                         IDS_ACC_OMNIBOX_PEDAL_MANAGE_PASSWORDS),
             GURL("chrome://settings/passwords")) {}
 };
 
@@ -51,7 +54,9 @@ class OmniboxPedalUpdateCreditCard : public OmniboxPedal {
             OmniboxPedal::LabelStrings(
                 IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_HINT,
                 IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_HINT_SHORT,
-                IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_SUGGESTION_CONTENTS),
+                IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_SUGGESTION_CONTENTS,
+                IDS_ACC_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_SUFFIX,
+                IDS_ACC_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD),
             GURL("chrome://settings/payments")) {}
 };
 
@@ -61,10 +66,11 @@ class OmniboxPedalLaunchIncognito : public OmniboxPedal {
  public:
   OmniboxPedalLaunchIncognito()
       : OmniboxPedal(
-            LabelStrings(
-                IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT,
-                IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT_SHORT,
-                IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_SUGGESTION_CONTENTS),
+            LabelStrings(IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT,
+                         IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT_SHORT,
+                         IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_SUGGESTION_CONTENTS,
+                         IDS_ACC_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_SUFFIX,
+                         IDS_ACC_OMNIBOX_PEDAL_LAUNCH_INCOGNITO),
             // Fake URL to distinguish matches.
             GURL("chrome://newtab?incognito=true")) {}
 
@@ -81,7 +87,9 @@ class OmniboxPedalTranslate : public OmniboxPedal {
       : OmniboxPedal(
             LabelStrings(IDS_OMNIBOX_PEDAL_TRANSLATE_HINT,
                          IDS_OMNIBOX_PEDAL_TRANSLATE_HINT_SHORT,
-                         IDS_OMNIBOX_PEDAL_TRANSLATE_SUGGESTION_CONTENTS),
+                         IDS_OMNIBOX_PEDAL_TRANSLATE_SUGGESTION_CONTENTS,
+                         IDS_ACC_OMNIBOX_PEDAL_TRANSLATE_SUFFIX,
+                         IDS_ACC_OMNIBOX_PEDAL_TRANSLATE),
             // Fake URL to distinguish matches.
             GURL("chrome://translate/pedals")) {}
 
@@ -98,7 +106,9 @@ class OmniboxPedalUpdateChrome : public OmniboxPedal {
       : OmniboxPedal(
             LabelStrings(IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT,
                          IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT_SHORT,
-                         IDS_OMNIBOX_PEDAL_UPDATE_CHROME_SUGGESTION_CONTENTS),
+                         IDS_OMNIBOX_PEDAL_UPDATE_CHROME_SUGGESTION_CONTENTS,
+                         IDS_ACC_OMNIBOX_PEDAL_UPDATE_CHROME_SUFFIX,
+                         IDS_ACC_OMNIBOX_PEDAL_UPDATE_CHROME),
             GURL("chrome://settings/help")) {}
 };
 

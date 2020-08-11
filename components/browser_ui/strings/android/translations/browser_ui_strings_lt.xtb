@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Naršymas užblokuotas: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Leidžiama</translation>
 <translation id="429312253194641664">Svetainėje leidžiama medija</translation>
+<translation id="4336434711095810371">Išvalyti visus duomenis</translation>
 <translation id="4433925000917964731">Supaprastintasis puslapis, kurį teikia „Google“</translation>
 <translation id="4434045419905280838">Iššok. langai ir peradresavimai</translation>
 <translation id="445467742685312942">Leisti svetainėms leisti saugomą turinį</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Inkognito skirtukas</translation>
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5301954838959518834">Gerai, supratau</translation>
-<translation id="5307446750509046227">Išvalyti svetainės saug.</translation>
 <translation id="5313967007315987356">Pridėti svetainę</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5335288049665977812">Leisti svetainėms paleisti „JavaScript“ (rekomenduojama)</translation>
@@ -228,6 +228,7 @@
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8300705686683892304">Valdo programa</translation>
 <translation id="8372893542064058268">Leisti fono sinchronizavimą konkrečioje svetainėje.</translation>
+<translation id="8376384591331888629">Įskaitant trečiosios šalies slapukus jūsų svetainėje</translation>
 <translation id="83792324527827022">Svetainėje naudojamas jūsų fotoaparatas ir mikrofonas</translation>
 <translation id="8380167699614421159">Šioje svetainėje rodomi nepageidaujami arba klaidinantys skelbimai</translation>
 <translation id="8394832520002899662">Norėdami grįžti į svetainę, palieskite</translation>
@@ -249,7 +250,6 @@
 <translation id="8801436777607969138">Blokuoti „JavaScript“ konkrečioje svetainėje.</translation>
 <translation id="8816026460808729765">Svetainės blokuojamos, kad nepasiektų jutiklių</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Saugykla</translation>
 <translation id="8926666909099850184">ALR išjungtas šiame įrenginyje. Įjunkite ALR <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Ši svetainė daugumai žmonių atsidaro ir reaguoja greitai</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +261,5 @@
 <translation id="913657688200966289">Įjunkite „<ph name="APP_NAME" />“ leidimus <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Prieiga prie mikrofono</translation>
 <translation id="965817943346481315">Blokuoti, jei svetainėje rodomi nepageidaujami arba klaidinantys skelbimai (rekomenduojama)</translation>
+<translation id="967624055006145463">Saugomi duomenys</translation>
 </translationbundle>

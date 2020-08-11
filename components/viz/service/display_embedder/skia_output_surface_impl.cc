@@ -230,7 +230,7 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
   auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
                              base::Unretained(impl_on_gpu_.get()), size,
                              device_scale_factor, color_space, format,
-                             use_stencil, pre_transform_);
+                             use_stencil, GetDisplayTransform());
   ScheduleGpuTask(std::move(task), {});
 
   color_space_ = color_space;
@@ -259,12 +259,18 @@ void SkiaOutputSurfaceImpl::SetGpuVSyncCallback(GpuVSyncCallback callback) {
 
 void SkiaOutputSurfaceImpl::SetDisplayTransformHint(
     gfx::OverlayTransform transform) {
-  if (capabilities_.supports_pre_transform)
-    pre_transform_ = transform;
+  display_transform_ = transform;
 }
 
 gfx::OverlayTransform SkiaOutputSurfaceImpl::GetDisplayTransform() {
-  return pre_transform_;
+  switch (capabilities_.orientation_mode) {
+    case OutputSurface::OrientationMode::kLogic:
+      return gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE;
+    case OutputSurface::OrientationMode::kHardware:
+      return display_transform_;
+    default:
+      NOTREACHED();
+  }
 }
 
 SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {

@@ -52,7 +52,9 @@ TEST_F(OmniboxPedalTest, SynonymGroupsDriveConceptMatches) {
       OmniboxPedal::LabelStrings(
           IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
           IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,
-          IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS),
+          IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS,
+          IDS_ACC_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUFFIX,
+          IDS_ACC_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA),
       GURL());
   const auto add_group = [&](bool required, int token) {
     OmniboxPedal::SynonymGroup group(required, true, 1);

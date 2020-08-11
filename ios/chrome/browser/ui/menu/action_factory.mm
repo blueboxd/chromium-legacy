@@ -107,6 +107,14 @@
                          block:block];
 }
 
+- (UIAction*)actionToOpenAllTabsWithBlock:(ProceduralBlock)block {
+  return [self actionWithTitle:l10n_util::GetNSString(
+                                   IDS_IOS_CONTENT_CONTEXT_OPEN_ALL_LINKS)
+                         image:[UIImage systemImageNamed:@"plus"]
+                          type:MenuActionType::OpenAllInNewTabs
+                         block:block];
+}
+
 - (UIAction*)actionToOpenInNewIncognitoTabWithURL:(const GURL)URL
                                        completion:(ProceduralBlock)completion {
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
@@ -162,6 +170,17 @@
                          image:[UIImage imageNamed:@"edit"]
                           type:MenuActionType::Edit
                          block:block];
+}
+
+- (UIAction*)actionToHideWithBlock:(ProceduralBlock)block {
+  UIAction* action =
+      [self actionWithTitle:l10n_util::GetNSString(
+                                IDS_IOS_RECENT_TABS_HIDE_MENU_OPTION)
+                      image:nil
+                       type:MenuActionType::Hide
+                      block:block];
+  action.attributes = UIMenuElementAttributesDestructive;
+  return action;
 }
 
 @end

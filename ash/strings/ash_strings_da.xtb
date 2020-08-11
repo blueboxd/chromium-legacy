@@ -507,6 +507,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6972754398087986839">Kom godt i gang</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="698231206551913481">Alle filer og lokale data, der er knyttet til denne bruger, slettes permanent, når brugeren fjernes.</translation>
+<translation id="7007983414944123363">Din pin- eller adgangskode kunne ikke bekræftes. Prøv igen.</translation>
 <translation id="7015766095477679451">Vend tilbage kl. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Slut <ph name="DEVICE_NAME" /> til din telefon</translation>
 <translation id="7026338066939101231">Reducer</translation>
@@ -552,6 +553,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7568294522609223312">Deaktiver automatiske klik</translation>
 <translation id="7568637526529101738">Når du højreklikker eller bruger langt tryk, viser Google Assistent dig oplysninger som f.eks. definitionen eller enhedskonverteringen for dit valg.</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er aktiveret</translation>
+<translation id="7579778809502851308">Screenshot</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7600875258240007829">Se alle notifikationer</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -670,6 +672,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8841375032071747811">Knappen Tilbage</translation>
 <translation id="8843682306134542540">Slå Lås rotation til eller fra. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Søg+Esc</translation>
+<translation id="8853703225951107899">Din pin- eller adgangskode kan stadig ikke bekræftes. Bemærk! Hvis du har ændret din adgangskode for nylig, skal du bruge din gamle adgangskode. Den nye adgangskode anvendes, når du har logget ud.</translation>
 <translation id="8870509716567206129">Appen understøtter ikke opdelt skærm.</translation>
 <translation id="8874184842967597500">Ikke forbundet</translation>
 <translation id="8877788021141246043">Opret en påmindelse</translation>

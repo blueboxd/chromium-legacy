@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
 <translation id="4278390842282768270">允许</translation>
 <translation id="429312253194641664">某个网站正在播放媒体内容</translation>
+<translation id="4336434711095810371">清除所有数据</translation>
 <translation id="4433925000917964731">由 Google 提供的精简版网页</translation>
 <translation id="4434045419905280838">弹出式窗口和重定向</translation>
 <translation id="445467742685312942">允许网站播放受保护内容。</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">无痕式标签页</translation>
 <translation id="5300589172476337783">显示</translation>
 <translation id="5301954838959518834">知道了</translation>
-<translation id="5307446750509046227">清空网站存储数据</translation>
 <translation id="5313967007315987356">添加网站</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5335288049665977812">允许网站运行 JavaScript（推荐）</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">禁止特定网站运行 JavaScript。</translation>
 <translation id="8816026460808729765">禁止网站使用传感器</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">存储数据</translation>
 <translation id="8926666909099850184">此设备的 NFC 功能处于关闭状态。请在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启此功能。</translation>
 <translation id="8929372349074745002">对于大多数人而言，此网站能快速打开和响应</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 <ph name="APP_NAME" /> 开启这些权限。</translation>
 <translation id="945632385593298557">使用您的麦克风</translation>
 <translation id="965817943346481315">屏蔽会展示侵扰性或误导性广告的网站（推荐）</translation>
+<translation id="967624055006145463">已存储的数据</translation>
 </translationbundle>

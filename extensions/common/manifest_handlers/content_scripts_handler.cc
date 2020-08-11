@@ -24,6 +24,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/script_constants.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/strings/grit/extensions_strings.h"
@@ -114,19 +115,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
     result->set_match_all_frames(all_frames->GetBool());
   }
 
-  // match about blank
-  const base::Value* match_about_blank =
-      content_script.FindKey(keys::kMatchAboutBlank);
-  if (match_about_blank != nullptr) {
-    if (!match_about_blank->is_bool()) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidMatchAboutBlank,
-          base::NumberToString(definition_index));
-      return nullptr;
-    }
-    result->set_match_about_blank(match_about_blank->GetBool());
-  }
-
+  bool has_match_origin_as_fallback = false;
   // match origin as fallback
   if (base::FeatureList::IsEnabled(
           extensions_features::kContentScriptsMatchOriginAsFallback)) {
@@ -139,7 +128,31 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
             base::NumberToString(definition_index));
         return nullptr;
       }
-      result->set_match_origin_as_fallback(match_origin_as_fallback->GetBool());
+      has_match_origin_as_fallback = true;
+      result->set_match_origin_as_fallback(
+          match_origin_as_fallback->GetBool()
+              ? MatchOriginAsFallbackBehavior::kAlways
+              : MatchOriginAsFallbackBehavior::kNever);
+    }
+  }
+
+  // match about blank
+  // Note: match_about_blank is ignored if |match_origin_as_fallback| was
+  // specified.
+  if (!has_match_origin_as_fallback) {
+    const base::Value* match_about_blank =
+        content_script.FindKey(keys::kMatchAboutBlank);
+    if (match_about_blank) {
+      if (!match_about_blank->is_bool()) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidMatchAboutBlank,
+            base::NumberToString(definition_index));
+        return nullptr;
+      }
+      result->set_match_origin_as_fallback(
+          match_about_blank->GetBool()
+              ? MatchOriginAsFallbackBehavior::kMatchForAboutSchemeAndClimbTree
+              : MatchOriginAsFallbackBehavior::kNever);
     }
   }
 

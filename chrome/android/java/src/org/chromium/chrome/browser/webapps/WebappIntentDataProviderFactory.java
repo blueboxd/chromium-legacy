@@ -54,7 +54,7 @@ public class WebappIntentDataProviderFactory {
      * @param intent Intent containing info about the app.
      */
     public static BrowserServicesIntentDataProvider create(Intent intent) {
-        String id = WebappIntentUtils.getId(intent);
+        String id = WebappIntentUtils.getIdForHomescreenShortcut(intent);
         String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
         if (id == null || url == null) {
             Log.e(TAG, "Incomplete data provided: " + id + ", " + url);

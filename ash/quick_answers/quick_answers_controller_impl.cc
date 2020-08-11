@@ -70,6 +70,8 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
   if (!is_eligible_)
     return;
 
+  is_session_active_ = true;
+
   // Cache anchor-bounds and query.
   anchor_bounds_ = anchor_bounds;
   // Initially, title is same as query. Title and query can be overridden based
@@ -94,6 +96,7 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
 }
 
 void QuickAnswersControllerImpl::DismissQuickAnswers(bool is_active) {
+  is_session_active_ = false;
   MaybeDismissQuickAnswersConsent();
   bool closed = quick_answers_ui_controller_->CloseQuickAnswersView();
   quick_answers_client_->OnQuickAnswersDismissed(
@@ -153,6 +156,9 @@ void QuickAnswersControllerImpl::OnRequestPreprocessFinished(
     return;
   }
 
+  if (!is_session_active_)
+    return;
+
   query_ = processed_request.preprocessed_output.query;
   title_ = processed_request.preprocessed_output.intent_text;
 
@@ -194,7 +200,8 @@ void QuickAnswersControllerImpl::OnUserConsentGranted() {
       chromeos::quick_answers::ConsentInteractionType::kAccept);
 
   // Display Quick-Answer for the cached query when user consents.
-  MaybeShowQuickAnswers(anchor_bounds_, title_, context_);
+  if (is_session_active_)
+    MaybeShowQuickAnswers(anchor_bounds_, title_, context_);
 }
 
 void QuickAnswersControllerImpl::OnConsentSettingsRequestedByUser() {

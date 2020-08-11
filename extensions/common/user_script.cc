@@ -97,8 +97,7 @@ UserScript::UserScript()
       user_script_id_(-1),
       emulate_greasemonkey_(false),
       match_all_frames_(false),
-      match_about_blank_(false),
-      match_origin_as_fallback_(false),
+      match_origin_as_fallback_(MatchOriginAsFallbackBehavior::kNever),
       incognito_enabled_(false) {}
 
 UserScript::~UserScript() {
@@ -132,7 +131,6 @@ std::unique_ptr<UserScript> UserScript::CopyMetadataFrom(
   script->user_script_id_ = other.user_script_id_;
   script->emulate_greasemonkey_ = other.emulate_greasemonkey_;
   script->match_all_frames_ = other.match_all_frames_;
-  script->match_about_blank_ = other.match_about_blank_;
   script->match_origin_as_fallback_ = other.match_origin_as_fallback_;
   script->incognito_enabled_ = other.incognito_enabled_;
 
@@ -199,8 +197,7 @@ void UserScript::Pickle(base::Pickle* pickle) const {
   pickle->WriteInt(user_script_id_);
   pickle->WriteBool(emulate_greasemonkey());
   pickle->WriteBool(match_all_frames());
-  pickle->WriteBool(match_about_blank());
-  pickle->WriteBool(match_origin_as_fallback());
+  pickle->WriteInt(static_cast<int>(match_origin_as_fallback()));
   pickle->WriteBool(is_incognito_enabled());
 
   PickleHostID(pickle, host_id_);
@@ -255,8 +252,10 @@ void UserScript::Unpickle(const base::Pickle& pickle,
   CHECK(iter->ReadInt(&user_script_id_));
   CHECK(iter->ReadBool(&emulate_greasemonkey_));
   CHECK(iter->ReadBool(&match_all_frames_));
-  CHECK(iter->ReadBool(&match_about_blank_));
-  CHECK(iter->ReadBool(&match_origin_as_fallback_));
+  int match_origin_as_fallback_int = 0;
+  CHECK(iter->ReadInt(&match_origin_as_fallback_int));
+  match_origin_as_fallback_ =
+      static_cast<MatchOriginAsFallbackBehavior>(match_origin_as_fallback_int);
   CHECK(iter->ReadBool(&incognito_enabled_));
 
   UnpickleHostID(pickle, iter, &host_id_);

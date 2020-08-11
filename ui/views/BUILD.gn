@@ -725,7 +725,7 @@ component("views") {
       "//ui/aura",
       "//ui/events",
       "//ui/platform_window",
-      "//ui/platform_window/platform_window_handler",
+      "//ui/platform_window/handlers",
       "//ui/touch_selection",
       "//ui/wm",
       "//ui/wm/public",
@@ -1165,7 +1165,7 @@ test("views_unittests") {
     "//ui/gl:test_support",
     "//ui/native_theme",
     "//ui/native_theme:test_support",
-    "//ui/platform_window/platform_window_handler",
+    "//ui/platform_window/handlers",
     "//ui/resources",
     "//ui/resources:ui_test_pak",
     "//ui/strings",
@@ -1381,7 +1381,7 @@ source_set("views_interactive_ui_tests") {
     deps += [
       "//ui/events/platform",
       "//ui/platform_window",
-      "//ui/platform_window/platform_window_handler",
+      "//ui/platform_window/handlers",
     ]
   }
 

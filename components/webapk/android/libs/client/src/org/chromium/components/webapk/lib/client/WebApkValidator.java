@@ -407,11 +407,11 @@ public class WebApkValidator {
     }
 
     /**
-     * Disables all validation performed by this class. This is meant only for development with
-     * unsigned WebApks and should never be enabled in a real build.
+     * Sets whether validation performed by this class should be disabled. This is meant only for
+     * development with unsigned WebApks and should never be enabled in a real build.
      */
-    public static void disableValidationForTesting() {
-        sOverrideValidationForTesting = true;
+    public static void setDisableValidationForTesting(boolean disable) {
+        sOverrideValidationForTesting = disable;
     }
 
     /**

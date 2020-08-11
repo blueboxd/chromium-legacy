@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(ManagedUiTest, ShouldDisplayManagedUiOnDesktop) {
   policy::PolicyMap policy_map;
   policy_map.Set("test-policy", policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
-                 std::make_unique<base::Value>("hello world"), nullptr);
+                 base::Value("hello world"), nullptr);
   provider()->UpdateChromePolicy(policy_map);
 
 #if defined(OS_CHROMEOS)

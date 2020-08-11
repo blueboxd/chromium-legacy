@@ -2171,6 +2171,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return nil;
   }
 
+  if (self.sharedState.currentlyInEditMode) {
+    // Don't show the context menu when currently in editing mode.
+    return nil;
+  }
+
   if (![self canShowContextMenuFor:indexPath]) {
     return nil;
   }

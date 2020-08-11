@@ -477,6 +477,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />reset sinkronisasi<ph name="
 <translation id="4837753911714442426">Membuka opsi untuk mencetak halaman</translation>
 <translation id="4842092870884894799">Menampilkan pop-up pembuatan sandi</translation>
 <translation id="4860895144060829044">Telepon</translation>
+<translation id="4864369630010738180">Login...</translation>
 <translation id="4866368707455379617">Tidak dapat menginstal <ph name="MODULE" /> untuk Chrome</translation>
 <translation id="4875775213178255010">Saran Konten</translation>
 <translation id="4878404682131129617">Gagal membentuk saluran melalui server proxy</translation>
@@ -1055,7 +1056,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="9209888181064652401">Tidak dapat menelepon</translation>
 <translation id="9219103736887031265">Gambar</translation>
 <translation id="926205370408745186">Hapus aktivitas Chrome Anda dari Kesehatan Digital</translation>
-<translation id="927968626442779827">Gunakan mode Ringan di Google Chrome</translation>
+<translation id="927968626442779827">Gunakan Mode Ringan di Google Chrome</translation>
 <translation id="932327136139879170">Beranda</translation>
 <translation id="93753284658583800">Halaman beranda diubah</translation>
 <translation id="938850635132480979">Kesalahan: <ph name="ERROR_CODE" /></translation>

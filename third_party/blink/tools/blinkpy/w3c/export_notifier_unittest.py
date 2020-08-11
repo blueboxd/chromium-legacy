@@ -20,11 +20,11 @@ class ExportNotifierTest(LoggingTestCase):
 
     def test_get_gerrit_sha_from_comment_success(self):
         gerrit_comment = self.generate_notifier_comment(
-            123, 'bar', 'num', None)
+            123, 'checks', 'SHA', None)
 
         actual = PRStatusInfo.get_gerrit_sha_from_comment(gerrit_comment)
 
-        self.assertEqual(actual, 'num')
+        self.assertEqual(actual, 'SHA')
 
     def test_get_gerrit_sha_from_comment_fail(self):
         gerrit_comment = 'ABC'
@@ -34,71 +34,82 @@ class ExportNotifierTest(LoggingTestCase):
         self.assertIsNone(actual)
 
     def test_to_gerrit_comment(self):
-        pr_status_info = PRStatusInfo('bar', 123, 'num')
-        expected = self.generate_notifier_comment(123, 'bar', 'num', None)
+        checks_results = {'key1': 'val1', 'key2': 'val2'}
+        result_comment = '\nkey2 (val2)\nkey1 (val1)'
+        pr_status_info = PRStatusInfo(checks_results, 123, 'SHA')
+        expected = self.generate_notifier_comment(123, result_comment, 'SHA',
+                                                  None)
 
         actual = pr_status_info.to_gerrit_comment()
 
         self.assertEqual(expected, actual)
 
     def test_to_gerrit_comment_latest(self):
-        pr_status_info = PRStatusInfo('bar', 123, None)
-        expected = self.generate_notifier_comment(123, 'bar', 'Latest', None)
+        checks_results = {'key1': 'val1', 'key2': 'val2'}
+        result_comment = '\nkey2 (val2)\nkey1 (val1)'
+        pr_status_info = PRStatusInfo(checks_results, 123, None)
+        expected = self.generate_notifier_comment(123, result_comment,
+                                                  'Latest', None)
 
         actual = pr_status_info.to_gerrit_comment()
 
         self.assertEqual(expected, actual)
 
     def test_to_gerrit_comment_with_patchset(self):
-        pr_status_info = PRStatusInfo('bar', 123, 'num')
-        expected = self.generate_notifier_comment(123, 'bar', 'num', 3)
+        checks_results = {'key1': 'val1', 'key2': 'val2'}
+        result_comment = '\nkey2 (val2)\nkey1 (val1)'
+        pr_status_info = PRStatusInfo(checks_results, 123, 'SHA')
+        expected = self.generate_notifier_comment(123, result_comment, 'SHA',
+                                                  3)
 
         actual = pr_status_info.to_gerrit_comment(3)
 
         self.assertEqual(expected, actual)
 
-    def test_get_failure_taskcluster_status_success(self):
-        taskcluster_status = [{
-            "state": "failure",
-            "context": "Community-TC (pull_request)",
-        }, {
-            "state": "success",
-            "context": "random",
-        }]
+    def test_get_relevant_failed_taskcluster_checks_success(self):
+        check_runs = [
+            {
+                "id": "1",
+                "conclusion": "failure",
+                "name": "wpt-chrome-dev-stability"
+            },
+            {
+                "id": "2",
+                "conclusion": "failure",
+                "name": "wpt-firefox-nightly-stability"
+            },
+        ]
+        expected = {
+            'wpt-chrome-dev-stability':
+            'https://github.com/web-platform-tests/wpt/pull/123/checks?check_run_id=1',
+            'wpt-firefox-nightly-stability':
+            'https://github.com/web-platform-tests/wpt/pull/123/checks?check_run_id=2'
+        }
 
         self.assertEqual(
-            self.notifier.get_failure_taskcluster_status(
-                taskcluster_status, 123), {
-                    "state": "failure",
-                    "context": "Community-TC (pull_request)",
-            })
+            self.notifier.get_relevant_failed_taskcluster_checks(
+                check_runs, 123), expected)
 
-    def test_get_failure_taskcluster_status_fail(self):
-        taskcluster_status = [
+    def test_get_relevant_failed_taskcluster_checks_empty(self):
+        check_runs = [
             {
-                "state": "success",
-                "context": "Community-TC (pull_request)",
+                "id": "1",
+                "conclusion": "success",
+                "name": "wpt-chrome-dev-stability"
+            },
+            {
+                "id": "2",
+                "conclusion": "failure",
+                "name": "infra"
             },
         ]
 
         self.assertEqual(
-            self.notifier.get_failure_taskcluster_status(
-                taskcluster_status, 123), None)
-
-    def test_get_failure_taskcluster_pending_status(self):
-        taskcluster_status = [
-            {
-                "state": "pending",
-                "context": "Community-TC (pull_request)",
-            },
-        ]
-
-        self.assertEqual(
-            self.notifier.get_failure_taskcluster_status(
-                taskcluster_status, 123), None)
+            self.notifier.get_relevant_failed_taskcluster_checks(
+                check_runs, 123), {})
 
     def test_has_latest_taskcluster_status_commented_false(self):
-        pr_status_info = PRStatusInfo('bar', 123, 'num')
+        pr_status_info = PRStatusInfo('bar', 123, 'SHA')
         messages = [{
             "date": "2019-08-20 17:42:05.000000000",
             "message": "Uploaded patch set 1.\nInitial upload",
@@ -111,7 +122,7 @@ class ExportNotifierTest(LoggingTestCase):
         self.assertFalse(actual)
 
     def test_has_latest_taskcluster_status_commented_true(self):
-        pr_status_info = PRStatusInfo('bar', 123, 'num')
+        pr_status_info = PRStatusInfo({'a': 'b'}, 123, 'SHA')
         messages = [
             {
                 "date": "2019-08-20 17:42:05.000000000",
@@ -119,11 +130,10 @@ class ExportNotifierTest(LoggingTestCase):
                 "_revision_number": 1
             },
             {
-                "date":
-                "2019-08-21 17:41:05.000000000",
-                "message": self.generate_notifier_comment(123, 'bar', 'num', 3),
-                "_revision_number":
-                2
+                "date": "2019-08-21 17:41:05.000000000",
+                "message":
+                self.generate_notifier_comment(123, 'result', 'SHA', 3),
+                "_revision_number": 2
             },
         ]
 
@@ -132,28 +142,31 @@ class ExportNotifierTest(LoggingTestCase):
 
         self.assertTrue(actual)
 
-        self.assertTrue(actual)
+    def test_get_check_runs_success(self):
+        self.notifier.wpt_github = MockWPTGitHub(pull_requests=[])
+        self.notifier.wpt_github.check_runs = [
+            {
+                "id": "123",
+                "conclusion": "failure",
+                "name": "wpt-chrome-dev-stability"
+            },
+            {
+                "id": "456",
+                "conclusion": "success",
+                "name": "firefox"
+            },
+        ]
+        actual = self.notifier.get_check_runs(123)
 
-    def test_get_taskcluster_statuses_success(self):
-        self.notifier.wpt_github = MockWPTGitHub(pull_requests=[
-            PullRequest(
-                title='title1',
-                number=1234,
-                body='description\nWPT-Export-Revision: 1',
-                state='open',
-                labels=[]),
-        ])
-        status = [{"description": "foo"}]
-        self.notifier.wpt_github.status = status
-        actual = self.notifier.get_taskcluster_statuses(123)
-
-        self.assertEqual(actual, status)
+        self.assertEqual(len(actual), 2)
         self.assertEqual(self.notifier.wpt_github.calls, [
             'get_pr_branch',
-            'get_branch_statuses',
+            'get_branch_check_runs',
         ])
 
     def test_process_failing_prs_success(self):
+        checks_results = {'key1': 'val1', 'key2': 'val2'}
+        result_comment = '\nkey2 (val2)\nkey1 (val1)'
         self.notifier.dry_run = False
         self.notifier.gerrit = MockGerritAPI()
         self.notifier.gerrit.cl = MockGerritCL(
@@ -175,14 +188,15 @@ class ExportNotifierTest(LoggingTestCase):
                     },
                 ],
                 'revisions': {
-                    'num': {
+                    'SHA': {
                         '_number': 1
                     }
                 }
             },
             api=self.notifier.gerrit)
-        gerrit_dict = {'abc': PRStatusInfo('bar', 123, 'num')}
-        expected = self.generate_notifier_comment(123, 'bar', 'num', 1)
+        gerrit_dict = {'abc': PRStatusInfo(checks_results, 123, 'SHA')}
+        expected = self.generate_notifier_comment(123, result_comment, 'SHA',
+                                                  1)
 
         self.notifier.process_failing_prs(gerrit_dict)
 
@@ -208,19 +222,19 @@ class ExportNotifierTest(LoggingTestCase):
                     {
                         "date":
                         "2019-08-21 17:41:05.000000000",
-                        "message": self.generate_notifier_comment(123, 'bar', 'num', 3),
+                        "message": self.generate_notifier_comment(123, 'bar', 'SHA', 3),
                         "_revision_number":
                         2
                     },
                 ],
                 'revisions': {
-                    'num': {
+                    'SHA': {
                         '_number': 1
                     }
                 }
             },
             api=self.notifier.gerrit)
-        gerrit_dict = {'abc': PRStatusInfo('bar', 123, 'num')}
+        gerrit_dict = {'abc': PRStatusInfo('bar', 123, 'SHA')}
 
         self.notifier.process_failing_prs(gerrit_dict)
 
@@ -249,14 +263,17 @@ class ExportNotifierTest(LoggingTestCase):
                     },
                 ],
                 'revisions': {
-                    'num': {
+                    'SHA': {
                         '_number': 1
                     }
                 }
             },
             api=self.notifier.gerrit)
-        expected = self.generate_notifier_comment(123, 'bar', 'Latest')
-        gerrit_dict = {'abc': PRStatusInfo('bar', 123, None)}
+        checks_results = {'key1': 'val1', 'key2': 'val2'}
+        result_comment = '\nkey2 (val2)\nkey1 (val1)'
+        expected = self.generate_notifier_comment(123, result_comment,
+                                                  'Latest')
+        gerrit_dict = {'abc': PRStatusInfo(checks_results, 123, None)}
 
         self.notifier.process_failing_prs(gerrit_dict)
 
@@ -269,14 +286,14 @@ class ExportNotifierTest(LoggingTestCase):
     def test_process_failing_prs_raise_gerrit_error(self):
         self.notifier.dry_run = False
         self.notifier.gerrit = MockGerritAPI(raise_error=True)
-        gerrit_dict = {'abc': PRStatusInfo('bar', 'num')}
+        gerrit_dict = {'abc': PRStatusInfo('bar', 'SHA')}
 
         self.notifier.process_failing_prs(gerrit_dict)
 
         self.assertEqual(self.notifier.gerrit.cls_queried, ['abc'])
         self.assertEqual(self.notifier.gerrit.request_posted, [])
         self.assertLog([
-            'INFO: Processing 1 CLs with failed Taskcluster status.\n',
+            'INFO: Processing 1 CLs with failed Taskcluster checks.\n',
             'ERROR: Could not process Gerrit CL abc: Error from query_cl\n'
         ])
 
@@ -290,13 +307,21 @@ class ExportNotifierTest(LoggingTestCase):
                 state='open',
                 labels=[''])
         ]
-        status = [{
-            "state": "failure",
-            "context": "Community-TC (pull_request)",
-            "node_id": "foo",
-            "target_url": "bar"
-        }]
-        self.notifier.wpt_github.status = status
+        self.notifier.wpt_github.check_runs = [
+            {
+                "id": "123",
+                "conclusion": "failure",
+                "name": "wpt-chrome-dev-stability"
+            },
+            {
+                "id": "456",
+                "conclusion": "success",
+                "name": "firefox"
+            },
+        ]
+        checks_results_comment = ('\nwpt-chrome-dev-stability ('
+                                  'https://github.com/web-platform-tests/wpt'
+                                  '/pull/1234/checks?check_run_id=123)')
 
         self.notifier.dry_run = False
         self.notifier.gerrit = MockGerritAPI()
@@ -325,7 +350,8 @@ class ExportNotifierTest(LoggingTestCase):
                 }
             },
             api=self.notifier.gerrit)
-        expected = self.generate_notifier_comment(1234, 'bar', 'hash', 2)
+        expected = self.generate_notifier_comment(1234, checks_results_comment,
+                                                  'hash', 2)
 
         exit_code = self.notifier.main()
 
@@ -333,7 +359,7 @@ class ExportNotifierTest(LoggingTestCase):
         self.assertEqual(self.notifier.wpt_github.calls, [
             'recent_failing_chromium_exports',
             'get_pr_branch',
-            'get_branch_statuses',
+            'get_branch_check_runs',
         ])
         self.assertEqual(self.notifier.gerrit.cls_queried, ['decafbad'])
         self.assertEqual(self.notifier.gerrit.request_posted,
@@ -341,30 +367,39 @@ class ExportNotifierTest(LoggingTestCase):
                              'message': expected
                          })])
 
-    def generate_notifier_comment(self, pr_number, link, sha, patchset=None):
+    def generate_notifier_comment(self,
+                                  pr_number,
+                                  checks_results_comment,
+                                  sha,
+                                  patchset=None):
         if patchset:
             comment = (
                 'The exported PR, https://github.com/web-platform-tests/wpt/pull/{}, '
-                'has failed Taskcluster check(s) on GitHub, which could indicate '
-                'cross-browser failures on the exported changes. Please contact '
-                'ecosystem-infra@chromium.org for more information.\n\n'
-                'Taskcluster Link: {}\n'
+                'has failed the following check(s) on GitHub:\n{}'
+                '\n\nThese failures will block the export. '
+                'They may represent new or existing problems; please take '
+                'a look at the output and see if it can be fixed. '
+                'Unresolved failures will be looked at by the Ecosystem-Infra '
+                'sheriff after this CL has been landed in Chromium; if you '
+                'need earlier help please contact ecosystem-infra@chromium.org.\n\n'
+                'Any suggestions to improve this service are welcome; '
+                'crbug.com/1027618.\n\n'
                 'Gerrit CL SHA: {}\n'
-                'Patchset Number: {}'
-                '\n\nAny suggestions to improve this service are welcome; '
-                'crbug.com/1027618.').format(
-                pr_number, link, sha, patchset
-            )
+                'Patchset Number: {}').format(pr_number,
+                                              checks_results_comment, sha,
+                                              patchset)
         else:
             comment = (
                 'The exported PR, https://github.com/web-platform-tests/wpt/pull/{}, '
-                'has failed Taskcluster check(s) on GitHub, which could indicate '
-                'cross-browser failures on the exported changes. Please contact '
-                'ecosystem-infra@chromium.org for more information.\n\n'
-                'Taskcluster Link: {}\n'
-                'Gerrit CL SHA: {}'
-                '\n\nAny suggestions to improve this service are welcome; '
-                'crbug.com/1027618.').format(
-                pr_number, link, sha
-            )
+                'has failed the following check(s) on GitHub:\n{}'
+                '\n\nThese failures will block the export. '
+                'They may represent new or existing problems; please take '
+                'a look at the output and see if it can be fixed. '
+                'Unresolved failures will be looked at by the Ecosystem-Infra '
+                'sheriff after this CL has been landed in Chromium; if you '
+                'need earlier help please contact ecosystem-infra@chromium.org.\n\n'
+                'Any suggestions to improve this service are welcome; '
+                'crbug.com/1027618.\n\n'
+                'Gerrit CL SHA: {}').format(pr_number, checks_results_comment,
+                                            sha)
         return comment

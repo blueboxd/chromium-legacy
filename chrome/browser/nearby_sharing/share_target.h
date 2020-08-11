@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_SHARE_TARGET_H_
 #define CHROME_BROWSER_NEARBY_SHARING_SHARE_TARGET_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -38,7 +39,7 @@ struct ShareTarget {
     return !text_attachments.empty() || !file_attachments.empty();
   }
 
-  std::vector<base::UnguessableToken> GetAttachmentIds() const;
+  std::vector<int64_t> GetAttachmentIds() const;
 
   base::UnguessableToken id = base::UnguessableToken::Create();
   std::string device_name;

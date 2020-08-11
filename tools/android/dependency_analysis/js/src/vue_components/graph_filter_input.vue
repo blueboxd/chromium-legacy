@@ -4,7 +4,11 @@
 
 <template>
   <div class="user-input-group">
-    <label for="filter-input">Add node to filter (exact name):</label>
+    <label
+        class="md-subheading"
+        for="filter-input">
+      Add Node
+    </label>
     <Autocomplete
         id="filter-input"
         ref="autocomplete"
@@ -76,16 +80,23 @@ export default GraphFilterInput;
 
 <style>
 #filter-input {
-  width: 500px;
+  width: 100%;
 }
 
 .autocomplete-result-list {
   background: #fff;
   box-sizing: content-box;
   list-style: none;
-  max-height: 600px;
+  margin: 0;
+  max-height: 40vh;
   overflow-y: auto;
   padding: 0;
+  /* !important since Autocomplete hard-codes z-index into its HTML template */
+  z-index: 10 !important;
+}
+
+.autocomplete-result {
+  word-wrap: break-word;
 }
 
 .autocomplete-result:hover,

@@ -1109,7 +1109,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> ne može bezbedno da se preuzme</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> želi da se upari</translation>
-<translation id="2341476639346994688">Štampač je zaustavljen</translation>
 <translation id="2342740338116612727">Obeleživači su dodati</translation>
 <translation id="2343747224442182863">Stavi ovu karticu u fokus</translation>
 <translation id="2344686470986284227">Pokreće se kontroler virtuelne mašine</translation>
@@ -3455,7 +3454,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5283677936944177147">Ups! Sistem nije uspeo da odredi model uređaja ili serijski broj.</translation>
 <translation id="5284445933715251131">Nastavi preuzimanje</translation>
 <translation id="5285635972691565180">Ekran <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Oblast za odštampane dokumente je puna</translation>
 <translation id="5286194356314741248">Skeniranje</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Nalozi</translation>
@@ -3677,7 +3675,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5553089923092577885">Mapiranja smernica sertifikata</translation>
 <translation id="5554489410841842733">Ova ikona će biti vidljiva kada dodatak može da deluje na trenutnoj stranici.</translation>
 <translation id="5554720593229208774">Autoritet za izdavanje sertifikata e-pošte</translation>
-<translation id="5554931805291741487">Oblast za odštampane dokumente na štampaču je skoro puna</translation>
 <translation id="5556459405103347317">Učitaj ponovo</translation>
 <translation id="5558125320634132440">Ovaj sajt je blokiran jer verovatno ima sadržaj za stariju publiku</translation>
 <translation id="5558129378926964177">Zoom &amp;In (Uvećaj)</translation>
@@ -4952,7 +4949,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7152478047064750137">Ovaj dodatak ne zahteva nikakve specijalne dozvole</translation>
 <translation id="7154130902455071009">Promenite početnu stranicu u: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Postojeća fotografija iz kamere ili datoteke</translation>
-<translation id="7163766494674803047">Greška štampača</translation>
 <translation id="7165320105431587207">Konfiguracija mreže nije uspela</translation>
 <translation id="716640248772308851">„<ph name="EXTENSION" />“ može da čita slike, video i audio datoteke na navedenim lokacijama.</translation>
 <translation id="7167486101654761064">&amp;Uvek otvori datoteke ovog tipa</translation>

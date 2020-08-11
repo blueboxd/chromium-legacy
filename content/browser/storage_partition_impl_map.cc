@@ -451,6 +451,14 @@ void StoragePartitionImplMap::PostCreateInitialization(
         in_memory ? base::FilePath()
                   : partition->GetPath().Append(kAppCacheDirname),
         browser_context_, browser_context_->GetSpecialStoragePolicy());
+  } else if (!in_memory) {
+    // If AppCache is not enabled, clean up any on disk storage.  This is the
+    // path that will execute once AppCache has been fully removed from Chrome.
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(
+            [](const base::FilePath& dir) { base::DeletePathRecursively(dir); },
+            partition->GetPath().Append(kAppCacheDirname)));
   }
 
   // Check first to avoid memory leak in unittests.

@@ -454,13 +454,6 @@ Wenn die Richtlinie nicht festgelegt wird, wird angenommen, dass <ph name="PRINT
 
       Ist sie auf "False" gesetzt, können Nutzer keine Lesezeichen hinzufügen, entfernen oder ändern. Sie können aber weiterhin bestehende Lesezeichen verwenden.</translation>
 <translation id="1715151459541210849">Bedienungshilfe "Spracheingabe" aktivieren</translation>
-<translation id="1717817358640580294">Wenn die Richtlinie nicht konfiguriert ist und das Chrome Cleanup Tool unerwünschte Software findet, kann es Metadaten betreffend den Scan an Google senden. Dies geschieht in Übereinstimmung mit der über "SafeBrowsingExtendedReportingEnabled" festgelegten Richtlinie. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll. Er kann die Ergebnisse der Bereinigung mit Google teilen, damit unerwünschte Software zukünftig besser erkannt wird. Diese Ergebnisse enthalten Dateimetadaten, automatisch installierte Erweiterungen und Registrierungsschlüssel, wie es im Whitepaper zum Datenschutz bei Chrome beschrieben ist.
-
-      Falls die Richtlinie deaktiviert ist und das Chrome Cleanup Tool unerwünschte Software findet, werden keine Metadaten betreffend den Scan an Google gesendet. Über "SafeBrowsingExtendedReportingEnabled" festgelegte Richtlinien werden überschrieben. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll.  Ergebnisse der Bereinigung werden nicht an Google gesendet und der Nutzer hat auch keine Möglichkeit dazu.
-
-      Falls die Richtlinie aktiviert ist und das Chrome Cleanup Tool unerwünschte Software findet, können Metadaten zum Scan an Google gesendet werden. Dies geschieht in Übereinstimmung mit der über "SafeBrowsingExtendedReportingEnabled" festgelegten Richtlinie. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll.  Ergebnisse der Bereinigung werden an Google gesendet und der Nutzer hat keine Möglichkeit, dies zu verhindern.
-
-      Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
 <translation id="172374442286684480">Speichern von lokalen Daten für alle Websites zulassen</translation>
 <translation id="1736269219679256369">Fortfahren von SSL-Hinweisseite erlauben</translation>
 <translation id="1745973235372964482">Keine passwortgeschützten Dateien zulassen</translation>
@@ -1363,15 +1356,6 @@ Ist sie nicht konfiguriert, ist der Datenschutzbildschirm anfangs deaktiviert, N
           Die Deaktivierung dieser Einstellung entspricht einer nicht konfigurierten Option. Nutzer können diese Einstellung in <ph name="PRODUCT_NAME" /> ändern.
 
           Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind, sowie macOS-Instanzen, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
-<translation id="2982571648442031489">Konfigurieren Sie die Liste der Domains, die von Safe Browsing als vertrauenswürdig eingestuft werden. Das bedeutet Folgendes:
-Es findet keine Prüfung auf gefährliche Ressourcen wie Phishing, Malware oder unerwünschte Software durch Safe Browsing statt, wenn die URLs dieser Ressourcen mit diesen Domains übereinstimmen.
-      Es findet keine Prüfung von in diesen Domains gehosteten Downloads durch den Downloadschutzdienst von Safe Browsing statt.
-      Es findet keine Prüfung auf eine Wiederverwendung von Passwörtern durch den Passwortschutzdienst von Safe Browsing statt, wenn die Seiten-URL mit diesen Domains übereinstimmt.
-
-      Wenn diese Einstellung aktiviert ist, stuft Safe Browsing diese Domains als vertrauenswürdig ein.
-      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird der Safe Browsing-Standardschutz auf alle Ressourcen angewendet.
-
-      Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind, sowie macOS-Instanzen, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
 <translation id="2985927503455169394">Standardmodus für das Einrichten von Assistant verwenden</translation>
 <translation id="2987155890997901449">ARC aktivieren</translation>
 <translation id="2987227569419001736">Verwendung der Web Bluetooth API steuern</translation>
@@ -1488,11 +1472,6 @@ Es findet keine Prüfung auf gefährliche Ressourcen wie Phishing, Malware oder 
       Wenn die Richtlinie nicht konfiguriert oder auf "false" festgelegt ist, werden DHE-Verschlüsselungssammlungen in TLS nicht aktiviert. Die Richtlinie kann auf "true" festgelegt werden, um DHE-Verschlüsselungssammlungen zu aktivieren und die Kompatibilität mit veralteten Servern zu gewährleisten. Dies ist eine provisorische Maßnahme. Der Server sollte neu konfiguriert werden.
 
       Server sollten zu ECDHE-Verschlüsselungssammlungen migriert werden. Falls diese nicht verfügbar sind, vergewissern Sie sich, dass eine Verschlüsselungssammlung mit einem RSA-Schlüsselaustausch aktiviert ist.</translation>
-<translation id="3117706142826400449">Wenn diese Richtlinie deaktiviert ist, kann das Chrome Cleanup Tool das System nicht auf unerwünschte Software scannen und bereinigen. Das Chrome Cleanup Tool kann dann auch nicht manuell über chrome://settings/cleanup gestartet werden.
-
-      Falls die Richtlinie aktiviert oder nicht konfiguriert ist, scannt das Chrome Cleanup Tool das System regelmäßig nach unerwünschter Software. Wird welche gefunden, wird der Nutzer gefragt, ob sie entfernt werden soll. Das Chrome Cleanup Tool kann auch manuell über chrome://settings gestartet werden.
-
-      Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
 <translation id="3119125876909100625">Upload von passwortgeschützten Dateien zulassen</translation>
 <translation id="3122082892722698079">Ausnahmen bei unsicheren Inhalten verwalten</translation>
 <translation id="3143265893557969814">Wenn Sie diese Richtlinie konfigurieren, werden alle angegebenen Datentypen von der Synchronisierung ausgeschlossen. Dies gilt sowohl für Google Sync als auch für die Synchronisierung von Roaming-Profilen. Dadurch lässt sich die Größe von Roaming-Profilen reduzieren und Sie können einschränken, welche Arten von Daten auf die Google Sync-Server hochgeladen werden.
@@ -2113,13 +2092,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4061590579642538878">Informationen über Absturzberichte melden.</translation>
 <translation id="4075675819066819571">Ablage auf der linken Seite des Bildschirms anzeigen</translation>
 <translation id="4075864623710596000">In dieser Liste aufgeführte Hostnamen sind vom HSTS-Richtliniencheck ausgenommen, der Anfragen von http auf https upgraden kann. Für diese Richtlinie sind nur Single-Label-Hostnamen zulässig. Hostnamen müssen kanonisiert werden: Alle IDNs müssen in ihr A-Label-Format konvertiert und alle ASCII-Buchstaben kleingeschrieben werden. Diese Richtlinie gilt nur für die angegebenen Hostnamen, aber nicht für Subdomains der angegebenen Namen.</translation>
-<translation id="4076584741592854827">Liste von Dateitypen, die nach dem Download automatisch geöffnet werden sollen. Das vorangestellte Trennzeichen sollte beim Aufführen der Dateitypen nicht mit angegeben werden. Geben Sie also beispielsweise "txt" und nicht ".txt" an.
-
-      Dateitypen, die automatisch geöffnet werden sollen, unterliegen dennoch den aktivierten Safe Browsing-Überprüfungen und werden nicht geöffnet, falls sie diese nicht bestehen.
-
-      Wenn diese Richtlinie nicht konfiguriert ist, werden nach dem Download nur die Dateitypen automatisch geöffnet, die der Nutzer bereits angegeben hat.
-
-      Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind, sowie macOS-Instanzen, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
 <translation id="408029843066770167">Abfragen an einen Google-Dienst für die Zeiteinstellung zulassen</translation>
 <translation id="408076456549153854">Browseranmeldung aktivieren</translation>
 <translation id="4082498585300984671">Funktion "Zum Anrufen klicken" aktivieren</translation>
@@ -3270,7 +3242,7 @@ Wenn die in der Richtlinie <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> ange
 
       Wenn die Richtlinie nicht konfiguriert ist, kommen alle 4 Schemas zum Einsatz.
 
-      Gültige Werte :
+      Gültige Werte:
 
       * basic
 
@@ -4054,19 +4026,6 @@ Hinweis: Nutzer können Cookies blockieren und so auf Google-Dienste zugreifen, 
 
       Wenn diese Richtlinie nicht konfiguriert ist, ist die Einstellung für vom Unternehmen verwaltete Nutzer und für nicht verwaltete Nutzer standardmäßig aktiviert.</translation>
 <translation id="6864244339257535116">Upload und Download von passwortgeschützten Dateien zulassen</translation>
-<translation id="6870295914868104867">Wenn die Richtlinie konfiguriert ist, wird eine Liste von Apps und Erweiterungen festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die vom Nutzer weder deinstalliert noch deaktiviert werden können. Berechtigungen, auch für die Erweiterungs-APIs "enterprise.deviceAttributes" und "enterprise.platformKeys", werden implizit gewährt. Diese beiden APIs stehen bei Apps oder Erweiterungen ohne erzwungene Installation nicht zur Verfügung.
-
-      Wenn die Richtlinie nicht konfiguriert ist, werden Apps und Erweiterungen nicht automatisch installiert und Nutzer können jede App oder Erweiterung in <ph name="PRODUCT_NAME" /> deinstallieren.
-
-      Diese Richtlinie hat Vorrang gegenüber der Richtlinie "<ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />". Wenn eine App oder Erweiterung mit erzwungener Installation aus dieser Liste entfernt wird, wird sie automatisch von <ph name="PRODUCT_NAME" /> deinstalliert.
-
-      In Windows®-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
-
-      Nutzer können den Quellcode jeder Erweiterung mithilfe von Entwicklertools ändern. Danach funktioniert die entsprechende Erweiterung eventuell nicht mehr. Wenn Sie das verhindern möchten, können Sie die Richtlinie "<ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />" festlegen.
-
-      Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch ein Semikolon (;) getrennt sind. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie beispielsweise im Entwicklermodus unter chrome://extensions sehen. Die Update-URL sollte, sofern festgelegt, auf ein XML-Dokument mit einem Update-Manifest verweisen (https://developer.chrome.com/extensions/autoupdate). Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz. Die in dieser Richtlinie festgelegte Update-URL wird nur für die Erstinstallation verwendet. In nachfolgenden Updates der Erweiterung kommt die Update-URL zum Einsatz, die im Manifest der Erweiterung angegeben wurde.
-
-       Hinweis: Diese Richtlinie gilt nicht für den Inkognitomodus. Informationen zum Hosting von Erweiterungen finden Sie unter https://developer.chrome.com/extensions/hosting.</translation>
 <translation id="687046793986382807">Diese Richtlinie gilt ab <ph name="PRODUCT_NAME" /> Version 35 nicht mehr.
 
 Speicherinformationen werden unabhängig von der gewählten Option an die Seite weitergegeben, allerdings werden die gemeldeten Größen quantisiert und die Aktualisierungshäufigkeit wird aus Sicherheitsgründen begrenzt. Um genaue Daten in Echtzeit zu erhalten, können Sie Tools wie Telemetry verwenden.</translation>
@@ -5710,11 +5669,6 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 75 und höher unterstützt. Bei älte
       Nach dem Neustart wird die Sitzung des Nutzers wiederhergestellt.</translation>
 <translation id="9160028464653564229">Websites nicht erlauben, den Nutzer über die Serial API um Zugriff auf serielle Ports zu bitten</translation>
 <translation id="9167719789236691545">Synchronisierung zwischen Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> deaktivieren</translation>
-<translation id="917514578273777202">Ist diese Richtlinie aktiviert, wird eine Standardsuche durchgeführt, wenn der Nutzer Text in die Adressleiste eingibt, bei dem es sich nicht um eine URL handelt. Wenn Sie den Standardsuchanbieter angeben möchten, legen Sie die restlichen Richtlinien für die Standardsuche fest. Tun Sie das nicht, kann der Nutzer den Standardanbieter selbst auswählen. Ist diese Richtlinie deaktiviert, wird keine Suche durchgeführt, wenn der Nutzer Text in die Adressleiste eingibt, bei dem es sich nicht um eine URL handelt.
-
-      Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern in <ph name="PRODUCT_NAME" /> nicht geändert werden. Ist die Richtlinie nicht konfiguriert, wird der Standardsuchanbieter aktiviert und Nutzer können die Suchanbieterliste selbst zusammenstellen.
-
-      Hinweis: Diese Richtlinie steht nur bei Windows®-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, bei Windows 10 Pro oder Chrome Enterprise-Upgrade und bei macOS-Instanzen, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
 <translation id="9185107612228451403">Hiermit werden erweiterungsbezogene Richtlinien konfiguriert. Auf die schwarze Liste gesetzte Erweiterungen können vom Nutzer nur installiert werden, wenn diese in der weißen Liste enthalten sind. Wenn Sie die automatische Installation von bestimmten Erweiterungen durch <ph name="PRODUCT_NAME" /> erzwingen möchten, können Sie die Erweiterungen in "<ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />" angeben. Erweiterungen mit erzwungener Installation werden immer installiert, unabhängig davon, ob sie sich auf der schwarzen Liste befinden.</translation>
 <translation id="9187743794267626640">Bereitstellen von externem Speicher deaktivieren</translation>
 <translation id="9190456586252617675">Mit dieser Richtlinie kann der Modus für die Einrichtung von Assistant konfiguriert werden.

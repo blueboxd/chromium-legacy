@@ -45,6 +45,8 @@ class CORE_EXPORT PendingImportMap final
                    ImportMap*,
                    ScriptValue error_to_rethrow,
                    const ExecutionContext& original_context);
+  PendingImportMap(const PendingImportMap&) = delete;
+  PendingImportMap& operator=(const PendingImportMap&) = delete;
 
   void RegisterImportMap() const;
 
@@ -65,8 +67,6 @@ class CORE_EXPORT PendingImportMap final
   // This is only used to check whether the script element is moved between
   // context and thus doesn't retain a strong reference.
   WeakMember<const ExecutionContext> original_execution_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingImportMap);
 };
 
 }  // namespace blink

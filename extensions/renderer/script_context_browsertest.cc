@@ -5,6 +5,7 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/test/frame_load_waiter.h"
+#include "extensions/common/script_constants.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -22,15 +23,12 @@ class ScriptContextTest : public ChromeRenderViewTest {
     return ScriptContext::GetEffectiveDocumentURLForContext(
         frame, frame->GetDocument().Url(), /*match_about_blank=*/true);
   }
-  GURL GetEffectiveDocumentURLForInjection(WebLocalFrame* frame) {
+  GURL GetEffectiveDocumentURLForInjection(
+      WebLocalFrame* frame,
+      MatchOriginAsFallbackBehavior match_origin_as_fallback =
+          MatchOriginAsFallbackBehavior::kAlways) {
     return ScriptContext::GetEffectiveDocumentURLForInjection(
-        frame, frame->GetDocument().Url(),
-        /*match_about_blank=*/true, /*match_origin_as_fallback=*/true);
-  }
-  GURL GetEffectiveURLForInjectionWithoutMatchingData(WebLocalFrame* frame) {
-    return ScriptContext::GetEffectiveDocumentURLForInjection(
-        frame, frame->GetDocument().Url(),
-        /*match_about_blank=*/true, /*match_origin_as_fallback=*/false);
+        frame, frame->GetDocument().Url(), match_origin_as_fallback);
   }
 };
 
@@ -136,17 +134,25 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
   // injecting scripts.
   EXPECT_EQ(data_url, GetEffectiveDocumentURLForContext(frame4));
   EXPECT_EQ(top_url, GetEffectiveDocumentURLForInjection(frame4));
-  // Sanity-check: without matching data: URLs, the original URL should be
+  // Sanity-check: if we only match about: schemes, the original URL should be
   // returned.
-  EXPECT_EQ(data_url, GetEffectiveURLForInjectionWithoutMatchingData(frame4));
+  EXPECT_EQ(
+      data_url,
+      GetEffectiveDocumentURLForInjection(
+          frame4,
+          MatchOriginAsFallbackBehavior::kMatchForAboutSchemeAndClimbTree));
 
   // top -> sandboxed data URL = same URL when classifying contexts, but
   // inherited when injecting scripts.
   EXPECT_EQ(data_url, GetEffectiveDocumentURLForContext(frame5));
   EXPECT_EQ(top_url, GetEffectiveDocumentURLForInjection(frame5));
-  // Sanity-check: without matching data: URLs, the original URL should be
+  // Sanity-check: if we only match about: schemes, the original URL should be
   // returned.
-  EXPECT_EQ(data_url, GetEffectiveURLForInjectionWithoutMatchingData(frame5));
+  EXPECT_EQ(
+      data_url,
+      GetEffectiveDocumentURLForInjection(
+          frame5,
+          MatchOriginAsFallbackBehavior::kMatchForAboutSchemeAndClimbTree));
 
   // top -> different origin = different origin
   EXPECT_EQ(different_url, GetEffectiveDocumentURLForContext(frame3));

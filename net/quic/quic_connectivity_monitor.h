@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_QUIC_CONNECTIVITY_MONITOR_H_
 #define NET_QUIC_QUIC_CONNECTIVITY_MONITOR_H_
 
+#include "base/numerics/clamped_math.h"
 #include "net/base/network_change_notifier.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
@@ -104,11 +105,13 @@ class NET_EXPORT_PRIVATE QuicConnectivityMonitor
   // - starts by the earliest detection of path degradation or a connectivity
   //   related packet write error,
   // - ends immediately by the detection of path recovery or a network change.
-  base::Optional<size_t>
+  // Use clamped math to cap number of sessions at INT_MAX.
+  base::Optional<base::ClampedNumeric<int>>
       num_sessions_active_during_current_speculative_connectivity_failure_;
   // Total number of sessions that has been degraded before any recovery,
   // including no longer active sessions.
-  size_t num_all_degraded_sessions_{0u};
+  // Use clamped math to cap number of sessions at INT_MAX.
+  base::ClampedNumeric<int> num_all_degraded_sessions_{0};
 
   // Map from the write error code to the corresponding number of reports.
   WriteErrorMap write_error_map_;

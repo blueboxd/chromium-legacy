@@ -710,8 +710,20 @@ Google Chrome is unable to recover your settings.
 
       <!-- Dice Web Signin Interception Bubble-->
       <if expr="not chromeos and not is_android">
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_DESC" desc="Body of the web signin interception bubble">
-          You signed in with a work account. Would you like to create a new Chrome Profile for Work to keep your data separate?
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_TITLE" desc="Title of the web signin interception bubble">
+          Create new Chrome space for <ph name="NEW_USER">$1<ex>Bob</ex></ph>?
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_MIXED_BUBBLE_DESC" desc="Body of the web signin interception bubble when the new account is a personal account and the existing account is a managed account">
+          You signed-in with a work account. Would you like to create a new Chrome space for <ph name="NEW_USER">$1<ex>Bob</ex></ph> to keep your personal data separate?
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_DESC" desc="Body of the web signin interception bubble">
+          You signed-in with a new account in <ph name="EXISTING_USER">$1<ex>Elisa</ex></ph>’s space. Would you like to create a new Chrome space for <ph name="NEW_USER">$2<ex>Bob</ex></ph> to keep your data separate?
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_DESC" desc="Body of the web signin interception bubble when the new account is managed">
+          You signed-in with a Work account in <ph name="EXISTING_USER">$1<ex>Elisa</ex></ph>’s space. Would you like to create a new Chrome space for <ph name="WORK_DOMAIN">$2<ex>example.com</ex></ph> to keep your data separate?
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_TITLE" desc="Title of the web signin interception bubble">
+          Create new Chrome Work space?
         </message>
       </if>
 

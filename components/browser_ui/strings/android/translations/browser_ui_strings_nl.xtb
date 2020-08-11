@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Navigatie is geblokkeerd: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Toegestaan</translation>
 <translation id="429312253194641664">Een site speelt media af</translation>
+<translation id="4336434711095810371">Alle gegevens wissen</translation>
 <translation id="4433925000917964731">Lite-pagina geleverd door Google</translation>
 <translation id="4434045419905280838">Pop-ups en omleidingen</translation>
 <translation id="445467742685312942">Sites toestaan om beschermde content af te spelen</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Incognitotabblad</translation>
 <translation id="5300589172476337783">Weergeven</translation>
 <translation id="5301954838959518834">OK, begrepen</translation>
-<translation id="5307446750509046227">Site-opslag wissen</translation>
 <translation id="5313967007315987356">Site toevoegen</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5335288049665977812">Sites toestaan JavaScript uit te voeren (aanbevolen)</translation>
@@ -228,6 +228,7 @@
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8300705686683892304">Beheerd door app</translation>
 <translation id="8372893542064058268">Synchronisatie op de achtergrond toestaan voor een specifieke site.</translation>
+<translation id="8376384591331888629">Inclusief cookies van derden op deze site</translation>
 <translation id="83792324527827022">Een site gebruikt de camera en microfoon</translation>
 <translation id="8380167699614421159">Deze site geeft opdringerige of misleidende advertenties weer</translation>
 <translation id="8394832520002899662">Tik hier om terug te gaan naar de site</translation>
@@ -249,7 +250,6 @@
 <translation id="8801436777607969138">Blokkeer JavaScript voor een specifieke site.</translation>
 <translation id="8816026460808729765">Sites geen toegang tot sensoren geven</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Opslag</translation>
 <translation id="8926666909099850184">NFC is uitgeschakeld voor dit apparaat. Schakel deze functie in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Deze site opent en reageert snel voor de meeste mensen</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +261,5 @@
 <translation id="913657688200966289">Schakel rechten in voor <ph name="APP_NAME" /> via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Toegang tot je microfoon</translation>
 <translation id="965817943346481315">Blokkeren als site opdringerige of misleidende advertenties weergeeft (aanbevolen)</translation>
+<translation id="967624055006145463">Opgeslagen gegevens</translation>
 </translationbundle>

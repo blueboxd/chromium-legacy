@@ -568,9 +568,6 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   void SetActiveForWidget(bool active) override {}
   bool SupportsMultipleWindowsForWidget() override { return true; }
   bool ShouldAckSyntheticInputImmediately() override { return true; }
-  void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
-                                      const gfx::Size& max_size) override {}
-  void DisableAutoResizeForWidget() override {}
   void ScrollFocusedNodeIntoViewForWidget() override {}
   void DidReceiveSetFocusEventForWidget() override {}
   void DidCommitCompositorFrameForWidget() override {}

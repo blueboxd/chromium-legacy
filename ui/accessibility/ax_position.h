@@ -3360,7 +3360,7 @@ class AXPosition {
 
   // Returns whether or not this anchor is represented in their parent with a
   // single embedded object character.
-  virtual bool IsEmbeddedObjectInParent() const { return false; }
+  virtual bool IsEmbeddedObjectInParent() const = 0;
 
   // Determines if the anchor containing this position produces a hard line
   // break in the text representation, e.g. a block level element or a <br>.

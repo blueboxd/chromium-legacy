@@ -34,8 +34,10 @@ class AlignedDataHelper;
 // Video encoder client configuration.
 // TODO(dstaessens): Add extra parameters (e.g. h264 output level)
 struct VideoEncoderClientConfig {
+  static constexpr uint32_t kDefaultBitrate = 200000;
   VideoEncoderClientConfig(const Video* video,
-                           VideoCodecProfile output_profile);
+                           VideoCodecProfile output_profile,
+                           uint32_t bitrate = kDefaultBitrate);
   VideoEncoderClientConfig(const VideoEncoderClientConfig&);
 
   // The output output profile to be used.
@@ -44,7 +46,7 @@ struct VideoEncoderClientConfig {
   // without waiting for the result of the previous encodes requests.
   size_t max_outstanding_encode_requests = 1;
   // The desired bitrate in bits/second.
-  uint32_t bitrate = 200000;
+  uint32_t bitrate = kDefaultBitrate;
   // The desired framerate in frames/second.
   uint32_t framerate = 30.0;
   // The number of frames to be encoded. This can be more than the number of

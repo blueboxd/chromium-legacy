@@ -1076,6 +1076,13 @@ void WebFrameWidgetImpl::ZoomToFindInPageRect(
       gfx::Rect(rect_in_root_frame));
 }
 
+void WebFrameWidgetImpl::SetAutoResizeMode(bool auto_resize,
+                                           const gfx::Size& min_size_before_dsf,
+                                           const gfx::Size& max_size_before_dsf,
+                                           float device_scale_factor) {
+  // Auto resize mode only exists on the top level widget.
+}
+
 HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
     const FloatPoint& pos_in_root_frame) {
   FloatPoint doc_point =

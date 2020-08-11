@@ -246,53 +246,9 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::LoadCredentials(
 void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateCredentials(
     const CoreAccountId& account_id,
     const std::string& refresh_token) {
-  // This API could have been called for upserting the Device/Primary
-  // |account_id| or a Secondary |account_id|.
-
-  // Account insertion:
-  // Device Account insertion on Chrome OS happens as a 2 step process:
-  // 1. The account is inserted into PrimaryAccountManager /
-  // AccountTrackerService, via IdentityManager, with a valid Gaia id and email
-  // but an invalid refresh token.
-  // 2. This API is called to update the aforementioned account with a valid
-  // refresh token.
-  // Secondary Account insertion on Chrome OS happens atomically in
-  // |InlineLoginHandlerChromeOS::<anon>::SigninHelper::OnClientOAuthSuccess|.
-  // In both of the aforementioned cases, we can be sure that when this API is
-  // called, |account_id| is guaranteed to be present in
-  // |AccountTrackerService|. This guarantee is important because
-  // |ProfileOAuth2TokenServiceDelegateChromeOS| relies on
-  // |AccountTrackerService| to convert |account_id| to an email id.
-
-  // Account update:
-  // If an account is being updated, it must be present in
-  // |AccountTrackerService|.
-
-  // Hence for all cases (insertion and updates for Device and Secondary
-  // Accounts) we can be sure that |account_id| is present in
-  // |AccountTrackerService|.
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(
-      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-      load_credentials_state());
-  DCHECK(!account_id.empty());
-  DCHECK(!refresh_token.empty());
-
-  ValidateAccountId(account_id);
-
-  const AccountInfo& account_info =
-      account_tracker_service_->GetAccountInfo(account_id);
-  LOG_IF(FATAL, account_info.gaia.empty())
-      << "account_id must be present in AccountTrackerService before "
-         "UpdateCredentials is called";
-
-  // Will result in chromeos::AccountManager calling
-  // |ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted|.
-  account_manager_->UpsertAccount(
-      chromeos::AccountManager::AccountKey{
-          account_info.gaia, chromeos::account_manager::AccountType::
-                                 ACCOUNT_TYPE_GAIA} /* account_key */,
-      account_info.email /* email */, refresh_token);
+  // UpdateCredentials should not be called on Chrome OS. Credentials should be
+  // updated through Chrome OS Account Manager.
+  NOTREACHED();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

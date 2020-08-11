@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">నావిగేషన్ బ్లాక్ చేయబడింది: <ph name="URL" /></translation>
 <translation id="4278390842282768270">అనుమతించబడింది</translation>
 <translation id="429312253194641664">ఒక సైట్‌లో మీడియా ప్లే చేయబడుతోంది</translation>
+<translation id="4336434711095810371">మొత్తం డేటాను క్లియర్ చేయి</translation>
 <translation id="4433925000917964731">Google అందించిన లైట్ పేజీ</translation>
 <translation id="4434045419905280838">పాప్-అప్‌లు మరియు మళ్లింపులు</translation>
 <translation id="445467742685312942">రక్షిత కంటెంట్‌ను ప్లే చేయడానికి సైట్‌లను అనుమతిస్తుంది</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">అజ్ఞాత ట్యాబ్</translation>
 <translation id="5300589172476337783">చూపించు</translation>
 <translation id="5301954838959518834">సరే, అర్థమైంది</translation>
-<translation id="5307446750509046227">సైట్ నిల్వను తీసివేయండి</translation>
 <translation id="5313967007315987356">సైట్‌ను జోడించు</translation>
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
 <translation id="5335288049665977812">సైట్‌లను జావాస్క్రిప్ట్ అమలు చేయడానికి అనుమతిస్తుంది (సిఫార్సు చేయబడింది)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">నిర్దిష్ట సైట్‌లో JavaScriptను బ్లాక్ చేస్తుంది.</translation>
 <translation id="8816026460808729765">సెన్సార్‌లను యాక్సెస్ చేయనీయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">నిల్వ</translation>
 <translation id="8926666909099850184">ఈ పరికరంలో NFC ఆఫ్ చేయబడింది. <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో దాన్ని ఆన్ చేయండి.</translation>
 <translation id="8929372349074745002">చాలా మందికి ఈ సైట్ వేగంగా తెరుచుకుంటుంది, అలాగే వేగంగా స్పందిస్తుంది</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో <ph name="APP_NAME" /> కోసం అనుమతులను ఆన్ చేయండి.</translation>
 <translation id="945632385593298557">మీ మైక్రోఫోన్ యాక్సెస్ అనుమతి</translation>
 <translation id="965817943346481315">సైట్ అనుచితమైన లేదా తప్పుదారి పట్టించే ప్రకటనలను చూపించినప్పుడు బ్లాక్ చేయి (సిఫార్సు చేయబడింది)</translation>
+<translation id="967624055006145463">నిల్వ చేయబడిన డేటా</translation>
 </translationbundle>

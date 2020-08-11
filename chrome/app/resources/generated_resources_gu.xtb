@@ -1104,7 +1104,6 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> સુરક્ષિતપણે ડાઉનલોડ કરી શકાતી નથી</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" />, જોડી કરવા માગે છે</translation>
-<translation id="2341476639346994688">પ્રિન્ટર થોભાવવામાં આવ્યું છે</translation>
 <translation id="2342740338116612727">બુકમાર્ક ઉમેર્યા</translation>
 <translation id="2343747224442182863">આ ટૅબ પર ફોકસ કરો</translation>
 <translation id="2344686470986284227">વર્ચ્યુઅલ મશીન નિયંત્રક શરૂ કરી રહ્યાં છીએ</translation>
@@ -3444,7 +3443,6 @@
 <translation id="5283677936944177147">અરેરે! સિસ્ટમ, ઉપકરણ મોડલ અથવા અનુક્રમ નંબર નિર્ધારિત કરવામાં નિષ્ફળ થઈ.</translation>
 <translation id="5284445933715251131">ડાઉનલોડ કરવાનું ચાલુ રાખો</translation>
 <translation id="5285635972691565180"><ph name="DISPLAY_ID" /> બતાવો</translation>
-<translation id="5286094561505658635">પ્રિન્ટરનો આઉટપુટ વિસ્તાર ભરાઈ ગયો છે</translation>
 <translation id="5286194356314741248">સ્કેનિંગ</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">તમારા એકાઉન્ટ્સ</translation>
@@ -3665,7 +3663,6 @@
 <translation id="5553089923092577885">પ્રમાણપત્ર નીતિ મેપિંગ્સ</translation>
 <translation id="5554489410841842733">જ્યારે એક્સટેન્શન ચાલુ પૃષ્ઠ પર કાર્ય કરી શકે ત્યારે આ આયકન દેખાશે.</translation>
 <translation id="5554720593229208774">ઇમેઇલ પ્રમાણન અધિકારી</translation>
-<translation id="5554931805291741487">આઉટપુટ વિસ્તાર લગભગ ભરાઈ ગયો છે</translation>
 <translation id="5556459405103347317">ફરિથી લોડ કરો</translation>
 <translation id="5558125320634132440">આ સાઇટમાં પુખ્ય વયના લોકો માટેનું કન્ટેન્ટ હોવાને કારણે તેને બ્લૉક કરવામાં આવી છે.</translation>
 <translation id="5558129378926964177">Zoom &amp;In</translation>
@@ -4938,7 +4935,6 @@ USB ડિવાઇસ</translation>
 <translation id="7152478047064750137">આ એક્સટેન્શનને કોઈ વિશિષ્ટ પરવાનગીઓની જરૂર નથી</translation>
 <translation id="7154130902455071009">તમારા પ્રારંભ પૃષ્ઠને આ પર બદલો: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">કૅમેરા અથવા ફાઇલમાંથી અસ્તિત્વમાંનો ફોટો</translation>
-<translation id="7163766494674803047">પ્રિન્ટર ડિવાઇસમાં ભૂલ</translation>
 <translation id="7165320105431587207">નેટવર્ક ગોઠવવામાં નિષ્ફળ</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" આ તપાસાયેલા સ્થાનોમાં ફોટા, વીડિયો અને સાઉન્ડ ફાઇલોને વાંચી શકે છે.</translation>
 <translation id="7167486101654761064">આ પ્રકારની ફાઇલો &amp;હંમેશા ખોલો</translation>

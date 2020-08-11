@@ -67,7 +67,7 @@
 <translation id="1070705170564860382">Beste arakatzaile batean irekiko da <ph name="COUNTDOWN_SECONDS" /> segundo barru</translation>
 <translation id="1071917609930274619">Datuak zifratzea</translation>
 <translation id="1072700771426194907">USB bidezko gailu bat hauteman da</translation>
-<translation id="1076176485976385390">Nabigatu orrietatik tartekatze-ikurra erabilita</translation>
+<translation id="1076176485976385390">Nabigatu orrietatik testu-kurtsorea erabilita</translation>
 <translation id="1076698951459398590">Gaitu gaia</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1079766198702302550">Blokeatu beti kamerarako sarbidea</translation>
@@ -386,7 +386,7 @@
 <translation id="1465827627707997754">Pizza zatia</translation>
 <translation id="1468571364034902819">Ezin da erabili profil hau</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{Gehitu fitxa talde berrian}other{Gehitu fitxak talde berrian}}</translation>
-<translation id="1470946456740188591">Tartekatze-ikurraren bidez arakatzeko eginbidea aktibatu edo desaktibatzeko, erabili Ktrl + Bilatu + 7 lasterbidea</translation>
+<translation id="1470946456740188591">Testu-kurtsorearen bidez arakatzeko eginbidea aktibatu edo desaktibatzeko, erabili Ktrl + Bilatu + 7 lasterbidea</translation>
 <translation id="1472675084647422956">Erakutsi gehiago</translation>
 <translation id="1474785664565228650">Mikrofonoaren ezarpenean egindako aldaketa gauzatzeko, berrabiarazi egin behar da Parallels Desktop. Aurrera egiteko, berrabiarazi Parallels Desktop.</translation>
 <translation id="1475502736924165259">Beste kategorietarako egokiak ez diren ziurtagiriak dituzu erregistratuta</translation>
@@ -573,7 +573,7 @@
 <translation id="1680849702532889074">Errore bat gertatu da Linux aplikazioa instalatzean.</translation>
 <translation id="16815041330799488">Ez utzi ikusten webguneei arbelean kopiatzen dituzun testuak eta irudiak</translation>
 <translation id="1682548588986054654">Ezkutuko leiho berria</translation>
-<translation id="1682867089915960590">Tartekatze-ikurraren bidez arakatzeko eginbidea aktibatu nahi duzu?</translation>
+<translation id="1682867089915960590">Testu-kurtsorearen bidez arakatzeko eginbidea aktibatu nahi duzu?</translation>
 <translation id="1686550358074589746">Gaitu idazketa lerrakorra</translation>
 <translation id="168715261339224929">Laster-markak gailu guztietan eskura izateko, aktibatu sinkronizazioa.</translation>
 <translation id="1688867105868176567">Webguneko datuak garbitu nahi dituzu?</translation>
@@ -1108,7 +1108,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2336381494582898602">Berrezarri fabrikako ezarpenak</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> ezin da segurtasunez deskargatu</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> webguneak parekatu egin nahi du</translation>
-<translation id="2341476639346994688">Gelditu egin da inprimagailua</translation>
 <translation id="2342740338116612727">Laster-markak gehitu dira</translation>
 <translation id="2343747224442182863">Fokuratu fitxa</translation>
 <translation id="2344686470986284227">Makina birtualaren kontrolagailua abiarazten</translation>
@@ -1507,7 +1506,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2805770823691782631">Xehetasun gehigarriak</translation>
 <translation id="2807517655263062534">Deskargatutako fitxategiak agertuko dira hemen</translation>
 <translation id="2809586584051668049">eta beste <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
-<translation id="2810024255621914659">Hautatutako oroitzapenen diapositiba-aurkezpena sortuko da. Lehendik dauden albumetan aldaketak egiteko, joan <ph name="LINK_BEGIN" />Google Argazkiak<ph name="LINK_END" /> zerbitzura.</translation>
+<translation id="2810024255621914659">Hautatutako oroitzapenen diapositiba-aurkezpen bat sortuko da. Lehendik dauden albumetan aldaketak egiteko, joan <ph name="LINK_BEGIN" />Google Argazkiak<ph name="LINK_END" /> zerbitzura.</translation>
 <translation id="2810390687497823527">Luzapenen bat ezagutzen ez baduzu edo arakatzaileak ez badu funtzionatzen behar bezala, desaktibatu edo pertsonalizatu luzapenak hemen.</translation>
 <translation id="2812049959647166806">Thunderbolt konektorea ez da bateragarria</translation>
 <translation id="2812989263793994277">Ez erakutsi irudirik</translation>
@@ -2722,7 +2721,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4336434711095810371">Garbitu datu guztiak</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> webguneak "<ph name="EXTENSION_NAME" />" aplikazioarekin komunikatu nahi du</translation>
 <translation id="4340575312453649552">Iragarki honek gailuko baliabide gehiegi erabili ditu; ondorioz, Chrome-k kendu egin du.</translation>
-<translation id="4341577178275615435">Tartekatze-ikurraren bidez arakatzeko eginbidea aktibatu edo desaktibatzeko, erabili F7 lasterbidea</translation>
+<translation id="4341577178275615435">Testu-kurtsorearen bidez arakatzeko eginbidea aktibatu edo desaktibatzeko, erabili F7 lasterbidea</translation>
 <translation id="434404122609091467">Uneko zerbitzu-hornitzailearekin</translation>
 <translation id="4345587454538109430">Konfiguratu…</translation>
 <translation id="4345732373643853732">Erabiltzaile-izena ezezaguna da zerbitzarian</translation>
@@ -2821,7 +2820,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4469477701382819144">Iragarkiak blokeatuta daude iragarki oztopatzaileak edo iruzurrezkoak erakusten dituzten webguneetan</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> webguneak <ph name="FOLDERNAME" /> karpetako fitxategiak edita ditzake</translation>
 <translation id="4470957202018033307">Kanpoko memoria erabiltzeko hobespenak</translation>
-<translation id="4471354919263203780">Ahotsa hautemateko fitxategiak deskargatzen… % <ph name="PERCENT" /></translation>
+<translation id="4471354919263203780">Ahots-hautematearen fitxategiak deskargatzen… % <ph name="PERCENT" /></translation>
 <translation id="447252321002412580">Lagundu Chrome-ren eginbideak eta errendimendua hobetzen</translation>
 <translation id="4472575034687746823">Hasi erabiltzen</translation>
 <translation id="4474155171896946103">Egin laster-markak fitxa guztiei…</translation>
@@ -3237,7 +3236,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5015344424288992913">Proxya ebazten…</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Gogoratu</translation>
-<translation id="5017643436812738274">Nabigatu orrietatik tartekatze-ikurra erabilita. Eginbidea desaktibatzeko, sakatu Ktrl + Bilatu + 7.</translation>
+<translation id="5017643436812738274">Nabigatu orrietatik testu-kurtsorea erabilita. Eginbidea desaktibatzeko, sakatu Ktrl + Bilatu + 7.</translation>
 <translation id="5018207570537526145">Ireki luzapenaren webgunea</translation>
 <translation id="5018526990965779848">Bidali erabilera- eta diagnostiko-datuak. Bidali diagnostikoak eta gailu zein aplikazioen erabilera-datuak Google-ri automatikoki darabiltzazun Android-en zerbitzuak hobetzeko. Horri esker, sistemaren eta aplikazioen egonkortasuna hobetuko da, besteak beste. Gainera, multzokatutako datu batzuk oso baliagarriak izango dira Google-ren aplikazioak hobetzeko eta bazkideei laguntzeko (adibidez, Android-en garatzaileei). Sareko eta aplikazioetako jarduera gehigarriak ezarpena aktibatuta badago, baliteke datu horiek Google-ko kontuan gordetzea.</translation>
 <translation id="5021750053540820849">Oraindik ez da eguneratu</translation>
@@ -3448,7 +3447,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5283677936944177147">Sistemak ezin izan du zehaztu gailuaren modeloa edo serie-zenbakia.</translation>
 <translation id="5284445933715251131">Jarraitu deskargatzen</translation>
 <translation id="5285635972691565180"><ph name="DISPLAY_ID" /> pantaila</translation>
-<translation id="5286094561505658635">Beteta dago irteera-eremua</translation>
 <translation id="5286194356314741248">Bilatzen</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Zure kontuak</translation>
@@ -3592,7 +3590,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5464660706533281090">Haurrek ezin dute aldatu ezarpen hau.</translation>
 <translation id="5466374726908360271">It&amp;satsi eta bilatu "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="5468173180030470402">Fitxategiak parekatzeko sareko gailuak bilatzen</translation>
-<translation id="5469852975082458401">Nabigatu orrietatik tartekatze-ikurra erabilita. Eginbidea desaktibatzeko, sakatu F7.</translation>
+<translation id="5469852975082458401">Nabigatu orrietatik testu-kurtsorea erabilita. Eginbidea desaktibatzeko, sakatu F7.</translation>
 <translation id="5470735824776589490">Berrabiarazi egin behar da gailuan fabrikako ezarpenak berrezarri ahal izateko. <ph name="LINK_BEGIN" />Lortu informazio gehiago<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Kaixo! Testua ahots bihurtzeko eginbidearen ahotsa naiz.</translation>
 <translation id="5472627187093107397">Gorde webgune honetako pasahitzak</translation>
@@ -3669,7 +3667,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5553089923092577885">Ziurtagiri-gidalerroen esleipenak</translation>
 <translation id="5554489410841842733">Ikonoa ikusgai egongo da luzapenak uneko orrian ekintzak egin ditzakeenean.</translation>
 <translation id="5554720593229208774">Mezu elektronikoaren ziurtagiri-emailea</translation>
-<translation id="5554931805291741487">Inprimagailuaren irteera-eremua ia beteta dago</translation>
 <translation id="5556459405103347317">Kargatu berriro</translation>
 <translation id="5558125320634132440">Webgunea blokeatu egin da, agian helduentzako edukiak baititu</translation>
 <translation id="5558129378926964177">&amp;Handitu</translation>
@@ -4458,7 +4455,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6545864417968258051">Bluetooth bidezko gailuen bilaketa</translation>
 <translation id="6545867563032584178">Mikrofonoa erabiltzeko baimena desaktibatuta dago Mac sistemaren hobespenetan</translation>
 <translation id="6547354035488017500">Libratu gutxienez 512 MB; bestela, gailuak ez du erantzungo. Tokia egiteko, ezabatu fitxategiak gailuaren memoriatik.</translation>
-<translation id="654871471440386944">Tartekatze-ikurraren bidez arakatzeko eginbidea aktibatu nahi duzu?</translation>
+<translation id="654871471440386944">Testu-kurtsorearen bidez arakatzeko eginbidea aktibatu nahi duzu?</translation>
 <translation id="6550675742724504774">Aukerak</translation>
 <translation id="6551508934388063976">Agindua ez dago erabilgarri. Beste leiho bat irekitzeko, sakatu Kontrol+N.</translation>
 <translation id="6551612971599078809">USB gailu bat erabiltzen ari da webgunea</translation>
@@ -4940,7 +4937,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="7152478047064750137">Luzapen honek ez du baimen berezirik behar</translation>
 <translation id="7154130902455071009">Aldatu hasiera-orria hau izan dadin: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Lehendik duzun kamerako argazkia edo fitxategia</translation>
-<translation id="7163766494674803047">Errore bat gertatu da inprimagailuan</translation>
 <translation id="7165320105431587207">Ezin izan da konfiguratu sarea</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" luzapenak markatutako kokapenetako irudiak, bideoak eta soinu-fitxategiak irakur ditzake.</translation>
 <translation id="7167486101654761064">Ireki &amp;beti mota honetako fitxategiak</translation>

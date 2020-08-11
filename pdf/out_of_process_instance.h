@@ -16,7 +16,6 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "pdf/paint_manager.h"
 #include "pdf/pdf_view_plugin_base.h"
 #include "pdf/preview_mode_client.h"
@@ -54,6 +53,8 @@ class OutOfProcessInstance : public PdfViewPluginBase,
                              public PreviewModeClient::Client {
  public:
   explicit OutOfProcessInstance(PP_Instance instance);
+  OutOfProcessInstance(const OutOfProcessInstance&) = delete;
+  OutOfProcessInstance& operator=(const OutOfProcessInstance&) = delete;
   ~OutOfProcessInstance() override;
 
   // pp::Instance implementation.
@@ -503,8 +504,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
     ACCESSIBILITY_STATE_PENDING,  // Enabled but waiting for doc to load.
     ACCESSIBILITY_STATE_LOADED
   } accessibility_state_ = ACCESSIBILITY_STATE_OFF;
-
-  DISALLOW_COPY_AND_ASSIGN(OutOfProcessInstance);
 };
 
 }  // namespace chrome_pdf

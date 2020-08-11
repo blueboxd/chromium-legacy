@@ -59,7 +59,6 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        include: path.resolve(__dirname, 'src'),
         use: ['vue-style-loader', 'style-loader', 'css-loader'],
       },
     ],

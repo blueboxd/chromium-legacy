@@ -43,6 +43,8 @@ enum EffectiveUrlFlags {
   kAllowDataFrames = 1 << 2,
 };
 
+// TODO(devlin): Modify this to take a
+// UserScript::MatchOriginAsFallbackBehavior, and handle it appropriately.
 GURL GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
                              const GURL& document_url,
                              int flags) {
@@ -466,16 +468,21 @@ GURL ScriptContext::GetEffectiveDocumentURLForContext(
 GURL ScriptContext::GetEffectiveDocumentURLForInjection(
     blink::WebLocalFrame* frame,
     const GURL& document_url,
-    bool match_about_blank,
-    bool match_origin_as_fallback) {
+    MatchOriginAsFallbackBehavior match_origin_as_fallback) {
   // We explicitly allow inaccessible parents here. Extensions should still be
   // able to inject into a sandboxed iframe if it has access to the embedding
   // origin.
   int flags = kAllowInaccessibleParents;
-  if (match_about_blank)
-    flags |= kAllowAboutFrames;
-  if (match_origin_as_fallback)
-    flags |= kAllowDataFrames;
+  switch (match_origin_as_fallback) {
+    case MatchOriginAsFallbackBehavior::kNever:
+      break;
+    case MatchOriginAsFallbackBehavior::kMatchForAboutSchemeAndClimbTree:
+      flags |= kAllowAboutFrames;
+      break;
+    case MatchOriginAsFallbackBehavior::kAlways:
+      flags |= kAllowAboutFrames | kAllowDataFrames;
+      break;
+  }
 
   return GetEffectiveDocumentURL(frame, document_url, flags);
 }

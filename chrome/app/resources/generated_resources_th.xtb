@@ -1108,7 +1108,6 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947">ดาวน์โหลด <ph name="FILE_NAME" /> อย่างปลอดภัยไม่ได้</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> ต้องการจับคู่</translation>
-<translation id="2341476639346994688">เครื่องพิมพ์หยุดทำงาน</translation>
 <translation id="2342740338116612727">เพิ่มบุ๊กมาร์กแล้ว</translation>
 <translation id="2343747224442182863">โฟกัสแท็บนี้</translation>
 <translation id="2344686470986284227">กำลังเริ่มตัวควบคุมเครื่องเสมือน</translation>
@@ -3448,7 +3447,6 @@
 <translation id="5283677936944177147">อ๊ะ!  ระบบไม่สามารถระบุรุ่นหรือหมายเลขซีเรียลของอุปกรณ์</translation>
 <translation id="5284445933715251131">ดาวน์โหลดต่อ</translation>
 <translation id="5285635972691565180">จอแสดงผล <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">พื้นที่สำหรับกระดาษออกเต็มแล้ว</translation>
 <translation id="5286194356314741248">กำลังสแกน</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">บัญชีของคุณ</translation>
@@ -3669,7 +3667,6 @@
 <translation id="5553089923092577885">การจับคู่นโยบายใบรับรอง</translation>
 <translation id="5554489410841842733">ไอคอนนี้จะมองเห็นได้เมื่อส่วนขยายสามารถทำงานบนหน้าปัจจุบันได้</translation>
 <translation id="5554720593229208774">ผู้ออกใบรับรองอีเมล</translation>
-<translation id="5554931805291741487">พื้นที่สำหรับกระดาษออกใกล้เต็มแล้ว</translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5558125320634132440">เว็บไซต์นี้ถูกบล็อกเนื่องจากอาจมีเนื้อหาสำหรับผู้ใหญ่</translation>
 <translation id="5558129378926964177">ขยาย&amp;</translation>
@@ -4940,7 +4937,6 @@
 <translation id="7152478047064750137">ส่วนขยายนี้ไม่จำเป็นต้องมีสิทธิ์พิเศษ</translation>
 <translation id="7154130902455071009">เปลี่ยนหน้าเริ่มต้นของคุณเป็น: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">รูปภาพที่มีอยู่จากกล้องหรือไฟล์</translation>
-<translation id="7163766494674803047">เกิดข้อผิดพลาดเกี่ยวกับอุปกรณ์เครื่องพิมพ์</translation>
 <translation id="7165320105431587207">ล้มเหลวในการกำหนดค่าเครือข่าย</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" สามารถอ่านรูปภาพ วิดีโอ และไฟล์เสียงในตำแหน่งที่เลือก</translation>
 <translation id="7167486101654761064">เปิดไฟล์ประเภทนี้เ&amp;สมอ</translation>

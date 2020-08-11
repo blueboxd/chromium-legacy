@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Навигация заблокирована: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Разрешено</translation>
 <translation id="429312253194641664">На сайте воспроизводятся медиафайлы</translation>
+<translation id="4336434711095810371">Удалить все данные</translation>
 <translation id="4433925000917964731">Lite-версия страницы получена с помощью Google</translation>
 <translation id="4434045419905280838">Всплывающие окна и переадресация</translation>
 <translation id="445467742685312942">Разрешить сайтам воспроизводить защищенный контент</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Вкладка инкогнито</translation>
 <translation id="5300589172476337783">Показать</translation>
 <translation id="5301954838959518834">ОК</translation>
-<translation id="5307446750509046227">Удалить данные сайтов</translation>
 <translation id="5313967007315987356">Добавить сайт</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5335288049665977812">Разрешить сайтам использовать JavaScript (рекомендуется)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">Блокировать код JavaScript на определенном сайте.</translation>
 <translation id="8816026460808729765">Закрыть сайтам доступ к датчикам</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Хранилище</translation>
 <translation id="8926666909099850184">Функция NFC на этом устройстве отключена. Включите ее в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">У большинства пользователей этот сайт быстро загружается и без задержек отвечает на запросы.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">Предоставьте приложению "<ph name="APP_NAME" />" разрешения в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Доступ к микрофону</translation>
 <translation id="965817943346481315">Блокировать, если сайт показывает навязчивую или вводящую в заблуждение рекламу (рекомендуется)</translation>
+<translation id="967624055006145463">Объем занятой памяти</translation>
 </translationbundle>

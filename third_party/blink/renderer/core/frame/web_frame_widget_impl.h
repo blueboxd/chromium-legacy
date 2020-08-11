@@ -129,6 +129,10 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void DidCreateLocalRootView() override;
   HitTestResult CoreHitTestResultAt(const gfx::PointF&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
+  void SetAutoResizeMode(bool auto_resize,
+                         const gfx::Size& min_size_before_dsf,
+                         const gfx::Size& max_size_before_dsf,
+                         float device_scale_factor) override;
 
   // FrameWidget overrides:
   void SetRootLayer(scoped_refptr<cc::Layer>) override;

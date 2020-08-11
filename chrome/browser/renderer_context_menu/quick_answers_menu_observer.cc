@@ -134,6 +134,8 @@ void QuickAnswersMenuObserver::InitMenu(
 void QuickAnswersMenuObserver::OnContextMenuShown(
     const content::ContextMenuParams& params,
     const gfx::Rect& bounds_in_screen) {
+  is_context_menu_showing_ = true;
+
   if (!IsRichUiEnabled())
     return;
 
@@ -163,12 +165,14 @@ void QuickAnswersMenuObserver::OnContextMenuShown(
 void QuickAnswersMenuObserver::OnContextMenuViewBoundsChanged(
     const gfx::Rect& bounds_in_screen) {
   bounds_in_screen_ = bounds_in_screen;
-  if (!quick_answers_controller_)
+  if (!quick_answers_controller_ || !is_context_menu_showing_)
     return;
   quick_answers_controller_->UpdateQuickAnswersAnchorBounds(bounds_in_screen);
 }
 
 void QuickAnswersMenuObserver::OnMenuClosed() {
+  is_context_menu_showing_ = false;
+
   if (!IsRichUiEnabled())
     return;
 
@@ -268,6 +272,9 @@ void QuickAnswersMenuObserver::OnTextSurroundingSelectionAvailable(
     const base::string16& surrounding_text,
     uint32_t start_offset,
     uint32_t end_offset) {
+  if (!is_context_menu_showing_)
+    return;
+
   Context context;
   context.surrounding_text = base::UTF16ToUTF8(surrounding_text);
   context.device_properties.language = GetDeviceLanguage();

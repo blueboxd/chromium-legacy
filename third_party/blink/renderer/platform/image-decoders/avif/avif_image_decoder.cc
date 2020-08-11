@@ -588,6 +588,10 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
   if (!decoder_)
     return false;
 
+  // TODO(crbug.com/1114916): Disable grid image support in libavif until the
+  // libavif grid image code has been audited.
+  decoder_->disableGridImages = AVIF_TRUE;
+
   // TODO(dalecurtis): This may create a second copy of the media data in
   // memory, which is not great. libavif should provide a read() based API:
   // https://github.com/AOMediaCodec/libavif/issues/11

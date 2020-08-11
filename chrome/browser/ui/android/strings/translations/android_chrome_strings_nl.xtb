@@ -152,6 +152,7 @@ Tik op een woord om te zoeken. Je kunt je zoekopdracht verfijnen door te tikken 
 <translation id="2154710561487035718">URL kopiëren</translation>
 <translation id="2156074688469523661">Resterende sites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Als je iets op je telefoon wilt delen met een ander apparaat, schakel je de synchronisatie in de Chrome-instellingen op beide apparaten in</translation>
+<translation id="2158408438301413340">Chrome kan niet alle wachtwoorden checken</translation>
 <translation id="2169830938017475061">Nu</translation>
 <translation id="2175927920773552910">QR-code</translation>
 <translation id="218608176142494674">Delen</translation>
@@ -160,6 +161,7 @@ Tik op een woord om te zoeken. Je kunt je zoekopdracht verfijnen door te tikken 
 <translation id="2239812875700136898">Beheer je artikelen met de knop 'Opties voor Discover'</translation>
 <translation id="2259659629660284697">Wachtwoorden exporteren…</translation>
 <translation id="2268044343513325586">Verfijnen</translation>
+<translation id="2276696007612801991">Log in met je Google-account om je wachtwoorden te checken</translation>
 <translation id="2286841657746966508">Factuuradres</translation>
 <translation id="230115972905494466">Geen geschikte apparaten gevonden</translation>
 <translation id="2318045970523081853">Tik om te bellen</translation>
@@ -316,6 +318,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /> over voorgestelde content</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3507132249039706973">Standaardbeveiliging is ingeschakeld</translation>
+<translation id="3509330069915219067">Offline. Chrome kan niet checken op updates.</translation>
 <translation id="3513704683820682405">Augmented reality</translation>
 <translation id="3518985090088779359">Accept. en doorgaan</translation>
 <translation id="3522247891732774234">Update beschikbaar. Meer opties</translation>
@@ -365,6 +368,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3895926599014793903">Zoom inschakelen forceren</translation>
 <translation id="3909763690984331376">Veiligheidscheck <ph name="BEGIN_NEW" />Nieuw<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">We zoeken naar het beste op internet…</translation>
+<translation id="3924911262913579434"><ph name="SAFE_BROWSING_MODE" /> is ingeschakeld</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Mijn gegevens combineren</translation>
 <translation id="393697183122708255">Gesproken zoekopdracht niet beschikbaar</translation>
@@ -372,6 +376,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome laadt de pagina wanneer deze gereed is}other{Chrome laadt de pagina's wanneer deze gereed zijn}}</translation>
 <translation id="3963007978381181125">Wachtwoordzinversleuteling is niet van toepassing op betaalmethoden en adressen van Google Pay. Alleen iemand met je wachtwoordzin kan je versleutelde gegevens lezen. De wachtwoordzin wordt niet verzonden naar of opgeslagen door Google. Als je je wachtwoordzin vergeet of deze instelling wilt wijzigen, moet je de synchronisatie resetten. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Downloaden voltooid</translation>
+<translation id="3969142555815019568">Chrome kan je wachtwoorden niet checken</translation>
 <translation id="3974987681202239636"><ph name="APP_NAME" /> wordt geopend in Chrome. Als je doorgaat, ga je akkoord met de <ph name="BEGIN_LINK1" />servicevoorwaarden van Google<ph name="END_LINK1" /> en met de <ph name="BEGIN_LINK2" />aanvullende servicevoorwaarden van Google Chrome en Chrome OS<ph name="END_LINK2" />. Ook is de <ph name="BEGIN_LINK3" />privacyverklaring voor Google-accounts die worden beheerd met Family Link<ph name="END_LINK3" /> van toepassing.</translation>
 <translation id="397583555483684758">Synchronisatie werkt niet meer</translation>
 <translation id="3976396876660209797">Verwijder de snelkoppeling en maak deze opnieuw</translation>
@@ -447,6 +452,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> openen</translation>
 <translation id="4634124774493850572">Wachtwoord gebruiken</translation>
 <translation id="4650364565596261010">Systeemstandaard</translation>
+<translation id="465657074423018424">Safe Browsing beschermt je tegen misleidende websites. Als je deze functie uitschakelt, moet je extra voorzichtig zijn als je browst, met name voordat je wachtwoorden opgeeft.</translation>
 <translation id="4662373422909645029">Cijfers niet toegestaan</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks verwijderd</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is toegevoegd aan je startscherm</translation>
@@ -477,6 +483,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4837753911714442426">Afdrukopties voor de pagina openen</translation>
 <translation id="4842092870884894799">Pop-upvenster voor wachtwoord genereren wordt weergegeven</translation>
 <translation id="4860895144060829044">Bellen</translation>
+<translation id="4864369630010738180">Inloggen...</translation>
 <translation id="4866368707455379617">Kan <ph name="MODULE" /> niet installeren voor Chrome</translation>
 <translation id="4875775213178255010">Contentsuggesties</translation>
 <translation id="4878404682131129617">Kan geen tunnel tot stand brengen via de proxyserver</translation>
@@ -783,6 +790,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7071521146534760487">Account beheren</translation>
 <translation id="7077143737582773186">SD-kaart</translation>
 <translation id="7080806333218412752">Stuurt URL's naar Safe Browsing om deze te checken. Stuurt ook een klein gedeelte pagina's, downloads, extensie-activiteit en systeeminformatie om nieuwe dreigingen te kunnen detecteren. Koppelt deze gegevens tijdelijk aan je Google-account als je bent ingelogd om je te beschermen binnen de Google-apps.</translation>
+<translation id="7088681679121566888">Chrome is up-to-date</translation>
 <translation id="7121362699166175603">Hiermee worden de geschiedenis en automatische aanvullingen voor de adresbalk gewist. Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Zie je topsites en recente artikelen als je op de startknop tikt</translation>
 <translation id="7138678301420049075">Overige</translation>
@@ -804,6 +812,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7293171162284876153">Schakel 'Je Chrome-gegevens synchroniseren' in om de synchronisatie te starten.</translation>
 <translation id="729975465115245577">Je apparaat bevat geen app om het wachtwoordbestand in op te slaan.</translation>
 <translation id="7302081693174882195">Details: gesorteerd op de hoeveelheid bespaarde data</translation>
+<translation id="7304873321153398381">Offline. Chrome kan je wachtwoorden niet checken.</translation>
 <translation id="7328017930301109123">In de Lite-versie van Chrome worden pagina's sneller geladen en wordt tot wel 60 procent minder data verbruikt.</translation>
 <translation id="7333031090786104871">Nog steeds bezig met toevoegen van vorige site</translation>
 <translation id="7340958967809483333">Opties voor Discover</translation>
@@ -817,6 +826,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="741204030948306876">Ja, inschakelen</translation>
 <translation id="7413229368719586778">Begindatum: <ph name="DATE" /></translation>
 <translation id="7431991332293347422">Beheren hoe je browsegeschiedenis wordt gebruikt om Google Zoeken en meer te personaliseren</translation>
+<translation id="7435356471928173109">Uitgeschakeld door je beheerder</translation>
 <translation id="7437998757836447326">Uitloggen bij Chrome</translation>
 <translation id="7438641746574390233">Wanneer de Lite-modus is ingeschakeld, gebruikt Chrome Google-servers om pagina's sneller te laden. In de Lite-versie worden erg trage pagina's herschreven zodat alleen essentiële content wordt geladen. De Lite-modus werkt niet op incognitotabbladen.</translation>
 <translation id="7444811645081526538">Meer categorieën</translation>
@@ -1032,6 +1042,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="9050666287014529139">Wachtwoordzin</translation>
 <translation id="9063523880881406963">'Desktopsite opvragen' uitschakelen</translation>
 <translation id="9065203028668620118">Bewerken</translation>
+<translation id="9069543557624799859">Download wordt gestart om <ph name="TIME" />.</translation>
 <translation id="9070377983101773829">Gesproken zoekopdracht starten</translation>
 <translation id="9074336505530349563">Log in en schakel synchronisatie in om suggesties voor gepersonaliseerde content van Google te ontvangen</translation>
 <translation id="9086302186042011942">Synchroniseren</translation>

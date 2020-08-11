@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">নেভিগেশন অবরুদ্ধ করা হয়েছে: <ph name="URL" /></translation>
 <translation id="4278390842282768270">মঞ্জুরিপ্রাপ্ত</translation>
 <translation id="429312253194641664">একটি সাইট মিডিয়া চালাচ্ছে</translation>
+<translation id="4336434711095810371">সব ডেটা মুছে ফেলুন</translation>
 <translation id="4433925000917964731">Google লাইট পৃষ্ঠা পাঠিয়েছে</translation>
 <translation id="4434045419905280838">পপ-আপ এবং রিডাইরেক্ট</translation>
 <translation id="445467742685312942">সাইটকে সুরক্ষিত কন্টেন্ট চালানোর জন্য অনুমতি দিন</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">ছদ্মবেশী ট্যাব</translation>
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5301954838959518834">ঠিক আছে, বুঝেছি</translation>
-<translation id="5307446750509046227">সাইটের সেভ করা ডেটা মুছুন</translation>
 <translation id="5313967007315987356">সাইট যোগ করুন</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5335288049665977812">সাইটগুলিকে JavaScript চালানোর অনুমতি দিন (প্রস্তাবিত)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">একটি নির্দিষ্ট সাইটের জন্য জাভাস্ক্রিপ্ট ব্লক করুন।</translation>
 <translation id="8816026460808729765">সেন্সর অ্যাক্সেস করা থেকে সাইটকে ব্লক করুন</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">স্টোরেজ</translation>
 <translation id="8926666909099850184">এই ডিভাইসে NFC বন্ধ আছে। <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে এটি চালু করুন।</translation>
 <translation id="8929372349074745002">বেশিরভাগ লোকের ক্ষেত্রে এই সাইট খুব কম সময়ের মধ্যেই খুলেও যায় এবং এখান থেকে সব রকম উত্তরও পান</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> <ph name="APP_NAME" />-এর জন্য অনুমতিগুলি চালু করুন।</translation>
 <translation id="945632385593298557">আপনার মাইক্রোফোন অ্যাক্সেস করুন</translation>
 <translation id="965817943346481315">সাইটে থাকা ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন ব্লক করুন (প্রস্তাবিত)</translation>
+<translation id="967624055006145463">ডেটা স্টোর করা হয়েছে</translation>
 </translationbundle>

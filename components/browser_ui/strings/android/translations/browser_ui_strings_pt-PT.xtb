@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">A navegação está bloqueada: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Permitido</translation>
 <translation id="429312253194641664">Um site está a reproduzir multimédia.</translation>
+<translation id="4336434711095810371">Limpar todos os dados</translation>
 <translation id="4433925000917964731">Página em modo lite fornecida pela Google</translation>
 <translation id="4434045419905280838">Pop-ups e redirecionamentos</translation>
 <translation id="445467742685312942">Permitir que os sites reproduzam conteúdos protegidos</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Separador de navegação anónima</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">OK, compreendi</translation>
-<translation id="5307446750509046227">Limpar armazen. do site</translation>
 <translation id="5313967007315987356">Adicionar site</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5335288049665977812">Permitir que os sites executem JavaScript (recomendado)</translation>
@@ -228,6 +228,7 @@
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8300705686683892304">Geridos por aplicação</translation>
 <translation id="8372893542064058268">Permitir Sincronização em segundo plano num site específico.</translation>
+<translation id="8376384591331888629">Incluindo cookies de terceiros neste site</translation>
 <translation id="83792324527827022">Um site está a utilizar a sua câmara e microfone.</translation>
 <translation id="8380167699614421159">Este site apresenta anúncios intrusivos ou enganadores.</translation>
 <translation id="8394832520002899662">Toque para regressar ao site.</translation>
@@ -249,7 +250,6 @@
 <translation id="8801436777607969138">Bloqueie JavaScript num site específico.</translation>
 <translation id="8816026460808729765">Impedir que os sites acedam aos sensores</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Armazenamento</translation>
 <translation id="8926666909099850184">O NFC está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Este site é aberto e responde rapidamente para a maioria das pessoas.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +261,5 @@
 <translation id="913657688200966289">Ative as autorizações para a app <ph name="APP_NAME" /> nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Aceder ao microfone</translation>
 <translation id="965817943346481315">Bloquear se o site apresentar anúncios intrusivos ou enganadores (recomendado)</translation>
+<translation id="967624055006145463">Dados armazenados</translation>
 </translationbundle>

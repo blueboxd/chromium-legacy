@@ -86,7 +86,7 @@ void SupervisedUserNavigationObserver::UpdateMainFrameFilteringStatus(
 }
 
 void SupervisedUserNavigationObserver::DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->HasCommitted())
     return;
 
@@ -108,13 +108,15 @@ void SupervisedUserNavigationObserver::DidFinishNavigation(
     auto* render_frame_host = web_contents()->GetMainFrame();
     int process_id = render_frame_host->GetProcess()->GetID();
     int routing_id = render_frame_host->GetRoutingID();
-
+    bool skip_manual_parent_filter =
+        url_filter_->ShouldSkipParentManualAllowlistFiltering(web_contents());
     url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
         web_contents()->GetLastCommittedURL(),
         base::BindOnce(
             &SupervisedUserNavigationObserver::URLFilterCheckCallback,
             weak_ptr_factory_.GetWeakPtr(), navigation_handle->GetURL(),
-            process_id, routing_id));
+            process_id, routing_id),
+        skip_manual_parent_filter);
   }
 }
 
@@ -149,13 +151,15 @@ void SupervisedUserNavigationObserver::OnURLFilterChanged() {
   auto* main_frame = web_contents()->GetMainFrame();
   int main_frame_process_id = main_frame->GetProcess()->GetID();
   int routing_id = main_frame->GetRoutingID();
-
+  bool skip_manual_parent_filter =
+      url_filter_->ShouldSkipParentManualAllowlistFiltering(web_contents());
   url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
       web_contents()->GetLastCommittedURL(),
       base::BindOnce(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
                      weak_ptr_factory_.GetWeakPtr(),
                      web_contents()->GetLastCommittedURL(),
-                     main_frame_process_id, routing_id));
+                     main_frame_process_id, routing_id),
+      skip_manual_parent_filter);
 
   MaybeUpdateRequestedHosts();
 
@@ -287,13 +291,15 @@ void SupervisedUserNavigationObserver::FilterRenderFrame(
     return;
 
   const GURL& last_committed_url = render_frame_host->GetLastCommittedURL();
-
+  bool skip_manual_parent_filter =
+      url_filter_->ShouldSkipParentManualAllowlistFiltering(web_contents());
   url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
       web_contents()->GetLastCommittedURL(),
       base::BindOnce(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
                      weak_ptr_factory_.GetWeakPtr(), last_committed_url,
                      render_frame_host->GetProcess()->GetID(),
-                     render_frame_host->GetRoutingID()));
+                     render_frame_host->GetRoutingID()),
+      skip_manual_parent_filter);
 }
 
 void SupervisedUserNavigationObserver::GoBack() {

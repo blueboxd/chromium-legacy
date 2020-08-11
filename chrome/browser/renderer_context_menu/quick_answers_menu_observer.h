@@ -84,6 +84,11 @@ class QuickAnswersMenuObserver
   // Whether commands other than quick answers is executed.
   bool is_other_command_executed_ = false;
 
+  // Whether the context menu is currently showing.
+  // TODO(updowndota): Instead of adding flags to check the callback, add a
+  // global quick answers state in the client to guard the sequence.
+  bool is_context_menu_showing_ = false;
+
   base::WeakPtrFactory<QuickAnswersMenuObserver> weak_factory_{this};
 };
 

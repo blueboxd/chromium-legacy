@@ -29,6 +29,8 @@ void LoadV8SnapshotData() {
 class PDFiumEngineExportsTest : public testing::Test {
  public:
   PDFiumEngineExportsTest() = default;
+  PDFiumEngineExportsTest(const PDFiumEngineExportsTest&) = delete;
+  PDFiumEngineExportsTest& operator=(const PDFiumEngineExportsTest&) = delete;
   ~PDFiumEngineExportsTest() override = default;
 
  protected:
@@ -49,8 +51,6 @@ class PDFiumEngineExportsTest : public testing::Test {
  private:
   std::unique_ptr<base::ThreadTaskRunnerHandle> handle_;
   base::FilePath pdf_data_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(PDFiumEngineExportsTest);
 };
 
 }  // namespace

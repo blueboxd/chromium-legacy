@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/signin/dice_web_signin_interceptor.h"
 
 namespace content {
 class BrowserContext;
@@ -18,7 +19,6 @@ namespace views {
 class View;
 }  // namespace views
 
-struct AccountInfo;
 
 // Bubble shown as part of Dice web signin interception. This bubble is
 // implemented as a WebUI page rendered inside a native bubble.
@@ -32,19 +32,23 @@ class DiceWebSigninInterceptionBubbleView
   DiceWebSigninInterceptionBubbleView& operator=(
       const DiceWebSigninInterceptionBubbleView& other) = delete;
 
-  static void CreateBubble(content::BrowserContext* browser_context,
-                           views::View* anchor_view,
-                           const AccountInfo& account_info,
-                           base::OnceCallback<void(bool)> callback);
+  static void CreateBubble(
+      content::BrowserContext* browser_context,
+      views::View* anchor_view,
+      const DiceWebSigninInterceptor::Delegate::BubbleParameters&
+          bubble_parameters,
+      base::OnceCallback<void(bool)> callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptionBubbleBrowserTest,
                            BubbleClosed);
 
-  DiceWebSigninInterceptionBubbleView(content::BrowserContext* browser_context,
-                                      views::View* anchor_view,
-                                      const AccountInfo& account_info,
-                                      base::OnceCallback<void(bool)> callback);
+  DiceWebSigninInterceptionBubbleView(
+      content::BrowserContext* browser_context,
+      views::View* anchor_view,
+      const DiceWebSigninInterceptor::Delegate::BubbleParameters&
+          bubble_parameters,
+      base::OnceCallback<void(bool)> callback);
 
   // This bubble has no native buttons. The user accepts or cancels through this
   // method, which is called by the inner web UI.

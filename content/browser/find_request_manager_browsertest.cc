@@ -863,7 +863,8 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ActivateNearestFindMatch) {
 // Test basic find-in-page functionality after going back and forth to the same
 // page. In particular, find-in-page should continue to work after going back to
 // a page using the back-forward cache.
-IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, HistoryBackAndForth) {
+// Flaky everywhere: https://crbug.com/1115102
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_HistoryBackAndForth) {
   GURL url_a = embedded_test_server()->GetURL("a.com", "/find_in_page.html");
   GURL url_b = embedded_test_server()->GetURL("b.com", "/find_in_page.html");
 

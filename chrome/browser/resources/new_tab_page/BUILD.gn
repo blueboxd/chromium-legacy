@@ -236,6 +236,7 @@ js_library("modules") {
   deps = [
     ":module_registry",
     "modules/dummy:module",
+    "modules/kaleidoscope:module",
   ]
 }
 
@@ -272,6 +273,7 @@ group("web_components") {
   public_deps = [
     ":web_components_local",
     "modules/dummy:web_components",
+    "modules/kaleidoscope:web_components",
   ]
 }
 

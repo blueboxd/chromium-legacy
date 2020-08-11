@@ -84,8 +84,8 @@ class MergeXmlTest(unittest.TestCase):
     """Checks that the UkmEventNameHash enum is populated correctly.
 
     If ukm.xml is provided, populate a list of ints to the UkmEventNameHash enum
-    where where each value is a xml event name hash truncated to 31 bits and
-    each label is the corresponding event name.
+    where each value is a truncated hash of the event name and each label is the
+    corresponding event name, with obsolete label when applicable.
     """
     merged = merge_xml.PrettyPrintMergedFiles(histogram_paths.ALL_TEST_XMLS)
     expected_merged_xml = """
@@ -109,9 +109,11 @@ class MergeXmlTest(unittest.TestCase):
     This gets populated by the GetEnumsNodes function in merge_xml.py when
     producing the merged XML file.
   </summary>
-  <int value="324605288" label="AbusiveExperienceHeuristic.WindowOpen"/>
-  <int value="1621538456" label="AbusiveExperienceHeuristic.TabUnder"/>
-  <int value="1913876024" label="Autofill.SelectedMaskedServerCard (Obsolete)"/>
+  <int value="151676257" label="AbusiveExperienceHeuristic.TestEvent1"/>
+  <int value="898353372"
+      label="AbusiveExperienceHeuristic.TestEvent2 (Obsolete)"/>
+  <int value="1052089961" label="Autofill.TestEvent3"/>
+  <int value="1758741469" label="FullyObsolete.TestEvent4 (Obsolete)"/>
 </enum>
 
 </enums>

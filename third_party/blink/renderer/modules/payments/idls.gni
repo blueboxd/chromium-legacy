@@ -21,6 +21,7 @@ modules_dictionary_idl_files = [
   "address_init.idl",
   "android_pay_method_data.idl",
   "basic_card_request.idl",
+  "secure_payment_confirmation_request.idl",
   "can_make_payment_event_init.idl",
   "can_make_payment_response.idl",
   "image_object.idl",

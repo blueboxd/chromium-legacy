@@ -71,4 +71,13 @@ WebViewPasswordFeatureManager::ComputePasswordAccountStorageUsageLevel() const {
       kUsingAccountStorage;
 }
 
+void WebViewPasswordFeatureManager::IncrementMoveToAccountRefusedCount() {
+  NOTREACHED();
+}
+
+int WebViewPasswordFeatureManager::GetMoveToAccountRefusedCount() const {
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace ios_web_view

@@ -272,6 +272,7 @@ class CONTENT_EXPORT RenderWidget
   blink::WebRect WindowRect() override;
   blink::WebRect ViewRect() override;
   void SetWindowRect(const blink::WebRect&) override;
+  void SetSize(const gfx::Size&) override;
   void ConvertViewportToWindow(blink::WebRect* rect) override;
   void ConvertViewportToWindow(blink::WebFloatRect* rect) override;
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
@@ -368,16 +369,6 @@ class CONTENT_EXPORT RenderWidget
 
   void DidNavigate(ukm::SourceId source_id, const GURL& url);
 
-  bool auto_resize_mode() const { return auto_resize_mode_; }
-
-  const gfx::Size& min_size_for_auto_resize() const {
-    return min_size_for_auto_resize_;
-  }
-
-  const gfx::Size& max_size_for_auto_resize() const {
-    return max_size_for_auto_resize_;
-  }
-
   viz::FrameSinkId GetFrameSinkIdAtPoint(const gfx::PointF& point,
                                          gfx::PointF* local_point);
 
@@ -387,9 +378,6 @@ class CONTENT_EXPORT RenderWidget
   void SetDeviceScaleFactorForTesting(float factor);
   void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
   void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
-  void EnableAutoResizeForTesting(const gfx::Size& min_size,
-                                  const gfx::Size& max_size);
-  void DisableAutoResizeForTesting(const gfx::Size& new_size);
 
   // Do a hit test for a given point in viewport coordinate.
   blink::WebHitTestResult GetHitTestResultAtPoint(const gfx::PointF& point);
@@ -441,13 +429,6 @@ class CONTENT_EXPORT RenderWidget
   // Must be called to pass updated values to blink when the widget size, the
   // visual viewport size, or the device scale factor change.
   void ResizeWebWidget();
-
-  // Enable or disable auto-resize. This is part of
-  // OnUpdateVisualProperties though tests may call to it more directly.
-  void SetAutoResizeMode(bool auto_resize,
-                         const gfx::Size& min_size_before_dsf,
-                         const gfx::Size& max_size_before_dsf,
-                         float device_scale_factor);
 
   // Helper method to get the device_viewport_rect() from the compositor, which
   // is always in physical pixels.
@@ -539,6 +520,8 @@ class CONTENT_EXPORT RenderWidget
   PepperPluginInstanceImpl* GetFocusedPepperPluginInsideWidget();
 #endif
 
+  bool AutoResizeMode();
+
   // Whether this widget is for a frame. This excludes widgets that are not for
   // a frame (eg popups, pepper), but includes both the main frame
   // (via delegate_) and subframes (via for_child_local_root_frame_).
@@ -590,16 +573,6 @@ class CONTENT_EXPORT RenderWidget
 
   // The size of the visible viewport in pixels.
   gfx::Size visible_viewport_size_;
-
-  // Whether the WebWidget is in auto resize mode, which is used for example
-  // by extension popups.
-  bool auto_resize_mode_ = false;
-
-  // The minimum size to use for auto-resize.
-  gfx::Size min_size_for_auto_resize_;
-
-  // The maximum size to use for auto-resize.
-  gfx::Size max_size_for_auto_resize_;
 
   // Indicates that we shouldn't bother generated paint events.
   bool is_hidden_;

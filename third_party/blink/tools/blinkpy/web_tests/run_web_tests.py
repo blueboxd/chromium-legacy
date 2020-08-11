@@ -142,17 +142,16 @@ def parse_args(args):
             action='store_true',
             default=True,
             help=('Log Zircon debug messages (enabled by default).')),
-        optparse.make_option(
-            '--no-zircon-logging',
-            dest='zircon_logging',
-            action='store_false',
-            default=True,
-            help=('Do not log Zircon debug messages.')),
-        optparse.make_option(
-            '--device',
-            choices=['aemu', 'qemu'],
-            default='qemu',
-            help=('Choose device to launch Fuchsia with.')),
+        optparse.make_option('--no-zircon-logging',
+                             dest='zircon_logging',
+                             action='store_false',
+                             default=True,
+                             help=('Do not log Zircon debug messages.')),
+        optparse.make_option('--device',
+                             choices=['aemu', 'qemu'],
+                             default='aemu',
+                             help=('Choose device to launch Fuchsia with. '
+                                   'Defaults to AEMU.')),
     ]))
 
     option_group_definitions.append((

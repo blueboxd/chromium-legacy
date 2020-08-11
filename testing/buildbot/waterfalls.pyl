@@ -2018,7 +2018,6 @@
           'all',
         ],
         'mixins': [
-          'fuchsia_aemu',
           'linux-xenial',
         ],
         'swarming': {
@@ -2039,7 +2038,6 @@
         'browser_config': 'web-engine-shell',
         'os_type': 'linux',
         'mixins': [
-          'fuchsia_aemu',
           'linux-xenial',
         ],
         'swarming': {
@@ -4082,7 +4080,6 @@
         'browser_config': 'web-engine-shell',
         'os_type': 'linux',
         'mixins': [
-          'fuchsia_aemu',
           'linux-xenial',
         ],
         'swarming': {

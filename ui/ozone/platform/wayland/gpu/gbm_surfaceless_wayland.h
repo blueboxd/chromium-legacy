@@ -101,6 +101,12 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
 
     bool schedule_planes_succeeded = false;
     std::vector<PlaneData> planes;
+
+    // TODO(fangzhoug): This is a temporary solution to barrier swap/present
+    // acks of a frame that contains multiple buffer commits. Next step is to
+    // barrier in browser process to avoid extra IPC hops.
+    size_t unacked_submissions;
+    size_t unacked_presentations;
   };
 
   void MaybeSubmitFrames();

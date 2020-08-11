@@ -1112,7 +1112,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947">Datoteke <ph name="FILE_NAME" /> ni mogoče varno prenesti</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> želi izvesti seznanitev</translation>
-<translation id="2341476639346994688">Tiskalnik je ustavljen</translation>
 <translation id="2342740338116612727">Dodani zaznamki</translation>
 <translation id="2343747224442182863">Izberi ta zavihek</translation>
 <translation id="2344686470986284227">Zagon kontrolnika navideznega računalnika</translation>
@@ -3458,7 +3457,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5283677936944177147">Ojoj. Sistemu ni uspelo določiti modela ali serijske številke naprave.</translation>
 <translation id="5284445933715251131">Nadaljuj prenašanje</translation>
 <translation id="5285635972691565180">Zaslon <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Izhodno območje je polno</translation>
 <translation id="5286194356314741248">Pregledovanje</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Vaši računi</translation>
@@ -3680,7 +3678,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5553089923092577885">Preslikave pravilnika potrdila</translation>
 <translation id="5554489410841842733">Ta ikona bo vidna, ko lahko razširitev deluje na trenutni strani.</translation>
 <translation id="5554720593229208774">Overitelj potrdil za e-pošto</translation>
-<translation id="5554931805291741487">Izhodno območje je skoraj polno</translation>
 <translation id="5556459405103347317">Znova naloži</translation>
 <translation id="5558125320634132440">To spletno mesto je blokirano, ker morda vsebuje neprimerno vsebino za otroke</translation>
 <translation id="5558129378926964177">Po&amp;večaj</translation>
@@ -4956,7 +4953,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7152478047064750137">Za to razširitev niso potrebna posebna dovoljenja</translation>
 <translation id="7154130902455071009">Sprememba začetne strani na: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Obstoječa fotografija iz fotoaparata ali datoteke</translation>
-<translation id="7163766494674803047">Napaka naprave v tiskalniku</translation>
 <translation id="7165320105431587207">Omrežja ni bilo mogoče konfigurirati</translation>
 <translation id="716640248772308851">Razširitev »<ph name="EXTENSION" />« lahko prebere slike ter videodatoteke in zvočne datoteke na označenih lokacijah.</translation>
 <translation id="7167486101654761064">&amp;Vedno odpri to vrsto datotek</translation>

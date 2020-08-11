@@ -8,12 +8,14 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/crosapi/screen_manager_crosapi.h"
-#include "chrome/browser/chromeos/crosapi/select_file_crosapi.h"
+#include "chrome/browser/chromeos/crosapi/select_file_ash.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
 
+namespace crosapi {
+
 AshChromeServiceImpl::AshChromeServiceImpl(
-    mojo::PendingReceiver<crosapi::mojom::AshChromeService> pending_receiver)
+    mojo::PendingReceiver<mojom::AshChromeService> pending_receiver)
     : receiver_(this, std::move(pending_receiver)),
       screen_manager_crosapi_(std::make_unique<ScreenManagerCrosapi>()) {
   // TODO(hidehiko): Remove non-critical log from here.
@@ -24,12 +26,13 @@ AshChromeServiceImpl::AshChromeServiceImpl(
 AshChromeServiceImpl::~AshChromeServiceImpl() = default;
 
 void AshChromeServiceImpl::BindSelectFile(
-    mojo::PendingReceiver<crosapi::mojom::SelectFile> receiver) {
-  select_file_crosapi_ =
-      std::make_unique<SelectFileCrosapi>(std::move(receiver));
+    mojo::PendingReceiver<mojom::SelectFile> receiver) {
+  select_file_crosapi_ = std::make_unique<SelectFileAsh>(std::move(receiver));
 }
 
 void AshChromeServiceImpl::BindScreenManager(
-    mojo::PendingReceiver<crosapi::mojom::ScreenManager> receiver) {
+    mojo::PendingReceiver<mojom::ScreenManager> receiver) {
   screen_manager_crosapi_->BindReceiver(std::move(receiver));
 }
+
+}  // namespace crosapi

@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import androidx.annotation.DrawableRes;
 import androidx.preference.PreferenceViewHolder;
 
+import org.chromium.base.Callback;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 
 /**
@@ -24,11 +25,20 @@ public class SafetyCheckElementPreference extends ChromeBasePreference {
     private ImageView mStatusView;
 
     /**
+     * Represents an action to take once the view elements are available.
+     * This is needed because |SafetyCheckMediator::setInitialState()| is invoked before all the
+     * nested views are available, so setting icons should be delayed.
+     */
+    private Callback<Void> mDelayedAction;
+
+    /**
      * Creates a new object and sets the widget layout.
      */
     public SafetyCheckElementPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setWidgetLayoutResource(R.layout.safety_check_status);
+        // No delayed action to take.
+        mDelayedAction = null;
     }
 
     /**
@@ -39,14 +49,21 @@ public class SafetyCheckElementPreference extends ChromeBasePreference {
         super.onBindViewHolder(holder);
         mProgressBar = holder.findViewById(R.id.progress);
         mStatusView = (ImageView) holder.findViewById(R.id.status_view);
+        // If there is a delayed action - take it.
+        if (mDelayedAction != null) {
+            mDelayedAction.onResult(null);
+        }
+        // Reset the delayed action.
+        mDelayedAction = null;
     }
 
     /**
      * Displays the progress bar.
      */
     void showProgressBar() {
-        // Ignore if this gets invoked before onBindViewHolder.
+        // Delay if this gets invoked before onBindViewHolder.
         if (mStatusView == null || mProgressBar == null) {
+            mDelayedAction = (ignored) -> showProgressBar();
             return;
         }
         mStatusView.setVisibility(View.GONE);
@@ -58,8 +75,9 @@ public class SafetyCheckElementPreference extends ChromeBasePreference {
      * @param icon An icon to display.
      */
     void showStatusIcon(@DrawableRes int icon) {
-        // Ignore if this gets invoked before onBindViewHolder.
+        // Delay if this gets invoked before onBindViewHolder.
         if (mStatusView == null || mProgressBar == null) {
+            mDelayedAction = (ignored) -> showStatusIcon(icon);
             return;
         }
         mStatusView.setImageResource(icon);
@@ -71,8 +89,9 @@ public class SafetyCheckElementPreference extends ChromeBasePreference {
      * Hides anything in the status area.
      */
     void clearStatusIndicator() {
-        // Ignore if this gets invoked before onBindViewHolder.
+        // Delay if this gets invoked before onBindViewHolder.
         if (mStatusView == null || mProgressBar == null) {
+            mDelayedAction = (ignored) -> clearStatusIndicator();
             return;
         }
         mStatusView.setVisibility(View.GONE);

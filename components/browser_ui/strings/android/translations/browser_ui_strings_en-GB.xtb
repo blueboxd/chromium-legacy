@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Allowed</translation>
 <translation id="429312253194641664">A site is playing media</translation>
+<translation id="4336434711095810371">Clear all data</translation>
 <translation id="4433925000917964731">Lite page provided by Google</translation>
 <translation id="4434045419905280838">Pop-ups and redirects</translation>
 <translation id="445467742685312942">Allow sites to play protected content</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Incognito tab</translation>
 <translation id="5300589172476337783">Show</translation>
 <translation id="5301954838959518834">OK, got it</translation>
-<translation id="5307446750509046227">Clear site storage</translation>
 <translation id="5313967007315987356">Add site</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5335288049665977812">Allow sites to run JavaScript (recommended)</translation>
@@ -250,7 +250,6 @@
 <translation id="8801436777607969138">Block JavaScript for a specific site.</translation>
 <translation id="8816026460808729765">Block sites from accessing sensors</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Storage</translation>
 <translation id="8926666909099850184">NFC is off for this device. Turn it on in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">This site opens and responds quickly for most people</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -262,4 +261,5 @@
 <translation id="913657688200966289">Turn on permissions for <ph name="APP_NAME" /> in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Access your microphone</translation>
 <translation id="965817943346481315">Block if site shows intrusive or misleading ads (recommended)</translation>
+<translation id="967624055006145463">Data stored</translation>
 </translationbundle>

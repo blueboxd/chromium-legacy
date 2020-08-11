@@ -1105,7 +1105,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> kan ikke lastes ned sikkert</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> vil koble til</translation>
-<translation id="2341476639346994688">Skriveren er stoppet</translation>
 <translation id="2342740338116612727">Bokmerkene er lagt til</translation>
 <translation id="2343747224442182863">Fokusér på denne fanen</translation>
 <translation id="2344686470986284227">Starter kontrolleren for den virtuelle maskinen</translation>
@@ -3443,7 +3442,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5283677936944177147">Beklager. Systemet kunne ikke fastslå enhetens modell eller serienummer.</translation>
 <translation id="5284445933715251131">Fortsett nedlastingen</translation>
 <translation id="5285635972691565180">Skjerm <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Utskriftsområdet er fullt</translation>
 <translation id="5286194356314741248">Skanning</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Dine kontoer</translation>
@@ -3664,7 +3662,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5553089923092577885">Retningslinjetilordninger for sertifikat</translation>
 <translation id="5554489410841842733">Dette ikonet vises når utvidelsen kan brukes på gjeldende side.</translation>
 <translation id="5554720593229208774">Sertifiseringsinstans for e-post</translation>
-<translation id="5554931805291741487">Utskriftsområdet er nesten fullt</translation>
 <translation id="5556459405103347317">Last inn på nytt</translation>
 <translation id="5558125320634132440">Dette nettstedet er blokkert fordi det kan ha innhold for voksne.</translation>
 <translation id="5558129378926964177">Zoom &amp;inn</translation>
@@ -4935,7 +4932,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7152478047064750137">Denne utvidelsen krever ingen spesielle tillatelser</translation>
 <translation id="7154130902455071009">endre startsiden din til: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Eksisterende bilde fra kamera eller fil</translation>
-<translation id="7163766494674803047">Skriverenhetsfeil</translation>
 <translation id="7165320105431587207">Kunne ikke konfigurere nettverket</translation>
 <translation id="716640248772308851">«<ph name="EXTENSION" />» kan lese bilder, videofiler og lydfiler i mappene som står oppført.</translation>
 <translation id="7167486101654761064">Åpne &amp;alltid filer av denne typen</translation>

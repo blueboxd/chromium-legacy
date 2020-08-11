@@ -146,7 +146,7 @@ crbug.com/1105129 [ win ] conformance/context/context-creation.html [ RetryOnFai
 
 # Win / AMD / Passthrough command decoder / D3D11
 crbug.com/685232 [ win amd d3d11 passthrough ] conformance/textures/misc/copytexsubimage2d-subrects.html [ RetryOnFailure ]
-crbug.com/772037 [ win7 debug amd d3d11 passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ RetryOnFailure ]
+crbug.com/772037 [ win amd d3d11 passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ RetryOnFailure ]
 crbug.com/772037 [ win7 release amd d3d11 passthrough ] conformance/extensions/oes-texture-half-float.html [ RetryOnFailure ]
 
 # Vulkan / Passthrough command decoder

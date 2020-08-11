@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">ਨੈਵੀਗੇਸ਼ਨ ਬਲੌਕ ਕੀਤੀ ਹੈ: <ph name="URL" /></translation>
 <translation id="4278390842282768270">ਆਗਿਆ ਦਿੱਤੀ</translation>
 <translation id="429312253194641664">ਕੋਈ ਸਾਈਟ ਮੀਡੀਆ ਫ਼ਾਈਲ ਨੂੰ ਚਲਾ ਰਹੀ ਹੈ</translation>
+<translation id="4336434711095810371">ਸਾਰਾ ਡਾਟਾ ਕਲੀਅਰ ਕਰੋ</translation>
 <translation id="4433925000917964731">Google ਵੱਲੋਂ ਮੁਹੱਈਆ ਕਰਵਾਏ ਗਏ ਤੇਜ਼ੀ ਨਾਲ ਖੁੱਲ੍ਹਣ ਵਾਲੇ ਪੰਨੇ</translation>
 <translation id="4434045419905280838">ਪੌਪ-ਅੱਪ ਅਤੇ ਰੀਡਾਇਰੈਕਟ</translation>
 <translation id="445467742685312942">ਸਾਈਟਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਕੀਤੀ ਸਮੱਗਰੀ ਚਲਾਉਣ ਦਿਓ</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">ਇਨਕੋਗਨਿਟੋ ਟੈਬ</translation>
 <translation id="5300589172476337783">ਦਿਖਾਓ</translation>
 <translation id="5301954838959518834">ਠੀਕ, ਸਮਝ ਲਿਆ</translation>
-<translation id="5307446750509046227">ਸਾਈਟ ਸਟੋਰੇਜ ਕਲੀਅਰ ਕਰੋ</translation>
 <translation id="5313967007315987356">ਸਾਈਟ ਜੋੜੋ</translation>
 <translation id="5317780077021120954">ਰੱਖਿਅਤ ਕਰੋ</translation>
 <translation id="5335288049665977812">ਸਾਈਟਾਂ ਨੂੰ JavaScript ਚਲਾਉਣ ਦੀ ਆਗਿਆ ਦਿਓ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
@@ -228,6 +228,7 @@
 <translation id="8261506727792406068">ਮਿਟਾਓ</translation>
 <translation id="8300705686683892304">ਐਪ ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ</translation>
 <translation id="8372893542064058268">ਇੱਕ ਖ਼ਾਸ ਸਾਈਟ ਲਈ ਬੈਕਗ੍ਰਾਊਂਡ ਸਮਕਾਲੀਕਰਨ ਦੀ ਆਗਿਆ ਦਿਓ।</translation>
+<translation id="8376384591331888629">ਇਸ ਸਾਈਟ 'ਤੇ ਤੀਜੀ-ਧਿਰ ਦੀਆਂ ਕੁਕੀਜ਼ ਸਮੇਤ</translation>
 <translation id="83792324527827022">ਕੋਈ ਸਾਈਟ ਤੁਹਾਡਾ ਕੈਮਰਾ ਅਤੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਵਰਤ ਰਹੀ ਹੈ</translation>
 <translation id="8380167699614421159">ਇਹ ਸਾਈਟ ਦਖਲਅੰਦਾਜ਼ੀ ਜਾਂ ਗੁਮਰਾਹ ਕਰਨ ਵਾਲੇ ਵਿਗਿਆਪਨ ਦਿਖਾਉਂਦੀ ਹੈ</translation>
 <translation id="8394832520002899662">ਸਾਈਟ 'ਤੇ ਵਾਪਸ ਜਾਣ ਲਈ ਟੈਪ ਕਰੋ</translation>
@@ -249,7 +250,6 @@
 <translation id="8801436777607969138">ਕਿਸੇ ਖਾਸ ਸਾਈਟ ਲਈ JavaScript ਨੂੰ ਬਲਾਕ ਕਰੋ।</translation>
 <translation id="8816026460808729765">ਸਾਈਟਾਂ ਨੂੰ ਸੈਂਸਰਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">ਸਟੋਰੇਜ</translation>
 <translation id="8926666909099850184">ਇਸ ਡੀਵਾਈਸ ਲਈ NFC ਬੰਦ ਹੈ। ਇਸਨੂੰ <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="8929372349074745002">ਇਹ ਸਾਈਟ ਜ਼ਿਆਦਾਤਰ ਲੋਕਾਂ ਲਈ ਤੇਜ਼ੀ ਨਾਲ ਖੁੱਲ੍ਹਦੀ ਅਤੇ ਜਵਾਬ ਦਿੰਦੀ ਹੈ</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +261,5 @@
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ <ph name="APP_NAME" /> ਲਈ ਇਜਾਜ਼ਤਾਂ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="945632385593298557">ਆਪਣੇ ਮਾਈਕ੍ਰੋਫੋਨ ਤੱਕ ਪਹੁੰਚੋ</translation>
 <translation id="965817943346481315">ਜੇਕਰ ਸਾਈਟ ਦਖਲਅੰਦਾਜ਼ੀ ਅਤੇ ਗੁਮਰਾਹ ਕਰਨ ਵਾਲੇ ਵਿਗਿਆਪਨ ਦਿਖਾਉਂਦੀ ਹੈ, ਤਾਂ ਇਸਨੂੰ ਬਲਾਕ ਕਰੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
+<translation id="967624055006145463">ਸਟੋਰ ਕੀਤਾ ਡਾਟਾ</translation>
 </translationbundle>

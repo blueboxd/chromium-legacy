@@ -27,6 +27,7 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.paintpreview.player.PlayerManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
 
 /**
@@ -53,7 +54,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
             TabbedPaintPreviewPlayer.class;
 
     private static final int SNACKBAR_DURATION_MS = 8 * 1000;
-    private static final int DEFAULT_INITIAL_REMOVE_DELAY_MS = 400;
+    private static final int DEFAULT_INITIAL_REMOVE_DELAY_MS = 0;
     private static final String INITIAL_REMOVE_DELAY_PARAM = "initial_remove_delay_ms";
 
     private Tab mTab;
@@ -62,7 +63,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     private Runnable mOnDismissed;
     private Boolean mInitializing;
     private boolean mHasUserInteraction;
-    private EmptyTabObserver mTabObserver;
+    private TabbedPaintPreviewObserver mObserver;
     private long mLastShownSnackBarTime;
     private boolean mDidStartRestore;
     private long mShownTime;
@@ -75,70 +76,71 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 
+    class TabbedPaintPreviewObserver extends EmptyTabObserver {
+        public void onFirstMeaningfulPaint() {
+            if (!isShowingAndNeedsBadge()) return;
+
+            long delayMs = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP, INITIAL_REMOVE_DELAY_PARAM,
+                    DEFAULT_INITIAL_REMOVE_DELAY_MS);
+            // Delay removing paint preview after didFirstVisuallyNonEmptyPaint and no user
+            // interaction by |delayMs|. This is to account for 'heavy' pages that take a while
+            // to finish painting and avoid having flickers when switching from paint preview
+            // to the live page.
+            new Handler().postDelayed(() -> {
+                if (!isShowingAndNeedsBadge()) return;
+
+                if (!mHasUserInteraction) {
+                    removePaintPreview(ExitCause.TAB_FINISHED_LOADING);
+                    return;
+                }
+
+                showSnackbar();
+            }, delayMs);
+        }
+
+        @Override
+        public void onRestoreStarted(Tab tab) {
+            mDidStartRestore = true;
+        }
+
+        @Override
+        public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {
+            if (mPlayerManager == null || !isShowingAndNeedsBadge()) return;
+
+            // Ignore navigations from subframes. We should only remove the paint preview
+            // player when the user navigates to a new page.
+            if (!navigationHandle.isInMainFrame()) return;
+
+            // If we haven't started to restore, this is the navigation call to start the
+            // restoration. We shouldn't remove the paint preview player.
+            if (!mDidStartRestore) return;
+
+            removePaintPreview(ExitCause.NAVIGATION_STARTED);
+        }
+    }
+
     private TabbedPaintPreviewPlayer(Tab tab) {
         mTab = tab;
         mPaintPreviewTabService = PaintPreviewTabServiceFactory.getServiceInstance();
-        mTabObserver = new EmptyTabObserver() {
-            private boolean mFirstPaintHappened;
-            private boolean mPageLoadFinished;
 
-            @Override
-            public void didFirstVisuallyNonEmptyPaint(Tab tab) {
-                mFirstPaintHappened = true;
-                maybeRemovePaintPreview();
-            }
+        mObserver = new TabbedPaintPreviewObserver();
+        mTab.addObserver(mObserver);
+    }
 
-            @Override
-            public void onPageLoadFinished(Tab tab, String url) {
-                mPageLoadFinished = true;
-                maybeRemovePaintPreview();
-            }
+    /**
+     * Triggered via {@link PageLoadMetrics.Observer} when First Meaningful Paint happens.
+     * @param webContents the webContents that triggered the event.
+     * @return Whether the event was handled for the provided webContents.
+     */
+    public void onFirstMeaningfulPaint(WebContents webContents) {
+        // If there is no observer or tab this will never handle the event so it should be
+        // treated as a success.
+        if (mObserver == null || mTab == null) return;
 
-            private void maybeRemovePaintPreview() {
-                if (!isShowingAndNeedsBadge() || !mFirstPaintHappened || !mPageLoadFinished) return;
+        if (mTab.getWebContents() != webContents) return;
 
-                mFirstPaintHappened = false;
-                mPageLoadFinished = false;
-                long delayMs = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                        ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP, INITIAL_REMOVE_DELAY_PARAM,
-                        DEFAULT_INITIAL_REMOVE_DELAY_MS);
-                // Delay removing paint preview after didFirstVisuallyNonEmptyPaint and no user
-                // interaction by |delayMs|. This is to account for 'heavy' pages that take a while
-                // to finish painting and avoid having flickers when switching from paint preview
-                // to the live page.
-                new Handler().postDelayed(() -> {
-                    if (!isShowingAndNeedsBadge()) return;
-
-                    if (!mHasUserInteraction) {
-                        removePaintPreview(ExitCause.TAB_FINISHED_LOADING);
-                        return;
-                    }
-
-                    showSnackbar();
-                }, delayMs);
-            }
-
-            @Override
-            public void onRestoreStarted(Tab tab) {
-                mDidStartRestore = true;
-            }
-
-            @Override
-            public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {
-                if (mPlayerManager == null || !isShowingAndNeedsBadge()) return;
-
-                // Ignore navigations from subframes. We should only remove the paint preview
-                // player when the user navigates to a new page.
-                if (!navigationHandle.isInMainFrame()) return;
-
-                // If we haven't started to restore, this is the navigation call to start the
-                // restoration. We shouldn't remove the paint preview player.
-                if (!mDidStartRestore) return;
-
-                removePaintPreview(ExitCause.NAVIGATION_STARTED);
-            }
-        };
-        mTab.addObserver(mTabObserver);
+        mObserver.onFirstMeaningfulPaint();
     }
 
     /**
@@ -254,7 +256,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     @Override
     public void destroy() {
         removePaintPreview(ExitCause.TAB_DESTROYED);
-        mTab.removeObserver(mTabObserver);
+        mTab.removeObserver(mObserver);
         mTab = null;
     }
 }

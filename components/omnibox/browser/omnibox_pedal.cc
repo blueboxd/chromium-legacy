@@ -44,10 +44,18 @@ bool EraseTokenSubsequence(OmniboxPedal::Tokens* from,
 
 OmniboxPedal::LabelStrings::LabelStrings(int id_hint,
                                          int id_hint_short,
-                                         int id_suggestion_contents)
+                                         int id_suggestion_contents,
+                                         int id_accessibility_suffix,
+                                         int id_accessibility_hint)
     : hint(l10n_util::GetStringUTF16(id_hint)),
       hint_short(l10n_util::GetStringUTF16(id_hint_short)),
-      suggestion_contents(l10n_util::GetStringUTF16(id_suggestion_contents)) {}
+      suggestion_contents(l10n_util::GetStringUTF16(id_suggestion_contents)),
+      id_accessibility_suffix(id_accessibility_suffix),
+      accessibility_hint(l10n_util::GetStringUTF16(id_accessibility_hint)) {}
+
+OmniboxPedal::LabelStrings::LabelStrings(const LabelStrings&) = default;
+
+OmniboxPedal::LabelStrings::~LabelStrings() = default;
 
 // =============================================================================
 

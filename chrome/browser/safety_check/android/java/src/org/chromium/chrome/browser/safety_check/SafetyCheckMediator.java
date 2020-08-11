@@ -115,8 +115,6 @@ class SafetyCheckMediator implements PasswordCheck.Observer, SafetyCheckCommonOb
         this(model, client, settingsLauncher, null, new Handler());
         // Have to initialize this after the constructor call, since a "this" instance is needed.
         mSafetyCheckBridge = new SafetyCheckBridge(SafetyCheckMediator.this);
-        // Determine and set the initial state.
-        setInitialState();
     }
 
     @VisibleForTesting
@@ -127,8 +125,6 @@ class SafetyCheckMediator implements PasswordCheck.Observer, SafetyCheckCommonOb
         mSafetyCheckBridge = bridge;
         mHandler = handler;
         mPreferenceManager = SharedPreferencesManager.getInstance();
-        mPasswordsLoaded = false;
-        mLeaksLoaded = false;
         // Set the listener for clicking the updates element.
         mModel.set(SafetyCheckProperties.UPDATES_CLICK_LISTENER,
                 (Preference.OnPreferenceClickListener) (p) -> {
@@ -176,10 +172,6 @@ class SafetyCheckMediator implements PasswordCheck.Observer, SafetyCheckCommonOb
         mModel.set(SafetyCheckProperties.LAST_RUN_TIMESTAMP,
                 mPreferenceManager.readLong(
                         ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP, 0));
-        if (mSafetyCheckBridge != null) {
-            // Determine and set the initial state.
-            setInitialState();
-        }
     }
 
     /**
@@ -204,6 +196,10 @@ class SafetyCheckMediator implements PasswordCheck.Observer, SafetyCheckCommonOb
         }
         mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.CHECKING);
         mLoadStage = PasswordCheckLoadStage.INITIAL_WAIT_FOR_LOAD;
+        // Reset the status of the password disk loads. If it's loaded, PasswordCheck will invoke
+        // the callbacks again (the |callImmediatelyIfReady| argument to |addObserver| is true).
+        mPasswordsLoaded = false;
+        mLeaksLoaded = false;
         // Refresh the PasswordCheck instance, since it's not guaranteed to be the same.
         mPasswordCheck = PasswordCheckFactory.getOrCreate();
         mPasswordCheck.addObserver(this, true);

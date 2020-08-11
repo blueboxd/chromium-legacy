@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/guid.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
@@ -19,6 +20,10 @@
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/components/account_manager/account_manager.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate_android.h"
@@ -51,6 +56,9 @@ void WaitForLoadCredentialsToComplete(IdentityManager* identity_manager) {
 void UpdateRefreshTokenForAccount(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
+#if defined(OS_CHROMEOS)
+    chromeos::AccountManager* account_manager,
+#endif
     IdentityManager* identity_manager,
     const CoreAccountId& account_id,
     const std::string& new_token) {
@@ -70,7 +78,19 @@ void UpdateRefreshTokenForAccount(
   token_updated_observer.SetOnRefreshTokenUpdatedCallback(
       run_loop.QuitClosure());
 
+#if defined(OS_CHROMEOS)
+  const AccountInfo& account_info =
+      account_tracker_service->GetAccountInfo(account_id);
+
+  DCHECK(account_manager);
+  account_manager->UpsertAccount(
+      chromeos::AccountManager::AccountKey{
+          account_info.gaia,
+          chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA},
+      account_info.email, new_token);
+#else
   token_service->UpdateCredentials(account_id, new_token);
+#endif
 
   run_loop.Run();
 }
@@ -279,9 +299,16 @@ void SetRefreshTokenForAccount(IdentityManager* identity_manager,
                                const std::string& token_value) {
   UpdateRefreshTokenForAccount(
       identity_manager->GetTokenService(),
-      identity_manager->GetAccountTrackerService(), identity_manager,
-      account_id,
+      identity_manager->GetAccountTrackerService(),
+#if defined(OS_CHROMEOS)
+      identity_manager->GetChromeOSAccountManager(),
+#endif
+      identity_manager, account_id,
+      // TODO(crbug.com/1115075): set the same token_value on all platforms.
       token_value.empty() ? "refresh_token_for_" + account_id.ToString()
+#if defined(OS_CHROMEOS)
+                                + "_" + base::GenerateGUID()
+#endif
                           : token_value);
 }
 
@@ -290,6 +317,9 @@ void SetInvalidRefreshTokenForAccount(IdentityManager* identity_manager,
   UpdateRefreshTokenForAccount(identity_manager->GetTokenService(),
 
                                identity_manager->GetAccountTrackerService(),
+#if defined(OS_CHROMEOS)
+                               identity_manager->GetChromeOSAccountManager(),
+#endif
                                identity_manager, account_id,
                                GaiaConstants::kInvalidRefreshToken);
 }
@@ -304,7 +334,17 @@ void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
   token_updated_observer.SetOnRefreshTokenRemovedCallback(
       run_loop.QuitClosure());
 
+#if defined(OS_CHROMEOS)
+  const AccountInfo& account_info =
+      identity_manager->GetAccountTrackerService()->GetAccountInfo(account_id);
+
+  identity_manager->GetChromeOSAccountManager()->RemoveAccount(
+      chromeos::AccountManager::AccountKey{
+          account_info.gaia,
+          chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA});
+#else
   identity_manager->GetTokenService()->RevokeCredentials(account_id);
+#endif
 
   run_loop.Run();
 }

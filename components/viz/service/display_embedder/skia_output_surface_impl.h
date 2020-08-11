@@ -254,7 +254,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // The display transform relative to the hardware natural orientation,
   // applied to the frame content. The transform can be rotations in 90 degree
   // increments or flips.
-  gfx::OverlayTransform pre_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
+  gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   // |gpu_task_scheduler_| holds a gpu::SingleTaskSequence, and helps schedule
   // tasks on GPU as a single sequence. It is shared with OverlayProcessor so

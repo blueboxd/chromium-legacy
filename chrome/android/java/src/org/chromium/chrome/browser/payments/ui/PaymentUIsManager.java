@@ -13,6 +13,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -37,19 +38,23 @@ import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.JourneyLogger;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentAppType;
+import org.chromium.components.payments.PaymentDetailsUpdateServiceHelper;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentOptionsUtils;
 import org.chromium.components.payments.PaymentRequestLifecycleObserver;
 import org.chromium.components.payments.PaymentRequestParams;
 import org.chromium.components.payments.Section;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.AddressErrors;
 import org.chromium.payments.mojom.PayerDetail;
+import org.chromium.payments.mojom.PayerErrors;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentShippingOption;
+import org.chromium.payments.mojom.PaymentValidationErrors;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
@@ -88,6 +93,7 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private SectionInformation mUiShippingOptions;
     private final Delegate mDelegate;
+    private final WebContents mWebContents;
     private final Map<String, CurrencyFormatter> mCurrencyFormatterMap;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
@@ -191,6 +197,7 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
         // billing address labels.
         mCardEditor = new CardEditor(webContents, mAddressEditor, /*includeOrgLabel=*/false);
         mJourneyLogger = journeyLogger;
+        mWebContents = webContents;
 
         mPaymentUisShowStateReconciler = new PaymentUisShowStateReconciler();
         mCurrencyFormatterMap = new HashMap<>();
@@ -458,6 +465,68 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
             }
             mHaveRequestedAutofillData &= haveCompleteContactInfo;
         }
+    }
+
+    // Implement PaymentRequestLifecycleObserver:
+    @Override
+    public void onRetry(PaymentValidationErrors errors) {
+        // Remove all payment apps except the selected one.
+        assert mPaymentMethodsSection != null;
+        PaymentApp selectedApp = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+        assert selectedApp != null;
+        mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,
+                /* selection = */ 0, new ArrayList<>(Arrays.asList(selectedApp)));
+        mPaymentRequestUI.updateSection(
+                PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
+        mPaymentRequestUI.disableAddingNewCardsDuringRetry();
+
+        // Go back to the payment sheet
+        mPaymentRequestUI.onPayButtonProcessingCancelled();
+        PaymentDetailsUpdateServiceHelper.getInstance().reset();
+        if (!TextUtils.isEmpty(errors.error)) {
+            mPaymentRequestUI.setRetryErrorMessage(errors.error);
+        } else {
+            ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
+            mPaymentRequestUI.setRetryErrorMessage(
+                    activity.getResources().getString(R.string.payments_error_message));
+        }
+
+        if (shouldShowShippingSection() && hasShippingAddressError(errors.shippingAddress)) {
+            mRetryQueue.add(() -> {
+                mAddressEditor.setAddressErrors(errors.shippingAddress);
+                AutofillAddress selectedAddress =
+                        (AutofillAddress) mShippingAddressesSection.getSelectedItem();
+                // Log the edit of a shipping address.
+                mJourneyLogger.incrementSelectionEdits(Section.SHIPPING_ADDRESS);
+                editAddress(selectedAddress);
+            });
+        }
+
+        if (shouldShowContactSection() && hasPayerError(errors.payer)) {
+            mRetryQueue.add(() -> {
+                mContactEditor.setPayerErrors(errors.payer);
+                AutofillContact selectedContact =
+                        (AutofillContact) mContactSection.getSelectedItem();
+                mJourneyLogger.incrementSelectionEdits(Section.CONTACT_INFO);
+                editContactOnPaymentRequestUI(selectedContact);
+            });
+        }
+
+        if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
+    }
+
+    private boolean hasShippingAddressError(AddressErrors errors) {
+        return !TextUtils.isEmpty(errors.addressLine) || !TextUtils.isEmpty(errors.city)
+                || !TextUtils.isEmpty(errors.country)
+                || !TextUtils.isEmpty(errors.dependentLocality)
+                || !TextUtils.isEmpty(errors.organization) || !TextUtils.isEmpty(errors.phone)
+                || !TextUtils.isEmpty(errors.postalCode) || !TextUtils.isEmpty(errors.recipient)
+                || !TextUtils.isEmpty(errors.region) || !TextUtils.isEmpty(errors.sortingCode);
+    }
+
+    private boolean hasPayerError(PayerErrors errors) {
+        return !TextUtils.isEmpty(errors.name) || !TextUtils.isEmpty(errors.phone)
+                || !TextUtils.isEmpty(errors.email);
     }
 
     /** @return The selected payment app type. */

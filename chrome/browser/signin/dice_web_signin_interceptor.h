@@ -49,6 +49,15 @@ class DiceWebSigninInterceptor : public KeyedService,
   // Delegate class responsible for showing the various interception UIs.
   class Delegate {
    public:
+    // Parameters for interception bubble UIs.
+    struct BubbleParameters {
+      bool operator==(const BubbleParameters& rhs) const;
+
+      SigninInterceptionType interception_type;
+      AccountInfo intercepted_account;
+      AccountInfo primary_account;
+    };
+
     virtual ~Delegate() = default;
 
     // Shows the signin interception bubble and calls |callback| to indicate
@@ -56,9 +65,8 @@ class DiceWebSigninInterceptor : public KeyedService,
     // The callback is never called if the delegate is deleted before it
     // completes.
     virtual void ShowSigninInterceptionBubble(
-        SigninInterceptionType signin_interception_type,
         content::WebContents* web_contents,
-        const AccountInfo& account_info,
+        const BubbleParameters& bubble_parameters,
         base::OnceCallback<void(bool)> callback) = 0;
   };
 

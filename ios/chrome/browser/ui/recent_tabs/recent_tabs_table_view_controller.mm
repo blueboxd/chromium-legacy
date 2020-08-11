@@ -645,11 +645,49 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   return sessionSectionIndexes;
 }
 
-// Returns YES if |sectionIdentifier| is a Sessions sectionIdentifier.
+#pragma mark - Public
+
 - (BOOL)isSessionSectionIdentifier:(NSInteger)sectionIdentifier {
   NSArray* sessionSectionIdentifiers = [self allSessionSectionIdentifiers];
   NSNumber* sectionIdentifierObject = @(sectionIdentifier);
   return [sessionSectionIdentifiers containsObject:sectionIdentifierObject];
+}
+
+- (synced_sessions::DistantSession const*)sessionForSectionIdentifier:
+    (NSInteger)sectionIdentifer {
+  NSInteger section =
+      [self.tableViewModel sectionForSectionIdentifier:sectionIdentifer];
+  DCHECK([self isSessionSectionIdentifier:sectionIdentifer]);
+  return _syncedSessions->GetSession(section - kNumberOfSectionsBeforeSessions);
+}
+
+- (void)removeSessionAtSessionSectionIdentifier:(NSInteger)sectionIdentifier {
+  DCHECK([self isSessionSectionIdentifier:sectionIdentifier]);
+  synced_sessions::DistantSession const* session =
+      [self sessionForSectionIdentifier:sectionIdentifier];
+  std::string sessionTagCopy = session->tag;
+
+  NSInteger section =
+      [self.tableViewModel sectionForSectionIdentifier:sectionIdentifier];
+
+  __weak __typeof(self) weakSelf = self;
+  void (^tableUpdates)(void) = ^{
+    [weakSelf.tableViewModel removeSectionWithIdentifier:sectionIdentifier];
+    _syncedSessions->EraseSession(section - kNumberOfSectionsBeforeSessions);
+    [weakSelf.tableView deleteSections:[NSIndexSet indexSetWithIndex:section]
+                      withRowAnimation:UITableViewRowAnimationLeft];
+  };
+
+  [self.tableView performBatchUpdates:tableUpdates
+                           completion:^(BOOL) {
+                             if (!weakSelf)
+                               return;
+                             sync_sessions::OpenTabsUIDelegate* openTabs =
+                                 SessionSyncServiceFactory::GetForBrowserState(
+                                     weakSelf.browserState)
+                                     ->GetOpenTabsUIDelegate();
+                             openTabs->DeleteForeignSession(sessionTagCopy);
+                           }];
 }
 
 #pragma mark - Consumer Protocol
@@ -1015,13 +1053,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       [self indexOfSessionForTabAtIndexPath:indexPath]);
 }
 
-- (synced_sessions::DistantSession const*)sessionForSection:(NSInteger)section {
-  NSInteger sectionIdentifer =
-      [self.tableViewModel sectionIdentifierForSection:section];
-  DCHECK([self isSessionSectionIdentifier:sectionIdentifer]);
-  return _syncedSessions->GetSession(section - kNumberOfSectionsBeforeSessions);
-}
-
 - (synced_sessions::DistantTab const*)distantTabAtIndexPath:
     (NSIndexPath*)indexPath {
   DCHECK_EQ([self.tableViewModel itemTypeForIndexPath:indexPath],
@@ -1294,48 +1325,9 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)openTabsFromSessionSectionIdentifier:(NSInteger)sectionIdentifier {
-  base::RecordAction(base::UserMetricsAction(
-      "MobileRecentTabManagerOpenAllTabsFromOtherDevice"));
-  NSInteger section =
-      [self.tableViewModel sectionForSectionIdentifier:sectionIdentifier];
   synced_sessions::DistantSession const* session =
-      [self sessionForSection:section];
-  for (auto const& tab : session->tabs) {
-    UrlLoadParams params = UrlLoadParams::InNewTab(tab->virtual_url);
-    params.SetInBackground(YES);
-    params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-    params.load_strategy = self.loadStrategy;
-    params.in_incognito = self.isIncognito;
-    UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
-  }
-  UMA_HISTOGRAM_COUNTS_100(
-      "Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll",
-      session->tabs.size());
-  [self.presentationDelegate showActiveRegularTabFromRecentTabs];
-}
-
-- (void)removeSessionAtSessionSectionIdentifier:(NSInteger)sectionIdentifier {
-  DCHECK([self isSessionSectionIdentifier:sectionIdentifier]);
-  NSInteger section =
-      [self.tableViewModel sectionForSectionIdentifier:sectionIdentifier];
-  synced_sessions::DistantSession const* session =
-      [self sessionForSection:section];
-  std::string sessionTagCopy = session->tag;
-  sync_sessions::OpenTabsUIDelegate* openTabs =
-      SessionSyncServiceFactory::GetForBrowserState(self.browserState)
-          ->GetOpenTabsUIDelegate();
-
-  void (^tableUpdates)(void) = ^{
-    [self.tableViewModel removeSectionWithIdentifier:sectionIdentifier];
-    _syncedSessions->EraseSession(section - kNumberOfSectionsBeforeSessions);
-    [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:section]
-                  withRowAnimation:UITableViewRowAnimationLeft];
-  };
-
-  [self.tableView performBatchUpdates:tableUpdates
-                           completion:^(BOOL) {
-                             openTabs->DeleteForeignSession(sessionTagCopy);
-                           }];
+      [self sessionForSectionIdentifier:sectionIdentifier];
+  [self.presentationDelegate openAllTabsFromSession:session];
 }
 
 #pragma mark - SigninPromoViewConsumer

@@ -41,7 +41,7 @@
 #include "chrome/browser/ui/views/in_product_help/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/in_product_help/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/in_product_help/feature_promo_colors.h"
-#include "chrome/browser/ui/views/in_product_help/feature_promo_controller.h"
+#include "chrome/browser/ui/views/in_product_help/feature_promo_controller_views.h"
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
@@ -343,7 +343,7 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
 class WebUITabStripContainerView::IPHController : public TabStripModelObserver {
  public:
   explicit IPHController(Browser* browser,
-                         FeaturePromoController* promo_controller)
+                         FeaturePromoControllerViews* promo_controller)
       : browser_(browser),
         promo_controller_(promo_controller),
         iph_tracker_(feature_engagement::TrackerFactory::GetForBrowserContext(
@@ -404,7 +404,7 @@ class WebUITabStripContainerView::IPHController : public TabStripModelObserver {
 
  private:
   Browser* const browser_;
-  FeaturePromoController* const promo_controller_;
+  FeaturePromoControllerViews* const promo_controller_;
   feature_engagement::Tracker* const iph_tracker_;
   views::ViewTracker anchor_;
 };

@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -34,6 +33,9 @@ class PDFiumAPIStringBufferAdapter {
   PDFiumAPIStringBufferAdapter(StringType* str,
                                size_t expected_size,
                                bool check_expected_size);
+  PDFiumAPIStringBufferAdapter(const PDFiumAPIStringBufferAdapter&) = delete;
+  PDFiumAPIStringBufferAdapter& operator=(const PDFiumAPIStringBufferAdapter&) =
+      delete;
   ~PDFiumAPIStringBufferAdapter();
 
   // Returns a pointer to |str_|'s buffer. The buffer's size is large enough to
@@ -57,8 +59,6 @@ class PDFiumAPIStringBufferAdapter {
   const size_t expected_size_;
   const bool check_expected_size_;
   bool is_closed_;
-
-  DISALLOW_COPY_AND_ASSIGN(PDFiumAPIStringBufferAdapter);
 };
 
 // Helper to deal with the fact that many PDFium APIs write the null-terminator

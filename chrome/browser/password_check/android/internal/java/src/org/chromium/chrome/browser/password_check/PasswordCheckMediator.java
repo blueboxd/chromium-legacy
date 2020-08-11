@@ -43,21 +43,18 @@ class PasswordCheckMediator
         this.mLaunchCctWithScript = launchCctWithScript;
     }
 
-    void initialize(PropertyModel model, PasswordCheckComponentUi.Delegate delegate) {
+    void initialize(PropertyModel model, PasswordCheckComponentUi.Delegate delegate,
+            @PasswordCheckReferrer int passwordCheckReferrer) {
         mModel = model;
         mDelegate = delegate;
-        ListModel<ListItem> items = mModel.get(ITEMS);
-        assert items.size() == 0;
 
-        items.add(new ListItem(PasswordCheckProperties.ItemType.HEADER,
-                new PropertyModel.Builder(PasswordCheckProperties.HeaderProperties.ALL_KEYS)
-                        .with(CHECK_PROGRESS, UNKNOWN_PROGRESS)
-                        .with(CHECK_STATUS, PasswordCheckUIStatus.RUNNING)
-                        .with(CHECK_TIMESTAMP, null)
-                        .with(COMPROMISED_CREDENTIALS_COUNT, null)
-                        .with(RESTART_BUTTON_ACTION, this::runCheck)
-                        .build()));
+        // If a run is scheduled to happen soon, initialize the UI as running to prevent flickering.
+        // Otherwise, initialize the UI with last known state (defaults to IDLE before first run).
+        boolean shouldRunCheck = passwordCheckReferrer != PasswordCheckReferrer.SAFETY_CHECK;
+        onPasswordCheckStatusChanged(shouldRunCheck ? PasswordCheckUIStatus.RUNNING
+                                                    : getPasswordCheck().getCheckStatus());
         getPasswordCheck().addObserver(this, true);
+        if (shouldRunCheck) getPasswordCheck().startCheck();
     }
 
     void destroy() {
@@ -97,9 +94,18 @@ class PasswordCheckMediator
     @Override
     public void onPasswordCheckStatusChanged(@PasswordCheckUIStatus int status) {
         ListModel<ListItem> items = mModel.get(ITEMS);
-        assert items.size() >= 1;
-
-        PropertyModel header = items.get(0).model;
+        PropertyModel header;
+        if (items.size() == 0) {
+            header = new PropertyModel.Builder(PasswordCheckProperties.HeaderProperties.ALL_KEYS)
+                             .with(CHECK_PROGRESS, UNKNOWN_PROGRESS)
+                             .with(CHECK_STATUS, PasswordCheckUIStatus.RUNNING)
+                             .with(CHECK_TIMESTAMP, null)
+                             .with(COMPROMISED_CREDENTIALS_COUNT, null)
+                             .with(RESTART_BUTTON_ACTION, this::runCheck)
+                             .build();
+        } else {
+            header = items.get(0).model;
+        }
         header.set(CHECK_STATUS, status);
         header.set(
                 CHECK_PROGRESS, status == PasswordCheckUIStatus.RUNNING ? UNKNOWN_PROGRESS : null);
@@ -111,6 +117,10 @@ class PasswordCheckMediator
         }
         header.set(CHECK_TIMESTAMP, checkTimestamp);
         header.set(COMPROMISED_CREDENTIALS_COUNT, compromisedCredentialCount);
+
+        if (items.size() == 0) {
+            items.add(new ListItem(PasswordCheckProperties.ItemType.HEADER, header));
+        }
     }
 
     void onPasswordCheckProgressChanged(Pair<Integer, Integer> progress) {

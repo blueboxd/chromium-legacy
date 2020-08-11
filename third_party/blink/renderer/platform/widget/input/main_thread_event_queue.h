@@ -141,9 +141,7 @@ class PLATFORM_EXPORT MainThreadEventQueue
       const std::unique_ptr<MainThreadEventQueueTask>& item) const;
   void RafFallbackTimerFired();
 
-  void set_use_raf_fallback_timer(bool use_timer) {
-    use_raf_fallback_timer_ = use_timer;
-  }
+  void ClearRafFallbackTimerForTesting();
 
   friend class QueuedWebInputEvent;
   friend class MainThreadEventQueueTest;
@@ -175,8 +173,10 @@ class PLATFORM_EXPORT MainThreadEventQueue
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scheduler::WebThreadScheduler* main_thread_scheduler_;
-  base::OneShotTimer raf_fallback_timer_;
-  bool use_raf_fallback_timer_;
+
+  // A safe guard timer to ensure input is always processed. A BeginMainFrame
+  // signal might not always occur if our visibility changed.
+  std::unique_ptr<base::OneShotTimer> raf_fallback_timer_;
 
   std::unique_ptr<InputEventPrediction> event_predictor_;
 

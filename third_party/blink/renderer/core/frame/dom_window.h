@@ -147,7 +147,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   //
   // This function must be called when accessing any attributes and methods
   // marked as "CrossOrigin" in the window.idl.
-  void ReportCoopAccess(v8::Isolate* isolate, const char* property_name);
+  void ReportCoopAccess(const char* property_name);
 
  protected:
   explicit DOMWindow(Frame&);

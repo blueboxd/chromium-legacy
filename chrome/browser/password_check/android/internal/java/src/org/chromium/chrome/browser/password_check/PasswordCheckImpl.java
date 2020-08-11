@@ -21,6 +21,7 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
 
     private boolean mCompromisedCredentialsFetched;
     private boolean mSavedPasswordsFetched;
+    private @PasswordCheckUIStatus int mStatus = PasswordCheckUIStatus.IDLE;
 
     PasswordCheckImpl() {
         mCompromisedCredentialsFetched = false;
@@ -36,7 +37,6 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
         fragmentArgs.putInt(
                 PasswordCheckFragmentView.PASSWORD_CHECK_REFERRER, passwordCheckReferrer);
         launcher.launchSettingsActivity(context, PasswordCheckFragmentView.class, fragmentArgs);
-        if (passwordCheckReferrer != PasswordCheckReferrer.SAFETY_CHECK) startCheck();
     }
 
     @Override
@@ -66,7 +66,8 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
     }
 
     @Override
-    public void onPasswordCheckStatusChanged(int status) {
+    public void onPasswordCheckStatusChanged(@PasswordCheckUIStatus int status) {
+        mStatus = status;
         for (Observer obs : mObserverList) {
             obs.onPasswordCheckStatusChanged(status);
         }
@@ -96,6 +97,11 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
     @Override
     public long getCheckTimestamp() {
         return mPasswordCheckBridge.getCheckTimestamp();
+    }
+
+    @Override
+    public @PasswordCheckUIStatus int getCheckStatus() {
+        return mStatus;
     }
 
     @Override

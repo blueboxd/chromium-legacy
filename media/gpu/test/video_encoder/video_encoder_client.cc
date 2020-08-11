@@ -44,8 +44,10 @@ void CallbackThunk(
 
 VideoEncoderClientConfig::VideoEncoderClientConfig(
     const Video* video,
-    VideoCodecProfile output_profile)
+    VideoCodecProfile output_profile,
+    uint32_t bitrate)
     : output_profile(output_profile),
+      bitrate(bitrate),
       framerate(video->FrameRate()),
       num_frames_to_encode(video->NumFrames()) {}
 

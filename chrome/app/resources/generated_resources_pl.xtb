@@ -1108,7 +1108,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947">Pliku <ph name="FILE_NAME" /> nie można pobrać w bezpieczny sposób</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> chce się sparować</translation>
-<translation id="2341476639346994688">Drukarka została zatrzymana</translation>
 <translation id="2342740338116612727">Dodano zakładki</translation>
 <translation id="2343747224442182863">Ustaw tę kartę jako aktywną</translation>
 <translation id="2344686470986284227">Uruchamiam kontroler maszyny wirtualnej</translation>
@@ -3454,7 +3453,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5283677936944177147">Ups! System nie mógł określić modelu lub numeru seryjnego urządzenia.</translation>
 <translation id="5284445933715251131">Pobieraj dalej</translation>
 <translation id="5285635972691565180">Wyświetlacz <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Obszar odbioru jest pełny</translation>
 <translation id="5286194356314741248">Skanowanie</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Twoje konta</translation>
@@ -3676,7 +3674,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5553089923092577885">Odwzorowania zasad certyfikatu</translation>
 <translation id="5554489410841842733">Ta ikona jest widoczna wtedy, gdy rozszerzenie umożliwia wykonanie działania na bieżącej stronie.</translation>
 <translation id="5554720593229208774">Urząd certyfikacji poczty e-mail</translation>
-<translation id="5554931805291741487">Obszar odbioru jest prawie pełny</translation>
 <translation id="5556459405103347317">Odśwież</translation>
 <translation id="5558125320634132440">Ta strona została zablokowana, ponieważ może zawierać treści dla dorosłych</translation>
 <translation id="5558129378926964177">Po&amp;większ</translation>
@@ -4950,7 +4947,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7152478047064750137">To rozszerzenie nie wymaga specjalnych uprawnień</translation>
 <translation id="7154130902455071009">Zmiana strony startowej na: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Istniejące zdjęcie z kamery lub pliku</translation>
-<translation id="7163766494674803047">Błąd urządzenia drukarki</translation>
 <translation id="7165320105431587207">Nie można skonfigurować sieci</translation>
 <translation id="716640248772308851">„<ph name="EXTENSION" />” może odczytywać pliki graficzne, wideo i dźwiękowe ze sprawdzonych lokalizacji.</translation>
 <translation id="7167486101654761064">&amp;Zawsze otwieraj pliki tego typu</translation>

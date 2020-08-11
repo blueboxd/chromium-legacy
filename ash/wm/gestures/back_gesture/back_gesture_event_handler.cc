@@ -314,6 +314,9 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
       if (features::AreContextualNudgesEnabled()) {
         // Cancel the in-waiting or in-progress back nudge animation.
         nudge_controller_->OnBackGestureStarted();
+        contextual_tooltip::HandleGesturePerformed(
+            Shell::Get()->session_controller()->GetActivePrefService(),
+            contextual_tooltip::TooltipType::kBackGesture);
       }
       return true;
     case ui::ET_GESTURE_SCROLL_BEGIN:
@@ -393,11 +396,6 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
           }
         }
         back_gesture_affordance_->Complete();
-        if (features::AreContextualNudgesEnabled()) {
-          contextual_tooltip::HandleGesturePerformed(
-              Shell::Get()->session_controller()->GetActivePrefService(),
-              contextual_tooltip::TooltipType::kBackGesture);
-        }
       } else {
         back_gesture_affordance_->Abort();
         RecordEndScenarioType(GetEndScenarioType(

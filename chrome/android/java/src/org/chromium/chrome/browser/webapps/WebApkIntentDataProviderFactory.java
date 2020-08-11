@@ -408,8 +408,8 @@ public class WebApkIntentDataProviderFactory {
         }
 
         WebappExtras webappExtras = new WebappExtras(
-                WebappRegistry.webApkIdForPackage(webApkPackageName), url, scope, primaryIcon, name,
-                shortName, displayMode, orientation, source,
+                WebappIntentUtils.getIdForWebApkPackage(webApkPackageName), url, scope, primaryIcon,
+                name, shortName, displayMode, orientation, source,
                 WebappIntentUtils.colorFromLongColor(backgroundColor), defaultBackgroundColor,
                 false /* isIconGenerated */, isPrimaryIconMaskable, forceNavigation);
         WebApkExtras webApkExtras = new WebApkExtras(webApkPackageName, splashIcon,

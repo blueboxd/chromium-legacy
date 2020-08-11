@@ -84,11 +84,9 @@ import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
-import org.chromium.payments.mojom.AddressErrors;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
 import org.chromium.payments.mojom.HasEnrolledInstrumentQueryResult;
 import org.chromium.payments.mojom.PayerDetail;
-import org.chromium.payments.mojom.PayerErrors;
 import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentComplete;
 import org.chromium.payments.mojom.PaymentDetails;
@@ -1580,69 +1578,7 @@ public class PaymentRequestImpl
 
         mWasRetryCalled = true;
 
-        // Remove all payment apps except the selected one.
-        assert mPaymentUIsManager.getPaymentMethodsSection() != null;
-        PaymentApp selectedApp =
-                (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
-        assert selectedApp != null;
-        mPaymentUIsManager.setPaymentMethodsSection(
-                new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,
-                        /* selection = */ 0, new ArrayList<>(Arrays.asList(selectedApp))));
-        mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                PaymentRequestUI.DataType.PAYMENT_METHODS,
-                mPaymentUIsManager.getPaymentMethodsSection());
-        mPaymentUIsManager.getPaymentRequestUI().disableAddingNewCardsDuringRetry();
-
-        // Go back to the payment sheet
-        mPaymentUIsManager.getPaymentRequestUI().onPayButtonProcessingCancelled();
-        PaymentDetailsUpdateServiceHelper.getInstance().reset();
-        if (!TextUtils.isEmpty(errors.error)) {
-            mPaymentUIsManager.getPaymentRequestUI().setRetryErrorMessage(errors.error);
-        } else {
-            ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-            mPaymentUIsManager.getPaymentRequestUI().setRetryErrorMessage(
-                    activity.getResources().getString(R.string.payments_error_message));
-        }
-
-        if (shouldShowShippingSection() && hasShippingAddressError(errors.shippingAddress)) {
-            mPaymentUIsManager.getRetryQueue().add(() -> {
-                mPaymentUIsManager.getAddressEditor().setAddressErrors(errors.shippingAddress);
-                AutofillAddress selectedAddress =
-                        (AutofillAddress) mPaymentUIsManager.getShippingAddressesSection()
-                                .getSelectedItem();
-                // Log the edit of a shipping address.
-                mJourneyLogger.incrementSelectionEdits(Section.SHIPPING_ADDRESS);
-                mPaymentUIsManager.editAddress(selectedAddress);
-            });
-        }
-
-        if (shouldShowContactSection() && hasPayerError(errors.payer)) {
-            mPaymentUIsManager.getRetryQueue().add(() -> {
-                mPaymentUIsManager.getContactEditor().setPayerErrors(errors.payer);
-                AutofillContact selectedContact =
-                        (AutofillContact) mPaymentUIsManager.getContactSection().getSelectedItem();
-                mJourneyLogger.incrementSelectionEdits(Section.CONTACT_INFO);
-                mPaymentUIsManager.editContactOnPaymentRequestUI(selectedContact);
-            });
-        }
-
-        if (!mPaymentUIsManager.getRetryQueue().isEmpty()) {
-            mHandler.post(mPaymentUIsManager.getRetryQueue().remove());
-        }
-    }
-
-    private boolean hasShippingAddressError(AddressErrors errors) {
-        return !TextUtils.isEmpty(errors.addressLine) || !TextUtils.isEmpty(errors.city)
-                || !TextUtils.isEmpty(errors.country)
-                || !TextUtils.isEmpty(errors.dependentLocality)
-                || !TextUtils.isEmpty(errors.organization) || !TextUtils.isEmpty(errors.phone)
-                || !TextUtils.isEmpty(errors.postalCode) || !TextUtils.isEmpty(errors.recipient)
-                || !TextUtils.isEmpty(errors.region) || !TextUtils.isEmpty(errors.sortingCode);
-    }
-
-    private boolean hasPayerError(PayerErrors errors) {
-        return !TextUtils.isEmpty(errors.name) || !TextUtils.isEmpty(errors.phone)
-                || !TextUtils.isEmpty(errors.email);
+        mComponentPaymentRequestImpl.getPaymentRequestLifecycleObserver().onRetry(errors);
     }
 
     @Override

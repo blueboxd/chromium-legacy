@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">ایجاد شد</translation>
 <translation id="1067291318998134776">‏Linux (بتا)</translation>
 <translation id="1067922213147265141">‏سایر سرویس‌های Google</translation>
+<translation id="1068961867683064946">‏ایجاد «حساب Google» برای فرزندتان</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">‏برنامه دیگری در رایانه شما یک افزونه اضافه کرده است که ممکن است نحوه کارکرد Chrome را تغییر دهد.
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660">دکمه برگشت صفحه فرعی <ph name="SUBPAGE_TITLE" /></translation>
 <translation id="1322046419516468189">در <ph name="SAVED_PASSWORDS_STORE" /> گذرواژه‌های ذخیره‌شده‌تان را مشاهده و مدیریت کنید</translation>
 <translation id="1324106254079708331">‏از «حساب‌های Google» شخصی همه افرادی که درخطر حمله هدفمند قرار دارند حفاظت می‌کند</translation>
+<translation id="1325985428688410772">افزودن فضا</translation>
 <translation id="1326317727527857210">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
 <translation id="1327074568633507428">‏چاپگر در Google Cloud Print</translation>
 <translation id="1327272175893960498">‏بلیت‌های Kerberos</translation>
@@ -1079,6 +1081,7 @@
 <translation id="2307462900900812319">پیکربندی شبکه</translation>
 <translation id="230927227160767054">این صفحه، می‌خواهد یک کنترل‌کننده سرویس نصب کند.</translation>
 <translation id="2309620859903500144">دسترسی این سایت به حسگرهای نور یا حرکت مسدود شده است.</translation>
+<translation id="2314873619957287124">تنظیم قوانین پایه دیجیتال برای کمک به فرزندتان در زمینه یادگیری، بازی، و کاوش</translation>
 <translation id="2315414688463285945">‏هنگام پیکربندی فایل‌های Linux خطایی روی داد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="2315587498123194634">ارسال پیوند به <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">نه متشکرم</translation>
@@ -1090,6 +1093,7 @@
 <translation id="2322318151094136999">اگر سایتی بخواهد به درگاه‌های سریال دسترسی یابد، سؤال شود (توصیه می‌شود)</translation>
 <translation id="2323018538045954000">‏شبکه‌های Wi-Fi ذخیره‌شده</translation>
 <translation id="2325444234681128157">گذرواژه به خاطر سپرده شود</translation>
+<translation id="2326160999284776503">‏ورود به سیستم با «حساب Google» فرزندتان</translation>
 <translation id="2326188115274135041">برای اینکه باز شدن خودکار قفل روشن شود، پین را تأیید کنید</translation>
 <translation id="2326931316514688470">&amp;تازه‌سازی برنامه</translation>
 <translation id="2327492829706409234">فعال کردن برنامه</translation>
@@ -1105,7 +1109,6 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947">نمی‌توان <ph name="FILE_NAME" /> را به‌طور ایمن بارگیری کرد</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> می‌خواهد مرتبط شود</translation>
-<translation id="2341476639346994688">چاپگر متوقف شد</translation>
 <translation id="2342740338116612727">نشانک‌ها اضافه شد</translation>
 <translation id="2343747224442182863">متمرکز کردن این برگه</translation>
 <translation id="2344686470986284227">درحال شروع کنترل‌کننده دستگاه مجازی</translation>
@@ -1149,6 +1152,7 @@
 <translation id="2384436799579181135">خطایی روی داده است. لطفاً چاپگرتان را بررسی و دوباره امتحان کنید.</translation>
 <translation id="2387052489799050037">رفتن به صفحه اصلی</translation>
 <translation id="2387458720915042159">نوع اتصال پراکسی</translation>
+<translation id="2391082728065870591">ارسال گزارش بازخورد</translation>
 <translation id="2391419135980381625">قلم استاندارد</translation>
 <translation id="2392163307141705938">به حداکثر زمانی که ولی‌تان برای استفاده از <ph name="IDS_SHORT_PRODUCT_NAME" /> تعیین کرده است رسیده‌اید.</translation>
 <translation id="2392369802118427583">فعالسازی</translation>
@@ -1279,6 +1283,7 @@
 <translation id="2537178555904266562">خطا در همگام‌سازی گذرواژه‌ها</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> می‌تواند این فایل‌ها و پوشه‌ها را مشاهده و ویرایش کند:</translation>
 <translation id="2537927931785713436">درحال بررسی تصویر دستگاه مجازی</translation>
+<translation id="2538084450874617176">چه کسی از این <ph name="DEVICE_TYPE" /> استفاده می‌کند؟</translation>
 <translation id="2538361623464451692">همگام‌سازی غیرفعال شد</translation>
 <translation id="2540449034743108469">برای گوش دادن به فعالیت‌های افزونه، روی «شروع» فشار دهید</translation>
 <translation id="2541002089857695151">ارسال محتوای تمام‌صفحه بهینه‌سازی شود؟</translation>
@@ -2740,6 +2745,7 @@
 <translation id="4364327530094270451">خربزه</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> در حال اشتراک‌گذاری یک پنجره است.</translation>
 <translation id="4364830672918311045">نمایش اعلان‌ها</translation>
+<translation id="4368115171699243057">راه‌اندازی این <ph name="DEVICE_TYPE" /> برای فرزندتان</translation>
 <translation id="437004882363131692">نکته‌ها، پیشنهادها، و به‌روزرسانی‌های مربوط به <ph name="DEVICE_TYPE" /> را دریافت کنید و بازخورد ارائه دهید. هرزمان خواستید اشتراک را لغو کنید.</translation>
 <translation id="4370975561335139969">ایمیل و گذرواژه‌ای که وارد کرده‌اید، مطابقت ندارند</translation>
 <translation id="4374831787438678295">‏نصب‌کننده Linux</translation>
@@ -2900,6 +2906,7 @@
 <translation id="4565377596337484307">عدم نمایش گذرواژه</translation>
 <translation id="4565917129334815774">ذخیره گزارش‌های سیستم</translation>
 <translation id="456717285308019641">زبان صفحه موردنظر برای ترجمه</translation>
+<translation id="4567533462991917415">بعد از راه‌اندازی، هرزمان خواستید می‌توانید افراد بیشتری را اضافه کنید. هر فرد می‌تواند حسابش را شخصی‌سازی کند و داده‌ها را خصوصی نگه دارد.</translation>
 <translation id="4567772783389002344">افزودن واژه</translation>
 <translation id="4568025708905928793">کلید امنیتی درخواست شده است</translation>
 <translation id="4568213207643490790">‏متأسفیم، حساب‌های Google در این دستگاه مجاز نیستند.</translation>
@@ -2951,6 +2958,7 @@
 <translation id="4628762811416793313">‏راه‌اندازی محتوی Linux تکمیل نشد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="4633003931260532286">افزونه به «<ph name="IMPORT_NAME" />» با نسخه حداقل «<ph name="IMPORT_VERSION" />» نیاز دارد اما تنها نسخه «<ph name="INSTALLED_VERSION" />» نصب شده است</translation>
 <translation id="4633757335284074492">‏در Google Drive پشتیبان‌گیری کنید. به‌آسانی داده‌ها را بازیابی کنید یا هرزمان خواستید دستگاه را عوض کنید. این نسخه پشتیبان حاوی داده‌های برنامه است. پشتیبان‌ها در Google بارگذاری می‌شوند و با گذرواژه «حساب Google» فرزندتان رمزگذاری می‌شوند.</translation>
+<translation id="4634575639321169635">راه‌اندازی این دستگاه برای استفاده کاری یا شخصی</translation>
 <translation id="4634771451598206121">ورود مجدد به سیستم...</translation>
 <translation id="4635072447747973225">‏حذف نصب Crostini</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> برای کاربران مهمان دردسترس نیست.</translation>
@@ -3369,6 +3377,7 @@
 <translation id="5185386675596372454">جدیدترین نسخه از "<ph name="EXTENSION_NAME" />" غیر فعال شده است زیرا به مجوزهای بیشتری نیاز دارد.</translation>
 <translation id="5185500136143151980">اتصال اینترنت وجود ندارد</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287">منوی گزینه‌ها برای <ph name="PROFILE_LOCAL_NAME" /></translation>
 <translation id="5190926251776387065">فعال کردن درگاه</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> می‌خواهد چند فایل را بارگیری کند</translation>
 <translation id="5192062846343383368">‏برای مشاهده تنظیمات نظارت، برنامه Family Link را باز کنید</translation>
@@ -3445,7 +3454,6 @@
 <translation id="5283677936944177147">متأسفیم! سیستم مدل دستگاه یا شماره سریال را تعیین نکرد.</translation>
 <translation id="5284445933715251131">ادامه بارگیری</translation>
 <translation id="5285635972691565180">نمایشگر <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">قسمت خروجی پر است</translation>
 <translation id="5286194356314741248">اسکن کردن</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">حساب‌های شما</translation>
@@ -3616,6 +3624,7 @@
 <translation id="5495597166260341369">روشن ماندن نمایشگر</translation>
 <translation id="5496587651328244253">سازماندهی</translation>
 <translation id="5497251278400702716">این فایل</translation>
+<translation id="5498967291577176373">نوشتن سریع‌تر با پیشنهادهای متغیر برای نام، نشانی، یا شماره تلفن</translation>
 <translation id="5499313591153584299">شاید این فایل برای کامپیوتر شما مضر باشد.</translation>
 <translation id="5499453227627332024">‏نسخه‌ای برای ارتقای محتوی Linux شما دردسترس است. همچنین می‌توانید بعداً در «تنظیمات» ارتقا دهید.</translation>
 <translation id="5500709606820808700">بررسی ایمنی امروز اجرا شد</translation>
@@ -3666,7 +3675,6 @@
 <translation id="5553089923092577885">نگاشتهای سیاست گواهی</translation>
 <translation id="5554489410841842733">این نماد وقتی قابل رؤیت است که برنامهٔ افزودنی بتواند برای صفحه فعلی کار کند.</translation>
 <translation id="5554720593229208774">ارائه دهنده مجوز ایمیل</translation>
-<translation id="5554931805291741487">قسمت خروجی تقریباً پر است</translation>
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5558125320634132440">این سایت مسدود شده است زیرا احتمالاً حاوی محتوای بزرگ‌سالان است</translation>
 <translation id="5558129378926964177">&amp;بزرگنمایی</translation>
@@ -3773,6 +3781,7 @@
 <translation id="5689516760719285838">مکان</translation>
 <translation id="56907980372820799">داده‌های پیوند</translation>
 <translation id="5691511426247308406">خانواده</translation>
+<translation id="5691581861107245578">دریافت پیشنهادهای اموجی براساس آنچه تایپ می‌کنید</translation>
 <translation id="5691772641933328258">اثر انگشت تشخیص داده نشد</translation>
 <translation id="5692183275898619210">چاپ کامل شد</translation>
 <translation id="569425414730375234">جلسه ناشناس کنونی: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4132,6 +4141,7 @@
 <translation id="6124698108608891449">این سایت به مجوزهای بیشتری نیاز دارد.</translation>
 <translation id="6125479973208104919">متأسفانه دوباره باید حسابتان را به این <ph name="DEVICE_TYPE" /> اضافه کنید.</translation>
 <translation id="6129691635767514872">‏داده‌های انتخاب‌شده از Chrome و دستگاه‌های همگام‌سازی‌شده برداشته شده‌اند. ممکن است حساب Google شما در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> شکل‌های دیگری از سابقه مرور (مانند جستجوها و فعالیت از سایر سرویس‌های Google) داشته باشد.</translation>
+<translation id="6129839611163153407">فرزندتان</translation>
 <translation id="6129938384427316298">‏نظر گواهی Netscape</translation>
 <translation id="6129953537138746214">فاصله</translation>
 <translation id="6130692320435119637">‏افزودن Wi-Fi</translation>
@@ -4172,6 +4182,7 @@
 <translation id="6178664161104547336">انتخاب گواهی</translation>
 <translation id="6181431612547969857">بارگیری مسدود شد</translation>
 <translation id="6185132558746749656">مکان دستگاه</translation>
+<translation id="6195446518998936840">‏برای راه‌اندازی «کنترل‌های والدین»، فرزندتان باید یک «حساب Google» داشته باشد که شما در مدیریت آن به او کمک خواهید کرد. می‌توانید محدودیت‌های مدت تماشای صفحه تنظیم کنید، وب‌سایت‌ها را تأیید یا مسدود کنید، و کارهای بیشتری با برنامه Family Link انجام دهید.</translation>
 <translation id="6195693561221576702">این دستگاه روی حالت نمایشی آفلاین تنظیم نمی‌شود.</translation>
 <translation id="6196640612572343990">مسدود کردن کوکی‌های شخص ثالث</translation>
 <translation id="6196854373336333322">افزونه «<ph name="EXTENSION_NAME" />»، کنترل تنظیمات پروکسی شما را در اختیار گرفته است یعنی می‌تواند هر چیزی که در حالت آنلاین انجام می‌دهید تغییر دهد، خراب کند یا استراق سمع کند. اگر مطمئن نیستید چرا این تغییر انجام شده است، احتمالاً این افزونه را نمی‌خواهید.</translation>
@@ -4937,7 +4948,6 @@
 <translation id="7152478047064750137">این افزونه به مجوز خاصی نیاز ندارد</translation>
 <translation id="7154130902455071009">تغییر صفحه شروعتان به: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">عکس موجود از دوربین یا فایل</translation>
-<translation id="7163766494674803047">خطای دستگاه چاپگر</translation>
 <translation id="7165320105431587207">پیکربندی شبکه انجام نشد</translation>
 <translation id="716640248772308851">«<ph name="EXTENSION" />» می‌تواند تصاویر، ویدئوها و فایل‌های صوتی موجود در مکان‌های انتخاب شده را بخواند.</translation>
 <translation id="7167486101654761064">&amp;همیشه این نوع فایل‌ها باز شوند</translation>
@@ -5927,6 +5937,7 @@
 <translation id="8372369524088641025">‏کلید WEP نادرست</translation>
 <translation id="8372477600026034341">میزبان‌های اضافی</translation>
 <translation id="8373652277231415614">‏فهرست‌های راهنمای هم‌رسانی‌شده Crostini</translation>
+<translation id="8376384591331888629">شامل کوکی‌های شخص ثالث در این سایت می‌شود</translation>
 <translation id="8378714024927312812">توسط سازمانتان مدیریت می‌شود</translation>
 <translation id="8379878387931047019">این دستگاه نوع کلید امنیتیِ درخواستی ازجانب این وب‌سایت را پشتیبانی نمی‌کند</translation>
 <translation id="8379991678458444070">با نشانک‌گذاری این برگه، سریع به اینجا برگردید</translation>
@@ -6010,6 +6021,7 @@
 <translation id="8481187309597259238">‏تأیید مجوز USB</translation>
 <translation id="8483248364096924578">‏نشانی IP</translation>
 <translation id="8487678622945914333">بزرگ‌نمایی</translation>
+<translation id="8489156414266187072">پیشنهادهای شخصی فقط در حساب شما نمایش داده می‌شوند</translation>
 <translation id="8490896350101740396">برنامه‌های کیوسک زیر «<ph name="UPDATED_APPS" />» به‌روز شده‌اند. لطفاً برای تکمیل فرآیند به‌روزرسانی دستگاه را مجدداً راه‌اندازی کنید.</translation>
 <translation id="8493236660459102203">میکروفن:</translation>
 <translation id="8496717697661868878">اجرای این افزایه</translation>

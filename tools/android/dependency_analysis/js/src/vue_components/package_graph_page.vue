@@ -4,31 +4,12 @@
 
 <template>
   <div id="page-container">
-    <div id="page-controls">
-      <GraphFilterInput
-          :node-ids="pageModel.getNodeIds()"
-          :nodes-already-in-filter="
-            displaySettingsData.nodeFilterData.filterList"
-          :shorten-name="filterShortenName"
-          @[CUSTOM_EVENTS.FILTER_SUBMITTED]="filterAddOrCheckNode"/>
-      <GraphFilterItems
-          :node-filter-data="displaySettingsData.nodeFilterData"
-          :shorten-name="filterShortenName"
-          @[CUSTOM_EVENTS.FILTER_REMOVE]="filterRemoveNode"
-          @[CUSTOM_EVENTS.FILTER_CHECK_ALL]="filterCheckAll"
-          @[CUSTOM_EVENTS.FILTER_UNCHECK_ALL]="filterUncheckAll"/>
-      <NumericInput
-          description="Change inbound (blue) depth:"
-          input-id="inbound-input"
-          :input-value.sync="displaySettingsData.inboundDepth"
-          :min-value="0"/>
-      <NumericInput
-          description="Change outbound (yellow) depth:"
-          input-id="outbound-input"
-          :input-value.sync="displaySettingsData.outboundDepth"
-          :min-value="0"/>
-    </div>
-    <div id="graph-and-node-details-container">
+    <div id="title-and-graph-container">
+      <div
+          id="title"
+          class="md-headline">
+        Clank Dependency Viewer - Package Graph
+      </div>
       <GraphVisualization
           :graph-update-triggers="[
             displaySettingsData,
@@ -37,22 +18,58 @@
           :display-settings-data="displaySettingsData"
           @[CUSTOM_EVENTS.NODE_CLICKED]="graphNodeClicked"
           @[CUSTOM_EVENTS.NODE_DOUBLE_CLICKED]="graphNodeDoubleClicked"/>
-      <div id="node-details-container">
-        <GraphDisplayPanel
-            :display-settings-data="displaySettingsData"
-            :display-settings-preset.sync="
-              displaySettingsData.displaySettingsPreset">
-          <GraphDisplaySettings
-              :display-settings-data="displaySettingsData"
-              @[CUSTOM_EVENTS.DISPLAY_OPTION_CHANGED]="displayOptionChanged"/>
-        </GraphDisplayPanel>
-        <GraphSelectedNodeDetails
-            :selected-node-details-data="pageModel.selectedNodeDetailsData"
-            @[CUSTOM_EVENTS.DETAILS_CHECK_NODE]="filterAddOrCheckNode"
-            @[CUSTOM_EVENTS.DETAILS_UNCHECK_NODE]="filterUncheckNode"/>
-        <PackageDetailsPanel
-            :selected-package="pageModel.selectedNodeDetailsData.selectedNode"/>
+    </div>
+    <div
+        id="page-sidebar"
+        class="md-elevation-3">
+      <MdSubheader class="sidebar-subheader">
+        Node Filter
+      </MdSubheader>
+      <GraphFilterItems
+          id="graph-filter-items"
+          :node-filter-data="displaySettingsData.nodeFilterData"
+          :shorten-name="filterShortenName"
+          @[CUSTOM_EVENTS.FILTER_REMOVE]="filterRemoveNode"
+          @[CUSTOM_EVENTS.FILTER_CHECK_ALL]="filterCheckAll"
+          @[CUSTOM_EVENTS.FILTER_UNCHECK_ALL]="filterUncheckAll"/>
+      <GraphFilterInput
+          :node-ids="pageModel.getNodeIds()"
+          :nodes-already-in-filter="
+            displaySettingsData.nodeFilterData.filterList"
+          :shorten-name="filterShortenName"
+          @[CUSTOM_EVENTS.FILTER_SUBMITTED]="filterAddOrCheckNode"/>
+      <MdSubheader class="sidebar-subheader">
+        Display Options
+      </MdSubheader>
+      <div id="inbound-outbound-depth-inputs">
+        <NumericInput
+            description="Inbound Depth"
+            input-id="inbound-input"
+            :input-value.sync="displaySettingsData.inboundDepth"
+            :min-value="0"/>
+        <NumericInput
+            description="Outbound Depth"
+            input-id="outbound-input"
+            :input-value.sync="displaySettingsData.outboundDepth"
+            :min-value="0"/>
       </div>
+      <GraphDisplayPanel
+          :display-settings-data="displaySettingsData"
+          :display-settings-preset.sync="
+            displaySettingsData.displaySettingsPreset">
+        <GraphDisplaySettings
+            :display-settings-data="displaySettingsData"
+            @[CUSTOM_EVENTS.DISPLAY_OPTION_CHANGED]="displayOptionChanged"/>
+      </GraphDisplayPanel>
+      <MdSubheader class="sidebar-subheader">
+        Node Details
+      </MdSubheader>
+      <GraphSelectedNodeDetails
+          :selected-node-details-data="pageModel.selectedNodeDetailsData"
+          @[CUSTOM_EVENTS.DETAILS_CHECK_NODE]="filterAddOrCheckNode"
+          @[CUSTOM_EVENTS.DETAILS_UNCHECK_NODE]="filterUncheckNode"/>
+      <PackageDetailsPanel
+          :selected-package="pageModel.selectedNodeDetailsData.selectedNode"/>
     </div>
   </div>
 </template>
@@ -221,24 +238,48 @@ export default PackageGraphPage;
 </style>
 
 <style scoped>
+#title {
+  padding: 10px;
+}
+
 #page-container {
   display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
+}
+
+#title-and-graph-container {
+  display: flex;
   flex-direction: column;
+  flex-grow: 1;
+}
+
+#page-sidebar {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 0;
+  overflow-y: scroll;
+  padding: 0 20px;
+  width: 30vw;
+}
+
+.sidebar-subheader {
+  padding: 0;
+}
+
+#graph-filter-items {
+  margin-bottom: 10px;
+}
+
+#inbound-outbound-depth-inputs {
+  display: flex;
+  flex-direction: row;
 }
 
 #page-controls {
   display: flex;
   flex-direction: row;
   height: 15vh;
-}
-
-#graph-and-node-details-container {
-  display: flex;
-  flex-direction: row;
-}
-
-#node-details-container {
-  display: flex;
-  flex-direction: column;
 }
 </style>

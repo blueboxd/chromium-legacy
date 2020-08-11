@@ -507,6 +507,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="6972754398087986839">Introdución</translation>
 <translation id="6981982820502123353">Accesibilidade</translation>
 <translation id="698231206551913481">En canto se borre este usuario, eliminaranse permanentemente os ficheiros e os datos locais asociados con el.</translation>
+<translation id="7007983414944123363">Non se puido verificar o teu PIN ou contrasinal. Téntao de novo.</translation>
 <translation id="7015766095477679451">Volve á seguinte hora: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Conecta o <ph name="DEVICE_NAME" /> co teu teléfono</translation>
 <translation id="7026338066939101231">Reducir</translation>
@@ -552,6 +553,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="7568294522609223312">Desactivar clics automáticos</translation>
 <translation id="7568637526529101738">Se fas clic co botón dereito ou realizas unha pulsación longa, o Asistente móstrache información como a definición ou a conversión de unidades relacionada coa túa selección.</translation>
 <translation id="7569509451529460200">Activouse o braille e ChromeVox</translation>
+<translation id="7579778809502851308">Captura de pantalla</translation>
 <translation id="7593891976182323525">Busca ou Maiús</translation>
 <translation id="7600875258240007829">Ver todas as notificacións</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
@@ -670,6 +672,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="8841375032071747811">Botón Atrás</translation>
 <translation id="8843682306134542540">Activar/desactivar o bloqueo de rotación. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Busca+Esc</translation>
+<translation id="8853703225951107899">Aínda non se puido verificar o teu PIN ou contrasinal. Nota: Se cambiaches o contrasinal recentemente, utiliza o antigo. O contrasinal novo aplicarase en canto peches sesión.</translation>
 <translation id="8870509716567206129">A aplicación non é compatible coa función de pantalla dividida.</translation>
 <translation id="8874184842967597500">Non conectada</translation>
 <translation id="8877788021141246043">Definir un recordatorio</translation>

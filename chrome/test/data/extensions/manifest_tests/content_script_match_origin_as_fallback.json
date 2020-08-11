@@ -12,7 +12,25 @@
     "match_origin_as_fallback": false,
     "js": ["file.js"]
   }, {
+    "matches": ["https://and.example/*"],
+    "match_about_blank": true,
+    "js": ["file.js"]
+  }, {
+    "matches": ["https://another.example/*"],
+    "match_about_blank": false,
+    "js": ["file.js"]
+  }, {
     "matches": ["https://bar.example/*"],
+    "match_origin_as_fallback": false,
+    "match_about_blank": true,
+    "js": ["file.js"]
+  }, {
+    "matches": ["https://baz.example/*"],
+    "match_origin_as_fallback": true,
+    "match_about_blank": false,
+    "js": ["file.js"]
+  }, {
+    "matches": ["https://example.example/*"],
     "js": ["file.js"]
   }]
 }

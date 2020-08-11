@@ -4,6 +4,9 @@
 
 #include "media/base/media.h"
 
+#include <stdint.h>
+#include <limits>
+
 #include "base/allocator/buildflags.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -41,7 +44,7 @@ class MediaInitializer {
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
     // Remove allocation limit from ffmpeg, so calls go down to shim layer.
-    av_max_alloc(0);
+    av_max_alloc(std::numeric_limits<size_t>::max());
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 #endif  // BUILDFLAG(ENABLE_FFMPEG)

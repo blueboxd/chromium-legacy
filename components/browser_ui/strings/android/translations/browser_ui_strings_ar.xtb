@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">التنقل محظور: <ph name="URL" /></translation>
 <translation id="4278390842282768270">منح الإذن</translation>
 <translation id="429312253194641664">تفعيل موقع إلكتروني للوسائط</translation>
+<translation id="4336434711095810371">محو جميع البيانات</translation>
 <translation id="4433925000917964731">‏نسخة خفيفة تقدِّمها Google</translation>
 <translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
 <translation id="445467742685312942">السماح للمواقع الإلكترونية بتشغيل المحتوى المَحمي</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">علامة تبويب "التصفُّح المتخفي"</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5301954838959518834">حسنًا</translation>
-<translation id="5307446750509046227">محو مساحة تخزين المواقع</translation>
 <translation id="5313967007315987356">إضافة موقع إلكتروني</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5335288049665977812">‏السماح للمواقع الإلكترونية بتشغيل JavaScript (موصى به)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">‏حظر JavaScript لموقع إلكتروني مُعيَّن.</translation>
 <translation id="8816026460808729765">يمكنك حظر المواقع الإلكترونية من الوصول إلى أجهزة الاستشعار.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">التخزين</translation>
 <translation id="8926666909099850184">‏تقنية NFC غير مفعّلة على هذا الجهاز. فعّلها في<ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">يفتح هذا الموقع الإلكتروني ويستجيب بشكل سريع لدى معظم الأشخاص.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">‏فعِّل الأذونات لتطبيق <ph name="APP_NAME" /> في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">الدخول إلى الميكروفون</translation>
 <translation id="965817943346481315">الحظر في حال كان الموقع الإلكتروني يعرض إعلانات مضلِّلة أو غير مرغوب فيها (مُستحسَن)</translation>
+<translation id="967624055006145463">البيانات المُخزَّنة</translation>
 </translationbundle>

@@ -50,12 +50,12 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
     apps::ArcRawIconPngDataToImageSkia(
         std::move(data_->icon), icon_dimension,
         base::BindOnce(&ArcAppShortcutSearchResult::SetIcon,
-                       base::Unretained(this)));
+                       weak_ptr_factory_.GetWeakPtr()));
   } else if (data_->icon && data_->icon->icon_png_data &&
              !data_->icon->icon_png_data->empty()) {
     icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
         base::BindOnce(&ArcAppShortcutSearchResult::SetIcon,
-                       base::Unretained(this)),
+                       weak_ptr_factory_.GetWeakPtr()),
         icon_dimension);
     icon_decode_request_->StartWithOptions(data_->icon->icon_png_data.value());
   } else {
@@ -63,7 +63,7 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
     // OS.
     icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
         base::BindOnce(&ArcAppShortcutSearchResult::SetIcon,
-                       base::Unretained(this)),
+                       weak_ptr_factory_.GetWeakPtr()),
         icon_dimension);
     icon_decode_request_->StartWithOptions(data_->icon_png);
   }

@@ -1158,7 +1158,7 @@ NearbySharingService::StatusCodes NearbySharingServiceImpl::ReceivePayloads(
 
   // TODO(himanshujaju) - Implement payload tracker.
 
-  for (const auto& attachment_id : share_target.GetAttachmentIds()) {
+  for (int64_t attachment_id : share_target.GetAttachmentIds()) {
     base::Optional<int64_t> payload_id = GetAttachmentPayloadId(attachment_id);
     if (!payload_id) {
       NS_LOG(WARNING) << __func__
@@ -1386,8 +1386,8 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
     NS_LOG(VERBOSE) << __func__ << "Found file attachment " << file->name
                     << " of type " << file->type << " with mimeType "
                     << file->mime_type;
-    FileAttachment attachment(file->name, file->type, file->size,
-                              /*file_path=*/base::nullopt, file->mime_type);
+    FileAttachment attachment(file->id, file->name, file->type, file->size,
+                              file->mime_type);
     SetAttachmentPayloadId(attachment, file->payload_id);
     share_target.file_attachments.push_back(std::move(attachment));
   }
@@ -1403,7 +1403,8 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
 
     NS_LOG(VERBOSE) << __func__ << "Found text attachment " << text->text_title
                     << " of type " << text->type;
-    TextAttachment attachment(text->text_title, text->type, text->size);
+    TextAttachment attachment(text->id, text->type, text->text_title,
+                              text->size);
     SetAttachmentPayloadId(attachment, text->payload_id);
     share_target.text_attachments.push_back(std::move(attachment));
   }
@@ -1657,7 +1658,7 @@ void NearbySharingServiceImpl::SetAttachmentPayloadId(
 }
 
 base::Optional<int64_t> NearbySharingServiceImpl::GetAttachmentPayloadId(
-    const base::UnguessableToken& attachment_id) {
+    int64_t attachment_id) {
   auto it = attachment_info_map_.find(attachment_id);
   if (it == attachment_info_map_.end())
     return base::nullopt;

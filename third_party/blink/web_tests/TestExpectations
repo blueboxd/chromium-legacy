@@ -1096,13 +1096,8 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-opacity-2
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-with-overflow-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/doubly-nested-with-top-padding-crossing-row-boundaries.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/change-second-row-height.html [ Failure ]
-crbug.com/1105758 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-before-content.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-stf-constrained-width.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-stf-unconstrained-width.html [ Failure ]
-crbug.com/1105758 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-pseudo-after-then-content.html [ Crash ]
-crbug.com/1105758 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-pseudo-before-after-in-content.html [ Crash ]
-crbug.com/1105758 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-pseudo-before-following-content.html [ Crash ]
-crbug.com/1105758 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-pseudo-before.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-column-content-next-to-abspos-between-spanners.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/static-becomes-relpos-has-abspos.html [ Crash Failure ]
@@ -1277,13 +1272,6 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/inline-re
 # Lots of manual tests here; just skip everything - not too interesting for LayoutNGFragmentTraversal anyway:
 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/cascade/* [ Skip ]
 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
-
-# Fieldset in NG
-#
-
-# Size containment
-crbug.com/875235 external/wpt/css/css-sizing/contain-intrinsic-size/contain-intrinsic-size-014.html [ Failure ]
-
 
 # ====== LayoutNG-only failures until here ======
 
@@ -2667,6 +2655,36 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/table-cell-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/table-cell-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/table-cell-001.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/table-progression-vrl-004.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/table-progression-vrl-004.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/table-progression-vrl-004.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/line-box-direction-vlr-016.xht [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/line-box-direction-vlr-016.xht [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/line-box-direction-vlr-016.xht [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/line-box-direction-vrl-015.xht [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/line-box-direction-vrl-015.xht [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/line-box-direction-vrl-015.xht [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/table-progression-vlr-003.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/table-progression-vlr-003.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/table-progression-vlr-003.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/block-flow-direction-vrl-017.xht [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/block-flow-direction-vrl-017.xht [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/block-flow-direction-vrl-017.xht [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/table-progression-vlr-004.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/table-progression-vlr-004.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/table-progression-vlr-004.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/table-cell-002.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/table-cell-002.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/table-cell-002.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/block-flow-direction-vlr-018.xht [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/block-flow-direction-vlr-018.xht [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/block-flow-direction-vlr-018.xht [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/table-progression-vrl-003.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/table-progression-vrl-003.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/table-progression-vrl-003.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-8.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-8.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-8.html [ Failure ]
@@ -6755,3 +6773,5 @@ crbug.com/1113791 [ Win ] media/video-zoom.html [ Pass Failure ]
 
 # Sheriff 2020-08-11
 crbug.com/1095540 virtual/threaded-prefer-compositing/fast/scrolling/resize-corner-tracking-touch.html [ Pass Failure ]
+
+crbug.com/1113521 [ Mac ] fast/events/mouse-cursor-image-set.html [ Pass Crash ]

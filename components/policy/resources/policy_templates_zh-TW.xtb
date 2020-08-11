@@ -437,13 +437,6 @@
 
       如果將這項政策設為 False，使用者無法新增、移除或修改書籤，但仍可以使用現有書籤。</translation>
 <translation id="1715151459541210849">啟用語音輸入無障礙功能</translation>
-<translation id="1717817358640580294">如未設定這項政策，當 Chrome 清理功能偵測到垃圾軟體時，可能會根據 SafeBrowsingExtendedReportingEnabled 設定的政策，將掃描作業的相關中繼資料回報給 Google。回報完畢後，Chrome 清理功能會詢問使用者是否要將偵測到的垃圾軟體清除。使用者可以選擇將清理作業的執行結果分享給 Google，讓日後的垃圾軟體偵測作業更精確。分享的結果包括檔案中繼資料、自動安裝的擴充功能和登錄機碼，詳情請見《Chrome 隱私權白皮書》。
-
-      如果停用這項政策，當 Chrome 清理功能偵測到垃圾軟體時，就不會將掃描作業的相關中繼資料回報給 Google，且會覆寫 SafeBrowsingExtendedReportingEnabled 設定的政策。此外，Chrome 清理功能會詢問使用者是否要將偵測到的垃圾軟體清除。清理作業的執行結果不會回報給 Google，使用者也無法選擇回報。
-
-      如果啟用這項政策，當 Chrome 清理功能偵測到垃圾軟體時，可能會根據 SafeBrowsingExtendedReportingEnabled 設定的政策，將掃描作業的相關中繼資料回報給 Google。此外，Chrome 清理功能會詢問使用者是否要將偵測到的垃圾軟體清除。清理作業的執行結果將回報給 Google，且使用者無法選擇不回報。
-
-      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="172374442286684480">允許所有網站設定本機資料</translation>
 <translation id="1736269219679256369">允許忽略 SSL 警告網頁，繼續前往原本指定的頁面</translation>
 <translation id="1745973235372964482">不允許受密碼保護的檔案</translation>
@@ -1338,15 +1331,6 @@
           停用這項設定等同於未設定。使用者仍可在 <ph name="PRODUCT_NAME" /> 中變更這項設定。
 
           這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體，以及已透過行動裝置管理 (MDM) 所管理或已透過 MCX 加入某個網域的 macOS 執行個體。</translation>
-<translation id="2982571648442031489">設定安全瀏覽功能信任的網域清單。這表示：
-      如果網路詐騙、惡意軟體或垃圾軟體等危險資源的網址與這些網域相符，安全瀏覽功能就不會進行檢查。
-      安全瀏覽功能的下載保護服務不會檢查由這些網域所代管的下載內容。
-      如果網頁的網址與這些網域相符，安全瀏覽功能的密碼保護服務就不會檢查密碼重複使用情形。
-
-      如果啟用這項設定，安全瀏覽功能將信任這些網域。
-      如果停用或不指定這項設定，則系統會對所有資源套用預設的安全瀏覽保護機制。
-
-      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體，以及已透過行動裝置管理 (MDM) 所管理或已透過 MCX 加入某個網域的 macOS 執行個體。</translation>
 <translation id="2985927503455169394">使用 Google 助理入門使用體驗的預設模式</translation>
 <translation id="2987155890997901449">啟用 ARC</translation>
 <translation id="2987227569419001736">控制 Web Bluetooth API 使用權限</translation>
@@ -1463,11 +1447,6 @@
       如果未設定這項政策或將其設為 false，系統就不會在 TLS 中啟用 DHE 加密套件。如要啟用 DHE 加密套件並維持與過舊伺服器的相容性，您也可以將這項政策設為 true。這種方法是權宜之計，正確的做法是重新設定伺服器。
 
       建議您讓伺服器改用 ECDHE 加密套件。如果無法使用 ECDHE 加密套件，請確定啟用的加密套件會使用 RSA 金鑰交換機制。</translation>
-<translation id="3117706142826400449">如果停用這項政策，系統會禁止 Chrome 清理功能掃描系統中的垃圾軟體及執行清理作業。此外，使用者將無法透過 chrome://settings/cleanup 手動觸發 Chrome 清理功能。
-
-      如果啟用或未設定這項政策，Chrome 清理功能會定期掃描系統中的垃圾軟體，並且在找到垃圾軟體時詢問使用者是否要予以移除。此外，使用者將可透過 chrome://settings/cleanup 手動觸發 Chrome 清理功能。
-
-      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="3119125876909100625">允許上傳受密碼保護的檔案</translation>
 <translation id="3122082892722698079">控管可使用不安全內容的例外網站</translation>
 <translation id="3143265893557969814">如果設定了這項政策，系統會將所有指定的資料類型從同步處理作業 (包含 Google Sync 和漫遊設定檔的同步處理作業) 中排除。這有助於縮減漫遊設定檔的大小，或限制上傳到 Google Sync 伺服器的資料類型。
@@ -2081,13 +2060,6 @@
 <translation id="4061590579642538878">回報當機報告相關資訊。</translation>
 <translation id="4075675819066819571">將檔案櫃放在畫面的左側</translation>
 <translation id="4075864623710596000">這份清單中指定的主機名稱會從 HTTP 嚴格傳輸安全性政策檢查作業中排除，該檢查可能會將要求從 HTTP 升級為 HTTPS。這項政策只允許單一標籤主機名稱。主機名稱必須標準化：任何 IDN 都必須轉換為單一標籤格式，且所有 ASCII 字母都必須使用小寫。這項政策只適用於指定的主機名稱，不適用於指定主機名稱的子網域。</translation>
-<translation id="4076584741592854827">指定下載後應自動開啟的檔案類型清單。列出檔案類型時，請勿加入開頭的分隔符，因此請列出「txt」，而非「.txt」。
-
-      在啟用安全瀏覽功能的情況下，即便使用者已指定要讓系統自動開啟某些類型的檔案，Chrome 還是會檢查這類檔案，如果未通過檢查，就不會開啟檔案。
-
-      如果不設定這項政策，只有使用者已指定要自動開啟的檔案類型會在下載後自動開啟。
-
-      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體，以及已透過行動裝置管理 (MDM) 所管理或已透過 MCX 加入某個網域的 macOS 執行個體。</translation>
 <translation id="408029843066770167">允許向 Google 時間服務傳送查詢</translation>
 <translation id="408076456549153854">允許登入瀏覽器</translation>
 <translation id="4082498585300984671">啟用「點選通話」功能</translation>
@@ -4015,19 +3987,6 @@
 
       如果不設定這項政策，預設值是允許受企業管理以及未受管理的使用者執行這項功能。</translation>
 <translation id="6864244339257535116">允許使用者上傳及下載受密碼保護的檔案</translation>
-<translation id="6870295914868104867">你可以透過這項政策指定要以無訊息方式 (使用者無需操作) 安裝的應用程式和擴充功能清單；使用者無法解除安裝或停用這些應用程式和擴充功能。系統會直接授予 enterprise.deviceAttributes 和 enterprise.platformKeys 擴充功能 API 等權限。(非強制安裝的應用程式和擴充功能無法取得這 2 個 API 的權限。)
-
-      如果未設定這項政策，系統不會自動安裝任何應用程式或擴充功能，且使用者可以在 <ph name="PRODUCT_NAME" /> 中解除安裝任何應用程式或擴充功能。
-
-          這項政策會取代 <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" /> 政策。如果從這份清單中移除先前強制安裝的應用程式或擴充功能，<ph name="PRODUCT_NAME" /> 會自動將其解除安裝。
-
-      如果 Windows® 執行個體未加入 <ph name="MS_AD_NAME" /> 網域，系統只會強制安裝 Chrome 線上應用程式商店中的應用程式和擴充功能。
-
-      使用者可透過開發人員工具變更任何擴充功能的原始碼 (這或許會造成擴充功能無法正常運作)。如果你對此有所顧慮，請設定 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 政策。
-
-      這項政策的每個清單項目都是一行字串，其中包含以分號 (;) 區隔的擴充功能 ID 和「更新」網址 (選用)。擴充功能 ID 為 32 個字母的字串，你可以在開發人員模式下前往 chrome://extensions 等位置查看這類字串。「更新」網址 (如有指定) 應指向更新資訊清單 XML 文件 ( https://developer.chrome.com/extensions/autoupdate )。根據預設，系統會使用 Chrome 線上應用程式商店的更新網址。這項政策設定的「更新」網址僅適用於初次安裝，後續的擴充功能更新將使用擴充功能資訊清單中的更新網址。
-
-       注意：這項政策不適用於無痕模式。請前往以下頁面，參閱有關代管擴充功能的資訊：https://developer.chrome.com/extensions/hosting。</translation>
 <translation id="687046793986382807">我們已於 <ph name="PRODUCT_NAME" /> 35 版中移除這項政策。
 
       無論其選項值為何，系統都會在網頁上回報記憶體資訊；但基於安全性考量，系統會限制回報的資料量以及更新頻率。如要取得即時準確資料，請使用 Telemetry 等工具。</translation>
@@ -5659,11 +5618,6 @@
       使用者的工作階段會在重新啟動後恢復。</translation>
 <translation id="9160028464653564229">不允許任何網站透過 Serial API 要求存取序列埠</translation>
 <translation id="9167719789236691545">禁止在 <ph name="PRODUCT_OS_NAME" />的「檔案」應用程式中使用 Google 雲端硬碟</translation>
-<translation id="917514578273777202">如果將這項政策設為啟用，當使用者在網址列中輸入非網址的文字時，系統會執行預設搜尋。如要指定預設搜尋引擎，請設定其餘的預設搜尋政策。如果將其餘的預設搜尋政策保留空白，使用者就可以選擇預設搜尋引擎。如果將這項政策設為停用，使用者在網址列中輸入非網址的文字時，系統不會執行任何搜尋。
-
-      如果設定這項政策，使用者將無法在 <ph name="PRODUCT_NAME" /> 中進行變更。如果未設定，系統會啟用預設搜尋引擎，且使用者可以設定搜尋引擎清單。
-
-      注意：這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows® 執行個體、Windows 10 專業版或 Chrome Enterprise 升級版，以及已透過行動裝置管理 (MDM) 所管理或已透過 MCX 加入某個網域的 macOS 執行個體。</translation>
 <translation id="9185107612228451403">這會設定擴充功能相關政策。使用者不得安裝黑名單上的擴充功能，只有將相關擴充功能加到許可清單後才能安裝。你也可以強制 <ph name="PRODUCT_NAME" /> 自動安裝某些擴充功能，只要在 <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> 政策中指定這些擴充功能即可。如果強制安裝某些擴充功能，不論這些擴充功能是否列在黑名單上，系統一律會予以安裝。</translation>
 <translation id="9187743794267626640">停用外部儲存裝置掛載功能</translation>
 <translation id="9190456586252617675">這項政策可控管 Google 助理入門使用體驗的模式。

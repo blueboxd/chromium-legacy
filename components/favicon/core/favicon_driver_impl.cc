@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/favicon/core/core_favicon_service.h"
@@ -38,8 +37,7 @@ FaviconDriverImpl::FaviconDriverImpl(CoreFaviconService* favicon_service)
   }
 }
 
-FaviconDriverImpl::~FaviconDriverImpl() {
-}
+FaviconDriverImpl::~FaviconDriverImpl() = default;
 
 void FaviconDriverImpl::FetchFavicon(const GURL& page_url,
                                      bool is_same_document) {

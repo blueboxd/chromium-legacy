@@ -7,7 +7,7 @@
 <translation id="1555130319947370107">Urdina</translation>
 <translation id="1588438908519853928">Arrunta</translation>
 <translation id="1591070050619849194">Desgaitu animazio guztiak.</translation>
-<translation id="1703735871906654364">Tartekatze-ikurrak arakatzeko aplikazioa</translation>
+<translation id="1703735871906654364">Tartekatze-ikurraren bidez arakatzeko aplikazioa</translation>
 <translation id="1791496371305830581">Onartu animazio guztiak.</translation>
 <translation id="1996252509865389616">Gaitu nahi duzu?</translation>
 <translation id="2079545284768500474">Desegin</translation>
@@ -18,7 +18,7 @@
 <translation id="2648340354586434750">Eduki sakatuta &lt;span class='key'&gt;Aukera&lt;/span&gt; hitz batetik bestera mugitzeko.</translation>
 <translation id="2795227192542594043">Luzapenak kurtsore mugikorra jartzen du webgunean testua teklatuarekin hautatu ahal izateko.</translation>
 <translation id="2808027189040546825">1. urratsa: hautatu izar lausoenak dituen errenkada:</translation>
-<translation id="2965611304828530558">&lt;p&gt;Estekara edo kontrolera iristean, automatikoki fokuratzen da. Sakatu &lt;span class='key'&gt;Sartu&lt;/span&gt; estekan edo botoian klik egitean. &lt;/p&gt; &lt;p&gt;Fokuratutako kontrolak (adibidez, testu-koadroak edo zerrenda-koadroak) gezien teklak hartzen dituenean, sakatu &lt;span class='key'&gt;Esc&lt;/span&gt; eta, ondoren, Ezkerrera edo Eskuinera gezia, tartekatze-ikurrak arakatzen jarraitzeko. &lt;/p&gt; &lt;p&gt;Horren ordez, sakatu &lt;span class='key'&gt;Fitxa&lt;/span&gt; fokura daitekeen hurrengo kontrolera joateko. &lt;/p&gt;</translation>
+<translation id="2965611304828530558">&lt;p&gt;Estekara edo kontrolera iristean, automatikoki fokuratzen da. Sakatu &lt;span class='key'&gt;Sartu&lt;/span&gt; estekan edo botoian klik egitean. &lt;/p&gt; &lt;p&gt;Fokuratutako kontrolak (adibidez, testu-koadroak edo zerrenda-koadroak) gezi-teklak hartzen dituenean, sakatu &lt;span class='key'&gt;Esc&lt;/span&gt; eta, ondoren, Ezkerrera edo Eskuinera gezia, tartekatze-ikurraren bidez arakatzen jarraitzeko. &lt;/p&gt; &lt;p&gt;Horren ordez, sakatu &lt;span class='key'&gt;Fitxa&lt;/span&gt; fokura daitekeen hurrengo kontrolera joateko. &lt;/p&gt;</translation>
 <translation id="3252573918265662711">Konfigurazioa</translation>
 <translation id="3410969471888629217">Ahaztu webgunearen pertsonalizazioak</translation>
 <translation id="3435896845095436175">Gaitu</translation>
@@ -32,7 +32,7 @@
 <translation id="4896660567607030658">Ez bistaratu azalpenik; besterik gabe, erakutsi kurtsorea.</translation>
 <translation id="4937901943818762779">Gaitu animazioak, baina behin soilik.</translation>
 <translation id="4949131196216960195">Sakatu &lt;span class='key'&gt;Bilatu&lt;/span&gt; + &lt;img src='increase_brightness.png'&gt; (distira handiagotzeko tekla edo F7) teklatu bidezko arakatzea aktibatzeko. Saka ezazu berriro desaktibatzeko.</translation>
-<translation id="4954450790315188152">Tartekatze-ikurrak arakatzeko aukera aktibatuta dagoenean:</translation>
+<translation id="4954450790315188152">Tartekatze-ikurraren bidez arakatzeko aukera aktibatuta dagoenean:</translation>
 <translation id="5041932793799765940">Kolore doikuntza</translation>
 <translation id="5094574508723441140">Kontraste handitua</translation>
 <translation id="5173942593318174089">Nabarmendu kurtsorearen posizioa animazioarekin.</translation>
@@ -60,9 +60,9 @@
 <translation id="7658239707568436148">Utzi</translation>
 <translation id="786423340267544509">Gehitu ertza aria-describedat edo longdesc atributuak dituen elementuan.</translation>
 <translation id="7942349550061667556">Gorria</translation>
-<translation id="8260673944985561857">Tartekatze-ikurrak arakatzeko aukerak</translation>
+<translation id="8260673944985561857">Tartekatze-ikurraren bidez arakatzeko aukerak</translation>
 <translation id="8321034316479930120">Animazioen gidalerroak</translation>
 <translation id="8480209185614411573">Kontraste handia</translation>
-<translation id="8609925175482059018">Sakatu &lt;span class='key'&gt;F7&lt;/span&gt; tartekatze-ikurrak arakatzeko aukera aktibatzeko. Saka ezazu berriro desaktibatzeko.</translation>
+<translation id="8609925175482059018">Sakatu &lt;span class='key'&gt;F7&lt;/span&gt; tartekatze-ikurraren bidez arakatzeko aukera aktibatzeko. Saka ezazu berriro desaktibatzeko.</translation>
 <translation id="894241283505723656">Laster-menuko azalpen luzeak</translation>
 </translationbundle>

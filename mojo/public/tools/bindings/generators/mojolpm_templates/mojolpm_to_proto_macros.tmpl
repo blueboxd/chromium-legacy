@@ -357,7 +357,7 @@ bool ToProto(
   mojolpm_result &= ToProto(std::move(input->get_{{raw_name}}()), tmp_{{name}});
   new_instance->set_m_{{name}}(tmp_{{name}});
 {%-       elif kind|is_nullable_kind %}
-  if ({{util.not_null(kind, 'input->' ~ raw_name)}}) {
+  if ({{util.not_null(kind, 'input->get_' ~ raw_name ~ '()')}}) {
 {%-         if kind|is_move_only_kind %}
     mojolpm_result &= ToProto(std::move({{util.value(kind, 'input->get_' ~ raw_name ~ '()')}}), *new_instance->mutable_m_{{name}}());
 {%-         else %}

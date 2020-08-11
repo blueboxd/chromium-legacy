@@ -1105,7 +1105,6 @@
 <translation id="2336381494582898602">שחזור הגדרות יצרן</translation>
 <translation id="2340239562261172947">לא ניתן להוריד את <ph name="FILE_NAME" /> בצורה מאובטחת</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> רוצה לבצע התאמה עם</translation>
-<translation id="2341476639346994688">המדפסת הפסיקה לפעול</translation>
 <translation id="2342740338116612727">סימניות נוספו</translation>
 <translation id="2343747224442182863">הדגשת הכרטיסייה הזו</translation>
 <translation id="2344686470986284227">המערכת מפעילה את בקר המכונה הווירטואלית</translation>
@@ -3446,7 +3445,6 @@
 <translation id="5283677936944177147">אופס! המערכת לא הצליחה לזהות את דגם המכשיר או את המספר הסידורי.</translation>
 <translation id="5284445933715251131">המשך הורדה</translation>
 <translation id="5285635972691565180">הצגת <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">אזור הפלט מלא</translation>
 <translation id="5286194356314741248">סורק</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">החשבונות שלך</translation>
@@ -3667,7 +3665,6 @@
 <translation id="5553089923092577885">מיפויי מדיניות אישור </translation>
 <translation id="5554489410841842733">סמל זה יוצג כאשר ההרחבה תוכל לפעול בדף הנוכחי.</translation>
 <translation id="5554720593229208774">רשות אישורי אימייל</translation>
-<translation id="5554931805291741487">אזור הפלט כמעט מלא</translation>
 <translation id="5556459405103347317">ניסיון טעינה נוסף</translation>
 <translation id="5558125320634132440">האתר נחסם מאחר שהוא עשוי להכיל תוכן למבוגרים בלבד</translation>
 <translation id="5558129378926964177">הת&amp;קרב</translation>
@@ -4938,7 +4935,6 @@
 <translation id="7152478047064750137">אין צורך בהרשאות מיוחדות כדי להשתמש בתוסף זה</translation>
 <translation id="7154130902455071009">שנה את דף הפתיחה ל: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">תמונה קיימת ממצלמה או מקובץ</translation>
-<translation id="7163766494674803047">שגיאה במדפסת</translation>
 <translation id="7165320105431587207">כשל בהגדרת התצורה של הרשת</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" יכול לקרוא קובצי תמונות, וידאו ואודיו במיקומים המסומנים.</translation>
 <translation id="7167486101654761064">&amp;פתח תמיד קבצים מסוג זה</translation>

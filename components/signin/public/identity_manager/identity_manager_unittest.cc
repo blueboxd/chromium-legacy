@@ -61,6 +61,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
+#include "components/signin/internal/identity_manager/test_profile_oauth2_token_service_delegate_chromeos.h"
 #endif
 
 namespace signin {
@@ -134,8 +135,17 @@ class CustomFakeOAuth2AccessTokenManager : public FakeOAuth2AccessTokenManager {
 class CustomFakeProfileOAuth2TokenService
     : public FakeProfileOAuth2TokenService {
  public:
-  CustomFakeProfileOAuth2TokenService(PrefService* user_prefs)
+  explicit CustomFakeProfileOAuth2TokenService(PrefService* user_prefs)
       : FakeProfileOAuth2TokenService(user_prefs) {
+    OverrideAccessTokenManagerForTesting(
+        std::make_unique<CustomFakeOAuth2AccessTokenManager>(
+            this /* OAuth2AccessTokenManager::Delegate* */));
+  }
+
+  CustomFakeProfileOAuth2TokenService(
+      PrefService* user_prefs,
+      std::unique_ptr<ProfileOAuth2TokenServiceDelegate> delegate)
+      : FakeProfileOAuth2TokenService(user_prefs, std::move(delegate)) {
     OverrideAccessTokenManagerForTesting(
         std::make_unique<CustomFakeOAuth2AccessTokenManager>(
             this /* OAuth2AccessTokenManager::Delegate* */));
@@ -291,6 +301,31 @@ class IdentityManagerTest : public testing::Test {
         identity_manager()->GetTokenService());
   }
 
+  void UpdateCredentials(const CoreAccountId& account_id,
+                         std::string gaia_id,
+                         std::string email,
+                         std::string token) {
+#if defined(OS_CHROMEOS)
+    identity_manager()->GetChromeOSAccountManager()->UpsertAccount(
+        chromeos::AccountManager::AccountKey{
+            gaia_id, chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA},
+        email, token);
+#else
+    token_service()->UpdateCredentials(account_id, "refresh_token");
+#endif
+  }
+
+  void RevokeCredentials(const CoreAccountId& account_id, std::string gaia_id) {
+#if defined(OS_CHROMEOS)
+    identity_manager()->GetChromeOSAccountManager()->RemoveAccount(
+        chromeos::AccountManager::AccountKey{
+            gaia_id,
+            chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA});
+#else
+    token_service()->RevokeCredentials(account_id);
+#endif
+  }
+
   // See RecreateIdentityManager.
   enum class PrimaryAccountManagerSetup {
     kWithAuthenticatedAccout,
@@ -321,16 +356,32 @@ class IdentityManagerTest : public testing::Test {
 
     ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
 
+    auto account_tracker_service = std::make_unique<AccountTrackerService>();
+    account_tracker_service->Initialize(&pref_service_,
+                                        temp_profile_dir_.GetPath());
+
+#if defined(OS_CHROMEOS)
+    chromeos::AccountManager::RegisterPrefs(pref_service_.registry());
+    chromeos::AccountManager* chromeos_account_manager =
+        GetAccountManagerFactory()->GetAccountManager(
+            temp_profile_dir_.GetPath().value());
+    chromeos_account_manager->InitializeInEphemeralMode(
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_));
+    chromeos_account_manager->SetPrefService(&pref_service_);
+    auto token_service = std::make_unique<CustomFakeProfileOAuth2TokenService>(
+        &pref_service_,
+        std::make_unique<TestProfileOAuth2TokenServiceDelegateChromeOS>(
+            account_tracker_service.get(), chromeos_account_manager,
+            /*is_regular_profile=*/true));
+#else
     auto token_service =
         std::make_unique<CustomFakeProfileOAuth2TokenService>(&pref_service_);
+#endif
 
     auto gaia_cookie_manager_service =
         std::make_unique<GaiaCookieManagerService>(token_service.get(),
                                                    &signin_client_);
-
-    auto account_tracker_service = std::make_unique<AccountTrackerService>();
-    account_tracker_service->Initialize(&pref_service_,
-                                        temp_profile_dir_.GetPath());
 
     auto account_fetcher_service = std::make_unique<AccountFetcherService>();
     account_fetcher_service->Initialize(
@@ -388,9 +439,7 @@ class IdentityManagerTest : public testing::Test {
         primary_account_manager.get(), &pref_service_);
 #endif
 #if defined(OS_CHROMEOS)
-    init_params.chromeos_account_manager =
-        GetAccountManagerFactory()->GetAccountManager(
-            temp_profile_dir_.GetPath().value());
+    init_params.chromeos_account_manager = chromeos_account_manager;
 #endif
 
     init_params.account_fetcher_service = std::move(account_fetcher_service);
@@ -449,6 +498,9 @@ class IdentityManagerTest : public testing::Test {
  private:
   base::ScopedTempDir temp_profile_dir_;
   base::test::TaskEnvironment task_environment_;
+#if defined(OS_CHROMEOS)
+  chromeos::AccountManagerFactory account_manager_factory_;
+#endif
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   TestSigninClient signin_client_;
@@ -457,9 +509,6 @@ class IdentityManagerTest : public testing::Test {
   std::unique_ptr<TestIdentityManagerDiagnosticsObserver>
       identity_manager_diagnostics_observer_;
   CoreAccountId primary_account_id_;
-#if defined(OS_CHROMEOS)
-  chromeos::AccountManagerFactory account_manager_factory_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerTest);
 };
@@ -1170,7 +1219,8 @@ TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
   identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
                                                                   kTestEmail);
   identity_manager()->GetPrimaryAccountManager()->SignIn(kTestEmail);
-  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
+  UpdateCredentials(primary_account_id(), kTestGaiaId, kTestEmail,
+                    "refresh_token");
 
   base::RunLoop run_loop;
   token_service()->set_on_access_token_invalidated_info(
@@ -1210,7 +1260,8 @@ TEST_F(IdentityManagerTest,
   identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
                                                                   kTestEmail);
   identity_manager()->GetPrimaryAccountManager()->SignIn(kTestEmail);
-  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
+  UpdateCredentials(primary_account_id(), kTestGaiaId, kTestEmail,
+                    "refresh_token");
 
   std::set<std::string> scopes{"scope"};
   AccessTokenFetcher::TokenCallback callback = base::BindOnce(
@@ -1260,7 +1311,7 @@ TEST_F(IdentityManagerTest,
   account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
   CoreAccountId account_id2 =
       account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
-  token_service()->UpdateCredentials(account_id2, "refresh_token");
+  UpdateCredentials(account_id2, kTestGaiaId2, kTestEmail2, "refresh_token");
 
   // No changes to the declared scopes and callback, we can reuse them.
   std::unique_ptr<AccessTokenFetcher> token_fetcher2 =
@@ -1299,7 +1350,8 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
   identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
                                                                   kTestEmail);
   identity_manager()->GetPrimaryAccountManager()->SignIn(kTestEmail);
-  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
+  UpdateCredentials(primary_account_id(), kTestGaiaId, kTestEmail,
+                    "refresh_token");
 
   std::set<std::string> scopes{"scope"};
   AccessTokenFetcher::TokenCallback callback = base::BindOnce(
@@ -1353,7 +1405,8 @@ TEST_F(IdentityManagerTest,
   identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
                                                                   kTestEmail);
   identity_manager()->GetPrimaryAccountManager()->SignIn(kTestEmail);
-  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
+  UpdateCredentials(primary_account_id(), kTestGaiaId, kTestEmail,
+                    "refresh_token");
   token_service()->set_auto_post_fetch_response_on_message_loop(true);
 
   std::set<std::string> scopes{"scope"};
@@ -1390,7 +1443,7 @@ TEST_F(IdentityManagerTest,
   account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
   CoreAccountId account_id2 =
       account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
-  token_service()->UpdateCredentials(account_id2, "refresh_token");
+  UpdateCredentials(account_id2, kTestGaiaId2, kTestEmail2, "refresh_token");
 
   std::set<std::string> scopes{"scope"};
   AccessTokenFetcher::TokenCallback callback = base::BindOnce(
@@ -1402,7 +1455,7 @@ TEST_F(IdentityManagerTest,
           AccessTokenFetcher::Mode::kImmediate);
 
   // Revoke the refresh token result cancelling access token request.
-  token_service()->RevokeCredentials(account_id2);
+  RevokeCredentials(account_id2, kTestGaiaId2);
 
   run_loop.Run();
 
@@ -1575,7 +1628,6 @@ TEST_F(IdentityManagerTest,
       expected_account_info.account_id,
       identity_manager_observer()->AccountIdFromRefreshTokenRemovedCallback());
 }
-#endif
 
 TEST_F(IdentityManagerTest, CallbackSentOnRefreshTokenRemovalOfUnknownAccount) {
   // When the token service is still loading credentials, it may send token
@@ -1595,6 +1647,7 @@ TEST_F(IdentityManagerTest, CallbackSentOnRefreshTokenRemovalOfUnknownAccount) {
       dummy_account_id,
       identity_manager_observer()->AccountIdFromRefreshTokenRemovedCallback());
 }
+#endif
 
 TEST_F(IdentityManagerTest, IdentityManagerGetsTokensLoadedEvent) {
   base::RunLoop run_loop;
@@ -2042,7 +2095,8 @@ TEST_F(IdentityManagerTest,
   identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
                                                                   kTestEmail);
   identity_manager()->GetPrimaryAccountManager()->SignIn(kTestEmail);
-  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
+  UpdateCredentials(primary_account_id(), kTestGaiaId, kTestEmail,
+                    "refresh_token");
 
   EXPECT_EQ(1ul, identity_manager_observer()->BatchChangeRecords().size());
   EXPECT_EQ(1ul,

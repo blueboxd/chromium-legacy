@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">ការរុករកត្រូវបានរារាំង៖ <ph name="URL" /></translation>
 <translation id="4278390842282768270">បានអនុញ្ញាត</translation>
 <translation id="429312253194641664">គេហទំព័រ​កំពុង​ចាក់មេឌៀ</translation>
+<translation id="4336434711095810371">សម្អាត​ទិន្នន័យ​ទាំងអស់</translation>
 <translation id="4433925000917964731">ទំព័រស្រាល​ដែល​ផ្ដល់​ដោយ Google</translation>
 <translation id="4434045419905280838">ផ្ទាំងផុស​ និង​ការ​បញ្ជូន​បន្ត</translation>
 <translation id="445467742685312942">អនុញ្ញាតឱ្យ​គេហទំព័រ​ចាក់ខ្លឹមសារដែលមាន​ការការពារ</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">ផ្ទាំង​អនាមិក</translation>
 <translation id="5300589172476337783">បង្ហាញ</translation>
 <translation id="5301954838959518834">យល់ព្រម ខ្ញុំយល់ហើយ</translation>
-<translation id="5307446750509046227">សម្អាតទំហំផ្ទុកគេហទំព័រ</translation>
 <translation id="5313967007315987356">បន្ថែមគេហទំព័រ</translation>
 <translation id="5317780077021120954">រក្សាទុក</translation>
 <translation id="5335288049665977812">អនុញ្ញាតឲ្យគេហទំព័រដំណើរការ JavaScript (បានណែនាំ)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">ទប់ស្កាត់ JavaScript សម្រាប់គេហទំព័រជាក់លាក់។</translation>
 <translation id="8816026460808729765">ទប់ស្កាត់​គេហទំព័រ​មិនឱ្យ​ចូលប្រើ​ឧបករណ៍​ចាប់សញ្ញា</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">ឧបករណ៍ផ្ទុកទិន្នន័យ</translation>
 <translation id="8926666909099850184">NFC ត្រូវ​បាន​បិទសម្រាប់​ឧបករណ៍​នេះ។ បើក NFC នៅក្នុង<ph name="BEGIN_LINK" />ការកំណត់ Android<ph name="END_LINK" />។</translation>
 <translation id="8929372349074745002">គេហទំព័រនេះ​បើក និងឆ្លើយតបយ៉ាងរហ័ស​សម្រាប់​មនុស្សភាគច្រើន</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">បើក​ការអនុញ្ញាត​សម្រាប់ <ph name="APP_NAME" /> នៅក្នុង​<ph name="BEGIN_LINK" />ការកំណត់ Android<ph name="END_LINK" />។</translation>
 <translation id="945632385593298557">ចូលប្រើម៉ៃក្រូហ្វូនរបស់អ្នក</translation>
 <translation id="965817943346481315">ទប់ស្កាត់ ​ប្រសិនបើ​គេហទំព័របង្ហាញ​ការផ្សាយពាណិជ្ជកម្ម​ដែលនាំឱ្យយល់ច្រឡំ ឬរំខាន (បានណែនាំ)</translation>
+<translation id="967624055006145463">​ទិន្នន័យដែល​បាន​រក្សា​ទុក</translation>
 </translationbundle>

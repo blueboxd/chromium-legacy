@@ -333,6 +333,8 @@ class SupervisedUserService : public KeyedService,
 
   void OnSafeSitesSettingChanged();
 
+  void UpdateAsyncUrlChecker();
+
   void OnSiteListsChanged(
       const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
 

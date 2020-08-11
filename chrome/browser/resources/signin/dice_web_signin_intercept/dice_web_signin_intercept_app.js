@@ -13,7 +13,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {AccountInfo, DiceWebSigninInterceptBrowserProxy, DiceWebSigninInterceptBrowserProxyImpl} from './dice_web_signin_intercept_browser_proxy.js';
+import {AccountInfo, DiceWebSigninInterceptBrowserProxy, DiceWebSigninInterceptBrowserProxyImpl, InterceptionParameters} from './dice_web_signin_intercept_browser_proxy.js';
 
 Polymer({
   is: 'dice-web-signin-intercept-app',
@@ -25,17 +25,8 @@ Polymer({
   ],
 
   properties: {
-    /** @private {AccountInfo} */
-    accountInfo_: Object,
-    /** @private */
-    headerStyle_: {
-      type: String,
-      value() {
-        return 'background-color: ' +
-            loadTimeData.getString('headerBackgroundColor') +
-            '; color: ' + loadTimeData.getString('headerTextColor');
-      },
-    },
+    /** @private {InterceptionParameters} */
+    InterceptionParameters_: Object,
   },
 
   /** @private {?DiceWebSigninInterceptBrowserProxy} */
@@ -43,12 +34,14 @@ Polymer({
 
   /** @override */
   attached() {
+    this.setColors_();
     this.diceWebSigninInterceptBrowserProxy_ =
         DiceWebSigninInterceptBrowserProxyImpl.getInstance();
-    this.diceWebSigninInterceptBrowserProxy_.pageLoaded().then(
-        info => this.handleAccountInfoChanged_(info));
     this.addWebUIListener(
-        'account-info-changed', this.handleAccountInfoChanged_.bind(this));
+        'interception-parameters-changed',
+        this.handleParametersChanged_.bind(this));
+    this.diceWebSigninInterceptBrowserProxy_.pageLoaded().then(
+        parameters => this.handleParametersChanged_(parameters));
   },
 
   /** @private */
@@ -61,12 +54,23 @@ Polymer({
     this.diceWebSigninInterceptBrowserProxy_.cancel();
   },
 
+  /** @private */
+  setColors_() {
+    this.style.setProperty(
+        '--header-background-color',
+        loadTimeData.getString('headerBackgroundColor'));
+    this.style.setProperty(
+        '--header-text-color', loadTimeData.getString('headerTextColor'));
+  },
+
   /**
-   * Called when the account image changes.
-   * @param {!AccountInfo} info
+   * Called when the interception parameters are updated.
+   * @param {!InterceptionParameters} parameters
    * @private
    */
-  handleAccountInfoChanged_(info) {
-    this.accountInfo_ = info;
+  handleParametersChanged_(parameters) {
+    this.interceptionParameters_ = parameters;
+    this.notifyPath('interceptionParameters_.interceptedAccount.isManaged');
+    this.notifyPath('interceptionParameters_.primaryAccount.isManaged');
   },
 });

@@ -30,7 +30,7 @@
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
-#include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
+#include "ui/platform_window/handlers/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 using ::testing::_;

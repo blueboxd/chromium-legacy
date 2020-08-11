@@ -166,7 +166,7 @@ void DOMWindow::postMessage(v8::Isolate* isolate,
 }
 
 DOMWindow* DOMWindow::AnonymousIndexedGetter(uint32_t index) {
-  ReportCoopAccess(window_proxy_manager_->GetIsolate(), "indexed");
+  ReportCoopAccess("indexed");
 
   if (!GetFrame())
     return nullptr;
@@ -450,11 +450,11 @@ void DOMWindow::InstallCoopAccessMonitor(
 
 // Check if the accessing context would be able to access this window if COOP
 // was enforced. If this isn't a report is sent.
-void DOMWindow::ReportCoopAccess(v8::Isolate* isolate,
-                                 const char* property_name) {
+void DOMWindow::ReportCoopAccess(const char* property_name) {
   if (coop_access_monitor_.IsEmpty())  // Fast early return. Very likely true.
     return;
 
+  v8::Isolate* isolate = window_proxy_manager_->GetIsolate();
   LocalDOMWindow* accessing_window = IncumbentDOMWindow(isolate);
   LocalFrame* accessing_frame = accessing_window->GetFrame();
 

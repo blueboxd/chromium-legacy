@@ -2218,14 +2218,31 @@ void SkiaRenderer::ScheduleOverlays() {
     NOTREACHED();
     return;
   }
+  // Only Wayland uses this code path.
+  DCHECK(output_surface_->capabilities().supports_surfaceless);
+  auto& locks = pending_overlay_locks_.back();
+  std::vector<gpu::SyncToken> sync_tokens;
+  for (auto& overlay : current_frame()->overlay_list) {
+    // Resources will be unlocked after the next SwapBuffers() is completed.
+    locks.emplace_back(resource_provider_, overlay.resource_id);
+    auto& lock = locks.back();
 
-  NOTIMPLEMENTED_LOG_ONCE();
-#else
+    // Sync tokens ensure the texture to be overlaid is available before
+    // scheduling it for display.
+    if (lock.sync_token().HasData())
+      sync_tokens.push_back(lock.sync_token());
+
+    overlay.mailbox = lock.mailbox();
+    DCHECK(!overlay.mailbox.IsZero());
+  }
+  skia_output_surface_->ScheduleOverlays(
+      std::move(current_frame()->overlay_list), std::move(sync_tokens));
+#else   // defined(OS_ANDROID)
   // For platforms that don't support overlays, the
   // current_frame()->overlay_list should be empty, and this code should not be
   // reached.
   NOTREACHED();
-#endif
+#endif  // defined(OS_ANDROID)
 }
 
 sk_sp<SkColorFilter> SkiaRenderer::GetColorSpaceConversionFilter(

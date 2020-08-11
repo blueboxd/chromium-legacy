@@ -53,6 +53,9 @@ namespace {
 // IDs start at 1, since 0 is reserved for the root content window.
 size_t next_tab_id = 1;
 
+// Next id for id()
+size_t next_id = 0;
+
 // Remove the given CastWebContents pointer from the global instance vector.
 void RemoveCastWebContents(CastWebContents* instance) {
   auto& all_cast_web_contents = CastWebContents::GetAll();
@@ -129,6 +132,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       activity_url_filter_(std::move(init_params.url_filters)),
       main_process_host_(nullptr),
       tab_id_(init_params.is_root_window ? 0 : next_tab_id++),
+      id_(next_id++),
       is_websql_enabled_(init_params.enable_websql),
       is_mixer_audio_enabled_(init_params.enable_mixer_audio),
       main_frame_loaded_(false),
@@ -183,6 +187,10 @@ CastWebContentsImpl::~CastWebContentsImpl() {
 
 int CastWebContentsImpl::tab_id() const {
   return tab_id_;
+}
+
+int CastWebContentsImpl::id() const {
+  return id_;
 }
 
 content::WebContents* CastWebContentsImpl::web_contents() const {

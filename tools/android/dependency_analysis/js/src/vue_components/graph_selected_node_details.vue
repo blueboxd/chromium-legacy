@@ -5,28 +5,39 @@
 <template>
   <div class="selected-node-details">
     <template v-if="selectedNode !== null">
-      <ul>
-        <li>Name: {{ selectedNode.id }}</li>
-        <li>Display Name: {{ selectedNode.displayName }}</li>
-        <li
-            v-for="(value, key) in selectedNode.visualizationState"
-            :key="key">
-          {{ key }}: {{ value }}
-        </li>
-      </ul>
-      <button
+      <MdList class="md-double-line">
+        <MdListItem>
+          <div class="md-list-item-text">
+            <span class="selected-node-details-text">
+              {{ selectedNode.id }}
+            </span>
+            <span>Name</span>
+          </div>
+        </MdListItem>
+        <MdListItem>
+          <div class="md-list-item-text">
+            <span class="selected-node-details-text">
+              {{ selectedNode.displayName }}
+            </span>
+            <span>Display Name</span>
+          </div>
+        </MdListItem>
+      </MdList>
+      <MdButton
           v-if="selectedNode.visualizationState.selectedByFilter"
+          class="md-primary md-raised md-dense"
           @click="uncheckNodeInFilter">
         Uncheck in filter
-      </button>
-      <button
+      </MdButton>
+      <MdButton
           v-else
+          class="md-primary md-raised md-dense"
           @click="checkNodeInFilter">
         Add/check in filter
-      </button>
+      </MdButton>
     </template>
     <div v-else>
-      Click a node for more details.
+      (Click a node for more details.)
     </div>
   </div>
 </template>
@@ -59,6 +70,12 @@ export default GraphSelectedNodeDetails;
 .selected-node-details {
   display: flex;
   flex-direction: column;
-  min-width: 400px;
+}
+
+.selected-node-details-text{
+  display: inline-block;
+  white-space: normal;
+  width: 100%;
+  word-wrap: break-word;
 }
 </style>

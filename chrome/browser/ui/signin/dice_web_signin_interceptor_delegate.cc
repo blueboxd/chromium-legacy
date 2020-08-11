@@ -14,11 +14,10 @@ DiceWebSigninInterceptorDelegate::DiceWebSigninInterceptorDelegate() = default;
 DiceWebSigninInterceptorDelegate::~DiceWebSigninInterceptorDelegate() = default;
 
 void DiceWebSigninInterceptorDelegate::ShowSigninInterceptionBubble(
-    DiceWebSigninInterceptor::SigninInterceptionType signin_interception_type,
     content::WebContents* web_contents,
-    const AccountInfo& account_info,
+    const BubbleParameters& bubble_parameters,
     base::OnceCallback<void(bool)> callback) {
-  if (signin_interception_type !=
+  if (bubble_parameters.interception_type !=
       DiceWebSigninInterceptor::SigninInterceptionType::kEnterprise) {
     // Only the enterprise interception is currently implemented.
     std::move(callback).Run(false);
@@ -31,6 +30,6 @@ void DiceWebSigninInterceptorDelegate::ShowSigninInterceptionBubble(
   }
 
   ShowSigninInterceptionBubbleInternal(
-      chrome::FindBrowserWithWebContents(web_contents), account_info,
+      chrome::FindBrowserWithWebContents(web_contents), bubble_parameters,
       std::move(callback));
 }

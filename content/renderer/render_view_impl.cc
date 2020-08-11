@@ -1028,13 +1028,8 @@ bool RenderViewImpl::ShouldAckSyntheticInputImmediately() {
   return false;
 }
 
-void RenderViewImpl::ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
-                                                    const gfx::Size& max_size) {
-  GetWebView()->EnableAutoResizeMode(min_size, max_size);
-}
-
-void RenderViewImpl::DisableAutoResizeForWidget() {
-  GetWebView()->DisableAutoResizeMode();
+bool RenderViewImpl::AutoResizeMode() {
+  return GetWebView()->AutoResizeMode();
 }
 
 void RenderViewImpl::ScrollFocusedNodeIntoViewForWidget() {

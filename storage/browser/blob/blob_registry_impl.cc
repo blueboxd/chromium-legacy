@@ -372,8 +372,10 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
   for (const auto& entry : elements_) {
     auto& element = entry.element;
     if (element->is_bytes()) {
-      transport_strategy_->AddBytesElement(element->get_bytes().get(),
-                                           entry.bytes_provider);
+      if (element->get_bytes()->length > 0) {
+        transport_strategy_->AddBytesElement(element->get_bytes().get(),
+                                             entry.bytes_provider);
+      }
     } else if (element->is_file()) {
       const auto& f = element->get_file();
       builder_->AppendFile(

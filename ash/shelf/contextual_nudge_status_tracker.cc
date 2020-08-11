@@ -53,7 +53,7 @@ void ContextualNudgeStatusTracker::HandleNudgeShown(
     base::TimeTicks shown_time) {
   nudge_shown_time_ = shown_time;
   gesture_time_recorded_ = false;
-  dismissal_reason_recorded_ = false;
+  can_record_dismiss_metrics_ = true;
 }
 
 void ContextualNudgeStatusTracker::HandleGesturePerformed(
@@ -61,7 +61,7 @@ void ContextualNudgeStatusTracker::HandleGesturePerformed(
   if (gesture_time_recorded_)
     return;
 
-  if (!dismissal_reason_recorded_) {
+  if (can_record_dismiss_metrics_) {
     MaybeLogNudgeDismissedMetrics(
         contextual_tooltip::DismissNudgeReason::kPerformedGesture);
   }
@@ -76,10 +76,10 @@ void ContextualNudgeStatusTracker::HandleGesturePerformed(
 
 void ContextualNudgeStatusTracker::MaybeLogNudgeDismissedMetrics(
     contextual_tooltip::DismissNudgeReason reason) {
-  if (dismissal_reason_recorded_)
+  if (!can_record_dismiss_metrics_)
     return;
   base::UmaHistogramEnumeration(GetEnumHistogramName(type_), reason);
-  dismissal_reason_recorded_ = true;
+  can_record_dismiss_metrics_ = false;
 }
 
 }  // namespace ash

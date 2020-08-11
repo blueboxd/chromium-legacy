@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -48,10 +47,6 @@ DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"diceWebSigninInterceptTitle",
-       IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_TITLE},
-      {"diceWebSigninInterceptDesc",
-       IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_DESC},
       {"diceWebSigninInterceptAcceptLabel",
        IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_NEW_PROFILE_BUTTON_LABEL},
       {"diceWebSigninInterceptCancelLabel",
@@ -72,10 +67,11 @@ DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
 DiceWebSigninInterceptUI::~DiceWebSigninInterceptUI() = default;
 
 void DiceWebSigninInterceptUI::Initialize(
-    const AccountInfo& account_info,
+    const DiceWebSigninInterceptor::Delegate::BubbleParameters&
+        bubble_parameters,
     base::OnceCallback<void(bool)> callback) {
   web_ui()->AddMessageHandler(std::make_unique<DiceWebSigninInterceptHandler>(
-      account_info, std::move(callback)));
+      bubble_parameters, std::move(callback)));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(DiceWebSigninInterceptUI)

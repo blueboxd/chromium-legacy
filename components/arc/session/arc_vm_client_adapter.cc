@@ -8,6 +8,7 @@
 #include <sys/un.h>
 #include <time.h>
 
+#include <deque>
 #include <set>
 #include <utility>
 #include <vector>
@@ -348,6 +349,84 @@ bool SendUpgradePropsToArcVmBootNotificationServer(
   return true;
 }
 
+// Decodes a job name that may have "_2d" e.g. |kArcCreateDataJobName|
+// and returns a decoded string.
+std::string DecodeJobName(const std::string& raw_job_name) {
+  constexpr const char* kFind = "_2d";
+  std::string decoded(raw_job_name);
+  base::ReplaceSubstringsAfterOffset(&decoded, 0, kFind, "-");
+  return decoded;
+}
+
+enum class UpstartOperation {
+  JOB_START = 0,
+  JOB_STOP,
+};
+
+struct JobDesc {
+  std::string job_name;
+  UpstartOperation operation;
+  std::vector<std::string> environment;
+};
+
+void OnConfigureUpstartJobs(std::deque<JobDesc> jobs,
+                            chromeos::VoidDBusMethodCallback callback,
+                            bool result);
+
+// Starts or stops a job in |jobs| one by one. If starting a job fails, the
+// whole operation is aborted and the |callback| is immediately called with
+// false. Errors on stopping a job is just ignored with some logs. Once all jobs
+// are successfully processed, |callback| is called with true.
+void ConfigureUpstartJobs(std::deque<JobDesc> jobs,
+                          chromeos::VoidDBusMethodCallback callback) {
+  if (jobs.empty()) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  const auto& job_name = jobs.front().job_name;
+  const auto& operation = jobs.front().operation;
+  const auto& environment = jobs.front().environment;
+
+  VLOG(1) << (operation == UpstartOperation::JOB_START ? "Starting "
+                                                       : "Stopping ")
+          << DecodeJobName(job_name);
+
+  auto wrapped_callback = base::BindOnce(&OnConfigureUpstartJobs,
+                                         std::move(jobs), std::move(callback));
+  switch (operation) {
+    case UpstartOperation::JOB_START:
+      chromeos::UpstartClient::Get()->StartJob(job_name, environment,
+                                               std::move(wrapped_callback));
+      break;
+    case UpstartOperation::JOB_STOP:
+      chromeos::UpstartClient::Get()->StopJob(job_name, environment,
+                                              std::move(wrapped_callback));
+      break;
+  }
+}
+
+// Called when the Upstart operation started in ConfigureUpstartJobs is
+// done. Handles the fatal error (if any) and then starts the next job.
+void OnConfigureUpstartJobs(std::deque<JobDesc> jobs,
+                            chromeos::VoidDBusMethodCallback callback,
+                            bool result) {
+  const std::string job_name = DecodeJobName(jobs.front().job_name);
+  const bool is_start = (jobs.front().operation == UpstartOperation::JOB_START);
+
+  if (!result && is_start) {
+    LOG(ERROR) << "Failed to start " << job_name;
+    // TODO(yusukes): Record UMA for this case.
+    std::move(callback).Run(false);
+    return;
+  }
+
+  VLOG(1) << job_name
+          << (is_start ? " started" : (result ? " stopped " : " not running?"));
+  jobs.pop_front();
+  ConfigureUpstartJobs(std::move(jobs), std::move(callback));
+}
+
 }  // namespace
 
 class ArcVmClientAdapter : public ArcClientAdapter,
@@ -490,112 +569,28 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   void OnIsDevMode(chromeos::VoidDBusMethodCallback callback,
                    bool is_dev_mode) {
-    VLOG(1) << "Starting arcvm-per-board-features";
-    // Note: the Upstart job is a task, and the callback for the start request
-    // won't be called until the task finishes. When the callback is called with
-    // true, it is ensured that the per-board features files exist.
-    chromeos::UpstartClient::Get()->StartJob(
-        kArcVmPerBoardFeaturesJobName, /*environment=*/{},
-        base::BindOnce(&ArcVmClientAdapter::OnArcVmPerBoardFeaturesStarted,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
     is_dev_mode_ = is_dev_mode;
-  }
+    std::deque<JobDesc> jobs{
+        // Note: the first Upstart job is a task, and the callback for the start
+        // request won't be called until the task finishes. When the callback is
+        // called with true, it is ensured that the per-board features files
+        // exist.
+        JobDesc{kArcVmPerBoardFeaturesJobName, UpstartOperation::JOB_START, {}},
 
-  void OnArcVmPerBoardFeaturesStarted(chromeos::VoidDBusMethodCallback callback,
-                                      bool result) {
-    if (!result) {
-      LOG(ERROR) << "Failed to start arcvm-per-board-features";
-      // TODO(yusukes): Record UMA for this case.
-      std::move(callback).Run(result);
-      return;
-    }
-    // Make sure to kill a stale arcvm-server-proxy job (if any).
-    chromeos::UpstartClient::Get()->StopJob(
-        kArcVmServerProxyJobName, /*environment=*/{},
-        base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStopped,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnArcVmServerProxyJobStopped(chromeos::VoidDBusMethodCallback callback,
-                                    bool result) {
-    // Ignore |result| since it can be false when the proxy job has already been
-    // stopped for other reasons, but it's not considered as an error.
-    VLOG(1) << "OnArcVmServerProxyJobStopped: job "
-            << (result ? "stopped" : "not running?");
-
-    // Make sure to stop arc-keymasterd if it's already started. Always move
-    // |callback| as is and ignore |result|.
-    chromeos::UpstartClient::Get()->StopJob(
-        kArcKeymasterJobName, /*environment=*/{},
-        base::BindOnce(&ArcVmClientAdapter::OnArcKeymasterJobStopped,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnArcKeymasterJobStopped(chromeos::VoidDBusMethodCallback callback,
-                                bool result) {
-    VLOG(1) << "OnArcKeymasterJobStopped: arc-keymasterd job "
-            << (result ? "stopped" : "not running?");
-
-    // Start arc-keymasterd. Always move |callback| as is and ignore |result|.
-    VLOG(1) << "Starting arc-keymasterd";
-    chromeos::UpstartClient::Get()->StartJob(
-        kArcKeymasterJobName, /*environment=*/{},
-        base::BindOnce(&ArcVmClientAdapter::OnArcKeymasterJobStarted,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnArcKeymasterJobStarted(chromeos::VoidDBusMethodCallback callback,
-                                bool result) {
-    if (!result) {
-      LOG(ERROR) << "Failed to start arc-keymasterd job";
-      std::move(callback).Run(false);
-      return;
-    }
-
-    // Kill a stale arc-sensor-service job
-    chromeos::UpstartClient::Get()->StopJob(
-        kArcSensorServiceJobName, /*environment=*/{},
-        base::BindOnce(&ArcVmClientAdapter::OnArcSensorServiceStopped,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnArcSensorServiceStopped(chromeos::VoidDBusMethodCallback callback,
-                                 bool result) {
-    VLOG(1) << "OnArcSensorServiceStopped: job "
-            << (result ? "stopped" : "not running?");
-
-    VLOG(1) << "Starting arc-sensor-service";
-    chromeos::UpstartClient::Get()->StartJob(
-        kArcSensorServiceJobName, /*environment=*/{},
-        base::BindOnce(&ArcVmClientAdapter::OnArcSensorServiceStarted,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnArcSensorServiceStarted(chromeos::VoidDBusMethodCallback callback,
-                                 bool result) {
-    if (!result) {
-      LOG(ERROR) << "Failed to start arc-sensor-service job";
-      std::move(callback).Run(false);
-      return;
-    }
-
-    // Kill a stale arcvm-boot-notification-server job
-    chromeos::UpstartClient::Get()->StopJob(
-        kArcVmBootNotificationServerJobName, /*environment=*/{},
-        base::BindOnce(
-            &ArcVmClientAdapter::OnArcVmBootNotificationServerStopped,
-            weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnArcVmBootNotificationServerStopped(
-      chromeos::VoidDBusMethodCallback callback,
-      bool result) {
-    VLOG(1) << "OnArcVmBootNotificationServerStopped: job "
-            << (result ? "stopped" : "not running?");
-
-    VLOG(1) << "Starting arcvm-boot-notification-server";
-    chromeos::UpstartClient::Get()->StartJob(
-        kArcVmBootNotificationServerJobName, /*environment=*/{},
+        JobDesc{kArcVmServerProxyJobName, UpstartOperation::JOB_STOP, {}},
+        JobDesc{kArcKeymasterJobName, UpstartOperation::JOB_STOP, {}},
+        JobDesc{kArcKeymasterJobName, UpstartOperation::JOB_START, {}},
+        JobDesc{kArcSensorServiceJobName, UpstartOperation::JOB_STOP, {}},
+        JobDesc{kArcSensorServiceJobName, UpstartOperation::JOB_START, {}},
+        JobDesc{kArcVmBootNotificationServerJobName,
+                UpstartOperation::JOB_STOP,
+                {}},
+        JobDesc{kArcVmBootNotificationServerJobName,
+                UpstartOperation::JOB_START,
+                {}},
+    };
+    ConfigureUpstartJobs(
+        std::move(jobs),
         base::BindOnce(
             &ArcVmClientAdapter::OnArcVmBootNotificationServerStarted,
             weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -605,11 +600,10 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       chromeos::VoidDBusMethodCallback callback,
       bool result) {
     if (!result) {
-      LOG(ERROR) << "Failed to start arcvm-boot-notification-server job";
+      LOG(ERROR) << "ConfigureUpstartJobs failed";
       std::move(callback).Run(false);
       return;
     }
-
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&IsArcVmBootNotificationServerListening),
@@ -639,29 +633,17 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       std::move(callback).Run(false);
       return;
     }
-    VLOG(1) << "Starting arcvm-server-proxy";
-    chromeos::UpstartClient::Get()->StartJob(
-        kArcVmServerProxyJobName, /*environment=*/{},
-        base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStarted,
-                       weak_factory_.GetWeakPtr(), std::move(params),
-                       std::move(callback)));
-  }
-
-  void OnArcVmServerProxyJobStarted(UpgradeParams params,
-                                    chromeos::VoidDBusMethodCallback callback,
-                                    bool result) {
-    if (!result) {
-      LOG(ERROR) << "Failed to start arcvm-server-proxy job";
-      std::move(callback).Run(false);
-      return;
-    }
-
-    VLOG(1) << "Starting arc-create-data";
-    const std::string account_id =
+    std::vector<std::string> environment = {
+        "CHROMEOS_USER=" +
         cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id_)
-            .account_id();
-    chromeos::UpstartClient::Get()->StartJob(
-        kArcCreateDataJobName, {"CHROMEOS_USER=" + account_id},
+            .account_id()};
+    std::deque<JobDesc> jobs{
+        JobDesc{kArcVmServerProxyJobName, UpstartOperation::JOB_START, {}},
+        JobDesc{kArcCreateDataJobName, UpstartOperation::JOB_START,
+                std::move(environment)},
+    };
+    ConfigureUpstartJobs(
+        std::move(jobs),
         base::BindOnce(&ArcVmClientAdapter::OnArcCreateDataJobStarted,
                        weak_factory_.GetWeakPtr(), std::move(params),
                        std::move(callback)));
@@ -671,11 +653,10 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                                  chromeos::VoidDBusMethodCallback callback,
                                  bool result) {
     if (!result) {
-      LOG(ERROR) << "Failed to start arc-create-data job";
+      LOG(ERROR) << "ConfigureUpstartJobs (on upgrading ARCVM) failed";
       std::move(callback).Run(false);
       return;
     }
-
     VLOG(2) << "Checking file system status";
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},

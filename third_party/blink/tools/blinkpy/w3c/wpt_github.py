@@ -48,13 +48,14 @@ class WPTGitHub(object):
         assert self.has_credentials()
         return base64.b64encode('{}:{}'.format(self.user, self.token))
 
-    def request(self, path, method, body=None):
+    def request(self, path, method, body=None, accept_header=None):
         """Sends a request to GitHub API and deserializes the response.
 
         Args:
             path: API endpoint without base URL (starting with '/').
             method: HTTP method to be used for this request.
             body: Optional payload in the request body (default=None).
+            accept_header: Custom media type in the Accept header (default=None).
 
         Returns:
             A JSONResponse instance.
@@ -64,7 +65,10 @@ class WPTGitHub(object):
         if body:
             body = json.dumps(body)
 
-        headers = {'Accept': 'application/vnd.github.v3+json'}
+        if accept_header:
+            headers = {'Accept': accept_header}
+        else:
+            headers = {'Accept': 'application/vnd.github.v3+json'}
 
         if self.has_credentials():
             headers['Authorization'] = 'Basic {}'.format(self.auth_token())
@@ -307,24 +311,6 @@ class WPTGitHub(object):
         _log.info('Fetched %d PRs from GitHub.', len(all_prs))
         return all_prs
 
-    def get_branch_statuses(self, branch_name):
-        """Gets the status of a PR.
-
-        API doc: https://developer.github.com/v3/repos/statuses/#get-the-combined-status-for-a-specific-ref
-
-        Returns:
-            The list of check statuses of the PR.
-        """
-        path = '/repos/{}/{}/commits/{}/status'.format(
-            WPT_GH_ORG, WPT_GH_REPO_NAME, branch_name)
-        response = self.request(path, method='GET')
-
-        if response.status_code != 200:
-            raise GitHubError(200, response.status_code,
-                              'get the statuses of PR %d' % branch_name)
-
-        return response.data['statuses']
-
     def get_pr_branch(self, pr_number):
         """Gets the remote branch name of a PR.
 
@@ -342,6 +328,33 @@ class WPTGitHub(object):
                               'get the branch of PR %d' % pr_number)
 
         return response.data['head']['ref']
+
+    def get_branch_check_runs(self, remote_branch_name):
+        """Returns the check runs of a remote branch.
+
+        API doc: https://developer.github.com/v3/checks/runs/#list-check-runs-for-a-git-reference
+
+        Returns:
+            The list of check runs from the HEAD of the branch.
+        """
+        path = '/repos/%s/%s/commits/%s/check-runs?page=1&per_page=%d' % (
+            WPT_GH_ORG, WPT_GH_REPO_NAME, remote_branch_name, MAX_PER_PAGE)
+        accept_header = 'application/vnd.github.antiope-preview+json'
+
+        check_runs = []
+        while path is not None:
+            response = self.request(path,
+                                    method='GET',
+                                    accept_header=accept_header)
+            if response.status_code != 200:
+                raise GitHubError(
+                    200, response.status_code,
+                    'get branch check runs %s' % remote_branch_name)
+
+            check_runs += response.data['check_runs']
+            path = self.extract_link_next(response.getheader('Link'))
+
+        return check_runs
 
     def is_pr_merged(self, pr_number):
         """Checks if a PR has been merged.

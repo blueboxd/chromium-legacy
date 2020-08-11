@@ -43,6 +43,7 @@ enum AssistantViewID {
   kAmbientBackgroundImageView,
   kAmbientGlanceableInfoView,
   kAmbientAssistantDialogPlate,
+  kAmbientMediaStringView,
 };
 
 }  // namespace ash

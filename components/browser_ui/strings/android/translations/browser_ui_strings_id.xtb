@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Navigasi diblokir: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Diizinkan</translation>
 <translation id="429312253194641664">Sebuah situs sedang memutar media</translation>
+<translation id="4336434711095810371">Hapus semua data</translation>
 <translation id="4433925000917964731">Halaman ringan yang ditampilkan oleh Google.</translation>
 <translation id="4434045419905280838">Pop-up dan pengalihan</translation>
 <translation id="445467742685312942">Izinkan situs memutar konten yang dilindungi</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Tab samaran</translation>
 <translation id="5300589172476337783">Tampilkan</translation>
 <translation id="5301954838959518834">Oke, mengerti</translation>
-<translation id="5307446750509046227">Hapus penyimpanan situs</translation>
 <translation id="5313967007315987356">Tambahkan situs</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5335288049665977812">Izinkan situs menjalankan JavaScript (disarankan)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">Blokir JavaScript untuk situs tertentu.</translation>
 <translation id="8816026460808729765">Memblokir situs agar tidak mengakses sensor</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Penyimpanan</translation>
 <translation id="8926666909099850184">NFC dinonaktifkan di perangkat ini. Aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Situs ini membuka dan merespons dengan cepat bagi sebagian besar orang</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">Aktifkan izin untuk <ph name="APP_NAME" /> di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Akses mikrofon Anda</translation>
 <translation id="965817943346481315">Blokir jika situs menampilkan iklan yang mengganggu atau menyesatkan (direkomendasikan)</translation>
+<translation id="967624055006145463">Data disimpan</translation>
 </translationbundle>

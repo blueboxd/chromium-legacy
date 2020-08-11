@@ -506,6 +506,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="6972754398087986839">Comença</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="698231206551913481">Tots els fitxers i les dades locals associats amb aquest usuari se suprimiran definitivament quan aquest usuari se suprimeixi.</translation>
+<translation id="7007983414944123363">El PIN o la contrasenya no s'han pogut verificar. Torna-ho a provar.</translation>
 <translation id="7015766095477679451">Pots tornar a aquesta hora: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Connecta <ph name="DEVICE_NAME" /> al telèfon</translation>
 <translation id="7026338066939101231">Disminueix</translation>
@@ -551,6 +552,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="7568294522609223312">Desactiva els clics automàtics</translation>
 <translation id="7568637526529101738">Si mantens el botó premut o fas clic amb el botó dret en un element, l'Assistent et mostrarà informació com ara la definició o la conversió d'unitats.</translation>
 <translation id="7569509451529460200">S'ha activat el braille i ChromeVox</translation>
+<translation id="7579778809502851308">Captura de pantalla</translation>
 <translation id="7593891976182323525">Cerca o Maj</translation>
 <translation id="7600875258240007829">Mostra totes les notificacions</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
@@ -669,6 +671,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="8841375032071747811">Botó Enrere</translation>
 <translation id="8843682306134542540">Activa o desactiva el bloqueig de rotació. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Cerca + Esc</translation>
+<translation id="8853703225951107899">El PIN o la contrasenya continuen sense poder-se verificar. Nota: si fa poc que has canviat la contrasenya, fes servir l'antiga. La contrasenya nova s'aplicarà un cop hagis tancat la sessió.</translation>
 <translation id="8870509716567206129">L'aplicació no admet la pantalla dividida.</translation>
 <translation id="8874184842967597500">No connectada</translation>
 <translation id="8877788021141246043">Estableix un recordatori</translation>

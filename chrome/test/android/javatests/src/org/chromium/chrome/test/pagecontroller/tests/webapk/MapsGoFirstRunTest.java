@@ -49,7 +49,7 @@ public class MapsGoFirstRunTest {
 
     @Before
     public void setUp() {
-        WebApkValidator.disableValidationForTesting();
+        WebApkValidator.setDisableValidationForTesting(true);
         TestThreadUtils.runOnUiThreadBlocking(WebappRegistry::refreshSharedPrefsForTesting);
     }
 

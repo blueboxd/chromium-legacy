@@ -435,8 +435,7 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
       level = POLICY_LEVEL_RECOMMENDED;
 
     policy->Set(policy_name, level, domain_constants_->scope, policy_source_,
-                base::Value::ToUniquePtrValue(std::move(value.value())),
-                nullptr);
+                std::move(value.value()), nullptr);
   }
 
   return true;

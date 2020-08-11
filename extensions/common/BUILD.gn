@@ -293,6 +293,7 @@ if (enable_extensions) {
       "permissions/usb_device_permission.h",
       "permissions/usb_device_permission_data.cc",
       "permissions/usb_device_permission_data.h",
+      "script_constants.h",
       "stack_frame.cc",
       "stack_frame.h",
       "switches.cc",

@@ -634,13 +634,11 @@ class ExtractHistogramsTest(unittest.TestCase):
 """)
     # Check that error is logged when empty string variant name is used
     # in token that is not the last token.
-    with self.assertLogs(level='ERROR') as log:
-      histograms_dict, _ = extract_histograms._ExtractHistogramsFromXmlTree(
-          histogram_with_duplicate_variant, {})
-      histograms_dict, have_errors = extract_histograms._UpdateHistogramsWithTokens(
-          histograms_dict)
-      self.assertTrue(have_errors)
-      self.assertIn('Duplicate histogram name', log.output[0])
+    histograms_dict, _ = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_duplicate_variant, {})
+    _, have_errors = extract_histograms._UpdateHistogramsWithTokens(
+        histograms_dict)
+    self.assertTrue(have_errors)
 
 
 if __name__ == "__main__":

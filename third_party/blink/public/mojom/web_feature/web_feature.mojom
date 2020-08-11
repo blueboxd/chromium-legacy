@@ -1927,8 +1927,6 @@ enum WebFeature {
   kBackgroundFetchRegistrationAbort = 2552,
   kBackgroundFetchRegistrationMatch = 2553,
   kBackgroundFetchRegistrationMatchAll = 2554,
-  kV8AtomicsNotify = 2555,
-  kV8AtomicsWake = 2556,
   kFormDisabledAttributePresent = 2557,
   kFormDisabledAttributePresentAndSubmit = 2558,
   kCSSValueAppearanceCheckboxRendered = 2559,

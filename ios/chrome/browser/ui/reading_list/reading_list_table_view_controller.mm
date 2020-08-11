@@ -316,6 +316,11 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     return nil;
   }
 
+  if (self.isEditing) {
+    // Don't show the context menu when currently in editing mode.
+    return nil;
+  }
+
   return [self.menuProvider
       contextMenuConfigurationForItem:[self.tableViewModel
                                           itemAtIndexPath:indexPath]

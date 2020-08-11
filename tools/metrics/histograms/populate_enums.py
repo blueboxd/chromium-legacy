@@ -22,18 +22,32 @@ def _GetEventDetails(event):
   """Returns a simple struct containing the event details.
 
   Args:
-    event: An event.
+    event: An event description as defined in ukm.xml.
 
   Returns:
-    A struct containing the event name, name hash, and whether the event is
-    obsolete.
+    A struct containing the event name, truncated hash, and whether the event is
+    considered obsolete.
   """
   name = event.getAttribute('name')
   # The value is UKM event name hash truncated to 31 bits. This is recorded in
-  # https://cs.chromium.org/chromium/src/components/ukm/ukm_recorder_impl.cc?rcl=728ad079d8e52ada4e321fb4f53713e4f0588072&l=114
+  # https://cs.chromium.org/chromium/src/components/ukm/ukm_recorder_impl.cc?q=LogEventHashasUmaHistogram
   hash = codegen.HashName(name) & 0x7fffffff
-  is_obsolete = event.getElementsByTagName('obsolete')
-  return EventDetails(name=name, hash=hash, is_obsolete=is_obsolete)
+
+  def _HasDirectObsoleteTag(node):
+    return any(
+        isinstance(child, xml.dom.minidom.Element)
+        and child.tagName == 'obsolete' for child in node.childNodes)
+
+  # The UKM event is considered obsolete if the event itself is marked as
+  # obsolete with a tag or all of its metrics are marked as obsolete.
+  is_event_obsolete = _HasDirectObsoleteTag(event)
+  are_all_metrics_obsolete = all(
+      _HasDirectObsoleteTag(metric)
+      for metric in event.getElementsByTagName('metric'))
+
+  return EventDetails(name=name,
+                      hash=hash,
+                      is_obsolete=is_event_obsolete or are_all_metrics_obsolete)
 
 
 def PopulateEnumWithUkmEvents(doc, enum, ukm_events):

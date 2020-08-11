@@ -1108,7 +1108,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> tidak dapat dimuat turun dengan selamat</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> mahu digandingkan</translation>
-<translation id="2341476639346994688">Pencetak dihentikan</translation>
 <translation id="2342740338116612727">Penanda halaman ditambahkan</translation>
 <translation id="2343747224442182863">Fokus pada Tab Ini</translation>
 <translation id="2344686470986284227">Memulakan pengawal mesin maya</translation>
@@ -3448,7 +3447,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5283677936944177147">Op! Sistem gagal menentukan model atau nombor siri peranti.</translation>
 <translation id="5284445933715251131">Teruskan Memuat Turun</translation>
 <translation id="5285635972691565180">Paparkan <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Kawasan output sudah penuh</translation>
 <translation id="5286194356314741248">Mengimbas</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Akaun anda</translation>
@@ -3669,7 +3667,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5553089923092577885">Pemetaan Dasar Sijil</translation>
 <translation id="5554489410841842733">Ikon ini akan kelihatan apabila sambungan boleh bertindak pada halaman semasa.</translation>
 <translation id="5554720593229208774">Pihak Berkuasa Pensijilan E-mel</translation>
-<translation id="5554931805291741487">Kawasan output hampir penuh</translation>
 <translation id="5556459405103347317">Muat Semula</translation>
 <translation id="5558125320634132440">Tapak ini disekat kerana mungkin mengandungi kandungan matang</translation>
 <translation id="5558129378926964177">Zum &amp;Masuk</translation>
@@ -4940,7 +4937,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="7152478047064750137">Sambungan ini tidak memerlukan kebenaran khas</translation>
 <translation id="7154130902455071009">Tukar halaman permulaan anda kepada: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Foto sedia ada daripada kamera atau fail</translation>
-<translation id="7163766494674803047">Ralat peranti cetak</translation>
 <translation id="7165320105431587207">Gagal mengkonfigurasi rangkaian</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" boleh membaca fail imej, video dan bunyi di lokasi yang ditandai.</translation>
 <translation id="7167486101654761064">&amp;Sentiasa buka fail jenis ini</translation>
@@ -6511,7 +6507,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9088234649737575428"><ph name="PLUGIN_NAME" /> disekat oleh dasar perusahaan</translation>
 <translation id="9088446193279799727">Tidak dapat mengkonfigurasi Linux. Sambung ke Internet dan cuba lagi.</translation>
 <translation id="9088917181875854783">Sila sahkan bahawa kekunci laluan ini dipaparkan pada "<ph name="DEVICE_NAME" />":</translation>
-<translation id="9093429538970210897">Menyandarkan fail adalah disyorkan sekiranya peningkatan tidak dapat diselesaikan. Tindakan memulakan peningkatan akan menyebabkan Linux (Beta) dimatikan. Sila simpan fail yang terbuka sebelum meneruskan.</translation>
+<translation id="9093429538970210897">Anda disyorkan untuk menyandarkan fail sekiranya peningkatan tidak dapat diselesaikan. Tindakan memulakan peningkatan akan menyebabkan Linux (Beta) dimatikan. Sila simpan fail yang terbuka sebelum meneruskan.</translation>
 <translation id="9094033019050270033">Kemaskinikan kata laluan</translation>
 <translation id="9094038138851891550">Nama pengguna tidak sah</translation>
 <translation id="9094982973264386462">Alih keluar</translation>

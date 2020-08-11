@@ -28,6 +28,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/script_constants.h"
 #include "extensions/common/user_script.h"
 
 using content::WebContents;
@@ -193,8 +194,13 @@ std::unique_ptr<extensions::UserScript> ParseContentScript(
   }
 
   // match_about_blank:
-  if (script_value.match_about_blank)
-    script->set_match_about_blank(*script_value.match_about_blank);
+  if (script_value.match_about_blank) {
+    script->set_match_origin_as_fallback(
+        *script_value.match_about_blank
+            ? extensions::MatchOriginAsFallbackBehavior::
+                  kMatchForAboutSchemeAndClimbTree
+            : extensions::MatchOriginAsFallbackBehavior::kNever);
+  }
 
   // css:
   if (script_value.css) {

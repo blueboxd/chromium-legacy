@@ -307,12 +307,17 @@ struct LaunchSessionResponse {
   enum Result { kOk, kError, kTimedOut, kUnknown, kMaxValue = kUnknown };
 
   LaunchSessionResponse();
+  LaunchSessionResponse(const LaunchSessionResponse& other) = delete;
   LaunchSessionResponse(LaunchSessionResponse&& other);
+  LaunchSessionResponse& operator=(const LaunchSessionResponse& other) = delete;
+  LaunchSessionResponse& operator=(LaunchSessionResponse&& other);
   ~LaunchSessionResponse();
 
   Result result = Result::kUnknown;
   // Populated if |result| is |kOk|.
   base::Optional<base::Value> receiver_status;
+  // Populated if |result| is |kError|.
+  std::string error_msg;
 };
 
 // Parses |payload| into a LaunchSessionResponse. Returns an empty
@@ -320,6 +325,8 @@ struct LaunchSessionResponse {
 // response. |payload| must be a dictionary from the string payload of a
 // CastMessage.
 LaunchSessionResponse GetLaunchSessionResponse(const base::Value& payload);
+
+LaunchSessionResponse GetLaunchSessionResponseError(std::string error_msg);
 
 }  // namespace cast_channel
 

@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">Створено</translation>
 <translation id="1067291318998134776">Linux (бета-версія)</translation>
 <translation id="1067922213147265141">Інші сервіси Google</translation>
+<translation id="1068961867683064946">Створіть обліковий запис Google для дитини</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Інша програма на вашому комп’ютері додала розширення, яке може впливати на роботу Chrome.
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660">Кнопка "Назад" на підсторінці "<ph name="SUBPAGE_TITLE" />"</translation>
 <translation id="1322046419516468189">Переглядайте збережені паролі й керуйте ними на сторінці <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1324106254079708331">Захищає особисті облікові записи Google від цілеспрямованих атак</translation>
+<translation id="1325985428688410772">Додати пробіл</translation>
 <translation id="1326317727527857210">Щоб мати доступ до вкладок з інших пристроїв, увійдіть в обліковий запис Chrome.</translation>
 <translation id="1327074568633507428">Принтер у Google Cloud Print</translation>
 <translation id="1327272175893960498">Квитки Kerberos</translation>
@@ -1082,6 +1084,7 @@
 <translation id="2307462900900812319">Установити параметри мережі</translation>
 <translation id="230927227160767054">Ця сторінка хоче встановити обробника служби.</translation>
 <translation id="2309620859903500144">Доступ цього сайту до датчиків руху чи світла заблоковано.</translation>
+<translation id="2314873619957287124">Визначте правила користування цифровим контентом, щоб вибрати для дитини час учитися, гратися чи переглядати сайти</translation>
 <translation id="2315414688463285945">Не вдалося налаштувати файли Linux. Повторіть спробу.</translation>
 <translation id="2315587498123194634">Надіслати посилання на пристрій "<ph name="DEVICE_NAME" />"</translation>
 <translation id="2316129865977710310">Ні, дякую</translation>
@@ -1093,6 +1096,7 @@
 <translation id="2322318151094136999">Запитувати, коли сайт хоче отримати доступ до послідовних портів (рекомендовано)</translation>
 <translation id="2323018538045954000">Збережені мережі Wi-Fi</translation>
 <translation id="2325444234681128157">Запам'ятати пароль</translation>
+<translation id="2326160999284776503">Увійдіть в обліковий запис Google дитини</translation>
 <translation id="2326188115274135041">Щоб увімкнути автоматичне розблокування, введіть PIN-код</translation>
 <translation id="2326931316514688470">&amp;Перезавантажити додаток</translation>
 <translation id="2327492829706409234">Увімкнути програму</translation>
@@ -1108,7 +1112,6 @@
 <translation id="2336381494582898602">Очищення</translation>
 <translation id="2340239562261172947">Не вдається безпечно завантажити файл "<ph name="FILE_NAME" />"</translation>
 <translation id="2340263603246777781">Сайт <ph name="ORIGIN" /> хоче підключитися до пристрою</translation>
-<translation id="2341476639346994688">Принтер зупинено</translation>
 <translation id="2342740338116612727">Закладки додано</translation>
 <translation id="2343747224442182863">Виділити цю вкладку</translation>
 <translation id="2344686470986284227">Запуск контролера віртуальної машини</translation>
@@ -1152,6 +1155,7 @@
 <translation id="2384436799579181135">Сталася помилка. Перевірте принтер і повторіть спробу.</translation>
 <translation id="2387052489799050037">На головний екран</translation>
 <translation id="2387458720915042159">Тип з’єднання з проксі-сервером</translation>
+<translation id="2391082728065870591">Надіслати відгук</translation>
 <translation id="2391419135980381625">Стандартний шрифт</translation>
 <translation id="2392163307141705938">Ви перевищили ліміт часу використання, який ваші батьки встановили для <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Активувати</translation>
@@ -1282,6 +1286,7 @@
 <translation id="2537178555904266562">Не вдалося синхронізувати паролі</translation>
 <translation id="2537395079978992874">Сайт <ph name="ORIGIN" /> може переглядати й змінювати вказані нижче файли та папки</translation>
 <translation id="2537927931785713436">Перевірка зображення віртуальної машини</translation>
+<translation id="2538084450874617176">Хто користується пристроєм <ph name="DEVICE_TYPE" />?</translation>
 <translation id="2538361623464451692">Синхронізацію вимкнено</translation>
 <translation id="2540449034743108469">Натисніть "Почати", щоб прослухати дії розширення</translation>
 <translation id="2541002089857695151">Оптимізувати трансляцію на повний екран?</translation>
@@ -2743,6 +2748,7 @@
 <translation id="4364327530094270451">Диня</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> транслює вікно.</translation>
 <translation id="4364830672918311045">Показувати сповіщення</translation>
+<translation id="4368115171699243057">Налаштуйте цей пристрій <ph name="DEVICE_TYPE" /> для дитини</translation>
 <translation id="437004882363131692">Отримуйте поради, пропозиції й оновлення для пристрою <ph name="DEVICE_TYPE" />, а також надсилайте відгуки. Ви можете будь-коли скасувати підписку на ці сповіщення.</translation>
 <translation id="4370975561335139969">Введені електронна адреса та пароль не збігаються</translation>
 <translation id="4374831787438678295">Файл встановлення Linux</translation>
@@ -2903,6 +2909,7 @@
 <translation id="4565377596337484307">Сховати пароль</translation>
 <translation id="4565917129334815774">Зберігати журнали системи</translation>
 <translation id="456717285308019641">Мова сторінки для перекладу</translation>
+<translation id="4567533462991917415">Після налаштування ви можете будь-коли додати інших користувачів. Кожен із них може персоналізувати обліковий запис і захистити свої дані.</translation>
 <translation id="4567772783389002344">Додати слово</translation>
 <translation id="4568025708905928793">Потрібен ключ безпеки</translation>
 <translation id="4568213207643490790">На цьому пристрої не можна входити в облікові записи Google.</translation>
@@ -2954,6 +2961,7 @@
 <translation id="4628762811416793313">Налаштування контейнера Linux не завершено. Повторіть спробу.</translation>
 <translation id="4633003931260532286"><ph name="IMPORT_NAME" /> з мінімальною версією <ph name="IMPORT_VERSION" /> – це обов’язковий компонент для роботи розширення, але встановлено версію <ph name="INSTALLED_VERSION" /></translation>
 <translation id="4633757335284074492">Створювати резервні копії на Google Диску. Легко відновлюйте дані чи переносьте їх на інші пристрої. Ця резервна копія містить дані додатків. Резервні копії завантажуються в Google і шифруються за допомогою пароля облікового запису Google вашої дитини.</translation>
+<translation id="4634575639321169635">Налаштуйте цей пристрій для особистого користування чи роботи</translation>
 <translation id="4634771451598206121">Увійти знову...</translation>
 <translation id="4635072447747973225">Видалити Crostini</translation>
 <translation id="4635398712689569051">Сторінка "<ph name="PAGE_NAME" />" недоступна гостям.</translation>
@@ -3372,6 +3380,7 @@
 <translation id="5185386675596372454">Нову версію розширення "<ph name="EXTENSION_NAME" />" вимкнено, оскільки для неї потрібно більше дозволів.</translation>
 <translation id="5185500136143151980">Немає Інтернету</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287"><ph name="PROFILE_LOCAL_NAME" />: меню параметрів</translation>
 <translation id="5190926251776387065">Активувати порт</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> хоче завантажити кілька файлів</translation>
 <translation id="5192062846343383368">Щоб переглянути налаштування батьківського контролю, відкрийте додаток Family Link</translation>
@@ -3448,7 +3457,6 @@
 <translation id="5283677936944177147">На жаль, системі не вдалося визначити модель та серійний номер пристрою.</translation>
 <translation id="5284445933715251131">Продовжити завантаження</translation>
 <translation id="5285635972691565180">Дисплей <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Область виводу заповнена</translation>
 <translation id="5286194356314741248">Сканування</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Ваші облікові записи</translation>
@@ -3619,6 +3627,7 @@
 <translation id="5495597166260341369">Залишати дисплей увімкненим</translation>
 <translation id="5496587651328244253">Упорядкувати</translation>
 <translation id="5497251278400702716">Цей файл</translation>
+<translation id="5498967291577176373">Пишіть швидше з вбудованими підказками щодо імені, адреси або номеру телефону</translation>
 <translation id="5499313591153584299">Цей файл може зашкодити вашому комп’ютеру.</translation>
 <translation id="5499453227627332024">Доступне оновлення для Linux Container. Ви також можете оновити систему пізніше в додатку Налаштування.</translation>
 <translation id="5500709606820808700">Перевірку безпеки виконано сьогодні</translation>
@@ -3669,7 +3678,6 @@
 <translation id="5553089923092577885">Зіставлення політик сертифікатів</translation>
 <translation id="5554489410841842733">Ця піктограма відображатиметься, коли розширення зможе працювати на поточній сторінці.</translation>
 <translation id="5554720593229208774">Центр сертифікації електронної пошти</translation>
-<translation id="5554931805291741487">Область виводу майже заповнена</translation>
 <translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5558125320634132440">Сайт заблоковано, оскільки він може містити контент для повнолітніх.</translation>
 <translation id="5558129378926964177">Збільшити &amp;масштаб</translation>
@@ -3776,6 +3784,7 @@
 <translation id="5689516760719285838">Місцезнаходження</translation>
 <translation id="56907980372820799">Зв’язати облікові записи</translation>
 <translation id="5691511426247308406">Сім’я</translation>
+<translation id="5691581861107245578">Отримувати підказки смайлів на основі введених слів</translation>
 <translation id="5691772641933328258">Відбиток не розпізнано</translation>
 <translation id="5692183275898619210">Друк завершено</translation>
 <translation id="569425414730375234">Зміна за поточний сеанс анонімного перегляду: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4135,6 +4144,7 @@
 <translation id="6124698108608891449">Цьому сайту потрібні додаткові дозволи.</translation>
 <translation id="6125479973208104919">На жаль, потрібно ще раз додати обліковий запис на пристрої <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6129691635767514872">Вибрані дані видалено з Chrome і синхронізованих пристроїв. Історія веб-перегляду, а також ваші дії в інших сервісах Google можуть також зберігатися у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="6129839611163153407">Ваша дитина</translation>
 <translation id="6129938384427316298">Коментар сертифіката Netscape</translation>
 <translation id="6129953537138746214">Пробіл</translation>
 <translation id="6130692320435119637">Додати мережу Wi-Fi</translation>
@@ -4175,6 +4185,7 @@
 <translation id="6178664161104547336">Вибір сертифіката</translation>
 <translation id="6181431612547969857">Завантаження заблоковано</translation>
 <translation id="6185132558746749656">Місцезнаходження пристрою</translation>
+<translation id="6195446518998936840">Щоб налаштувати батьківський контроль, дитина повинна мати обліковий запис Google, яким ви керуватимете. У додатку Family Link ви можете обмежувати час використання пристрою, схвалювати чи блокувати веб-сайти тощо.</translation>
 <translation id="6195693561221576702">Не вдається налаштувати пристрій у демо-режимі офлайн.</translation>
 <translation id="6196640612572343990">Блокувати сторонні файли cookie</translation>
 <translation id="6196854373336333322">Розширення "<ph name="EXTENSION_NAME" />" керує налаштуваннями проксі-сервера, тобто може змінювати та переривати будь-які ваші дії онлайн, а також стежити за ними. Якщо ви не знаєте причини такої зміни, імовірно, вона небажана.</translation>
@@ -4940,7 +4951,6 @@
 <translation id="7152478047064750137">Для цього розширення не потрібні спеціальні дозволи</translation>
 <translation id="7154130902455071009">Зробити <ph name="START_PAGE" /> домашньою сторінкою</translation>
 <translation id="7155171745945906037">Наявні фотографії з камери або файлу</translation>
-<translation id="7163766494674803047">Помилка принтера</translation>
 <translation id="7165320105431587207">Помилка налаштування мережі</translation>
 <translation id="716640248772308851">Розширення "<ph name="EXTENSION" />" має доступ до читання зображень, відео та звукових файлів у вибраних розташуваннях.</translation>
 <translation id="7167486101654761064">&amp;Завжди відкривати файли цього типу</translation>
@@ -5930,6 +5940,7 @@
 <translation id="8372369524088641025">Поганий WEP-ключ</translation>
 <translation id="8372477600026034341">Додаткові хости</translation>
 <translation id="8373652277231415614">Спільні каталоги Crostini</translation>
+<translation id="8376384591331888629">Зокрема файли cookie третіх сторін на цьому сайті</translation>
 <translation id="8378714024927312812">Профілем керує ваша організація</translation>
 <translation id="8379878387931047019">Пристрій не підтримує тип ключа безпеки, потрібний для цього веб-сайту</translation>
 <translation id="8379991678458444070">Зробіть закладку для цієї вкладки, щоб швидко повертатися на неї</translation>
@@ -6013,6 +6024,7 @@
 <translation id="8481187309597259238">Підтвердьте дозвіл USB</translation>
 <translation id="8483248364096924578">IP-адреса</translation>
 <translation id="8487678622945914333">Збільшити</translation>
+<translation id="8489156414266187072">Персональні підказки з'являються лише у вашому обліковому записі</translation>
 <translation id="8490896350101740396">Оновлено такі додатки-термінали: <ph name="UPDATED_APPS" />. Перезавантажте пристрій, щоб завершити оновлення.</translation>
 <translation id="8493236660459102203">Мікрофон:</translation>
 <translation id="8496717697661868878">Запустити цей плагін</translation>

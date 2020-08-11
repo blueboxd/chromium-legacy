@@ -21,10 +21,10 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_overlay_manager.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
@@ -77,6 +77,11 @@ constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
     // clients simply don't know their position on screens and always assume
     // they are located at some arbitrary position.
     .ignore_screen_bounds_for_menus = true,
+};
+
+constexpr OzonePlatform::InitializedHostProperties
+    kWaylandInitializedHostProperties = {
+        /*supports_overlays=*/false,
 };
 
 class OzonePlatformWayland : public OzonePlatform {
@@ -181,7 +186,6 @@ class OzonePlatformWayland : public OzonePlatform {
     buffer_manager_connector_ = std::make_unique<WaylandBufferManagerConnector>(
         connection_->buffer_manager_host());
     cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
-    overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
@@ -199,6 +203,7 @@ class OzonePlatformWayland : public OzonePlatform {
     buffer_manager_ = std::make_unique<WaylandBufferManagerGpu>();
     surface_factory_ = std::make_unique<WaylandSurfaceFactory>(
         connection_.get(), buffer_manager_.get());
+    overlay_manager_ = std::make_unique<WaylandOverlayManager>();
 #if defined(WAYLAND_GBM)
     const base::FilePath drm_node_path = path_finder_.GetDrmRenderNodePath();
     if (drm_node_path.empty()) {
@@ -219,6 +224,10 @@ class OzonePlatformWayland : public OzonePlatform {
 
   const PlatformProperties& GetPlatformProperties() override {
     return kWaylandPlatformProperties;
+  }
+
+  const InitializedHostProperties& GetInitializedHostProperties() override {
+    return kWaylandInitializedHostProperties;
   }
 
   void AddInterfaces(mojo::BinderMap* binders) override {
@@ -243,7 +252,6 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<WaylandConnection> connection_;
   std::unique_ptr<WaylandSurfaceFactory> surface_factory_;
   std::unique_ptr<CursorFactory> cursor_factory_;
-  std::unique_ptr<StubOverlayManager> overlay_manager_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<WaylandInputMethodContextFactory>
@@ -252,6 +260,7 @@ class OzonePlatformWayland : public OzonePlatform {
 
   // Objects, which solely live in the GPU process.
   std::unique_ptr<WaylandBufferManagerGpu> buffer_manager_;
+  std::unique_ptr<WaylandOverlayManager> overlay_manager_;
 
   // Provides supported buffer formats for native gpu memory buffers
   // framework.

@@ -45,6 +45,8 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   const base::FilePath& OutputFolder() const;
   // Get the output codec profile.
   VideoCodecProfile Profile() const;
+  // Get the target bitrate (bits/second).
+  uint32_t Bitrate() const;
   // Whether the encoded bitstream is saved to disk.
   bool SaveOutputBitstream() const;
   base::Optional<base::FilePath> OutputBitstreamFilePath() const;
@@ -62,6 +64,7 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
                               bool enable_bitstream_validator,
                               const base::FilePath& output_folder,
                               VideoCodecProfile profile,
+                              uint32_t bitrate,
                               bool save_output_bitstream,
                               const FrameOutputConfig& frame_output_config);
 
@@ -73,6 +76,8 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   const base::FilePath output_folder_;
   // VideoCodecProfile to be produced by VideoEncoder.
   const VideoCodecProfile profile_;
+  // Targeted bitrate (bits/second) of the stream produced by VideoEncoder.
+  const uint32_t bitrate_;
   // Whether the bitstream produced by VideoEncoder is saved to disk.
   const bool save_output_bitstream_;
   // The configuration about saving decoded images of bitstream encoded by

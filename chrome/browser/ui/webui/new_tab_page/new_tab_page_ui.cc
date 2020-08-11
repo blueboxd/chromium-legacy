@@ -31,6 +31,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "media/base/media_switches.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -86,6 +87,8 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       base::FeatureList::IsEnabled(ntp_features::kWebUIThemeModeDoodles));
   source->AddBoolean("modulesEnabled",
                      base::FeatureList::IsEnabled(ntp_features::kModules));
+  source->AddBoolean("kaleidoscopeModuleEnabled",
+                     base::FeatureList::IsEnabled(media::kKaleidoscopeModule));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},

@@ -237,9 +237,6 @@ QUIC_FLAG(bool,
 // If true, use predictable grease settings identifiers and values.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_grease_randomness, true)
 
-// If true, disable QUIC version h3-25.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_25, true)
-
 // If true, disable QUIC version h3-27.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_27, false)
 
@@ -300,16 +297,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_29, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_support_handshake_done_in_t050,
           true)
-
-// When true, QUIC_CRYPTO versions of QUIC will not send the max ACK delay
-// unless it is configured to a non-default value.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_dont_send_max_ack_delay_if_default,
-          true)
-
-// When true, do not pad the QUIC_CRYPTO CHLO message itself. Note that the
-// packet containing the CHLO will still be padded.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_dont_pad_chlo, true)
 
 // When true, QuicDispatcher supports decapsulation of Legacy Version
 // Encapsulation packets.

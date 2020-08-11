@@ -964,6 +964,11 @@ const char kPerAppTimeLimitsPolicy[] = "child_user.per_app_time_limits.policy";
 const char kPerAppTimeLimitsAllowlistPolicy[] =
     "child_user.per_app_time_limits.whitelist";
 
+// Time pref to record the user engagement session start time for family user
+// metrics.
+const char kFamilyUserMetricsSessionEngagementStartTime[] =
+    "family_user.metrics.session_engagement_start_time";
+
 // List of preconfigured network file shares.
 const char kNetworkFileSharesPreconfiguredShares[] =
     "network_file_shares.preconfigured_shares";

@@ -33,12 +33,11 @@ class FakeDiceWebSigninInterceptorDelegate
     : public DiceWebSigninInterceptor::Delegate {
  public:
   void ShowSigninInterceptionBubble(
-      DiceWebSigninInterceptor::SigninInterceptionType signin_interception_type,
       content::WebContents* web_contents,
-      const AccountInfo& account_info,
+      const BubbleParameters& bubble_parameters,
       base::OnceCallback<void(bool)> callback) override {
     bool should_intercept =
-        signin_interception_type ==
+        bubble_parameters.interception_type ==
         DiceWebSigninInterceptor::SigninInterceptionType::kMultiUser;
     std::move(callback).Run(should_intercept);
   }

@@ -51,12 +51,13 @@ class FaviconDriverImpl : public FaviconDriver,
                           const std::vector<FaviconURL>& candidates,
                           const GURL& manifest_url);
 
- protected:
   CoreFaviconService* favicon_service() { return favicon_service_; }
 
  private:
-  // KeyedService used by FaviconDriverImpl. It may be null, if non-null, it
-  // must outlive FaviconDriverImpl.
+  friend class FaviconDriverImplTestHelper;
+
+  // KeyedService used by FaviconDriverImpl. It may be null during testing,
+  // but if it is defined, it must outlive the FaviconDriverImpl.
   CoreFaviconService* favicon_service_;
 
   // FaviconHandlers used to download the different kind of favicons.

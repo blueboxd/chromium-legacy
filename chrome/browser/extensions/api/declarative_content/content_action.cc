@@ -28,6 +28,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/image_util.h"
+#include "extensions/common/script_constants.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -336,7 +337,10 @@ void RequestContentScript::InitScript(const HostID& host_id,
   script_.set_host_id(host_id);
   script_.set_run_location(UserScript::BROWSER_DRIVEN);
   script_.set_match_all_frames(script_data.all_frames);
-  script_.set_match_about_blank(script_data.match_about_blank);
+  script_.set_match_origin_as_fallback(
+      script_data.match_about_blank
+          ? MatchOriginAsFallbackBehavior::kMatchForAboutSchemeAndClimbTree
+          : MatchOriginAsFallbackBehavior::kNever);
   for (auto it = script_data.css_file_names.cbegin();
        it != script_data.css_file_names.cend(); ++it) {
     GURL url = extension->GetResourceURL(*it);

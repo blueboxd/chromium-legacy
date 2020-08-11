@@ -15,6 +15,7 @@
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/strings/grit/components_strings.h"
@@ -608,28 +609,43 @@ base::string16 OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection(
           message_id,
           result().GetHeaderForGroupId(match.suggestion_group_id.value()));
     }
-    case NORMAL:
+    case NORMAL: {
+      int available_actions_count = 0;
       if (IsControlPresentOnMatch(Selection(line, FOCUSED_BUTTON_TAB_SWITCH))) {
         additional_message_id = IDS_ACC_TAB_SWITCH_SUFFIX;
+        available_actions_count++;
       }
+      if (IsControlPresentOnMatch(Selection(line, FOCUSED_BUTTON_KEYWORD))) {
+        additional_message_id = IDS_ACC_KEYWORD_SUFFIX;
+        available_actions_count++;
+      }
+      if (IsControlPresentOnMatch(Selection(line, FOCUSED_BUTTON_PEDAL))) {
+        additional_message_id =
+            match.pedal->GetLabelStrings().id_accessibility_suffix;
+        available_actions_count++;
+      }
+      DCHECK_EQ(LINE_STATE_MAX_VALUE, 7);
+      if (available_actions_count > 1)
+        additional_message_id = IDS_ACC_MULTIPLE_ACTIONS_SUFFIX;
+
       // Don't add an additional message for removable suggestions without
       // button focus, since they are relatively common.
       break;
+    }
     case KEYWORD_MODE:
       // TODO(tommycli): Investigate whether the accessibility messaging for
       // Keyword mode belongs here.
       break;
     case FOCUSED_BUTTON_KEYWORD:
-      // TODO(yoangela): Add an accessibility message for the Keyword button
-      // in the button-row UI configuration.
+      additional_message_id = IDS_ACC_KEYWORD_BUTTON;
       break;
     case FOCUSED_BUTTON_TAB_SWITCH:
       additional_message_id = IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX;
       break;
     case FOCUSED_BUTTON_PEDAL:
-      // TODO(orinj): Add an accessibility message for the Pedal button
-      // in the button-row UI configuration.
-      break;
+      // When pedal button is focused, the autocomplete suggestion isn't
+      // read because it's not relevant to the button's action.
+      return match.pedal->GetLabelStrings().accessibility_hint;
     case FOCUSED_BUTTON_REMOVE_SUGGESTION:
       additional_message_id = IDS_ACC_REMOVE_SUGGESTION_FOCUSED_PREFIX;
       break;

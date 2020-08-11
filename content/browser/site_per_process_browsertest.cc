@@ -13615,8 +13615,10 @@ class SitePerProcessBrowserTestWithoutSadFrameTabReload
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTestWithoutSadFrameTabReload,
-                       ChildFrameCrashMetrics_ScrolledIntoViewAfterTabIsShown) {
+// Flaky everywhere: https://crbug.com/1115096
+IN_PROC_BROWSER_TEST_P(
+    SitePerProcessBrowserTestWithoutSadFrameTabReload,
+    DISABLED_ChildFrameCrashMetrics_ScrolledIntoViewAfterTabIsShown) {
   // Start on a page that has a single iframe, which is positioned out of
   // view, and navigate that iframe cross-site.
   GURL main_url(

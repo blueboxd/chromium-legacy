@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_RUNNER_H_
 
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
@@ -48,6 +47,8 @@ class CORE_EXPORT ScriptRunner final
       public NameClient {
  public:
   explicit ScriptRunner(Document*);
+  ScriptRunner(const ScriptRunner&) = delete;
+  ScriptRunner& operator=(const ScriptRunner&) = delete;
 
   void QueueScriptForExecution(PendingScript*);
   bool HasPendingScripts() const {
@@ -122,8 +123,6 @@ class CORE_EXPORT ScriptRunner final
   // design doc:
   // https://docs.google.com/document/u/1/d/1G-IUrT4enARZlsIrFQ4d4cRVe9MRTJASfWwolV09JZE/edit.
   bool delay_async_script_milestone_reached_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ScriptRunner);
 };
 
 }  // namespace blink

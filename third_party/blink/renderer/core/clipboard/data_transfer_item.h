@@ -55,6 +55,8 @@ class CORE_EXPORT DataTransferItem final : public ScriptWrappable {
 
  public:
   explicit DataTransferItem(DataTransfer*, DataObjectItem*);
+  DataTransferItem(const DataTransferItem&) = delete;
+  DataTransferItem& operator=(const DataTransferItem&) = delete;
 
   String kind() const;
   String type() const;
@@ -75,7 +77,6 @@ class CORE_EXPORT DataTransferItem final : public ScriptWrappable {
 
   Member<DataTransfer> data_transfer_;
   Member<DataObjectItem> item_;
-  DISALLOW_COPY_AND_ASSIGN(DataTransferItem);
 };
 
 }  // namespace blink

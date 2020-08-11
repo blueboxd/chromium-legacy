@@ -304,7 +304,9 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles) {
 
   // Add default.prop to the source, but not build.prop.
   base::FilePath default_prop = source_dir.Append("default.prop");
-  constexpr const char kDefaultProp[] = "ro.foo=bar\n";
+  // Add a non-ro property to make sure that the property is NOT filetered out
+  // when not in the "append" mode.
+  constexpr const char kDefaultProp[] = "dalvik.a=b\nro.foo=bar\n";
   base::WriteFile(default_prop, kDefaultProp, strlen(kDefaultProp));
   EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_dir, false, false));
 
@@ -380,8 +382,12 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles_SingleFile) {
 
   // Add default.prop to the source, but not build.prop.
   const base::FilePath default_prop = source_dir.Append("default.prop");
+  // Add a non-ro property to make sure that the property is filetered out when
+  // in the "append" mode.
+  constexpr const char kDefaultPropNonRo[] = "dalvik.a=b\n";
   constexpr const char kDefaultProp[] = "ro.foo=bar\n";
-  base::WriteFile(default_prop, kDefaultProp, strlen(kDefaultProp));
+  base::WriteFile(default_prop,
+                  base::StringPrintf("%s%s", kDefaultPropNonRo, kDefaultProp));
   EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_prop_file, true, false));
 
   // Add build.prop too. The call should not succeed still.
@@ -435,6 +441,7 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles_SingleFile) {
   // Verify the content.
   std::string content;
   EXPECT_TRUE(base::ReadFileToString(dest_prop_file, &content));
+  // Don't include kDefaultPropNonRo since that one should be filtered out.
   EXPECT_EQ(base::StringPrintf("%s%s%s%s%s%s", kDefaultProp, kBuildProp,
                                kSystemExtBuildProp, kVendorBuildProp,
                                kOdmBuildProp, kProductBuildProp),

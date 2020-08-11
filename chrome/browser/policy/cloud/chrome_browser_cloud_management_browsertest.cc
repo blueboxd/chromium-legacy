@@ -535,6 +535,7 @@ class ChromeBrowserCloudManagementEnrollmentTest
 #define MAYBE_Test Test
 #endif
 IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementEnrollmentTest, MAYBE_Test) {
+#undef MAYBE_Test
   // Test body is run only if enrollment is succeeded or failed without error
   // message.
   EXPECT_TRUE(is_enrollment_token_valid() || !should_display_error_message());
@@ -789,7 +790,13 @@ class MachineLevelUserCloudPolicyRobotAuthTest
   network::TestURLLoaderFactory test_url_loader_factory_;
 };  // namespace policy
 
-IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyRobotAuthTest, Test) {
+// Flaky on linux & win: https://crbug.com/1105167
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
+IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyRobotAuthTest, MAYBE_Test) {
   MachineLevelUserCloudPolicyManager* manager =
       g_browser_process->browser_policy_connector()
           ->machine_level_user_cloud_policy_manager();

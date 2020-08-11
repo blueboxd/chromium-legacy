@@ -20,10 +20,9 @@ namespace component_updater {
 class CrOSComponentManager;
 }  // namespace component_updater
 
-class AshChromeServiceImpl;
-
 namespace crosapi {
 
+class AshChromeServiceImpl;
 class BrowserLoader;
 
 // Manages the lifetime of lacros-chrome, and its loading status. This class is

@@ -247,6 +247,8 @@ void GbmSurfacelessWayland::MaybeSubmitFrames() {
     }
     buffer_manager_->CommitOverlays(widget_, std::move(overlay_configs));
 
+    submitted_frame->unacked_submissions = submitted_frame->planes.size();
+    submitted_frame->unacked_presentations = submitted_frame->planes.size();
     submitted_frame->planes.clear();
     submitted_frames_.push_back(std::move(submitted_frame));
   }
@@ -274,12 +276,13 @@ void GbmSurfacelessWayland::OnSubmission(uint32_t buffer_id,
   // submitted_frames_ may temporarily have more than one buffer in it if
   // buffers are released out of order by the Wayland server.
   DCHECK(!submitted_frames_.empty());
+  if (--submitted_frames_.front()->unacked_submissions)
+    return;
 
   auto submitted_frame = std::move(submitted_frames_.front());
   submitted_frames_.erase(submitted_frames_.begin());
   submitted_frame->overlays.clear();
 
-  DCHECK_EQ(submitted_frame->buffer_id, buffer_id);
   std::move(submitted_frame->completion_callback)
       .Run(gfx::SwapCompletionResult(swap_result));
 
@@ -296,10 +299,35 @@ void GbmSurfacelessWayland::OnSubmission(uint32_t buffer_id,
 void GbmSurfacelessWayland::OnPresentation(
     uint32_t buffer_id,
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(!pending_presentation_frames_.empty());
+  // Items in |submitted_frames_| will not be moved to
+  // |pending_presentation_frames_| until |unacked_submissions| decrements to 0.
+  // Example:
+  //    A SwapBuffers that submitted 2 buffers (buffer_1 and buffer_2) will push
+  //    a submitted_frame expecting 2 submission feedbacks and 2 presentation
+  //    feedbacks.
+  //    If IPCs comes in the order of:
+  //      buffer_1:submission > buffer_2:submission > buffer_1:presentation >
+  //      buffer_2:presentation
+  //    We are fine without below logic. However, this can happen:
+  //      buffer_1:submission > buffer_1:presentation > buffer_2:submission >
+  //      buffer_2:presentation
+  //    In this case, we have to find the item in |submitted_frames_| and
+  //    decrement |unacked_presentations| there.
+  // TODO(fangzhoug): This solution is sub-optimal and confusing. It increases
+  // the number of IPCs from browser to gpu. The barrier logic should be in the
+  // browser process.
+  if (pending_presentation_frames_.empty()) {
+    auto it = submitted_frames_.begin();
+    for (; !(*it)->unacked_presentations; ++it)
+      ;
+    --(*it)->unacked_presentations;
+    return;
+  }
 
   auto* frame = pending_presentation_frames_.front().get();
-  DCHECK_EQ(frame->buffer_id, buffer_id);
+  if (--frame->unacked_presentations)
+    return;
+
   std::move(frame->presentation_callback).Run(feedback);
   pending_presentation_frames_.erase(pending_presentation_frames_.begin());
 }

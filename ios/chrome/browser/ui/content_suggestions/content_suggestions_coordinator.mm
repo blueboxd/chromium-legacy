@@ -66,7 +66,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#import "ios/web/public/web_state.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -211,8 +214,20 @@
   self.metricsRecorder = [[ContentSuggestionsMetricsRecorder alloc] init];
   self.metricsRecorder.delegate = self.contentSuggestionsMediator;
 
+  // Offset to maintain Discover feed scroll position.
+  CGFloat offset = 0;
+  if (IsDiscoverFeedEnabled() && contentSuggestionsEnabled) {
+    web::NavigationManager* navigationManager =
+        self.webState->GetNavigationManager();
+    web::NavigationItem* item = navigationManager->GetVisibleItem();
+    if (item) {
+      offset = item->GetPageDisplayState().scroll_state().content_offset().y;
+    }
+  }
+
   self.suggestionsViewController = [[ContentSuggestionsViewController alloc]
-      initWithStyle:CollectionViewControllerStyleDefault];
+      initWithStyle:CollectionViewControllerStyleDefault
+             offset:offset];
   [self.suggestionsViewController
       setDataSource:self.contentSuggestionsMediator];
   self.suggestionsViewController.suggestionCommandHandler = self.NTPMediator;

@@ -82,6 +82,7 @@ public class StatusCoordinator implements View.OnClickListener, UrlTextChangeLis
 
     /**
      * Provides data and state for the toolbar component.
+     *
      * @param toolbarDataProvider The data provider.
      */
     public void setToolbarDataProvider(ToolbarDataProvider toolbarDataProvider) {
@@ -94,17 +95,13 @@ public class StatusCoordinator implements View.OnClickListener, UrlTextChangeLis
         updateStatusIcon();
     }
 
-    /**
-     * Signals that native initialization has completed.
-     */
+    /** Signals that native initialization has completed. */
     public void onNativeInitialized() {
         mMediator.updateLocationBarIcon();
         mMediator.setStatusClickListener(this);
     }
 
-    /**
-     * @param urlHasFocus Whether the url currently has focus.
-     */
+    /** @param urlHasFocus Whether the url currently has focus. */
     public void onUrlFocusChange(boolean urlHasFocus) {
         mMediator.setUrlHasFocus(urlHasFocus);
         mUrlHasFocus = urlHasFocus;
@@ -123,15 +120,14 @@ public class StatusCoordinator implements View.OnClickListener, UrlTextChangeLis
 
     /**
      * Set the url focus change percent.
+     *
      * @param percent The current focus percent.
      */
     public void setUrlFocusChangePercent(float percent) {
         mMediator.setUrlFocusChangePercent(percent);
     }
 
-    /**
-     * @param useDarkColors Whether dark colors should be for the status icon and text.
-     */
+    /**  @param useDarkColors Whether dark colors should be for the status icon and text. */
     public void setUseDarkColors(boolean useDarkColors) {
         mMediator.setUseDarkColors(useDarkColors);
 
@@ -140,9 +136,7 @@ public class StatusCoordinator implements View.OnClickListener, UrlTextChangeLis
         updateStatusIcon();
     }
 
-    /**
-     * @param incognitoBadgeVisible Whether or not the incognito badge is visible.
-     */
+    /** @param incognitoBadgeVisible Whether or not the incognito badge is visible. */
     public void setIncognitoBadgeVisibility(boolean incognitoBadgeVisible) {
         mMediator.setIncognitoBadgeVisibility(incognitoBadgeVisible);
     }
@@ -156,9 +150,7 @@ public class StatusCoordinator implements View.OnClickListener, UrlTextChangeLis
         mModalDialogManagerSupplier = modalDialogManagerSupplier;
     }
 
-    /**
-     * Updates the security icon displayed in the LocationBar.
-     */
+    /** Updates the security icon displayed in the LocationBar. */
     public void updateStatusIcon() {
         mMediator.setSecurityIconResource(mToolbarDataProvider.getSecurityIconResource(mIsTablet));
         mMediator.setSecurityIconTint(mToolbarDataProvider.getSecurityIconColorStateList());
@@ -169,22 +161,18 @@ public class StatusCoordinator implements View.OnClickListener, UrlTextChangeLis
         updateVerboseStatusVisibility();
     }
 
-    /**
-     * @return The view displaying the security icon.
-     */
+    /** Returns the view displaying the security icon. */
     public View getSecurityIconView() {
         return mStatusView.getSecurityButton();
     }
 
-    /**
-     * @return Whether the security button is currently being displayed.
-     */
+    /** Returns {@code true} if the security button is currently being displayed. */
     @VisibleForTesting
     public boolean isSecurityButtonShown() {
         return mMediator.isSecurityButtonShown();
     }
 
-    /** @return The ID of the drawable currently shown in the security icon. */
+    /** Returns the ID of the drawable currently shown in the security icon. */
     @DrawableRes
     public int getSecurityIconResourceIdForTesting() {
         return mModel.get(StatusProperties.STATUS_ICON_RESOURCE) == null
@@ -192,7 +180,7 @@ public class StatusCoordinator implements View.OnClickListener, UrlTextChangeLis
                 : mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconResForTesting();
     }
 
-    /** @return The icon identifier used for custom resources. */
+    /** Returns the icon identifier used for custom resources. */
     public String getSecurityIconIdentifierForTesting() {
         return mModel.get(StatusProperties.STATUS_ICON_RESOURCE) == null
                 ? null
@@ -236,29 +224,24 @@ public class StatusCoordinator implements View.OnClickListener, UrlTextChangeLis
     /**
      * Called to set the width of the location bar when the url bar is not focused.
      * This value is used to determine whether the verbose status text should be visible.
+     *
      * @param width The unfocused location bar width.
      */
     public void setUnfocusedLocationBarWidth(int width) {
         mMediator.setUnfocusedLocationBarWidth(width);
     }
 
-    /**
-     * Toggle animation of icon changes.
-     */
+    /** Toggle animation of icon changes. */
     public void setShouldAnimateIconChanges(boolean shouldAnimate) {
         mMediator.setAnimationsEnabled(shouldAnimate);
     }
 
-    /**
-     * Specify whether URL should present icons when focused.
-     */
+    /** Specify whether URL should present icons when focused. */
     public void setShowIconsWhenUrlFocused(boolean showIconsWithUrlFocused) {
         mMediator.setShowIconsWhenUrlFocused(showIconsWithUrlFocused);
     }
 
-    /**
-     * Specify whether suggestion for URL bar is a search action.
-     */
+    /** Specify whether suggestion for URL bar is a search action. */
     public void setFirstSuggestionIsSearchType(boolean firstSuggestionIsSearchQuery) {
         mMediator.setFirstSuggestionIsSearchType(firstSuggestionIsSearchQuery);
     }
@@ -267,20 +250,21 @@ public class StatusCoordinator implements View.OnClickListener, UrlTextChangeLis
         mMediator.setIncognitoStateProvider(incognitoStateProvider);
     }
 
-    /**
-     * Update information required to display the search engine icon.
-     */
+    /** Update information required to display the search engine icon. */
     public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
         mMediator.updateSearchEngineStatusIcon(
                 shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
     }
 
-    /**
-     * @return Width of the status icon including start/end margins.
-     */
+    /** Returns width of the status icon including start/end margins. */
     public int getStatusIconWidth() {
         return mStatusView.getStatusIconWidth();
+    }
+
+    /** Returns the increase in StatusView end padding, when the Url bar is focused. */
+    public int getEndPaddingPixelSizeOnFocusDelta() {
+        return mMediator.getEndPaddingPixelSizeOnFocusDelta();
     }
 
     @Override

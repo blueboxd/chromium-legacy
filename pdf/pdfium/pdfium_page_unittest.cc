@@ -86,6 +86,8 @@ TEST_F(PDFiumPageTest, Constructor) {
 class PDFiumPageLinkTest : public PDFiumTestBase {
  public:
   PDFiumPageLinkTest() = default;
+  PDFiumPageLinkTest(const PDFiumPageLinkTest&) = delete;
+  PDFiumPageLinkTest& operator=(const PDFiumPageLinkTest&) = delete;
   ~PDFiumPageLinkTest() override = default;
 
   const std::vector<PDFiumPage::Link>& GetLinks(PDFiumEngine* engine,
@@ -95,8 +97,6 @@ class PDFiumPageLinkTest : public PDFiumTestBase {
     page->CalculateLinks();
     return page->links_;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(PDFiumPageLinkTest);
 };
 
 TEST_F(PDFiumPageLinkTest, TestLinkGeneration) {

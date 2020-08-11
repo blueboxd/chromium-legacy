@@ -506,6 +506,7 @@
 <translation id="6972754398087986839">አስጀማሪ መመሪያ</translation>
 <translation id="6981982820502123353">ተደራሽነት</translation>
 <translation id="698231206551913481">አንዴ ይህ ተጠቃሚ ከተወገደ በኋላ ከዚህ ተጠቃሚ ጋር የተጎዳኙ ሁሉም ፋይሎች እና አካባቢያዊ ውሂብ በቋሚነት ይሰረዛሉ።</translation>
+<translation id="7007983414944123363">የእርስዎ ፒን ወይም ይለፍ ቃል ሊረጋገጥ አልቻለም። እንደገና ይሞክሩ።</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> ላይ ተመልሰው ይምጡ።</translation>
 <translation id="7025533177575372252">የእርስዎን <ph name="DEVICE_NAME" /> ከስልክዎ ጋር ያገናኙት</translation>
 <translation id="7026338066939101231">ቅነሳ</translation>
@@ -551,6 +552,7 @@
 <translation id="7568294522609223312">ራስሰር ጠቅ ማድረጎችን ያጥፉ</translation>
 <translation id="7568637526529101738">በቀኝ ጠቅታ ወይም ረጅም መጫን አማካኝነት ረዳት እርስዎ ለመረጡት እንደ ፍቺ ወይም የአሃድ ልወጣ ያለ መረጃን ያሳያል።</translation>
 <translation id="7569509451529460200">ብሬይል እና ChromeVox ነቅተዋል</translation>
+<translation id="7579778809502851308">የማያ ገጽ ቀረጻ</translation>
 <translation id="7593891976182323525">Search ወይም Shift</translation>
 <translation id="7600875258240007829">ሁሉንም ማሳወቂያዎች ይመልከቱ</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° ፋ</translation>
@@ -669,6 +671,7 @@
 <translation id="8841375032071747811">የተመለስ አዝራር</translation>
 <translation id="8843682306134542540">የማሽከርከሪያ ቁልፍን አብራ ወይም አጥፋ። <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">የእርስዎ ፒን ወይም ይለፍ ቃል አሁንም ሊረጋገጥ አልቻለም። ማሳሰቢያ፦ በቅርቡ የይለፍ ቃልዎን ከቀየሩ፣ የድሮውን የይለፍ ቃል ይጠቀሙ። አዲስ የይለፍ ቃልዎ የሚተገበረው ሲወጡ ነው።</translation>
 <translation id="8870509716567206129">መተግበሪያው የተከፈለ ማያ ገጽን አይደግፍም።</translation>
 <translation id="8874184842967597500">አልተገናኘም</translation>
 <translation id="8877788021141246043">አስታዋሽ አዘጋጅ</translation>

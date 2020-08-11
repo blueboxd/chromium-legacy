@@ -95,6 +95,7 @@
 <translation id="4677944499843243528">Úgy tűnik, a profilt egy másik Chromium-folyamat (<ph name="PROCESS_ID" />) használja egy másik számítógépen (<ph name="HOST_NAME" />). A Chromium zárolta a profilt, hogy az ne sérülhessen. Ha biztos benne, hogy nem használja másik folyamat a profilt, feloldhatja azt, és újraindíthatja a Chromiumot.</translation>
 <translation id="469338717132742108">Segítség a Chromium OS használatával kapcsolatban</translation>
 <translation id="4708774505295300557">Valaki korábban <ph name="ACCOUNT_EMAIL_LAST" /> néven bejelentkezett a Chromiumba erről a számítógépről. Az adatai elkülönítéséhez hozzon létre új Chromium-felhasználót.</translation>
+<translation id="4745225042341419983">Az ehhez a profilhoz tartozó böngészési adatok törlődnek majd erről az eszközről. Az adatok visszaállításához jelentkezzen be a Chromiumba a következő felhasználóként:</translation>
 <translation id="4746050847053251315">Biztosan kilép a Chromiumból?</translation>
 <translation id="4748217263233248895">A rendszer egy speciális biztonsági frissítést alkalmazott a Chromiumon. Indítsa újra a számítógépet, a lapokat majd mi visszaállítjuk.</translation>
 <translation id="4750035648288509542">Már majdnem naprakész! Indítsa újra a Chromiumot a frissítés befejezéséhez. Az inkognitó ablakok nem fognak újra megnyílni.</translation>

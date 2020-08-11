@@ -105,16 +105,17 @@ ClientTagBasedRemoteUpdateHandler::ProcessIncrementalUpdate(
 
     DCHECK(storage_key_to_clear.empty());
 
+    if (got_new_encryption_requirements) {
+      already_updated.insert(entity->storage_key());
+    }
+
     if (entity->CanClearMetadata()) {
       metadata_changes->ClearMetadata(entity->storage_key());
+      // The line below frees |entity| and it shouldn't be used afterwards.
       entity_tracker_->RemoveEntityForStorageKey(entity->storage_key());
     } else {
       metadata_changes->UpdateMetadata(entity->storage_key(),
                                        entity->metadata());
-    }
-
-    if (got_new_encryption_requirements) {
-      already_updated.insert(entity->storage_key());
     }
   }
 

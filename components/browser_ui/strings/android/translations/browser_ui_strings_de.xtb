@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Die Navigation zu <ph name="URL" /> ist blockiert.</translation>
 <translation id="4278390842282768270">Zugelassen</translation>
 <translation id="429312253194641664">Eine Website gibt Medien wieder</translation>
+<translation id="4336434711095810371">Alle Daten löschen</translation>
 <translation id="4433925000917964731">Lite-Modus-Seite von Google bereitgestellt</translation>
 <translation id="4434045419905280838">Pop-ups und Weiterleitungen</translation>
 <translation id="445467742685312942">Websites erlauben, geschützte Inhalte wiederzugeben</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Inkognitotab</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5301954838959518834">Ok</translation>
-<translation id="5307446750509046227">Websitespeicher löschen</translation>
 <translation id="5313967007315987356">Website hinzufügen</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5335288049665977812">Ausführung von JavaScript durch Websites zulassen (empfohlen)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">Hier können Sie Websites angeben, für die JavaScript blockiert werden soll.</translation>
 <translation id="8816026460808729765">Zugriff auf Sensoren für Websites blockieren</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Speicher</translation>
 <translation id="8926666909099850184">NFC ist für dieses Gerät deaktiviert. Sie können die Funktion in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="8929372349074745002">Diese Website lädt und reagiert meistens schnell</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">Die Berechtigungen für <ph name="APP_NAME" /> können in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktiviert werden.</translation>
 <translation id="945632385593298557">Mikrofonzugriff</translation>
 <translation id="965817943346481315">Blockieren, wenn Website aufdringliche oder irreführende Werbung anzeigt (empfohlen)</translation>
+<translation id="967624055006145463">Gespeicherte Daten</translation>
 </translationbundle>

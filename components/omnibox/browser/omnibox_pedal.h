@@ -37,10 +37,18 @@ class OmniboxPedal {
   typedef std::vector<int> Tokens;
 
   struct LabelStrings {
-    LabelStrings(int id_hint, int id_hint_short, int id_suggestion_contents);
+    LabelStrings(int id_hint,
+                 int id_hint_short,
+                 int id_suggestion_contents,
+                 int id_accessibility_suffix,
+                 int id_accessibility_hint);
+    LabelStrings(const LabelStrings&);
+    ~LabelStrings();
     const base::string16 hint;
     const base::string16 hint_short;
     const base::string16 suggestion_contents;
+    const int id_accessibility_suffix;
+    const base::string16 accessibility_hint;
   };
 
   class SynonymGroup {

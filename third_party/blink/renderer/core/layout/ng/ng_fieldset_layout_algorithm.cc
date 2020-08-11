@@ -448,11 +448,14 @@ MinMaxSizesResult NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
   MinMaxSizesResult result;
 
-  // TODO(crbug.com/1011842): Need to consider content-size here.
   bool apply_size_containment = Node().ShouldApplySizeContainment();
-
-  // Size containment does not consider the legend for sizing.
-  if (!apply_size_containment) {
+  if (apply_size_containment) {
+    // Size containment does not consider the legend for sizing.
+    base::Optional<MinMaxSizesResult> result_without_children =
+        CalculateMinMaxSizesIgnoringChildren(Node(), BorderScrollbarPadding());
+    if (result_without_children)
+      return *result_without_children;
+  } else {
     if (NGBlockNode legend = Node().GetRenderedLegend()) {
       result = ComputeMinAndMaxContentContribution(Style(), legend, input);
       result.sizes += ComputeMinMaxMargins(Style(), legend).InlineSum();

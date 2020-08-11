@@ -2615,6 +2615,7 @@ void LayoutBox::AddLayoutResult(scoped_refptr<const NGLayoutResult> result,
     ReplaceLayoutResult(std::move(result), index);
     return;
   }
+  DCHECK_EQ(index, layout_results_.size());
   const auto& fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
   layout_results_.push_back(std::move(result));
 #if DCHECK_IS_ON()

@@ -19,7 +19,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/platform_window/extensions/x11_extension.h"
-#include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
+#include "ui/platform_window/handlers/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"

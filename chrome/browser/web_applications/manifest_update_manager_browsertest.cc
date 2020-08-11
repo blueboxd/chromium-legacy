@@ -826,11 +826,11 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_DisplayOverride,
   )";
 
   OverrideManifest(kManifestTemplate,
-                   {R"([ "browser", "standalone" ])", kInstallableIconList});
+                   {R"([ "fullscreen", "standalone" ])", kInstallableIconList});
   AppId app_id = InstallWebApp();
 
   OverrideManifest(kManifestTemplate,
-                   {R"([ "browser", "minimal-ui" ])", kInstallableIconList});
+                   {R"([ "fullscreen", "minimal-ui" ])", kInstallableIconList});
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
             ManifestUpdateResult::kAppUpdated);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
@@ -841,7 +841,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_DisplayOverride,
       GetProvider().registrar().GetAppDisplayModeOverride(app_id);
 
   ASSERT_EQ(2u, app_display_mode_override.size());
-  EXPECT_EQ(DisplayMode::kBrowser, app_display_mode_override[0]);
+  EXPECT_EQ(DisplayMode::kFullscreen, app_display_mode_override[0]);
   EXPECT_EQ(DisplayMode::kMinimalUi, app_display_mode_override[1]);
 }
 
@@ -989,13 +989,13 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_DisplayOverride,
   )";
 
   OverrideManifest(kManifestTemplate,
-                   {R"([ "browser", "fullscreen" ])", kInstallableIconList});
+                   {R"([ "standard", "fullscreen" ])", kInstallableIconList});
   AppId app_id = InstallWebApp();
 
   // display_override contains an additional invalid value
   OverrideManifest(
       kManifestTemplate,
-      {R"([ "invalid", "browser", "fullscreen" ])", kInstallableIconList});
+      {R"([ "invalid", "standard", "fullscreen" ])", kInstallableIconList});
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
             ManifestUpdateResult::kAppUpToDate);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,

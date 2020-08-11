@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 #define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -36,6 +37,9 @@
 class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
  public:
   explicit FakeProfileOAuth2TokenService(PrefService* user_prefs);
+  FakeProfileOAuth2TokenService(
+      PrefService* user_prefs,
+      std::unique_ptr<ProfileOAuth2TokenServiceDelegate> delegate);
   ~FakeProfileOAuth2TokenService() override;
 
   // Gets a list of active requests (can be used by tests to validate that the

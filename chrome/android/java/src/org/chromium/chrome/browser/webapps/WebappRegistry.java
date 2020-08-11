@@ -98,13 +98,6 @@ public class WebappRegistry {
     }
 
     /**
-     * Returns the {@link WebappDataStorage} id for the passed-in WebAPK package name.
-     */
-    public static String webApkIdForPackage(String webApkPackageName) {
-        return WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName;
-    }
-
-    /**
      * Warm up the WebappRegistry and a specific WebappDataStorage SharedPreferences. Can be called
      * from any thread.
      * @param id The web app id to warm up in addition to the WebappRegistry.

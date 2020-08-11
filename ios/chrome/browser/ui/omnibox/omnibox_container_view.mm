@@ -117,6 +117,10 @@ const CGFloat kTextFieldClearButtonTrailingOffset = 4;
   self.leadingImageView.alpha = alpha;
 }
 
+- (void)setLeadingImageScale:(CGFloat)scaleValue {
+  self.leadingImageView.transform =
+      CGAffineTransformMakeScale(scaleValue, scaleValue);
+}
 #pragma mark - private
 
 - (void)setupLeadingImageViewWithTint:(UIColor*)iconTint {

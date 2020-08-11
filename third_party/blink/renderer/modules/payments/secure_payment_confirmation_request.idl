@@ -1,0 +1,20 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/rsolomakhin/secure-payment-confirmation#authenticating-a-payment
+
+enum SecurePaymentConfirmationAction {
+    "authenticate",
+};
+
+dictionary SecurePaymentConfirmationRequest {
+    SecurePaymentConfirmationAction action;
+    required DOMString instrumentId;
+    // Opaque data about the current transaction provided by the issuer. As the
+    // issuer is the RP of the credential, |networkData| provides protection
+    // against replay attacks.
+    required BufferSource networkData;
+    unsigned long timeout;
+    required USVString fallbackUrl;
+};

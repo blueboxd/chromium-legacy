@@ -33,7 +33,7 @@ public class ChromeWebApkHost {
         if (ChromeVersionInfo.isLocalBuild()
                 && CommandLine.getInstance().hasSwitch(SKIP_WEBAPK_VERIFICATION)) {
             // Tell the WebApkValidator to work for all WebAPKs.
-            WebApkValidator.disableValidationForTesting();
+            WebApkValidator.setDisableValidationForTesting(true);
         }
     }
 

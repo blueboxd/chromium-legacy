@@ -60,7 +60,7 @@ class Browser;
 class ContentsLayoutManager;
 class DownloadShelfView;
 class ExclusiveAccessBubbleViews;
-class FeaturePromoController;
+class FeaturePromoControllerViews;
 class FullscreenControlHost;
 class InfoBarContainerView;
 class LocationBarView;
@@ -294,7 +294,7 @@ class BrowserView : public BrowserWindow,
     return tab_groups_iph_controller_.get();
   }
 
-  FeaturePromoController* feature_promo_controller() {
+  FeaturePromoControllerViews* feature_promo_controller() {
     return feature_promo_controller_.get();
   }
 
@@ -903,7 +903,7 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<AccessibilityFocusHighlight> accessibility_focus_highlight_;
 
   std::unique_ptr<TabGroupsIPHController> tab_groups_iph_controller_;
-  std::unique_ptr<FeaturePromoController> feature_promo_controller_;
+  std::unique_ptr<FeaturePromoControllerViews> feature_promo_controller_;
 
   mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};
 

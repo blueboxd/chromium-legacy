@@ -97,6 +97,7 @@
 <translation id="4677944499843243528">Parece que outro proceso de Chromium (<ph name="PROCESS_ID" />) está utilizando o perfil noutro ordenador (<ph name="HOST_NAME" />). Chromium bloqueou o perfil para que non se dane. Se estás seguro de que ningún outro proceso está utilizando este perfil, podes desbloquear o perfil e volver iniciar Chromium.</translation>
 <translation id="469338717132742108">Obter axuda sobre Chromium OS</translation>
 <translation id="4708774505295300557">Anteriormente, alguén iniciou sesión como <ph name="ACCOUNT_EMAIL_LAST" /> en Chromium neste ordenador. Crea un novo usuario de Chromium para manter a túa información por separado.</translation>
+<translation id="4745225042341419983">Os datos de navegación deste espazo eliminaranse deste dispositivo. Para recuperalos, inicia sesión en Chromium como</translation>
 <translation id="4746050847053251315">Queres saír de Chromium de todas formas?</translation>
 <translation id="4748217263233248895">Acábase de aplicar unha actualización de seguranza especial para Chromium. Reinicia agora e restauraremos as túas pestanas.</translation>
 <translation id="4750035648288509542">A actualización está a piques de rematar. Reinicia Chromium para completala. As ventás do modo de incógnito non se volverán abrir.</translation>

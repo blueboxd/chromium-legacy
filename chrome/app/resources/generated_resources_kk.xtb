@@ -1105,7 +1105,6 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> файлын қауіпсіз күйде жүктеп алу мүмкін емес.</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> сайты жұптасқысы келеді</translation>
-<translation id="2341476639346994688">Принтердің жұмысы тоқтатылды.</translation>
 <translation id="2342740338116612727">Бетбелгілер енгізілді</translation>
 <translation id="2343747224442182863">Осы қойындыны ерекшелеу</translation>
 <translation id="2344686470986284227">Виртуалды құрылғы контроллері іске қосылуда</translation>
@@ -3445,7 +3444,6 @@
 <translation id="5283677936944177147">Жүйе құрылғының үлгісін не сериялық нөмірін анықтай алмады.</translation>
 <translation id="5284445933715251131">Жүктеп алуды жалғастыру</translation>
 <translation id="5285635972691565180"><ph name="DISPLAY_ID" /> көрсету</translation>
-<translation id="5286094561505658635">Шығыс науасы толы.</translation>
 <translation id="5286194356314741248">Ізделуде</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Есептік жазбаларыңыз</translation>
@@ -3666,7 +3664,6 @@
 <translation id="5553089923092577885">Сертификат саясатының салыстырулары</translation>
 <translation id="5554489410841842733">Бұл белгіше кеңейтім ағымдағы бетте әрекет ететін кезде көрінеді.</translation>
 <translation id="5554720593229208774">Электрондық пошта сертификаттау орталығы</translation>
-<translation id="5554931805291741487">Шығыс науасы толайын деп қалды.</translation>
 <translation id="5556459405103347317">Қайта жүктеу</translation>
 <translation id="5558125320634132440">Бұл сайт бөгелді, себебі құрамында ересектерге арналған мазмұн болуы мүмкін.</translation>
 <translation id="5558129378926964177">Үлкей&amp;ту</translation>
@@ -4937,7 +4934,6 @@
 <translation id="7152478047064750137">Бұл кеңейтім үшін арнайы рұқсаттар қажет емес</translation>
 <translation id="7154130902455071009">Бастапқы бетті келесіге өзгерту: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Камерадан немесе файлдан алынған бар суреттер</translation>
-<translation id="7163766494674803047">Принтерде қате пайда болды.</translation>
 <translation id="7165320105431587207">Желіні реттеу мүмкін емес</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" кеңейтімі таңдалған орындардағы кескіндерді, бейнені және дыбыстық файлдарды оқи алады.</translation>
 <translation id="7167486101654761064">&amp;Түрі осындай файлдарды әрқашан ашу</translation>

@@ -176,7 +176,7 @@ class PowerHandlerTest : public InProcessBrowserTest {
   // Sets a policy update which will cause power pref managed change.
   void SetPolicyForPolicyKey(policy::PolicyMap* policy_map,
                              const std::string& policy_key,
-                             std::unique_ptr<base::Value> value) {
+                             base::Value value) {
     policy_map->Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
                     policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                     std::move(value), nullptr);
@@ -224,21 +224,20 @@ IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendSettingsForControlledPrefs) {
   // Making an arbitrary AC delay pref managed should result in the AC idle
   // setting being reported as managed.
   SetPolicyForPolicyKey(&policy_map, policy::key::kScreenDimDelayAC,
-                        std::make_unique<base::Value>(10000));
+                        base::Value(10000));
   DevicePowerSettings settings;
   settings.ac_idle_managed = true;
   EXPECT_EQ(ToString(settings), GetLastSettingsChangedMessage());
 
   // Ditto for battery delay pref managed.
   SetPolicyForPolicyKey(&policy_map, policy::key::kScreenDimDelayBattery,
-                        std::make_unique<base::Value>(10000));
+                        base::Value(10000));
   settings.battery_idle_managed = true;
   EXPECT_EQ(ToString(settings), GetLastSettingsChangedMessage());
 
   // Ditto for making the lid action pref managed.
-  SetPolicyForPolicyKey(
-      &policy_map, policy::key::kLidCloseAction,
-      std::make_unique<base::Value>(PowerPolicyController::ACTION_SUSPEND));
+  SetPolicyForPolicyKey(&policy_map, policy::key::kLidCloseAction,
+                        base::Value(PowerPolicyController::ACTION_SUSPEND));
   settings.lid_closed_controlled = true;
   EXPECT_EQ(ToString(settings), GetLastSettingsChangedMessage());
 }
@@ -288,9 +287,9 @@ IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendManagedIdleSettingForPrefChanges) {
   // Set Enterpise policy that forces AC idle action to suspend. Only possible
   // AC idle option visible to the user should be DISPLAY_OFF_SLEEP and the
   // current should also be set to same.
-  SetPolicyForPolicyKey(&policy_map, policy::key::kIdleActionAC,
-                        std::make_unique<base::Value>(
-                            chromeos::PowerPolicyController::ACTION_SUSPEND));
+  SetPolicyForPolicyKey(
+      &policy_map, policy::key::kIdleActionAC,
+      base::Value(chromeos::PowerPolicyController::ACTION_SUSPEND));
   DevicePowerSettings settings;
   std::set<PowerHandler::IdleBehavior> behaviors;
   behaviors.insert(PowerHandler::IdleBehavior::DISPLAY_OFF_SLEEP);
@@ -301,9 +300,9 @@ IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendManagedIdleSettingForPrefChanges) {
   // Set Enterpise policy that forces battery idle action to Shutdown. Only
   // possible battery idle option visible to the user then should be OTHER and
   // the default should also be set to same.
-  SetPolicyForPolicyKey(&policy_map, policy::key::kIdleActionBattery,
-                        std::make_unique<base::Value>(
-                            chromeos::PowerPolicyController::ACTION_SHUT_DOWN));
+  SetPolicyForPolicyKey(
+      &policy_map, policy::key::kIdleActionBattery,
+      base::Value(chromeos::PowerPolicyController::ACTION_SHUT_DOWN));
   behaviors.clear();
   behaviors.insert(PowerHandler::IdleBehavior::OTHER);
   settings.possible_battery_behaviors = behaviors;
@@ -317,8 +316,7 @@ IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendManagedIdleSettingForPrefChanges) {
   // should not see DISPLAY_OFF_SLEEP in available options.
   SetPolicyForPolicyKey(
       &policy_map, policy::key::kIdleActionBattery,
-      std::make_unique<base::Value>(
-          chromeos::PowerPolicyController::ACTION_DO_NOTHING));
+      base::Value(chromeos::PowerPolicyController::ACTION_DO_NOTHING));
   behaviors.clear();
   behaviors.insert(PowerHandler::IdleBehavior::DISPLAY_OFF);
   behaviors.insert(PowerHandler::IdleBehavior::DISPLAY_ON);
@@ -330,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendManagedIdleSettingForPrefChanges) {
   // action. The user should see only see DISPLAY_OFF as the possible battery
   // idle action.
   SetPolicyForPolicyKey(&policy_map, policy::key::kScreenOffDelayBattery,
-                        std::make_unique<base::Value>(10000));
+                        base::Value(10000));
   behaviors.clear();
   behaviors.insert(PowerHandler::IdleBehavior::DISPLAY_OFF);
   settings.possible_battery_behaviors = behaviors;

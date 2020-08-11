@@ -80,4 +80,9 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
         if (passwordCheckDeletionDialogFragment == null) return;
         passwordCheckDeletionDialogFragment.show(getParentFragmentManager(), null);
     }
+
+    @PasswordCheckReferrer
+    int getReferrer() {
+        return mPasswordCheckReferrer;
+    }
 }

@@ -18,6 +18,9 @@ from blinkpy.w3c.gerrit import GerritError
 from blinkpy.w3c.wpt_github import GitHubError
 
 _log = logging.getLogger(__name__)
+RELEVANT_TASKCLUSTER_CHECKS = [
+    'wpt-chrome-dev-stability', 'wpt-firefox-nightly-stability', 'lint'
+]
 
 
 class ExportNotifier(object):
@@ -28,7 +31,7 @@ class ExportNotifier(object):
         self.dry_run = dry_run
 
     def main(self):
-        """Surfaces stability check failures to Gerrit through comments."""
+        """Surfaces relevant Taskcluster check failures to Gerrit through comments."""
         gerrit_dict = {}
 
         try:
@@ -47,13 +50,13 @@ class ExportNotifier(object):
 
         _log.info('Found %d failing PRs.', len(prs))
         for pr in prs:
-            statuses = self.get_taskcluster_statuses(pr.number)
-            if not statuses:
+            check_runs = self.get_check_runs(pr.number)
+            if not check_runs:
                 continue
 
-            taskcluster_status = self.get_failure_taskcluster_status(
-                statuses, pr.number)
-            if not taskcluster_status:
+            checks_results = self.get_relevant_failed_taskcluster_checks(
+                check_runs, pr.number)
+            if not checks_results:
                 continue
 
             gerrit_id = self.wpt_github.extract_metadata(
@@ -64,30 +67,30 @@ class ExportNotifier(object):
 
             gerrit_sha = self.wpt_github.extract_metadata(
                 WPT_REVISION_FOOTER, pr.body)
-            gerrit_dict[gerrit_id] = PRStatusInfo(
-                taskcluster_status['target_url'], pr.number, gerrit_sha)
+            gerrit_dict[gerrit_id] = PRStatusInfo(checks_results, pr.number,
+                                                  gerrit_sha)
 
         self.process_failing_prs(gerrit_dict)
         return False
 
-    def get_taskcluster_statuses(self, number):
-        """Retrieves Taskcluster status through PR number.
+    def get_check_runs(self, number):
+        """Retrieves check runs through a PR number.
 
         Returns:
-            A JSON object representing all Taskcluster statuses for this PR.
+            A JSON array representing the check runs for the HEAD of this PR.
         """
         try:
             branch = self.wpt_github.get_pr_branch(number)
-            statuses = self.wpt_github.get_branch_statuses(branch)
+            check_runs = self.wpt_github.get_branch_check_runs(branch)
         except GitHubError as e:
             _log.error(str(e))
             return None
 
-        return statuses
+        return check_runs
 
     def process_failing_prs(self, gerrit_dict):
-        """Processes and comments on CLs with failed TackCluster status."""
-        _log.info('Processing %d CLs with failed Taskcluster status.',
+        """Processes and comments on CLs with failed Tackcluster checks."""
+        _log.info('Processing %d CLs with failed Taskcluster checks.',
                   len(gerrit_dict))
         for change_id, pr_status_info in gerrit_dict.items():
             try:
@@ -107,7 +110,7 @@ class ExportNotifier(object):
                 if self.dry_run:
                     _log.info('[dry_run] Would have commented on CL %s\n',
                               change_id)
-                    _log.debug('Comments are:\n %s\n', cl_comment)
+                    _log.debug('Comments are:\n%s\n', cl_comment)
                 else:
                     _log.info('Commenting on CL %s\n', change_id)
                     cl.post_comment(cl_comment)
@@ -132,63 +135,40 @@ class ExportNotifier(object):
 
         return False
 
-    def get_failure_taskcluster_status(self, taskcluster_status, pr_number):
-        """Parses Taskcluster status from Taskcluster statuses description field.
+    def get_relevant_failed_taskcluster_checks(self, check_runs, pr_number):
+        """Filters relevant failed Taskcluster checks from check_runs.
 
         Args:
-            taskcluster_status: array; is of following format:
-                [
-                    {
-                    "url": "https://b",
-                    "avatar_url": "https://a",
-                    "id": 1,
-                    "node_id": "A",
-                    "state": "failure",
-                    "description": "TaskGroup: failure",
-                    "target_url": "https://tools.taskcluster.net/task-group-inspector/#/abc",
-                    "context": "Community-TC (pull_request)",
-                    "created_at": "2019-08-05T22:52:08Z",
-                    "updated_at": "2019-08-05T22:52:08Z"
-                    }
-                ]
-                e.g. https://api.github.com/repos/web-platform-tests/wpt/commits/chromium-export-cl-1407433/status
+            check_runs: A JSON array; e.g. "check_runs" in
+                https://developer.github.com/v3/checks/runs/#response-3
             pr_number: The PR number.
 
         Returns:
-            Taskcluster status dictionary if it has a failure status; None otherwise.
+            A dictionary where keys are names of the Taskcluster checks and values
+            are URLs to the Taskcluster checks' results.
         """
-        status = None
-        for status_dict in taskcluster_status:
-            if status_dict['context'] == 'Community-TC (pull_request)':
-                status = status_dict
-                break
+        checks_results = {}
+        for check in check_runs:
+            if (check['conclusion'] == 'failure') and (
+                    check['name'] in RELEVANT_TASKCLUSTER_CHECKS):
+                result_url = '{}pull/{}/checks?check_run_id={}'.format(
+                    WPT_GH_URL, pr_number, check['id'])
+                checks_results[check['name']] = result_url
 
-        if status and status['state'] == 'failure':
-            return status
-
-        if status is None:
-            return None
-
-        _log.debug('Taskcluster status for PR %s is %s', pr_number, status)
-        return None
+        return checks_results
 
 
 class PRStatusInfo(object):
-    LINK_TAG = 'Taskcluster Link: '
     CL_SHA_TAG = 'Gerrit CL SHA: '
     PATCHSET_TAG = 'Patchset Number: '
 
-    def __init__(self, link, pr_number, gerrit_sha=None):
-        self._link = link
-        self.pr_number = pr_number
+    def __init__(self, checks_results, pr_number, gerrit_sha=None):
+        self._checks_results = checks_results
+        self._pr_number = pr_number
         if gerrit_sha:
             self._gerrit_sha = gerrit_sha
         else:
             self._gerrit_sha = 'Latest'
-
-    @property
-    def link(self):
-        return self._link
 
     @property
     def gerrit_sha(self):
@@ -202,20 +182,30 @@ class PRStatusInfo(object):
 
         return None
 
-    def to_gerrit_comment(self, patchset=None):
-        status_line = (
-            'The exported PR, {pr_url}, has failed Taskcluster check(s) '
-            'on GitHub, which could indicate cross-browser failures on the '
-            'exported changes. Please contact ecosystem-infra@chromium.org for '
-            'more information.').format(
-            pr_url='%spull/%d' % (WPT_GH_URL, self.pr_number)
-        )
-        link_line = ('\n\n{}{}').format(PRStatusInfo.LINK_TAG, self.link)
-        sha_line = ('\n{}{}').format(PRStatusInfo.CL_SHA_TAG, self.gerrit_sha)
+    def _checks_results_as_comment(self):
+        comment = ''
+        for check, url in self._checks_results.items():
+            comment += '\n%s (%s)' % (check, url)
 
-        comment = status_line + link_line + sha_line
+        return comment
+
+    def to_gerrit_comment(self, patchset=None):
+        comment = (
+            'The exported PR, {}, has failed the following check(s) '
+            'on GitHub:\n{}\n\nThese failures will block the export. '
+            'They may represent new or existing problems; please take '
+            'a look at the output and see if it can be fixed. '
+            'Unresolved failures will be looked at by the Ecosystem-Infra '
+            'sheriff after this CL has been landed in Chromium; if you '
+            'need earlier help please contact ecosystem-infra@chromium.org.\n\n'
+            'Any suggestions to improve this service are welcome; '
+            'crbug.com/1027618.').format(
+                '%spull/%d' % (WPT_GH_URL, self._pr_number),
+                self._checks_results_as_comment())
+
+        comment += ('\n\n{}{}').format(PRStatusInfo.CL_SHA_TAG,
+                                       self._gerrit_sha)
         if patchset is not None:
             comment += ('\n{}{}').format(PRStatusInfo.PATCHSET_TAG, patchset)
 
-        comment += '\n\nAny suggestions to improve this service are welcome; crbug.com/1027618.'
         return comment

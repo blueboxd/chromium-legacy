@@ -97,9 +97,6 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return quic_version.UsesTls()
                  ? HttpResponseInfo::CONNECTION_INFO_QUIC_T050
                  : HttpResponseInfo::CONNECTION_INFO_QUIC_Q050;
-    case quic::QUIC_VERSION_IETF_DRAFT_25:
-      DCHECK(quic_version.UsesTls());
-      return HttpResponseInfo::CONNECTION_INFO_QUIC_DRAFT_25;
     case quic::QUIC_VERSION_IETF_DRAFT_27:
       DCHECK(quic_version.UsesTls());
       return HttpResponseInfo::CONNECTION_INFO_QUIC_DRAFT_27;

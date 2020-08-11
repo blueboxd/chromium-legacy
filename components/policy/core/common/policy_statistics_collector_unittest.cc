@@ -116,8 +116,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
 
   void SetPolicy(const std::string& name) {
     policy_map_.Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
-                    nullptr);
+                    POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   }
 
   void SetPolicyIgnoredByAtomicGroup(const std::string& name) {

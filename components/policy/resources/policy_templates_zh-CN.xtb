@@ -66,7 +66,7 @@
       如果您未设置此政策，系统将会使用默认的个人资料目录。</translation>
 <translation id="1062011392452772310">为设备启用远程认证</translation>
 <translation id="1062407476771304334">替换</translation>
-<translation id="1069489575852947981">如果此政策已启用或未设置，系统将设置设备本地帐号以实现零延迟的自动登录。<ph name="PRODUCT_OS_NAME" /> 支持利用键盘快捷键 Ctrl+Alt+S 绕过自动登录并显示登录屏幕。
+<translation id="1069489575852947981">如果此政策已启用或未设置，系统将设置设备本地帐号以实现零延迟的自动登录。<ph name="PRODUCT_OS_NAME" />支持利用键盘快捷键 Ctrl + Alt + S 绕过自动登录并显示登录屏幕。
 
       如果此政策已停用，用户则无法绕过零延迟的自动登录（若已配置）。</translation>
 <translation id="1073983258515362346">报告与设备背光有关的信息。
@@ -437,13 +437,6 @@
 
       如果此政策设为 False，用户无法添加、移除或修改书签，但仍能使用现有书签。</translation>
 <translation id="1715151459541210849">启用“语音输入”无障碍功能</translation>
-<translation id="1717817358640580294">如果此政策未设置，当 Chrome 清理功能检测到垃圾软件时，它可能会按照 SafeBrowsingExtendedReportingEnabled 设置的政策向 Google 报告与此项扫描相关的元数据。然后，Chrome 清理功能会询问用户是否要清理垃圾软件。用户可以选择与 Google 分享清理结果，以协助 Google 日后更好地检测垃圾软件。这些结果包括文件元数据、自动安装的扩展程序以及注册表项（如《Chrome 隐私权白皮书》中所述）。
-
-      如果此政策处于停用状态，当 Chrome 清理功能检测到垃圾软件时，它不会向 Google 报告与此项扫描相关的元数据，而是会覆盖 SafeBrowsingExtendedReportingEnabled 设置的任何政策。Chrome 清理功能会询问用户是否要清理垃圾软件。它不会向 Google 报告清理结果，也不会为用户提供用于向 Google 报告清理结果的选项。
-
-      如果此政策处于启用状态，当 Chrome 清理功能检测到垃圾软件时，它可能会按照 SafeBrowsingExtendedReportingEnabled 设置的政策向 Google 报告与此项扫描相关的元数据。Chrome 清理功能会询问用户是否要清理垃圾软件。它会向 Google 报告清理结果，但不会为用户提供用于禁止向 Google 报告清理结果的选项。
-
-      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="172374442286684480">允许所有网站设置本地数据</translation>
 <translation id="1736269219679256369">允许关闭 SSL 警告页面并继续操作</translation>
 <translation id="1745973235372964482">不允许传输受密码保护的文件</translation>
@@ -552,7 +545,7 @@
           该功能目前在服务器端已停用。</translation>
 <translation id="1919802376548418720">使用 KDC 政策委派凭据。</translation>
 <translation id="1920046221095339924">允许在设备上使用受管理自助服务终端</translation>
-<translation id="1920772397574801429">通过设置此政策，您可以指定支持 <ph name="HTTP_NEGOTIATE" /> 身份验证（例如 Kerberos 身份验证）的 Android 身份验证应用提供的帐号所属的类型。您应该可以从身份验证应用的供应商处获得此信息。如需更多详细信息，请访问 Chromium 项目 ( https://goo.gl/hajyfN )
+<translation id="1920772397574801429">通过设置此政策，您可以指定支持 <ph name="HTTP_NEGOTIATE" /> 身份验证（例如 Kerberos 身份验证）的 Android 身份验证应用提供的帐号所属的类型。您应该可以从身份验证应用的供应商处获得此信息。如需更多详细信息，请访问 https://goo.gl/hajyfN 查看 Chromium 项目
 
       如果您不设置此政策，Android 设备上将停用 <ph name="HTTP_NEGOTIATE" /> 身份验证。</translation>
 <translation id="1930127294345368978">单个打印任务可以使用的纸张数上限</translation>
@@ -832,13 +825,13 @@
       如果 URI 模板包含 <ph name="HTTP_VARIABLE_DNS" /> 变量，向解析器发出的请求将会使用 <ph name="HTTP_METHOD_GET" />；否则，这些请求便会使用 <ph name="HTTP_METHOD_POST" />。
 
       格式有误的模板将被忽略。</translation>
-<translation id="2333228572393176330">此政策用于控制 TLS 1.3 中的一项安全功能，该功能可为连接提供保护，使其免受降级攻击。它可向后兼容，因此不会影响与合规的 TLS 1.2 服务器或代理之间的连接。但是，某些旧版 TLS 拦截代理存在一项实施漏洞，此漏洞会导致这些代理不兼容。
+<translation id="2333228572393176330">此政策用于控制 TLS 1.3 中的一项安全功能，该功能可为连接提供保护，使其免受降级攻击。此政策可向后兼容，因此不会影响与合规的 TLS 1.2 服务器或代理之间的连接。但是，某些旧版 TLS 拦截代理存在一项实施漏洞，此漏洞会导致这些代理不兼容。
 
       如果此政策设为 True 或未设置，<ph name="PRODUCT_NAME" /> 会为所有连接启用此类安全保护措施。
 
       如果此政策设为 False，那么对于使用本地安装的 CA 证书进行身份验证的连接，<ph name="PRODUCT_NAME" /> 会停用此类安全保护措施。对于使用公认可信的 CA 证书进行身份验证的连接，系统会始终启用此类保护措施。
 
-      在 <ph name="PRODUCT_NAME" /> 81 中，此政策的默认值从 false 改成了 true。受影响的代理预计会无法成功连接，并会返回错误代码 ERR_TLS13_DOWNGRADE_DETECTED。如果管理员需要更多时间来升级受影响的代理，则可以使用此政策暂时停用这项安全功能。此政策已在 86 版中移除。
+      在 <ph name="PRODUCT_NAME" /> 81 版中，此政策的默认值从 false 改成了 true。受影响的代理预计会无法成功连接，并会返回错误代码 ERR_TLS13_DOWNGRADE_DETECTED。如果管理员需要更多时间来升级受影响的代理，则可以使用此政策暂时停用这项安全功能。此政策已在 86 版中移除。
       </translation>
 <translation id="2333763898098246468">控制 <ph name="PRODUCT_NAME" /> 在 Windows 上的打印方式。
 
@@ -1001,12 +994,12 @@
 
           如果未设置此政策，则“插入符号突出显示”最初会处于停用状态，但用户可以随时启用该功能。</translation>
 <translation id="2509919237512982967">在 M84 之前的版本中使用旧版表单控件。</translation>
-<translation id="2512630007068794030">启用 <ph name="PRODUCT_NAME" /> 功能后，当离开某个网页时，系统会将此网页以现行状态（文档、树、脚本等）保存到往返缓存中。
+<translation id="2512630007068794030">启用 <ph name="PRODUCT_NAME" /> 功能后，当离开某个网页时，系统会将此网页以现行状态（文档树、脚本等）保存到往返缓存中。
           如果我们返回此网页，此网页将从往返缓存中恢复，显示之前缓存的网页状态。
 
           此功能可能会破坏一些未曾预料会被缓存的网站，尤其是需要在离开网页时触发上传处理程序的网站，因为在离开网页时系统不会分派上传事件，而网页却会保存到往返缓存中。
 
-          如果此政策已启用或未设置，系统会启用<ph name="PRODUCT_NAME" /> 功能。
+          如果此政策已启用或未设置，系统会启用 <ph name="PRODUCT_NAME" /> 功能。
 
           如果此政策已停用，系统会强制停用此功能。
           </translation>
@@ -1343,14 +1336,6 @@
           停用此设置与未配置此设置的效果相同。用户仍能在 <ph name="PRODUCT_NAME" /> 中更改它。
 
           此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 专业版或企业版实例，以及通过 MDM 进行管理或通过 MCX 加入网域的 macOS 实例。</translation>
-<translation id="2982571648442031489">配置安全浏览功能将会信任的一系列网域。这意味着：如果相应网址与所指定的任一网域匹配，安全浏览功能将不会检查其中是否含有危险资源（例如网上诱骗、恶意软件或垃圾软件）。
-      安全浏览功能的下载保护服务将不会检查托管在这些网域上的下载内容。
-      如果相应网页的网址与所指定的任一网域匹配，安全浏览功能的密码保护服务将不会检查密码重用情况。
-
-      如果您启用了此设置，安全浏览功能将会信任这些网域。
-      如果您停用了或不配置此设置，系统便会将默认开启的安全浏览保护功能应用于所有资源。
-
-      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 专业版或企业版实例，以及通过 MDM 进行管理或通过 MCX 加入网域的 macOS 实例。</translation>
 <translation id="2985927503455169394">使用 Google 助理新手入门体验的默认模式</translation>
 <translation id="2987155890997901449">启用 ARC</translation>
 <translation id="2987227569419001736">控制对 Web Bluetooth API 的使用</translation>
@@ -1358,7 +1343,7 @@
 
       如果此政策已停用或未设置，<ph name="REQUIRED_PLATFORM_VERSION" /> 清单键便会被忽略，并且系统会按照常规流程进行自动更新。
 
-      警告：不得将 <ph name="PRODUCT_OS_NAME" /> 的版本控制权委派给自助服务终端应用，否则这可能会阻止设备获取软件更新和重要的安全修补程序。委派 <ph name="PRODUCT_OS_NAME" /> 版本控制权可能会将用户置于风险之中。</translation>
+      警告：不得将 <ph name="PRODUCT_OS_NAME" />的版本控制权委派给自助服务终端应用，否则这可能会阻止设备获取软件更新和重要的安全修补程序。委派 <ph name="PRODUCT_OS_NAME" /> 版本控制权可能会将用户置于风险之中。</translation>
 <translation id="299519952839316970">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 88 中移除。公用自助服务终端已不再受支持。请改用 <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> 来配置受管理访客会话。
       如果此政策设为 false，受管理访客会话的行为将会与 https://support.google.com/chrome/a/answer/3017014 页面中所述的标准“公用自助服务终端”的行为一样。
 
@@ -1467,11 +1452,6 @@
        如果此政策未设置或设为 false，系统将不会在 TLS 中启用 DHE 加密套件。您也可以将此政策设为 true，以便启用 DHE 加密套件，并与过时的服务器保持兼容。但这只是一种权宜之计，对服务器进行重新配置才是正确的做法。
 
       我们建议您让服务器改用 ECDHE 加密套件。如果这些加密套件不可用，请确保使用 RSA 密钥交换机制的加密套件处于启用状态。</translation>
-<translation id="3117706142826400449">如果此政策处于停用状态，Chrome 清理功能将无法扫描系统以检测是否存在垃圾软件，也无法执行清理操作。此外，还会禁止通过 chrome://settings/cleanup 手动触发 Chrome 清理功能。
-
-      如果此政策处于启用状态或未设置，Chrome 清理功能将会定期扫描系统以检测是否存在垃圾软件，并会在发现任何垃圾软件时询问用户是否要将其移除。此外，还会允许通过 chrome://settings 手动触发 Chrome 清理功能。
-
-      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="3119125876909100625">允许上传受密码保护的文件</translation>
 <translation id="3122082892722698079">控制对不安全内容例外情况的使用</translation>
 <translation id="3143265893557969814">如果您设置了此政策，所有指定的数据类型都会从同步操作（无论是 Google 同步还是漫游个人资料同步）中排除。这有助于缩减漫游个人资料的大小，或者限制向 Google 同步服务器上传的数据类型。
@@ -1738,7 +1718,7 @@
 
       如需详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="3540935459049973317">应用级时间限制</translation>
-<translation id="3543579213273969284">如果此政策已启用，HTTP 身份验证机制便会遵循 KDC 政策的审批结果。换言之，如果 KDC 政策在服务凭单上设置了 <ph name="OK_AS_DELEGATE" />，<ph name="PRODUCT_NAME" /> 便会委派凭据。参阅 RFC 5896 ( https://tools.ietf.org/html/rfc5896.html )。服务应与 <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> 一致。
+<translation id="3543579213273969284">如果此政策已启用，HTTP 身份验证机制会遵循 KDC 政策的审批结果。换言之，如果 KDC 政策在服务凭单上设置了 <ph name="OK_AS_DELEGATE" />，<ph name="PRODUCT_NAME" /> 便会委派凭据。参阅 RFC 5896 ( https://tools.ietf.org/html/rfc5896.html )。服务应与 <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> 一致。
 
       如果此政策已停用或未设置，那么在支持的平台上，只会遵循 <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> 政策，KDC 政策会被忽略。
 
@@ -2085,13 +2065,6 @@
 <translation id="4061590579642538878">报告有关崩溃报告的信息。</translation>
 <translation id="4075675819066819571">将文件架放置到屏幕左侧</translation>
 <translation id="4075864623710596000">此列表中指定的主机名将免受 HSTS 政策检查，该检查可能会将请求从 HTTP 升级到 HTTPS。此政策只允许使用单标签主机名。必须使用规范化主机名：任何 IDN 都必须转换为对应的 A 标签格式，并且所有 ASCII 字母都必须小写。此政策只适用于指定的特定主机名，不适用于指定名称的子网域。</translation>
-<translation id="4076584741592854827">此政策用于指定一系列应在下载完毕后自动打开的文件类型。罗列文件类型时不应添加前导分隔符，因此请罗列“txt”而非“.txt”。
-
-      应自动打开的文件类型所对应的文件仍须接受安全浏览检查（若已启用）；如果未通过检查，便不会打开。
-
-      如果您不设置此政策，只有那些已被用户指定为自动打开的文件类型才会在下载完毕后自动打开。
-
-      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 专业版或企业版实例，以及通过 MDM 进行管理或通过 MCX 加入网域的 macOS 实例。</translation>
 <translation id="408029843066770167">允许向 Google 时间服务发出查询</translation>
 <translation id="408076456549153854">允许登录浏览器</translation>
 <translation id="4082498585300984671">启用“点击通话”功能</translation>
@@ -2469,14 +2442,14 @@
 
       此政策已被弃用，请改用 <ph name="EXTERNAL_PRINT_SERVERS_ALLOWLIST" />。</translation>
 <translation id="4668325077104657568">默认图片设置</translation>
-<translation id="4668497019777708116">指定可启用为 <ph name="PRODUCT_OS_NAME" /> 锁定屏幕中记事应用的应用的列表。
+<translation id="4668497019777708116">指定在 <ph name="PRODUCT_OS_NAME" />锁定屏幕中，可作为笔记应用启用的应用列表。
 
-      如果首选的记事应用已在锁定屏幕中启用，锁定屏幕将包含用于启动首选记事应用的界面元素。
-      启动后，应用将能在锁定屏幕之上创建应用窗口，并在锁定屏幕情境中创建数据项（记事）。当主要用户会话解锁时，应用将能把已创建的记事导入此会话。目前，锁定屏幕上仅支持 Chrome 记事应用。
+      如果首选的笔记应用已在锁定屏幕中启用，锁定屏幕将包含用于启动首选笔记应用的界面元素。
+      启动后，应用将能在锁定屏幕之上创建应用窗口，并在锁定屏幕情境中创建数据项（笔记）。当主要用户会话解锁时，应用将能把已创建的笔记导入此会话。目前，锁定屏幕上仅支持 Chrome 笔记应用。
 
       如果您不设置此政策，只有当应用的扩展程序 ID 包含在政策列表值中时，用户才能在锁定屏幕上启用应用。
-      因此，如果您将政策设为空列表，系统将完全禁用锁定屏幕上的记事功能。
-      注意：此政策包含应用 ID 并不一定表示用户能在锁定屏幕上将该应用作为记事应用启用 - 例如，在 Chrome 61 中，可用应用集还受到平台的限制。
+      因此，如果您将政策设为空列表，系统将完全禁用锁定屏幕上的笔记功能。
+      注意：此政策包含应用 ID 并不一定表示用户能在锁定屏幕上将该应用作为笔记应用启用 - 例如，在 Chrome 61 版中，可用应用集还受到平台的限制。
 
       如果您不设置此政策，此政策便不会对用户可在锁定屏幕上启用的应用集施加任何限制。
 
@@ -3968,7 +3941,7 @@
 <translation id="6810445994095397827">在这些网站上阻止 JavaScript</translation>
 <translation id="6813263547126514821">电源和关机</translation>
 <translation id="681446116407619279">支持的身份验证方案</translation>
-<translation id="6815483833848348029">如果此政策已启用或未设置，当设备离线时，如果系统已设置设备本地帐号以实现零延迟的自动登录，<ph name="PRODUCT_OS_NAME" /> 会显示网络配置提示。
+<translation id="6815483833848348029">如果此政策已启用或未设置，当设备离线时，如果系统已设置设备本地帐号以实现零延迟的自动登录，<ph name="PRODUCT_OS_NAME" />会显示网络配置提示。
 
       如果此政策已停用，系统则会显示错误消息。</translation>
 <translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" />和“保存到 Google 云端硬盘”目的地</translation>
@@ -4010,19 +3983,6 @@
 
       如果您不设置此政策，默认情况下，受企业管理的用户和不受管理的用户都能选择启用“附近分享”功能。</translation>
 <translation id="6864244339257535116">允许上传和下载受密码保护的文件</translation>
-<translation id="6870295914868104867">通过设置此政策，您能以列表形式指定哪些应用和扩展程序无需用户互动即可静默安装且无法由用户卸载或停用。权限由系统默认授予，其中包括对 enterprise.deviceAttributes 和 enterprise.platformKeys 扩展程序 API 的权限（这 2 个 API 不适用于非强制安装的应用和扩展程序。）
-
-      如果您不设置此政策，系统将不会自动安装任何应用或扩展程序，而且用户可在 <ph name="PRODUCT_NAME" /> 中卸载任何应用或扩展程序。
-
-      此政策会取代 <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" /> 政策。如果以前强制安装的某个应用或扩展程序被从此列表中移除了，<ph name="PRODUCT_NAME" /> 便会自动卸载该应用或扩展程序。
-
-      对于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows® 实例，强制安装仅限于 Chrome 网上应用店中所列的应用和扩展程序。
-
-      用户可通过开发者工具更改任何扩展程序的源代码，这可能会导致扩展程序无法正常运行。如果您不希望用户进行此类更改，请设置 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 政策。
-
-      此政策的每个列表项都是一个字符串，其中包含一个扩展程序 ID 和一个可选的“更新”网址（这两者之间以英文分号 [;] 分隔）。扩展程序 ID 是一个由 32 个字母构成的字符串；若想查看该字符串，一种方法是在开发者模式下访问 chrome://extensions。“更新”网址（若指定）应指向一个更新清单 XML 文档 (https://developer.chrome.com/extensions/autoupdate)。默认情况下，系统会使用 Chrome 网上应用店的更新网址。此政策中设置的“更新”网址仅用于初次安装；相应扩展程序的后续更新将会使用该扩展程序的清单中的更新网址。
-
-       注意：此政策不适用于无痕模式。了解如何托管扩展程序 (https://developer.chrome.com/extensions/hosting)。</translation>
 <translation id="687046793986382807">此政策自35版<ph name="PRODUCT_NAME" />起已停止使用。
 
       无论选项值是什么，系统都会向网页报告内存信息，但出于安全考虑，系统会限制所报告的内存大小，并会限制更新率。要获取准确的实时数据，请使用遥测等工具。</translation>
@@ -4561,11 +4521,11 @@
 <translation id="7632724434767231364">GSSAPI 库名称</translation>
 <translation id="7642890175637942277">默认情况下，当 CCT/PWA 首次运行时，系统会显示服务条款。如果此政策已停用，服务条款对话框在首次运行体验或后续运行期间就不会出现。如果此政策已启用或未设置，则服务器条款对话框会在首次运行体验期间出现。其他注意事项：
 
-      - 此政策仅适用于可由统一端点管理供应商配置的完全托管 Android 设备。
+      - 此政策仅适用于可由统一端点管理供应商配置的全代管式 Android 设备。
 
       - 如果此政策已停用，BrowserSignin 政策则不会产生任何效力。
 
-      - 如果此政策已停用，系统就不会将指标发送给服务器。
+      - 如果此政策已停用，系统不会将指标发送给服务器。
 
       - 如果此政策已停用，浏览器的功能会受到限制。
 
@@ -5229,7 +5189,7 @@
 
       如果此政策已停用，系统会关闭 NTLMv2。
 
-      所有最新版本的 Samba 和 <ph name="MS_WIN_NAME" /> 服务器均支持 NTLMv2。只有为了实现向后兼容性时才应关闭它，因为它会降低身份验证的安全性。</translation>
+      所有最新版本的 Samba 和 <ph name="MS_WIN_NAME" /> 服务器均支持 NTLMv2。只有为了实现向后兼容性时才应关闭此功能，因为关闭此功能会降低身份验证的安全性。</translation>
 <translation id="8606263947930257189">控制 <ph name="PRODUCT_NAME" /> 可否冻结已在后台运行至少 5 分钟的标签页。
 
       如果此政策设为 true，系统可能会冻结已在后台运行至少 5 分钟的标签页。冻结标签页可以降低 CPU、电池和内存使用量。<ph name="PRODUCT_NAME" /> 会使用试探法来避免冻结在后台执行有用工作（例如显示通知、播放声音、流式传输视频）的标签页。网络开发者也可选择停用用于冻结网站标签页的功能 (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md)。
@@ -5252,7 +5212,7 @@
 
         如果未设置此政策，系统将会对所有网站使用全局默认值（不会自动授予访问权限）。</translation>
 <translation id="8631434304112909927">到版本 <ph name="UNTIL_VERSION" /> 为止</translation>
-<translation id="8631437968147930597">可在 <ph name="PRODUCT_OS_NAME" /> 锁定屏幕中显示的记事应用的列表。</translation>
+<translation id="8631437968147930597">可在 <ph name="PRODUCT_OS_NAME" />锁定屏幕中显示的笔记应用的列表。</translation>
 <translation id="8649763579836720255">Chrome 操作系统设备可使用远程凭证（经验证的访问凭证）来获取由 Chrome OS CA 颁发的证书，以证明该设备符合播放受保护内容的条件。此过程涉及向 Chrome OS CA 发送用于唯一标识设备的硬件背书信息。
 
           如果该设置为 False，设备将不使用远程凭证来保护内容，并且设备可能无法播放受保护内容。
@@ -5643,11 +5603,6 @@
       浏览器重新启动/设备重启后，将会恢复用户会话。</translation>
 <translation id="9160028464653564229">不允许任何网站请求通过 Serial API 使用串行端口</translation>
 <translation id="9167719789236691545">在 <ph name="PRODUCT_OS_NAME" />的“文件”应用中停用 Google 云端硬盘</translation>
-<translation id="917514578273777202">如果此政策已启用，当用户在地址栏中输入非网址的文字时，系统将会执行默认搜索。若要指定默认搜索服务提供商，请设置其余的默认搜索政策。如果您将这些政策留空，用户可自行选择默认提供商。如果此政策已停用，当用户在地址栏中输入非网址的文字时，系统将不会执行任何搜索。
-
-      如果您设置了此政策，用户便无法在 <ph name="PRODUCT_NAME" /> 中更改它。如果您不设置此政策，系统将启用默认的搜索服务提供商，而且用户可以设置搜索服务提供商列表。
-
-      注意：此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows® 实例，或者 Windows 10 专业版或 Chrome 企业版升级，以及通过 MDM 进行管理或通过 MCX 加入网域的 macOS 实例。</translation>
 <translation id="9185107612228451403">配置与扩展程序相关的政策。用户不能安装任何已被列入黑名单的扩展程序（除非它们已被加入白名单）。您也可以在 <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> 中指定某些扩展程序，从而强制 <ph name="PRODUCT_NAME" /> 自动安装这些扩展程序。强制安装的扩展程序均会被安装（无论它们是否包含在黑名单内）。</translation>
 <translation id="9187743794267626640">禁止装载外部存储设备</translation>
 <translation id="9190456586252617675">此政策旨在控制 Google 助理新手入门体验的模式。

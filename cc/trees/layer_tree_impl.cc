@@ -1666,7 +1666,7 @@ LayerImpl* LayerTreeImpl::FindPendingTreeLayerById(int id) {
 }
 
 bool LayerTreeImpl::PinchGestureActive() const {
-  return host_impl_->pinch_gesture_active();
+  return host_impl_->GetInputHandler().pinch_gesture_active();
 }
 
 const viz::BeginFrameArgs& LayerTreeImpl::CurrentBeginFrameArgs() const {

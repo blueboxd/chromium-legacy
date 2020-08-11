@@ -5654,7 +5654,15 @@ class NetworkContextMockHostTest : public NetworkContextTest {
   }
 };
 
-TEST_F(NetworkContextMockHostTest, CustomProxyUsesSpecifiedProxyList) {
+#if defined(OS_LINUX)
+// Flaky crashes on Linux: https://crbug.com/1115201
+#define MAYBE_CustomProxyUsesSpecifiedProxyList \
+  DISABLED_CustomProxyUsesSpecifiedProxyList
+#else
+#define MAYBE_CustomProxyUsesSpecifiedProxyList \
+  CustomProxyUsesSpecifiedProxyList
+#endif
+TEST_F(NetworkContextMockHostTest, MAYBE_CustomProxyUsesSpecifiedProxyList) {
   net::EmbeddedTestServer proxy_test_server;
   net::test_server::RegisterDefaultHandlers(&proxy_test_server);
   ASSERT_TRUE(proxy_test_server.Start());

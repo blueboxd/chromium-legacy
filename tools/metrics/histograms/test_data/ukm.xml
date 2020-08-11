@@ -1,42 +1,64 @@
 <ukm-configuration>
 
-<event name="AbusiveExperienceHeuristic.TabUnder">
-  <owner>csharrison@chromium.org</owner>
-  <metric name="DidTabUnder">
+<event name="AbusiveExperienceHeuristic.TestEvent1">
+  <owner>owner1@chromium.org</owner>
+  <metric name="Metric">
     <summary>
-      True if the page attempted a tab-under navigation.
+      A summary of AbusiveExperienceHeuristic.TestEvent1
     </summary>
   </metric>
 </event>
 
-<event name="AbusiveExperienceHeuristic.WindowOpen">
-  <owner>yaoxia@chromium.org</owner>
-  <summary>
-    Recorded whenever window.open() is called when AdTagging is enabled.
-  </summary>
-  <metric name="FromAdScript">
-    <summary>
-      True if the page called window.open() with an ad script in the stack.
-    </summary>
-  </metric>
-  <metric name="FromAdSubframe">
-    <summary>
-      True if the page called window.open() from an ad subframe.
-    </summary>
-  </metric>
-</event>
-
-<event name="Autofill.SelectedMaskedServerCard">
+<event name="AbusiveExperienceHeuristic.TestEvent2">
+  <owner>owner3@chromium.org</owner>
   <obsolete>
     Deprecated 2/2019
   </obsolete>
-  <owner>jiahuiguo@google.com</owner>
-  <metric name="MillisecondsSinceFormParsed">
+  <metric name="Metric">
     <summary>
-      Obsolete.
-
-      Time since form parse.
+      A summary of the metric.
     </summary>
+  </metric>
+</event>
+
+<event name="Autofill.TestEvent3">
+  <owner>owner3@chromium.org</owner>
+  <summary>
+    A summary of Autofill.TestEvent3.
+  </summary>
+  <metric name="MetricVersion1">
+    <summary>
+      MetricVersion1 summary.
+    </summary>
+    <obsolete>
+      Deprecated and replaced by MetricVersion2.
+    </obsolete>
+  </metric>
+  <metric name="MetricVersion2">
+    <summary>
+      MetricVersion2 summary.
+    </summary>
+  </metric>
+</event>
+
+<event name="FullyObsolete.TestEvent4">
+  <owner>owner4@chromium.org</owner>
+  <summary>
+    All metrics of this event are marked as obsolete.
+  </summary>
+  <metric name="MetricVersion1">
+    <summary>
+      MetricVersion1 summary.
+    </summary>
+    <obsolete>
+      Deprecated and replaced by MetricVersion2.
+    </obsolete>
+  </metric>
+  <metric name="MetricVersion2">
+    <summary>
+      MetricVersion2 summary.
+    </summary>
+    <obsolete/>
   </metric>
 </event>
 

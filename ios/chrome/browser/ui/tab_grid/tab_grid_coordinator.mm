@@ -436,4 +436,8 @@
   self.incognitoTabsMediator.browser = browser;
 }
 
+- (void)openAllTabsFromSession:(const synced_sessions::DistantSession*)session {
+  // TODO(crbug.com/1093302) : Implement this.
+}
+
 @end

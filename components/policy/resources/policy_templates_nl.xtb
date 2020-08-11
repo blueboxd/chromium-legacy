@@ -73,6 +73,7 @@
 
       Als het beleid is ingesteld op False of niet is ingesteld, worden de gegevens niet gerapporteerd.
       Als het beleid is ingesteld op True, wordt informatie over de schermverlichting van het apparaat gerapporteerd.</translation>
+<translation id="1076751984131277498">Toelatingslijst met USB-apparaten die mogen worden ontkoppeld</translation>
 <translation id="1079801999187584280">Het gebruik van de hulpprogramma's voor ontwikkelaars niet toestaan</translation>
 <translation id="1087437665304381368">Met dit beleid wordt alleen de ontwikkelaarsmodus van <ph name="PRODUCT_OS_NAME" /> bepaald. Als je de toegang tot de ontwikkelaarsopties van Android wilt blokkeren, moet je het beleid <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> instellen.</translation>
 <translation id="1087707496788636333">De Chrome Enterprise-beleidslijst wordt verplaatst. Update je bookmarks naar <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -457,13 +458,6 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 
       Als je het beleid instelt op 'False', kunnen gebruikers geen bookmarks toevoegen, verwijderen of wijzigen. Ze kunnen nog wel bestaande bookmarks gebruiken.</translation>
 <translation id="1715151459541210849">De toegankelijkheidsfunctie voor dicteren inschakelen</translation>
-<translation id="1717817358640580294">Als deze optie niet is ingesteld en er ongewenste software door Chrome Cleanup wordt gedetecteerd, worden er mogelijk metadata over de scan naar Google verzonden, overeenkomstig het beleid dat is ingesteld met SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker vervolgens of de ongewenste software moet worden opgeschoond. De gebruiker kan ervoor kiezen om de resultaten van de opschoonbewerking met Google te delen en bij te dragen aan de toekomstige detectie van ongewenste software. Deze resultaten bevatten metadata van bestanden, automatisch geïnstalleerde extensies en registersleutels zoals beschreven in de whitepaper over het privacybeleid voor Chrome.
-
-      Als deze optie uitgeschakeld is en er ongewenste software door Chrome Cleanup wordt gedetecteerd, worden er geen metadata over de scan naar Google verzonden en wordt het beleid dat is ingesteld met SafeBrowsingExtendedReportingEnabled, overschreven. Chrome Cleanup vraagt de gebruiker of deze de ongewenste software wil opschonen.  De resultaten van de opschoonbewerking worden niet aan Google gemeld en de gebruiker beschikt ook niet over de optie om dit te doen.
-
-      Als deze optie ingeschakeld is en er ongewenste software door Chrome Cleanup wordt gedetecteerd, worden er mogelijk metadata over de scan naar Google verzonden, overeenkomstig het beleid dat is ingesteld met SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker of deze de ongewenste software wil opschonen.  De resultaten van de opschoonbewerking worden gemeld aan Google en de gebruiker beschikt niet over de optie om dit te voorkomen.
-
-      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="172374442286684480">Alle sites toestaan lokale gegevens in te stellen</translation>
 <translation id="1736269219679256369">Doorgaan vanaf de SSL-waarschuwingspagina toestaan</translation>
 <translation id="1745973235372964482">Bestanden met wachtwoordbeveiliging niet toestaan</translation>
@@ -536,6 +530,9 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 
       Als dit beleid niet wordt ingesteld, wordt netwerkvoorspelling ingeschakeld, maar kan de gebruiker dit wijzigen.</translation>
 <translation id="1865417998205858223">Rechten voor sleutels</translation>
+<translation id="1866563857170942397">Definieert de lijst met gebruikers die toestemming hebben om op het apparaat in te loggen. De invoer heeft de vorm <ph name="USER_ALLOWLIST_ENTRY_FORMAT" />, zoals <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Als je willekeurige gebruikers toegang wilt geven tot een domein, gebruik je invoer in de vorm <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
+
+      Als dit beleid niet is geconfigureerd, zijn er geen beperkingen voor welke gebruikers mogen inloggen. Als je nieuwe gebruikers wilt maken, moet het beleid <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> correct zijn ingesteld.</translation>
 <translation id="186719019195685253">Actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt bij gebruik op netspanning</translation>
 <translation id="187819629719252111">Hiermee wordt toegang tot lokale bestanden op de computer toegestaan doordat <ph name="PRODUCT_NAME" /> dialoogvensters voor het selecteren van bestanden kan weergeven.
 
@@ -1373,15 +1370,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
           Als je deze instelling uitschakelt, heeft dit hetzelfde effect als wanneer de instelling niet is geconfigureerd. De gebruiker kan de instelling nog wel steeds wijzigen in <ph name="PRODUCT_NAME" />.
 
           Dit beleid is alleen beschikbaar voor Windows-instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein, voor Windows 10 Pro- of Enterprise-instanties die zijn ingeschreven voor apparaatbeheer en voor macOS-instanties die worden beheerd via MDM of aan een domein zijn gekoppeld via MCX.</translation>
-<translation id="2982571648442031489">Configureer de lijst met domeinen die door Safe Browsing worden vertrouwd. Dit betekent het volgende:
-      Safe Browsing checkt niet op gevaarlijke bronnen (zoals phishing, malware of ongewenste software) als de URL's van de bronnen overeenkomen met deze domeinen.
-      De downloadbeveiligingsservice van Safe Browsing checkt geen downloads die op deze domeinen worden gehost.
-      De wachtwoordbeveiligingsservice van Safe Browsing checkt niet of wachtwoorden opnieuw worden gebruikt als de pagina-URL overeenkomt met deze domeinen.
-
-      Als deze instelling is ingeschakeld, worden deze domeinen vertrouwd door Safe Browsing.
-      Als deze instelling is uitgeschakeld of niet is ingesteld, wordt de standaard Safe Browsing-beveiliging toegepast op alle bronnen.
-
-      Dit beleid is alleen beschikbaar voor Windows-instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein, voor Windows 10 Pro- of Enterprise-instanties die zijn ingeschreven voor apparaatbeheer en voor macOS-instanties die worden beheerd via MDM of aan een domein zijn gekoppeld via MCX.</translation>
 <translation id="2985927503455169394">De standaard modus voor introductie van de Assistent gebruiken</translation>
 <translation id="2987155890997901449">ARC inschakelen</translation>
 <translation id="2987227569419001736">Gebruik van de Web Bluetooth API beheren</translation>
@@ -1498,11 +1486,6 @@ Dit beleid kan alleen worden ingesteld via de Google Beheerdersconsole.</transla
       Als het beleid niet is ingesteld of is ingesteld op 'False', worden de DHE-coderingssuites in TLS niet ingeschakeld. Anders kan het worden ingesteld op 'True' om DHE-coderingssuites in te schakelen en de compatibiliteit met een verouderde server te behouden. Dit is een tijdelijke oplossing en de server moet opnieuw worden geconfigureerd.
 
       Servers kunnen het beste worden gemigreerd naar ECDHE-coderingssuites. Indien deze niet beschikbaar zijn, moet je ervoor zorgen dat er een coderingssuite is ingeschakeld die gebruikmaakt van RSA-sleuteluitwisseling.</translation>
-<translation id="3117706142826400449">Als dit beleid uitgeschakeld is, scant Chrome Cleanup het systeem niet op ongewenste software en kan de tool niets opschonen. Het is in dit geval ook niet meer mogelijk Chrome Cleanup handmatig te starten via chrome://settings/cleanup.
-
-      Als het beleid ingeschakeld is, of niet ingesteld is, scant Chrome Cleanup het systeem periodiek op ongewenste software. Als er ongewenste software wordt aangetroffen, wordt de gebruiker gevraagd of deze software moet worden verwijderd. Het is in dit geval mogelijk Chrome Cleanup te starten via chrome://settings.
-
-      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="3119125876909100625">Uploads van bestanden met wachtwoordbeveiliging toestaan</translation>
 <translation id="3122082892722698079">Gebruik van niet-beveiligde contentuitzonderingen beheren</translation>
 <translation id="3143265893557969814">Als dit beleid is ingesteld, worden alle opgegeven gegevenstypen uitgesloten van synchronisatie voor zowel Google Sync als synchronisatie van roaming-profielen. Dit kan handig zijn om het roaming-profiel te verkleinen of het type gegevens te beperken dat wordt geüpload naar de Google Sync-servers.
@@ -1831,6 +1814,9 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="3647212518036289905">Als je het beleid instelt, geef je aan welke GSSAPI-bibliotheek moet worden gebruikt voor HTTP-verificatie. Stel het beleid in op een bibliotheeknaam of een volledig pad.
 
       Als je het beleid niet instelt, gebruikt <ph name="PRODUCT_NAME" /> een standaard bibliotheeknaam.</translation>
+<translation id="3653234084868565720">Bepaalt of <ph name="PRODUCT_OS_NAME" /> het maken van nieuwe gebruikersaccounts toestaat. Als dit beleid is ingesteld op False, kunnen gebruikers zonder account niet inloggen.
+
+      Als dit beleid is ingesteld op True of niet is geconfigureerd, kunnen er nieuwe gebruikersaccounts worden gemaakt, mits <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> de gebruiker toestaat in te loggen.</translation>
 <translation id="3653237928288822292">Icoon voor standaardzoekprovider</translation>
 <translation id="3654906736796256792">Toestaan dat de audiosandbox wordt uitgevoerd</translation>
 <translation id="3657998022005237040">Downloads van niet-ondersteunde bestandstypen blokkeren</translation>
@@ -2123,13 +2109,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="4061590579642538878">Informatie over crashrapporten rapporteren.</translation>
 <translation id="4075675819066819571">De plank aan de linkerkant van het scherm plaatsen</translation>
 <translation id="4075864623710596000">De op deze lijst vermelde hostnamen zijn vrijgesteld van controle van het HSTS-beleid die verzoeken kan upgraden van HTTP naar HTTPS. In dit beleid zijn alleen hostnamen met één label toegestaan. Hostnamen moeten een canonieke URL hebben. Eventuele IDN's moeten worden geconverteerd naar de A-labelindeling en alle ASCII-letters moeten kleine letters zijn. Dit beleid is alleen van toepassing op de vermelde specifieke hostnamen en niet op de subdomeinen van de vermelde namen.</translation>
-<translation id="4076584741592854827">Lijst met bestandstypen die automatisch moeten worden geopend nadat ze zijn gedownload. Het voorafgaande scheidingsteken mag niet worden opgenomen als je het bestandstype vermeldt. Vermeld dus 'txt' in plaats van '.txt'.
-
-      Bestanden met typen die automatisch moeten worden geopend, vallen nog steeds onder de ingeschakelde Safe Browsing-checks en worden niet geopend als ze die checks niet doorstaan.
-
-      Als dit beleid niet is ingesteld, worden alleen bestandstypen waarvoor een gebruiker dit al heeft opgegeven, automatisch geopend nadat ze zijn gedownload.
-
-      Dit beleid is alleen beschikbaar voor Windows-instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein, voor Windows 10 Pro- of Enterprise-instanties die zijn ingeschreven voor apparaatbeheer en voor macOS-instanties die worden beheerd via MDM of aan een domein zijn gekoppeld via MCX.</translation>
 <translation id="408029843066770167">Query's naar een Google-tijdservice toestaan</translation>
 <translation id="408076456549153854">Inloggen bij browser inschakelen</translation>
 <translation id="4082498585300984671">De functie 'Klik om te bellen' inschakelen</translation>
@@ -3191,6 +3170,11 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als dit niet is gespecificeerd, wordt de URL voor de seed voor varianten niet aangepast.</translation>
 <translation id="5561811616825571914">Clientcertificaten automatisch selecteren voor deze sites op het inlogscherm</translation>
+<translation id="5564345250641049313">Definieert de lijst met gebruikers die toestemming hebben om op het apparaat in te loggen. De invoer heeft de vorm <ph name="USER_ALLOWLIST_ENTRY_FORMAT" />, zoals <ph name="USER_ALLOWLIST_ENTRY_EXAMPLE" />. Als je willekeurige gebruikers toegang wilt geven tot een domein, gebruik je invoer in de vorm <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
+
+      Als dit beleid niet is geconfigureerd, zijn er geen beperkingen voor welke gebruikers mogen inloggen. Als je nieuwe gebruikers wilt maken, moet het beleid <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> correct zijn ingesteld.
+
+      Dit beleid is verouderd. Gebruik in plaats daarvan <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" />.</translation>
 <translation id="5564865786900450806">Hiermee wordt de waarschuwing genegeerd die wordt weergegeven als <ph name="PRODUCT_NAME" /> wordt uitgevoerd op een computer die of besturingssysteem dat niet meer wordt ondersteund.
 
       Als dit beleid is ingesteld op False of niet is ingesteld, worden de waarschuwingen weergegeven op dergelijke niet-ondersteunde computers of besturingssystemen.</translation>
@@ -3564,6 +3548,11 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           De aanbevolen manier om het scherm te vergrendelen bij inacitiviteit is de schermvergrendeling in te schakelen bij tijdelijk opschorten en <ph name="PRODUCT_OS_NAME" /> tijdelijk te laten opschorten zodra de inactiviteitsdrempel is bereikt. Dit beleid mag alleen worden gebruikt wanneer de schermvergrendeling aanzienlijk eerder moet worden ingesteld dan de tijdelijke opschorting of wanneer tijdelijk opschorten bij inactiviteit helemaal niet wenselijk is.
 
           De beleidswaarde moet worden gespecificeerd in milliseconden. Waarden worden vastgezet op een lagere waarde dan de inactiviteitsdrempel.</translation>
+<translation id="6096729330325888677">Als je het beleid instelt, wordt de lijst met USB-apparaten gedefinieerd die door gebruikers mogen worden ontkoppeld van hun kernel-driver, zodat ze via de chrome.usb API rechtstreeks kunnen worden gebruikt in een web-app. Items zijn paren van de ID van de USB-leverancier en de ID van het product, zodat specifieke hardware kan worden geïdentificeerd.
+
+      Als je het beleid niet instelt, is de lijst met USB-apparaten die kunnen worden ontkoppeld leeg.
+
+      Dit beleid is verouderd. Gebruik in plaats daarvan <ph name="USB_DETACHABLE_ALLOWLIST" />.</translation>
 <translation id="6097601282776163274">Aan URL's gekoppelde, geanonimiseerde gegevens verzamelen</translation>
 <translation id="6099853574908182288">Standaard kleurenmodus voor afdrukken</translation>
 <translation id="6102342563050263313">Scrollen naar opgegeven tekst in URL-fragmenten inschakelen</translation>
@@ -4071,19 +4060,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als je dit beleid niet instelt, is de standaardoptie toegestaan voor zowel zakelijk beheerde gebruikers als niet-beheerde gebruikers.</translation>
 <translation id="6864244339257535116">Uploads en downloads van bestanden met wachtwoordbeveiliging toestaan</translation>
-<translation id="6870295914868104867">Als je het beleid instelt, wordt een lijst met apps en extensies gespecificeerd die op de achtergrond worden geïnstalleerd zonder interactie met de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door gebruikers. Rechten worden impliciet verleend, waaronder voor de extensie-API's enterprise.deviceAttributes en enterprise.platformKeys. (Deze twee API's zijn niet beschikbaar voor apps en extensies die niet afgedwongen geïnstalleerd zijn.)
-
-      Als je dit beleid niet instelt, worden apps of extensies niet automatisch geïnstalleerd en kunnen gebruikers elke app of extensie in <ph name="PRODUCT_NAME" /> verwijderen.
-
-      Dit beleid vervangt het beleid <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />. Als een eerder afgedwongen geïnstalleerde app of extensie wordt verwijderd uit deze lijst, verwijdert <ph name="PRODUCT_NAME" /> de app of extensie automatisch.
-
-      Voor Windows®-instanties die niet zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein, is afgedwongen installatie beperkt tot apps en extensies in de Chrome Web Store.
-
-      Gebruikers kunnen de broncode van een extensie wijzigen via de ontwikkelaarstools, waardoor de extensie mogelijk niet meer functioneert. Als je je hierover zorgen maakt, moet je het beleid <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> instellen.
-
-      Elk lijstitem van het beleid is een tekenreeks die een extensie-ID en optioneel een update-URL bevat, gescheiden door een puntkomma (;). De extensie-ID is de tekenreeks van 32 letters die bijvoorbeeld op chrome://extensions kan worden gevonden als de ontwikkelaarsmodus actief is. De update-URL, indien opgegeven, moet verwijzen naar een XML-updatedocument voor het manifest (https://developer.chrome.com/extensions/autoupdate). Standaard wordt de update-URL van de Chrome Web Store gebruikt. De update-URL die in dit beleid is ingesteld, wordt alleen voor de eerste installatie gebruikt. Daaropvolgende updates van de extensie gebruiken de update-URL die in het manifest van de extensie wordt aangegeven.
-
-       Opmerking: Dit beleid is niet van toepassing op de incognitomodus. Bekijk meer informatie over het hosten van extensies (https://developer.chrome.com/extensions/hosting).</translation>
 <translation id="687046793986382807">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 35.
 
 Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien van de optiewaarde, maar de gerapporteerde grootten zijn gekwantiseerd en de snelheid van updates is om veiligheidsredenen beperkt. Om nauwkeurige realtime gegevens te verkrijgen, gebruik je tools zoals Telemetry.</translation>
@@ -4220,6 +4196,16 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid niet wordt ingesteld, wordt de plank standaard onderaan het scherm geplaatst en kan de gebruiker de positie van de plank zelf wijzigen.</translation>
 <translation id="7040229947030068419">Voorbeeldwaarde:</translation>
 <translation id="7044883996351280650">De Android-service 'Back-up maken en terugzetten' beheren</translation>
+<translation id="7063842402585660314">De lijst met apps die zijn toegestaan op het <ph name="PRODUCT_OS_NAME" />-vergrendelscherm.
+
+      Als de gewenste notitie-app is ingeschakeld op het vergrendelscherm, bevat het vergrendelscherm een UI-element om de gewenste notitie-app te starten.
+      Wanneer de app is gestart, kan deze een app-venster bovenop het vergrendelscherm maken en gegevensitems (notities) maken in de context van het vergrendelscherm. De app kan gemaakte notities importeren naar de primaire gebruikerssessie wanneer de sessie ontgrendeld is. Momenteel worden alleen Chrome-notitie-apps ondersteund op het vergrendelscherm.
+
+      Als het beleid is ingesteld, kan de gebruiker een app alleen inschakelen op het vergrendelscherm als de extensie-ID van de app is opgenomen in de beleidslijstwaarde.
+      Dit betekent dat als je dit beleid instelt op een lege lijst, het maken van notities op het vergrendelscherm volledig wordt uitgeschakeld.
+      Houd er rekening mee dat als het beleid een app-ID bevat, dit niet noodzakelijkerwijs betekent dat de gebruiker de app kan inschakelen als notitie-app op het vergrendelscherm. In Chrome 61 wordt de reeks beschikbare apps bijvoorbeeld extra beperkt door het platform.
+
+      Als het beleid niet wordt ingesteld, gelden er geen beperkingen voor de reeks apps die de gebruiker kan inschakelen op het vergrendelscherm.</translation>
 <translation id="7063895219334505671">Pop-ups toestaan ​​op deze sites</translation>
 <translation id="706669471845501145">Sites toestaan bureaubladmeldingen weer te geven</translation>
 <translation id="7068108874199666656">Hiermee kun je een netwerkconfiguratie toepassen voor alle gebruikers van een <ph name="PRODUCT_OS_NAME" />-apparaat. De netwerkconfiguratie is een tekenreeks met json-indeling, zoals gedefinieerd in de Open Network Configuration-indeling.</translation>
@@ -5127,6 +5113,7 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 
           Ga naar https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns voor gedetailleerde informatie over geldige URL-patronen.</translation>
 <translation id="8357681633047935212">Beperk de duur van een gebruikerssessie</translation>
+<translation id="8357989008292691856">Toelatingslijst met gebruikers die mogen inloggen</translation>
 <translation id="8359734107661430198">API voor ExampleDeprecatedFeature tot en met 02-09-2008 inschakelen</translation>
 <translation id="8367209241899435947">Chrome Cleanup inschakelen op Windows</translation>
 <translation id="8367473200119029349">Cloudrapportage</translation>
@@ -5740,11 +5727,6 @@ Dit beleid wordt verwijderd in M75.</translation>
       De sessie van de gebruiker wordt hersteld zodra opnieuw is opgestart.</translation>
 <translation id="9160028464653564229">Geen sites toestemming geven om toegang tot seriële poorten te vragen via de Serial API</translation>
 <translation id="9167719789236691545">Drive uitschakelen in de app Bestanden van <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="917514578273777202">Als je het beleid inschakelt, wordt er een standaard zoekopdracht uitgevoerd als de gebruiker in de adresbalk tekst invoert die geen URL is. Als je de standaard zoekprovider wilt opgeven, stel je alle andere standaard zoekbeleidsregels in. Als je die zoekbeleidsregels leeg laat, kan de gebruiker zelf de standaard provider kiezen. Als je het beleid uitschakelt, wordt er geen zoekopdracht uitgevoerd als de gebruiker in de adresbalk tekst invoert die geen URL is.
-
-      Als je het beleid instelt, kunnen gebruikers het niet wijzigen in <ph name="PRODUCT_NAME" />. Als je dit beleid niet instelt, wordt de standaard zoekprovider ingeschakeld en kunnen gebruikers de lijst met zoekproviders instellen.
-
-      Opmerking: Dit beleid geldt alleen voor Windows®-instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein, Windows 10 Pro of Chrome Enterprise Upgrade- en macOS-instanties die worden beheerd via MDM of aan een domein zijn gekoppeld via MCX.</translation>
 <translation id="9185107612228451403">Hiermee wordt aan extensies gerelateerd beleid geconfigureerd. De gebruiker mag geen extensies installeren die op de blacklist zijn gezet, tenzij ze op de witte lijst zijn gezet. Je kunt ook <ph name="PRODUCT_NAME" /> dwingen extensies automatisch te installeren door ze in <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> op te geven. Afgedwongen geïnstalleerde extensies worden geïnstalleerd, ongeacht of ze op de blacklist zijn gezet.</translation>
 <translation id="9187743794267626640">Koppelen van externe opslag uitschakelen</translation>
 <translation id="9190456586252617675">Met dit beleid wordt de modus voor introductie van de Assistent beheerd.

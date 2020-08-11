@@ -197,6 +197,13 @@ static_library("test_support") {
     "fake_profile_oauth2_token_service_delegate.h",
   ]
 
+  if (is_chromeos) {
+    sources += [
+      "test_profile_oauth2_token_service_delegate_chromeos.cc",
+      "test_profile_oauth2_token_service_delegate_chromeos.h",
+    ]
+  }
+
   public_deps = [
     ":identity_manager",
     "//base",

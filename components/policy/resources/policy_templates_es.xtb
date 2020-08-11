@@ -464,13 +464,6 @@ Si inhabilitas esta política, se inhabilitará el desplazamiento de una página
 
       Si se le asigna el valor "Falso", los usuarios no podrán añadir, quitar ni modificar marcadores. Sin embargo, podrán usar los marcadores existentes.</translation>
 <translation id="1715151459541210849">Habilita la función de accesibilidad de dictado</translation>
-<translation id="1717817358640580294">Si no se define esta política, cuando Limpiador de Chrome detecte software no deseado, podrá enviar metadatos sobre el análisis a Google, según la política definida por SafeBrowsingExtendedReportingEnabled. Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado. El usuario tendrá la opción de compartir los resultados de la limpieza con Google para ayudar a detectar software no deseado en el futuro. Estos resultados contienen metadatos de archivos, extensiones instaladas de forma automática y claves de registro, tal como se describe en la página de información sobre privacidad de Chrome.
-
-      Si se inhabilita esta política, cuando Limpiador de Chrome detecte software no deseado, no enviará metadatos sobre el análisis a Google y anulará cualquier política definida por SafeBrowsingExtendedReportingEnabled. Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado.  Los resultados de la limpieza no se enviarán a Google y el usuario no tendrá la opción de hacerlo.
-
-      Si se habilita esta política, cuando Limpiador de Chrome detecte software no deseado, podrá enviar metadatos sobre el análisis de acuerdo con la política definida por SafeBrowsingExtendedReportingEnabled. Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado.  Los resultados de la limpieza se enviarán a Google y el usuario no tendrá la opción de impedirlo.
-
-      Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
 <translation id="172374442286684480">Permitir que todos los sitios establezcan datos locales</translation>
 <translation id="1736269219679256369">Permitir que se continúe desde la página de advertencia de SSL</translation>
 <translation id="1745973235372964482">No permitir archivos protegidos con contraseña</translation>
@@ -1398,15 +1391,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
           Si la inhabilitas, se considerará que no la has configurado. Sin embargo, el usuario podrá cambiar esta opción en <ph name="PRODUCT_NAME" />.
 
           Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" />, en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos y en instancias de macOS que se gestionen mediante MDM o estén vinculadas a un dominio a través de MCX.</translation>
-<translation id="2982571648442031489">Configura la lista de dominios en los que confiará la función Navegación Segura. Esto quiere decir que:
-      Navegación Segura no comprobará si los recursos son peligrosos (por ejemplo: suplantación de identidad, software malicioso o software no deseado) cuando sus URL coincidan con estos dominios.
-      El servicio de protección de descargas de Navegación Segura no comprobará las descargas alojadas en estos dominios.
-      El servicio de protección de contraseñas de Navegación Segura no comprobará si se está reutilizando la contraseña cuando la URL de la página coincida con estos dominios.
-
-      Si se habilita esta opción, Navegación Segura confiará en estos dominios.
-      Si no se habilita o no se configura, se aplicará la protección predeterminada de Navegación Segura a todos los recursos.
-
-      Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" />, en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos y en instancias de MacOS que se gestionen mediante MDM o estén vinculadas a un dominio a través de MCX.</translation>
 <translation id="2985927503455169394">Usa el modo predeterminado de la experiencia de incorporación del Asistente</translation>
 <translation id="2987155890997901449">Habilitar ARC</translation>
 <translation id="2987227569419001736">Controlar el uso de la API Bluetooth web</translation>
@@ -1523,11 +1507,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Si la política no se establece o se le asigna el valor false, no se habilitarán los conjuntos de cifrado DHE en TLS. Si por el contrario se le asigna el valor true, se habilitarán estos conjuntos de cifrado y se mantendrá la compatibilidad con un servidor obsoleto. Se trata de una medida provisional y el servidor se debería volver a configurar.
 
       Se recomienda migrar los servidores a los conjuntos de cifrado ECDHE. Si no están disponibles, asegúrate de que se habilite un conjunto de cifrado que utilice el intercambio de claves RSA.</translation>
-<translation id="3117706142826400449">Si se inhabilita, la función Limpiador de Chrome no podrá analizar el sistema para detectar software no deseado y realizar limpiezas. La opción para activar manualmente esta función desde chrome://settings/cleanup está inhabilitada.
-
-      Si se habilita o no se le asigna ningún valor, Limpiador de Chrome analizará el sistema periódicamente para detectar software no deseado y, si encuentra alguno, preguntará al usuario si quiere eliminarlo. La opción para activar manualmente esta función desde chrome://settings/cleanup está habilitada.
-
-      Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
 <translation id="3119125876909100625">Permitir la subida de archivos protegidos con contraseña</translation>
 <translation id="3122082892722698079">Permite controlar el uso de las excepciones de contenido no seguro</translation>
 <translation id="3143265893557969814">Si se establece esta política, todos los tipos de datos especificados se excluirán de la sincronización de Google Sync y de la sincronización del perfil de itinerancia. Esto puede ser útil para reducir el tamaño del perfil de itinerancia o para limitar el tipo de datos que se suben a los servidores de Google Sync.
@@ -2152,13 +2131,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4061590579642538878">Proporcionar información de informes sobre fallos</translation>
 <translation id="4075675819066819571">Colocar la estantería en la parte izquierda de la pantalla</translation>
 <translation id="4075864623710596000">Los nombres de host que se especifican en esta lista quedarán exentos de la comprobación de la política de HSTS, que podría actualizar las solicitudes de http a https. Esta política solo admite nombres de host de una sola etiqueta. Los nombres de host deben seguir el proceso de canonicalización: cada IDN debe codificarse en su formato de etiqueta A y todas las letras ASCII deben ser minúsculas. Esta política solo se aplica a los nombres de host que se especifican en esta lista. No se aplica a sus subdominios.</translation>
-<translation id="4076584741592854827">Lista de tipos de archivo que deberían abrirse automáticamente al descargarse. No se debe incluir el separador del principio al añadir un tipo de archivo a la lista, así que añade "txt" en lugar de ".txt".
-
-      Los archivos de los tipos que se deben abrir automáticamente seguirán estando sujetos a las comprobaciones de Navegación Segura y no se abrirán si no las superan.
-
-      Si no se establece esta política, solo se abrirán automáticamente al descargarse los tipos de archivo que haya especificado el usuario.
-
-      Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" />, en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos y en instancias de MacOS que se gestionen mediante MDM o estén vinculadas a un dominio a través de MCX.</translation>
 <translation id="408029843066770167">Permitir consultas a un servicio de hora de Google</translation>
 <translation id="408076456549153854">Habilitar inicio de sesión en el navegador</translation>
 <translation id="4082498585300984671">Habilitar la función Clic de llamada</translation>
@@ -4112,19 +4084,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
       Si no se asigna ningún valor a esta política, el valor predeterminado para los usuarios administrados por una empresa y para los no administrados es permitirlo.</translation>
 <translation id="6864244339257535116">Permitir la subida y la descarga de archivos protegidos con contraseña</translation>
-<translation id="6870295914868104867">Si se define esta política, se especificará una lista de aplicaciones y extensiones que se instalarán de forma silenciosa, sin intervención del usuario, y que los usuarios no podrán desinstalar ni desactivar. Los permisos se concederán de forma implícita, incluidas las API de extensión enterprise.deviceAttributes y enterprise.platformKeys. Estas dos API no estarán disponibles para las aplicaciones y extensiones que no se instalen de manera forzada.
-
-      Si no se asigna ningún valor a esta política, no se instalará ninguna aplicación ni extensión de forma automática y los usuarios podrán desinstalar cualquier aplicación o extensión en <ph name="PRODUCT_NAME" />.
-
-      Esta política sustituye a la política <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />. Si una aplicación o extensión que se haya instalado anteriormente de manera forzada se quita de la lista, <ph name="PRODUCT_NAME" /> la desinstalará automáticamente.
-
-      Para las instancias de Windows® que no estén vinculadas a un dominio de <ph name="MS_AD_NAME" />, la instalación forzada se limitará a las aplicaciones y extensiones disponibles en Chrome Web Store.
-
-      Los usuarios podrán modificar el código fuente de las extensiones mediante las herramientas para desarrolladores, lo que puede provocar problemas de funcionamiento en esas extensiones. Si te preocupa, configura la política <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.
-
-      Cada elemento de la lista de la política es una cadena que contiene un ID de extensión y, opcionalmente, una URL de actualización separados por punto y coma (;). El ID de extensión es la cadena de 32 letras que aparece, por ejemplo, en chrome://extensions cuando está habilitado el modo desarrollador. Si se especifica, la URL de actualización debe dirigir a un documento XML de un archivo de manifiesto de actualización (https://developer.chrome.com/extensions/autoupdate). De forma predeterminada, se utiliza la URL de actualización de Chrome Web Store, La URL de actualización definida en esta política solo se usará en la instalación inicial. Las actualizaciones posteriores de la extensión usarán la URL de actualización indicada en el archivo de manifiesto de la extensión.
-
-       Nota: Esta política no se aplica al modo de incógnito. Para obtener más información sobre el alojamiento de extensiones, consulta https://developer.chrome.com/extensions/hosting.</translation>
 <translation id="687046793986382807">Esta política no está disponible a partir de la versión 35 de <ph name="PRODUCT_NAME" />.
 
       La información sobre memoria se notifica a la página, independientemente del valor de la opción, pero los tamaños notificados están restringidos y la frecuencia de actualizaciones está limitada por razones de seguridad. Para obtener información precisa en tiempo real, debes utilizar herramientas como la telemetría.</translation>
@@ -5789,11 +5748,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
       La sesión del usuario se restaurará tras el reinicio.</translation>
 <translation id="9160028464653564229">No permitir a ningún sitio web solicitar acceso a puertos serie a través de la API Serial</translation>
 <translation id="9167719789236691545">Inhabilitar Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="917514578273777202">Si se asigna el valor "Habilitada" a esta política, se realiza una búsqueda predeterminada cuando un usuario introduce en la barra de direcciones texto que no es una URL. Para especificar el proveedor de búsqueda predeterminado, configura el resto de las políticas de búsqueda predeterminadas. Si no configuras esas políticas, el usuario podrá elegir el proveedor predeterminado. Si se le asigna el valor "Inhabilitada", no se realizará ninguna búsqueda cuando el usuario introduzca texto que no es una URL en la barra de direcciones.
-
-      Si se asigna un valor a esta política, los usuarios no podrán cambiarlo en <ph name="PRODUCT_NAME" />. Si no se le asigna ninguno, el proveedor de búsqueda predeterminado estará activado y los usuarios podrán crear la lista de proveedores de búsqueda.
-
-      Nota: Esta política solo se aplica a instancias de Windows® que estén vinculadas a un dominio de <ph name="MS_AD_NAME" />, Windows 10 Pro, Licencia de Chrome Enterprise e instancias de macOS que se gestionen mediante MDM o que estén vinculadas a un dominio a través de MCX.</translation>
 <translation id="9185107612228451403">Permite configurar políticas relacionadas con las extensiones. Los usuarios solo pueden instalar extensiones de la lista negra si estas se han incluido en la lista blanca. Se puede forzar la instalación automática de extensiones en <ph name="PRODUCT_NAME" /> si se especifican en <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Las extensiones de instalación forzada se instalan estén incluidas o no en la lista negra.</translation>
 <translation id="9187743794267626640">Inhabilitar la activación del almacenamiento externo</translation>
 <translation id="9190456586252617675">Esta política controla el modo de la experiencia de incorporación del Asistente.

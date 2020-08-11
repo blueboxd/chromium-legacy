@@ -4,13 +4,10 @@
 
 #include "chrome/browser/chromeos/crosapi/browser_manager.h"
 
-#include <sys/statvfs.h>
-
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -22,11 +19,9 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/crosapi/ash_chrome_service_impl.h"
 #include "chrome/browser/chromeos/crosapi/browser_loader.h"
 #include "chrome/browser/chromeos/crosapi/browser_util.h"
@@ -41,7 +36,6 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/mojom/base/binder.mojom.h"
-#include "ui/message_center/message_center.h"
 
 // TODO(crbug.com/1101667): Currently, this source has log spamming
 // by LOG(WARNING) for non critical errors to make it easy
@@ -95,39 +89,6 @@ void SetLaunchOnLoginPref(bool launch_on_login) {
 bool GetLaunchOnLoginPref() {
   return ProfileManager::GetPrimaryUserProfile()->GetPrefs()->GetBoolean(
       browser_util::kLaunchOnLoginPref);
-}
-
-// Checks that the stateful parition is executable. Returns true if it is.
-// Otherwise presents a warning dialog for the developer.
-bool VerifyStatefulPartitionIsExecutable() {
-  struct statvfs buf;
-  {
-    base::ScopedBlockingCall scoped_blocking_call(
-        FROM_HERE, base::BlockingType::MAY_BLOCK);
-    if (statvfs("/mnt/stateful_partition", &buf) < 0) {
-      PLOG(ERROR) << "statvfs() failed";
-      return false;
-    }
-  }
-  const bool is_executable = !(buf.f_flag & ST_NOEXEC);
-  if (is_executable)
-    return true;
-
-  message_center::MessageCenter* message_center =
-      message_center::MessageCenter::Get();
-  std::string notification_id = "stateful_noexec";
-  message_center->AddNotification(ash::CreateSystemNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-      base::ASCIIToUTF16("Cannot launch lacros-chrome"),
-      base::ASCIIToUTF16("/mnt/stateful_partition is marked as noexec."),
-      base::string16(),  // display_source
-      GURL(),
-      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
-                                 notification_id),
-      message_center::RichNotificationData(),
-      /*delegate=*/nullptr, gfx::VectorIcon(),
-      message_center::SystemNotificationWarningLevel::NORMAL));
-  return false;
 }
 
 }  // namespace
@@ -250,16 +211,6 @@ bool BrowserManager::Start() {
   if (custom_chrome_path) {
     argv.push_back("--enable-logging");
     argv.push_back("--log-file=" + LacrosLogPath().value());
-
-    // If this is a developer, we also want to check that the partition is
-    // executable. This allows us to present an obvious warning dialog for the
-    // common case where the device has been restarted and the partition is no
-    // longer executable. We cannot simply check the return value of
-    // base::LaunchProcess as that actually returns success.
-    if (base::SysInfo::IsRunningOnChromeOS() &&
-        !VerifyStatefulPartitionIsExecutable()) {
-      return false;
-    }
   }
 
   // Set up Mojo channel.

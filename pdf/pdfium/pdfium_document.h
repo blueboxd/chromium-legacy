@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_dataavail.h"
 #include "third_party/pdfium/public/fpdfview.h"
@@ -20,6 +19,8 @@ class DocumentLoader;
 class PDFiumDocument {
  public:
   explicit PDFiumDocument(DocumentLoader* doc_loader);
+  PDFiumDocument(const PDFiumDocument&) = delete;
+  PDFiumDocument& operator=(const PDFiumDocument&) = delete;
   ~PDFiumDocument();
 
   FPDF_FILEACCESS& file_access() { return *file_access_; }
@@ -65,8 +66,6 @@ class PDFiumDocument {
 
   // Current form availability status.
   int form_status_ = PDF_FORM_NOTAVAIL;
-
-  DISALLOW_COPY_AND_ASSIGN(PDFiumDocument);
 };
 
 }  // namespace chrome_pdf

@@ -139,6 +139,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
     'net_junit_tests',
     'net_junit_tests',
     'password_check_junit_tests',
+    'password_manager_junit_tests',
     'services_junit_tests',
     'shipped_binaries',
     'system_webview_apk',

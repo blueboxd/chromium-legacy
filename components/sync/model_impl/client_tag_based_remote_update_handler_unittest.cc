@@ -14,11 +14,9 @@
 #include "components/sync/test/engine/mock_model_type_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+namespace syncer {
 
-using syncer::FakeModelTypeSyncBridge;
-using syncer::UpdateResponseData;
-using syncer::UpdateResponseDataList;
+namespace {
 
 const char kKey1[] = "key1";
 const char kKey2[] = "key2";
@@ -34,42 +32,46 @@ class ClientTagBasedRemoteUpdateHandlerTest : public ::testing::Test {
  public:
   ClientTagBasedRemoteUpdateHandlerTest()
       : processor_entity_tracker_(GenerateModelTypeState(),
-                                  syncer::EntityMetadataMap()),
+                                  EntityMetadataMap()),
         model_type_sync_bridge_(change_processor_.CreateForwardingProcessor()),
-        remote_update_handler_(syncer::PREFERENCES,
+        remote_update_handler_(PREFERENCES,
                                &model_type_sync_bridge_,
                                &processor_entity_tracker_),
         worker_(GenerateModelTypeState(), &model_type_processor_) {}
 
   ~ClientTagBasedRemoteUpdateHandlerTest() override = default;
 
-  void ProcessSingleUpdate(UpdateResponseData update) {
+  void ProcessSingleUpdate(const sync_pb::ModelTypeState& model_type_state,
+                           UpdateResponseData update) {
     UpdateResponseDataList updates;
     updates.push_back(std::move(update));
-    remote_update_handler_.ProcessIncrementalUpdate(GenerateModelTypeState(),
+    remote_update_handler_.ProcessIncrementalUpdate(model_type_state,
                                                     std::move(updates));
   }
 
-  syncer::UpdateResponseData GenerateUpdate(const std::string& key,
-                                            const std::string& value) {
-    const syncer::ClientTagHash client_tag_hash =
+  void ProcessSingleUpdate(UpdateResponseData update) {
+    ProcessSingleUpdate(GenerateModelTypeState(), std::move(update));
+  }
+
+  UpdateResponseData GenerateUpdate(const std::string& key,
+                                    const std::string& value) {
+    const ClientTagHash client_tag_hash =
         FakeModelTypeSyncBridge::TagHashFromKey(key);
     return GenerateUpdate(client_tag_hash, key, value);
   }
 
-  syncer::UpdateResponseData GenerateUpdate(
-      const syncer::ClientTagHash& client_tag_hash,
-      const std::string& key,
-      const std::string& value) {
+  UpdateResponseData GenerateUpdate(const ClientTagHash& client_tag_hash,
+                                    const std::string& key,
+                                    const std::string& value) {
     return worker()->GenerateUpdateData(
         client_tag_hash,
         FakeModelTypeSyncBridge::GenerateSpecifics(key, value));
   }
 
-  syncer::UpdateResponseData GenerateUpdate(const std::string& key,
-                                            const std::string& value,
-                                            int64_t version_offset) {
-    const syncer::ClientTagHash client_tag_hash =
+  UpdateResponseData GenerateUpdate(const std::string& key,
+                                    const std::string& value,
+                                    int64_t version_offset) {
+    const ClientTagHash client_tag_hash =
         FakeModelTypeSyncBridge::TagHashFromKey(key);
     const sync_pb::ModelTypeState model_type_state = GenerateModelTypeState();
     const sync_pb::EntitySpecifics specifics =
@@ -84,25 +86,25 @@ class ClientTagBasedRemoteUpdateHandlerTest : public ::testing::Test {
   }
 
   FakeModelTypeSyncBridge* bridge() { return &model_type_sync_bridge_; }
-  syncer::ClientTagBasedRemoteUpdateHandler* remote_update_handler() {
+  ClientTagBasedRemoteUpdateHandler* remote_update_handler() {
     return &remote_update_handler_;
   }
   FakeModelTypeSyncBridge::Store* db() { return bridge()->mutable_db(); }
-  syncer::ProcessorEntityTracker* entity_tracker() {
+  ProcessorEntityTracker* entity_tracker() {
     return &processor_entity_tracker_;
   }
-  testing::NiceMock<syncer::MockModelTypeChangeProcessor>* change_processor() {
+  testing::NiceMock<MockModelTypeChangeProcessor>* change_processor() {
     return &change_processor_;
   }
-  syncer::MockModelTypeWorker* worker() { return &worker_; }
+  MockModelTypeWorker* worker() { return &worker_; }
 
  private:
-  testing::NiceMock<syncer::MockModelTypeChangeProcessor> change_processor_;
-  syncer::ProcessorEntityTracker processor_entity_tracker_;
+  testing::NiceMock<MockModelTypeChangeProcessor> change_processor_;
+  ProcessorEntityTracker processor_entity_tracker_;
   FakeModelTypeSyncBridge model_type_sync_bridge_;
-  syncer::ClientTagBasedRemoteUpdateHandler remote_update_handler_;
-  testing::NiceMock<syncer::MockModelTypeProcessor> model_type_processor_;
-  syncer::MockModelTypeWorker worker_;
+  ClientTagBasedRemoteUpdateHandler remote_update_handler_;
+  testing::NiceMock<MockModelTypeProcessor> model_type_processor_;
+  MockModelTypeWorker worker_;
 };
 
 // Thoroughly tests the data generated by a server item creation.
@@ -111,7 +113,7 @@ TEST_F(ClientTagBasedRemoteUpdateHandlerTest, ShouldProcessRemoteCreation) {
   EXPECT_EQ(1u, db()->data_count());
   EXPECT_EQ(1u, db()->metadata_count());
 
-  const syncer::EntityData& data = db()->GetData(kKey1);
+  const EntityData& data = db()->GetData(kKey1);
   EXPECT_FALSE(data.id.empty());
   EXPECT_EQ(kKey1, data.specifics.preference().name());
   EXPECT_EQ(kValue1, data.specifics.preference().value());
@@ -136,7 +138,7 @@ TEST_F(ClientTagBasedRemoteUpdateHandlerTest,
        ShouldIgnoreRemoteUpdatesForRootNodes) {
   ASSERT_EQ(0U, ProcessorEntityCount());
   ProcessSingleUpdate(
-      worker()->GenerateTypeRootUpdateData(syncer::ModelType::SESSIONS));
+      worker()->GenerateTypeRootUpdateData(ModelType::SESSIONS));
   // Root node update should be filtered out.
   EXPECT_EQ(0U, db()->data_count());
   EXPECT_EQ(0U, db()->metadata_count());
@@ -222,4 +224,28 @@ TEST_F(ClientTagBasedRemoteUpdateHandlerTest,
   EXPECT_FALSE(entity_tracker()->HasLocalChanges());
 }
 
+// Test for the case from crbug.com/1046309. Tests that there is no redundant
+// deletion when processing remote deletion with different encryption key.
+TEST_F(ClientTagBasedRemoteUpdateHandlerTest,
+       ShouldNotIssueDeletionUponRemoteDeletion) {
+  const std::string kTestEncryptionKeyName = "TestEncryptionKey";
+  const std::string kDifferentEncryptionKeyName = "DifferentEncryptionKey";
+  const ClientTagHash kClientTagHash =
+      FakeModelTypeSyncBridge::TagHashFromKey(kKey1);
+
+  sync_pb::ModelTypeState model_type_state = GenerateModelTypeState();
+  model_type_state.set_encryption_key_name(kTestEncryptionKeyName);
+
+  ProcessSingleUpdate(GenerateUpdate(kClientTagHash, kKey1, kValue1));
+
+  // Generate a remote deletion with a different encryption key.
+  model_type_state.set_encryption_key_name(kDifferentEncryptionKeyName);
+  ProcessSingleUpdate(model_type_state,
+                      worker()->GenerateTombstoneUpdateData(kClientTagHash));
+
+  EXPECT_EQ(0u, ProcessorEntityCount());
+}
+
 }  // namespace
+
+}  // namespace syncer

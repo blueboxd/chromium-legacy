@@ -33,7 +33,38 @@ bool IsProfileCreationAllowed() {
   return service->GetBoolean(prefs::kBrowserAddPersonEnabled);
 }
 
+// Helper function to return the primary account info. The returned info is
+// empty if there is no primary account, and non-empty otherwise. Extended
+// fields may be missing if they are not available.
+AccountInfo GetPrimaryAccountInfo(signin::IdentityManager* manager) {
+  CoreAccountInfo primary_core_account_info =
+      manager->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired);
+  if (primary_core_account_info.IsEmpty())
+    return AccountInfo();
+
+  base::Optional<AccountInfo> primary_account_info =
+      manager->FindExtendedAccountInfoForAccountWithRefreshToken(
+          primary_core_account_info);
+
+  if (primary_account_info)
+    return *primary_account_info;
+
+  // Return an AccountInfo without extended fields, based on the core info.
+  AccountInfo account_info;
+  account_info.gaia = primary_core_account_info.gaia;
+  account_info.email = primary_core_account_info.email;
+  account_info.account_id = primary_core_account_info.account_id;
+  return account_info;
+}
+
 }  // namespace
+
+bool DiceWebSigninInterceptor::Delegate::BubbleParameters::operator==(
+    const DiceWebSigninInterceptor::Delegate::BubbleParameters& rhs) const {
+  return interception_type == rhs.interception_type &&
+         intercepted_account == rhs.intercepted_account &&
+         primary_account == rhs.primary_account;
+}
 
 DiceWebSigninInterceptor::DiceWebSigninInterceptor(
     Profile* profile,
@@ -80,8 +111,11 @@ void DiceWebSigninInterceptor::MaybeInterceptWebSignin(
   if (ShouldShowProfileSwitchBubble(*account_info,
                                     &g_browser_process->profile_manager()
                                          ->GetProfileAttributesStorage())) {
+    Delegate::BubbleParameters bubble_parameters{
+        SigninInterceptionType::kProfileSwitch, *account_info,
+        GetPrimaryAccountInfo(identity_manager_)};
     delegate_->ShowSigninInterceptionBubble(
-        SigninInterceptionType::kProfileSwitch, web_contents, *account_info,
+        web_contents, bubble_parameters,
         base::BindOnce(&DiceWebSigninInterceptor::OnProfileSwitchChoice,
                        base::Unretained(this)));
 
@@ -217,8 +251,10 @@ void DiceWebSigninInterceptor::OnExtendedAccountInfoUpdated(
     return;
   }
 
+  Delegate::BubbleParameters bubble_parameters{
+      *interception_type, info, GetPrimaryAccountInfo(identity_manager_)};
   delegate_->ShowSigninInterceptionBubble(
-      *interception_type, web_contents(), info,
+      web_contents(), bubble_parameters,
       base::BindOnce(&DiceWebSigninInterceptor::OnProfileCreationChoice,
                      base::Unretained(this)));
 }

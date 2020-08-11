@@ -189,8 +189,6 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/password_manager/settings/DialogManagerTest.java",
   "junit/src/org/chromium/chrome/browser/password_manager/settings/EnsureAsyncPostingRule.java",
   "junit/src/org/chromium/chrome/browser/password_manager/settings/ExportWarningDialogFragmentTest.java",
-  "junit/src/org/chromium/chrome/browser/password_manager/settings/PasswordReauthenticationFragmentTest.java",
-  "junit/src/org/chromium/chrome/browser/password_manager/settings/ReauthenticationManagerTest.java",
   "junit/src/org/chromium/chrome/browser/password_manager/settings/SingleThreadBarrierClosureTest.java",
   "junit/src/org/chromium/chrome/browser/password_manager/settings/TimedCallbackDelayerTest.java",
   "junit/src/org/chromium/chrome/browser/payments/AutofillContactTest.java",

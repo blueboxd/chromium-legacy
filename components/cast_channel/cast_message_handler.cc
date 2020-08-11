@@ -209,8 +209,8 @@ void CastMessageHandler::LaunchSession(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CastSocket* socket = socket_service_->GetSocket(channel_id);
   if (!socket) {
-    DVLOG(2) << __func__ << ": socket not found: " << channel_id;
-    std::move(callback).Run(LaunchSessionResponse());
+    std::move(callback).Run(GetLaunchSessionResponseError(
+        base::StringPrintf("Socket not found: %d.", channel_id)));
     return;
   }
 
@@ -223,9 +223,8 @@ void CastMessageHandler::LaunchSession(
   CastMessage message = CreateLaunchRequest(
       sender_id_, request_id, app_id, locale_, supported_app_types, app_params);
   if (message.ByteSizeLong() > kMaxCastMessagePayload) {
-    LaunchSessionResponse response;
-    response.result = LaunchSessionResponse::kError;
-    std::move(callback).Run(std::move(response));
+    std::move(callback).Run(GetLaunchSessionResponseError(
+        "Message size exceeds maximum cast channel message payload."));
     return;
   }
   if (requests->AddLaunchRequest(std::make_unique<LaunchSessionRequest>(

@@ -7,13 +7,15 @@
 
   #header {
     --avatar-position: 84px;
-    border-radius: 8px;
+    background-color: var(--header-background-color);
+    border-radius: 4px;
+    color: var(--header-text-color);
     margin: 8px 8px 16px;
     min-height: 128px;
     position: relative;
   }
 
-  #accountName {
+  #headerText {
     font-size: 15px;
     font-weight: bold;
     line-height: 18px;
@@ -24,36 +26,61 @@
     white-space: nowrap;
   }
 
-  .avatar {
-    --avatar-size: 60px;
-    border: 2px solid var(--md-background-color);
-    border-radius: 50%;
+  .avatar-container {
+    --avatar-image-width: 60px;
+    --avatar-border: 2px;
+    --avatar-size: calc(var(--avatar-image-width) + 2 * var(--avatar-border));
+    --avatar-radius: calc(var(--avatar-image-width)/2 + var(--avatar-border));
+    --avatar-overlap: 27px;
     height: var(--avatar-size);
     position: absolute;
-    top: 43px;
     width: var(--avatar-size);
   }
 
-  #workBadge {
-    background-color: var(--signin-work-badge-background-color);
-    display: flex;
-    left: var(--avatar-position);
-    /** Ensure the work badge is on top */
-    z-index: 1;
+  .avatar {
+    /** The user avatar may be transparent, add a background */
+    background-color: var(--md-background-color);
+    border: var(--avatar-border) solid var(--md-background-color);
+    border-radius: 50%;
+    height: var(--avatar-image-width);
+    top: 43px;
+    width: var(--avatar-image-width);
   }
 
-  #workBadge > iron-icon {
-    --work-icon-size: 36px;
+  .work-badge {
+    --badge-width: 20px;
+    --badge-offset: -4px;
+    background-color: var(--signin-work-badge-background-color);
+    border: 2px solid var(--header-background-color);
+    border-radius: 50%;
+    bottom: var(--badge-offset);
+    height: var(--badge-width);
+    position: absolute;
+    right: var(--badge-offset);
+    width: var(--badge-width);
+  }
+
+  .work-badge > iron-icon {
+    --work-icon-size: 16px;
+    bottom: 0;
     color: white;
     height: var(--work-icon-size);
+    left: 0;
     margin: auto;
+    position: absolute;
+    right: 0;
+    top: 0;
     width: var(--work-icon-size);
   }
 
-  #userAvatar {
-    /** The user avatar may be transparent, add a background */
-    background-color: var(--md-background-color);
-    right: var(--avatar-position);
+  #interceptedAvatar {
+    left: calc(50% - var(--avatar-radius) - var(--avatar-overlap));
+    /** Ensure the intercepted avatar is on top of the primary avatar */
+    z-index: 1;
+  }
+
+  #primaryAvatar {
+    left: calc(50% - var(--avatar-radius) + var(--avatar-overlap));
   }
 
   #body {
@@ -72,22 +99,38 @@
     margin: 0 0 8px;
   }
 
+  .action-container {
+    padding: 0 16px 16px;
+  }
+
   cr-button {
     font-size: 12px;
   }
 </style>
 
-<div id="header" style$="[[headerStyle_]]">
-  <div id="accountName">[[accountInfo_.name]]</div>
-  <div class="avatar" id="workBadge">
-    <iron-icon class="icon" icon="signin:work"></iron-icon>
+<div id="header">
+  <div id="headerText">[[interceptionParameters_.headerText]]</div>
+  <div class="avatar-container" id="interceptedAvatar">
+    <img class="avatar" id="interceptedAvatarImg"
+        src="[[interceptionParameters_.interceptedAccount.pictureUrl]]">
+    <div class="work-badge" id="interceptedBadge"
+        hidden="[[!interceptionParameters_.interceptedAccount.isManaged]]">
+      <iron-icon class="icon" icon="signin:work"></iron-icon>
+    </div>
   </div>
-  <img class="avatar" id="userAvatar" src="[[accountInfo_.pictureUrl]]">
+  <div class="avatar-container" id="primaryAvatar">
+    <img class="avatar" id="primaryAvatarImg"
+        src="[[interceptionParameters_.primaryAccount.pictureUrl]]">
+    <div class="work-badge" id="primaryBadge"
+        hidden="[[!interceptionParameters_.primaryAccount.isManaged]]">
+      <iron-icon class="icon" icon="signin:work"></iron-icon>
+    </div>
+  </div>
 </div>
 
 <div id="body">
-  <div id="title">$i18n{diceWebSigninInterceptTitle}</div>
-  <div>$i18n{diceWebSigninInterceptDesc}</div>
+  <div id="title">[[interceptionParameters_.bodyTitle]]</div>
+  <div id="contents">[[interceptionParameters_.bodyText]]</div>
 </div>
 
 <div class="action-container">

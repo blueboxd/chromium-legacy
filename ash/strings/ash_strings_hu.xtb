@@ -507,6 +507,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6972754398087986839">Első lépések</translation>
 <translation id="6981982820502123353">Kisegítő opciók</translation>
 <translation id="698231206551913481">A felhasználó eltávolításakor az összes hozzá tartozó fájl és helyi adat is véglegesen törlődik.</translation>
+<translation id="7007983414944123363">PIN-kódjának vagy jelszavának ellenőrzése nem sikerült. Próbálja újra.</translation>
 <translation id="7015766095477679451">Térjen vissza ekkor: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">A(z) <ph name="DEVICE_NAME" /> eszköz csatlakoztatása a telefonjával</translation>
 <translation id="7026338066939101231">Csökkentés</translation>
@@ -552,6 +553,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7568294522609223312">Automatikus kattintások kikapcsolása</translation>
 <translation id="7568637526529101738">Jobb kattintással vagy nyomva tartással információkat kérhet Segédjétől (például definíciót a szavakhoz vagy átváltást a mértékegységekhez).</translation>
 <translation id="7569509451529460200">Braille és ChromeVox bekapcsolva</translation>
+<translation id="7579778809502851308">Képernyőfelvétel</translation>
 <translation id="7593891976182323525">Keresés vagy Shift</translation>
 <translation id="7600875258240007829">Összes értesítés megtekintése</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />°F</translation>
@@ -670,6 +672,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8841375032071747811">Vissza gomb</translation>
 <translation id="8843682306134542540">Váltás a forgatás zárolásának állapotai közt. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Keresés+Esc</translation>
+<translation id="8853703225951107899">PIN-kódjának vagy jelszavának ellenőrzése még mindig nem sikerült. Megjegyzés: Ha nemrég módosította jelszavát, akkor használja a régit. Az új jelszó beállítása a kijelentkezés után lép érvénybe.</translation>
 <translation id="8870509716567206129">Az alkalmazás nem támogatja az osztott képernyős nézetet.</translation>
 <translation id="8874184842967597500">Nincs csatl.</translation>
 <translation id="8877788021141246043">Emlékeztető beállítása</translation>

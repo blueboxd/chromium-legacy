@@ -9835,6 +9835,13 @@
       },
       {
         "isolate_profile_data": true,
+        "name": "password_manager_junit_tests",
+        "swarming": {},
+        "test": "password_manager_junit_tests",
+        "test_id_prefix": "ninja://chrome/browser/password_manager/android:password_manager_junit_tests/"
+      },
+      {
+        "isolate_profile_data": true,
         "name": "services_junit_tests",
         "swarming": {},
         "test": "services_junit_tests",
@@ -14893,9 +14900,6 @@
     ],
     "gtest_tests": [
       {
-        "args": [
-          "--device=aemu"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -14915,7 +14919,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -14937,7 +14940,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -14960,7 +14962,6 @@
       {
         "args": [
           "--child-arg=--ozone-platform=headless",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -14982,7 +14983,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15004,7 +15004,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15026,7 +15025,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15048,7 +15046,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15070,7 +15067,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15093,7 +15089,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.blink_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15115,7 +15110,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15137,7 +15131,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15159,7 +15152,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15181,7 +15173,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15203,7 +15194,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15225,7 +15215,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15247,7 +15236,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15271,7 +15259,6 @@
       {
         "args": [
           "--child-arg=--ozone-platform=headless",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15294,7 +15281,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15316,7 +15302,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15338,7 +15323,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15360,7 +15344,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15382,7 +15365,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15404,7 +15386,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15426,7 +15407,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15448,7 +15428,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15470,7 +15449,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15492,7 +15470,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15513,9 +15490,6 @@
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
       {
-        "args": [
-          "--device=aemu"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -15536,7 +15510,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.headless_browsertests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15558,7 +15531,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15580,7 +15552,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15602,7 +15573,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15624,7 +15594,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15646,7 +15615,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15668,7 +15636,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15691,7 +15658,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15713,7 +15679,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15735,7 +15700,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15757,7 +15721,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15780,7 +15743,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.services_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15802,7 +15764,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15824,7 +15785,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15847,7 +15807,6 @@
       {
         "args": [
           "--child-arg=--ozone-platform=headless",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15869,7 +15828,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15892,7 +15850,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.storage_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15915,7 +15872,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15937,7 +15893,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15960,7 +15915,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.viz_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -15982,7 +15936,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16003,9 +15956,6 @@
         "test_id_prefix": "ninja://fuchsia/engine:web_engine_browsertests/"
       },
       {
-        "args": [
-          "--device=aemu"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16025,7 +15975,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16046,9 +15995,6 @@
         "test_id_prefix": "ninja://fuchsia/engine:web_engine_unittests/"
       },
       {
-        "args": [
-          "--device=aemu"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16068,7 +16014,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16096,9 +16041,6 @@
     ],
     "gtest_tests": [
       {
-        "args": [
-          "--device=aemu"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16118,7 +16060,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16140,7 +16081,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16163,7 +16103,6 @@
       {
         "args": [
           "--child-arg=--ozone-platform=headless",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16185,7 +16124,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16207,7 +16145,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16229,7 +16166,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16251,7 +16187,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16273,7 +16208,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16296,7 +16230,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.blink_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16318,7 +16251,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16340,7 +16272,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16362,7 +16293,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16384,7 +16314,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16406,7 +16335,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16428,7 +16356,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16450,7 +16377,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16474,7 +16400,6 @@
       {
         "args": [
           "--child-arg=--ozone-platform=headless",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16497,7 +16422,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16519,7 +16443,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16541,7 +16464,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16563,7 +16485,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16585,7 +16506,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16607,7 +16527,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16629,7 +16548,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16651,7 +16569,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16673,7 +16590,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16695,7 +16611,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16716,9 +16631,6 @@
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
       {
-        "args": [
-          "--device=aemu"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16739,7 +16651,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.headless_browsertests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16761,7 +16672,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16783,7 +16693,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16805,7 +16714,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16827,7 +16735,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16849,7 +16756,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16871,7 +16777,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16894,7 +16799,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16916,7 +16820,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16939,7 +16842,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16962,7 +16864,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -16984,7 +16885,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17007,7 +16907,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.services_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17029,7 +16928,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17051,7 +16949,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17074,7 +16971,6 @@
       {
         "args": [
           "--child-arg=--ozone-platform=headless",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17096,7 +16992,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17119,7 +17014,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.storage_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17142,7 +17036,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17164,7 +17057,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17187,7 +17079,6 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.viz_unittests.filter",
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17209,7 +17100,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17230,9 +17120,6 @@
         "test_id_prefix": "ninja://fuchsia/engine:web_engine_browsertests/"
       },
       {
-        "args": [
-          "--device=aemu"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -17252,7 +17139,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17273,9 +17159,6 @@
         "test_id_prefix": "ninja://fuchsia/engine:web_engine_unittests/"
       },
       {
-        "args": [
-          "--device=aemu"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -17295,7 +17178,6 @@
       },
       {
         "args": [
-          "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
         "merge": {
@@ -17320,7 +17202,6 @@
       {
         "args": [
           "--num-retries=3",
-          "--device=aemu",
           "--platform=fuchsia"
         ],
         "isolate_name": "blink_web_tests",
@@ -17351,8 +17232,7 @@
           "--browser=web-engine-shell",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating",
-          "--device=aemu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
         "isolate_name": "fuchsia_telemetry_gpu_integration_test",
         "merge": {
@@ -17381,8 +17261,7 @@
           "--browser=web-engine-shell",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--device=aemu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "fuchsia_telemetry_gpu_integration_test",
         "merge": {
@@ -17411,8 +17290,7 @@
           "--browser=web-engine-shell",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--device=aemu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "fuchsia_telemetry_gpu_integration_test",
         "merge": {
@@ -17441,8 +17319,7 @@
           "--browser=web-engine-shell",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--device=aemu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "fuchsia_telemetry_gpu_integration_test",
         "merge": {
@@ -17475,8 +17352,7 @@
           "--expected-vendor-id",
           "0",
           "--expected-device-id",
-          "0",
-          "--device=aemu"
+          "0"
         ],
         "isolate_name": "fuchsia_telemetry_gpu_integration_test",
         "merge": {
@@ -17505,8 +17381,7 @@
           "--browser=web-engine-shell",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--device=aemu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "fuchsia_telemetry_gpu_integration_test",
         "merge": {
@@ -17535,8 +17410,7 @@
           "--browser=web-engine-shell",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--device=aemu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "fuchsia_telemetry_gpu_integration_test",
         "merge": {
@@ -17565,8 +17439,7 @@
           "--browser=web-engine-shell",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--device=aemu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "fuchsia_telemetry_gpu_integration_test",
         "merge": {

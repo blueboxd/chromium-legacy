@@ -568,7 +568,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
-    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE})
     public void testContextMenuRetrievesImageOptions() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
@@ -586,10 +585,9 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
-    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE,
-            ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST})
-    public void
-    testContextMenuRetrievesImageOptionsWithLensShoppingAllowlist() throws TimeoutException {
+    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST})
+    public void testContextMenuRetrievesImageOptionsWithLensShoppingAllowlist()
+            throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
 
@@ -605,10 +603,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
-    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
-            ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE})
-    public void
-    testContextMenuRetrievesImageOptionsLensEnabled() throws TimeoutException {
+    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
+    public void testContextMenuRetrievesImageOptionsLensEnabled() throws TimeoutException {
         LensUtils.setFakePassableLensEnvironmentForTesting(true);
 
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -642,7 +638,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image,
-                R.id.contextmenu_shop_similar_products};
+                R.id.contextmenu_shop_similar_products, R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
                 addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
@@ -668,7 +664,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image,
-                R.id.contextmenu_shop_image_with_google_lens};
+                R.id.contextmenu_shop_image_with_google_lens, R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
                 addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
@@ -694,7 +690,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image,
-                R.id.contextmenu_search_similar_products};
+                R.id.contextmenu_search_similar_products, R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
                 addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
@@ -719,7 +715,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_with_google_lens,
-                R.id.contextmenu_share_image};
+                R.id.contextmenu_share_image, R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
                 addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
@@ -745,7 +741,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_with_google_lens,
-                R.id.contextmenu_share_image, R.id.contextmenu_shop_similar_products};
+                R.id.contextmenu_share_image, R.id.contextmenu_shop_similar_products,
+                R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
                 addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
@@ -766,7 +763,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
-                R.id.contextmenu_share_image};
+                R.id.contextmenu_share_image, R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
                 addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
@@ -778,7 +775,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Feature({"Browser", "ContextMenu"})
     @Policies.Add({ @Policies.Item(key = "DefaultSearchProviderEnabled", string = "false") })
     @DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
-    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE})
     public void testContextMenuRetrievesImageOptions_NoDefaultSearchEngine()
             throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -797,10 +793,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @Policies.Add({ @Policies.Item(key = "DefaultSearchProviderEnabled", string = "false") })
-    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
-            ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE})
-    public void
-    testContextMenuRetrievesImageOptions_NoDefaultSearchEngineLensEnabled()
+    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
+    public void testContextMenuRetrievesImageOptions_NoDefaultSearchEngineLensEnabled()
             throws TimeoutException {
         LensUtils.setFakePassableLensEnvironmentForTesting(true);
 
@@ -821,7 +815,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
-    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE})
     public void testContextMenuRetrievesImageLinkOptions() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImageLink");
@@ -842,10 +835,9 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
-    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
-            ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE})
-    public void
-    testContextMenuRetrievesImageLinkOptionsSearchLensEnabled() throws TimeoutException {
+    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
+    public void testContextMenuRetrievesImageLinkOptionsSearchLensEnabled()
+            throws TimeoutException {
         LensUtils.setFakePassableLensEnvironmentForTesting(true);
 
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -883,7 +875,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_copy_link_address,
                 R.id.contextmenu_save_link_as, R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
-                R.id.contextmenu_share_image, R.id.contextmenu_share_link};
+                R.id.contextmenu_share_image, R.id.contextmenu_share_link,
+                R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
                 R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
@@ -908,7 +901,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
-    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE})
     public void testCopyImage() throws Throwable {
         // Clear the clipboard.
         Clipboard.getInstance().setText("");

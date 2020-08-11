@@ -472,15 +472,10 @@ void RenderWidget::UpdateVisualProperties(
       web_view->CancelPagePopup();
     }
 
-    SetAutoResizeMode(visual_properties.auto_resize_enabled,
-                      visual_properties.min_size_for_auto_resize,
-                      visual_properties.max_size_for_auto_resize,
-                      visual_properties.screen_info.device_scale_factor);
-
     browser_controls_params_ = visual_properties.browser_controls_params;
   }
 
-  if (!auto_resize_mode_) {
+  if (!AutoResizeMode()) {
     if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_) {
       is_fullscreen_granted_ = visual_properties.is_fullscreen_granted;
       if (is_fullscreen_granted_)
@@ -493,7 +488,7 @@ void RenderWidget::UpdateVisualProperties(
   gfx::Size old_visible_viewport_size = visible_viewport_size_;
 
   if (device_emulator_) {
-    DCHECK(!auto_resize_mode_);
+    DCHECK(!AutoResizeMode());
     DCHECK(!synchronous_resize_mode_for_testing_);
 
     // TODO(danakj): Have RenderWidget grab emulated values from the emulator
@@ -541,7 +536,7 @@ void RenderWidget::UpdateVisualProperties(
     if (!ignore_resize_ipc) {
       gfx::Rect new_compositor_viewport_pixel_rect =
           visual_properties.compositor_viewport_pixel_rect;
-      if (auto_resize_mode_) {
+      if (AutoResizeMode()) {
         new_compositor_viewport_pixel_rect = gfx::Rect(gfx::ScaleToCeiledSize(
             size_, visual_properties.screen_info.device_scale_factor));
       }
@@ -570,9 +565,8 @@ void RenderWidget::UpdateVisualProperties(
       // hierarchy via the VisualProperties waterfall.
       visible_viewport_size_ = visual_properties.visible_viewport_size;
 
-      if (!auto_resize_mode_) {
-        size_ = visual_properties.new_size;
-        ResizeWebWidget();
+      if (!AutoResizeMode()) {
+        SetSize(visual_properties.new_size);
       }
     }
   }
@@ -670,31 +664,6 @@ float RenderWidget::GetEmulatorScale() const {
   if (device_emulator_)
     return device_emulator_->scale();
   return 1;
-}
-
-void RenderWidget::SetAutoResizeMode(bool auto_resize,
-                                     const gfx::Size& min_size_before_dsf,
-                                     const gfx::Size& max_size_before_dsf,
-                                     float device_scale_factor) {
-  bool was_changed = auto_resize_mode_ != auto_resize;
-  auto_resize_mode_ = auto_resize;
-
-  min_size_for_auto_resize_ = min_size_before_dsf;
-  max_size_for_auto_resize_ = max_size_before_dsf;
-
-  if (auto_resize) {
-    gfx::Size min_auto_size = min_size_for_auto_resize_;
-    gfx::Size max_auto_size = max_size_for_auto_resize_;
-    if (compositor_deps_->IsUseZoomForDSFEnabled()) {
-      min_auto_size =
-          gfx::ScaleToCeiledSize(min_auto_size, device_scale_factor);
-      max_auto_size =
-          gfx::ScaleToCeiledSize(max_auto_size, device_scale_factor);
-    }
-    delegate()->ApplyAutoResizeLimitsForWidget(min_auto_size, max_auto_size);
-  } else if (was_changed) {
-    delegate()->DisableAutoResizeForWidget();
-  }
 }
 
 void RenderWidget::SetRootWindowSegments(
@@ -940,7 +909,7 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
 void RenderWidget::ResizeWebWidget() {
   // In auto resize mode, blink controls sizes and RenderWidget should not be
   // passing values back in.
-  DCHECK(!auto_resize_mode_);
+  DCHECK(!AutoResizeMode());
 
   // The widget size given to blink is scaled by the (non-emulated,
   // see https://crbug.com/819903) device scale factor (if UseZoomForDSF is
@@ -1000,7 +969,7 @@ void RenderWidget::SetScreenInfoAndSize(
   DCHECK(delegate());
   DCHECK(for_frame());
   // Emulation happens on regular main frames which don't use auto-resize mode.
-  DCHECK(!auto_resize_mode_);
+  DCHECK(!AutoResizeMode());
 
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(), screen_info);
@@ -1023,8 +992,7 @@ void RenderWidget::SetScreenInfoAndSize(
                                         screen_info_.device_scale_factor));
 
   visible_viewport_size_ = visible_viewport_size;
-  size_ = widget_size;
-  ResizeWebWidget();
+  SetSize(widget_size);
 }
 
 void RenderWidget::SetScreenMetricsEmulationParameters(
@@ -1317,6 +1285,11 @@ void RenderWidget::SetPendingWindowRect(const WebRect& rect) {
   }
 }
 
+void RenderWidget::SetSize(const gfx::Size& new_size) {
+  size_ = new_size;
+  ResizeWebWidget();
+}
+
 void RenderWidget::ImeSetCompositionForPepper(
     const blink::WebString& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
@@ -1436,8 +1409,7 @@ void RenderWidget::SetWindowRectSynchronously(
                              compositor_viewport_pixel_rect, screen_info_);
 
   visible_viewport_size_ = new_window_rect.size();
-  size_ = new_window_rect.size();
-  ResizeWebWidget();
+  SetSize(new_window_rect.size());
 
   widget_screen_rect_ = new_window_rect;
   window_screen_rect_ = new_window_rect;
@@ -1759,7 +1731,7 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   gfx::Size viewport_pixel_size = gfx::ScaleToCeiledSize(size_, factor);
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              gfx::Rect(viewport_pixel_size), info);
-  if (!auto_resize_mode_)
+  if (!AutoResizeMode())
     ResizeWebWidget();  // This picks up the new device scale factor in |info|.
 
   RenderFrameImpl* render_frame =
@@ -1784,26 +1756,6 @@ void RenderWidget::SetDeviceColorSpaceForTesting(
 void RenderWidget::SetWindowRectSynchronouslyForTesting(
     const gfx::Rect& new_window_rect) {
   SetWindowRectSynchronously(new_window_rect);
-}
-
-void RenderWidget::EnableAutoResizeForTesting(const gfx::Size& min_size,
-                                              const gfx::Size& max_size) {
-  SetAutoResizeMode(true, min_size, max_size, screen_info_.device_scale_factor);
-}
-
-void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
-  if (!auto_resize_mode_)
-    return;
-
-  SetAutoResizeMode(false, gfx::Size(), gfx::Size(),
-                    screen_info_.device_scale_factor);
-
-  // The |new_size| is empty when resetting auto resize in between tests. In
-  // this case the current size should just be preserved.
-  if (!new_size.IsEmpty()) {
-    size_ = new_size;
-    ResizeWebWidget();
-  }
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1838,6 +1790,12 @@ gfx::Rect RenderWidget::ViewportVisibleRect() {
   if (for_child_local_root_frame_)
     return compositor_visible_rect_;
   return CompositorViewportRect();
+}
+
+bool RenderWidget::AutoResizeMode() {
+  if (!delegate_)
+    return false;
+  return delegate_->AutoResizeMode();
 }
 
 }  // namespace content

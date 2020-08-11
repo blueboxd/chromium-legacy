@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">ନାଭିଗେସନ୍ ଅବରୋଧ କରାଯାଇଛି: <ph name="URL" /></translation>
 <translation id="4278390842282768270">ଅନୁମୋଦିତ</translation>
 <translation id="429312253194641664">କୌଣସି ସାଇଟ୍ ମିଡିଆ ଚଲାଉଛି</translation>
+<translation id="4336434711095810371">ସମସ୍ତ ଡାଟା ଖାଲି କରନ୍ତୁ</translation>
 <translation id="4433925000917964731">Google ଦ୍ୱାରା ପ୍ରଦତ୍ତ ଲାଇଟ୍ ପୃଷ୍ଠା</translation>
 <translation id="4434045419905280838">ପପ୍-ଅପ୍ ଏବଂ ରିଡାଇରେକ୍‌ଟ</translation>
 <translation id="445467742685312942">ସାଇଟ୍‍ଗୁଡ଼ିକୁ ସୁରକ୍ଷିତ ବିଷୟବସ୍ତୁ ଚଳାଇବାକୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">ଇନ୍‌କଗ୍ନିଟୋ ଟାବ୍</translation>
 <translation id="5300589172476337783">ପ୍ରଦର୍ଶନ କରନ୍ତୁ</translation>
 <translation id="5301954838959518834">ଠିକ୍ ଅଛି, ବୁଝିଗଲି</translation>
-<translation id="5307446750509046227">ସାଇଟ୍‌ର ଷ୍ଟୋରେଜ୍ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="5313967007315987356">ସାଇଟ୍ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="5317780077021120954">ସଞ୍ଚୟ</translation>
 <translation id="5335288049665977812">ସାଇଟ୍‌ଗୁଡ଼ିକୁ JavaScript ଚଲାଇବା ପାଇଁ ଅନୁମତି ଦିଅନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">ଏକ ନିର୍ଦ୍ଧିଷ୍ଟ ସାଇଟ୍‌ ପାଇଁ JavaScript ଅବରୋଧ କରନ୍ତୁ।</translation>
 <translation id="8816026460808729765">ସେନ୍ସରଗୁଡ଼ିକୁ ଆକ୍ସେସ୍ କରିବାରୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">ଷ୍ଟୋରେଜ୍</translation>
 <translation id="8926666909099850184">ଏହି ଡିଭାଇସ୍ ପାଇଁ NFC ବନ୍ଦ ଅଛି। ଏହାକୁ <ph name="BEGIN_LINK" />Android ସେଟିଂସ୍‌<ph name="END_LINK" />ରେ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="8929372349074745002">ଏହି ସାଇଟ୍ ଅଧିକାଂଶ ଲୋକଙ୍କ ପାଇଁ ଶୀଘ୍ର ଖୋଲିଥାଏ ଏବଂ ଶୀଘ୍ର ବ୍ୟବହାର ପାଇଁ ପ୍ରସ୍ତୁତ ଥାଏ</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android ସେଟିଂସ<ph name="END_LINK" />ରେ <ph name="APP_NAME" /> ପାଇଁ ଅନୁମତି ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="945632385593298557">ଆପଣଙ୍କର ମାଇକ୍ରୋଫୋନ୍ ଆକ୍ସେସ୍ କରନ୍ତୁ</translation>
 <translation id="965817943346481315">ଯଦି ସାଇଟ୍ ଅନଧିକାର ପ୍ରବେଶ କରିଥିବା କିମ୍ବା ବିଭ୍ରାନ୍ତିକର ବିଜ୍ଞାପନ ଦେଖାଉଛି, ତେବେ ବ୍ଲକ୍ କରନ୍ତୁ(ସୁପାରିଶ୍ କରାଯାଇଛି)</translation>
+<translation id="967624055006145463">ଡାଟା ଷ୍ଟୋର୍ କରାଯାଇଛି</translation>
 </translationbundle>

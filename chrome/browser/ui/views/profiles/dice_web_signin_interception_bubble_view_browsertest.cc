@@ -25,7 +25,7 @@ class DiceWebSigninInterceptionBubbleBrowserTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     DiceWebSigninInterceptionBubbleView::CreateBubble(
-        browser()->profile(), GetAvatarButton(), AccountInfo(),
+        browser()->profile(), GetAvatarButton(), GetTestBubbleParameters(),
         base::OnceCallback<void(bool)>());
   }
 
@@ -46,6 +46,17 @@ class DiceWebSigninInterceptionBubbleBrowserTest : public DialogBrowserTest {
     callback_result_ = accept;
   }
 
+  // Returns dummy bubble parameters for testing.
+  DiceWebSigninInterceptor::Delegate::BubbleParameters
+  GetTestBubbleParameters() {
+    AccountInfo account;
+    account.account_id = CoreAccountId::FromGaiaId("ID1");
+    AccountInfo primary_account;
+    primary_account.account_id = CoreAccountId::FromGaiaId("ID2");
+    return {DiceWebSigninInterceptor::SigninInterceptionType::kMultiUser,
+            account, primary_account};
+  }
+
   base::Optional<bool> callback_result_;
 };
 
@@ -59,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptionBubbleBrowserTest,
                        BubbleClosed) {
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(
       new DiceWebSigninInterceptionBubbleView(
-          browser()->profile(), GetAvatarButton(), AccountInfo(),
+          browser()->profile(), GetAvatarButton(), GetTestBubbleParameters(),
           base::BindOnce(&DiceWebSigninInterceptionBubbleBrowserTest::
                              OnInterceptionComplete,
                          base::Unretained(this))));

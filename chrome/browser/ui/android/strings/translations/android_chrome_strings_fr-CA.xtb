@@ -265,7 +265,7 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="3062802207422175757">Articles portant sur vos centres d'intérêt dans Chrome</translation>
 <translation id="3089395242580810162">Ouvrir dans onglet nav. privée</translation>
 <translation id="3114012059975132928">Lecteur vidéo</translation>
-<translation id="3114507951000454849">Découvrez les actualités du jour <ph name="NEWS_ICON" /></translation>
+<translation id="3114507951000454849">Actualités du jour <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Annonces</translation>
 <translation id="3137521801621304719">Désactiver le mode de navigation privée</translation>
 <translation id="3143515551205905069">Annuler la synchronisation</translation>
@@ -477,6 +477,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4837753911714442426">Ouvrir les options d'impression de la page</translation>
 <translation id="4842092870884894799">Affichage de la fenêtre contextuelle de génération de mot de passe</translation>
 <translation id="4860895144060829044">Appeler</translation>
+<translation id="4864369630010738180">Connexion en cours…</translation>
 <translation id="4866368707455379617">Impossible d'installer <ph name="MODULE" /> dans Chrome</translation>
 <translation id="4875775213178255010">Suggestions de contenu</translation>
 <translation id="4878404682131129617">Échec de l'établissement d'un tunnel par l'intermédiaire d'un serveur mandataire</translation>

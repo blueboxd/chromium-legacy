@@ -1358,6 +1358,10 @@
     "label": "//chrome/browser/password_check/android:password_check_junit_tests",
     "type": "junit_test",
   },
+  "password_manager_junit_tests": {
+    "label": "//chrome/browser/password_manager/android:password_manager_junit_tests",
+    "type": "junit_test",
+  },
   "pdf_fuzzers": {
     "label": "//pdf/pdfium/fuzzers:pdf_fuzzers",
     "type": "additional_compile_target",

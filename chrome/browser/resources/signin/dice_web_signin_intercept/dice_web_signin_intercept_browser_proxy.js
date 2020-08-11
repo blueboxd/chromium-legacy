@@ -11,11 +11,22 @@ import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js
 /**
  * Account information sent from C++.
  * @typedef {{
- *   name: string,
+ *   isManaged: boolean,
  *   pictureUrl: string,
  * }}
  */
 export let AccountInfo;
+
+/**
+ * @typedef {{
+ *   headerText: string,
+ *   bodyTitle: string,
+ *   bodyText: string,
+ *   interceptedAccount: AccountInfo,
+ *   primaryAccount: AccountInfo,
+ * }}
+ */
+export let InterceptionParameters;
 
 /** @interface */
 export class DiceWebSigninInterceptBrowserProxy {
@@ -27,7 +38,7 @@ export class DiceWebSigninInterceptBrowserProxy {
 
   /**
    * Called when the page is loaded.
-   * @return {!Promise<!AccountInfo>}
+   * @return {!Promise<!InterceptionParameters>}
    * */
   pageLoaded() {}
 }

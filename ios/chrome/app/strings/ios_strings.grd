@@ -615,6 +615,10 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_CONTENT_CONTEXT_OPEN" desc="The iOS menu item for opening a link. Shorter than the desktop version [Length: 25em] [iOS only]">
         Open
       </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_OPEN_ALL_LINKS" desc="The iOS menu item for opening a list of links in new tabs. Shorter than the desktop version [iOS only]">
+        Open all
+      </message>
+
       <message name="IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW" desc="The iOS menu item for opening a link in a new window. [iOS only]">
         Open in New Window
       </message>

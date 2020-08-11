@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULE_MAP_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULE_MAP_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -31,6 +30,8 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   class Entry;
 
  public:
+  ModuleMap(const ModuleMap&) = delete;
+  ModuleMap& operator=(const ModuleMap&) = delete;
   explicit ModuleMap(Modulator*);
 
   void Trace(Visitor*) const;
@@ -59,7 +60,6 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
 
   Member<Modulator> modulator_;
   Member<ModuleScriptLoaderRegistry> loader_registry_;
-  DISALLOW_COPY_AND_ASSIGN(ModuleMap);
 };
 
 }  // namespace blink

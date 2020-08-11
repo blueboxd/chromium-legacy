@@ -467,13 +467,6 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
 
       Si cette règle est définie sur "False", les utilisateurs ne peuvent pas ajouter, supprimer ni modifier des favoris. En revanche, ils peuvent utiliser les favoris déjà disponibles.</translation>
 <translation id="1715151459541210849">Activer la fonctionnalité d'accessibilité de dictée</translation>
-<translation id="1717817358640580294">Si cette règle n'est pas configurée et si l'outil Chrome Cleanup détecte des logiciels indésirables, celui-ci peut envoyer à Google des métadonnées concernant l'analyse, conformément à la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demande ensuite à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés. Ce dernier peut choisir de nous communiquer les résultats du nettoyage afin de nous aider à améliorer la détection de ces logiciels. Ces résultats comprennent des métadonnées de fichiers, des extensions installées automatiquement et des clés de registre, tel que décrit dans le livre blanc sur la confidentialité dans Google Chrome.
-
-      Si cette règle est désactivée et si Chrome Cleanup détecte des logiciels indésirables, aucune métadonnée sur l'analyse n'est envoyée à Google, quelle que soit la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demande à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés.  Les résultats du nettoyage ne sont pas transmis à Google et l'utilisateur n'a pas non plus la possibilité de le faire.
-
-      Si cette règle est activée et si Chrome Cleanup détecte des logiciels indésirables, celui-ci peut envoyer à Google des métadonnées sur l'analyse conformément à la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demande à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés.  Les résultats du nettoyage sont transmis à Google, et l'utilisateur n'a pas la possibilité d'empêcher cette transmission.
-
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="172374442286684480">Autoriser tous les sites à définir des données locales</translation>
 <translation id="1736269219679256369">Autoriser la poursuite de la navigation depuis une page d'avertissement SSL</translation>
 <translation id="1745973235372964482">Ne pas autoriser les fichiers protégés par un mot de passe</translation>
@@ -1401,14 +1394,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
           Si vous désactivez ce paramètre, cela revient à ne pas configurer cette règle. L'utilisateur peut quand même le modifier dans <ph name="PRODUCT_NAME" />.
 
           Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
-<translation id="2982571648442031489">Permet d'établir la liste des domaines que la fonctionnalité de navigation sécurisée juge fiables. Autrement dit, cette fonctionnalité ne vérifie pas s'il y a des ressources dangereuses (hameçonnage, logiciels malveillants ou indésirables, par exemple) lorsque le domaine de l'URL concernée figure dans cette liste.
-      Dans le cadre de la navigation sécurisée, le service de protection des téléchargements ne vérifie pas les téléchargements hébergés sur ces domaines.
-      De même, le service de protection par mot de passe ne vérifie pas non plus si un mot de passe est réutilisé lorsque le domaine de l'URL de la page concernée figure dans la liste.
-
-      Si ce paramètre est activé, la fonctionnalité de navigation sécurisée considère ces domaines comme fiables.
-      Si ce paramètre est désactivé ou qu'il n'est pas défini, le service de protection par défaut est appliqué à toutes les ressources dans le cadre de la navigation sécurisée.
-
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="2985927503455169394">Utiliser le mode par défaut du processus de prise en main de l'Assistant</translation>
 <translation id="2987155890997901449">Activer ARC</translation>
 <translation id="2987227569419001736">Contrôler l'utilisation de l'API Web Bluetooth</translation>
@@ -1525,11 +1510,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", les suites de chiffrement DHE dans TLS ne seront pas activées. Sinon, elle peut être définie sur "True" pour activer ces mêmes suites de chiffrement et assurer la compatibilité avec un serveur obsolète. Il s'agit là d'une solution provisoire, et le serveur devrait être reconfiguré.
 
       Nous recommandons la migration des serveurs vers des suites de chiffrement ECDHE. Si celles-ci ne sont pas disponibles, veillez à ce qu'une suite de chiffrement utilisant l'échange de clés RSA soit activée.</translation>
-<translation id="3117706142826400449">Si cette règle est désactivée, Chrome Cleanup ne peut pas analyser le système pour détecter les éventuels logiciels indésirables et les supprimer. Notez également que le déclenchement manuel de Chrome Cleanup depuis la page chrome://settings/cleanup est désactivé.
-
-      Si cette règle est activée ou si elle n'est pas configurée, Chrome Cleanup analyse régulièrement le système pour détecter les éventuels logiciels indésirables. Si Chrome Cleanup en trouve un, l'utilisateur devra confirmer qu'il souhaite le supprimer. Notez également que le déclenchement manuel de Chrome Cleanup depuis la page chrome://settings est activé.
-
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="3119125876909100625">Autoriser l'importation de fichiers protégés par un mot de passe</translation>
 <translation id="3122082892722698079">Contrôler l'utilisation des exceptions liées au contenu non sécurisé</translation>
 <translation id="3143265893557969814">Si cette règle est configurée, tous les types de données spécifiés ne seront pas synchronisés avec Google Sync ni avec le profil itinérant. Cela peut permettre de réduire la taille du profil itinérant ou de limiter les types de données importés sur les serveurs Google Sync.
@@ -2149,13 +2129,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="4061590579642538878">Transmettre les informations liées aux rapports d'erreur.</translation>
 <translation id="4075675819066819571">Placer l'étagère sur le côté gauche de l'écran</translation>
 <translation id="4075864623710596000">Les noms d'hôte indiqués dans cette liste seront exemptés de la vérification de la règle HSTS susceptible de remplacer les requêtes HTTP par des requêtes HTTPS. Seuls les noms d'hôte sans extension sont autorisés dans cette règle. Les noms d'hôtes doivent être indiqués sous forme canonique : tous les noms de domaine internationalisés (IDN) doivent être convertis dans leur format d'étiquette A, et toutes les lettres ASCII doivent être en minuscules. Cette règle ne s'applique qu'aux noms d'hôte spécifiques indiqués. Elle ne concerne pas leurs sous-domaines.</translation>
-<translation id="4076584741592854827">Permet d'établir la liste des types de fichiers qui doivent s'ouvrir automatiquement une fois téléchargés. Lorsque vous répertoriez un type de fichier, veillez à ne pas inclure le séparateur qui précède l'extension (par exemple, indiquez "txt" et non ".txt").
-
-      Les types de fichiers qui doivent s'ouvrir automatiquement continueront d'être analysés dans le cadre de la navigation sécurisée si les fonctionnalités de contrôle correspondantes sont activées, et ne seront ouverts que si le résultat de l'analyse est concluant.
-
-      Si cette règle n'est pas configurée, seuls les types de fichiers que l'utilisateur aura précédemment spécifiés s'ouvriront automatiquement une fois téléchargés.
-
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="408029843066770167">Autoriser l'envoi de requêtes à un service horaire de Google</translation>
 <translation id="408076456549153854">Activer la connexion au navigateur</translation>
 <translation id="4082498585300984671">Activer la fonctionnalité Click to Call</translation>
@@ -4099,19 +4072,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si cette règle n'est pas définie, le Partage à proximité est autorisé par défaut pour les utilisateurs gérés par une entreprise et pour les utilisateurs non gérés.</translation>
 <translation id="6864244339257535116">Autoriser l'importation et le téléchargement de fichiers protégés par un mot de passe</translation>
-<translation id="6870295914868104867">Permet d'établir la liste des applications et des extensions qui s'installent de manière autonome, sans aucune intervention de l'utilisateur, et que celui-ci ne peut pas désinstaller ni désactiver. Les autorisations sont accordées implicitement, y compris pour les API d'extension enterprise.deviceAttributes et enterprise.platformKeys (ces deux API ne sont pas disponibles pour les applications et extensions qui ne sont pas installées d'office).
-
-      Si cette règle n'est pas configurée, aucune application ni extension ne s'installe automatiquement, et l'utilisateur peut désinstaller n'importe quelle application ou extension dans <ph name="PRODUCT_NAME" />.
-
-      Cette règle remplace la règle <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />. Si une application ou une extension installée d'office est supprimée de cette liste, <ph name="PRODUCT_NAME" /> la désinstalle automatiquement.
-
-      Pour les instances Windows® qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />, l'installation d'office est limitée aux applications et aux extensions sur le Chrome Web Store.
-
-      Le code source de toute extension peut être modifié par les utilisateurs à l'aide des outils pour les développeurs, ce qui peut entraîner des dysfonctionnements. Si cela pose problème, configurez la règle <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.
-
-      Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension et éventuellement d'une URL de mise à jour séparés par un point-virgule (;). L'ID d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans chrome://extensions en mode développeur. Si elle est indiquée, l'URL de mise à jour doit renvoyer à un fichier manifeste au format XML (voir https://developer.chrome.com/extensions/autoupdate ). Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée. L'URL de mise à jour spécifiée dans cette règle ne sert que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL dans le fichier manifeste de l'extension.
-
-       Remarque : cette règle ne s'applique pas en mode navigation privée. Pour en savoir plus sur l'hébergement des extensions, consultez la page https://developer.chrome.com/extensions/hosting.</translation>
 <translation id="687046793986382807">Cette règle a été supprimée de la version 35 de <ph name="PRODUCT_NAME" />.
 
       Les informations relatives à la mémoire sont tout de même consignées sur cette page, quelle que soit l'option retenue, mais les tailles indiquées sont
@@ -5770,11 +5730,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
       La session de l'utilisateur est restaurée après le redémarrage.</translation>
 <translation id="9160028464653564229">Interdire à tous les sites de demander l'accès aux ports série via l'API Serial</translation>
 <translation id="9167719789236691545">Désactiver Drive dans l'application "Fichiers" de <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="917514578273777202">Si cette règle est activée et que l'utilisateur saisit un texte autre qu'une URL dans la barre d'adresse, une recherche par défaut est alors lancée. Pour spécifier le moteur de recherche par défaut, définissez le reste des règles de recherche par défaut. Si vous ne configurez pas ces règles, l'utilisateur peut choisir le moteur par défaut. Si cette règle est désactivée et que l'utilisateur saisit un texte autre qu'une URL dans la barre d'adresse, aucune recherche n'est lancée.
-
-      Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier dans <ph name="PRODUCT_NAME" />. Si cette règle n'est pas configurée, le moteur de recherche par défaut est activé, et les utilisateurs peuvent configurer la liste des moteurs de recherche.
-
-      Remarque : Cette règle ne concerne que les instances Windows® qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro, ou les instances Chrome Enterprise Upgrade et macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="9185107612228451403">Permet de configurer les stratégies relatives aux extensions. L'utilisateur n'est pas autorisé à installer des extensions figurant sur la liste noire, à moins qu'elles aient été ajoutées à la liste blanche. Vous pouvez également forcer <ph name="PRODUCT_NAME" /> à installer automatiquement des extensions en les spécifiant dans <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Cette méthode permet d'installer les extensions inscrites sur la liste noire.</translation>
 <translation id="9187743794267626640">Désactiver le montage de périphériques de stockage externe</translation>
 <translation id="9190456586252617675">Cette règle permet de gérer le mode du processus de prise en main de l'Assistant.

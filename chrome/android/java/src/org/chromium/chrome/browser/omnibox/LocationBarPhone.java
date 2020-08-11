@@ -45,6 +45,7 @@ public class LocationBarPhone extends LocationBarLayout {
 
         mUrlBar = findViewById(R.id.url_bar);
         updateUrlBarPaddingForSearchEngineIcon();
+        mStatusView = findViewById(R.id.location_bar_status);
         // Assign the first visible view here only if it hasn't been set by the DSE icon experiment.
         // See onNativeLibrary ready for when this variable is set for the DSE icon case.
         mFirstVisibleFocusedView =
@@ -69,8 +70,6 @@ public class LocationBarPhone extends LocationBarLayout {
                 getToolbarDataProvider().isIncognito());
 
         // This branch will be hit if the search engine logo experiment is enabled.
-        // This value can never revert back to false, so it's safe to initialize mStatusView here
-        // without a corresponding else that nulls it out.
         if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             // Setup the padding once we're loaded, the focused padding changes will happen with
             // post-layout positioning via setTranslation. This is a byproduct of the way we do the
@@ -83,7 +82,6 @@ public class LocationBarPhone extends LocationBarLayout {
                     R.dimen.sei_location_bar_lateral_padding);
             setPaddingRelative(lateralPadding, getPaddingTop(), lateralPadding, getPaddingBottom());
             updateUrlBarPaddingForSearchEngineIcon();
-            mStatusView = findViewById(R.id.location_bar_status);
         }
 
         // This branch will be hit if the search engine logo experiment is enabled and we should
@@ -105,7 +103,7 @@ public class LocationBarPhone extends LocationBarLayout {
      * Factor in extra padding added for the focused state when the search engine icon is active.
      */
     private void updateUrlBarPaddingForSearchEngineIcon() {
-        if (mUrlBar == null || mStatusView == null) return;
+        if (mUrlBar == null || mStatusCoordinator == null) return;
 
         mUrlBar.post(() -> {
             // TODO(crbug.com/1019019): Come up with a better solution for M80 or M81.
@@ -114,8 +112,7 @@ public class LocationBarPhone extends LocationBarLayout {
             final int endPadding = SearchEngineLogoUtils.shouldShowSearchEngineLogo(
                                            mToolbarDataProvider.isIncognito())
                             && hasFocus()
-                    ? mStatusView.getEndPaddingPixelSizeForFocusState(true)
-                            - mStatusView.getEndPaddingPixelSizeForFocusState(false)
+                    ? mStatusCoordinator.getEndPaddingPixelSizeOnFocusDelta()
                     : 0;
 
             mUrlBar.setPaddingRelative(mUrlBar.getPaddingStart(), mUrlBar.getPaddingTop(),
@@ -202,7 +199,7 @@ public class LocationBarPhone extends LocationBarLayout {
     public float getUrlBarTranslationXForToolbarAnimation(
             float urlExpansionPercent, boolean hasFocus) {
         // This will be called before status view is ready.
-        if (mStatusView == null) return 0;
+        if (mStatusView == null || mStatusCoordinator == null) return 0;
 
         // No offset is required if the experiment is disabled.
         if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(
@@ -215,9 +212,8 @@ public class LocationBarPhone extends LocationBarLayout {
         // states and also accounts for the translation that the status icon will do. In the end,
         // this translation will be the distance that the url bar needs to travel to arrive at the
         // desired padding when focused.
-        float translation = urlExpansionPercent
-                * (mStatusView.getEndPaddingPixelSizeForFocusState(true)
-                        - mStatusView.getEndPaddingPixelSizeForFocusState(false));
+        float translation =
+                urlExpansionPercent * mStatusCoordinator.getEndPaddingPixelSizeOnFocusDelta();
 
         if (!hasFocus && mStatusView.isSearchEngineStatusIconVisible()
                 && SearchEngineLogoUtils.currentlyOnNTP(mToolbarDataProvider)) {

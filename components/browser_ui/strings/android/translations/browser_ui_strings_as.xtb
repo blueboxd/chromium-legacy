@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">নেভিগে’শ্বন অৱৰোধ কৰা আছে: <ph name="URL" /></translation>
 <translation id="4278390842282768270">অনুমতি দিয়া হৈছে</translation>
 <translation id="429312253194641664">ছাইটটোৱে মিডিয়া প্লে’ কৰি আছে</translation>
+<translation id="4336434711095810371">সকলো ডেটা মচক</translation>
 <translation id="4433925000917964731">Googleএ প্ৰদান কৰা লাইট পৃষ্ঠা</translation>
 <translation id="4434045419905280838">পপ-আপ আৰু পুনৰ নির্দেশ</translation>
 <translation id="445467742685312942">ছাইটসমূহক সুৰক্ষিত সমল প্লে' কৰিবলৈ অনুমতি দিয়ক</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">ইনক’গনিট’ টেব</translation>
 <translation id="5300589172476337783">দেখুৱাওক</translation>
 <translation id="5301954838959518834">ঠিক আছে, বুজি পালোঁ</translation>
-<translation id="5307446750509046227">ছাইটৰ ষ্ট’ৰেজ মচক</translation>
 <translation id="5313967007315987356">ছাইট যোগ দিয়ক</translation>
 <translation id="5317780077021120954">ছেভ কৰক</translation>
 <translation id="5335288049665977812">JavaScript চলাবলৈ ছাইটক অনুমতি দিয়ক (চুপাৰিছ কৰা)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">কোনো নির্দিষ্ট ছাইটৰ বাবে JavaScript অৱৰোধ কৰক।</translation>
 <translation id="8816026460808729765">ছেন্সৰসমূহ এক্সেছ কৰাত ছাইটসমূহ অৱৰোধ কৰক</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">ষ্ট’ৰেজ</translation>
 <translation id="8926666909099850184">এই ডিভাইচটোৰ বাবে NFC অফ কৰা আছে। ইয়াক <ph name="BEGIN_LINK" />Android ছেটিংসমূহ<ph name="END_LINK" />লৈ গৈ অন কৰক।</translation>
 <translation id="8929372349074745002">সৰহভাগ লোকৰ বাবে এই ছাইটটো খোল খায় তথা সেইটোৱে দ্ৰুতভাৱে সঁহাৰি দিয়ে</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android ছেটিংসমূহ<ph name="END_LINK" />ত <ph name="APP_NAME" />ৰ বাবে অনুমতিসমূহ অন কৰক।</translation>
 <translation id="945632385593298557">আপোনাৰ মাইক্ৰ'ফ'ন এক্সেছ কৰক</translation>
 <translation id="965817943346481315">কোনো ছাইটে অননুমোদিত বা বিভ্ৰান্তিকৰ বিজ্ঞাপন দেখুৱালে সেয়া অৱৰোধ কৰক ( চুপাৰিছ কৰা)</translation>
+<translation id="967624055006145463">ডেটা সঞ্চয় কৰা হ’ল</translation>
 </translationbundle>

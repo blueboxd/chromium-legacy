@@ -118,6 +118,9 @@ class ASH_EXPORT QuickAnswersControllerImpl
 
   // The last received QuickAnswer from client.
   std::unique_ptr<chromeos::quick_answers::QuickAnswer> quick_answer_;
+
+  // If currently there is an active quick answers session.
+  bool is_session_active_ = false;
 };
 
 }  // namespace ash

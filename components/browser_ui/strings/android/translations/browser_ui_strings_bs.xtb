@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Navigacija je blokirana: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Dozvoljeno</translation>
 <translation id="429312253194641664">Web lokacija reproducira medij</translation>
+<translation id="4336434711095810371">Obriši sve podatke</translation>
 <translation id="4433925000917964731">Jednostavnu stranicu omogućava Google</translation>
 <translation id="4434045419905280838">Skočni proz. i preusmjeravanja</translation>
 <translation id="445467742685312942">Dozvoljava web lokacijama da reproduciraju zaštićen sadržaj</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Anonimna kartica</translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5301954838959518834">Uredu, razumijem</translation>
-<translation id="5307446750509046227">Obriši pohranu web lok.</translation>
 <translation id="5313967007315987356">Dodajte web lokaciju</translation>
 <translation id="5317780077021120954">Sačuvaj</translation>
 <translation id="5335288049665977812">Web-lokacije mogu pokretati JavaScript (preporučeno)</translation>
@@ -228,7 +228,7 @@
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8300705686683892304">Upravlja aplikacija</translation>
 <translation id="8372893542064058268">Dozvolite sinhronizaciju u pozadini za određenu web lokaciju.</translation>
-<translation id="8376384591331888629">Uključujući kolačiće treće strane na ovoj web-lokaciji</translation>
+<translation id="8376384591331888629">Uključujući kolačiće treće strane na ovoj web lokaciji</translation>
 <translation id="83792324527827022">Web lokacija koristi vašu kameru i mikrofon</translation>
 <translation id="8380167699614421159">Ova web lokacija prikazuje ometajuće ili obmanjujuće oglase</translation>
 <translation id="8394832520002899662">Dodirnite da se vratite na web lokaciju</translation>
@@ -250,7 +250,6 @@
 <translation id="8801436777607969138">Blokiranje JavaScripta za određenu web lokaciju.</translation>
 <translation id="8816026460808729765">Blokiranje web lokacijama pristup senzorima</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Pohrana</translation>
 <translation id="8926666909099850184">NFC je isključen na ovom uređaju. Uključite ga u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Ova web lokacija se otvara i reagira brzo kod većine korisnika</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -262,4 +261,5 @@
 <translation id="913657688200966289">Uključite odobrenja za aplikaciju <ph name="APP_NAME" /> u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Pristup mikrofonu</translation>
 <translation id="965817943346481315">Blokirajte ako web lokacija prikazuje nametljive ili obmanjujuće oglase (preporučeno)</translation>
+<translation id="967624055006145463">Pohranjeni podaci</translation>
 </translationbundle>

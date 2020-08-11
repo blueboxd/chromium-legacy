@@ -1736,7 +1736,8 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
   }
 
   if (GetDocument().HasListenerType(Document::kTransitionCancelListener)) {
-    if (current_phase == Timing::kPhaseNone) {
+    if (current_phase == Timing::kPhaseNone &&
+        previous_phase_ != Timing::kPhaseAfter) {
       // Per the css-transitions-2 spec, transitioncancel is fired with the
       // "active time of the animation at the moment it was cancelled,
       // calculated using a fill mode of both".

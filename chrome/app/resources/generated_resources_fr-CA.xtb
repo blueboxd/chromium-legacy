@@ -1108,7 +1108,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> ne peut pas être téléchargé de manière sécuritaire</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> veut s'associer</translation>
-<translation id="2341476639346994688">L'imprimante est arrêtée</translation>
 <translation id="2342740338116612727">Favoris ajoutés</translation>
 <translation id="2343747224442182863">Mettre cet onglet en évidence</translation>
 <translation id="2344686470986284227">Démarrage du contrôleur de la machine virtuelle en cours…</translation>
@@ -3449,7 +3448,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5283677936944177147">Oups! Le système n'a pas réussi à déterminer le modèle de l'appareil ni son numéro de série.</translation>
 <translation id="5284445933715251131">Poursuivre le téléchargement</translation>
 <translation id="5285635972691565180">Écran <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Le plateau de sortie est plein</translation>
 <translation id="5286194356314741248">Recherche en cours…</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Vos comptes</translation>
@@ -3670,7 +3668,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5553089923092577885">Mappages des règles de certificat</translation>
 <translation id="5554489410841842733">Cette icône sera visible lorsque l'extension pourra agir sur la page en cours.</translation>
 <translation id="5554720593229208774">Autorité de certification de courrier électronique</translation>
-<translation id="5554931805291741487">La zone de sortie de l'imprimante est presque pleine</translation>
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5558125320634132440">Ce site a été bloqué, car il est possible qu'il comporte du contenu réservé aux adultes</translation>
 <translation id="5558129378926964177">Zoom &amp;avant</translation>
@@ -4941,7 +4938,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7152478047064750137">Cette extension fonctionne sans autorisation spéciale</translation>
 <translation id="7154130902455071009">Utiliser l'adresse <ph name="START_PAGE" /> comme page de démarrage?</translation>
 <translation id="7155171745945906037">Photo existante de l'appareil photo ou du fichier</translation>
-<translation id="7163766494674803047">Erreur d'appareil sur l'imprimante</translation>
 <translation id="7165320105431587207">Échec de la configuration du réseau</translation>
 <translation id="716640248772308851">« <ph name="EXTENSION" /> » dispose d'un droit d'accès en lecture aux images, aux vidéos et aux fichiers audio figurant dans les dossiers sélectionnés.</translation>
 <translation id="7167486101654761064">&amp;Toujours ouvrir les fichiers de ce type</translation>
@@ -6510,7 +6506,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9088234649737575428">Le plugiciel <ph name="PLUGIN_NAME" /> est bloqué par une politique de l'entreprise</translation>
 <translation id="9088446193279799727">Impossible de configurer Linux. Connectez-vous à Internet et réessayez.</translation>
 <translation id="9088917181875854783">Veuillez confirmer que le code d'authentification suivant est affiché sur « <ph name="DEVICE_NAME" /> » :</translation>
-<translation id="9093429538970210897">Nous vous recommandons de sauvegarder vos fichiers au cas où la mise à niveau ne pourrait pas être effectuée au complet. Lorsque vous démarrez la mise à niveau, Linux (bêta) s'éteindra. Veuillez enregistrer vos fichiers avant de continuer.</translation>
+<translation id="9093429538970210897">Nous vous recommandons de sauvegarder vos fichiers au cas où la mise à niveau ne pourrait pas être effectuée au complet. Lorsque vous démarrerez la mise à niveau, Linux (bêta) s'éteindra. Veuillez enregistrer vos fichiers avant de continuer.</translation>
 <translation id="9094033019050270033">Mettre à jour le mot de passe</translation>
 <translation id="9094038138851891550">Nom d'utilisateur incorrect</translation>
 <translation id="9094982973264386462">Supprimer</translation>

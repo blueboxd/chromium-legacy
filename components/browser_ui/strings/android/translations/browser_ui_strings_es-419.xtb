@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Navegación bloqueada: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Permitido</translation>
 <translation id="429312253194641664">Un sitio está reproduciendo contenido multimedia</translation>
+<translation id="4336434711095810371">Borrar todos los datos</translation>
 <translation id="4433925000917964731">Google proporcionó la página básica</translation>
 <translation id="4434045419905280838">Ventanas emergentes y redireccionamientos</translation>
 <translation id="445467742685312942">Permitir que los sitios reproduzcan contenido protegido</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Pestaña de incógnito</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">Entendido</translation>
-<translation id="5307446750509046227">Borrar el almacenamiento de sitios</translation>
 <translation id="5313967007315987356">Agregar sitio</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5335288049665977812">Permitir que los sitios ejecuten JavaScript (recomendado)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">Bloquea JavaScript para un sitio específico.</translation>
 <translation id="8816026460808729765">Impedir que los sitios accedan a los sensores</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Almacenamiento</translation>
 <translation id="8926666909099850184">La tecnología NFC está desactivada en este dispositivo. Actívala en la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Este sitio se abre y responde rápidamente para la mayoría de las personas</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">Activa los permisos para <ph name="APP_NAME" /> en la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Acceso al micrófono</translation>
 <translation id="965817943346481315">Bloquear si el sitio muestra anuncios intrusivos o engañosos (opción recomendada)</translation>
+<translation id="967624055006145463">Datos almacenados</translation>
 </translationbundle>

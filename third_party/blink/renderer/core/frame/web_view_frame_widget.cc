@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
 
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -288,6 +289,21 @@ void WebViewFrameWidget::SetZoomLevel(double zoom_level) {
   if (zoom_level_for_testing_ != -INFINITY)
     zoom_level = zoom_level_for_testing_;
   WebFrameWidgetBase::SetZoomLevel(zoom_level);
+}
+
+void WebViewFrameWidget::SetAutoResizeMode(bool auto_resize,
+                                           const gfx::Size& min_window_size,
+                                           const gfx::Size& max_window_size,
+                                           float device_scale_factor) {
+  if (auto_resize) {
+    if (!Platform::Current()->IsUseZoomForDSFEnabled())
+      device_scale_factor = 1.f;
+    web_view_->EnableAutoResizeMode(
+        gfx::ScaleToCeiledSize(min_window_size, device_scale_factor),
+        gfx::ScaleToCeiledSize(max_window_size, device_scale_factor));
+  } else if (web_view_->AutoResizeMode()) {
+    web_view_->DisableAutoResizeMode();
+  }
 }
 
 }  // namespace blink

@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Navigācija ir bloķēta: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Atļauts</translation>
 <translation id="429312253194641664">Vietne atskaņo multivides saturu</translation>
+<translation id="4336434711095810371">Notīrīt visus datus</translation>
 <translation id="4433925000917964731">Vienkāršota lapa, ko nodrošina Google</translation>
 <translation id="4434045419905280838">Uznirstošie elem. un novirzīšana</translation>
 <translation id="445467742685312942">Ļaut vietnēm atskaņot aizsargātu saturu</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Inkognito cilne</translation>
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5301954838959518834">Labi, sapratu</translation>
-<translation id="5307446750509046227">Notīrīt vietnes krātuvi</translation>
 <translation id="5313967007315987356">Pievienot vietni</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5335288049665977812">Atļaut vietnēm izmantot JavaScript (ieteicams)</translation>
@@ -228,6 +228,7 @@
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8300705686683892304">Pārvalda lietotne</translation>
 <translation id="8372893542064058268">Atļaut sinhronizāciju fonā konkrētai vietnei</translation>
+<translation id="8376384591331888629">Arī šajā vietnē esošos trešo pušu sīkfailus</translation>
 <translation id="83792324527827022">Kāda vietne izmanto jūsu kameru un mikrofonu</translation>
 <translation id="8380167699614421159">Šajā vietnē tiek rādītas traucējošas vai maldinošas reklāmas</translation>
 <translation id="8394832520002899662">Lai atgrieztos vietnē, pieskarieties šeit</translation>
@@ -249,7 +250,6 @@
 <translation id="8801436777607969138">Bloķēt JavaScript konkrētai vietnei.</translation>
 <translation id="8816026460808729765">Bloķēt vietņu piekļuvi sensoriem</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Krātuve</translation>
 <translation id="8926666909099850184">Šajā ierīcē tehnoloģija NFC ir izslēgta. Ieslēdziet to <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Lielākajai daļai lietotāju šī vietne atveras un reaģē ātri.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +261,5 @@
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" /> ieslēdziet atļaujas lietotnei <ph name="APP_NAME" />.</translation>
 <translation id="945632385593298557">Piekļuve mikrofonam</translation>
 <translation id="965817943346481315">Bloķēt, ja vietnē tiek rādītas traucējošas vai maldinošas reklāmas (ieteicams)</translation>
+<translation id="967624055006145463">Dati saglabāti</translation>
 </translationbundle>

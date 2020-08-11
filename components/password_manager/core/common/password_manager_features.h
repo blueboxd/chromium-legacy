@@ -54,6 +54,10 @@ extern const char
     kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission[];
 extern const char kPasswordChangeInSettingsWithForcedWarningForEverySite[];
 
+// |kEnablePasswordAccountStorage| variations.
+extern const char kMaxMoveToAccountOffersForNonOptedInUser[];
+extern const int kMaxMoveToAccountOffersForNonOptedInUserDefaultValue;
+
 }  // namespace features
 
 }  // namespace password_manager

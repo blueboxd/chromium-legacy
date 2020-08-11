@@ -1108,7 +1108,6 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947">មិនអាច​ទាញយក <ph name="FILE_NAME" /> ដោយសុវត្ថិភាពបានទេ</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> ចង់ផ្គូផ្គង</translation>
-<translation id="2341476639346994688">ម៉ាស៊ីនបោះពុម្ព​ត្រូវបានបញ្ឈប់</translation>
 <translation id="2342740338116612727">បានបញ្ចូល​ចំណាំ</translation>
 <translation id="2343747224442182863">ផ្ដោត​ផ្ទាំងនេះ</translation>
 <translation id="2344686470986284227">កំពុងចាប់ផ្ដើម​ឧបករណ៍បញ្ជា​ម៉ាស៊ីននិម្មិត</translation>
@@ -3448,7 +3447,6 @@
 <translation id="5283677936944177147">អូ!  ប្រព័ន្ធបានបរាជ័យក្នុងការកំណត់ម៉ូដែលឧបករណ៍ ឬលេខស៊េរី។</translation>
 <translation id="5284445933715251131">បន្តការទាញយក</translation>
 <translation id="5285635972691565180">បង្ហាញ <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">កន្លែងបញ្ចេញក្រដាស​ពេញហើយ</translation>
 <translation id="5286194356314741248">កំពុង​ស្កេន</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">គណនីរបស់អ្នក</translation>
@@ -3669,7 +3667,6 @@
 <translation id="5553089923092577885">ការកំណត់ទីតាំងគោលការណ៍វិញ្ញាបនប័ត្រ</translation>
 <translation id="5554489410841842733">រូបតំណាងនេះអាចមើលឃើញ នៅពេលកម្មវិធីបន្ថែមអាចដំណើរនៅលើទំព័របច្ចុប្បន្ន។</translation>
 <translation id="5554720593229208774">អាជ្ញាធរវិញ្ញាបនប័ត្រអ៊ីម៉ែល</translation>
-<translation id="5554931805291741487">កន្លែងបញ្ចេញក្រដាស​ជិតពេញហើយ</translation>
 <translation id="5556459405103347317">ដំណើរការឡើងវិញ</translation>
 <translation id="5558125320634132440">គេហទំព័រនេះ​ត្រូវបាន​ទប់ស្កាត់ ដោយសារ​វាអាចមាន​ខ្លឹមសារ​សម្រាប់​មនុស្សពេញវ័យ</translation>
 <translation id="5558129378926964177">ពង្រីក</translation>
@@ -4941,7 +4938,6 @@
 <translation id="7152478047064750137">កម្មវិធី​បន្ថែម​នេះ​មិន​តម្រូវ​ឱ្យ​មាន​ការអនុញ្ញាត​ពិសេសទេ</translation>
 <translation id="7154130902455071009">ប្តូរទំព័រចាប់ផ្តើមរបស់អ្នកទៅ៖ <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">រូបភាពពីកាមេរ៉ា និងឯកសារដែលមានស្រាប់</translation>
-<translation id="7163766494674803047">ឧបករណ៍របស់​ម៉ាស៊ីនបោះពុម្ព​មានបញ្ហា</translation>
 <translation id="7165320105431587207">បានបរាជ័យក្នុងការកំណត់បណ្តាាញ</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" មិនអាចអានឯកសាររូបភាព វីដេអូ និងសម្លេងនៅក្នុងទីតាំងដែលបានពិនិត្យទេ។</translation>
 <translation id="7167486101654761064">បើកឯកសារប្រភេទនេះជានិច្ច</translation>

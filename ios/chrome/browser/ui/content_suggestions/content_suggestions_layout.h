@@ -13,6 +13,14 @@
 // is pinned to the top of the collection.
 @interface ContentSuggestionsLayout : MDCCollectionViewFlowLayout
 
+// The cached scroll position of the NTP.
+@property(nonatomic, assign) CGFloat offset;
+
+// Creates layout with |offset| as additional height. Allows the view's height
+// to be increased enough to maintain the scroll position. Only needed if
+// Discover feed is enabled.
+- (instancetype)initWithOffset:(CGFloat)offset;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_LAYOUT_H_

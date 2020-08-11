@@ -39,12 +39,14 @@ DiceWebSigninInterceptionBubbleView::~DiceWebSigninInterceptionBubbleView() {
 void DiceWebSigninInterceptionBubbleView::CreateBubble(
     content::BrowserContext* browser_context,
     views::View* anchor_view,
-    const AccountInfo& account_info,
+    const DiceWebSigninInterceptor::Delegate::BubbleParameters&
+        bubble_parameters,
     base::OnceCallback<void(bool)> callback) {
   // The widget is owned by the views system.
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(
-      new DiceWebSigninInterceptionBubbleView(
-          browser_context, anchor_view, account_info, std::move(callback)));
+      new DiceWebSigninInterceptionBubbleView(browser_context, anchor_view,
+                                              bubble_parameters,
+                                              std::move(callback)));
   // TODO(droger): Delay showing the bubble until the web view is loaded.
   widget->Show();
 }
@@ -52,7 +54,8 @@ void DiceWebSigninInterceptionBubbleView::CreateBubble(
 DiceWebSigninInterceptionBubbleView::DiceWebSigninInterceptionBubbleView(
     content::BrowserContext* browser_context,
     views::View* anchor_view,
-    const AccountInfo& account_info,
+    const DiceWebSigninInterceptor::Delegate::BubbleParameters&
+        bubble_parameters,
     base::OnceCallback<void(bool)> callback)
     : views::BubbleDialogDelegateView(anchor_view,
                                       views::BubbleBorder::TOP_RIGHT),
@@ -72,7 +75,7 @@ DiceWebSigninInterceptionBubbleView::DiceWebSigninInterceptionBubbleView(
   DCHECK(web_ui);
   // Unretained is fine because this outlives the inner web UI.
   web_ui->Initialize(
-      account_info,
+      bubble_parameters,
       base::BindOnce(&DiceWebSigninInterceptionBubbleView::OnWebUIUserChoice,
                      base::Unretained(this)));
   AddChildView(std::move(web_view));
@@ -93,7 +96,8 @@ void DiceWebSigninInterceptionBubbleView::OnWebUIUserChoice(bool accept) {
 
 void DiceWebSigninInterceptorDelegate::ShowSigninInterceptionBubbleInternal(
     Browser* browser,
-    const AccountInfo& account_info,
+    const DiceWebSigninInterceptor::Delegate::BubbleParameters&
+        bubble_parameters,
     base::OnceCallback<void(bool)> callback) {
   DCHECK(browser);
   views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
@@ -101,5 +105,5 @@ void DiceWebSigninInterceptorDelegate::ShowSigninInterceptionBubbleInternal(
                                  ->GetAvatarToolbarButton();
   DCHECK(anchor_view);
   DiceWebSigninInterceptionBubbleView::CreateBubble(
-      browser->profile(), anchor_view, account_info, std::move(callback));
+      browser->profile(), anchor_view, bubble_parameters, std::move(callback));
 }

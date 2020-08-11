@@ -1108,7 +1108,6 @@
 <translation id="2336381494582898602">পাওয়ারওয়াশ</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> ফাইলটি নিরাপদে ডাউনলোড করা যাচ্ছে না</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> এদের সঙ্গে যুক্ত হতে চাচ্ছে</translation>
-<translation id="2341476639346994688">প্রিন্টার বন্ধ করা আছে</translation>
 <translation id="2342740338116612727">বুকমার্ক যোগ করা হয়েছে</translation>
 <translation id="2343747224442182863">এই ট্যাবে ফোকাস করুন</translation>
 <translation id="2344686470986284227">ভার্চুয়াল মেশিন কন্ট্রোলার শুরু করা হচ্ছে</translation>
@@ -3446,7 +3445,6 @@
 <translation id="5283677936944177147">ওহো! সিস্টেমটি ডিভাইস মডেল বা সিরিয়াল নম্বর নির্ধারণ করতে ব্যর্থ হয়েছে।</translation>
 <translation id="5284445933715251131">ডাউনলোড চালিয়ে যান</translation>
 <translation id="5285635972691565180">ডিসপ্লে <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">আউটপুট এরিয়া সম্পূর্ণ ভরে গেছে</translation>
 <translation id="5286194356314741248">স্ক্যান হচ্ছে</translation>
 <translation id="5286252187236914003">L2TP/IPসেক</translation>
 <translation id="5287425679749926365">আপনার অ্যাকাউন্টগুলি</translation>
@@ -3667,7 +3665,6 @@
 <translation id="5553089923092577885">সার্টিফিকেট নীতি ম্যাপিং</translation>
 <translation id="5554489410841842733">এক্সটেনশনটি বর্তমান পৃষ্ঠাতে কাজ করলে এই আইনকটিকে দেখা যাবে৷</translation>
 <translation id="5554720593229208774">ইমেল সার্টিফিকেশন কর্তৃপক্ষ</translation>
-<translation id="5554931805291741487">আউটপুট এরিয়া প্রায় ভরে এসেছে</translation>
 <translation id="5556459405103347317">রিলোড করুন</translation>
 <translation id="5558125320634132440">প্রাপ্তবয়স্কদের জন্য কন্টেন্ট থাকার কারণে হয়ত এই সাইট ব্লক করা হয়েছে</translation>
 <translation id="5558129378926964177">বড়ো করুন</translation>
@@ -4940,7 +4937,6 @@
 <translation id="7152478047064750137">এই এক্সটেনশনটির জন্য কোনও বিশেষ অনুমতির প্রয়োজন নেই</translation>
 <translation id="7154130902455071009">আপনার সূচনা পৃষ্ঠাকে এতে পরিবর্তন করুন: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">ক্যামেরা বা ফাইল থেকে বিদ্যমান ফটো</translation>
-<translation id="7163766494674803047">প্রিন্টারের ডিভাইসে কোনও সমস্যা হয়েছে</translation>
 <translation id="7165320105431587207">নেটওয়ার্ক কনফিগার করা যায়নি</translation>
 <translation id="716640248772308851">" <ph name="EXTENSION" /> " নির্দিষ্ট করা অবস্থানে ছবি, ভিডিও এবং সাউন্ড ফাইলগুলি পড়তে পারে৷</translation>
 <translation id="7167486101654761064">&amp;সবসময় এই ধরনের ফাইল খুলুন</translation>

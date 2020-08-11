@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "build/build_config.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -34,14 +36,19 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   capabilities_.preserve_buffer_content = true;
   capabilities_.only_invalidates_damage_rect = false;
   capabilities_.number_of_buffers = 3;
-
-// TODO(crbug.com/1110443): This ifdef was added to unblock SkiaRenderer GL on
-// Chrome OS, but theoretically, this should be true across all buffer queue
-// platforms. Remove this ifdef once we verify that supports_pre_transform
-// does not cause any regressions on Android.
-#if defined(OS_CHROMEOS)
-  capabilities_.supports_pre_transform = true;
-#endif  // defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
+  capabilities_.orientation_mode = OutputSurface::OrientationMode::kHardware;
+  // With vulkan and android surface control, if the chrome is launched in
+  // landscape mode, the chrome is always blank until chrome window is rotated
+  // once. Workaround this problem by using logic rotation mode.
+  // TODO(https://crbug.com/1115065): use hardware orientation mode for vulkan,
+  if (dependency_->GetSharedContextState()->GrContextIsVulkan() &&
+      base::FeatureList::GetFieldTrial(features::kVulkan)) {
+    capabilities_.orientation_mode = OutputSurface::OrientationMode::kLogic;
+  }
+#else
+  capabilities_.orientation_mode = OutputSurface::OrientationMode::kHardware;
+#endif
 
   // Force the number of max pending frames to one when the switch
   // "double-buffer-compositing" is passed.

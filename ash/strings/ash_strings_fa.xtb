@@ -506,6 +506,7 @@
 <translation id="6972754398087986839">شروع به کار</translation>
 <translation id="6981982820502123353">قابلیت دسترسی</translation>
 <translation id="698231206551913481">اگر کاربر حذف شود، همه فایل‌ها و داده‌های محلی مربوط به او به‌طور دائم حذف خواهند شد.</translation>
+<translation id="7007983414944123363">نمی‌توان پین یا گذرواژه را تأیید کرد. دوباره امتحان کنید.</translation>
 <translation id="7015766095477679451">ساعت <ph name="COME_BACK_TIME" /> دوباره برگردید.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> را به تلفنتان متصل کنید</translation>
 <translation id="7026338066939101231">کاهش</translation>
@@ -551,6 +552,7 @@
 <translation id="7568294522609223312">خاموش کردن کلیک‌های خودکار</translation>
 <translation id="7568637526529101738">با کلیک راست یا فشار طولانی، «دستیار» اطلاعاتی ازقبیل معنی واژه یا تبدیل واحد انتخاب‌شده را نمایش می‌دهد.</translation>
 <translation id="7569509451529460200">‏بریل و ChromeVox فعال هستند</translation>
+<translation id="7579778809502851308">ضبط صفحه‌نمایش</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
 <translation id="7600875258240007829">دیدن همه اعلان‌ها</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> درجه فارنهایت</translation>
@@ -669,6 +671,7 @@
 <translation id="8841375032071747811">دکمه برگشت</translation>
 <translation id="8843682306134542540">تغییر وضعیت قفل چرخش. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">همچنان نمی‌توان پین یا گذرواژه را تأیید کرد. توجه: اگر اخیراً گذرواژه‌تان را تغییر داده‌اید، از گذرواژه قدیمی‌تان استفاده کنید. گذرواژه جدیدتان بعد از خروج شما از سیستم اعمال می‌شود.</translation>
 <translation id="8870509716567206129">برنامه از تقسیم صفحه پشتیبانی نمی‌کند.</translation>
 <translation id="8874184842967597500">متصل نیست</translation>
 <translation id="8877788021141246043">‏Set a reminder (یادآوری تنظیم کن)</translation>

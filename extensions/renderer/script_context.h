@@ -17,6 +17,7 @@
 #include "base/unguessable_token.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/common/script_constants.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_injection_callback.h"
@@ -225,17 +226,14 @@ class ScriptContext {
   // If |document_url| is an about: or data: URL, returns the URL of the first
   // frame without an about: or data: URL that matches the initiator origin.
   // This may not be the immediate parent. Returns |document_url| if it is not
-  // an about: or data: URL, if the corresponding |match_about_blank| or
-  // |match_origin_as_fallback| is false, or if a suitable parent cannot be
-  // found.
+  // an about: or data: URL, if |match_origin_as_fallback| is set to not match,
+  // or if a suitable parent cannot be found.
   // Considers parent contexts that cannot be accessed (as is the case for
   // sandboxed frames).
-  // TODO(devlin): Enum-ify match_about_* here.
   static GURL GetEffectiveDocumentURLForInjection(
       blink::WebLocalFrame* frame,
       const GURL& document_url,
-      bool match_about_blank,
-      bool match_origin_as_fallback);
+      MatchOriginAsFallbackBehavior match_origin_as_fallback);
 
   // Grants a set of content capabilities to this context.
   void set_content_capabilities(APIPermissionSet capabilities) {

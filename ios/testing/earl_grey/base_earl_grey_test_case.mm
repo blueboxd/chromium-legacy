@@ -152,6 +152,15 @@ bool g_needs_set_up_for_test_case = true;
         [self tapAlertButtonWithText:@"Not Now" error:&error];
         GREYAssertNil(
             error, @"Error closing Carrier Settings Update alert.\n%@", error);
+      } else if ([alertText containsString:@"would like to find and connect to "
+                                           @"devices on your local network."]) {
+        DLOG(WARNING) << "Denying iOS system alert of connecting to local "
+                         "network devices!";
+        NSError* error = nil;
+        [self tapAlertButtonWithText:@"OK" error:&error];
+        GREYAssertNil(error,
+                      @"Error closing connecting to local network devices.\n%@",
+                      error);
       } else {
         XCTFail("An unsupported system alert is present on device. Failing "
                 "this test. Alert label: %@",

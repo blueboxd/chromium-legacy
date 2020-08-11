@@ -8514,7 +8514,7 @@ class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    if (!impl->pinch_gesture_active())
+    if (!impl->GetInputHandler().pinch_gesture_active())
       return;
 
     // We just drew a frame, stats for it should have been recorded. End the

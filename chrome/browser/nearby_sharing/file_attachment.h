@@ -23,13 +23,14 @@ class FileAttachment : public Attachment {
                  int64_t size,
                  base::Optional<base::FilePath> file_path,
                  std::string mime_type);
-  ~FileAttachment() override;
+  FileAttachment(int64_t id,
+                 std::string file_name,
+                 Type type,
+                 int64_t size,
+                 std::string mime_type);
   FileAttachment(const FileAttachment&);
   FileAttachment& operator=(const FileAttachment&);
-
-  // Attachment:
-  int64_t size() const override;
-  Attachment::Family family() const override;
+  ~FileAttachment() override;
 
   const std::string& file_name() const { return file_name_; }
   Type type() const { return type_; }
@@ -39,7 +40,6 @@ class FileAttachment : public Attachment {
  private:
   std::string file_name_;
   Type type_;
-  int64_t size_;
   base::Optional<base::FilePath> file_path_;
   std::string mime_type_;
 };

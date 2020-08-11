@@ -61,6 +61,14 @@ NSString* const kSiriShortcutOpenInChrome = @"OpenInChromeIntent";
 NSString* const kSiriShortcutSearchInChrome = @"SearchInChromeIntent";
 NSString* const kSiriShortcutOpenInIncognito = @"OpenInChromeIncognitoIntent";
 
+std::vector<GURL> createGURLVectorFromIntentURLs(NSArray<NSURL*>* intentURLs) {
+  std::vector<GURL> URLs;
+  for (NSURL* URL in intentURLs) {
+    URLs.push_back(net::GURLWithNSURL(URL));
+  }
+  return URLs;
+}
+
 }  // namespace
 
 @interface UserActivityHandler ()
@@ -176,18 +184,23 @@ NSString* const kSiriShortcutOpenInIncognito = @"OpenInChromeIncognitoIntent";
     base::RecordAction(UserMetricsAction("IOSLaunchedByOpenInChromeIntent"));
     OpenInChromeIntent* intent = base::mac::ObjCCastStrict<OpenInChromeIntent>(
         userActivity.interaction.intent);
-    if (!intent.url)
-      return NO;
 
-    GURL webpageGURL(net::GURLWithNSURL(intent.url));
-    if (!webpageGURL.is_valid())
+    if (!intent.url || intent.url.count == 0) {
       return NO;
+    }
 
+    std::vector<GURL> URLs = createGURLVectorFromIntentURLs(intent.url);
     AppStartupParameters* startupParams =
-        [[AppStartupParameters alloc] initWithExternalURL:webpageGURL
-                                              completeURL:webpageGURL];
+        [[AppStartupParameters alloc] initWithURLs:URLs];
+
     [connectionInformation setStartupParameters:startupParams];
-    webpageURL = intent.url;
+    return [self continueUserActivityURLs:URLs
+                      applicationIsActive:applicationIsActive
+                                tabOpener:tabOpener
+                    connectionInformation:connectionInformation
+                       startupInformation:startupInformation
+                                Incognito:NO];
+
   } else if ([userActivity.activityType
                  isEqualToString:kSiriShortcutOpenInIncognito]) {
     base::RecordAction(UserMetricsAction("IOSLaunchedByOpenInIncognitoIntent"));
@@ -199,13 +212,11 @@ NSString* const kSiriShortcutOpenInIncognito = @"OpenInChromeIncognitoIntent";
       return NO;
     }
 
-    std::vector<GURL> URLs;
-    for (NSURL* URL in intent.urls) {
-      URLs.push_back(net::GURLWithNSURL(URL));
-    }
+    std::vector<GURL> URLs = createGURLVectorFromIntentURLs(intent.urls);
 
     AppStartupParameters* startupParams =
         [[AppStartupParameters alloc] initWithURLs:URLs];
+
     startupParams.launchInIncognito = YES;
     [connectionInformation setStartupParameters:startupParams];
     return [self continueUserActivityURLs:URLs

@@ -5,28 +5,36 @@
 <template>
   <div id="filter-items-container">
     <div id="controls">
-      <button @click="checkAll">
+      <MdButton
+          class="md-primary md-raised md-dense"
+          @click="checkAll">
         Check All
-      </button>
-      <button @click="uncheckAll">
+      </MdButton>
+      <MdButton
+          class="md-primary md-raised md-dense"
+          @click="uncheckAll">
         Uncheck All
-      </button>
+      </MdButton>
     </div>
-    <ul id="filter-list">
-      <li
+    <MdList
+        id="filter-list"
+        class="md-scrollbar">
+      <MdListItem
           v-for="node in filterList"
           :key="node.name">
-        <div class="filter-list-item">
-          <div @click="removeFromFilter(node.name)">
-            x
-          </div>
-          <input
-              v-model="node.checked"
-              type="checkbox">
-          <div>{{ shortenName(node.name) }}</div>
+        <MdButton
+            class="numeric-input-button md-icon-button md-dense"
+            @click="removeFromFilter(node.name)">
+          <MdIcon>clear</MdIcon>
+        </MdButton>
+        <MdCheckbox
+            v-model="node.checked"
+            class="md-primary"/>
+        <div class="filter-items-text md-list-item-text">
+          {{ shortenName(node.name) }}
         </div>
-      </li>
-    </ul>
+      </MdListItem>
+    </MdList>
   </div>
 </template>
 
@@ -58,6 +66,13 @@ const GraphFilterItems = {
 export default GraphFilterItems;
 </script>
 
+<style>
+#filter-list .md-list-item-content {
+  min-height: 0;
+  padding: 0;
+}
+</style>
+
 <style scoped>
 ul {
   list-style-type: none;
@@ -70,19 +85,20 @@ ul {
   min-width: 100px;
 }
 
+.filter-items-text{
+  display: inline-block;
+  margin-left: 15px;
+  white-space: normal;
+  width: 100%;
+  word-wrap: break-word;
+}
+
 #filter-list {
-  margin: 0;
-  overflow-x: hidden;
+  max-height: 30vh;
   overflow-y: scroll;
-  padding: 0;
 }
 
 #controls {
-  display: flex;
-  flex-direction: row;
-}
-
-.filter-list-item {
   display: flex;
   flex-direction: row;
 }

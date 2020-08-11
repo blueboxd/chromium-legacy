@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/views/in_product_help/feature_promo_controller.h"
+#include "chrome/browser/ui/views/in_product_help/feature_promo_controller_views.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_test_widget.h"
@@ -57,7 +57,7 @@ class TabGroupsIPHControllerTest : public BrowserWithTestWindowTest {
         .WillRepeatedly(Return(false));
 
     promo_controller_ =
-        std::make_unique<FeaturePromoController>(browser()->profile());
+        std::make_unique<FeaturePromoControllerViews>(browser()->profile());
 
     iph_controller_ = std::make_unique<TabGroupsIPHController>(
         browser(), promo_controller_.get(),

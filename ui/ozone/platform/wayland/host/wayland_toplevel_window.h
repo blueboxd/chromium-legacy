@@ -8,9 +8,9 @@
 #include "build/lacros_buildflags.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
-#include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
-#include "ui/platform_window/platform_window_handler/wm_move_loop_handler.h"
-#include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
+#include "ui/platform_window/handlers/wm_drag_handler.h"
+#include "ui/platform_window/handlers/wm_move_loop_handler.h"
+#include "ui/platform_window/handlers/wm_move_resize_handler.h"
 
 namespace ui {
 

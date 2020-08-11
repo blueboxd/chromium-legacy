@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AccountInfo, DiceWebSigninInterceptBrowserProxy} from 'chrome://signin-dice-web-intercept/dice_web_signin_intercept_browser_proxy.js';
+import {AccountInfo, DiceWebSigninInterceptBrowserProxy, InterceptionParameters} from 'chrome://signin-dice-web-intercept/dice_web_signin_intercept_browser_proxy.js';
 
 import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 
@@ -10,13 +10,19 @@ import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 export class TestDiceWebSigninInterceptBrowserProxy extends TestBrowserProxy {
   constructor() {
     super(['accept', 'cancel', 'pageLoaded']);
-    /** @private {!AccountInfo} */
-    this.accountInfo_ = {pictureUrl: '', name: ''};
+    /** @private {!InterceptionParameters} */
+    this.interceptionParameters_ = {
+      headerText: '',
+      bodyTitle: '',
+      bodyText: '',
+      interceptedAccount: {isManaged: false, pictureUrl: ''},
+      primaryAccount: {isManaged: false, pictureUrl: ''}
+    };
   }
 
-  /** @param {!AccountInfo} info */
-  setAccountInfo(info) {
-    this.accountInfo_ = info;
+  /** @param {!InterceptionParameters} parameters */
+  setInterceptionParameters(parameters) {
+    this.interceptionParameters_ = parameters;
   }
 
   /** @override */
@@ -32,6 +38,6 @@ export class TestDiceWebSigninInterceptBrowserProxy extends TestBrowserProxy {
   /** @override */
   pageLoaded() {
     this.methodCalled('pageLoaded');
-    return Promise.resolve(this.accountInfo_);
+    return Promise.resolve(this.interceptionParameters_);
   }
 }

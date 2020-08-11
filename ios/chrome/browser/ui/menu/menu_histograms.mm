@@ -23,6 +23,8 @@ const char ReadingListEntryActionsHistogram[] =
     "Mobile.ContextMenu.ReadingListEntry.Actions";
 const char RecentTabsEntryActionsHistogram[] =
     "Mobile.ContextMenu.RecentTabsEntry.Actions";
+const char RecentTabsHeaderActionsHistogram[] =
+    "Mobile.ContextMenu.RecentTabsHeader.Actions";
 const char ContentSuggestionsEntryActionsHistogram[] =
     "Mobile.ContextMenu.ContentSuggestionsEntry.Actions";
 }  // namespace
@@ -41,6 +43,8 @@ const char* GetActionsHistogramName(MenuScenario scenario) {
       return ReadingListEntryActionsHistogram;
     case MenuScenario::kRecentTabsEntry:
       return RecentTabsEntryActionsHistogram;
+    case MenuScenario::kRecentTabsHeader:
+      return RecentTabsHeaderActionsHistogram;
     case MenuScenario::kContentSuggestionsEntry:
       return ContentSuggestionsEntryActionsHistogram;
   }

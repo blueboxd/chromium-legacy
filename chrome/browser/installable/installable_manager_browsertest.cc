@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/installable/installable_logging.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -211,6 +213,7 @@ class NestedCallbackTester {
     EXPECT_EQ(manifest_.display, data.manifest->display);
     EXPECT_EQ(manifest_.name, data.manifest->name);
     EXPECT_EQ(manifest_.short_name, data.manifest->short_name);
+    EXPECT_EQ(manifest_.display_override, data.manifest->display_override);
 
     quit_closure_.Run();
   }
@@ -1835,4 +1838,104 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
   ASSERT_EQ(tester->errors().size(), 1u);
   EXPECT_EQ(tester->errors()[0], MANIFEST_URL_CHANGED);
+}
+
+// A dedicated test fixture for DisplayOverride, which is supported
+// only for the new web apps mode, and requires a command line switch
+// to enable manifest parsing.
+class InstallableManagerBrowserTest_DisplayOverride
+    : public InstallableManagerBrowserTest {
+ public:
+  InstallableManagerBrowserTest_DisplayOverride() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kWebAppManifestDisplayOverride);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
+                       CheckManifestOnly) {
+  base::RunLoop run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(run_loop.QuitClosure()));
+
+  NavigateAndRunInstallableManager(
+      browser(), tester.get(), GetManifestParams(),
+      GetURLOfPageWithServiceWorkerAndManifest(
+          "/banners/manifest_display_override.json"));
+  run_loop.Run();
+
+  EXPECT_FALSE(tester->manifest().IsEmpty());
+  EXPECT_FALSE(tester->manifest_url().is_empty());
+  ASSERT_EQ(2u, tester->manifest().display_override.size());
+  EXPECT_EQ(blink::mojom::DisplayMode::kMinimalUi,
+            tester->manifest().display_override[0]);
+  EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
+            tester->manifest().display_override[1]);
+
+  EXPECT_TRUE(tester->primary_icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->primary_icon());
+  EXPECT_FALSE(tester->has_maskable_primary_icon());
+  EXPECT_FALSE(tester->valid_manifest());
+  EXPECT_FALSE(tester->has_worker());
+  EXPECT_TRUE(tester->splash_icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->splash_icon());
+  EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
+                       ManifestDisplayOverrideReportsError) {
+  base::RunLoop run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(run_loop.QuitClosure()));
+
+  NavigateAndRunInstallableManager(
+      browser(), tester.get(), GetWebAppParams(),
+      GetURLOfPageWithServiceWorkerAndManifest(
+          "/banners/manifest_display_override_contains_browser.json"));
+  run_loop.Run();
+
+  EXPECT_FALSE(tester->manifest().IsEmpty());
+  EXPECT_FALSE(tester->manifest_url().is_empty());
+  ASSERT_EQ(3u, tester->manifest().display_override.size());
+  EXPECT_EQ(blink::mojom::DisplayMode::kBrowser,
+            tester->manifest().display_override[0]);
+  EXPECT_EQ(blink::mojom::DisplayMode::kMinimalUi,
+            tester->manifest().display_override[1]);
+  EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
+            tester->manifest().display_override[2]);
+  EXPECT_EQ(
+      std::vector<InstallableStatusCode>{
+          MANIFEST_DISPLAY_OVERRIDE_NOT_SUPPORTED},
+      tester->errors());
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
+                       FallbackToDisplayBrowser) {
+  base::RunLoop run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(run_loop.QuitClosure()));
+
+  NavigateAndRunInstallableManager(
+      browser(), tester.get(), GetWebAppParams(),
+      GetURLOfPageWithServiceWorkerAndManifest(
+          "/banners/manifest_display_override_display_is_browser.json"));
+  run_loop.Run();
+
+  EXPECT_FALSE(tester->manifest().IsEmpty());
+  EXPECT_FALSE(tester->manifest_url().is_empty());
+  ASSERT_EQ(1u, tester->manifest().display_override.size());
+  EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
+            tester->manifest().display_override[0]);
+
+  EXPECT_FALSE(tester->primary_icon_url().is_empty());
+  EXPECT_NE(nullptr, tester->primary_icon());
+  EXPECT_EQ(144, tester->primary_icon()->width());
+  EXPECT_TRUE(tester->valid_manifest());
+  EXPECT_TRUE(tester->has_worker());
+  EXPECT_TRUE(tester->splash_icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->splash_icon());
+  EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
 }

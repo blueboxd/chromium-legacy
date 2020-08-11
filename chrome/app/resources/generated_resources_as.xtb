@@ -1105,7 +1105,6 @@
 <translation id="2336381494582898602">পাৱাৰৱাশ্ব</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" />ক সুৰক্ষিতভাৱে ডাউনল’ড কৰিব নোৱাৰি</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" />এ যোৰা লাগিব খোজে</translation>
-<translation id="2341476639346994688">প্ৰিণ্টাৰটো বন্ধ হৈ আছে</translation>
 <translation id="2342740338116612727">বুকমাৰ্ক যোগ কৰা হ’ল</translation>
 <translation id="2343747224442182863">এই টেবটোত ফ'কাছ কৰক</translation>
 <translation id="2344686470986284227">ভাৰ্ছুৱেল মেচিনটোৰ নিয়ন্ত্ৰক আৰম্ভ কৰি থকা হৈছে</translation>
@@ -3441,7 +3440,6 @@
 <translation id="5283677936944177147">আমি দুঃখিত!  ছিষ্টেমটোৱে ডিভাইচৰ ম'ডেল আৰু ক্ৰমিক নম্বৰ নিৰ্ধাৰণ কৰিব নোৱাৰিলে।</translation>
 <translation id="5284445933715251131">ডাউনল’ড কৰি থকাটো অব্যাহত ৰাখক</translation>
 <translation id="5285635972691565180"><ph name="DISPLAY_ID" /> প্ৰদৰ্শন কৰক</translation>
-<translation id="5286094561505658635">আউটপুট ক্ষেত্ৰখন ভৰ্তি হৈ পৰিছে</translation>
 <translation id="5286194356314741248">স্কেন কৰি থকা হৈছে</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">আপোনাৰ একাউণ্ট</translation>
@@ -3662,7 +3660,6 @@
 <translation id="5553089923092577885">প্ৰমাণপত্ৰৰ নীতি মেপিং</translation>
 <translation id="5554489410841842733">এক্সটেনশ্বনটোৱে বর্তমানৰ পৃষ্ঠাটোত কার্য সম্পাদন কৰিব পাৰিলে এই আইকনটো দেখা পোৱা যাব।</translation>
 <translation id="5554720593229208774">ইমেইলৰ প্ৰমাণপত্ৰৰ কৰ্তৃপক্ষ</translation>
-<translation id="5554931805291741487">আউটপুট ক্ষেত্ৰখন প্ৰায় ভৰ্তি হৈ পৰিছে</translation>
 <translation id="5556459405103347317">পুনৰ ল’ড কৰক</translation>
 <translation id="5558125320634132440">এই ছাইটটো অৱৰোধ কৰা হৈছে কাৰণ ইয়াত প্ৰাপ্তবয়স্কৰ সমল থাকিব পাৰে</translation>
 <translation id="5558129378926964177">জুম &amp;ইন কৰক</translation>
@@ -4927,7 +4924,6 @@
 <translation id="7152478047064750137">এই এক্সটেনশ্বনটোৰ বাবে কোনো বিশেষ অনুমতি ল’ব নালাগে</translation>
 <translation id="7154130902455071009">আপোনাৰ আৰম্ভণিৰ পৃষ্ঠা ইয়ালৈ সলনি কৰক: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">কেমেৰা বা ফাইলৰ পৰা ইতিমধ্যে থকা ফট’</translation>
-<translation id="7163766494674803047">প্ৰিণ্টাৰৰ ডিভাইচৰ আসোঁৱাহ</translation>
 <translation id="7165320105431587207">নেটৱৰ্ক কনফিগাৰ কৰাত বিফল হ'ল</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />"এ পৰীক্ষা কৰা অৱস্থানসমূহত প্ৰতিচ্ছবি, ভিডিঅ’ আৰু ধ্বনিৰ ফাইলসমূহ পঢ়িব আৰু লিখিব পাৰে।</translation>
 <translation id="7167486101654761064">এই ধৰণৰ ফাইলসমূহ &amp;সদায় খোলক</translation>

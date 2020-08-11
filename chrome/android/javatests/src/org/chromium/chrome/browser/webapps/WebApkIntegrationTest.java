@@ -57,7 +57,7 @@ public class WebApkIntegrationTest {
                 Uri.parse(mActivityTestRule.getEmbeddedTestServerRule().getServer().getURL("/"));
         CommandLine.getInstance().appendSwitchWithValue(
                 ContentSwitches.HOST_RESOLVER_RULES, "MAP * " + mapToUri.getAuthority());
-        WebApkValidator.disableValidationForTesting();
+        WebApkValidator.setDisableValidationForTesting(true);
     }
 
     /**

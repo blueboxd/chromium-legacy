@@ -220,3 +220,15 @@ var NewTabPageModulesDummyModuleTest = class extends NewTabPageBrowserTest {
 TEST_F('NewTabPageModulesDummyModuleTest', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var NewTabPageModulesKaleidoscopeModuleTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/kaleidoscope/module_test.js';
+  }
+};
+
+TEST_F('NewTabPageModulesKaleidoscopeModuleTest', 'All', function() {
+  mocha.run();
+});

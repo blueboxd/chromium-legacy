@@ -1105,7 +1105,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2336381494582898602">Rivendosje në gjendjen e fabrikës</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> nuk mund të shkarkohet në mënyrë të sigurt</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> dëshiron të çiftohet</translation>
-<translation id="2341476639346994688">Printeri ka ndaluar</translation>
 <translation id="2342740338116612727">Faqeshënuesit u shtuan</translation>
 <translation id="2343747224442182863">Fokuso këtë skedë</translation>
 <translation id="2344686470986284227">Po niset kontrolluesi i pajisjes virtuale</translation>
@@ -3445,7 +3444,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5283677936944177147">Mos! Sistemi nuk arriti të përcaktonte modelin e pajisjes ose numrin e serisë.</translation>
 <translation id="5284445933715251131">Vazhdo shkarkimin</translation>
 <translation id="5285635972691565180">Ekrani <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Zona e daljes është plot</translation>
 <translation id="5286194356314741248">Po skanon</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Llogaritë e tua</translation>
@@ -3666,7 +3664,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5553089923092577885">Planifikime të politikës së certifikatës</translation>
 <translation id="5554489410841842733">Kjo ikonë do të jetë e dukshme kur shtesa të arrijë të veprojë në faqen aktuale.</translation>
 <translation id="5554720593229208774">Autoriteti i vërtetimit të mail-eve</translation>
-<translation id="5554931805291741487">Zona e daljes është pothuajse plot</translation>
 <translation id="5556459405103347317">Ringarko</translation>
 <translation id="5558125320634132440">Kjo faqe është bllokuar sepse mund të ketë përmbajtje për të rritur</translation>
 <translation id="5558129378926964177">Afroje&amp;</translation>
@@ -4937,7 +4934,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7152478047064750137">Kjo shtesë nuk kërkon leje të veçanta</translation>
 <translation id="7154130902455071009">Ndrysho faqen tënde të nisjes te: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Fotografi ekzistuese nga kamera ose skedari</translation>
-<translation id="7163766494674803047">Gabim i pajisjes së printerit</translation>
 <translation id="7165320105431587207">Konfigurimi i rrjetit dështoi</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" mund të lexojë imazhe, video dhe skedarë audio në vendndodhjet e verifikuara.</translation>
 <translation id="7167486101654761064">&amp;Hapi gjithmonë skedarët e këtij lloji</translation>

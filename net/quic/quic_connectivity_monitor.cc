@@ -35,13 +35,25 @@ void QuicConnectivityMonitor::RecordConnectivityStatsToHistograms(
       return;
   }
 
-  UMA_HISTOGRAM_COUNTS_100(
-      "Net.QuicConnectivityMonitor.NumActiveQuicSessionsAtNetworkChange",
-      active_sessions_.size());
+  base::ClampedNumeric<int> num_degrading_sessions = GetNumDegradingSessions();
 
   if (num_sessions_active_during_current_speculative_connectivity_failure_) {
     UMA_HISTOGRAM_COUNTS_100(
         "Net.QuicConnectivityMonitor.NumSessionsTrackedSinceSpeculativeError",
+        num_sessions_active_during_current_speculative_connectivity_failure_
+            .value());
+  }
+
+  UMA_HISTOGRAM_COUNTS_100(
+      "Net.QuicConnectivityMonitor.NumActiveQuicSessionsAtNetworkChange",
+      active_sessions_.size());
+
+  int percentage = 0;
+  if (num_sessions_active_during_current_speculative_connectivity_failure_ &&
+      num_sessions_active_during_current_speculative_connectivity_failure_
+              .value() > 0) {
+    percentage = base::saturated_cast<int>(
+        num_all_degraded_sessions_ * 100.0 /
         num_sessions_active_during_current_speculative_connectivity_failure_
             .value());
   }
@@ -55,14 +67,6 @@ void QuicConnectivityMonitor::RecordConnectivityStatsToHistograms(
   base::UmaHistogramCustomCounts(raw_histogram_name1,
                                  num_all_degraded_sessions_, 1, 100, 50);
 
-  int percentage = 0;
-  if (num_sessions_active_during_current_speculative_connectivity_failure_) {
-    percentage =
-        num_all_degraded_sessions_ * 100 /
-        num_sessions_active_during_current_speculative_connectivity_failure_
-            .value();
-  }
-
   const std::string percentage_histogram_name1 =
       "Net.QuicConnectivityMonitor.PercentageAllDegradedSessions." +
       notification;
@@ -70,16 +74,18 @@ void QuicConnectivityMonitor::RecordConnectivityStatsToHistograms(
   base::UmaHistogramPercentage(percentage_histogram_name1, percentage);
 
   // Skip degrading session collection if there are less than two sessions.
-  if (active_sessions_.size() < 2)
+  if (active_sessions_.size() < 2u)
     return;
 
-  size_t num_degrading_sessions = GetNumDegradingSessions();
   const std::string raw_histogram_name =
       "Net.QuicConnectivityMonitor.NumActiveDegradingSessions." + notification;
 
   base::UmaHistogramCustomCounts(raw_histogram_name, num_degrading_sessions, 1,
                                  100, 50);
-  percentage = num_degrading_sessions * 100 / active_sessions_.size();
+
+  percentage = base::saturated_cast<double>(num_degrading_sessions * 100.0 /
+                                            active_sessions_.size());
+
   const std::string percentage_histogram_name =
       "Net.QuicConnectivityMonitor.PercentageActiveDegradingSessions." +
       notification;
@@ -109,6 +115,11 @@ void QuicConnectivityMonitor::OnSessionPathDegrading(
 
   degrading_sessions_.insert(session);
   num_all_degraded_sessions_++;
+  // If the degrading session used to be on the previous default network, it is
+  // possible that the session is no longer tracked in |active_sessions_| due
+  // to the recent default network change.
+  active_sessions_.insert(session);
+
   if (!num_sessions_active_during_current_speculative_connectivity_failure_) {
     num_sessions_active_during_current_speculative_connectivity_failure_ =
         active_sessions_.size();
@@ -127,6 +138,12 @@ void QuicConnectivityMonitor::OnSessionResumedPostPathDegrading(
     return;
 
   degrading_sessions_.erase(session);
+
+  // If the resumed session used to be on the previous default network, it is
+  // possible that the session is no longer tracked in |active_sessions_| due
+  // to the recent default network change.
+  active_sessions_.insert(session);
+
   num_all_degraded_sessions_ = 0u;
   num_sessions_active_during_current_speculative_connectivity_failure_ =
       base::nullopt;
@@ -138,6 +155,11 @@ void QuicConnectivityMonitor::OnSessionEncounteringWriteError(
     int error_code) {
   if (network != default_network_)
     return;
+
+  // If the session used to be on the previous default network, it is
+  // possible that the session is no longer tracked in |active_sessions_| due
+  // to the recent default network change.
+  active_sessions_.insert(session);
 
   ++write_error_map_[error_code];
 

@@ -951,26 +951,26 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, LocalAndExternalPinchState) {
   // PinchGestureBegin/End update pinch_gesture_active() properly.
-  EXPECT_FALSE(host_impl_->pinch_gesture_active());
+  EXPECT_FALSE(host_impl_->GetInputHandler().pinch_gesture_active());
   host_impl_->PinchGestureBegin();
-  EXPECT_TRUE(host_impl_->pinch_gesture_active());
+  EXPECT_TRUE(host_impl_->GetInputHandler().pinch_gesture_active());
   host_impl_->PinchGestureEnd(gfx::Point(), false /* snap_to_min */);
-  EXPECT_FALSE(host_impl_->pinch_gesture_active());
+  EXPECT_FALSE(host_impl_->GetInputHandler().pinch_gesture_active());
 
   // set_external_pinch_gesture_active updates pinch_gesture_active() properly.
-  host_impl_->set_external_pinch_gesture_active(true);
-  EXPECT_TRUE(host_impl_->pinch_gesture_active());
-  host_impl_->set_external_pinch_gesture_active(false);
-  EXPECT_FALSE(host_impl_->pinch_gesture_active());
+  host_impl_->GetInputHandler().set_external_pinch_gesture_active(true);
+  EXPECT_TRUE(host_impl_->GetInputHandler().pinch_gesture_active());
+  host_impl_->GetInputHandler().set_external_pinch_gesture_active(false);
+  EXPECT_FALSE(host_impl_->GetInputHandler().pinch_gesture_active());
 
   // Clearing external_pinch_gesture_active doesn't affect
   // pinch_gesture_active() if it was set by PinchGestureBegin().
   host_impl_->PinchGestureBegin();
-  EXPECT_TRUE(host_impl_->pinch_gesture_active());
-  host_impl_->set_external_pinch_gesture_active(false);
-  EXPECT_TRUE(host_impl_->pinch_gesture_active());
+  EXPECT_TRUE(host_impl_->GetInputHandler().pinch_gesture_active());
+  host_impl_->GetInputHandler().set_external_pinch_gesture_active(false);
+  EXPECT_TRUE(host_impl_->GetInputHandler().pinch_gesture_active());
   host_impl_->PinchGestureEnd(gfx::Point(), false /* snap_to_min */);
-  EXPECT_FALSE(host_impl_->pinch_gesture_active());
+  EXPECT_FALSE(host_impl_->GetInputHandler().pinch_gesture_active());
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, NotifyIfCanDrawChanged) {
@@ -2442,7 +2442,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnX) {
   host_impl_->ScrollEnd(true);
 
   // Snap target should not be set until the end of the animation.
-  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2454,7 +2454,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnX) {
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), CurrentScrollOffset(overflow));
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
@@ -2487,7 +2487,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnY) {
   host_impl_->ScrollEnd(true);
 
   // Snap target should not be set until the end of the animation.
-  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2499,7 +2499,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnY) {
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 50), CurrentScrollOffset(overflow));
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(), ElementId(10)),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
@@ -2531,7 +2531,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnBoth) {
   host_impl_->ScrollEnd(true);
 
   // Snap target should not be set until the end of the animation.
-  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2543,7 +2543,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnBoth) {
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50), CurrentScrollOffset(overflow));
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
@@ -2597,7 +2597,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
   // Animating for the wheel scroll.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(50));
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   gfx::ScrollOffset current_offset = CurrentScrollOffset(overflow);
   EXPECT_LT(0, current_offset.x());
   EXPECT_GT(20, current_offset.x());
@@ -2611,7 +2611,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
   // The snap target should not be set until the end of the animation.
-  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2619,7 +2619,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1500));
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50), CurrentScrollOffset(overflow));
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
@@ -2641,7 +2641,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationTargetUpdated) {
   host_impl_->ScrollUpdate(
       UpdateState(pointer_position, y_delta, ui::ScrollInputType::kWheel)
           .get());
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
@@ -2653,7 +2653,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationTargetUpdated) {
   // Finish smooth wheel scroll animation which starts a snap animation.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2666,20 +2666,20 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationTargetUpdated) {
   // animation.
   host_impl_->ScrollUpdate(
       AnimatedUpdateState(gfx::Point(10, 10), gfx::Vector2dF(0, -10)).get());
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   // Finish the smooth scroll animation for wheel.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(150));
 
   // At the end of the previous scroll animation, a new animation for the
   // snapping should have started.
-  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
 
   // Finish the snap animation.
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   // At the end of snap animation we should have updated the
   // TargetSnapAreaElementIds.
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(), ElementId(10)),
@@ -2704,7 +2704,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
   host_impl_->ScrollUpdate(
       UpdateState(pointer_position, x_delta, ui::ScrollInputType::kWheel)
           .get());
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
@@ -2716,7 +2716,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
   // Animating for the snap.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2734,7 +2734,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
       ScrollThread::SCROLL_ON_IMPL_THREAD,
       host_impl_->ScrollBegin(begin_state.get(), ui::ScrollInputType::kWheel)
           .thread);
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2769,14 +2769,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   host_impl_->ScrollUpdate(
       UpdateState(pointer_position, x_delta, ui::ScrollInputType::kWheel)
           .get());
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   host_impl_->ScrollEnd(true);
 
   // No animation is created, but the snap target should be updated.
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2785,13 +2785,13 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   BeginImplFrameAndAnimate(begin_frame_args, start_time);
 
   // We are already at a snap target so we should not animate for snap.
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
 
   // Verify that we are not actually animating by running one frame and ensuring
   // scroll offset has not changed.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(100));
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), CurrentScrollOffset(overflow));
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
@@ -2824,7 +2824,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   gfx::Vector2dF initial_offset, target_offset;
   EXPECT_TRUE(host_impl_->GetSnapFlingInfoAndSetAnimatingSnapTarget(
       gfx::Vector2dF(10, 10), &initial_offset, &target_offset));
-  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), initial_offset);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), target_offset);
   // Snap targets shouldn't be set until the fling animation is complete.
@@ -2832,7 +2832,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   host_impl_->ScrollEndForSnapFling(true /* did_finish */);
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
@@ -2864,7 +2864,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   gfx::Vector2dF initial_offset, target_offset;
   EXPECT_TRUE(host_impl_->GetSnapFlingInfoAndSetAnimatingSnapTarget(
       gfx::Vector2dF(10, 10), &initial_offset, &target_offset));
-  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), initial_offset);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), target_offset);
   // Snap targets shouldn't be set until the fling animation is complete.
@@ -2873,7 +2873,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 
   // The snap targets should not be set if the snap fling did not finish.
   host_impl_->ScrollEndForSnapFling(false /* did_finish */);
-  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
@@ -9218,7 +9218,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
 
   host_impl_->active_tree()->PushPageScaleFromMainThread(1, 0.5f, 4);
   DrawFrame();
-  EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   // In-bounds scrolling does not affect overscroll.
   EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD,
@@ -9235,7 +9237,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_TRUE(scroll_result.did_scroll);
   EXPECT_FALSE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   // Overscroll events are reflected immediately.
   scroll_result =
@@ -9245,9 +9249,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_TRUE(scroll_result.did_scroll);
   EXPECT_TRUE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(0, 10), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(0, 10), host_impl_->accumulated_root_overscroll());
-  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
-            host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(0, 10),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
+  EXPECT_EQ(
+      scroll_result.accumulated_root_overscroll,
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   // In-bounds scrolling resets accumulated overscroll for the scrolled axes.
   scroll_result =
@@ -9257,9 +9264,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_TRUE(scroll_result.did_scroll);
   EXPECT_FALSE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(0, 0), host_impl_->accumulated_root_overscroll());
-  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
-            host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(0, 0),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
+  EXPECT_EQ(
+      scroll_result.accumulated_root_overscroll,
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   scroll_result =
       host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, -10),
@@ -9268,9 +9278,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_FALSE(scroll_result.did_scroll);
   EXPECT_TRUE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(0, -10), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(0, -10), host_impl_->accumulated_root_overscroll());
-  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
-            host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(0, -10),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
+  EXPECT_EQ(
+      scroll_result.accumulated_root_overscroll,
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   scroll_result =
       host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(10, 0),
@@ -9279,9 +9292,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_TRUE(scroll_result.did_scroll);
   EXPECT_FALSE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(0, 0), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(0, -10), host_impl_->accumulated_root_overscroll());
-  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
-            host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(0, -10),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
+  EXPECT_EQ(
+      scroll_result.accumulated_root_overscroll,
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   scroll_result =
       host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(-15, 0),
@@ -9290,9 +9306,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_TRUE(scroll_result.did_scroll);
   EXPECT_TRUE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(-5, 0), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(-5, -10), host_impl_->accumulated_root_overscroll());
-  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
-            host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(-5, -10),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
+  EXPECT_EQ(
+      scroll_result.accumulated_root_overscroll,
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   scroll_result =
       host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, 60),
@@ -9301,9 +9320,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_TRUE(scroll_result.did_scroll);
   EXPECT_TRUE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(0, 10), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(-5, 10), host_impl_->accumulated_root_overscroll());
-  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
-            host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(-5, 10),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
+  EXPECT_EQ(
+      scroll_result.accumulated_root_overscroll,
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   scroll_result =
       host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(10, -60),
@@ -9312,9 +9334,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_TRUE(scroll_result.did_scroll);
   EXPECT_TRUE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(0, -10), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(0, -10), host_impl_->accumulated_root_overscroll());
-  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
-            host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(0, -10),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
+  EXPECT_EQ(
+      scroll_result.accumulated_root_overscroll,
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   // Overscroll accumulates within the scope of ScrollBegin/ScrollEnd as long
   // as no scroll occurs.
@@ -9325,9 +9350,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_FALSE(scroll_result.did_scroll);
   EXPECT_TRUE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(0, -20), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(0, -30), host_impl_->accumulated_root_overscroll());
-  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
-            host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(0, -30),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
+  EXPECT_EQ(
+      scroll_result.accumulated_root_overscroll,
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   scroll_result =
       host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, -20),
@@ -9336,9 +9364,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_FALSE(scroll_result.did_scroll);
   EXPECT_TRUE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(0, -20), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(0, -50), host_impl_->accumulated_root_overscroll());
-  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
-            host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(0, -50),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
+  EXPECT_EQ(
+      scroll_result.accumulated_root_overscroll,
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   // Overscroll resets on valid scroll.
   scroll_result =
@@ -9348,9 +9379,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_TRUE(scroll_result.did_scroll);
   EXPECT_FALSE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(0, 0), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(0, 0), host_impl_->accumulated_root_overscroll());
-  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
-            host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(0, 0),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
+  EXPECT_EQ(
+      scroll_result.accumulated_root_overscroll,
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   scroll_result =
       host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, -20),
@@ -9359,9 +9393,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollRoot) {
   EXPECT_TRUE(scroll_result.did_scroll);
   EXPECT_TRUE(scroll_result.did_overscroll_root);
   EXPECT_EQ(gfx::Vector2dF(0, -10), scroll_result.unused_scroll_delta);
-  EXPECT_EQ(gfx::Vector2dF(0, -10), host_impl_->accumulated_root_overscroll());
-  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
-            host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(0, -10),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
+  EXPECT_EQ(
+      scroll_result.accumulated_root_overscroll,
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   host_impl_->ScrollEnd();
 }
@@ -9410,7 +9447,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
               grand_child_layer->scroll_tree_index());
     EXPECT_TRUE(scroll_result.did_scroll);
     EXPECT_FALSE(scroll_result.did_overscroll_root);
-    EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
+    EXPECT_EQ(gfx::Vector2dF(), host_impl_->GetInputHandler()
+                                    .accumulated_root_overscroll_for_testing());
     host_impl_->ScrollEnd();
 
     // The next time we scroll we should only scroll the parent, but overscroll
@@ -9425,7 +9463,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
                   .thread);
     EXPECT_EQ(host_impl_->CurrentlyScrollingNode()->id,
               child_layer->scroll_tree_index());
-    EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
+    EXPECT_EQ(gfx::Vector2dF(), host_impl_->GetInputHandler()
+                                    .accumulated_root_overscroll_for_testing());
     host_impl_->ScrollEnd();
 
     EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD,
@@ -9443,7 +9482,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
     EXPECT_FALSE(scroll_result.did_overscroll_root);
     EXPECT_EQ(host_impl_->CurrentlyScrollingNode()->id,
               child_layer->scroll_tree_index());
-    EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
+    EXPECT_EQ(gfx::Vector2dF(), host_impl_->GetInputHandler()
+                                    .accumulated_root_overscroll_for_testing());
     host_impl_->ScrollEnd();
 
     // After scrolling the parent, another scroll on the opposite direction
@@ -9466,7 +9506,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
     EXPECT_FALSE(scroll_result.did_overscroll_root);
     EXPECT_EQ(host_impl_->CurrentlyScrollingNode()->id,
               grand_child_layer->scroll_tree_index());
-    EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
+    EXPECT_EQ(gfx::Vector2dF(), host_impl_->GetInputHandler()
+                                    .accumulated_root_overscroll_for_testing());
     host_impl_->ScrollEnd();
   }
 }
@@ -9492,19 +9533,24 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollChildEventBubbling) {
             .get());
     EXPECT_TRUE(scroll_result.did_scroll);
     EXPECT_FALSE(scroll_result.did_overscroll_root);
-    EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
+    EXPECT_EQ(gfx::Vector2dF(), host_impl_->GetInputHandler()
+                                    .accumulated_root_overscroll_for_testing());
     scroll_result = host_impl_->ScrollUpdate(
         UpdateState(gfx::Point(), scroll_delta, ui::ScrollInputType::kWheel)
             .get());
     EXPECT_TRUE(scroll_result.did_scroll);
     EXPECT_TRUE(scroll_result.did_overscroll_root);
-    EXPECT_EQ(gfx::Vector2dF(0, 6), host_impl_->accumulated_root_overscroll());
+    EXPECT_EQ(gfx::Vector2dF(0, 6),
+              host_impl_->GetInputHandler()
+                  .accumulated_root_overscroll_for_testing());
     scroll_result = host_impl_->ScrollUpdate(
         UpdateState(gfx::Point(), scroll_delta, ui::ScrollInputType::kWheel)
             .get());
     EXPECT_FALSE(scroll_result.did_scroll);
     EXPECT_TRUE(scroll_result.did_overscroll_root);
-    EXPECT_EQ(gfx::Vector2dF(0, 14), host_impl_->accumulated_root_overscroll());
+    EXPECT_EQ(gfx::Vector2dF(0, 14),
+              host_impl_->GetInputHandler()
+                  .accumulated_root_overscroll_for_testing());
     host_impl_->ScrollEnd();
   }
 }
@@ -9519,7 +9565,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollAlways) {
 
   host_impl_->active_tree()->PushPageScaleFromMainThread(1, 0.5f, 4);
   DrawFrame();
-  EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 
   // Even though the layer can't scroll the overscroll still happens.
   EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD,
@@ -9535,7 +9583,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollAlways) {
                                    .get());
   EXPECT_FALSE(scroll_result.did_scroll);
   EXPECT_TRUE(scroll_result.did_overscroll_root);
-  EXPECT_EQ(gfx::Vector2dF(0, 10), host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(0, 10),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
@@ -9563,7 +9613,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
     EXPECT_TRUE(scroll_result.did_scroll);
     EXPECT_FALSE(scroll_result.did_overscroll_root);
     EXPECT_EQ(gfx::Vector2dF().ToString(),
-              host_impl_->accumulated_root_overscroll().ToString());
+              host_impl_->GetInputHandler()
+                  .accumulated_root_overscroll_for_testing()
+                  .ToString());
     scroll_result = host_impl_->ScrollUpdate(
         UpdateState(gfx::Point(), gfx::Vector2dF(0, -2.30f),
                     ui::ScrollInputType::kWheel)
@@ -9571,7 +9623,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
     EXPECT_TRUE(scroll_result.did_scroll);
     EXPECT_FALSE(scroll_result.did_overscroll_root);
     EXPECT_EQ(gfx::Vector2dF().ToString(),
-              host_impl_->accumulated_root_overscroll().ToString());
+              host_impl_->GetInputHandler()
+                  .accumulated_root_overscroll_for_testing()
+                  .ToString());
     host_impl_->ScrollEnd();
     // unusedrootDelta should be subtracted from applied delta so that
     // unwanted glow effect calls are not called.
@@ -9590,7 +9644,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
     EXPECT_TRUE(scroll_result.did_scroll);
     EXPECT_TRUE(scroll_result.did_overscroll_root);
     EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(0.000000f, 17.699997f),
-                        host_impl_->accumulated_root_overscroll());
+                        host_impl_->GetInputHandler()
+                            .accumulated_root_overscroll_for_testing());
 
     scroll_result = host_impl_->ScrollUpdate(
         UpdateState(gfx::Point(), gfx::Vector2dF(0.02f, -0.01f),
@@ -9599,7 +9654,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
     EXPECT_FALSE(scroll_result.did_scroll);
     EXPECT_FALSE(scroll_result.did_overscroll_root);
     EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(0.000000f, 17.699997f),
-                        host_impl_->accumulated_root_overscroll());
+                        host_impl_->GetInputHandler()
+                            .accumulated_root_overscroll_for_testing());
     host_impl_->ScrollEnd();
     // TestCase to check  kEpsilon, which prevents minute values to trigger
     // gloweffect without reaching edge.
@@ -9618,7 +9674,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
     EXPECT_FALSE(scroll_result.did_scroll);
     EXPECT_FALSE(scroll_result.did_overscroll_root);
     EXPECT_EQ(gfx::Vector2dF().ToString(),
-              host_impl_->accumulated_root_overscroll().ToString());
+              host_impl_->GetInputHandler()
+                  .accumulated_root_overscroll_for_testing()
+                  .ToString());
     host_impl_->ScrollEnd();
   }
 }
@@ -12351,7 +12409,9 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   EXPECT_EQ(gfx::Vector2dF(0, 2 * offset).ToString(),
             CurrentScrollOffset(scroll_layer).ToString());
   EXPECT_EQ(gfx::Vector2dF(0, overscrollamount).ToString(),
-            host_impl_->accumulated_root_overscroll().ToString());
+            host_impl_->GetInputHandler()
+                .accumulated_root_overscroll_for_testing()
+                .ToString());
 
   EXPECT_TRUE(host_impl_
                   ->ScrollUpdate(UpdateState(gfx::Point(),
@@ -12593,7 +12653,9 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
 
   // When inner viewport is unscrollable, a fling gives zero overscroll.
   EXPECT_FALSE(scroll_result.did_overscroll_root);
-  EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(
+      gfx::Vector2dF(),
+      host_impl_->GetInputHandler().accumulated_root_overscroll_for_testing());
 }
 
 class LayerTreeHostImplWithImplicitLimitsTest : public LayerTreeHostImplTest {

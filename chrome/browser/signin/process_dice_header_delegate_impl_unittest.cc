@@ -41,9 +41,8 @@ class TestDiceWebSigninInterceptorDelegate
  public:
   ~TestDiceWebSigninInterceptorDelegate() override = default;
   void ShowSigninInterceptionBubble(
-      DiceWebSigninInterceptor::SigninInterceptionType signin_interception_type,
       content::WebContents* web_contents,
-      const AccountInfo& account_info,
+      const BubbleParameters& bubble_parameters,
       base::OnceCallback<void(bool)> callback) override {
     std::move(callback).Run(false);
   }

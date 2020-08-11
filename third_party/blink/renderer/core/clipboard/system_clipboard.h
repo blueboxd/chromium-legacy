@@ -32,6 +32,9 @@ class CORE_EXPORT SystemClipboard final
   enum SmartReplaceOption { kCanSmartReplace, kCannotSmartReplace };
 
   explicit SystemClipboard(LocalFrame* frame);
+  SystemClipboard(const SystemClipboard&) = delete;
+  SystemClipboard& operator=(const SystemClipboard&) = delete;
+
   uint64_t SequenceNumber();
   bool IsSelectionMode() const;
   void SetSelectionMode(bool);
@@ -87,7 +90,6 @@ class CORE_EXPORT SystemClipboard final
   // Whether the selection buffer is available on the underlying platform.
   bool is_selection_buffer_available_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(SystemClipboard);
 };
 
 }  // namespace blink

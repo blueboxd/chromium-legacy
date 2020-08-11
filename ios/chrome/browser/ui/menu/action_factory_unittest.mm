@@ -258,4 +258,41 @@ TEST_F(ActionFactoryTest, EditAction) {
   }
 }
 
+// Tests that the Open All Tabs action has the right title and image.
+TEST_F(ActionFactoryTest, openAllTabsAction) {
+  if (@available(iOS 13.0, *)) {
+    ActionFactory* factory =
+        [[ActionFactory alloc] initWithBrowser:test_browser_.get()
+                                      scenario:kTestMenuScenario];
+
+    UIImage* expectedImage = [UIImage systemImageNamed:@"plus"];
+    NSString* expectedTitle =
+        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPEN_ALL_LINKS);
+
+    UIAction* action = [factory actionToOpenAllTabsWithBlock:^{
+    }];
+
+    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+    EXPECT_EQ(expectedImage, action.image);
+  }
+}
+
+// Tests that the hide action has the right title and image.
+TEST_F(ActionFactoryTest, hideAction) {
+  if (@available(iOS 13.0, *)) {
+    ActionFactory* factory =
+        [[ActionFactory alloc] initWithBrowser:test_browser_.get()
+                                      scenario:kTestMenuScenario];
+
+    NSString* expectedTitle =
+        l10n_util::GetNSString(IDS_IOS_RECENT_TABS_HIDE_MENU_OPTION);
+
+    UIAction* action = [factory actionToHideWithBlock:^{
+    }];
+
+    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+    EXPECT_EQ(nil, action.image);
+  }
+}
+
 #endif  // defined(__IPHONE_13_0)

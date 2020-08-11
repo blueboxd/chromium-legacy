@@ -55,6 +55,11 @@ API_AVAILABLE(ios(13.0))
 // needs to open a URL in a new tab.
 - (UIAction*)actionToOpenInNewTabWithBlock:(ProceduralBlock)block;
 
+// Creates a UIAction instance whose title and icon are configured for opening
+// multiple URLs in new tabs. When triggered, the action will invoke the |block|
+// which needs to open URLs in new tabs.
+- (UIAction*)actionToOpenAllTabsWithBlock:(ProceduralBlock)block;
+
 // Creates a UIAction instance configured for opening the |URL| in a new
 // incognito tab and which will invoke the given |completion| block after
 // execution.
@@ -80,6 +85,10 @@ API_AVAILABLE(ios(13.0))
 // Creates a UIAction instance whose title and icon are configured for editing
 // which will invoke the given edit |block| when executed.
 - (UIAction*)actionToEditWithBlock:(ProceduralBlock)block;
+
+// Creates a UIAction instance configured for hiding which will invoke
+// the given hiding |block| when executed.
+- (UIAction*)actionToHideWithBlock:(ProceduralBlock)block;
 
 @end
 

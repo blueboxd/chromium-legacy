@@ -1112,7 +1112,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> can't be downloaded securely</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> wants to pair</translation>
-<translation id="2341476639346994688">Printer is stopped</translation>
 <translation id="2342740338116612727">Bookmarks added</translation>
 <translation id="2343747224442182863">Focus This Tab</translation>
 <translation id="2344686470986284227">Starting the virtual machine controller</translation>
@@ -3458,7 +3457,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5283677936944177147">Oops!  The system failed to determine device model or serial number.</translation>
 <translation id="5284445933715251131">Continue Downloading</translation>
 <translation id="5285635972691565180">Display <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Output area is full</translation>
 <translation id="5286194356314741248">Scanning</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Your accounts</translation>
@@ -3680,7 +3678,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5553089923092577885">Certificate Policy Mappings</translation>
 <translation id="5554489410841842733">This icon will be visible when the extension can act on the current page.</translation>
 <translation id="5554720593229208774">Email Certification Authority</translation>
-<translation id="5554931805291741487">Output area is almost full</translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5558125320634132440">This site is blocked because it may have mature content</translation>
 <translation id="5558129378926964177">Zoom &amp;In</translation>
@@ -4954,7 +4951,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7152478047064750137">This extension requires no special permissions</translation>
 <translation id="7154130902455071009">Change your start page to: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Existing photo from camera or file</translation>
-<translation id="7163766494674803047">Printer device error</translation>
 <translation id="7165320105431587207">Failed to configure network</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" can read images, video and sound files in the ticked locations.</translation>
 <translation id="7167486101654761064">&amp;Always open files of this type</translation>

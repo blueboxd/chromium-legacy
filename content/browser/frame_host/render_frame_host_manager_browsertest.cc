@@ -5536,10 +5536,9 @@ class ProactivelySwapBrowsingInstancesCrossSiteSwapProcessTest
 
 // Test to ensure that the error page navigation does not change
 // BrowsingInstances when window.open is present.
-// TODO(crbug.com/1110429): Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_P(
     ProactivelySwapBrowsingInstancesCrossSiteSwapProcessTest,
-    DISABLED_ErrorPageNavigationWithWindowOpenDoesNotChangeBrowsingInstance) {
+    ErrorPageNavigationWithWindowOpenDoesNotChangeBrowsingInstance) {
   StartEmbeddedServer();
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   GURL error_url(embedded_test_server()->GetURL("/empty.html"));

@@ -9,15 +9,15 @@
         v-for="hullDisplay in HullDisplay"
         :key="hullDisplay"
         @change="displayOptionChanged">
-      <input
+      <MdRadio
           :id="hullDisplay"
           v-model="internalSelectedHullDisplay"
+          class="md-primary hull-settings-option"
           type="radio"
           name="hullDisplayRadioButtons"
           :value="hullDisplay">
-      <label :for="hullDisplay">
         {{ hullDisplay }}
-      </label>
+      </MdRadio>
     </div>
   </div>
 </template>
@@ -57,5 +57,9 @@ export default ClassGraphHullSettings;
   display: flex;
   flex-direction: column;
   margin-bottom: 10px;
+}
+
+.hull-settings-option {
+  margin: 0;
 }
 </style>

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_IMPL_H_
 #define CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_IMPL_H_
 
+#include <stdint.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -206,8 +207,7 @@ class NearbySharingServiceImpl
       const std::string& endpoint_id);
   void ClearOutgoingShareTargetInfoMap();
   void SetAttachmentPayloadId(const Attachment& attachment, int64_t payload_id);
-  base::Optional<int64_t> GetAttachmentPayloadId(
-      const base::UnguessableToken& attachment_id);
+  base::Optional<int64_t> GetAttachmentPayloadId(int64_t attachment_id);
   void UnregisterShareTarget(const ShareTarget& share_target);
 
   Profile* profile_;
@@ -269,7 +269,7 @@ class NearbySharingServiceImpl
 
   // A mapping of Attachment Id to additional AttachmentInfo related to the
   // Attachment.
-  base::flat_map<base::UnguessableToken, AttachmentInfo> attachment_info_map_;
+  base::flat_map<int64_t, AttachmentInfo> attachment_info_map_;
 
   // This alarm is used to disconnect the sharing connection if both sides do
   // not press accept within the timeout.

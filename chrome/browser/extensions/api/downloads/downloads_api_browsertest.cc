@@ -875,6 +875,8 @@ downloads::InterruptReason InterruptReasonContentToExtension(
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_Open) {
+  platform_util::internal::DisableShellOperationsForTesting();
+
   LoadExtension("downloads_split");
   DownloadsOpenFunction* open_function = new DownloadsOpenFunction();
   open_function->set_user_gesture(true);

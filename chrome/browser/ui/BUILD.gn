@@ -3486,6 +3486,8 @@ static_library("ui") {
       "views/in_product_help/feature_promo_colors.h",
       "views/in_product_help/feature_promo_controller.cc",
       "views/in_product_help/feature_promo_controller.h",
+      "views/in_product_help/feature_promo_controller_views.cc",
+      "views/in_product_help/feature_promo_controller_views.h",
       "views/in_product_help/global_media_controls_promo_controller.cc",
       "views/in_product_help/global_media_controls_promo_controller.h",
       "views/in_product_help/reopen_tab_promo_controller.cc",

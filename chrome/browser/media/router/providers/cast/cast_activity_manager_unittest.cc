@@ -28,6 +28,7 @@
 #include "chrome/browser/media/router/test/mock_logger.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -56,6 +57,7 @@ namespace media_router {
 namespace {
 constexpr int kChannelId = 42;
 constexpr int kChannelId2 = 43;
+constexpr char kClientId[] = "theClientId";
 constexpr char kOrigin[] = "https://google.com";
 constexpr int kTabId = 1;
 constexpr int kTabId2 = 2;
@@ -76,9 +78,10 @@ constexpr char kPresentationId[] = "presentationId";
 constexpr char kPresentationId2[] = "presentationId2";
 
 std::string MakeSourceId(const std::string& app_id = kAppId1,
-                         const std::string& app_params = "") {
+                         const std::string& app_params = "",
+                         const std::string& client_id = kClientId) {
   return base::StrCat(
-      {"cast:", app_id, "?clientId=theClientId&appParams=", app_params});
+      {"cast:", app_id, "?clientId=", client_id, "&appParams=", app_params});
 }
 
 base::Value MakeReceiverStatus(const std::string& app_id,
@@ -207,6 +210,7 @@ class CastActivityManagerTest : public testing::Test,
       media_router::RouteRequestResult::ResultCode) {
     ASSERT_TRUE(route);
     route_ = std::make_unique<MediaRoute>(*route);
+    presentation_connections_ = std::move(presentation_connections);
   }
 
   void ExpectLaunchSessionFailure(
@@ -219,7 +223,8 @@ class CastActivityManagerTest : public testing::Test,
   }
 
   void CallLaunchSession(const std::string& app_id = kAppId1,
-                         const std::string& app_params = "") {
+                         const std::string& app_params = "",
+                         const std::string& client_id = kClientId) {
     // MediaRouter is notified of new route.
     ExpectSingleRouteUpdate();
 
@@ -234,8 +239,8 @@ class CastActivityManagerTest : public testing::Test,
           launch_session_callback_ = std::move(callback);
         }));
 
-    auto source =
-        CastMediaSource::FromMediaSourceId(MakeSourceId(app_id, app_params));
+    auto source = CastMediaSource::FromMediaSourceId(
+        MakeSourceId(app_id, app_params, client_id));
     ASSERT_TRUE(source);
 
     cast_activity_callback_ =
@@ -403,6 +408,7 @@ class CastActivityManagerTest : public testing::Test,
   base::Optional<MediaRoute> updated_route_;
   cast_channel::ResultCallback stop_session_callback_;
   MockLogger logger_;
+  mojom::RoutePresentationConnectionPtr presentation_connections_;
 };
 
 TEST_F(CastActivityManagerTest, LaunchCastAppSession) {
@@ -417,6 +423,14 @@ TEST_F(CastActivityManagerTest, LaunchCastAppSessionWithAppParams) {
 
 TEST_F(CastActivityManagerTest, LaunchMirroringSession) {
   CallLaunchSession(kCastStreamingAppId);
+  EXPECT_EQ(RouteControllerType::kMirroring, route_->controller_type());
+}
+
+TEST_F(CastActivityManagerTest, LaunchSiteInitiatedMirroringSession) {
+  // For a session initiated by a website with the mirroring source we should be
+  // establishing a presentation connection, even if the client ID isn't set.
+  CallLaunchSession(kCastStreamingAppId, /*app_params*/ "", /*client_id*/ "");
+  EXPECT_FALSE(presentation_connections_.is_null());
   EXPECT_EQ(RouteControllerType::kMirroring, route_->controller_type());
 }
 

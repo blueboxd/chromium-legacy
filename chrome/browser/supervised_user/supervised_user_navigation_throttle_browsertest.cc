@@ -26,7 +26,9 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -81,6 +83,40 @@ void RenderFrameTracker::FrameDeleted(content::RenderFrameHost* host) {
     return;
 
   render_frame_hosts_.erase(host->GetFrameTreeNodeId());
+}
+
+class InnerWebContentsAttachedWaiter : public content::WebContentsObserver {
+ public:
+  explicit InnerWebContentsAttachedWaiter(content::WebContents* contents)
+      : content::WebContentsObserver(contents) {}
+  InnerWebContentsAttachedWaiter(const InnerWebContentsAttachedWaiter&) =
+      delete;
+  InnerWebContentsAttachedWaiter& operator=(
+      const InnerWebContentsAttachedWaiter&) = delete;
+  ~InnerWebContentsAttachedWaiter() override = default;
+
+  // content::WebContentsObserver:
+  void InnerWebContentsAttached(content::WebContents* inner_web_contents,
+                                content::RenderFrameHost* render_frame_host,
+                                bool is_full_page) override;
+
+  void WaitForInnerWebContentsAttached();
+
+ private:
+  base::RunLoop run_loop_{base::RunLoop::Type::kNestableTasksAllowed};
+};
+
+void InnerWebContentsAttachedWaiter::InnerWebContentsAttached(
+    content::WebContents* inner_web_contents,
+    content::RenderFrameHost* render_frame_host,
+    bool is_full_page) {
+  run_loop_.Quit();
+}
+
+void InnerWebContentsAttachedWaiter::WaitForInnerWebContentsAttached() {
+  if (web_contents()->GetInnerWebContents().size() > 0u)
+    return;
+  run_loop_.Run();
 }
 
 }  // namespace
@@ -231,6 +267,42 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
   bool loaded2 = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(tab, "loaded2()", &loaded2));
   EXPECT_TRUE(loaded2);
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
+                       AllowEDUCoexistenceInnerWebContents) {
+  BlockHost(kExampleHost2);
+  GURL manually_blocked_url = embedded_test_server()->GetURL(
+      kExampleHost2, "/supervised_user/with_iframes.html");
+
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeUIEDUCoexistenceLoginURL));
+  // Get the top level WebContents.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(contents->GetURL(), GURL(chrome::kChromeUIEDUCoexistenceLoginURL));
+
+  InnerWebContentsAttachedWaiter web_contents_attached_waiter(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  web_contents_attached_waiter.WaitForInnerWebContentsAttached();
+
+  // Get the inner WebContents.
+  std::vector<content::WebContents*> inner_web_contents =
+      contents->GetInnerWebContents();
+
+  // There is only one inner web content in EDUCoexistence flow.
+  EXPECT_EQ(inner_web_contents.size(), 1u);
+
+  content::WebContents* webview_element = inner_web_contents[0];
+  NavigationFinishedWaiter waiter(webview_element, manually_blocked_url);
+  webview_element->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(manually_blocked_url));
+  waiter.Wait();
+
+  // Make sure that there is no error page in the inner web content.
+  EXPECT_NE(
+      webview_element->GetController().GetLastCommittedEntry()->GetPageType(),
+      content::PAGE_TYPE_ERROR);
 }
 
 class SupervisedUserIframeFilterTest

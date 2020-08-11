@@ -4,20 +4,26 @@
 
 <template>
   <div class="numeric-input-container">
-    <label :for="inputId">{{ description }}</label>
-    <div class="input-and-button-container">
-      <input
+    <MdField
+        class="input-field">
+      <label :for="inputId">{{ description }}</label>
+      <MdInput
           :id="inputId"
           v-model="internalInputValue"
-          type="number">
-      <div class="button-group">
-        <button @click="internalInputValue++">
-          +
-        </button>
-        <button @click="internalInputValue--">
-          -
-        </button>
-      </div>
+          class="numeric-input-value"
+          type="number"/>
+    </MdField>
+    <div class="button-group">
+      <MdButton
+          class="numeric-input-button md-icon-button md-dense"
+          @click="internalInputValue++">
+        <MdIcon>expand_less</MdIcon>
+      </MdButton>
+      <MdButton
+          class="numeric-input-button md-icon-button md-dense"
+          @click="internalInputValue--">
+        <MdIcon>expand_more</MdIcon>
+      </MdButton>
     </div>
   </div>
 </template>
@@ -58,22 +64,25 @@ export default NumericInput;
 <style scoped>
 .numeric-input-container {
   display: flex;
-  flex-direction: column;
-  max-width: 150px;
-}
-
-.input-and-button-container {
-  display: flex;
   flex-direction: row;
 }
 
 .button-group {
+  align-items: center;
   display: flex;
   flex-direction: column;
 }
 
-input {
+.numeric-input-button {
+  margin: 0;
+}
+
+.numeric-input-value {
   width: 100%;
+}
+
+.input-field {
+  width: 50%;
 }
 
 input[type=number]::-webkit-inner-spin-button,

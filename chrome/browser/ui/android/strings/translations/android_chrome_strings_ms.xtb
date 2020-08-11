@@ -262,7 +262,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="305593374596241526">Lokasi dimatikan, hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Anda boleh mematikan penyegerakan pada bila-bila masa dalam tetapan</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> penanda halaman}other{<ph name="BOOKMARKS_COUNT_MANY" /> penanda halaman}}</translation>
-<translation id="3062802207422175757">Artikel tentang minat anda pada Chrome</translation>
+<translation id="3062802207422175757">Artikel tentang minat anda di Chrome</translation>
 <translation id="3089395242580810162">Buka dalam tab inkognito</translation>
 <translation id="3114012059975132928">Pemain video</translation>
 <translation id="3114507951000454849">Baca berita hari ini <ph name="NEWS_ICON" /></translation>
@@ -477,6 +477,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="4837753911714442426">Buka pilihan untuk mencetak halaman</translation>
 <translation id="4842092870884894799">Menunjukkan tetingkap timbul penjanaan kata laluan</translation>
 <translation id="4860895144060829044">Hubungi</translation>
+<translation id="4864369630010738180">Sedang log masuk...</translation>
 <translation id="4866368707455379617">Tidak dapat memasang <ph name="MODULE" /> untuk Chrome</translation>
 <translation id="4875775213178255010">Cadangan Kandungan</translation>
 <translation id="4878404682131129617">Gagal mewujudkan terowong melalui pelayan proksi</translation>
@@ -1055,7 +1056,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="9209888181064652401">Tidak dapat membuat panggilan</translation>
 <translation id="9219103736887031265">Imej</translation>
 <translation id="926205370408745186">Alih keluar aktiviti Chrome anda daripada Kesejahteraan Digital</translation>
-<translation id="927968626442779827">Gunakan Mod ringkas pada Google Chrome</translation>
+<translation id="927968626442779827">Gunakan mod Ringkas pada Google Chrome</translation>
 <translation id="932327136139879170">Laman Utama</translation>
 <translation id="93753284658583800">Halaman utama ditukar</translation>
 <translation id="938850635132480979">Ralat: <ph name="ERROR_CODE" /></translation>

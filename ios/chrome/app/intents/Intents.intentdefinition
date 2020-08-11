@@ -29,8 +29,6 @@
 			<true/>
 			<key>INIntentInput</key>
 			<string>url</string>
-			<key>INIntentKeyParameter</key>
-			<string>url</string>
 			<key>INIntentLastParameterTag</key>
 			<integer>6</integer>
 			<key>INIntentManagedParameterCombinations</key>
@@ -68,13 +66,15 @@
 							<key>INIntentParameterPromptDialogCustom</key>
 							<true/>
 							<key>INIntentParameterPromptDialogFormatString</key>
-							<string>Which URL?</string>
+							<string>What URL?</string>
 							<key>INIntentParameterPromptDialogFormatStringID</key>
 							<string>3PpdH5</string>
 							<key>INIntentParameterPromptDialogType</key>
 							<string>Primary</string>
 						</dict>
 					</array>
+					<key>INIntentParameterSupportsMultipleValues</key>
+					<true/>
 					<key>INIntentParameterSupportsResolution</key>
 					<true/>
 					<key>INIntentParameterTag</key>

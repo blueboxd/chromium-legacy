@@ -24,6 +24,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/url_util.h"
@@ -177,6 +178,12 @@ bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest,
   }
 
   return false;
+}
+
+bool ShouldRejectDisplayMode(blink::mojom::DisplayMode display_mode) {
+  return !(display_mode == blink::mojom::DisplayMode::kStandalone ||
+           display_mode == blink::mojom::DisplayMode::kFullscreen ||
+           display_mode == blink::mojom::DisplayMode::kMinimalUi);
 }
 
 // Returns true if |params| specifies a full PWA check.
@@ -656,12 +663,26 @@ bool InstallableManager::IsManifestValidForWebApp(
     is_valid = false;
   }
 
-  if (check_webapp_manifest_display &&
-      manifest.display != blink::mojom::DisplayMode::kStandalone &&
-      manifest.display != blink::mojom::DisplayMode::kFullscreen &&
-      manifest.display != blink::mojom::DisplayMode::kMinimalUi) {
-    valid_manifest_->errors.push_back(MANIFEST_DISPLAY_NOT_SUPPORTED);
-    is_valid = false;
+  if (check_webapp_manifest_display) {
+    blink::mojom::DisplayMode display_mode_to_evaluate = manifest.display;
+    InstallableStatusCode manifest_error = MANIFEST_DISPLAY_NOT_SUPPORTED;
+
+    if (base::FeatureList::IsEnabled(
+            features::kWebAppManifestDisplayOverride)) {
+      // Unsupported values are ignored when we parse the manifest, and
+      // consequently aren't in the manifest.display_override array.
+      // If this array is not empty, the first value will "win", so validate
+      // this value is installable.
+      if (!manifest.display_override.empty()) {
+        display_mode_to_evaluate = manifest.display_override[0];
+        manifest_error = MANIFEST_DISPLAY_OVERRIDE_NOT_SUPPORTED;
+      }
+    }
+
+    if (ShouldRejectDisplayMode(display_mode_to_evaluate)) {
+      valid_manifest_->errors.push_back(manifest_error);
+      is_valid = false;
+    }
   }
 
   if (!DoesManifestContainRequiredIcon(manifest, prefer_maskable_icon)) {

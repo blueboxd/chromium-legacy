@@ -36,7 +36,7 @@ class TabGroupsIPHController : public TabStripModelObserver {
 
   // |browser| is the browser window that this instance will track and
   // will show IPH in if needed. |promo_controller| is the window's
-  // FeaturePromoController, used to start promos. |get_tab_view| should
+  // FeaturePromoControllerViews, used to start promos. |get_tab_view| should
   // get an appropriate tab to anchor the bubble in |browser|.
   TabGroupsIPHController(Browser* browser,
                          FeaturePromoController* promo_controller,

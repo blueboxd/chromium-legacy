@@ -4,21 +4,40 @@
 
 #include <utility>
 
+#include "base/strings/strcat.h"
 #include "chrome/browser/nearby_sharing/text_attachment.h"
 
-TextAttachment::TextAttachment(std::string text_body, Type type, int64_t size)
-    : text_body_(std::move(text_body)), type_(type), size_(size) {}
+namespace {
 
-TextAttachment::~TextAttachment() = default;
+constexpr size_t kMaxPreviewTextLength = 32;
+
+std::string GetTextTitle(const std::string& text_body,
+                         TextAttachment::Type type) {
+  // TODO(crbug.com/1085067): Improve title based on |type|.
+  if (text_body.size() > kMaxPreviewTextLength)
+    return base::StrCat({text_body.substr(0, kMaxPreviewTextLength), "…"});
+
+  return text_body;
+}
+
+}  // namespace
+
+TextAttachment::TextAttachment(Type type, std::string text_body)
+    : Attachment(Attachment::Family::kText, text_body.size()),
+      type_(type),
+      text_title_(GetTextTitle(text_body, type)),
+      text_body_(std::move(text_body)) {}
+
+TextAttachment::TextAttachment(int64_t id,
+                               Type type,
+                               std::string text_title,
+                               int64_t size)
+    : Attachment(id, Attachment::Family::kText, size),
+      type_(type),
+      text_title_(std::move(text_title)) {}
 
 TextAttachment::TextAttachment(const TextAttachment&) = default;
 
 TextAttachment& TextAttachment::operator=(const TextAttachment&) = default;
 
-int64_t TextAttachment::size() const {
-  return size_;
-}
-
-Attachment::Family TextAttachment::family() const {
-  return Attachment::Family::kText;
-}
+TextAttachment::~TextAttachment() = default;

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -19,7 +19,7 @@ class ASH_EXPORT BackGestureContextualNudge {
  public:
   // Constructor to create a BackGestureContextualNudge with |callback| to be
   // called after the animation is completed or cancelled.
-  explicit BackGestureContextualNudge(base::OnceClosure callback);
+  explicit BackGestureContextualNudge(base::OnceCallback<void(bool)> callback);
   BackGestureContextualNudge(const BackGestureContextualNudge&) = delete;
   BackGestureContextualNudge& operator=(const BackGestureContextualNudge&) =
       delete;
@@ -34,6 +34,11 @@ class ASH_EXPORT BackGestureContextualNudge {
   // in animation no matter whether its following animations get cancelled or
   // not.
   bool ShouldNudgeCountAsShown() const;
+
+  // Set nudge as shown for testing. Only after nudge is counted as shown,
+  // the nudge dismiss metrics can be correctly logged. This is to simulate
+  // something happens in the middle of a nudge animation.
+  void SetNudgeShownForTesting();
 
   views::Widget* widget() { return widget_.get(); }
 

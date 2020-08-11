@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
 #include "extensions/common/host_id.h"
+#include "extensions/common/script_constants.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
@@ -170,14 +171,12 @@ class UserScript {
   bool match_all_frames() const { return match_all_frames_; }
   void set_match_all_frames(bool val) { match_all_frames_ = val; }
 
-  // Whether to match about:blank and about:srcdoc.
-  bool match_about_blank() const { return match_about_blank_; }
-  void set_match_about_blank(bool val) { match_about_blank_ = val; }
-
-  // Whether to match on the origin if an appropriate URL cannot be found for
-  // the frame.
-  bool match_origin_as_fallback() const { return match_origin_as_fallback_; }
-  void set_match_origin_as_fallback(bool val) {
+  // Whether to match the origin as a fallback if the URL cannot be used
+  // directly.
+  MatchOriginAsFallbackBehavior match_origin_as_fallback() const {
+    return match_origin_as_fallback_;
+  }
+  void set_match_origin_as_fallback(MatchOriginAsFallbackBehavior val) {
     match_origin_as_fallback_ = val;
   }
 
@@ -239,8 +238,7 @@ class UserScript {
 
   // Returns true if the script should be applied to the given
   // |effective_document_url|. It is the caller's responsibility to calculate
-  // |effective_document_url| based on match_about_blank() and
-  // match_origin_as_fallback().
+  // |effective_document_url| based on match_origin_as_fallback().
   bool MatchesDocument(const GURL& effective_document_url,
                        bool is_subframe) const;
 
@@ -329,15 +327,11 @@ class UserScript {
   // Defaults to false.
   bool match_all_frames_;
 
-  // Whether the user script should run in about:blank and about:srcdoc as well.
-  // Defaults to false.
-  bool match_about_blank_;
-
   // Whether the user script should run in frames whose initiator / precursor
   // origin matches a match pattern, if an appropriate URL cannot be found for
   // the frame for matching purposes, such as in the case of about:, data:, and
   // other schemes.
-  bool match_origin_as_fallback_;
+  MatchOriginAsFallbackBehavior match_origin_as_fallback_;
 
   // True if the script should be injected into an incognito tab.
   bool incognito_enabled_;

@@ -19,6 +19,8 @@ namespace {
 class FindTextTestClient : public TestClient {
  public:
   FindTextTestClient() = default;
+  FindTextTestClient(const FindTextTestClient&) = delete;
+  FindTextTestClient& operator=(const FindTextTestClient&) = delete;
   ~FindTextTestClient() override = default;
 
   // PDFEngine::Client:
@@ -48,9 +50,6 @@ class FindTextTestClient : public TestClient {
     }
     return results;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FindTextTestClient);
 };
 
 }  // namespace

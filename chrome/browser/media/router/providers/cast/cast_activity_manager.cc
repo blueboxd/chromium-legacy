@@ -13,6 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/logger_impl.h"
 #include "chrome/browser/media/router/providers/cast/app_activity.h"
@@ -116,9 +117,10 @@ void CastActivityManager::LaunchSessionParsed(
     mojom::MediaRouteProvider::CreateRouteCallback callback,
     data_decoder::DataDecoder::ValueOrError result) {
   if (!cast_source.app_params().empty() && result.error) {
-    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
-                      "Error parsing JSON data in appParams" + *result.error,
-                      sink.id(), cast_source.source_id(), presentation_id);
+    logger_->LogError(
+        mojom::LogCategory::kRoute, kLoggerComponent,
+        base::StrCat({"Error parsing JSON data in appParams: ", *result.error}),
+        sink.id(), cast_source.source_id(), presentation_id);
     std::move(callback).Run(
         base::nullopt, nullptr, std::string("Invalid JSON Format of appParams"),
         RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
@@ -191,7 +193,7 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
           ? AddMirroringActivity(route, app_id, tab_id, sink.cast_data())
           : AddAppActivity(route, app_id);
   const std::string& client_id = cast_source.client_id();
-  if (!client_id.empty()) {
+  if (MediaSource(cast_source.source_id()).IsCastPresentationUrl()) {
     presentation_connection =
         activity_ptr->AddClient(cast_source, params.origin, tab_id);
     activity_ptr->SendMessageToClient(
@@ -772,9 +774,18 @@ void CastActivityManager::HandleLaunchSessionResponse(
   }
 
   if (response.result != cast_channel::LaunchSessionResponse::Result::kOk) {
-    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
-                      "Failed to launch session.", sink.id(),
-                      cast_source.source_id(),
+    std::string message;
+    switch (response.result) {
+      case cast_channel::LaunchSessionResponse::Result::kTimedOut:
+        message = "Failed to launch session due to timeout.";
+        break;
+      default:
+        message =
+            base::StrCat({"Failed to launch session. ", response.error_msg});
+        break;
+    }
+    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent, message,
+                      sink.id(), cast_source.source_id(),
                       MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
     RemoveActivity(activity_it, PresentationConnectionState::CLOSED,
                    PresentationConnectionCloseReason::CONNECTION_ERROR);

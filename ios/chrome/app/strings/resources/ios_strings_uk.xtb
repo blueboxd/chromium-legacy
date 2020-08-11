@@ -393,6 +393,7 @@
 <translation id="5614553682702429503">Зберегти пароль?</translation>
 <translation id="5626245204502895507">Зараз неможливо завантажити цей файл.</translation>
 <translation id="5631164295104953411">Додати спосіб оплати</translation>
+<translation id="5653058065071344726">Веб-переглядачем керує ваша організація. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="5659593005791499971">Ел. пошта</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Версія <ph name="PRODUCT_VERSION" /></translation>
@@ -437,6 +438,7 @@
 <translation id="6108923351542677676">Виконується налаштування…</translation>
 <translation id="6119050551270742952">Поточна сторінка в анонімному режимі</translation>
 <translation id="6122191549521593678">Онлайн</translation>
+<translation id="6125339936101702016">Веб-переглядачем керує компанія <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Веб-сайт видалено</translation>
 <translation id="6136914049981179737">Мить тому</translation>
 <translation id="616831107264507309">Читати пізніше</translation>

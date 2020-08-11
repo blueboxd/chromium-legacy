@@ -2494,6 +2494,11 @@ IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest,
   EXPECT_EQ(c_url, subframe->GetLastCommittedURL());
   EXPECT_EQ(c_origin, subframe->GetLastCommittedOrigin());
 
+  // Check that main frame and subframe are in the same BrowsingInstance.
+  content::SiteInstance* subframe_instance_c = subframe->GetSiteInstance();
+  EXPECT_TRUE(new_tab->GetMainFrame()->GetSiteInstance()->IsRelatedSiteInstance(
+      subframe_instance_c));
+
   // Go back - this should reach: a.com(a.com-blank).
   {
     content::TestNavigationObserver nav_observer(new_tab);
@@ -2503,10 +2508,13 @@ IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest,
   ASSERT_EQ(2u, new_tab->GetAllFrames().size());
   subframe = new_tab->GetAllFrames()[1];
   EXPECT_EQ(GURL(url::kAboutBlankURL), subframe->GetLastCommittedURL());
-  // TODO(lukasza): https://crbug.com/888079: The browser process should tell
-  // the renderer which (initiator-based) origin to commit.  Right now, Blink
-  // just falls back to an opaque origin.
-  EXPECT_TRUE(subframe->GetLastCommittedOrigin().opaque());
+  EXPECT_EQ(a_origin, subframe->GetLastCommittedOrigin());
+
+  // Check that we're still in the same BrowsingInstance.
+  EXPECT_TRUE(new_tab->GetMainFrame()->GetSiteInstance()->IsRelatedSiteInstance(
+      subframe->GetSiteInstance()));
+  EXPECT_TRUE(
+      subframe_instance_c->IsRelatedSiteInstance(subframe->GetSiteInstance()));
 }
 
 // Check that TabManager.TimeSinceTabClosedUntilRestored histogram is not

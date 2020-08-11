@@ -134,7 +134,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="11903325225202653">Se il criterio è impostato su True, la modalità ad alto contrasto rimane attivata. Se il criterio è impostato su False, la modalità ad alto contrasto rimane disattivata.
 
       Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, la modalità ad alto contrasto è disattivata, ma gli utenti possono attivarla in qualsiasi momento.</translation>
-<translation id="1192875037379495940">Se il criterio viene configurato, viene eseguito automaticamente l'accesso alla sessione specificata se non sono più presenti interazioni dell'utente nella schermata di accesso entro un periodo di tempo specificato nel criterio <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_DELAY_POLICY_NAME" />. L'account locale del dispositivo deve essere già configurato (vedi <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" />).
+<translation id="1192875037379495940">Se il criterio viene configurato, viene eseguito automaticamente l'accesso alla sessione specificata se non ci sono interazioni dell'utente nella schermata di accesso entro il periodo di tempo specificato nel criterio <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_DELAY_POLICY_NAME" />. L'account locale del dispositivo deve essere già configurato (vedi <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" />).
 
       Se non viene configurato, non è possibile effettuare l'accesso automatico.</translation>
 <translation id="1197437816436565375">Non puoi forzare le app Android a utilizzare un proxy. Un sottoinsieme di impostazioni relative al proxy viene messo a disposizione delle app Android, che possono decidere volontariamente se rispettarlo o meno. Consulta la norma <ph name="PROXY_MODE_POLICY_NAME" /> per ulteriori dettagli.</translation>
@@ -292,7 +292,7 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 
       Se il criterio non viene configurato, <ph name="PRODUCT_NAME" /> prova a rilevare se un server è presente sulla Intranet. Solo allora risponderà alle richieste IWA. Se viene rilevato un server su Internet, <ph name="PRODUCT_NAME" /> ignora le richieste IWA provenienti da tale server.
 
-      Nota: separa i nomi dei server utilizzando le virgole. I caratteri jolly (<ph name="WILDCARD_VALUE" />) sono consentiti.</translation>
+      Nota: se ci sono più server, separane i nomi utilizzando virgole. I caratteri jolly (<ph name="WILDCARD_VALUE" />) sono consentiti.</translation>
 <translation id="1488406778491620405">La funzione di accessibilità <ph name="PRODUCT_NAME" /> consente agli utenti di screen reader con disabilità visiva di recuperare le descrizioni delle immagini senza etichetta sul Web. Gli utenti che decidono di attivarla avranno la possibilità di usare un servizio Google anonimo per avere descrizioni automatiche delle immagini senza etichetta che trovano sul Web.
 
           Se questa funzione viene attivata, i contenuti delle immagini vengono inviati ai server di Google per generare una descrizione. Non vengono inviati cookie o altri dati utente e Google non salva né registra i contenuti delle immagini.
@@ -437,13 +437,6 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 
       Se il criterio è impostato su False, gli utenti non possono aggiungere, rimuovere o modificare i preferiti, ma possono comunque utilizzare quelli esistenti.</translation>
 <translation id="1715151459541210849">Attiva la funzione di accessibilità di dettatura</translation>
-<translation id="1717817358640580294">Se questa norma non viene impostata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base alla norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà poi all'utente se vuole ripulire il software indesiderato. L'utente può scegliere se condividere i risultati della pulizia con Google per facilitare l'identificazione di software indesiderato in futuro. Questi risultati contengono metadati di file, estensioni installate automaticamente e chiavi del registro di sistema, come spiegato nel Whitepaper sulla privacy di Chrome.
-
-      Se la norma viene disattivata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google non verranno segnalati metadati relativi alla scansione, ignorando qualsiasi norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà all'utente se vuole ripulire il software indesiderato.  I risultati della pulizia non verranno segnalati a Google e l'utente non avrà la possibilità di segnalarli.
-
-      Se questa norma viene attivata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base alla norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà all'utente se vuole ripulire il software indesiderato.  I risultati della pulizia verranno segnalati a Google e l'utente non avrà la possibilità di impedire la segnalazione.
-
-      Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="172374442286684480">Consenti a tutti i siti di impostare i dati locali</translation>
 <translation id="1736269219679256369">Consenti di proseguire dalla pagina di avviso SSL</translation>
 <translation id="1745973235372964482">Non consentire i file protetti da password</translation>
@@ -551,7 +544,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Questa funzione è attualmente disattivata lato server.</translation>
 <translation id="1919802376548418720">Utilizza il criterio KDC per delegare credenziali.</translation>
 <translation id="1920046221095339924">Consenti la sessione gestita sul dispositivo</translation>
-<translation id="1920772397574801429">La configurazione del criterio consente di specificare il tipo di account forniti dall'app di autenticazione Android che supporta l'autenticazione <ph name="HTTP_NEGOTIATE" />, ad esempio Kerberos. Queste informazioni dovrebbero essere messe a disposizione dal fornitore dell'app di autenticazione. Per i dettagli, consulta la pagina I progetti di Chromium ( https://goo.gl/hajyfN )
+<translation id="1920772397574801429">La configurazione del criterio consente di specificare il tipo di account, tra quelli forniti dall'app di autenticazione Android, che supporta l'autenticazione <ph name="HTTP_NEGOTIATE" />, ad esempio Kerberos. Queste informazioni dovrebbero essere messe a disposizione dal fornitore dell'app di autenticazione. Per i dettagli, consulta la pagina I progetti di Chromium ( https://goo.gl/hajyfN )
 
       Se il criterio non viene configurato, l'autenticazione <ph name="HTTP_NEGOTIATE" /> su Android viene disattivata.</translation>
 <translation id="1930127294345368978">Numero massimo consentito di fogli da utilizzare per un singolo processo di stampa</translation>
@@ -1208,11 +1201,11 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2796714419743648316">Lista consentita limiti di utilizzo per app</translation>
 <translation id="2796896367838042659">Questo criterio consente di specificare le applicazioni e gli URL da autorizzare per i limiti di utilizzo per app.
         La lista consentita configurata viene applicata alle app installate su <ph name="PRODUCT_OS_NAME" /> per l'utente in questione con limiti di utilizzo per app.
-        La lista consentita configurata può essere applicata soltanto per gli account utente dei bambini e diventa effettiva quando viene impostato il criterio <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" />.
-        La lista consentita configurata viene applicata alle applicazioni e agli URL affinché non vengano bloccati da limiti di utilizzo per app.
+        La lista consentita configurata può essere applicata soltanto agli account per bambini e diventa effettiva quando viene impostato il criterio <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" />.
+        La lista consentita configurata viene applicata alle applicazioni e agli URL affinché non vengano bloccati secondo i limiti di utilizzo per app.
         L'accesso agli URL autorizzati non viene considerato per il limite di utilizzo di Chrome.
         Aggiungi espressioni regolari degli URL a |url_list| per autorizzare gli URL corrispondenti alle espressioni regolari nell'elenco.
-        Aggiungi all'elenco |app_list| un'applicazione con i relativi valori |app_id| e |app_type| per autorizzare l'applicazione.
+        Aggiungi all'elenco |app_list| un'applicazione con i relativi valori |app_id| e |app_type| per autorizzarla.
 
         Questo criterio è deprecato. Usa il criterio <ph name="PER_APP_TIME_LIMITS_ALLOWLIST" />.
         </translation>
@@ -1356,15 +1349,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
           Disattivare questa impostazione equivale a non configurarla. Gli utenti potranno comunque modificarla su <ph name="PRODUCT_NAME" />.
 
           Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi. Inoltre è disponibile per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
-<translation id="2982571648442031489">Consente di configurare l'elenco dei domini che Navigazione sicura ritiene attendibili. In questo modo:
-      Navigazione sicura non controllerà la presenza di risorse pericolose (ad esempio phishing, malware o software indesiderato) se i rispettivi URL corrispondono a questi domini.
-      Il servizio di protezione dei download di Navigazione sicura non controllerà i download ospitati su questi domini.
-      Il servizio di protezione tramite password di Navigazione sicura non controllerà il riutilizzo della password se l'URL della pagina corrisponde a questi domini.
-
-      Se questa impostazione è attivata, Navigazione sicura considererà questi domini attendibili.
-      Se questa impostazione è disattivata o non impostata, a tutte le risorse verrà applicata la protezione predefinita di Navigazione sicura.
-
-      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi. Inoltre è disponibile per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="2985927503455169394">Usa la modalità predefinita dell'esperienza di onboarding dell'assistente</translation>
 <translation id="2987155890997901449">Attiva ARC</translation>
 <translation id="2987227569419001736">Controlla l'utilizzo dell'API Web Bluetooth</translation>
@@ -1481,11 +1465,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia DHE in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per attivare i pacchetti di crittografia DHE e per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.
 
       Si consiglia di effettuare la migrazione dei server ai pacchetti di crittografia ECDHE. Se non sono disponibili, assicurati che siano attivati i pacchetti di crittografia con l'utilizzo dello scambio delle chiavi RSA.</translation>
-<translation id="3117706142826400449">Se questa norma viene disattivata, Chrome Software Cleaner non potrà eseguire la scansione del sistema per individuare eventuale software indesiderato e ripulire il sistema. L'attivazione manuale di Chrome Software Cleaner da chrome://settings/cleanup viene disattivata.
-
-      Se la norma viene attivata o non viene impostata, Chrome Software Cleaner eseguirà periodicamente la scansione del sistema per individuare eventuale software indesiderato e, qualora fosse presente, chiederà all'utente se vuole rimuoverlo. L'attivazione manuale di Chrome Software Cleaner da chrome://settings viene attivata.
-
-      Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="3119125876909100625">Consenti caricamenti di file protetti da password</translation>
 <translation id="3122082892722698079">Controlla l'utilizzo delle eccezioni per i contenuti non sicuri</translation>
 <translation id="3143265893557969814">Se questo criterio viene impostato, tutti i tipi di dati specificati verranno esclusi dalla sincronizzazione sia per Google Sync sia per la sincronizzazione del profilo di roaming. Questa operazione può essere utile per ridurre le dimensioni del profilo di roaming o per limitare il tipo di dati caricati sui server di Google Sync.
@@ -1633,7 +1612,7 @@ Se questo criterio viene impostato su False, <ph name="PRODUCT_NAME" /> non util
 
       Se il criterio non viene configurato, il timeout è 0 millisecondi.
 
-      Se il criterio <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> viene configurato, questo criterio non ha effetto.</translation>
+      Se il criterio <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> non viene configurato, questo criterio non ha alcun effetto.</translation>
 <translation id="3412937883532015092">Se per il criterio viene impostato un numero, <ph name="PRODUCT_NAME" /> mostra un messaggio relativo al numero di millisecondi impostato, quindi apre un browser alternativo.
 
       Se il criterio non viene impostato o viene impostato su 0 e si passa a un URL definito, l'URL viene aperto subito in un browser alternativo.</translation>
@@ -1791,9 +1770,9 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
 
       Ogni voce della norma è un oggetto con due componenti: "share_url" e "mode". "share_url" deve essere l'URL della condivisione e "mode" deve essere "drop_down" o "pre_mount". La modalità "drop_down" indica che il valore "share_url" verrà aggiunto al menu a discesa per il rilevamento delle condivisioni. La modalità "pre_mount" indica che il valore "share_url" verrà montato.</translation>
 <translation id="3584194414857209694">Abilita i criteri sperimentali</translation>
-<translation id="3584722841530002134">La configurazione del criterio consente di assegnare i server a cui <ph name="PRODUCT_NAME" /> potrebbe delegare le credenziali utente. Separa i nomi dei server utilizzando le virgole. I caratteri jolly (<ph name="WILDCARD_VALUE" />) sono consentiti.
+<translation id="3584722841530002134">La configurazione del criterio consente di assegnare i server a cui <ph name="PRODUCT_NAME" /> può delegare le credenziali utente. Se ci sono più server, separane i nomi utilizzando virgole. I caratteri jolly (<ph name="WILDCARD_VALUE" />) sono consentiti.
 
-      Se il criterio non viene configurato, <ph name="PRODUCT_NAME" /> non delega le credenziali utente, anche se viene rilevato un server come Intranet.</translation>
+      Se il criterio non viene configurato, <ph name="PRODUCT_NAME" /> non delega le credenziali utente, anche se un server viene rilevato come Intranet.</translation>
 <translation id="3585177699591644295">Consente di attivare la funzione di accessibilità Seleziona per ascoltare.
 
           Se questo criterio viene impostato su true, la funzione Seleziona per ascoltare sarà sempre attiva.
@@ -2107,13 +2086,6 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4061590579642538878">Segnala informazioni relative ai rapporti sugli arresti anomali.</translation>
 <translation id="4075675819066819571">Posiziona la shelf sul lato sinistro dello schermo</translation>
 <translation id="4075864623710596000">I nomi host specificati in questo elenco saranno esenti dalla verifica dei criteri HSTS che potrebbero eseguire l'upgrade delle richieste da http a https. Solo i nomi host con etichetta singola sono consentiti in questo criterio. I nomi host devono essere canonicalizzati: ogni IDN deve essere convertito nel relativo formato A-label e tutte le lettere ASCII devono essere minuscole. Questo criterio si applica soltanto ai nomi host specificati e non ai relativi sottodomini.</translation>
-<translation id="4076584741592854827">Elenco dei tipi di file che dovrebbero essere aperti automaticamente al termine del download. Il separatore iniziale non deve essere incluso nell'elenco dei tipi di file, quindi usa "txt" anziché ".txt".
-
-      I tipi di file che dovrebbero essere aperti automaticamente saranno comunque soggetti ai controlli attivi di Navigazione sicura e non verranno aperti se non superano tali controlli.
-
-      Se questo criterio non viene configurato, al termine del download verranno aperti automaticamente soltanto i tipi di file per cui l'utente ha già specificato tale tipo di apertura.
-
-      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi. Inoltre è disponibile per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="408029843066770167">Consenti query a un servizio orario di Google</translation>
 <translation id="408076456549153854">Attiva accesso al browser</translation>
 <translation id="4082498585300984671">Attiva la funzionalità Click-to-call</translation>
@@ -2372,8 +2344,8 @@ Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà le dimen
 Se il valore di questa norma è 0, verranno utilizzate le dimensioni della cache predefinite, che l'utente non potrà modificare.
 
 Se questa norma non viene impostata, verranno utilizzate le dimensioni predefinite, che l'utente potrà sostituire con il flag --media-cache-size.</translation>
-<translation id="4508084713148633492">Consente di attivare o di disattivare una notifica quando lo spazio sul disco è in esaurimento. La scelta è valida per tutti gli utenti sul dispositivo.
-      Se su un dispositivo gestito è presente esattamente un account utente, la notifica viene sempre mostrata, indipendentemente dal valore di questo criterio.
+<translation id="4508084713148633492">Consente di attivare o di disattivare una notifica quando lo spazio sul disco è in esaurimento. La scelta si applica a tutti gli utenti sul dispositivo.
+      Se su un dispositivo gestito è presente esattamente un account utente, la notifica viene mostrata sempre, indipendentemente dal valore di questo criterio.
       Se su un dispositivo gestito sono presenti più account, la notifica viene mostrata solo se questo criterio è impostato su Vero.
       La notifica viene sempre visualizzata sui dispositivi non gestiti.</translation>
 <translation id="4510923771103268849">L'utente può avere accesso root ai contenitori Crostini</translation>
@@ -3244,7 +3216,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se il criterio non viene configurato, <ph name="PRODUCT_NAME" /> prova a rilevare se un server è presente sulla Intranet. Solo allora risponderà alle richieste IWA. Se viene rilevato un server su Internet, <ph name="PRODUCT_NAME" /> ignora le richieste IWA provenienti da tale server.
 
-      Nota: separa i nomi dei server utilizzando le virgole. I caratteri jolly (<ph name="WILDCARD_VALUE" />) sono consentiti.</translation>
+      Nota: se ci sono più server, separane i nomi utilizzando virgole. I caratteri jolly (<ph name="WILDCARD_VALUE" />) sono consentiti.</translation>
 <translation id="5645779841392247734">Consenti i cookie in questi siti</translation>
 <translation id="5646234199535103501">Criterio di configurazione per il connettore OnBulkDataEntry di Chrome Enterprise</translation>
 <translation id="5656177735561364047">Attiva la funzione Appunti condivisi</translation>
@@ -3383,12 +3355,12 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
 <translation id="5875873062228321803">Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_OS_NAME" />.
 
       Se per questo criterio viene impostato un elenco non vuoto:
-      Se nessuna voce ha un valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> superiore alla versione corrente del dispositivo, non vengono applicate limitazioni e le limitazioni esistenti vengono revocate.
+      Se nessuna voce ha un valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> superiore alla versione corrente del dispositivo, non vengono applicate limitazioni e quelle esistenti vengono revocate.
       Se almeno una voce ha un valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> superiore alla versione corrente, viene scelta la voce la cui versione è superiore e più simile a quella corrente.
       In caso di conflitto, si preferisce la voce con il valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> o <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> inferiore e il criterio viene applicato usando tale voce.
 
-      Se la versione corrente diventa obsoleta durante la sessione utente e la rete corrente limita gli aggiornamenti automatici, sullo schermo viene mostrata una notifica che invita l'utente ad aggiornare il dispositivo entro il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> mostrato nella notifica.
-      Se la rete corrente consente gli aggiornamenti automatici, non viene mostrata alcuna notifica e il dispositivo deve essere aggiornato entro il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
+      Se la versione corrente diventa obsoleta durante la sessione utente e la rete in uso limita gli aggiornamenti automatici, sullo schermo viene mostrata una notifica che invita l'utente ad aggiornare il dispositivo entro il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> mostrato nella notifica.
+      Se la rete in uso consente gli aggiornamenti automatici e il dispositivo deve essere aggiornato entro il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" />, non viene mostrata alcuna notifica.
       Il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> parte dal momento in cui viene applicato il criterio.
       Se il dispositivo non viene aggiornato entro la scadenza del periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" />, l'utente viene disconnesso dalla sessione.
       Se la versione corrente risulta obsoleta al momento dell'accesso con il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> scaduto, all'utente viene richiesto di aggiornare il dispositivo prima di accedere.
@@ -3396,12 +3368,12 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
       Se la versione corrente diventa obsoleta durante la sessione utente e il dispositivo ha raggiunto la scadenza dell'aggiornamento automatico, sullo schermo viene mostrata una notifica che invita l'utente a restituire il dispositivo entro il periodo indicato nel valore <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
       Se risulta che il dispositivo ha raggiunto la scadenza dell'aggiornamento automatico al momento dell'accesso con il periodo indicato nel valore <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> scaduto, il dispositivo viene bloccato e nessun utente può eseguire l'accesso.
 
-      Le sessioni utente non gestite non ricevono notifiche e forzano la disconnessione se il valore <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> non viene configurato o se viene impostato su Falso.
+      Se il valore <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> non viene configurato o se viene impostato su Falso, le sessioni utente non gestite non ricevono notifiche e viene forzata la disconnessione.
 
       Se questo criterio non viene configurato o se viene lasciato vuoto, non vengono applicate limitazioni, vengono revocate quelle esistenti e l'utente può accedere qualunque sia la versione di <ph name="PRODUCT_OS_NAME" />.
 
       Il valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> può essere una versione esatta, ad esempio "13305.0.0" oppure un prefisso di versione, ad esempio "13305".
-      I valori <ph name="WARNING_PERIOD_PROPERTY_NAME" /> e <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> sono facoltativi e specificati in numero di giorni. Il valore predefinito è 0 giorni, a indicare nessun periodo di avviso.
+      I valori <ph name="WARNING_PERIOD_PROPERTY_NAME" /> e <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> sono facoltativi e specificati in numero di giorni. Il valore predefinito è 0, a indicare nessun periodo di avviso.
       Il valore <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> è una proprietà facoltativa, il cui valore predefinito è Falso.</translation>
 <translation id="5879014913445067283">Consente di controllare la funzione Condivisioni file di rete tramite il protocollo <ph name="NETBIOS_NAME" /></translation>
 <translation id="588135807064822874">Attiva la funzione Tocca per cercare</translation>
@@ -3696,11 +3668,11 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           L'avviso viene mostrato solo se l'azione stabilita in caso di inattività è la disconnessione o lo spegnimento.</translation>
 <translation id="6334330017384340264">Questo criterio consente di specificare le applicazioni e gli URL da autorizzare per i limiti di utilizzo per app.
         La lista consentita configurata viene applicata alle app installate su <ph name="PRODUCT_OS_NAME" /> per l'utente in questione con limiti di utilizzo per app.
-        La lista consentita configurata può essere applicata soltanto per gli account utente dei bambini e diventa effettiva quando viene impostato il criterio <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" />.
-        La lista consentita configurata viene applicata alle applicazioni e agli URL affinché non vengano bloccati da limiti di utilizzo per app.
+        La lista consentita configurata può essere applicata soltanto agli account per bambini e diventa effettiva quando viene impostato il criterio <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" />.
+        La lista consentita configurata viene applicata alle applicazioni e agli URL affinché non vengano bloccati secondo i limiti di utilizzo per app.
         L'accesso agli URL autorizzati non viene considerato per il limite di utilizzo di Chrome.
         Aggiungi espressioni regolari degli URL a |url_list| per autorizzare gli URL corrispondenti alle espressioni regolari nell'elenco.
-        Aggiungi all'elenco |app_list| un'applicazione con i relativi valori |app_id| e |app_type| per autorizzare l'applicazione.
+        Aggiungi all'elenco |app_list| un'applicazione con i relativi valori |app_id| e |app_type| per autorizzarla.
        </translation>
 <translation id="6337782882143073193">Questo criterio è deprecato, al suo posto utilizza <ph name="URL_BLOCKLIST_POLICY_NAME" />.
 
@@ -3841,7 +3813,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6573305661369899995">Imposta una fonte esterna di limitazioni relative agli URL</translation>
 <translation id="6575944031719151455">La configurazione del criterio consente di specificare l'elenco di account locali del dispositivo da visualizzare nella schermata di accesso. Gli identificatori fanno distinzione tra i diversi account locali del dispositivo.
 
-      Se il criterio non viene configurato o se l'elenco è vuoto, non sono presenti account locali del dispositivo.</translation>
+      Se il criterio non viene configurato o se l'elenco è vuoto, non vengono visualizzati account locali del dispositivo.</translation>
 <translation id="6583851521569686409">Consente di configurare un elenco di stampanti.
 
       Questo criterio consente agli amministratori di fornire configurazioni delle stampanti ai propri utenti.
@@ -4004,7 +3976,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6810445994095397827">Blocca JavaScript in questi siti</translation>
 <translation id="6813263547126514821">Alimentazione e spegnimento</translation>
 <translation id="681446116407619279">Schemi di autenticazione supportati</translation>
-<translation id="6815483833848348029">Se il criterio viene impostato su Attivato o se non viene configurato, se un account locale del dispositivo viene configurato per l'accesso automatico senza ritardo quando un dispositivo è offline, <ph name="PRODUCT_OS_NAME" /> mostra una richiesta di configurazione della rete.
+<translation id="6815483833848348029">Se il criterio viene impostato su Attivato o non viene configurato e se un account locale del dispositivo è configurato per l'accesso automatico senza ritardo, quando un dispositivo è offline <ph name="PRODUCT_OS_NAME" /> mostra una richiesta di configurazione della rete.
 
       Se il criterio viene impostato su Disattivato, viene visualizzato invece un messaggio di errore.</translation>
 <translation id="6821268164692776674">Destinazioni <ph name="CLOUD_PRINT_NAME" /> e "Salva su Google Drive"</translation>
@@ -4040,25 +4012,12 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Consente di specificare i flag da applicare all'avvio di <ph name="PRODUCT_NAME" />. I flag specificati vengono applicati soltanto alla schermata di accesso. I flag impostati tramite questa norma non vengono applicati anche alle sessioni utente.</translation>
 <translation id="685769593149966548">Imponi il livello massimo della Modalità con restrizioni per YouTube</translation>
 <translation id="686079137349561371">Microsoft Windows 7 o versioni successive</translation>
-<translation id="6863342574191774334">Se questa impostazione viene attivata, gli utenti possono attivare la funzionalità Condivisione nelle vicinanze, che consente loro di inviare e ricevere file dalle persone nelle vicinanze.
+<translation id="6863342574191774334">Se questa impostazione viene attivata, gli utenti possono scegliere di utilizzare la funzionalità Condivisione nelle vicinanze, che consente di inviare e ricevere file dalle persone nelle vicinanze.
 
-      Se questa impostazione viene disattivata, gli utenti non possono attivare la funzionalità Condivisione nelle vicinanze.
+      Se viene disattivata, gli utenti non possono attivare la funzionalità.
 
-      Se questo criterio non viene configurato, l'impostazione predefinita è consentita sia per gli utenti gestiti a livello aziendale sia per gli utenti non gestiti.</translation>
+      Se questo criterio non viene configurato, per impostazione predefinita la funzionalità è consentita sia per gli utenti gestiti a livello aziendale sia per quelli non gestiti.</translation>
 <translation id="6864244339257535116">Consenti sia caricamenti sia download di file protetti da password</translation>
-<translation id="6870295914868104867">Se il criterio viene impostato, viene installato in automatico un elenco di app ed estensioni, senza l'interazione dell'utente, ed è implicito quali utenti non possono disinstallarle o disattivarle. Le autorizzazioni vengono concesse implicitamente, incluse le API delle estensioni enterprise.deviceAttributes e enterprise.platformKeys. Queste due API non sono disponibili per le app/estensioni senza installazione forzata.
-
-      Se questo criterio non viene impostato, nessuna app o estensione viene installata automaticamente e gli utenti possono disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.
-
-      Questo criterio prevale sul criterio <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />. Se un'app o un estensione di cui è stata precedentemente forzata l'installazione viene rimossa da questo elenco, tali app o estensioni vengono disinstallate automaticamente da <ph name="PRODUCT_NAME" />.
-
-      Per le istanze di Windows® che non fanno parte di un dominio <ph name="MS_AD_NAME" />, l'installazione forzata è limitata alle app e alle estensioni nel Chrome Web Store.
-
-      Il codice sorgente di qualsiasi estensione può essere modificato dagli utenti tramite lo strumento per sviluppatori, causando potenzialmente il malfunzionamento dell'estensione. Per evitare un problema di questo tipo, è consigliabile impostare il criterio <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.
-
-      Ogni elemento nell'elenco del criterio è una stringa contenente un ID estensione e, facoltativamente, un URL "di aggiornamento" separati da punto e virgola (;). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo chrome://extensions quando è attiva la modalità sviluppatore. Se specificato, l'URL "di aggiornamento" deve indirizzare a un documento XML manifest di aggiornamento (https://developer.chrome.com/extensions/autoupdate). Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store. L'URL "di aggiornamento" impostato in questo criterio viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento nel file manifest dell'estensione.
-
-       Nota: questo criterio non viene applicato alla Modalità di navigazione in incognito. Leggi ulteriori informazioni sull'hosting delle estensioni (https://developer.chrome.com/extensions/hosting).</translation>
 <translation id="687046793986382807">Questa norma è stata ritirata a partire dalla versione 35 di <ph name="PRODUCT_NAME" />.
 
       Le informazioni sulla memoria sono comunque riportate sulla pagina, indipendentemente dal valore opzione, ma le dimensioni segnalate presentano
@@ -4533,9 +4492,9 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="7563608136659080810">Questo criterio è deprecato. Usa il criterio "<ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />".
 
-      La configurazione del criterio consente di assegnare i server a cui <ph name="PRODUCT_NAME" /> potrebbe delegare le credenziali utente. Separa i nomi dei server utilizzando le virgole. I caratteri jolly (<ph name="WILDCARD_VALUE" />) sono consentiti.
+      La configurazione del criterio consente di assegnare i server a cui <ph name="PRODUCT_NAME" /> può delegare le credenziali utente. Se ci sono più server, separane i nomi utilizzando virgole. I caratteri jolly (<ph name="WILDCARD_VALUE" />) sono consentiti.
 
-      Se il criterio non viene configurato, <ph name="PRODUCT_NAME" /> non delega le credenziali utente, anche se viene rilevato un server come Intranet.</translation>
+      Se il criterio non viene configurato, <ph name="PRODUCT_NAME" /> non delega le credenziali utente, anche se un server viene rilevato come Intranet.</translation>
 <translation id="7566878661979235378">Tipo di autenticazione per gli accessi SAML</translation>
 <translation id="7567373982693549834">Questo criterio consente di controllare l'utilizzo delle app Android di fonti non attendibili (diverse dal Google Play Store) per ogni utente.
 
@@ -4793,7 +4752,7 @@ Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita 
       Puoi specificare l'URL di ricerca di Google come: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="7895553628261067384">Accesso remoto</translation>
 <translation id="7902040092815978832">Mostra la tastiera numerica per la password</translation>
-<translation id="7904177352786629708">Se il criterio viene impostato su Attivato, è possibile saltare la ricerca CNAME. Il nome del server viene utilizzato come valore inserito durante la generazione del Kerberos SPN.
+<translation id="7904177352786629708">Impostando il criterio su Attivato, la ricerca CNAME viene saltata. Il nome del server viene utilizzato come valore inserito durante la generazione del Kerberos SPN.
 
       Se il criterio viene impostato su Disattivato o se non viene configurato, la ricerca CNAME determina il nome canonico del server durante la generazione del Kerberos SPN.</translation>
 <translation id="7912255076272890813">Configura tipi di app/estensioni consentiti</translation>
@@ -5691,11 +5650,6 @@ https://www.w3.org/TR/secure-contexts/
       La sessione dell'utente viene ripristinata dopo il riavvio.</translation>
 <translation id="9160028464653564229">Non consentire a nessun sito di richiedere l'accesso a porte seriali tramite l'API Serial</translation>
 <translation id="9167719789236691545">Disattiva Drive nell'app File di <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="917514578273777202">Se il criterio viene attivato, viene eseguita una ricerca predefinita quando un utente inserisce un testo che non è un URL nella barra degli indirizzi. Per specificare il provider di ricerca predefinito, imposta gli altri criteri di ricerca predefiniti. Se non configuri questi criteri, l'utente può scegliere il provider predefinito. Se il criterio viene disattivato, non viene eseguita alcuna ricerca quando l'utente inserisce un testo che non è un URL nella barra degli indirizzi.
-
-      Se il criterio viene configurato, gli utenti non possono modificarlo in <ph name="PRODUCT_NAME" />. Se non viene configurato, il provider di ricerca predefinito è attivo e gli utenti possono configurare l'elenco dei provider di ricerca.
-
-      Nota: questo criterio è disponibile solo per le istanze di Windows® che fanno parte di un dominio <ph name="MS_AD_NAME" />, così come per le istanze di Windows 10 Pro o di Chrome Enterprise Upgrade e macOS che vengono gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="9185107612228451403">Configura le norme relative alle estensioni. L'utente non può installare estensioni presenti nella lista nera, a meno che non siano inserite nella lista bianca. È possibile anche forzare <ph name="PRODUCT_NAME" /> affinché installi automaticamente le estensioni specificandole in <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Le estensioni a installazione forzata sono installate indipendentemente dalla loro presenza nella lista nera.</translation>
 <translation id="9187743794267626640">Disabilita il montaggio di una memoria esterna</translation>
 <translation id="9190456586252617675">Questo criterio consente di stabilire la modalità dell'esperienza di onboarding dell'assistente.

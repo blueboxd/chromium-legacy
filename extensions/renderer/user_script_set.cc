@@ -217,8 +217,7 @@ std::unique_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
 
   GURL effective_document_url =
       ScriptContext::GetEffectiveDocumentURLForInjection(
-          web_frame, document_url, script->match_about_blank(),
-          script->match_origin_as_fallback());
+          web_frame, document_url, script->match_origin_as_fallback());
 
   bool is_subframe = web_frame->Parent();
   if (!script->MatchesDocument(effective_document_url, is_subframe))

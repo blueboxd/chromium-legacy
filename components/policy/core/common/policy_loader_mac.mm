@@ -134,7 +134,7 @@ std::unique_ptr<PolicyBundle> PolicyLoaderMac::Load() {
     std::unique_ptr<base::Value> policy = PropertyToValue(value);
     if (policy) {
       chrome_policy.Set(it.key(), level, POLICY_SCOPE_MACHINE,
-                        POLICY_SOURCE_PLATFORM, std::move(policy), nullptr);
+                        POLICY_SOURCE_PLATFORM, std::move(*policy), nullptr);
     } else {
       status.Add(POLICY_LOAD_STATUS_PARSE_ERROR);
     }
@@ -234,7 +234,7 @@ void PolicyLoaderMac::LoadPolicyForComponent(
     std::unique_ptr<base::Value> policy_value = PropertyToValue(value);
     if (policy_value) {
       policy->Set(it.key(), level, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
-                  std::move(policy_value), nullptr);
+                  std::move(*policy_value), nullptr);
     }
   }
 }

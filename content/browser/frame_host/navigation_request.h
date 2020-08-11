@@ -1020,16 +1020,17 @@ class CONTENT_EXPORT NavigationRequest
   }
 
   // Returns true if the contents of |common_params_| requires
-  // |source_site_instance_| to be set. This is used to ensure that data:
-  // URLs with valid initiator origins always have |source_site_instance_| set
-  // so that site isolation enforcements work properly.
-  bool RequiresSourceSiteInstance() const;
+  // |source_site_instance_| to be set. This is used to ensure that data: and
+  // about:blank URLs with valid initiator origins always have
+  // |source_site_instance_| set so that site isolation enforcements work
+  // properly.
+  bool RequiresInitiatorBasedSourceSiteInstance() const;
 
   // Sets |source_site_instance_| to a SiteInstance that is derived from
   // |common_params_->initiator_origin| and related to the |frame_tree_node_|'s
   // current SiteInstance. |source_site_instance_| is only set if it doesn't
-  // already have a value, |common_params_->initiator_origin| has a valid
-  // origin, and RequiresSourceSiteInstance() return true.
+  // already have a value and RequiresInitiatorBasedSourceSiteInstance() returns
+  // true.
   void SetSourceSiteInstanceToInitiatorIfNeeded();
 
   // See RestartBackForwardCachedNavigation.

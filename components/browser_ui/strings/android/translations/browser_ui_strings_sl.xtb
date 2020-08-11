@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Krmarjenje je blokirano: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Dovoljeno</translation>
 <translation id="429312253194641664">Spletno mesto predvaja predstavnost</translation>
+<translation id="4336434711095810371">Izbriši vse podatke</translation>
 <translation id="4433925000917964731">Stran v osnovnem načinu, ki jo je prikazal Google</translation>
 <translation id="4434045419905280838">Pojavna okna in preusmeritve</translation>
 <translation id="445467742685312942">Spletnim mestom dovoli predvajanje zaščitene vsebine</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Zavihek brez beleženja zgodovine</translation>
 <translation id="5300589172476337783">Pokaži</translation>
 <translation id="5301954838959518834">V redu, razumem</translation>
-<translation id="5307446750509046227">Izbris shrambe mesta</translation>
 <translation id="5313967007315987356">Dodajanje mesta</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5335288049665977812">Spletnim mestom dovoli izvajanje JavaScripta (priporočeno)</translation>
@@ -250,7 +250,6 @@
 <translation id="8801436777607969138">Preprečevanje JavaScripta za določeno spletno mesto.</translation>
 <translation id="8816026460808729765">Preprečevanje spletnim mestom dostopa do tipal</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Shramba</translation>
 <translation id="8926666909099850184">Tehnologija NFC je izklopljena za to napravo. Vklopite jo v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">To spletno mesto se odpre in odzove hitro za večino uporabnikov</translation>
 <translation id="8941729603749328384">www.primer.si</translation>
@@ -262,4 +261,5 @@
 <translation id="913657688200966289">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenja za aplikacijo <ph name="APP_NAME" />.</translation>
 <translation id="945632385593298557">Dostop do mikrofona</translation>
 <translation id="965817943346481315">Blokiraj, če spletno mesto prikazuje vsiljive ali zavajajoče oglase (priporočljivo)</translation>
+<translation id="967624055006145463">Shranjeni podatki</translation>
 </translationbundle>

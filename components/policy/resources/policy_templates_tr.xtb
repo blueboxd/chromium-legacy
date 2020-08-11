@@ -443,13 +443,6 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 
       Politikayı False (Yanlış) değerine ayarlamak, kullanıcıların yer işaretleri eklemelerine, kaldırmalarına veya bunları değiştirmelerine izin verilmediği anlamına gelir. Mevcut yer işaretlerini kullanmaya devam edebilirler.</translation>
 <translation id="1715151459541210849">Dikte erişilebilirlik özelliğini etkinleştir</translation>
-<translation id="1717817358640580294">Ayarlanmadan bırakılırsa, Chrome Temizleme Aracı istenmeyen yazılımlar tespit ettiğinde, SafeBrowsingExtendedReportingEnabled tarafından ayarlanan politikaya uygun şekilde taramayla ilgili meta verileri Google'a raporlayabilir. Chrome Temizleme Aracı, daha sonra kullanıcıya istenmeyen yazılımın temizlenmesini isteyip istemediğini sorar. Kullanıcı, ileride istenmeyen yazılımların tespiti konusunda yardımcı olması için temizleme işlemi sonuçlarının Google ile paylaşılmasını seçebilir. Bu sonuçlar, Chrome Gizlilik Raporu'nda açıklandığı gibi dosya meta verilerini, otomatik olarak yüklenen uzantıları ve kayıt defteri anahtarlarını içerir.
-
-      Devre dışı bırakılırsa, Chrome Temizleme Aracı istenmeyen yazılımlar tespit ettiğinde, SafeBrowsingExtendedReportingEnabled tarafından ayarlanan politikayı geçersiz kılarak taramayla ilgili meta verileri Google'a raporlamaz. Chrome Temizleme Aracı, kullanıcıya istenmeyen yazılımın temizlenmesini isteyip istemediğini sorar.  Temizleme işleminin sonuçları Google'a bildirilmez ve kullanıcıya bununla ilgili bir seçenek sunulmaz.
-
-      Etkinleştirilirse, Chrome Temizleme Aracı istenmeyen yazılımlar tespit ettiğinde, SafeBrowsingExtendedReportingEnabled tarafından ayarlanan politikaya uygun şekilde taramayla ilgili meta verileri Google'a raporlayabilir. Chrome Temizleme Aracı, kullanıcıya istenmeyen yazılımın temizlenmesini isteyip istemediğini sorar.  Temizleme işleminin sonuçları Google'a bildirilir ve kullanıcıya bunu önleme seçeneği sunulmaz.
-
-      Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
 <translation id="172374442286684480">Tüm sitelerin yerel verileri ayarlamasına izin verme</translation>
 <translation id="1736269219679256369">SSL uyarı sayfasından devam etmeye izin ver</translation>
 <translation id="1745973235372964482">Şifre korumalı dosyalara izin verme</translation>
@@ -1359,15 +1352,6 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
           Bu ayarı devre dışı bırakmak, yapılandırılmamış olarak bırakmakla aynı şeydir. Kullanıcı isterse <ph name="PRODUCT_NAME" /> ürününden bu ayarı değiştirebilir.
 
           Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde ve MDM ile çalışan veya MCX aracılığıyla bir alan adına katılmış macOS örneklerinde kullanılabilir.</translation>
-<translation id="2982571648442031489">Güvenli Tarama'nın güveneceği alanların listesini yapılandırır. Bunun anlamı:
-      Tehlikeli kaynakların (ör. kimlik avı, kötü amaçlı yazılım veya istenmeyen yazılım) URL'leri bu alanlarla eşleşirse Güvenli Tarama tehlikeli kaynakları kontrol etmeyecektir.
-      Güvenli Tarama'nın indirme koruma hizmeti, bu alanlarda barındırılan indirmeleri kontrol etmeyecektir.
-      Sayfa URL'si bu alanlarla eşleşirse Güvenli Tarama'nın şifre koruma hizmeti şifre yeniden kullanımını kontrol etmeyecektir.
-
-      Bu ayar etkinleştirilirse Güvenli Tarama bu alanlara güvenecektir.
-      Bu ayar devre dışı bırakılırsa veya ayarlanmazsa varsayılan Güvenli Tarama koruması tüm kaynaklara uygulanır.
-
-      Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde ve MDM ile çalışan veya MCX aracılığıyla bir alan adına katılmış macOS örneklerinde kullanılabilir.</translation>
 <translation id="2985927503455169394">Asistan ilk katılım deneyiminin varsayılan modunu kullanma</translation>
 <translation id="2987155890997901449">ARC'yi etkinleştir</translation>
 <translation id="2987227569419001736">Web Bluetooth API'sının kullanımını kontrol et</translation>
@@ -1484,11 +1468,6 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
       Politika ayarlanmamışsa veya yanlış seçeneğine ayarlanmışsa, TLS'deki DHE şifre paketleri etkinleştirilmez. Aksi takdirde, DHE şifre paketlerinin etkinleştirilmesi ve eski bir sunucuyla uyumluluğun korunması için doğru seçeneğine ayarlanabilir. Bu geçici bir tedbirdir ve sunucu yeniden yapılandırılmalıdır.
 
       Sunucuların ECDHE şifre paketi sürümüne taşınması önerilir. Bunlar kullanılamıyorsa RSA anahtar değiş tokuşunu kullanan bir şifre paketinin etkinleştirildiğinden emin olun.</translation>
-<translation id="3117706142826400449">Devre dışı bırakılırsa, Chrome Temizleme Aracı'nın sistemdeki istenmeyen yazılımları taramasını ve temizleme işlemleri gerçekleştirmesini engeller. Chrome Temizleme Aracı'nın chrome://settings/cleanup adresinden manuel olarak tetiklenmesi devre dışı bırakılır.
-
-      Etkinleştirilir veya ayarlanmadan bırakılırsa, Chrome Temizleme Aracı belirli aralıklarla sistemdeki istenmeyen yazılımları tarar ve böyle bir yazılım bulursa kullanıcıya, bulduğu yazılımı kaldırmak isteyip istemediğini sorar. Chrome Temizleme Aracı'nın chrome://settings adresinden manuel olarak tetiklenmesi etkinleştirilir.
-
-      Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
 <translation id="3119125876909100625">Şifre korumalı dosyaların yüklenmesine izin ver</translation>
 <translation id="3122082892722698079">Güvenli olmayan içerik istisnalarının kullanımını kontrol et</translation>
 <translation id="3143265893557969814">Bu politika ayarlanırsa belirtilen tüm veri türleri hem Google Sync senkronizasyonunun hem de dolaşım profili senkronizasyonunun dışında tutulur. Bu, dolaşım profilinin boyutunu küçültmeye veya Google Sync sunucularına yüklenen veri türlerini sınırlandırmaya yarayabilir.
@@ -2110,13 +2089,6 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 <translation id="4061590579642538878">Kilitlenme raporlarıyla ilgili bilgileri raporlama</translation>
 <translation id="4075675819066819571">Rafı ekranın sol tarafında konumlandır</translation>
 <translation id="4075864623710596000">Bu listede belirtilen ana makine adları, istekleri http'den https'ye yükseltebilecek HSTS politika kontrolünden muaf tutulur. Bu politikada yalnızca tek etiketli ana makine adlarına izin verilir. Ana makine adları standartlaştırılmalıdır: Tüm IDN'ler, A-etiket biçimine dönüştürülmeli ve tüm ASCII harfleri küçük harf olmalıdır. Bu politika yalnızca belirtilen spesifik ana makine adları için geçerlidir; belirtilen adların alt alanları için geçerli değildir.</translation>
-<translation id="4076584741592854827">İndirildiğinde otomatik olarak açılması gereken dosya türleri listesi. Dosya türü listelenirken baştaki ayırıcının eklenmemesi gerektiğinden, ".txt" yerine "txt" yazın.
-
-      Otomatik olarak açılması gereken türdeki dosyalar, yine de etkinleştirilmiş güvenli tarama kontrollerine tabidir ve bu kontrollerden geçmezse açılmaz.
-
-      Bu politika ayarlanmazsa yalnızca kullanıcının otomatik olarak açılmasını zaten belirttiği dosya türleri indirildiğinde otomatik olarak açılır.
-
-      Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde ve MDM ile çalışan veya MCX aracılığıyla bir alan adına katılmış macOS örneklerinde kullanılabilir.</translation>
 <translation id="408029843066770167">Google zaman hizmetini sorgulamaya izin ver</translation>
 <translation id="408076456549153854">Tarayıcıda oturum açmayı etkinleştir</translation>
 <translation id="4082498585300984671">Tıkla ve Ara Özelliğini Etkinleştirme</translation>
@@ -4063,19 +4035,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Bu politika ayarlanmadan bırakılırsa hem kurumsal olarak yönetilen kullanıcılar hem de yönetilmeyen kullanıcılar için varsayılana izin verilir.</translation>
 <translation id="6864244339257535116">Şifre korumalı dosyaların hem yüklenmesine hem de indirilmesine izin ver</translation>
-<translation id="6870295914868104867">Politikanın ayarlanması, kullanıcı etkileşimi olmadan sessizce yüklenen, kullanıcı tarafından yüklemesi kaldırılamayan veya kapatılamayan uygulamaların ve uzantıların bir listesini belirtir. İzinler, enterprise.deviceAttributes ve enterprise.platformKeys uzantı API'leri için dolaylı olarak verilir. (Bu iki API zorunlu olarak yüklenmemiş uygulamalar ve uzantılar tarafından kullanılamaz.)
-
-      Bu politika ayarlanmadan bırakılırsa hiçbir uygulama veya uzantı otomatik olarak yüklenmez ve kullanıcılar <ph name="PRODUCT_NAME" /> ürünündeki uygulama veya uzantıları kaldırabilirler.
-
-      Bu politika, <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" /> politikasının yerini alır. Önceden zorunlu yüklenmiş bir uygulama veya uzantı listeden çıkarılırsa <ph name="PRODUCT_NAME" /> ürünü, otomatik olarak bu uygulamayı veya uzantıyı kaldırır.
-
-      <ph name="MS_AD_NAME" /> alanına katılmamış Windows® örneklerinde zorunlu yükleme, Chrome Web Mağazası'ndaki uygulama ve uzantılarla sınırlıdır.
-
-      Herhangi bir uzantının kaynak kodu, kullanıcılar tarafından geliştirici araçları kullanılarak uzantının işlevselliğini devre dışı bırakabilecek şekilde değiştirilebilir. Böyle bir endişe olması durumunda <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> politikasını ayarlayın.
-
-      Politikaya ait her liste öğesi, noktalı virgülle (;) ayrılmış bir uzantı kimliği ve isteğe bağlı bir "güncelleme" URL'si içeren bir dizedir. Uzantı kimliği, örneğin Geliştirici modundayken chrome://extensions adresinde bulunabilen 32 harfli bir dizedir. Belirtilmişse "güncelleme" URL'si bir Güncelleme Manifest XML dokümanına işaret etmelidir. ( https://developer.chrome.com/extensions/autoupdate ). Varsayılan olarak Chrome Web Mağazası'nın güncelleme URL'si kullanılır. Bu politikada ayarlanan "güncelleme" URL'si yalnızca ilk yükleme için kullanılır. Uzantının sonraki güncellemelerinde ise uzantının manifest dosyasındaki güncelleme URL'si kullanılır.
-
-       Not: Bu politika gizli mod için geçerli değildir. Uzantıların barındırılması ( https://developer.chrome.com/extensions/hosting ) ile ilgili bilgi edinin.</translation>
 <translation id="687046793986382807">Bu politika, <ph name="PRODUCT_NAME" /> sürüm 35 itibarı ile kullanımdan kaldırılmıştır.
 
       Bellek bilgisi, seçenek değerinden bağımsız olarak her şekilde sayfada raporlanır, ancak
@@ -5722,11 +5681,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Yeniden başlatmanın ardından kullanıcı oturumu yeniden açılır.</translation>
 <translation id="9160028464653564229">Hiçbir sitenin Serial API'si üzerinden seri bağlantı noktalarına erişim izni istemesine izin verme</translation>
 <translation id="9167719789236691545"><ph name="PRODUCT_OS_NAME" />, Dosyalar uygulamasında Drive'ı devre dışı bırak</translation>
-<translation id="917514578273777202">Politika, Etkin değerine ayarlanırsa kullanıcı adres çubuğunda URL olmayan metin girdiğinde varsayılan arama gerçekleştirilir. Varsayılan arama sağlayıcısını belirtmek için geri kalan arama politikalarını ayarlayın. Bu politikaları boş bırakırsanız kullanıcı varsayılan sağlayıcısını seçebilir. Politika, Devre dışı değerine ayarlanırsa kullanıcı adres çubuğuna URL olmayan metin girdiğinde arama gerçekleşmez.
-
-      Bu politikayı ayarlarsanız kullanıcılar <ph name="PRODUCT_NAME" /> ürününde değiştiremez. Ayarlanmadan bırakılırsa varsayılan arama sağlayıcısı etkin hale gelir ve kullanıcılar, arama sağlayıcısı listesini ayarlayabilir.
-
-      Not: Bu politika, yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows® örneklerinde, Windows 10 Pro veya Chrome Enterprise Yükseltme ve MDM ile çalışan ya da MCX aracılığıyla bir alan adına katılmış macOS örneklerinde kullanılabilir.</translation>
 <translation id="9185107612228451403">Uzantılarla ilgili politikaları yapılandırır. Kullanıcının kara listeye alınmış uzantıları, beyaz listeye alınmadığı sürece yüklemesine izin verilmez. Uzantıları <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> içinde belirterek bu uzantıların <ph name="PRODUCT_NAME" /> tarafından zorla otomatik olarak yüklenmesini de sağlayabilirsiniz. Zorunlu yüklenmiş uzantılar, kara listede olsalar bile yüklenirler.</translation>
 <translation id="9187743794267626640">Harici depolama birimi eklemeyi devre dışı bırak</translation>
 <translation id="9190456586252617675">Bu politika, Asistan ilk katılım deneyimi modunu kontrol eder.

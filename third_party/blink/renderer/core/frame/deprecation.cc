@@ -502,11 +502,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "native UI",
               kM75, "5825971391299584")};
 
-    case WebFeature::kV8AtomicsWake:
-      return {"V8AtomicsWake", kM76,
-              ReplacedWillBeRemoved("Atomics.wake", "Atomics.notify", kM76,
-                                    "6228189936353280")};
-
     case WebFeature::kXRSupportsSession:
       return {"XRSupportsSession", kM80,
               ReplacedBy(

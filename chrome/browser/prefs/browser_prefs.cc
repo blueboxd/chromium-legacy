@@ -265,6 +265,7 @@
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/bluetooth/debug_logs_manager.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
+#include "chrome/browser/chromeos/child_accounts/family_user_session_metrics.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
@@ -1057,6 +1058,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::ClientAppMetadataProviderService::RegisterProfilePrefs(registry);
   chromeos::CupsPrintersManager::RegisterProfilePrefs(registry);
   chromeos::device_sync::DeviceSyncImpl::RegisterProfilePrefs(registry);
+  chromeos::FamilyUserSessionMetrics::RegisterProfilePrefs(registry);
   chromeos::first_run::RegisterProfilePrefs(registry);
   chromeos::file_system_provider::RegisterProfilePrefs(registry);
   chromeos::KerberosCredentialsManager::RegisterProfilePrefs(registry);

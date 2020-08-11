@@ -12,6 +12,7 @@
 #include "ash/ambient/ambient_photo_controller.h"
 #include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ambient/ui/ambient_container_view.h"
+#include "ash/ambient/ui/media_string_view.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
@@ -167,6 +168,22 @@ void AmbientAshTestBase::SetScreenBrightnessAndWait(double percent) {
   base::RunLoop().RunUntilIdle();
 }
 
+void AmbientAshTestBase::SimulateMediaMetadataChanged(
+    media_session::MediaMetadata metadata) {
+  GetMediaStringView()->MediaSessionMetadataChanged(metadata);
+}
+
+void AmbientAshTestBase::SimulateMediaPlaybackStateChanged(
+    media_session::mojom::MediaPlaybackState state) {
+  // Creates media session info.
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state = state;
+
+  // Simulate media session info changed.
+  GetMediaStringView()->MediaSessionInfoChanged(std::move(session_info));
+}
+
 void AmbientAshTestBase::SetPhotoViewImageSize(int width, int height) {
   auto* image_decoder = static_cast<TestAmbientImageDecoderImpl*>(
       ambient_controller()
@@ -180,6 +197,11 @@ AmbientBackgroundImageView*
 AmbientAshTestBase::GetAmbientBackgroundImageView() {
   return static_cast<AmbientBackgroundImageView*>(container_view()->GetViewByID(
       AssistantViewID::kAmbientBackgroundImageView));
+}
+
+MediaStringView* AmbientAshTestBase::GetMediaStringView() {
+  return static_cast<MediaStringView*>(
+      container_view()->GetViewByID(AssistantViewID::kAmbientMediaStringView));
 }
 
 void AmbientAshTestBase::FastForwardToInactivity() {

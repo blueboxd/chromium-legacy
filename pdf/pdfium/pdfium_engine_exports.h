@@ -16,6 +16,8 @@ namespace chrome_pdf {
 class PDFiumEngineExports : public PDFEngineExports {
  public:
   PDFiumEngineExports();
+  PDFiumEngineExports(const PDFiumEngineExports&) = delete;
+  PDFiumEngineExports& operator=(const PDFiumEngineExports&) = delete;
   ~PDFiumEngineExports() override;
 
 // PDFEngineExports:
@@ -59,9 +61,6 @@ class PDFiumEngineExports : public PDFEngineExports {
                              int page_number,
                              double* width,
                              double* height) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PDFiumEngineExports);
 };
 
 }  // namespace chrome_pdf

@@ -152,6 +152,7 @@
 <translation id="2154710561487035718">Копіювати URL-адресу</translation>
 <translation id="2156074688469523661">Інші сайти (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Щоб файли з вашого телефона були доступними на іншому вашому пристрої, увімкніть синхронізацію в налаштуваннях Chrome на обох пристроях</translation>
+<translation id="2158408438301413340">Chrome не вдалося перевірити всі паролі</translation>
 <translation id="2169830938017475061">Щойно</translation>
 <translation id="2175927920773552910">QR-код</translation>
 <translation id="218608176142494674">Спільний доступ</translation>
@@ -160,6 +161,7 @@
 <translation id="2239812875700136898">Контролюйте новини за допомогою кнопки "Налаштування рекомендацій"</translation>
 <translation id="2259659629660284697">Експортувати паролі…</translation>
 <translation id="2268044343513325586">Уточнити</translation>
+<translation id="2276696007612801991">Щоб перевірити паролі, увійдіть в обліковий запис Google</translation>
 <translation id="2286841657746966508">Розрахункова адреса</translation>
 <translation id="230115972905494466">Сумісних пристроїв не знайдено</translation>
 <translation id="2318045970523081853">Натисніть, щоб зателефонувати</translation>
@@ -316,6 +318,7 @@
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /> про рекомендований контент</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3507132249039706973">Стандартний захист увімкнено</translation>
+<translation id="3509330069915219067">Офлайн. Chrome не може перевірити наявність оновлень.</translation>
 <translation id="3513704683820682405">Доповнена реальність</translation>
 <translation id="3518985090088779359">Продовжити</translation>
 <translation id="3522247891732774234">Доступне оновлення. Більше опцій</translation>
@@ -365,6 +368,7 @@
 <translation id="3895926599014793903">Примусово ввімкнути масштабування</translation>
 <translation id="3909763690984331376">Перевірка безпеки <ph name="BEGIN_NEW" />Новинка<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Шукаємо найкраще в Інтернеті…</translation>
+<translation id="3924911262913579434"><ph name="SAFE_BROWSING_MODE" /> увімкнено</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Об’єднати мої дані</translation>
 <translation id="393697183122708255">Голосовий пошук вимкнено</translation>
@@ -372,6 +376,7 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Коли все буде готово, Chrome завантажить сторінку}one{Коли все буде готово, Chrome завантажить сторінки}few{Коли все буде готово, Chrome завантажить сторінки}many{Коли все буде готово, Chrome завантажить сторінки}other{Коли все буде готово, Chrome завантажить сторінки}}</translation>
 <translation id="3963007978381181125">Парольна фраза не стосується способів оплати й адрес із Google Pay. Ваші зашифровані дані можуть переглядати лише користувачі, які знають вашу парольну фразу. Вона не надсилається й не зберігається в Google. Якщо ви забули її або хочете змінити це налаштування, скиньте параметри синхронізації. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Завантажено</translation>
+<translation id="3969142555815019568">Chrome не може перевірити паролі</translation>
 <translation id="3974987681202239636">Додаток <ph name="APP_NAME" /> відкриється в Chrome. Продовжуючи, ви погоджуєтесь із <ph name="BEGIN_LINK1" />Загальними положеннями та умовами Google<ph name="END_LINK1" /> і <ph name="BEGIN_LINK2" />Додатковими умовами використання Google Chrome і ОС Chrome<ph name="END_LINK2" />. Також застосовується <ph name="BEGIN_LINK3" />Примітка про конфіденційність для облікових записів Google, керованих у Family Link<ph name="END_LINK3" />.</translation>
 <translation id="397583555483684758">Синхронізація перестала працювати</translation>
 <translation id="3976396876660209797">Вилучити й знову створити цей ярлик</translation>
@@ -447,6 +452,7 @@
 <translation id="4616150815774728855">Відкрити файл <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Прийняти пароль</translation>
 <translation id="4650364565596261010">За умовчанням у системі</translation>
+<translation id="465657074423018424">Безпечний перегляд захищає вас від оманливих веб-сайтів. Якщо ви вимкнете цю функцію, будьте обережні під час перегляду веб-сторінок, особливо, коли вводите паролі.</translation>
 <translation id="4662373422909645029">Не можна додавати цифри</translation>
 <translation id="4663756553811254707">Видалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Веб-сайт <ph name="NAME" /> додано на головний екран</translation>
@@ -477,6 +483,7 @@
 <translation id="4837753911714442426">Відкрити налаштування друку сторінки</translation>
 <translation id="4842092870884894799">Показ спливаючих вікон для створення пароля</translation>
 <translation id="4860895144060829044">Зателефонувати</translation>
+<translation id="4864369630010738180">Вхід…</translation>
 <translation id="4866368707455379617">Не вдалося встановити модуль <ph name="MODULE" /> для Chrome</translation>
 <translation id="4875775213178255010">Пропозиції вмісту</translation>
 <translation id="4878404682131129617">Не вдалося налагодити зв’язок через проксі-сервер</translation>
@@ -783,6 +790,7 @@
 <translation id="7071521146534760487">Керувати обліковим записом</translation>
 <translation id="7077143737582773186">Карта SD</translation>
 <translation id="7080806333218412752">Надсилає URL-адреси в Безпечний перегляд на перевірку. Також надсилає невеликі зразки сторінок, завантаження, дані про дії розширень та інформацію про систему, щоб виявляти нові загрози. Тимчасово зв'язує ці дані з обліковим записом Google, у який ви ввійшли, щоб захищати вас у всіх додатках Google.</translation>
+<translation id="7088681679121566888">Chrome оновлено</translation>
 <translation id="7121362699166175603">Видалення історії й варіантів автозавершень в адресному рядку. Історія веб-перегляду може також зберігатися у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Переглядайте улюблені сайти й нещодавні історії щоразу, коли натискаєте кнопку головного екрана</translation>
 <translation id="7138678301420049075">Інше</translation>
@@ -804,6 +812,7 @@
 <translation id="7293171162284876153">Щоб почати синхронізацію, увімкніть параметр "Синхронізувати дані Chrome".</translation>
 <translation id="729975465115245577">На пристрої немає додатка для зберігання файлу з паролями.</translation>
 <translation id="7302081693174882195">Деталі: відсортовано за кількістю заощадженого трафіку</translation>
+<translation id="7304873321153398381">Офлайн. Chrome не може перевірити паролі.</translation>
 <translation id="7328017930301109123">У спрощеному режимі Chrome завантажує сторінки швидше та використовує на 60 відсотків менше трафіку.</translation>
 <translation id="7333031090786104871">Попередній сайт ще додається</translation>
 <translation id="7340958967809483333">Налаштування рекомендацій</translation>
@@ -817,6 +826,7 @@
 <translation id="741204030948306876">Увімкнути</translation>
 <translation id="7413229368719586778">Дата початку: <ph name="DATE" /></translation>
 <translation id="7431991332293347422">Указуйте, як використовувати історію веб-перегляду для персоналізації Пошуку тощо</translation>
+<translation id="7435356471928173109">Вимкнено адміністратором</translation>
 <translation id="7437998757836447326">Вихід із Chrome</translation>
 <translation id="7438641746574390233">Коли ввімкнено спрощений режим, Chrome використовує сервери Google, щоб швидше завантажувати сторінки. Спрощений режим переписує дуже повільні сторінки, щоб завантажувати лише основний вміст. Це не стосується анонімних вкладок.</translation>
 <translation id="7444811645081526538">Інші категорії</translation>
@@ -1032,6 +1042,7 @@
 <translation id="9050666287014529139">Парольна фраза</translation>
 <translation id="9063523880881406963">Вимкнути функцію "Запитувати версію сайту для комп’ютера"</translation>
 <translation id="9065203028668620118">Редагувати</translation>
+<translation id="9069543557624799859">Завантаження почнеться <ph name="TIME" />.</translation>
 <translation id="9070377983101773829">Почати голосовий пошук</translation>
 <translation id="9074336505530349563">Щоб отримувати персоналізовані пропозиції від Google, увійдіть в обліковий запис і ввімкніть синхронізацію</translation>
 <translation id="9086302186042011942">Синхронізація</translation>

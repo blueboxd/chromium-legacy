@@ -64,6 +64,9 @@ static const char kPreferRelatedApplicationsSupportedOnlyBetaStable[] =
     "channels on Android.";
 static const char kManifestLocationChanged[] =
     "Manifest location changed during fetch";
+static const char kManifestDisplayOverrideNotSupportedMessage[] =
+    "Manifest contains 'display_override' field, and the first supported "
+    "display mode must be one of 'standalone', 'fullscreen', or 'minimal-ui'";
 
 static const char kNotInMainFrameId[] = "not-in-main-frame";
 static const char kNotFromSecureOriginId[] = "not-from-secure-origin";
@@ -96,6 +99,8 @@ static const char kPreferRelatedApplicationsId[] =
 static const char kPreferRelatedApplicationsSupportedOnlyBetaStableId[] =
     "prefer-related-applications-only-beta-stable";
 static const char kManifestLocationChangedId[] = "manifest-location-changed";
+static const char kManifestDisplayOverrideNotSupportedId[] =
+    "manifest-display-override-not-supported";
 
 const std::string& GetMessagePrefix() {
   static base::NoDestructor<std::string> message_prefix(
@@ -199,6 +204,9 @@ std::string GetErrorMessage(InstallableStatusCode code) {
       break;
     case MANIFEST_URL_CHANGED:
       message = kManifestLocationChanged;
+      break;
+    case MANIFEST_DISPLAY_OVERRIDE_NOT_SUPPORTED:
+      message = kManifestDisplayOverrideNotSupportedMessage;
       break;
   }
 
@@ -304,6 +312,9 @@ content::InstallabilityError GetInstallabilityError(
       break;
     case MANIFEST_URL_CHANGED:
       error_id = kManifestLocationChangedId;
+      break;
+    case MANIFEST_DISPLAY_OVERRIDE_NOT_SUPPORTED:
+      error_id = kManifestDisplayOverrideNotSupportedId;
       break;
   }
   error.error_id = error_id;

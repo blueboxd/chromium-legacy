@@ -4,6 +4,9 @@
 
 package org.chromium.components.payments;
 
+import org.chromium.payments.mojom.PaymentRequest;
+import org.chromium.payments.mojom.PaymentValidationErrors;
+
 /** Observe the lifecycle of the PaymentRequest. */
 public interface PaymentRequestLifecycleObserver {
     /**
@@ -11,4 +14,10 @@ public interface PaymentRequestLifecycleObserver {
      * @param params The parameters.
      */
     void onPaymentRequestParamsInitiated(PaymentRequestParams params);
+
+    /**
+     * Called after {@link PaymentRequest#retry} is invoked.
+     * @param errors The payment validation errors.
+     */
+    void onRetry(PaymentValidationErrors errors);
 }

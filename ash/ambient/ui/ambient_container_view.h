@@ -17,6 +17,7 @@ class AmbientAssistantContainerView;
 class AmbientViewDelegate;
 class GlanceableInfoView;
 class PhotoView;
+class MediaStringView;
 
 // Container view to display all Ambient Mode related views, i.e. photo frame,
 // weather info.
@@ -38,9 +39,12 @@ class ASH_EXPORT AmbientContainerView : public views::View {
   void Init();
 
   // Layouts its child views.
+  // TODO(meilinw): Use LayoutManagers to lay out children instead of overriding
+  // Layout(). See b/163170162.
   void LayoutPhotoView();
   void LayoutGlanceableInfoView();
   void LayoutAssistantView();
+  void LayoutMediaStringView();
 
   // Invoked on specific types of events.
   void HandleEvent();
@@ -51,6 +55,7 @@ class ASH_EXPORT AmbientContainerView : public views::View {
   PhotoView* photo_view_ = nullptr;
   AmbientAssistantContainerView* ambient_assistant_container_view_ = nullptr;
   GlanceableInfoView* glanceable_info_view_ = nullptr;
+  MediaStringView* media_string_view_ = nullptr;
 
   // Observes events from its host widget.
   std::unique_ptr<HostWidgetEventObserver> event_observer_;

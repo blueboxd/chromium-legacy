@@ -1104,7 +1104,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2336381494582898602">Sıfırlama</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> faylını təhlükəsiz şəkildə endirmək mümkün deyil</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> ütləndirmək istəyir</translation>
-<translation id="2341476639346994688">Printer dayanıb</translation>
 <translation id="2342740338116612727">Əlfəcinlər əlavə edildi</translation>
 <translation id="2343747224442182863">Bu Tabı Mərkəzə Gətirin</translation>
 <translation id="2344686470986284227">Virtual cihaz nizamlayıcısı başladılır</translation>
@@ -3441,7 +3440,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5283677936944177147">Ups!  Sistem bu cihaz üçün cihaz modelini və seriya nömrəsini aşkarlaya bilmədi.</translation>
 <translation id="5284445933715251131">Endirməyə Davam edin</translation>
 <translation id="5285635972691565180">Displey <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Çıxış sahəsi dolub</translation>
 <translation id="5286194356314741248">Skan edilir</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Hesablarınız</translation>
@@ -3662,7 +3660,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5553089923092577885">Sertifikat Siyasəti Tutuşdurmaları</translation>
 <translation id="5554489410841842733">Artırma cari səhifədə fəaliyyət göstərən zaman bu ikona görünə bilər.</translation>
 <translation id="5554720593229208774">E-poçt Sertifikatlaşdırma Təşkilatı</translation>
-<translation id="5554931805291741487">Çıxış sahəsi dolmaq üzrədir</translation>
 <translation id="5556459405103347317">Yenidən yükləyin</translation>
 <translation id="5558125320634132440">Bu sayt böyüklər üçün məzmun ehtiva etdiyinə görə bloklanıb.</translation>
 <translation id="5558129378926964177">Böyüdün</translation>
@@ -4931,7 +4928,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="7152478047064750137">Bu artırma xüsusi icazələr tələb etmir</translation>
 <translation id="7154130902455071009">Başlanğıc səhifənizi buna dəyişin: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Kamera və ya fayldan mövcud foto</translation>
-<translation id="7163766494674803047">Printer cihaz xətası</translation>
 <translation id="7165320105431587207">Şəbəkəni konfiqurasiya etmək uğursuz oldu</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" yoxlanılmış məkanlarda şəkil, video və səs fayllarını oxuya bilər.</translation>
 <translation id="7167486101654761064">Bu növ faylları hər zaman açın</translation>

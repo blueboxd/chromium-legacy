@@ -28,9 +28,7 @@ void MultiplyByThree(base::Value* val) {
   *val = base::Value(val->GetInt() * 3);
 }
 
-void SetPolicy(PolicyMap* policy,
-               const char* policy_name,
-               std::unique_ptr<base::Value> value) {
+void SetPolicy(PolicyMap* policy, const char* policy_name, base::Value value) {
   policy->Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
               POLICY_SOURCE_CLOUD, std::move(value), nullptr);
 }
@@ -42,9 +40,8 @@ TEST(LegacyChromePolicyMigratorTest, CopyPolicyIfUnset) {
 
   PolicyMap& chrome_map = bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
 
-  SetPolicy(&chrome_map, kOldPolicy, std::make_unique<base::Value>(kOldValue));
-  SetPolicy(&chrome_map, kOtherPolicy,
-            std::make_unique<base::Value>(kOtherValue));
+  SetPolicy(&chrome_map, kOldPolicy, base::Value(kOldValue));
+  SetPolicy(&chrome_map, kOtherPolicy, base::Value(kOtherValue));
 
   LegacyChromePolicyMigrator migrator(kOldPolicy, kNewPolicy);
 
@@ -71,7 +68,7 @@ TEST(LegacyChromePolicyMigratorTest, TransformPolicy) {
 
   PolicyMap& chrome_map = bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
 
-  SetPolicy(&chrome_map, kOldPolicy, std::make_unique<base::Value>(kOldValue));
+  SetPolicy(&chrome_map, kOldPolicy, base::Value(kOldValue));
 
   LegacyChromePolicyMigrator migrator(kOldPolicy, kNewPolicy,
                                       base::BindRepeating(&MultiplyByThree));
@@ -88,8 +85,8 @@ TEST(LegacyChromePolicyMigratorTest, IgnoreOldIfNewIsSet) {
 
   PolicyMap& chrome_map = bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
 
-  SetPolicy(&chrome_map, kOldPolicy, std::make_unique<base::Value>(kOldValue));
-  SetPolicy(&chrome_map, kNewPolicy, std::make_unique<base::Value>(kNewValue));
+  SetPolicy(&chrome_map, kOldPolicy, base::Value(kOldValue));
+  SetPolicy(&chrome_map, kNewPolicy, base::Value(kNewValue));
 
   LegacyChromePolicyMigrator migrator(kOldPolicy, kNewPolicy);
 

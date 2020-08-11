@@ -65,11 +65,9 @@ namespace blink {
 
 template <typename CallbackInfo>
 static void LocationAttributeGet(const CallbackInfo& info) {
-  v8::Isolate* isolate = info.GetIsolate();
   v8::Local<v8::Object> holder = info.Holder();
-
   DOMWindow* window = V8Window::ToImpl(holder);
-  window->ReportCoopAccess(isolate, "location");
+  window->ReportCoopAccess("location");
   Location* location = window->location();
   DCHECK(location);
 
@@ -77,6 +75,7 @@ static void LocationAttributeGet(const CallbackInfo& info) {
   if (DOMDataStore::SetReturnValue(info.GetReturnValue(), location))
     return;
 
+  v8::Isolate* isolate = info.GetIsolate();
   v8::Local<v8::Value> wrapper;
 
   // Note that this check is gated on whether or not |window| is remote, not
@@ -141,9 +140,8 @@ void V8Window::FrameElementAttributeGetterCustom(
 template <typename CallbackInfo>
 static void OpenerAttributeSet(v8::Local<v8::Value> value,
                                const CallbackInfo& info) {
-  v8::Isolate* isolate = info.GetIsolate();
   DOMWindow* impl = V8Window::ToImpl(info.Holder());
-  impl->ReportCoopAccess(isolate, "opener");
+  impl->ReportCoopAccess("opener");
   if (!impl->GetFrame())
     return;
 
@@ -157,6 +155,7 @@ static void OpenerAttributeSet(v8::Local<v8::Value> value,
     To<LocalFrame>(impl->GetFrame())->Loader().SetOpener(nullptr);
   }
 
+  v8::Isolate* isolate = info.GetIsolate();
   // Delete the accessor from the inner object.
   if (info.Holder()
           ->Delete(isolate->GetCurrentContext(),
@@ -210,7 +209,7 @@ void V8Window::NamedPropertyGetterCustom(
   // https://html.spec.whatwg.org/C/#document-tree-child-browsing-context-name-property-set
   Frame* child = frame->Tree().ScopedChild(name);
   if (child) {
-    window->ReportCoopAccess(info.GetIsolate(), "named");
+    window->ReportCoopAccess("named");
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                       WebFeature::kNamedAccessOnWindow_ChildBrowsingContext);
 
@@ -271,7 +270,7 @@ void V8Window::NamedPropertyGetterCustom(
 
   if (!has_named_item && !has_id_item)
     return;
-  window->ReportCoopAccess(info.GetIsolate(), "named");
+  window->ReportCoopAccess("named");
 
   if (!has_named_item && has_id_item &&
       !doc->ContainsMultipleElementsWithId(name)) {

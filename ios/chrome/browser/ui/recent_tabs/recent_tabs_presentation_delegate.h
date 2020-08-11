@@ -7,6 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
+namespace synced_sessions {
+class DistantSession;
+}
+
 // Presentation commands that depend on the context from which they are
 // presented.
 @protocol RecentTabsPresentationDelegate
@@ -19,6 +23,10 @@
 // Tells the receiver to show the history UI. Receiver may also dismiss recent
 // tabs.
 - (void)showHistoryFromRecentTabs;
+
+// Tells the receiver to open all tabs from the given |session|.
+- (void)openAllTabsFromSession:(const synced_sessions::DistantSession*)session;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_RECENT_TABS_RECENT_TABS_PRESENTATION_DELEGATE_H_

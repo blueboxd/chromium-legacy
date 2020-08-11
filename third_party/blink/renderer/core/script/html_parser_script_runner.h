@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_HTML_PARSER_SCRIPT_RUNNER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_HTML_PARSER_SCRIPT_RUNNER_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_reentry_permit.h"
 #include "third_party/blink/renderer/core/script/pending_script.h"
@@ -67,6 +66,8 @@ class HTMLParserScriptRunner final
   HTMLParserScriptRunner(HTMLParserReentryPermit*,
                          Document*,
                          HTMLParserScriptRunnerHost*);
+  HTMLParserScriptRunner(const HTMLParserScriptRunner&) = delete;
+  HTMLParserScriptRunner& operator=(const HTMLParserScriptRunner&) = delete;
   ~HTMLParserScriptRunner() override;
 
   // Invoked when the parser is detached.
@@ -161,8 +162,6 @@ class HTMLParserScriptRunner final
   // when |force_deferred_scripts_| is not empty in order to let the force
   // deferred scripts execute before any async scripts.
   bool suspended_async_script_execution_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(HTMLParserScriptRunner);
 };
 
 }  // namespace blink

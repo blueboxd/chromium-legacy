@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdfview.h"
@@ -28,6 +27,8 @@ class PDFiumEngine;
 class PDFiumPrint {
  public:
   explicit PDFiumPrint(PDFiumEngine* engine);
+  PDFiumPrint(const PDFiumPrint&) = delete;
+  PDFiumPrint& operator=(const PDFiumPrint&) = delete;
   ~PDFiumPrint();
 
 #if defined(OS_CHROMEOS)
@@ -86,8 +87,6 @@ class PDFiumPrint {
       const PP_PrintSettings_Dev& print_settings);
 
   PDFiumEngine* const engine_;
-
-  DISALLOW_COPY_AND_ASSIGN(PDFiumPrint);
 };
 
 }  // namespace chrome_pdf

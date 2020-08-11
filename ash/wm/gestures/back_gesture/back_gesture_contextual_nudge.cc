@@ -5,6 +5,8 @@
 #include "ash/wm/gestures/back_gesture/back_gesture_contextual_nudge.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shelf/contextual_tooltip.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/callback.h"
@@ -124,7 +126,7 @@ class BackGestureContextualNudge::ContextualNudgeView
     : public views::View,
       public ui::ImplicitAnimationObserver {
  public:
-  explicit ContextualNudgeView(base::OnceClosure callback)
+  explicit ContextualNudgeView(base::OnceCallback<void(bool)> callback)
       : callback_(std::move(callback)) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
@@ -151,7 +153,7 @@ class BackGestureContextualNudge::ContextualNudgeView
       animation_stage_ = AnimationStage::kWaitingCancelled;
       DCHECK(show_timer_.IsRunning());
       show_timer_.AbandonAndStop();
-      std::move(callback_).Run();
+      std::move(callback_).Run(/*animation_completed=*/false);
     } else if (animation_stage_ == AnimationStage::kSlidingIn ||
                animation_stage_ == AnimationStage::kBouncing ||
                animation_stage_ == AnimationStage::kSlidingOut) {
@@ -163,6 +165,8 @@ class BackGestureContextualNudge::ContextualNudgeView
       suggestion_view_->FadeOutForDismiss();
     }
   }
+
+  void SetNudgeShownForTesting() { SetNudgeCountsAsShown(); }
 
   bool count_as_shown() const { return count_as_shown_; }
 
@@ -330,6 +334,14 @@ class BackGestureContextualNudge::ContextualNudgeView
     layer()->SetTransform(transform);
   }
 
+  void SetNudgeCountsAsShown() {
+    count_as_shown_ = true;
+    // Log nudge metrics right after it's shown.
+    contextual_tooltip::HandleNudgeShown(
+        Shell::Get()->session_controller()->GetActivePrefService(),
+        contextual_tooltip::TooltipType::kBackGesture);
+  }
+
   // views::View:
   void Layout() override { suggestion_view_->SetBoundsRect(GetLocalBounds()); }
 
@@ -339,13 +351,16 @@ class BackGestureContextualNudge::ContextualNudgeView
         (animation_stage_ == AnimationStage::kSlidingOut &&
          !WasAnimationAbortedForProperty(
              ui::LayerAnimationElement::TRANSFORM))) {
-      std::move(callback_).Run();
+      std::move(callback_).Run(/*animation_completed=*/animation_stage_ ==
+                               AnimationStage::kSlidingOut);
       return;
     }
 
     if (animation_stage_ == AnimationStage::kSlidingIn &&
         !WasAnimationAbortedForProperty(ui::LayerAnimationElement::TRANSFORM)) {
-      count_as_shown_ = true;
+      // Only after the back nudge finishes sliding in animation, it counts as
+      // a successful shown.
+      SetNudgeCountsAsShown();
       animation_stage_ = AnimationStage::kBouncing;
       suggestion_view_->ScheduleBounceAnimation();
     }
@@ -366,12 +381,12 @@ class BackGestureContextualNudge::ContextualNudgeView
   bool count_as_shown_ = false;
 
   // Callback function to be called after animation is cancelled or completed.
-  // Count the nudge as shown successfully if |success| is true.
-  base::OnceClosure callback_;
+  // Count the nudge as shown successfully if |count_as_shown_| is true.
+  base::OnceCallback<void(bool)> callback_;
 };
 
 BackGestureContextualNudge::BackGestureContextualNudge(
-    base::OnceClosure callback) {
+    base::OnceCallback<void(bool)> callback) {
   widget_ = CreateWidget();
   nudge_view_ = new ContextualNudgeView(std::move(callback));
   widget_->SetContentsView(nudge_view_);
@@ -386,6 +401,10 @@ void BackGestureContextualNudge::CancelAnimationOrFadeOutToHide() {
 
 bool BackGestureContextualNudge::ShouldNudgeCountAsShown() const {
   return nudge_view_->count_as_shown();
+}
+
+void BackGestureContextualNudge::SetNudgeShownForTesting() {
+  nudge_view_->SetNudgeShownForTesting();
 }
 
 }  // namespace ash

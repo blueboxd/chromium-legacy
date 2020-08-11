@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">नेव्हिगेशन अवरोधित केले आहे: <ph name="URL" /></translation>
 <translation id="4278390842282768270">अनुमत</translation>
 <translation id="429312253194641664">साइट मीडिया प्ले करत आहे</translation>
+<translation id="4336434711095810371">सर्व डेटा साफ करा</translation>
 <translation id="4433925000917964731">Google द्वारे पुरवलेले लाइट पेज</translation>
 <translation id="4434045419905280838">पॉप-अप आणि रीडिरेक्ट</translation>
 <translation id="445467742685312942">साइटना संरक्षित आशय प्ले करू द्या</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">गुप्त टॅब</translation>
 <translation id="5300589172476337783">दर्शवा</translation>
 <translation id="5301954838959518834">ठीक आहे, समजले</translation>
-<translation id="5307446750509046227">साइट स्टोरेज साफ करा</translation>
 <translation id="5313967007315987356">साइट जोडा</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
 <translation id="5335288049665977812">साइटना JavaScript रन करण्याची अनुमती द्या (शिफारस केलेले)</translation>
@@ -228,6 +228,7 @@
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8300705686683892304">ॲपद्वारे व्यवस्थापित</translation>
 <translation id="8372893542064058268">विशिष्ट साइटसाठी पार्श्वभूमी संकालनासाठी अनुमती द्या.</translation>
+<translation id="8376384591331888629">या साइटवरील तृतीय-पक्ष कुकीच्या समावेशासह</translation>
 <translation id="83792324527827022">साइट तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे</translation>
 <translation id="8380167699614421159">ही साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवते</translation>
 <translation id="8394832520002899662">साइटवर परत जाण्यासाठी टॅप करा</translation>
@@ -249,7 +250,6 @@
 <translation id="8801436777607969138">विशिष्ट साइटसाठी JavaScript ब्लॉक करा.</translation>
 <translation id="8816026460808729765">साइटना सेन्सर ॲक्सेस करण्यापासून ब्लॉक करा</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">स्टोरेज</translation>
 <translation id="8926666909099850184">या डिव्हाइससाठी NFC बंद केले आहे. ते <ph name="BEGIN_LINK" />Android सेटिंग्जमध्ये<ph name="END_LINK" /> सुरू करा.</translation>
 <translation id="8929372349074745002">बहुतेक लोकांसाठी ही साइट झटपटपणे उघडते आणि प्रतिसाद देते</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +261,5 @@
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्‍ये <ph name="APP_NAME" /> साठी परवानग्या सुरू करा.</translation>
 <translation id="945632385593298557">तुमचा मायक्रोफोन ॲक्सेस करा</translation>
 <translation id="965817943346481315">साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवत असल्यास ब्लॉक करा (शिफारस केलेले)</translation>
+<translation id="967624055006145463">डेटा स्टोअर केला</translation>
 </translationbundle>

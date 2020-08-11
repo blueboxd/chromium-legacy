@@ -506,6 +506,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="6972754398087986839">Boshlash</translation>
 <translation id="6981982820502123353">Qulayliklar</translation>
 <translation id="698231206551913481">Bu foydalanuvchiga tegishli barcha fayllar va mahalliy ma’lumotlar foydalanuvchi olib tashlanganda butunlay o‘chib ketadi.</translation>
+<translation id="7007983414944123363">PIN kod yoki parolingiz tekshirilmadi. Qayta urining.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> da qayting.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> qurilmasini telefoningiz bilan ulang</translation>
 <translation id="7026338066939101231">Kamaytirish</translation>
@@ -551,6 +552,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="7568294522609223312">Avtomatik kliklarni faolsizlantirish</translation>
 <translation id="7568637526529101738">Oʻng klik yoki biroz bosib turilsa, Assistent ekranda tanlangan narsaga mos tavsif yoki birliklar konvertorini chiqaradi.</translation>
 <translation id="7569509451529460200">Brayl yozuvi va ChromeVox yoqildi</translation>
+<translation id="7579778809502851308">Ekranni suratga olish</translation>
 <translation id="7593891976182323525">Search yoki Shift</translation>
 <translation id="7600875258240007829">Barcha bildirishnomalarni ochish</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -669,6 +671,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="8841375032071747811">Orqaga tugmasi</translation>
 <translation id="8843682306134542540">Burishni qulflash/qulfdan chiqarish. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search + Esc</translation>
+<translation id="8853703225951107899">PIN kod yoki parolingiz haligacha tekshirilmadi. Eslatma: Parol yaqinda almashtirilgan boʻlsa, eskisini kiriting. Yangi parolingiz hisobdan chiqqaningizda kuchga kiradi.</translation>
 <translation id="8870509716567206129">Bu dastur ekranni bo‘lish xususiyatini qo‘llab-quvvatlamaydi.</translation>
 <translation id="8874184842967597500">Ulanmagan</translation>
 <translation id="8877788021141246043">Eslatma belgilash</translation>

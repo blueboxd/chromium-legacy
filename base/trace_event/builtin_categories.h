@@ -82,6 +82,7 @@
   X("fonts")                                                             \
   X("GAMEPAD")                                                           \
   X("gpu")                                                               \
+  X("gpu.angle")                                                         \
   X("gpu.capture")                                                       \
   X("gpu.memory")                                                        \
   X("headless")                                                          \

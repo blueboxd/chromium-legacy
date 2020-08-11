@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_PENDING_SCRIPT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_PENDING_SCRIPT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -65,6 +64,8 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
 class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
                                   public NameClient {
  public:
+  PendingScript(const PendingScript&) = delete;
+  PendingScript& operator=(const PendingScript&) = delete;
   virtual ~PendingScript();
 
   TextPosition StartingPosition() const { return starting_position_; }
@@ -171,8 +172,6 @@ class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
   WeakMember<ExecutionContext> original_execution_context_;
 
   const bool created_during_document_write_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingScript);
 };
 
 }  // namespace blink

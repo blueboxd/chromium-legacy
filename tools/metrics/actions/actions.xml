@@ -6638,6 +6638,17 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="FamilyUser.SessionEngagement.Start">
+  <owner>xiqiruan@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>cros-families-eng@google.com</owner>
+  <description>
+    Emitted every time when the Chrome OS users' usage time state changes to
+    UsageTimeStateNotifier::UsageTimeState::ACTIVE.
+  </description>
+</action>
+
 <action name="Feedback">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

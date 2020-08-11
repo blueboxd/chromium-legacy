@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">La navigation sur <ph name="URL" /> est bloquée.</translation>
 <translation id="4278390842282768270">Autorisé</translation>
 <translation id="429312253194641664">Un site est en train de lire un contenu multimédia</translation>
+<translation id="4336434711095810371">Effacer toutes les données</translation>
 <translation id="4433925000917964731">Page simplifiée fournie par Google</translation>
 <translation id="4434045419905280838">Pop-up et redirections</translation>
 <translation id="445467742685312942">Autoriser les sites à lire les contenus protégés</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Onglet de navigation privée</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5301954838959518834">OK</translation>
-<translation id="5307446750509046227">Effacer données stockage</translation>
 <translation id="5313967007315987356">Ajouter un site</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5335288049665977812">Autoriser les sites à exécuter JavaScript (recommandé)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">Bloquer JavaScript sur un site spécifique.</translation>
 <translation id="8816026460808729765">Bloque l'accès aux capteurs pour certains sites</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Données stockées</translation>
 <translation id="8926666909099850184">La fonctionnalité NFC est désactivée pour cet appareil. Activez-la dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Ce site s'ouvre et répond aux interactions rapidement pour la majorité des utilisateurs</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289">Activez les autorisations pour <ph name="APP_NAME" /> dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Accéder à votre micro</translation>
 <translation id="965817943346481315">Bloquer si le site affiche des annonces intrusives ou trompeuses (recommandé)</translation>
+<translation id="967624055006145463">Données stockées</translation>
 </translationbundle>

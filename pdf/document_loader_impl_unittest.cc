@@ -36,6 +36,8 @@ class TestURLLoader : public URLLoaderWrapper {
   class LoaderData {
    public:
     LoaderData() = default;
+    LoaderData(const LoaderData&) = delete;
+    LoaderData& operator=(const LoaderData&) = delete;
     ~LoaderData() {
       // We should call callbacks to prevent memory leaks.
       // The callbacks don't do anything, because the objects that created the
@@ -135,14 +137,13 @@ class TestURLLoader : public URLLoaderWrapper {
     int status_code_ = 0;
     bool closed_ = true;
     gfx::Range open_byte_range_ = gfx::Range::InvalidRange();
-
-    DISALLOW_COPY_AND_ASSIGN(LoaderData);
   };
 
   explicit TestURLLoader(LoaderData* data) : data_(data) {
     data_->set_closed(false);
   }
-
+  TestURLLoader(const TestURLLoader&) = delete;
+  TestURLLoader& operator=(const TestURLLoader&) = delete;
   ~TestURLLoader() override { Close(); }
 
   int GetContentLength() const override { return data_->content_length(); }
@@ -192,13 +193,13 @@ class TestURLLoader : public URLLoaderWrapper {
 
  private:
   LoaderData* data_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLLoader);
 };
 
 class TestClient : public DocumentLoader::Client {
  public:
   TestClient() { full_page_loader_data()->set_content_type("application/pdf"); }
+  TestClient(const TestClient&) = delete;
+  TestClient& operator=(const TestClient&) = delete;
   ~TestClient() override = default;
 
   // DocumentLoader::Client overrides:
@@ -248,21 +249,18 @@ class TestClient : public DocumentLoader::Client {
  private:
   TestURLLoader::LoaderData full_page_loader_data_;
   TestURLLoader::LoaderData partial_loader_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 
 class MockClient : public TestClient {
  public:
   MockClient() = default;
+  MockClient(const MockClient&) = delete;
+  MockClient& operator=(const MockClient&) = delete;
 
   MOCK_METHOD(void, OnPendingRequestComplete, (), (override));
   MOCK_METHOD(void, OnNewDataReceived, (), (override));
   MOCK_METHOD(void, OnDocumentComplete, (), (override));
   MOCK_METHOD(void, OnDocumentCanceled, (), (override));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockClient);
 };
 
 }  // namespace

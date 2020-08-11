@@ -369,7 +369,8 @@ gfx::Vector2dF ScrollbarController::ComputeClampedDelta(
   // level. Since we're producing a delta for an injected GSU, we need to get
   // back to and unscaled delta (i.e. multiply by the page scale factor).
   gfx::Vector2dF clamped_delta =
-      layer_tree_host_impl_->ComputeScrollDelta(target_node, scroll_delta);
+      layer_tree_host_impl_->GetInputHandler().ComputeScrollDelta(target_node,
+                                                                  scroll_delta);
   const float scale_factor = GetPageScaleFactorForScroll();
   clamped_delta.Scale(scale_factor);
   return clamped_delta;
@@ -648,7 +649,7 @@ int ScrollbarController::GetScrollDeltaForPercentBasedScroll() const {
           : gfx::Vector2dF(kPercentDeltaForDirectionalScroll, 0);
 
   const gfx::Vector2dF pixel_delta =
-      layer_tree_host_impl_->ResolveScrollGranularityToPixels(
+      layer_tree_host_impl_->GetInputHandler().ResolveScrollGranularityToPixels(
           *scroll_node, scroll_delta,
           ui::ScrollGranularity::kScrollByPercentage);
 

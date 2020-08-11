@@ -291,7 +291,7 @@ bool SkiaOutputDeviceVulkan::Initialize() {
   capabilities_.preserve_buffer_content = true;
   capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
   capabilities_.supports_post_sub_buffer = true;
-  capabilities_.supports_pre_transform = true;
+  capabilities_.orientation_mode = OutputSurface::OrientationMode::kHardware;
   // We don't know the number of buffers until the VulkanSwapChain is
   // initialized, so set it to 0. Since |damage_area_from_skia_output_device| is
   // assigned to true, so |number_of_buffers| will not be used for tracking

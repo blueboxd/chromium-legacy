@@ -28,7 +28,7 @@
 #include "ui/platform_window/common/platform_window_defaults.h"
 #include "ui/platform_window/extensions/workspace_extension_delegate.h"
 #include "ui/platform_window/extensions/x11_extension_delegate.h"
-#include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
+#include "ui/platform_window/handlers/wm_drop_handler.h"
 #include "ui/platform_window/x11/x11_topmost_window_finder.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
 

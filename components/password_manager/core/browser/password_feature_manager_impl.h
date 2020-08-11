@@ -41,6 +41,9 @@ class PasswordFeatureManagerImpl : public PasswordFeatureManager {
   metrics_util::PasswordAccountStorageUsageLevel
   ComputePasswordAccountStorageUsageLevel() const override;
 
+  void IncrementMoveToAccountRefusedCount() override;
+  int GetMoveToAccountRefusedCount() const override;
+
  private:
   PrefService* const pref_service_;
   const syncer::SyncService* const sync_service_;

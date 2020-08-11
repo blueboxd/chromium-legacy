@@ -5,6 +5,8 @@
 #include "components/download/database/download_db_conversions.h"
 
 #include "base/optional.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_schedule.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,7 +69,19 @@ DownloadInfo CreateDownloadInfo() {
 class DownloadDBConversionsTest : public testing::Test,
                                   public DownloadDBConversions {
  public:
-  ~DownloadDBConversionsTest() override {}
+  ~DownloadDBConversionsTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kDownloadLater);
+  }
+
+ protected:
+  base::test::ScopedFeatureList* scoped_feature_list() {
+    return &scoped_feature_list_;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(DownloadDBConversionsTest, DownloadEntry) {
@@ -183,6 +197,22 @@ TEST_F(DownloadDBConversionsTest, DownloadSchedule) {
   persisted_download_schedule = DownloadScheduleFromProto(
       DownloadScheduleToProto(download_schedule), kOnlyOnWifi);
   EXPECT_EQ(persisted_download_schedule, download_schedule);
+}
+
+// Test to verify that when download later feature is disabled, download
+// schedule will not be loaded.
+TEST_F(DownloadDBConversionsTest, DownloadLaterDisabled) {
+  scoped_feature_list()->Reset();
+  scoped_feature_list()->InitAndDisableFeature(features::kDownloadLater);
+
+  DownloadDBEntry entry;
+  entry.download_info = CreateDownloadInfo();
+  EXPECT_TRUE(
+      entry.download_info->in_progress_info->download_schedule.has_value());
+
+  auto new_entry = DownloadDBEntryFromProto(DownloadDBEntryToProto(entry));
+  EXPECT_FALSE(
+      new_entry.download_info->in_progress_info->download_schedule.has_value());
 }
 
 }  // namespace download

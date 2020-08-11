@@ -246,9 +246,9 @@ MainThreadEventQueue::MainThreadEventQueue(
       needs_unbuffered_input_for_debugger_(false),
       allow_raf_aligned_input_(allow_raf_aligned_input),
       main_task_runner_(main_task_runner),
-      main_thread_scheduler_(main_thread_scheduler),
-      use_raf_fallback_timer_(true) {
-  raf_fallback_timer_.SetTaskRunner(main_task_runner);
+      main_thread_scheduler_(main_thread_scheduler) {
+  raf_fallback_timer_ = std::make_unique<base::OneShotTimer>();
+  raf_fallback_timer_->SetTaskRunner(main_task_runner);
 
   event_predictor_ = std::make_unique<InputEventPrediction>(
       base::FeatureList::IsEnabled(blink::features::kResamplingInputEvents));
@@ -508,8 +508,13 @@ void MainThreadEventQueue::RafFallbackTimerFired() {
   DispatchRafAlignedInput(base::TimeTicks::Now());
 }
 
+void MainThreadEventQueue::ClearRafFallbackTimerForTesting() {
+  raf_fallback_timer_.reset();
+}
+
 void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {
-  raf_fallback_timer_.Stop();
+  if (raf_fallback_timer_)
+    raf_fallback_timer_->Stop();
   size_t queue_size_at_start;
 
   // Record the queue size so that we only process
@@ -676,8 +681,8 @@ bool MainThreadEventQueue::HandleEventOnMainThread(
 
 void MainThreadEventQueue::SetNeedsMainFrame() {
   if (main_task_runner_->BelongsToCurrentThread()) {
-    if (use_raf_fallback_timer_) {
-      raf_fallback_timer_.Start(
+    if (raf_fallback_timer_) {
+      raf_fallback_timer_->Start(
           FROM_HERE, kMaxRafDelay,
           base::BindOnce(&MainThreadEventQueue::RafFallbackTimerFired, this));
     }
@@ -696,6 +701,7 @@ void MainThreadEventQueue::SetNeedsMainFrame() {
 void MainThreadEventQueue::ClearClient() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   client_ = nullptr;
+  raf_fallback_timer_.reset();
 }
 
 void MainThreadEventQueue::SetNeedsLowLatency(bool low_latency) {

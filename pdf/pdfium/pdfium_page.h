@@ -31,6 +31,8 @@ class PDFiumEngine;
 class PDFiumPage {
  public:
   PDFiumPage(PDFiumEngine* engine, int i);
+  PDFiumPage(const PDFiumPage&) = delete;
+  PDFiumPage& operator=(const PDFiumPage&) = delete;
   PDFiumPage(PDFiumPage&& that);
   ~PDFiumPage();
 
@@ -387,8 +389,6 @@ class PDFiumPage {
   // objects.
   std::set<int> page_object_text_run_breaks_;
   bool available_;
-
-  DISALLOW_COPY_AND_ASSIGN(PDFiumPage);
 };
 
 // Converts page orientations to the PDFium equivalents, as defined by

@@ -2060,7 +2060,7 @@ TEST_F(ScrollbarsTest, AutosizeTest) {
 
   // Enable auto size mode where the frame is resized such that the content
   // doesn't need scrollbars (up to a maximum).
-  WebView().EnableAutoResizeMode(WebSize(100, 100), WebSize(100, 200));
+  WebView().EnableAutoResizeMode(gfx::Size(100, 100), gfx::Size(100, 200));
 
   // Note, the frame autosizer doesn't work correctly with subpixel sizes so
   // even though the container is a fraction larger than the frame, we don't
@@ -2098,7 +2098,7 @@ TEST_F(ScrollbarsTest, AutosizeTest) {
 TEST_F(ScrollbarsTest, AutosizeAlmostRemovableScrollbar) {
   // This test requires that scrollbars take up space.
   ENABLE_OVERLAY_SCROLLBARS(false);
-  WebView().EnableAutoResizeMode(WebSize(25, 25), WebSize(800, 600));
+  WebView().EnableAutoResizeMode(gfx::Size(25, 25), gfx::Size(800, 600));
 
   SimRequest resource("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");

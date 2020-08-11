@@ -393,6 +393,13 @@ class CORE_EXPORT WebFrameWidgetBase
 
   virtual void SetZoomLevel(double zoom_level);
 
+  // Enable or disable auto-resize. This is part of
+  // UpdateVisualProperties though tests may call to it more directly.
+  virtual void SetAutoResizeMode(bool auto_resize,
+                                 const gfx::Size& min_size_before_dsf,
+                                 const gfx::Size& max_size_before_dsf,
+                                 float device_scale_factor) = 0;
+
   // This method returns the focused frame belonging to this WebWidget, that
   // is, a focused frame with the same local root as the one corresponding
   // to this widget. It will return nullptr if no frame is focused or, the

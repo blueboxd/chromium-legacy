@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">S'ha bloquejat la navegació: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Permès</translation>
 <translation id="429312253194641664">Un lloc web està reproduint contingut multimèdia</translation>
+<translation id="4336434711095810371">Esborra totes les dades</translation>
 <translation id="4433925000917964731">Pàgina en mode bàsic oferida per Google</translation>
 <translation id="4434045419905280838">Finestres emergents i redireccions</translation>
 <translation id="445467742685312942">Permet que els llocs web reprodueixin contingut protegit</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Pestanya d'incògnit</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5301954838959518834">D'acord</translation>
-<translation id="5307446750509046227">Esborra emmagatz. lloc</translation>
 <translation id="5313967007315987356">Afegeix un lloc web</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5335288049665977812">Permet que els llocs web executin JavaScript (opció recomanada)</translation>
@@ -228,6 +228,7 @@
 <translation id="8261506727792406068">Suprimeix</translation>
 <translation id="8300705686683892304">Gestionats per aplicacions</translation>
 <translation id="8372893542064058268">Permet la sincronització en segon pla en un lloc concret.</translation>
+<translation id="8376384591331888629">Incloses les galetes de tercers en aquest lloc web</translation>
 <translation id="83792324527827022">Un lloc web està utilitzant la càmera i el micròfon</translation>
 <translation id="8380167699614421159">Aquest lloc web mostra anuncis intrusius o enganyosos</translation>
 <translation id="8394832520002899662">Toca per tornar al lloc web</translation>
@@ -249,7 +250,6 @@
 <translation id="8801436777607969138">Bloqueja JavaScript en un lloc web concret.</translation>
 <translation id="8816026460808729765">Impedeix que els llocs web accedeixin als sensors</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Emmagatzematge</translation>
 <translation id="8926666909099850184">L'NFC està desactivada en aquest dispositiu. Activa-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Aquest lloc web s'obre i respon ràpidament per a la majoria de persones</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +261,5 @@
 <translation id="913657688200966289">Activa els permisos per a <ph name="APP_NAME" /> a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Accés al micròfon</translation>
 <translation id="965817943346481315">Bloqueja els anuncis si el lloc web mostra publicitat intrusiva o enganyosa (opció recomanada)</translation>
+<translation id="967624055006145463">Dades emmagatzemades</translation>
 </translationbundle>

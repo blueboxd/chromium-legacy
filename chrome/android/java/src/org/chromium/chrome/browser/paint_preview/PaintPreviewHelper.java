@@ -7,12 +7,14 @@ package org.chromium.chrome.browser.paint_preview;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Handles initialization of the Paint Preview tab observers.
@@ -69,6 +71,25 @@ public class PaintPreviewHelper {
         }
 
         sHasAttemptedToShowOnRestore = true;
-        return TabbedPaintPreviewPlayer.get(tab).maybeShow(onShown, onDismissed);
+
+        TabbedPaintPreviewPlayer player = TabbedPaintPreviewPlayer.get(tab);
+        PageLoadMetrics.Observer observer = new PageLoadMetrics.Observer() {
+            @Override
+            public void onFirstMeaningfulPaint(WebContents webContents, long navigationId,
+                    long navigationStartTick, long firstMeaningfulPaintMs) {
+                player.onFirstMeaningfulPaint(webContents);
+            }
+        };
+
+        if (!player.maybeShow(onShown, () -> {
+                onDismissed.run();
+                PageLoadMetrics.removeObserver(observer);
+            })) {
+            return false;
+        }
+
+        PageLoadMetrics.addObserver(observer);
+
+        return true;
     }
 }

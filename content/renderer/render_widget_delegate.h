@@ -34,17 +34,13 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // VR. https://crbug.com/940063
   virtual bool ShouldAckSyntheticInputImmediately() = 0;
 
+  // Returns the current state of auto resize.
+  virtual bool AutoResizeMode() = 0;
+
   // ==================================
   // These methods called during handling of a SynchronizeVisualProperties
   // message to handle updating state on the delegate.
   //
-  // Called during handling a SynchronizeVisualProperties message, if auto
-  // resize is enabled, with the new auto size limits.
-  virtual void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
-                                              const gfx::Size& max_size) = 0;
-  // Called during handling a SynchronizeVisualProperties message, if auto
-  // resize was enabled but is being disabled.
-  virtual void DisableAutoResizeForWidget() = 0;
   // Called during handling a SynchronizeVisualProperties message, if the
   // message informed that the focused node should be scrolled into view.
   virtual void ScrollFocusedNodeIntoViewForWidget() = 0;

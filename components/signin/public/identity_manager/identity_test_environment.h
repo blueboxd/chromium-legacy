@@ -6,6 +6,8 @@
 #define COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_IDENTITY_TEST_ENVIRONMENT_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/optional.h"
@@ -20,6 +22,10 @@ class FakeProfileOAuth2TokenService;
 class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
 class TestSigninClient;
+
+namespace chromeos {
+class AccountManagerFactory;
+}
 
 namespace sync_preferences {
 class TestingPrefServiceSyncable;
@@ -340,6 +346,37 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   IdentityTestEnvironment(IdentityManager* identity_manager,
                           SigninClient* signin_client);
 
+  // Shared constructor initialization logic.
+  void Initialize();
+
+  // Create an IdentityManager instance for tests.
+#if defined(OS_CHROMEOS)
+  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
+      SigninClient* signin_client,
+      PrefService* pref_service,
+      base::FilePath user_data_dir,
+      chromeos::AccountManagerFactory* chromeos_account_manager_factory,
+      AccountConsistencyMethod account_consistency =
+          AccountConsistencyMethod::kDisabled);
+#else
+  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
+      SigninClient* signin_client,
+      PrefService* pref_service,
+      base::FilePath user_data_dir,
+      AccountConsistencyMethod account_consistency =
+          AccountConsistencyMethod::kDisabled);
+#endif
+
+  static std::unique_ptr<IdentityManager> FinishBuildIdentityManagerForTests(
+      IdentityManager::InitParameters&& init_params,
+      std::unique_ptr<AccountTrackerService> account_tracker_service,
+      std::unique_ptr<ProfileOAuth2TokenService> token_service,
+      SigninClient* signin_client,
+      PrefService* pref_service,
+      base::FilePath user_data_dir,
+      AccountConsistencyMethod account_consistency =
+          AccountConsistencyMethod::kDisabled);
+
   // IdentityManager::DiagnosticsObserver:
   void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
@@ -386,17 +423,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   base::OnceClosure on_access_token_requested_callback_;
   std::vector<AccessTokenRequestState> requesters_;
-
-  // Create an IdentityManager instance for tests.
-  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
-      SigninClient* signin_client,
-      PrefService* pref_service,
-      base::FilePath user_data_dir,
-      AccountConsistencyMethod account_consistency =
-          AccountConsistencyMethod::kDisabled);
-
-  // Shared constructor initialization logic.
-  void Initialize();
 
   base::WeakPtrFactory<IdentityTestEnvironment> weak_ptr_factory_{this};
 

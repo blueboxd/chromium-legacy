@@ -1108,7 +1108,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> tidak dapat didownload dengan aman</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> ingin menyandingkan</translation>
-<translation id="2341476639346994688">Printer berhenti</translation>
 <translation id="2342740338116612727">Bookmark ditambahkan</translation>
 <translation id="2343747224442182863">Fokuskan Tab Ini</translation>
 <translation id="2344686470986284227">Memulai pengontrol mesin virtual (VM)</translation>
@@ -3448,7 +3447,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5283677936944177147">Ups! Sistem gagal menentukan model perangkat atau nomor seri.</translation>
 <translation id="5284445933715251131">Lanjutkan Mendownload</translation>
 <translation id="5285635972691565180">Layar <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Penampung hasil cetak penuh</translation>
 <translation id="5286194356314741248">Memindai</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Akun Anda</translation>
@@ -3669,7 +3667,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5553089923092577885">Pemetaan Kebijakan Sertifikat</translation>
 <translation id="5554489410841842733">Ikon ini akan kelihatan saat ekstensi dapat bertindak pada halaman saat ini.</translation>
 <translation id="5554720593229208774">Otoritas Sertifikasi Email</translation>
-<translation id="5554931805291741487">Penampung hasil cetak hampir penuh</translation>
 <translation id="5556459405103347317">Muat ulang</translation>
 <translation id="5558125320634132440">Situs ini diblokir karena mungkin berisi konten dewasa</translation>
 <translation id="5558129378926964177">Per&amp;besar</translation>
@@ -4940,7 +4937,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7152478047064750137">Ekstensi ini tidak memerlukan izin khusus</translation>
 <translation id="7154130902455071009">Ubah halaman awal Anda menjadi: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Foto yang sudah ada dari kamera atau file</translation>
-<translation id="7163766494674803047">Error perangkat pada printer</translation>
 <translation id="7165320105431587207">Gagal mengonfigurasi jaringan</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" dapat membaca file gambar, video, dan suara di lokasi yang dicentang.</translation>
 <translation id="7167486101654761064">Sel&amp;alu buka file jenis ini</translation>
@@ -5811,7 +5807,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8227119283605456246">Lampirkan file</translation>
 <translation id="8229943166551236192">Data perangkat akan dihapus dalam 24 jam</translation>
 <translation id="8230134520748321204">Simpan sandi untuk <ph name="ORIGIN" />?</translation>
-<translation id="8233874515683663066">Gambar dan karya seni pilihan</translation>
+<translation id="8233874515683663066">Gambar dan poster pilihan</translation>
 <translation id="8234795456569844941">Bantu engineer kami memperbaiki masalah ini. Beri tahu kami yang terjadi tepat sebelum Anda mendapatkan pesan error profil:</translation>
 <translation id="8236917170563564587">Bagikan tab ini saja</translation>
 <translation id="8237647586961940482">Merah muda gelap dan merah tua</translation>
@@ -6095,7 +6091,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8602851771975208551">Program lain di komputer Anda menambahkan aplikasi yang dapat mengubah cara kerja Chrome.</translation>
 <translation id="8605428685123651449">Memori SQLite</translation>
 <translation id="8608618451198398104">Tambahkan tiket Kerberos</translation>
-<translation id="860909219589324847">Jangan pernah menggunakan data seluler untuk transfer</translation>
+<translation id="860909219589324847">Jangan pernah gunakan data seluler untuk transfer</translation>
 <translation id="8609465669617005112">Berpindah ke atas</translation>
 <translation id="8610103157987623234">Format salah, harap coba lagi</translation>
 <translation id="8613164732773110792">Karakter huruf kecil, angka, garis bawah, atau tanda hubung saja</translation>

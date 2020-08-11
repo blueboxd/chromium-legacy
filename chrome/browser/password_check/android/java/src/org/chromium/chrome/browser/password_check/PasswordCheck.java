@@ -72,6 +72,12 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
     long getCheckTimestamp();
 
     /**
+     * @return The last known status of the check.
+     */
+    @PasswordCheckUIStatus
+    int getCheckStatus();
+
+    /**
      * @return The latest available number of compromised passwords. If this is invoked before
      * {@link Observer#onCompromisedCredentialsFetchCompleted}, the returned value is likely
      * invalid.

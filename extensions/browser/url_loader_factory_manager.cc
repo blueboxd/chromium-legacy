@@ -29,6 +29,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
+#include "extensions/common/script_constants.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/user_script.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -478,8 +479,19 @@ bool DoesContentScriptMatchNavigatingFrame(
   if (user_script.js_scripts().empty())
     return false;
 
+  // TODO(devlin): Update GetEffectiveDocumentURL() to take a
+  // MatchOriginAsFallbackBehavior.
+  bool match_about_blank = false;
+  switch (user_script.match_origin_as_fallback()) {
+    case MatchOriginAsFallbackBehavior::kAlways:
+    case MatchOriginAsFallbackBehavior::kMatchForAboutSchemeAndClimbTree:
+      match_about_blank = true;
+      break;
+    case MatchOriginAsFallbackBehavior::kNever:
+      break;  // `false` is correct for |match_about_blank|.
+  }
   GURL effective_url = GetEffectiveDocumentURL(
-      navigating_frame, navigation_target, user_script.match_about_blank());
+      navigating_frame, navigation_target, match_about_blank);
   bool is_subframe = navigating_frame->GetParent();
   return user_script.MatchesDocument(effective_url, is_subframe);
 }

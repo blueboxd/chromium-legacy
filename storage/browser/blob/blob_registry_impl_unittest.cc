@@ -294,6 +294,37 @@ TEST_F(BlobRegistryImplTest, Register_EmptyBlob) {
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
 
+TEST_F(BlobRegistryImplTest, Register_EmptyBytesBlob) {
+  const std::string kId = "id";
+  const std::string kContentType = "content/type";
+  const std::string kContentDisposition = "disposition";
+
+  std::vector<blink::mojom::DataElementPtr> elements;
+  elements.push_back(
+      blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
+          0, base::nullopt, CreateBytesProvider(""))));
+
+  mojo::Remote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.BindNewPipeAndPassReceiver(), kId,
+                                  kContentType, kContentDisposition,
+                                  std::move(elements)));
+
+  EXPECT_TRUE(bad_messages_.empty());
+
+  EXPECT_EQ(kId, UUIDFromBlob(blob.get()));
+  EXPECT_TRUE(context_->registry().HasEntry(kId));
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  EXPECT_EQ(kContentType, handle->content_type());
+  EXPECT_EQ(kContentDisposition, handle->content_disposition());
+  EXPECT_EQ(0u, handle->size());
+
+  WaitForBlobCompletion(handle.get());
+
+  EXPECT_FALSE(handle->IsBroken());
+  EXPECT_EQ(BlobStatus::DONE, handle->GetBlobStatus());
+  EXPECT_EQ(0u, BlobsUnderConstruction());
+}
+
 TEST_F(BlobRegistryImplTest, Register_ReferencedBlobClosedPipe) {
   const std::string kId = "id";
 

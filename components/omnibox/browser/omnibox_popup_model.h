@@ -81,6 +81,11 @@ class OmniboxPopupModel {
     // FOCUSED_BUTTON_REMOVE_SUGGESTION state means the Remove Suggestion (X)
     // button is focused. Pressing enter will attempt to remove this suggestion.
     FOCUSED_BUTTON_REMOVE_SUGGESTION = 6,
+
+    // Whenever new line state is added, accessibility label for current
+    // selection should be revisited
+    // (OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection).
+    LINE_STATE_MAX_VALUE
   };
 
   struct Selection {

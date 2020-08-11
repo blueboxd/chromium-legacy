@@ -5,8 +5,10 @@
 #include "components/download/database/download_db_conversions.h"
 
 #include <utility>
+
 #include "base/notreached.h"
 #include "base/pickle.h"
+#include "components/download/public/common/download_features.h"
 
 namespace download {
 namespace {
@@ -207,7 +209,8 @@ download_pb::InProgressInfo DownloadDBConversions::InProgressInfoToProto(
   proto.set_metered(in_progress_info.metered);
   proto.set_bytes_wasted(in_progress_info.bytes_wasted);
   proto.set_auto_resume_count(in_progress_info.auto_resume_count);
-  if (in_progress_info.download_schedule.has_value()) {
+  if (base::FeatureList::IsEnabled(download::features::kDownloadLater) &&
+      in_progress_info.download_schedule.has_value()) {
     DCHECK_NE(in_progress_info.download_schedule->only_on_wifi(),
               in_progress_info.metered);
     auto download_schedule_proto =
@@ -266,7 +269,8 @@ InProgressInfo DownloadDBConversions::InProgressInfoFromProto(
   info.metered = proto.metered();
   info.bytes_wasted = proto.bytes_wasted();
   info.auto_resume_count = proto.auto_resume_count();
-  if (proto.has_download_schedule()) {
+  if (base::FeatureList::IsEnabled(download::features::kDownloadLater) &&
+      proto.has_download_schedule()) {
     info.download_schedule = DownloadScheduleFromProto(
         proto.download_schedule(), !proto.metered() /*only_on_wifi*/);
     DCHECK_NE(info.download_schedule->only_on_wifi(), info.metered);

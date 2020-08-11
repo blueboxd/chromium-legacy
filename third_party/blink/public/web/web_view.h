@@ -323,13 +323,15 @@ class WebView {
 
   // Auto-Resize -----------------------------------------------------------
 
-  // In auto-resize mode, the view is automatically adjusted to fit the html
-  // content within the given bounds.
-  virtual void EnableAutoResizeMode(const WebSize& min_size,
-                                    const WebSize& max_size) = 0;
+  // Return the state of the auto resize mode.
+  virtual bool AutoResizeMode() = 0;
 
-  // Turn off auto-resize.
-  virtual void DisableAutoResizeMode() = 0;
+  // Enable auto resize.
+  virtual void EnableAutoResizeForTesting(const gfx::Size& min_size,
+                                          const gfx::Size& max_size) = 0;
+
+  // Disable auto resize.
+  virtual void DisableAutoResizeForTesting(const gfx::Size& new_size) = 0;
 
   // Data exchange -------------------------------------------------------
 
@@ -351,7 +353,6 @@ class WebView {
 
   // Cancel emulation started via |enableDeviceEmulation| call.
   virtual void DisableDeviceEmulation() = 0;
-
 
   // Context menu --------------------------------------------------------
 

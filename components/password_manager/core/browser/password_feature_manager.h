@@ -71,6 +71,18 @@ class PasswordFeatureManager {
   virtual metrics_util::PasswordAccountStorageUsageLevel
   ComputePasswordAccountStorageUsageLevel() const = 0;
 
+  // Increases the count of how many times Chrome automatically offered to move
+  // a password to the account and the user refused this, e.g. by ignoring the
+  // bubble that's shown after successful sign-in with a device password. Should
+  // only be called if the user is signed-in and not opted-in.
+  virtual void IncrementMoveToAccountRefusedCount() = 0;
+
+  // Gets the count of how many times Chrome automatically offered to move a
+  // password to the account and the user refused this, e.g. by ignoring the
+  // bubble that's shown after successful sign-in with a device password. Should
+  // only be called if the user is signed-in and not opted-in.
+  virtual int GetMoveToAccountRefusedCount() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordFeatureManager);
 };

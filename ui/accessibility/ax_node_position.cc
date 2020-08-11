@@ -261,6 +261,19 @@ int AXNodePosition::MaxTextOffset() const {
   return text_length;
 }
 
+bool AXNodePosition::IsEmbeddedObjectInParent() const {
+  switch (g_ax_embedded_object_behavior) {
+    case AXEmbeddedObjectBehavior::kSuppressCharacter:
+      return false;
+    case AXEmbeddedObjectBehavior::kExposeCharacter:
+      // We don't need to expose an "embedded object character" for textual
+      // nodes and nodes that are invisible to platform APIs. Textual nodes are
+      // represented by their actual text.
+      return !IsNullPosition() && !GetAnchor()->IsText() &&
+             GetAnchor()->IsChildOfLeaf();
+  }
+}
+
 bool AXNodePosition::IsInLineBreakingObject() const {
   if (IsNullPosition())
     return false;

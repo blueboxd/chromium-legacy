@@ -1,13 +1,9 @@
 specific_include_rules = {
-  "browser_manager\.cc": [
-    # To show error notification to developers.
-    "+ui/message_center/message_center.h",
-  ],
   "screen_manager_crosapi\.cc": [
     # For window parenting.
     "+ash/shell.h",
   ],
-  "select_file_crosapi\.cc": [
+  "select_file_ash\.cc": [
     # For window parenting.
     "+ash/shell.h",
     "+ash/wm/desks/desks_util.h",

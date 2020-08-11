@@ -1108,7 +1108,6 @@
 <translation id="2336381494582898602">파워워시</translation>
 <translation id="2340239562261172947"><ph name="FILE_NAME" /> 파일은 안전하게 다운로드할 수 없습니다.</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" />에서 페어링하려고 함</translation>
-<translation id="2341476639346994688">프린터 중지됨</translation>
 <translation id="2342740338116612727">북마크 추가됨</translation>
 <translation id="2343747224442182863">이 탭에 포커스</translation>
 <translation id="2344686470986284227">가상 머신 컨트롤러 시작 중</translation>
@@ -3446,7 +3445,6 @@
 <translation id="5283677936944177147">시스템이 기기 모델 또는 일련번호를 확인하는 데 실패했습니다.</translation>
 <translation id="5284445933715251131">다운로드 계속</translation>
 <translation id="5285635972691565180"><ph name="DISPLAY_ID" /> 표시</translation>
-<translation id="5286094561505658635">출력 영역이 가득 참</translation>
 <translation id="5286194356314741248">검색 중</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">내 계정</translation>
@@ -3667,7 +3665,6 @@
 <translation id="5553089923092577885">인증서 정책 매핑</translation>
 <translation id="5554489410841842733">현재 페이지에서 확장 프로그램을 실행할 수 있게 되면 아이콘이 표시됩니다.</translation>
 <translation id="5554720593229208774">이메일 인증 기관</translation>
-<translation id="5554931805291741487">출력 영역이 거의 다 참</translation>
 <translation id="5556459405103347317">새로고침</translation>
 <translation id="5558125320634132440">이 사이트는 미성년자 부적합 콘텐츠가 포함되어 있을 수 있어 차단되었습니다</translation>
 <translation id="5558129378926964177">확대(&amp;I)</translation>
@@ -4938,7 +4935,6 @@
 <translation id="7152478047064750137">이 확장 프로그램에는 특별한 권한이 필요하지 않습니다</translation>
 <translation id="7154130902455071009">다음으로 시작 페이지 변경: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">카메라 또는 파일의 기존 사진</translation>
-<translation id="7163766494674803047">프린터 기기 오류</translation>
 <translation id="7165320105431587207">네트워크를 설정하지 못했습니다.</translation>
 <translation id="716640248772308851">'<ph name="EXTENSION" />'은(는) 선택된 위치에서 이미지, 동영상 및 사운드 파일을 읽을 수 있습니다.</translation>
 <translation id="7167486101654761064">해당 유형의 파일 항상 열기(&amp;A)</translation>

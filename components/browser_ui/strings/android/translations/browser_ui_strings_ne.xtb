@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">नेभिगेशन रोकियो: <ph name="URL" /></translation>
 <translation id="4278390842282768270">अनुमति प्राप्त</translation>
 <translation id="429312253194641664">कुनै साइटले मिडियो प्ले गरिरहेको छ</translation>
+<translation id="4336434711095810371">सबै डेटा खाली गर्नुहोस्</translation>
 <translation id="4433925000917964731">Google ले प्रदान गरेको मूल पृष्ठको लाइट संस्करण</translation>
 <translation id="4434045419905280838">पपअप तथा रिडिरेक्टहरू</translation>
 <translation id="445467742685312942">साइटहरूलाई संरक्षित सामग्री प्ले गर्ने अनुमति दिनुहोस्</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">इन्कोग्निटो ट्याब</translation>
 <translation id="5300589172476337783">देखाउनुहोस्</translation>
 <translation id="5301954838959518834">ठिक छ, बुझेँ</translation>
-<translation id="5307446750509046227">साइटको भण्डारण खाली गर्नु</translation>
 <translation id="5313967007315987356">साइट थप्नुहोस्</translation>
 <translation id="5317780077021120954">बचत गर्नुहोस्</translation>
 <translation id="5335288049665977812">साइटहरूलाई JavaScript सञ्चालन गर्न अनुमति दिने (सिफारिस गरिएको)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">कुनै खास साइटमा JavaScript लाई रोक लगाउनुहोस्।</translation>
 <translation id="8816026460808729765">साइटहरूलाई सेन्सरहरूमाथि पहुँच राख्न नदिनुहोस्</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">भण्डारण</translation>
 <translation id="8926666909099850184">यो यन्त्रमा NFC निष्क्रिय पारिएको छ। <ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" /> मा गई यसलाई सक्रिय गर्नुहोस्।</translation>
 <translation id="8929372349074745002">यो साइट धेरै जसो मान्छेका यन्त्रमा छिट्टै खुल्छ</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" />मा गई <ph name="APP_NAME" /> लाई अनुमति दिनुहोस्।</translation>
 <translation id="945632385593298557">आफ्नो माइक्रोफोन पहुँच गर्नुहोस्</translation>
 <translation id="965817943346481315">साइटले हस्तक्षेपकारी वा भ्रामक विज्ञापनहरू देखाएमा त्यसलाई रोक लगाउनुहोस् (सिफारिस गरिएको)</translation>
+<translation id="967624055006145463">डेटा भण्डारण गरियो</translation>
 </translationbundle>

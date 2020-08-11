@@ -41,6 +41,10 @@ struct AdapterInfo {
   bool discovering;
 };
 
+// Represents a request to discover nearby devices.
+// Note: Methods which are declared [Sync] are for use by
+// //chrome/services/sharing/nearby; all other usage of their synchronous
+// signatures is strongly discouraged.
 interface DiscoverySession {
   // Returns true if the session is active, false otherwise. If false, the
   // adapter might still be discovering as there might still be other active
@@ -66,6 +70,9 @@ interface DiscoverySession {
 // Represents an open connection to a remote device. Releasing it will destroy
 // the underlying connection, but callers should prefer to let a call to
 // Disconnect() to finish first.
+// Note: Methods which are declared [Sync] are for use by
+// //chrome/services/sharing/nearby; all other usage of their synchronous
+// signatures is strongly discouraged.
 interface Socket {
   // Use to gracefully close the underlying connection before destroying. The
   // reply callback can be used to synchronize a reconnection attempt;
@@ -77,6 +84,9 @@ interface Socket {
 
 // Handles requests to either query Bluetooth adapter capabilities or state, or
 // find or connect to remote devices. Backed by //device/bluetooth.
+// Note: Methods which are declared [Sync] are for use by
+// //chrome/services/sharing/nearby; all other usage of their synchronous
+// signatures is strongly discouraged.
 interface Adapter {
   // Creates a GATT connection to the device with |address| and returns a
   // Device if the connection was succesful. The GATT connection is tied to the
@@ -142,4 +152,3 @@ interface AdapterClient {
   // Called after the device hasn't been seen for 3 minutes.
   DeviceRemoved(DeviceInfo device);
 };
-

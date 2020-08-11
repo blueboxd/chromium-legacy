@@ -223,7 +223,8 @@ class VideoEncoderTest : public ::testing::Test {
 // Encode video from start to end. Wait for the kFlushDone event at the end of
 // the stream, that notifies us all frames have been encoded.
 TEST_F(VideoEncoderTest, FlushAtEndOfStream) {
-  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile());
+  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile(),
+                                  g_env->Bitrate());
   auto encoder = CreateVideoEncoder(g_env->Video(), config);
 
   encoder->Encode();
@@ -239,7 +240,8 @@ TEST_F(VideoEncoderTest, FlushAtEndOfStream) {
 // resolution. The test only verifies initialization and doesn't do any
 // encoding.
 TEST_F(VideoEncoderTest, Initialize) {
-  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile());
+  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile(),
+                                  g_env->Bitrate());
   auto encoder = CreateVideoEncoder(g_env->Video(), config);
 
   EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kInitialized), 1u);
@@ -250,7 +252,8 @@ TEST_F(VideoEncoderTest, Initialize) {
 // of scope at the end of the test. The test will pass if no asserts or crashes
 // are triggered upon destroying.
 TEST_F(VideoEncoderTest, DestroyBeforeInitialize) {
-  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile());
+  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile(),
+                                  g_env->Bitrate());
   auto video_encoder =
       VideoEncoder::Create(config, g_env->GetGpuMemoryBufferFactory());
 
@@ -277,7 +280,8 @@ TEST_F(VideoEncoderTest, FlushAtEndOfStream_MultipleConcurrentEncodes) {
   // The minimal number of concurrent encoders we expect to be supported.
   constexpr size_t kMinSupportedConcurrentEncoders = 3;
 
-  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile());
+  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile(),
+                                  g_env->Bitrate());
   std::vector<std::unique_ptr<VideoEncoder>> encoders(
       kMinSupportedConcurrentEncoders);
   for (size_t i = 0; i < kMinSupportedConcurrentEncoders; ++i)
@@ -296,7 +300,8 @@ TEST_F(VideoEncoderTest, FlushAtEndOfStream_MultipleConcurrentEncodes) {
 }
 
 TEST_F(VideoEncoderTest, BitrateCheck) {
-  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile());
+  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile(),
+                                  g_env->Bitrate());
   config.num_frames_to_encode = kNumFramesToEncodeForBitrateCheck;
   auto encoder = CreateVideoEncoder(g_env->Video(), config);
 
@@ -311,7 +316,8 @@ TEST_F(VideoEncoderTest, BitrateCheck) {
 }
 
 TEST_F(VideoEncoderTest, DynamicBitrateChange) {
-  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile());
+  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile(),
+                                  g_env->Bitrate());
   config.num_frames_to_encode = kNumFramesToEncodeForBitrateCheck * 2;
   auto encoder = CreateVideoEncoder(g_env->Video(), config);
 
@@ -339,7 +345,8 @@ TEST_F(VideoEncoderTest, DynamicBitrateChange) {
 }
 
 TEST_F(VideoEncoderTest, DynamicFramerateChange) {
-  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile());
+  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile(),
+                                  g_env->Bitrate());
   config.num_frames_to_encode = kNumFramesToEncodeForBitrateCheck * 2;
   auto encoder = CreateVideoEncoder(g_env->Video(), config);
 
@@ -371,7 +378,8 @@ TEST_F(VideoEncoderTest, FlushAtEndOfStream_NV12Dmabuf) {
   auto nv12_video = g_env->Video()->ConvertToNV12();
   ASSERT_TRUE(nv12_video);
 
-  VideoEncoderClientConfig config(nv12_video.get(), g_env->Profile());
+  VideoEncoderClientConfig config(nv12_video.get(), g_env->Profile(),
+                                  g_env->Bitrate());
   config.input_storage_type =
       VideoEncodeAccelerator::Config::StorageType::kDmabuf;
 

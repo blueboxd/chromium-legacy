@@ -51,6 +51,12 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     kOpenGL = 1,
     kVulkan = 2,
   };
+
+  enum class OrientationMode {
+    kLogic,     // The orientation same to logical screen orientation as seen by
+                // the user.
+    kHardware,  // The orientation same to the hardware.
+  };
   struct Capabilities {
     Capabilities();
     Capabilities(const Capabilities& capabilities);
@@ -75,12 +81,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     bool supports_commit_overlay_planes = false;
     // Whether this OutputSurface supports gpu vsync callbacks.
     bool supports_gpu_vsync = false;
-    // Whether this OutputSurface supports pre transform. If it is supported,
-    // the chrome will set the output surface size in hardware natural
-    // orientation, and will render transformed content on back buffers based
-    // on the current system transform. So the OS presentation engine can
-    // present buffers onto the screen directly.
-    bool supports_pre_transform = false;
+    // OutputSurface's orientation mode.
+    OrientationMode orientation_mode = OrientationMode::kLogic;
     // Whether this OutputSurface supports direct composition layers.
     bool supports_dc_layers = false;
     // Whether this OutputSurface should skip DrawAndSwap(). This is true for

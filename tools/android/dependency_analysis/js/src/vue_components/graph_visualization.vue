@@ -5,8 +5,8 @@
 <template>
   <svg
       id="graph-svg"
-      width="960"
-      height="600"/>
+      width="100%"
+      height="100%"/>
 </template>
 
 <script>
@@ -72,9 +72,12 @@ export default GraphVisualization;
 </script>
 
 <style>
+svg text {
+  font-family: Roboto;
+}
+
 .graph-hull-labels text {
   dominant-baseline: baseline;
-  font-family: sans-serif;
   font-size: 10px;
   font-weight: bold;
   text-anchor: middle;
@@ -89,7 +92,6 @@ export default GraphVisualization;
 }
 
 .graph-labels text {
-  font-family: sans-serif;
   font-size: 12px;
 }
 

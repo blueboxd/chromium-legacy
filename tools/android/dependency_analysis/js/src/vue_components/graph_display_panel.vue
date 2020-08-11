@@ -5,21 +5,31 @@
 <template>
   <div id="display-panel">
     <div id="preset-container">
-      <select
-          v-model="internalDisplaySettingsPreset"
-          @change="applySelectedPreset">
-        <option
-            v-for="presetName in DisplaySettingsPreset"
-            :key="presetName"
-            :value="presetName">
-          {{ presetName }}
-        </option>
-      </select>
-      <button @click="settingsExpanded = !settingsExpanded">
-        {{ settingsExpanded ? 'Collapse' : 'Expand' }} Advanced Settings
-      </button>
+      <MdField id="preset-select-container">
+        <label for="preset-select">Display Preset</label>
+        <MdSelect
+            id="preset-select"
+            v-model="internalDisplaySettingsPreset"
+            @md-selected="applySelectedPreset">
+          <MdOption
+              v-for="presetName in DisplaySettingsPreset"
+              :key="presetName"
+              :value="presetName">
+            {{ presetName }}
+          </MdOption>
+        </MdSelect>
+      </MdField>
+      <MdButton
+          class="md-primary md-raised md-dense"
+          @click="settingsExpanded = !settingsExpanded">
+        {{ settingsExpanded ? 'Hide' : 'Show' }} Advanced
+      </MdButton>
     </div>
-    <slot v-if="settingsExpanded"/>
+    <div
+        v-if="settingsExpanded"
+        id="advanced-panel">
+      <slot/>
+    </div>
   </div>
 </template>
 
@@ -63,8 +73,19 @@ export default GraphDisplaySettings;
 
 <style scoped>
 #preset-container {
+  align-items: baseline;
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
+}
+
+#preset-select-container {
+  margin-bottom: 0;
+  width: 60%;
+}
+
+#advanced-panel {
+  margin: 0 20px;
 }
 
 #display-panel {

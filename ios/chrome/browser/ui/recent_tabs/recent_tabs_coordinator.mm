@@ -5,7 +5,8 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 
 #include "base/ios/block_types.h"
-#include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -19,12 +20,17 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_transitioning_delegate.h"
+#include "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -41,6 +47,9 @@
     TableViewNavigationController* recentTabsNavigationController;
 @property(nonatomic, strong)
     RecentTabsTransitioningDelegate* recentTabsTransitioningDelegate;
+@property(nonatomic, strong)
+    RecentTabsTableViewController* recentTabsTableViewController;
+
 @end
 
 @implementation RecentTabsCoordinator
@@ -51,18 +60,18 @@
 
 - (void)start {
   // Initialize and configure RecentTabsTableViewController.
-  RecentTabsTableViewController* recentTabsTableViewController =
+  self.recentTabsTableViewController =
       [[RecentTabsTableViewController alloc] init];
-  recentTabsTableViewController.browser = self.browser;
-  recentTabsTableViewController.loadStrategy = self.loadStrategy;
+  self.recentTabsTableViewController.browser = self.browser;
+  self.recentTabsTableViewController.loadStrategy = self.loadStrategy;
   CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
   id<ApplicationCommands> handler =
       HandlerForProtocol(dispatcher, ApplicationCommands);
-  recentTabsTableViewController.handler = handler;
-  recentTabsTableViewController.presentationDelegate = self;
+  self.recentTabsTableViewController.handler = handler;
+  self.recentTabsTableViewController.presentationDelegate = self;
 
   if (@available(iOS 13.0, *)) {
-    recentTabsTableViewController.menuProvider = self;
+    self.recentTabsTableViewController.menuProvider = self;
   }
 
   // Adds the "Done" button and hooks it up to |stop|.
@@ -72,7 +81,7 @@
                            action:@selector(dismissButtonTapped)];
   [dismissButton
       setAccessibilityIdentifier:kTableViewNavigationDismissButtonId];
-  recentTabsTableViewController.navigationItem.rightBarButtonItem =
+  self.recentTabsTableViewController.navigationItem.rightBarButtonItem =
       dismissButton;
 
   // Initialize and configure RecentTabsMediator. Make sure to use the
@@ -84,18 +93,18 @@
       self.browser->GetBrowserState()->GetOriginalChromeBrowserState();
   // Set the consumer first before calling [self.mediator initObservers] and
   // then [self.mediator configureConsumer].
-  self.mediator.consumer = recentTabsTableViewController;
+  self.mediator.consumer = self.recentTabsTableViewController;
   // TODO(crbug.com/845636) : Currently, the image data source must be set
   // before the mediator starts updating its consumer. Fix this so that order of
   // calls does not matter.
-  recentTabsTableViewController.imageDataSource = self.mediator;
-  recentTabsTableViewController.delegate = self.mediator;
+  self.recentTabsTableViewController.imageDataSource = self.mediator;
+  self.recentTabsTableViewController.delegate = self.mediator;
   [self.mediator initObservers];
   [self.mediator configureConsumer];
 
   // Present RecentTabsNavigationController.
   self.recentTabsNavigationController = [[TableViewNavigationController alloc]
-      initWithTable:recentTabsTableViewController];
+      initWithTable:self.recentTabsTableViewController];
   self.recentTabsNavigationController.toolbarHidden = YES;
 
   BOOL useCustomPresentation = YES;
@@ -104,7 +113,7 @@
       [self.recentTabsNavigationController
           setModalPresentationStyle:UIModalPresentationFormSheet];
       self.recentTabsNavigationController.presentationController.delegate =
-          recentTabsTableViewController;
+          self.recentTabsTableViewController;
       useCustomPresentation = NO;
     }
   }
@@ -118,7 +127,7 @@
         setModalPresentationStyle:UIModalPresentationCustom];
   }
 
-  recentTabsTableViewController.preventUpdates = NO;
+  self.recentTabsTableViewController.preventUpdates = NO;
 
   [self.baseViewController
       presentViewController:self.recentTabsNavigationController
@@ -127,12 +136,7 @@
 }
 
 - (void)stop {
-  // TODO(crbug.com/805135): Create RecentTabsLocalCommands?. Remove
-  // "base/mac/foundation_util.h" import then.
-  RecentTabsTableViewController* recentTabsTableViewController =
-      base::mac::ObjCCastStrict<RecentTabsTableViewController>(
-          self.recentTabsNavigationController.tableViewController);
-  [recentTabsTableViewController dismissModals];
+  [self.recentTabsTableViewController dismissModals];
   [self.recentTabsNavigationController
       dismissViewControllerAnimated:YES
                          completion:self.completion];
@@ -146,7 +150,36 @@
   [self stop];
 }
 
+#pragma mark - Private
+
+// Opens all tabs from the given |sectionIdentifier|.
+- (void)openAllTabsFromSessionSectionIdentitifer:(NSInteger)sectionIdentifier {
+  synced_sessions::DistantSession const* session =
+      [self.recentTabsTableViewController
+          sessionForSectionIdentifier:sectionIdentifier];
+  [self openAllTabsFromSession:session];
+}
+
 #pragma mark - RecentTabsPresentationDelegate
+
+- (void)openAllTabsFromSession:(const synced_sessions::DistantSession*)session {
+  base::RecordAction(base::UserMetricsAction(
+      "MobileRecentTabManagerOpenAllTabsFromOtherDevice"));
+  base::UmaHistogramCounts100(
+      "Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll",
+      session->tabs.size());
+
+  for (auto const& tab : session->tabs) {
+    UrlLoadParams params = UrlLoadParams::InNewTab(tab->virtual_url);
+    params.SetInBackground(YES);
+    params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+    params.load_strategy = self.loadStrategy;
+    params.in_incognito = self.browser->GetBrowserState()->IsOffTheRecord();
+    UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
+  }
+
+  [self showActiveRegularTabFromRecentTabs];
+}
 
 - (void)dismissRecentTabs {
   self.completion = nil;
@@ -178,26 +211,51 @@
     (TableViewURLItem*)item API_AVAILABLE(ios(13.0)) {
   __weak __typeof(self) weakSelf = self;
 
-  UIContextMenuActionProvider actionProvider =
-      ^(NSArray<UIMenuElement*>* suggestedActions) {
-        if (!weakSelf) {
-          // Return an empty menu.
-          return [UIMenu menuWithTitle:@"" children:@[]];
-        }
+  UIContextMenuActionProvider actionProvider = ^(
+      NSArray<UIMenuElement*>* suggestedActions) {
+    if (!weakSelf) {
+      // Return an empty menu.
+      return [UIMenu menuWithTitle:@"" children:@[]];
+    }
 
-        RecentTabsCoordinator* strongSelf = weakSelf;
+    RecentTabsCoordinator* strongSelf = weakSelf;
 
-        // Record that this context menu was shown to the user.
-        RecordMenuShown(MenuScenario::kRecentTabsEntry);
+    // Record that this context menu was shown to the user.
+    RecordMenuShown(MenuScenario::kRecentTabsEntry);
 
-        ActionFactory* actionFactory = [[ActionFactory alloc]
-            initWithBrowser:strongSelf.browser
-                   scenario:MenuScenario::kRecentTabsEntry];
+    ActionFactory* actionFactory =
+        [[ActionFactory alloc] initWithBrowser:strongSelf.browser
+                                      scenario:MenuScenario::kRecentTabsEntry];
 
-        UIAction* copyAction = [actionFactory actionToCopyURL:item.URL];
+    NSMutableArray<UIMenuElement*>* menuElements =
+        [[NSMutableArray alloc] init];
 
-        return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
-      };
+    [menuElements addObject:[actionFactory actionToOpenInNewTabWithURL:item.URL
+                                                            completion:^{
+                                                              [strongSelf stop];
+                                                            }]];
+
+    [menuElements
+        addObject:[actionFactory actionToOpenInNewIncognitoTabWithURL:item.URL
+                                                           completion:^{
+                                                             [strongSelf stop];
+                                                           }]];
+
+    if (IsMultipleScenesSupported()) {
+      [menuElements
+          addObject:
+              [actionFactory
+                  actionToOpenInNewWindowWithURL:item.URL
+                                  activityOrigin:WindowActivityRecentTabsOrigin
+                                      completion:^{
+                                        [strongSelf stop];
+                                      }]];
+    }
+
+    [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
+
+    return [UIMenu menuWithTitle:@"" children:menuElements];
+  };
 
   return
       [UIContextMenuConfiguration configurationWithIdentifier:nil
@@ -208,17 +266,51 @@
 - (UIContextMenuConfiguration*)
     contextMenuConfigurationForHeaderWithSectionIdentifier:
         (NSInteger)sectionIdentifier API_AVAILABLE(ios(13.0)) {
-  return [UIContextMenuConfiguration
-      configurationWithIdentifier:nil
-                  previewProvider:nil
-                   actionProvider:^(NSArray<UIMenuElement*>* suggestedActions) {
-                     // Record that this context menu was shown to the user.
-                     RecordMenuShown(MenuScenario::kRecentTabsEntry);
+  __weak __typeof(self) weakSelf = self;
 
-                     // TODO(crbug.com/1093302): Implement this.
+  UIContextMenuActionProvider actionProvider =
+      ^(NSArray<UIMenuElement*>* suggestedActions) {
+        if (!weakSelf || ![weakSelf.recentTabsTableViewController
+                             isSessionSectionIdentifier:sectionIdentifier]) {
+          // Return an empty menu.
+          return [UIMenu menuWithTitle:@"" children:@[]];
+        }
 
-                     return [UIMenu menuWithTitle:@"" children:@[]];
-                   }];
+        // Record that this context menu was shown to the user.
+        RecordMenuShown(MenuScenario::kRecentTabsHeader);
+
+        ActionFactory* actionFactory = [[ActionFactory alloc]
+            initWithBrowser:weakSelf.browser
+                   scenario:MenuScenario::kRecentTabsHeader];
+
+        NSMutableArray<UIMenuElement*>* menuElements =
+            [[NSMutableArray alloc] init];
+
+        synced_sessions::DistantSession const* session =
+            [weakSelf.recentTabsTableViewController
+                sessionForSectionIdentifier:sectionIdentifier];
+
+        if (!session->tabs.empty()) {
+          [menuElements
+              addObject:[actionFactory actionToOpenAllTabsWithBlock:^{
+                [weakSelf
+                    openAllTabsFromSessionSectionIdentitifer:sectionIdentifier];
+              }]];
+        }
+
+        [menuElements
+            addObject:[actionFactory actionToHideWithBlock:^{
+              [weakSelf.recentTabsTableViewController
+                  removeSessionAtSessionSectionIdentifier:sectionIdentifier];
+            }]];
+
+        return [UIMenu menuWithTitle:@"" children:menuElements];
+      };
+
+  return
+      [UIContextMenuConfiguration configurationWithIdentifier:nil
+                                              previewProvider:nil
+                                               actionProvider:actionProvider];
 }
 
 @end

@@ -1270,10 +1270,11 @@ class LayerTreeHostScrollTestImplOnlyScrollSnap
 
       DoGestureScroll(host_impl, scroller_, impl_thread_scroll_);
 
-      EXPECT_TRUE(host_impl->IsAnimatingForSnap());
+      EXPECT_TRUE(host_impl->GetInputHandler().IsAnimatingForSnap());
       EXPECT_VECTOR_EQ(impl_thread_scroll_, ScrollDelta(scroller_impl));
     } else {
-      snap_animation_finished_ = !host_impl->IsAnimatingForSnap();
+      snap_animation_finished_ =
+          !host_impl->GetInputHandler().IsAnimatingForSnap();
     }
   }
 

@@ -44,6 +44,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" />. Pulsa Intro para cancelar el trabajo de impresión.</translation>
 <translation id="467510802200863975">Las contraseñas no coinciden</translation>
 <translation id="4731797938093519117">Acceso parental</translation>
+<translation id="4773299976671772492">Detenido</translation>
 <translation id="4808449224298348341">Trabajo de impresión <ph name="DOCUMENT_TITLE" /> cancelado</translation>
 <translation id="4890353053343094602">Selecciona otra inmediatamente</translation>
 <translation id="4932733599132424254">Fecha</translation>

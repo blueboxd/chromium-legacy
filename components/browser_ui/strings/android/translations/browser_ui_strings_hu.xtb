@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Le van tiltva az ide vezető navigáció: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Engedélyezve</translation>
 <translation id="429312253194641664">Az egyik webhely médiatartalmat játszik le</translation>
+<translation id="4336434711095810371">Az összes adat törlése</translation>
 <translation id="4433925000917964731">Egyszerű oldal a Google-tól</translation>
 <translation id="4434045419905280838">Előugró ablakok és átirányítások</translation>
 <translation id="445467742685312942">Védett tartalmak lejátszásának engedélyezése a webhelyek számára</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Inkognitó lap</translation>
 <translation id="5300589172476337783">Megjelenítés</translation>
 <translation id="5301954838959518834">Rendben, értem</translation>
-<translation id="5307446750509046227">Webhelytárhely törlése</translation>
 <translation id="5313967007315987356">Webhely hozzáadása</translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="5335288049665977812">Engedélyezze a webhelyek számára a JavaScript futtatását (ajánlott)</translation>
@@ -228,6 +228,7 @@
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="8300705686683892304">Alkalmazás által kezelt</translation>
 <translation id="8372893542064058268">Háttérben történő szinkronizálás engedélyezése adott webhely esetében.</translation>
+<translation id="8376384591331888629">Ide tartoznak többek között az ezen a webhelyen található, harmadik felektől származó cookie-k</translation>
 <translation id="83792324527827022">Egy webhely használja az Ön kameráját és mikrofonját</translation>
 <translation id="8380167699614421159">Ez a webhely tolakodó vagy félrevezető hirdetéseket jelenít meg</translation>
 <translation id="8394832520002899662">Koppintson a webhelyre való visszatéréshez</translation>
@@ -249,7 +250,6 @@
 <translation id="8801436777607969138">JavaScript letiltása adott webhelynél.</translation>
 <translation id="8816026460808729765">Az érzékelőkhöz való hozzáférés tiltása a webhelyek számára</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Tárolás</translation>
 <translation id="8926666909099850184">Az NFC ki van kapcsolva ezen az eszközön. Kapcsolja be az <ph name="BEGIN_LINK" />Android Beállítások alkalmazásában<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Ez a webhely gyorsan megnyílik és reagál a legtöbb felhasználó számára</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +261,5 @@
 <translation id="913657688200966289">A(z) <ph name="APP_NAME" /> alkalmazásra vonatkozó engedélyeket az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között lehet aktiválni.</translation>
 <translation id="945632385593298557">Hozzáférés a mikrofonhoz</translation>
 <translation id="965817943346481315">Letiltás, ha a webhely tolakodó vagy félrevezető hirdetéseket jelenít meg (ajánlott)</translation>
+<translation id="967624055006145463">Tárolt adatok</translation>
 </translationbundle>

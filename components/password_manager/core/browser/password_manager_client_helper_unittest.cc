@@ -172,7 +172,7 @@ TEST_F(PasswordManagerClientHelperTest,
 TEST_F(PasswordManagerClientHelperTest, NoPromptToMoveWithoutFeature) {
   base::test::ScopedFeatureList account_storage_feature;
   account_storage_feature.InitAndDisableFeature(
-      password_manager::features::kEnablePasswordsAccountStorage);
+      features::kEnablePasswordsAccountStorage);
   EXPECT_CALL(*client(), PromptUserToMovePasswordToAccount).Times(0);
   EXPECT_CALL(*client(), PromptUserToEnableAutosignin).Times(0);
 
@@ -186,7 +186,7 @@ TEST_F(PasswordManagerClientHelperTest, NoPromptToMoveWithoutFeature) {
 TEST_F(PasswordManagerClientHelperTest, NoPromptToMoveForUnmovableForm) {
   base::test::ScopedFeatureList account_storage_feature;
   account_storage_feature.InitAndEnableFeature(
-      password_manager::features::kEnablePasswordsAccountStorage);
+      features::kEnablePasswordsAccountStorage);
   EXPECT_CALL(*client(), PromptUserToMovePasswordToAccount).Times(0);
   EXPECT_CALL(*client(), PromptUserToEnableAutosignin).Times(0);
 
@@ -200,7 +200,7 @@ TEST_F(PasswordManagerClientHelperTest, NoPromptToMoveForUnmovableForm) {
 TEST_F(PasswordManagerClientHelperTest, NoPromptToMoveForGaiaAccountForm) {
   base::test::ScopedFeatureList account_storage_feature;
   account_storage_feature.InitAndEnableFeature(
-      password_manager::features::kEnablePasswordsAccountStorage);
+      features::kEnablePasswordsAccountStorage);
   EXPECT_CALL(*client()->GetPasswordFeatureManager(),
               ShouldShowAccountStorageBubbleUi)
       .WillOnce(Return(true));
@@ -213,6 +213,37 @@ TEST_F(PasswordManagerClientHelperTest, NoPromptToMoveForGaiaAccountForm) {
       kGaiaAccountEmail, kTestPassword, GaiaUrls::GetInstance()->gaia_url());
   helper()->NotifySuccessfulLoginWithExistingPassword(
       CreateFormManager(&gaia_account_form, /*is_movable=*/true));
+}
+
+TEST_F(PasswordManagerClientHelperTest,
+       NoPromptToMoveForNonOptedInUserIfRefusedTooManyTimes) {
+  base::test::ScopedFeatureList account_storage_feature;
+  account_storage_feature.InitAndEnableFeatureWithParameters(
+      features::kEnablePasswordsAccountStorage,
+      {{features::kMaxMoveToAccountOffersForNonOptedInUser, "1"}});
+  ON_CALL(*client()->GetPasswordFeatureManager(),
+          ShouldShowAccountStorageBubbleUi)
+      .WillByDefault(Return(true));
+  ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore)
+      .WillByDefault(Return(autofill::PasswordForm::Store::kAccountStore));
+
+  // Simulate that no refusals happened so far. Moving should be offered.
+  EXPECT_CALL(*client()->GetPasswordFeatureManager(),
+              GetMoveToAccountRefusedCount)
+      .WillOnce(Return(0));
+  EXPECT_CALL(*client(), PromptUserToMovePasswordToAccount);
+  const PasswordForm form =
+      CreateForm(kTestUsername, kTestPassword, GURL(kTestOrigin));
+  helper()->NotifySuccessfulLoginWithExistingPassword(
+      CreateFormManager(&form, /*is_movable=*/true));
+
+  // If the previous move was refused and the max is 1, shouldn't offer anymore.
+  EXPECT_CALL(*client()->GetPasswordFeatureManager(),
+              GetMoveToAccountRefusedCount)
+      .WillOnce(Return(1));
+  EXPECT_CALL(*client(), PromptUserToMovePasswordToAccount).Times(0);
+  helper()->NotifySuccessfulLoginWithExistingPassword(
+      CreateFormManager(&form, /*is_movable=*/true));
 }
 
 }  // namespace password_manager

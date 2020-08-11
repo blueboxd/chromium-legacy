@@ -529,11 +529,9 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     visual_properties.new_size = gfx::Size(100, 100);
     visual_properties.compositor_viewport_pixel_rect = gfx::Rect(200, 200);
     visual_properties.visible_viewport_size = visual_properties.new_size;
-    visual_properties.auto_resize_enabled = main_widget()->auto_resize_mode();
-    visual_properties.min_size_for_auto_resize =
-        main_widget()->min_size_for_auto_resize();
-    visual_properties.max_size_for_auto_resize =
-        main_widget()->max_size_for_auto_resize();
+    visual_properties.auto_resize_enabled = view()->AutoResizeMode();
+    visual_properties.min_size_for_auto_resize = min_size_for_autoresize_;
+    visual_properties.max_size_for_auto_resize = max_size_for_autoresize_;
     visual_properties.local_surface_id_allocation =
         viz::LocalSurfaceIdAllocation(
             viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()),
@@ -566,6 +564,17 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     cc::LayerTreeHost* host = main_widget()->layer_tree_host();
     EXPECT_EQ(compositor_dsf, host->device_scale_factor());
   }
+
+  void EnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size) {
+    min_size_for_autoresize_ = min_size;
+    max_size_for_autoresize_ = max_size;
+    blink::WebView* webview = view()->GetWebView();
+    webview->EnableAutoResizeForTesting(min_size, max_size);
+  }
+
+ private:
+  gfx::Size min_size_for_autoresize_;
+  gfx::Size max_size_for_autoresize_;
 };
 
 // This test class forces UseZoomForDSF to be on for all platforms.
@@ -3262,8 +3271,7 @@ const char kAutoResizeTestPage[] =
 }  // namespace
 
 TEST_F(RenderViewImplEnableZoomForDSFTest, AutoResizeWithZoomForDSF) {
-  main_widget()->EnableAutoResizeForTesting(gfx::Size(5, 5),
-                                            gfx::Size(1000, 1000));
+  EnableAutoResize(gfx::Size(5, 5), gfx::Size(1000, 1000));
   LoadHTML(kAutoResizeTestPage);
   gfx::Size size_at_1x = main_widget()->size();
   ASSERT_FALSE(size_at_1x.IsEmpty());
@@ -3275,8 +3283,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, AutoResizeWithZoomForDSF) {
 }
 
 TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
-  main_widget()->EnableAutoResizeForTesting(gfx::Size(5, 5),
-                                            gfx::Size(1000, 1000));
+  EnableAutoResize(gfx::Size(5, 5), gfx::Size(1000, 1000));
   LoadHTML(kAutoResizeTestPage);
   gfx::Size size_at_1x = main_widget()->size();
   ASSERT_FALSE(size_at_1x.IsEmpty());

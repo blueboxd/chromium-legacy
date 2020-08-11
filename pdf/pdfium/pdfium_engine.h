@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -223,6 +222,8 @@ class PDFiumEngine : public PDFEngine,
    public:
     MouseDownState(const PDFiumPage::Area& area,
                    const PDFiumPage::LinkTarget& target);
+    MouseDownState(const MouseDownState&) = delete;
+    MouseDownState& operator=(const MouseDownState&) = delete;
     ~MouseDownState();
 
     void Set(const PDFiumPage::Area& area,
@@ -234,8 +235,6 @@ class PDFiumEngine : public PDFEngine,
    private:
     PDFiumPage::Area area_;
     PDFiumPage::LinkTarget target_;
-
-    DISALLOW_COPY_AND_ASSIGN(MouseDownState);
   };
 
   friend class FormFillerTest;

@@ -125,31 +125,52 @@ std::vector<std::string> PersistedData::GetAppIds() const {
   return app_ids;
 }
 
-std::string PersistedData::GetString(const std::string& id,
-                                     const std::string& key) const {
+const base::Value* PersistedData::GetAppKey(const std::string& id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!base::Contains(id, '.'));  // Assume the id does not contain '.'.
-
+  if (!pref_service_)
+    return nullptr;
   const base::DictionaryValue* dict =
       pref_service_->GetDictionary(kPersistedDataPreference);
   if (!dict)
+    return nullptr;
+  const base::Value* apps = dict->FindDictKey("apps");
+  if (!apps)
+    return nullptr;
+  return apps->FindDictKey(id);
+}
+
+std::string PersistedData::GetString(const std::string& id,
+                                     const std::string& key) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const base::Value* app_key = GetAppKey(id);
+  if (!app_key)
     return {};
-  std::string result;
-  return dict->GetString(
-             base::StringPrintf("apps.%s.%s", id.c_str(), key.c_str()), &result)
-             ? result
-             : std::string();
+  const std::string* value = app_key->FindStringKey(key);
+  if (!value)
+    return {};
+  return *value;
+}
+
+base::Value* PersistedData::GetOrCreateAppKey(const std::string& id,
+                                              base::Value* root) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::Value* apps = root->FindDictKey("apps");
+  if (!apps)
+    apps = root->SetKey("apps", base::Value(base::Value::Type::DICTIONARY));
+  base::Value* app = apps->FindDictKey(id);
+  if (!app)
+    app = apps->SetKey(id, base::Value(base::Value::Type::DICTIONARY));
+  return app;
 }
 
 void PersistedData::SetString(const std::string& id,
                               const std::string& key,
                               const std::string& value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!base::Contains(id, '.'));  // Assume the id does not contain '.'.
-
+  if (!pref_service_)
+    return;
   DictionaryPrefUpdate update(pref_service_, kPersistedDataPreference);
-  update->SetString(base::StringPrintf("apps.%s.%s", id.c_str(), key.c_str()),
-                    value);
+  GetOrCreateAppKey(id, update.Get())->SetStringKey(key, value);
 }
 
 }  // namespace updater

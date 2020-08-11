@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Навигирането е блокирано: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Разрешено</translation>
 <translation id="429312253194641664">Сайт възпроизвежда мултимедийно съдържание</translation>
+<translation id="4336434711095810371">Изчистване на всички данни</translation>
 <translation id="4433925000917964731">Олекотена страница, предоставена от Google</translation>
 <translation id="4434045419905280838">Изскач. прозорци и пренасочвания</translation>
 <translation id="445467742685312942">Разрешаване на сайтовете да възпроизвеждат защитено съдържание</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Раздел в режим „инкогнито“</translation>
 <translation id="5300589172476337783">Показване</translation>
 <translation id="5301954838959518834">Добре, разбрах</translation>
-<translation id="5307446750509046227">Изчистване на данните</translation>
 <translation id="5313967007315987356">Добавяне на сайт</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5335288049665977812">Разрешаване на сайтовете да изпълняват JavaScript (препоръчително)</translation>
@@ -250,7 +250,6 @@
 <translation id="8801436777607969138">Блокиране на JavaScript за конкретен сайт.</translation>
 <translation id="8816026460808729765">Блокиране на достъпа на сайтовете до сензорите</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Хранилище</translation>
 <translation id="8926666909099850184">Функцията за NFC е изключена на това устройство. Включете я от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">За повечето хора този сайт се отваря и реагира бързо</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -262,4 +261,5 @@
 <translation id="913657688200966289">Включете разрешенията за <ph name="APP_NAME" /> от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Достъп до микрофона</translation>
 <translation id="965817943346481315">Блокиране, ако на сайта се показват натрапчиви или подвеждащи реклами (препоръчително)</translation>
+<translation id="967624055006145463">Съхранени данни</translation>
 </translationbundle>

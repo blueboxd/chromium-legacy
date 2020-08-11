@@ -454,13 +454,6 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 
       Jika kebijakan ditetapkan ke Salah (False), pengguna tidak akan dapat menambahkan, menghapus, atau mengubah bookmark. Mereka tetap dapat menggunakan bookmark yang ada.</translation>
 <translation id="1715151459541210849">Mengaktifkan fitur aksesibilitas dikte</translation>
-<translation id="1717817358640580294">Jika tidak disetel, apabila mendeteksi software yang tidak diinginkan, Pembersih Chrome dapat melaporkan metadata tentang pemindaian ke Google sesuai kebijakan yang disetel oleh SafeBrowsingExtendedReportingEnabled. Selanjutnya, Pembersih Chrome akan menanyakan kepada pengguna apakah ia ingin menghapus software yang tidak diinginkan tersebut atau tidak. Pengguna dapat membagikan hasil pembersihan ke Google untuk membantu mendeteksi software yang tidak diinginkan di masa mendatang. Hasil ini memuat metadata file, ekstensi yang diinstal otomatis, dan kunci registry seperti dijelaskan dalam Lembar Informasi Privasi Chrome.
-
-      Jika dinonaktifkan, apabila mendeteksi software yang tidak diinginkan, Pembersih Chrome tidak akan melaporkan metadata tentang pemindaian ke Google, yang berarti menggantikan kebijakan apa pun yang disetel oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome akan menanyakan kepada pengguna apakah ia ingin menghapus software yang tidak diinginkan tersebut atau tidak.  Hasil pembersihan tidak akan dilaporkan ke Google, dan pengguna tidak akan memiliki opsi untuk melaporkannya.
-
-      Jika diaktifkan, apabila mendeteksi software yang tidak diinginkan, Pembersih Chrome dapat melaporkan metadata tentang pemindaian ke Google sesuai kebijakan yang disetel oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome akan menanyakan kepada pengguna apakah ia ingin menghapus software yang tidak diinginkan tersebut atau tidak.  Hasil pembersihan akan dilaporkan ke Google dan pengguna tidak akan memiliki opsi untuk mencegahnya.
-
-      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="172374442286684480">Izinkan semua situs menyetel data lokal</translation>
 <translation id="1736269219679256369">Memungkinkan melanjutkan dari halaman peringatan SSL</translation>
 <translation id="1745973235372964482">Jangan izinkan file yang dilindungi sandi</translation>
@@ -1032,7 +1025,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
           Jika kebijakan ini tidak ditetapkan, sorotan tanda sisipan mula-mula akan dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="2509919237512982967">Menggunakan Kontrol Formulir Lama hingga M84.</translation>
-<translation id="2512630007068794030">Jika diaktifkan, fitur <ph name="PRODUCT_NAME" /> akan membuat halaman web yang dipertahankan di status saat ini (pohon dokumen, skrip, dll.) menjadi back-forward cache saat keluar dari halaman.
+<translation id="2512630007068794030">Jika diaktifkan, fitur <ph name="PRODUCT_NAME" /> akan membuat halaman web yang dipertahankan di status saat ini (hierarki dokumen, skrip, dll.) menjadi back-forward cache saat keluar dari halaman.
           Jika membuka halaman kembali, halaman akan dipulihkan dari back-forward cache, yang menampilkannya dalam status sebelum di-cache.
 
           Fitur ini dapat membagi situs yang tidak perlu
@@ -1378,21 +1371,12 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
           Menonaktifkan setelan ini sama dengan tidak mengonfigurasinya. Pengguna masih dapat mengubahnya di <ph name="PRODUCT_NAME" />.
 
           Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat, dan instance macOS yang dikelola melalui MDM atau dihubungkan ke domain melalui MCX.</translation>
-<translation id="2982571648442031489">Mengonfigurasi daftar domain yang akan dipercaya Safe Browsing. Artinya:
-      Safe Browsing tidak akan memeriksa keberadaan resource berbahaya (misalnya phishing, malware, atau software yang tidak diinginkan) jika URL cocok dengan domain ini.
-      Layanan perlindungan download Safe Browsing tidak akan memeriksa download yang dihosting di domain ini.
-      Layanan perlindungan sandi Safe Browsing tidak akan memeriksa penggunaan ulang sandi jika URL halaman cocok dengan domain ini.
-
-      Jika setelan ini diaktifkan, Safe Browsing akan memercayai domain ini.
-      Jika setelan ini dinonaktifkan atau tidak disetel, perlindungan Safe Browsing default akan diterapkan untuk semua resource.
-
-      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat, dan instance macOS yang dikelola melalui MDM atau dihubungkan ke domain melalui MCX.</translation>
 <translation id="2985927503455169394">Gunakan mode default pengalaman aktivasi Asisten</translation>
 <translation id="2987155890997901449">Aktifkan ARC</translation>
 <translation id="2987227569419001736">Mengontrol penggunaan API Bluetooth Web</translation>
 <translation id="2988481278211008583">Jika kebijakan disetel ke Aktif, nilai kunci manifes <ph name="REQUIRED_PLATFORM_VERSION" /> pada aplikasi kios yang diluncurkan otomatis tanpa penundaan akan digunakan sebagai prefiks versi target update otomatis.
 
-      Jika kebijakan disetel ke Nonaktif atau tidak disetel, kunci manifes <ph name="REQUIRED_PLATFORM_VERSION" /> akan diabaikan dan update otomatis akan berjalan normal.
+      Jika kebijakan disetel ke Nonaktif atau tidak disetel, kunci manifes <ph name="REQUIRED_PLATFORM_VERSION" /> akan diabaikan dan update otomatis akan berjalan seperti biasa.
 
       Peringatan: Jangan mendelegasikan kontrol versi <ph name="PRODUCT_OS_NAME" /> ke aplikasi kios, karena dapat mencegah perangkat menerima update software dan perbaikan keamanan penting. Mendelegasikan kontrol versi <ph name="PRODUCT_OS_NAME" /> dapat membahayakan pengguna.</translation>
 <translation id="299519952839316970">Harap diperhatikan, kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 88. Sesi publik tidak lagi didukung. Sebagai gantinya, gunakan <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> untuk mengonfigurasi sesi tamu terkelola.
@@ -1481,7 +1465,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Jika kebijakan ini tidak ditetapkan, atau nilai setelah substitusi bukan merupakan hostname yang valid, tidak ada hostname yang akan disetel dalam permintaan DHCP. </translation>
 <translation id="3051089299923124309">Jika kebijakan disetel ke Aktif, subkonten pihak ketiga di halaman akan diizinkan untuk membuka pop-up HTTP Basic Auth.
 
-       Jika kebijakan disetel ke Nonaktif atau tidak disetel, subkonten pihak ketiga tidak akan dapat membuka pop-up HTTP Basic Auth.
+       Jika kebijakan disetel ke Nonaktif atau tidak disetel, subkonten pihak ketiga tidak dapat membuka pop-up HTTP Basic Auth.
 
       Kebijakan ini biasanya Dinonaktifkan sebagai pertahanan terhadap phishing.</translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
@@ -1503,11 +1487,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Jika kebijakan tidak disetel, atau disetel ke false, maka cipher suite DHE di TLS tidak akan diaktifkan. Kebijakan dapat disetel ke true untuk mengaktifkan cipher suite DHE dan mempertahankan kompatibilitas dengan server yang telah usang. Tindakan ini hanya sementara dan server harus dikonfigurasi ulang.
 
       Server sebaiknya dimigrasikan ke cipher suite ECDHE. Jika tidak tersedia, pastikan cipher suite yang menggunakan pertukaran kunci RSA diaktifkan.</translation>
-<translation id="3117706142826400449">Jika dinonaktifkan, Pembersih Chrome tidak akan memindai sistem untuk menemukan software yang tidak diinginkan dan menjalankan pembersihan. Pembersih Chrome tidak dapat dipicu secara manual dari chrome://settings/cleanup.
-
-      Jika diaktifkan atau tidak disetel, Pembersih Chrome akan memindai sistem secara berkala untuk menemukan software yang tidak diinginkan, dan jika ditemukan, akan menanyakan kepada pengguna apakah ia ingin menghapusnya atau tidak. Pembersih Chrome dapat dipicu secara manual dari chrome://settings.
-
-      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="3119125876909100625">Izinkan upload file yang dilindungi sandi</translation>
 <translation id="3122082892722698079">Mengontrol penggunaan pengecualian konten tidak aman</translation>
 <translation id="3143265893557969814">Jika kebijakan ini disetel, semua jenis data yang ditentukan akan dikecualikan dari sinkronisasi, baik untuk Google Sync maupun sinkronisasi profil roaming. Hal ini berguna untuk mengurangi ukuran profil roaming atau membatasi jenis data yang diupload ke Server Google Sync.
@@ -2133,13 +2112,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4061590579642538878">Laporkan informasi tentang laporan kerusakan.</translation>
 <translation id="4075675819066819571">Posisikan rak di sisi kiri layar</translation>
 <translation id="4075864623710596000">Hostname yang ditentukan dalam daftar ini akan dikecualikan dari pemeriksaan kebijakan HSTS yang berpotensi mengupgrade permintaan dari http ke https. Hanya hostname berlabel tunggal yang diizinkan dalam kebijakan ini. Hostname harus dikanonikalisasi: semua IDN harus dikonversi ke format berlabel A, dan semua huruf ASCII harus berupa huruf kecil. Kebijakan ini hanya berlaku untuk hostname tertentu yang sudah ditentukan; tidak berlaku untuk subdomain dari nama yang ditentukan.</translation>
-<translation id="4076584741592854827">Daftar jenis file yang harus dibuka secara otomatis di hasil download. Pemisah di awal tidak boleh disertakan saat mencantumkan jenis file, jadi cantumkan "txt", bukan ".txt".
-
-      File dengan jenis yang harus dibuka secara otomatis masih akan tunduk pada pemeriksaan Safe Browsing yang diaktifkan dan tidak akan dibuka jika gagal dalam pemeriksaan tersebut.
-
-      Jika kebijakan ini tidak disetel, hanya jenis file yang telah ditentukan pengguna yang akan dibuka secara otomatis saat didownload.
-
-      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat, dan instance macOS yang dikelola melalui MDM atau dihubungkan ke domain melalui MCX.</translation>
 <translation id="408029843066770167">Izinkan kueri ke layanan waktu Google</translation>
 <translation id="408076456549153854">Aktifkan login browser</translation>
 <translation id="4082498585300984671">Mengaktifkan Fitur Click to Call</translation>
@@ -2520,10 +2492,10 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4668497019777708116">Menentukan daftar aplikasi yang dapat diaktifkan sebagai aplikasi pencatat di layar kunci <ph name="PRODUCT_OS_NAME" />.
 
       Jika aplikasi pencatat pilihan diaktifkan di layar kunci, layar kunci akan memuat elemen UI untuk meluncurkan aplikasi pencatat pilihan.
-      Saat diluncurkan, aplikasi akan dapat membuat jendela aplikasi di bagian atas layar kunci, dan membuat item data (catatan) di konteks layar kunci. Saat sesi dibuka, aplikasi akan dapat mengimpor catatan yang dibuat ke sesi pengguna utama. Saat ini, hanya aplikasi pencatat Chrome yang didukung di layar kunci.
+      Saat diluncurkan, aplikasi dapat membuat jendela aplikasi di bagian atas layar kunci, dan membuat item data (catatan) dalam konteks layar kunci. Saat sesi dibuka, aplikasi dapat mengimpor catatan yang dibuat ke sesi pengguna utama. Saat ini, hanya aplikasi pencatat Chrome yang didukung di layar kunci.
 
       Jika kebijakan disetel, pengguna akan diizinkan untuk mengaktifkan aplikasi di layar kunci hanya jika ID ekstensi aplikasi dimuat dalam nilai daftar kebijakan.
-      Oleh karena itu, menyetel kebijakan ini ke daftar kosong akan menonaktifkan pencatatan di layar kunci sepenuhnya.
+      Oleh karena itu, menyetel kebijakan ini ke daftar kosong akan sepenuhnya menonaktifkan pencatatan di layar kunci.
       Perlu diperhatikan bahwa kebijakan berisi ID aplikasi tidak selalu berarti bahwa pengguna dapat mengaktifkan aplikasi sebagai pencatat di layar kunci. Misalnya, di Chrome 61, kumpulan aplikasi yang tersedia juga dibatasi oleh platform.
 
       Jika kebijakan tidak disetel, tidak akan ada batasan pada kumpulan aplikasi yang dapat diaktifkan pengguna di layar kunci sebagaimana diberlakukan oleh kebijakan.
@@ -3876,7 +3848,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6573305661369899995">Setel sumber eksternal batasan URL</translation>
 <translation id="6575944031719151455">Menyetel kebijakan akan menentukan daftar akun lokal perangkat yang ditampilkan di layar login. ID akan menunjukkan akun lokal perangkat yang berbeda.
 
-      Jika kebijakan ini tidak disetel atau disetel ke daftar kosong, berarti tidak ada akun lokal perangkat.</translation>
+      Jika kebijakan ini tidak disetel atau disetel ke daftar kosong, berarti tidak ada akun lokal perangkat yang ditampilkan.</translation>
 <translation id="6583851521569686409">Mengonfigurasi daftar printer.
 
       Kebijakan ini memungkinkan administrator memberikan konfigurasi printer
@@ -4042,7 +4014,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="681446116407619279">Skema autentikasi yang didukung</translation>
 <translation id="6815483833848348029">Jika kebijakan disetel ke Aktif atau tidak disetel dan akun lokal perangkat disetel untuk login otomatis tanpa penundaan, <ph name="PRODUCT_OS_NAME" /> akan menampilkan perintah konfigurasi jaringan saat perangkat offline.
 
-      Jika kebijakan disetel ke Nonaktif, pesan error yang akan ditampilkan.</translation>
+      Jika kebijakan disetel ke Nonaktif, pesan error akan ditampilkan.</translation>
 <translation id="6821268164692776674">Tujuan <ph name="CLOUD_PRINT_NAME" /> dan 'Simpan ke Google Drive'</translation>
 <translation id="6833064854262015312">Jika kebijakan ditetapkan ke Benar (True), Mode kontras tinggi akan diaktifkan di layar login. Jika kebijakan ditetapkan ke Salah (False), Mode kontras tinggi akan dinonaktifkan di layar login.
 
@@ -4082,19 +4054,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini tidak disetel, secara default pengguna yang dikelola perusahaan dan pengguna yang tidak dikelola akan diizinkan.</translation>
 <translation id="6864244339257535116">Izinkan upload dan download file yang dilindungi sandi</translation>
-<translation id="6870295914868104867">Menyetel kebijakan akan menentukan daftar aplikasi dan ekstensi yang diinstal otomatis, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan pengguna. Izin akan diberikan secara implisit, termasuk untuk API ekstensi enterprise.deviceAttributes dan enterprise.platformKeys. (Dua API ini tidak tersedia untuk aplikasi dan ekstensi yang tidak diinstal otomatis.)
-
-      Jika kebijakan tidak disetel, tidak ada aplikasi atau ekstensi yang diinstal otomatis, dan pengguna dapat meng-uninstal aplikasi atau ekstensi apa pun di <ph name="PRODUCT_NAME" />.
-
-      Kebijakan ini akan menggantikan kebijakan <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />. Jika aplikasi atau ekstensi yang sebelumnya diinstal otomatis dihapus dari daftar ini, <ph name="PRODUCT_NAME" /> akan meng-uninstal-nya secara otomatis.
-
-      Untuk instances Windows® yang tidak bergabung dalam domain <ph name="MS_AD_NAME" />, penginstalan otomatis dibatasi untuk aplikasi dan ekstensi di Chrome Web Store.
-
-      Kode sumber ekstensi apa pun dapat diubah oleh pengguna melalui alat developer, yang berpotensi menyebabkan ekstensi tersebut tidak berfungsi lagi. Jika hal ini menjadi masalah, setel kebijakan <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.
-
-      Setiap item daftar kebijakan merupakan string yang berisi ID ekstensi dan, terkadang, URL "update" yang dipisahkan titik koma (;). ID ekstensi adalah string 32 huruf yang ditemukan, misalnya, di chrome://extensions saat dalam mode Developer. Jika ditentukan, URL "update" akan mengarah ke dokumen XML Manifes Update (https://developer.chrome.com/extensions/autoupdate). Secara default, URL update Chrome Web Store akan digunakan. URL "update" yang disetel dalam kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update dalam manifes ekstensi.
-
-       Catatan: Kebijakan ini tidak berlaku untuk mode Samaran. Baca tentang ekstensi hosting (https://developer.chrome.com/extensions/hosting).</translation>
 <translation id="687046793986382807">Kebijakan ini telah dihentikan pada <ph name="PRODUCT_NAME" /> versi 35.
 
       Bagaimanapun juga info memori dilaporkan ke halaman, terlepas dari nilai opsinya, namun ukuran yang dilaporkan
@@ -5728,11 +5687,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Sesi pengguna dipulihkan setelah peluncuran ulang/mulai ulang.</translation>
 <translation id="9160028464653564229">Jangan izinkan situs apa pun meminta akses ke port serial lewat Serial API</translation>
 <translation id="9167719789236691545">Nonaktifkan Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="917514578273777202">Jika kebijakan disetel ke Aktif, penelusuran default akan dilakukan saat pengguna memasukkan teks non-URL ke kolom URL. Untuk menentukan penyedia penelusuran default, setel kebijakan penelusuran default lainnya. Jika kebijakan tersebut dibiarkan kosong, pengguna dapat memilih penyedia default. Jika kebijakan disetel ke Nonaktif, penelusuran tidak akan dilakukan saat pengguna memasukkan teks non-URL di kolom URL.
-
-      Jika kebijakan disetel, pengguna tidak dapat mengubahnya di <ph name="PRODUCT_NAME" />. Jika tidak disetel, penyedia penelusuran default akan diaktifkan, dan pengguna dapat menyetel daftar penyedia penelusuran.
-
-      Catatan: Kebijakan ini hanya tersedia pada instance Windows® yang dihubungkan ke domain <ph name="MS_AD_NAME" />, Windows 10 Pro, atau Chrome Enterprise Upgrade dan instance macOS yang dikelola melalui MDM atau dihubungkan ke domain melalui MCX.</translation>
 <translation id="9185107612228451403">Mengonfigurasi kebijakan terkait ekstensi. Pengguna tidak diizinkan menginstal ekstensi yang tercantum dalam daftar tidak diizinkan kecuali jika ekstensi tersebut dipindahkan ke daftar diizinkan. Anda juga dapat memaksa <ph name="PRODUCT_NAME" /> agar otomatis menginstal ekstensi dengan menentukannya di <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Ekstensi instal otomatis akan diinstal meskipun ekstensi tersebut tercantum dalam daftar tidak diizinkan.</translation>
 <translation id="9187743794267626640">Menonaktifkan pemasangan penyimpanan eksternal</translation>
 <translation id="9190456586252617675">Kebijakan ini mengontrol mode pengalaman aktivasi Asisten.

@@ -38,7 +38,7 @@ MATCHER_P(MatchesTarget, target, "") {
 }
 
 TextAttachment CreateTextAttachment(TextAttachment::Type type) {
-  return TextAttachment("text body", type, /*size=*/9);
+  return TextAttachment(type, "text body");
 }
 
 FileAttachment CreateFileAttachment(FileAttachment::Type type) {

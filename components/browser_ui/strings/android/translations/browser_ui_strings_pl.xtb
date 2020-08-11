@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Adres zablokowany: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Dopuszczone</translation>
 <translation id="429312253194641664">Strona odtwarza multimedia</translation>
+<translation id="4336434711095810371">Wyczyść wszystkie dane</translation>
 <translation id="4433925000917964731">Lżejsza wersja strony dostarczona przez Google</translation>
 <translation id="4434045419905280838">Pop-upy i przekierowania</translation>
 <translation id="445467742685312942">Zezwalaj stronom na odtwarzanie treści chronionych</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Karta incognito</translation>
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5301954838959518834">Rozumiem</translation>
-<translation id="5307446750509046227">Wyczyść dane witryn</translation>
 <translation id="5313967007315987356">Dodaj stronę</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5335288049665977812">Zezwalaj na wykonywanie kodu JavaScript w witrynach (zalecane)</translation>
@@ -250,7 +250,6 @@
 <translation id="8801436777607969138">Zablokuj JavaScript w określonej witrynie.</translation>
 <translation id="8816026460808729765">Blokuj stronom dostęp do czujników</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Pamięć</translation>
 <translation id="8926666909099850184">Funkcja NFC na tym urządzeniu jest wyłączona. Włącz ją w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">U większości użytkowników ta strona szybko się otwiera i umożliwia płynną interakcję</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -262,4 +261,5 @@
 <translation id="913657688200966289">Przyznaj aplikacji <ph name="APP_NAME" /> uprawnienia w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Dostęp do mikrofonu</translation>
 <translation id="965817943346481315">Zablokuj, jeśli na stronie wyświetlają się uciążliwe lub wprowadzające w błąd reklamy (zalecane)</translation>
+<translation id="967624055006145463">Zapisane dane</translation>
 </translationbundle>

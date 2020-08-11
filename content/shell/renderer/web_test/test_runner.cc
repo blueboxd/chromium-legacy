@@ -1232,11 +1232,11 @@ void TestRunnerBindings::EnableAutoResizeMode(int min_width,
   if (max_width <= 0 || max_height <= 0)
     return;
 
-  RenderWidget* widget = frame_->GetLocalRootRenderWidget();
+  blink::WebView* web_view = GetWebFrame()->View();
 
-  blink::WebSize min_size(min_width, min_height);
-  blink::WebSize max_size(max_width, max_height);
-  widget->EnableAutoResizeForTesting(min_size, max_size);
+  gfx::Size min_size(min_width, min_height);
+  gfx::Size max_size(max_width, max_height);
+  web_view->EnableAutoResizeForTesting(min_size, max_size);
 }
 
 void TestRunnerBindings::DisableAutoResizeMode(int new_width, int new_height) {
@@ -1250,11 +1250,12 @@ void TestRunnerBindings::DisableAutoResizeMode(int new_width, int new_height) {
 
   RenderWidget* widget = frame_->GetLocalRootRenderWidget();
 
-  blink::WebSize new_size(new_width, new_height);
-  widget->DisableAutoResizeForTesting(new_size);
+  gfx::Size new_size(new_width, new_height);
+  blink::WebView* web_view = GetWebFrame()->View();
+  web_view->DisableAutoResizeForTesting(new_size);
 
   gfx::Rect window_rect(widget->WindowRect().x, widget->WindowRect().y,
-                        new_size.width, new_size.height);
+                        new_size.width(), new_size.height());
   widget->SetWindowRectSynchronouslyForTesting(window_rect);
 }
 
@@ -2258,6 +2259,7 @@ void TestRunner::ResetWebView(WebViewTestProxy* web_view_test_proxy) {
 
   web_view->SetTabKeyCyclesThroughElements(true);
   web_view->GetSettings()->SetHighlightAds(false);
+  web_view->DisableAutoResizeForTesting(gfx::Size());
 }
 
 void TestRunner::ResetWebWidget(WebWidgetTestProxy* web_widget_test_proxy) {
@@ -2269,7 +2271,6 @@ void TestRunner::ResetWebWidget(WebWidgetTestProxy* web_widget_test_proxy) {
   // These things are only modified/valid for the main frame's widget.
   if (web_widget_test_proxy->delegate()) {
     web_widget->ResetZoomLevelForTesting();
-    web_widget_test_proxy->DisableAutoResizeForTesting(gfx::Size());
     web_widget_test_proxy->UseSynchronousResizeModeForTesting(false);
 
     web_widget->SetMainFrameOverlayColor(SK_ColorTRANSPARENT);

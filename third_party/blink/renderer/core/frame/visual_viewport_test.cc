@@ -875,7 +875,7 @@ TEST_P(VisualViewportTest, TestVisualViewportGetsSizeInAutoSizeMode) {
   EXPECT_EQ(IntSize(0, 0), IntSize(WebView()->MainFrameWidget()->Size()));
   EXPECT_EQ(IntSize(0, 0), GetFrame()->GetPage()->GetVisualViewport().Size());
 
-  WebView()->EnableAutoResizeMode(WebSize(10, 10), WebSize(1000, 1000));
+  WebView()->EnableAutoResizeMode(gfx::Size(10, 10), gfx::Size(1000, 1000));
 
   RegisterMockedHttpURLLoad("200-by-300.html");
   NavigateTo(base_url_ + "200-by-300.html");
@@ -2386,7 +2386,7 @@ TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
 TEST_P(VisualViewportTest, AutoResizeNoHeightUsesMinimumHeight) {
   InitializeWithDesktopSettings();
   WebView()->ResizeWithBrowserControls(WebSize(0, 0), 0, 0, false);
-  WebView()->EnableAutoResizeMode(WebSize(25, 25), WebSize(100, 100));
+  WebView()->EnableAutoResizeMode(gfx::Size(25, 25), gfx::Size(100, 100));
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(WebView()->MainFrameImpl(),
                                      "<!DOCTYPE html>"

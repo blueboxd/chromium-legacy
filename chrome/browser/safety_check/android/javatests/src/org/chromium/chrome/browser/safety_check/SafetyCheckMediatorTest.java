@@ -381,7 +381,7 @@ public class SafetyCheckMediatorTest {
     @Test
     public void testPasswordsInitialLoadDuringInitialState() {
         // Order: initial state -> load completed -> done.
-        // setInitialState was invoked on Mediator creation.
+        mMediator.setInitialState();
         assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
 
         mMediator.onCompromisedCredentialsFetchCompleted();
@@ -398,7 +398,7 @@ public class SafetyCheckMediatorTest {
     @Test
     public void testPasswordsInitialLoadDuringRunningCheck() {
         // Order: initial state -> safety check triggered -> load completed -> check done.
-        // setInitialState was invoked on Mediator creation.
+        mMediator.setInitialState();
         assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
 
         mMediator.performSafetyCheck();
@@ -419,7 +419,7 @@ public class SafetyCheckMediatorTest {
     @Test
     public void testPasswordsInitialLoadAfterRunningCheck() {
         // Order: initial state -> safety check triggered -> check done -> load completed.
-        // setInitialState was invoked on Mediator creation.
+        mMediator.setInitialState();
         assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
 
         mMediator.performSafetyCheck();
@@ -440,7 +440,7 @@ public class SafetyCheckMediatorTest {
     @Test
     public void testPasswordsInitialLoadCheckReturnsError() {
         // Order: initial state -> safety check triggered -> check error -> load ignored.
-        // setInitialState was invoked on Mediator creation.
+        mMediator.setInitialState();
         assertEquals(PasswordsState.CHECKING, mModel.get(PASSWORDS_STATE));
 
         mMediator.performSafetyCheck();

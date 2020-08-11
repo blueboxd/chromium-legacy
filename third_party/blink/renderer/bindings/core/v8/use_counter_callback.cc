@@ -161,13 +161,6 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kWasmSimdOpcodes:
       blink_feature = WebFeature::kV8WasmSimdOpcodes;
       break;
-    case v8::Isolate::kAtomicsNotify:
-      blink_feature = WebFeature::kV8AtomicsNotify;
-      break;
-    case v8::Isolate::kAtomicsWake:
-      blink_feature = WebFeature::kV8AtomicsWake;
-      deprecated = true;
-      break;
     case v8::Isolate::kCollator:
       blink_feature = WebFeature::kCollator;
       break;

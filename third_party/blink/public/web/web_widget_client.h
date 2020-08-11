@@ -127,6 +127,9 @@ class WebWidgetClient {
   // content view area, i.e. doesn't include any window decorations.
   virtual WebRect ViewRect() { return WebRect(); }
 
+  // Set the size of the widget.
+  virtual void SetSize(const gfx::Size&) {}
+
   // Requests to lock the mouse cursor for the |requester_frame| in the
   // widget. If true is returned, the success result will be asynchronously
   // returned via a single call to WebWidget::didAcquirePointerLock() or

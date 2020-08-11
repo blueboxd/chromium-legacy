@@ -51,21 +51,19 @@ void RemapProxyPolicies(PolicyMap* policies) {
   // first, and then only policies with those exact attributes are merged.
   PolicyMap::Entry current_priority;  // Defaults to the lowest priority.
   PolicySource inherited_source = POLICY_SOURCE_ENTERPRISE_DEFAULT;
-  std::unique_ptr<base::DictionaryValue> proxy_settings(
-      new base::DictionaryValue);
+  base::Value proxy_settings(base::Value::Type::DICTIONARY);
   for (size_t i = 0; i < base::size(kProxyPolicies); ++i) {
     const PolicyMap::Entry* entry = policies->Get(kProxyPolicies[i]);
     if (entry) {
       if (entry->has_higher_priority_than(current_priority)) {
-        proxy_settings->Clear();
+        proxy_settings = base::Value(base::Value::Type::DICTIONARY);
         current_priority = entry->DeepCopy();
         if (entry->source > inherited_source)  // Higher priority?
           inherited_source = entry->source;
       }
       if (!entry->has_higher_priority_than(current_priority) &&
           !current_priority.has_higher_priority_than(*entry)) {
-        proxy_settings->Set(kProxyPolicies[i],
-                            entry->value()->CreateDeepCopy());
+        proxy_settings.SetKey(kProxyPolicies[i], entry->value()->Clone());
       }
       policies->Erase(kProxyPolicies[i]);
     }
@@ -73,7 +71,7 @@ void RemapProxyPolicies(PolicyMap* policies) {
   // Sets the new |proxy_settings| if kProxySettings isn't set yet, or if the
   // new priority is higher.
   const PolicyMap::Entry* existing = policies->Get(key::kProxySettings);
-  if (!proxy_settings->empty() &&
+  if (!proxy_settings.DictEmpty() &&
       (!existing || current_priority.has_higher_priority_than(*existing))) {
     policies->Set(key::kProxySettings, current_priority.level,
                   current_priority.scope, inherited_source,

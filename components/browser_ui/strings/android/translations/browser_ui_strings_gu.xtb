@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">નેવિગેશન અવરોધિત છે: <ph name="URL" /></translation>
 <translation id="4278390842282768270">મંજૂર</translation>
 <translation id="429312253194641664">સાઇટ મીડિયા ચલાવી રહી છે</translation>
+<translation id="4336434711095810371">બધો ડેટા સાફ કરો</translation>
 <translation id="4433925000917964731">Google દ્વારા પૂરું પાડવામાં આવેલું લાઇટ વર્ઝનનું પેજ</translation>
 <translation id="4434045419905280838">પૉપ-અપ અને રીડાયરેક્ટ</translation>
 <translation id="445467742685312942">સાઇટને સંરક્ષિત કન્ટેન્ટ ચલાવવાની મંજૂરી આપો</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">છૂપા મોડમાંની ટૅબ</translation>
 <translation id="5300589172476337783">બતાવો</translation>
 <translation id="5301954838959518834">બરાબર, સમજાઇ ગયું</translation>
-<translation id="5307446750509046227">સાઇટ સ્ટોરેજ સાફ કરો</translation>
 <translation id="5313967007315987356">સાઈટ ઉમેરો</translation>
 <translation id="5317780077021120954">સાચવો</translation>
 <translation id="5335288049665977812">સાઇટ્સને JavaScript ચલાવાની મંજૂરી આપો (ભલામણ કરેલ)</translation>
@@ -249,7 +249,6 @@
 <translation id="8801436777607969138">કોઈ ચોક્કસ સાઇટ માટે JavaScriptને બ્લૉક કરો.</translation>
 <translation id="8816026460808729765">સાઇટને સેન્સરને ઍક્સેસ કરવાથી બ્લૉક કરો</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">સ્ટોરેજ</translation>
 <translation id="8926666909099850184">આ ડિવાઇસ માટે NFC સેવા બંધ કરેલી છે. તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>
 <translation id="8929372349074745002">આ સાઇટ મોટાભાગના લોકો માટે ઝડપથી ખૂલે છે અને પ્રતિસાદ આપે છે</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +260,5 @@
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં <ph name="APP_NAME" /> માટે પરવાનગીઓ ચાલુ કરો.</translation>
 <translation id="945632385593298557">તમારા માઇક્રોફોનની ઍક્સેસ</translation>
 <translation id="965817943346481315">જો સાઇટ ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવતી હોય, તો બ્લૉક કરો (ભલામણ કરેલ)</translation>
+<translation id="967624055006145463">સ્ટોર કરેલ ડેટા</translation>
 </translationbundle>

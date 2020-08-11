@@ -36,10 +36,8 @@ class ASH_EXPORT ContextualNudgeStatusTracker {
 
   bool gesture_time_recorded() const { return gesture_time_recorded_; }
 
-  bool dismissal_reason_recorded() const { return dismissal_reason_recorded_; }
-
   bool can_record_dismiss_metrics() const {
-    return !gesture_time_recorded_ && !dismissal_reason_recorded_;
+    return can_record_dismiss_metrics_;
   }
 
  private:
@@ -49,13 +47,16 @@ class ASH_EXPORT ContextualNudgeStatusTracker {
   // The tooltip type tracked by this object.
   const ash::contextual_tooltip::TooltipType type_;
 
-  // Tracks whether the tooltip dismiss time has been recorded.
-  // Set when the tooltip is shown. Resets after gesture is  performed.
+  // Tracks whether the tooltip dismiss time has been recorded because of the
+  // gesture is performed. Sets after gesture is performed. Resets when the
+  // tooltip is shown.
   bool gesture_time_recorded_ = false;
 
-  // Tracks whether the tooltip dismiss time has been recorded.
-  // Set when the tooltip is shown. Resets after tooltip is hidden.
-  bool dismissal_reason_recorded_ = false;
+  // Tracks whether the nudge dismiss metrics can be recorded. Only after the
+  // tooltip is shown, the tooltip can be dismissed and the dismiss reason
+  // metrics can be logged. Otherwise, calling MaybeLogNudgeDismissedMetrics()
+  // is a no-op.
+  bool can_record_dismiss_metrics_ = false;
 };
 
 }  // namespace ash

@@ -7767,9 +7767,6 @@ the Bookmarks menu.">
 
       <!-- Dice Web Signin Interception Bubble-->
       <if expr="not chromeos and not is_android">
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_TITLE" desc="Title of the web signin interception bubble">
-          Create Work Profile?
-        </message>
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_NEW_PROFILE_BUTTON_LABEL" desc="Label of the confirmation button in the web signin interception bubble">
           New Profile
         </message>

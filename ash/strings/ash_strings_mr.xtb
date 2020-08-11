@@ -506,6 +506,7 @@
 <translation id="6972754398087986839">प्रारंभ करा</translation>
 <translation id="6981982820502123353">ॲक्सेसिबिलिटी</translation>
 <translation id="698231206551913481">एकदा हा वापरकर्ता काढल्यानंतर या वापरकर्त्याशी संबद्ध सर्व फाइल आणि स्थानिक डेटा कायमचा हटवला जाईल.</translation>
+<translation id="7007983414944123363">तुमच्या पिन किंवा पासवर्डची पडताळणी करता आली नाही. पुन्हा प्रयत्न करा.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> वाजता परत या.</translation>
 <translation id="7025533177575372252">तुमचे <ph name="DEVICE_NAME" /> तुमच्या फोनशी कनेक्ट करा</translation>
 <translation id="7026338066939101231">घट</translation>
@@ -551,6 +552,7 @@
 <translation id="7568294522609223312">ऑटोमेटिक क्लिक बंद करा</translation>
 <translation id="7568637526529101738">राइट क्लिक केल्याने किंवा दाबून ठेवल्याने, Assistant तुम्हाला व्याख्या किंवा तुमच्या निवडीसाठी एकक रूपांतर यांसारखी माहिती दाखवतो.</translation>
 <translation id="7569509451529460200">ब्रेल आणि ChromeVox सुरू केलेले आहेत</translation>
+<translation id="7579778809502851308">स्‍क्रीन कॅप्‍चर</translation>
 <translation id="7593891976182323525">Search किंवा Shift</translation>
 <translation id="7600875258240007829">सर्व सूचना पहा</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° फॅ</translation>
@@ -669,6 +671,7 @@
 <translation id="8841375032071747811">मागे जा बटण</translation>
 <translation id="8843682306134542540">रोटेशन लॉक टॉगल करा. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">तुमच्या पिन किंवा पासवर्डची अद्याप पडताळणी करता आली नाही. टीप: तुम्ही अलीकडेच तुमच्या पासवर्ड बदलला असल्यास, तुमचा जुना पासवर्ड वापरा. तुम्ही साइन आउट केल्यानंतर तुमचा नवीन पासवर्ड लागू केला जाईल.</translation>
 <translation id="8870509716567206129">ॲप विभाजित-स्क्रीनला सपोर्ट करत नाही.</translation>
 <translation id="8874184842967597500">कनेक्ट नाही</translation>
 <translation id="8877788021141246043">रिमाइंडर सेट करा</translation>

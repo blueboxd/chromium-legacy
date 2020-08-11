@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">Навигација је блокирана: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Дозвољено</translation>
 <translation id="429312253194641664">Сајт пушта медијски садржај</translation>
+<translation id="4336434711095810371">Обриши све податке</translation>
 <translation id="4433925000917964731">Поједностављену страницу пружа Google</translation>
 <translation id="4434045419905280838">Искачући прозори и преусмеравања</translation>
 <translation id="445467742685312942">Дозволите сајтовима да пуштају заштићени садржај</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">Картица без архивирања</translation>
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5301954838959518834">Важи</translation>
-<translation id="5307446750509046227">Обриши складиште сајта</translation>
 <translation id="5313967007315987356">Додајте сајт</translation>
 <translation id="5317780077021120954">Сачувај</translation>
 <translation id="5335288049665977812">Дозволи сајтовима да покрећу JavaScript (препоручено)</translation>
@@ -250,7 +250,6 @@
 <translation id="8801436777607969138">Блокирајте JavaScript за одређени сајт.</translation>
 <translation id="8816026460808729765">Не дозвољавај сајтовима да приступају сензорима</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">Меморијски простор</translation>
 <translation id="8926666909099850184">NFC је искључен за овај уређај. Укључите га у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Овај сајт се брзо отвара и брзо реагује за већину људи</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -262,4 +261,5 @@
 <translation id="913657688200966289">Укључите дозволе за апликацију <ph name="APP_NAME" /> у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Приступ микрофону</translation>
 <translation id="965817943346481315">Блокирај ако сајт приказује огласе који ометају активности или обмањујуће огласе (препоручено)</translation>
+<translation id="967624055006145463">Сачувани подаци</translation>
 </translationbundle>

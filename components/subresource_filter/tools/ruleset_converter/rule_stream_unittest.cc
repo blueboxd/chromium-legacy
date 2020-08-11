@@ -46,7 +46,7 @@ std::vector<std::string> GetSomeRules() {
 std::vector<std::string> GetSomeChromeUnfriendlyRules() {
   return std::vector<std::string>{
       "/a[0-9].com/$image",
-      "a.com$image,popup"
+      "a.com$image,popup",
       "a.com$popup",
       "a.com$~image",
       "a.com$~popup",

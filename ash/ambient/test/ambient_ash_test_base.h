@@ -15,12 +15,14 @@
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
 class AmbientContainerView;
 class AmbientPhotoController;
+class MediaStringView;
 
 // The base class to test the Ambient Mode in Ash.
 class AmbientAshTestBase : public AshTestBase {
@@ -66,6 +68,11 @@ class AmbientAshTestBase : public AshTestBase {
   // Simulates a screen brightness changed event.
   void SetScreenBrightnessAndWait(double percent);
 
+  void SimulateMediaMetadataChanged(media_session::MediaMetadata metadata);
+
+  void SimulateMediaPlaybackStateChanged(
+      media_session::mojom::MediaPlaybackState state);
+
   // Set the size of the next image that will be loaded.
   void SetPhotoViewImageSize(int width, int height);
 
@@ -85,6 +92,9 @@ class AmbientAshTestBase : public AshTestBase {
   bool IsAccessTokenRequestPending() const;
 
   AmbientBackgroundImageView* GetAmbientBackgroundImageView();
+
+  // Returns the media string view for displaying ongoing media info.
+  MediaStringView* GetMediaStringView();
 
   AmbientController* ambient_controller();
 

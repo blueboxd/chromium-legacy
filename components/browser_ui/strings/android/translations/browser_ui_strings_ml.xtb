@@ -100,6 +100,7 @@
 <translation id="4259722352634471385">നാവിഗേഷൻ തടഞ്ഞിരിക്കുന്നു: <ph name="URL" /></translation>
 <translation id="4278390842282768270">അനുവദനീയം</translation>
 <translation id="429312253194641664">സൈറ്റ്, മീഡിയ പ്ലേ ചെയ്യുന്നു</translation>
+<translation id="4336434711095810371">എല്ലാ ഡാറ്റയും മായ്ക്കുക</translation>
 <translation id="4433925000917964731">Google നല്‍കുന്ന ലൈറ്റ് പേജ്</translation>
 <translation id="4434045419905280838">പോപ്-അപ്പുകളും റീഡയറക്‌റ്റുകളും</translation>
 <translation id="445467742685312942">പരിരക്ഷിത ഉള്ളടക്കം പ്ലേ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക</translation>
@@ -122,7 +123,6 @@
 <translation id="5123685120097942451">അദൃശ്യ ടാബ്</translation>
 <translation id="5300589172476337783">കാണിക്കുക</translation>
 <translation id="5301954838959518834">മനസ്സിലായി</translation>
-<translation id="5307446750509046227">സൈറ്റ് സംഭരണം മായ്ക്കൂ</translation>
 <translation id="5313967007315987356">സൈറ്റ് ചേർക്കുക</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
 <translation id="5335288049665977812">JavaScript റൺ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>
@@ -228,6 +228,7 @@
 <translation id="8261506727792406068">ഇല്ലാതാക്കുക</translation>
 <translation id="8300705686683892304">ആപ്പ് മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="8372893542064058268">ഒരു പ്രത്യേക സൈറ്റിന് വേണ്ടി പശ്ചാത്തലം സമന്വയിപ്പിക്കൽ അനുവദിക്കുക.</translation>
+<translation id="8376384591331888629">ഈ സൈറ്റിൽ മൂന്നാം കക്ഷി കുക്കികളെ ഉൾപ്പെടുത്തുന്നു</translation>
 <translation id="83792324527827022">ഒരു സൈറ്റ് നിങ്ങളുടെ ക്യാമറയും മൈക്രോഫോണും ഉപയോഗിക്കുന്നു</translation>
 <translation id="8380167699614421159">ഈ സൈറ്റ്, അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്നു</translation>
 <translation id="8394832520002899662">സൈറ്റിലേക്ക് മടങ്ങാൻ ടാപ്പ് ചെയ്യുക</translation>
@@ -249,7 +250,6 @@
 <translation id="8801436777607969138">ഒരു നിർദ്ദിഷ്‌ട സൈറ്റിനായി JavaScript ബ്ലോക്ക് ചെയ്യുക.</translation>
 <translation id="8816026460808729765">സെൻസറുകൾ ആക്‌സസ് ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885701979325669005">സംഭരണം</translation>
 <translation id="8926666909099850184">ഈ ഉപകരണത്തിനുള്ള NFC ഓഫാണ്. ഇത് <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> ഓണാക്കുക.</translation>
 <translation id="8929372349074745002">കൂടുതൽ ആളുകൾക്കും ഈ സൈറ്റ് വേഗത്തിൽ തുറക്കുകയും പ്രതികരിക്കുകയും ചെയ്യുന്നു</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -261,4 +261,5 @@
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> <ph name="APP_NAME" /> ആപ്പിനായി അനുമതികൾ ഓണാക്കുക.</translation>
 <translation id="945632385593298557">നിങ്ങളുടെ മൈക്രോഫോൺ ആക്‌സസ് ചെയ്യുക</translation>
 <translation id="965817943346481315">സൈറ്റ്, അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്നുണ്ടെങ്കില്‍ ബ്ലോക്ക് ചെയ്യുക (ശുപാര്‍ശ ചെയ്യുന്നു)</translation>
+<translation id="967624055006145463">ഡാറ്റ സംഭരിച്ചു</translation>
 </translationbundle>

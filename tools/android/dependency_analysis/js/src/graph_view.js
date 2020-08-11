@@ -350,9 +350,10 @@ class GraphView {
         .classed('graph-labels', true)
         .attr('pointer-events', 'none');
 
-    // TODO(yjlong): SVG should be resizable & these values updated.
-    const width = +svg.attr('width');
-    const height = +svg.attr('height');
+    // Using .style() instead of .attr() gets px-based measurements of
+    // percentage-based widths and heights.
+    const width = parseInt(svg.style('width'), 10);
+    const height = parseInt(svg.style('height'), 10);
 
     const centeringStrengthY = 0.1;
     const centeringStrengthX = centeringStrengthY * (height / width);

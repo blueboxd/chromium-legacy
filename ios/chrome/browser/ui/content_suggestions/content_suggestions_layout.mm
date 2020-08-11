@@ -16,6 +16,13 @@
 
 @implementation ContentSuggestionsLayout
 
+- (instancetype)initWithOffset:(CGFloat)offset {
+  if (self = [super init]) {
+    _offset = offset;
+  }
+  return self;
+}
+
 - (CGSize)collectionViewContentSize {
   CGFloat collectionViewHeight = self.collectionView.bounds.size.height;
   CGFloat headerHeight = [self firstHeaderHeight];
@@ -40,6 +47,11 @@
   CGSize contentSize = [super collectionViewContentSize];
   if (contentSize.height < minimumHeight) {
     contentSize.height = minimumHeight;
+    // Increases the minimum height to allow the page to scroll to the cached
+    // position.
+    if (self.offset > 0) {
+      contentSize.height += self.offset;
+    }
   }
   return contentSize;
 }

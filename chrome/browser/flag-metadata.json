@@ -3901,7 +3901,7 @@
   {
     "name": "scanning-ui",
     "owners": [ "jschettler", "bmgordon" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "scheduler-configuration",

@@ -13,7 +13,6 @@ namespace content {
 class WebContents;
 }
 
-struct AccountInfo;
 class Browser;
 
 class DiceWebSigninInterceptorDelegate
@@ -24,16 +23,15 @@ class DiceWebSigninInterceptorDelegate
 
   // DiceWebSigninInterceptor::Delegate
   void ShowSigninInterceptionBubble(
-      DiceWebSigninInterceptor::SigninInterceptionType signin_interception_type,
       content::WebContents* web_contents,
-      const AccountInfo& account_info,
+      const BubbleParameters& bubble_parameters,
       base::OnceCallback<void(bool)> callback) override;
 
  private:
   // Implemented in dice_web_signin_interception_bubble_view.cc
   void ShowSigninInterceptionBubbleInternal(
       Browser* browser,
-      const AccountInfo& account_info,
+      const BubbleParameters& bubble_parameters,
       base::OnceCallback<void(bool)> callback);
 };
 

@@ -25,5 +25,6 @@ PASS Call Animation.cancel after restarting transition immediately
 FAIL Set timeline and play transition after clear the timeline promise_test: Unhandled rejection with value: object "TypeError: Cannot assign to read only property 'timeline' of object '#<CSSTransition>'"
 PASS Set null target effect after canceling the transition
 PASS Cancel the transition after clearing the target effect
+PASS Cancel the transition after it finishes
 Harness: the test ran to completion.
 

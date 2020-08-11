@@ -273,7 +273,6 @@ WebrtcDummyVideoEncoderFactory::CodecInfo
 WebrtcDummyVideoEncoderFactory::QueryVideoEncoder(
     const webrtc::SdpVideoFormat& format) const {
   CodecInfo codec_info;
-  codec_info.is_hardware_accelerated = true;
   // Set internal source to true to directly provide encoded frames to webrtc.
   codec_info.has_internal_source = true;
   return codec_info;

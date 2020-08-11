@@ -17,6 +17,7 @@ class MockCastWebContents : public CastWebContents {
 
   // CastWebContents implementation
   MOCK_METHOD(int, tab_id, (), (const, override));
+  MOCK_METHOD(int, id, (), (const, override));
   MOCK_METHOD(content::WebContents*, web_contents, (), (const, override));
   MOCK_METHOD(PageState, page_state, (), (const, override));
   MOCK_METHOD(QueryableDataHost*, queryable_data_host, (), (const, override));

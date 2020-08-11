@@ -51,6 +51,8 @@ blink_modules_sources("payments") {
     "payment_state_resolver.h",
     "payments_validators.cc",
     "payments_validators.h",
+    "secure_payment_confirmation_helper.cc",
+    "secure_payment_confirmation_helper.h",
     "update_payment_details_function.cc",
     "update_payment_details_function.h",
   ]

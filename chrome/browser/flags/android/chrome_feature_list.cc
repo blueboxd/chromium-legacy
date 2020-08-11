@@ -408,7 +408,7 @@ const base::Feature kContextMenuEnableLensShoppingAllowlist{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextMenuCopyImage{"ContextMenuCopyImage",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextMenuSearchWithGoogleLens{
     "ContextMenuSearchWithGoogleLens", base::FEATURE_DISABLED_BY_DEFAULT};

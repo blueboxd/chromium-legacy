@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
@@ -105,11 +106,11 @@ bool PasswordManagerClientHelper::ShouldPromptToEnableAutoSignIn() const {
 
 bool PasswordManagerClientHelper::ShouldPromptToMovePasswordToAccount(
     const PasswordFormManagerForUI& submitted_manager) const {
-  if (!delegate_->GetPasswordFeatureManager()
-           ->ShouldShowAccountStorageBubbleUi()) {
+  PasswordFeatureManager* feature_manager =
+      delegate_->GetPasswordFeatureManager();
+  if (!feature_manager->ShouldShowAccountStorageBubbleUi())
     return false;
-  }
-  if (delegate_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
+  if (feature_manager->GetDefaultPasswordStore() ==
       autofill::PasswordForm::Store::kProfileStore) {
     return false;
   }
@@ -125,7 +126,14 @@ bool PasswordManagerClientHelper::ShouldPromptToMovePasswordToAccount(
           submitted_manager.GetPendingCredentials().signon_realm)) {
     return false;
   }
-  return true;
+  int max_move_to_account_offers_for_non_opted_in_user =
+      base::GetFieldTrialParamByFeatureAsInt(
+          features::kEnablePasswordsAccountStorage,
+          features::kMaxMoveToAccountOffersForNonOptedInUser,
+          features::kMaxMoveToAccountOffersForNonOptedInUserDefaultValue);
+  return feature_manager->IsOptedInForAccountStorage() ||
+         feature_manager->GetMoveToAccountRefusedCount() <
+             max_move_to_account_offers_for_non_opted_in_user;
 }
 
 }  // namespace password_manager

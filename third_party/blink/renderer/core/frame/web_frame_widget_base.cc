@@ -598,6 +598,11 @@ void WebFrameWidgetBase::UpdateVisualProperties(
   // https://developer.mozilla.org/en-US/docs/Web/CSS/@media/display-mode
   SetDisplayMode(visual_properties.display_mode);
 
+  SetAutoResizeMode(visual_properties.auto_resize_enabled,
+                    visual_properties.min_size_for_auto_resize,
+                    visual_properties.max_size_for_auto_resize,
+                    visual_properties.screen_info.device_scale_factor);
+
   bool capture_sequence_number_changed =
       visual_properties.capture_sequence_number !=
       last_capture_sequence_number_;

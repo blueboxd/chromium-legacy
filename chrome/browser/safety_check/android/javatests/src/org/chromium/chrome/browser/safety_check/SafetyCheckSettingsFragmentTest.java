@@ -7,6 +7,10 @@ package org.chromium.chrome.browser.safety_check;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -69,6 +73,18 @@ public class SafetyCheckSettingsFragmentTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
+        // Make the passwords initial status return immediately to avoid spinning animation.
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(0);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(0);
+        doAnswer(invocation -> {
+            PasswordCheck.Observer observer =
+                    (PasswordCheck.Observer) (invocation.getArguments()[0]);
+            observer.onCompromisedCredentialsFetchCompleted();
+            observer.onSavedPasswordsFetchCompleted();
+            return null;
+        })
+                .when(mPasswordCheck)
+                .addObserver(any(SafetyCheckMediator.class), eq(true));
     }
 
     @Test

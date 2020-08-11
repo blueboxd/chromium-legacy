@@ -466,13 +466,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 
       Nếu bạn đặt chính sách này thành False, thì người dùng không thể thêm, xóa hoặc sửa đổi dấu trang. Người dùng vẫn có thể sử dụng dấu trang hiện có.</translation>
 <translation id="1715151459541210849">Bật tính năng hỗ trợ tiếp cận về đọc chính tả</translation>
-<translation id="1717817358640580294">Nếu bạn không đặt chính sách này và tính năng Làm sạch Chrome phát hiện phần mềm không mong muốn, thì tính năng này có thể báo cáo siêu dữ liệu về lần quét đó cho Google theo chính sách do SafeBrowsingExtendedReportingEnabled đặt. Sau đó, tính năng Làm sạch Chrome sẽ hỏi người dùng xem họ có muốn xóa phần mềm không mong muốn hay không. Người dùng có thể chọn chia sẻ kết quả của quá trình làm sạch với Google để hỗ trợ việc phát hiện phần mềm không mong muốn trong tương lai. Những kết quả này chứa siêu dữ liệu tệp, tiện ích tự động cài đặt và khóa sổ đăng ký như mô tả trong Báo cáo chính thức về quyền riêng tư của Chrome.
-
-      Nếu bạn tắt tùy chọn cài đặt này và tính năng Làm sạch Chrome phát hiện thấy phần mềm không mong muốn, thì tính năng này sẽ không báo cáo siêu dữ liệu về lần quét đó cho Google, ghi đè bất kỳ chính sách nào do SafeBrowsingExtendedReportingEnabled đặt. Tính năng Làm sạch Chrome sẽ hỏi người dùng xem họ có muốn xóa phần mềm không mong muốn hay không.  Kết quả của quá trình làm sạch sẽ không được báo cáo cho Google và người dùng sẽ không có tùy chọn để làm như vậy.
-
-      Nếu bạn bật tùy chọn cài đặt này và tính năng Làm sạch Chrome phát hiện phần mềm không mong muốn, thì tính năng này có thể báo cáo siêu dữ liệu về lần quét đó cho Google, ghi đè bất kỳ chinh sách nào do SafeBrowsingExtendedReportingEnabled đặt. Tính năng Làm sạch Chrome sẽ hỏi người dùng xem họ có muốn xóa phần mềm không mong muốn hay không.  Kết quả làm sạch sẽ được báo cáo cho Google và người dùng sẽ không có tùy chọn để chọn không gửi.
-
-      Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="172374442286684480">Cho phép tất cả trang web lưu dữ liệu trên máy</translation>
 <translation id="1736269219679256369">Cho phép tiến hành từ trang cảnh báo SSL</translation>
 <translation id="1745973235372964482">Không cho phép các tệp được bảo vệ bằng mật khẩu</translation>
@@ -1389,15 +1382,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Tùy chọn cài đặt này không được định cấu hình nếu bạn tắt tùy chọn cài đặt này. Người dùng vẫn có thể thay đổi tùy chọn cài đặt này trong <ph name="PRODUCT_NAME" />.
 
           Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký dịch vụ quản lý thiết bị, cũng như phiên bản macOS được quản lý thông qua phần mềm MDM (Quản lý thiết bị di động) hoặc đã liên kết với miền qua MCX.</translation>
-<translation id="2982571648442031489">Định cấu hình danh sách miền mà tính năng Duyệt web an toàn sẽ tin cậy. Điều này có nghĩa là:
-      Tính năng Duyệt web an toàn sẽ không kiểm tra các tài nguyên nguy hiểm (chẳng hạn như lừa đảo, phần mềm độc hại hoặc phần mềm không mong muốn) nếu URL của chúng khớp với những miền này.
-      Dịch vụ bảo vệ tệp tải xuống của tính năng Duyệt web an toàn sẽ không kiểm tra các tệp tải xuống được lưu trữ trên những miền này.
-      Dịch vụ bảo vệ mật khẩu của tính năng Duyệt web an toàn sẽ không kiểm tra việc sử dụng lại mật khẩu nếu URL của trang khớp với những miền này.
-
-      Nếu bạn bật tùy chọn cài đặt này, thì tính năng Duyệt web an toàn sẽ tin cậy những miền này.
-      Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì cơ chế bảo vệ mặc định của tính năng Duyệt web an toàn sẽ áp dụng cho tất cả tài nguyên.
-
-      Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký dịch vụ quản lý thiết bị, cũng như phiên bản macOS được quản lý thông qua phần mềm MDM (Quản lý thiết bị di động) hoặc đã liên kết với miền qua MCX.</translation>
 <translation id="2985927503455169394">Sử dụng chế độ mặc định của trải nghiệm làm quen với Trợ lý</translation>
 <translation id="2987155890997901449">Bật ARC</translation>
 <translation id="2987227569419001736">Kiểm soát việc sử dụng API Web Bluetooth</translation>
@@ -1513,11 +1497,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này không được đặt hoặc được đặt thành false thì bộ mã hóa DHE trong TLS sẽ không được bật. Ngoài ra, chính sách có thể được đặt thành true để bật bộ mã hóa DHE và duy trì khả năng tương thích với các máy chủ lỗi thời. Đây là một biện pháp tạm thời và cần phải định cấu hình lại máy chủ.
 
       Nên di chuyển máy chủ sang bộ mã hóa ECDHE. Nếu các bộ mã hóa này không khả dụng, hãy đảm bảo bộ mã hóa sử dụng trao đổi khóa RSA được bật.</translation>
-<translation id="3117706142826400449">Nếu bạn tắt chính sách này thì tính năng Làm sạch Chrome sẽ không quét hệ thống để tìm phần mềm không mong muốn và thực hiện các thao tác làm sạch. Tùy chọn kích hoạt thủ công tính năng Làm sạch Chrome trên trang chrome://settings/cleanup sẽ bị tắt.
-
-      Nếu bạn bật hoặc không đặt chính sách này, thì tính năng Làm sạch Chrome sẽ quét định kỳ hệ thống để tìm ra phần mềm không mong muốn. Khi tìm thấy phần mềm không mong muốn, tính năng này sẽ hỏi người dùng liệu họ có muốn xóa phần mềm đó hay không. Tùy chọn kích hoạt thủ công tính năng Làm sạch Chrome trên trang chrome://settings sẽ được bật.
-
-      Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="3119125876909100625">Cho phép tải các tệp được bảo vệ bằng mật khẩu lên</translation>
 <translation id="3122082892722698079">Kiểm soát việc sử dụng trường hợp ngoại lệ cho nội dung không an toàn</translation>
 <translation id="3143265893557969814">Nếu bạn đặt chính sách này thì tất cả các loại dữ liệu đã chỉ định sẽ bị loại trừ khỏi cả quá trình đồng bộ hóa của Google Sync lẫn quá trình đồng bộ hóa cấu hình chuyển vùng. Điều này có thể giúp giảm kích thước của cấu hình chuyển vùng hoặc giới hạn loại dữ liệu đã tải lên các máy chủ Google Sync.
@@ -2144,13 +2123,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="4061590579642538878">Báo cáo thông tin về báo cáo sự cố.</translation>
 <translation id="4075675819066819571">Đặt giá ở bên trái màn hình</translation>
 <translation id="4075864623710596000">Các tên máy chủ đã chỉ định trong danh sách này sẽ được miễn kiểm tra chính sách HSTS mà có thể nâng cấp yêu cầu từ http lên https. Chính sách này chỉ cho phép tên máy chủ một nhãn. Cần phải chuẩn hóa tên máy chủ: mọi IDN phải được chuyển sang định dạng nhãn A và tất cả chữ cái ASCII phải là chữ thường. Chính sách này chỉ áp dụng với các tên máy chủ cụ thể đã chỉ định, chứ không áp dụng với các miền con của tên máy chủ đã chỉ định.</translation>
-<translation id="4076584741592854827">Danh sách các loại tệp tự động mở khi tải xuống. Bạn không được thêm dấu phân cách phía trước khi liệt kê loại tệp. Do đó, hãy dùng "txt" thay cho ".txt".
-
-      Những tệp thuộc loại tự động mở sẽ vẫn phải trải qua các bước kiểm tra trong chế độ duyệt web an toàn mà người dùng đã bật và sẽ không mở nếu không vượt qua các bước kiểm tra đó.
-
-      Nếu bạn không đặt chính sách này, thì chỉ các loại tệp mà người dùng đã chỉ định là tự động mở sẽ tự động mở khi tải xuống.
-
-      Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký dịch vụ quản lý thiết bị, cũng như phiên bản macOS được quản lý thông qua phần mềm MDM (Quản lý thiết bị di động) hoặc đã liên kết với miền qua MCX.</translation>
 <translation id="408029843066770167">Cho phép gửi truy vấn tới dịch vụ thời gian của Google</translation>
 <translation id="408076456549153854">Cho phép đăng nhập vào trình duyệt</translation>
 <translation id="4082498585300984671">Bật tính năng Nhấp để gọi</translation>
@@ -4106,19 +4078,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Nếu bạn không đặt chính sách này, thì tùy chọn mặc định sẽ được phép áp dụng cho cả người dùng do doanh nghiệp quản lý và người dùng không được quản lý.</translation>
 <translation id="6864244339257535116">Cho phép tải lên và tải xuống các tệp được bảo vệ bằng mật khẩu</translation>
-<translation id="6870295914868104867">Nếu bạn đặt chính sách này, thì hệ thống sẽ chỉ định danh sách các ứng dụng và tiện ích tự động cài đặt mà không cần sự can thiệp của người dùng, cũng như những người dùng nào không thể gỡ cài đặt hay tắt đi. Các quyền được cấp hoàn toàn, kể cả cho các API tiện ích enterprise.deviceAttributes và enterprise.platformKeys. (Những ứng dụng và tiện ích không buộc phải cài đặt sẽ không dùng được 2 API này.)
-
-      Nếu bạn không đặt chính sách này, thì các ứng dụng hoặc tiện ích sẽ không tự động cài đặt, và người dùng có thể gỡ cài đặt mọi ứng dụng hoặc tiện ích trong <ph name="PRODUCT_NAME" />.
-
-      Chính sách này thay thế chính sách <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />. Nếu một ứng dụng/tiện ích buộc phải cài đặt trước đây và hiện bị xóa khỏi danh sách này, thì <ph name="PRODUCT_NAME" /> sẽ tự động gỡ cài đặt ứng dụng/tiện ích đó.
-
-      Đối với các phiên bản Windows® không liên kết với một miền <ph name="MS_AD_NAME" />, việc buộc cài đặt chỉ áp dụng cho các ứng dụng và tiện ích có trong Cửa hàng Chrome trực tuyến.
-
-      Người dùng có thể thay đổi mã nguồn của mọi tiện ích thông qua các công cụ cho nhà phát triển (điều này có thể khiến tiện ích hoạt động không chính xác). Nếu bạn lo ngại về điều này, hãy đặt chính sách <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.
-
-      Mỗi mục danh sách của chính sách là một chuỗi chứa một mã tiện ích và một URL "cập nhật" (không bắt buộc) phân tách bằng dấu chấm phẩy (;). Mã tiện ích là một chuỗi gồm 32 chữ cái, chẳng hạn như trên chrome://extensions khi ở Chế độ nhà phát triển. Nếu được chỉ định, thì URL "cập nhật" phải trỏ đến tài liệu XML của tệp kê khai cập nhật (https://developer.chrome.com/extensions/autoupdate). Theo mặc định, URL cập nhật của Cửa hàng Chrome trực tuyến sẽ được sử dụng. URL "cập nhật" được đặt trong chính sách này chỉ dùng cho lần cài đặt ban đầu. Các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích.
-
-       Lưu ý: chính sách này không áp dụng cho Chế độ ẩn danh. Hãy tìm hiểu về các tiện ích lưu trữ (https://developer.chrome.com/extensions/hosting).</translation>
 <translation id="687046793986382807">Chính sách này sẽ được xóa bỏ kể từ phiên bản 35 của <ph name="PRODUCT_NAME" />.
 
       Thông tin bộ nhớ vẫn được báo cáo tới trang bất kể giá trị tùy chọn như thế nào. Tuy nhiên, kích thước được báo cáo
@@ -5796,11 +5755,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Phiên của người dùng sẽ được khôi phục sau khi chạy lại/khởi động.</translation>
 <translation id="9160028464653564229">Không cho phép trang web nào yêu cầu quyền truy cập vào cổng nối tiếp qua API nối tiếp</translation>
 <translation id="9167719789236691545">Tắt Drive trong ứng dụng Tệp dành cho <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="917514578273777202">Nếu bạn đặt chính sách này thành Bật, thì hệ thống sẽ thực hiện quá trình tìm kiếm mặc định khi người dùng nhập văn bản không phải là URL vào thanh địa chỉ. Để chỉ định nhà cung cấp dịch vụ tìm kiếm mặc định, hãy đặt các chính sách tìm kiếm mặc định còn lại. Nếu bạn để trống những chính sách đó, thì người dùng có thể chọn nhà cung cấp mặc định. Nếu bạn đặt chính sách này thành Tắt, thì hệ thống sẽ không tìm kiếm khi người dùng nhập văn bản không phải là URL vào thanh địa chỉ.
-
-      Nếu bạn đặt chính sách này, thì người dùng sẽ không thay đổi được trong <ph name="PRODUCT_NAME" />. Nếu bạn không đặt chính sách này, thì nhà cung cấp dịch vụ tìm kiếm mặc định sẽ được bật và người dùng có thể đặt danh sách nhà cung cấp dịch vụ tìm kiếm.
-
-      Lưu ý: Chính sách này chỉ có trên các phiên bản Windows® liên kết với một miền <ph name="MS_AD_NAME" />, hoặc phiên bản Windows 10 Pro hay Bản nâng cấp Chrome Enterprise và macOS được quản lý thông qua phần mềm MDM (Quản lý thiết bị di động) hoặc đã liên kết với một miền qua MCX.</translation>
 <translation id="9185107612228451403">Định cấu hình các chính sách liên quan tới tiện ích. Người dùng không được phép cài đặt các tiện ích có trong danh sách cấm trừ khi các tiện ích này có trong danh sách cho phép. Bạn cũng có thể buộc <ph name="PRODUCT_NAME" /> tự động cài đặt tiện ích bằng cách chỉ định các tiện ích đó trong <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Các tiện ích bị buộc cài đặt sẽ được cài đặt bất kể có thuộc danh sách cấm hay không.</translation>
 <translation id="9187743794267626640">Vô hiệu hóa việc lắp bộ nhớ ngoài</translation>
 <translation id="9190456586252617675">Chính sách này kiểm soát chế độ của trải nghiệm làm quen với Trợ lý.

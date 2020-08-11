@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_P(OobeLocalizationTest, LocalizationTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    StructSequence,
+    All,
     OobeLocalizationTest,
     testing::Range(&oobe_localization_test_parameters[0],
                    &oobe_localization_test_parameters[base::size(

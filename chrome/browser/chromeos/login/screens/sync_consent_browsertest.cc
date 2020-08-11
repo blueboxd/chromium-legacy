@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_P(SyncConsentTestWithParams, SyncConsentTestWithLocale) {
 }
 
 // "es" tests language switching, "en-GB" checks switching to language varants.
-INSTANTIATE_TEST_SUITE_P(SyncConsentTestWithParamsImpl,
+INSTANTIATE_TEST_SUITE_P(All,
                          SyncConsentTestWithParams,
                          testing::Values("es", "en-GB"));
 

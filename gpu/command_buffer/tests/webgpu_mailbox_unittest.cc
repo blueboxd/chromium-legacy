@@ -14,24 +14,15 @@
 namespace gpu {
 namespace {
 
-class MockBufferMapReadCallback {
+class MockBufferMapCallback {
  public:
-  MOCK_METHOD4(Call,
-               void(WGPUBufferMapAsyncStatus status,
-                    const uint32_t* ptr,
-                    uint64_t data_length,
-                    void* userdata));
+  MOCK_METHOD(void, Call, (WGPUBufferMapAsyncStatus status, void* userdata));
 };
+std::unique_ptr<testing::StrictMock<MockBufferMapCallback>>
+    mock_buffer_map_callback;
 
-std::unique_ptr<testing::StrictMock<MockBufferMapReadCallback>>
-    mock_buffer_map_read_callback;
-void ToMockBufferMapReadCallback(WGPUBufferMapAsyncStatus status,
-                                 const void* ptr,
-                                 uint64_t data_length,
-                                 void* userdata) {
-  // Assume the data is uint32_t
-  mock_buffer_map_read_callback->Call(status, static_cast<const uint32_t*>(ptr),
-                                      data_length, userdata);
+void ToMockBufferMapCallback(WGPUBufferMapAsyncStatus status, void* userdata) {
+  mock_buffer_map_callback->Call(status, userdata);
 }
 
 class MockUncapturedErrorCallback {
@@ -55,14 +46,14 @@ class WebGPUMailboxTest : public WebGPUTest {
   void SetUp() override {
     WebGPUTest::SetUp();
     Initialize(WebGPUTest::Options());
-    mock_buffer_map_read_callback =
-        std::make_unique<testing::StrictMock<MockBufferMapReadCallback>>();
+    mock_buffer_map_callback =
+        std::make_unique<testing::StrictMock<MockBufferMapCallback>>();
     mock_device_error_callback =
         std::make_unique<testing::StrictMock<MockUncapturedErrorCallback>>();
   }
 
   void TearDown() override {
-    mock_buffer_map_read_callback = nullptr;
+    mock_buffer_map_callback = nullptr;
     mock_device_error_callback = nullptr;
     WebGPUTest::TearDown();
   }
@@ -153,9 +144,9 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
 
     wgpu::BufferCopyView copy_dst = {};
     copy_dst.buffer = readback_buffer;
-    copy_dst.offset = 0;
-    copy_dst.bytesPerRow = 256;
-    copy_dst.rowsPerImage = 0;
+    copy_dst.layout.offset = 0;
+    copy_dst.layout.bytesPerRow = 256;
+    copy_dst.layout.rowsPerImage = 0;
 
     wgpu::Extent3D copy_size = {1, 1, 1};
 
@@ -170,15 +161,16 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
                                 reservation.generation);
 
     // Map the buffer and assert the pixel is the correct value.
-    readback_buffer.MapReadAsync(ToMockBufferMapReadCallback, 0);
-    uint32_t buffer_contents = 0xFF00FF00;
-    EXPECT_CALL(*mock_buffer_map_read_callback,
-                Call(WGPUBufferMapAsyncStatus_Success,
-                     testing::Pointee(testing::Eq(buffer_contents)),
-                     sizeof(uint32_t), 0))
+    readback_buffer.MapAsync(wgpu::MapMode::Read, 0, 4, ToMockBufferMapCallback,
+                             nullptr);
+    EXPECT_CALL(*mock_buffer_map_callback,
+                Call(WGPUBufferMapAsyncStatus_Success, nullptr))
         .Times(1);
 
     WaitForCompletion(device);
+
+    const void* data = readback_buffer.GetConstMappedRange(0, 4);
+    EXPECT_EQ(0xFF00FF00, *static_cast<const uint32_t*>(data));
   }
 }
 

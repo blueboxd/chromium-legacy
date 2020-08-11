@@ -5,6 +5,7 @@
 #include "chrome/browser/reputation/url_elision_policy.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/reputation/safety_tip_test_utils.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/url_formatter/spoof_checks/common_words/common_words_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,6 +26,9 @@ class UrlElisionPolicyTest : public testing::Test {
         {});
     url_formatter::common_words::SetCommonWordDAFSAForTesting(
         test::kDafsa, sizeof(test::kDafsa));
+
+    // Ensure that the allowlist exists (as otherwise we'll never elide).
+    InitializeBlankLookalikeAllowlistForTesting();
   }
 
   ~UrlElisionPolicyTest() override = default;
@@ -48,6 +52,18 @@ TEST_F(UrlElisionPolicyTest, ElidesLongDomains) {
 // Ensure that short domains are not elided.
 TEST_F(UrlElisionPolicyTest, DoesntElideShortDomains) {
   GURL kUrl = GURL("http://abc.d/xyz");
+  EXPECT_FALSE(ShouldElideToRegistrableDomain(kUrl));
+}
+
+// Ensure that domains are allowlisted are not elided.
+TEST_F(UrlElisionPolicyTest, DoesntElideAllowlistedDomains) {
+  GURL kUrl = GURL("http://alongbutstillallowlisteddomain.com/xyz");
+
+  // This domain should be elided normally...
+  EXPECT_TRUE(ShouldElideToRegistrableDomain(kUrl));
+
+  // ...but not when allowlisted.
+  SetSafetyTipAllowlistPatterns({"alongbutstillallowlisteddomain.com/"}, {});
   EXPECT_FALSE(ShouldElideToRegistrableDomain(kUrl));
 }
 

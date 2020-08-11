@@ -45,11 +45,8 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
     }
 
     @Override
-    public void onCompromisedCredentialFound(
-            String originUrl, String username, String password, boolean hasScript) {
-        for (Observer obs : mObserverList) {
-            obs.onCompromisedCredentialFound(originUrl, username, password, hasScript);
-        }
+    public void onCompromisedCredentialFound(CompromisedCredential credential) {
+        for (Observer obs : mObserverList) obs.onCompromisedCredentialFound(credential);
     }
 
     @Override

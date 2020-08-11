@@ -3657,7 +3657,7 @@
 
       If this policy isn't set, only file types that a user has already specified to automatically be opened will do so when downloaded.
 
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'AutoOpenAllowedForURLs',
@@ -4452,7 +4452,9 @@
 
       This policy superseeds <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph> policy. If a previously force-installed app or extension is removed from this list, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically uninstalls it.
 
-      For Windows® instances not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, forced installation is limited to apps and extensions in the Chrome Web Store.
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> instances, apps and extensions from outside the Chrome Web Store can only be forced installed if the instance is joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management.
+
+      On <ph name="MAC_OS_NAME">macOS</ph> instances, apps and extensions from outside the Chrome Web Store can only can only be force installed if the instance is managed via MDM, or joined to a domain via MCX.
 
       The source code of any extension may be altered by users through developer tools, potentially rendering the extension dysfunctional. If this is a concern, set the <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME">DeveloperToolsDisabled</ph> policy.
 
@@ -4958,7 +4960,7 @@
 
       If you set the policy, users can't change it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If not set, the default search provider is on, and users can set the search provider list.
 
-      Note: This policy is only on Windows® instances that are joined to a <ph name="MS_AD_NAME">Microsoft®ActiveDirectory®</ph> domain, Windows 10 Pro, or Chrome Enterprise Upgrade and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'DefaultSearchProviderContextMenuAccessAllowed',
@@ -17257,7 +17259,7 @@
       If this setting is enabled, then Safe Browsing will trust these domains.
       If this setting is disabled or not set, then default Safe Browsing protection is applied to all resources.
 
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'PasswordProtectionLoginURLs',
@@ -17579,7 +17581,7 @@
 
       If enabled or unset, Chrome Cleanup periodically scans the system for unwanted software and should any be found, will ask the user if they wish to remove it. Manually triggering Chrome Cleanup from chrome://settings is enabled.
 
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management.''',
     },
     {
       'name': 'ChromeCleanupReportingEnabled',
@@ -17601,7 +17603,7 @@
 
       If enabled, should Chrome Cleanup detect unwanted software, it may report metadata about the scan to Google in accordance with policy set by SafeBrowsingExtendedReportingEnabled. Chrome Cleanup will ask the user if they wish to clean up the unwanted software.  Results of the cleanup will be reported to Google and the user will not have the option to prevent it.
 
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management.''',
     },
     {
       'name': 'AllowedLanguages',

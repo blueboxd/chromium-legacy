@@ -10,9 +10,12 @@
 // Protocol for instances that will provide menus to ReadingList components.
 @protocol ReadingListMenuProvider
 
-// Creates a context menu configuration instance for the given |item|.
+// Creates a context menu configuration instance for the given |item| and it's
+// corresponding |view|.
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
-    (id<ReadingListListItem>)item API_AVAILABLE(ios(13.0));
+                                   (id<ReadingListListItem>)item
+                                                      withView:(UIView*)view
+    API_AVAILABLE(ios(13.0));
 
 @end
 

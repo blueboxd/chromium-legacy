@@ -119,8 +119,11 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
         mAccountPickerTitle.setText(R.string.signin_account_picker_bottom_sheet_signin_title);
         mContentView.findViewById(R.id.account_picker_bottom_sheet_subtitle)
                 .setVisibility(View.GONE);
+        mContentView.findViewById(R.id.account_picker_horizontal_divider).setVisibility(View.GONE);
         mSelectedAccountView.setVisibility(View.GONE);
         mContinueAsButton.setVisibility(View.GONE);
+        mContentView.findViewById(R.id.account_picker_signin_spinner_view)
+                .setVisibility(View.VISIBLE);
     }
 
     @Override

@@ -76,6 +76,8 @@ public class QualityEnforcerUnitTest {
     private ArgumentCaptor<CustomTabTabObserver> mTabObserverCaptor;
     @Mock
     private Tab mTab;
+    @Mock
+    public TrustedWebActivityUmaRecorder mUmaRecorder;
 
     private ShadowPackageManager mShadowPackageManager;
 
@@ -91,8 +93,9 @@ public class QualityEnforcerUnitTest {
         when(mVerifier.verify(TRUSTED_ORIGIN_PAGE)).thenReturn(Promise.fulfilled(true));
         when(mVerifier.verify(UNTRUSTED_PAGE)).thenReturn(Promise.fulfilled(false));
 
-        mQualityEnforcer = new QualityEnforcer(mActivity, mTabObserverRegistrar,
-                mIntentDataProvider, mCustomTabsConnection, mVerifier, mClientPackageNameProvider);
+        mQualityEnforcer =
+                new QualityEnforcer(mActivity, mTabObserverRegistrar, mIntentDataProvider,
+                        mCustomTabsConnection, mVerifier, mClientPackageNameProvider, mUmaRecorder);
     }
 
     @Test

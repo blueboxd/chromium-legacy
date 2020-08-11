@@ -35,6 +35,7 @@ class WebOmniboxEditController;
 - (void)start;
 // Stop this coordinator.
 - (void)stop;
+
 // Indicates if the omnibox is the first responder.
 - (BOOL)isOmniboxFirstResponder;
 // Inserts text to the omnibox without triggering autocomplete.
@@ -45,6 +46,12 @@ class WebOmniboxEditController;
 - (void)updateOmniboxState;
 // Use this method to make the omnibox first responder.
 - (void)focusOmnibox;
+
+// Prepare the omnibox for scribbling.
+- (void)focusOmniboxForScribble;
+// Target input for scribble targeting the omnibox.
+- (UIResponder<UITextInput>*)scribbleInput;
+
 // Use this method to resign |textField| as the first responder.
 - (void)endEditing;
 // Creates a child popup coordinator. The popup coordinator is linked to the

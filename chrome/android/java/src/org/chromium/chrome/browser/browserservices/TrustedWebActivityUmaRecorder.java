@@ -212,4 +212,9 @@ public class TrustedWebActivityUmaRecorder {
         RecordHistogram.recordEnumeratedHistogram("TrustedWebActivity.LocationUpdateErrorCode",
                 error, LocationUpdateError.MAX_VALUE + 1);
     }
+
+    public void recordQualityEnforcementViolation(@QualityEnforcer.ViolationType int type) {
+        RecordHistogram.recordEnumeratedHistogram("TrustedWebActivity.QualityEnforcementViolation",
+                type, QualityEnforcer.ViolationType.NUM_ENTRIES);
+    }
 }

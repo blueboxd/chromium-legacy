@@ -32,4 +32,10 @@ void SetSafetyTipBadRepPatterns(std::vector<std::string> pattern);
 void SetSafetyTipAllowlistPatterns(std::vector<std::string> patterns,
                                    std::vector<std::string> target_patterns);
 
+// Ensure that the allowlist has been initialized. This is important as some
+// code (e.g. the elision policy) is fail-open (i.e. it won't elide without an
+// initialized allowlist). This is convenience wrapper around
+// SetSafetyTipAllowlistPatterns().
+void InitializeBlankLookalikeAllowlistForTesting();
+
 #endif  // CHROME_BROWSER_REPUTATION_SAFETY_TIP_TEST_UTILS_H_

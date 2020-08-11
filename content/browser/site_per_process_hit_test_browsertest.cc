@@ -5914,15 +5914,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, MAYBE_PopupMenuTest) {
 // a popup menu in the correct position, even if the top-level page repositions
 // its out-of-process iframe. This verifies that screen positioning information
 // is propagating down the frame tree correctly.
-#if defined(OS_ANDROID)
 // On Android the reported menu coordinates are relative to the OOPIF, and its
 // screen position is computed later, so this test isn't relevant.
-#define MAYBE_NestedPopupMenuTest DISABLED_NestedPopupMenuTest
-#else
-#define MAYBE_NestedPopupMenuTest NestedPopupMenuTest
-#endif
+// Flaky on all other platforms: https://crbug.com/1074248
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
-                       MAYBE_NestedPopupMenuTest) {
+                       DISABLED_NestedPopupMenuTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/cross_site_iframe_factory.html?a(b(c))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

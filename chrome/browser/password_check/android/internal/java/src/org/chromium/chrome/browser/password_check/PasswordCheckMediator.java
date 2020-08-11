@@ -76,6 +76,7 @@ class PasswordCheckMediator
                             .with(RESTART_BUTTON_ACTION, this::runCheck)
                             .build()));
         }
+        if (items.size() > 1) items.removeRange(1, items.size() - 1);
 
         for (CompromisedCredential credential : credentials) {
             items.add(new ListItem(credential.hasScript()
@@ -126,22 +127,16 @@ class PasswordCheckMediator
     }
 
     @Override
-    public void onCompromisedCredentialFound(
-            String originUrl, String username, String password, boolean hasScript) {
-        assert originUrl != null;
-        assert username != null;
-        assert password != null;
+    public void onCompromisedCredentialFound(CompromisedCredential leakedCredential) {
+        assert leakedCredential != null;
         ListModel<ListItem> items = mModel.get(ITEMS);
         assert items.size() >= 1 : "Needs to initialize list with header before adding items!";
-
-        CompromisedCredential credential =
-                new CompromisedCredential(originUrl, username, password, false, hasScript);
-        items.add(new ListItem(credential.hasScript()
+        items.add(new ListItem(leakedCredential.hasScript()
                         ? PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT
                         : PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL,
                 new PropertyModel
                         .Builder(PasswordCheckProperties.CompromisedCredentialProperties.ALL_KEYS)
-                        .with(COMPROMISED_CREDENTIAL, credential)
+                        .with(COMPROMISED_CREDENTIAL, leakedCredential)
                         .with(CREDENTIAL_HANDLER, this)
                         .build()));
     }
@@ -153,7 +148,7 @@ class PasswordCheckMediator
 
     @Override
     public void onRemove(CompromisedCredential credential) {
-        mModel.set(DELETION_ORIGIN, credential.getOriginUrl());
+        mModel.set(DELETION_ORIGIN, credential.getDisplayOrigin());
         mModel.set(
                 DELETION_CONFIRMATION_HANDLER, new PasswordCheckDeletionDialogFragment.Handler() {
                     @Override
@@ -173,7 +168,7 @@ class PasswordCheckMediator
 
     @Override
     public void onChangePasswordButtonClick(CompromisedCredential credential) {
-        mLaunchCctWithChangePasswordUrl.accept(credential.getOriginUrl());
+        mLaunchCctWithChangePasswordUrl.accept(credential.getSignonRealm());
     }
 
     @Override

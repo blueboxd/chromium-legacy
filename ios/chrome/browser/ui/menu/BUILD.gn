@@ -13,6 +13,13 @@ source_set("menu") {
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     "resources:copy_link_url",
+    "resources:delete",
+    "resources:edit",
+    "resources:open_in_incognito",
+    "resources:open_in_new_tab",
+    "resources:open_new_window",
+    "resources:remove",
+    "resources:share",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/commands",
@@ -32,6 +39,13 @@ source_set("unit_tests") {
   deps = [
     ":menu",
     "resources:copy_link_url",
+    "resources:delete",
+    "resources:edit",
+    "resources:open_in_incognito",
+    "resources:open_in_new_tab",
+    "resources:open_new_window",
+    "resources:remove",
+    "resources:share",
     "//base",
     "//base/test:test_support",
     "//ios/chrome/app/strings",

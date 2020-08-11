@@ -6,6 +6,8 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/reputation/local_heuristics.h"
+#include "chrome/browser/reputation/safety_tip_test_utils.h"
+#include "chrome/browser/reputation/safety_tips_config.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
@@ -25,9 +27,14 @@ bool ShouldElideToRegistrableDomain(const GURL& url) {
     return false;
   }
 
-  auto host = url.host();
-  // TODO(jdeblasio): Check allowlist
+  auto* proto = GetSafetyTipsRemoteConfigProto();
+  if (!proto || IsUrlAllowlistedBySafetyTipsComponent(proto, url)) {
+    // Not having a proto happens when the component hasn't downloaded yet. This
+    // should only happen for a short window following initial Chrome install.
+    return false;
+  }
 
+  auto host = url.host();
   if (static_cast<int>(host.length()) > kMaximumUnelidedHostnameLength.Get()) {
     return true;
   }

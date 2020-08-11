@@ -1052,7 +1052,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerUpdateAfterCompletedOobeTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    WizardControllerUpdateAfterCompletedOobe,
+    All,
     WizardControllerUpdateAfterCompletedOobeTest,
     testing::Values(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
                     UpdateScreen::Result::UPDATE_ERROR));
@@ -1469,7 +1469,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(WizardControllerDeviceStateExplicitRequirement,
+INSTANTIATE_TEST_SUITE_P(All,
                          WizardControllerDeviceStateExplicitRequirementTest,
                          testing::Values(false, true));
 

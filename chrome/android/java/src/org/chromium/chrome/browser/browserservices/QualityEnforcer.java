@@ -58,9 +58,12 @@ public class QualityEnforcer {
     private final CustomTabsConnection mConnection;
     private final CustomTabsSessionToken mSessionToken;
     private final ClientPackageNameProvider mClientPackageNameProvider;
+    private final TrustedWebActivityUmaRecorder mUmaRecorder;
 
     private boolean mOriginVerified;
 
+    // Do not modify or reuse existing entries, they are used in a UMA histogram. Please also edit
+    // TrustedWebActivityQualityEnforcementViolationType in enums.xml if new value added.
     @IntDef({ViolationType.ERROR_404, ViolationType.ERROR_5XX, ViolationType.UNAVAILABLE_OFFLINE,
             ViolationType.DIGITAL_ASSERTLINKS})
     @Retention(RetentionPolicy.SOURCE)
@@ -103,18 +106,21 @@ public class QualityEnforcer {
     @Inject
     public QualityEnforcer(ChromeActivity<?> activity, TabObserverRegistrar tabObserverRegistrar,
             BrowserServicesIntentDataProvider intentDataProvider, CustomTabsConnection connection,
-            Verifier verifier, ClientPackageNameProvider clientPackageNameProvider) {
+            Verifier verifier, ClientPackageNameProvider clientPackageNameProvider,
+            TrustedWebActivityUmaRecorder umaRecorder) {
         mActivity = activity;
         mVerifier = verifier;
         mConnection = connection;
         mSessionToken = intentDataProvider.getSession();
         mClientPackageNameProvider = clientPackageNameProvider;
+        mUmaRecorder = umaRecorder;
         // Initialize the value to true before the first navigation.
         mOriginVerified = true;
         tabObserverRegistrar.registerActivityTabObserver(mTabObserver);
     }
 
     private void trigger(@ViolationType int type, String url, int httpStatusCode) {
+        mUmaRecorder.recordQualityEnforcementViolation(type);
         showErrorToast(getToastMessage(type, url, httpStatusCode));
 
         // Notify the client app.

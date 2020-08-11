@@ -15,7 +15,6 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.RESTART_BUTTON_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.UNKNOWN_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
-import static org.chromium.components.embedder_support.util.UrlUtilities.stripScheme;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -64,6 +63,7 @@ class PasswordCheckViewBinder {
                             PasswordCheckViewBinder::connectPropertyModel),
                     PasswordCheckViewBinder::createViewHolder));
         } else if (propertyKey == DELETION_CONFIRMATION_HANDLER) {
+            if (model.get(DELETION_CONFIRMATION_HANDLER) == null) return; // Initial or onDismiss.
             view.showDialogFragment(new PasswordCheckDeletionDialogFragment(
                     model.get(DELETION_CONFIRMATION_HANDLER), model.get(DELETION_ORIGIN)));
         } else if (propertyKey == DELETION_ORIGIN) {
@@ -122,14 +122,11 @@ class PasswordCheckViewBinder {
             PropertyModel model, View view, PropertyKey propertyKey) {
         CompromisedCredential credential = model.get(COMPROMISED_CREDENTIAL);
         if (propertyKey == COMPROMISED_CREDENTIAL) {
-            TextView pslOriginText = view.findViewById(R.id.credential_origin);
-            String formattedOrigin = stripScheme(credential.getOriginUrl());
-            formattedOrigin =
-                    formattedOrigin.replaceFirst("/$", ""); // Strip possibly trailing slash.
-            pslOriginText.setText(formattedOrigin);
+            TextView originText = view.findViewById(R.id.credential_origin);
+            originText.setText(credential.getDisplayOrigin());
 
             TextView username = view.findViewById(R.id.compromised_username);
-            username.setText(credential.getUsername());
+            username.setText(credential.getDisplayUsername());
 
             TextView reason = view.findViewById(R.id.compromised_reason);
             reason.setText(credential.isPhished()

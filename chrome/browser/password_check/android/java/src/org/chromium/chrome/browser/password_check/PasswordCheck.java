@@ -33,14 +33,10 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
         void onPasswordCheckStatusChanged(@PasswordCheckUIStatus int status);
 
         /**
-         * Invoked whenever a running check finds another compromised credential.
-         * @param originUrl The origin of the newly found compromised credential.
-         * @param username The username of the newly found compromised credential.
-         * @param password The password of the newly found compromised credential.
-         * @param hasScript True iff a script can be applied to the newly found credential.
+         * Invoked whenever a running check finds another leaked credential.
+         * @param leakedCredential The newly found leaked credential.
          */
-        void onCompromisedCredentialFound(
-                String originUrl, String username, String password, boolean hasScript);
+        void onCompromisedCredentialFound(CompromisedCredential leakedCredential);
     }
 
     /**

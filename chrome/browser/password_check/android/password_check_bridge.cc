@@ -7,9 +7,29 @@
 #include <jni.h>
 
 #include "base/android/jni_string.h"
-#include "chrome/browser/password_check/android/internal/jni_headers/PasswordCheckBridge_jni.h"
+#include "chrome/browser/password_check/android/jni_headers/CompromisedCredential_jni.h"
+#include "chrome/browser/password_check/android/jni_headers/PasswordCheckBridge_jni.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
 #include "url/android/gurl_android.h"
+
+namespace {
+
+password_manager::CredentialView ConvertJavaObjectToCredentialView(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& credential) {
+  return password_manager::CredentialView(
+      ConvertJavaStringToUTF8(
+          env, Java_CompromisedCredential_getSignonRealm(env, credential)),
+      *url::GURLAndroid::ToNativeGURL(
+          env, Java_CompromisedCredential_getOrigin(env, credential)),
+      ConvertJavaStringToUTF16(
+          env, Java_CompromisedCredential_getUsername(env, credential)),
+      ConvertJavaStringToUTF16(
+          env, Java_CompromisedCredential_getPassword(env, credential)));
+}
+
+}  // namespace
 
 static jlong JNI_PasswordCheckBridge_Create(
     JNIEnv* env,
@@ -49,6 +69,9 @@ void PasswordCheckBridge::GetCompromisedCredentials(
     const auto& credential = credentials[i];
     Java_PasswordCheckBridge_insertCredential(
         env, java_credentials, i,
+        base::android::ConvertUTF8ToJavaString(env, credential.signon_realm),
+        url::GURLAndroid::FromNativeGURL(env, credential.url),
+        base::android::ConvertUTF16ToJavaString(env, credential.username),
         base::android::ConvertUTF16ToJavaString(env, credential.display_origin),
         base::android::ConvertUTF16ToJavaString(env,
                                                 credential.display_username),
@@ -62,7 +85,8 @@ void PasswordCheckBridge::GetCompromisedCredentials(
 void PasswordCheckBridge::RemoveCredential(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& credential) {
-  // TODO(crbug.com/1108358): implement this.
+  check_manager_.RemoveCredential(
+      ConvertJavaObjectToCredentialView(env, credential));
 }
 
 void PasswordCheckBridge::Destroy(JNIEnv* env) {

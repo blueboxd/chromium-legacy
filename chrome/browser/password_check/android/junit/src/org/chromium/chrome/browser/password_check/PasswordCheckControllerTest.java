@@ -50,6 +50,7 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.GURL;
 
 /**
  * Controller tests verify that the PasswordCheck controller modifies the model if the API is used
@@ -59,9 +60,11 @@ import org.chromium.ui.modelutil.PropertyModel;
 @EnableFeatures(ChromeFeatureList.PASSWORD_CHECK)
 public class PasswordCheckControllerTest {
     private static final CompromisedCredential ANA =
-            new CompromisedCredential("https://m.a.xyz/", "Ana", "password", false, false);
+            new CompromisedCredential("https://m.a.xyz/signin", mock(GURL.class), "Ana", "m.a.xyz",
+                    "Ana", "password", false, false);
     private static final CompromisedCredential BOB =
-            new CompromisedCredential("https://www.b.ch/", "Baub", "DoneSth", false, true);
+            new CompromisedCredential("http://www.b.ch/signin", mock(GURL.class), "",
+                    "http://www.b.ch", "(No username)", "DoneSth", false, true);
 
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
@@ -167,12 +170,31 @@ public class PasswordCheckControllerTest {
         mMediator.onCompromisedCredentialsFetchCompleted();
         assertThat(mModel.get(ITEMS).size(), is(2)); // Header + existing credentials.
 
-        mMediator.onCompromisedCredentialFound(
-                BOB.getOriginUrl(), BOB.getUsername(), BOB.getPassword(), BOB.hasScript());
+        mMediator.onCompromisedCredentialFound(BOB);
 
         assertThat(mModel.get(ITEMS).get(2).type, is(ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT));
         assertThat(mModel.get(ITEMS).get(2).model.get(COMPROMISED_CREDENTIAL), equalTo(BOB));
         assertThat(mModel.get(ITEMS).get(2).model.get(CREDENTIAL_HANDLER), is(mMediator));
+    }
+
+    @Test
+    public void testReplacesEntriesForUpdateOfEntireList() {
+        mMediator.onPasswordCheckStatusChanged(IDLE);
+
+        // First call adds only ANA.
+        when(mPasswordCheck.getCompromisedCredentials())
+                .thenReturn(new CompromisedCredential[] {ANA});
+        mMediator.onCompromisedCredentialsFetchCompleted();
+        assertThat(mModel.get(ITEMS).size(), is(2)); // Header + existing credentials.
+
+        // Second call adds BOB and removes ANA.
+        when(mPasswordCheck.getCompromisedCredentials())
+                .thenReturn(new CompromisedCredential[] {BOB});
+        mMediator.onCompromisedCredentialsFetchCompleted();
+        assertThat(mModel.get(ITEMS).size(), is(2));
+        assertThat(mModel.get(ITEMS).get(1).type, is(ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT));
+        assertThat(mModel.get(ITEMS).get(1).model.get(COMPROMISED_CREDENTIAL), equalTo(BOB));
+        assertThat(mModel.get(ITEMS).get(1).model.get(CREDENTIAL_HANDLER), is(mMediator));
     }
 
     @Test
@@ -191,7 +213,7 @@ public class PasswordCheckControllerTest {
     @Test
     public void testOnChangePasswordButtonClick() {
         mMediator.onChangePasswordButtonClick(ANA);
-        verify(mLaunchCctWithChangePasswordUrlConsumer).accept(eq(ANA.getOriginUrl()));
+        verify(mLaunchCctWithChangePasswordUrlConsumer).accept(eq(ANA.getSignonRealm()));
     }
 
     @Test

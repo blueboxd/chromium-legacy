@@ -318,7 +318,9 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 
   return [self.menuProvider
       contextMenuConfigurationForItem:[self.tableViewModel
-                                          itemAtIndexPath:indexPath]];
+                                          itemAtIndexPath:indexPath]
+                             withView:[self.tableView
+                                          cellForRowAtIndexPath:indexPath]];
 }
 
 #pragma mark - TableViewURLDragDataSource

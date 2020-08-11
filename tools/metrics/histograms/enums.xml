@@ -37172,6 +37172,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Tab Share Button"/>
   <int value="1" label="QR Code Image"/>
   <int value="2" label="History Entry"/>
+  <int value="3" label="Reading List Entry"/>
 </enum>
 
 <enum name="IOSContentSizeCategory">
@@ -70247,6 +70248,13 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Null to True"/>
   <int value="2" label="True to False"/>
   <int value="3" label="False to True"/>
+</enum>
+
+<enum name="TrustedWebActivityQualityEnforcementViolationType">
+  <int value="0" label="Error 404"/>
+  <int value="1" label="Error 5xx"/>
+  <int value="2" label="Page unavailable offline"/>
+  <int value="3" label="Digital assetlinks verification failure"/>
 </enum>
 
 <enum name="TunnelRedirectHistogramValue">

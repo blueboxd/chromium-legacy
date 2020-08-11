@@ -373,6 +373,14 @@
   return [self.delegate locationBarModel];
 }
 
+- (UIResponder<UITextInput>*)scribbleForwardingTarget {
+  return self.omniboxCoordinator.scribbleInput;
+}
+
+- (void)locationBarRequestScribbleTargetFocus {
+  [self.omniboxCoordinator focusOmniboxForScribble];
+}
+
 #pragma mark - LocationBarViewControllerDelegate
 
 - (void)locationBarSteadyViewTapped {

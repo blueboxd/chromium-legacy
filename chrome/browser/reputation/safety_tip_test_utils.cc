@@ -74,3 +74,7 @@ void SetSafetyTipAllowlistPatterns(std::vector<std::string> patterns,
   }
   SetSafetyTipsRemoteConfigProto(std::move(config_proto));
 }
+
+void InitializeBlankLookalikeAllowlistForTesting() {
+  SetSafetyTipAllowlistPatterns({}, {});
+}

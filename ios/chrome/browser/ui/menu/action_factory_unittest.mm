@@ -116,7 +116,7 @@ TEST_F(ActionFactoryTest, ShareAction) {
         [[ActionFactory alloc] initWithBrowser:test_browser_.get()
                                       scenario:kTestMenuScenario];
 
-    UIImage* expectedImage = [UIImage systemImageNamed:@"square.and.arrow.up"];
+    UIImage* expectedImage = [UIImage imageNamed:@"share"];
     NSString* expectedTitle =
         l10n_util::GetNSString(IDS_IOS_SHARE_BUTTON_LABEL);
 
@@ -135,7 +135,7 @@ TEST_F(ActionFactoryTest, DeleteAction) {
         [[ActionFactory alloc] initWithBrowser:test_browser_.get()
                                       scenario:kTestMenuScenario];
 
-    UIImage* expectedImage = [UIImage systemImageNamed:@"trash"];
+    UIImage* expectedImage = [UIImage imageNamed:@"delete"];
     NSString* expectedTitle =
         l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE);
 
@@ -157,7 +157,7 @@ TEST_F(ActionFactoryTest, OpenInNewTabAction_URL) {
 
     GURL testURL = GURL("https://example.com");
 
-    UIImage* expectedImage = [UIImage systemImageNamed:@"plus"];
+    UIImage* expectedImage = [UIImage imageNamed:@"open_in_new_tab"];
     NSString* expectedTitle =
         l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
 
@@ -182,18 +182,19 @@ TEST_F(ActionFactoryTest, OpenInNewIncognitoTabAction_URL) {
 
     GURL testURL = GURL("https://example.com");
 
+    UIImage* expectedImage = [UIImage imageNamed:@"open_in_incognito"];
     NSString* expectedTitle =
         l10n_util::GetNSString(IDS_IOS_OPEN_IN_INCOGNITO_ACTION_TITLE);
 
     UIAction* actionWithURL =
         [factory actionToOpenInNewIncognitoTabWithURL:testURL completion:nil];
     EXPECT_TRUE([expectedTitle isEqualToString:actionWithURL.title]);
-    EXPECT_FALSE(!!actionWithURL.image);
+    EXPECT_EQ(expectedImage, actionWithURL.image);
 
     UIAction* actionWithBlock =
         [factory actionToOpenInNewIncognitoTabWithBlock:nil];
     EXPECT_TRUE([expectedTitle isEqualToString:actionWithBlock.title]);
-    EXPECT_FALSE(!!actionWithBlock.image);
+    EXPECT_EQ(expectedImage, actionWithBlock.image);
   }
 }
 
@@ -206,7 +207,7 @@ TEST_F(ActionFactoryTest, OpenInNewWindowAction) {
 
     GURL testURL = GURL("https://example.com");
 
-    UIImage* expectedImage = [UIImage systemImageNamed:@"plus.square"];
+    UIImage* expectedImage = [UIImage imageNamed:@"open_new_window"];
     NSString* expectedTitle =
         l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW);
 
@@ -220,6 +221,25 @@ TEST_F(ActionFactoryTest, OpenInNewWindowAction) {
   }
 }
 
+// Tests that the remove action has the right title and image.
+TEST_F(ActionFactoryTest, RemoveAction) {
+  if (@available(iOS 13.0, *)) {
+    ActionFactory* factory =
+        [[ActionFactory alloc] initWithBrowser:test_browser_.get()
+                                      scenario:kTestMenuScenario];
+
+    UIImage* expectedImage = [UIImage imageNamed:@"remove"];
+    NSString* expectedTitle =
+        l10n_util::GetNSString(IDS_IOS_REMOVE_ACTION_TITLE);
+
+    UIAction* action = [factory actionToRemoveWithBlock:^{
+    }];
+
+    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+    EXPECT_EQ(expectedImage, action.image);
+  }
+}
+
 // Tests that the edit action has the right title and image.
 TEST_F(ActionFactoryTest, EditAction) {
   if (@available(iOS 13.0, *)) {
@@ -227,13 +247,14 @@ TEST_F(ActionFactoryTest, EditAction) {
         [[ActionFactory alloc] initWithBrowser:test_browser_.get()
                                       scenario:kTestMenuScenario];
 
+    UIImage* expectedImage = [UIImage imageNamed:@"edit"];
     NSString* expectedTitle = l10n_util::GetNSString(IDS_IOS_EDIT_ACTION_TITLE);
 
     UIAction* action = [factory actionToEditWithBlock:^{
     }];
 
     EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
-    EXPECT_EQ(nil, action.image);
+    EXPECT_EQ(expectedImage, action.image);
   }
 }
 

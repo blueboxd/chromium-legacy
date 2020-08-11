@@ -47,6 +47,7 @@
         app:leading="@dimen/text_size_medium_leading" />
 
     <View
+        android:id="@+id/account_picker_horizontal_divider"
         style="@style/HorizontalDivider" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -81,4 +82,13 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:text="@string/signin_promo_continue_as" />
+
+    <ProgressBar
+        android:id="@+id/account_picker_signin_spinner_view"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="132dp"
+        android:visibility="gone" />
 </LinearLayout>

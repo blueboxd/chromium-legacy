@@ -30,6 +30,12 @@
 // Notifies the delegate about a tap on the Copy entry in the editing menu.
 - (void)locationBarCopyTapped;
 
+// Returns the target that location bar scribble events should be forwarded to.
+- (UIResponder<UITextInput>*)scribbleForwardingTarget;
+
+// Request the scribble target to be focused.
+- (void)locationBarRequestScribbleTargetFocus;
+
 @end
 
 // The view controller displaying the location bar. Manages the two states of

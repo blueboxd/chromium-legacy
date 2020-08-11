@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.password_check;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.url.GURL;
 
 /**
  * Class handling the communication with the C++ part of the password check feature. It forwards
@@ -21,13 +22,9 @@ class PasswordCheckBridge {
     interface PasswordCheckObserver {
         /**
          * Called when a new compromised credential is found by the password check
-         * @param originUrl Origin of the compromised credential.
-         * @param username Username for the compromised credential.
-         * @param password Password of the compromised credential.
-         * @param hasScript True iff a script can be applied to the compromised credential.
+         * @param credential The newly found compromised credential.
          */
-        void onCompromisedCredentialFound(
-                String originUrl, String username, String password, boolean hasScript);
+        void onCompromisedCredentialFound(CompromisedCredential credential);
 
         /**
          * Called when the compromised credentials found in a previous check are read from disk.
@@ -56,10 +53,14 @@ class PasswordCheckBridge {
     }
 
     // TODO(crbug.com/1102025): Add call from native.
-    void onCompromisedCredentialFound(
-            String originUrl, String username, String password, boolean hasScript) {
-        mPasswordCheckObserver.onCompromisedCredentialFound(
-                originUrl, username, password, hasScript);
+    void onCompromisedCredentialFound(String signonRealm, GURL origin, String username,
+            String displayOrigin, String displayUsername, String password, boolean hasScript) {
+        assert signonRealm != null;
+        assert displayOrigin != null;
+        assert username != null;
+        assert password != null;
+        mPasswordCheckObserver.onCompromisedCredentialFound(new CompromisedCredential(signonRealm,
+                origin, username, displayOrigin, displayUsername, password, false, hasScript));
     }
 
     @CalledByNative
@@ -79,10 +80,10 @@ class PasswordCheckBridge {
 
     @CalledByNative
     private static void insertCredential(CompromisedCredential[] credentials, int index,
-            String displayOrigin, String displayUsername, String password, boolean phished,
-            boolean hasScript) {
-        credentials[index] = new CompromisedCredential(
-                displayOrigin, displayUsername, password, phished, hasScript);
+            String signonRealm, GURL origin, String username, String displayOrigin,
+            String displayUsername, String password, boolean phished, boolean hasScript) {
+        credentials[index] = new CompromisedCredential(signonRealm, origin, username, displayOrigin,
+                displayUsername, password, phished, hasScript);
     }
 
     /**

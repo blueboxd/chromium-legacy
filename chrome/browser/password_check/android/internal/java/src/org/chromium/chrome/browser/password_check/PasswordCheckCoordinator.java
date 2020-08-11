@@ -142,7 +142,7 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
      * @param credential A {@link CompromisedCredential} to be changed with a script.
      */
     private void launchCctWithScript(CompromisedCredential credential) {
-        Intent intent = buildIntent(credential.getOriginUrl());
+        Intent intent = buildIntent(credential.getOrigin().getSpec());
         populateAutofillAssistantExtras(intent, credential.getUsername());
         IntentUtils.safeStartActivity(mFragmentView.getActivity(), intent);
     }

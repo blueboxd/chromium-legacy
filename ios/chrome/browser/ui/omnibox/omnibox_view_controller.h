@@ -57,6 +57,12 @@ class OmniboxTextChangeDelegate;
 - (instancetype)initWithIncognito:(BOOL)isIncognito;
 
 - (void)setTextChangeDelegate:(OmniboxTextChangeDelegate*)textChangeDelegate;
+
+// Hides extra chrome, i.e. attributed text, and clears.
+- (void)prepareOmniboxForScribble;
+// Restores the chrome post-scribble.
+- (void)cleanupOmniboxAfterScribble;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_CONTROLLER_H_

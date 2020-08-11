@@ -766,7 +766,7 @@ IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, MAYBE_SimpleEndToEnd) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    OobeInteractiveUITestImpl,
+    All,
     OobeInteractiveUITest,
     testing::Combine(testing::Bool(),
                      testing::Bool(),
@@ -844,7 +844,7 @@ IN_PROC_BROWSER_TEST_P(OobeZeroTouchInteractiveUITest, MAYBE_EndToEnd) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    OobeZeroTouchInteractiveUITestImpl,
+    All,
     OobeZeroTouchInteractiveUITest,
     testing::Combine(testing::Bool(),
                      testing::Bool(),
@@ -938,7 +938,7 @@ IN_PROC_BROWSER_TEST_P(PublicSessionOobeTest, NoTermsOfService) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    PublicSessionOobeTestImpl,
+    All,
     PublicSessionOobeTest,
     testing::Combine(testing::Bool(),
                      testing::Bool(),
@@ -972,7 +972,7 @@ IN_PROC_BROWSER_TEST_P(PublicSessionWithTermsOfServiceOobeTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    PublicSessionWithTermsOfServiceOobeTestImpl,
+    All,
     PublicSessionWithTermsOfServiceOobeTest,
     testing::Combine(testing::Bool(),
                      testing::Bool(),
@@ -1078,7 +1078,7 @@ IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, DISABLED_RegularEphemeralUser) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    EphemeralUserOobeTestImpl,
+    All,
     EphemeralUserOobeTest,
     testing::Combine(testing::Bool(),
                      testing::Bool(),

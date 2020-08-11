@@ -158,15 +158,12 @@ IN_PROC_BROWSER_TEST_F(SyntheticInputTest, SmoothScrollWheel) {
                         "document.scrollingElement.scrollTop"));
 }
 
-#if defined(OS_ANDROID)
-// http://crbug.com/1103731. Flaky on Android bots.
-#define MAYBE_SlowSmoothScrollWheel DISABLED_SlowSmoothScrollWheel
-#else
-#define MAYBE_SlowSmoothScrollWheel SlowSmoothScrollWheel
-#endif
 // This test ensures that slow synthetic wheel scrolling does not lose precision
 // over time.
-IN_PROC_BROWSER_TEST_F(SyntheticInputTest, MAYBE_SlowSmoothScrollWheel) {
+// https://crbug.com/1103731. Flaky on Android bots.
+// https://crbug.com/1086334. Flaky on all desktop bots, but maybe for a
+// different reason.
+IN_PROC_BROWSER_TEST_F(SyntheticInputTest, DISABLED_SlowSmoothScrollWheel) {
   LoadURL(R"HTML(
     data:text/html;charset=utf-8,
     <!DOCTYPE html>

@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
@@ -33,6 +34,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_provider.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
+#import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_animator.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
@@ -74,14 +76,12 @@
 @property(nonatomic, strong)
     ReadingListContextMenuCoordinator* contextMenuCoordinator;
 
+// Coordinator in charge of handling sharing use cases.
+@property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
+
 @end
 
 @implementation ReadingListCoordinator
-@synthesize started = _started;
-@synthesize mediator = _mediator;
-@synthesize navigationController = _navigationController;
-@synthesize tableViewController = _tableViewController;
-@synthesize contextMenuCoordinator = _contextMenuCoordinator;
 
 #pragma mark - Accessors
 
@@ -187,6 +187,10 @@
                          completion:nil];
   self.tableViewController = nil;
   self.navigationController = nil;
+
+  [self.sharingCoordinator stop];
+  self.sharingCoordinator = nil;
+
   [super stop];
   self.started = NO;
 }
@@ -420,7 +424,9 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 #pragma mark - ReadingListMenuProvider
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
-    (id<ReadingListListItem>)item API_AVAILABLE(ios(13.0)) {
+                                   (id<ReadingListListItem>)item
+                                                      withView:(UIView*)view
+    API_AVAILABLE(ios(13.0)) {
   __weak id<ReadingListListItemAccessibilityDelegate> accessibilityDelegate =
       self.tableViewController;
   __weak __typeof(self) weakSelf = self;
@@ -470,6 +476,12 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
         [menuElements addObject:[actionFactory actionToCopyURL:item.entryURL]];
 
+        [menuElements addObject:[actionFactory actionToShareWithBlock:^{
+                        [weakSelf shareURL:item.entryURL
+                                     title:item.title
+                                  fromView:view];
+                      }]];
+
         [menuElements addObject:[actionFactory actionToDeleteWithBlock:^{
                         [accessibilityDelegate deleteItem:item];
                       }]];
@@ -481,6 +493,25 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
       [UIContextMenuConfiguration configurationWithIdentifier:nil
                                               previewProvider:nil
                                                actionProvider:actionProvider];
+}
+
+#pragma mark - Private
+
+// Triggers the URL sharing flow for the given |URL| and |title|, with the
+// origin |view| representing the UI component for that URL.
+- (void)shareURL:(const GURL&)URL
+           title:(NSString*)title
+        fromView:(UIView*)view {
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithURL:URL
+                                    title:title
+                                 scenario:ActivityScenario::ReadingListEntry];
+  self.sharingCoordinator = [[SharingCoordinator alloc]
+      initWithBaseViewController:self.tableViewController
+                         browser:self.browser
+                          params:params
+                      originView:view];
+  [self.sharingCoordinator start];
 }
 
 @end

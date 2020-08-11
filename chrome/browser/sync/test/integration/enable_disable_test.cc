@@ -442,10 +442,14 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, ClearsPrefsIfClearData) {
   SetupTest(/*all_types_enabled=*/true);
 
   SyncPrefs prefs(GetProfile(0)->GetPrefs());
-  ASSERT_NE("", prefs.GetCacheGuid());
+  const std::string initial_cache_guid = prefs.GetCacheGuid();
+  ASSERT_NE("", initial_cache_guid);
 
   GetClient(0)->StopSyncServiceAndClearData();
-  EXPECT_EQ("", prefs.GetCacheGuid());
+  // After "stop and clear", the SyncService may immediately start up again in
+  // transport-only mode, creating a new cache GUID. So the cache GUID may be
+  // non-empty now, but it must be different from the previous one.
+  EXPECT_NE(initial_cache_guid, prefs.GetCacheGuid());
 }
 
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,

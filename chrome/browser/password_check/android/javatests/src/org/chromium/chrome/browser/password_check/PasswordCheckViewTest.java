@@ -83,6 +83,7 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.ButtonCompat;
+import org.chromium.url.GURL;
 
 /**
  * View tests for the Password Check component ensure model changes are reflected in the check UI.
@@ -90,14 +91,18 @@ import org.chromium.ui.widget.ButtonCompat;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordCheckViewTest {
-    private static final CompromisedCredential ANA =
-            new CompromisedCredential("some-url.com", "Ana", "password", false, false);
+    private static final CompromisedCredential ANA = new CompromisedCredential(
+            "https://some-url.com/signin", new GURL("https://some-url.com/"), "Ana", "some-url.com",
+            "Ana", "password", false, false);
     private static final CompromisedCredential PHISHED =
-            new CompromisedCredential("example.com", "Baub", "DoSomething", true, false);
-    private static final CompromisedCredential LEAKED =
-            new CompromisedCredential("some-other-url.com", "AZiegler", "N0M3rcy", false, false);
+            new CompromisedCredential("http://example.com/signin", new GURL("http://example.com/"),
+                    "", "http://example.com", "(No username)", "DoSomething", true, false);
+    private static final CompromisedCredential LEAKED = new CompromisedCredential(
+            "https://some-other-url.com/signin", new GURL("https://some-other-url.com/"),
+            "AZiegler", "some-other-url.com", "AZiegler", "N0M3rcy", false, false);
     private static final CompromisedCredential SCRIPTED =
-            new CompromisedCredential("script.com", "Charlie", "secret", false, true);
+            new CompromisedCredential("https://script.com/signin", new GURL("https://script.com/"),
+                    "Charlie", "script.com", "Charlie", "secret", false, true);
 
     private static final int LEAKS_COUNT = 2;
 
@@ -393,14 +398,14 @@ public class PasswordCheckViewTest {
         waitForListViewToHaveLength(2);
 
         // The phished credential is rendered first:
-        assertThat(getCredentialOriginAt(0).getText(), is(PHISHED.getOriginUrl()));
-        assertThat(getCredentialUserAt(0).getText(), is(PHISHED.getUsername()));
+        assertThat(getCredentialOriginAt(0).getText(), is(PHISHED.getDisplayOrigin()));
+        assertThat(getCredentialUserAt(0).getText(), is(PHISHED.getDisplayUsername()));
         assertThat(getCredentialReasonAt(0).getText(),
                 is(getString(R.string.password_check_credential_row_reason_phished)));
 
         // The leaked credential is rendered second:
-        assertThat(getCredentialOriginAt(1).getText(), is(LEAKED.getOriginUrl()));
-        assertThat(getCredentialUserAt(1).getText(), is(LEAKED.getUsername()));
+        assertThat(getCredentialOriginAt(1).getText(), is(LEAKED.getDisplayOrigin()));
+        assertThat(getCredentialUserAt(1).getText(), is(LEAKED.getDisplayUsername()));
         assertThat(getCredentialReasonAt(1).getText(),
                 is(getString(R.string.password_check_credential_row_reason_leaked)));
     }
@@ -412,8 +417,8 @@ public class PasswordCheckViewTest {
         pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
 
         // Origin and username.
-        assertThat(getCredentialOriginAt(0).getText(), is(SCRIPTED.getOriginUrl()));
-        assertThat(getCredentialUserAt(0).getText(), is(SCRIPTED.getUsername()));
+        assertThat(getCredentialOriginAt(0).getText(), is(SCRIPTED.getDisplayOrigin()));
+        assertThat(getCredentialUserAt(0).getText(), is(SCRIPTED.getDisplayUsername()));
 
         // Reason to show credential.
         assertThat(getCredentialReasonAt(0).getText(),
@@ -509,7 +514,7 @@ public class PasswordCheckViewTest {
     public void testConfirmingDeletionDialogTriggersHandler() {
         PasswordCheckDeletionDialogFragment.Handler mockHandler =
                 mock(PasswordCheckDeletionDialogFragment.Handler.class);
-        mModel.set(DELETION_ORIGIN, ANA.getOriginUrl());
+        mModel.set(DELETION_ORIGIN, ANA.getDisplayOrigin());
         runOnUiThreadBlocking(() -> mModel.set(DELETION_CONFIRMATION_HANDLER, mockHandler));
 
         onView(withText(R.string.password_check_delete_credential_dialog_confirm))

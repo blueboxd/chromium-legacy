@@ -106,6 +106,11 @@ PasswordCheckManager::GetCompromisedCredentials() const {
   return ui_credentials;
 }
 
+void PasswordCheckManager::RemoveCredential(
+    const password_manager::CredentialView& credential) {
+  compromised_credentials_manager_.RemoveCompromisedCredential(credential);
+}
+
 void PasswordCheckManager::OnSavedPasswordsChanged(
     password_manager::SavedPasswordsPresenter::SavedPasswordsView passwords) {
   if (!is_initialized_) {

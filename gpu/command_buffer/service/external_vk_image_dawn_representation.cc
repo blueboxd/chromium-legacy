@@ -52,7 +52,6 @@ WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
   texture_descriptor.usage = usage;
   texture_descriptor.dimension = WGPUTextureDimension_2D;
   texture_descriptor.size = {size().width(), size().height(), 1};
-  texture_descriptor.arrayLayerCount = 1;
   texture_descriptor.mipLevelCount = 1;
   texture_descriptor.sampleCount = 1;
 

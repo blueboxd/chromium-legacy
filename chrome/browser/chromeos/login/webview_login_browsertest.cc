@@ -650,7 +650,7 @@ IN_PROC_BROWSER_TEST_P(WebviewLoginWithIframeTest, GaiaWithIframe) {
   EXPECT_FALSE(error_screen_watcher.has_error_screen_been_shown());
 }
 
-INSTANTIATE_TEST_SUITE_P(WebviewLoginWithIframe,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebviewLoginWithIframeTest,
                          testing::Values(FrameUrlOrigin::kSameOrigin,
                                          FrameUrlOrigin::kDifferentOrigin));

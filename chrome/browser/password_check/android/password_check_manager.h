@@ -70,6 +70,10 @@ class PasswordCheckManager
   // Called by java to retrieve the compromised credentials.
   std::vector<CompromisedCredentialForUI> GetCompromisedCredentials() const;
 
+  // Called by java to remove the given compromised |credential| and trigger a
+  // UI update on completion.
+  void RemoveCredential(const password_manager::CredentialView& credential);
+
   // Not copyable or movable
   PasswordCheckManager(const PasswordCheckManager&) = delete;
   PasswordCheckManager& operator=(const PasswordCheckManager&) = delete;

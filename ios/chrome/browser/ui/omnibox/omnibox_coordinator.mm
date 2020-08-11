@@ -189,6 +189,17 @@
   return self.viewController;
 }
 
+#pragma mark Scribble
+
+- (void)focusOmniboxForScribble {
+  [self.textField becomeFirstResponder];
+  [self.viewController prepareOmniboxForScribble];
+}
+
+- (UIResponder<UITextInput>*)scribbleInput {
+  return self.viewController.textField;
+}
+
 #pragma mark - OmniboxViewControllerDelegate
 
 - (void)omniboxViewControllerTextInputModeDidChange:

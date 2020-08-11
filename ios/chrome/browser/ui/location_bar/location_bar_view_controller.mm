@@ -48,7 +48,17 @@ typedef NS_ENUM(int, TrailingButtonState) {
 // off mode for the badge view.
 const double kFullscreenProgressBadgeViewThreshold = 0.85;
 
+// Identifier for the omnibox embedded in this location bar as a scribble
+// element.
+const NSString* kScribbleOmniboxElementId = @"omnibox";
+
 }  // namespace
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+@interface LocationBarViewController (Scribble) <
+    UIIndirectScribbleInteractionDelegate>
+@end
+#endif  // defined(__IPHONE14_0)
 
 @interface LocationBarViewController ()
 // The injected edit view.
@@ -191,6 +201,14 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
           initWithTarget:self
                   action:@selector(showLongPressMenu:)];
   [_locationBarSteadyView.locationButton addGestureRecognizer:recognizer];
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+  if (@available(iOS 14, *)) {
+    UIIndirectScribbleInteraction* scribbleInteraction =
+        [[UIIndirectScribbleInteraction alloc] initWithDelegate:self];
+    [_locationBarSteadyView addInteraction:scribbleInteraction];
+  }
+#endif  // #if defined(__IPHONE_14_0)
 
   DCHECK(self.editView) << "The edit view must be set at this point";
 
@@ -385,6 +403,53 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
   CGFloat targetOffset = labelRect.origin.x - textFieldRect.origin.x - offset;
   return targetOffset;
 }
+
+#pragma mark - UIIndirectScribbleInteractionDelegate
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+
+- (void)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+              requestElementsInRect:(CGRect)rect
+                         completion:
+                             (void (^)(NSArray<UIScribbleElementIdentifier>*
+                                           elements))completion
+    API_AVAILABLE(ios(14.0)) {
+  completion(@[ kScribbleOmniboxElementId ]);
+}
+
+- (BOOL)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+                   isElementFocused:
+                       (UIScribbleElementIdentifier)elementIdentifier
+    API_AVAILABLE(ios(14.0)) {
+  DCHECK(elementIdentifier == kScribbleOmniboxElementId);
+  return self.delegate.scribbleForwardingTarget.isFirstResponder;
+}
+
+- (CGRect)
+    indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+                frameForElement:(UIScribbleElementIdentifier)elementIdentifier
+    API_AVAILABLE(ios(14.0)) {
+  DCHECK(elementIdentifier == kScribbleOmniboxElementId);
+
+  // Imitate the entire location bar being scribblable.
+  return self.view.bounds;
+}
+
+- (void)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+               focusElementIfNeeded:
+                   (UIScribbleElementIdentifier)elementIdentifier
+                     referencePoint:(CGPoint)focusReferencePoint
+                         completion:
+                             (void (^)(UIResponder<UITextInput>* focusedInput))
+                                 completion API_AVAILABLE(ios(14.0)) {
+  if (!self.delegate.scribbleForwardingTarget.isFirstResponder) {
+    [self.delegate locationBarRequestScribbleTargetFocus];
+  }
+
+  completion(self.delegate.scribbleForwardingTarget);
+}
+
+#endif  // defined(__IPHONE_14_0)
 
 #pragma mark - private
 

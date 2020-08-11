@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.password_check;
 
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.url.GURL;
+
 import java.util.Objects;
 
 /**
@@ -11,34 +14,62 @@ import java.util.Objects;
  * settings screen.
  */
 public class CompromisedCredential {
+    private final String mSignonRealm;
+    private final GURL mOrigin;
     private final String mUsername;
+    private final String mDisplayOrigin;
+    private final String mDisplayUsername;
     private final String mPassword;
-    private final String mOriginUrl;
     private final boolean mPhished;
     private final boolean mHasScript;
 
     /**
-     * @param username Username shown to the user.
-     * @param originUrl Origin URL shown to the user in case this credential is a PSL match.
+     * @param signonRealm The URL leading to the sign-on page.
+     * @param origin The origin used to identify this credential (may be empty).
+     * @param username The name used to identify this credential (may be empty).
+     * @param displayOrigin The origin displayed to the user. Not necessarily a valid URL (e.g.
+     *         missing scheme).
+     * @param displayUsername The username displayed to the user (substituted if empty).
+     * @param password The compromised password.
+     * @param phished True iff the credential was entered on an unsafe site.
+     * @param hasScript True iff the credential can be automatically fixed.
      */
-    public CompromisedCredential(String originUrl, String username, String password,
-            boolean phished, boolean hasScript) {
-        assert originUrl != null : "Credential origin is null! Pass an empty one instead.";
-        mOriginUrl = originUrl;
+    public CompromisedCredential(String signonRealm, GURL origin, String username,
+            String displayOrigin, String displayUsername, String password, boolean phished,
+            boolean hasScript) {
+        assert origin != null : "Credential origin is null! Pass an empty one instead.";
+        assert signonRealm != null;
+        mSignonRealm = signonRealm;
+        mOrigin = origin;
         mUsername = username;
+        mDisplayOrigin = displayOrigin;
+        mDisplayUsername = displayUsername;
         mPassword = password;
         mPhished = phished;
         mHasScript = hasScript;
     }
 
-    public String getOriginUrl() {
-        return mOriginUrl;
+    @CalledByNative
+    public String getSignonRealm() {
+        return mSignonRealm;
     }
+    @CalledByNative
     public String getUsername() {
         return mUsername;
     }
+    @CalledByNative
+    public GURL getOrigin() {
+        return mOrigin;
+    }
+    @CalledByNative
     public String getPassword() {
         return mPassword;
+    }
+    public String getDisplayUsername() {
+        return mDisplayUsername;
+    }
+    public String getDisplayOrigin() {
+        return mDisplayOrigin;
     }
     public boolean isPhished() {
         return mPhished;
@@ -52,21 +83,25 @@ public class CompromisedCredential {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CompromisedCredential that = (CompromisedCredential) o;
-        return mPhished == that.mPhished && mHasScript == that.mHasScript
-                && mUsername.equals(that.mUsername) && mPassword.equals(that.mPassword)
-                && mOriginUrl.equals(that.mOriginUrl);
+        return mSignonRealm.equals(that.mSignonRealm) && mOrigin.equals(that.mOrigin)
+                && mUsername.equals(that.mUsername) && mDisplayOrigin.equals(that.mDisplayOrigin)
+                && mDisplayUsername.equals(that.mDisplayUsername)
+                && mPassword.equals(that.mPassword) && mPhished == that.mPhished
+                && mHasScript == that.mHasScript;
     }
 
     @Override
     public String toString() {
         return "CompromisedCredential{"
-                + "username='" + mUsername + '\'' + ", password='" + mPassword + '\''
-                + ", originUrl='" + mOriginUrl + '\'' + ", phished=" + mPhished
-                + ", hasScript=" + mHasScript + '}';
+                + "signonRealm='" + mSignonRealm + ", origin='" + mOrigin + '\'' + '\''
+                + ", username='" + mUsername + '\'' + ", displayOrigin='" + mDisplayOrigin + '\''
+                + ", displayUsername='" + mDisplayUsername + '\'' + ", password='" + mPassword
+                + '\'' + ", phished=" + mPhished + ", hasScript=" + mHasScript + '}';
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mUsername, mPassword, mOriginUrl, mPhished, mHasScript);
+        return Objects.hash(mSignonRealm, mOrigin, mUsername, mDisplayOrigin, mDisplayUsername,
+                mPassword, mPhished, mHasScript);
     }
 }

@@ -29,6 +29,7 @@ import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -59,6 +60,7 @@ import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.io.IOException;
 
@@ -83,6 +85,11 @@ public class AccountPickerBottomSheetTest {
             new ProfileDataSource.ProfileData(
                     /* accountName= */ "test.account2@gmail.com", /* avatar= */ null,
                     /* fullName= */ null, /* givenName= */ null);
+
+    // Disable animations to reduce flakiness.
+    @ClassRule
+    public static final DisableAnimationsTestRule sNoAnimationsRule =
+            new DisableAnimationsTestRule();
 
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
@@ -293,10 +300,22 @@ public class AccountPickerBottomSheetTest {
             return !bottomSheetView.findViewById(R.id.account_picker_continue_as_button).isShown();
         });
         verify(mAccountPickerDelegateMock).signIn(PROFILE_DATA1.getAccountName());
+        Assert.assertTrue(
+                bottomSheetView.findViewById(R.id.account_picker_signin_spinner_view).isShown());
+        // Currently the ProgressBar animation cannot be disabled on android-marshmallow-arm64-rel
+        // bot with DisableAnimationsTestRule, we hide the ProgressBar manually here to enable
+        // checks of other elements on the screen.
+        // TODO(https://crbug.com/1115067): Delete this line once DisableAnimationsTestRule is
+        // fixed.
+        ThreadUtils.runOnUiThread(() -> {
+            bottomSheetView.findViewById(R.id.account_picker_signin_spinner_view)
+                    .setVisibility(View.GONE);
+        });
         onView(withText(R.string.signin_account_picker_bottom_sheet_signin_title))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.account_picker_bottom_sheet_subtitle))
                 .check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_continue_as_button)).check(matches(not(isDisplayed())));

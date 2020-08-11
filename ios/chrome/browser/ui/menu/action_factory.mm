@@ -71,7 +71,7 @@
 - (UIAction*)actionToShareWithBlock:(ProceduralBlock)block {
   return
       [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_SHARE_BUTTON_LABEL)
-                      image:[UIImage systemImageNamed:@"square.and.arrow.up"]
+                      image:[UIImage imageNamed:@"share"]
                        type:MenuActionType::Share
                       block:block];
 }
@@ -79,7 +79,7 @@
 - (UIAction*)actionToDeleteWithBlock:(ProceduralBlock)block {
   UIAction* action =
       [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE)
-                      image:[UIImage systemImageNamed:@"trash"]
+                      image:[UIImage imageNamed:@"delete"]
                        type:MenuActionType::Delete
                       block:block];
   action.attributes = UIMenuElementAttributesDestructive;
@@ -102,7 +102,7 @@
 - (UIAction*)actionToOpenInNewTabWithBlock:(ProceduralBlock)block {
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
-                         image:[UIImage systemImageNamed:@"plus"]
+                         image:[UIImage imageNamed:@"open_in_new_tab"]
                           type:MenuActionType::OpenInNewTab
                          block:block];
 }
@@ -124,7 +124,7 @@
 - (UIAction*)actionToOpenInNewIncognitoTabWithBlock:(ProceduralBlock)block {
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_OPEN_IN_INCOGNITO_ACTION_TITLE)
-                         image:nil
+                         image:[UIImage imageNamed:@"open_in_incognito"]
                           type:MenuActionType::OpenInNewIncognitoTab
                          block:block];
 }
@@ -137,7 +137,7 @@
   NSUserActivity* activity = ActivityToLoadURL(activityOrigin, URL);
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW)
-                         image:[UIImage systemImageNamed:@"plus.square"]
+                         image:[UIImage imageNamed:@"open_new_window"]
                           type:MenuActionType::OpenInNewWindow
                          block:^{
                            [windowOpener openNewWindowWithActivity:activity];
@@ -150,7 +150,7 @@
 - (UIAction*)actionToRemoveWithBlock:(ProceduralBlock)block {
   UIAction* action =
       [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_REMOVE_ACTION_TITLE)
-                      image:[UIImage systemImageNamed:@"trash"]
+                      image:[UIImage imageNamed:@"remove"]
                        type:MenuActionType::Remove
                       block:block];
   action.attributes = UIMenuElementAttributesDestructive;
@@ -159,7 +159,7 @@
 
 - (UIAction*)actionToEditWithBlock:(ProceduralBlock)block {
   return [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_EDIT_ACTION_TITLE)
-                         image:nil
+                         image:[UIImage imageNamed:@"edit"]
                           type:MenuActionType::Edit
                          block:block];
 }

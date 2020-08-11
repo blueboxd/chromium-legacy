@@ -21,6 +21,7 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/command_updater_impl.h"
+#include "chrome/browser/reputation/safety_tip_test_utils.h"
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
@@ -1624,7 +1625,10 @@ class OmniboxViewViewsRevealOnHoverTest
                       {{omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
                         {}}}),
             {},
-            GetParam().second) {}
+            GetParam().second) {
+    // The lookalike allowlist is used by the registrable-domain-elision code.
+    InitializeBlankLookalikeAllowlistForTesting();
+  }
 
   OmniboxViewViewsRevealOnHoverTest(const OmniboxViewViewsRevealOnHoverTest&) =
       delete;
@@ -1734,7 +1738,10 @@ class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
                             kHideSteadyStateUrlPathQueryAndRefOnInteraction,
                         {}}}),
             {},
-            GetParam().second) {}
+            GetParam().second) {
+    // The lookalike allowlist is used by the registrable-domain-elision code.
+    InitializeBlankLookalikeAllowlistForTesting();
+  }
 
   OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest(
       const OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest&) = delete;
@@ -2098,7 +2105,11 @@ class OmniboxViewViewsHideOnInteractionTest
                             kHideSteadyStateUrlPathQueryAndRefOnInteraction,
                         {}}}),
             {},
-            GetParam().second) {}
+            GetParam().second) {
+    // The lookalike allowlist is used by the registrable-domain-elision code.
+    InitializeBlankLookalikeAllowlistForTesting();
+  }
+
   OmniboxViewViewsHideOnInteractionTest(
       const OmniboxViewViewsHideOnInteractionTest&) = delete;
   OmniboxViewViewsHideOnInteractionTest& operator=(

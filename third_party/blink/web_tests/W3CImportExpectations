@@ -287,30 +287,6 @@ external/wpt/css/css-writing-modes/vertical-alignment-srl-040.xht [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-parsing-sideways-lr-001.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-parsing-sideways-rl-001.html [ Skip ]
 
-# CSS Writing Modes Level 3: Following tests require applying writing-mode to table-cell, which we do not support today. crbug.com/409155
-external/wpt/css/css-writing-modes/block-flow-direction-vlr-018.xht [ Skip ]
-external/wpt/css/css-writing-modes/block-flow-direction-vrl-017.xht [ Skip ]
-external/wpt/css/css-writing-modes/line-box-direction-vlr-016.xht [ Skip ]
-external/wpt/css/css-writing-modes/line-box-direction-vrl-015.xht [ Skip ]
-external/wpt/css/css-writing-modes/table-cell-001.html [ Skip ]
-external/wpt/css/css-writing-modes/table-cell-002.html [ Skip ]
-
-# CSS Writing Modes Level 3: Following tests require bottom-to-top or mixed ordering of table cells, which we do not support today. crbug.com/409155
-external/wpt/css/css-writing-modes/table-column-order-002.xht [ Skip ]
-external/wpt/css/css-writing-modes/table-column-order-003.xht [ Skip ]
-external/wpt/css/css-writing-modes/table-column-order-004.xht [ Skip ]
-external/wpt/css/css-writing-modes/table-column-order-005.xht [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-001-ref.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-002-ref.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vlr-001.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vlr-002.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vlr-003.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vlr-004.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vrl-001.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vrl-002.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vrl-003.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vrl-004.html [ Skip ]
-
 # CSS Writing Modes Level 3: Following tests require new definition of ch unit, which we do not support today. crbug.com/409155
 external/wpt/css/css-writing-modes/ch-units-vrl-001.html [ Skip ]
 external/wpt/css/css-writing-modes/ch-units-vrl-002.html [ Skip ]

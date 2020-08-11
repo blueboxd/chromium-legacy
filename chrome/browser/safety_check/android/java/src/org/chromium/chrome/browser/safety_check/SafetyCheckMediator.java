@@ -19,6 +19,7 @@ import org.chromium.base.BuildConfig;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.password_check.CompromisedCredential;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_check.PasswordCheckUIStatus;
@@ -310,8 +311,7 @@ class SafetyCheckMediator implements PasswordCheck.Observer, SafetyCheckCommonOb
     }
 
     @Override
-    public void onCompromisedCredentialFound(
-            String originUrl, String username, String password, boolean hasScript) {}
+    public void onCompromisedCredentialFound(CompromisedCredential leakedCredential) {}
 
     /** Cancels any pending callbacks and registered observers.  */
     public void destroy() {

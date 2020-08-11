@@ -1852,9 +1852,7 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginFailed) {
   EXPECT_FALSE(attrs.has_password_change_url());
 }
 
-INSTANTIATE_TEST_SUITE_P(SAMLPasswordAttributesSuite,
-                         SAMLPasswordAttributesTest,
-                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, SAMLPasswordAttributesTest, testing::Bool());
 
 void FakeGetCertificateCallbackTrue(
     attestation::AttestationFlow::CertificateCallback callback) {

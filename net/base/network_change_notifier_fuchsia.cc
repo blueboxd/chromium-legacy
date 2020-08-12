@@ -103,12 +103,15 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
     if ((internal::ConvertConnectionType(interface) ==
          NetworkChangeNotifier::CONNECTION_NONE) ||
         (interface.features &
-         fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK)) {
+         static_cast<decltype(interface.features)>(
+             fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK))) {
       continue;
     }
 
     // Filter out interfaces that do not meet the |required_features_|.
-    if ((interface.features & required_features_) != required_features_) {
+    auto required_features =
+        static_cast<decltype(interface.features)>(required_features_);
+    if ((interface.features & required_features) != required_features) {
       continue;
     }
 

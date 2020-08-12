@@ -6834,7 +6834,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "enable_subresource_server_redirect": "false"
+                        "enable_subresource_server_redirect": "true"
                     },
                     "enable_features": [
                         "SubresourceRedirect"

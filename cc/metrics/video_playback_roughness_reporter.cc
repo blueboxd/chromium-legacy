@@ -8,6 +8,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 
 namespace {
@@ -72,9 +73,9 @@ void VideoPlaybackRoughnessReporter::FrameSubmitted(
     }
 
     // Adjust frame window size to fit about 1 second of playback
-    double win_size = std::round(kDesiredWindowDuration /
-                                 info.intended_duration.value().InSecondsF());
-    frames_window_size_ = std::max(kMinWindowSize, static_cast<int>(win_size));
+    int win_size = base::ClampRound(
+        kDesiredWindowDuration / info.intended_duration.value().InSecondsF());
+    frames_window_size_ = std::max(kMinWindowSize, win_size);
     frames_window_size_ = std::min(frames_window_size_, kMaxWindowSize);
   }
 

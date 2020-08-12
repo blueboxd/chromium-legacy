@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
+  <include name="IDR_OS_SETTINGS_ALBUM_ITEM_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/ambient_mode_page/album_item.m.js"
+           use_base_dir="false"
+           compress="false"
+           type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_ALBUM_LIST_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/ambient_mode_page/album_list.m.js"
+           use_base_dir="false"
+           compress="false"
+           type="BINDATA" />
   <include name="IDR_OS_SETTINGS_TOPIC_SOURCE_ITEM_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/ambient_mode_page/topic_source_item.m.js"
            use_base_dir="false"

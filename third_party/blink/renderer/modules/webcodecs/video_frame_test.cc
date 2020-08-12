@@ -18,6 +18,17 @@ class VideoFrameTest : public testing::Test {
       scoped_refptr<media::VideoFrame> media_frame) {
     return MakeGarbageCollected<VideoFrame>(std::move(media_frame));
   }
+  VideoFrame* CreateBlinkVideoFrameFromHandle(
+      scoped_refptr<VideoFrame::Handle> handle) {
+    return MakeGarbageCollected<VideoFrame>(std::move(handle));
+  }
+  scoped_refptr<media::VideoFrame> CreateDefaultBlackMediaVideoFrame() {
+    return CreateBlackMediaVideoFrame(base::TimeDelta::FromMicroseconds(1000),
+                                      media::PIXEL_FORMAT_I420,
+                                      gfx::Size(112, 208) /* coded_size */,
+                                      gfx::Size(100, 200) /* visible_size */);
+  }
+
   scoped_refptr<media::VideoFrame> CreateBlackMediaVideoFrame(
       base::TimeDelta timestamp,
       media::VideoPixelFormat format,
@@ -47,7 +58,7 @@ TEST_F(VideoFrameTest, ConstructorAndAttributes) {
   EXPECT_EQ(200u, blink_frame->cropHeight());
   EXPECT_EQ(media_frame, blink_frame->frame());
 
-  blink_frame->close();
+  blink_frame->destroy();
 
   EXPECT_FALSE(blink_frame->timestamp().has_value());
   EXPECT_EQ(0u, blink_frame->codedWidth());
@@ -55,6 +66,42 @@ TEST_F(VideoFrameTest, ConstructorAndAttributes) {
   EXPECT_EQ(0u, blink_frame->cropWidth());
   EXPECT_EQ(0u, blink_frame->cropHeight());
   EXPECT_EQ(nullptr, blink_frame->frame());
+}
+
+TEST_F(VideoFrameTest, FramesSharingHandleDestruction) {
+  scoped_refptr<media::VideoFrame> media_frame =
+      CreateDefaultBlackMediaVideoFrame();
+  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+
+  VideoFrame* frame_with_shared_handle =
+      CreateBlinkVideoFrameFromHandle(blink_frame->handle());
+
+  // A blink::VideoFrame created from a handle should share the same
+  // media::VideoFrame reference.
+  EXPECT_EQ(media_frame, frame_with_shared_handle->frame());
+
+  // Destroying a frame should invalidate all frames sharing the same handle.
+  blink_frame->destroy();
+  EXPECT_EQ(nullptr, frame_with_shared_handle->frame());
+}
+
+TEST_F(VideoFrameTest, FramesNotSharingHandleDestruction) {
+  scoped_refptr<media::VideoFrame> media_frame =
+      CreateDefaultBlackMediaVideoFrame();
+  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+
+  auto new_handle =
+      base::MakeRefCounted<VideoFrame::Handle>(blink_frame->frame());
+
+  VideoFrame* frame_with_new_handle =
+      CreateBlinkVideoFrameFromHandle(std::move(new_handle));
+
+  EXPECT_EQ(media_frame, frame_with_new_handle->frame());
+
+  // If a frame was created a new handle reference the same media::VideoFrame,
+  // one frame's destruction should not affect the other.
+  blink_frame->destroy();
+  EXPECT_EQ(media_frame, frame_with_new_handle->frame());
 }
 
 }  // namespace

@@ -235,7 +235,44 @@ TEST_F(FontPreloadManagerTest, OptionalFontWithoutPreloading) {
                                       "font/woff2");
 
   LoadURL("https://example.com");
-  main_resource.Complete(R"HTML(
+  main_resource.Write(R"HTML(
+    <!doctype html>
+    <style>
+      @font-face {
+        font-family: custom-font;
+        src: url(https://example.com/Ahem.woff2) format("woff2");
+        font-display: optional;
+      }
+      #target {
+        font: 25px/1 custom-font, monospace;
+      }
+    </style>
+    <span id=target>0123456789</span>
+    <script>document.fonts.load('25px/1 custom-font');</script>
+  )HTML");
+
+  // Now rendering has started, as there's no blocking resources.
+  EXPECT_FALSE(Compositor().DeferMainFrameUpdate());
+  EXPECT_EQ(State::kUnblocked, GetState());
+
+  font_resource.Complete(ReadAhemWoff2());
+
+  // Although the optional web font isn't preloaded, it finished loading before
+  // the first time we try to render with it. Therefore it's used.
+  Compositor().BeginFrame().Contains(SimCanvas::kText);
+  EXPECT_EQ(250, GetTarget()->OffsetWidth());
+  EXPECT_FALSE(GetTargetFont().ShouldSkipDrawing());
+
+  main_resource.Finish();
+}
+
+TEST_F(FontPreloadManagerTest, OptionalFontMissingFirstFrame) {
+  SimRequest main_resource("https://example.com", "text/html");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
+
+  LoadURL("https://example.com");
+  main_resource.Write(R"HTML(
     <!doctype html>
     <style>
       @font-face {
@@ -254,13 +291,20 @@ TEST_F(FontPreloadManagerTest, OptionalFontWithoutPreloading) {
   EXPECT_FALSE(Compositor().DeferMainFrameUpdate());
   EXPECT_EQ(State::kUnblocked, GetState());
 
-  font_resource.Complete(ReadAhemWoff2());
-
-  // The 'optional' web font isn't used, as it didn't finish loading before
-  // rendering started. Text is rendered in visible fallback.
-  Compositor().BeginFrame().Contains(SimCanvas::kText);
+  // We render visible fallback as the 'optional' web font hasn't loaded.
+  Compositor().BeginFrame();
   EXPECT_GT(250, GetTarget()->OffsetWidth());
   EXPECT_FALSE(GetTargetFont().ShouldSkipDrawing());
+
+  font_resource.Complete(ReadAhemWoff2());
+
+  // Since we have rendered fallback for the 'optional' font, even after it
+  // finishes loading, we shouldn't use it, as otherwise there's a relayout.
+  Compositor().BeginFrame();
+  EXPECT_GT(250, GetTarget()->OffsetWidth());
+  EXPECT_FALSE(GetTargetFont().ShouldSkipDrawing());
+
+  main_resource.Finish();
 }
 
 TEST_F(FontPreloadManagerTest, OptionalFontRemoveAndReadd) {

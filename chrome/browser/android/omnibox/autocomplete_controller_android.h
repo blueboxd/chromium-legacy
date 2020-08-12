@@ -134,11 +134,13 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
   base::android::ScopedJavaLocalRef<jobject> BuildOmniboxSuggestion(
       JNIEnv* env, const AutocompleteMatch& match);
 
-  // Construct Java Group Headers map from supplied HeadersMap.
-  void PopulateOmniboxGroupHeaders(
+  // Construct Java GroupDetails map from supplied HeadersMap and expanded
+  // state.
+  void PopulateOmniboxGroupsDetails(
       JNIEnv* env,
       base::android::ScopedJavaLocalRef<jobject> j_autocomplete_result,
-      const SearchSuggestionParser::HeadersMap& header_map);
+      const SearchSuggestionParser::HeadersMap& header_map,
+      const std::vector<int>& hidden_group_ids);
 
   // A helper method for fetching the top synchronous autocomplete result.
   // The |prevent_inline_autocomplete| flag is passed to the AutocompleteInput

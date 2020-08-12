@@ -157,6 +157,14 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   FontLoadHistograms histograms_;
   bool is_intervention_triggered_;
   bool finished_before_document_rendering_begin_;
+
+  // Indicates whether FontData has been requested while the font is still being
+  // loaded, in which case a fallback FontData is returned and used. If true, we
+  // will render contents with fallback font, and later if we would switch to
+  // the web font after it loads, there will be a layout shifting. Therefore, we
+  // don't need to worry about layout shifting when it's false.
+  bool has_been_requested_while_pending_;
+
   bool finished_before_lcp_limit_;
 };
 

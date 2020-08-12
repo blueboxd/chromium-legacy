@@ -70,6 +70,10 @@ extern const int kMaxNumConsecutiveUploadDeviceFailures;
 // it is empty, developer mode isn't enabled.
 extern const wchar_t kRegDeveloperMode[];
 
+// Enables updating credentials on login UI when the enforcement of any GCPW
+// associated account changes.
+extern const wchar_t kRegUpdateCredentialsOnChange[];
+
 // Maximum allowed time delta after which user policies should be refreshed
 // again.
 extern const base::TimeDelta kMaxTimeDeltaSinceLastUserPolicyRefresh;

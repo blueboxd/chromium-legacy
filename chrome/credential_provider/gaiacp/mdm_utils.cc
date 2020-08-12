@@ -51,6 +51,8 @@ constexpr wchar_t kRegDeviceDetailsUploadStatus[] =
 constexpr wchar_t kRegDeviceDetailsUploadFailures[] =
     L"device_details_upload_failures";
 constexpr wchar_t kRegGlsPath[] = L"gls_path";
+constexpr wchar_t kRegUpdateCredentialsOnChange[] =
+    L"update_credentials_on_change";
 constexpr wchar_t kRegUserDeviceResourceId[] = L"device_resource_id";
 constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

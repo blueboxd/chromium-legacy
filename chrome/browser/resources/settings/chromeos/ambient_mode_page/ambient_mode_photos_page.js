@@ -13,16 +13,34 @@ Polymer({
       [I18nBehavior, settings.RouteObserverBehavior, WebUIListenerBehavior],
 
   properties: {
+    /** @private */
+    photoPreviewEnabled: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isAmbientModePhotoPreviewEnabled');
+      },
+      readOnly: true,
+    },
+
     /** @private {!AmbientModeTopicSource} */
     topicSource_: {
-      type: AmbientModeTopicSource,
+      type: Number,
       value() {
         return AmbientModeTopicSource.UNKNOWN;
       },
     },
 
     /** @private {Array<!AmbientModeAlbum>} */
-    albums_: Array,
+    albums_: {
+      type: Array,
+      notify: true,
+      // Set to null to differentiate from an empty album.
+      value: null,
+    },
+  },
+
+  listeners: {
+    'selected-albums-changed': 'onSelectedAlbumsChanged_',
   },
 
   /** @private {?settings.AmbientModeBrowserProxy} */
@@ -36,6 +54,8 @@ Polymer({
   /** @override */
   ready() {
     this.addWebUIListener('albums-changed', this.onAlbumsChanged_.bind(this));
+    this.addWebUIListener(
+        'album-preview-changed', this.onAlbumPreviewChanged_.bind(this));
   },
 
   /**
@@ -68,7 +88,9 @@ Polymer({
       return;
     }
 
-    this.albums_ = [];
+    // TODO(b/162793904): Have a better plan to cache the UI data.
+    // Reset to null to distinguish empty albums fetched from server.
+    this.albums_ = null;
     this.browserProxy_.requestAlbums(this.topicSource_);
   },
 
@@ -86,6 +108,22 @@ Polymer({
   },
 
   /**
+   * @param {!AmbientModeAlbum} album
+   * @private
+   */
+  onAlbumPreviewChanged_(album) {
+    if (album.topicSource !== this.topicSource_) {
+      return;
+    }
+
+    for (let i = 0; i < this.albums_.length; ++i) {
+      if (this.albums_[i].albumId === album.albumId) {
+        this.set('albums_.' + i + '.url', album.url);
+      }
+    }
+  },
+
+  /**
    * @param {number} topicSource
    * @return {string}
    * @private
@@ -98,17 +136,28 @@ Polymer({
     }
   },
 
+  /**
+   * @param {!CustomEvent<{item: !AmbientModeAlbum}>} event
+   * @private
+   */
+  onSelectedAlbumsChanged_(event) {
+    const albums = [];
+    this.albums_.forEach((/** @param {AmbientModeAlbum} album */ (album) => {
+      if (album.checked) {
+        albums.push({albumId: album.albumId});
+      }
+    }));
+    this.browserProxy_.setSelectedAlbums(
+        {topicSource: this.topicSource_, albums: albums});
+  },
+
   /** @private */
   onCheckboxChange_() {
     const checkboxes = this.$$('#albums').querySelectorAll('cr-checkbox');
     const albums = [];
     checkboxes.forEach((checkbox) => {
       if (checkbox.checked && !checkbox.hidden) {
-        albums.push({
-          albumId: checkbox.dataset.id,
-          checked: true,
-          title: checkbox.label
-        });
+        albums.push({albumId: checkbox.dataset.id});
       }
     });
     this.browserProxy_.setSelectedAlbums(

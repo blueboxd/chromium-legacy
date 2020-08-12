@@ -861,7 +861,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             mAutocompleteResult = autocompleteResult;
             List<DropdownItemViewInfo> viewInfoList =
                     mDropdownViewInfoListBuilder.buildDropdownViewInfoList(autocompleteResult);
-            mDropdownViewInfoListManager.setSourceViewInfoList(viewInfoList);
+            mDropdownViewInfoListManager.setSourceViewInfoList(
+                    viewInfoList, autocompleteResult.getGroupsDetails());
             mDelegate.onSuggestionsChanged(inlineAutocompleteText);
             updateOmniboxSuggestionsVisibility();
         }
@@ -869,8 +870,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     }
 
     @Override
-    public void setGroupVisibility(int groupId, boolean state) {
-        mDropdownViewInfoListManager.setGroupVisibility(groupId, state);
+    public void setGroupCollapsedState(int groupId, boolean state) {
+        mDropdownViewInfoListManager.setGroupCollapsedState(groupId, state);
     }
 
     @NonNull

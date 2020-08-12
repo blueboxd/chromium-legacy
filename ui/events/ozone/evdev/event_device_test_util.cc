@@ -1090,6 +1090,11 @@ bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
     return false;
   devinfo->SetLedEvents(&led_bits[0], led_bits.size());
 
+  std::vector<unsigned long> ff_bits;
+  if (!ParseBitfield(capabilities.ff, FF_CNT, &ff_bits))
+    return false;
+  devinfo->SetFfEvents(&ff_bits[0], ff_bits.size());
+
   std::vector<unsigned long> prop_bits;
   if (!ParseBitfield(capabilities.prop, INPUT_PROP_CNT, &prop_bits))
     return false;

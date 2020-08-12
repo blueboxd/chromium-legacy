@@ -7,47 +7,36 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutIFrame IFRAME",
-      "position": [-45, -45],
-      "bounds": [585, 360],
-      "transform": 1
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [428, 288],
-      "transform": 2
-    },
-    {
-      "name": "LayoutIFrame IFRAME",
-      "bounds": [378, 258],
-      "transform": 3
+      "transform": 1
     },
     {
       "name": "LayoutView #document",
       "bounds": [375, 255],
       "contentsOpaqueForText": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 4
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow DIV id='iframe-content' class='box'",
       "bounds": [315, 315],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 5
+      "transform": 3
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
       "position": [428, 0],
       "bounds": [22, 225],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow DIV class='box'",
       "bounds": [315, 315],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 7
+      "transform": 5
     }
   ],
   "transforms": [
@@ -57,7 +46,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [12, 12, 0, 1]
+        [35, 35, 0, 1]
       ]
     },
     {
@@ -67,7 +56,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [23, 23, 0, 1]
+        [14, 14, 0, 1]
       ]
     },
     {
@@ -77,31 +66,11 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [12, 12, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [2, 2, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
-      "parent": 4,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
         [27, 15, 0, 1]
       ]
     },
     {
-      "id": 6,
+      "id": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -110,8 +79,8 @@
       ]
     },
     {
-      "id": 7,
-      "parent": 6,
+      "id": 5,
+      "parent": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

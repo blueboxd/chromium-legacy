@@ -8,11 +8,10 @@
     },
     {
       "name": "LayoutInline (relative positioned) SPAN",
-      "position": [237, 237],
-      "bounds": [150, 150],
-      "contentsOpaque": true,
+      "position": [12, 12],
+      "bounds": [375, 375],
       "invalidations": [
-        [0, 0, 150, 150]
+        [225, 225, 150, 150]
       ]
     }
   ]

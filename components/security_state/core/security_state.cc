@@ -44,14 +44,6 @@ SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
   return input_events.insecure_field_edited ? DANGEROUS : WARNING;
 }
 
-SecurityLevel GetSecurityLevelForDisplayedMixedContent(bool suppress_warning) {
-  if (base::FeatureList::IsEnabled(features::kPassiveMixedContentWarning) &&
-      !suppress_warning) {
-    return kDisplayedInsecureContentWarningLevel;
-  }
-  return kDisplayedInsecureContentLevel;
-}
-
 std::string GetHistogramSuffixForSecurityLevel(
     security_state::SecurityLevel level) {
   switch (level) {
@@ -223,8 +215,10 @@ SecurityLevel GetSecurityLevel(
   DCHECK(!visible_security_state.ran_content_with_cert_errors);
 
   if (visible_security_state.displayed_mixed_content) {
-    return GetSecurityLevelForDisplayedMixedContent(
-        visible_security_state.should_suppress_mixed_content_warning);
+    if (base::FeatureList::IsEnabled(features::kPassiveMixedContentWarning)) {
+      return kDisplayedInsecureContentWarningLevel;
+    }
+    return kDisplayedInsecureContentLevel;
   }
 
   if ((visible_security_state.contained_mixed_form &&
@@ -281,7 +275,6 @@ VisibleSecurityState::VisibleSecurityState()
       is_reader_mode(false),
       connection_used_legacy_tls(false),
       should_suppress_legacy_tls_warning(false),
-      should_suppress_mixed_content_warning(false),
       should_treat_displayed_mixed_forms_as_secure(false) {}
 
 VisibleSecurityState::VisibleSecurityState(const VisibleSecurityState& other) =

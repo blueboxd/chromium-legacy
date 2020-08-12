@@ -92,9 +92,27 @@ ExecutionContext* ExecutionContext::ForCurrentRealm(
 }
 
 // static
+ExecutionContext* ExecutionContext::ForCurrentRealm(
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  auto ctx = info.GetIsolate()->GetCurrentContext();
+  if (ctx.IsEmpty())
+    return nullptr;
+  return ToExecutionContext(ctx);
+}
+
+// static
 ExecutionContext* ExecutionContext::ForRelevantRealm(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   return ToExecutionContext(info.Holder()->CreationContext());
+}
+
+// static
+ExecutionContext* ExecutionContext::ForRelevantRealm(
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  auto ctx = info.Holder()->CreationContext();
+  if (ctx.IsEmpty())
+    return nullptr;
+  return ToExecutionContext(ctx);
 }
 
 void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {

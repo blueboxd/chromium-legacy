@@ -50,7 +50,9 @@ const ProgressItemType = {
   // This is used for the mixed operation of summarized item.
   TRANSFER: 'transfer',
   // The item is external drive format operation.
-  FORMAT: 'format'
+  FORMAT: 'format',
+  // The item is archive operation.
+  MOUNT_ARCHIVE: 'mount_archive'
 };
 Object.freeze(ProgressItemType);
 

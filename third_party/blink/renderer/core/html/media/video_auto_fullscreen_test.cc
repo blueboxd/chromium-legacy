@@ -32,23 +32,21 @@ class VideoAutoFullscreenFrameHost : public FakeLocalFrameHost {
     std::move(callback).Run(true);
     Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
-        WTF::Bind(
-            [](WebWidget* web_widget) { web_widget->DidEnterFullscreen(); },
-            WTF::Unretained(web_widget_)));
+        WTF::Bind([](WebViewImpl* web_view) { web_view->DidEnterFullscreen(); },
+                  WTF::Unretained(web_view_)));
   }
 
   void ExitFullscreen() override {
     Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
-        WTF::Bind(
-            [](WebWidget* web_widget) { web_widget->DidExitFullscreen(); },
-            WTF::Unretained(web_widget_)));
+        WTF::Bind([](WebViewImpl* web_view) { web_view->DidExitFullscreen(); },
+                  WTF::Unretained(web_view_)));
   }
 
-  void set_frame_widget(WebWidget* web_widget) { web_widget_ = web_widget; }
+  void set_web_view(WebViewImpl* web_view) { web_view_ = web_view; }
 
  private:
-  WebWidget* web_widget_;
+  WebViewImpl* web_view_;
 };
 
 class VideoAutoFullscreenFrameClient
@@ -81,7 +79,7 @@ class VideoAutoFullscreen : public testing::Test,
 
     video_ = To<HTMLVideoElement>(*GetDocument()->QuerySelector("video"));
 
-    frame_host_.set_frame_widget(GetWebView()->MainFrameWidget());
+    frame_host_.set_web_view(GetWebView());
   }
 
   WebViewImpl* GetWebView() { return web_view_helper_.GetWebView(); }

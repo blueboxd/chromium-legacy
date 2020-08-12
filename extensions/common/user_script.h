@@ -276,7 +276,7 @@ class UserScript {
                        FileList* scripts);
 
   // The location to run the script inside the document.
-  RunLocation run_location_;
+  RunLocation run_location_ = DOCUMENT_IDLE;
 
   // The namespace of the script. This is used by Greasemonkey in the same way
   // as XML namespaces. Only used when parsing Greasemonkey-style scripts.
@@ -313,28 +313,28 @@ class UserScript {
   HostID host_id_;
 
   // The type of the consumer instance that the script will be injected.
-  ConsumerInstanceType consumer_instance_type_;
+  ConsumerInstanceType consumer_instance_type_ = TAB;
 
-  // The globally-unique id associated with this user script. Defaults to
-  // -1 for invalid.
-  int user_script_id_;
+  // The globally-unique id associated with this user script. -1 indicates
+  // "invalid".
+  int user_script_id_ = -1;
 
   // Whether we should try to emulate Greasemonkey's APIs when running this
   // script.
-  bool emulate_greasemonkey_;
+  bool emulate_greasemonkey_ = false;
 
   // Whether the user script should run in all frames, or only just the top one.
-  // Defaults to false.
-  bool match_all_frames_;
+  bool match_all_frames_ = false;
 
   // Whether the user script should run in frames whose initiator / precursor
   // origin matches a match pattern, if an appropriate URL cannot be found for
   // the frame for matching purposes, such as in the case of about:, data:, and
   // other schemes.
-  MatchOriginAsFallbackBehavior match_origin_as_fallback_;
+  MatchOriginAsFallbackBehavior match_origin_as_fallback_ =
+      MatchOriginAsFallbackBehavior::kNever;
 
   // True if the script should be injected into an incognito tab.
-  bool incognito_enabled_;
+  bool incognito_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UserScript);
 };

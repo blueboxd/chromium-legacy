@@ -62,7 +62,9 @@ NetworkChangeNotifier::ConnectionType ConvertConnectionType(
     const fuchsia::netstack::NetInterface& iface) {
   if (!(iface.flags & fuchsia::netstack::NetInterfaceFlagUp)) {
     return NetworkChangeNotifier::CONNECTION_NONE;
-  } else if (iface.features & fuchsia::hardware::ethernet::INFO_FEATURE_WLAN) {
+  } else if (iface.features &
+             static_cast<decltype(iface.features)>(
+                 fuchsia::hardware::ethernet::INFO_FEATURE_WLAN)) {
     return NetworkChangeNotifier::CONNECTION_WIFI;
   }
   return NetworkChangeNotifier::CONNECTION_UNKNOWN;
@@ -121,7 +123,8 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
     if ((internal::ConvertConnectionType(interface) ==
          NetworkChangeNotifier::CONNECTION_NONE) ||
         (interface.features &
-         fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK)) {
+         static_cast<decltype(interface.features)>(
+             fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK))) {
       continue;
     }
 

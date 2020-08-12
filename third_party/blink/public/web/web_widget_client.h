@@ -193,13 +193,6 @@ class WebWidgetClient {
                              const SkBitmap& drag_image,
                              const gfx::Point& drag_image_offset) {}
 
-  // Sets the current page scale factor and minimum / maximum limits. Both
-  // limits are initially 1 (no page scale allowed).
-  virtual void SetPageScaleStateAndLimits(float page_scale_factor,
-                                          bool is_pinch_gesture_active,
-                                          float minimum,
-                                          float maximum) {}
-
   // Requests an image decode and will have the |callback| run asynchronously
   // when it completes. Forces a new main frame to occur that will trigger
   // pushing the decode through the compositor.
@@ -307,11 +300,6 @@ class WebWidgetClient {
 
   // Indicate composition is complete to pepper.
   virtual void ImeFinishComposingTextForPepper(bool keep_selection) {}
-
-  // Called only for main frame widgets; updates the widget client about
-  // whether it is currently nested inside a frame tree. Main frames can be
-  // nested in cases like Portals or GuestViews.
-  virtual void SetIsNestedMainFrameWidget(bool is_nested) {}
 
   // Called to indicate a syntehtic event was queued.
   virtual void WillQueueSyntheticEvent(const WebCoalescedInputEvent& event) {}

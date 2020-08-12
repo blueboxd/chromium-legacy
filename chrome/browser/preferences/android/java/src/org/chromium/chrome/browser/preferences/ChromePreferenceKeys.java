@@ -765,6 +765,8 @@ public final class ChromePreferenceKeys {
             new KeyPrefix("zero_suggest_header_group_id*");
     public static final KeyPrefix KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX =
             new KeyPrefix("zero_suggest_header_group_title*");
+    public static final KeyPrefix KEY_ZERO_SUGGEST_HEADER_GROUP_COLLAPSED_BY_DEFAULT_PREFIX =
+            new KeyPrefix("zero_suggest_header_group_collapsed_by_default*");
 
     /**
      * These values are currently used as SharedPreferences keys, along with the keys in

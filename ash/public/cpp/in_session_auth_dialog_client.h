@@ -18,7 +18,7 @@ class ASH_PUBLIC_EXPORT InSessionAuthDialogClient {
  public:
   // Attempt to authenticate the current session user with a password or PIN.
   // |password|: The submitted password.
-  // |authenticated_by_pin|: True if we are using pin to authenticate.
+  // |authenticated_by_pin|: True if we are authenticating by PIN..
   // |callback|: the callback to run on auth complete.
   virtual void AuthenticateUserWithPasswordOrPin(
       const std::string& password,

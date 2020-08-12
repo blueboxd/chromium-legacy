@@ -7,10 +7,6 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
-      "bounds": [300, 300]
-    },
-    {
       "name": "LayoutNGBlockFlow DIV class='composited box'",
       "bounds": [15, 15],
       "drawsContent": false

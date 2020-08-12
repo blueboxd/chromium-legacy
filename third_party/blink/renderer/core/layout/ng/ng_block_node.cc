@@ -357,6 +357,14 @@ bool CanUseCachedIntrinsicInlineSizes(const MinMaxSizesInput& input,
                                  style.PaddingEnd().IsPercentOrCalc()))
     return false;
 
+  if (style.AspectRatio() &&
+      (style.LogicalMinHeight().IsPercentOrCalc() ||
+       style.LogicalMaxHeight().IsPercentOrCalc()) &&
+      input.percentage_resolution_block_size !=
+          node.GetLayoutBox()
+              ->IntrinsicLogicalWidthsPercentageResolutionBlockSize())
+    return false;
+
   return true;
 }
 
@@ -771,11 +779,12 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
 
   // Calculate the %-block-size for our children up front. This allows us to
   // determine if |input|'s %-block-size is used.
+  const NGBoxStrut border_padding =
+      fragment_geometry.border + fragment_geometry.padding;
   bool uses_input_percentage_block_size = false;
   LayoutUnit child_percentage_resolution_block_size =
       CalculateChildPercentageBlockSizeForMinMax(
-          *constraint_space, *this,
-          fragment_geometry.border + fragment_geometry.padding,
+          *constraint_space, *this, border_padding,
           input.percentage_resolution_block_size,
           &uses_input_percentage_block_size);
 
@@ -825,13 +834,29 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
                 (html_input_element &&
                  html_input_element->type() == input_type_names::kFile)) &&
                    Style().LogicalWidth().IsPercentOrCalc())) {
-    result.sizes.min_size =
-        (fragment_geometry.border + fragment_geometry.padding).InlineSum();
+    result.sizes.min_size = border_padding.InlineSum();
   }
 
   bool depends_on_percentage_block_size =
       uses_input_percentage_block_size &&
       result.depends_on_percentage_block_size;
+
+  if (Style().AspectRatio() &&
+      BlockLengthUnresolvable(*constraint_space, Style().LogicalHeight(),
+                              LengthResolvePhase::kLayout)) {
+    // If the block size will be computed from the aspect ratio, we need
+    // to take the max-block-size into account.
+    // https://drafts.csswg.org/css-sizing-4/#aspect-ratio
+    MinMaxSizes min_max = ComputeMinMaxInlineSizesFromAspectRatio(
+        *constraint_space, Style(), border_padding,
+        LengthResolvePhase::kIntrinsic);
+    result.sizes.min_size = min_max.ClampSizeToMinAndMax(result.sizes.min_size);
+    result.sizes.max_size = min_max.ClampSizeToMinAndMax(result.sizes.max_size);
+    depends_on_percentage_block_size =
+        depends_on_percentage_block_size ||
+        Style().LogicalMinHeight().IsPercentOrCalc() ||
+        Style().LogicalMaxHeight().IsPercentOrCalc();
+  }
 
   box_->SetIntrinsicLogicalWidthsFromNG(
       input.percentage_resolution_block_size, depends_on_percentage_block_size,

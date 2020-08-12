@@ -81,6 +81,7 @@ class CORE_EXPORT WebFrameWidgetBase
 
   void BindLocalRoot(WebLocalFrame&);
 
+  virtual bool ForTopLevelFrame() const = 0;
   virtual bool ForSubframe() const = 0;
   virtual void IntrinsicSizingInfoChanged(
       mojom::blink::IntrinsicSizingInfoPtr) {}
@@ -302,6 +303,9 @@ class CORE_EXPORT WebFrameWidgetBase
 #endif
   void ApplyVisualProperties(
       const VisualProperties& visual_properties) override;
+  bool IsFullscreenGranted() override;
+  bool PinchGestureActiveInMainFrame() override;
+  float PageScaleInMainFrame() override;
 
   // WidgetBaseClient methods.
   void RecordDispatchRafAlignedInputTime(
@@ -494,9 +498,12 @@ class CORE_EXPORT WebFrameWidgetBase
   // Called when the widget should get targeting input.
   void SetMouseCapture(bool capture);
 
-  // Called when a main frame widget is promoted or demoted from being the top
-  // level widget in a tab/window. E.g. a portal is activated or deactivated.
-  void SetIsNestedMainFrameWidget(bool is_nested);
+  // Sets the current page scale factor and minimum / maximum limits. Both
+  // limits are initially 1 (no page scale allowed).
+  virtual void SetPageScaleStateAndLimits(float page_scale_factor,
+                                          bool is_pinch_gesture_active,
+                                          float minimum,
+                                          float maximum);
 
   // The value of the applied battery-savings META element in the document
   // changed.
@@ -535,6 +542,9 @@ class CORE_EXPORT WebFrameWidgetBase
   // need to be passed for the main frame.
   virtual LocalFrameView* GetLocalFrameViewForAnimationScrolling() = 0;
 
+  void NotifyPageScaleFactorChanged(float page_scale_factor,
+                                    bool is_pinch_gesture_active);
+
   // A copy of the web drop data object we received from the browser.
   Member<DataObject> current_drag_data_;
 
@@ -551,6 +561,12 @@ class CORE_EXPORT WebFrameWidgetBase
   // Base functionality all widgets have. This is a member as to avoid
   // complicated inheritance structures.
   std::unique_ptr<WidgetBase> widget_base_;
+
+  // The last seen page scale state, which comes from the main frame and is
+  // propagated through the RenderWidget tree. This state is passed to any new
+  // child RenderWidget.
+  float page_scale_factor_from_mainframe_ = 1.f;
+  bool is_pinch_gesture_active_from_mainframe_ = false;
 
  private:
   void CancelDrag();
@@ -609,6 +625,9 @@ class CORE_EXPORT WebFrameWidgetBase
 
   base::Optional<gfx::Point> host_context_menu_location_;
   uint32_t last_capture_sequence_number_ = 0u;
+
+  // Indicates whether tab-initiated fullscreen was granted.
+  bool is_fullscreen_granted_ = false;
 
   friend class WebViewImpl;
   friend class ReportTimeSwapPromise;

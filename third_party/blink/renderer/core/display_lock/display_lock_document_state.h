@@ -54,7 +54,7 @@ class CORE_EXPORT DisplayLockDocumentState final
   // Returns true if all activatable locks have been forced.
   bool ActivatableDisplayLocksForced() const;
 
-  class ScopedForceActivatableDisplayLocks {
+  class CORE_EXPORT ScopedForceActivatableDisplayLocks {
     STACK_ALLOCATED();
 
    public:

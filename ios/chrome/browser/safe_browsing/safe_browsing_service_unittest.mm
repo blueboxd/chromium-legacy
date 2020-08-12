@@ -416,3 +416,27 @@ TEST_F(SafeBrowsingServiceTest, ClearCookies) {
       }));
   run_loop5.Run();
 }
+
+using SafeBrowsingServiceInitializationTest = PlatformTest;
+
+// Verifies that GetURLLoaderFactory() has a non-null return value when called
+// immediately after initialization.
+TEST_F(SafeBrowsingServiceInitializationTest, GetURLLoaderFactory) {
+  web::WebTaskEnvironment task_environment;
+
+  TestChromeBrowserState::Builder builder;
+  std::unique_ptr<TestChromeBrowserState> browser_state = builder.Build();
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  scoped_refptr<SafeBrowsingService> safe_browsing_service =
+      base::MakeRefCounted<SafeBrowsingServiceImpl>();
+  safe_browsing_service->Initialize(browser_state->GetPrefs(),
+                                    temp_dir.GetPath());
+
+  EXPECT_TRUE(safe_browsing_service->GetURLLoaderFactory());
+
+  safe_browsing_service->ShutDown();
+  base::RunLoop().RunUntilIdle();
+}

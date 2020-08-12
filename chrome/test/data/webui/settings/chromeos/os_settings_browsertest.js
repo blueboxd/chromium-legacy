@@ -220,7 +220,6 @@ TEST_F('OSSettingsAddUsersTest', 'AllJsTests', () => {
   mocha.run();
 });
 
-
 // Tests for ambient mode page.
 // eslint-disable-next-line no-var
 var OSSettingsAmbientModePageTest = class extends OSSettingsBrowserTest {
@@ -243,7 +242,35 @@ var OSSettingsAmbientModePageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsAmbientModePageTest', 'AllJsTests', () => {
+// Tests for ambient mode photos page.
+// eslint-disable-next-line no-var
+var OSSettingsAmbientModePhotosPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'ambient_mode_page/ambient_mode_photos_page.html';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: [
+        'chromeos::features::kAmbientModeFeature',
+        'chromeos::features::kAmbientModePhotoPreviewFeature',
+      ]
+    };
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'ambient_mode_photos_page_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsAmbientModePhotosPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 

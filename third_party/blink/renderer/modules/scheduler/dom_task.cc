@@ -87,7 +87,6 @@ void DOMTask::InvokeInternal(ScriptState* script_state) {
   v8::Isolate* isolate = script_state->GetIsolate();
   ScriptState::Scope scope(script_state);
   v8::TryCatch try_catch(isolate);
-  try_catch.SetVerbose(true);
 
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context);

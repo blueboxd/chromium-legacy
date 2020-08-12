@@ -35,7 +35,6 @@ source_set("activity_services") {
     "//ios/chrome/browser/ui/activity_services/activities",
     "//ios/chrome/browser/ui/activity_services/data",
     "//ios/chrome/browser/ui/activity_services/requirements",
-    "//ios/chrome/browser/ui/bookmarks",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/util",

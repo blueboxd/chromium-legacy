@@ -11,6 +11,7 @@
 #include <cmath>
 
 #include "base/check_op.h"
+#include "base/numerics/safe_conversions.h"
 
 namespace media {
 
@@ -68,8 +69,8 @@ void AudioClock::WroteAudio(int frames_written,
 
 void AudioClock::CompensateForSuspendedWrites(base::TimeDelta elapsed,
                                               int delay_frames) {
-  const int64_t frames_elapsed =
-      elapsed.InMicroseconds() / microseconds_per_frame_ + 0.5;
+  const int64_t frames_elapsed = base::ClampRound<int64_t>(
+      elapsed.InMicrosecondsF() / microseconds_per_frame_);
 
   // No need to do anything if we're within the limits of our played out audio
   // or there are no delay frames, the next WroteAudio() call will expire

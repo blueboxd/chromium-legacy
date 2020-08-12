@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
@@ -517,8 +518,8 @@ void VideoRendererImpl::UpdateLatencyHintBufferingCaps_Locked(
     return;
 
   int latency_hint_frames =
-      std::round(latency_hint_->InMicrosecondsF() /
-                 average_frame_duration.InMicrosecondsF());
+      base::ClampRound(latency_hint_->InMicrosecondsF() /
+                       average_frame_duration.InMicrosecondsF());
 
   std::string clamp_string;
   if (latency_hint_frames > kAbsoluteMaxFrames) {

@@ -756,15 +756,6 @@ TestWebWidgetClient::BindNewWidgetHost() {
   return receiver_.BindNewEndpointAndPassDedicatedRemoteForTesting();
 }
 
-void TestWebWidgetClient::SetPageScaleStateAndLimits(
-    float page_scale_factor,
-    bool is_pinch_gesture_active,
-    float minimum,
-    float maximum) {
-  layer_tree_host()->SetPageScaleFactorAndLimits(page_scale_factor, minimum,
-                                                 maximum);
-}
-
 bool TestWebWidgetClient::HaveScrollEventHandlers() const {
   return layer_tree_host()->have_scroll_event_handlers();
 }

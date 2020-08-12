@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import unittest
 
 from instance_servlet import InstanceServlet
@@ -26,6 +27,7 @@ class InstanceServletTest(unittest.TestCase):
   It should never return a 500 (i.e. crash).
   '''
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   @DisableLogging('warning')
   def testHostFileSystemNotAccessed(self):
     delegate = _TestDelegate(FailOnAccessFileSystem)

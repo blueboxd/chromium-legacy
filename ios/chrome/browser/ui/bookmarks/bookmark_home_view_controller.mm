@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/policy/policy_features.h"
+#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
@@ -54,6 +55,7 @@
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
+#import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_illustrated_empty_view.h"
@@ -221,6 +223,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Handler for URL drag and drop interactions.
 @property(nonatomic, strong) TableViewURLDragDropHandler* dragDropHandler;
+
+// Coordinator in charge of handling sharing use cases.
+@property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
 
 @end
 
@@ -1402,6 +1407,24 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   return self.scrimView.superview ? YES : NO;
 }
 
+// Triggers the URL sharing flow for the given |URL| and |title|, with the
+// |indexPath| for the cell representing the UI component for that URL.
+- (void)shareURL:(const GURL&)URL
+           title:(NSString*)title
+       indexPath:(NSIndexPath*)indexPath {
+  UIView* cellView = [self.tableView cellForRowAtIndexPath:indexPath];
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithURL:URL
+                                    title:title
+                                 scenario:ActivityScenario::BookmarkEntry];
+  self.sharingCoordinator =
+      [[SharingCoordinator alloc] initWithBaseViewController:self
+                                                     browser:self.browser
+                                                      params:params
+                                                  originView:cellView];
+  [self.sharingCoordinator start];
+}
+
 #pragma mark - Loading and Empty States
 
 // Shows loading spinner background view.
@@ -2226,6 +2249,13 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       [menuElements addObject:[actionFactory actionToEditWithBlock:^{
                       [self editNode:node];
                     }]];
+
+      [menuElements
+          addObject:[actionFactory actionToShareWithBlock:^{
+            [self shareURL:node->url()
+                     title:bookmark_utils_ios::TitleForBookmarkNode(node)
+                 indexPath:indexPath];
+          }]];
 
       [menuElements addObject:[actionFactory actionToDeleteWithBlock:^{
                       std::set<const BookmarkNode*> nodes;

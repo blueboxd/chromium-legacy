@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <iterator>
 #include <random>
 #include <utility>
 
@@ -61,6 +62,12 @@ constexpr bool is_even(int i) {
 
 bool is_odd(int i) {
   return i % 2 == 1;
+}
+
+template <typename Iter>
+auto make_vector(Iter begin, Iter end) {
+  using T = typename std::iterator_traits<Iter>::value_type;
+  return std::vector<T>(begin, end);
 }
 
 }  // namespace
@@ -1130,6 +1137,160 @@ TEST(RangesTest, InplaceMerge) {
   EXPECT_EQ(ints + 10, ranges::inplace_merge(ints, ints + 5, ranges::greater(),
                                              &Int::value));
   EXPECT_THAT(ints, ElementsAre(9, 8, 7, 6, 5, 4, 3, 2, 1, 0));
+}
+
+TEST(RangesTest, Includes) {
+  int evens[] = {0, 2, 4, 6, 8};
+  int odds[] = {1, 3, 5, 7, 9};
+  int fours[] = {0, 4, 8};
+
+  EXPECT_TRUE(ranges::includes(evens, evens + 5, fours, fours + 3));
+  EXPECT_FALSE(ranges::includes(fours, fours + 3, evens, evens + 5));
+  EXPECT_FALSE(ranges::includes(evens, evens + 5, odds, odds + 5));
+  EXPECT_FALSE(ranges::includes(odds, odds + 5, evens, evens + 5));
+
+  Int even_ints[] = {0, 2, 4, 6, 8};
+  Int odd_ints[] = {1, 3, 5, 7, 9};
+
+  EXPECT_TRUE(ranges::includes(even_ints, fours, {}, &Int::value));
+  EXPECT_FALSE(ranges::includes(fours, even_ints, {}, {}, &Int::value));
+  EXPECT_FALSE(
+      ranges::includes(even_ints, odd_ints, {}, &Int::value, &Int::value));
+  EXPECT_FALSE(
+      ranges::includes(odd_ints, even_ints, {}, &Int::value, &Int::value));
+}
+
+TEST(RangesTest, SetUnion) {
+  int evens[] = {0, 2, 4, 6, 8};
+  int odds[] = {1, 3, 5, 7, 9};
+  int fours[] = {0, 4, 8};
+  int result[10];
+
+  EXPECT_EQ(result + 10,
+            ranges::set_union(evens, evens + 5, odds, odds + 5, result));
+  EXPECT_THAT(result, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+  EXPECT_EQ(result + 5,
+            ranges::set_union(evens, evens + 5, fours, fours + 3, result));
+  EXPECT_THAT(make_vector(result, result + 5), ElementsAre(0, 2, 4, 6, 8));
+
+  Int even_ints[] = {0, 2, 4, 6, 8};
+  Int odd_ints[] = {1, 3, 5, 7, 9};
+  Int result_ints[10];
+
+  EXPECT_EQ(result_ints + 10,
+            ranges::set_union(even_ints, odd_ints, result_ints, {}, &Int::value,
+                              &Int::value));
+  EXPECT_THAT(result_ints, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+  EXPECT_EQ(result_ints + 5,
+            ranges::set_union(even_ints, fours, result_ints, {}, &Int::value));
+  EXPECT_THAT(make_vector(result_ints, result_ints + 5),
+              ElementsAre(0, 2, 4, 6, 8));
+
+  EXPECT_EQ(result_ints + 8, ranges::set_union(fours, odd_ints, result_ints, {},
+                                               {}, &Int::value));
+  EXPECT_THAT(make_vector(result_ints, result_ints + 8),
+              ElementsAre(0, 1, 3, 4, 5, 7, 8, 9));
+}
+
+TEST(RangesTest, SetIntersection) {
+  int evens[] = {0, 2, 4, 6, 8};
+  int odds[] = {1, 3, 5, 7, 9};
+  int fours[] = {0, 4, 8};
+  int result[10];
+
+  EXPECT_EQ(result,
+            ranges::set_intersection(evens, evens + 5, odds, odds + 5, result));
+
+  EXPECT_EQ(result + 3, ranges::set_intersection(evens, evens + 5, fours,
+                                                 fours + 3, result));
+  EXPECT_THAT(make_vector(result, result + 3), ElementsAre(0, 4, 8));
+
+  Int even_ints[] = {0, 2, 4, 6, 8};
+  Int odd_ints[] = {1, 3, 5, 7, 9};
+  Int result_ints[10];
+
+  EXPECT_EQ(result_ints,
+            ranges::set_intersection(even_ints, odd_ints, result_ints, {},
+                                     &Int::value, &Int::value));
+
+  EXPECT_EQ(
+      result_ints + 3,
+      ranges::set_intersection(even_ints, fours, result_ints, {}, &Int::value));
+  EXPECT_THAT(make_vector(result_ints, result_ints + 3), ElementsAre(0, 4, 8));
+
+  EXPECT_EQ(result_ints, ranges::set_intersection(fours, odd_ints, result_ints,
+                                                  {}, {}, &Int::value));
+}
+
+TEST(RangesTest, SetDifference) {
+  int evens[] = {0, 2, 4, 6, 8};
+  int odds[] = {1, 3, 5, 7, 9};
+  int fours[] = {0, 4, 8};
+  int result[5];
+
+  EXPECT_EQ(result + 5,
+            ranges::set_difference(evens, evens + 5, odds, odds + 5, result));
+  EXPECT_THAT(result, ElementsAre(0, 2, 4, 6, 8));
+
+  EXPECT_EQ(result + 2,
+            ranges::set_difference(evens, evens + 5, fours, fours + 3, result));
+  EXPECT_THAT(make_vector(result, result + 2), ElementsAre(2, 6));
+
+  Int even_ints[] = {0, 2, 4, 6, 8};
+  Int odd_ints[] = {1, 3, 5, 7, 9};
+  Int result_ints[5];
+
+  EXPECT_EQ(result_ints + 5,
+            ranges::set_difference(even_ints, odd_ints, result_ints, {},
+                                   &Int::value, &Int::value));
+  EXPECT_THAT(result_ints, ElementsAre(0, 2, 4, 6, 8));
+
+  EXPECT_EQ(
+      result_ints + 2,
+      ranges::set_difference(even_ints, fours, result_ints, {}, &Int::value));
+  EXPECT_THAT(make_vector(result_ints, result_ints + 2), ElementsAre(2, 6));
+
+  EXPECT_EQ(result_ints + 3,
+            ranges::set_difference(fours, odd_ints, result_ints, {}, {},
+                                   &Int::value));
+  EXPECT_THAT(make_vector(result_ints, result_ints + 3), ElementsAre(0, 4, 8));
+}
+
+TEST(RangesTest, SetSymmetricDifference) {
+  int evens[] = {0, 2, 4, 6, 8};
+  int odds[] = {1, 3, 5, 7, 9};
+  int fours[] = {0, 4, 8};
+  int result[10];
+
+  EXPECT_EQ(result + 10, ranges::set_symmetric_difference(
+                             evens, evens + 5, odds, odds + 5, result));
+  EXPECT_THAT(result, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+  EXPECT_EQ(result + 2, ranges::set_symmetric_difference(
+                            evens, evens + 5, fours, fours + 3, result));
+  EXPECT_THAT(make_vector(result, result + 2), ElementsAre(2, 6));
+
+  Int even_ints[] = {0, 2, 4, 6, 8};
+  Int odd_ints[] = {1, 3, 5, 7, 9};
+  Int result_ints[10];
+
+  EXPECT_EQ(result_ints + 10,
+            ranges::set_symmetric_difference(even_ints, odd_ints, result_ints,
+                                             {}, &Int::value, &Int::value));
+  EXPECT_THAT(result_ints, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+  EXPECT_EQ(result_ints + 2,
+            ranges::set_symmetric_difference(even_ints, fours, result_ints, {},
+                                             &Int::value));
+  EXPECT_THAT(make_vector(result_ints, result_ints + 2), ElementsAre(2, 6));
+
+  EXPECT_EQ(result_ints + 8,
+            ranges::set_symmetric_difference(fours, odd_ints, result_ints, {},
+                                             {}, &Int::value));
+  EXPECT_THAT(make_vector(result_ints, result_ints + 8),
+              ElementsAre(0, 1, 3, 4, 5, 7, 8, 9));
 }
 
 }  // namespace util

@@ -752,6 +752,57 @@ TEST_P(AutofillProfileComparatorTest, AreMergeable) {
   EXPECT_FALSE(comparator_.AreMergeable(p, not_mergeable_by_phone_number));
 }
 
+TEST_P(AutofillProfileComparatorTest, MergeStructuredNames_WithPermutation) {
+  // This test is only applicable to structured names.
+  if (!StructuredNames())
+    return;
+
+  // The first name has an observed structure.
+  NameInfo name1;
+  name1.SetRawInfoWithVerificationStatus(
+      NAME_FIRST, UTF8ToUTF16("Thomas"),
+      autofill::structured_address::VerificationStatus::kObserved);
+  name1.SetRawInfoWithVerificationStatus(
+      NAME_MIDDLE, UTF8ToUTF16("A."),
+      autofill::structured_address::VerificationStatus::kObserved);
+  name1.SetRawInfoWithVerificationStatus(
+      NAME_LAST, UTF8ToUTF16("Anderson"),
+      autofill::structured_address::VerificationStatus::kObserved);
+  AutofillProfile profile1 = CreateProfileWithName(name1);
+  profile1.FinalizeAfterImport();
+
+  EXPECT_EQ(profile1.GetRawInfo(NAME_FULL), UTF8ToUTF16("Thomas A. Anderson"));
+  EXPECT_EQ(profile1.GetVerificationStatus(NAME_FULL),
+            autofill::structured_address::VerificationStatus::kFormatted);
+
+  // The second name has an observed full name that uses a custom formatting.
+  NameInfo name2;
+  name2.SetRawInfoWithVerificationStatus(
+      NAME_FULL, UTF8ToUTF16("Anderson, Thomas A."),
+      autofill::structured_address::VerificationStatus::kObserved);
+  AutofillProfile profile2 = CreateProfileWithName(name2);
+  profile2.FinalizeAfterImport();
+
+  NameInfo merged_name;
+  comparator_.MergeNames(profile1, profile2, &merged_name);
+
+  // The merged name should maintain the structure but use the observation of
+  // the custom-formatted full name.
+  EXPECT_EQ(merged_name.GetRawInfo(NAME_FULL),
+            UTF8ToUTF16("Anderson, Thomas A."));
+  EXPECT_EQ(merged_name.GetVerificationStatus(NAME_FULL),
+            autofill::structured_address::VerificationStatus::kObserved);
+  EXPECT_EQ(merged_name.GetRawInfo(NAME_FIRST), UTF8ToUTF16("Thomas"));
+  EXPECT_EQ(merged_name.GetVerificationStatus(NAME_FIRST),
+            autofill::structured_address::VerificationStatus::kObserved);
+  EXPECT_EQ(merged_name.GetRawInfo(NAME_MIDDLE), UTF8ToUTF16("A."));
+  EXPECT_EQ(merged_name.GetVerificationStatus(NAME_MIDDLE),
+            autofill::structured_address::VerificationStatus::kObserved);
+  EXPECT_EQ(merged_name.GetRawInfo(NAME_LAST), UTF8ToUTF16("Anderson"));
+  EXPECT_EQ(merged_name.GetVerificationStatus(NAME_LAST),
+            autofill::structured_address::VerificationStatus::kObserved);
+}
+
 TEST_P(AutofillProfileComparatorTest, MergeNames) {
   NameInfo name1;
   name1.SetRawInfo(NAME_FULL, UTF8ToUTF16("John Quincy Public"));

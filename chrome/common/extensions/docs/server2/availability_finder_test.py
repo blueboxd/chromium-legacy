@@ -74,6 +74,7 @@ class AvailabilityFinderTest(unittest.TestCase):
         self._branch_utility.GetStableChannelInfo(13),
         stat_paths)
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testGraphOptimization(self):
     for platform in GetPlatforms():
       # Keep track of how many times the APISchemaGraph constructor is called.
@@ -100,6 +101,7 @@ class AvailabilityFinderTest(unittest.TestCase):
         # constructor.
         api_schema_graph.APISchemaGraph = original_constructor
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testGetAPIAvailability(self):
     # Key: Using 'channel' (i.e. 'beta') to represent an availability listing
     # for an API in a _features.json file, and using |channel| (i.e. |dev|) to
@@ -192,6 +194,7 @@ class AvailabilityFinderTest(unittest.TestCase):
               'appsFirst',
               only_on='apps')
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testGetAPINodeAvailability(self):
     def assertEquals(found, channel_info, actual, scheduled=None):
       lookup_result = api_schema_graph.LookupResult

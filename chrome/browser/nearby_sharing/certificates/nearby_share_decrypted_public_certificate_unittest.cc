@@ -63,7 +63,7 @@ TEST(NearbyShareDecryptedPublicCertificateTest, Decrypt_InvalidDataFailure) {
       proto_cert, GetNearbyShareTestEncryptedMetadataKey()));
 }
 
-TEST(NearbySharePublicCertificateTest, Verify) {
+TEST(NearbyShareDecryptedPublicCertificateTest, Verify) {
   base::Optional<NearbyShareDecryptedPublicCertificate> cert =
       NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
           GetNearbyShareTestPublicCertificate(),

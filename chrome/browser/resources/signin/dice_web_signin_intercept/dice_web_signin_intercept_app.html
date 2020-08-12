@@ -61,9 +61,9 @@
   }
 
   .work-badge > iron-icon {
-    --work-icon-size: 16px;
+    --work-icon-size: 15px;
     bottom: 0;
-    color: white;
+    color: var(--signin-work-badge-foreground-color);
     height: var(--work-icon-size);
     left: 0;
     margin: auto;
@@ -115,7 +115,7 @@
         src="[[interceptionParameters_.interceptedAccount.pictureUrl]]">
     <div class="work-badge" id="interceptedBadge"
         hidden="[[!interceptionParameters_.interceptedAccount.isManaged]]">
-      <iron-icon class="icon" icon="signin:work"></iron-icon>
+      <iron-icon class="icon" icon="signin:business"></iron-icon>
     </div>
   </div>
   <div class="avatar-container" id="primaryAvatar">
@@ -123,7 +123,7 @@
         src="[[interceptionParameters_.primaryAccount.pictureUrl]]">
     <div class="work-badge" id="primaryBadge"
         hidden="[[!interceptionParameters_.primaryAccount.isManaged]]">
-      <iron-icon class="icon" icon="signin:work"></iron-icon>
+      <iron-icon class="icon" icon="signin:business"></iron-icon>
     </div>
   </div>
 </div>

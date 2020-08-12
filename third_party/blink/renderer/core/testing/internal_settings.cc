@@ -322,6 +322,8 @@ void InternalSettings::setEditingBehavior(const String& editing_behavior,
     GetSettings()->SetEditingBehaviorType(kEditingUnixBehavior);
   else if (EqualIgnoringASCIICase(editing_behavior, "android"))
     GetSettings()->SetEditingBehaviorType(kEditingAndroidBehavior);
+  else if (EqualIgnoringASCIICase(editing_behavior, "chromeos"))
+    GetSettings()->SetEditingBehaviorType(kEditingChromeOSBehavior);
   else
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "The editing behavior type provided ('" +

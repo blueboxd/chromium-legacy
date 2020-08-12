@@ -43,7 +43,7 @@ bool IsCompressionServerOrigin(const GURL& url) {
 bool ShouldCompressionServerRedirectSubresource() {
   return base::GetFieldTrialParamByFeatureAsBool(
       blink::features::kSubresourceRedirect,
-      "enable_subresource_server_redirect", false);
+      "enable_subresource_server_redirect", true);
 }
 
 base::TimeDelta GetCompressionRedirectTimeout() {

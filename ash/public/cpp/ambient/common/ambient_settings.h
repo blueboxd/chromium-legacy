@@ -14,6 +14,9 @@ namespace ash {
 
 // Structs and classes related to Ambient mode Settings.
 
+// TODO(wutao): Replace the internal code with this constant.
+ASH_PUBLIC_EXPORT extern const char kAmbientModeRecentHighlightsAlbumId[];
+
 // Enumeration of the topic source, i.e. where the photos come from.
 // Values need to stay in sync with the |topicSource_| in ambient_mode_page.js.
 // Art gallery is a super set of art related topic sources in Backdrop service.
@@ -48,6 +51,9 @@ struct ASH_PUBLIC_EXPORT ArtSetting {
   std::string description;
 
   std::string preview_image_url;
+
+  // Image blob in PNG format used on Settings UI.
+  std::string png_data_url;
 };
 
 enum class AmbientModeTemperatureUnit {
@@ -91,16 +97,22 @@ struct ASH_PUBLIC_EXPORT PersonalAlbum {
   // UTF-8 encoded.
   std::string album_name;
 
+  // Whether the album is selected in the Google Photos topic source.
+  bool selected = false;
+
   // UTF-8 encoded.
   std::string description;
 
-  int number_of_photos;
+  int number_of_photos = 0;
 
   // Preview image of this album.
   std::string banner_image_url;
 
   // Preview images if this album is Recent highlights.
   std::vector<std::string> preview_image_urls;
+
+  // Image blob in PNG format used on Settings UI.
+  std::string png_data_url;
 };
 
 struct ASH_PUBLIC_EXPORT PersonalAlbums {

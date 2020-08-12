@@ -724,7 +724,7 @@ void ArImage_getWidth(const ArSession* session,
 void ArImage_getHeight(const ArSession* session,
                        const ArImage* image,
                        int32_t* out_height) {
-  return g_arcore_api->impl_ArImage_getWidth(session, image, out_height);
+  return g_arcore_api->impl_ArImage_getHeight(session, image, out_height);
 }
 
 void ArImage_getFormat(const ArSession* session,

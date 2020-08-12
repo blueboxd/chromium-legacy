@@ -128,6 +128,13 @@ const base::Feature kClientStorageAccessContextAuditing{
 const base::Feature kContentSettingsRedesign{"ContentSettingsRedesign",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
+// Restricts all of Chrome's threads to use only LITTLE cores on big.LITTLE
+// architectures.
+const base::Feature kCpuAffinityRestrictToLittleCores{
+    "CpuAffinityRestrictToLittleCores", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_CHROMEOS)
 // Enables or disables "usm" service in the list of user services returned by
 // userInfo Gaia message.

@@ -2872,6 +2872,27 @@ TEST_P(ArcAppLauncherForDefaultAppTest, AppIconNonDefaultDip) {
   icon_loader.reset();
 }
 
+// Validates that default app icon can be loaded for the single icon file
+// generated when the adaptive icon feature is disabled.
+TEST_P(ArcAppLauncherForDefaultAppTest, AppIconMigration) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  ASSERT_EQ(3u, fake_default_apps().size());
+  const arc::mojom::AppInfo& app = fake_default_apps()[2];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+
+  // Icon can be only fetched after app is registered in the system.
+  arc_test()->WaitForDefaultApps();
+
+  FakeAppIconLoaderDelegate icon_delegate;
+  std::unique_ptr<AppServiceAppIconLoader> icon_loader =
+      std::make_unique<AppServiceAppIconLoader>(profile(), 64, &icon_delegate);
+  icon_loader->FetchImage(app_id);
+  icon_delegate.WaitForIconUpdates(1);
+  icon_loader.reset();
+}
+
 TEST_P(ArcAppLauncherForDefaultAppTest, AppLauncherForDefaultApps) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);

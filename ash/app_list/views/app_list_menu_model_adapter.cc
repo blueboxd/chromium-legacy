@@ -152,7 +152,6 @@ bool AppListMenuModelAdapter::IsCommandEnabled(int id) const {
 }
 
 void AppListMenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
-  RecordExecuteCommandHistogram(id);
   MaybeRecordAppLaunched(id);
 
   // Note that ExecuteCommand might delete us.

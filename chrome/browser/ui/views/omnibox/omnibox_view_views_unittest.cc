@@ -2969,6 +2969,73 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   EXPECT_TRUE(elide_animation->IsAnimating());
 }
 
+// Tests that in the hide-on-interaction field trial variation, the URL is
+// aligned as appropriate for LTR and RTL UIs during the different stages
+// of elision.
+// Regression test for crbug.com/1114332
+TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+       URLPositionWithHideOnInteraction) {
+  SetUpSimplifiedDomainTest();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+  // Initially the display rect of the render text matches the omnibox bounds,
+  // store a copy of it.
+  gfx::Rect omnibox_bounds(render_text->display_rect());
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+
+  // Simulate a user interaction to fade out the path.
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  gfx::AnimationContainerElement* elide_as_element =
+      elide_animation->GetAnimationForTesting();
+  elide_as_element->SetStartTime(base::TimeTicks());
+  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
+
+  // Check the URL is right aligned if the UI is RTL, or left aligned if it is
+  // LTR.
+  if (base::i18n::IsRTL()) {
+    EXPECT_EQ(render_text->display_rect().x(),
+              omnibox_bounds.right() - render_text->display_rect().width());
+  } else {
+    EXPECT_EQ(render_text->display_rect().x(), omnibox_bounds.x());
+  }
+
+  // Call OnFocus to trigger unelision.
+  omnibox_view()->OnFocus();
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      render_text, gfx::Range(0, kSimplifiedDomainDisplayUrl.size())));
+
+  // Check alignment again
+  if (base::i18n::IsRTL()) {
+    EXPECT_EQ(render_text->display_rect().x(),
+              omnibox_bounds.right() - render_text->display_rect().width());
+  } else {
+    EXPECT_EQ(render_text->display_rect().x(), omnibox_bounds.x());
+  }
+
+  // Call OnBlur to return to the state on page load.
+  omnibox_view()->OnBlur();
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                              kSimplifiedDomainDisplayUrl.size())));
+
+  // Check alignment again
+  if (base::i18n::IsRTL()) {
+    EXPECT_EQ(render_text->display_rect().x(),
+              omnibox_bounds.right() - render_text->display_rect().width());
+  } else {
+    EXPECT_EQ(render_text->display_rect().x(), omnibox_bounds.x());
+  }
+}
+
 // Tests that the last gradient mask from a previous animation is no longer
 // visible when starting a new animation.
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,

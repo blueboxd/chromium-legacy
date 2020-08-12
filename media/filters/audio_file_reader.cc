@@ -191,7 +191,7 @@ base::TimeDelta AudioFileReader::GetDuration() const {
 }
 
 int AudioFileReader::GetNumberOfFrames() const {
-  return static_cast<int>(ceil(GetDuration().InSecondsF() * sample_rate()));
+  return base::ClampCeil(GetDuration().InSecondsF() * sample_rate());
 }
 
 bool AudioFileReader::OpenDemuxerForTesting() {

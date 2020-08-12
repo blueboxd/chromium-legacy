@@ -1575,6 +1575,9 @@ extern const char kContextualSearchSecondTapDescription[];
 extern const char kContextualSearchTranslationsName[];
 extern const char kContextualSearchTranslationsDescription[];
 
+extern const char kCpuAffinityRestrictToLittleCoresName[];
+extern const char kCpuAffinityRestrictToLittleCoresDescription[];
+
 extern const char kDirectActionsName[];
 extern const char kDirectActionsDescription[];
 

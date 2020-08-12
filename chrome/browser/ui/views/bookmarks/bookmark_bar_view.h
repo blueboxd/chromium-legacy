@@ -33,6 +33,7 @@ class BookmarkContextMenu;
 class Browser;
 class BrowserView;
 class Profile;
+class ReadLaterButton;
 
 namespace bookmarks {
 class BookmarkModel;
@@ -144,6 +145,8 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // Returns the button used when not all the items on the bookmark bar fit.
   views::MenuButton* overflow_button() const { return overflow_button_; }
+
+  ReadLaterButton* read_later_button() const { return read_later_button_; }
 
   const gfx::Animation& size_animation() { return size_animation_; }
 
@@ -430,6 +433,9 @@ class BookmarkBarView : public views::AccessiblePaneView,
   std::vector<views::LabelButton*> bookmark_buttons_;
 
   ButtonSeparatorView* bookmarks_separator_view_ = nullptr;
+
+  ReadLaterButton* read_later_button_ = nullptr;
+  ButtonSeparatorView* read_later_separator_view_ = nullptr;
 
   Browser* const browser_;
   BrowserView* browser_view_;

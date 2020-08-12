@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_mock_clock_override.h"
@@ -3512,7 +3513,7 @@ TEST(LayerAnimatorTest,
   const float frame_interval =
       base::Time::kMillisecondsPerSecond / compositor->refresh_rate();
   const int kStartFrameNumber =
-      static_cast<int>(kAnimationDuration.InMillisecondsF() / frame_interval) *
+      base::ClampFloor(kAnimationDuration.InMillisecondsF() / frame_interval) *
       4;
   while (compositor->activated_frame_count() < kStartFrameNumber) {
     compositor->ScheduleFullRedraw();

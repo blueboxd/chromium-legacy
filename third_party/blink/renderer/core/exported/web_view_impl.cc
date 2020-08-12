@@ -107,6 +107,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
@@ -1501,7 +1502,7 @@ void WebViewImpl::DidExitFullscreen() {
   fullscreen_controller_->DidExitFullscreen();
 }
 
-void WebViewImpl::SetMainFrameWidgetBase(WebFrameWidgetBase* widget) {
+void WebViewImpl::SetMainFrameWidgetBase(WebViewFrameWidget* widget) {
   web_widget_ = widget;
 }
 
@@ -2018,12 +2019,10 @@ void WebViewImpl::DidAttachLocalMainFrame() {
       local_main_frame_host_remote_.BindNewEndpointAndPassReceiver());
 
   if (does_composite_) {
-    WebWidgetClient* widget_client =
-        MainFrameImpl()->FrameWidgetImpl()->Client();
     // When attaching a local main frame, set up any state on the compositor.
     MainFrameImpl()->FrameWidgetImpl()->SetBackgroundColor(BackgroundColor());
     auto& viewport = GetPage()->GetVisualViewport();
-    widget_client->SetPageScaleStateAndLimits(
+    MainFrameImpl()->FrameWidgetImpl()->SetPageScaleStateAndLimits(
         viewport.Scale(), viewport.IsPinchGestureActive(),
         MinimumPageScaleFactor(), MaximumPageScaleFactor());
     // Prevent main frame updates while the main frame is loading until enough
@@ -2650,7 +2649,7 @@ void WebViewImpl::RefreshPageScaleFactor() {
   // the scale factor is changed.
   if (does_composite_) {
     auto& viewport = GetPage()->GetVisualViewport();
-    MainFrameImpl()->FrameWidgetImpl()->Client()->SetPageScaleStateAndLimits(
+    MainFrameImpl()->FrameWidgetImpl()->SetPageScaleStateAndLimits(
         viewport.Scale(), viewport.IsPinchGestureActive(),
         MinimumPageScaleFactor(), MaximumPageScaleFactor());
   }
@@ -2900,7 +2899,7 @@ void WebViewImpl::SendResizeEventForMainFrame() {
   // A resized main frame can change the page scale limits.
   if (does_composite_) {
     auto& viewport = GetPage()->GetVisualViewport();
-    MainFrameImpl()->FrameWidgetImpl()->Client()->SetPageScaleStateAndLimits(
+    MainFrameImpl()->FrameWidgetImpl()->SetPageScaleStateAndLimits(
         viewport.Scale(), viewport.IsPinchGestureActive(),
         MinimumPageScaleFactor(), MaximumPageScaleFactor());
   }
@@ -3164,7 +3163,7 @@ void WebViewImpl::PageScaleFactorChanged() {
   // Set up the compositor and inform the browser of the PageScaleFactor,
   // which is tracked per-view.
   auto& viewport = GetPage()->GetVisualViewport();
-  MainFrameImpl()->FrameWidgetImpl()->Client()->SetPageScaleStateAndLimits(
+  MainFrameImpl()->FrameWidgetImpl()->SetPageScaleStateAndLimits(
       viewport.Scale(), viewport.IsPinchGestureActive(),
       MinimumPageScaleFactor(), MaximumPageScaleFactor());
 

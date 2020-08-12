@@ -458,13 +458,23 @@ LayoutUnit ComputeInlineSizeForFragment(
                                      MinMaxSizesFunc, logical_width);
   }
 
-  LayoutUnit max = ResolveMaxInlineLength(
-      space, style, border_padding, MinMaxSizesFunc, style.LogicalMaxWidth(),
-      LengthResolvePhase::kLayout);
-  LayoutUnit min =
+  // This implements the transferred min/max sizes per
+  // https://drafts.csswg.org/css-sizing-4/#aspect-ratio
+  if (style.AspectRatio() &&
+      BlockLengthUnresolvable(space, style.LogicalHeight(),
+                              LengthResolvePhase::kLayout)) {
+    MinMaxSizes transferred_min_max = ComputeMinMaxInlineSizesFromAspectRatio(
+        space, style, border_padding, LengthResolvePhase::kLayout);
+    extent = transferred_min_max.ClampSizeToMinAndMax(extent);
+  }
+
+  MinMaxSizes min_max{
       ResolveMinInlineLength(space, style, border_padding, MinMaxSizesFunc,
-                             min_length, LengthResolvePhase::kLayout);
-  return ConstrainByMinMax(extent, min, max);
+                             min_length, LengthResolvePhase::kLayout),
+      ResolveMaxInlineLength(space, style, border_padding, MinMaxSizesFunc,
+                             style.LogicalMaxWidth(),
+                             LengthResolvePhase::kLayout)};
+  return min_max.ClampSizeToMinAndMax(extent);
 }
 
 MinMaxSizes ComputeMinMaxBlockSize(
@@ -483,6 +493,40 @@ MinMaxSizes ComputeMinMaxBlockSize(
       LengthResolvePhase::kLayout,
       opt_percentage_resolution_block_size_for_min_max);
   return result;
+}
+
+MinMaxSizes ComputeMinMaxInlineSizesFromAspectRatio(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    LengthResolvePhase phase) {
+  DCHECK(style.LogicalAspectRatio());
+
+  // The spec requires us to clamp these by the specified size (it calls it the
+  // preferred size). However, we actually don't need to worry about that,
+  // because we only use this if the width is indefinite.
+
+  // We do not need to compute the min/max inline sizes; as long as we always
+  // apply the transferred min/max size before the explicit min/max size, the
+  // result will be identical.
+
+  LogicalSize ratio = *style.LogicalAspectRatio();
+  MinMaxSizes block_min_max =
+      ComputeMinMaxBlockSize(constraint_space, style, border_padding,
+                             /* content_size */ kIndefiniteSize);
+  MinMaxSizes transferred_min_max = {LayoutUnit(), LayoutUnit::Max()};
+  if (block_min_max.min_size > LayoutUnit()) {
+    transferred_min_max.min_size = InlineSizeFromAspectRatio(
+        border_padding, ratio, style.BoxSizing(), block_min_max.min_size);
+  }
+  if (block_min_max.max_size != LayoutUnit::Max()) {
+    transferred_min_max.max_size = InlineSizeFromAspectRatio(
+        border_padding, ratio, style.BoxSizing(), block_min_max.max_size);
+  }
+  // Minimum size wins over maximum size.
+  transferred_min_max.max_size =
+      std::max(transferred_min_max.max_size, transferred_min_max.min_size);
+  return transferred_min_max;
 }
 
 namespace {

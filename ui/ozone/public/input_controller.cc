@@ -67,6 +67,10 @@ class StubInputController : public InputController {
   void GetGesturePropertiesService(
       mojo::PendingReceiver<ui::ozone::mojom::GesturePropertiesService>
           receiver) override {}
+  void PlayVibrationEffect(int id,
+                           uint8_t amplitude,
+                           uint16_t duration_millis) override {}
+  void StopVibration(int id) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubInputController);

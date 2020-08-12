@@ -1,5 +1,5 @@
 <!doctype html>
-<title>Scheduling API: Task.result When a Task Throws an Erorr</title>
+<title>Scheduling API: Task.result When a Task Throws an Error</title>
 <link rel="author" title="Scott Haseley" href="mailto:shaseley@chromium.org">
 <link rel="help" href="https://github.com/WICG/main-thread-scheduling">
 <script src="/resources/testharness.js"></script>
@@ -7,10 +7,6 @@
 
 <script>
 'use strict';
-
-// Uncaught exceptions in asynchronous tasks are still reported to the global
-// handler, which we expect to happen in this test.
-setup({allow_uncaught_exception : true});
 
 async_test(t => {
   (function() {

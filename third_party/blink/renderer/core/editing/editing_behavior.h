@@ -79,7 +79,7 @@ class CORE_EXPORT EditingBehavior {
   // On Mac, when processing a contextual click, the object being clicked upon
   // should be selected.
   bool ShouldSelectOnContextualMenuClick() const {
-    return type_ == kEditingMacBehavior;
+    return type_ == kEditingMacBehavior || type_ == kEditingChromeOSBehavior;
   }
 
   // On Mac, selecting backwards by word/line from the middle of a word/line,

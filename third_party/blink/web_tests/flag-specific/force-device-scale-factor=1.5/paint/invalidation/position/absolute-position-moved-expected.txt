@@ -15,8 +15,7 @@
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",
       "invalidations": [
-        [150, 150, 150, 150],
-        [0, 0, 150, 150]
+        [150, 150, 150, 150]
       ],
       "transform": 1
     },

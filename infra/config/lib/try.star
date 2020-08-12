@@ -22,7 +22,7 @@ load("@stdlib//internal/luci/common.star", "keys")
 load("./builders.star", "builders")
 load("./args.star", "args")
 
-INFRA_CONFIG_LOCATION_REGEXP = "infra/config/.+"
+INFRA_CONFIG_LOCATION_REGEXP = ".+/[+]/infra/config/.+"
 
 defaults = args.defaults(
     extends = builders.defaults,

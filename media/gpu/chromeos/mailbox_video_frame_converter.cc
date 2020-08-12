@@ -19,6 +19,7 @@
 #include "gpu/ipc/service/shared_image_stub.h"
 #include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -44,18 +45,18 @@ class MailboxVideoFrameConverter::ScopedSharedImage {
   ~ScopedSharedImage() { Destroy(); }
 
   void Reset(const gpu::Mailbox& mailbox,
-             const gfx::Rect& rect,
+             const gfx::Size& size,
              DestroySharedImageCB destroy_shared_image_cb) {
     Destroy();
     DCHECK(!mailbox.IsZero());
     mailbox_ = mailbox;
-    rect_ = rect;
+    size_ = size;
     destroy_shared_image_cb_ = std::move(destroy_shared_image_cb);
   }
 
   bool HasData() const { return !mailbox_.IsZero(); }
   const gpu::Mailbox& mailbox() const { return mailbox_; }
-  const gfx::Rect& rect() const { return rect_; }
+  const gfx::Size& size() const { return size_; }
 
  private:
   void Destroy() {
@@ -71,7 +72,7 @@ class MailboxVideoFrameConverter::ScopedSharedImage {
   }
 
   gpu::Mailbox mailbox_;
-  gfx::Rect rect_;
+  gfx::Size size_;
   DestroySharedImageCB destroy_shared_image_cb_;
   const scoped_refptr<base::SequencedTaskRunner> destruction_task_runner_;
 
@@ -222,10 +223,19 @@ void MailboxVideoFrameConverter::WrapMailboxAndVideoFrameAndOutput(
       },
       gpu_task_runner_, gpu_weak_this_, frame);
 
+  // Note the use of GetRectSizeFromOrigin() as the coded size. The reason is
+  // that the coded_size() of the outgoing VideoFrame tells the client what the
+  // "usable area" of the frame's buffer is so that it issues rendering commands
+  // correctly. For most videos, this usable area is simply
+  // frame->visible_rect().size(). However, some H.264 videos define a visible
+  // rectangle that doesn't start at (0, 0). For these frames, the usable area
+  // includes the non-visible area on the left and on top of the visible area
+  // (so that the client can calculate the UV coordinates correctly). Hence the
+  // use of GetRectSizeFromOrigin().
   scoped_refptr<VideoFrame> mailbox_frame = VideoFrame::WrapNativeTextures(
       frame->format(), mailbox_holders, std::move(release_mailbox_cb),
-      frame->coded_size(), frame->visible_rect(), frame->natural_size(),
-      frame->timestamp());
+      GetRectSizeFromOrigin(frame->visible_rect()), frame->visible_rect(),
+      frame->natural_size(), frame->timestamp());
   mailbox_frame->set_color_space(frame->ColorSpace());
   mailbox_frame->set_metadata(*(frame->metadata()));
   mailbox_frame->metadata()->read_lock_fences_enabled = true;
@@ -253,11 +263,11 @@ void MailboxVideoFrameConverter::ConvertFrameOnGPUThread(
   if (stored_shared_image) {
     DCHECK(!stored_shared_image->mailbox().IsZero());
     bool res;
-    if (stored_shared_image->rect() == visible_rect) {
+    if (stored_shared_image->size() == GetRectSizeFromOrigin(visible_rect)) {
       res = UpdateSharedImageOnGPUThread(stored_shared_image->mailbox());
     } else {
-      // The visible rectangle changed, so we need to recreate the SharedImage
-      // with the new rectangle.
+      // The existing shared image's size is no longer good enough, so let's
+      // create a new one.
       res = GenerateSharedImageOnGPUThread(origin_frame, visible_rect,
                                            stored_shared_image);
     }
@@ -328,9 +338,15 @@ bool MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
   gpu::SharedImageStub* shared_image_stub = gpu_channel_->shared_image_stub();
   DCHECK(shared_image_stub);
 
-  // Destination VideoFrames should have visible rectangles stating at the
-  // origin.
-  DCHECK(destination_visible_rect.origin().IsOrigin());
+  // The SharedImage size ultimately must correspond to the size used to import
+  // the decoded frame into a graphics API (e.g., the EGL image size when using
+  // OpenGL). For most videos, this is simply |destination_visible_rect|.size().
+  // However, some H.264 videos specify a visible rectangle that doesn't start
+  // at (0, 0). Since clients are expected to calculate UV coordinates to handle
+  // these exotic visible rectangles, we must include the area on the left and
+  // on the top of the frames when computing the SharedImage size.
+  const gfx::Size shared_image_size =
+      GetRectSizeFromOrigin(destination_visible_rect);
 
   // The allocated SharedImages should be usable for the (Display) compositor
   // and, potentially, for overlays (Scanout).
@@ -339,9 +355,8 @@ bool MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
   const bool success = shared_image_stub->CreateSharedImage(
       mailbox, gpu::kPlatformVideoFramePoolClientId,
       std::move(gpu_memory_buffer_handle), *buffer_format,
-      gpu::kNullSurfaceHandle, destination_visible_rect.size(),
-      video_frame->ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-      shared_image_usage);
+      gpu::kNullSurfaceHandle, shared_image_size, video_frame->ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, shared_image_usage);
   if (!success) {
     OnError(FROM_HERE, "Failed to create shared image.");
     return false;
@@ -349,7 +364,7 @@ bool MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
   // There's no need to UpdateSharedImage() after CreateSharedImage().
 
   shared_image->Reset(
-      mailbox, destination_visible_rect,
+      mailbox, shared_image_size,
       shared_image_stub->GetSharedImageDestructionCallback(mailbox));
   return true;
 }

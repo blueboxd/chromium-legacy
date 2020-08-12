@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:textIsSelectable="true"
         android:textStyle="bold"
-        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textAppearance="@style/MediumText"
         android:drawablePadding="4dp"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"/>

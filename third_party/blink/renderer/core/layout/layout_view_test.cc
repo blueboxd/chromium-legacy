@@ -154,11 +154,13 @@ INSTANTIATE_TEST_SUITE_P(All,
                              HitTestConfig{false, kEditingWindowsBehavior},
                              HitTestConfig{false, kEditingUnixBehavior},
                              HitTestConfig{false, kEditingAndroidBehavior},
+                             HitTestConfig{false, kEditingChromeOSBehavior},
                              // LayoutNG
                              HitTestConfig{true, kEditingMacBehavior},
                              HitTestConfig{true, kEditingWindowsBehavior},
                              HitTestConfig{true, kEditingUnixBehavior},
-                             HitTestConfig{true, kEditingAndroidBehavior}));
+                             HitTestConfig{true, kEditingAndroidBehavior},
+                             HitTestConfig{true, kEditingChromeOSBehavior}));
 
 TEST_P(LayoutViewHitTestTest, HitTestHorizontal) {
   LoadAhem();

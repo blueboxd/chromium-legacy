@@ -6,6 +6,8 @@
 
 namespace ash {
 
+const char kAmbientModeRecentHighlightsAlbumId[] = "RecentHighlights";
+
 // ArtSetting ------------------------------------------------------------------
 
 ArtSetting::ArtSetting() = default;

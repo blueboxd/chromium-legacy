@@ -7,10 +7,6 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutIFrame (positioned) IFRAME",
-      "bounds": [600, 600]
-    },
-    {
       "name": "Scrolling Contents Layer",
       "position": [22, 0],
       "bounds": [1500, 1500],

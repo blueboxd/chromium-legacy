@@ -1117,9 +1117,9 @@ void OmniboxEditModel::StartZeroSuggestRequest(
                              client_->GetSchemeClassifier());
   input_.set_current_url(client_->GetURL());
   input_.set_current_title(client_->GetTitle());
-  // TODO(tommycli): Distinguish between on-focus and on-clobber ZeroSuggest
-  // requests.
-  input_.set_focus_type(OmniboxFocusType::ON_FOCUS);
+  input_.set_focus_type(user_clobbered_permanent_text
+                            ? OmniboxFocusType::DELETED_PERMANENT_TEXT
+                            : OmniboxFocusType::ON_FOCUS);
   autocomplete_controller()->Start(input_);
 }
 

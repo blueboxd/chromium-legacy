@@ -50,11 +50,17 @@ def IsPreviewServer():
 def IsAppEngine():
   return IsDevServer() or IsReleaseServer()
 
-
 def IsTest():
-  return sys.argv and os.path.basename(sys.argv[0]).endswith('_test.py')
+  if not sys.argv:
+    return False
 
+  script_path_head, script_basename = os.path.split(sys.argv[0])
+  if script_basename.endswith('_test.py'):
+    return True
+
+  # Tests under extension_docserver_python_unittests target are run by typ.
+  return (script_basename == 'runner.py' and
+          os.path.basename(script_path_head) == 'typ')
 
 class UnknownEnvironmentError(Exception):
   pass
-

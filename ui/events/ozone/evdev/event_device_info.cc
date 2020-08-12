@@ -177,6 +177,7 @@ EventDeviceInfo::EventDeviceInfo() {
   memset(msc_bits_, 0, sizeof(msc_bits_));
   memset(sw_bits_, 0, sizeof(sw_bits_));
   memset(led_bits_, 0, sizeof(led_bits_));
+  memset(ff_bits_, 0, sizeof(ff_bits_));
   memset(prop_bits_, 0, sizeof(prop_bits_));
   memset(abs_info_, 0, sizeof(abs_info_));
 }
@@ -203,6 +204,9 @@ bool EventDeviceInfo::Initialize(int fd, const base::FilePath& path) {
     return false;
 
   if (!GetEventBits(fd, path, EV_LED, led_bits_, sizeof(led_bits_)))
+    return false;
+
+  if (!GetEventBits(fd, path, EV_FF, ff_bits_, sizeof(ff_bits_)))
     return false;
 
   if (!GetPropBits(fd, path, prop_bits_, sizeof(prop_bits_)))
@@ -272,6 +276,10 @@ void EventDeviceInfo::SetSwEvents(const unsigned long* sw_bits, size_t len) {
 
 void EventDeviceInfo::SetLedEvents(const unsigned long* led_bits, size_t len) {
   AssignBitset(led_bits, len, led_bits_, base::size(led_bits_));
+}
+
+void EventDeviceInfo::SetFfEvents(const unsigned long* ff_bits, size_t len) {
+  AssignBitset(ff_bits, len, ff_bits_, base::size(ff_bits_));
 }
 
 void EventDeviceInfo::SetProps(const unsigned long* prop_bits, size_t len) {
@@ -355,6 +363,12 @@ bool EventDeviceInfo::HasLedEvent(unsigned int code) const {
   if (code > LED_MAX)
     return false;
   return EvdevBitIsSet(led_bits_, code);
+}
+
+bool EventDeviceInfo::HasFfEvent(unsigned int code) const {
+  if (code > FF_MAX)
+    return false;
+  return EvdevBitIsSet(ff_bits_, code);
 }
 
 bool EventDeviceInfo::HasProp(unsigned int code) const {
@@ -534,6 +548,10 @@ bool EventDeviceInfo::HasGamepad() const {
   }
 
   return support_gamepad_btn && !HasTablet() && !HasKeyboard();
+}
+
+bool EventDeviceInfo::SupportsRumble() const {
+  return HasEventType(EV_FF) && HasFfEvent(FF_RUMBLE);
 }
 
 // static

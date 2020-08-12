@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
@@ -161,7 +162,8 @@ class PLATFORM_EXPORT FontMatchingMetrics {
  public:
   FontMatchingMetrics(bool top_level,
                       ukm::UkmRecorder* ukm_recorder,
-                      ukm::SourceId source_id);
+                      ukm::SourceId source_id,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Called when a page attempts to match a font family, and the font family is
   // available.
@@ -232,6 +234,8 @@ class PLATFORM_EXPORT FontMatchingMetrics {
   void PublishUkmMetrics();
 
  private:
+  void IdentifiabilityMetricsTimerFired(TimerBase*);
+
   // Get a hash that uniquely represents the font data. Returns 0 if |font_data|
   // is nullptr.
   uint64_t GetHashForFontData(SimpleFontData* font_data);
@@ -272,9 +276,7 @@ class PLATFORM_EXPORT FontMatchingMetrics {
   ukm::UkmRecorder* const ukm_recorder_;
   const ukm::SourceId source_id_;
 
-  // Records when the first font lookup occurred since the last call to
-  // PublishIdentifiablityMetrics(), if any.
-  base::Optional<base::Time> time_of_earliest_unpublished_font_lookup_;
+  TaskRunnerTimer<FontMatchingMetrics> identifiability_metrics_timer_;
 };
 
 }  // namespace blink

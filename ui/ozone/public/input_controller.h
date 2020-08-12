@@ -93,6 +93,15 @@ class COMPONENT_EXPORT(OZONE_BASE) InputController {
 
   virtual void SetTouchscreensEnabled(bool enabled) = 0;
 
+  // Controls vibration for the gamepad device with the corresponding |id|.
+  // |amplitude| determines the strength of the vibration, where 0 is no
+  // vibration and 255 is maximum vibration, and |duration_millis|
+  // determines the duration of the vibration in milliseconds.
+  virtual void PlayVibrationEffect(int id,
+                                   uint8_t amplitude,
+                                   uint16_t duration_millis) = 0;
+  virtual void StopVibration(int id) = 0;
+
   // If |enable_filter| is true, all keys on the internal keyboard except
   // |allowed_keys| are disabled.
   virtual void SetInternalKeyboardFilter(bool enable_filter,

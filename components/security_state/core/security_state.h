@@ -204,10 +204,6 @@ struct VisibleSecurityState {
   // True if the page should be excluded from a UI treatment for legacy TLS
   // (used for control group in an experimental UI rollout).
   bool should_suppress_legacy_tls_warning;
-  // True if the page should be excluded from a warning UI treatment for mixed
-  // content. If set to false, the page will receive a neutral (rather than
-  // positively secure) UI treatment.
-  bool should_suppress_mixed_content_warning;
   // True if mixed forms should be treated as secure from the visible security
   // state perspective (for example, if a different warning is being shown for
   // them).

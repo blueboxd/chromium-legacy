@@ -104,8 +104,12 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
     NOTREACHED();
   }
   bool IsOffMainThreadScriptFetchDisabled() override { return true; }
+  WorkerToken GetWorkerToken() const override { return token_; }
 
   void ExceptionThrown(ErrorEvent*) override {}
+
+ private:
+  DedicatedWorkerToken token_;
 };
 
 class WorkerThreadForTest : public WorkerThread {

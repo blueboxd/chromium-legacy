@@ -22,6 +22,8 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame_delegate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame_delegate.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame_attachment.h"
 
 namespace blink {
 
@@ -73,6 +75,8 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       return ReadRTCEncodedAudioFrame();
     case kRTCEncodedVideoFrameTag:
       return ReadRTCEncodedVideoFrame();
+    case kVideoFrameTag:
+      return ReadVideoFrame();
     default:
       break;
   }
@@ -423,6 +427,28 @@ V8ScriptValueDeserializerForModules::ReadRTCEncodedVideoFrame() {
     return nullptr;
 
   return MakeGarbageCollected<RTCEncodedVideoFrame>(frames[index]);
+}
+
+VideoFrame* V8ScriptValueDeserializerForModules::ReadVideoFrame() {
+  if (!RuntimeEnabledFeatures::WebCodecsEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    return nullptr;
+  }
+
+  uint32_t index;
+  if (!ReadUint32(&index))
+    return nullptr;
+
+  const auto* attachment =
+      GetSerializedScriptValue()->GetAttachmentIfExists<VideoFrameAttachment>();
+  if (!attachment)
+    return nullptr;
+
+  const auto& handles = attachment->Handles();
+  if (index >= attachment->size())
+    return nullptr;
+
+  return MakeGarbageCollected<VideoFrame>(handles[index]);
 }
 
 }  // namespace blink

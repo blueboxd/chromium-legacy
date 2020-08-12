@@ -8,6 +8,7 @@
 -WebRtcDesktopCaptureBrowserTest.RunsScreenshareFromOneTabToAnother
 -WebRtcGetDisplayMediaBrowserTestWithPicker.GetDisplayMediaVideo
 -WebRtcGetDisplayMediaBrowserTestWithPicker.GetDisplayMediaVideoAndAudio
+-SaveType/SavePageOriginalVsSavedComparisonTest.CrossSiteObject/0
 
 # Flaky
 -AutofillProviderBrowserTestWithSkipFlagOff.InferredLabelChangeImpactFormComparing

@@ -1573,6 +1573,23 @@ interface UserActivation
     getter hasBeenActive
     getter isActive
     method constructor
+interface VideoFrame
+    attribute @@toStringTag
+    getter codedHeight
+    getter codedWidth
+    getter cropHeight
+    getter cropLeft
+    getter cropTop
+    getter cropWidth
+    getter displayHeight
+    getter displayWidth
+    getter duration
+    getter format
+    getter planes
+    getter timestamp
+    method constructor
+    method createImageBitmap
+    method destroy
 interface WebGL2ComputeRenderingContext
     attribute @@toStringTag
     attribute ACTIVE_ATOMIC_COUNTER_BUFFERS

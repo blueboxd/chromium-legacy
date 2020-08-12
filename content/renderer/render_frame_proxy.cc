@@ -42,6 +42,7 @@
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -257,7 +258,14 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
   // propagate VisualProperty changes down the frame/process hierarchy. Remote
   // main frame proxies do not participate in this flow.
   if (ancestor_render_widget_) {
+    blink::WebFrameWidget* ancestor_frame_widget =
+        static_cast<blink::WebFrameWidget*>(
+            ancestor_render_widget_->GetWebWidget());
     pending_visual_properties_.zoom_level = render_view->GetZoomLevel();
+    pending_visual_properties_.page_scale_factor =
+        ancestor_frame_widget->PageScaleInMainFrame();
+    pending_visual_properties_.is_pinch_gesture_active =
+        ancestor_frame_widget->PinchGestureActiveInMainFrame();
     pending_visual_properties_.screen_info =
         ancestor_render_widget_->GetOriginalScreenInfo();
     ancestor_render_widget_->RegisterRenderFrameProxy(this);
@@ -306,8 +314,8 @@ void RenderFrameProxy::OnRootWindowSegmentsChanged(
   SynchronizeVisualProperties();
 }
 
-void RenderFrameProxy::OnPageScaleFactorChanged(float page_scale_factor,
-                                                bool is_pinch_gesture_active) {
+void RenderFrameProxy::PageScaleFactorChanged(float page_scale_factor,
+                                              bool is_pinch_gesture_active) {
   DCHECK(ancestor_render_widget_);
 
   pending_visual_properties_.page_scale_factor = page_scale_factor;

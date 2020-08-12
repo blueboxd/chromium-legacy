@@ -12,11 +12,6 @@
       "bounds": [300, 300],
       "backgroundColor": "#000000",
       "transform": 1
-    },
-    {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='software-parent'",
-      "bounds": [300, 300],
-      "backgroundColor": "#008000"
     }
   ],
   "transforms": [

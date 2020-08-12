@@ -12,9 +12,7 @@
 namespace base {
 
 BigEndianReader::BigEndianReader(const char* buf, size_t len)
-    : ptr_(buf), end_(ptr_ + len) {
-  CHECK_LE(ptr_, end_);
-}
+    : ptr_(buf), end_(ptr_ + len) {}
 
 bool BigEndianReader::Skip(size_t len) {
   if (len > remaining())
@@ -88,9 +86,7 @@ bool BigEndianReader::ReadU16LengthPrefixed(base::StringPiece* out) {
 }
 
 BigEndianWriter::BigEndianWriter(char* buf, size_t len)
-    : ptr_(buf), end_(ptr_ + len) {
-  CHECK_LE(ptr_, end_);
-}
+    : ptr_(buf), end_(ptr_ + len) {}
 
 bool BigEndianWriter::Skip(size_t len) {
   if (len > remaining())

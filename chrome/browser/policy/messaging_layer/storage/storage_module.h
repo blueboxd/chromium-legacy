@@ -35,6 +35,10 @@ class StorageModule : public base::RefCountedThreadSafe<StorageModule> {
                          reporting::Priority priority,
                          base::OnceCallback<void(Status)> callback);
 
+  // Once a record has been successfully uploaded, the sequencing information
+  // can be passed back to the StorageModule here for record deletion.
+  virtual void ReportSuccess(SequencingInformation sequencing_information);
+
  protected:
   // Constructor can only be called by |Create| factory method.
   StorageModule();

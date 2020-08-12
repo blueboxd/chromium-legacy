@@ -66,22 +66,22 @@ public class HeaderViewBinderUnitTest {
     @Test
     public void actionIcon_iconReflectsExpandedState() {
         // Expand.
-        mModel.set(HeaderViewProperties.IS_EXPANDED, true);
+        mModel.set(HeaderViewProperties.IS_COLLAPSED, false);
         verify(mHeaderIcon, times(1)).setImageResource(R.drawable.ic_expand_less_black_24dp);
 
         // Collapse.
-        mModel.set(HeaderViewProperties.IS_EXPANDED, false);
+        mModel.set(HeaderViewProperties.IS_COLLAPSED, true);
         verify(mHeaderIcon, times(1)).setImageResource(R.drawable.ic_expand_more_black_24dp);
     }
 
     @Test
     public void headerView_accessibilityStringReflectsExpandedState() {
         // Expand without title.
-        mModel.set(HeaderViewProperties.IS_EXPANDED, true);
-        verify(mHeaderView, times(1)).setExpandedStateForAccessibility(true);
+        mModel.set(HeaderViewProperties.IS_COLLAPSED, false);
+        verify(mHeaderView, times(1)).setCollapsedStateForAccessibility(false);
 
-        mModel.set(HeaderViewProperties.IS_EXPANDED, false);
-        verify(mHeaderView, times(1)).setExpandedStateForAccessibility(false);
+        mModel.set(HeaderViewProperties.IS_COLLAPSED, true);
+        verify(mHeaderView, times(1)).setCollapsedStateForAccessibility(true);
     }
 
     @Test
@@ -125,7 +125,7 @@ public class HeaderViewBinderUnitTest {
         final AccessibilityNodeInfo info = mock(AccessibilityNodeInfo.class);
 
         // Expand.
-        mModel.set(HeaderViewProperties.IS_EXPANDED, true);
+        mModel.set(HeaderViewProperties.IS_COLLAPSED, false);
         mHeaderView.onInitializeAccessibilityNodeInfo(info);
         verify(info, times(1)).addAction(AccessibilityAction.ACTION_COLLAPSE);
         verify(info, never()).addAction(AccessibilityAction.ACTION_EXPAND);
@@ -133,7 +133,7 @@ public class HeaderViewBinderUnitTest {
         reset(info);
 
         // Collapse.
-        mModel.set(HeaderViewProperties.IS_EXPANDED, false);
+        mModel.set(HeaderViewProperties.IS_COLLAPSED, true);
         mHeaderView.onInitializeAccessibilityNodeInfo(info);
         verify(info, never()).addAction(AccessibilityAction.ACTION_COLLAPSE);
         verify(info, times(1)).addAction(AccessibilityAction.ACTION_EXPAND);

@@ -4,12 +4,15 @@
 
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 
-#include <cmath>
+#include <algorithm>
+#include <string>
+#include <utility>
 
 #include "ash/public/cpp/system_tray.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -79,8 +82,8 @@ BuildState* GetBuildState() {
 }
 
 int GetDaysRounded(base::TimeDelta time) {
-  return std::lround(time.InSecondsF() /
-                     base::TimeDelta::FromDays(1).InSecondsF());
+  return base::ClampRound(time.InSecondsF() /
+                          base::TimeDelta::FromDays(1).InSecondsF());
 }
 
 chromeos::UpdateEngineClient* GetUpdateEngineClient() {

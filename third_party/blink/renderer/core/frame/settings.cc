@@ -28,8 +28,10 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 
 namespace blink {
@@ -49,6 +51,10 @@ static EditingBehaviorType EditingBehaviorTypeForPlatform() {
       kEditingWindowsBehavior
 #elif defined(OS_ANDROID)
       kEditingAndroidBehavior
+#elif defined(OS_CHROMEOS)
+      base::FeatureList::IsEnabled(features::kCrOSAutoSelect)
+          ? kEditingChromeOSBehavior
+          : kEditingUnixBehavior
 #else  // Rest of the UNIX-like systems
       kEditingUnixBehavior
 #endif

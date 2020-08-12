@@ -55,10 +55,6 @@ class ClientSideDetectionService : public KeyedService {
   typedef base::Callback<void(GURL, bool)> ClientReportPhishingRequestCallback;
 
   explicit ClientSideDetectionService(Profile* profile);
-
-  // Create a ClientSideDetectionService with no associated profile, for tests.
-  explicit ClientSideDetectionService(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader);
   ~ClientSideDetectionService() override;
 
   void Shutdown() override;

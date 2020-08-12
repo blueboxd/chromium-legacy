@@ -13,4 +13,7 @@
     <style name="UnselectedNavigationButton">
         <item name="android:textColor">@color/navigation_unselected</item>
     </style>
+    <style name="MediumText" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">@color/medium_text_color</item>
+    </style>
 </resources>

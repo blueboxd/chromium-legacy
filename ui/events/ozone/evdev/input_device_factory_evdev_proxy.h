@@ -49,6 +49,8 @@ class COMPONENT_EXPORT(EVDEV) InputDeviceFactoryEvdevProxy {
                         InputController::GetTouchEventLogReply reply);
   void GetGesturePropertiesService(
       mojo::PendingReceiver<ozone::mojom::GesturePropertiesService> receiver);
+  void PlayVibrationEffect(int id, uint8_t amplitude, uint16_t duration_millis);
+  void StopVibration(int id);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

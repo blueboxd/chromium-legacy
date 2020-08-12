@@ -136,6 +136,8 @@ class AutocompleteResult {
     return headers_map_;
   }
 
+  const std::vector<int>& hidden_group_ids() const { return hidden_group_ids_; }
+
   // Clears the matches for this result set.
   void Reset();
 

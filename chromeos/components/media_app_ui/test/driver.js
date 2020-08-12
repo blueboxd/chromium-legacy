@@ -287,33 +287,6 @@ async function createMockTestDirectory(files = [{}]) {
 }
 
 /**
- * Helper to send a single file to the guest.
- * @param {!File} file
- * @param {!FileSystemFileHandle} handle
- * @return {!Promise<undefined>}
- */
-async function loadFile(file, handle) {
-  currentFiles.length = 0;
-  currentFiles.push({token: -1, file, handle});
-  entryIndex = 0;
-  await sendFilesToGuest();
-}
-
-/**
- * Helper to send multiple file to the guest.
- * @param {!Array<{file: !File, handle: !FileSystemFileHandle}>} files
- * @return {!Promise<undefined>}
- */
-async function loadMultipleFiles(files) {
-  currentFiles.length = 0;
-  for (const f of files) {
-    currentFiles.push({token: -1, file: f.file, handle: f.handle});
-  }
-  entryIndex = 0;
-  await sendFilesToGuest();
-}
-
-/**
  * Creates a mock LaunchParams object from the provided `files`.
  * @param {!Array<!FileSystemHandle>} files
  * @return {!LaunchParams}

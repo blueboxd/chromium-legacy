@@ -130,9 +130,13 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // Returns the ExecutionContext of the current realm.
   static ExecutionContext* ForCurrentRealm(
       const v8::FunctionCallbackInfo<v8::Value>&);
+  static ExecutionContext* ForCurrentRealm(
+      const v8::PropertyCallbackInfo<v8::Value>&);
   // Returns the ExecutionContext of the relevant realm for the receiver object.
   static ExecutionContext* ForRelevantRealm(
       const v8::FunctionCallbackInfo<v8::Value>&);
+  static ExecutionContext* ForRelevantRealm(
+      const v8::PropertyCallbackInfo<v8::Value>&);
 
   virtual bool IsWindow() const { return false; }
   virtual bool IsWorkerOrWorkletGlobalScope() const { return false; }

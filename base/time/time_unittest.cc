@@ -1816,56 +1816,63 @@ TEST(TimeDelta, Overflows) {
   EXPECT_TRUE((kLargeDelta / 0.5).is_max());
   EXPECT_TRUE((kLargeDelta / -0.5).is_min());
 
-  static_assert(TimeDelta::Max() / TimeDelta::FromSeconds(10) ==
-                    std::numeric_limits<double>::infinity(),
-                "");
-  static_assert(TimeDelta::Max() / TimeDelta::FromSeconds(-10) ==
+  static_assert(
+      TimeDelta::Max() / kOneSecond == std::numeric_limits<double>::infinity(),
+      "");
+  static_assert(TimeDelta::Max() / -kOneSecond ==
                     -std::numeric_limits<double>::infinity(),
                 "");
-  static_assert(TimeDelta::Min() / TimeDelta::FromSeconds(10) ==
-                    -std::numeric_limits<double>::infinity(),
-                "");
-  static_assert(TimeDelta::Min() / TimeDelta::FromSeconds(-10) ==
-                    std::numeric_limits<double>::infinity(),
-                "");
-  static_assert(TimeDelta::Max().IntDiv(TimeDelta::FromSeconds(10)) ==
+  static_assert(
+      TimeDelta::Min() / kOneSecond == -std::numeric_limits<double>::infinity(),
+      "");
+  static_assert(
+      TimeDelta::Min() / -kOneSecond == std::numeric_limits<double>::infinity(),
+      "");
+  static_assert(TimeDelta::Max().IntDiv(kOneSecond) ==
                     std::numeric_limits<int64_t>::max(),
                 "");
-  static_assert(TimeDelta::Max().IntDiv(TimeDelta::FromSeconds(-10)) ==
+  static_assert(TimeDelta::Max().IntDiv(-kOneSecond) ==
                     std::numeric_limits<int64_t>::min(),
                 "");
-  static_assert(TimeDelta::Min().IntDiv(TimeDelta::FromSeconds(10)) ==
+  static_assert(TimeDelta::Min().IntDiv(kOneSecond) ==
                     std::numeric_limits<int64_t>::min(),
                 "");
-  static_assert(TimeDelta::Min().IntDiv(TimeDelta::FromSeconds(-10)) ==
+  static_assert(TimeDelta::Min().IntDiv(-kOneSecond) ==
                     std::numeric_limits<int64_t>::max(),
                 "");
+  static_assert(TimeDelta::Max() % kOneSecond == TimeDelta::Max(), "");
+  static_assert(TimeDelta::Max() % -kOneSecond == TimeDelta::Max(), "");
+  static_assert(TimeDelta::Min() % kOneSecond == TimeDelta::Min(), "");
+  static_assert(TimeDelta::Min() % -kOneSecond == TimeDelta::Min(), "");
 
   // Division by zero.
-  static_assert((TimeDelta::FromSeconds(1) / 0).is_max(), "");
-  static_assert((TimeDelta::FromSeconds(-1) / 0).is_min(), "");
+  static_assert((kOneSecond / 0).is_max(), "");
+  static_assert((-kOneSecond / 0).is_min(), "");
   static_assert((TimeDelta::Max() / 0).is_max(), "");
   static_assert((TimeDelta::Min() / 0).is_min(), "");
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            TimeDelta::FromSeconds(1) / TimeDelta());
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), kOneSecond / TimeDelta());
   EXPECT_EQ(-std::numeric_limits<double>::infinity(),
-            TimeDelta::FromSeconds(-1) / TimeDelta());
+            -kOneSecond / TimeDelta());
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             TimeDelta::Max() / TimeDelta());
   EXPECT_EQ(-std::numeric_limits<double>::infinity(),
             TimeDelta::Min() / TimeDelta());
-  static_assert(TimeDelta::FromSeconds(1).IntDiv(TimeDelta()) ==
-                    std::numeric_limits<int64_t>::max(),
-                "");
-  static_assert(TimeDelta::FromSeconds(-1).IntDiv(TimeDelta()) ==
-                    std::numeric_limits<int64_t>::min(),
-                "");
+  static_assert(
+      kOneSecond.IntDiv(TimeDelta()) == std::numeric_limits<int64_t>::max(),
+      "");
+  static_assert(
+      (-kOneSecond).IntDiv(TimeDelta()) == std::numeric_limits<int64_t>::min(),
+      "");
   static_assert(TimeDelta::Max().IntDiv(TimeDelta()) ==
                     std::numeric_limits<int64_t>::max(),
                 "");
   static_assert(TimeDelta::Min().IntDiv(TimeDelta()) ==
                     std::numeric_limits<int64_t>::min(),
                 "");
+  static_assert(kOneSecond % TimeDelta() == kOneSecond, "");
+  static_assert(-kOneSecond % TimeDelta() == -kOneSecond, "");
+  static_assert(TimeDelta::Max() % TimeDelta() == TimeDelta::Max(), "");
+  static_assert(TimeDelta::Min() % TimeDelta() == TimeDelta::Min(), "");
 
   // Division by infinity.
   static_assert(kLargeDelta / TimeDelta::Min() == 0, "");
@@ -1876,13 +1883,8 @@ TEST(TimeDelta, Overflows) {
   static_assert(kLargeDelta.IntDiv(TimeDelta::Max()) == 0, "");
   static_assert(kLargeNegative.IntDiv(TimeDelta::Min()) == 0, "");
   static_assert(kLargeNegative.IntDiv(TimeDelta::Max()) == 0, "");
-
-  static_assert(TimeDelta::FromSeconds(10) % TimeDelta::Min() ==
-                    TimeDelta::FromSeconds(10),
-                "");
-  static_assert(TimeDelta::FromSeconds(10) % TimeDelta::Max() ==
-                    TimeDelta::FromSeconds(10),
-                "");
+  static_assert(kOneSecond % TimeDelta::Min() == kOneSecond, "");
+  static_assert(kOneSecond % TimeDelta::Max() == kOneSecond, "");
 
   // Test that double conversions overflow to infinity.
   EXPECT_EQ((kLargeDelta + kOneSecond).InSecondsF(),
@@ -1892,7 +1894,7 @@ TEST(TimeDelta, Overflows) {
   EXPECT_EQ((kLargeDelta + kOneSecond).InMicrosecondsF(),
             std::numeric_limits<double>::infinity());
 
-  // Test +=, -=, *= and /= operators.
+  // Test op=.
   TimeDelta delta = kLargeDelta;
   delta += kOneSecond;
   EXPECT_TRUE(delta.is_max());
@@ -1920,6 +1922,13 @@ TEST(TimeDelta, Overflows) {
   delta = kLargeNegative;
   delta /= 0.5;
   EXPECT_TRUE(delta.is_min());
+
+  delta = kOneSecond;
+  delta %= TimeDelta::Max();
+  EXPECT_EQ(kOneSecond, delta);
+  delta = kOneSecond;
+  delta %= TimeDelta();
+  EXPECT_EQ(kOneSecond, delta);
 
   // Test operations with Time and TimeTicks.
   EXPECT_TRUE((kLargeDelta + Time::Now()).is_max());

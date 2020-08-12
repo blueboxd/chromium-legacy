@@ -652,6 +652,11 @@
     "expiry_milestone": 89
   },
   {
+    "name": "cpu-affinity-restrict-to-little-cores",
+    "owners": [ "eseckler", "skyostil" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "credit-card-scanner",
     "owners": [ "gambard", "javierrobles", "bling-flags" ],
     "expiry_milestone": 86
@@ -2075,8 +2080,8 @@
   },
   {
     "name": "enable-subresource-redirect",
-    "owners": [ "robertogden", "tbansal" ],
-    "expiry_milestone": 85
+    "owners": [ "rajendrant", "mcrouse", "tbansal" ],
+    "expiry_milestone": 87
   },
   {
     "name": "enable-suggested-files",
@@ -4067,7 +4072,7 @@
     "_comment2": "in https://crbug.com/849815.",
     "name": "site-isolation-trial-opt-out",
     "owners": [ "site-isolation-dev", "alexmos", "creis", "lukasza" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 95
   },
   {
     "name": "smart-dim-model-v3",
@@ -4096,8 +4101,8 @@
   },
   {
     "name": "sms-receiver-cross-device",
-    "owners": [ "goto", "fugu-dev" ],
-    "expiry_milestone": 85
+    "owners": [ "goto", "web-identity@google.com" ],
+    "expiry_milestone": 88
   },
   {
     "name": "snapshot-draw-view",

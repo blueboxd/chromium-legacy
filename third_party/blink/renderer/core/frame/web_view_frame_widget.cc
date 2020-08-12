@@ -24,13 +24,15 @@ WebViewFrameWidget::WebViewFrameWidget(
     CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
         widget_host,
     CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
-        widget)
+        widget,
+    bool is_for_nested_main_frame)
     : WebFrameWidgetBase(client,
                          std::move(frame_widget_host),
                          std::move(frame_widget),
                          std::move(widget_host),
                          std::move(widget)),
       web_view_(&web_view),
+      is_for_nested_main_frame_(is_for_nested_main_frame),
       self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   web_view_->SetMainFrameWidgetBase(this);
 }
@@ -54,14 +56,6 @@ WebSize WebViewFrameWidget::Size() {
 
 void WebViewFrameWidget::Resize(const WebSize& size) {
   web_view_->Resize(size);
-}
-
-void WebViewFrameWidget::DidEnterFullscreen() {
-  web_view_->DidEnterFullscreen();
-}
-
-void WebViewFrameWidget::DidExitFullscreen() {
-  web_view_->DidExitFullscreen();
 }
 
 void WebViewFrameWidget::SetSuppressFrameRequestsWorkaroundFor704763Only(
@@ -304,6 +298,28 @@ void WebViewFrameWidget::SetAutoResizeMode(bool auto_resize,
   } else if (web_view_->AutoResizeMode()) {
     web_view_->DisableAutoResizeMode();
   }
+}
+
+void WebViewFrameWidget::SetIsNestedMainFrameWidget(bool is_nested) {
+  is_for_nested_main_frame_ = is_nested;
+}
+
+void WebViewFrameWidget::SetPageScaleStateAndLimits(
+    float page_scale_factor,
+    bool is_pinch_gesture_active,
+    float minimum,
+    float maximum) {
+  WebFrameWidgetBase::SetPageScaleStateAndLimits(
+      page_scale_factor, is_pinch_gesture_active, minimum, maximum);
+
+  // If page scale hasn't changed, then just return without notifying
+  // the remote frames.
+  if (page_scale_factor == page_scale_factor_from_mainframe_ &&
+      is_pinch_gesture_active == is_pinch_gesture_active_from_mainframe_) {
+    return;
+  }
+
+  NotifyPageScaleFactorChanged(page_scale_factor, is_pinch_gesture_active);
 }
 
 }  // namespace blink

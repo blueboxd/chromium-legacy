@@ -7,14 +7,25 @@
 #include <utility>
 
 #include "ash/public/cpp/in_session_auth_dialog_controller.h"
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
+#include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+
+using chromeos::AuthStatusConsumer;
+using chromeos::ExtendedAuthenticator;
+using chromeos::Key;
+using chromeos::UserContext;
 
 namespace {
 InSessionAuthDialogClient* g_auth_dialog_client_instance = nullptr;
 }  // namespace
 
 InSessionAuthDialogClient::InSessionAuthDialogClient() {
-  // Register this object as the client interface implementation.
   ash::InSessionAuthDialogController::Get()->SetClient(this);
 
   DCHECK(!g_auth_dialog_client_instance);
@@ -42,6 +53,78 @@ void InSessionAuthDialogClient::AuthenticateUserWithPasswordOrPin(
     const std::string& password,
     bool authenticated_by_pin,
     base::OnceCallback<void(bool)> callback) {
-  // TODO(yichengli): Implement.
-  std::move(callback).Run(false);
+  // TODO(b/156258540): Pick/validate the correct user.
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  DCHECK(user);
+  UserContext user_context(*user);
+  user_context.SetKey(
+      Key(chromeos::Key::KEY_TYPE_PASSWORD_PLAIN, std::string(), password));
+  user_context.SetIsUsingPin(authenticated_by_pin);
+  user_context.SetSyncPasswordData(password_manager::PasswordHashData(
+      user->GetAccountId().GetUserEmail(), base::UTF8ToUTF16(password),
+      false /*force_update*/));
+  if (user->GetAccountId().GetAccountType() == AccountType::ACTIVE_DIRECTORY &&
+      (user_context.GetUserType() !=
+       user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY)) {
+    LOG(FATAL) << "Incorrect Active Directory user type "
+               << user_context.GetUserType();
+  }
+
+  // Lazily allocate |extended_authenticator_| so that tests can inject a fake.
+  if (!extended_authenticator_)
+    extended_authenticator_ = ExtendedAuthenticator::Create(this);
+
+  DCHECK(!pending_auth_state_);
+  pending_auth_state_.emplace(std::move(callback));
+
+  // TODO(yichengli): If it can be PIN, use quick unlock to attempt PIN auth.
+
+  // TODO(yichengli): If user type is SUPERVISED, use supervised authenticator?
+
+  AuthenticateWithPassword(user_context);
 }
+
+void InSessionAuthDialogClient::AuthenticateWithPassword(
+    const UserContext& user_context) {
+  // TODO(crbug.com/1115120): Don't post to UI thread if it turns out to be
+  // unnecessary.
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &ExtendedAuthenticator::AuthenticateToCheck,
+          extended_authenticator_.get(), user_context,
+          base::Bind(&InSessionAuthDialogClient::OnPasswordAuthSuccess,
+                     weak_factory_.GetWeakPtr(), user_context)));
+}
+
+void InSessionAuthDialogClient::OnPasswordAuthSuccess(
+    const UserContext& user_context) {
+  chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      chromeos::quick_unlock::QuickUnlockFactory::GetForAccountId(
+          user_context.GetAccountId());
+  if (quick_unlock_storage)
+    quick_unlock_storage->MarkStrongAuth();
+}
+
+// AuthStatusConsumer:
+void InSessionAuthDialogClient::OnAuthFailure(
+    const chromeos::AuthFailure& error) {
+  if (pending_auth_state_) {
+    std::move(pending_auth_state_->callback).Run(false);
+    pending_auth_state_.reset();
+  }
+}
+
+void InSessionAuthDialogClient::OnAuthSuccess(const UserContext& user_context) {
+  if (pending_auth_state_) {
+    std::move(pending_auth_state_->callback).Run(true);
+    pending_auth_state_.reset();
+  }
+}
+
+InSessionAuthDialogClient::AuthState::AuthState(
+    base::OnceCallback<void(bool)> callback)
+    : callback(std::move(callback)) {}
+
+InSessionAuthDialogClient::AuthState::~AuthState() = default;

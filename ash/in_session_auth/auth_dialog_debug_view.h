@@ -63,6 +63,9 @@ class AuthDialogDebugView : public views::View, public views::ButtonListener {
   // Called when the user submits password or PIN.
   void OnAuthSubmit(const base::string16& password);
 
+  // Called when authentication of the user completes.
+  void OnAuthComplete(base::Optional<bool> success);
+
   // Debug container which holds the entire debug UI.
   views::View* container_ = nullptr;
 
@@ -89,6 +92,8 @@ class AuthDialogDebugView : public views::View, public views::ButtonListener {
 
   // Container which holds action buttons.
   views::View* action_view_container_ = nullptr;
+
+  base::WeakPtrFactory<AuthDialogDebugView> weak_factory_{this};
 };
 
 }  // namespace ash

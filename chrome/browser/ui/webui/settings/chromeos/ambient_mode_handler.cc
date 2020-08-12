@@ -10,11 +10,25 @@
 
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
+#include "ash/public/cpp/image_downloader.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/image/image_skia.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace settings {
@@ -22,8 +36,8 @@ namespace settings {
 namespace {
 
 // Width and height of the preview image for personal album.
-constexpr int kBannerWidth = 512;
-constexpr int kBannerHeight = 512;
+constexpr int kBannerWidthPx = 160;
+constexpr int kBannerHeightPx = 160;
 
 // Strings for converting to and from AmbientModeTemperatureUnit enum.
 constexpr char kCelsius[] = "celsius";
@@ -63,6 +77,33 @@ ash::AmbientModeTopicSource ExtractTopicSource(const base::Value& value) {
 ash::AmbientModeTopicSource ExtractTopicSource(const base::ListValue* args) {
   CHECK_EQ(args->GetSize(), 1U);
   return ExtractTopicSource(args->GetList()[0]);
+}
+
+void EncodeImage(const gfx::ImageSkia& image,
+                 std::vector<unsigned char>* output) {
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(*image.bitmap(),
+                                         /*discard_transparency=*/false,
+                                         output)) {
+    VLOG(1) << "Failed to encode image to png";
+    output->clear();
+  }
+}
+
+base::string16 GetAlbumDescription(const ash::PersonalAlbum& album) {
+  if (album.album_id == ash::kAmbientModeRecentHighlightsAlbumId) {
+    return l10n_util::GetStringUTF16(
+        IDS_OS_SETTINGS_AMBIENT_MODE_ALBUMS_SUBPAGE_RECENT_DESC);
+  }
+
+  if (album.number_of_photos <= 1) {
+    return l10n_util::GetStringFUTF16Int(
+        IDS_OS_SETTINGS_AMBIENT_MODE_ALBUMS_SUBPAGE_PHOTOS_NUM_SINGULAR,
+        album.number_of_photos);
+  }
+
+  return l10n_util::GetStringFUTF16Int(
+      IDS_OS_SETTINGS_AMBIENT_MODE_ALBUMS_SUBPAGE_PHOTOS_NUM_PLURAL,
+      album.number_of_photos);
 }
 
 }  // namespace
@@ -172,11 +213,9 @@ void AmbientModeHandler::HandleSetSelectedAlbums(const base::ListValue* args) {
       for (const auto& album : albums->GetList()) {
         const base::Value* album_id = album.FindKey("albumId");
         const std::string& id = album_id->GetString();
-        auto it = std::find_if(
-            personal_albums_.albums.begin(), personal_albums_.albums.end(),
-            [&id](const auto& album) { return album.album_id == id; });
-        CHECK(it != personal_albums_.albums.end());
-        settings_->selected_album_ids.emplace_back(it->album_id);
+        ash::PersonalAlbum* personal_album = FindPersonalAlbumById(id);
+        DCHECK(personal_album);
+        settings_->selected_album_ids.emplace_back(personal_album->album_id);
       }
       break;
     case ash::AmbientModeTopicSource::kArtGallery:
@@ -221,10 +260,10 @@ void AmbientModeHandler::SendAlbums(ash::AmbientModeTopicSource topic_source) {
       for (const auto& album : personal_albums_.albums) {
         base::Value value(base::Value::Type::DICTIONARY);
         value.SetKey("albumId", base::Value(album.album_id));
+        value.SetKey("checked", base::Value(album.selected));
+        value.SetKey("description", base::Value(GetAlbumDescription(album)));
         value.SetKey("title", base::Value(album.album_name));
-        value.SetKey("checked",
-                     base::Value(base::Contains(settings_->selected_album_ids,
-                                                album.album_id)));
+        value.SetKey("url", base::Value(album.png_data_url));
         albums.Append(std::move(value));
       }
       break;
@@ -232,8 +271,10 @@ void AmbientModeHandler::SendAlbums(ash::AmbientModeTopicSource topic_source) {
       for (const auto& setting : settings_->art_settings) {
         base::Value value(base::Value::Type::DICTIONARY);
         value.SetKey("albumId", base::Value(setting.album_id));
-        value.SetKey("title", base::Value(setting.title));
         value.SetKey("checked", base::Value(setting.enabled));
+        value.SetKey("description", base::Value(setting.description));
+        value.SetKey("title", base::Value(setting.title));
+        value.SetKey("url", base::Value(setting.png_data_url));
         albums.Append(std::move(value));
       }
       break;
@@ -242,6 +283,17 @@ void AmbientModeHandler::SendAlbums(ash::AmbientModeTopicSource topic_source) {
   dictionary.SetKey("topicSource", base::Value(static_cast<int>(topic_source)));
   dictionary.SetKey("albums", std::move(albums));
   FireWebUIListener("albums-changed", std::move(dictionary));
+}
+
+void AmbientModeHandler::SendAlbumPreview(
+    ash::AmbientModeTopicSource topic_source,
+    const std::string& album_id,
+    std::string&& png_data_url) {
+  base::Value album(base::Value::Type::DICTIONARY);
+  album.SetKey("albumId", base::Value(album_id));
+  album.SetKey("topicSource", base::Value(static_cast<int>(topic_source)));
+  album.SetKey("url", base::Value(png_data_url));
+  FireWebUIListener("album-preview-changed", std::move(album));
 }
 
 void AmbientModeHandler::UpdateSettings() {
@@ -265,7 +317,7 @@ void AmbientModeHandler::RequestSettingsAndAlbums(
   // TODO(b/161044021): Add a helper function to get all the albums. Currently
   // only load 100 latest modified albums.
   ash::AmbientBackendController::Get()->FetchSettingsAndAlbums(
-      kBannerWidth, kBannerHeight, /*num_albums=*/100, std::move(callback));
+      kBannerWidthPx, kBannerHeightPx, /*num_albums=*/100, std::move(callback));
 }
 
 void AmbientModeHandler::OnSettingsAndAlbumsFetched(
@@ -279,14 +331,109 @@ void AmbientModeHandler::OnSettingsAndAlbumsFetched(
 
   settings_ = settings;
   personal_albums_ = std::move(personal_albums);
+  SyncSettingsAndAlbums();
 
-  if (topic_source) {
-    SendAlbums(*topic_source);
+  if (!topic_source) {
+    SendTopicSource();
+    SendTemperatureUnit();
     return;
   }
 
-  SendTopicSource();
-  SendTemperatureUnit();
+  if (chromeos::features::IsAmbientModePhotoPreviewEnabled())
+    DownloadAlbumPreviewImage(*topic_source);
+
+  SendAlbums(*topic_source);
+}
+
+void AmbientModeHandler::SyncSettingsAndAlbums() {
+  auto it = settings_->selected_album_ids.begin();
+  while (it != settings_->selected_album_ids.end()) {
+    const std::string& album_id = *it;
+    ash::PersonalAlbum* album = FindPersonalAlbumById(album_id);
+    if (album) {
+      album->selected = true;
+      ++it;
+    } else {
+      // The selected album does not exist any more.
+      it = settings_->selected_album_ids.erase(it);
+    }
+  }
+}
+
+void AmbientModeHandler::DownloadAlbumPreviewImage(
+    ash::AmbientModeTopicSource topic_source) {
+  switch (topic_source) {
+    case ash::AmbientModeTopicSource::kGooglePhotos:
+      // TODO(b/163413738): Slow down the downloading when there are too many
+      // albums.
+      for (const auto& album : personal_albums_.albums) {
+        ash::ImageDownloader::Get()->Download(
+            GURL(album.banner_image_url), NO_TRAFFIC_ANNOTATION_YET,
+            base::BindOnce(&AmbientModeHandler::OnAlbumPreviewImageDownloaded,
+                           backend_weak_factory_.GetWeakPtr(), topic_source,
+                           album.album_id));
+      }
+      break;
+    case ash::AmbientModeTopicSource::kArtGallery:
+      for (const auto& album : settings_->art_settings) {
+        ash::ImageDownloader::Get()->Download(
+            GURL(album.preview_image_url), NO_TRAFFIC_ANNOTATION_YET,
+            base::BindOnce(&AmbientModeHandler::OnAlbumPreviewImageDownloaded,
+                           backend_weak_factory_.GetWeakPtr(), topic_source,
+                           album.album_id));
+      }
+      break;
+  }
+}
+
+void AmbientModeHandler::OnAlbumPreviewImageDownloaded(
+    ash::AmbientModeTopicSource topic_source,
+    const std::string& album_id,
+    const gfx::ImageSkia& image) {
+  switch (topic_source) {
+    case ash::AmbientModeTopicSource::kGooglePhotos:
+      // Album does not exist any more.
+      if (!FindPersonalAlbumById(album_id))
+        return;
+      break;
+    case ash::AmbientModeTopicSource::kArtGallery:
+      if (!FindArtAlbumById(album_id))
+        return;
+      break;
+  }
+
+  std::vector<unsigned char> encoded_image_bytes;
+  EncodeImage(image, &encoded_image_bytes);
+  if (encoded_image_bytes.empty())
+    return;
+
+  SendAlbumPreview(topic_source, album_id,
+                   webui::GetPngDataUrl(&encoded_image_bytes.front(),
+                                        encoded_image_bytes.size()));
+}
+
+ash::PersonalAlbum* AmbientModeHandler::FindPersonalAlbumById(
+    const std::string& album_id) {
+  auto it = std::find_if(
+      personal_albums_.albums.begin(), personal_albums_.albums.end(),
+      [&album_id](const auto& album) { return album.album_id == album_id; });
+
+  if (it == personal_albums_.albums.end())
+    return nullptr;
+
+  return &(*it);
+}
+
+ash::ArtSetting* AmbientModeHandler::FindArtAlbumById(
+    const std::string& album_id) {
+  auto it = std::find_if(
+      settings_->art_settings.begin(), settings_->art_settings.end(),
+      [&album_id](const auto& album) { return album.album_id == album_id; });
+  // Album does not exist any more.
+  if (it == settings_->art_settings.end())
+    return nullptr;
+
+  return &(*it);
 }
 
 }  // namespace settings

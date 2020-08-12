@@ -522,9 +522,8 @@ TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
 
   // Load a zero-byte video. It won't load, but the video element should be
   // added to the DOM (and it can still be fullscreened).
-  await loadFile(
-      new File([], 'zero_byte_video.webm', {type: 'video/webm'}),
-      new FakeFileSystemFileHandle());
+  await launchWithFiles(
+      [new File([], 'zero_byte_video.webm', {type: 'video/webm'})]);
 
   const SELECTOR = 'video';
   const tagName = await driver.waitForElementInGuest(SELECTOR, 'tagName');
@@ -746,12 +745,8 @@ TEST_F('MediaAppUIBrowserTest', 'DeletionOpensNextFile', async () => {
 // Tests the IPC behind the loadNext and loadPrev functions on the received file
 // list in the untrusted context.
 TEST_F('MediaAppUIBrowserTest', 'NavigateIPC', async () => {
-  async function fakeEntry() {
-    const file = await createTestImageFile();
-    const handle = new FakeFileSystemFileHandle(file.name, file.type, 0, file);
-    return {file, handle};
-  }
-  await loadMultipleFiles([await fakeEntry(), await fakeEntry()]);
+  await launchWithFiles(
+      [await createTestImageFile(), await createTestImageFile()]);
   assertEquals(entryIndex, 0);
 
   let result = await sendTestMessage({navigate: 'next'});
@@ -834,8 +829,7 @@ TEST_F('MediaAppUIBrowserTest', 'RequestSaveFileIPC', async () => {
       return Promise.resolve(newFileHandle);
     };
   });
-  const testImage = await createTestImageFile(10, 10);
-  await loadFile(testImage, new FakeFileSystemFileHandle());
+  await launchWithFiles([await createTestImageFile(10, 10)]);
 
   const result = await sendTestMessage({requestSaveFile: true});
   const options = await chooseEntries;
@@ -903,9 +897,8 @@ TEST_F('MediaAppUIBrowserTest', 'SaveAsErrorHandling', async () => {
   newFileHandle.nextCreateWritableError =
       new DOMException('Fake exception', 'FakeError');
   window.showSaveFilePicker = () => Promise.resolve(newFileHandle);
-  const testImage = await createTestImageFile(10, 10);
-  const testHandle = new FakeFileSystemFileHandle('original_file.jpg');
-  await loadFile(testImage, testHandle);
+  const directory = await launchWithFiles(
+      [await createTestImageFile(10, 10, 'original_file.jpg')]);
   const originalFileToken = currentFiles[0].token;
 
   const result = await sendTestMessage({saveAs: 'foo'});
@@ -917,7 +910,7 @@ TEST_F('MediaAppUIBrowserTest', 'SaveAsErrorHandling', async () => {
   assertEquals(result.testQueryResultData['filename'], 'original_file.jpg');
   assertEquals(entryIndex, 0);
   assertEquals(currentFiles.length, 1);
-  assertEquals(currentFiles[0].handle, testHandle);
+  assertEquals(currentFiles[0].handle, directory.files[0]);
   assertEquals(currentFiles[0].handle.name, 'original_file.jpg');
   assertEquals(currentFiles[0].token, originalFileToken);
   assertEquals(tokenMap.get(currentFiles[0].token), currentFiles[0].handle);

@@ -21,30 +21,18 @@
       "transform": 4
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
-      "position": [30, 15],
-      "bounds": [90, 105],
-      "transform": 5
+      "name": "LayoutNGBlockFlow DIV class='box'",
+      "bounds": [150, 225],
+      "contentsOpaque": true,
+      "backgroundColor": "#808080",
+      "transform": 6
     },
     {
       "name": "LayoutNGBlockFlow DIV class='box'",
       "bounds": [150, 225],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 7
-    },
-    {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
-      "position": [30, 15],
-      "bounds": [90, 105],
       "transform": 8
-    },
-    {
-      "name": "LayoutNGBlockFlow DIV class='box'",
-      "bounds": [150, 225],
-      "contentsOpaque": true,
-      "backgroundColor": "#808080",
-      "transform": 10
     }
   ],
   "transforms": [
@@ -92,7 +80,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [42, 330, 0, 1]
+        [75, 363, 0, 1]
       ]
     },
     {
@@ -102,41 +90,21 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [33, 33, 0, 1]
-      ]
-    },
-    {
-      "id": 7,
-      "parent": 6,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
         [0, 0, 1.5, 1]
       ]
     },
     {
+      "id": 7,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [363, 363, 0, 1]
+      ]
+    },
+    {
       "id": 8,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [330, 330, 0, 1]
-      ]
-    },
-    {
-      "id": 9,
-      "parent": 8,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [33, 33, 0, 1]
-      ]
-    },
-    {
-      "id": 10,
-      "parent": 9,
+      "parent": 7,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

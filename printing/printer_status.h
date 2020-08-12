@@ -19,45 +19,50 @@ namespace printing {
 struct PRINTING_EXPORT PrinterStatus {
   struct PrinterReason {
     // Standardized reasons from RFC2911.
-    enum Reason {
-      UNKNOWN_REASON,
-      NONE,
-      MEDIA_NEEDED,
-      MEDIA_JAM,
-      MOVING_TO_PAUSED,
-      PAUSED,
-      SHUTDOWN,
-      CONNECTING_TO_DEVICE,
-      TIMED_OUT,
-      STOPPING,
-      STOPPED_PARTLY,
-      TONER_LOW,
-      TONER_EMPTY,
-      SPOOL_AREA_FULL,
-      COVER_OPEN,
-      INTERLOCK_OPEN,
-      DOOR_OPEN,
-      INPUT_TRAY_MISSING,
-      MEDIA_LOW,
-      MEDIA_EMPTY,
-      OUTPUT_TRAY_MISSING,
-      OUTPUT_AREA_ALMOST_FULL,
-      OUTPUT_AREA_FULL,
-      MARKER_SUPPLY_LOW,
-      MARKER_SUPPLY_EMPTY,
-      MARKER_WASTE_ALMOST_FULL,
-      MARKER_WASTE_FULL,
-      FUSER_OVER_TEMP,
-      FUSER_UNDER_TEMP,
-      OPC_NEAR_EOL,
-      OPC_LIFE_OVER,
-      DEVELOPER_LOW,
-      DEVELOPER_EMPTY,
-      INTERPRETER_RESOURCE_UNAVAILABLE
+    enum class Reason {
+      UNKNOWN_REASON = 0,
+      NONE = 1,
+      MEDIA_NEEDED = 2,
+      MEDIA_JAM = 3,
+      MOVING_TO_PAUSED = 4,
+      PAUSED = 5,
+      SHUTDOWN = 6,
+      CONNECTING_TO_DEVICE = 7,
+      TIMED_OUT = 8,
+      STOPPING = 9,
+      STOPPED_PARTLY = 10,
+      TONER_LOW = 11,
+      TONER_EMPTY = 12,
+      SPOOL_AREA_FULL = 13,
+      COVER_OPEN = 14,
+      INTERLOCK_OPEN = 15,
+      DOOR_OPEN = 16,
+      INPUT_TRAY_MISSING = 17,
+      MEDIA_LOW = 18,
+      MEDIA_EMPTY = 19,
+      OUTPUT_TRAY_MISSING = 20,
+      OUTPUT_AREA_ALMOST_FULL = 21,
+      OUTPUT_AREA_FULL = 22,
+      MARKER_SUPPLY_LOW = 23,
+      MARKER_SUPPLY_EMPTY = 24,
+      MARKER_WASTE_ALMOST_FULL = 25,
+      MARKER_WASTE_FULL = 26,
+      FUSER_OVER_TEMP = 27,
+      FUSER_UNDER_TEMP = 28,
+      OPC_NEAR_EOL = 29,
+      OPC_LIFE_OVER = 30,
+      DEVELOPER_LOW = 31,
+      DEVELOPER_EMPTY = 32,
+      INTERPRETER_RESOURCE_UNAVAILABLE = 33
     };
 
     // Severity of the state-reason.
-    enum Severity { UNKNOWN_SEVERITY, REPORT, WARNING, ERROR };
+    enum class Severity {
+      UNKNOWN_SEVERITY = 0,
+      REPORT = 1,
+      WARNING = 2,
+      ERROR = 3,
+    };
 
     Reason reason;
     Severity severity;

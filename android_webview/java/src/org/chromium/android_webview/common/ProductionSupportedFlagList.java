@@ -6,6 +6,7 @@ package org.chromium.android_webview.common;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.components.metrics.MetricsSwitches;
+import org.chromium.gpu.config.GpuSwitches;
 
 /**
  * List of experimental features/flags supported for user devices. Add features/flags to this list
@@ -57,7 +58,7 @@ public final class ProductionSupportedFlagList {
             Flag.commandLine(BaseSwitches.ENABLE_CRASH_REPORTER_FOR_TESTING,
                     "Used for turning on Breakpad crash reporting in a debug environment where "
                             + "crash reporting is typically compiled but disabled."),
-            Flag.commandLine("disable-gpu-rasterization",
+            Flag.commandLine(GpuSwitches.DISABLE_GPU_RASTERIZATION,
                     "Disables GPU rasterization, i.e. rasterizes on the CPU only."),
             Flag.baseFeature("OutOfBlinkCors",
                     "Moves CORS logic into the Network Service (rather than inside the blink "

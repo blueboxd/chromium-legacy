@@ -17,6 +17,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult.GroupDetails;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -241,7 +242,7 @@ public class AutocompleteController {
         AutocompleteResult resultsWithVoiceSuggestions = new AutocompleteResult(
                 mVoiceSuggestionProvider.addVoiceSuggestions(
                         autocompleteResult.getSuggestionsList(), MAX_VOICE_SUGGESTION_COUNT),
-                autocompleteResult.getGroupHeaders());
+                autocompleteResult.getGroupsDetails());
 
         mCurrentNativeAutocompleteResult = currentNativeAutocompleteResult;
 
@@ -293,9 +294,9 @@ public class AutocompleteController {
 
     @CalledByNative
     private static AutocompleteResult createAutocompleteResult(
-            int suggestionsCount, int groupHeadersCount) {
+            int suggestionsCount, int groupsCount) {
         return new AutocompleteResult(new ArrayList<OmniboxSuggestion>(suggestionsCount),
-                new SparseArray<String>(groupHeadersCount));
+                new SparseArray<GroupDetails>(groupsCount));
     }
 
     /**
@@ -311,16 +312,18 @@ public class AutocompleteController {
     }
 
     /**
-     * Insert element to Group Headers map.
+     * Insert element to GroupDetails map.
      *
      * @param autocompleteResult AutocompleteResult instance.
      * @param groupId ID of a Group.
      * @param headerText Group title.
+     * @param collapsedByDefault Whether group should be collapsed by default.
      */
     @CalledByNative
-    private static void addOmniboxGroupHeaderToResult(
-            AutocompleteResult autocompleteResult, int groupId, String headerText) {
-        autocompleteResult.getGroupHeaders().put(groupId, headerText);
+    private static void addOmniboxGroupDetailsToResult(AutocompleteResult autocompleteResult,
+            int groupId, String headerText, boolean collapsedByDefault) {
+        autocompleteResult.getGroupsDetails().put(
+                groupId, new GroupDetails(headerText, collapsedByDefault));
     }
 
     @CalledByNative

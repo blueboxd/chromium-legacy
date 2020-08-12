@@ -10,10 +10,10 @@
 namespace printing {
 
 // Specifies query status codes.
-enum PRINTING_EXPORT PrinterQueryResult {
-  UNKNOWN_FAILURE,  // catchall error
-  SUCCESS,          // successful
-  UNREACHABLE,      // failed to reach the host
+enum class PRINTING_EXPORT PrinterQueryResult {
+  UNKNOWN_FAILURE = 0,  // catchall error
+  SUCCESS = 1,          // successful
+  UNREACHABLE = 2,      // failed to reach the host
 };
 
 }  // namespace printing

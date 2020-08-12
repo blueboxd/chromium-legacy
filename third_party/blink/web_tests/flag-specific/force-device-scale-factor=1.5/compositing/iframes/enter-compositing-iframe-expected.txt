@@ -7,30 +7,24 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutIFrame IFRAME id='parent-iframe'",
-      "position": [-45, -45],
-      "bounds": [585, 360],
-      "transform": 1
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [428, 345],
       "contentsOpaqueForText": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow DIV id='test' class='composited box'",
       "bounds": [315, 315],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
       "position": [428, 0],
       "bounds": [22, 225],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='overlay'",
@@ -46,22 +40,12 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [42, 42, 0, 1]
+        [65, 65, 0, 1]
       ]
     },
     {
       "id": 2,
       "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [23, 23, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

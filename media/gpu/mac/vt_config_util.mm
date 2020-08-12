@@ -415,6 +415,49 @@ gfx::ColorSpace::MatrixID GetImageBufferMatrix(CVImageBufferRef image_buffer) {
   return matrix_id;
 }
 
+void SetVp9CodecConfigurationBox(
+    media::VideoCodecProfile codec_profile,
+    const media::VideoColorSpace& color_space,
+    NSMutableDictionary<NSString*, id>* extensions) {
+  // Synthesize a 'vpcC' box. See
+  // https://www.webmproject.org/vp9/mp4/#vp-codec-configuration-box.
+  uint8_t version = 1;
+  uint8_t profile = 0;
+  uint8_t level = 51;
+  uint8_t bit_depth = 8;
+  uint8_t chroma_subsampling = 1;  // 4:2:0 colocated with luma (0, 0).
+  uint8_t primaries = 1;           // BT.709.
+  uint8_t transfer = 1;            // BT.709.
+  uint8_t matrix = 1;              // BT.709.
+
+  if (color_space.IsSpecified()) {
+    primaries = static_cast<uint8_t>(color_space.primaries);
+    transfer = static_cast<uint8_t>(color_space.transfer);
+    matrix = static_cast<uint8_t>(color_space.matrix);
+  }
+
+  if (codec_profile == media::VP9PROFILE_PROFILE2) {
+    profile = 2;
+    bit_depth = 10;
+  }
+
+  uint8_t vpcc[12] = {0};
+  vpcc[0] = version;
+  vpcc[4] = profile;
+  vpcc[5] = level;
+  vpcc[6] |= bit_depth << 4;
+  vpcc[6] |= chroma_subsampling << 1;
+  vpcc[7] = primaries;
+  vpcc[8] = transfer;
+  vpcc[9] = matrix;
+  SetDictionaryValue(
+      extensions, kCMFormatDescriptionExtension_SampleDescriptionExtensionAtoms,
+      @{
+        @"vpcC" : [NSData dataWithBytes:&vpcc length:sizeof(vpcc)],
+      });
+  SetDictionaryValue(extensions, CFSTR("BitsPerComponent"), @(bit_depth));
+}
+
 }  // namespace
 
 namespace media {
@@ -459,6 +502,9 @@ CFMutableDictionaryRef CreateFormatExtensions(
     SetContentLightLevelInfo(*hdr_metadata, extensions);
     SetMasteringMetadata(*hdr_metadata, extensions);
   }
+
+  if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX)
+    SetVp9CodecConfigurationBox(profile, color_space, extensions);
 
   return base::mac::NSToCFCast(extensions);
 }

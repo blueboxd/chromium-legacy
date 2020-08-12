@@ -34,6 +34,7 @@ import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult.GroupDetails;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderProcessor;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -102,8 +103,8 @@ public class DropdownItemViewInfoListBuilderUnitTest {
     @UiThreadTest
     public void headers_buildsHeaderForFirstSuggestion() {
         final List<OmniboxSuggestion> actualList = new ArrayList<>();
-        final SparseArray<String> headers = new SparseArray<>();
-        headers.put(1, "Header 1");
+        final SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
+        groupsDetails.put(1, new GroupDetails("Header 1", false));
 
         OmniboxSuggestion suggestion =
                 OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
@@ -114,8 +115,8 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         actualList.add(suggestion);
 
         final InOrder verifier = inOrder(mMockSuggestionProcessor, mMockHeaderProcessor);
-        final List<DropdownItemViewInfo> model =
-                mBuilder.buildDropdownViewInfoList(new AutocompleteResult(actualList, headers));
+        final List<DropdownItemViewInfo> model = mBuilder.buildDropdownViewInfoList(
+                new AutocompleteResult(actualList, groupsDetails));
 
         verifier.verify(mMockHeaderProcessor, times(1)).populateModel(any(), eq(1), eq("Header 1"));
         verifier.verify(mMockSuggestionProcessor, times(1))
@@ -140,9 +141,9 @@ public class DropdownItemViewInfoListBuilderUnitTest {
     @UiThreadTest
     public void headers_buildsHeadersOnlyWhenGroupChanges() {
         final List<OmniboxSuggestion> actualList = new ArrayList<>();
-        final SparseArray<String> headers = new SparseArray<>();
-        headers.put(1, "Header 1");
-        headers.put(2, "Header 2");
+        final SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
+        groupsDetails.put(1, new GroupDetails("Header 1", false));
+        groupsDetails.put(2, new GroupDetails("Header 2", false));
 
         OmniboxSuggestion suggestionWithNoGroup =
                 OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
@@ -163,8 +164,8 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         actualList.add(suggestionForGroup2);
 
         final InOrder verifier = inOrder(mMockSuggestionProcessor, mMockHeaderProcessor);
-        final List<DropdownItemViewInfo> model =
-                mBuilder.buildDropdownViewInfoList(new AutocompleteResult(actualList, headers));
+        final List<DropdownItemViewInfo> model = mBuilder.buildDropdownViewInfoList(
+                new AutocompleteResult(actualList, groupsDetails));
 
         verifier.verify(mMockSuggestionProcessor, times(1))
                 .populateModel(eq(suggestionWithNoGroup), any(), eq(0));
@@ -232,8 +233,8 @@ public class DropdownItemViewInfoListBuilderUnitTest {
     @UiThreadTest
     public void grouping_noGroupingForSuggestionsWithHeaders() {
         final List<Pair<OmniboxSuggestion, SuggestionProcessor>> actualList = new ArrayList<>();
-        final SparseArray<String> headers = new SparseArray<>();
-        headers.put(1, "Header 1");
+        final SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
+        groupsDetails.put(1, new GroupDetails("Header 1", false));
 
         OmniboxSuggestionBuilderForTest builder =
                 OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)

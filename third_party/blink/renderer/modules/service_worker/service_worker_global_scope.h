@@ -141,6 +141,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       RejectCoepUnsafeNone reject_coep_unsafe_none) override;
   void Dispose() override;
   InstalledScriptsManager* GetInstalledScriptsManager() override;
+  WorkerToken GetWorkerToken() const override { return token_; }
 
   // Counts an evaluated script and its size. Called for the main worker script.
   void CountWorkerScript(size_t script_size, size_t cached_metadata_size);
@@ -314,6 +315,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   int GetOutstandingThrottledLimit() const override;
 
+  const ServiceWorkerToken& token() const { return token_; }
+
  protected:
   // EventTarget
   bool AddEventListenerInternal(
@@ -330,10 +333,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   ResourceLoadScheduler::ThrottleOptionOverride GetThrottleOptionOverride()
       const override;
-
-  // TODO(chrisha): Lift this up to WorkerGlobalScope once all worker types
-  // have tokens.
-  const ServiceWorkerToken& token() const { return token_; }
 
  private:
   void importScripts(const Vector<String>& urls, ExceptionState&) override;

@@ -81,7 +81,7 @@ bool ShouldCompressionServerRedirectSubresource() {
   return base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
          base::GetFieldTrialParamByFeatureAsBool(
              blink::features::kSubresourceRedirect,
-             "enable_subresource_server_redirect", false);
+             "enable_subresource_server_redirect", true);
 }
 
 bool ShowInfoBarOnAndroid(content::WebContents* web_contents) {

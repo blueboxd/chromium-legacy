@@ -28697,6 +28697,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3368" label="WebSharePolicyAllow"/>
   <int value="3369" label="WebSharePolicyDisallow"/>
   <int value="3370" label="FormAssociatedCustomElement"/>
+  <int value="3371" label="WindowClosed"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40696,6 +40697,7 @@ from previous Chrome versions.
   <int value="-1376510363" label="ServiceWorkerScriptFullCodeCache:disabled"/>
   <int value="-1376006534" label="WinUseBrowserSpellChecker:disabled"/>
   <int value="-1375111024" label="enable-fixed-position-compositing"/>
+  <int value="-1374048865" label="CpuAffinityRestrictToLittleCores:enabled"/>
   <int value="-1373942769" label="WebAuthenticationCtap2:disabled"/>
   <int value="-1373705581" label="ManualSaving:enabled"/>
   <int value="-1372926635" label="AndroidManagedByMenuItem:disabled"/>
@@ -43657,6 +43659,7 @@ from previous Chrome versions.
   <int value="1816723085" label="SchemefulSameSite:enabled"/>
   <int value="1816843861" label="ServiceWorkerServicification:enabled"/>
   <int value="1817312143" label="num-raster-threads"/>
+  <int value="1817420759" label="CpuAffinityRestrictToLittleCores:disabled"/>
   <int value="1818829958" label="IdentityDisc:enabled"/>
   <int value="1819256299" label="disable-webrtc-hw-decoding"/>
   <int value="1819536169" label="disable-cast-streaming-hw-encoding"/>

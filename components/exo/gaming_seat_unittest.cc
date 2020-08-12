@@ -63,7 +63,8 @@ class GamingSeatTest : public test::ExoTestBase {
     for (auto& id : gamepad_device_ids) {
       gamepad_devices.emplace_back(
           ui::InputDevice(id, ui::InputDeviceType::INPUT_DEVICE_USB, "gamepad"),
-          std::vector<ui::GamepadDevice::Axis>());
+          std::vector<ui::GamepadDevice::Axis>(),
+          /*supports_vibration_rumble=*/false);
     }
     ui::GamepadProviderOzone::GetInstance()->DispatchGamepadDevicesUpdated(
         gamepad_devices);

@@ -39,9 +39,11 @@ class RietveldPatcherTest(unittest.TestCase):
   def _ApplySingle(self, path):
     return self._patcher.Apply([path], None).Get()[path]
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testGetVersion(self):
     self.assertEqual(self._patcher.GetVersion(), '22002')
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testGetPatchedFiles(self):
     added, deleted, modified = self._patcher.GetPatchedFiles()
     self.assertEqual(
@@ -58,6 +60,7 @@ class RietveldPatcherTest(unittest.TestCase):
                      'docs/templates/json/extensions_sidenav.json',
                      'manifest.h']))
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testApply(self):
     article_path = '%stest_foo.html' % ARTICLES_TEMPLATES
 

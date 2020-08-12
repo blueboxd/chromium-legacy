@@ -4,38 +4,40 @@
 
 #include "media/gpu/mac/vt_config_util.h"
 
+#include <CoreMedia/CoreMedia.h>
+
 #include "base/containers/span.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-std::string GetStrValue(CFMutableDictionaryRef dict, CFStringRef key) {
+std::string GetStrValue(CFDictionaryRef dict, CFStringRef key) {
   return base::SysCFStringRefToUTF8(
       base::mac::CFCastStrict<CFStringRef>(CFDictionaryGetValue(dict, key)));
 }
 
-CFStringRef GetCFStrValue(CFMutableDictionaryRef dict, CFStringRef key) {
+CFStringRef GetCFStrValue(CFDictionaryRef dict, CFStringRef key) {
   return base::mac::CFCastStrict<CFStringRef>(CFDictionaryGetValue(dict, key));
 }
 
-int GetIntValue(CFMutableDictionaryRef dict, CFStringRef key) {
+int GetIntValue(CFDictionaryRef dict, CFStringRef key) {
   CFNumberRef value =
       base::mac::CFCastStrict<CFNumberRef>(CFDictionaryGetValue(dict, key));
   int result;
   return CFNumberGetValue(value, kCFNumberIntType, &result) ? result : -1;
 }
 
-bool GetBoolValue(CFMutableDictionaryRef dict, CFStringRef key) {
+bool GetBoolValue(CFDictionaryRef dict, CFStringRef key) {
   return CFBooleanGetValue(
       base::mac::CFCastStrict<CFBooleanRef>(CFDictionaryGetValue(dict, key)));
 }
 
-base::span<const uint8_t> GetDataValue(CFMutableDictionaryRef dict,
-                                       CFStringRef key) {
+base::span<const uint8_t> GetDataValue(CFDictionaryRef dict, CFStringRef key) {
   CFDataRef data =
       base::mac::CFCastStrict<CFDataRef>(CFDictionaryGetValue(dict, key));
   return data ? base::span<const uint8_t>(
@@ -44,9 +46,17 @@ base::span<const uint8_t> GetDataValue(CFMutableDictionaryRef dict,
               : base::span<const uint8_t>();
 }
 
+base::span<const uint8_t> GetNestedDataValue(CFDictionaryRef dict,
+                                             CFStringRef key1,
+                                             CFStringRef key2) {
+  CFDictionaryRef nested_dict = base::mac::CFCastStrict<CFDictionaryRef>(
+      CFDictionaryGetValue(dict, key1));
+  return GetDataValue(nested_dict, key2);
+}
+
 base::ScopedCFTypeRef<CVImageBufferRef> CreateCVImageBuffer(
     media::VideoColorSpace cs) {
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> fmt(
+  base::ScopedCFTypeRef<CFDictionaryRef> fmt(
       CreateFormatExtensions(kCMVideoCodecType_H264, media::H264PROFILE_MAIN,
                              cs, media::HDRMetadata()));
 
@@ -71,7 +81,7 @@ gfx::ColorSpace ToBT709_APPLE(gfx::ColorSpace cs) {
                          cs.GetMatrixID(), cs.GetRangeID());
 }
 
-void AssertHasEmptyHDRMetadata(CFMutableDictionaryRef fmt) {
+void AssertHasEmptyHDRMetadata(CFDictionaryRef fmt) {
   if (__builtin_available(macos 10.13, *)) {
     // We constructed with an empty HDRMetadata, so all values should be zero.
     auto mdcv = GetDataValue(
@@ -88,12 +98,15 @@ void AssertHasEmptyHDRMetadata(CFMutableDictionaryRef fmt) {
   }
 }
 
+constexpr char kBitDepthKey[] = "BitsPerComponent";
+constexpr char kVpccKey[] = "vpcC";
+
 }  // namespace
 
 namespace media {
 
 TEST(VTConfigUtil, CreateFormatExtensions_H264_BT709) {
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> fmt(
+  base::ScopedCFTypeRef<CFDictionaryRef> fmt(
       CreateFormatExtensions(kCMVideoCodecType_H264, H264PROFILE_MAIN,
                              VideoColorSpace::REC709(), base::nullopt));
   EXPECT_EQ("avc1", GetStrValue(fmt, kCMFormatDescriptionExtension_FormatName));
@@ -118,7 +131,7 @@ TEST(VTConfigUtil, CreateFormatExtensions_H264_BT709) {
 }
 
 TEST(VTConfigUtil, CreateFormatExtensions_H264_BT2020_PQ) {
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> fmt(CreateFormatExtensions(
+  base::ScopedCFTypeRef<CFDictionaryRef> fmt(CreateFormatExtensions(
       kCMVideoCodecType_H264, H264PROFILE_MAIN,
       VideoColorSpace(VideoColorSpace::PrimaryID::BT2020,
                       VideoColorSpace::TransferID::SMPTEST2084,
@@ -142,7 +155,7 @@ TEST(VTConfigUtil, CreateFormatExtensions_H264_BT2020_PQ) {
 }
 
 TEST(VTConfigUtil, CreateFormatExtensions_H264_BT2020_HLG) {
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> fmt(CreateFormatExtensions(
+  base::ScopedCFTypeRef<CFDictionaryRef> fmt(CreateFormatExtensions(
       kCMVideoCodecType_H264, H264PROFILE_MAIN,
       VideoColorSpace(VideoColorSpace::PrimaryID::BT2020,
                       VideoColorSpace::TransferID::ARIB_STD_B67,
@@ -178,7 +191,7 @@ TEST(VTConfigUtil, CreateFormatExtensions_HDRMetadata) {
   mastering.primary_b = gfx::PointF(0.15, 0.06);
   mastering.white_point = gfx::PointF(0.3127, 0.3290);
 
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> fmt(CreateFormatExtensions(
+  base::ScopedCFTypeRef<CFDictionaryRef> fmt(CreateFormatExtensions(
       kCMVideoCodecType_H264, H264PROFILE_MAIN,
       VideoColorSpace(VideoColorSpace::PrimaryID::BT2020,
                       VideoColorSpace::TransferID::SMPTEST2084,
@@ -224,6 +237,47 @@ TEST(VTConfigUtil, CreateFormatExtensions_HDRMetadata) {
                 hdr_meta.max_frame_average_light_level);
     }
   }
+}
+
+TEST(VTConfigUtil, CreateFormatExtensions_VP9Profile0) {
+  constexpr VideoCodecProfile kTestProfile = VP9PROFILE_PROFILE0;
+  const auto kTestColorSpace = VideoColorSpace::REC709();
+  base::ScopedCFTypeRef<CFDictionaryRef> fmt(CreateFormatExtensions(
+      kCMVideoCodecType_VP9, kTestProfile, kTestColorSpace, base::nullopt));
+  EXPECT_EQ(8, GetIntValue(fmt, base::SysUTF8ToCFStringRef(kBitDepthKey)));
+
+  auto vpcc = GetNestedDataValue(
+      fmt, kCMFormatDescriptionExtension_SampleDescriptionExtensionAtoms,
+      base::SysUTF8ToCFStringRef(kVpccKey));
+  std::unique_ptr<mp4::BoxReader> box_reader(
+      mp4::BoxReader::ReadConcatentatedBoxes(vpcc.data(), vpcc.size(),
+                                             nullptr));
+  mp4::VPCodecConfigurationRecord vpcc_box;
+  ASSERT_TRUE(vpcc_box.Parse(box_reader.get()));
+  ASSERT_EQ(kTestProfile, vpcc_box.profile);
+  ASSERT_EQ(kTestColorSpace, vpcc_box.color_space);
+}
+
+TEST(VTConfigUtil, CreateFormatExtensions_VP9Profile2) {
+  constexpr VideoCodecProfile kTestProfile = VP9PROFILE_PROFILE2;
+  const VideoColorSpace kTestColorSpace(
+      VideoColorSpace::PrimaryID::BT2020,
+      VideoColorSpace::TransferID::SMPTEST2084,
+      VideoColorSpace::MatrixID::BT2020_NCL, gfx::ColorSpace::RangeID::LIMITED);
+  base::ScopedCFTypeRef<CFDictionaryRef> fmt(CreateFormatExtensions(
+      kCMVideoCodecType_VP9, kTestProfile, kTestColorSpace, base::nullopt));
+  EXPECT_EQ(10, GetIntValue(fmt, base::SysUTF8ToCFStringRef(kBitDepthKey)));
+
+  auto vpcc = GetNestedDataValue(
+      fmt, kCMFormatDescriptionExtension_SampleDescriptionExtensionAtoms,
+      base::SysUTF8ToCFStringRef(kVpccKey));
+  std::unique_ptr<mp4::BoxReader> box_reader(
+      mp4::BoxReader::ReadConcatentatedBoxes(vpcc.data(), vpcc.size(),
+                                             nullptr));
+  mp4::VPCodecConfigurationRecord vpcc_box;
+  ASSERT_TRUE(vpcc_box.Parse(box_reader.get()));
+  ASSERT_EQ(kTestProfile, vpcc_box.profile);
+  ASSERT_EQ(kTestColorSpace, vpcc_box.color_space);
 }
 
 TEST(VTConfigUtil, GetImageBufferColorSpace_BT601) {

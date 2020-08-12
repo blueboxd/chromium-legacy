@@ -69,10 +69,14 @@ ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
     : is_phishing(phish), timestamp(time) {}
 
 ClientSideDetectionService::ClientSideDetectionService(Profile* profile)
-    : ClientSideDetectionService(profile ? profile->GetURLLoaderFactory()
-                                         : nullptr) {
-  profile_ = profile;
-
+    : profile_(profile),
+      enabled_(false),
+      extended_reporting_(false),
+      url_loader_factory_(
+          g_browser_process->safe_browsing_service()
+              ? g_browser_process->safe_browsing_service()->GetURLLoaderFactory(
+                    profile)
+              : nullptr) {
   // |profile_| can be null in unit tests
   if (!profile_)
     return;
@@ -93,13 +97,6 @@ ClientSideDetectionService::ClientSideDetectionService(Profile* profile)
 
   // Do an initial check of the prefs.
   OnPrefsUpdated();
-}
-
-ClientSideDetectionService::ClientSideDetectionService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader)
-    : enabled_(false),
-      extended_reporting_(false),
-      url_loader_factory_(url_loader) {
 }
 
 ClientSideDetectionService::~ClientSideDetectionService() {
@@ -129,7 +126,7 @@ void ClientSideDetectionService::OnPrefsUpdated() {
       model_loader_ = std::make_unique<ModelLoader>(
           base::BindRepeating(&ClientSideDetectionService::SendModelToRenderers,
                               base::Unretained(this)),
-          url_loader_factory_, extended_reporting_);
+          profile_->GetURLLoaderFactory(), extended_reporting_);
     }
     // Refresh the models when the service is enabled.  This can happen when
     // either of the preferences are toggled, or early during startup if

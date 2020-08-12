@@ -88,8 +88,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
       scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
-  void DidEnterFullscreen() override;
-  void DidExitFullscreen() override;
   void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason) override;
   void ThemeChanged() override;
@@ -124,6 +122,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return true; }
+  bool ForTopLevelFrame() const override { return false; }
   void IntrinsicSizingInfoChanged(
       mojom::blink::IntrinsicSizingInfoPtr) override;
   void DidCreateLocalRootView() override;

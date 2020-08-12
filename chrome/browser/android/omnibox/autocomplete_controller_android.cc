@@ -478,8 +478,9 @@ void AutocompleteControllerAndroid::NotifySuggestionsReceived(
         env, j_autocomplete_result, j_omnibox_suggestion);
   }
 
-  PopulateOmniboxGroupHeaders(env, j_autocomplete_result,
-                              autocomplete_result.headers_map());
+  PopulateOmniboxGroupsDetails(env, j_autocomplete_result,
+                               autocomplete_result.headers_map(),
+                               autocomplete_result.hidden_group_ids());
 
   // Get the inline-autocomplete text.
   base::string16 inline_autocomplete_text;
@@ -634,14 +635,18 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       match.has_tab_match);
 }
 
-void AutocompleteControllerAndroid::PopulateOmniboxGroupHeaders(
+void AutocompleteControllerAndroid::PopulateOmniboxGroupsDetails(
     JNIEnv* env,
     ScopedJavaLocalRef<jobject> j_autocomplete_result,
-    const SearchSuggestionParser::HeadersMap& native_header_map) {
+    const SearchSuggestionParser::HeadersMap& native_header_map,
+    const std::vector<int>& hidden_group_ids) {
+  base::flat_set<int> hidden_group_ids_set = hidden_group_ids;
+
   for (const auto& group_header : native_header_map) {
-    Java_AutocompleteController_addOmniboxGroupHeaderToResult(
+    Java_AutocompleteController_addOmniboxGroupDetailsToResult(
         env, j_autocomplete_result, group_header.first,
-        ConvertUTF16ToJavaString(env, group_header.second));
+        ConvertUTF16ToJavaString(env, group_header.second),
+        hidden_group_ids_set.contains(group_header.first));
   }
 }
 

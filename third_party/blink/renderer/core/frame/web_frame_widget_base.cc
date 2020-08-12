@@ -619,7 +619,43 @@ void WebFrameWidgetBase::UpdateVisualProperties(
         visual_properties.capture_sequence_number));
   }
 
+  if (!View()->AutoResizeMode()) {
+    if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_) {
+      is_fullscreen_granted_ = visual_properties.is_fullscreen_granted;
+      if (is_fullscreen_granted_)
+        View()->DidEnterFullscreen();
+      else
+        View()->DidExitFullscreen();
+    }
+  }
+
   Client()->UpdateVisualProperties(visual_properties);
+
+  // All non-top-level Widgets (child local-root frames, Portals, GuestViews,
+  // etc.) propagate and consume the page scale factor as "external", meaning
+  // that it comes from the top level widget's page scale.
+  if (!ForTopLevelFrame()) {
+    // The main frame controls the page scale factor, from blink. For other
+    // frame widgets, the page scale is received from its parent as part of
+    // the visual properties here. While blink doesn't need to know this
+    // page scale factor outside the main frame, the compositor does in
+    // order to produce its output at the correct scale.
+    widget_base_->LayerTreeHost()->SetExternalPageScaleFactor(
+        visual_properties.page_scale_factor,
+        visual_properties.is_pinch_gesture_active);
+
+    NotifyPageScaleFactorChanged(visual_properties.page_scale_factor,
+                                 visual_properties.is_pinch_gesture_active);
+  } else {
+    // Ensure scale factors used in nested widgets are reset to their default
+    // values, they may be leftover from when a widget was nested and was
+    // promoted to top level (e.g. portal activation).
+    widget_base_->LayerTreeHost()->SetExternalPageScaleFactor(
+        1.f,
+        /*is_pinch_gesture_active=*/false);
+    page_scale_factor_from_mainframe_ = 1.f;
+    is_pinch_gesture_active_from_mainframe_ = false;
+  }
 }
 
 void WebFrameWidgetBase::UpdateScreenRects(
@@ -987,6 +1023,18 @@ WebFrameWidgetBase::GetSynchronousCompositorRegistry() {
 void WebFrameWidgetBase::ApplyVisualProperties(
     const VisualProperties& visual_properties) {
   widget_base_->UpdateVisualProperties(visual_properties);
+}
+
+bool WebFrameWidgetBase::IsFullscreenGranted() {
+  return is_fullscreen_granted_;
+}
+
+bool WebFrameWidgetBase::PinchGestureActiveInMainFrame() {
+  return is_pinch_gesture_active_from_mainframe_;
+}
+
+float WebFrameWidgetBase::PageScaleInMainFrame() {
+  return page_scale_factor_from_mainframe_;
 }
 
 void WebFrameWidgetBase::AutoscrollStart(const gfx::PointF& position) {
@@ -1572,11 +1620,6 @@ void WebFrameWidgetBase::SetMouseCapture(bool capture) {
   }
 }
 
-void WebFrameWidgetBase::SetIsNestedMainFrameWidget(bool is_nested) {
-  if (client_)
-    client_->SetIsNestedMainFrameWidget(is_nested);
-}
-
 gfx::Range WebFrameWidgetBase::CompositionRange() {
   WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
   if (!focused_frame)
@@ -1893,6 +1936,38 @@ void WebFrameWidgetBase::ForEachRemoteFrameControlledByWidget(
 void WebFrameWidgetBase::BatterySavingsChanged(WebBatterySavingsFlags savings) {
   widget_base_->LayerTreeHost()->SetEnableFrameRateThrottling(
       savings & kAllowReducedFrameRate);
+}
+
+void WebFrameWidgetBase::NotifyPageScaleFactorChanged(
+    float page_scale_factor,
+    bool is_pinch_gesture_active) {
+  // Store the value to give to any new RemoteFrame that will be created as a
+  // descendant of this widget.
+  page_scale_factor_from_mainframe_ = page_scale_factor;
+  is_pinch_gesture_active_from_mainframe_ = is_pinch_gesture_active;
+  // Push the page scale factor down to any child RemoteFrames.
+  // TODO(danakj): This ends up setting the page scale factor in the
+  // RenderWidgetHost of the child WebFrameWidgetBase, so that it can bounce
+  // the value down to its WebFrameWidgetBase. Since this is essentially a
+  // global value per-page, we could instead store it once in the browser
+  // (such as in RenderViewHost) and distribute it to each WebFrameWidgetBase
+  // from there.
+  ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
+      [](float page_scale_factor, bool is_pinch_gesture_active,
+         RemoteFrame* remote_frame) {
+        remote_frame->Client()->PageScaleFactorChanged(page_scale_factor,
+                                                       is_pinch_gesture_active);
+      },
+      page_scale_factor, is_pinch_gesture_active));
+}
+
+void WebFrameWidgetBase::SetPageScaleStateAndLimits(
+    float page_scale_factor,
+    bool is_pinch_gesture_active,
+    float minimum,
+    float maximum) {
+  widget_base_->LayerTreeHost()->SetPageScaleFactorAndLimits(page_scale_factor,
+                                                             minimum, maximum);
 }
 
 }  // namespace blink

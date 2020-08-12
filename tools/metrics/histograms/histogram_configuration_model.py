@@ -87,12 +87,14 @@ _VARIANT_TYPE = models.ObjectNodeType(
         ('name', str, None),
         ('label', str, None),
     ],
+    required_attributes=['name', 'label'],
     alphabetization=[
         (_OBSOLETE_TYPE.tag, _KEEP_ORDER),
+        (_OWNER_TYPE.tag, _KEEP_ORDER),
     ],
-    required_attributes=['name', 'label'],
     children=[
         models.ChildType(_OBSOLETE_TYPE.tag, _OBSOLETE_TYPE, multiple=False),
+        models.ChildType(_OWNER_TYPE.tag, _OWNER_TYPE, multiple=True),
     ])
 
 _TOKEN_TYPE = models.ObjectNodeType(
@@ -102,13 +104,9 @@ _TOKEN_TYPE = models.ObjectNodeType(
     ],
     required_attributes=['key'],
     alphabetization=[
-        (_OBSOLETE_TYPE.tag, _KEEP_ORDER),
-        (_OWNER_TYPE.tag, _KEEP_ORDER),
         (_VARIANT_TYPE.tag, _NaturalSortByName)
     ],
     children=[
-        models.ChildType(_OBSOLETE_TYPE.tag, _OBSOLETE_TYPE, multiple=False),
-        models.ChildType(_OWNER_TYPE.tag, _OWNER_TYPE, multiple=True),
         models.ChildType(_VARIANT_TYPE.tag, _VARIANT_TYPE, multiple=True),
     ])
 

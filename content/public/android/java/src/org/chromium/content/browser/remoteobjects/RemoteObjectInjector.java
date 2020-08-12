@@ -51,11 +51,20 @@ public final class RemoteObjectInjector extends WebContentsObserver {
 
     @Override
     public void renderFrameCreated(int renderProcessId, int renderFrameId) {
-        // TODO(crbug.com/1105935): replicate the necessary logic from
-        // GinJavaBridgeDispatcherHost::RenderFrameCreated().
+        if (mInjectedObjects.isEmpty()) return;
 
-        // TODO(crbug.com/1107555): get the RenderFrameHost
-        // from renderProcessId and renderFrameId.
+        WebContents webContents = mWebContents.get();
+        if (webContents == null) return;
+
+        RenderFrameHost frameHost =
+                webContents.getRenderFrameHostFromId(renderProcessId, renderFrameId);
+        if (frameHost == null) return;
+
+        for (Map.Entry<String, Pair<Object, Class<? extends Annotation>>> entry :
+                mInjectedObjects.entrySet()) {
+            addInterfaceForFrame(
+                    frameHost, entry.getKey(), entry.getValue().first, entry.getValue().second);
+        }
     }
 
     public void addInterface(Object object, String name) {
@@ -69,10 +78,10 @@ public final class RemoteObjectInjector extends WebContentsObserver {
 
         // TODO(crbug.com/1105935): the objects need to be injected into all frames, not just the
         // main one.
-        addInterfaceForFrame(webContents.getMainFrame(), object, name, requiredAnnotation);
+        addInterfaceForFrame(webContents.getMainFrame(), name, object, requiredAnnotation);
     }
 
-    private void addInterfaceForFrame(RenderFrameHost frameHost, Object object, String name,
+    private void addInterfaceForFrame(RenderFrameHost frameHost, String name, Object object,
             Class<? extends Annotation> requiredAnnotation) {
         RemoteObjectGatewayHelper helper =
                 getRemoteObjectGatewayHelperForFrame(frameHost, requiredAnnotation);

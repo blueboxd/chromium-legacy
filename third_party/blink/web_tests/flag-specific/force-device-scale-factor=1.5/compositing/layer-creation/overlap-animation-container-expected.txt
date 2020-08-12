@@ -16,23 +16,22 @@ Before:
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='container'",
-      "position": [-16, 0],
+      "position": [71, 345],
       "bounds": [215, 678],
-      "backgroundColor": "#FFFFFF",
-      "transform": 3
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='box gray force-layer'",
       "bounds": [150, 150],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 5
+      "transform": 4
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV class='box yellow')",
       "position": [-77, 676],
       "bounds": [150, 150],
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -73,16 +72,6 @@ Before:
     {
       "id": 4,
       "parent": 3,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 5,
-      "parent": 4,
       "transform": [
         [...],
         [...],
@@ -111,23 +100,23 @@ After:
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='container'",
+      "position": [87, 345],
       "bounds": [183, 678],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "transform": 3
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='box gray force-layer'",
       "bounds": [150, 150],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 5
+      "transform": 4
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='first-green-box' class='box green rotate-45deg')",
       "position": [-77, 132],
       "bounds": [259, 694],
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -168,16 +157,6 @@ After:
     {
       "id": 4,
       "parent": 3,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 5,
-      "parent": 4,
       "transform": [
         [...],
         [...],

@@ -139,9 +139,10 @@ TEST_F(PowerMetricsProviderTest, BatteryDischargeCaptureIsEarly) {
 
   // The discharge rate is normalized to be representative over
   // |kMetricsCollectionInterval|.
-  int discharge = (kFirstReading - kSecondReading) *
-                  kMetricsCollectionInterval.InSecondsF() /
-                  (second_capture_time - first_capture_time).InSeconds();
+  int discharge =
+      base::ClampFloor((kFirstReading - kSecondReading) *
+                       kMetricsCollectionInterval.InSecondsF() /
+                       (second_capture_time - first_capture_time).InSeconds());
   histogram_tester_.ExpectUniqueSample(kHistogramName, discharge, 1);
 }
 
@@ -188,8 +189,9 @@ TEST_F(PowerMetricsProviderTest, BatteryDischargeCaptureIsLate) {
 
   // The discharge rate is normalized to be representative over
   // |kMetricsCollectionInterval|.
-  int discharge = (kFirstReading - kSecondReading) *
-                  kMetricsCollectionInterval.InSecondsF() /
-                  (second_capture_time - first_capture_time).InSeconds();
+  int discharge =
+      base::ClampFloor((kFirstReading - kSecondReading) *
+                       kMetricsCollectionInterval.InSecondsF() /
+                       (second_capture_time - first_capture_time).InSeconds());
   histogram_tester_.ExpectUniqueSample(kHistogramName, discharge, 1);
 }

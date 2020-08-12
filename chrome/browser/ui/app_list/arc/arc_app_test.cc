@@ -169,6 +169,12 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
   app.sticky = true;
   fake_default_apps_.push_back(app);
 
+  app.name = "TestApp3";
+  app.package_name = "test.app3";
+  app.activity = "test.app3.activity";
+  app.sticky = true;
+  fake_default_apps_.push_back(app);
+
   base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
       permissions1;
   permissions1.emplace(arc::mojom::AppPermission::CAMERA,

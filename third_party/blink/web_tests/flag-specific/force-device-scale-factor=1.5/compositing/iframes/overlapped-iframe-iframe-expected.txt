@@ -7,10 +7,6 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutIFrame (positioned) IFRAME",
-      "bounds": [456, 456]
-    },
-    {
       "name": "LayoutView #document",
       "bounds": [450, 450],
       "contentsOpaqueForText": true,
@@ -26,21 +22,21 @@
     },
     {
       "name": "LayoutIFrame (positioned) IFRAME id='overlap'",
-      "bounds": [456, 456],
-      "transform": 3
+      "position": [375, 0],
+      "bounds": [456, 456]
     },
     {
       "name": "Scrolling Contents Layer",
       "bounds": [428, 1527],
       "contentsOpaqueForText": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
       "position": [428, 0],
       "bounds": [22, 450],
-      "transform": 4
+      "transform": 3
     }
   ],
   "transforms": [
@@ -69,17 +65,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [375, 0, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [3, 3, 0, 1]
+        [378, 3, 0, 1]
       ]
     }
   ]

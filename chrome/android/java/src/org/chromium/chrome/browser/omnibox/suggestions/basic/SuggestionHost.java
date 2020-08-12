@@ -39,7 +39,7 @@ public interface SuggestionHost {
      * Toggle expanded state of suggestion items belonging to specific group.
      *
      * @param groupId ID of Suggestion Group whose visibility changed.
-     * @param state True if elements should be visible, otherwise false.
+     * @param isCollapsed True if group should appear collapsed, otherwise false.
      */
-    void setGroupVisibility(int groupId, boolean state);
+    void setGroupCollapsedState(int groupId, boolean isCollapsed);
 }

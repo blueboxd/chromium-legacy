@@ -33,9 +33,8 @@ public abstract class WebContentsObserver {
      * Called when a RenderFrame for renderFrameHost is created in the
      * renderer process.
      * To avoid creating a RenderFrameHost object without necessity, only process id and frame id
-     * are passed.
-     * TODO(crbug.com/1107555): expose a C++ method to get a Java RenderFrameHost by process id and
-     * frame id.
+     * are passed. Call WebContents#getRenderFrameHostFromId() to get the RenderFrameHostImpl object
+     * if needed.
      */
     public void renderFrameCreated(int renderProcessId, int renderFrameId) {}
 

@@ -31,11 +31,11 @@ public class HeaderViewBinder {
         } else if (propertyKey == SuggestionCommonProperties.LAYOUT_DIRECTION) {
             ViewCompat.setLayoutDirection(
                     view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
-        } else if (propertyKey == HeaderViewProperties.IS_EXPANDED) {
-            boolean isExpanded = model.get(HeaderViewProperties.IS_EXPANDED);
-            view.getIconView().setImageResource(isExpanded ? R.drawable.ic_expand_less_black_24dp
-                                                           : R.drawable.ic_expand_more_black_24dp);
-            view.setExpandedStateForAccessibility(isExpanded);
+        } else if (propertyKey == HeaderViewProperties.IS_COLLAPSED) {
+            boolean isCollapsed = model.get(HeaderViewProperties.IS_COLLAPSED);
+            view.getIconView().setImageResource(isCollapsed ? R.drawable.ic_expand_more_black_24dp
+                                                            : R.drawable.ic_expand_less_black_24dp);
+            view.setCollapsedStateForAccessibility(isCollapsed);
         } else if (propertyKey == HeaderViewProperties.DELEGATE) {
             HeaderViewProperties.Delegate delegate = model.get(HeaderViewProperties.DELEGATE);
             if (delegate != null) {

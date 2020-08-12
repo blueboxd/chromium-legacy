@@ -323,7 +323,8 @@ class BASE_EXPORT TimeDelta {
   }
 
   constexpr TimeDelta operator%(TimeDelta a) const {
-    return TimeDelta(a.is_inf() ? delta_ : (delta_ % a.delta_));
+    return TimeDelta(
+        (is_inf() || a.is_zero() || a.is_inf()) ? delta_ : (delta_ % a.delta_));
   }
   TimeDelta& operator%=(TimeDelta other) { return *this = (*this % other); }
 

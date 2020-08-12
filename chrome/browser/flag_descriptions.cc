@@ -2719,6 +2719,11 @@ const char kContextualSearchTranslationsDescription[] =
     "Enables automatic translations of words on a page to be presented in the "
     "caption of the bottom bar.";
 
+const char kCpuAffinityRestrictToLittleCoresName[] = "Restrict to LITTLE cores";
+const char kCpuAffinityRestrictToLittleCoresDescription[] =
+    "Restricts Chrome threads to LITTLE cores on devices with big.LITTLE or "
+    "similar CPU architectures.";
+
 const char kDirectActionsName[] = "Direct actions";
 const char kDirectActionsDescription[] =
     "Enables direct actions (Android Q and more).";

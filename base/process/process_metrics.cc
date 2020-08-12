@@ -8,6 +8,7 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 
@@ -25,7 +26,7 @@ int CalculateEventsPerSecond(uint64_t event_count,
   }
 
   int64_t events_delta = event_count - *last_event_count;
-  int64_t time_delta = (time - *last_calculated).InMicroseconds();
+  double time_delta = (time - *last_calculated).InSecondsF();
   if (time_delta == 0) {
     NOTREACHED();
     return 0;
@@ -34,11 +35,7 @@ int CalculateEventsPerSecond(uint64_t event_count,
   *last_calculated = time;
   *last_event_count = event_count;
 
-  int64_t events_delta_for_ms =
-      events_delta * base::Time::kMicrosecondsPerSecond;
-  // Round the result up by adding 1/2 (the second term resolves to 1/2 without
-  // dropping down into floating point).
-  return (events_delta_for_ms + time_delta / 2) / time_delta;
+  return base::ClampRound(events_delta / time_delta);
 }
 
 }  // namespace

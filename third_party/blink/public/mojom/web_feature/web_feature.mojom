@@ -2700,6 +2700,7 @@ enum WebFeature {
   kWebSharePolicyAllow = 3368,
   kWebSharePolicyDisallow = 3369,
   kFormAssociatedCustomElement = 3370,
+  kWindowClosed = 3371,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

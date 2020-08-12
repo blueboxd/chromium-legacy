@@ -257,4 +257,18 @@ void InputControllerEvdev::UpdateCapsLockLed() {
   caps_lock_led_state_ = caps_lock_state;
 }
 
+void InputControllerEvdev::PlayVibrationEffect(int id,
+                                               uint8_t amplitude,
+                                               uint16_t duration_millis) {
+  if (!input_device_factory_)
+    return;
+  input_device_factory_->PlayVibrationEffect(id, amplitude, duration_millis);
+}
+
+void InputControllerEvdev::StopVibration(int id) {
+  if (!input_device_factory_)
+    return;
+  input_device_factory_->StopVibration(id);
+}
+
 }  // namespace ui

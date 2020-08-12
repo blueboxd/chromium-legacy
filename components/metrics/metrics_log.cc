@@ -321,7 +321,7 @@ const SystemProfileProto& MetricsLog::RecordEnvironment(
   //
   // The |has_environment| case will happen on the very first log, where we
   // call RecordEnvironment() in order to persist the system profile in the
-  // persistent hitograms .pma file.
+  // persistent histograms .pma file.
   if (has_environment_) {
     uma_proto_.clear_system_profile();
     MetricsLog::RecordCoreSystemProfile(client_,

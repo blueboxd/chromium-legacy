@@ -330,20 +330,6 @@ void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
   std::vector<base::FilePath> paths;
   std::vector<base::FilePath> default_app_paths;
   switch (icon_type_) {
-    case IconType::kUncompressed: {
-      // Deliberately fall through to IconType::kCompressed to add |path| to
-      // |paths|.
-      FALLTHROUGH;
-    }
-    case IconType::kCompressed: {
-      base::FilePath path = prefs->GetIconPath(mapped_app_id_, descriptor);
-      if (path.empty())
-        return;
-      paths.emplace_back(path);
-      default_app_paths.emplace_back(
-          prefs->MaybeGetIconPathForDefaultApp(mapped_app_id_, descriptor));
-      break;
-    }
     case IconType::kAdaptive: {
       base::FilePath foreground_path =
           prefs->GetForegroundIconPath(mapped_app_id_, descriptor);
@@ -360,6 +346,24 @@ void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
       default_app_paths.emplace_back(
           prefs->MaybeGetBackgroundIconPathForDefaultApp(mapped_app_id_,
                                                          descriptor));
+      // Deliberately fall through to IconType::kCompressed to add |path| to
+      // |paths|. For the migration scenario, when the foreground icon file
+      // doesn't exist, load the original icon file to resolve the icon lag
+      // issue.
+      FALLTHROUGH;
+    }
+    case IconType::kUncompressed: {
+      // Deliberately fall through to IconType::kCompressed to add |path| to
+      // |paths|.
+      FALLTHROUGH;
+    }
+    case IconType::kCompressed: {
+      base::FilePath path = prefs->GetIconPath(mapped_app_id_, descriptor);
+      if (path.empty())
+        return;
+      paths.emplace_back(path);
+      default_app_paths.emplace_back(
+          prefs->MaybeGetIconPathForDefaultApp(mapped_app_id_, descriptor));
       break;
     }
   }
@@ -441,34 +445,21 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadAdaptiveIconFiles(
     ui::ScaleFactor scale_factor,
     const std::vector<base::FilePath>& paths,
     const std::vector<base::FilePath>& default_app_paths) {
-  DCHECK_EQ(2u, paths.size());
+  DCHECK_EQ(3u, paths.size());
 
   const base::FilePath& foreground_path = paths[0];
   const base::FilePath& background_path = paths[1];
   if (!base::PathExists(foreground_path)) {
-    DCHECK_EQ(2u, default_app_paths.size());
-    const base::FilePath& default_app_foreground_path = default_app_paths[0];
-    const base::FilePath& default_app_background_path = default_app_paths[1];
-    if (default_app_foreground_path.empty() ||
-        !base::PathExists(default_app_foreground_path)) {
-      return std::make_unique<ArcAppIcon::ReadResult>(
-          false /* error */, true /* request_to_install */, scale_factor,
-          false /* resize_allowed */,
-          std::vector<std::string>() /* unsafe_icon_data */);
-    }
-
-    if (default_app_background_path.empty() ||
-        !base::PathExists(default_app_background_path)) {
-      // For non-adaptive icon, there could be a |default_app_foreground_path|
-      // file only without a |default_app_background_path| file.
+    // For the migration scenario, when the foreground icon file doesn't
+    // exist, load the original icon file to resolve the icon lag issue.
+    if (!paths[2].empty() && base::PathExists(paths[2])) {
       return ArcAppIcon::ReadFile(true /* request_to_install */, scale_factor,
-                                  true /* resize_allowed */,
-                                  default_app_foreground_path);
+                                  false /* resize_allowed */, paths[2]);
     }
 
-    return ArcAppIcon::ReadFiles(
-        true /* request_to_install */, scale_factor, true /* resize_allowed */,
-        default_app_foreground_path, default_app_background_path);
+    // Check and read the default app icon path for the default app if the files
+    // exist.
+    return ReadDefaultAppAdaptiveIconFiles(scale_factor, default_app_paths);
   }
 
   if (!base::PathExists(background_path)) {
@@ -481,6 +472,48 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadAdaptiveIconFiles(
   return ArcAppIcon::ReadFiles(false /* request_to_install */, scale_factor,
                                false /* resize_allowed */, foreground_path,
                                background_path);
+}
+
+// static
+std::unique_ptr<ArcAppIcon::ReadResult>
+ArcAppIcon::ReadDefaultAppAdaptiveIconFiles(
+    ui::ScaleFactor scale_factor,
+    const std::vector<base::FilePath>& default_app_paths) {
+  // Check the default app icon path, and read the icon files for the default
+  // app if the files exist.
+  DCHECK_EQ(3u, default_app_paths.size());
+  const base::FilePath& default_app_foreground_path = default_app_paths[0];
+  const base::FilePath& default_app_background_path = default_app_paths[1];
+  if (default_app_foreground_path.empty() ||
+      !base::PathExists(default_app_foreground_path)) {
+    // For the migration scenario, when the foreground icon file doesn't
+    // exist, load the original icon file to resolve the icon lag issue for
+    // the default app.
+    if (default_app_paths.size() == 3u && !default_app_paths[2].empty() &&
+        base::PathExists(default_app_paths[2])) {
+      return ArcAppIcon::ReadFile(true /* request_to_install */, scale_factor,
+                                  true /* resize_allowed */,
+                                  default_app_paths[2]);
+    }
+
+    return std::make_unique<ArcAppIcon::ReadResult>(
+        false /* error */, true /* request_to_install */, scale_factor,
+        false /* resize_allowed */,
+        std::vector<std::string>() /* unsafe_icon_data */);
+  }
+
+  if (default_app_background_path.empty() ||
+      !base::PathExists(default_app_background_path)) {
+    // For non-adaptive icon, there could be a |default_app_foreground_path|
+    // file only without a |default_app_background_path| file.
+    return ArcAppIcon::ReadFile(true /* request_to_install */, scale_factor,
+                                true /* resize_allowed */,
+                                default_app_foreground_path);
+  }
+
+  return ArcAppIcon::ReadFiles(
+      true /* request_to_install */, scale_factor, true /* resize_allowed */,
+      default_app_foreground_path, default_app_background_path);
 }
 
 // static

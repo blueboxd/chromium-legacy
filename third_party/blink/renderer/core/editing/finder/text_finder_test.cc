@@ -11,12 +11,15 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/find_in_page_coordinates.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -25,6 +28,8 @@
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -59,6 +64,14 @@ class TextFinderTest : public testing::Test {
   frame_test_helpers::WebViewHelper web_view_helper_;
   Persistent<Document> document_;
   Persistent<TextFinder> text_finder_;
+};
+
+class TextFinderSimTest : public SimTest {
+ public:
+  TextFinder& GetTextFinder() {
+    return WebLocalFrameImpl::FromFrame(GetDocument().GetFrame())
+        ->EnsureTextFinder();
+  }
 };
 
 v8::Local<v8::Value> TextFinderTest::EvalJs(const std::string& script) {
@@ -714,6 +727,47 @@ TEST_F(TextFinderTest, BeforeMatchEventRemoveElement) {
 
 // TODO(jarhar): Write more tests here once we decide on a behavior here:
 // https://github.com/WICG/display-locking/issues/150
+
+TEST_F(TextFinderSimTest, BeforeMatchEventAsyncExpandHighlight) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      .hidden {
+        content-visibility: hidden-matchable;
+      }
+    </style>
+
+    <div id=hiddenid class=hidden>hidden</div>
+
+    <script>
+      hiddenid.addEventListener('beforematch', () => {
+        setTimeout(() => {
+          hiddenid.classList.remove('hidden');
+        }, 0);
+      });
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto forced_activatable_locks = GetDocument()
+                                      .GetDisplayLockDocumentState()
+                                      .GetScopedForceActivatableLocks();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kFindInPage);
+  GetTextFinder().Find(/*identifier=*/0, WebString(String("hidden")),
+                       *mojom::blink::FindOptions::New(),
+                       /*wrap_within_frame=*/false);
+
+  Compositor().BeginFrame();
+  Compositor().BeginFrame();
+
+  HeapVector<Member<DocumentMarker>> markers =
+      GetDocument().Markers().Markers();
+  ASSERT_EQ(markers.size(), 1u);
+  DocumentMarker* marker = markers[0];
+  EXPECT_TRUE(marker->GetType() == DocumentMarker::kTextMatch);
+}
 
 TEST_F(TextFinderTest, FindTextAcrossCommentNode) {
   GetDocument().body()->setInnerHTML(

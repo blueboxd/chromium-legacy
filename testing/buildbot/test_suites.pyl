@@ -1201,6 +1201,7 @@
         }
       },
       'content_shell_crash_test': {},
+      'extension_docserver_python_unittests': {},
       'flatbuffers_unittests': {},
       'grit_python_unittests': {},
       'metrics_python_tests': {},
@@ -1948,6 +1949,9 @@
 
     'gpu_angle_end2end_gtests': {
       'angle_end2end_tests': {
+        'android_args': [
+          '--shard-timeout=180'
+        ],
         'desktop_args': [
           '--use-gpu-in-tests',
         ],
@@ -3359,7 +3363,6 @@
       'accessibility_unittests': {},
       'aura_unittests': {},
       'browser_tests': {
-        'experiment_percentage': 100,
         'swarming': {
           'shards': 10
         },

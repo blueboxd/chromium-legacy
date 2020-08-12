@@ -442,10 +442,17 @@ void TextFinder::DidFindMatch(int identifier,
           active_match_index_ + 1, identifier);
     }
   }
-  OwnerFrame().GetFrame()->GetDocument()->Markers().AddTextMatchMarker(
-      EphemeralRange(result_range),
-      found_active_match ? TextMatchMarker::MatchStatus::kActive
-                         : TextMatchMarker::MatchStatus::kInactive);
+  DocumentMarkerController& marker_controller =
+      OwnerFrame().GetFrame()->GetDocument()->Markers();
+  EphemeralRange ephemeral_result_range(result_range);
+  // Scroll() may have added a match marker to this range already.
+  if (!marker_controller.FirstMarkerIntersectingEphemeralRange(
+          ephemeral_result_range, DocumentMarker::MarkerTypes::TextMatch())) {
+    marker_controller.AddTextMatchMarker(
+        EphemeralRange(result_range),
+        found_active_match ? TextMatchMarker::MatchStatus::kActive
+                           : TextMatchMarker::MatchStatus::kInactive);
+  }
 
   find_matches_cache_.push_back(FindMatch(result_range, current_total_matches));
 }
@@ -824,6 +831,21 @@ void TextFinder::Scroll(std::unique_ptr<AsyncScrollContext> context) {
     OwnerFrame().LocalRoot()->FrameWidget()->ZoomToFindInPageRect(
         OwnerFrame().GetFrameView()->ConvertToRootFrame(
             ComputeTextRect(EphemeralRange(context->range))));
+  }
+
+  // DidFindMatch will race against this to add a text match marker to this
+  // range. In the case where the match is hidden and the beforematch event (or
+  // anything else) reveals the range in between DidFindMatch and this function,
+  // we need to add the marker again or else it won't show up at all.
+  EphemeralRange ephemeral_range(context->range);
+  DocumentMarkerController& marker_controller =
+      OwnerFrame().GetFrame()->GetDocument()->Markers();
+  if (!context->options.run_synchronously_for_testing &&
+      !marker_controller.FirstMarkerIntersectingEphemeralRange(
+          ephemeral_range, DocumentMarker::MarkerTypes::TextMatch())) {
+    marker_controller.AddTextMatchMarker(ephemeral_range,
+                                         TextMatchMarker::MatchStatus::kActive);
+    SetMarkerActive(context->range, true);
   }
 }
 

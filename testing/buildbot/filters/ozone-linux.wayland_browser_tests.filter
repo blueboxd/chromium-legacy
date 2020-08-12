@@ -30,6 +30,10 @@
 -WebRtcDesktopCaptureBrowserTest.RunsScreenshareFromOneTabToAnother
 -WebRtcGetDisplayMediaBrowserTestWithPicker.GetDisplayMediaVideo
 -WebRtcGetDisplayMediaBrowserTestWithPicker.GetDisplayMediaVideoAndAudio
+-BrowserViewTest.GetAccessibleTabModalDialogTree
+-IconLoaderBrowserTest.LoadGroup
+-PrintBrowserTest.PDFPluginNotKeyboardFocusable
+-LocalNTPTest.EmbeddedSearchAPIOnlyAvailableOnNTP
 
 # Flaky:
 -All/ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsWhitelisted/0

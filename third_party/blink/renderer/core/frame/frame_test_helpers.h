@@ -236,10 +236,6 @@ class TestWebWidgetClient : public WebWidgetClient,
 
   // WebWidgetClient overrides;
   void ScheduleAnimation() override { animation_scheduled_ = true; }
-  void SetPageScaleStateAndLimits(float page_scale_factor,
-                                  bool is_pinch_gesture_active,
-                                  float minimum,
-                                  float maximum) override;
   void DidMeaningfulLayout(WebMeaningfulLayout) override;
   viz::FrameSinkId GetFrameSinkId() override;
   void RequestNewLayerTreeFrameSink(

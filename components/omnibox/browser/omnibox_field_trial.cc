@@ -803,29 +803,27 @@ std::string OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(
 int OmniboxFieldTrial::OnDeviceHeadSuggestMaxScoreForNonUrlInput(
     bool is_incognito,
     const int default_score) {
-  const base::Feature* feature =
-      is_incognito ? &omnibox::kOnDeviceHeadProviderIncognito
-                   : &omnibox::kOnDeviceHeadProviderNonIncognito;
-  return base::GetFieldTrialParamByFeatureAsInt(
-      *feature, kOnDeviceHeadSuggestMaxScoreForNonUrlInput, default_score);
+  return is_incognito
+             ? default_score
+             : base::GetFieldTrialParamByFeatureAsInt(
+                   omnibox::kOnDeviceHeadProviderNonIncognito,
+                   kOnDeviceHeadSuggestMaxScoreForNonUrlInput, default_score);
 }
 
 int OmniboxFieldTrial::OnDeviceHeadSuggestDelaySuggestRequestMs(
     bool is_incognito) {
-  const base::Feature* feature =
-      is_incognito ? &omnibox::kOnDeviceHeadProviderIncognito
-                   : &omnibox::kOnDeviceHeadProviderNonIncognito;
-  return base::GetFieldTrialParamByFeatureAsInt(
-      *feature, kOnDeviceHeadSuggestDelaySuggestRequestMs, 0);
+  return is_incognito ? 0
+                      : base::GetFieldTrialParamByFeatureAsInt(
+                            omnibox::kOnDeviceHeadProviderNonIncognito,
+                            kOnDeviceHeadSuggestDelaySuggestRequestMs, 0);
 }
 
 int OmniboxFieldTrial::OnDeviceSearchProviderDefaultLoaderTimeoutMs(
     bool is_incognito) {
-  const base::Feature* feature =
-      is_incognito ? &omnibox::kOnDeviceHeadProviderIncognito
-                   : &omnibox::kOnDeviceHeadProviderNonIncognito;
-  return base::GetFieldTrialParamByFeatureAsInt(
-      *feature, kOnDeviceSearchProviderDefaultLoaderTimeoutMs, 0);
+  return is_incognito ? 0
+                      : base::GetFieldTrialParamByFeatureAsInt(
+                            omnibox::kOnDeviceHeadProviderNonIncognito,
+                            kOnDeviceSearchProviderDefaultLoaderTimeoutMs, 0);
 }
 
 std::string OmniboxFieldTrial::OnDeviceHeadSuggestDemoteMode() {

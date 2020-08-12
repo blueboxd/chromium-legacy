@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_Z
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_DESCRIPTION_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_DISPLAY_TEXT_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_GROUP_ID_PREFIX;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_GROUP_COLLAPSED_BY_DEFAULT_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_IS_DELETABLE_PREFIX;
@@ -27,6 +28,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult.GroupDetails;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.url.GURL;
@@ -44,7 +46,7 @@ public class CachedZeroSuggestionsManager {
     public static void saveToCache(AutocompleteResult resultToCache) {
         final SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
         cacheSuggestionList(manager, resultToCache.getSuggestionsList());
-        cacheGroupHeaders(manager, resultToCache.getGroupHeaders());
+        cacheGroupsDetails(manager, resultToCache.getGroupsDetails());
     }
 
     /**
@@ -55,10 +57,10 @@ public class CachedZeroSuggestionsManager {
         final SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
         List<OmniboxSuggestion> suggestions =
                 CachedZeroSuggestionsManager.readCachedSuggestionList(manager);
-        SparseArray<String> groupHeaders =
-                CachedZeroSuggestionsManager.readCachedGroupHeaders(manager);
-        removeInvalidSuggestionsAndGroupHeaders(suggestions, groupHeaders);
-        return new AutocompleteResult(suggestions, groupHeaders);
+        SparseArray<GroupDetails> groupsDetails =
+                CachedZeroSuggestionsManager.readCachedGroupsDetails(manager);
+        removeInvalidSuggestionsAndGroupsDetails(suggestions, groupsDetails);
+        return new AutocompleteResult(suggestions, groupsDetails);
     }
 
     /**
@@ -172,58 +174,68 @@ public class CachedZeroSuggestionsManager {
     }
 
     /**
-     * Cache suggestion group headers in shared preferences.
+     * Cache suggestion group details in shared preferences.
      *
      * @param prefs Shared preferences manager.
+     * @param groupsDetails Map of Group ID to GroupDetails.
      */
-    private static void cacheGroupHeaders(
-            SharedPreferencesManager prefs, SparseArray<String> groupHeaders) {
-        final int size = groupHeaders.size();
+    private static void cacheGroupsDetails(
+            SharedPreferencesManager prefs, SparseArray<GroupDetails> groupsDetails) {
+        final int size = groupsDetails.size();
         prefs.writeInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_LIST_SIZE, size);
         for (int i = 0; i < size; i++) {
+            final GroupDetails details = groupsDetails.valueAt(i);
+            String title = details.title;
+            boolean collapsedByDefault = details.collapsedByDefault;
+
             prefs.writeInt(
-                    KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX.createKey(i), groupHeaders.keyAt(i));
-            prefs.writeString(KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX.createKey(i),
-                    groupHeaders.valueAt(i));
+                    KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX.createKey(i), groupsDetails.keyAt(i));
+            prefs.writeString(KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX.createKey(i), title);
+            prefs.writeBoolean(
+                    KEY_ZERO_SUGGEST_HEADER_GROUP_COLLAPSED_BY_DEFAULT_PREFIX.createKey(i),
+                    collapsedByDefault);
         }
     }
 
     /**
-     * Restore group headers from shared preferences.
+     * Restore group details from shared preferences.
      *
      * @param prefs Shared preferences manager.
-     * @return Map of group ID to header text previously cached in shared preferences.
+     * @return Map of group ID to GroupDetails previously cached in shared preferences.
      */
     @NonNull
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    static SparseArray<String> readCachedGroupHeaders(SharedPreferencesManager prefs) {
+    static SparseArray<GroupDetails> readCachedGroupsDetails(SharedPreferencesManager prefs) {
         final int size = prefs.readInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_LIST_SIZE, 0);
-        final SparseArray<String> groupHeaders = new SparseArray<>(size);
+        final SparseArray<GroupDetails> groupsDetails = new SparseArray<>(size);
 
         for (int i = 0; i < size; i++) {
             int groupId = prefs.readInt(KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX.createKey(i),
                     OmniboxSuggestion.INVALID_GROUP);
             String groupTitle =
                     prefs.readString(KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX.createKey(i), null);
-            groupHeaders.put(groupId, groupTitle);
+            boolean collapsedByDefault = prefs.readBoolean(
+                    KEY_ZERO_SUGGEST_HEADER_GROUP_COLLAPSED_BY_DEFAULT_PREFIX.createKey(i), false);
+
+            groupsDetails.put(groupId, new GroupDetails(groupTitle, collapsedByDefault));
         }
-        return groupHeaders;
+        return groupsDetails;
     }
 
     /**
-     * Remove all invalid entries for group headers and omnibox suggestions.
+     * Remove all invalid entries for group details map and omnibox suggestions list.
      *
      * @param suggestions List of suggestions to scan for invalid entries.
-     * @param groupHeaders Group headers to scan for invalid entries.
+     * @param groupsDetails Map of GroupDetails to scan for invalid entries.
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    static void removeInvalidSuggestionsAndGroupHeaders(
-            List<OmniboxSuggestion> suggestions, SparseArray<String> groupHeaders) {
-        // Remove all group headers that have invalid index or title.
-        for (int index = groupHeaders.size() - 1; index >= 0; index--) {
-            if (groupHeaders.keyAt(index) == OmniboxSuggestion.INVALID_GROUP
-                    || TextUtils.isEmpty(groupHeaders.valueAt(index))) {
-                groupHeaders.removeAt(index);
+    static void removeInvalidSuggestionsAndGroupsDetails(
+            List<OmniboxSuggestion> suggestions, SparseArray<GroupDetails> groupsDetails) {
+        // Remove all group details that have invalid index or title.
+        for (int index = groupsDetails.size() - 1; index >= 0; index--) {
+            if (groupsDetails.keyAt(index) == OmniboxSuggestion.INVALID_GROUP
+                    || TextUtils.isEmpty(groupsDetails.valueAt(index).title)) {
+                groupsDetails.removeAt(index);
             }
         }
 
@@ -233,7 +245,7 @@ public class CachedZeroSuggestionsManager {
             final int groupId = suggestion.getGroupId();
             if (!suggestion.getUrl().isValid() || suggestion.getUrl().isEmpty()
                     || (groupId != OmniboxSuggestion.INVALID_GROUP
-                            && groupHeaders.indexOfKey(groupId) < 0)) {
+                            && groupsDetails.indexOfKey(groupId) < 0)) {
                 suggestions.remove(index);
             }
         }

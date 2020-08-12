@@ -524,7 +524,14 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(1, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordVisitOnNewOrigin) {
+#if defined(OS_WIN) || defined(OS_LINUX)
+// Flaky: https://crbug.com/1115238
+#define MAYBE_RecordVisitOnNewOrigin DISABLED_RecordVisitOnNewOrigin
+#else
+#define MAYBE_RecordVisitOnNewOrigin RecordVisitOnNewOrigin
+#endif
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
+                       MAYBE_RecordVisitOnNewOrigin) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_small_frame_size.html",
                                        false);
   AdvanceMeaningfulPlaybackTime();

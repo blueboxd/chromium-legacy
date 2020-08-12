@@ -23,11 +23,6 @@
       "transform": 1
     },
     {
-      "name": "LayoutIFrame IFRAME id='subframe'",
-      "bounds": [450, 225],
-      "transform": 2
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [428, 324],
       "transform": 2

@@ -108,4 +108,20 @@ void InputDeviceFactoryEvdevProxy::GetGesturePropertiesService(
                      input_device_factory_, std::move(receiver)));
 }
 
+void InputDeviceFactoryEvdevProxy::PlayVibrationEffect(
+    int id,
+    uint8_t amplitude,
+    uint16_t duration_millis) {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&InputDeviceFactoryEvdev::PlayVibrationEffect,
+                     input_device_factory_, id, amplitude, duration_millis));
+}
+
+void InputDeviceFactoryEvdevProxy::StopVibration(int id) {
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&InputDeviceFactoryEvdev::StopVibration,
+                                        input_device_factory_, id));
+}
+
 }  // namespace ui

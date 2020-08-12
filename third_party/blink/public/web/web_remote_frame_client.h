@@ -68,6 +68,10 @@ class WebRemoteFrameClient {
   // Called when the local root's capture sequence number has changed.
   virtual void UpdateCaptureSequenceNumber(uint32_t sequence_number) {}
 
+  // Called when the local page scale factor changed.
+  virtual void PageScaleFactorChanged(float page_scale_factor,
+                                      bool is_pinch_gesture_active) {}
+
  protected:
   virtual ~WebRemoteFrameClient() = default;
 };

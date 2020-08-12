@@ -110,6 +110,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       network::mojom::CredentialsMode,
       RejectCoepUnsafeNone reject_coep_unsafe_none) override;
   bool IsOffMainThreadScriptFetchDisabled() override;
+  WorkerToken GetWorkerToken() const override { return token_; }
 
   // Called by the bindings (dedicated_worker_global_scope.idl).
   const String name() const;
@@ -142,8 +143,6 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
 
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
 
-  // TODO(chrisha): Lift this up to WorkerGlobalScope once all worker types
-  // have tokens.
   const DedicatedWorkerToken token_;
   Member<WorkerAnimationFrameProvider> animation_frame_provider_;
   RejectCoepUnsafeNone reject_coep_unsafe_none_ = RejectCoepUnsafeNone(false);

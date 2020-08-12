@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_background.h"
+#include "chrome/browser/ui/views/read_later/read_later_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -731,6 +733,12 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
     gfx::Size size = apps_page_shortcut_->GetPreferredSize();
     width += size.width() + bookmark_bar_button_padding;
   }
+  if (read_later_button_) {
+    gfx::Size separator_size = read_later_separator_view_->GetPreferredSize();
+    gfx::Size size = read_later_button_->GetPreferredSize();
+    width +=
+        separator_size.width() + size.width() + bookmark_bar_button_padding;
+  }
 
   return gfx::Size(width, height);
 }
@@ -785,6 +793,13 @@ void BookmarkBarView::Layout() {
               bookmarks_separator_pref.width();
   if (other_bookmarks_button_->GetVisible())
     max_x -= other_bookmarks_pref.width() + bookmark_bar_button_padding;
+
+  if (read_later_button_) {
+    if (bookmarks_separator_view_->GetVisible())
+      max_x -= bookmarks_separator_pref.width();
+    max_x -= read_later_button_->GetPreferredSize().width() +
+             bookmark_bar_button_padding;
+  }
 
   // Start with the apps page shortcut button.
   if (apps_page_shortcut_->GetVisible()) {
@@ -857,6 +872,19 @@ void BookmarkBarView::Layout() {
     other_bookmarks_button_->SetBounds(x, y, other_bookmarks_pref.width(),
                                        button_height);
     x += other_bookmarks_pref.width() + bookmark_bar_button_padding;
+  }
+
+  // Read-later button and separator.
+  if (read_later_button_) {
+    gfx::Size read_later_separator_pref =
+        read_later_separator_view_->GetPreferredSize();
+    gfx::Size read_later_pref = read_later_button_->GetPreferredSize();
+    read_later_separator_view_->SetBounds(
+        x, center_y(read_later_separator_pref.height()),
+        read_later_separator_pref.width(), read_later_separator_pref.height());
+    x += read_later_separator_pref.width();
+    read_later_button_->SetBounds(x, y, read_later_pref.width(), button_height);
+    x += read_later_pref.width() + bookmark_bar_button_padding;
   }
 }
 
@@ -1416,6 +1444,13 @@ void BookmarkBarView::Init() {
   other_bookmarks_button_ = AddChildView(CreateOtherBookmarksButton());
   // We'll re-enable when the model is loaded.
   other_bookmarks_button_->SetEnabled(false);
+
+  if (base::FeatureList::IsEnabled(features::kReadLater)) {
+    read_later_separator_view_ =
+        AddChildView(std::make_unique<ButtonSeparatorView>());
+    read_later_button_ =
+        AddChildView(std::make_unique<ReadLaterButton>(browser_));
+  }
 
   profile_pref_registrar_.Init(browser_->profile()->GetPrefs());
   profile_pref_registrar_.Add(

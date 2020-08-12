@@ -8802,9 +8802,9 @@ interface VideoFrame
     getter format
     getter planes
     getter timestamp
-    method close
     method constructor
     method createImageBitmap
+    method destroy
 interface VideoPlaybackQuality
     attribute @@toStringTag
     getter corruptedVideoFrames

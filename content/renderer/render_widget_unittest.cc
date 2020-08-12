@@ -209,6 +209,9 @@ int InteractiveRenderWidget::next_routing_id_ = 0;
 
 class RenderWidgetUnittest : public testing::Test {
  public:
+  explicit RenderWidgetUnittest(bool is_for_nested_main_frame = false)
+      : is_for_nested_main_frame_(is_for_nested_main_frame) {}
+
   void SetUp() override {
     mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget_remote;
     mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>
@@ -243,7 +246,7 @@ class RenderWidgetUnittest : public testing::Test {
     web_frame_widget_ = blink::WebFrameWidget::CreateForMainFrame(
         widget_.get(), web_local_frame_, frame_widget_host.Unbind(),
         std::move(frame_widget_receiver), widget_host.Unbind(),
-        std::move(widget_receiver));
+        std::move(widget_receiver), is_for_nested_main_frame_);
     widget_->Init(web_frame_widget_, blink::ScreenInfo());
     web_view_->DidAttachLocalMainFrame();
   }
@@ -284,6 +287,7 @@ class RenderWidgetUnittest : public testing::Test {
   FakeCompositorDependencies compositor_deps_;
   std::unique_ptr<InteractiveRenderWidget> widget_;
   base::HistogramTester histogram_tester_;
+  const bool is_for_nested_main_frame_;
 };
 
 class RenderWidgetExternalWidgetUnittest : public testing::Test {
@@ -580,9 +584,16 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
       const blink::DeviceEmulationParams& params) override {}
 };
 
+class RenderWidgetSubFrameUnittest : public RenderWidgetUnittest {
+ public:
+  RenderWidgetSubFrameUnittest()
+      : RenderWidgetUnittest(/*is_for_nested_main_frame=*/true) {}
+};
+
 // Tests that the value of VisualProperties::is_pinch_gesture_active is
 // propagated to the LayerTreeHost when properties are synced for subframes.
-TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
+TEST_F(RenderWidgetSubFrameUnittest,
+       ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
   cc::LayerTreeHost* layer_tree_host = widget()->layer_tree_host();
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
   blink::VisualProperties visual_properties;

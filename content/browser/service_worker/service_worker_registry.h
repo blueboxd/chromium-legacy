@@ -202,7 +202,6 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
                                      StatusCallback callback);
   void StoreUncommittedResourceId(int64_t resource_id, const GURL& origin);
   void DoomUncommittedResource(int64_t resource_id);
-  void DoomUncommittedResources(const std::vector<int64_t>& resource_ids);
   void GetUserData(int64_t registration_id,
                    const std::vector<std::string>& keys,
                    GetUserDataCallback callback);
@@ -269,6 +268,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   // what "findable" means and when a registration is returned.
   base::Optional<scoped_refptr<ServiceWorkerRegistration>>
   FindFromLiveRegistrationsForId(int64_t registration_id);
+
+  void DoomUncommittedResources(const std::vector<int64_t>& resource_ids);
 
   void DidFindRegistrationForClientUrl(
       const GURL& client_url,

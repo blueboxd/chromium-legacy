@@ -3665,27 +3665,476 @@ constexpr auto inplace_merge(Range&& range,
 // [includes] includes
 // Reference: https://wg21.link/includes
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The ranges `[first1, last1)` and `[first2, last2)` are sorted
+// with respect to `comp` and `proj1` or `proj2`, respectively.
+//
+// Returns: `true` if and only if `[first2, last2)` is a subsequence of
+// `[first1, last1)`.
+//
+// Complexity: At most `2 * ((last1 - first1) + (last2 - first2)) - 1`
+// comparisons and applications of each projection.
+//
+// Reference: https://wg21.link/includes#:~:text=ranges::includes(I1
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<InputIterator1>,
+          typename = internal::iterator_category_t<InputIterator2>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator1, Proj1>,
+                                       projected<InputIterator2, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator2, Proj2>,
+                                       projected<InputIterator1, Proj1>>>
+constexpr auto includes(InputIterator1 first1,
+                        InputIterator1 last1,
+                        InputIterator2 first2,
+                        InputIterator2 last2,
+                        Comp comp = {},
+                        Proj1 proj1 = {},
+                        Proj2 proj2 = {}) {
+  // Needs to opt-in to all permutations, since std::includes expects
+  // comp(proj1(lhs), proj2(rhs)) and comp(proj2(lhs), proj1(rhs)) to compile.
+  return std::includes(
+      first1, last1, first2, last2,
+      internal::PermutedProjectedBinaryPredicate(comp, proj1, proj2));
+}
+
+// Preconditions: The ranges `range1` and `range2` are sorted with respect to
+// `comp` and `proj1` or `proj2`, respectively.
+//
+// Returns: `true` if and only if `range2` is a subsequence of `range1`.
+//
+// Complexity: At most `2 * (size(range1) + size(range2)) - 1` comparisons and
+// applications of each projection.
+//
+// Reference: https://wg21.link/includes#:~:text=ranges::includes(R1
+template <typename Range1,
+          typename Range2,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range2>, Proj2>,
+                                       projected<iterator_t<Range1>, Proj1>>>
+constexpr auto includes(Range1&& range1,
+                        Range2&& range2,
+                        Comp comp = {},
+                        Proj1 proj1 = {},
+                        Proj2 proj2 = {}) {
+  return ranges::includes(ranges::begin(range1), ranges::end(range1),
+                          ranges::begin(range2), ranges::end(range2),
+                          std::move(comp), std::move(proj1), std::move(proj2));
+}
 
 // [set.union] set_union
 // Reference: https://wg21.link/set.union
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The ranges `[first1, last1)` and `[first2, last2)` are sorted
+// with respect to `comp` and `proj1` or `proj2`, respectively. The resulting
+// range does not overlap with either of the original ranges.
+//
+// Effects: Constructs a sorted union of the elements from the two ranges; that
+// is, the set of elements that are present in one or both of the ranges.
+//
+// Returns: The end of the constructed range.
+//
+// Complexity: At most `2 * ((last1 - first1) + (last2 - first2)) - 1`
+// comparisons and applications of each projection.
+//
+// Remarks: Stable. If `[first1, last1)` contains `m` elements that are
+// equivalent to each other and `[first2, last2)` contains `n` elements that are
+// equivalent to them, then all `m` elements from the first range are copied to
+// the output range, in order, and then the final `max(n - m , 0)` elements from
+// the second range are copied to the output range, in order.
+//
+// Reference: https://wg21.link/set.union#:~:text=ranges::set_union(I1
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename OutputIterator,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<InputIterator1>,
+          typename = internal::iterator_category_t<InputIterator2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator1, Proj1>,
+                                       projected<InputIterator2, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator2, Proj2>,
+                                       projected<InputIterator1, Proj1>>>
+constexpr auto set_union(InputIterator1 first1,
+                         InputIterator1 last1,
+                         InputIterator2 first2,
+                         InputIterator2 last2,
+                         OutputIterator result,
+                         Comp comp = {},
+                         Proj1 proj1 = {},
+                         Proj2 proj2 = {}) {
+  // Needs to opt-in to all permutations, since std::set_union expects
+  // comp(proj1(lhs), proj2(rhs)) and comp(proj2(lhs), proj1(rhs)) to compile.
+  return std::set_union(
+      first1, last1, first2, last2, result,
+      internal::PermutedProjectedBinaryPredicate(comp, proj1, proj2));
+}
+
+// Preconditions: The ranges `range1` and `range2` are sorted with respect to
+// `comp` and `proj1` or `proj2`, respectively. The resulting range does not
+// overlap with either of the original ranges.
+//
+// Effects: Constructs a sorted union of the elements from the two ranges; that
+// is, the set of elements that are present in one or both of the ranges.
+//
+// Returns: The end of the constructed range.
+//
+// Complexity: At most `2 * (size(range1) + size(range2)) - 1` comparisons and
+// applications of each projection.
+//
+// Remarks: Stable. If `range1` contains `m` elements that are equivalent to
+// each other and `range2` contains `n` elements that are equivalent to them,
+// then all `m` elements from the first range are copied to the output range, in
+// order, and then the final `max(n - m , 0)` elements from the second range are
+// copied to the output range, in order.
+//
+// Reference: https://wg21.link/set.union#:~:text=ranges::set_union(R1
+template <typename Range1,
+          typename Range2,
+          typename OutputIterator,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range2>, Proj2>,
+                                       projected<iterator_t<Range1>, Proj1>>>
+constexpr auto set_union(Range1&& range1,
+                         Range2&& range2,
+                         OutputIterator result,
+                         Comp comp = {},
+                         Proj1 proj1 = {},
+                         Proj2 proj2 = {}) {
+  return ranges::set_union(ranges::begin(range1), ranges::end(range1),
+                           ranges::begin(range2), ranges::end(range2), result,
+                           std::move(comp), std::move(proj1), std::move(proj2));
+}
 
 // [set.intersection] set_intersection
 // Reference: https://wg21.link/set.intersection
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The ranges `[first1, last1)` and `[first2, last2)` are sorted
+// with respect to `comp` and `proj1` or `proj2`, respectively. The resulting
+// range does not overlap with either of the original ranges.
+//
+// Effects: Constructs a sorted intersection of the elements from the two
+// ranges; that is, the set of elements that are present in both of the ranges.
+//
+// Returns: The end of the constructed range.
+//
+// Complexity: At most `2 * ((last1 - first1) + (last2 - first2)) - 1`
+// comparisons and applications of each projection.
+//
+// Remarks: Stable. If `[first1, last1)` contains `m` elements that are
+// equivalent to each other and `[first2, last2)` contains `n` elements that are
+// equivalent to them, the first `min(m, n)` elements are copied from the first
+// range to the output range, in order.
+//
+// Reference:
+// https://wg21.link/set.intersection#:~:text=ranges::set_intersection(I1
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename OutputIterator,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<InputIterator1>,
+          typename = internal::iterator_category_t<InputIterator2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator1, Proj1>,
+                                       projected<InputIterator2, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator2, Proj2>,
+                                       projected<InputIterator1, Proj1>>>
+constexpr auto set_intersection(InputIterator1 first1,
+                                InputIterator1 last1,
+                                InputIterator2 first2,
+                                InputIterator2 last2,
+                                OutputIterator result,
+                                Comp comp = {},
+                                Proj1 proj1 = {},
+                                Proj2 proj2 = {}) {
+  // Needs to opt-in to all permutations, since std::set_intersection expects
+  // comp(proj1(lhs), proj2(rhs)) and comp(proj2(lhs), proj1(rhs)) to compile.
+  return std::set_intersection(
+      first1, last1, first2, last2, result,
+      internal::PermutedProjectedBinaryPredicate(comp, proj1, proj2));
+}
+
+// Preconditions: The ranges `range1` and `range2` are sorted with respect to
+// `comp` and `proj1` or `proj2`, respectively. The resulting range does not
+// overlap with either of the original ranges.
+//
+// Effects: Constructs a sorted intersection of the elements from the two
+// ranges; that is, the set of elements that are present in both of the ranges.
+//
+// Returns: The end of the constructed range.
+//
+// Complexity: At most `2 * (size(range1) + size(range2)) - 1` comparisons and
+// applications of each projection.
+//
+// Remarks: Stable. If `range1` contains `m` elements that are equivalent to
+// each other and `range2` contains `n` elements that are equivalent to them,
+// the first `min(m, n)` elements are copied from the first range to the output
+// range, in order.
+//
+// Reference:
+// https://wg21.link/set.intersection#:~:text=ranges::set_intersection(R1
+template <typename Range1,
+          typename Range2,
+          typename OutputIterator,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range2>, Proj2>,
+                                       projected<iterator_t<Range1>, Proj1>>>
+constexpr auto set_intersection(Range1&& range1,
+                                Range2&& range2,
+                                OutputIterator result,
+                                Comp comp = {},
+                                Proj1 proj1 = {},
+                                Proj2 proj2 = {}) {
+  return ranges::set_intersection(ranges::begin(range1), ranges::end(range1),
+                                  ranges::begin(range2), ranges::end(range2),
+                                  result, std::move(comp), std::move(proj1),
+                                  std::move(proj2));
+}
 
 // [set.difference] set_difference
 // Reference: https://wg21.link/set.difference
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The ranges `[first1, last1)` and `[first2, last2)` are sorted
+// with respect to `comp` and `proj1` or `proj2`, respectively. The resulting
+// range does not overlap with either of the original ranges.
+//
+// Effects: Copies the elements of the range `[first1, last1)` which are not
+// present in the range `[first2, last2)` to the range beginning at `result`.
+// The elements in the constructed range are sorted.
+//
+// Returns: The end of the constructed range.
+//
+// Complexity: At most `2 * ((last1 - first1) + (last2 - first2)) - 1`
+// comparisons and applications of each projection.
+//
+// Remarks: If `[first1, last1)` contains `m` elements that are equivalent to
+// each other and `[first2, last2)` contains `n` elements that are equivalent to
+// them, the last `max(m - n, 0)` elements from `[first1, last1)` are copied to
+// the output range, in order.
+//
+// Reference:
+// https://wg21.link/set.difference#:~:text=ranges::set_difference(I1
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename OutputIterator,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<InputIterator1>,
+          typename = internal::iterator_category_t<InputIterator2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator1, Proj1>,
+                                       projected<InputIterator2, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator2, Proj2>,
+                                       projected<InputIterator1, Proj1>>>
+constexpr auto set_difference(InputIterator1 first1,
+                              InputIterator1 last1,
+                              InputIterator2 first2,
+                              InputIterator2 last2,
+                              OutputIterator result,
+                              Comp comp = {},
+                              Proj1 proj1 = {},
+                              Proj2 proj2 = {}) {
+  // Needs to opt-in to all permutations, since std::set_difference expects
+  // comp(proj1(lhs), proj2(rhs)) and comp(proj2(lhs), proj1(rhs)) to compile.
+  return std::set_difference(
+      first1, last1, first2, last2, result,
+      internal::PermutedProjectedBinaryPredicate(comp, proj1, proj2));
+}
+
+// Preconditions: The ranges `range1` and `range2` are sorted with respect to
+// `comp` and `proj1` or `proj2`, respectively. The resulting range does not
+// overlap with either of the original ranges.
+//
+// Effects: Copies the elements of `range1` which are not present in `range2`
+// to the range beginning at `result`. The elements in the constructed range are
+// sorted.
+//
+// Returns: The end of the constructed range.
+//
+// Complexity: At most `2 * (size(range1) + size(range2)) - 1` comparisons and
+// applications of each projection.
+//
+// Remarks: Stable. If `range1` contains `m` elements that are equivalent to
+// each other and `range2` contains `n` elements that are equivalent to them,
+// the last `max(m - n, 0)` elements from `range1` are copied to the output
+// range, in order.
+//
+// Reference:
+// https://wg21.link/set.difference#:~:text=ranges::set_difference(R1
+template <typename Range1,
+          typename Range2,
+          typename OutputIterator,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range2>, Proj2>,
+                                       projected<iterator_t<Range1>, Proj1>>>
+constexpr auto set_difference(Range1&& range1,
+                              Range2&& range2,
+                              OutputIterator result,
+                              Comp comp = {},
+                              Proj1 proj1 = {},
+                              Proj2 proj2 = {}) {
+  return ranges::set_difference(ranges::begin(range1), ranges::end(range1),
+                                ranges::begin(range2), ranges::end(range2),
+                                result, std::move(comp), std::move(proj1),
+                                std::move(proj2));
+}
 
 // [set.symmetric.difference] set_symmetric_difference
 // Reference: https://wg21.link/set.symmetric.difference
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The ranges `[first1, last1)` and `[first2, last2)` are sorted
+// with respect to `comp` and `proj1` or `proj2`, respectively. The resulting
+// range does not overlap with either of the original ranges.
+//
+// Effects: Copies the elements of the range `[first1, last1)` that are not
+// present in the range `[first2, last2)`, and the elements of the range
+// `[first2, last2)` that are not present in the range `[first1, last1)` to the
+// range beginning at `result`. The elements in the constructed range are
+// sorted.
+//
+// Returns: The end of the constructed range.
+//
+// Complexity: At most `2 * ((last1 - first1) + (last2 - first2)) - 1`
+// comparisons and applications of each projection.
+//
+// Remarks: Stable. If `[first1, last1)` contains `m` elements that are
+// equivalent to each other and `[first2, last2)` contains `n` elements that are
+// equivalent to them, then `|m - n|` of those elements shall be copied to the
+// output range: the last `m - n` of these elements from `[first1, last1)` if
+// `m > n`, and the last `n - m` of these elements from `[first2, last2)` if
+// `m < n`. In either case, the elements are copied in order.
+//
+// Reference:
+// https://wg21.link/set.symmetric.difference#:~:text=set_symmetric_difference(I1
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename OutputIterator,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<InputIterator1>,
+          typename = internal::iterator_category_t<InputIterator2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator1, Proj1>,
+                                       projected<InputIterator2, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator2, Proj2>,
+                                       projected<InputIterator1, Proj1>>>
+constexpr auto set_symmetric_difference(InputIterator1 first1,
+                                        InputIterator1 last1,
+                                        InputIterator2 first2,
+                                        InputIterator2 last2,
+                                        OutputIterator result,
+                                        Comp comp = {},
+                                        Proj1 proj1 = {},
+                                        Proj2 proj2 = {}) {
+  // Needs to opt-in to all permutations, since std::set_symmetric_difference
+  // expects comp(proj1(lhs), proj2(rhs)) and comp(proj2(lhs), proj1(rhs)) to
+  // compile.
+  return std::set_symmetric_difference(
+      first1, last1, first2, last2, result,
+      internal::PermutedProjectedBinaryPredicate(comp, proj1, proj2));
+}
+
+// Preconditions: The ranges `range1` and `range2` are sorted with respect to
+// `comp` and `proj1` or `proj2`, respectively. The resulting range does not
+// overlap with either of the original ranges.
+//
+// Effects: Copies the elements of `range1` that are not present in `range2`,
+// and the elements of `range2` that are not present in `range1` to the range
+// beginning at `result`. The elements in the constructed range are sorted.
+//
+// Returns: The end of the constructed range.
+//
+// Complexity: At most `2 * (size(range1) + size(range2)) - 1` comparisons and
+// applications of each projection.
+//
+// Remarks: Stable. If `range1` contains `m` elements that are equivalent to
+// each other and `range2` contains `n` elements that are equivalent to them,
+// then `|m - n|` of those elements shall be copied to the output range: the
+// last `m - n` of these elements from `range1` if `m > n`, and the last `n - m`
+// of these elements from `range2` if `m < n`. In either case, the elements are
+// copied in order.
+//
+// Reference:
+// https://wg21.link/set.symmetric.difference#:~:text=set_symmetric_difference(R1
+template <typename Range1,
+          typename Range2,
+          typename OutputIterator,
+          typename Comp = ranges::less,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range2>, Proj2>,
+                                       projected<iterator_t<Range1>, Proj1>>>
+constexpr auto set_symmetric_difference(Range1&& range1,
+                                        Range2&& range2,
+                                        OutputIterator result,
+                                        Comp comp = {},
+                                        Proj1 proj1 = {},
+                                        Proj2 proj2 = {}) {
+  return ranges::set_symmetric_difference(
+      ranges::begin(range1), ranges::end(range1), ranges::begin(range2),
+      ranges::end(range2), result, std::move(comp), std::move(proj1),
+      std::move(proj2));
+}
 
 // [alg.heap.operations] Heap operations
 // Reference: https://wg21.link/alg.heap.operations

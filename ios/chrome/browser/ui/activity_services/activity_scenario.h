@@ -13,8 +13,9 @@ enum class ActivityScenario {
   QRCodeImage = 1,
   HistoryEntry = 2,
   ReadingListEntry = 3,
+  BookmarkEntry = 4,
   // Highest enumerator. Recommended by Histogram metrics best practices.
-  kMaxValue = ReadingListEntry
+  kMaxValue = BookmarkEntry
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_ACTIVITY_SCENARIO_H_

@@ -1,0 +1,152 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="constants.html">
+<link rel="import" href="../../settings_shared_css.html">
+
+<dom-module id="album-item">
+  <template>
+    <style include="settings-shared cr-shared-style iron-flex">
+      :host(:not([disabled])) {
+        cursor: default;
+        display: block;
+        outline: none;
+      }
+
+      #albumContainer.personal-album {
+        margin: 8px 0;
+        width: 184px;
+      }
+
+      #albumContainer.art-album {
+        margin: 8px auto;
+        width: 512px;
+      }
+
+      #imageContainer {
+        background-color: rgba(var(--google-blue-50-rgb), .8);
+        border-radius: 4px;
+        display: block;
+      }
+
+      #imageContainer.personal-album {
+        height: 160px;
+        margin: 0 12px;
+        width: 160px;
+      }
+
+      #imageContainer.art-album {
+        height: 320px;
+        width: 512px;
+      }
+
+      #albumInfo.personal-album {
+        margin: 0 12px;
+      }
+
+      #image {
+        border-radius: 4px;
+        display: block;
+        transform: scale(1.0);
+        transition: transform 240ms;
+      }
+
+      #image.personal-album {
+        height: 160px;
+        width: 160px;
+      }
+
+      #image.art-album {
+        height: 320px;
+        width: 512px;
+      }
+
+      .selected-circle {
+        background-color: rgba(var(--google-blue-700-rgb), 1.0);
+        border-radius: 50%;
+        box-shadow: 0 3px 6px 1px rgba(0, 0, 0, .16),
+            0 1px 2px 1px rgba(0, 0, 0, .23);
+        display: none;
+        height: 22px;
+        position: absolute;
+        top: 13px;
+        width: 22px;
+        z-index: 1;
+      }
+
+      .selected-circle.personal-album {
+        left: 144px;
+      }
+
+      .selected-circle.art-album {
+        left: 558px;
+      }
+
+      .check {
+        border-bottom: 2px solid #fff;
+        border-inline-end: 2px solid #fff;
+        display: none;
+        height: 10px;
+        position: absolute;
+        top: 17px;
+        transform: rotate(45deg);
+        width: 5px;
+        z-index: 2;
+      }
+
+      .check.personal-album {
+        left: 152px;
+      }
+
+      .check.art-album {
+        left: 566px;
+      }
+
+      :host([checked]) #image {
+        border-radius: 6px;
+        box-shadow: 0 4px 8px rgba(32, 33, 36, 0.17);
+        transform: scale(0.9);
+        transition: transform 240ms;
+      }
+
+      :host([checked]) #image.personal-album {
+        transform: scale(0.8);
+      }
+
+      :host([checked]) #image.art-album {
+        transform: scale(0.9);
+      }
+
+      :host([checked]) .selected-circle {
+        display: block;
+        transition: transform 240ms;
+      }
+
+      :host([checked]) .check {
+        display: block;
+        transition: transform 240ms;
+      }
+    </style>
+    <div id="albumContainer"
+        class$="layout vertical left flex [[computeClass_(topicSource)]]">
+      <div id="imageContainer" class$="[[computeClass_(topicSource)]]"
+          aria-hidden="true">
+        <img id="image" class$="[[computeClass_(topicSource)]]" actionable
+            src="[[album.url]]" on-click="onImageClick_">
+        </img>
+        <div class$="check [[computeClass_(topicSource)]]"></div>
+        <div class$="selected-circle [[computeClass_(topicSource)]]"></div>
+      </div>
+
+      <div id="albumInfo" class$="[[computeClass_(topicSource)]]"
+          aria-hidden="true">
+        <div>[[album.title]]</div>
+        <div class="cr-secondary-text">[[album.description]]</div>
+      </div>
+    </div>
+  </template>
+  <script src="album_item.js"></script>
+</dom-module>

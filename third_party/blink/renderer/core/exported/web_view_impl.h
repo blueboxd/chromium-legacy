@@ -93,6 +93,7 @@ class WebLocalFrameImpl;
 class WebSettingsImpl;
 class WebViewClient;
 class WebFrameWidgetBase;
+class WebViewFrameWidget;
 
 namespace mojom {
 namespace blink {
@@ -433,7 +434,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidEnterFullscreen();
   void DidExitFullscreen();
 
-  void SetMainFrameWidgetBase(WebFrameWidgetBase* widget);
+  void SetMainFrameWidgetBase(WebViewFrameWidget* widget);
   WebFrameWidgetBase* MainFrameWidgetBase();
 
  private:
@@ -714,7 +715,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // The WebWidget for the main frame. This is expected to be unset when the
   // WebWidget destroys itself. This will be null if the main frame is remote.
-  WeakPersistent<WebFrameWidgetBase> web_widget_;
+  WeakPersistent<WebViewFrameWidget> web_widget_;
 
   // We defer commits when transitioning to a new page. ChromeClientImpl calls
   // StopDeferringCommits() to release this when a new page is loaded.

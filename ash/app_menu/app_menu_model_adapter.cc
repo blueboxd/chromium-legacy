@@ -94,8 +94,12 @@ base::TimeTicks AppMenuModelAdapter::GetClosingEventTime() {
 }
 
 void AppMenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
-  views::MenuModelAdapter::ExecuteCommand(id, mouse_event_flags);
+  // Note that the command execution may cause this to get deleted - for
+  // example, for search result menus, the command could open an app window
+  // causing the app list search to get cleared, destroying non-zero state
+  // search results.
   RecordExecuteCommandHistogram(GetCommandIdForHistograms(id));
+  views::MenuModelAdapter::ExecuteCommand(id, mouse_event_flags);
 }
 
 void AppMenuModelAdapter::OnMenuClosed(views::MenuItemView* menu) {

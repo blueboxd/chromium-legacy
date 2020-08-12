@@ -47,8 +47,11 @@ def CopyThirdParty(src, dest, files=None, make_init=True):
   for filename in files:
     shutil.copy(os.path.join(src, filename), os.path.join(dest_path, filename))
 
+def HasLocalThirdPartyDirectory():
+  return os.path.isdir(LOCAL_THIRD_PARTY_DIR)
+
 def main():
-  if os.path.isdir(LOCAL_THIRD_PARTY_DIR):
+  if HasLocalThirdPartyDirectory():
     try:
       shutil.rmtree(LOCAL_THIRD_PARTY_DIR, False, OnError)
     except OSError:

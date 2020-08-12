@@ -5,6 +5,7 @@
 
 from cStringIO import StringIO
 import json
+import os
 import unittest
 from zipfile import ZipFile
 
@@ -110,6 +111,7 @@ class ContentProviderUnittest(unittest.TestCase):
     self._assertContent(content, 'text/html', content_and_type)
     self.assertEqual(version, self._content_provider.GetVersion(path).Get())
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testPlainText(self):
     self._assertContent(
         u'a.txt content', 'text/plain',

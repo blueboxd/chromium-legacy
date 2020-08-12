@@ -124,7 +124,8 @@ RemoteFontFaceSource::DisplayPeriod RemoteFontFaceSource::ComputePeriod()
 
       if (GetDocument()->GetFontPreloadManager().RenderingHasBegun()) {
         if (FinishedFromMemoryCache() ||
-            finished_before_document_rendering_begin_)
+            finished_before_document_rendering_begin_ ||
+            !has_been_requested_while_pending_)
           return kSwapPeriod;
         return kFailurePeriod;
       }
@@ -152,6 +153,7 @@ RemoteFontFaceSource::RemoteFontFaceSource(CSSFontFace* css_font_face,
       phase_(kNoLimitExceeded),
       is_intervention_triggered_(ShouldTriggerWebFontsIntervention()),
       finished_before_document_rendering_begin_(false),
+      has_been_requested_while_pending_(false),
       finished_before_lcp_limit_(false) {
   DCHECK(face_);
   period_ = ComputePeriod();
@@ -357,6 +359,7 @@ RemoteFontFaceSource::CreateLoadingFallbackFontData(
   scoped_refptr<CSSCustomFontData> css_font_data = CSSCustomFontData::Create(
       this, period_ == kBlockPeriod ? CSSCustomFontData::kInvisibleFallback
                                     : CSSCustomFontData::kVisibleFallback);
+  has_been_requested_while_pending_ = true;
   return SimpleFontData::Create(temporary_font->PlatformData(), css_font_data);
 }
 

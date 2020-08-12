@@ -2636,8 +2636,11 @@ void OmniboxViewViews::ShowFullURLWithoutSchemeAndTrivialSubdomain() {
   // then set the display offset to scroll the scheme and trivial subdomain out
   // of visibility.
   GetRenderText()->SetDisplayRect(
-      gfx::Rect(current_display_rect.x(), display_url_bounds.y(),
-                display_url_bounds.width(), display_url_bounds.height()));
+      gfx::Rect(base::i18n::IsRTL()
+                    ? current_display_rect.right() - display_url_bounds.width()
+                    : current_display_rect.x(),
+                display_url_bounds.y(), display_url_bounds.width(),
+                display_url_bounds.height()));
 
   GetRenderText()->SetDisplayOffset(
       -1 * (display_url_bounds.x() - current_display_rect.x()));

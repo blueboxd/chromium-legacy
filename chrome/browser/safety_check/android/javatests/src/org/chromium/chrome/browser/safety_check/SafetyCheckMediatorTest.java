@@ -89,6 +89,8 @@ public class SafetyCheckMediatorTest {
         })
                 .when(mHandler)
                 .postDelayed(any(Runnable.class), anyLong());
+        // User is always signed in unless the test specifies otherwise.
+        when(mBridge.userSignedIn()).thenReturn(true);
     }
 
     @Test
@@ -458,5 +460,20 @@ public class SafetyCheckMediatorTest {
 
         mMediator.onCompromisedCredentialsFetchCompleted();
         assertEquals(PasswordsState.ERROR, mModel.get(PASSWORDS_STATE));
+    }
+
+    @Test
+    public void testPasswordsInitialLoadUserSignedOut() {
+        // Order: initial state is user signed out -> load ignored.
+        when(mBridge.userSignedIn()).thenReturn(false);
+        mMediator.setInitialState();
+        assertEquals(PasswordsState.SIGNED_OUT, mModel.get(PASSWORDS_STATE));
+
+        // Previous check found compromises.
+        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(20);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(18);
+        // The results of the previous check should be ignored.
+        mMediator.onSavedPasswordsFetchCompleted();
+        assertEquals(PasswordsState.SIGNED_OUT, mModel.get(PASSWORDS_STATE));
     }
 }

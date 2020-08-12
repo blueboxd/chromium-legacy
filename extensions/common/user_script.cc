@@ -91,17 +91,8 @@ UserScript::File::File(const File& other)
 
 UserScript::File::~File() {}
 
-UserScript::UserScript()
-    : run_location_(DOCUMENT_IDLE),
-      consumer_instance_type_(TAB),
-      user_script_id_(-1),
-      emulate_greasemonkey_(false),
-      match_all_frames_(false),
-      match_origin_as_fallback_(MatchOriginAsFallbackBehavior::kNever),
-      incognito_enabled_(false) {}
-
-UserScript::~UserScript() {
-}
+UserScript::UserScript() = default;
+UserScript::~UserScript() = default;
 
 // static.
 std::unique_ptr<UserScript> UserScript::CopyMetadataFrom(

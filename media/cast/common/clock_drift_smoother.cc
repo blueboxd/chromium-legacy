@@ -8,6 +8,7 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 
 namespace media {
 namespace cast {
@@ -22,8 +23,8 @@ ClockDriftSmoother::~ClockDriftSmoother() = default;
 
 base::TimeDelta ClockDriftSmoother::Current() const {
   DCHECK(!last_update_time_.is_null());
-  return base::TimeDelta::FromMicroseconds(static_cast<int64_t>(
-      estimate_us_ + 0.5));  // Round to nearest microsecond.
+  return base::TimeDelta::FromMicroseconds(
+      base::ClampRound<int64_t>(estimate_us_));
 }
 
 void ClockDriftSmoother::Reset(base::TimeTicks now,

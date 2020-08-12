@@ -359,6 +359,7 @@ class JSCViewWithNodeAvailabilityTest(unittest.TestCase):
         self._branch_utility.GetStableChannelInfo(13),
         stat_paths)
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testGetAPINodeAvailability(self):
     def assertEquals(node, actual):
       node_availabilities = {

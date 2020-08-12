@@ -7,6 +7,10 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 group("config") {
   if (is_component_build) {
     public_deps = [ "//gpu" ]
@@ -223,5 +227,20 @@ source_set("config_sources") {
       "//ui/base:features",
       "//ui/gfx/linux:gpu_memory_buffer_support_x11",
     ]
+  }
+}
+
+if (is_android) {
+  java_cpp_strings("java_switches_srcjar") {
+    # External code should depend on ":config_java" instead.
+    visibility = [ ":*" ]
+    sources = [ "gpu_switches.cc" ]
+    template = "android/java/src/org/chromium/gpu/GpuSwitches.java.tmpl"
+  }
+
+  android_library("config_java") {
+    # Right now, this only includes the Java switches. But if we need more Java
+    # files, they should be added here as necessary.
+    srcjar_deps = [ ":java_switches_srcjar" ]
   }
 }

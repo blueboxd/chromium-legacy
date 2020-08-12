@@ -66,6 +66,7 @@ class BranchUtilityTest(unittest.TestCase):
     self.assertEquals('dev', self._branch_util.NewestChannel(('dev',)))
     self.assertEquals('master', self._branch_util.NewestChannel(('master',)))
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testNewer(self):
     oldest_stable_info = ChannelInfo('stable', '963', 17)
     older_stable_info = ChannelInfo('stable', '1025', 18)
@@ -89,6 +90,7 @@ class BranchUtilityTest(unittest.TestCase):
     self.assertEquals(None, self._branch_util.Newer(master_info))
 
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testOlder(self):
     master_info = ChannelInfo('master', 'master', 'master')
     dev_info = ChannelInfo('dev', '1612', 31)
@@ -107,6 +109,7 @@ class BranchUtilityTest(unittest.TestCase):
     # Test the lower limit.
     self.assertEquals(None, self._branch_util.Older(oldest_stable_info))
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testGetChannelInfo(self):
     master_info = ChannelInfo('master', 'master', 'master')
     self.assertEquals(master_info, self._branch_util.GetChannelInfo('master'))
@@ -120,9 +123,11 @@ class BranchUtilityTest(unittest.TestCase):
     stable_info = ChannelInfo('stable', '1547', 29)
     self.assertEquals(stable_info, self._branch_util.GetChannelInfo('stable'))
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testGetLatestVersionNumber(self):
     self.assertEquals(37, self._branch_util.GetLatestVersionNumber())
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testGetBranchForVersion(self):
     self.assertEquals('1500',
         self._branch_util.GetBranchForVersion(28))
@@ -153,6 +158,7 @@ class BranchUtilityTest(unittest.TestCase):
     self.assertEquals('396',
         self._branch_util.GetBranchForVersion(5))
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testGetChannelForVersion(self):
     self.assertEquals('master',
         self._branch_util.GetChannelForVersion('master'))

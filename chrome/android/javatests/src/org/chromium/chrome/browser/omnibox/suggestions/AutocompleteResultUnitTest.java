@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult.GroupDetails;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,17 +42,17 @@ public class AutocompleteResultUnitTest {
         List<OmniboxSuggestion> list2 = Arrays.asList(
                 buildSuggestionForIndex(1), buildSuggestionForIndex(2), buildSuggestionForIndex(3));
 
-        SparseArray<String> headers1 = new SparseArray<>();
-        SparseArray<String> headers2 = new SparseArray<>();
+        SparseArray<GroupDetails> groupsDetails1 = new SparseArray<>();
+        SparseArray<GroupDetails> groupsDetails2 = new SparseArray<>();
 
-        headers1.put(10, "Hello");
-        headers1.put(20, "Test");
+        groupsDetails1.put(10, new GroupDetails("Hello", false));
+        groupsDetails1.put(20, new GroupDetails("Test", true));
 
-        headers2.put(10, "Hello");
-        headers2.put(20, "Test");
+        groupsDetails2.put(10, new GroupDetails("Hello", false));
+        groupsDetails2.put(20, new GroupDetails("Test", true));
 
-        AutocompleteResult res1 = new AutocompleteResult(list1, headers1);
-        AutocompleteResult res2 = new AutocompleteResult(list2, headers2);
+        AutocompleteResult res1 = new AutocompleteResult(list1, groupsDetails1);
+        AutocompleteResult res2 = new AutocompleteResult(list2, groupsDetails2);
 
         Assert.assertEquals(res1, res2);
         Assert.assertEquals(res1.hashCode(), res2.hashCode());
@@ -65,40 +66,17 @@ public class AutocompleteResultUnitTest {
         List<OmniboxSuggestion> list2 = Arrays.asList(
                 buildSuggestionForIndex(2), buildSuggestionForIndex(1), buildSuggestionForIndex(3));
 
-        SparseArray<String> headers1 = new SparseArray<>();
-        SparseArray<String> headers2 = new SparseArray<>();
+        SparseArray<GroupDetails> groupsDetails1 = new SparseArray<>();
+        SparseArray<GroupDetails> groupsDetails2 = new SparseArray<>();
 
-        headers1.put(10, "Hello");
-        headers1.put(20, "Test");
+        groupsDetails1.put(10, new GroupDetails("Hello", false));
+        groupsDetails1.put(20, new GroupDetails("Test", true));
 
-        headers2.put(10, "Hello");
-        headers2.put(20, "Test");
+        groupsDetails2.put(10, new GroupDetails("Hello", false));
+        groupsDetails2.put(20, new GroupDetails("Test", true));
 
-        AutocompleteResult res1 = new AutocompleteResult(list1, headers1);
-        AutocompleteResult res2 = new AutocompleteResult(list2, headers2);
-
-        Assert.assertNotEquals(res1, res2);
-        Assert.assertNotEquals(res1.hashCode(), res2.hashCode());
-    }
-
-    @Test
-    @SmallTest
-    public void autocompleteResult_missingGroupHeadersAreNotEqual() {
-        List<OmniboxSuggestion> list1 = Arrays.asList(
-                buildSuggestionForIndex(1), buildSuggestionForIndex(2), buildSuggestionForIndex(3));
-        List<OmniboxSuggestion> list2 = Arrays.asList(
-                buildSuggestionForIndex(1), buildSuggestionForIndex(2), buildSuggestionForIndex(3));
-
-        SparseArray<String> headers1 = new SparseArray<>();
-        SparseArray<String> headers2 = new SparseArray<>();
-
-        headers1.put(10, "Hello");
-        headers1.put(20, "Test");
-
-        headers2.put(10, "Hello");
-
-        AutocompleteResult res1 = new AutocompleteResult(list1, headers1);
-        AutocompleteResult res2 = new AutocompleteResult(list2, headers2);
+        AutocompleteResult res1 = new AutocompleteResult(list1, groupsDetails1);
+        AutocompleteResult res2 = new AutocompleteResult(list2, groupsDetails2);
 
         Assert.assertNotEquals(res1, res2);
         Assert.assertNotEquals(res1.hashCode(), res2.hashCode());
@@ -106,24 +84,71 @@ public class AutocompleteResultUnitTest {
 
     @Test
     @SmallTest
-    public void autocompleteResult_extraGroupHeadersAreNotEqual() {
+    public void autocompleteResult_missingGroupsDetailsAreNotEqual() {
         List<OmniboxSuggestion> list1 = Arrays.asList(
                 buildSuggestionForIndex(1), buildSuggestionForIndex(2), buildSuggestionForIndex(3));
         List<OmniboxSuggestion> list2 = Arrays.asList(
                 buildSuggestionForIndex(1), buildSuggestionForIndex(2), buildSuggestionForIndex(3));
 
-        SparseArray<String> headers1 = new SparseArray<>();
-        SparseArray<String> headers2 = new SparseArray<>();
+        SparseArray<GroupDetails> groupsDetails1 = new SparseArray<>();
+        SparseArray<GroupDetails> groupsDetails2 = new SparseArray<>();
 
-        headers1.put(10, "Hello");
-        headers1.put(20, "Test");
+        groupsDetails1.put(10, new GroupDetails("Hello", true));
+        groupsDetails1.put(20, new GroupDetails("Test", false));
 
-        headers2.put(10, "Hello");
-        headers2.put(20, "Test");
-        headers2.put(30, "Yikes");
+        groupsDetails2.put(10, new GroupDetails("Hello", true));
 
-        AutocompleteResult res1 = new AutocompleteResult(list1, headers1);
-        AutocompleteResult res2 = new AutocompleteResult(list2, headers2);
+        AutocompleteResult res1 = new AutocompleteResult(list1, groupsDetails1);
+        AutocompleteResult res2 = new AutocompleteResult(list2, groupsDetails2);
+
+        Assert.assertNotEquals(res1, res2);
+        Assert.assertNotEquals(res1.hashCode(), res2.hashCode());
+    }
+
+    @Test
+    @SmallTest
+    public void autocompleteResult_groupsWithDifferentDefaultExpandedStateAreNotEqual() {
+        List<OmniboxSuggestion> list1 = Arrays.asList(
+                buildSuggestionForIndex(1), buildSuggestionForIndex(2), buildSuggestionForIndex(3));
+        List<OmniboxSuggestion> list2 = Arrays.asList(
+                buildSuggestionForIndex(1), buildSuggestionForIndex(2), buildSuggestionForIndex(3));
+
+        SparseArray<GroupDetails> groupsDetails1 = new SparseArray<>();
+        SparseArray<GroupDetails> groupsDetails2 = new SparseArray<>();
+
+        groupsDetails1.put(10, new GroupDetails("Hello", false));
+        groupsDetails1.put(20, new GroupDetails("Test", true));
+
+        groupsDetails2.put(10, new GroupDetails("Hello", false));
+        groupsDetails2.put(20, new GroupDetails("Test", false));
+
+        AutocompleteResult res1 = new AutocompleteResult(list1, groupsDetails1);
+        AutocompleteResult res2 = new AutocompleteResult(list2, groupsDetails2);
+
+        Assert.assertNotEquals(res1, res2);
+        Assert.assertNotEquals(res1.hashCode(), res2.hashCode());
+    }
+
+    @Test
+    @SmallTest
+    public void autocompleteResult_extraGroupsDetailsAreNotEqual() {
+        List<OmniboxSuggestion> list1 = Arrays.asList(
+                buildSuggestionForIndex(1), buildSuggestionForIndex(2), buildSuggestionForIndex(3));
+        List<OmniboxSuggestion> list2 = Arrays.asList(
+                buildSuggestionForIndex(1), buildSuggestionForIndex(2), buildSuggestionForIndex(3));
+
+        SparseArray<GroupDetails> groupsDetails1 = new SparseArray<>();
+        SparseArray<GroupDetails> groupsDetails2 = new SparseArray<>();
+
+        groupsDetails1.put(10, new GroupDetails("Hello", false));
+        groupsDetails1.put(20, new GroupDetails("Test", false));
+
+        groupsDetails2.put(10, new GroupDetails("Hello", false));
+        groupsDetails2.put(20, new GroupDetails("Test", false));
+        groupsDetails2.put(30, new GroupDetails("Yikes", false));
+
+        AutocompleteResult res1 = new AutocompleteResult(list1, groupsDetails1);
+        AutocompleteResult res2 = new AutocompleteResult(list2, groupsDetails2);
 
         Assert.assertNotEquals(res1, res2);
         Assert.assertNotEquals(res1.hashCode(), res2.hashCode());
@@ -146,26 +171,26 @@ public class AutocompleteResultUnitTest {
 
     @Test
     @SmallTest
-    public void autocompleteResult_differentHeadersAreNotEqual() {
+    public void autocompleteResult_differentGroupsDetailsAreNotEqual() {
         List<OmniboxSuggestion> list = Arrays.asList(
                 buildSuggestionForIndex(1), buildSuggestionForIndex(2), buildSuggestionForIndex(3));
 
-        SparseArray<String> headers1 = new SparseArray<>();
-        SparseArray<String> headers2 = new SparseArray<>();
-        SparseArray<String> headers3 = new SparseArray<>();
+        SparseArray<GroupDetails> groupsDetails1 = new SparseArray<>();
+        SparseArray<GroupDetails> groupsDetails2 = new SparseArray<>();
+        SparseArray<GroupDetails> groupsDetails3 = new SparseArray<>();
 
-        headers1.put(10, "Hello");
-        headers1.put(20, "Test");
+        groupsDetails1.put(10, new GroupDetails("Hello", false));
+        groupsDetails1.put(20, new GroupDetails("Test", false));
 
-        headers2.put(10, "Hello");
-        headers2.put(15, "Test");
+        groupsDetails2.put(10, new GroupDetails("Hello", false));
+        groupsDetails2.put(15, new GroupDetails("Test", false));
 
-        headers3.put(10, "Hello");
-        headers3.put(20, "Test 2");
+        groupsDetails3.put(10, new GroupDetails("Hello", false));
+        groupsDetails3.put(20, new GroupDetails("Test 2", false));
 
-        AutocompleteResult res1 = new AutocompleteResult(list, headers1);
-        AutocompleteResult res2 = new AutocompleteResult(list, headers2);
-        AutocompleteResult res3 = new AutocompleteResult(list, headers3);
+        AutocompleteResult res1 = new AutocompleteResult(list, groupsDetails1);
+        AutocompleteResult res2 = new AutocompleteResult(list, groupsDetails2);
+        AutocompleteResult res3 = new AutocompleteResult(list, groupsDetails3);
 
         Assert.assertNotEquals(res1, res2);
         Assert.assertNotEquals(res1, res3);

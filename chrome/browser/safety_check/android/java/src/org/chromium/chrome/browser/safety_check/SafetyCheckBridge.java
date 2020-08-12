@@ -44,6 +44,13 @@ public class SafetyCheckBridge {
     }
 
     /**
+     * Returns whether the user is signed in for the purposes of password check.
+     */
+    boolean userSignedIn() {
+        return SafetyCheckBridgeJni.get().userSignedIn();
+    }
+
+    /**
      * Triggers the Safe Browsing check on the C++ side.
      */
     void checkSafeBrowsing() {
@@ -66,6 +73,7 @@ public class SafetyCheckBridge {
     @NativeMethods
     interface Natives {
         long init(SafetyCheckBridge safetyCheckBridge, SafetyCheckCommonObserver observer);
+        boolean userSignedIn();
         void checkSafeBrowsing(long nativeSafetyCheckBridge, SafetyCheckBridge safetyCheckBridge);
         void destroy(long nativeSafetyCheckBridge, SafetyCheckBridge safetyCheckBridge);
     }

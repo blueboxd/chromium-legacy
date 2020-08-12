@@ -8,6 +8,7 @@
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
           "--gtest_filter=-*Vulkan_SwiftShader*",
+          "--shard-timeout=180",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -2658,6 +2659,7 @@
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
           "--gtest_filter=-*Vulkan_SwiftShader*",
+          "--shard-timeout=180",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -3168,6 +3170,7 @@
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
           "--gtest_filter=-*Vulkan_SwiftShader*",
+          "--shard-timeout=180",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -3643,6 +3646,7 @@
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
           "--gtest_filter=-*Vulkan_SwiftShader*",
+          "--shard-timeout=180",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -4794,6 +4798,7 @@
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
           "--gtest_filter=-*Vulkan_SwiftShader*",
+          "--shard-timeout=180",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -5902,6 +5907,7 @@
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
           "--gtest_filter=-*Vulkan_SwiftShader*",
+          "--shard-timeout=180",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],

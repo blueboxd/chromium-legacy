@@ -59,6 +59,10 @@ class CONTENT_EXPORT WebContentsAndroid {
   base::android::ScopedJavaLocalRef<jobject> GetFocusedFrame(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) const;
+  base::android::ScopedJavaLocalRef<jobject> GetRenderFrameHostFromId(
+      JNIEnv* env,
+      jint render_process_id,
+      jint render_frame_id) const;
   base::android::ScopedJavaLocalRef<jstring> GetTitle(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) const;

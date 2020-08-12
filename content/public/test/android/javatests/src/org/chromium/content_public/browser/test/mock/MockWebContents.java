@@ -91,6 +91,11 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public RenderFrameHost getRenderFrameHostFromId(int renderProcessId, int renderFrameId) {
+        return null;
+    }
+
+    @Override
     @Nullable
     public RenderWidgetHostView getRenderWidgetHostView() {
         return null;

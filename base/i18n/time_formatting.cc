@@ -11,6 +11,7 @@
 #include "base/i18n/unicodestring.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
@@ -181,7 +182,7 @@ bool TimeDurationFormat(const TimeDelta time,
                         string16* out) {
   DCHECK(out);
   UErrorCode status = U_ZERO_ERROR;
-  const int total_minutes = static_cast<int>(time.InSecondsF() / 60 + 0.5);
+  const int total_minutes = base::ClampRound(time.InSecondsF() / 60);
   const int hours = total_minutes / 60;
   const int minutes = total_minutes % 60;
   UMeasureFormatWidth u_width = DurationWidthToMeasureWidth(width);

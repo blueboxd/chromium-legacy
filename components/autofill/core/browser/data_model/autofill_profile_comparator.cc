@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/address_rewriter.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -333,8 +334,7 @@ bool AutofillProfileComparator::MergeNames(const AutofillProfile& p1,
   // structure should be possible.
   // * One name is a variant of the other. In this scenario, use the non-variant
   // name. Note, p1 is the newer profile.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableSupportForMoreStructureInNames)) {
+  if (structured_address::StructuredNamesEnabled()) {
     // First, set info to the original profile.
     *name_info = p2.GetNameInfo();
     // If the name of the |p1| is empty, just keep the state of p2.
@@ -1006,6 +1006,12 @@ bool AutofillProfileComparator::HaveMergeableNames(
       Compare(full_name_1, full_name_2)) {
     return true;
   }
+
+  // If the two names are just a permutation of each other, they are mergeable
+  // for structured names.
+  if (structured_address::StructuredNamesEnabled() &&
+      structured_address::AreStringTokenEquivalent(full_name_1, full_name_2))
+    return true;
 
   base::string16 canon_full_name_1 = NormalizeForComparison(full_name_1);
   base::string16 canon_full_name_2 = NormalizeForComparison(full_name_2);

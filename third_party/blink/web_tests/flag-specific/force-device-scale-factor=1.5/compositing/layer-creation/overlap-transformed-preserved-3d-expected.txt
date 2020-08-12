@@ -15,9 +15,9 @@ Before:
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='green-box' class='center box-container'",
+      "position": [162, 162],
       "contentsOpaque": true,
-      "drawsContent": false,
-      "transform": 1
+      "drawsContent": false
     },
     {
       "name": "LayoutNGBlockFlow DIV id='camera' class='rotate-3d-start'",
@@ -68,9 +68,10 @@ Before:
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [162, 162, 0, 1]
-      ]
+        [0, 0, 1, -0.00333333333333333],
+        [0, 0, 0, 1]
+      ],
+      "origin": [237, 237]
     },
     {
       "id": 2,
@@ -78,10 +79,10 @@ Before:
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, -0.00333333333333333],
-        [0, 0, 0, 1]
+        [0, 0, 1, 0],
+        [162, 162, 0, 1]
       ],
-      "origin": [75, 75]
+      "flattenInheritedTransform": false
     },
     {
       "id": 3,
@@ -223,9 +224,9 @@ After:
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='green-box' class='center box-container'",
+      "position": [162, 162],
       "contentsOpaque": true,
-      "drawsContent": false,
-      "transform": 1
+      "drawsContent": false
     },
     {
       "name": "LayoutNGBlockFlow DIV id='camera' class='rotate-3d-start rotate-3d-end'",
@@ -288,9 +289,10 @@ After:
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [162, 162, 0, 1]
-      ]
+        [0, 0, 1, -0.00333333333333333],
+        [0, 0, 0, 1]
+      ],
+      "origin": [237, 237]
     },
     {
       "id": 2,
@@ -298,10 +300,10 @@ After:
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, -0.00333333333333333],
-        [0, 0, 0, 1]
+        [0, 0, 1, 0],
+        [162, 162, 0, 1]
       ],
-      "origin": [75, 75]
+      "flattenInheritedTransform": false
     },
     {
       "id": 3,

@@ -31,7 +31,7 @@ class WebContents;
 // The lifetime of an instance of AccessibilityBridge is the same as that of a
 // View created by FrameImpl. This class refers to the View via the
 // caller-supplied ViewRef.
-// If |tree_ptr_| gets disconnected, it will cause the FrameImpl that owns
+// If |semantic_tree_| gets disconnected, it will cause the FrameImpl that owns
 // |this| to close, which will also destroy |this|.
 class WEB_ENGINE_EXPORT AccessibilityBridge
     : public content::WebContentsObserver,
@@ -49,11 +49,17 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   AccessibilityBridge(const AccessibilityBridge&) = delete;
   AccessibilityBridge& operator=(const AccessibilityBridge&) = delete;
 
+  const ui::AXSerializableTree* ax_tree_for_test() { return &ax_tree_; }
+
+  void set_event_received_callback_for_test(base::OnceClosure callback) {
+    event_received_callback_for_test_ = std::move(callback);
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AccessibilityBridgeTest, OnSemanticsModeChanged);
 
-  // A struct used for caching semantic information. This allows for updates and
-  // deletes to be stored in the same vector to preserve all ordering
+  // A struct used for caching semantic information. This allows for updates
+  // and deletes to be stored in the same vector to preserve all ordering
   // information.
   struct SemanticUpdateOrDelete {
     enum Type { UPDATE, DELETE };
@@ -79,14 +85,14 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   // Callback for SemanticTree::CommitUpdates.
   void OnCommitComplete();
 
-  // Converts AXNode ids to Semantic Node ids, and handles special casing of the
-  // root.
+  // Converts AXNode ids to Semantic Node ids, and handles special casing of
+  // the root.
   uint32_t ConvertToFuchsiaNodeId(int32_t ax_node_id);
 
-  // Deletes all nodes in subtree rooted at and including |node|, unless |node|
-  // is the root of the tree.
-  // |tree| and |node| are owned by the accessibility bridge.
-  void DeleteSubtree(ui::AXTree* tree, ui::AXNode* node);
+  // Deletes all nodes in subtree rooted at and including |node|, unless
+  // |node| is the root of the tree. |tree| and |node| are owned by the
+  // accessibility bridge.
+  void DeleteSubtree(ui::AXNode* node);
 
   // content::WebContentsObserver implementation.
   void AccessibilityEventReceived(
@@ -110,25 +116,27 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
       bool root_changed,
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
-  fuchsia::accessibility::semantics::SemanticTreePtr tree_ptr_;
+  fuchsia::accessibility::semantics::SemanticTreePtr semantic_tree_;
   fidl::Binding<fuchsia::accessibility::semantics::SemanticListener> binding_;
   content::WebContents* web_contents_;
-  ui::AXSerializableTree tree_;
+  ui::AXSerializableTree ax_tree_;
 
   // Cache for pending data to be sent to the Semantic Tree between commits.
   std::vector<SemanticUpdateOrDelete> to_send_;
   bool commit_inflight_ = false;
 
-  // Maintain a map of callbacks as multiple hit test events can happen at once.
-  // These are keyed by the request_id field of ui::AXActionData.
+  // Maintain a map of callbacks as multiple hit test events can happen at
+  // once. These are keyed by the request_id field of ui::AXActionData.
   base::flat_map<int, HitTestCallback> pending_hit_test_callbacks_;
 
   // Run in the case of an internal error that cannot be recovered from. This
   // will cause the frame |this| is owned by to be torn down.
   base::OnceCallback<void(zx_status_t)> on_error_callback_;
 
-  // The root id of |tree_|.
+  // The root id of |ax_tree_|.
   int32_t root_id_ = 0;
+
+  base::OnceClosure event_received_callback_for_test_;
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_ACCESSIBILITY_BRIDGE_H_

@@ -2548,7 +2548,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   LocalFrame::NotifyUserActivation(
       frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*element);
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases();
 
   // Assert the scroll position on the document element doesn't change.
@@ -2556,7 +2556,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
 
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2100));
 
-  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(2100, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
@@ -2578,7 +2578,7 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
   LocalFrame::NotifyUserActivation(
       frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*element);
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(SK_ColorYELLOW, web_view_impl->BackgroundColor());

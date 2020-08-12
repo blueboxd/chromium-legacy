@@ -21,6 +21,10 @@ namespace base {
 class ListValue;
 }  // namespace base
 
+namespace gfx {
+class ImageSkia;
+}  // namespace gfx
+
 namespace chromeos {
 namespace settings {
 
@@ -67,6 +71,12 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
   // in the |topic_source|.
   void SendAlbums(ash::AmbientModeTopicSource topic_source);
 
+  // Send the "album-preview-changed" WebUIListener event with album preview
+  // in the |topic_source|.
+  void SendAlbumPreview(ash::AmbientModeTopicSource topic_source,
+                        const std::string& album_id,
+                        std::string&& png_data_url);
+
   // Update the local |settings_| to server.
   void UpdateSettings();
 
@@ -84,6 +94,21 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
       base::Optional<ash::AmbientModeTopicSource> topic_source,
       const base::Optional<ash::AmbientSettings>& settings,
       ash::PersonalAlbums personal_albums);
+
+  // The |settings_| could be stale when the albums in Google Photos changes.
+  // Prune the |selected_album_id| which does not exist any more.
+  // Populate albums with selected info which will be shown on Settings UI.
+  void SyncSettingsAndAlbums();
+
+  void DownloadAlbumPreviewImage(ash::AmbientModeTopicSource topic_source);
+
+  void OnAlbumPreviewImageDownloaded(ash::AmbientModeTopicSource topic_source,
+                                     const std::string& album_id,
+                                     const gfx::ImageSkia& image);
+
+  ash::PersonalAlbum* FindPersonalAlbumById(const std::string& album_id);
+
+  ash::ArtSetting* FindArtAlbumById(const std::string& album_id);
 
   base::Optional<ash::AmbientSettings> settings_;
 

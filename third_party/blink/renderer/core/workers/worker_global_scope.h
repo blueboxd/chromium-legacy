@@ -32,6 +32,7 @@
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -211,6 +212,10 @@ class CORE_EXPORT WorkerGlobalScope
   TakeWorkerMainScriptLoadingParametersForModules();
 
   ukm::SourceId UkmSourceID() const override { return ukm_source_id_; }
+
+  // Returns the token uniquely identifying this worker. The token type will
+  // match the actual worker type.
+  virtual WorkerToken GetWorkerToken() const = 0;
 
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,

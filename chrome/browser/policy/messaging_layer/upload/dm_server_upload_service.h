@@ -14,7 +14,6 @@
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "chrome/browser/policy/messaging_layer/util/task_runner_context.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/proto/record.pb.h"
 #include "components/policy/proto/record_constants.pb.h"
@@ -22,7 +21,7 @@
 
 namespace reporting {
 
-// DMServerUploadService uploads events to the DMServer. It does not manage
+// DmServerUploadService uploads events to the DMServer. It does not manage
 // sequence information, instead reporting the highest sequence number for each
 // generation id and priority.
 //
@@ -115,32 +114,31 @@ class DmServerUploadService {
 
   // Will create a DMServerUploadService with handlers.
   // On successful completion returns a DMServerUploadService.
-  // If |profile| is null, will return error::INVALID_ARGUMENT.
+  // If |client| is null, will return error::INVALID_ARGUMENT.
   // If any handlers fail to create, or the policy::CloudPolicyClient is null,
   // will return error::UNAVAILABLE.
   //
-  // |profile| must not be null.
+  // |client| must not be null.
   // |completion_cb| should report back to the holder of the created object
   // whenever a record set is successfully uploaded.
   static StatusOr<std::unique_ptr<DmServerUploadService>> Create(
-      Profile* profile,
+      std::unique_ptr<policy::CloudPolicyClient> client,
       ReportSuccessfulUploadCallback completion_cb);
   ~DmServerUploadService();
 
   Status EnqueueUpload(std::unique_ptr<std::vector<EncryptedRecord>> record);
 
  private:
-  DmServerUploadService(Profile* profile,
+  DmServerUploadService(std::unique_ptr<policy::CloudPolicyClient> client,
                         ReportSuccessfulUploadCallback completion_cb);
 
   Status InitRecordHandlers();
 
   void UploadCompletion(StatusOr<std::vector<SequencingInformation>>) const;
 
-  // Must check for nullptr.
   policy::CloudPolicyClient* GetClient();
 
-  Profile* profile_;
+  std::unique_ptr<policy::CloudPolicyClient> client_;
   ReportSuccessfulUploadCallback upload_cb_;
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 

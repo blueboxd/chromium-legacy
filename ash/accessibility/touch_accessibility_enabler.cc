@@ -11,6 +11,7 @@
 #include "base/check.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -161,7 +162,7 @@ void TouchAccessibilityEnabler::OnTimer() {
   base::TimeTicks now = Now();
   double tick_count_f =
       (now - two_finger_start_time_).InMillisecondsF() / kTimerDelayInMS;
-  int tick_count = roundf(tick_count_f);
+  int tick_count = base::ClampRound(tick_count_f);
 
   if (tick_count == kTimerTicksOfFirstSoundFeedback) {
     base::RecordAction(

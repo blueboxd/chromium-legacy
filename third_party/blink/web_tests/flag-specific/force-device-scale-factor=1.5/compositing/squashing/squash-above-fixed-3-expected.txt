@@ -145,11 +145,9 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='container'",
       "position": [150, 150],
-      "bounds": [300, 6000],
+      "bounds": [150, 6000],
+      "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "invalidations": [
-        [150, 0, 150, 150]
-      ],
       "transform": 1
     },
     {
@@ -158,6 +156,14 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
       "transform": 2
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='innerScrolling'",
+      "position": [300, 150],
+      "bounds": [150, 150],
+      "contentsOpaque": true,
+      "backgroundColor": "#00FF00",
+      "transform": 1
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",

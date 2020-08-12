@@ -149,6 +149,13 @@ void RemoteFrameClientImpl::UpdateCaptureSequenceNumber(
   web_frame_->Client()->UpdateCaptureSequenceNumber(sequence_number);
 }
 
+void RemoteFrameClientImpl::PageScaleFactorChanged(
+    float page_scale_factor,
+    bool is_pinch_gesture_active) {
+  web_frame_->Client()->PageScaleFactorChanged(page_scale_factor,
+                                               is_pinch_gesture_active);
+}
+
 void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
     const ViewportIntersectionState& intersection_state) {
   web_frame_->Client()->UpdateRemoteViewportIntersection(intersection_state);

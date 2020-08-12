@@ -174,7 +174,7 @@ class _TargetHost(object):
                                                       stdout=subprocess.PIPE,
                                                       stderr=subprocess.STDOUT)
 
-        listener_log_path = os.path.join(results_directory, 'system.log')
+        listener_log_path = os.path.join(results_directory, 'system_log')
         listener_log = open(listener_log_path, 'w')
         self.symbolizer = symbolizer.RunSymbolizer(
             self._listener.stdout, listener_log, [build_ids_path])

@@ -198,7 +198,13 @@ views::LabelButton* AuthDialogDebugView::AddButton(const std::string& text,
 }
 
 void AuthDialogDebugView::OnAuthSubmit(const base::string16& password) {
-  // TODO(b/156258540): Call InSessionAuthDialogController to authenticate user.
+  InSessionAuthDialogController::Get()->AuthenticateUserWithPasswordOrPin(
+      base::UTF16ToUTF8(password),
+      base::BindOnce(&AuthDialogDebugView::OnAuthComplete,
+                     weak_factory_.GetWeakPtr()));
 }
+
+// TODO(b/156258540): Clear password/PIN if auth failed and retry is allowed.
+void AuthDialogDebugView::OnAuthComplete(base::Optional<bool> success) {}
 
 }  // namespace ash

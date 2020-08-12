@@ -200,6 +200,11 @@ class SafetyCheckMediator implements PasswordCheck.Observer, SafetyCheckCommonOb
         // the callbacks again (the |callImmediatelyIfReady| argument to |addObserver| is true).
         mPasswordsLoaded = false;
         mLeaksLoaded = false;
+        // If the user is not signed in, immediately set the state and do not block on disk loads.
+        if (!mSafetyCheckBridge.userSignedIn()) {
+            mLoadStage = PasswordCheckLoadStage.IDLE;
+            mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.SIGNED_OUT);
+        }
         // Refresh the PasswordCheck instance, since it's not guaranteed to be the same.
         mPasswordCheck = PasswordCheckFactory.getOrCreate();
         mPasswordCheck.addObserver(this, true);

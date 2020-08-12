@@ -53,7 +53,7 @@ class WebSettings {
  public:
   enum class ImageAnimationPolicy { kAllowed, kAnimateOnce, kNoAnimation };
 
-  enum class EditingBehavior { kMac, kWin, kUnix, kAndroid };
+  enum class EditingBehavior { kMac, kWin, kUnix, kAndroid, kChromeOS };
 
   enum class V8CacheOptions {
     kDefault,

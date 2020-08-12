@@ -7,62 +7,42 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutIFrame IFRAME",
-      "bounds": [426, 306],
+      "name": "LayoutView #document",
+      "bounds": [420, 300],
       "transform": 1
     },
     {
       "name": "LayoutView #document",
-      "bounds": [420, 300],
+      "bounds": [375, 255],
+      "contentsOpaqueForText": true,
+      "backgroundColor": "#C0C0C0",
       "transform": 2
     },
     {
-      "name": "LayoutIFrame IFRAME",
-      "bounds": [378, 258],
+      "name": "LayoutNGBlockFlow DIV id='iframe-content' class='box'",
+      "bounds": [315, 315],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF",
       "transform": 3
     },
     {
       "name": "LayoutView #document",
-      "bounds": [375, 255],
-      "contentsOpaqueForText": true,
-      "backgroundColor": "#C0C0C0",
+      "bounds": [420, 300],
       "transform": 4
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='iframe-content' class='box'",
-      "bounds": [315, 315],
-      "contentsOpaque": true,
-      "backgroundColor": "#0000FF",
-      "transform": 5
-    },
-    {
-      "name": "LayoutIFrame IFRAME",
-      "bounds": [426, 306],
-      "transform": 6
-    },
-    {
-      "name": "LayoutView #document",
-      "bounds": [420, 300],
-      "transform": 7
-    },
-    {
-      "name": "LayoutIFrame IFRAME",
-      "bounds": [378, 258],
-      "transform": 8
-    },
-    {
       "name": "LayoutView #document",
       "bounds": [375, 255],
       "contentsOpaqueForText": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 9
+      "transform": 5
     },
     {
       "name": "LayoutNGBlockFlow DIV id='iframe-content' class='box'",
       "bounds": [315, 315],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 10
+      "transform": 6
     },
     {
       "name": "LayoutNGBlockFlow DIV id='box' class='composited'",
@@ -84,7 +64,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [30, 180, 0, 1]
+        [33, 183, 0, 1]
       ]
     },
     {
@@ -94,7 +74,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [3, 3, 0, 1]
+        [14, 14, 0, 1]
       ]
     },
     {
@@ -104,17 +84,16 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [12, 12, 0, 1]
+        [27, 15, 0, 1]
       ]
     },
     {
       "id": 4,
-      "parent": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [2, 2, 0, 1]
+        [33, 519, 0, 1]
       ]
     },
     {
@@ -124,51 +103,12 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [27, 15, 0, 1]
+        [14, 14, 0, 1]
       ]
     },
     {
       "id": 6,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [30, 516, 0, 1]
-      ]
-    },
-    {
-      "id": 7,
-      "parent": 6,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [3, 3, 0, 1]
-      ]
-    },
-    {
-      "id": 8,
-      "parent": 7,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [12, 12, 0, 1]
-      ]
-    },
-    {
-      "id": 9,
-      "parent": 8,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [2, 2, 0, 1]
-      ]
-    },
-    {
-      "id": 10,
-      "parent": 9,
+      "parent": 5,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

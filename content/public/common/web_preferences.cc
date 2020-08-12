@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "ui/base/ui_base_switches_util.h"
 
@@ -37,6 +38,8 @@ STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_WIN, WebSettings::EditingBehavior::kWin);
 STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_UNIX, WebSettings::EditingBehavior::kUnix);
 STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_ANDROID,
                    WebSettings::EditingBehavior::kAndroid);
+STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_CHROMEOS,
+                   WebSettings::EditingBehavior::kChromeOS);
 
 STATIC_ASSERT_ENUM(blink::mojom::V8CacheOptions::kDefault,
                    WebSettings::V8CacheOptions::kDefault);
@@ -145,6 +148,11 @@ WebPreferences::WebPreferences()
       editing_behavior(EDITING_BEHAVIOR_WIN),
 #elif defined(OS_ANDROID)
       editing_behavior(EDITING_BEHAVIOR_ANDROID),
+#elif defined(OS_CHROMEOS)
+      editing_behavior(
+          base::FeatureList::IsEnabled(blink::features::kCrOSAutoSelect)
+              ? EDITING_BEHAVIOR_CHROMEOS
+              : EDITING_BEHAVIOR_UNIX),
 #elif defined(OS_POSIX)
       editing_behavior(EDITING_BEHAVIOR_UNIX),
 #else

@@ -18,6 +18,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult.GroupDetails;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
@@ -47,12 +48,12 @@ public class CachedZeroSuggestionsManagerUnitTest {
         final List<OmniboxSuggestion> list2 = data2.getSuggestionsList();
         Assert.assertEquals(list1, list2);
 
-        final SparseArray<String> headers1 = data1.getGroupHeaders();
-        final SparseArray<String> headers2 = data2.getGroupHeaders();
-        Assert.assertEquals(headers1.size(), headers2.size());
-        for (int index = 0; index < headers1.size(); index++) {
-            Assert.assertEquals(headers1.keyAt(index), headers2.keyAt(index));
-            Assert.assertEquals(headers1.valueAt(index), headers2.valueAt(index));
+        final SparseArray<GroupDetails> groupsDetails1 = data1.getGroupsDetails();
+        final SparseArray<GroupDetails> groupsDetails2 = data2.getGroupsDetails();
+        Assert.assertEquals(groupsDetails1.size(), groupsDetails2.size());
+        for (int index = 0; index < groupsDetails1.size(); index++) {
+            Assert.assertEquals(groupsDetails1.keyAt(index), groupsDetails2.keyAt(index));
+            Assert.assertEquals(groupsDetails1.valueAt(index), groupsDetails2.valueAt(index));
         }
     }
 
@@ -146,7 +147,7 @@ public class CachedZeroSuggestionsManagerUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    public void groupHeaders_restoreHeadersFromEmptyCache() {
+    public void groupsDetails_restoreDetailsFromEmptyCache() {
         // Note: purge cache explicitly, because tests are run on an actual device
         // and cache may hold content from other test runs.
         AutocompleteResult dataToCache = new AutocompleteResult(null, null);
@@ -158,12 +159,12 @@ public class CachedZeroSuggestionsManagerUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    public void groupHeaders_cacheAllSaneGroupHeaders() {
-        SparseArray<String> headers = new SparseArray<>();
-        headers.put(10, "Header For Group 10");
-        headers.put(20, "Header For Group 20");
-        headers.put(30, "Header For Group 30");
-        AutocompleteResult dataToCache = new AutocompleteResult(null, headers);
+    public void groupsDetails_cacheAllSaneGroupDetails() {
+        SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
+        groupsDetails.put(10, new GroupDetails("Header For Group 10", false));
+        groupsDetails.put(20, new GroupDetails("Header For Group 20", false));
+        groupsDetails.put(30, new GroupDetails("Header For Group 30", false));
+        AutocompleteResult dataToCache = new AutocompleteResult(null, groupsDetails);
         CachedZeroSuggestionsManager.saveToCache(dataToCache);
         AutocompleteResult dataFromCache = CachedZeroSuggestionsManager.readFromCache();
         assertAutocompleteResultEquals(dataToCache, dataFromCache);
@@ -172,31 +173,34 @@ public class CachedZeroSuggestionsManagerUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    public void groupHeaders_cachePartiallySaneGroupHeadersDropsInvalidEntries() {
-        SparseArray<String> headers = new SparseArray<>();
-        headers.put(10, "Header For Group 10");
-        headers.put(OmniboxSuggestion.INVALID_GROUP, "Header For Group 20");
-        headers.put(30, null);
+    public void groupsDetails_cachePartiallySaneGroupDetailsDropsInvalidEntries() {
+        SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
+        groupsDetails.put(10, new GroupDetails("Header For Group 10", false));
+        groupsDetails.put(
+                OmniboxSuggestion.INVALID_GROUP, new GroupDetails("Header For Group 20", true));
+        groupsDetails.put(30, new GroupDetails("", false));
 
-        AutocompleteResult dataToCache = new AutocompleteResult(null, headers);
+        AutocompleteResult dataToCache = new AutocompleteResult(null, groupsDetails);
         CachedZeroSuggestionsManager.saveToCache(dataToCache);
         AutocompleteResult dataFromCache = CachedZeroSuggestionsManager.readFromCache();
 
-        SparseArray<String> validHeaders = new SparseArray<>();
-        validHeaders.put(10, "Header For Group 10");
-        assertAutocompleteResultEquals(dataFromCache, new AutocompleteResult(null, validHeaders));
+        SparseArray<GroupDetails> validGroupsDetails = new SparseArray<>();
+        validGroupsDetails.put(10, new GroupDetails("Header For Group 10", false));
+        assertAutocompleteResultEquals(
+                dataFromCache, new AutocompleteResult(null, validGroupsDetails));
     }
 
     @Test
     @SmallTest
     @UiThreadTest
-    public void groupHeaders_restoreInvalidHeadersFromCache() {
-        SparseArray<String> headers = new SparseArray<>();
-        headers.put(OmniboxSuggestion.INVALID_GROUP, "This group is invalid");
-        headers.put(20, "");
-        headers.put(30, null);
+    public void groupsDetails_restoreInvalidGroupsDetailsFromCache() {
+        SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
+        groupsDetails.put(
+                OmniboxSuggestion.INVALID_GROUP, new GroupDetails("This group is invalid", true));
+        groupsDetails.put(20, new GroupDetails("", false));
+        groupsDetails.put(30, new GroupDetails("", false));
 
-        AutocompleteResult dataToCache = new AutocompleteResult(null, headers);
+        AutocompleteResult dataToCache = new AutocompleteResult(null, groupsDetails);
         CachedZeroSuggestionsManager.saveToCache(dataToCache);
         AutocompleteResult dataFromCache = CachedZeroSuggestionsManager.readFromCache();
         assertAutocompleteResultEquals(dataFromCache, new AutocompleteResult(null, null));
@@ -208,10 +212,10 @@ public class CachedZeroSuggestionsManagerUnitTest {
     public void dropSuggestions_suggestionsWithValidGroupsAssociation() {
         List<OmniboxSuggestion> list = buildDummySuggestionsList(2, false);
         list.add(createSuggestionBuilder(33).setGroupId(1).build());
-        SparseArray<String> headers = new SparseArray<>();
-        headers.put(1, "Valid Header");
+        SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
+        groupsDetails.put(1, new GroupDetails("Valid Header", true));
 
-        AutocompleteResult dataToCache = new AutocompleteResult(list, headers);
+        AutocompleteResult dataToCache = new AutocompleteResult(list, groupsDetails);
         CachedZeroSuggestionsManager.saveToCache(dataToCache);
         AutocompleteResult dataFromCache = CachedZeroSuggestionsManager.readFromCache();
         assertAutocompleteResultEquals(dataToCache, dataFromCache);
@@ -270,38 +274,41 @@ public class CachedZeroSuggestionsManagerUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    public void malformedCache_dropsMissingGroupHeaders() {
+    public void malformedCache_dropsMissingGroupDetails() {
         // Clear cache explicitly, otherwise this test will be flaky until the suite is re-executed.
         ContextUtils.getAppSharedPreferences().edit().clear().apply();
 
         final SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
 
-        // Write 3 wrong group headers to the cache
-        SparseArray<String> headers = new SparseArray<>();
-        headers.put(12, "Valid group");
-        headers.put(34, "");
-        headers.put(OmniboxSuggestion.INVALID_GROUP, "Invalid group");
-        AutocompleteResult invalidDataToCache = new AutocompleteResult(null, headers);
+        // Write 3 wrong group groupsDetails to the cache
+        SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
+        groupsDetails.put(12, new GroupDetails("Valid group", true));
+        groupsDetails.put(34, new GroupDetails("", false));
+        groupsDetails.put(OmniboxSuggestion.INVALID_GROUP, new GroupDetails("Invalid group", true));
+        AutocompleteResult invalidDataToCache = new AutocompleteResult(null, groupsDetails);
         CachedZeroSuggestionsManager.saveToCache(invalidDataToCache);
 
         // Report that we actually have 4 items in the cache.
         manager.writeInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_LIST_SIZE, 4);
 
         // Read raw suggestions from the cache. Note that the sparse array will only have 3 elements
-        // because we put one item with INVALID_GROUP, and another such element will be deduced from
-        // missing data.
-        SparseArray<String> rawGroupHeaders =
-                CachedZeroSuggestionsManager.readCachedGroupHeaders(manager);
-        Assert.assertEquals(3, rawGroupHeaders.size());
-        Assert.assertEquals(rawGroupHeaders.get(12), "Valid group");
-        Assert.assertEquals(rawGroupHeaders.get(34), "");
-        // missing group entry will overwrite our invalid group definition
-        Assert.assertNull(rawGroupHeaders.get(OmniboxSuggestion.INVALID_GROUP));
+        // because we put one item with INVALID_GROUP, and additional INVALID_GROUP will be deduced
+        // from missing data with null title and default expanded state set to true.
+        SparseArray<GroupDetails> rawGroupsDetails =
+                CachedZeroSuggestionsManager.readCachedGroupsDetails(manager);
+        Assert.assertEquals(3, rawGroupsDetails.size());
+        Assert.assertEquals(rawGroupsDetails.get(12).title, "Valid group");
+        Assert.assertEquals(rawGroupsDetails.get(12).collapsedByDefault, true);
+        Assert.assertEquals(rawGroupsDetails.get(34).title, "");
+        Assert.assertEquals(rawGroupsDetails.get(34).collapsedByDefault, false);
+        Assert.assertEquals(rawGroupsDetails.get(OmniboxSuggestion.INVALID_GROUP).title, null);
+        Assert.assertEquals(
+                rawGroupsDetails.get(OmniboxSuggestion.INVALID_GROUP).collapsedByDefault, false);
 
         // Cache recovery however should be smart here and remove items that make no sense.
-        SparseArray<String> wantHeaders = new SparseArray<>();
-        wantHeaders.put(12, "Valid group");
-        AutocompleteResult wantDataFromCache = new AutocompleteResult(null, wantHeaders);
+        SparseArray<GroupDetails> wantGroupsDetails = new SparseArray<>();
+        wantGroupsDetails.put(12, new GroupDetails("Valid group", true));
+        AutocompleteResult wantDataFromCache = new AutocompleteResult(null, wantGroupsDetails);
         AutocompleteResult dataFromCache = CachedZeroSuggestionsManager.readFromCache();
 
         assertAutocompleteResultEquals(dataFromCache, wantDataFromCache);
@@ -310,15 +317,16 @@ public class CachedZeroSuggestionsManagerUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    public void removeInvalidSuggestions_dropsInvalidSuggestionsAndHeaders() {
-        // Write 3 wrong group headers to the cache
-        SparseArray<String> headersExpected = new SparseArray<>();
-        headersExpected.put(12, "Valid group");
+    public void removeInvalidSuggestions_dropsInvalidSuggestionsAndGroupsDetails() {
+        // Write 3 wrong group groupsDetails to the cache
+        SparseArray<GroupDetails> groupsDetailsExpected = new SparseArray<>();
+        groupsDetailsExpected.put(12, new GroupDetails("Valid group", true));
 
-        SparseArray<String> headersWithInvalidItems = new SparseArray<>();
-        headersWithInvalidItems.put(12, "Valid group");
-        headersWithInvalidItems.put(34, "");
-        headersWithInvalidItems.put(OmniboxSuggestion.INVALID_GROUP, "Invalid group");
+        SparseArray<GroupDetails> groupsDetailsWithInvalidItems = new SparseArray<>();
+        groupsDetailsWithInvalidItems.put(12, new GroupDetails("Valid group", true));
+        groupsDetailsWithInvalidItems.put(34, new GroupDetails("", false));
+        groupsDetailsWithInvalidItems.put(
+                OmniboxSuggestion.INVALID_GROUP, new GroupDetails("Invalid group", true));
 
         List<OmniboxSuggestion> listExpected = buildDummySuggestionsList(2, false);
         listExpected.add(createSuggestionBuilder(72).setGroupId(12).build());
@@ -330,11 +338,12 @@ public class CachedZeroSuggestionsManagerUnitTest {
         listWithInvalidItems.add(createSuggestionBuilder(74).setGroupId(34).build());
 
         AutocompleteResult dataWithInvalidItems =
-                new AutocompleteResult(listWithInvalidItems, headersWithInvalidItems);
-        AutocompleteResult dataExpected = new AutocompleteResult(listExpected, headersExpected);
+                new AutocompleteResult(listWithInvalidItems, groupsDetailsWithInvalidItems);
+        AutocompleteResult dataExpected =
+                new AutocompleteResult(listExpected, groupsDetailsExpected);
 
-        CachedZeroSuggestionsManager.removeInvalidSuggestionsAndGroupHeaders(
-                dataWithInvalidItems.getSuggestionsList(), dataWithInvalidItems.getGroupHeaders());
+        CachedZeroSuggestionsManager.removeInvalidSuggestionsAndGroupsDetails(
+                dataWithInvalidItems.getSuggestionsList(), dataWithInvalidItems.getGroupsDetails());
         assertAutocompleteResultEquals(dataWithInvalidItems, dataExpected);
     }
 }

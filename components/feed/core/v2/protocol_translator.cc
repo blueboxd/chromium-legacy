@@ -107,6 +107,10 @@ bool TranslateFeature(feedwire::Feature* feature,
         result.stream_structure.content_id();
     result.content->set_allocated_frame(
         wire_content->mutable_xsurface_content()->release_xsurface_output());
+    if (wire_content->prefetch_metadata_size() > 0) {
+      result.content->mutable_prefetch_metadata()->Swap(
+          wire_content->mutable_prefetch_metadata());
+    }
   }
   return true;
 }

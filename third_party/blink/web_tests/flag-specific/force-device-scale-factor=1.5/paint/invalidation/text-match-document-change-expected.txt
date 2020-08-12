@@ -7,20 +7,15 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutIFrame (positioned) IFRAME id='iframe'",
-      "bounds": [456, 606],
-      "transform": 1
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [428, 1578],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
       "position": [428, 0],
       "bounds": [22, 600],
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
@@ -30,17 +25,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [12, 150, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [3, 3, 0, 1]
+        [15, 153, 0, 1]
       ]
     }
   ]

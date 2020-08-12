@@ -559,7 +559,9 @@ void ServiceWorkerStorage::DoomUncommittedResources(
       database_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ServiceWorkerDatabase::PurgeUncommittedResourceIds,
                      base::Unretained(database_.get()), resource_ids),
-      std::move(callback));
+      base::BindOnce(&ServiceWorkerStorage::DidDoomUncommittedResourceIds,
+                     weak_factory_.GetWeakPtr(), resource_ids,
+                     std::move(callback)));
 }
 
 void ServiceWorkerStorage::StoreUserData(
@@ -1151,6 +1153,15 @@ void ServiceWorkerStorage::DidWriteUncommittedResourceIds(
     const GURL& origin,
     ServiceWorkerDatabase::Status status) {
   MaybeNotifyWriteFailed(quota_manager_proxy_, status, origin);
+  std::move(callback).Run(status);
+}
+
+void ServiceWorkerStorage::DidDoomUncommittedResourceIds(
+    const std::vector<int64_t>& resource_ids,
+    DatabaseStatusCallback callback,
+    ServiceWorkerDatabase::Status status) {
+  if (status == ServiceWorkerDatabase::Status::kOk)
+    PurgeResources(resource_ids);
   std::move(callback).Run(status);
 }
 

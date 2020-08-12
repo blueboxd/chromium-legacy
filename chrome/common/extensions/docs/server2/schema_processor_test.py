@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import unittest
 from copy import deepcopy
 
@@ -25,6 +26,7 @@ class _FakeFeaturesBundle():
     return Future(value={})
 
 class SchemaUtilTest(unittest.TestCase):
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testRemoveNoDocs(self):
     expected_nodoc = [
       {
@@ -132,6 +134,7 @@ class SchemaUtilTest(unittest.TestCase):
     schema_processor._RemoveNoDocs(nodoc_data)
     self.assertEquals(expected_nodoc, nodoc_data)
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testInlineDocs(self):
     schema = {
       'namespace': 'storage',
@@ -205,6 +208,7 @@ class SchemaUtilTest(unittest.TestCase):
     schema_processor._InlineDocs(inlined_schema)
     self.assertEqual(expected_schema, inlined_schema)
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testDetectInline(self):
     schema = {
       'types': [

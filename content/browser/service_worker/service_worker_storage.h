@@ -406,6 +406,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void DidWriteUncommittedResourceIds(DatabaseStatusCallback callback,
                                       const GURL& origin,
                                       ServiceWorkerDatabase::Status status);
+  void DidDoomUncommittedResourceIds(const std::vector<int64_t>& resource_ids,
+                                     DatabaseStatusCallback callback,
+                                     ServiceWorkerDatabase::Status status);
   void DidStoreUserData(DatabaseStatusCallback callback,
                         const GURL& origin,
                         ServiceWorkerDatabase::Status status);

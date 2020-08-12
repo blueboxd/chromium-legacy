@@ -57,7 +57,8 @@ class MultiToken : public internal::MultiTokenBase<TokenVariant0,
   template <typename InputTokenType,
             typename = typename std::enable_if<
                 Base::template ValidType<InputTokenType>::kValue>::type>
-  explicit MultiToken(const InputTokenType& input_token)
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  MultiToken(const InputTokenType& input_token)
       : value_(input_token.value()),
         variant_index_(Base::template TypeIndex<InputTokenType>::kValue) {}
 

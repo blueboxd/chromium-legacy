@@ -7118,7 +7118,8 @@ FontMatchingMetrics* Document::GetFontMatchingMetrics() {
   if (font_matching_metrics_)
     return font_matching_metrics_.get();
   font_matching_metrics_ = std::make_unique<FontMatchingMetrics>(
-      IsInMainFrame(), UkmRecorder(), UkmSourceID());
+      IsInMainFrame(), UkmRecorder(), UkmSourceID(),
+      GetTaskRunner(TaskType::kInternalDefault));
   return font_matching_metrics_.get();
 }
 

@@ -16,7 +16,6 @@
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "chrome/browser/policy/messaging_layer/util/task_runner_context.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/proto/record.pb.h"
@@ -100,6 +99,8 @@ void DmServerUploader::HandleRecords() {
   // |ArcAppInstallEventLogUploader|).
   // TODO(chromium:1078512) Consider creating a whitelist/blacklist for retry
   // and continue.
+  // TODO(chromium:1078512) Cannot verify client state on this thread. Find a
+  // way to do that and restructure this loop to handle it.
   for (auto record_info_it = record_infos_.begin();
        record_info_it != record_infos_.end();) {
     for (auto& handler : *handlers_) {
@@ -197,13 +198,13 @@ void DmServerUploader::ResetDelay() {
 }
 
 StatusOr<std::unique_ptr<DmServerUploadService>> DmServerUploadService::Create(
-    Profile* profile,
+    std::unique_ptr<policy::CloudPolicyClient> client,
     ReportSuccessfulUploadCallback upload_cb) {
-  if (profile == nullptr) {
-    return Status(error::INVALID_ARGUMENT, "Profile may not be nullptr.");
+  if (client == nullptr) {
+    return Status(error::INVALID_ARGUMENT, "client may not be nullptr.");
   }
   auto uploader =
-      base::WrapUnique(new DmServerUploadService(profile, upload_cb));
+      base::WrapUnique(new DmServerUploadService(std::move(client), upload_cb));
 
   RETURN_IF_ERROR(uploader->InitRecordHandlers());
 
@@ -211,9 +212,9 @@ StatusOr<std::unique_ptr<DmServerUploadService>> DmServerUploadService::Create(
 }
 
 DmServerUploadService::DmServerUploadService(
-    Profile* profile,
+    std::unique_ptr<policy::CloudPolicyClient> client,
     ReportSuccessfulUploadCallback upload_cb)
-    : profile_(profile),
+    : client_(std::move(client)),
       upload_cb_(upload_cb),
       sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})) {}
 
@@ -257,25 +258,7 @@ void DmServerUploadService::UploadCompletion(
 }
 
 CloudPolicyClient* DmServerUploadService::GetClient() {
-#if defined(OS_CHROMEOS)
-  auto* policy_manager = profile_->GetUserCloudPolicyManagerChromeOS();
-#else
-  auto* policy_manager = profile_->GetUserCloudPolicyManager();
-#endif
-  if (policy_manager == nullptr) {
-    LOG(ERROR) << "Policy manager was null";
-    return nullptr;
-  }
-  auto* core = policy_manager->core();
-  if (core == nullptr) {
-    LOG(ERROR) << "Core was null";
-    return nullptr;
-  }
-  auto* client = core->client();
-  if (client == nullptr) {
-    LOG(ERROR) << "Client was null";
-  }
-  return client;
+  return client_.get();
 }
 
 }  // namespace reporting

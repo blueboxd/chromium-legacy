@@ -30,9 +30,9 @@ const char kButtonName2[] = "another button";
 const char kButtonName3[] = "button 3";
 const char kNodeName[] = "last node";
 const char kParagraphName[] = "a third paragraph";
+const char kOffscreenNodeName[] = "offscreen node";
 const size_t kPage1NodeCount = 9;
 const size_t kPage2NodeCount = 190;
-
 
 fuchsia::math::PointF GetCenterOfBox(fuchsia::ui::gfx::BoundingBox box) {
   fuchsia::math::PointF center;
@@ -269,4 +269,48 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, Disconnect) {
 
   semantics_manager_.semantic_tree()->Disconnect();
   run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, PerformScrollToMakeVisible) {
+  constexpr int kScreenWidth = 720;
+  constexpr int kScreenHeight = 640;
+  gfx::Rect screen_bounds(kScreenWidth, kScreenHeight);
+
+  GURL page_url(embedded_test_server()->GetURL(kPage1Path));
+  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      page_url.spec()));
+  navigation_listener_.RunUntilUrlAndTitleEquals(page_url, kPage1Title);
+  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
+
+  auto* content_view =
+      frame_impl_->web_contents_for_test()->GetContentNativeView();
+  content_view->SetBounds(screen_bounds);
+
+  // Get a node that is off the screen.
+  fuchsia::accessibility::semantics::Node* node =
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kOffscreenNodeName);
+  ASSERT_TRUE(node);
+  AccessibilityBridge* bridge = frame_impl_->accessibility_bridge_for_test();
+  ui::AXNode* ax_node = bridge->ax_tree_for_test()->GetFromId(node->node_id());
+  ASSERT_TRUE(ax_node);
+  bool is_offscreen = false;
+  bridge->ax_tree_for_test()->GetTreeBounds(ax_node, &is_offscreen);
+  EXPECT_TRUE(is_offscreen);
+
+  // Perform SHOW_ON_SCREEN on that node and check that it is on the screen.
+  base::RunLoop run_loop;
+  bridge->set_event_received_callback_for_test(run_loop.QuitClosure());
+  semantics_manager_.RequestAccessibilityAction(
+      node->node_id(),
+      fuchsia::accessibility::semantics::Action::SHOW_ON_SCREEN);
+  semantics_manager_.RunUntilNumActionsHandledEquals(1);
+  run_loop.Run();
+
+  // Initialize |is_offscreen| to false before calling GetTreeBounds as
+  // specified by the API.
+  is_offscreen = false;
+  bridge->ax_tree_for_test()->GetTreeBounds(ax_node, &is_offscreen);
+
+  EXPECT_FALSE(is_offscreen);
 }

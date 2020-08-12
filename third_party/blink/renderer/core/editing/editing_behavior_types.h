@@ -41,7 +41,8 @@ enum EditingBehaviorType {
   kEditingMacBehavior,
   kEditingWindowsBehavior,
   kEditingUnixBehavior,
-  kEditingAndroidBehavior
+  kEditingAndroidBehavior,
+  kEditingChromeOSBehavior
 };
 
 }  // namespace blink

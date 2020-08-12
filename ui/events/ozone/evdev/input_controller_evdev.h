@@ -79,6 +79,10 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   void GetGesturePropertiesService(
       mojo::PendingReceiver<ozone::mojom::GesturePropertiesService> receiver)
       override;
+  void PlayVibrationEffect(int id,
+                           uint8_t amplitude,
+                           uint16_t duration_millis) override;
+  void StopVibration(int id) override;
 
  private:
   // Post task to update settings.

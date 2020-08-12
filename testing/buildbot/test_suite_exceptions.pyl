@@ -92,28 +92,6 @@
       'Linux FYI Release (AMD R7 240)',
     ],
   },
-  'app_shell_unittests': {
-    'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
-    ],
-    'modifications': {
-      # https://crbug.com/1111979
-      'linux-lacros-tester-fyi-rel': {
-        'experiment_percentage': 100,
-      },
-    },
-  },
-  'aura_unittests': {
-    'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
-    ],
-    'modifications': {
-      # https://crbug.com/1111979
-      'linux-lacros-tester-fyi-rel': {
-        'experiment_percentage': 100,
-      },
-    },
-  },
   'blink_platform_unittests': {
     'modifications': {
       # TODO(crbug.com/1108121): Remove this filter
@@ -815,14 +793,7 @@
   'components_browsertests': {
     'remove_from': [
       'android-code-coverage-native', # crbug/1018434
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
-    'modifications': {
-      # https://crbug.com/1111979
-      'linux-lacros-tester-fyi-rel': {
-        'experiment_percentage': 100,
-      },
-    },
   },
   'components_unittests': {
     'remove_from': [
@@ -833,7 +804,6 @@
       'fuchsia-fyi-arm64-rel',  # https://crbug.com/961457
       'fuchsia-fyi-x64-dbg',  # https://crbug.com/961457
       'fuchsia-fyi-x64-rel',  # https://crbug.com/961457
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Linux ASan LSan Tests (1)': {
@@ -864,16 +834,12 @@
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
       },
-    },
-  },
-  'compositor_unittests': {
-    'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
-    ],
-    'modifications': {
-      # https://crbug.com/1111979
-      'linux-lacros-tester-fyi-rel': {
+      # https://crbug.com/1111979,
+      'linux-lacros-tester-rel': {
         'experiment_percentage': 100,
+        'args': [
+          '--gtest_filter=-NetExportFileWriterTest*',
+        ],
       },
     },
   },
@@ -886,7 +852,6 @@
       # http://crbug.com/1060245#c30: due to low utility and capacity.
       'android-marshmallow-arm64-rel',
       'android-marshmallow-x86-rel', # crbug.com/1098111
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Cast Audio Linux': {
@@ -1007,6 +972,13 @@
       # https://crbug.com/1111979
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
+      },
+      # https://crbug.com/1111979,
+      'linux-lacros-tester-rel': {
+        'experiment_percentage': 100,
+        'args': [
+          '--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont',
+        ],
       },
     },
   },
@@ -1146,17 +1118,6 @@
       'Linux FYI Release (AMD R7 240)', # https://crbug.com/915430
     ],
   },
-  'dbus_unittests': {
-    'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
-    ],
-    'modifications': {
-      # https://crbug.com/1111979
-      'linux-lacros-tester-fyi-rel': {
-        'experiment_percentage': 100,
-      },
-    },
-  },
   'depth_capture_tests': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
     # exception once there is enough capacity to run these tests.
@@ -1182,7 +1143,6 @@
   'extensions_browsertests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Win10 Tests x64 (dbg)': {
@@ -1192,16 +1152,27 @@
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
       },
+      # https://crbug.com/1111979,
+      'linux-lacros-tester-rel': {
+        'experiment_percentage': 100,
+        'args': [
+          '--gtest_filter=-BluetoothShellApiTest.ApiSanityCheck:BluetoothSocketApiTest.Listen:BluetoothSocketApiTest.PermissionDenied',
+        ],
+      },
     },
   },
   'extensions_unittests': {
-    'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
-    ],
     # https://crbug.com/1111979
     'modifications': {
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
+      },
+      # https://crbug.com/1111979,
+      'linux-lacros-tester-rel': {
+        'experiment_percentage': 100,
+        'args': [
+          '--gtest_filter=-NativeExtensionBindingsSystemUnittest*',
+        ],
       },
     },
   },
@@ -1594,17 +1565,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_p.media_unittests.filter',
         ],
-      },
-    },
-  },
-  'message_center_unittests': {
-    'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
-    ],
-    'modifications': {
-      # https://crbug.com/1111979
-      'linux-lacros-tester-fyi-rel': {
-        'experiment_percentage': 100,
       },
     },
   },
@@ -2369,21 +2329,7 @@
       },
     },
   },
-  'snapshot_unittests': {
-    'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
-    ],
-    'modifications': {
-      # https://crbug.com/1111979
-      'linux-lacros-tester-fyi-rel': {
-        'experiment_percentage': 100,
-      },
-    },
-  },
   'storage_service_content_browsertests': {
-    'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
-    ],
     'modifications': {
       'Linux Tests (dbg)(1)': {
         'swarming': {
@@ -2399,16 +2345,27 @@
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
       },
+      # https://crbug.com/1111979,
+      'linux-lacros-tester-rel': {
+        'experiment_percentage': 100,
+        'args': [
+          '--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont',
+        ],
+      },
     },
   },
   'storage_service_extensions_browsertests': {
-    'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
-    ],
     'modifications': {
       # https://crbug.com/1111979
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
+      },
+      # https://crbug.com/1111979,
+      'linux-lacros-tester-rel': {
+        'experiment_percentage': 100,
+        'args': [
+          '--gtest_filter=-BluetoothShellApiTest.ApiSanityCheck:BluetoothSocketApiTest.Listen:BluetoothSocketApiTest.PermissionDenied',
+        ],
       },
     },
   },
@@ -2441,7 +2398,6 @@
   'sync_integration_tests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Linux ASan LSan Tests (1)': {
@@ -2480,6 +2436,13 @@
       # https://crbug.com/1111979
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
+      },
+      # https://crbug.com/1111979,
+      'linux-lacros-tester-rel': {
+        'experiment_percentage': 100,
+        'args': [
+          '--gtest_filter=-SingleClientSessionsSyncTestWithFaviconTestServer.ShouldDeleteOnDemandIconsOnSessionsDisabled',
+        ],
       },
     },
   },
@@ -2616,7 +2579,6 @@
       # on the CQ. https://crbug.com/1026487.
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',  # https://crbug.com/1010211
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Linux ASan LSan Tests (1)': {
@@ -2679,20 +2641,21 @@
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
       },
+      # https://crbug.com/1111979,
+      'linux-lacros-tester-rel': {
+        'experiment_percentage': 100,
+        'args': [
+          '--gtest_filter=-NativeDesktopMediaListTest*:PermissionMessageCombinationsUnittest.USBSerialBluetoothCoalescing:'
+          'RelaunchNotificationControllerPlatformImplTest.SynchronousNotification:WindowSizerTest*',
+        ],
+      },
     },
   },
   'url_unittests': {
     'remove_from': [
       # crbug.com/1054240
       'Fuchsia ARM64',
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
-    'modifications': {
-      # https://crbug.com/1111979
-      'linux-lacros-tester-fyi-rel': {
-        'experiment_percentage': 100,
-      },
-    },
   },
   'video_decode_accelerator_gl_unittest': {
     'remove_from': [
@@ -2705,13 +2668,23 @@
     ],
   },
   'views_unittests': {
-    'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
-    ],
     'modifications': {
       # https://crbug.com/1111979
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
+      },
+      # https://crbug.com/1111979,
+      'linux-lacros-tester-rel': {
+        'experiment_percentage': 100,
+        'args': [
+          '--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:'
+          'DesktopWidgetTest.GetWindowPlacement:'
+          'DesktopWidgetTest.MinimumSizeConstraints:'
+          'EditableComboboxTest.EndOrHomeMovesToBeginningOrEndOfText:'
+          'EditableComboboxTest.MenuCanAdaptToContentChange:'
+          'TextfieldTest.ContextMenuDisplayTest:'
+          'TooltipControllerTest*',
+        ],
       },
     },
   },
@@ -2933,17 +2906,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_instrumentation_test_apk.filter',
         ],
-      },
-    },
-  },
-  'wm_unittests': {
-    'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
-    ],
-    'modifications': {
-      # https://crbug.com/1111979
-      'linux-lacros-tester-fyi-rel': {
-        'experiment_percentage': 100,
       },
     },
   },

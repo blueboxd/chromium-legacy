@@ -10,9 +10,11 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,14 +24,14 @@ class DropdownItemViewInfoListManager {
     private int mLayoutDirection;
     private @OmniboxTheme int mOmniboxTheme;
     private List<DropdownItemViewInfo> mSourceViewInfoList;
-    private SparseArray<Boolean> mGroupVisibility;
+    private SparseArray<Boolean> mGroupsCollapsedState;
 
     DropdownItemViewInfoListManager(@NonNull ModelList managedModel) {
         assert managedModel != null : "Must specify a non-null model.";
         mLayoutDirection = View.LAYOUT_DIRECTION_INHERIT;
         mOmniboxTheme = OmniboxTheme.LIGHT_THEME;
         mSourceViewInfoList = Collections.emptyList();
-        mGroupVisibility = new SparseArray<>();
+        mGroupsCollapsedState = new SparseArray<>();
         mManagedModel = managedModel;
     }
 
@@ -67,15 +69,15 @@ class DropdownItemViewInfoListManager {
     }
 
     /**
-     * Toggle the visibility state of suggestions belonging to specific group.
+     * Toggle the collapsed state of suggestions belonging to specific group.
      *
-     * @param groupId ID of the group whose visibility state is expected to change.
-     * @param state Visibility state of the suggestions belonging to the group.
+     * @param groupId ID of the group whose collapsed state is expected to change.
+     * @param groupIsCollapsed Collapsed state of the group.
      */
-    void setGroupVisibility(int groupId, boolean state) {
-        if (getGroupVisibility(groupId) == state) return;
-        mGroupVisibility.put(groupId, state);
-        if (!state) {
+    void setGroupCollapsedState(int groupId, boolean groupIsCollapsed) {
+        if (getGroupCollapsedState(groupId) == groupIsCollapsed) return;
+        mGroupsCollapsedState.put(groupId, groupIsCollapsed);
+        if (groupIsCollapsed) {
             removeSuggestionsForGroup(groupId);
         } else {
             insertSuggestionsForGroup(groupId);
@@ -84,10 +86,10 @@ class DropdownItemViewInfoListManager {
 
     /**
      * @param groupId ID of the suggestions group.
-     * @return True, if group should be visible, otherwise false.
+     * @return True, if group should be collapsed, otherwise false.
      */
-    private boolean getGroupVisibility(int groupId) {
-        return mGroupVisibility.get(groupId, /* defaultVisibility= */ true);
+    private boolean getGroupCollapsedState(int groupId) {
+        return mGroupsCollapsedState.get(groupId, /* defaultCollapsedState= */ false);
     }
 
     /** @return Whether the supplied view info is a header for the specific group of suggestions. */
@@ -99,7 +101,7 @@ class DropdownItemViewInfoListManager {
     void clear() {
         mSourceViewInfoList.clear();
         mManagedModel.clear();
-        mGroupVisibility.clear();
+        mGroupsCollapsedState.clear();
     }
 
     /** Record histograms for all currently presented suggestions. */
@@ -114,21 +116,34 @@ class DropdownItemViewInfoListManager {
      * Specify the input list of DropdownItemViewInfo elements.
      *
      * @param sourceList Source list of ViewInfo elements.
+     * @param groupsDetails Group ID to GroupDetails map carrying group collapsed state information.
      */
-    void setSourceViewInfoList(@NonNull List<DropdownItemViewInfo> sourceList) {
+    void setSourceViewInfoList(@NonNull List<DropdownItemViewInfo> sourceList,
+            @NonNull SparseArray<AutocompleteResult.GroupDetails> groupsDetails) {
         mSourceViewInfoList = sourceList;
-        mGroupVisibility.clear();
+        mGroupsCollapsedState.clear();
 
+        // Clone information about the recommended group collapsed state.
+        for (int index = 0; index < groupsDetails.size(); index++) {
+            mGroupsCollapsedState.put(
+                    groupsDetails.keyAt(index), groupsDetails.valueAt(index).collapsedByDefault);
+        }
+
+        // Build a new list of suggestions. Honor the default collapsed state.
+        final List<ListItem> suggestionsList = new ArrayList<>();
         for (int i = 0; i < mSourceViewInfoList.size(); i++) {
-            PropertyModel model = mSourceViewInfoList.get(i).model;
+            final DropdownItemViewInfo item = mSourceViewInfoList.get(i);
+            final PropertyModel model = item.model;
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, mLayoutDirection);
             model.set(SuggestionCommonProperties.OMNIBOX_THEME, mOmniboxTheme);
+
+            final boolean groupIsDefaultCollapsed = getGroupCollapsedState(item.groupId);
+            if (!groupIsDefaultCollapsed || isGroupHeaderWithId(item, item.groupId)) {
+                suggestionsList.add(item);
+            }
         }
-        // Note: Despite DropdownItemViewInfo extending ListItem, we can't use the
-        // List<DropdownItemViewInfo> as a parameter expecting a List<ListItem>.
-        // Java disallows casting one generic type to another, unless the specialization
-        // is dropped.
-        mManagedModel.set((List) mSourceViewInfoList);
+
+        mManagedModel.set(suggestionsList);
     }
 
     /**

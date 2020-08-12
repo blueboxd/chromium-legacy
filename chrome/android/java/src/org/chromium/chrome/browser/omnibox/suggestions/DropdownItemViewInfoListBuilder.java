@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult.GroupDetails;
 import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
@@ -275,10 +276,18 @@ class DropdownItemViewInfoListBuilder {
 
             if (currentGroup != suggestion.getGroupId()) {
                 currentGroup = suggestion.getGroupId();
-                final PropertyModel model = mHeaderProcessor.createModel();
-                mHeaderProcessor.populateModel(model, currentGroup,
-                        autocompleteResult.getGroupHeaders().get(currentGroup));
-                viewInfoList.add(new DropdownItemViewInfo(mHeaderProcessor, model, currentGroup));
+                final GroupDetails details =
+                        autocompleteResult.getGroupsDetails().get(currentGroup);
+
+                // Only add the Header Group when both ID and details are specified.
+                // Note that despite GroupsDetails map not holding <null> values,
+                // a group definition for specific ID may be unavailable.
+                if (details != null) {
+                    final PropertyModel model = mHeaderProcessor.createModel();
+                    mHeaderProcessor.populateModel(model, currentGroup, details.title);
+                    viewInfoList.add(
+                            new DropdownItemViewInfo(mHeaderProcessor, model, currentGroup));
+                }
             }
 
             final PropertyModel model = processor.createModel();

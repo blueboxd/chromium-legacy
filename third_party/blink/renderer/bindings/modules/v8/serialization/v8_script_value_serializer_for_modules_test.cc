@@ -22,11 +22,13 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_crypto_key.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_dom_file_system.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_certificate.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_result_impl.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate_generator.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -978,6 +980,55 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeInvalidDOMFileSystem) {
           }))
           .Deserialize()
           ->IsNull());
+}
+
+TEST(V8ScriptValueSerializerForModulesTest, RoundTripVideoFrame) {
+  V8TestingScope scope;
+
+  const gfx::Size kFrameSize(600, 480);
+  scoped_refptr<media::VideoFrame> media_frame =
+      media::VideoFrame::CreateBlackFrame(kFrameSize);
+
+  // Pass a copy the reference to the video frame.
+  auto* blink_frame = MakeGarbageCollected<VideoFrame>(media_frame);
+
+  // Round trip the frame and make sure the size is the same.
+  v8::Local<v8::Value> wrapper = ToV8(blink_frame, scope.GetScriptState());
+  v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
+
+  ASSERT_TRUE(V8VideoFrame::HasInstance(result, scope.GetIsolate()));
+
+  VideoFrame* new_frame = V8VideoFrame::ToImpl(result.As<v8::Object>());
+  EXPECT_EQ(new_frame->frame()->natural_size(), kFrameSize);
+
+  EXPECT_FALSE(media_frame->HasOneRef());
+
+  // Destroying either |blink_frame| or |new_frame| should remove all references
+  // to |media_frame|.
+  blink_frame->destroy();
+  EXPECT_TRUE(media_frame->HasOneRef());
+}
+
+TEST(V8ScriptValueSerializerForModulesTest, DestroyedVideoFrameThrows) {
+  V8TestingScope scope;
+  ExceptionState exception_state(scope.GetIsolate(),
+                                 ExceptionState::kExecutionContext, "Window",
+                                 "postMessage");
+
+  const gfx::Size kFrameSize(600, 480);
+  scoped_refptr<media::VideoFrame> media_frame =
+      media::VideoFrame::CreateBlackFrame(kFrameSize);
+
+  // Create and destroy the frame.
+  auto* blink_frame = MakeGarbageCollected<VideoFrame>(media_frame);
+  blink_frame->destroy();
+
+  // Serializing the destroyed frame should throw an error.
+  v8::Local<v8::Value> wrapper = ToV8(blink_frame, scope.GetScriptState());
+  EXPECT_FALSE(V8ScriptValueSerializer(scope.GetScriptState())
+                   .Serialize(wrapper, exception_state));
+  EXPECT_TRUE(HadDOMExceptionInModulesTest(
+      "DataCloneError", scope.GetScriptState(), exception_state));
 }
 
 }  // namespace

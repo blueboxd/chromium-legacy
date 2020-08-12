@@ -125,16 +125,6 @@ const FeatureEntry::Choice kAutofillIOSDelayBetweenFieldsChoices[] = {
 };
 
 const FeatureEntry::FeatureVariation
-    kOmniboxOnDeviceHeadSuggestIncognitoExperimentVariations[] = {{
-        "relevance-1000",
-        (FeatureEntry::FeatureParam[]){
-            {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
-             "1000"}},
-        1,
-        nullptr,
-    }};
-
-const FeatureEntry::FeatureVariation
     kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations[] = {
         {
             "relevance-1000",
@@ -396,10 +386,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoName,
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoDescription,
      flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         omnibox::kOnDeviceHeadProviderIncognito,
-         kOmniboxOnDeviceHeadSuggestIncognitoExperimentVariations,
-         "OmniboxOnDeviceHeadSuggestIncognitoIOS")},
+     FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProviderIncognito)},
     {"omnibox-on-device-head-suggestions-non-incognito",
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoName,
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription,

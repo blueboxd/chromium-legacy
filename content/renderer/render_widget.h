@@ -192,7 +192,6 @@ class CONTENT_EXPORT RenderWidget
   void InitForMainFrame(ShowCallback show_callback,
                         blink::WebFrameWidget* web_frame_widget,
                         const blink::ScreenInfo& screen_info,
-                        mojom::ViewWidgetType view_widget_type,
                         RenderWidgetDelegate& delegate);
 
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
@@ -221,7 +220,6 @@ class CONTENT_EXPORT RenderWidget
   blink::WebInputMethodController* GetInputMethodController() const;
 
   const gfx::Size& size() const { return size_; }
-  bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
   bool is_hidden() const { return is_hidden_; }
   const gfx::Size& visible_viewport_size() const {
     return visible_viewport_size_;
@@ -292,10 +290,6 @@ class CONTENT_EXPORT RenderWidget
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,
                      const gfx::Point& image_offset) override;
-  void SetPageScaleStateAndLimits(float page_scale_factor,
-                                  bool is_pinch_gesture_active,
-                                  float minimum,
-                                  float maximum) override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   viz::FrameSinkId GetFrameSinkId() override;
@@ -326,7 +320,6 @@ class CONTENT_EXPORT RenderWidget
   void ImeFinishComposingTextForPepper(bool keep_selection) override;
   void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                          const gfx::Rect& window_screen_rect) override;
-  void SetIsNestedMainFrameWidget(bool is_nested) override;
   void EnableDeviceEmulation(
       const blink::DeviceEmulationParams& params) override;
   void DisableDeviceEmulation() override;
@@ -387,6 +380,9 @@ class CONTENT_EXPORT RenderWidget
   using PresentationTimeCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   virtual void RequestPresentation(PresentationTimeCallback callback);
+
+  // Determines if fullscreen is granted for the frame.
+  bool IsFullscreenGrantedForFrame();
 
  protected:
   // blink::WebWidgetClient
@@ -580,9 +576,6 @@ class CONTENT_EXPORT RenderWidget
   // Indicates that we are never visible, so never produce graphical output.
   const bool never_composited_;
 
-  // Indicates whether tab-initiated fullscreen was granted.
-  bool is_fullscreen_granted_ = false;
-
   // True once Close() is called, during the self-destruction process, and to
   // verify destruction always goes through Close().
   bool closing_ = false;
@@ -658,11 +651,6 @@ class CONTENT_EXPORT RenderWidget
   // message to kill the render widget is coming for a popup or fullscreen.
   bool for_popup_ = false;
   bool for_pepper_fullscreen_ = false;
-  // If this widget is for a main frame (i.e. has a delegate_), this bit is
-  // used to tell if this is a nested widget (an "inner web contents") like a
-  // <webview> or <portal> widget. If false, the widget is either not a main
-  // frame (delegate_ == nullptr) or it is the top level widget.
-  bool for_nested_main_frame_ = false;
 
   // A callback into the creator/opener of this widget, to be executed when
   // WebWidgetClient::Show() occurs.
@@ -679,12 +667,6 @@ class CONTENT_EXPORT RenderWidget
   // Browser controls params such as top and bottom controls heights, whether
   // controls shrink blink size etc.
   cc::BrowserControlsParams browser_controls_params_;
-
-  // The last seen page scale state, which comes from the main frame and is
-  // propagated through the RenderWidget tree. This state is passed to any new
-  // child RenderWidget.
-  float page_scale_factor_from_mainframe_ = 1.f;
-  bool is_pinch_gesture_active_from_mainframe_ = false;
 
   gfx::Rect compositor_visible_rect_;
 

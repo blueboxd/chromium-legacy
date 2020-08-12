@@ -506,7 +506,6 @@ void FeatureInfo::InitializeFeatures() {
   AddExtensionString("GL_CHROMIUM_strict_attribs");
   AddExtensionString("GL_CHROMIUM_texture_mailbox");
   AddExtensionString("GL_CHROMIUM_trace_marker");
-  AddExtensionString("GL_EXT_debug_marker");
 
   // Pre es3, there are no PBOS and all unpack state is handled in client side.
   // With es3, unpack state is needed in server side. We always mark these
@@ -1601,8 +1600,6 @@ void FeatureInfo::InitializeFeatures() {
       gfx::HasExtension(extensions, "GL_ANGLE_client_arrays");
   feature_flags_.angle_request_extension =
       gfx::HasExtension(extensions, "GL_ANGLE_request_extension");
-  feature_flags_.ext_debug_marker =
-      gfx::HasExtension(extensions, "GL_EXT_debug_marker");
   feature_flags_.ext_pixel_buffer_object =
       gfx::HasExtension(extensions, "GL_ARB_pixel_buffer_object") ||
       gfx::HasExtension(extensions, "GL_NV_pixel_buffer_object");
@@ -1613,6 +1610,11 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.angle_robust_resource_initialization =
       gfx::HasExtension(extensions, "GL_ANGLE_robust_resource_initialization");
   feature_flags_.nv_fence = gfx::HasExtension(extensions, "GL_NV_fence");
+
+  if (gfx::HasExtension(extensions, "GL_EXT_debug_marker")) {
+    feature_flags_.ext_debug_marker = true;
+    AddExtensionString("GL_EXT_debug_marker");
+  }
 
   // UnpremultiplyAndDitherCopyCHROMIUM is only implemented on the full decoder.
   feature_flags_.unpremultiply_and_dither_copy = !is_passthrough_cmd_decoder_;

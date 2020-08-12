@@ -11,4 +11,5 @@
     <color name="blue">#1967D2</color>
     <color name="navigation_selected">#000000</color>
     <color name="navigation_unselected">#888888</color>
+    <color name="medium_text_color">#202124</color>
 </resources>

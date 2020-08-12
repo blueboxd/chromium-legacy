@@ -41,6 +41,8 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
                          const IntRect& screen_space_rect) override;
   void ZoomLevelChanged(double zoom_level) override;
   void UpdateCaptureSequenceNumber(uint32_t sequence_number) override;
+  void PageScaleFactorChanged(float page_scale_factor,
+                              bool is_pinch_gesture_active) override;
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override;
   AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;

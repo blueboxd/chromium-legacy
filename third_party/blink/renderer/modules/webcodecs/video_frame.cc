@@ -63,9 +63,29 @@ bool IsValidSkColorType(SkColorType sk_color_type) {
 
 }  // namespace
 
-VideoFrame::VideoFrame(scoped_refptr<media::VideoFrame> frame)
+VideoFrame::Handle::Handle(scoped_refptr<media::VideoFrame> frame)
     : frame_(std::move(frame)) {
   DCHECK(frame_);
+}
+
+scoped_refptr<media::VideoFrame> VideoFrame::Handle::frame() {
+  WTF::MutexLocker locker(mutex_);
+  return frame_;
+}
+
+void VideoFrame::Handle::Invalidate() {
+  WTF::MutexLocker locker(mutex_);
+  frame_.reset();
+}
+
+VideoFrame::VideoFrame(scoped_refptr<media::VideoFrame> frame)
+    : handle_(base::MakeRefCounted<Handle>(std::move(frame))) {
+  DCHECK(handle_->frame());
+}
+
+VideoFrame::VideoFrame(scoped_refptr<Handle> handle)
+    : handle_(std::move(handle)) {
+  DCHECK(handle_);
 }
 
 // static
@@ -164,7 +184,7 @@ VideoFrame* VideoFrame::Create(ImageBitmap* source,
 }
 
 String VideoFrame::format() const {
-  // TODO(sandersd): Look up on |frame_|.
+  // TODO(sandersd): Look up on |handle_->frame()|.
   return String();
 }
 
@@ -174,76 +194,90 @@ HeapVector<Member<Plane>> VideoFrame::planes() const {
 }
 
 uint32_t VideoFrame::codedWidth() const {
-  if (!frame_)
+  auto local_frame = handle_->frame();
+  if (!local_frame)
     return 0;
-  return frame_->coded_size().width();
+  return local_frame->coded_size().width();
 }
 
 uint32_t VideoFrame::codedHeight() const {
-  if (!frame_)
+  auto local_frame = handle_->frame();
+  if (!local_frame)
     return 0;
-  return frame_->coded_size().height();
+  return local_frame->coded_size().height();
 }
 
 uint32_t VideoFrame::cropLeft() const {
-  if (!frame_)
+  auto local_frame = handle_->frame();
+  if (!local_frame)
     return 0;
-  return frame_->visible_rect().x();
+  return local_frame->visible_rect().x();
 }
 
 uint32_t VideoFrame::cropTop() const {
-  if (!frame_)
+  auto local_frame = handle_->frame();
+  if (!local_frame)
     return 0;
-  return frame_->visible_rect().y();
+  return local_frame->visible_rect().y();
 }
 
 uint32_t VideoFrame::cropWidth() const {
-  if (!frame_)
+  auto local_frame = handle_->frame();
+  if (!local_frame)
     return 0;
-  return frame_->visible_rect().width();
+  return local_frame->visible_rect().width();
 }
 
 uint32_t VideoFrame::cropHeight() const {
-  if (!frame_)
+  auto local_frame = handle_->frame();
+  if (!local_frame)
     return 0;
-  return frame_->visible_rect().height();
+  return local_frame->visible_rect().height();
 }
 
 uint32_t VideoFrame::displayWidth() const {
-  if (!frame_)
+  auto local_frame = handle_->frame();
+  if (!local_frame)
     return 0;
-  return frame_->natural_size().width();
+  return local_frame->natural_size().width();
 }
 
 uint32_t VideoFrame::displayHeight() const {
-  if (!frame_)
+  auto local_frame = handle_->frame();
+  if (!local_frame)
     return 0;
-  return frame_->natural_size().height();
+  return local_frame->natural_size().height();
 }
 
 base::Optional<uint64_t> VideoFrame::timestamp() const {
-  if (!frame_ || frame_->timestamp() == media::kNoTimestamp)
+  auto local_frame = handle_->frame();
+  if (!local_frame || local_frame->timestamp() == media::kNoTimestamp)
     return base::nullopt;
-  return frame_->timestamp().InMicroseconds();
+  return local_frame->timestamp().InMicroseconds();
 }
 
 base::Optional<uint64_t> VideoFrame::duration() const {
+  auto local_frame = handle_->frame();
   // TODO(sandersd): Can a duration be kNoTimestamp?
-  if (!frame_ || !frame_->metadata()->frame_duration.has_value())
+  if (!local_frame || !local_frame->metadata()->frame_duration.has_value())
     return base::nullopt;
-  return frame_->metadata()->frame_duration->InMicroseconds();
+  return local_frame->metadata()->frame_duration->InMicroseconds();
 }
 
-void VideoFrame::close() {
-  frame_.reset();
+void VideoFrame::destroy() {
+  handle_->Invalidate();
+}
+
+scoped_refptr<VideoFrame::Handle> VideoFrame::handle() {
+  return handle_;
 }
 
 scoped_refptr<media::VideoFrame> VideoFrame::frame() {
-  return frame_;
+  return handle_->frame();
 }
 
 scoped_refptr<const media::VideoFrame> VideoFrame::frame() const {
-  return frame_;
+  return handle_->frame();
 }
 
 ScriptPromise VideoFrame::createImageBitmap(ScriptState* script_state,
@@ -259,20 +293,30 @@ IntSize VideoFrame::BitmapSourceSize() const {
 }
 
 bool VideoFrame::preferAcceleratedImageBitmap() const {
+  auto local_frame = frame();
   return BitmapSourceSize().Area() > kCpuEfficientFrameSize ||
-         frame_->HasTextures();
+         (local_frame && local_frame->HasTextures());
 }
 
 ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
                                             base::Optional<IntRect> crop_rect,
                                             const ImageBitmapOptions* options,
                                             ExceptionState& exception_state) {
-  if ((frame_->IsMappable() || frame_->HasTextures()) &&
-      (frame_->format() == media::PIXEL_FORMAT_I420 ||
-       (frame_->format() == media::PIXEL_FORMAT_NV12 &&
-        frame_->HasTextures()))) {
+  auto local_frame = frame();
+
+  if (!local_frame) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot create ImageBitmap from destroyed VideoFrame.");
+    return ScriptPromise();
+  }
+
+  if ((local_frame->IsMappable() || local_frame->HasTextures()) &&
+      (local_frame->format() == media::PIXEL_FORMAT_I420 ||
+       (local_frame->format() == media::PIXEL_FORMAT_NV12 &&
+        local_frame->HasTextures()))) {
     scoped_refptr<StaticBitmapImage> image;
-    gfx::ColorSpace gfx_color_space = frame_->ColorSpace();
+    gfx::ColorSpace gfx_color_space = local_frame->ColorSpace();
     gfx_color_space = gfx_color_space.GetWithMatrixAndRange(
         gfx::ColorSpace::MatrixID::RGB, gfx::ColorSpace::RangeID::FULL);
     auto sk_color_space = gfx_color_space.ToSkColorSpace();
@@ -291,7 +335,7 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
         return ScriptPromise();
       }
       media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
-          frame_.get(), image_pixels->writable_data(), bytes_per_row);
+          local_frame.get(), image_pixels->writable_data(), bytes_per_row);
 
       SkImageInfo info =
           SkImageInfo::Make(cropWidth(), cropHeight(), kN32_SkColorType,
@@ -313,14 +357,14 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
       gpu::MailboxHolder dest_holder;
       // Use coded_size() to comply with media::ConvertFromVideoFrameYUV.
       dest_holder.mailbox = shared_image_interface->CreateSharedImage(
-          viz::ResourceFormat::RGBA_8888, frame_->coded_size(),
+          viz::ResourceFormat::RGBA_8888, local_frame->coded_size(),
           gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
           usage, gpu::kNullSurfaceHandle);
       dest_holder.sync_token = shared_image_interface->GenUnverifiedSyncToken();
       dest_holder.texture_target = GL_TEXTURE_2D;
 
-      media::ConvertFromVideoFrameYUV(frame_.get(), raster_context_provider,
-                                      dest_holder);
+      media::ConvertFromVideoFrameYUV(local_frame.get(),
+                                      raster_context_provider, dest_holder);
       gpu::SyncToken sync_token;
       raster_context_provider->RasterInterface()
           ->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());

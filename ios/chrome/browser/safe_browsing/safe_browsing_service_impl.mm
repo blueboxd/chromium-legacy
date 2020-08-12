@@ -67,6 +67,17 @@ void SafeBrowsingServiceImpl::Initialize(PrefService* prefs,
                      network_context_client_.BindNewPipeAndPassReceiver(),
                      safe_browsing_data_path));
 
+  auto url_loader_factory_params =
+      network::mojom::URLLoaderFactoryParams::New();
+  url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
+  url_loader_factory_params->is_corb_enabled = false;
+  network_context_client_->CreateURLLoaderFactory(
+      url_loader_factory_.BindNewPipeAndPassReceiver(),
+      std::move(url_loader_factory_params));
+  shared_url_loader_factory_ =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          url_loader_factory_.get());
+
   // Watch for changes to the Safe Browsing opt-out preference.
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
@@ -133,17 +144,7 @@ void SafeBrowsingServiceImpl::ClearCookies(
 void SafeBrowsingServiceImpl::SetUpURLLoaderFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  auto url_loader_factory_params =
-      network::mojom::URLLoaderFactoryParams::New();
-  url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
-  url_loader_factory_params->is_corb_enabled = false;
-  network_context_client_->CreateURLLoaderFactory(
-      url_loader_factory_.BindNewPipeAndPassReceiver(),
-      std::move(url_loader_factory_params));
   url_loader_factory_->Clone(std::move(receiver));
-  shared_url_loader_factory_ =
-      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-          url_loader_factory_.get());
 }
 
 void SafeBrowsingServiceImpl::UpdateSafeBrowsingEnabledState() {

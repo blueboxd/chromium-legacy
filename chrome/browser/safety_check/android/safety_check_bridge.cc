@@ -8,6 +8,8 @@
 
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safety_check/android/jni_headers/SafetyCheckBridge_jni.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/password_manager/core/browser/leak_detection/authenticated_leak_check.h"
 #include "components/safety_check/safety_check.h"
 
 static jlong JNI_SafetyCheckBridge_Init(
@@ -16,6 +18,14 @@ static jlong JNI_SafetyCheckBridge_Init(
     const base::android::JavaParamRef<jobject>& j_safety_check_observer) {
   return reinterpret_cast<intptr_t>(
       new SafetyCheckBridge(env, j_safety_check_observer));
+}
+
+static jboolean JNI_SafetyCheckBridge_UserSignedIn(JNIEnv* env) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(
+          ProfileManager::GetLastUsedProfile());
+  return password_manager::AuthenticatedLeakCheck::HasAccountForRequest(
+      identity_manager);
 }
 
 SafetyCheckBridge::SafetyCheckBridge(

@@ -135,6 +135,20 @@ std::vector<ui::GamepadDevice::Axis> EventConverterEvdev::GetGamepadAxes()
   return std::vector<ui::GamepadDevice::Axis>();
 }
 
+bool EventConverterEvdev::GetGamepadRumbleCapability() const {
+  NOTREACHED();
+  return false;
+}
+
+void EventConverterEvdev::PlayVibrationEffect(uint8_t amplitude,
+                                              uint16_t duration_millis) {
+  NOTREACHED();
+}
+
+void EventConverterEvdev::StopVibration() {
+  NOTREACHED();
+}
+
 int EventConverterEvdev::GetTouchPoints() const {
   NOTREACHED();
   return 0;

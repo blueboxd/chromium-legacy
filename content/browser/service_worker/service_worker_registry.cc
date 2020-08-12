@@ -527,15 +527,6 @@ void ServiceWorkerRegistry::DoomUncommittedResource(int64_t resource_id) {
   DoomUncommittedResources(resource_ids);
 }
 
-void ServiceWorkerRegistry::DoomUncommittedResources(
-    const std::vector<int64_t>& resource_ids) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  GetRemoteStorageControl()->DoomUncommittedResources(
-      resource_ids,
-      base::BindOnce(&ServiceWorkerRegistry::DidDoomUncommittedResourceIds,
-                     weak_factory_.GetWeakPtr(), resource_ids));
-}
-
 void ServiceWorkerRegistry::GetUserData(int64_t registration_id,
                                         const std::vector<std::string>& keys,
                                         GetUserDataCallback callback) {
@@ -886,6 +877,15 @@ ServiceWorkerRegistry::FindFromLiveRegistrationsForId(int64_t registration_id) {
   // There is no live registration. Storage lookup is required. Returning
   // nullopt results in storage lookup.
   return base::nullopt;
+}
+
+void ServiceWorkerRegistry::DoomUncommittedResources(
+    const std::vector<int64_t>& resource_ids) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  GetRemoteStorageControl()->DoomUncommittedResources(
+      resource_ids,
+      base::BindOnce(&ServiceWorkerRegistry::DidDoomUncommittedResourceIds,
+                     weak_factory_.GetWeakPtr(), resource_ids));
 }
 
 void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
@@ -1254,11 +1254,8 @@ void ServiceWorkerRegistry::DidWriteUncommittedResourceIds(
 void ServiceWorkerRegistry::DidDoomUncommittedResourceIds(
     const std::vector<int64_t>& resource_ids,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
-  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk)
     ScheduleDeleteAndStartOver();
-    return;
-  }
-  storage()->PurgeResources(resource_ids);
 }
 
 void ServiceWorkerRegistry::DidGetUserData(

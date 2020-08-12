@@ -3,10 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import build_server
+
 # Run build_server so that files needed by tests are copied to the local
 # third_party directory.
-import build_server
-build_server.main()
+if not build_server.HasLocalThirdPartyDirectory():
+  build_server.main()
+
+assert build_server.HasLocalThirdPartyDirectory(), (
+  'Third party dependencies were not copied')
 
 import json
 import optparse
@@ -85,6 +90,7 @@ class IntegrationTest(unittest.TestCase):
   def setUp(self):
     ConfigureFakeFetchers()
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   @EnableLogging('info')
   def testUpdateAndPublicFiles(self):
     '''Runs update then requests every public file. Update needs to be run first

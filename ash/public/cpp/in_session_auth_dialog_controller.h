@@ -7,12 +7,19 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/in_session_auth_dialog_client.h"
+#include "base/optional.h"
 
 namespace ash {
 
 // InSessionAuthDialogController manages the in-session auth dialog.
 class ASH_PUBLIC_EXPORT InSessionAuthDialogController {
  public:
+  // Callback for authentication checks. |success| is nullopt if an
+  // authentication check did not run, otherwise it is true/false if auth
+  // succeeded/failed.
+  using OnAuthenticateCallback =
+      base::OnceCallback<void(base::Optional<bool> success)>;
+
   // Return the singleton instance.
   static InSessionAuthDialogController* Get();
 
@@ -24,6 +31,13 @@ class ASH_PUBLIC_EXPORT InSessionAuthDialogController {
 
   // Destroys the authentication dialog.
   virtual void DestroyAuthenticationDialog() = 0;
+
+  // Takes a password or PIN and sends it to InSessionAuthDialogClient to
+  // authenticate. The InSessionAuthDialogClient should already know the current
+  // session's active user, so the user account is not provided here.
+  virtual void AuthenticateUserWithPasswordOrPin(
+      const std::string& password,
+      OnAuthenticateCallback callback) = 0;
 
  protected:
   InSessionAuthDialogController();

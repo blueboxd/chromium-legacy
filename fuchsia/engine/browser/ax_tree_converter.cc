@@ -178,10 +178,12 @@ bool ConvertAction(fuchsia::accessibility::semantics::Action fuchsia_action,
     case fuchsia::accessibility::semantics::Action::DEFAULT:
       *mojom_action = ax::mojom::Action::kDoDefault;
       return true;
+    case fuchsia::accessibility::semantics::Action::SHOW_ON_SCREEN:
+      *mojom_action = ax::mojom::Action::kScrollToMakeVisible;
+      return true;
     case fuchsia::accessibility::semantics::Action::SECONDARY:
     case fuchsia::accessibility::semantics::Action::SET_FOCUS:
     case fuchsia::accessibility::semantics::Action::SET_VALUE:
-    case fuchsia::accessibility::semantics::Action::SHOW_ON_SCREEN:
       return false;
     default:
       LOG(WARNING)

@@ -378,13 +378,21 @@ PRETTY_XML_WITH_TOKEN = """
 
 <histogram name="Omnibox.Version.{content}.Time" units="ms"
     expires_after="2020-12-25">
+  <obsolete>
+    Obsolete text
+  </obsolete>
   <owner>me@google.com</owner>
   <summary>
     The length of time taken by version of {content} provider's synchronous
     pass.
   </summary>
   <token key="content">
-    <variant name=".ExtensionApp" label="ExtensionApp"/>
+    <variant name=".ExtensionApp" label="ExtensionApp">
+      <obsolete>
+        Obsolete variant
+      </obsolete>
+      <owner>you@google.com</owner>
+    </variant>
     <variant name=".HistoryContents" label="HistoryContents"/>
     <variant name=".HistoryQuick" label="HistoryQuick"/>
   </token>
@@ -404,13 +412,21 @@ XML_WRONG_TOKEN_CHILDREN_ORDER = """
 
 <histogram name="Omnibox.Version.{content}.Time" units="ms"
     expires_after="2020-12-25">
+  <obsolete>
+    Obsolete text
+  </obsolete>
   <owner>me@google.com</owner>
   <summary>
     The length of time taken by version of {content} provider's synchronous
     pass.
   </summary>
   <token key="content">
-    <variant name=".ExtensionApp" label="ExtensionApp"/>
+    <variant name=".ExtensionApp" label="ExtensionApp">
+      <obsolete>
+        Obsolete variant
+      </obsolete>
+      <owner>you@google.com</owner>
+    </variant>
     <variant name=".HistoryContents" label="HistoryContents"/>
     <variant name=".HistoryQuick" label="HistoryQuick"/>
   </token>
@@ -430,13 +446,21 @@ XML_WRONG_VARIANT_ORDER = """
 
 <histogram name="Omnibox.Version.{content}.Time" units="ms"
     expires_after="2020-12-25">
+  <obsolete>
+    Obsolete text
+  </obsolete>
   <owner>me@google.com</owner>
   <summary>
     The length of time taken by version of {content} provider's synchronous
     pass.
   </summary>
   <token key="content">
-    <variant name=".ExtensionApp" label="ExtensionApp"/>
+    <variant name=".ExtensionApp" label="ExtensionApp">
+      <obsolete>
+        Obsolete variant
+      </obsolete>
+      <owner>you@google.com</owner>
+    </variant>
     <variant name=".HistoryQuick" label="HistoryQuick"/>
     <variant name=".HistoryContents" label="HistoryContents"/>
   </token>
@@ -517,7 +541,7 @@ class HistogramXmlTest(unittest.TestCase):
       ('ChildrenOrder', XML_WRONG_TOKEN_CHILDREN_ORDER, PRETTY_XML_WITH_TOKEN),
       ('VariantOrder', XML_WRONG_VARIANT_ORDER, PRETTY_XML_WITH_TOKEN),
   ])
-  def testPrettify(self, _, input_xml, expected_xml):
+  def testTokenPrettify(self, _, input_xml, expected_xml):
     self.maxDiff = None
     result = histogram_configuration_model.PrettifyTree(
         etree_util.ParseXMLString(input_xml))

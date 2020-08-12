@@ -136,7 +136,6 @@ AppInstallReportHandler::AppInstallReportHandler(
 AppInstallReportHandler::~AppInstallReportHandler() = default;
 
 Status AppInstallReportHandler::HandleRecord(Record record) {
-  RETURN_IF_ERROR(ValidateClientState());
   ASSIGN_OR_RETURN(base::Value report, ValidateRecord(record));
 
   ClientCallback client_cb = base::BindOnce([](bool finished_running) {

@@ -1609,6 +1609,8 @@ TEST(SafeNumerics, CompoundNumericOperations) {
   EXPECT_EQ(2, d.ValueOrDie());
   d *= d;
   EXPECT_EQ(4, d.ValueOrDie());
+  d *= 0.5;
+  EXPECT_EQ(2, d.ValueOrDie());
 
   CheckedNumeric<int> too_large = std::numeric_limits<int>::max();
   EXPECT_TRUE(too_large.IsValid());

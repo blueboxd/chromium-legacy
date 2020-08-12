@@ -8,19 +8,15 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/process/process_handle.h"
+#include "chrome/common/chrome_features.h"
 
 namespace chrome {
 
-namespace {
-
-const base::Feature kCpuAffinityRestrictToLittleCores{
-    "CpuAffinityRestrictToLittleCores", base::FEATURE_DISABLED_BY_DEFAULT};
-
-}  // namespace
-
 void InitializeCpuAffinityExperiments() {
-  if (!base::FeatureList::IsEnabled(kCpuAffinityRestrictToLittleCores))
+  if (!base::FeatureList::IsEnabled(
+          features::kCpuAffinityRestrictToLittleCores)) {
     return;
+  }
 
   // Restrict affinity of all existing threads of the current process. The
   // affinity is inherited by any subsequently created thread. While

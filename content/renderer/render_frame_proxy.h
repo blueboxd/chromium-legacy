@@ -140,8 +140,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnScreenInfoChanged(const blink::ScreenInfo& screen_info);
   void OnRootWindowSegmentsChanged(
       std::vector<gfx::Rect> root_widget_window_segments);
-  void OnPageScaleFactorChanged(float page_scale_factor,
-                                bool is_pinch_gesture_active);
   void OnVisibleViewportSizeChanged(const gfx::Size& visible_viewport_size);
 
   // Pass replicated information, such as security origin, to this
@@ -197,6 +195,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   base::UnguessableToken GetDevToolsFrameToken() override;
   void ZoomLevelChanged(double zoom_level) override;
   void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number) override;
+  void PageScaleFactorChanged(float page_scale_factor,
+                              bool is_pinch_gesture_active) override;
 
   void DidStartLoading();
 

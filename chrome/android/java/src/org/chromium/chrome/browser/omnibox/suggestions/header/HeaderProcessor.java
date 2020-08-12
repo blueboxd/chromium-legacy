@@ -54,7 +54,7 @@ public class HeaderProcessor implements DropdownItemProcessor {
     public void populateModel(
             final PropertyModel model, final int groupId, final String headerText) {
         model.set(HeaderViewProperties.TITLE, headerText);
-        model.set(HeaderViewProperties.IS_EXPANDED, true);
+        model.set(HeaderViewProperties.IS_COLLAPSED, false);
         model.set(HeaderViewProperties.DELEGATE, new HeaderViewProperties.Delegate() {
             @Override
             public void onHeaderSelected() {
@@ -63,14 +63,14 @@ public class HeaderProcessor implements DropdownItemProcessor {
 
             @Override
             public void onHeaderClicked() {
-                final boolean newState = !model.get(HeaderViewProperties.IS_EXPANDED);
+                final boolean newState = !model.get(HeaderViewProperties.IS_COLLAPSED);
                 RecordHistogram.recordSparseHistogram(newState
-                                ? "Omnibox.ToggleSuggestionGroupId.On"
-                                : "Omnibox.ToggleSuggestionGroupId.Off",
+                                ? "Omnibox.ToggleSuggestionGroupId.Off"
+                                : "Omnibox.ToggleSuggestionGroupId.On",
                         groupId);
 
-                model.set(HeaderViewProperties.IS_EXPANDED, newState);
-                mSuggestionHost.setGroupVisibility(groupId, newState);
+                model.set(HeaderViewProperties.IS_COLLAPSED, newState);
+                mSuggestionHost.setGroupCollapsedState(groupId, newState);
             }
         });
     }

@@ -10,10 +10,6 @@
       ]
     },
     {
-      "name": "LayoutIFrame IFRAME id='iframe'",
-      "bounds": [750, 900]
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [728, 906]
     },

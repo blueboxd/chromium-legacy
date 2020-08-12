@@ -397,6 +397,26 @@ void InputDeviceFactoryEvdev::ApplyCapsLockLed() {
   }
 }
 
+void InputDeviceFactoryEvdev::PlayVibrationEffect(int id,
+                                                  uint8_t amplitude,
+                                                  uint16_t duration_millis) {
+  for (const auto& it : converters_) {
+    if (it.second->id() == id) {
+      it.second->PlayVibrationEffect(amplitude, duration_millis);
+      return;
+    }
+  }
+}
+
+void InputDeviceFactoryEvdev::StopVibration(int id) {
+  for (const auto& it : converters_) {
+    if (it.second->id() == id) {
+      it.second->StopVibration();
+      return;
+    }
+  }
+}
+
 bool InputDeviceFactoryEvdev::IsDeviceEnabled(
     const EventConverterEvdev* converter) {
   if (!input_device_settings_.enable_internal_touchpad &&
@@ -515,7 +535,8 @@ void InputDeviceFactoryEvdev::NotifyGamepadDevicesUpdated() {
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasGamepad()) {
       gamepads.emplace_back(it->second->input_device(),
-                            it->second->GetGamepadAxes());
+                            it->second->GetGamepadAxes(),
+                            it->second->GetGamepadRumbleCapability());
     }
   }
 

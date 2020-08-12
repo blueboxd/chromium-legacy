@@ -66,6 +66,10 @@ class TestInputController : public ui::InputController {
                         GetTouchEventLogReply reply) override {
     std::move(reply).Run(std::vector<base::FilePath>());
   }
+  void PlayVibrationEffect(int id,
+                           uint8_t amplitude,
+                           uint16_t duration_millis) override {}
+  void StopVibration(int id) override {}
   void SetInternalTouchpadEnabled(bool enabled) override {}
   bool IsInternalTouchpadEnabled() const override { return false; }
   void SetTouchscreensEnabled(bool enabled) override {}

@@ -895,12 +895,17 @@ class FileTasks {
             console.error('Cannot resolve display root after mounting:', error);
           }
         } catch (error) {
-          const path = util.extractFilePath(url);
-          const namePos = path.lastIndexOf('/');
-          this.ui_.alertDialog.show(
-              strf('ARCHIVE_MOUNT_FAILED', path.substr(namePos + 1), error),
-              null, null);
-          console.error(`Cannot mount '${path}': ${error.stack || error}`);
+          const filename = util.extractFilePath(url).split('/').pop();
+
+          const errorItem = new ProgressCenterItem();
+          errorItem.id = 'cannot-mount-' + url;
+          errorItem.type = ProgressItemType.MOUNT_ARCHIVE;
+          errorItem.message = strf('ARCHIVE_MOUNT_FAILED', filename);
+          errorItem.state = ProgressItemState.ERROR;
+          this.progressCenter_.updateItem(errorItem);
+
+          console.error(`Cannot mount '${url}':`);
+          console.error(error);
         }
       });
 

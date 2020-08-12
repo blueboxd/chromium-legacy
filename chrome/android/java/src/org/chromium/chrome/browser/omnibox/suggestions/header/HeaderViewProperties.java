@@ -24,13 +24,13 @@ public class HeaderViewProperties {
     /** The runnable object that is executed whenever user taps the header suggestion. */
     public static final WritableObjectPropertyKey<Delegate> DELEGATE =
             new WritableObjectPropertyKey<>();
-    /** The expanded state of the header suggestion. */
-    public static final WritableBooleanPropertyKey IS_EXPANDED = new WritableBooleanPropertyKey();
+    /** The collapsed state of the header suggestion. */
+    public static final WritableBooleanPropertyKey IS_COLLAPSED = new WritableBooleanPropertyKey();
     /** The text content to be displayed as a header text. */
     public static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
 
     public static final PropertyKey[] ALL_UNIQUE_KEYS =
-            new PropertyKey[] {DELEGATE, IS_EXPANDED, TITLE};
+            new PropertyKey[] {DELEGATE, IS_COLLAPSED, TITLE};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);

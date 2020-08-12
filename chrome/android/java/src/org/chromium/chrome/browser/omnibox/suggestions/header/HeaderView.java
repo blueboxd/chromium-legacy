@@ -33,7 +33,7 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 public class HeaderView extends SimpleHorizontalLayoutView {
     private final TextView mHeaderText;
     private final ImageView mHeaderIcon;
-    private boolean mIsExpanded;
+    private boolean mIsCollapsed;
     private Runnable mOnSelectListener;
 
     /**
@@ -78,9 +78,9 @@ public class HeaderView extends SimpleHorizontalLayoutView {
             public void onInitializeAccessibilityNodeInfo(
                     View host, AccessibilityNodeInfoCompat info) {
                 super.onInitializeAccessibilityNodeInfo(host, info);
-                AccessibilityActionCompat action = mIsExpanded
-                        ? AccessibilityActionCompat.ACTION_COLLAPSE
-                        : AccessibilityActionCompat.ACTION_EXPAND;
+                AccessibilityActionCompat action = mIsCollapsed
+                        ? AccessibilityActionCompat.ACTION_EXPAND
+                        : AccessibilityActionCompat.ACTION_COLLAPSE;
 
                 info.addAction(new AccessibilityActionCompat(
                         AccessibilityEvent.TYPE_VIEW_CLICKED, action.getLabel()));
@@ -111,10 +111,10 @@ public class HeaderView extends SimpleHorizontalLayoutView {
     /**
      * Specifies whether view should be announced as expanded or collapsed.
      *
-     * @param isExpanded true, if view should be announced as expanded.
+     * @param isCollapsed true, if view should be announced as collapsed.
      */
-    void setExpandedStateForAccessibility(boolean isExpanded) {
-        mIsExpanded = isExpanded;
+    void setCollapsedStateForAccessibility(boolean isCollapsed) {
+        mIsCollapsed = isCollapsed;
     }
 
     /**

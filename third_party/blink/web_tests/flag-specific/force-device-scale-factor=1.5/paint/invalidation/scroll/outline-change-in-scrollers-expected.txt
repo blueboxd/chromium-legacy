@@ -6,7 +6,7 @@
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "invalidations": [
-        [258, 258, 113, 113]
+        [259, 259, 112, 112]
       ]
     },
     {
@@ -51,7 +51,7 @@
       "position": [15, 15],
       "bounds": [143, 225],
       "invalidations": [
-        [30, 0, 113, 113]
+        [31, 0, 112, 113]
       ],
       "transform": 2
     },
@@ -115,7 +115,7 @@
       "position": [37, 15],
       "bounds": [143, 225],
       "invalidations": [
-        [30, 0, 113, 113]
+        [31, 0, 112, 113]
       ],
       "transform": 4
     },
@@ -147,7 +147,7 @@
       "position": [15, 15],
       "bounds": [225, 143],
       "invalidations": [
-        [0, 30, 113, 113]
+        [0, 31, 113, 112]
       ],
       "transform": 5
     },

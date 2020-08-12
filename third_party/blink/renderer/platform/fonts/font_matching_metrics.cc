@@ -28,12 +28,18 @@ HashSet<T> SetIntersection(const HashSet<T>& a, const HashSet<T>& b) {
 
 namespace blink {
 
-FontMatchingMetrics::FontMatchingMetrics(bool top_level,
-                                         ukm::UkmRecorder* ukm_recorder,
-                                         ukm::SourceId source_id)
+FontMatchingMetrics::FontMatchingMetrics(
+    bool top_level,
+    ukm::UkmRecorder* ukm_recorder,
+    ukm::SourceId source_id,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : top_level_(top_level),
       ukm_recorder_(ukm_recorder),
-      source_id_(source_id) {
+      source_id_(source_id),
+      identifiability_metrics_timer_(
+          task_runner,
+          this,
+          &FontMatchingMetrics::IdentifiabilityMetricsTimerFired) {
   // Estimate of average page font use from anecdotal browsing session.
   constexpr unsigned kEstimatedFontCount = 7;
   local_fonts_succeeded_.ReserveCapacityForSize(kEstimatedFontCount);
@@ -182,16 +188,14 @@ void FontMatchingMetrics::PublishUkmMetrics() {
 }
 
 void FontMatchingMetrics::OnFontLookup() {
-  if (!time_of_earliest_unpublished_font_lookup_) {
-    time_of_earliest_unpublished_font_lookup_ = base::Time::Now();
-    return;
+  if (!identifiability_metrics_timer_.IsActive()) {
+    identifiability_metrics_timer_.StartOneShot(base::TimeDelta::FromMinutes(1),
+                                                FROM_HERE);
   }
+}
 
-  if (base::Time::Now() - *time_of_earliest_unpublished_font_lookup_ >=
-      base::TimeDelta::FromMinutes(1)) {
-    PublishIdentifiabilityMetrics();
-    time_of_earliest_unpublished_font_lookup_ = base::Time::Now();
-  }
+void FontMatchingMetrics::IdentifiabilityMetricsTimerFired(TimerBase*) {
+  PublishIdentifiabilityMetrics();
 }
 
 void FontMatchingMetrics::PublishAllMetrics() {

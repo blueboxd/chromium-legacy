@@ -149,6 +149,13 @@ public interface WebContents extends Parcelable {
     RenderFrameHost getFocusedFrame();
 
     /**
+     * @return The frame associated with renderProcessId and renderFrameId. Will be null if the IDs
+     *         do not correspond to a live RenderFrameHost.
+     */
+    @Nullable
+    RenderFrameHost getRenderFrameHostFromId(int renderProcessId, int renderFrameId);
+
+    /**
      * @return The root level view from the renderer, or {@code null} in some cases where there is
      *         none.
      */

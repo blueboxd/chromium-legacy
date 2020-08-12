@@ -46,6 +46,9 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void UpdateCaptureSequenceNumber(uint32_t sequence_number) = 0;
 
+  virtual void PageScaleFactorChanged(float page_scale_factor,
+                                      bool is_pinch_gesture_active) = 0;
+
   virtual void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) = 0;
 

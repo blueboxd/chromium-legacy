@@ -113,10 +113,6 @@ class WebWidget {
   // Called to resize the WebWidget.
   virtual void Resize(const WebSize&) {}
 
-  // Called to notify the WebWidget of entering/exiting fullscreen mode.
-  virtual void DidEnterFullscreen() {}
-  virtual void DidExitFullscreen() {}
-
   // Called to run through the entire set of document lifecycle phases needed
   // to render a frame of the web widget. This MUST be called before Paint,
   // and it may result in calls to WebViewClient::DidInvalidateRect (for

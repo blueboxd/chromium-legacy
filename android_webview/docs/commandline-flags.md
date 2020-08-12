@@ -141,9 +141,11 @@ Some interesting flags and Features:
 
 WebView also defines its own flags and Features:
 
- * [AwSwitches.java](https://cs.chromium.org/chromium/src/android_webview/java/src/org/chromium/android_webview/common/AwSwitches.java)
-   (and its [native
-   counterpart](https://cs.chromium.org/chromium/src/android_webview/common/aw_switches.h))
+ * C++ switches are defined in
+   [`aw_switches.cc`](/android_webview/common/aw_switches.cc). We use
+   [`java_cpp_strings`](/docs/android_accessing_cpp_switches_in_java.md) to
+   automatically generate Java switch constants from the C++ switches (see
+   [`AwSwitches.java`](https://source.chromium.org/chromium/chromium/src/+/master:out/android-Debug/gen/android_webview/common_java/generated_java/input_srcjars/org/chromium/android_webview/common/AwSwitches.java)).
  * [AwFeatureList.java](https://cs.chromium.org/chromium/src/android_webview/java/src/org/chromium/android_webview/AwFeatureList.java)
    (and its [native
    counterpart](https://cs.chromium.org/chromium/src/android_webview/common/aw_features.h))

@@ -54,6 +54,7 @@ class WebFrameWidget : public WebWidget {
  public:
   // Makes a WebFrameWidget that wraps a pre-existing WebWidget from the
   // RenderView/WebView, for a new local main frame.
+  // Main frames can be nested in cases like Portals or GuestViews.
   BLINK_EXPORT static WebFrameWidget* CreateForMainFrame(
       WebWidgetClient*,
       WebLocalFrame* main_frame,
@@ -63,7 +64,8 @@ class WebFrameWidget : public WebWidget {
           frame_widget,
       CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
           widget_host,
-      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget);
+      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
+      bool is_for_nested_main_frame = false);
   // Makes a WebFrameWidget that wraps a WebLocalFrame that is not a main frame,
   // providing a WebWidget to interact with the child local root frame.
   BLINK_EXPORT static WebFrameWidget* CreateForChildLocalRoot(
@@ -185,6 +187,15 @@ class WebFrameWidget : public WebWidget {
 
   // If the widget is currently selecting a range.
   virtual bool HandlingSelectRange() = 0;
+
+  // If fullscreen has been granted.
+  virtual bool IsFullscreenGranted() = 0;
+
+  // Returns true if a pinch gesture is currently active in main frame.
+  virtual bool PinchGestureActiveInMainFrame() = 0;
+
+  // Returns page scale in main frame..
+  virtual float PageScaleInMainFrame() = 0;
 
   // Override the zoom level for testing.
   virtual void SetZoomLevelForTesting(double zoom_level) = 0;

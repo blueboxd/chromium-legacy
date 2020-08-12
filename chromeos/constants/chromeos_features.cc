@@ -25,6 +25,10 @@ const base::Feature kAllowScrollSettings{"AllowScrollSettings",
 const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable Ambient mode album selection with photo previews.
+const base::Feature kAmbientModePhotoPreviewFeature{
+    "ChromeOSAmbientModePhotoPreview", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable ARC ADB sideloading support.
 const base::Feature kArcAdbSideloadingFeature{
     "ArcAdbSideloading", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -516,6 +520,10 @@ const base::Feature kImeMozcProto{"ImeMozcProto",
 
 bool IsAmbientModeEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModeFeature);
+}
+
+bool IsAmbientModePhotoPreviewEnabled() {
+  return base::FeatureList::IsEnabled(kAmbientModePhotoPreviewFeature);
 }
 
 bool IsBetterUpdateEnabled() {

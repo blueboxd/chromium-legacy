@@ -7,16 +7,11 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='container'",
-      "bounds": [183, 363],
-      "transform": 1
-    },
-    {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='transformed box'",
       "bounds": [150, 150],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -26,22 +21,12 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [12, 12, 0, 1]
+        [29, 29, 0, 1]
       ]
     },
     {
       "id": 2,
       "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [17, 17, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

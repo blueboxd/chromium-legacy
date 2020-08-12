@@ -14,14 +14,6 @@
         [0, 0, 300, 300]
       ],
       "transform": 1
-    },
-    {
-      "name": "Mask Layer",
-      "bounds": [300, 300],
-      "invalidations": [
-        [0, 0, 300, 300]
-      ],
-      "transform": 1
     }
   ],
   "transforms": [

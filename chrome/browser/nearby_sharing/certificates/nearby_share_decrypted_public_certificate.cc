@@ -126,21 +126,18 @@ NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
     return base::nullopt;
   }
 
-  // Note: Failure to decrypt the metadata key should not log an error. When
-  // another device advertises their encrypted metadata key, we do not know what
-  // public certificate that corresponds too. So, we will potentially be calling
-  // DecryptPublicCertificate() on all of our public certificates with the same
-  // encrypted metadata key until we find the correct one.
+  // Note: Failure to decrypt the metadata key or failure to confirm that the
+  // decrypted metadata key agrees with the key commitment tag should not log an
+  // error. When another device advertises their encrypted metadata key, we do
+  // not know what public certificate that corresponds to. So, we will
+  // potentially be calling DecryptPublicCertificate() on all of our public
+  // certificates with the same encrypted metadata key until we find the correct
+  // one.
   base::Optional<std::vector<uint8_t>> decrypted_metadata_key =
       DecryptMetadataKey(encrypted_metadata_key, secret_key.get());
-  if (!decrypted_metadata_key)
-    return base::nullopt;
-
-  // Confirm that the decrypted metadata key agrees with key commitment tag.
-  if (!VerifyMetadataEncryptionKeyTag(*decrypted_metadata_key,
+  if (!decrypted_metadata_key ||
+      !VerifyMetadataEncryptionKeyTag(*decrypted_metadata_key,
                                       metadata_encryption_key_tag)) {
-    NS_LOG(ERROR) << "Metadata decryption failed: Failed to verify metadata "
-                  << "encryption key tag.";
     return base::nullopt;
   }
 

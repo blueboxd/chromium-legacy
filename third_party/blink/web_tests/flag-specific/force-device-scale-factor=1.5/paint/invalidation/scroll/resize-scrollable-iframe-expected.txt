@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutIFrame IFRAME id='iframe'",
-      "bounds": [450, 450],
-      "transform": 1
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [1512, 1524],
       "transform": 1

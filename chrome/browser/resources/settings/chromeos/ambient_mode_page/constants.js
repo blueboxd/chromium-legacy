@@ -24,9 +24,12 @@
  * Album metadata for UI.
  *
  * @typedef {{
- *   albumId: String,
- *   checked: Boolean,
- *   title: String,
+ *   topicSource: AmbientModeTopicSource,
+ *   albumId: string,
+ *   checked: boolean,
+ *   description: string,
+ *   title: string,
+ *   url: string,
  * }}
  */
 /* #export */ let AmbientModeAlbum;

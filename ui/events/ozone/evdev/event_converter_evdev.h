@@ -102,7 +102,10 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
 
   // Returns information for all axes if the converter is used for a gamepad
   // device.
-  virtual std::vector<ui::GamepadDevice::Axis> GetGamepadAxes() const;
+  virtual std::vector<GamepadDevice::Axis> GetGamepadAxes() const;
+
+  // Returns whether the gamepad device supports rumble type force feedback.
+  virtual bool GetGamepadRumbleCapability() const;
 
   // Sets which keyboard keys should be processed. If |enable_filter| is
   // false, all keys are allowed and |allowed_keys| is ignored.
@@ -121,6 +124,10 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
 
   // Helper to generate a base::TimeTicks from an input_event's time
   static base::TimeTicks TimeTicksFromInputEvent(const input_event& event);
+
+  // Handle gamepad force feedback effects.
+  virtual void PlayVibrationEffect(uint8_t amplitude, uint16_t duration_millis);
+  virtual void StopVibration();
 
  protected:
   // base::MessagePumpForUI::FdWatcher:

@@ -84,8 +84,10 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
+#include "chrome/browser/ui/read_later/reading_list_model_factory.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -333,6 +335,10 @@ void ChromeBrowserMainExtraPartsProfiles::
   ProfileThemeUpdateServiceFactory::GetInstance();
 #endif
   ProtocolHandlerRegistryFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kReadLater))
+    ReadingListModelFactory::GetInstance();
+#endif
   RendererUpdaterFactory::GetInstance();
 #if !defined(OS_ANDROID)
   performance_manager::SiteDataCacheFacadeFactory::GetInstance();

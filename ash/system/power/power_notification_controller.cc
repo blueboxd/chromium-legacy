@@ -12,6 +12,7 @@
 #include "ash/system/power/dual_role_notification.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/message_center/message_center.h"
@@ -199,7 +200,7 @@ bool PowerNotificationController::UpdateNotificationStateForRemainingTime() {
   // The notification includes a rounded minutes value, so round the estimate
   // received from the power manager to match.
   const int remaining_minutes =
-      static_cast<int>(remaining_time->InSecondsF() / 60.0 + 0.5);
+      base::ClampRound(remaining_time->InSecondsF() / 60.0);
 
   if (remaining_minutes >= kNoWarningMinutes ||
       PowerStatus::Get()->IsBatteryFull()) {

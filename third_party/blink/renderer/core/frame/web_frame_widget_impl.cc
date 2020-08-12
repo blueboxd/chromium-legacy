@@ -116,7 +116,8 @@ WebFrameWidget* WebFrameWidget::CreateForMainFrame(
     CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
         mojo_widget_host,
     CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
-        mojo_widget) {
+        mojo_widget,
+    bool is_for_nested_main_frame) {
   DCHECK(client) << "A valid WebWidgetClient must be supplied.";
   DCHECK(!main_frame->Parent());  // This is the main frame.
 
@@ -135,7 +136,8 @@ WebFrameWidget* WebFrameWidget::CreateForMainFrame(
   auto* widget = MakeGarbageCollected<WebViewFrameWidget>(
       util::PassKey<WebFrameWidget>(), *client, web_view_impl,
       std::move(mojo_frame_widget_host), std::move(mojo_frame_widget),
-      std::move(mojo_widget_host), std::move(mojo_widget));
+      std::move(mojo_widget_host), std::move(mojo_widget),
+      is_for_nested_main_frame);
   widget->BindLocalRoot(*main_frame);
   return widget;
 }
@@ -256,9 +258,9 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
     // TODO(wjmaclean): This is updating when the size of the *child frame*
     // have changed which are completely independent of the WebView, and in an
     // OOPIF where the main frame is remote, are these limits even useful?
-    Client()->SetPageScaleStateAndLimits(
-        1.f, false /* is_pinch_gesture_active */,
-        View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
+    SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,
+                               View()->MinimumPageScaleFactor(),
+                               View()->MaximumPageScaleFactor());
   }
 }
 
@@ -273,14 +275,6 @@ void WebFrameWidgetImpl::UpdateMainFrameLayoutSize() {
   WebSize layout_size = *size_;
 
   view->SetLayoutSize(layout_size);
-}
-
-void WebFrameWidgetImpl::DidEnterFullscreen() {
-  View()->DidEnterFullscreen();
-}
-
-void WebFrameWidgetImpl::DidExitFullscreen() {
-  View()->DidExitFullscreen();
 }
 
 void WebFrameWidgetImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
@@ -1053,9 +1047,9 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   widget_base_->LayerTreeHost()->set_background_color(SK_ColorTRANSPARENT);
   // Pass the limits even though this is for subframes, as the limits will
   // be needed in setting the raster scale.
-  Client()->SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,
-                                       View()->MinimumPageScaleFactor(),
-                                       View()->MaximumPageScaleFactor());
+  SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,
+                             View()->MinimumPageScaleFactor(),
+                             View()->MaximumPageScaleFactor());
 
   widget_base_->LayerTreeHost()->SetRootLayer(layer);
 }

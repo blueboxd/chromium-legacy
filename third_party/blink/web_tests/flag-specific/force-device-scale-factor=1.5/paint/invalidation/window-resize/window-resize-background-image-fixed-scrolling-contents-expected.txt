@@ -6,7 +6,7 @@
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "invalidations": [
-        [0, 0, 900, 375]
+        [0, 0, 878, 375]
       ]
     },
     {
@@ -52,7 +52,7 @@
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "invalidations": [
-        [0, 0, 600, 900]
+        [0, 0, 578, 900]
       ]
     },
     {
@@ -75,7 +75,7 @@
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "invalidations": [
-        [0, 0, 1200, 900]
+        [0, 0, 1178, 900]
       ]
     },
     {

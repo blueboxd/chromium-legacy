@@ -65,7 +65,12 @@ feedwire::DataOperation MakeDataOperationWithContent(
   result.mutable_feature()
       ->mutable_content_extension()
       ->mutable_xsurface_content()
-      ->set_xsurface_output(std::move(xsurface_content));
+      ->set_xsurface_output(xsurface_content);
+
+  result.mutable_feature()
+      ->mutable_content_extension()
+      ->add_prefetch_metadata()
+      ->set_uri("http://uri-for-" + xsurface_content);
   return result;
 }
 
@@ -128,6 +133,9 @@ TEST(ProtocolTranslatorTest, TranslateContent) {
       TranslateDataOperation(wire_operation);
   EXPECT_TRUE(translated);
   EXPECT_EQ("content", translated->content().frame());
+  ASSERT_EQ(1, translated->content().prefetch_metadata_size());
+  EXPECT_EQ("http://uri-for-content",
+            translated->content().prefetch_metadata(0).uri());
 }
 
 TEST(ProtocolTranslatorTest, TranslateContentFailsWhenMissingContent) {

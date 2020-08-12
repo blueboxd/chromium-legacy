@@ -7847,7 +7847,7 @@ TEST_F(WebFrameTest, FullscreenLayerSize) {
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
@@ -7885,7 +7885,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
@@ -7908,7 +7908,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
 
   // Verify that the viewports are scrollable upon exiting fullscreen.
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
-  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  web_view_impl->DidExitFullscreen();
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
@@ -7952,7 +7952,7 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
       frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*document->documentElement());
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   EXPECT_EQ(document->documentElement(),
             Fullscreen::FullscreenElementFrom(*document));
 
@@ -8002,7 +8002,7 @@ TEST_F(WebFrameTest, FullscreenSubframe) {
       frame, mojom::UserActivationNotificationType::kTest);
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
 
   // Verify that the element is sized to the viewport.
@@ -8041,14 +8041,14 @@ TEST_F(WebFrameTest, FullscreenNestedExit) {
       top_doc->GetFrame(), mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*top_body);
 
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
 
   LocalFrame::NotifyUserActivation(
       iframe_doc->GetFrame(), mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*iframe_body);
 
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
   UpdateAllLifecyclePhases(web_view_impl);
 
@@ -8057,7 +8057,7 @@ TEST_F(WebFrameTest, FullscreenNestedExit) {
   EXPECT_EQ(iframe, Fullscreen::FullscreenElementFrom(*top_doc));
   EXPECT_EQ(iframe_body, Fullscreen::FullscreenElementFrom(*iframe_doc));
 
-  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
 
   // We should now have fully exited fullscreen.
@@ -8092,7 +8092,7 @@ TEST_F(WebFrameTest, FullscreenWithTinyViewport) {
   LocalFrame::NotifyUserActivation(
       frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(384, layout_view->LogicalWidth().Floor());
   EXPECT_EQ(640, layout_view->LogicalHeight().Floor());
@@ -8100,7 +8100,7 @@ TEST_F(WebFrameTest, FullscreenWithTinyViewport) {
   EXPECT_FLOAT_EQ(1.0, web_view_impl->MinimumPageScaleFactor());
   EXPECT_FLOAT_EQ(1.0, web_view_impl->MaximumPageScaleFactor());
 
-  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(320, layout_view->LogicalWidth().Floor());
   EXPECT_EQ(533, layout_view->LogicalHeight().Floor());
@@ -8130,7 +8130,7 @@ TEST_F(WebFrameTest, FullscreenResizeWithTinyViewport) {
   LocalFrame::NotifyUserActivation(
       frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(384, layout_view->LogicalWidth().Floor());
   EXPECT_EQ(640, layout_view->LogicalHeight().Floor());
@@ -8149,7 +8149,7 @@ TEST_F(WebFrameTest, FullscreenResizeWithTinyViewport) {
   EXPECT_FLOAT_EQ(1.0, web_view_impl->MinimumPageScaleFactor());
   EXPECT_FLOAT_EQ(1.0, web_view_impl->MaximumPageScaleFactor());
 
-  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(320, layout_view->LogicalWidth().Floor());
   EXPECT_EQ(192, layout_view->LogicalHeight().Floor());
@@ -8196,7 +8196,7 @@ TEST_F(WebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
     Fullscreen::RequestFullscreen(*frame->GetDocument()->body());
   }
 
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   client.screen_info_.rect = gfx::Rect(screen_size_minus_status_bars.width,
                                        screen_size_minus_status_bars.height);
@@ -8209,7 +8209,7 @@ TEST_F(WebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
   EXPECT_FLOAT_EQ(1.0, web_view_impl->MinimumPageScaleFactor());
   EXPECT_FLOAT_EQ(1.0, web_view_impl->MaximumPageScaleFactor());
 
-  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   client.screen_info_.rect = gfx::Rect(screen_size_minus_status_bars.width,
                                        screen_size_minus_status_bars.height);
@@ -8255,7 +8255,7 @@ TEST_F(WebFrameTest, ClearFullscreenConstraintsOnNavigation) {
   LocalFrame::NotifyUserActivation(
       frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
 
   // Entering fullscreen causes layout size and page scale limits to be
@@ -8272,7 +8272,7 @@ TEST_F(WebFrameTest, ClearFullscreenConstraintsOnNavigation) {
   KURL test_url = ToKURL("about:blank");
   WebLocalFrame* web_frame = web_view_helper.LocalMainFrame();
   frame_test_helpers::LoadHTMLString(web_frame, kSource, test_url);
-  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
 
   // Make sure the new page's layout size and scale factor limits aren't
@@ -8311,7 +8311,7 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
 
   video->webkitEnterFullscreen();
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_TRUE(video->IsFullscreen());
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()),
@@ -8353,7 +8353,7 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
   EXPECT_EQ(actively_painting_layers, 0);
   EXPECT_TRUE(found_video_layer);
 
-  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_FALSE(video->IsFullscreen());
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
@@ -8384,13 +8384,13 @@ TEST_F(WebFrameTest, OverlayFullscreenVideoInIframe) {
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
 
   video->webkitEnterFullscreen();
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_TRUE(video->IsFullscreen());
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()),
             SK_AlphaTRANSPARENT);
 
-  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_FALSE(video->IsFullscreen());
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
@@ -8429,7 +8429,7 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   document->SetIsXrOverlay(true, overlay);
   EXPECT_TRUE(document->IsXrOverlay());
 
-  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_TRUE(Fullscreen::IsFullscreenElement(*overlay));
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()),
@@ -8499,7 +8499,7 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   });
   EXPECT_TRUE(found_inner_layer);
 
-  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_FALSE(Fullscreen::IsFullscreenElement(*overlay));
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
@@ -13241,14 +13241,14 @@ TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {
   LocalFrame::NotifyUserActivation(
       frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*element);
-  WebView().MainFrameWidget()->DidEnterFullscreen();
+  WebView().DidEnterFullscreen();
 
   // Page scale factor must be 1.0 during fullscreen for elements to be sized
   // properly.
   EXPECT_EQ(1.0f, WebView().PageScaleFactor());
 
   // Confirm that exiting fullscreen restores back to default values.
-  WebView().MainFrameWidget()->DidExitFullscreen();
+  WebView().DidExitFullscreen();
   WebView().MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 

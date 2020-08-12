@@ -7,24 +7,25 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='container'",
-      "bounds": [183, 363],
-      "transform": 1
-    },
-    {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='to-animate' class='animating box'",
       "bounds": [150, 150],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='box'",
-      "position": [17, 182],
+      "position": [29, 194],
       "bounds": [150, 150],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF",
-      "transform": 1
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='box'",
+      "position": [27, 390],
+      "bounds": [150, 150],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF"
     }
   ],
   "transforms": [
@@ -40,16 +41,6 @@
     {
       "id": 2,
       "parent": 1,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
       "transform": [
         [...],
         [...],

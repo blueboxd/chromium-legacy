@@ -14,6 +14,7 @@ class CryptoKey;
 class NativeFileSystemHandle;
 class RTCEncodedAudioFrame;
 class RTCEncodedVideoFrame;
+class VideoFrame;
 
 // Extends V8ScriptValueSerializer with support for modules/ types.
 class MODULES_EXPORT V8ScriptValueDeserializerForModules final
@@ -48,6 +49,7 @@ class MODULES_EXPORT V8ScriptValueDeserializerForModules final
   NativeFileSystemHandle* ReadNativeFileSystemHandle(SerializationTag tag);
   RTCEncodedAudioFrame* ReadRTCEncodedAudioFrame();
   RTCEncodedVideoFrame* ReadRTCEncodedVideoFrame();
+  VideoFrame* ReadVideoFrame();
 };
 
 }  // namespace blink

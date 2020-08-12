@@ -87,6 +87,7 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::CredentialsMode,
       RejectCoepUnsafeNone reject_coep_unsafe_none) override;
+  WorkerToken GetWorkerToken() const override { return token_; }
 
   // shared_worker_global_scope.idl
   const String name() const;
@@ -108,8 +109,6 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
 
   void ExceptionThrown(ErrorEvent*) override;
 
-  // TODO(chrisha): Lift this up to WorkerGlobalScope once all worker types
-  // have tokens.
   const SharedWorkerToken token_;
   Member<ApplicationCacheHostForWorker> appcache_host_;
 };

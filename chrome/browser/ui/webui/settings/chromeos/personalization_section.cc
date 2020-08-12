@@ -116,6 +116,10 @@ bool IsAmbientModeAllowed() {
          ash::AmbientClient::Get()->IsAmbientModeAllowed();
 }
 
+bool IsAmbientModePhotoPreviewAllowed() {
+  return chromeos::features::IsAmbientModePhotoPreviewEnabled();
+}
+
 GURL GetGooglePhotosURL() {
   return GURL(chrome::kGooglePhotosURL);
 }
@@ -165,9 +169,9 @@ void PersonalizationSection::AddLoadTimeData(
       {"ambientModeTopicSourceGooglePhotos",
        IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS},
       {"ambientModeTopicSourceGooglePhotosDescription",
-       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS_DESCRIPTION},
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS_DESC},
       {"ambientModeTopicSourceGooglePhotosDescriptionNoAlbum",
-       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS_DESCRIPTION_NO_ALBUM},
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS_DESC_NO_ALBUM},
       {"ambientModeTopicSourceArtGallery",
        IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY},
       {"ambientModeTopicSourceArtGalleryDescription",
@@ -185,6 +189,10 @@ void PersonalizationSection::AddLoadTimeData(
        IDS_OS_SETTINGS_AMBIENT_MODE_TEMPERATURE_UNIT_FAHRENHEIT},
       {"ambientModeTemperatureUnitCelsius",
        IDS_OS_SETTINGS_AMBIENT_MODE_TEMPERATURE_UNIT_CELSIUS},
+      {"ambientModeAlbumsSubpageAlbumSelected",
+       IDS_OS_SETTINGS_AMBIENT_MODE_ALBUMS_SUBPAGE_ALBUM_SELECTED},
+      {"ambientModeAlbumsSubpageAlbumUnselected",
+       IDS_OS_SETTINGS_AMBIENT_MODE_ALBUMS_SUBPAGE_ALBUM_UNSELECTED},
       {"changePictureTitle", IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE},
       {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
       {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
@@ -214,6 +222,8 @@ void PersonalizationSection::AddLoadTimeData(
       "changePictureVideoModeEnabled",
       base::FeatureList::IsEnabled(::features::kChangePictureVideoMode));
   html_source->AddBoolean("isAmbientModeEnabled", IsAmbientModeAllowed());
+  html_source->AddBoolean("isAmbientModePhotoPreviewEnabled",
+                          IsAmbientModePhotoPreviewAllowed());
   html_source->AddString(
       "ambientModeAlbumsSubpageGooglePhotosTitle",
       l10n_util::GetStringFUTF16(

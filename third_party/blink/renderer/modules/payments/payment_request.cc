@@ -442,6 +442,8 @@ void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
   } else if (supported_method == kSecurePaymentConfirmationMethod &&
              RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
                  &execution_context)) {
+    UseCounter::Count(&execution_context,
+                      WebFeature::kSecurePaymentConfirmation);
     SecurePaymentConfirmationHelper::ParseSecurePaymentConfirmationData(
         input, exception_state);
   }

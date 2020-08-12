@@ -189,12 +189,14 @@ void ChildExitObserver::Observe(int type,
       // NOTIFICATION_RENDERER_PROCESS_TERMINATED is sent when the renderer
       // process is cleanly shutdown.
       info.normal_termination = true;
+      info.renderer_shutdown_requested = rph->ShutdownRequested();
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
       // We do not care about android fast shutdowns as it is a known case where
       // the renderer is intentionally killed when we are done with it.
       info.normal_termination = rph->FastShutdownStarted();
+      info.renderer_shutdown_requested = rph->ShutdownRequested();
       info.app_state = base::android::ApplicationStatusListener::GetState();
       const auto& content_info =
           *content::Details<content::ChildProcessTerminationInfo>(details)

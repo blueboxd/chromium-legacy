@@ -285,6 +285,9 @@ class MockTabStripModelObserver : public TabStripModelObserver {
         group_updates_[change.group] = TabGroupUpdate();
         break;
       }
+      case TabGroupChange::kEditorOpened: {
+        break;
+      }
       case TabGroupChange::kContentsChanged: {
         group_updates_[change.group].contents_update_count++;
         break;

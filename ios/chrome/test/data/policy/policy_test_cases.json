@@ -46,6 +46,8 @@
     ]
   },
 
+  "CloudManagementEnrollmentToken": {},
+
   "CloudReportingEnabled": {
     "os": [ "ios" ],
     "policy_pref_mapping_test": [

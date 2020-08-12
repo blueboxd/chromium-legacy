@@ -45,5 +45,6 @@ void LiteVideoKeyedService::Initialize(const base::FilePath& profile_path) {
 
 void LiteVideoKeyedService::ClearData(const base::Time& delete_begin,
                                       const base::Time& delete_end) {
-  decider_->ClearBlocklist(delete_begin, delete_end);
+  if (decider_)
+    decider_->ClearBlocklist(delete_begin, delete_end);
 }

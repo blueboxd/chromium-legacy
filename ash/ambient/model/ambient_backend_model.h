@@ -67,7 +67,7 @@ class ASH_EXPORT AmbientBackendModel {
   void Clear();
 
   // Get images from local storage. Could be null image.
-  PhotoWithDetails GetNextImage() const;
+  const PhotoWithDetails& GetNextImage() const;
 
   // Updates the weather information and notifies observers if the icon image is
   // not null.

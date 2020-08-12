@@ -141,6 +141,10 @@ class NearbySharingServiceImpl
   void OnOutgoingAdvertisementDecoded(
       const std::string& endpoint_id,
       sharing::mojom::AdvertisementPtr advertisement);
+  void OnOutgoingDecryptedCertificate(
+      const std::string& endpoint_id,
+      sharing::mojom::AdvertisementPtr advertisement,
+      base::Optional<NearbyShareDecryptedPublicCertificate> certificate);
   bool IsBluetoothPresent() const;
   bool IsBluetoothPowered() const;
   bool HasAvailableConnectionMediums();
@@ -154,6 +158,9 @@ class NearbySharingServiceImpl
   void InvalidateReceiveSurfaceState();
   void InvalidateAdvertisingState();
   void StopAdvertising();
+
+  void OnTransferComplete();
+  void OnTransferStarted(bool is_incoming);
 
   StatusCodes ReceivePayloads(const ShareTarget& share_target);
   StatusCodes SendPayloads(const ShareTarget& share_target);
@@ -284,6 +291,8 @@ class NearbySharingServiceImpl
   bool is_transferring_ = false;
   // True if we're currently receiving a file.
   bool is_receiving_files_ = false;
+  // True if we're currently sending a file.
+  bool is_sending_files_ = false;
   // True if we're currently attempting to connect to a remote device.
   bool is_connecting_ = false;
   // The time scanning began.

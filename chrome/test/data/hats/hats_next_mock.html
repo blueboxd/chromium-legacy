@@ -20,6 +20,14 @@
         window.open('http://foo.com', '_blank');
         history.pushState('', '', '#loaded');
       }
+
+      if (params.get('trigger_id') == "resize_for_testing") {
+        window.resizeTo(123, 456);
+      }
+
+      if (params.get('trigger_id') == "invalid_size_for_testing") {
+        window.resizeTo(1000, 1000);
+      }
     </script>
   </head>
   <body>

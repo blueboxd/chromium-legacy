@@ -24,8 +24,8 @@ enum class LCDTextDisallowedReason : uint8_t {
   kNonIntegralXOffset = 5,
   kNonIntegralYOffset = 6,
   kWillChangeTransform = 7,
-  kLayerHasFilterEffect = 8,
-  kMaxValue = kLayerHasFilterEffect,
+  kPixelOrColorEffect = 8,
+  kMaxValue = kPixelOrColorEffect,
 };
 constexpr size_t kLCDTextDisallowedReasonCount =
     static_cast<size_t>(LCDTextDisallowedReason::kMaxValue) + 1;

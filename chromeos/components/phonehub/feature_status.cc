@@ -18,9 +18,6 @@ std::ostream& operator<<(std::ostream& stream, FeatureStatus status) {
     case FeatureStatus::kPhoneSelectedAndPendingSetup:
       stream << "[Phone selected and pending setup]";
       break;
-    case FeatureStatus::kProhibitedByPolicy:
-      stream << "[Prohibited by policy]";
-      break;
     case FeatureStatus::kDisabled:
       stream << "[Disabled]";
       break;

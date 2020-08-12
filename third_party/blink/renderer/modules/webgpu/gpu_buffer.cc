@@ -138,34 +138,6 @@ void GPUBuffer::Trace(Visitor* visitor) const {
   DawnObject<WGPUBuffer>::Trace(visitor);
 }
 
-void GPUBuffer::setSubData(uint64_t dst_byte_offset,
-                           const FlexibleArrayBufferView& src,
-                           uint64_t src_byte_offset,
-                           uint64_t byte_length,
-                           ExceptionState& exception_state) {
-  device_->AddConsoleWarning(
-      "GPUBuffer.setSubData is deprecated: use GPUQueue.writeBuffer instead");
-
-  const uint8_t* src_base =
-      reinterpret_cast<const uint8_t*>(src.BaseAddressMaybeOnStack());
-  size_t src_byte_length = src.ByteLengthAsSizeT();
-
-  if (src_byte_offset > src_byte_length) {
-    exception_state.ThrowRangeError("srcOffset is too large");
-    return;
-  }
-
-  if (byte_length == 0) {
-    byte_length = src_byte_length - src_byte_offset;
-  } else if (byte_length > src_byte_length - src_byte_offset) {
-    exception_state.ThrowRangeError("byteLength is too large");
-    return;
-  }
-
-  const uint8_t* data = &src_base[src_byte_offset];
-  GetProcs().bufferSetSubData(GetHandle(), dst_byte_offset, byte_length, data);
-}
-
 void GPUBuffer::OnOldMapAsyncCallback(ScriptPromiseResolver* resolver,
                                       WGPUBufferMapAsyncStatus status,
                                       void* data,

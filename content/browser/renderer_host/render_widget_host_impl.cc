@@ -101,6 +101,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/filename_util.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "storage/browser/file_system/isolated_context.h"
@@ -308,8 +309,9 @@ blink::mojom::DragDataPtr DropDataToDragData(
     items.push_back(blink::mojom::DragItem::NewString(std::move(item)));
   }
 
-  return blink::mojom::DragData::New(
-      std::move(items), base::UTF16ToUTF8(drop_data.filesystem_id));
+  return blink::mojom::DragData::New(std::move(items),
+                                     base::UTF16ToUTF8(drop_data.filesystem_id),
+                                     drop_data.referrer_policy);
 }
 
 class UnboundWidgetInputHandler : public blink::mojom::WidgetInputHandler {

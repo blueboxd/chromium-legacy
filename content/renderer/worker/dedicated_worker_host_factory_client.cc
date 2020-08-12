@@ -41,7 +41,6 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHostDeprecated(
     base::OnceCallback<void(const network::CrossOriginEmbedderPolicy&)>
         callback) {
   DCHECK(!base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
-  DCHECK(!dedicated_worker_token.is_empty());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   factory_->CreateWorkerHost(
@@ -59,7 +58,6 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
     blink::CrossVariantMojoRemote<blink::mojom::BlobURLTokenInterfaceBase>
         blob_url_token) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
-  DCHECK(!dedicated_worker_token.is_empty());
   factory_->CreateWorkerHostAndStartScriptLoad(
       dedicated_worker_token, script_url, credentials_mode,
       FetchClientSettingsObjectFromWebToMojom(fetch_client_settings_object),

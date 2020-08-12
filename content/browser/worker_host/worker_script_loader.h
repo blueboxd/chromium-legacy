@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/public/browser/service_worker_client_info.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -69,8 +70,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   // chrome-extension:// URL.
   WorkerScriptLoader(
       int process_id,
-      const blink::DedicatedWorkerToken& dedicated_worker_token,
-      const blink::SharedWorkerToken& shared_worker_token,
+      const DedicatedOrSharedWorkerToken& worker_token,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,

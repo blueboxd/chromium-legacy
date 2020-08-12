@@ -22,15 +22,13 @@ namespace content {
 
 WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
     int process_id,
-    const blink::DedicatedWorkerToken& dedicated_worker_token,
-    const blink::SharedWorkerToken& shared_worker_token,
+    const DedicatedOrSharedWorkerToken& worker_token,
     ServiceWorkerMainResourceHandle* service_worker_handle,
     base::WeakPtr<AppCacheHost> appcache_host,
     const BrowserContextGetter& browser_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : process_id_(process_id),
-      dedicated_worker_token_(dedicated_worker_token),
-      shared_worker_token_(shared_worker_token),
+      worker_token_(worker_token),
       appcache_host_(std::move(appcache_host)),
       browser_context_getter_(browser_context_getter),
       loader_factory_(std::move(loader_factory)) {
@@ -63,10 +61,10 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
 
   // Create a WorkerScriptLoader to load the script.
   auto script_loader = std::make_unique<WorkerScriptLoader>(
-      process_id_, dedicated_worker_token_, shared_worker_token_, routing_id,
-      request_id, options, resource_request, std::move(client),
-      service_worker_handle_, appcache_host_, browser_context_getter_,
-      loader_factory_, traffic_annotation);
+      process_id_, worker_token_, routing_id, request_id, options,
+      resource_request, std::move(client), service_worker_handle_,
+      appcache_host_, browser_context_getter_, loader_factory_,
+      traffic_annotation);
   script_loader_ = script_loader->GetWeakPtr();
   mojo::MakeSelfOwnedReceiver(std::move(script_loader), std::move(receiver));
 }

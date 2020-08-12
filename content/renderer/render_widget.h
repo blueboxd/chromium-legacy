@@ -46,7 +46,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
@@ -285,8 +284,7 @@ class CONTENT_EXPORT RenderWidget
       bool request_unadjusted_movement) override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
-  void StartDragging(network::mojom::ReferrerPolicy policy,
-                     const blink::WebDragData& data,
+  void StartDragging(const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,
                      const gfx::Point& image_offset) override;

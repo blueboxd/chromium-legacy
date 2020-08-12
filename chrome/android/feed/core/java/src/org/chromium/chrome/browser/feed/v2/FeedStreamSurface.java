@@ -342,12 +342,14 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * Performs all necessary cleanups.
      */
     public void destroy() {
+        if (mOpened) {
+            surfaceClosed();
+        }
         if (mSliceViewTracker != null) {
             mSliceViewTracker.destroy();
             mSliceViewTracker = null;
         }
         mHybridListRenderer.unbind();
-        surfaceClosed();
     }
 
     /**
@@ -787,6 +789,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         if (sStartupCalled) {
             FeedStreamSurfaceJni.get().surfaceOpened(
                     mNativeFeedStreamSurface, FeedStreamSurface.this);
+            mHybridListRenderer.onSurfaceOpened();
         }
     }
 
@@ -794,6 +797,13 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * Informs that the surface is closed.
      */
     public void surfaceClosed() {
+        // Let the hybrid list renderer know that the surface has closed, so it doesn't
+        // interpret the removal of contents as related to actions otherwise initiated by
+        // the user.
+        if (sStartupCalled) {
+            mHybridListRenderer.onSurfaceClosed();
+        }
+
         int feedCount = mContentManager.getItemCount() - mHeaderCount;
         if (feedCount > 0) {
             mContentManager.removeContents(mHeaderCount, feedCount);

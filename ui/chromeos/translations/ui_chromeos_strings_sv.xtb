@@ -107,7 +107,6 @@
 <translation id="2085470240340828803">Det finns redan en fil med namnet <ph name="FILENAME" />. Vad vill du göra?</translation>
 <translation id="2121825465123208577">Ändra storlek</translation>
 <translation id="2136953289241069843">Translitterering (namaste → नमस्कार)</translation>
-<translation id="2138867954865495510">Det går inte att öppna <ph name="PATH" />: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="2163152940313951844">Ogiltigt tecken: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2164862903024139959">Tangentbord för vietnamesiska (TCVN)</translation>
 <translation id="2168214441502403371">Tangentbord för persiska</translation>

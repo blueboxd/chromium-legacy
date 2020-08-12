@@ -123,8 +123,7 @@ bool WebWidgetTestProxy::IsPointerLocked() {
   return event_sender_.IsPointerLocked();
 }
 
-void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
-                                       const blink::WebDragData& data,
+void WebWidgetTestProxy::StartDragging(const blink::WebDragData& data,
                                        blink::WebDragOperationsMask mask,
                                        const SkBitmap& drag_image,
                                        const gfx::Point& image_offset) {

@@ -143,3 +143,11 @@ TEST(NearbySharePrivateCertificateTest, SignVerifyRoundtrip) {
   EXPECT_TRUE(decrypted_public_certificate->VerifySignature(
       GetNearbyShareTestPayloadToSign(), *signature));
 }
+
+TEST(NearbySharePrivateCertificateTest, HashAuthenticationToken) {
+  NearbySharePrivateCertificate private_certificate =
+      GetNearbyShareTestPrivateCertificate(NearbyShareVisibility::kAllContacts);
+  EXPECT_EQ(GetNearbyShareTestPayloadHashUsingSecretKey(),
+            private_certificate.HashAuthenticationToken(
+                GetNearbyShareTestPayloadToSign()));
+}

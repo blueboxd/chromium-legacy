@@ -331,7 +331,6 @@
 <translation id="3568688522516854065">अपने दूसरे डिवाइस से अपने टैब पाने के लिए, साइन इन करें और 'सिंक करें' को चालू करें</translation>
 <translation id="3587482841069643663">सभी</translation>
 <translation id="3587596251841506391">वेब पर सुरक्षा बेहतर करने में मदद करें</translation>
-<translation id="3590487821116122040">ऐसी 'साइट मेमोरी' जो Chrome के हिसाब से ज़रूरी नहीं है (जैसे कि ऐसी साइट जिनमें कोई भी सेटिंग नहीं सेव की गई है या जिन पर आप अक्सर नहीं जाते हैं)</translation>
 <translation id="3594780231884063836">वीडियो म्यूट करें</translation>
 <translation id="3599863153486145794">साइन इन किए हुए सभी डिवाइसों से इतिहास साफ़ कर देता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकते हैं.</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
@@ -384,7 +383,6 @@
 <translation id="3987993985790029246">लिंक की प्रति बनाएं</translation>
 <translation id="3988213473815854515">स्‍थान अनुमत है</translation>
 <translation id="3988466920954086464">झटपट खोज नतीजे इस पैनल में देखें</translation>
-<translation id="3997476611815694295">महत्वहीन मेमोरी</translation>
 <translation id="4000212216660919741">ऑफ़लाइन होम</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# घंटा}one{# घंटे}other{# घंटे}}</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -562,7 +560,6 @@
 <translation id="5433691172869980887">उपयोगकर्ता नाम कॉपी किया गया</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> फ़ाइलें डाउनलोड हो रही हैं (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">सीधे पता बार पर जाएं</translation>
-<translation id="5447201525962359567">सभी साइट मेमोरी, जिसमें कुकी और स्थानीय रूप से संग्रहित अन्य डेटा शामिल है</translation>
 <translation id="545042621069398927">आपके डाउनलोड की गति बढ़ाई जा रही है.</translation>
 <translation id="5456381639095306749">पेज डाउनलोड करें</translation>
 <translation id="548278423535722844">मैप ऐप्लिकेशन में खोलें</translation>

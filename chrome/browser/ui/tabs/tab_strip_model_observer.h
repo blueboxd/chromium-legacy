@@ -199,7 +199,14 @@ struct TabGroupChange {
   // a kContentsChange event is fired. Whenever the group's visual data changes,
   // such as its title or color, a kVisualsChange event is fired. Whenever the
   // group is moved by interacting with its header, a kMoved event is fired.
-  enum Type { kCreated, kContentsChanged, kVisualsChanged, kMoved, kClosed };
+  enum Type {
+    kCreated,
+    kEditorOpened,
+    kContentsChanged,
+    kVisualsChanged,
+    kMoved,
+    kClosed
+  };
 
   TabGroupChange(tab_groups::TabGroupId group, Type type);
   ~TabGroupChange();

@@ -110,6 +110,12 @@ const uint8_t kTestSampleSignature[] = {
     // end s
 };
 
+// The result of HKDF of kTestPayloadToSign, using kTestSecretKey as salt. A
+// trivial info parameter is used, and the output length is fixed to be
+// kNearbyShareNumBytesAuthenticationTokenHash.
+const uint8_t kTestPayloadHashUsingSecretKey[] = {0xE2, 0xCB, 0x90,
+                                                  0x58, 0xDE, 0x3A};
+
 const int64_t kTestNotBeforeMillis = 1881702000000;
 
 const int64_t kTestValidityOffsetMillis = 1800000;  // 30 minutes
@@ -213,6 +219,13 @@ const std::vector<uint8_t>& GetNearbyShareTestSampleSignature() {
   static const base::NoDestructor<std::vector<uint8_t>> signature(
       std::begin(kTestSampleSignature), std::end(kTestSampleSignature));
   return *signature;
+}
+
+const std::vector<uint8_t>& GetNearbyShareTestPayloadHashUsingSecretKey() {
+  static const base::NoDestructor<std::vector<uint8_t>> hash(
+      std::begin(kTestPayloadHashUsingSecretKey),
+      std::end(kTestPayloadHashUsingSecretKey));
+  return *hash;
 }
 
 NearbySharePrivateCertificate GetNearbyShareTestPrivateCertificate(

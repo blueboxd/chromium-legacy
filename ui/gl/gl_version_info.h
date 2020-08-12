@@ -65,6 +65,7 @@ struct GL_EXPORT GLVersionInfo {
   bool is_d3d = false;
   bool is_mesa = false;
   bool is_swiftshader = false;
+  bool is_angle_metal = false;
   bool is_angle_swiftshader = false;
   bool is_angle_vulkan = false;
   unsigned major_version = 0;

@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/password_check/android/password_check_ui_status.h"
@@ -15,7 +17,6 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
-#include "components/password_manager/core/browser/mock_bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -30,15 +31,21 @@ using autofill::PasswordForm;
 using password_manager::BulkLeakCheckService;
 using password_manager::CompromisedCredentials;
 using password_manager::CompromiseType;
-using password_manager::MockBulkLeakCheckService;
 using password_manager::PasswordCheckUIStatus;
 using password_manager::TestPasswordStore;
 using testing::_;
+using testing::ElementsAre;
+using testing::Field;
+using testing::IsEmpty;
 using testing::NiceMock;
+
+using CompromisedCredentialForUI =
+    PasswordCheckManager::CompromisedCredentialForUI;
 
 namespace {
 
 constexpr char kExampleCom[] = "https://example.com";
+constexpr char kExampleApp[] = "com.example.app";
 
 constexpr char kUsername1[] = "alice";
 constexpr char kUsername2[] = "bob";
@@ -95,6 +102,22 @@ PasswordForm MakeSavedPassword(base::StringPiece signon_realm,
   return form;
 }
 
+std::string MakeAndroidRealm(base::StringPiece package_name) {
+  return base::StrCat({"android://hash@", package_name});
+}
+PasswordForm MakeSavedAndroidPassword(
+    base::StringPiece package_name,
+    base::StringPiece username,
+    base::StringPiece app_display_name = "",
+    base::StringPiece affiliated_web_realm = "") {
+  PasswordForm form;
+  form.signon_realm = MakeAndroidRealm(package_name);
+  form.username_value = base::ASCIIToUTF16(username);
+  form.app_display_name = std::string(app_display_name);
+  form.affiliated_web_realm = std::string(affiliated_web_realm);
+  return form;
+}
+
 CompromisedCredentials MakeCompromised(
     base::StringPiece signon_realm,
     base::StringPiece username,
@@ -106,6 +129,33 @@ CompromisedCredentials MakeCompromised(
       base::Time::Now() - time_since_creation,
       compromise_type,
   };
+}
+
+// Creates matcher for a given compromised credential
+auto ExpectCompromisedCredentialForUI(
+    const base::string16& display_username,
+    const base::string16& display_origin,
+    const base::Optional<std::string>& package_name,
+    const base::Optional<std::string>& change_password_url,
+    bool is_android_credential,
+    bool has_script) {
+  auto package_name_field_matcher =
+      package_name.has_value()
+          ? Field(&CompromisedCredentialForUI::package_name,
+                  package_name.value())
+          : Field(&CompromisedCredentialForUI::package_name, IsEmpty());
+  auto change_password_url_field_matcher =
+      change_password_url.has_value()
+          ? Field(&CompromisedCredentialForUI::change_password_url,
+                  change_password_url.value())
+          : Field(&CompromisedCredentialForUI::change_password_url, IsEmpty());
+  return AllOf(
+      Field(&CompromisedCredentialForUI::display_username, display_username),
+      Field(&CompromisedCredentialForUI::display_origin, display_origin),
+      package_name_field_matcher, change_password_url_field_matcher,
+      Field(&CompromisedCredentialForUI::is_android_credential,
+            is_android_credential),
+      Field(&CompromisedCredentialForUI::has_script, has_script));
 }
 
 }  // namespace
@@ -172,4 +222,45 @@ TEST_F(PasswordCheckManagerTest, OnCompromisedCredentialsChanged) {
       MakeCompromised(kExampleCom, kUsername1, base::TimeDelta::FromMinutes(1),
                       CompromiseType::kLeaked));
   RunUntilIdle();
+}
+
+TEST_F(PasswordCheckManagerTest, CorrectlyCreatesUIStructForSiteCredential) {
+  InitializeManager();
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+  EXPECT_THAT(
+      manager_->GetCompromisedCredentials(),
+      ElementsAre(ExpectCompromisedCredentialForUI(
+          base::ASCIIToUTF16(kUsername1), base::ASCIIToUTF16("example.com"),
+          base::nullopt, "https://example.com/",
+          /*is_android_credential=*/false, /*has_script=*/false)));
+}
+
+TEST_F(PasswordCheckManagerTest, CorrectlyCreatesUIStructForAppCredentials) {
+  InitializeManager();
+  // A credential without affiliation information.
+  store().AddLogin(MakeSavedAndroidPassword(kExampleApp, kUsername1));
+  // A credential for which affiliation information is known.
+  store().AddLogin(MakeSavedAndroidPassword(kExampleApp, kUsername2,
+                                            "Example App", kExampleCom));
+  store().AddCompromisedCredentials(
+      MakeCompromised(MakeAndroidRealm(kExampleApp), kUsername1));
+  store().AddCompromisedCredentials(
+      MakeCompromised(MakeAndroidRealm(kExampleApp), kUsername2));
+
+  RunUntilIdle();
+
+  EXPECT_THAT(
+      manager_->GetCompromisedCredentials(),
+      ElementsAre(
+          ExpectCompromisedCredentialForUI(
+              base::ASCIIToUTF16(kUsername1),
+              base::ASCIIToUTF16("App (com.example.app)"), "com.example.app",
+              base::nullopt, /*is_android_credential=*/true,
+              /*has_script=*/false),
+          ExpectCompromisedCredentialForUI(
+              base::ASCIIToUTF16(kUsername2), base::ASCIIToUTF16("Example App"),
+              "com.example.app", base::nullopt, /*is_android_credential=*/true,
+              /*has_script=*/false)));
 }

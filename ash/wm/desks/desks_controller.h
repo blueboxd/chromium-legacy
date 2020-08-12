@@ -27,6 +27,7 @@ class Window;
 namespace ash {
 
 class Desk;
+class DeskAnimationBase;
 
 // Defines a controller for creating, destroying and managing virtual desks and
 // their windows.
@@ -167,9 +168,9 @@ class ASH_EXPORT DesksController : public DesksHelper,
   void OnFirstSessionStarted() override;
 
  private:
-  class DeskAnimationBase;
-  class DeskActivationAnimation;
-  class DeskRemovalAnimation;
+  friend class DeskAnimationBase;
+  friend class DeskActivationAnimation;
+  friend class DeskRemovalAnimation;
 
   void OnAnimationFinished(DeskAnimationBase* animation);
 

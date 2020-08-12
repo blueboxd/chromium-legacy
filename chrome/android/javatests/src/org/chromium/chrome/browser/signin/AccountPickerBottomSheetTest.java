@@ -41,16 +41,13 @@ import org.mockito.Mock;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomSheetCoordinator;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -61,8 +58,6 @@ import org.chromium.components.signin.test.util.FakeProfileDataSource;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
-
-import java.io.IOException;
 
 /**
  * Tests account picker bottom sheet of the web signin flow.
@@ -90,10 +85,6 @@ public class AccountPickerBottomSheetTest {
     @ClassRule
     public static final DisableAnimationsTestRule sNoAnimationsRule =
             new DisableAnimationsTestRule();
-
-    @Rule
-    public final ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(0).build();
 
     @Captor
     public ArgumentCaptor<Callback<String>> callbackArgumentCaptor;
@@ -135,28 +126,6 @@ public class AccountPickerBottomSheetTest {
 
     @Test
     @MediumTest
-    @Feature("RenderTest")
-    public void testCollapsedSheetWithAccountView() throws IOException {
-        buildAndShowCollapsedBottomSheet();
-        mRenderTestRule.render(
-                mCoordinator.getBottomSheetViewForTesting(), "collapsed_sheet_with_account");
-    }
-
-    @Test
-    @MediumTest
-    @Feature("RenderTest")
-    public void testCollapsedSheetWithAccountViewDarkMode() throws IOException {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { ChromeNightModeTestUtils.setUpNightModeForChromeActivity(true); });
-        mRenderTestRule.setNightModeEnabled(true);
-        mActivityTestRule.startMainActivityOnBlankPage();
-        buildAndShowCollapsedBottomSheet();
-        mRenderTestRule.render(
-                mCoordinator.getBottomSheetViewForTesting(), "collapsed_sheet_with_account_dark");
-    }
-
-    @Test
-    @MediumTest
     public void testExpandedSheet() {
         buildAndShowExpandedBottomSheet();
         onView(allOf(withText(PROFILE_DATA1.getAccountName()), withEffectiveVisibility(VISIBLE)))
@@ -168,14 +137,6 @@ public class AccountPickerBottomSheetTest {
 
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_continue_as_button)).check(matches(not(isDisplayed())));
-    }
-
-    @Test
-    @MediumTest
-    @Feature("RenderTest")
-    public void testExpandedSheetView() throws IOException {
-        buildAndShowExpandedBottomSheet();
-        mRenderTestRule.render(mCoordinator.getBottomSheetViewForTesting(), "expanded_sheet");
     }
 
     @Test

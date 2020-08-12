@@ -334,8 +334,7 @@ bool ThroughputAnalyzer::MaybeGetThroughputObservation(
     return false;
   }
 
-  double downstream_kbps_double =
-      (bits_received * 1.0f) / duration.InMillisecondsF();
+  double downstream_kbps_double = bits_received * duration.ToHz() / 1000;
 
   if (IsHangingWindow(bits_received, duration, downstream_kbps_double)) {
     requests_.clear();

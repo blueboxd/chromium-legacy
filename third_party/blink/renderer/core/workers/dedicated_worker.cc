@@ -87,7 +87,6 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
                                  const KURL& script_request_url,
                                  const WorkerOptions* options)
     : AbstractWorker(context),
-      token_(blink::DedicatedWorkerToken::Create()),
       script_request_url_(script_request_url),
       options_(options),
       context_proxy_(

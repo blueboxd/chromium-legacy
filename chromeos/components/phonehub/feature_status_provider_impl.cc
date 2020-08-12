@@ -28,7 +28,16 @@ using multidevice_setup::mojom::HostStatus;
 
 bool IsEligibleForFeature(
     const base::Optional<multidevice::RemoteDeviceRef>& local_device,
-    const RemoteDeviceRefList& remote_devices) {
+    const RemoteDeviceRefList& remote_devices,
+    FeatureState feature_state) {
+  // If the feature is prohibited by policy, we don't initialize Phone Hub
+  // classes at all. But, there is an edge case where a user session starts up
+  // normally, then an administrator prohibits the policy during the user
+  // session. If this occurs, we consider the session ineligible for using Phone
+  // Hub.
+  if (feature_state == FeatureState::kProhibitedByPolicy)
+    return false;
+
   // If the local device has not yet been enrolled, no phone can serve as its
   // Phone Hub host.
   if (!local_device)
@@ -65,7 +74,7 @@ bool IsEligibleForFeature(
       continue;
 
     return true;
-  };
+  }
 
   // If none of the devices return true above, there are no phones capable of
   // Phone Hub connections on the account.
@@ -185,8 +194,12 @@ void FeatureStatusProviderImpl::UpdateStatus() {
 }
 
 FeatureStatus FeatureStatusProviderImpl::ComputeStatus() {
+  FeatureState feature_state =
+      multidevice_setup_client_->GetFeatureState(Feature::kPhoneHub);
+
   if (!IsEligibleForFeature(device_sync_client_->GetLocalDeviceMetadata(),
-                            device_sync_client_->GetSyncedDevices())) {
+                            device_sync_client_->GetSyncedDevices(),
+                            feature_state)) {
     return FeatureStatus::kNotEligibleForFeature;
   }
 
@@ -195,14 +208,8 @@ FeatureStatus FeatureStatusProviderImpl::ComputeStatus() {
   if (host_status == HostStatus::kEligibleHostExistsButNoHostSet)
     return FeatureStatus::kEligiblePhoneButNotSetUp;
 
-  FeatureState feature_state =
-      multidevice_setup_client_->GetFeatureState(Feature::kPhoneHub);
-
   if (IsPhonePendingSetup(host_status, feature_state))
     return FeatureStatus::kPhoneSelectedAndPendingSetup;
-
-  if (feature_state == FeatureState::kProhibitedByPolicy)
-    return FeatureStatus::kProhibitedByPolicy;
 
   if (IsFeatureDisabledByUser(feature_state))
     return FeatureStatus::kDisabled;

@@ -8,7 +8,6 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -17,10 +16,11 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_animation_base.h"
+#include "ash/wm/desks/desk_animation_impl.h"
 #include "ash/wm/desks/desks_animations.h"
 #include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/desks/desks_util.h"
-#include "ash/wm/desks/root_window_desk_switch_animator.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -35,10 +35,7 @@
 #include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/compositor/compositor.h"
-#include "ui/compositor/throughput_tracker.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -59,10 +56,6 @@ constexpr char kNumberOfWindowsOnDesk_3_HistogramName[] =
     "Ash.Desks.NumberOfWindowsOnDesk_3";
 constexpr char kNumberOfWindowsOnDesk_4_HistogramName[] =
     "Ash.Desks.NumberOfWindowsOnDesk_4";
-constexpr char kDeskActivationSmoothnessHistogramName[] =
-    "Ash.Desks.AnimationSmoothness.DeskActivation";
-constexpr char kDeskRemovalSmoothnessHistogramName[] =
-    "Ash.Desks.AnimationSmoothness.DeskRemoval";
 
 // Appends the given |windows| to the end of the currently active overview mode
 // session such that the most-recently used window is added first. If
@@ -93,18 +86,6 @@ void RemoveAllWindowsFromOverview() {
     while (!grid->empty())
       overview_session->RemoveItem(grid->window_list()[0].get());
   }
-}
-
-// Selects and returns the compositor to measure the animation smoothness.
-ui::Compositor* GetSelectedCompositorForAnimationSmoothness() {
-  // Favor the compositor associated with the active window's root window (if
-  // any), or that of the primary root window.
-  auto* active_window = window_util::GetActiveWindow();
-  auto* selected_root = active_window && active_window->GetRootWindow()
-                            ? active_window->GetRootWindow()
-                            : Shell::GetPrimaryRootWindow();
-  DCHECK(selected_root);
-  return selected_root->layer()->GetCompositor();
 }
 
 base::string16 GetDeskDefaultName(size_t desk_index) {
@@ -154,291 +135,6 @@ void MaybeUpdateShelfItems(
 }
 
 }  // namespace
-
-// -----------------------------------------------------------------------------
-// DesksController::AbstractDeskSwitchAnimation:
-
-// An abstract class that handles the shared operations need to be performed
-// when doing an animation that causes a desk switch animation. Subclasses
-// such as DeskActivationAnimation and DeskRemovalAnimation implement the
-// abstract interface of this class to handle the unique operations specific to
-// each animation type.
-class DesksController::DeskAnimationBase
-    : public RootWindowDeskSwitchAnimator::Delegate {
- public:
-  ~DeskAnimationBase() override = default;
-
-  const Desk* ending_desk() const { return ending_desk_; }
-
-  // Launches the animation. This should be done once all animators
-  // are created and added to `desk_switch_animators_`. This is to avoid any
-  // potential race conditions that might happen if one animator finished phase
-  // (1) of the animation while other animators are still being constructed.
-  void Launch() {
-    for (auto& observer : controller_->observers_)
-      observer.OnDeskSwitchAnimationLaunching();
-
-    throughput_tracker_.Start(GetReportCallback());
-
-    // This step makes sure that the containers of the target desk are shown at
-    // the beginning of the animation (but not actually visible to the user yet,
-    // until the desk is actually activated at a later step of the animation).
-    // This is needed because a window on the target desk can be focused before
-    // the desk becomes active (See `DesksController::OnWindowActivating()`).
-    // This window must be able to accept events (See
-    // `aura::Window::CanAcceptEvent()`) even though its desk is still being
-    // activated. https://crbug.com/1008574.
-    const_cast<Desk*>(ending_desk_)->PrepareForActivationAnimation();
-
-    DCHECK(!desk_switch_animators_.empty());
-    for (auto& animator : desk_switch_animators_)
-      animator->TakeStartingDeskScreenshot();
-  }
-
-  // RootWindowDeskSwitchAnimator::Delegate:
-  void OnStartingDeskScreenshotTaken(const Desk* ending_desk) override {
-    DCHECK(!desk_switch_animators_.empty());
-
-    // Once all starting desk screenshots on all roots are taken and placed on
-    // the screens, do the actual desk activation logic.
-    for (const auto& animator : desk_switch_animators_) {
-      if (!animator->starting_desk_screenshot_taken())
-        return;
-    }
-
-    // Extend the compositors' timeouts in order to prevents any repaints until
-    // the desks are switched and overview mode exits.
-    const auto roots = Shell::GetAllRootWindows();
-    for (auto* root : roots)
-      root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(true);
-
-    OnStartingDeskScreenshotTakenInternal(ending_desk);
-
-    for (auto* root : roots)
-      root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(false);
-
-    // Continue the second phase of the animation by taking the ending desk
-    // screenshot and actually animating the layers.
-    for (auto& animator : desk_switch_animators_)
-      animator->TakeEndingDeskScreenshot();
-  }
-
-  void OnEndingDeskScreenshotTaken() override {
-    DCHECK(!desk_switch_animators_.empty());
-
-    // Once all ending desk screenshots on all roots are taken, start the
-    // animation on all roots at the same time, so that they look synchrnoized.
-    for (const auto& animator : desk_switch_animators_) {
-      if (!animator->ending_desk_screenshot_taken())
-        return;
-    }
-
-    for (auto& animator : desk_switch_animators_)
-      animator->StartAnimation();
-  }
-
-  void OnDeskSwitchAnimationFinished() override {
-    DCHECK(!desk_switch_animators_.empty());
-
-    // Once all desk switch animations on all roots finish, destroy all the
-    // animators.
-    for (const auto& animator : desk_switch_animators_) {
-      if (!animator->animation_finished())
-        return;
-    }
-
-    OnDeskSwitchAnimationFinishedInternal();
-
-    desk_switch_animators_.clear();
-
-    throughput_tracker_.Stop();
-
-    for (auto& observer : controller_->observers_)
-      observer.OnDeskSwitchAnimationFinished();
-
-    controller_->OnAnimationFinished(this);
-    // `this` is now deleted.
-  }
-
- protected:
-  DeskAnimationBase(DesksController* controller, const Desk* ending_desk)
-      : controller_(controller), ending_desk_(ending_desk) {
-    DCHECK(controller_);
-    DCHECK(ending_desk_);
-  }
-
-  // Abstract functions that can be overridden by child classes to do different
-  // things when phase (1), and phase (3) completes. Note that
-  // `OnDeskSwitchAnimationFinishedInternal()` will be called before the desks
-  // screenshot layers, stored in `desk_switch_animators_`, are destroyed.
-  virtual void OnStartingDeskScreenshotTakenInternal(
-      const Desk* ending_desk) = 0;
-  virtual void OnDeskSwitchAnimationFinishedInternal() = 0;
-
-  // Since performance here matters, we have to use the UMA histograms macros to
-  // report the smoothness histograms, but each macro use has to be associated
-  // with exactly one histogram name. This function allows subclasses to return
-  // a callback that reports the histogram using the macro with their desired
-  // name.
-  virtual ash::metrics_util::ReportCallback GetReportCallback() const = 0;
-
-  DesksController* const controller_;
-
-  // An animator object per each root. Once all the animations are complete,
-  // this list is cleared.
-  std::vector<std::unique_ptr<RootWindowDeskSwitchAnimator>>
-      desk_switch_animators_;
-
-  // The desk that will be active after this animation ends.
-  const Desk* const ending_desk_;
-
- private:
-  // ThroughputTracker used for measuring this animation smoothness.
-  ui::ThroughputTracker throughput_tracker_ =
-      GetSelectedCompositorForAnimationSmoothness()
-          ->RequestNewThroughputTracker();
-
-  DISALLOW_COPY_AND_ASSIGN(DeskAnimationBase);
-};
-
-// -----------------------------------------------------------------------------
-// DesksController::DeskActivationAnimation:
-
-class DesksController::DeskActivationAnimation
-    : public DesksController::DeskAnimationBase {
- public:
-  DeskActivationAnimation(DesksController* controller,
-                          const Desk* ending_desk,
-                          bool move_left)
-      : DeskAnimationBase(controller, ending_desk) {
-    for (auto* root : Shell::GetAllRootWindows()) {
-      desk_switch_animators_.emplace_back(
-          std::make_unique<RootWindowDeskSwitchAnimator>(root, ending_desk,
-                                                         this, move_left,
-                                                         /*for_remove=*/false));
-    }
-  }
-
-  ~DeskActivationAnimation() override = default;
-
-  // DesksController::AbstractDeskSwitchAnimation:
-  void OnStartingDeskScreenshotTakenInternal(const Desk* ending_desk) override {
-    DCHECK_EQ(ending_desk_, ending_desk);
-    // The order here matters. Overview must end before ending tablet split view
-    // before switching desks. (If clamshell split view is active on one or more
-    // displays, then it simply will end when we end overview.) That's because
-    // we don't want |TabletModeWindowManager| maximizing all windows because we
-    // cleared the snapped ones in |SplitViewController| first. See
-    // |TabletModeWindowManager::OnOverviewModeEndingAnimationComplete|.
-    // See also test coverage for this case in
-    // `TabletModeDesksTest.SnappedStateRetainedOnSwitchingDesksFromOverview`.
-    const bool in_overview =
-        Shell::Get()->overview_controller()->InOverviewSession();
-    if (in_overview) {
-      // Exit overview mode immediately without any animations before taking the
-      // ending desk screenshot. This makes sure that the ending desk
-      // screenshot will only show the windows in that desk, not overview stuff.
-      Shell::Get()->overview_controller()->EndOverview(
-          OverviewEnterExitType::kImmediateExit);
-    }
-    SplitViewController* split_view_controller =
-        SplitViewController::Get(Shell::GetPrimaryRootWindow());
-    split_view_controller->EndSplitView(
-        SplitViewController::EndReason::kDesksChange);
-
-    controller_->ActivateDeskInternal(ending_desk,
-                                      /*update_window_activation=*/true);
-
-    MaybeRestoreSplitView(/*refresh_snapped_windows=*/true);
-  }
-
-  void OnDeskSwitchAnimationFinishedInternal() override {}
-
-  ash::metrics_util::ReportCallback GetReportCallback() const override {
-    return ash::metrics_util::ForSmoothness(
-        base::BindRepeating([](int smoothness) {
-          UMA_HISTOGRAM_PERCENTAGE(kDeskActivationSmoothnessHistogramName,
-                                   smoothness);
-        }));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeskActivationAnimation);
-};
-
-// -----------------------------------------------------------------------------
-// DesksController::DeskRemovalAnimation:
-
-class DesksController::DeskRemovalAnimation
-    : public DesksController::DeskAnimationBase {
- public:
-  DeskRemovalAnimation(DesksController* controller,
-                       const Desk* desk_to_remove,
-                       const Desk* desk_to_activate,
-                       bool move_left,
-                       DesksCreationRemovalSource source)
-      : DeskAnimationBase(controller, desk_to_activate),
-        desk_to_remove_(desk_to_remove),
-        request_source_(source) {
-    DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
-    DCHECK_EQ(controller_->active_desk(), desk_to_remove_);
-
-    for (auto* root : Shell::GetAllRootWindows()) {
-      desk_switch_animators_.emplace_back(
-          std::make_unique<RootWindowDeskSwitchAnimator>(root, desk_to_activate,
-                                                         this, move_left,
-                                                         /*for_remove=*/true));
-    }
-  }
-
-  ~DeskRemovalAnimation() override = default;
-
-  // DesksController::AbstractDeskSwitchAnimation:
-  void OnStartingDeskScreenshotTakenInternal(const Desk* ending_desk) override {
-    DCHECK_EQ(ending_desk_, ending_desk);
-    DCHECK_EQ(controller_->active_desk(), desk_to_remove_);
-    // We are removing the active desk, which may have tablet split view active.
-    // We will restore the split view state of the newly activated desk at the
-    // end of the animation. Clamshell split view is impossible because
-    // |DeskRemovalAnimation| is not used in overview.
-    SplitViewController* split_view_controller =
-        SplitViewController::Get(Shell::GetPrimaryRootWindow());
-    split_view_controller->EndSplitView(
-        SplitViewController::EndReason::kDesksChange);
-
-    // At the end of phase (1), we activate the target desk (i.e. the desk that
-    // will be activated after the active desk `desk_to_remove_` is removed).
-    // This means that phase (2) will take a screenshot of that desk before we
-    // move the windows of `desk_to_remove_` to that target desk.
-    controller_->ActivateDeskInternal(ending_desk,
-                                      /*update_window_activation=*/false);
-  }
-
-  void OnDeskSwitchAnimationFinishedInternal() override {
-    // Do the actual desk removal behind the scenes before the screenshot layers
-    // are destroyed.
-    controller_->RemoveDeskInternal(desk_to_remove_, request_source_);
-
-    MaybeRestoreSplitView(/*refresh_snapped_windows=*/true);
-  }
-
-  ash::metrics_util::ReportCallback GetReportCallback() const override {
-    return ash::metrics_util::ForSmoothness(
-        base::BindRepeating([](int smoothness) {
-          UMA_HISTOGRAM_PERCENTAGE(kDeskRemovalSmoothnessHistogramName,
-                                   smoothness);
-        }));
-  }
-
- private:
-  const Desk* const desk_to_remove_;
-  const DesksCreationRemovalSource request_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeskRemovalAnimation);
-};
-
-// -----------------------------------------------------------------------------
-// DesksController:
 
 DesksController::DesksController() {
   Shell::Get()->activation_client()->AddObserver(this);

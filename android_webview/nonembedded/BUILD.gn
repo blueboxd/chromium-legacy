@@ -32,7 +32,7 @@ android_library("nonembedded_java") {
     "//components/embedder_support/android:application_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
+    "//third_party/android_deps:protobuf_lite_runtime_java",
     "//ui/android:ui_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -103,7 +103,7 @@ android_library("services_java") {
     "//components/version_info/android:version_constants_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
+    "//third_party/android_deps:protobuf_lite_runtime_java",
   ]
 }
 

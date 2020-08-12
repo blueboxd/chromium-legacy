@@ -50,7 +50,8 @@ class CrashMetricsReporter {
     kRendererAllocationFailureAll = 16,
     kUtilityForegroundOom = 17,
     kUtilityCrashAll = 18,
-    kMaxValue = kUtilityCrashAll
+    kRendererProcessHostShutdown = 19,
+    kMaxValue = kRendererProcessHostShutdown
   };
   using ReportedCrashTypeSet = base::flat_set<ProcessedCrashCounts>;
 

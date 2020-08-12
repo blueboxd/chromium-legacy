@@ -59,7 +59,6 @@ DedicatedWorkerHost::DedicatedWorkerHost(
       cross_origin_embedder_policy_(cross_origin_embedder_policy),
       coep_reporter_(std::move(coep_reporter)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!token_.is_empty());
   DCHECK(worker_process_host_);
   DCHECK(worker_process_host_->IsInitializedAndNotDead());
   DCHECK(coep_reporter_);
@@ -191,8 +190,8 @@ void DedicatedWorkerHost::StartScriptLoad(
           storage_partition_impl);
 
   WorkerScriptFetchInitiator::Start(
-      worker_process_host_->GetID(), token_, blink::SharedWorkerToken::Null(),
-      script_url, creator_render_frame_host,
+      worker_process_host_->GetID(), token_, script_url,
+      creator_render_frame_host,
       nearest_ancestor_render_frame_host->ComputeSiteForCookies(),
       creator_origin_,
       nearest_ancestor_render_frame_host->GetIsolationInfoForSubresources(),

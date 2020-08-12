@@ -295,7 +295,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         // Only display the Enter VR button if VR Shell Dev environment is enabled.
         menu.findItem(R.id.enter_vr_id).setVisible(shouldShowEnterVr());
 
-        menu.findItem(R.id.managed_by_menu_id).setVisible(shouldShowManagedByMenuItem(currentTab));
+        MenuItem managedByMenuItem = menu.findItem(R.id.managed_by_menu_id);
+        managedByMenuItem.setVisible(shouldShowManagedByMenuItem(currentTab));
+        // TODO(https://crbug.com/1092175): Enable "managed by" menu item after chrome://management
+        // page is added.
+        managedByMenuItem.setEnabled(false);
     }
 
     private void prepareCommonMenuItems(Menu menu, @MenuGroup int menuGroup, boolean isIncognito) {

@@ -176,8 +176,7 @@ class WebViewPlugin : public blink::WebPlugin,
     void DidInvalidateRect(const blink::WebRect&) override;
 
     // WebWidgetClient methods:
-    void StartDragging(network::mojom::ReferrerPolicy,
-                       const blink::WebDragData&,
+    void StartDragging(const blink::WebDragData&,
                        blink::WebDragOperationsMask,
                        const SkBitmap&,
                        const gfx::Point&) override;

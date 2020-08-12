@@ -266,15 +266,6 @@
       type: "int",
     },
 
-    // Whether touch gestures should be "fuzzed" to nearest touch targets.
-    // It's expected that this is enabled everywhere by default, but it may be
-    // disabled for testing purposes as the algorithm is not yet perfect.
-    // crbug.com/304895 tracks removal once we're satisfied with the algorithm.
-    {
-      name: "touchAdjustmentEnabled",
-      initial: true,
-    },
-
     // Determines whether WebViewClient::didTapMultipleTargets will be used for
     // touch disambiguation.
     {

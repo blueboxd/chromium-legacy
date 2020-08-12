@@ -104,7 +104,7 @@ class MetricsReporter {
                             LoadStreamStatus final_status,
                             std::unique_ptr<LoadLatencyTimes> load_latencies);
   virtual void OnBackgroundRefresh(LoadStreamStatus final_status);
-  void OnLoadMoreBegin(SurfaceId surface_id);
+  virtual void OnLoadMoreBegin(SurfaceId surface_id);
   virtual void OnLoadMore(LoadStreamStatus final_status);
   virtual void OnClearAll(base::TimeDelta time_since_last_clear);
   // Called each time the surface receives new content.

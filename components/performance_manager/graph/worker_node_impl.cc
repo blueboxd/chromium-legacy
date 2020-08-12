@@ -12,14 +12,13 @@ namespace performance_manager {
 WorkerNodeImpl::WorkerNodeImpl(const std::string& browser_context_id,
                                WorkerType worker_type,
                                ProcessNodeImpl* process_node,
-                               const WorkerToken& worker_token)
+                               const blink::WorkerToken& worker_token)
     : browser_context_id_(browser_context_id),
       worker_type_(worker_type),
       process_node_(process_node),
       worker_token_(worker_token) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(process_node);
-  DCHECK(worker_token);
 }
 
 WorkerNodeImpl::~WorkerNodeImpl() {
@@ -121,7 +120,7 @@ const GURL& WorkerNodeImpl::url() const {
   return url_;
 }
 
-const WorkerToken& WorkerNodeImpl::worker_token() const {
+const blink::WorkerToken& WorkerNodeImpl::worker_token() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return worker_token_;
 }
@@ -173,7 +172,7 @@ const GURL& WorkerNodeImpl::GetURL() const {
   return url();
 }
 
-const WorkerToken& WorkerNodeImpl::GetWorkerToken() const {
+const blink::WorkerToken& WorkerNodeImpl::GetWorkerToken() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return worker_token();
 }

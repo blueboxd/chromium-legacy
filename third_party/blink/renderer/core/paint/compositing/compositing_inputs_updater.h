@@ -88,7 +88,7 @@ class CompositingInputsUpdater {
 
   bool NeedsPaintOffsetTranslationForCompositing(PaintLayer*);
 
-  LayoutGeometryMap geometry_map_;
+  base::Optional<LayoutGeometryMap> geometry_map_;
   PaintLayer* root_layer_;
   PaintLayer* compositing_inputs_root_;
 };

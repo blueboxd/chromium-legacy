@@ -107,7 +107,6 @@
 <translation id="2085470240340828803">Файл із назвою "<ph name="FILENAME" />" уже існує. Що робити?</translation>
 <translation id="2121825465123208577">Змінити розмір</translation>
 <translation id="2136953289241069843">Транслітерація (namaste → नमस्कार)</translation>
-<translation id="2138867954865495510">Не вдається відкрити шлях <ph name="PATH" />: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="2163152940313951844">Недійсний символ: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2164862903024139959">В’єтнамська клавіатура (TCVN)</translation>
 <translation id="2168214441502403371">Перська клавіатура</translation>

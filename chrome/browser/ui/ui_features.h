@@ -42,6 +42,8 @@ extern const base::Feature kReadLater;
 
 extern const base::Feature kScrollableTabStrip;
 
+extern const base::Feature kSignInProfileCreationFlow;
+
 extern const base::Feature kTabGroups;
 
 extern const base::Feature kTabGroupsCollapse;

@@ -181,6 +181,7 @@ void TabStripUIHandler::OnJavascriptAllowed() {
 void TabStripUIHandler::OnTabGroupChanged(const TabGroupChange& change) {
   switch (change.type) {
     case TabGroupChange::kCreated:
+    case TabGroupChange::kEditorOpened:
     case TabGroupChange::kContentsChanged: {
       // TabGroupChange::kCreated events are unnecessary as the front-end will
       // assume a group was created if there is a tab-group-state-changed event

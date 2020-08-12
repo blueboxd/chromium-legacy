@@ -141,10 +141,18 @@ TEST_F(CompositingInputsUpdaterTest,
       ->SetNeedsCompositingInputsUpdate();
 
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(IntRect(8, 8, 200, 200),
-            target->Layer()->ClippedAbsoluteBoundingBox());
-  EXPECT_EQ(IntRect(8, 8, 200, 200),
-            target->Layer()->UnclippedAbsoluteBoundingBox());
+  if (RuntimeEnabledFeatures::CompositingOptimizationsEnabled()) {
+    EXPECT_EQ(IntRect(8, 33, 200, 200),
+              target->Layer()->ClippedAbsoluteBoundingBox());
+    EXPECT_EQ(IntRect(8, 33, 200, 200),
+              target->Layer()->UnclippedAbsoluteBoundingBox());
+
+  } else {
+    EXPECT_EQ(IntRect(8, 8, 200, 200),
+              target->Layer()->ClippedAbsoluteBoundingBox());
+    EXPECT_EQ(IntRect(8, 8, 200, 200),
+              target->Layer()->UnclippedAbsoluteBoundingBox());
+  }
 }
 
 TEST_F(CompositingInputsUpdaterTest, ClipPathAncestor) {

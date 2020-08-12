@@ -42,6 +42,8 @@ using PermissionRequestOutcome =
 using SensitiveDirectoryResult =
     ChromeNativeFileSystemPermissionContext::SensitiveDirectoryResult;
 using HandleType = content::NativeFileSystemPermissionContext::HandleType;
+using UserActivationState =
+    content::NativeFileSystemPermissionGrant::UserActivationState;
 
 class OriginScopedNativeFileSystemPermissionContextTest : public testing::Test {
  public:
@@ -318,7 +320,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop;
   grant->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kUserDismissed, outcome);
         loop.Quit();
@@ -340,7 +342,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop;
   grant->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kUserGranted, outcome);
         loop.Quit();
@@ -361,7 +363,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop;
   grant->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kUserDenied, outcome);
         loop.Quit();
@@ -380,7 +382,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop;
   grant->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kNoUserActivation, outcome);
         loop.Quit();
@@ -388,6 +390,26 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
   loop.Run();
   // No user activation, so status should not change.
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+}
+
+TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
+       RequestPermission_NoUserActivation_UserActivationNotRequired) {
+  NativeFileSystemPermissionRequestManager::FromWebContents(web_contents_.get())
+      ->set_auto_response_for_test(PermissionAction::GRANTED);
+
+  auto grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
+
+  base::RunLoop loop;
+  grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kUserGranted, outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+  // No user activation, so status should not change.
+  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
@@ -400,7 +422,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop;
   grant->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kRequestAborted, outcome);
         loop.Quit();
@@ -422,7 +444,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop;
   grant->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kRequestAborted, outcome);
         loop.Quit();
@@ -435,7 +457,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop2;
   grant2->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kRequestAborted, outcome);
         loop2.Quit();
@@ -453,7 +475,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop3;
   grant2->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kNoUserActivation, outcome);
         loop3.Quit();
@@ -477,7 +499,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop;
   grant->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kBlockedByContentSetting, outcome);
         loop.Quit();
@@ -487,7 +509,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop2;
   grant2->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kBlockedByContentSetting, outcome);
         loop2.Quit();
@@ -508,7 +530,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop3;
   grant->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kNoUserActivation, outcome);
         loop3.Quit();
@@ -518,7 +540,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   base::RunLoop loop4;
   grant2->RequestPermission(
-      frame_id(),
+      frame_id(), UserActivationState::kRequired,
       base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
         EXPECT_EQ(PermissionRequestOutcome::kRequestAborted, outcome);
         loop4.Quit();

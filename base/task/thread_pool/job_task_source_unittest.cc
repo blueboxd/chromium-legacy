@@ -57,14 +57,17 @@ TEST_F(ThreadPoolJobTaskSourceTest, RunTasks) {
   {
     EXPECT_EQ(registered_task_source.WillRunTask(),
               TaskSource::RunStatus::kAllowedNotSaturated);
+    EXPECT_EQ(1U, task_source->GetWorkerCount());
 
     auto task = registered_task_source.TakeTask();
     std::move(task.task).Run();
     EXPECT_TRUE(registered_task_source.DidProcessTask());
+    EXPECT_EQ(0U, task_source->GetWorkerCount());
   }
   {
     EXPECT_EQ(registered_task_source.WillRunTask(),
               TaskSource::RunStatus::kAllowedSaturated);
+    EXPECT_EQ(1U, task_source->GetWorkerCount());
 
     // An attempt to run an additional task is not allowed.
     EXPECT_EQ(RegisteredTaskSource::CreateForTesting(task_source).WillRunTask(),
@@ -76,8 +79,11 @@ TEST_F(ThreadPoolJobTaskSourceTest, RunTasks) {
 
     std::move(task.task).Run();
     EXPECT_EQ(0U, task_source->GetRemainingConcurrency());
+    EXPECT_FALSE(task_source->IsCompleted());
     // Returns false because the task source is out of tasks.
     EXPECT_FALSE(registered_task_source.DidProcessTask());
+    EXPECT_EQ(0U, task_source->GetWorkerCount());
+    EXPECT_TRUE(task_source->IsCompleted());
   }
 }
 
@@ -196,12 +202,14 @@ TEST_F(ThreadPoolJobTaskSourceTest, RunTasksInParallel) {
       RegisteredTaskSource::CreateForTesting(task_source);
   EXPECT_EQ(registered_task_source_a.WillRunTask(),
             TaskSource::RunStatus::kAllowedNotSaturated);
+  EXPECT_EQ(1U, task_source->GetWorkerCount());
   auto task_a = registered_task_source_a.TakeTask();
 
   auto registered_task_source_b =
       RegisteredTaskSource::CreateForTesting(task_source);
   EXPECT_EQ(registered_task_source_b.WillRunTask(),
             TaskSource::RunStatus::kAllowedSaturated);
+  EXPECT_EQ(2U, task_source->GetWorkerCount());
   auto task_b = registered_task_source_b.TakeTask();
 
   // WillRunTask() should return a null RunStatus once the max concurrency is
@@ -217,6 +225,8 @@ TEST_F(ThreadPoolJobTaskSourceTest, RunTasksInParallel) {
 
   std::move(task_b.task).Run();
   EXPECT_TRUE(registered_task_source_b.DidProcessTask());
+
+  EXPECT_EQ(0U, task_source->GetWorkerCount());
 
   auto registered_task_source_c =
       RegisteredTaskSource::CreateForTesting(task_source);
@@ -283,11 +293,13 @@ TEST_F(ThreadPoolJobTaskSourceTest, RunJoinTaskInParallel) {
   auto worker_task = registered_task_source.TakeTask();
 
   EXPECT_TRUE(task_source->WillJoin());
+  EXPECT_FALSE(task_source->IsCompleted());
 
   std::move(worker_task.task).Run();
   EXPECT_FALSE(registered_task_source.DidProcessTask());
 
   EXPECT_FALSE(task_source->RunJoinTask());
+  EXPECT_TRUE(task_source->IsCompleted());
 }
 
 // Verifies that a call to NotifyConcurrencyIncrease() calls the delegate
@@ -365,7 +377,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, MaxConcurrencyStagnateIfShouldYield) {
             // As set up below, the mock will return true once.
             ASSERT_TRUE(delegate->ShouldYield());
           }),
-          BindRepeating([]() -> size_t {
+          BindRepeating([](size_t /*worker_count*/) -> size_t {
             return 1;  // max concurrency is always 1.
           }),
           &pooled_task_runner_delegate_);
@@ -422,7 +434,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, StaleConcurrency) {
 
   auto task_source = MakeRefCounted<JobTaskSource>(
       FROM_HERE, TaskTraits{}, BindRepeating([](JobDelegate*) {}),
-      BindRepeating([]() -> size_t { return 1; }),
+      BindRepeating([](size_t /*worker_count*/) -> size_t { return 1; }),
       &pooled_task_runner_delegate_);
 
   auto registered_task_source =
@@ -505,7 +517,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, GetTaskId) {
         // Allow running the task again.
         delegate->NotifyConcurrencyIncrease();
       }),
-      BindRepeating([]() -> size_t { return 1; }),
+      BindRepeating([](size_t /*worker_count*/) -> size_t { return 1; }),
       &pooled_task_runner_delegate_);
 
   auto registered_task_source =

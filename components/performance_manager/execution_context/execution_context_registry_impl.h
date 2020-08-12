@@ -41,9 +41,10 @@ class ExecutionContextRegistryImpl
   void RemoveObserver(ExecutionContextObserver* observer) override;
   const ExecutionContext* GetExecutionContextByToken(
       const ExecutionContextToken& token) override;
-  const FrameNode* GetFrameNodeByFrameToken(const FrameToken& token) override;
+  const FrameNode* GetFrameNodeByFrameToken(
+      const blink::LocalFrameToken& token) override;
   const WorkerNode* GetWorkerNodeByWorkerToken(
-      const WorkerToken& token) override;
+      const blink::WorkerToken& token) override;
   const ExecutionContext* GetExecutionContextForFrameNode(
       const FrameNode* frame_node) override;
   const ExecutionContext* GetExecutionContextForWorkerNode(

@@ -113,6 +113,7 @@ void NativeFileSystemHandleBase::DoRequestPermission(
   if (!writable) {
     handle_state_.read_grant->RequestPermission(
         context().frame_id,
+        NativeFileSystemPermissionGrant::UserActivationState::kRequired,
         base::BindOnce(&NativeFileSystemHandleBase::DidRequestPermission,
                        AsWeakPtr(), writable, std::move(callback)));
     return;
@@ -125,12 +126,15 @@ void NativeFileSystemHandleBase::DoRequestPermission(
     // the write permission request probably fails the same way. And we check
     // the final permission status after the permission request completes
     // anyway.
-    handle_state_.read_grant->RequestPermission(context().frame_id,
-                                                base::DoNothing());
+    handle_state_.read_grant->RequestPermission(
+        context().frame_id,
+        NativeFileSystemPermissionGrant::UserActivationState::kRequired,
+        base::DoNothing());
   }
 
   handle_state_.write_grant->RequestPermission(
       context().frame_id,
+      NativeFileSystemPermissionGrant::UserActivationState::kRequired,
       base::BindOnce(&NativeFileSystemHandleBase::DidRequestPermission,
                      AsWeakPtr(), writable, std::move(callback)));
 }

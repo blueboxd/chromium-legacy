@@ -16,6 +16,10 @@ const base::Feature kAccessiblePDFHighlight = {
 const base::Feature kPdfHonorJsContentSettings = {
     "PdfHonorJsContentSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// TODO(crbug.com/1064175): Remove this once partial loading is fixed.
+const base::Feature kPdfPartialLoading = {"PdfPartialLoading",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kPDFViewerUpdate = {"PDFViewerUpdate",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 

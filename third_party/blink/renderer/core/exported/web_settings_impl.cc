@@ -564,10 +564,6 @@ void WebSettingsImpl::SetPrefersReducedMotion(bool enabled) {
   settings_->SetPrefersReducedMotion(enabled);
 }
 
-void WebSettingsImpl::SetEnableTouchAdjustment(bool enabled) {
-  settings_->SetTouchAdjustmentEnabled(enabled);
-}
-
 bool WebSettingsImpl::ViewportEnabled() const {
   return settings_->GetViewportEnabled();
 }

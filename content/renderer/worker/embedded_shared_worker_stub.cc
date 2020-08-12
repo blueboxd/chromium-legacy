@@ -57,7 +57,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     ukm::SourceId ukm_source_id,
     const std::vector<std::string>& cors_exempt_header_list)
     : receiver_(this, std::move(receiver)) {
-  DCHECK(token);
   DCHECK(main_script_load_params);
   DCHECK(pending_subresource_loader_factory_bundle);
 

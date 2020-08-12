@@ -395,12 +395,12 @@
       'expiration': 14400,
     }
   },
-  'linux_nvidia_quadro_p400_experimental': {
+  'linux_nvidia_gtx_1660_experimental': {
     'swarming': {
       'dimensions': {
-        'gpu': '10de:1cb3-418.56',
-        'os': 'Ubuntu-19.04',
-        'pool': 'chromium.tests.gpu',
+        'gpu': '10de:2184-440.100',
+        'os': 'Ubuntu-18.04',
+        'pool': 'chromium.tests.gpu.experimental',
       },
     },
   },

@@ -102,11 +102,11 @@ class ArcAppInstallEventLogManager
   // to disk in its destructor.
   std::unique_ptr<ArcLog> log_;
 
-  // Collects log events and passes them to |this|.
-  std::unique_ptr<AppInstallEventLogger> logger_;
-
   // Handles storing the logs and preparing them for upload.
   std::unique_ptr<AppLogUpload> app_log_upload_;
+
+  // Collects log events and passes them to |this|.
+  std::unique_ptr<AppInstallEventLogger> logger_;
 };
 
 }  // namespace policy

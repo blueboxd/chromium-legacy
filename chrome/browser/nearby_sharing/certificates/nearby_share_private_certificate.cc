@@ -248,6 +248,13 @@ base::Optional<std::vector<uint8_t>> NearbySharePrivateCertificate::Sign(
   return signature;
 }
 
+std::vector<uint8_t> NearbySharePrivateCertificate::HashAuthenticationToken(
+    base::span<const uint8_t> authentication_token) const {
+  return ComputeAuthenticationTokenHash(
+      authentication_token,
+      base::as_bytes(base::make_span(secret_key_->key())));
+}
+
 base::Optional<nearbyshare::proto::PublicCertificate>
 NearbySharePrivateCertificate::ToPublicCertificate() {
   std::vector<uint8_t> public_key;

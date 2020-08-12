@@ -112,6 +112,8 @@ class MediaFeedsService : public KeyedService {
 
   bool HasCookieObserverForTest() const;
 
+  void EnsureCookieObserver();
+
  private:
   friend class MediaFeedsServiceTest;
 

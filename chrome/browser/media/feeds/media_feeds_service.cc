@@ -77,6 +77,7 @@ class CookieChangeListener : public network::mojom::CookieChangeListener {
     DCHECK(profile);
     DCHECK(!profile->IsOffTheRecord());
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
     MaybeStartListening();
   }
 
@@ -154,12 +155,7 @@ constexpr base::TimeDelta kTopFeedsMinWatchTime =
     base::TimeDelta::FromMinutes(30);
 
 MediaFeedsService::MediaFeedsService(Profile* profile)
-    : cookie_change_listener_(std::make_unique<CookieChangeListener>(
-          profile,
-          base::BindRepeating(&MediaFeedsService::OnResetOriginFromCookie,
-                              base::Unretained(this)))),
-      profile_(profile),
-      clock_(base::DefaultClock::GetInstance()) {
+    : profile_(profile), clock_(base::DefaultClock::GetInstance()) {
   DCHECK(!profile->IsOffTheRecord());
 
   pref_change_registrar_.Init(profile_->GetPrefs());
@@ -657,6 +653,15 @@ void MediaFeedsService::OnDiscoveredFeed() {
   GetMediaHistoryService()->GetPendingSafeSearchCheckMediaFeedItems(
       base::BindOnce(&MediaFeedsService::CheckItemsAgainstSafeSearch,
                      weak_factory_.GetWeakPtr()));
+}
+
+void MediaFeedsService::EnsureCookieObserver() {
+  if (cookie_change_listener_)
+    return;
+
+  cookie_change_listener_ = std::make_unique<CookieChangeListener>(
+      profile_, base::BindRepeating(&MediaFeedsService::OnResetOriginFromCookie,
+                                    base::Unretained(this)));
 }
 
 }  // namespace media_feeds

@@ -14,11 +14,11 @@
 #include "ui/gfx/x/event.h"
 #include "ui/platform_window/extensions/workspace_extension.h"
 #include "ui/platform_window/extensions/x11_extension.h"
-#include "ui/platform_window/handlers/wm_drag_handler.h"
-#include "ui/platform_window/handlers/wm_move_loop_handler.h"
-#include "ui/platform_window/handlers/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+#include "ui/platform_window/wm/wm_drag_handler.h"
+#include "ui/platform_window/wm/wm_move_loop_handler.h"
+#include "ui/platform_window/wm/wm_move_resize_handler.h"
 #include "ui/platform_window/x11/x11_window_export.h"
 
 namespace ui {

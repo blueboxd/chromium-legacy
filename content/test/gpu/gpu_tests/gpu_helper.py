@@ -109,6 +109,8 @@ def GetANGLERenderer(gpu_info):
         retval = 'opengles'
       elif 'OpenGL' in gl_renderer:
         retval = 'opengl'
+      elif 'Metal' in gl_renderer:
+        retval = 'metal'
       # SwiftShader first because it also contains Vulkan
       elif 'SwiftShader' in gl_renderer:
         retval = 'swiftshader'

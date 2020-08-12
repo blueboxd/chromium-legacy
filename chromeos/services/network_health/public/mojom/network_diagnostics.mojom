@@ -76,6 +76,18 @@ enum DnsResolutionProblem {
   kFailedToResolveHost,
 };
 
+// Problems related to the CaptivePortal routine.
+[Extensible]
+enum CaptivePortalProblem {
+  // No active networks found.
+  kNoActiveNetworks,
+  // The active network is detected to be behind a captive portal and have
+  // restricted connectivity.
+  kRestrictedConnectivity,
+  // The active network is detected to be behind a captive portal.
+  kCaptivePortalState,
+};
+
 // This interface is to be used by any clients that need to run specific
 // network-related diagnostics. Expected clients of this interface are
 // NetworkHealth, cros_healthd, and a connectivity diagnostics Web UI (to name
@@ -84,7 +96,7 @@ interface NetworkDiagnosticsRoutines {
   // Tests whether the device is connected to a LAN. It is possible that the
   // device may be trapped in a captive portal yet pass this test successfully.
   // Captive portal checks are done separately and are outside of the scope of
-  // this routine.
+  // this routine. See CaptivePortal() below.
   LanConnectivity() => (RoutineVerdict verdict);
 
   // Tests whether there is an acceptable signal strength on wireless networks.
@@ -111,4 +123,8 @@ interface NetworkDiagnosticsRoutines {
   // Tests whether a DNS resolution can be completed successfully.
   DnsResolution() => (RoutineVerdict verdict,
       array<DnsResolutionProblem> problems);
+
+  // Tests whether the internet connection is behind a captive portal.
+  CaptivePortal() => (RoutineVerdict verdict,
+      array<CaptivePortalProblem> problems);
 };

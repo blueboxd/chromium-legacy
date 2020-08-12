@@ -18,7 +18,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_drag_controller.h"
-#include "ui/platform_window/handlers/wm_drop_handler.h"
+#include "ui/platform_window/wm/wm_drop_handler.h"
 
 namespace ui {
 

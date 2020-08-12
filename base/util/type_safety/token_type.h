@@ -10,12 +10,19 @@
 
 namespace util {
 
-// A specialization of StrongAlias for base::UnguessableToken.
+// A specialization of StrongAlias for base::UnguessableToken. Unlike
+// base::UnguessableToken, a TokenType<...> does not default to null and does
+// not expose the concept of null tokens. If you need to indicate a null token,
+// please use base::Optional<TokenType<...>>.
 template <typename TypeMarker>
 class TokenType : public StrongAlias<TypeMarker, base::UnguessableToken> {
+ private:
+  using Super = StrongAlias<TypeMarker, base::UnguessableToken>;
+
  public:
-  // Inherit constructors.
-  using StrongAlias<TypeMarker, base::UnguessableToken>::StrongAlias;
+  TokenType() : Super(base::UnguessableToken::Create()) {}
+  explicit TokenType(const base::UnguessableToken& token) : Super(token) {}
+  TokenType(const TokenType& token) : Super(token.value()) {}
 
   // This object allows default assignment operators for compatibility with
   // STL containers.
@@ -30,16 +37,7 @@ class TokenType : public StrongAlias<TypeMarker, base::UnguessableToken> {
   };
 
   // Mimic the base::UnguessableToken API for ease and familiarity of use.
-  static TokenType Create() {
-    return TokenType(base::UnguessableToken::Create());
-  }
-  static const TokenType& Null() {
-    static const TokenType kNull;
-    return kNull;
-  }
-  bool is_empty() const { return this->value().is_empty(); }
   std::string ToString() const { return this->value().ToString(); }
-  explicit constexpr operator bool() const { return !is_empty(); }
 };
 
 }  // namespace util

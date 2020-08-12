@@ -465,7 +465,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoBackground) {
   OpenInChromeIncognitoIntent* intent =
       [[OpenInChromeIncognitoIntent alloc] init];
 
-  intent.urls = urls;
+  intent.url = urls;
 
   INInteraction* interaction = [[INInteraction alloc] initWithIntent:intent
                                                             response:nil];
@@ -487,8 +487,8 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoBackground) {
           AppStartupParameters* startupParameters =
               (AppStartupParameters*)value;
           const GURL calledURL = startupParameters.externalURL;
-          EXPECT_TRUE((int)[intent.urls count] == 3);
-          return [intent.urls containsObject:(net::NSURLWithGURL(calledURL))];
+          EXPECT_TRUE((int)[intent.url count] == 3);
+          return [intent.url containsObject:(net::NSURLWithGURL(calledURL))];
         } else {
           return YES;
         }
@@ -576,7 +576,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoForeground) {
   OpenInChromeIncognitoIntent* intent =
       [[OpenInChromeIncognitoIntent alloc] init];
 
-  intent.urls = urls;
+  intent.url = urls;
 
   INInteraction* interaction = [[INInteraction alloc] initWithIntent:intent
                                                             response:nil];
@@ -598,8 +598,8 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoForeground) {
           AppStartupParameters* startupParameters =
               (AppStartupParameters*)value;
           const GURL calledURL = startupParameters.externalURL;
-          EXPECT_TRUE((int)[intent.urls count] == 3);
-          return [intent.urls containsObject:(net::NSURLWithGURL(calledURL))];
+          EXPECT_TRUE((int)[intent.url count] == 3);
+          return [intent.url containsObject:(net::NSURLWithGURL(calledURL))];
         } else {
           return YES;
         }

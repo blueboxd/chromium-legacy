@@ -60,7 +60,7 @@ bool RelList::ValidateTokenValue(const AtomicString& token_value,
       return true;
     }
     if (RuntimeEnabledFeatures::MediaFeedsEnabled(
-            GetElement().GetExecutionContext()) ||
+            GetElement().GetExecutionContext()) &&
         token_value == "media-feed") {
       return true;
     }

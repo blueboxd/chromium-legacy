@@ -808,6 +808,7 @@ void ServiceWorkerGlobalScope::Trace(Visitor* visitor) const {
   visitor->Trace(payment_response_callbacks_);
   visitor->Trace(fetch_response_callbacks_);
   visitor->Trace(pending_preload_fetch_events_);
+  visitor->Trace(pending_fetch_events_);
   visitor->Trace(controller_receivers_);
   WorkerGlobalScope::Trace(visitor);
 }
@@ -820,6 +821,20 @@ bool ServiceWorkerGlobalScope::HasRelatedFetchEvent(
 
 int ServiceWorkerGlobalScope::GetOutstandingThrottledLimit() const {
   return features::kInstallingServiceWorkerOutstandingThrottledLimit.Get();
+}
+
+void ServiceWorkerGlobalScope::ResolveFetchEventHandledPromise(int event_id) {
+  FetchEvent* fetch_event = pending_fetch_events_.Take(event_id);
+  DCHECK(fetch_event);
+  fetch_event->ResolveHandledPromise();
+}
+
+void ServiceWorkerGlobalScope::RejectFetchEventHandledPromise(
+    int event_id,
+    const String& error_message) {
+  FetchEvent* fetch_event = pending_fetch_events_.Take(event_id);
+  DCHECK(fetch_event);
+  fetch_event->RejectHandledPromise(error_message);
 }
 
 void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls,
@@ -1527,6 +1542,8 @@ void ServiceWorkerGlobalScope::StartFetchEvent(
     // onNavigationPreloadError() will be called.
     pending_preload_fetch_events_.insert(event_id, fetch_event);
   }
+
+  pending_fetch_events_.insert(event_id, fetch_event);
 
   NoteNewFetchEvent(request->url());
 

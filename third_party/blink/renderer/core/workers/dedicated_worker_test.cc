@@ -89,7 +89,8 @@ class DedicatedWorkerObjectProxyForTest final
       DedicatedWorkerMessagingProxy* messaging_proxy,
       ParentExecutionContextTaskRunners* parent_execution_context_task_runners)
       : DedicatedWorkerObjectProxy(messaging_proxy,
-                                   parent_execution_context_task_runners) {}
+                                   parent_execution_context_task_runners,
+                                   DedicatedWorkerToken()) {}
 
   void CountFeature(WebFeature feature) override {
     // Any feature should be reported only one time.
@@ -109,6 +110,9 @@ class DedicatedWorkerMessagingProxyForTest
   DedicatedWorkerMessagingProxyForTest(ExecutionContext* execution_context)
       : DedicatedWorkerMessagingProxy(execution_context,
                                       nullptr /* worker_object */) {
+    // The |worker_object_proxy_| should not have been set in the
+    // DedicatedWorkerMessagingProxy constructor as |worker_object| is nullptr.
+    DCHECK(!worker_object_proxy_);
     worker_object_proxy_ = std::make_unique<DedicatedWorkerObjectProxyForTest>(
         this, GetParentExecutionContextTaskRunners());
   }

@@ -862,6 +862,15 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 - (void)createFullPagePDFWithCompletion:(void (^)(NSData*))completionBlock {
+  // Invoke the |completionBlock| with nil rather than a blank PDF for certain
+  // URLs.
+  const GURL& URL = self.webState->GetLastCommittedURL();
+  if (!URL.is_valid() || web::GetWebClient()->IsAppSpecificURL(URL)) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      completionBlock(nil);
+    });
+    return;
+  }
   web::CreateFullPagePdf(self.webView, base::BindOnce(completionBlock));
 }
 

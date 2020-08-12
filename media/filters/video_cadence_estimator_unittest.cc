@@ -400,7 +400,7 @@ TEST(VideoCadenceEstimatorTest, BresenhamCadenceChange) {
         estimator.UpdateCadenceEstimate(new_render_interval, frame_duration,
                                         base::TimeDelta(), base::TimeDelta()))
         << "render interval: " << new_render_interval
-        << " hz: " << (1e6 / new_render_interval.InMicrosecondsF());
+        << " hz: " << new_render_interval.ToHz();
   }
 
   EXPECT_TRUE(estimator.UpdateCadenceEstimate(

@@ -87,6 +87,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/services/machine_learning/machine_learning_tflite_buildflags.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/blocked_content/popup_blocker_tab_helper.h"
@@ -186,6 +187,10 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #endif
 
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+#include "chrome/browser/tflite_experiment/tflite_experiment_observer.h"
+#endif
+
 using content::WebContents;
 
 namespace {
@@ -255,6 +260,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   InstallableManager::CreateForWebContents(web_contents);
   IsolatedPrerenderTabHelper::CreateForWebContents(web_contents);
   LiteVideoObserver::MaybeCreateForWebContents(web_contents);
+
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  TFLiteExperimentObserver::CreateForWebContents(web_contents);
+#endif
+
   if (MediaEngagementService::IsEnabled())
     MediaEngagementService::CreateWebContentsObserver(web_contents);
   if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))

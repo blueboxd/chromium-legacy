@@ -21,6 +21,7 @@
 #include "components/performance_manager/public/render_process_host_proxy.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace performance_manager {
 
@@ -79,8 +80,7 @@ struct TestNodeWrapper<FrameNodeImpl>::Factory {
       FrameNodeImpl* parent_frame_node,
       int frame_tree_node_id,
       int render_frame_id,
-      const FrameToken& frame_token =
-          FrameToken(base::UnguessableToken::Create()),
+      const blink::LocalFrameToken& frame_token = blink::LocalFrameToken(),
       int32_t browsing_instance_id = 0,
       int32_t site_instance_id = 0) {
     return std::make_unique<FrameNodeImpl>(
@@ -126,7 +126,7 @@ struct TestNodeWrapper<WorkerNodeImpl>::Factory {
       WorkerNode::WorkerType worker_type,
       ProcessNodeImpl* process_node,
       const std::string& browser_context_id = std::string(),
-      const WorkerToken& token = WorkerToken::Create()) {
+      const blink::WorkerToken& token = blink::WorkerToken()) {
     return std::make_unique<WorkerNodeImpl>(browser_context_id, worker_type,
                                             process_node, token);
   }

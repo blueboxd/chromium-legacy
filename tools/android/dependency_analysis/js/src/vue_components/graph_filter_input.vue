@@ -31,16 +31,16 @@ const GraphFilterInput = {
   props: {
     nodeIds: Array,
     nodesAlreadyInFilter: Array,
-    shortenName: Function,
+    getShortName: Function,
   },
   data: function() {
     return {
-      // Sorts the nodes by their shortened names, which will be displayed.
-      // this.shortenName() is cached to improve performance (~150 ms at load).
+      // Sorts the nodes by their short names, which will be displayed.
+      // this.getShortName() is cached to improve performance (~150 ms at load).
       nodeIdsSortedByShortNames: this.nodeIds
           .map(name => ({
             realName: name,
-            shortName: this.shortenName(name),
+            shortName: this.getShortName(name),
           }))
           .sort((a, b) => a.shortName.localeCompare(b.shortName))
           .map(nameObj => nameObj.realName),
@@ -54,7 +54,7 @@ const GraphFilterInput = {
   },
   methods: {
     getResultValue: function(result) {
-      return this.shortenName(result);
+      return this.getShortName(result);
     },
 
     search: function(searchTerm) {

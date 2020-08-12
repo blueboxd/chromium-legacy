@@ -27,7 +27,7 @@
 namespace viz {
 namespace {
 
-static const int kTimeLimitMillis = 2000;
+static const auto kTimeLimit = base::TimeDelta::FromSeconds(2);
 static const int kNumWarmupRuns = 20;
 static const int kTimeCheckInterval = 10;
 
@@ -74,8 +74,7 @@ class VizSerializationPerfTest : public testing::Test {
     }
 
     base::TimeTicks start = base::TimeTicks::Now();
-    base::TimeTicks end =
-        start + base::TimeDelta::FromMilliseconds(kTimeLimitMillis);
+    base::TimeTicks end = start + kTimeLimit;
     base::TimeTicks now = start;
     base::TimeDelta min_time;
     size_t count = 0;
@@ -99,7 +98,7 @@ class VizSerializationPerfTest : public testing::Test {
     reporter.AddResult(kMetricStructDeserializationTimeUs,
                        min_time.InMicrosecondsF() / kTimeCheckInterval);
     reporter.AddResult(kMetricStructDeserializationThroughputRunsPerS,
-                       count * 1000 / kTimeLimitMillis);
+                       count * kTimeLimit.ToHz());
   }
 
   static void RunSerializationTestStructTraits(
@@ -112,8 +111,7 @@ class VizSerializationPerfTest : public testing::Test {
     }
 
     base::TimeTicks start = base::TimeTicks::Now();
-    base::TimeTicks end =
-        start + base::TimeDelta::FromMilliseconds(kTimeLimitMillis);
+    base::TimeTicks end = start + kTimeLimit;
     base::TimeTicks now = start;
     base::TimeDelta min_time;
     size_t count = 0;
@@ -136,7 +134,7 @@ class VizSerializationPerfTest : public testing::Test {
     reporter.AddResult(kMetricStructSerializationTimeUs,
                        min_time.InMicrosecondsF() / kTimeCheckInterval);
     reporter.AddResult(kMetricStructSerializationThroughputRunsPerS,
-                       count * 1000 / kTimeLimitMillis);
+                       count * kTimeLimit.ToHz());
   }
 
   static void RunComplexCompositorFrameTest(const std::string& story) {

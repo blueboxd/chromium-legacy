@@ -18,17 +18,8 @@
       } else {
         load();
       }
-      // Display failed URL and error info.
-      window.addEventListener('load', () => {
-        document.getElementById('failedUrl').textContent = failedUrl;
-        let error = params.get('error');
-        document.getElementById('error').textContent = error;
-      });
     </script>
   </head>
   <body>
-    <h1>Error page loaded by [WKWebview loadFileURL:allowingReadAccessToURL:]</h1>
-    <h2 id='failedUrl'></h2>
-    <h2 id='error'></h2>
   </body>
 </html>

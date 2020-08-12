@@ -43,6 +43,7 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
                  client_id,
                  dawn_control_client->GetInterface()->GetDevice(client_id)),
       adapter_(adapter),
+      extension_name_list_(descriptor->extensions()),
       queue_(MakeGarbageCollected<GPUQueue>(
           this,
           GetProcs().deviceGetDefaultQueue(GetHandle()))),
@@ -53,6 +54,12 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
   GetProcs().deviceSetUncapturedErrorCallback(
       GetHandle(), error_callback_->UnboundRepeatingCallback(),
       error_callback_->AsUserdata());
+
+  if (extension_name_list_.Contains("textureCompressionBC")) {
+    AddConsoleWarning(
+        "The extension name 'textureCompressionBC' is deprecated: use "
+        "'texture-compression-bc' instead");
+  }
 }
 
 GPUDevice::~GPUDevice() {
@@ -115,6 +122,10 @@ void GPUDevice::OnUncapturedError(WGPUErrorType errorType,
 
 GPUAdapter* GPUDevice::adapter() const {
   return adapter_;
+}
+
+Vector<String> GPUDevice::extensions() const {
+  return extension_name_list_;
 }
 
 ScriptPromise GPUDevice::lost(ScriptState* script_state) {

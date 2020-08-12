@@ -82,7 +82,7 @@ TEST(MultiTokenTest, MultiTokenWorks) {
   EXPECT_FALSE(token1.Is<BarToken>());
 
   // Test copy construction.
-  BarToken bar = BarToken::Create();
+  BarToken bar = BarToken();
   FooBarToken token2(bar);
   EXPECT_EQ(token2.value(), bar.value());
   EXPECT_FALSE(token2.value().is_empty());

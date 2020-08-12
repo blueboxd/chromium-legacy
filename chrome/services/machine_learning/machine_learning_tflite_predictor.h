@@ -19,12 +19,10 @@
 
 namespace machine_learning {
 
-// TFLite predictor class around TFLite C API for model evaluation.
+// TFLite predictor class around TFLite C API for TFLite model evaluation.
 class TFLitePredictor {
  public:
-  // Creates a |TFLitePredictor| from a
-  // |char*| TFLite file.
-  explicit TFLitePredictor(std::string filename);
+  TFLitePredictor(std::string filename, int32_t num_threads);
   ~TFLitePredictor();
 
   // Loads model, build the TFLite interpreter and allocates tensors.
@@ -77,6 +75,9 @@ class TFLitePredictor {
   TfLiteStatus AllocateTensors();
 
   std::string model_file_name_;
+
+  // Number of threads used by |interpreter_| for evaluating |model_|.
+  int32_t num_threads_ = 1;
   std::unique_ptr<TfLiteModel, std::function<void(TfLiteModel*)>> model_;
   std::unique_ptr<TfLiteInterpreterOptions,
                   std::function<void(TfLiteInterpreterOptions*)>>

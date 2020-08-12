@@ -261,7 +261,8 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const BindingContext& binding_context,
       const base::FilePath& path,
       ChooseEntriesCallback callback,
-      NativeFileSystemPermissionContext::PermissionStatus permission);
+      const SharedHandleState& shared_handle_state,
+      NativeFileSystemPermissionGrant::PermissionRequestOutcome outcome);
 
   void CreateTransferTokenImpl(
       const storage::FileSystemURL& url,

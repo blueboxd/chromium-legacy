@@ -1855,6 +1855,7 @@ Unknown properties are collapsed to zero. -->
   <int value="16" label="All renderer allocation failure"/>
   <int value="17" label="Utility process foreground OOM"/>
   <int value="18" label="All utility process crashes"/>
+  <int value="19" label="Renderer shutdown from RenderProcessHost::Shutdown"/>
 </enum>
 
 <enum name="AndroidProcessedMinidumps">
@@ -21410,6 +21411,7 @@ Called by update_document_policy_enum.py.-->
   <int value="766" label="InsecurePrivateNetworkRequestsAllowed"/>
   <int value="767" label="InsecurePrivateNetworkRequestsAllowedForUrls"/>
   <int value="768" label="UserPrintersAllowed"/>
+  <int value="769" label="Printers"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28702,6 +28704,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3373" label="WrongBaselineOfEmptyLineButton"/>
   <int value="3374" label="V8RTCRtpTransceiver_Stopped_AttributeGetter"/>
   <int value="3375" label="V8RTCRtpTransceiver_Stop_Method"/>
+  <int value="3376" label="SecurePaymentConfirmation"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -39094,6 +39097,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="Non-integral x offset"/>
   <int value="6" label="Non-integral y offset"/>
   <int value="7" label="Will-change: transform"/>
+  <int value="8" label="Pixel or color effect"/>
 </enum>
 
 <enum name="LevelDBCorruptionRestoreValue">
@@ -39621,7 +39625,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Allowed"/>
   <int value="2" label="Navigation not eligibile"/>
   <int value="3" label="Blocklisted due to rebuffers"/>
-  <int value="4" label="Blocklisted due to reloads/back-forwards"/>
+  <int value="4" label="Blocklisted due to frequent reloads/back-forwards"/>
+  <int value="5" label="Blocklisted because page transition was a reload"/>
+  <int value="6" label="Blocklisted because page transition was back-forwards"/>
 </enum>
 
 <enum name="LiteVideoDecision">
@@ -40346,6 +40352,7 @@ from previous Chrome versions.
   <int value="-1734666001" label="SafeBrowsingEnhancedProtection:enabled"/>
   <int value="-1734254845" label="ash-enable-night-light"/>
   <int value="-1732888954" label="UseButtonTranslateBubbleUI:enabled"/>
+  <int value="-1732777136" label="SignInProfileCreationFlow:disabled"/>
   <int value="-1732561795" label="ConsistentOmniboxGeolocation:enabled"/>
   <int value="-1731267886" label="AutofillEnableStickyPaymentsBubble:enabled"/>
   <int value="-1731149013" label="AndroidMessagesIntegration:enabled"/>
@@ -41513,6 +41520,7 @@ from previous Chrome versions.
   <int value="-520221221" label="UserDataSnapshot:enabled"/>
   <int value="-520004021" label="WebXRHitTest:disabled"/>
   <int value="-519960638" label="enable-site-engagement-service"/>
+  <int value="-519844731" label="SignInProfileCreationFlow:enabled"/>
   <int value="-518104091" label="NewAudioRenderingMixingStrategy:enabled"/>
   <int value="-516845951" label="enable-embedded-extension-options"/>
   <int value="-515913489" label="EphemeralTabUsingBottomSheet:disabled"/>

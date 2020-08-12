@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_engagement_metrics_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder_factory.h"
@@ -70,6 +71,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   KerberosCredentialsManagerFactory::GetInstance();
   launcher_search_provider::ServiceFactory::GetInstance();
   OwnerSettingsServiceChromeOSFactory::GetInstance();
+  phonehub::PhoneHubManagerFactory::GetInstance();
   plugin_vm::PluginVmEngagementMetricsService::Factory::GetInstance();
   policy::PolicyCertServiceFactory::GetInstance();
   policy::UserCloudPolicyTokenForwarderFactory::GetInstance();

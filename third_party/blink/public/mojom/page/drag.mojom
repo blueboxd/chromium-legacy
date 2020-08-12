@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "services/network/public/mojom/referrer_policy.mojom";
 import "url/mojom/url.mojom";
 import "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom";
 
@@ -88,4 +89,8 @@ struct DragData {
   string file_system_id;  // Only used when dragging into Blink to represent a
                           // new isolated file system to access the dropped
                           // files.
+
+  // Used for DragItemString when string_type == "downloadurl".
+  network.mojom.ReferrerPolicy referrer_policy =
+      network.mojom.ReferrerPolicy.kDefault;
 };

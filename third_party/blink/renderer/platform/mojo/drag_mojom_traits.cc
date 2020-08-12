@@ -9,6 +9,7 @@
 #include "base/notreached.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom-blink.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -247,17 +248,27 @@ WTF::String StructTraits<blink::mojom::DragDataDataView, blink::WebDragData>::
 }
 
 // static
+network::mojom::ReferrerPolicy StructTraits<
+    blink::mojom::DragDataDataView,
+    blink::WebDragData>::referrer_policy(const blink::WebDragData& drag_data) {
+  return drag_data.ReferrerPolicy();
+}
+
+// static
 bool StructTraits<blink::mojom::DragDataDataView, blink::WebDragData>::Read(
     blink::mojom::DragDataDataView data,
     blink::WebDragData* out) {
   blink::WebVector<blink::WebDragData::Item> items;
   WTF::String file_system_id;
-  if (!data.ReadItems(&items) || !data.ReadFileSystemId(&file_system_id))
+  network::mojom::ReferrerPolicy referrer_policy;
+  if (!data.ReadItems(&items) || !data.ReadFileSystemId(&file_system_id) ||
+      !data.ReadReferrerPolicy(&referrer_policy))
     return false;
 
   blink::WebDragData drag_data;
   drag_data.SetItems(std::move(items));
   drag_data.SetFilesystemId(file_system_id);
+  drag_data.SetReferrerPolicy(referrer_policy);
   *out = std::move(drag_data);
   return true;
 }

@@ -1381,7 +1381,7 @@ void MenuController::SetSelection(MenuItemView* menu_item,
     StartShowTimer();
 
   // Notify an accessibility focus event on all menu items except for the root.
-  if (menu_item &&
+  if (menu_item && pending_item_changed &&
       (MenuDepth(menu_item) != 1 ||
        menu_item->GetType() != MenuItemView::Type::kSubMenu ||
        (menu_item->GetType() == MenuItemView::Type::kActionableSubMenu &&
@@ -3117,16 +3117,19 @@ void MenuController::SetNextHotTrackedView(
   SetInitialHotTrackedView(to_select, direction);
 }
 
-void MenuController::SetHotTrackedButton(Button* hot_button) {
+void MenuController::SetHotTrackedButton(Button* new_hot_button) {
+  if (hot_button_ == new_hot_button)
+    return;
+
   // If we're providing a new hot-tracked button, first remove the existing one.
-  if (hot_button_ && hot_button_ != hot_button) {
+  if (hot_button_) {
     hot_button_->SetHotTracked(false);
     hot_button_->GetViewAccessibility().EndPopupFocusOverride();
   }
 
   // Then set the new one.
-  hot_button_ = hot_button;
-  if (hot_button_ && !hot_button_->IsHotTracked()) {
+  hot_button_ = new_hot_button;
+  if (hot_button_) {
     hot_button_->GetViewAccessibility().SetPopupFocusOverride();
     hot_button_->SetHotTracked(true);
     hot_button_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);

@@ -19,6 +19,7 @@
 #endif
 
 namespace {
+using blink::mojom::PermissionStatus;
 using permissions::PermissionAction;
 
 enum class GrantType { kRead, kWrite };
@@ -52,15 +53,8 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
   PermissionStatus GetStatus() override { return status_; }
   void RequestPermission(
       content::GlobalFrameRoutingId frame_id,
+      UserActivationState user_activation_state,
       base::OnceCallback<void(PermissionRequestOutcome)> callback) override {
-    RequestPermissionImpl(frame_id,
-                          /*require_user_gesture=*/true, std::move(callback));
-  }
-
-  void RequestPermissionImpl(
-      content::GlobalFrameRoutingId frame_id,
-      bool require_user_gesture,
-      base::OnceCallback<void(PermissionRequestOutcome)> callback) {
     // Check if a permission request has already been processed previously. This
     // check is done first because we don't want to reset the status of a
     // permission if it has already been granted.
@@ -102,7 +96,8 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
       return;
     }
 
-    if (require_user_gesture && !rfh->HasTransientUserActivation()) {
+    if (user_activation_state == UserActivationState::kRequired &&
+        !rfh->HasTransientUserActivation()) {
       // No permission prompts without user activation.
       RunCallbackAndRecordPermissionRequestOutcome(
           std::move(callback), PermissionRequestOutcome::kNoUserActivation);
@@ -414,30 +409,6 @@ OriginScopedNativeFileSystemPermissionContext::GetWritePermissionGrant(
   }
 
   return existing_grant;
-}
-
-void OriginScopedNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(
-    const url::Origin& origin,
-    const base::FilePath& path,
-    content::GlobalFrameRoutingId frame_id,
-    base::OnceCallback<void(PermissionStatus)> callback) {
-  // TODO(mek): Once tab-scoped permission model is no longer used we can
-  // refactor the calling code of this method to just do what this
-  // implementation does directly.
-  scoped_refptr<content::NativeFileSystemPermissionGrant> grant =
-      GetReadPermissionGrant(origin, path, HandleType::kDirectory,
-                             UserAction::kOpen);
-  static_cast<PermissionGrantImpl*>(grant.get())
-      ->RequestPermissionImpl(
-          frame_id, /*require_user_gesture=*/false,
-          base::BindOnce(
-              [](base::OnceCallback<void(PermissionStatus)> callback,
-                 scoped_refptr<content::NativeFileSystemPermissionGrant> grant,
-                 content::NativeFileSystemPermissionGrant::
-                     PermissionRequestOutcome outcome) {
-                std::move(callback).Run(grant->GetStatus());
-              },
-              std::move(callback), grant));
 }
 
 ChromeNativeFileSystemPermissionContext::Grants

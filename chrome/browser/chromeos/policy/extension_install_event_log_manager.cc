@@ -37,8 +37,8 @@ ExtensionInstallEventLogManager::ExtensionInstallEventLogManager(
     : InstallEventLogManagerBase(log_task_runner_wrapper, profile),
       uploader_(uploader) {
   uploader_->SetDelegate(this);
-  extension_log_upload_ = std::make_unique<ExtensionLogUpload>(this);
   log_ = std::make_unique<ExtensionLog>();
+  extension_log_upload_ = std::make_unique<ExtensionLogUpload>(this);
   base::PostTaskAndReplyWithResult(
       log_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ExtensionLog::Init, base::Unretained(log_.get()),
@@ -51,8 +51,11 @@ ExtensionInstallEventLogManager::ExtensionInstallEventLogManager(
 }
 
 ExtensionInstallEventLogManager::~ExtensionInstallEventLogManager() {
-  extension_log_upload_.reset();
   logger_.reset();
+  // Destroy |extension_log_upload_| after |logger_| otherwise it is possible
+  // that when we add new logs created through |logger_| cause the crash as
+  // |extension_log_upload_| will be destroyed already.
+  extension_log_upload_.reset();
   uploader_->SetDelegate(nullptr);
   log_task_runner_->DeleteSoon(FROM_HERE, std::move(log_));
 }
@@ -71,13 +74,17 @@ void ExtensionInstallEventLogManager::Add(
     const em::ExtensionInstallReportLogEvent& event) {
   if (extensions.empty())
     return;
+  // After |logger_| is destroyed, we do not add any new events. And |log_| is
+  // destroyed by creating a non nestable task at the end of
+  // ExtensionInstallEventLogManager destructor, it is safe to use
+  // base::Unretained(log_.get()) here.
   base::PostTaskAndReplyWithResult(
       log_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ExtensionLog::Add, base::Unretained(log_.get()),
                      std::move(extensions), event),
       base::BindOnce(
           &ExtensionInstallEventLogManager::ExtensionLogUpload::OnLogChange,
-          base::Unretained(extension_log_upload_.get())));
+          extension_log_upload_->log_weak_factory_.GetWeakPtr()));
 }
 
 void ExtensionInstallEventLogManager::SerializeExtensionLogForUpload(

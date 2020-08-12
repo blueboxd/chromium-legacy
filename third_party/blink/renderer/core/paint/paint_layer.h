@@ -852,16 +852,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return EnsureAncestorDependentCompositingInputs();
   }
 
-  // These two  do not include any applicable scroll offset of the
-  // root PaintLayer.
-  const IntRect& ClippedAbsoluteBoundingBox() const {
-    return GetAncestorDependentCompositingInputs()
-        .clipped_absolute_bounding_box;
-  }
-  const IntRect& UnclippedAbsoluteBoundingBox() const {
-    return GetAncestorDependentCompositingInputs()
-        .unclipped_absolute_bounding_box;
-  }
+  // These two do not include any applicable scroll offset of the
+  // root PaintLayer, unless CompositingOptimizationsEnabled is on.
+  const IntRect ClippedAbsoluteBoundingBox() const;
+  const IntRect UnclippedAbsoluteBoundingBox() const;
 
   const PaintLayer* OpacityAncestor() const {
     return GetAncestorDependentCompositingInputs().opacity_ancestor;

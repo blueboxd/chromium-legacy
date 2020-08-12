@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 59 tests; 58 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 85 tests; 84 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS TrustedHTML interface: existence and properties of interface object
@@ -36,10 +36,36 @@ PASS TrustedTypePolicyFactory interface: existence and properties of interface p
 PASS TrustedTypePolicyFactory interface: existence and properties of interface prototype object's "constructor" property
 PASS TrustedTypePolicyFactory interface: existence and properties of interface prototype object's @@unscopables property
 FAIL TrustedTypePolicyFactory interface: operation createPolicy(DOMString, optional TrustedTypePolicyOptions) assert_equals: property has wrong .length expected 1 but got 2
+PASS TrustedTypePolicyFactory interface: operation isHTML(any)
+PASS TrustedTypePolicyFactory interface: operation isScript(any)
+PASS TrustedTypePolicyFactory interface: operation isScriptURL(any)
+PASS TrustedTypePolicyFactory interface: attribute emptyHTML
+PASS TrustedTypePolicyFactory interface: attribute emptyScript
+PASS TrustedTypePolicyFactory interface: operation getAttributeType(DOMString, DOMString, optional DOMString, optional DOMString)
+PASS TrustedTypePolicyFactory interface: operation getPropertyType(DOMString, DOMString, optional DOMString)
+PASS TrustedTypePolicyFactory interface: attribute defaultPolicy
+PASS TrustedTypePolicyFactory interface: operation getTypeMapping(optional DOMString)
+PASS TrustedTypePolicyFactory interface: attribute onbeforecreatepolicy
 PASS TrustedTypePolicyFactory must be primary interface of window.trustedTypes
 PASS Stringification of window.trustedTypes
 PASS TrustedTypePolicyFactory interface: window.trustedTypes must inherit property "createPolicy(DOMString, optional TrustedTypePolicyOptions)" with the proper type
 PASS TrustedTypePolicyFactory interface: calling createPolicy(DOMString, optional TrustedTypePolicyOptions) on window.trustedTypes with too few arguments must throw TypeError
+PASS TrustedTypePolicyFactory interface: window.trustedTypes must inherit property "isHTML(any)" with the proper type
+PASS TrustedTypePolicyFactory interface: calling isHTML(any) on window.trustedTypes with too few arguments must throw TypeError
+PASS TrustedTypePolicyFactory interface: window.trustedTypes must inherit property "isScript(any)" with the proper type
+PASS TrustedTypePolicyFactory interface: calling isScript(any) on window.trustedTypes with too few arguments must throw TypeError
+PASS TrustedTypePolicyFactory interface: window.trustedTypes must inherit property "isScriptURL(any)" with the proper type
+PASS TrustedTypePolicyFactory interface: calling isScriptURL(any) on window.trustedTypes with too few arguments must throw TypeError
+PASS TrustedTypePolicyFactory interface: window.trustedTypes must inherit property "emptyHTML" with the proper type
+PASS TrustedTypePolicyFactory interface: window.trustedTypes must inherit property "emptyScript" with the proper type
+PASS TrustedTypePolicyFactory interface: window.trustedTypes must inherit property "getAttributeType(DOMString, DOMString, optional DOMString, optional DOMString)" with the proper type
+PASS TrustedTypePolicyFactory interface: calling getAttributeType(DOMString, DOMString, optional DOMString, optional DOMString) on window.trustedTypes with too few arguments must throw TypeError
+PASS TrustedTypePolicyFactory interface: window.trustedTypes must inherit property "getPropertyType(DOMString, DOMString, optional DOMString)" with the proper type
+PASS TrustedTypePolicyFactory interface: calling getPropertyType(DOMString, DOMString, optional DOMString) on window.trustedTypes with too few arguments must throw TypeError
+PASS TrustedTypePolicyFactory interface: window.trustedTypes must inherit property "defaultPolicy" with the proper type
+PASS TrustedTypePolicyFactory interface: window.trustedTypes must inherit property "getTypeMapping(optional DOMString)" with the proper type
+PASS TrustedTypePolicyFactory interface: calling getTypeMapping(optional DOMString) on window.trustedTypes with too few arguments must throw TypeError
+PASS TrustedTypePolicyFactory interface: window.trustedTypes must inherit property "onbeforecreatepolicy" with the proper type
 PASS TrustedTypePolicy interface: existence and properties of interface object
 PASS TrustedTypePolicy interface object length
 PASS TrustedTypePolicy interface object name

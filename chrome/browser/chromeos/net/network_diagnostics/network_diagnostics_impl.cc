@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/net/network_diagnostics/captive_portal_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/dns_latency_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/dns_resolution_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/dns_resolver_present_routine.h"
@@ -134,6 +135,20 @@ void NetworkDiagnosticsImpl::DnsResolution(DnsResolutionCallback callback) {
          DnsResolutionCallback callback, mojom::RoutineVerdict verdict,
          const std::vector<mojom::DnsResolutionProblem>& problems) {
         std::move(callback).Run(verdict, std::move(problems));
+      },
+      std::move(routine), std::move(callback)));
+}
+
+void NetworkDiagnosticsImpl::CaptivePortal(CaptivePortalCallback callback) {
+  auto routine = std::make_unique<CaptivePortalRoutine>();
+  // RunRoutine() takes a lambda callback that takes ownership of the routine.
+  // This ensures that the routine stays alive when it makes asynchronous mojo
+  // calls. The routine will be destroyed when the lambda exits.
+  routine->RunRoutine(base::BindOnce(
+      [](std::unique_ptr<CaptivePortalRoutine> routine,
+         CaptivePortalCallback callback, mojom::RoutineVerdict verdict,
+         const std::vector<mojom::CaptivePortalProblem>& problems) {
+        std::move(callback).Run(verdict, problems);
       },
       std::move(routine), std::move(callback)));
 }

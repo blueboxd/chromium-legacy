@@ -14,6 +14,8 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 import static org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule.LONG_TIMEOUT_MS;
+import static org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.createTestBitmap;
+import static org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.getVisibleMenuSize;
 import static org.chromium.components.content_settings.PrefNames.BLOCK_THIRD_PARTY_COOKIES;
 
 import android.app.Activity;
@@ -24,7 +26,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -88,6 +89,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
+import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.OnFinishedForTest;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -267,16 +269,6 @@ public class CustomTabActivityTest {
                 InstrumentationRegistry.getTargetContext(), mTestPage);
     }
 
-    /**
-     * Add a bundle specifying a a number of custom menu entries.
-     * @param customTabIntent The intent to modify.
-     * @param numEntries The number of menu entries to add.
-     * @return The pending intent associated with the menu entries.
-     */
-    private PendingIntent addMenuEntriesToIntent(Intent customTabIntent, int numEntries) {
-        return addMenuEntriesToIntent(customTabIntent, numEntries, new Intent());
-    }
-
     @Test
     @SmallTest
     public void testWhitelistedHeadersReceivedWhenConnectionVerified() throws Exception {
@@ -320,52 +312,8 @@ public class CustomTabActivityTest {
         pageLoadFinishedHelper.waitForCallback(0);
     }
 
-    /**
-     * Add a bundle specifying a custom menu entry.
-     * @param customTabIntent The intent to modify.
-     * @param numEntries The number of menu entries to add.
-     * @param callbackIntent The intent to use as the base for the pending intent.
-     * @return The pending intent associated with the menu entry.
-     */
-    private PendingIntent addMenuEntriesToIntent(
-            Intent customTabIntent, int numEntries, Intent callbackIntent) {
-        PendingIntent pi = PendingIntent.getBroadcast(InstrumentationRegistry.getTargetContext(), 0,
-                callbackIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        ArrayList<Bundle> menuItems = new ArrayList<>();
-        for (int i = 0; i < numEntries; i++) {
-            Bundle bundle = new Bundle();
-            bundle.putString(CustomTabsIntent.KEY_MENU_ITEM_TITLE, TEST_MENU_TITLE);
-            bundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pi);
-            menuItems.add(bundle);
-        }
-        customTabIntent.putParcelableArrayListExtra(CustomTabsIntent.EXTRA_MENU_ITEMS, menuItems);
-        return pi;
-    }
-
     private void addToolbarColorToIntent(Intent intent, int color) {
         intent.putExtra(CustomTabsIntent.EXTRA_TOOLBAR_COLOR, color);
-    }
-
-    /**
-     * Adds an action button to the custom tab toolbar.
-     * @return The {@link PendingIntent} that will be triggered when the action button is clicked.
-     */
-    private PendingIntent addActionButtonToIntent(Intent intent, Bitmap icon, String description) {
-        PendingIntent pi = PendingIntent.getBroadcast(
-                InstrumentationRegistry.getTargetContext(), 0, new Intent(), 0);
-        intent.putExtra(CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE,
-                makeToolbarItemBundle(icon, description, pi));
-        return pi;
-    }
-
-    private Bundle makeToolbarItemBundle(Bitmap icon, String description, PendingIntent pi) {
-        Bundle bundle = new Bundle();
-        bundle.putInt(CustomTabsIntent.KEY_ID, sIdToIncrement++);
-        bundle.putParcelable(CustomTabsIntent.KEY_ICON, icon);
-        bundle.putString(CustomTabsIntent.KEY_DESCRIPTION, description);
-        bundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pi);
-        bundle.putBoolean(CustomButtonParams.SHOW_ON_TOOLBAR, true);
-        return bundle;
     }
 
     private Bundle makeBottomBarBundle(int id, Bitmap icon, String description) {
@@ -402,25 +350,6 @@ public class CustomTabActivityTest {
             if (item.isVisible() && item.isEnabled()) actualMenuSize++;
         }
         return actualMenuSize;
-    }
-
-    /**
-     * @return The number of visible items in the given menu.
-     */
-    private int getVisibleMenuSize(Menu menu) {
-        int visibleMenuSize = 0;
-        for (int i = 0; i < menu.size(); i++) {
-            MenuItem item = menu.getItem(i);
-            if (item.isVisible()) visibleMenuSize++;
-        }
-        return visibleMenuSize;
-    }
-
-    private Bitmap createTestBitmap(int widthDp, int heightDp) {
-        Resources testRes = InstrumentationRegistry.getTargetContext().getResources();
-        float density = testRes.getDisplayMetrics().density;
-        return Bitmap.createBitmap((int) (widthDp * density),
-                (int) (heightDp * density), Bitmap.Config.ARGB_8888);
     }
 
     private Bitmap createVectorDrawableBitmap(@DrawableRes int resId, int widthDp, int heightDp) {
@@ -625,7 +554,7 @@ public class CustomTabActivityTest {
     public void testAppMenu() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         int numMenuEntries = 1;
-        addMenuEntriesToIntent(intent, numMenuEntries);
+        CustomTabsTestUtils.addMenuEntriesToIntent(intent, numMenuEntries, TEST_MENU_TITLE);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
@@ -647,6 +576,8 @@ public class CustomTabActivityTest {
         Assert.assertNotNull(menu.findItem(R.id.add_to_homescreen_id));
         Assert.assertNotNull(menu.findItem(R.id.request_desktop_site_row_menu_id));
         Assert.assertNotNull(menu.findItem(R.id.translate_id));
+
+        mScreenShooter.shoot("Testtttt");
     }
 
     /**
@@ -748,7 +679,7 @@ public class CustomTabActivityTest {
         Intent intent = createMinimalCustomTabIntent();
         int numMenuEntries = 7;
         Assert.assertTrue(MAX_MENU_CUSTOM_ITEMS < numMenuEntries);
-        addMenuEntriesToIntent(intent, numMenuEntries);
+        CustomTabsTestUtils.addMenuEntriesToIntent(intent, numMenuEntries, TEST_MENU_TITLE);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
@@ -769,7 +700,8 @@ public class CustomTabActivityTest {
         Intent customTabIntent = createMinimalCustomTabIntent();
         Intent baseCallbackIntent = new Intent();
         baseCallbackIntent.putExtra("FOO", 42);
-        final PendingIntent pi = addMenuEntriesToIntent(customTabIntent, 1, baseCallbackIntent);
+        final PendingIntent pi = CustomTabsTestUtils.addMenuEntriesToIntent(
+                customTabIntent, 1, baseCallbackIntent, TEST_MENU_TITLE);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(customTabIntent);
 
         final OnFinishedForTest onFinished = new OnFinishedForTest(pi);
@@ -942,7 +874,8 @@ public class CustomTabActivityTest {
     public void testActionButton() throws TimeoutException {
         Bitmap expectedIcon = createVectorDrawableBitmap(R.drawable.ic_credit_card_black, 77, 48);
         Intent intent = createMinimalCustomTabIntent();
-        final PendingIntent pi = addActionButtonToIntent(intent, expectedIcon, "Good test");
+        final PendingIntent pi = CustomTabsTestUtils.addActionButtonToIntent(
+                intent, expectedIcon, "Good test", sIdToIncrement++);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         final OnFinishedForTest onFinished = new OnFinishedForTest(pi);
@@ -994,12 +927,14 @@ public class CustomTabActivityTest {
         final PendingIntent pi1 = PendingIntent.getBroadcast(
                 InstrumentationRegistry.getTargetContext(), 0, new Intent(), 0);
         final OnFinishedForTest onFinished1 = new OnFinishedForTest(pi1);
-        toolbarItems.add(makeToolbarItemBundle(expectedIcon1, "Good test", pi1));
+        toolbarItems.add(CustomTabsTestUtils.makeToolbarItemBundle(
+                expectedIcon1, "Good test", pi1, sIdToIncrement++));
         final PendingIntent pi2 = PendingIntent.getBroadcast(
                 InstrumentationRegistry.getTargetContext(), 1, new Intent(), 0);
         Assert.assertThat(pi2, not(equalTo(pi1)));
         final OnFinishedForTest onFinished2 = new OnFinishedForTest(pi2);
-        toolbarItems.add(makeToolbarItemBundle(expectedIcon2, "Even gooder test", pi2));
+        toolbarItems.add(CustomTabsTestUtils.makeToolbarItemBundle(
+                expectedIcon2, "Even gooder test", pi2, sIdToIncrement++));
         intent.putParcelableArrayListExtra(CustomTabsIntent.EXTRA_TOOLBAR_ITEMS, toolbarItems);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
@@ -1059,7 +994,8 @@ public class CustomTabActivityTest {
     public void testActionButtonBadRatio() {
         Bitmap expectedIcon = createTestBitmap(60, 20);
         Intent intent = createMinimalCustomTabIntent();
-        addActionButtonToIntent(intent, expectedIcon, "Good test");
+        CustomTabsTestUtils.addActionButtonToIntent(
+                intent, expectedIcon, "Good test", sIdToIncrement++);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         View toolbarView = mCustomTabActivityTestRule.getActivity().findViewById(R.id.toolbar);
@@ -1120,7 +1056,8 @@ public class CustomTabActivityTest {
         Intent intent = createMinimalCustomTabIntent();
 
         Bitmap expectedIcon = createVectorDrawableBitmap(R.drawable.ic_credit_card_black, 77, 48);
-        PendingIntent pi = addActionButtonToIntent(intent, expectedIcon, "Good test");
+        PendingIntent pi = CustomTabsTestUtils.addActionButtonToIntent(
+                intent, expectedIcon, "Good test", sIdToIncrement++);
 
         // Create a RemoteViews. The layout used here is pretty much arbitrary, but with the
         // constraint that a) it already exists in production code, and b) it only contains views
@@ -2628,40 +2565,6 @@ public class CustomTabActivityTest {
                     Matchers.notNullValue());
         }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         ChromeTabUtils.waitForTabPageLoaded(connection.getSpeculationParamsForTesting().tab, url);
-    }
-
-    /**
-      * A helper class to monitor sending status of a {@link PendingIntent}.
-      */
-    private class OnFinishedForTest implements PendingIntent.OnFinished {
-
-        private final PendingIntent mPendingIntent;
-        private final CallbackHelper mCallbackHelper = new CallbackHelper();
-        private Intent mCallbackIntent;
-
-        /**
-         * Create an instance of {@link OnFinishedForTest}, testing the given {@link PendingIntent}.
-         */
-        public OnFinishedForTest(PendingIntent pendingIntent) {
-            mPendingIntent = pendingIntent;
-        }
-
-        public Intent getCallbackIntent() {
-            return mCallbackIntent;
-        }
-
-        public void waitForCallback(String failureReason) throws TimeoutException {
-            mCallbackHelper.waitForCallback(failureReason, 0);
-        }
-
-        @Override
-        public void onSendFinished(PendingIntent pendingIntent, Intent intent, int resultCode,
-                String resultData, Bundle resultExtras) {
-            if (pendingIntent.equals(mPendingIntent)) {
-                mCallbackIntent = intent;
-                mCallbackHelper.notifyCalled();
-            }
-        }
     }
 
     private static class ElementContentCriteria implements Runnable {

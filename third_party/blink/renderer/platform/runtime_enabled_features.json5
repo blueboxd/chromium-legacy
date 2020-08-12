@@ -333,6 +333,10 @@
       name: "CompositeSVG",
     },
     {
+      name: "CompositingOptimizations",
+      status: "experimental"
+    },
+    {
       name: "ComputedAccessibilityInfo",
       status: "experimental",
     },
@@ -699,7 +703,7 @@
     },
     {
       name: "EncryptedMediaPersistentUsageRecordSession",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "EnterKeyHintAttribute",

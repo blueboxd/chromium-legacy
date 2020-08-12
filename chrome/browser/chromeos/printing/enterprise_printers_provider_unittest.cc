@@ -98,7 +98,7 @@ class EnterprisePrintersProviderTest : public testing::Test {
     sync_preferences::TestingPrefServiceSyncable* prefs =
         profile_.GetTestingPrefService();
     // TestingPrefSyncableService assumes ownership of |value|.
-    prefs->SetManagedPref(prefs::kRecommendedNativePrinters, std::move(value));
+    prefs->SetManagedPref(prefs::kRecommendedPrinters, std::move(value));
   }
 
   // Must outlive |profile_|.

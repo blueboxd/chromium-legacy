@@ -1714,11 +1714,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   //   If TraverseDocumentBoundaries is specified, the result will be in the
   //   space of the local root frame.
   //   Otherwise, the result will be in the space of the containing frame.
-  // This method supports kUseGeometryMapper.
+  // This method supports kUseGeometryMapperMode.
   PhysicalRect LocalToAncestorRect(const PhysicalRect& rect,
                                    const LayoutBoxModelObject* ancestor,
                                    MapCoordinatesFlags mode = 0) const;
-  // This method supports kUseGeometryMapper.
   FloatQuad LocalRectToAncestorQuad(const PhysicalRect& rect,
                                     const LayoutBoxModelObject* ancestor,
                                     MapCoordinatesFlags mode = 0) const {
@@ -1756,7 +1755,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Shorthands of the above LocalToAncestor* and AncestorToLocal* functions,
   // with nullptr as the ancestor. See the above functions for the meaning of
   // "absolute" coordinates.
-  // This method supports kUseGeometryMapper.
+  // This method supports kUseGeometryMapperMode.
   PhysicalRect LocalToAbsoluteRect(const PhysicalRect& rect,
                                    MapCoordinatesFlags mode = 0) const {
     return LocalToAncestorRect(rect, nullptr, mode);

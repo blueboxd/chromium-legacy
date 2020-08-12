@@ -340,6 +340,7 @@ static_library("ui") {
   # have the same dependencies. Once browser_ui is untangled from
   # browser, then we can clean up these dependencies.
   public_deps = [
+    "//chrome/services/machine_learning:machine_learning_tflite_buildflags",
     "//components/dom_distiller/core",
     "//components/safe_browsing:buildflags",
     "//components/sync",
@@ -2060,8 +2061,6 @@ static_library("ui") {
       "webui/app_management/app_management_shelf_delegate_chromeos.h",
       "webui/certificate_provisioning_ui_handler.cc",
       "webui/certificate_provisioning_ui_handler.h",
-      "webui/chrome_url_disabled_ui.cc",
-      "webui/chrome_url_disabled_ui.h",
       "webui/chromeos/account_manager/account_manager_error_ui.cc",
       "webui/chromeos/account_manager/account_manager_error_ui.h",
       "webui/chromeos/account_manager/account_manager_welcome_dialog.cc",
@@ -2107,6 +2106,8 @@ static_library("ui") {
       "webui/chromeos/cellular_setup/mobile_setup_ui.h",
       "webui/chromeos/certificate_manager_dialog_ui.cc",
       "webui/chromeos/certificate_manager_dialog_ui.h",
+      "webui/chromeos/chrome_url_disabled/chrome_url_disabled_ui.cc",
+      "webui/chromeos/chrome_url_disabled/chrome_url_disabled_ui.h",
       "webui/chromeos/crostini_installer/crostini_installer_dialog.cc",
       "webui/chromeos/crostini_installer/crostini_installer_dialog.h",
       "webui/chromeos/crostini_installer/crostini_installer_page_handler.cc",

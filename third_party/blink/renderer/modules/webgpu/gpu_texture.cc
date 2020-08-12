@@ -24,20 +24,10 @@ WGPUTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc,
   dawn_desc.dimension =
       AsDawnEnum<WGPUTextureDimension>(webgpu_desc->dimension());
   dawn_desc.size = AsDawnType(&webgpu_desc->size());
-
-  if (webgpu_desc->hasArrayLayerCount()) {
-    device->AddConsoleWarning("arrayLayerCount is deprecated: use size.depth");
-    dawn_desc.arrayLayerCount = webgpu_desc->arrayLayerCount();
-  } else {
-    if (dawn_desc.dimension == WGPUTextureDimension_2D) {
-      dawn_desc.arrayLayerCount = dawn_desc.size.depth;
-      dawn_desc.size.depth = 1;
-    }
-  }
-
   dawn_desc.format = AsDawnEnum<WGPUTextureFormat>(webgpu_desc->format());
   dawn_desc.mipLevelCount = webgpu_desc->mipLevelCount();
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
+
   if (webgpu_desc->hasLabel()) {
     dawn_desc.label = webgpu_desc->label().Utf8().data();
   }

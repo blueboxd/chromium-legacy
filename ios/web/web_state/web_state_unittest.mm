@@ -218,18 +218,29 @@ TEST_F(WebStateTest, Snapshot) {
 }
 
 // Tests that the create PDF method retuns an PDF of a rendered html page.
-TEST_F(WebStateTest, CreateFullPagePdf) {
-  CGFloat kSaveAreaTopInset =
-      UIApplication.sharedApplication.keyWindow.safeAreaInsets.top;
+TEST_F(WebStateTest, CreateFullPagePdf_ValidURL) {
+  // Load a URL and some HTML in the WebState.
+  NSString* data_html =
+      @"<html><div style='background-color:#FF0000; width:50%; "
+       "height:100%;'></div></html>";
+  GURL url("https://www.chromium.org");
+  web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
+                        @"text/html", url);
 
-  ASSERT_TRUE(LoadHtml("<html><div style='background-color:#FF0000; width:50%; "
-                       "height:100%;'></div></html>"));
+  NavigationManager::WebLoadParams load_params(url);
+  web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForPageLoadTimeout, ^bool {
+        return web_state()->GetLastCommittedURL() == url;
+      }));
+
+  // Add the subview. Since it does not get immediately painted, adding a small
+  // delay is necessary.
   [[[UIApplication sharedApplication] keyWindow]
       addSubview:web_state()->GetView()];
-  // The subview is added but not immediately painted, so a small delay is
-  // necessary.
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
 
+  // Create a PDF for this page and validate the data.
   __block NSData* callback_data = nil;
   web_state()->CreateFullPagePdf(base::BindOnce(^(NSData* pdf_document_data) {
     callback_data = [pdf_document_data copy];
@@ -245,11 +256,49 @@ TEST_F(WebStateTest, CreateFullPagePdf) {
   CGSize pdf_size =
       CGPDFPageGetBoxRect(CGPDFDocumentGetPage(pdf, 1), kCGPDFMediaBox).size;
 
+  CGFloat kSaveAreaTopInset =
+      UIApplication.sharedApplication.keyWindow.safeAreaInsets.top;
   EXPECT_GE(pdf_size.height,
             UIScreen.mainScreen.bounds.size.height - kSaveAreaTopInset);
   EXPECT_GE(pdf_size.width, [[UIScreen mainScreen] bounds].size.width);
 
   CGPDFDocumentRelease(pdf);
+}
+
+// Tests that CreateFullPagePdf invokes completion callback nil when an invalid
+// URL is loaded.
+TEST_F(WebStateTest, CreateFullPagePdf_InvalidURLs) {
+  GURL app_specific_url(
+      base::StringPrintf("%s://app_specific_url", kTestAppSpecificScheme));
+
+  // Empty URL and app-specific URLs (e.g. app_specific_url) should get nil
+  // data through the completion callback.
+  std::vector<GURL> invalid_urls = {GURL(), app_specific_url};
+  NSString* data_html = @(kTestPageHTML);
+  for (auto& url : invalid_urls) {
+    web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
+                          @"text/html", url);
+
+    NavigationManager::WebLoadParams load_params(url);
+    web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
+    ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForPageLoadTimeout, ^bool {
+          return web_state()->GetLastCommittedURL() == url;
+        }));
+
+    __block NSData* callback_data = nil;
+    __block bool callback_called = false;
+    web_state()->CreateFullPagePdf(base::BindOnce(^(NSData* pdf_document_data) {
+      callback_data = [pdf_document_data copy];
+      callback_called = true;
+    }));
+
+    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+      return callback_called;
+    }));
+
+    ASSERT_FALSE(callback_data);
+  }
 }
 
 // Tests that message sent from main frame triggers the ScriptCommandCallback

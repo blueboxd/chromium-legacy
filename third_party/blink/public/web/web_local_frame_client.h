@@ -221,8 +221,7 @@ class BLINK_EXPORT WebLocalFrameClient {
       CrossVariantMojoAssociatedRemote<mojom::PortalClientInterfaceBase>
           client_endpoint,
       const WebElement& portal_element) {
-    return std::pair<WebRemoteFrame*, PortalToken>(nullptr,
-                                                   blink::PortalToken::Null());
+    return std::pair<WebRemoteFrame*, PortalToken>(nullptr, PortalToken());
   }
 
   // Request the creation of a remote frame which corresponds to an existing

@@ -570,7 +570,7 @@ android_library("browser_java") {
     "//net/android:net_java",
     "//services/network/public/mojom:mojom_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
+    "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/blink/public:blink_headers_java",
     "//ui/android:ui_java",
     "//url:gurl_java",
@@ -597,7 +597,7 @@ android_library("common_variations_java") {
     "//base:base_java",
     "//components/variations/android:variations_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
+    "//third_party/android_deps:protobuf_lite_runtime_java",
   ]
 }
 

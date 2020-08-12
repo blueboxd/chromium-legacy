@@ -64,6 +64,9 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
     // tab is closed. Some fields below may not be populated if this is true.
     bool normal_termination = false;
 
+    // Renderer process shutdown started by RenderProcessHost::Shutdown.
+    bool renderer_shutdown_requested = false;
+
     // Values from ChildProcessTerminationInfo.
     // Note base::TerminationStatus and exit_code are missing intentionally
     // because those fields hold no useful information on Android.

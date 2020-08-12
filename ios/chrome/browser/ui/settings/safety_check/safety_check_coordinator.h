@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+@protocol ApplicationCommands;
 @class SafetyCheckCoordinator;
 
 // Delegate that allows to dereference the SafetyCheckCoordinator.
@@ -20,6 +21,7 @@
 // The coordinator for the Safety Check screen.
 @interface SafetyCheckCoordinator : ChromeCoordinator
 
+// Delegate to pass user interactions to the mediator.
 @property(nonatomic, weak) id<SafetyCheckCoordinatorDelegate> delegate;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController

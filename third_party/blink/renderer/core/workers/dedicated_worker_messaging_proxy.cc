@@ -35,8 +35,13 @@ DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
     DedicatedWorker* worker_object)
     : ThreadedMessagingProxyBase(execution_context),
       worker_object_(worker_object) {
-  worker_object_proxy_ = std::make_unique<DedicatedWorkerObjectProxy>(
-      this, GetParentExecutionContextTaskRunners());
+  if (worker_object) {
+    // Worker object is only nullptr in tests, which subsequently manually
+    // injects a |worker_object_proxy_|.
+    worker_object_proxy_ = std::make_unique<DedicatedWorkerObjectProxy>(
+        this, GetParentExecutionContextTaskRunners(),
+        worker_object->GetToken());
+  }
 }
 
 DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy() = default;
@@ -239,13 +244,6 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
 void DedicatedWorkerMessagingProxy::Trace(Visitor* visitor) const {
   visitor->Trace(worker_object_);
   ThreadedMessagingProxyBase::Trace(visitor);
-}
-
-const DedicatedWorkerToken&
-DedicatedWorkerMessagingProxy::GetDedicatedWorkerToken() const {
-  if (!worker_object_)
-    return DedicatedWorkerToken::Null();
-  return worker_object_->GetToken();
 }
 
 base::Optional<WorkerBackingThreadStartupData>

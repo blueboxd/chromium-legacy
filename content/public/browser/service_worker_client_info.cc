@@ -9,14 +9,27 @@ namespace content {
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(int frame_tree_node_id)
     : type_(blink::mojom::ServiceWorkerClientType::kWindow),
       frame_tree_node_id_(frame_tree_node_id) {}
+
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     const blink::DedicatedWorkerToken& dedicated_worker_token)
     : type_(blink::mojom::ServiceWorkerClientType::kDedicatedWorker),
-      dedicated_worker_token_(dedicated_worker_token) {}
+      worker_token_(dedicated_worker_token) {}
+
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     const blink::SharedWorkerToken& shared_worker_token)
     : type_(blink::mojom::ServiceWorkerClientType::kSharedWorker),
-      shared_worker_token_(shared_worker_token) {}
+      worker_token_(shared_worker_token) {}
+
+ServiceWorkerClientInfo::ServiceWorkerClientInfo(
+    const DedicatedOrSharedWorkerToken& worker_token)
+    : worker_token_(worker_token) {
+  if (worker_token.Is<blink::DedicatedWorkerToken>()) {
+    type_ = blink::mojom::ServiceWorkerClientType::kDedicatedWorker;
+  } else {
+    DCHECK(worker_token.Is<blink::SharedWorkerToken>());
+    type_ = blink::mojom::ServiceWorkerClientType::kSharedWorker;
+  }
+}
 
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     const ServiceWorkerClientInfo& other) = default;
@@ -31,16 +44,15 @@ int ServiceWorkerClientInfo::GetFrameTreeNodeId() const {
   return frame_tree_node_id_;
 }
 
-const blink::DedicatedWorkerToken&
-ServiceWorkerClientInfo::GetDedicatedWorkerToken() const {
+blink::DedicatedWorkerToken ServiceWorkerClientInfo::GetDedicatedWorkerToken()
+    const {
   DCHECK_EQ(type_, blink::mojom::ServiceWorkerClientType::kDedicatedWorker);
-  return dedicated_worker_token_;
+  return worker_token_->GetAs<blink::DedicatedWorkerToken>();
 }
 
-const blink::SharedWorkerToken& ServiceWorkerClientInfo::GetSharedWorkerToken()
-    const {
+blink::SharedWorkerToken ServiceWorkerClientInfo::GetSharedWorkerToken() const {
   DCHECK_EQ(type_, blink::mojom::ServiceWorkerClientType::kSharedWorker);
-  return shared_worker_token_;
+  return worker_token_->GetAs<blink::SharedWorkerToken>();
 }
 
 }  // namespace content

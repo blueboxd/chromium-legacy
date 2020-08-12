@@ -82,7 +82,7 @@ JobTaskSource::JobTaskSource(
     const Location& from_here,
     const TaskTraits& traits,
     RepeatingCallback<void(JobDelegate*)> worker_task,
-    RepeatingCallback<size_t()> max_concurrency_callback,
+    RepeatingCallback<size_t(size_t)> max_concurrency_callback,
     PooledTaskRunnerDelegate* delegate)
     : TaskSource(traits, nullptr, TaskSourceExecutionMode::kJob),
       from_here_(from_here),
@@ -127,7 +127,7 @@ bool JobTaskSource::WillJoin() {
   const auto state_before_add = state_.IncrementWorkerCount();
 
   if (!state_before_add.is_canceled() &&
-      state_before_add.worker_count() < GetMaxConcurrency()) {
+      state_before_add.worker_count() < GetMaxConcurrency(state_before_add)) {
     return true;
   }
   return WaitForParticipationOpportunity();
@@ -142,7 +142,7 @@ bool JobTaskSource::RunJoinTask() {
   // Stale values will only cause WaitForParticipationOpportunity() to be
   // called.
   const auto state = TS_UNCHECKED_READ(state_).Load();
-  if (!state.is_canceled() && state.worker_count() <= GetMaxConcurrency())
+  if (!state.is_canceled() && state.worker_count() <= GetMaxConcurrency(state))
     return true;
 
   TRACE_EVENT0("base", "Job.WaitForParticipationOpportunity");
@@ -170,7 +170,7 @@ bool JobTaskSource::WaitForParticipationOpportunity() {
   // std::memory_order_relaxed is sufficient because no other state is
   // synchronized with |state_| outside of |lock_|.
   auto state = state_.Load();
-  size_t max_concurrency = GetMaxConcurrency();
+  size_t max_concurrency = GetMaxConcurrency(state);
 
   // Wait until either:
   //  A) |worker_count| is below or equal to max concurrency and state is not
@@ -188,7 +188,7 @@ bool JobTaskSource::WaitForParticipationOpportunity() {
     // 2- In NotifyConcurrencyIncrease(), following a max_concurrency increase.
     worker_released_condition_->Wait();
     state = state_.Load();
-    max_concurrency = GetMaxConcurrency();
+    max_concurrency = GetMaxConcurrency(state);
   }
   // Case A:
   if (state.worker_count() <= max_concurrency && !state.is_canceled())
@@ -204,8 +204,8 @@ bool JobTaskSource::WaitForParticipationOpportunity() {
 TaskSource::RunStatus JobTaskSource::WillRunTask() {
   CheckedAutoLock auto_lock(worker_lock_);
 
-  const size_t max_concurrency = GetMaxConcurrency();
   auto state_before_add = state_.Load();
+  const size_t max_concurrency = GetMaxConcurrency(state_before_add);
   if (!state_before_add.is_canceled() &&
       state_before_add.worker_count() < max_concurrency) {
     state_before_add = state_.IncrementWorkerCount();
@@ -233,11 +233,21 @@ size_t JobTaskSource::GetRemainingConcurrency() const {
   // It is safe to read |state_| without a lock since this variable is atomic,
   // and no other state is synchronized with GetRemainingConcurrency().
   const auto state = TS_UNCHECKED_READ(state_).Load();
-  const size_t max_concurrency = GetMaxConcurrency();
+  const size_t max_concurrency = GetMaxConcurrency(state);
   // Avoid underflows.
   if (state.is_canceled() || state.worker_count() > max_concurrency)
     return 0;
   return max_concurrency - state.worker_count();
+}
+
+bool JobTaskSource::IsCompleted() const {
+  CheckedAutoLock auto_lock(worker_lock_);
+  auto state = state_.Load();
+  return GetMaxConcurrency(state) == 0 && state.worker_count() == 0;
+}
+
+size_t JobTaskSource::GetWorkerCount() const {
+  return TS_UNCHECKED_READ(state_).Load().worker_count();
 }
 
 void JobTaskSource::NotifyConcurrencyIncrease() {
@@ -272,7 +282,12 @@ void JobTaskSource::NotifyConcurrencyIncrease() {
 }
 
 size_t JobTaskSource::GetMaxConcurrency() const {
-  return std::min(max_concurrency_callback_.Run(), kMaxWorkersPerJob);
+  return GetMaxConcurrency(TS_UNCHECKED_READ(state_).Load());
+}
+
+size_t JobTaskSource::GetMaxConcurrency(State::Value value) const {
+  return std::min(max_concurrency_callback_.Run(value.worker_count()),
+                  kMaxWorkersPerJob);
 }
 
 uint8_t JobTaskSource::AcquireTaskId() {
@@ -357,7 +372,7 @@ bool JobTaskSource::DidProcessTask(TaskSource::Transaction* /*transaction*/) {
 
   // Re-enqueue the TaskSource if the task ran and the worker count is below the
   // max concurrency.
-  return state_before_sub.worker_count() <= GetMaxConcurrency();
+  return state_before_sub.worker_count() <= GetMaxConcurrency(state_.Load());
 }
 
 SequenceSortKey JobTaskSource::GetSortKey() const {

@@ -123,12 +123,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     WebLayerImpl() {}
 
     @Override
-    public void loadAsyncV80(
-            IObjectWrapper appContextWrapper, IObjectWrapper loadedCallbackWrapper) {
-        loadAsync(appContextWrapper, null, loadedCallbackWrapper);
-    }
-
-    @Override
     public void loadAsync(IObjectWrapper appContextWrapper, IObjectWrapper remoteContextWrapper,
             IObjectWrapper loadedCallbackWrapper) {
         StrictModeWorkaround.apply();
@@ -150,11 +144,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                         loadedCallback.onReceiveValue(false);
                     }
                 });
-    }
-
-    @Override
-    public void loadSyncV80(IObjectWrapper appContextWrapper) {
-        loadSync(appContextWrapper, null);
     }
 
     @Override
@@ -305,12 +294,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public ICrashReporterController getCrashReporterControllerV80(IObjectWrapper appContext) {
-        StrictModeWorkaround.apply();
-        return getCrashReporterController(appContext, null);
-    }
-
-    @Override
     public ICrashReporterController getCrashReporterController(
             IObjectWrapper appContext, IObjectWrapper remoteContext) {
         StrictModeWorkaround.apply();
@@ -370,20 +353,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     public void registerExternalExperimentIDs(String trialName, int[] experimentIDs) {
         StrictModeWorkaround.apply();
         WebLayerImplJni.get().registerExternalExperimentIDs(trialName, experimentIDs);
-    }
-
-    /**
-     * Creates a remote context. This should only be used for backwards compatibility when the
-     * client was not sending the remote context.
-     */
-    public static Context createRemoteContextV80(Context appContext) {
-        try {
-            return appContext.createPackageContext(
-                    WebViewFactory.getLoadedPackageInfo().packageName,
-                    Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
-        } catch (PackageManager.NameNotFoundException e) {
-            throw new AndroidRuntimeException(e);
-        }
     }
 
     public static Intent createIntent() {
@@ -482,9 +451,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         }
         Context appContext = ObjectWrapper.unwrap(appContextWrapper, Context.class);
         Context remoteContext = ObjectWrapper.unwrap(remoteContextWrapper, Context.class);
-        if (remoteContext == null) {
-            remoteContext = createRemoteContextV80(appContext);
-        }
+        assert remoteContext != null;
         ClassLoaderContextWrapperFactory.setResourceOverrideContext(remoteContext);
         // Wrap the app context so that it can be used to load WebLayer implementation classes.
         appContext = ClassLoaderContextWrapperFactory.get(appContext);

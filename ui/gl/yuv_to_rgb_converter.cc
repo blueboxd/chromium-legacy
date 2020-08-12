@@ -129,11 +129,12 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
 
   // On MacOS, the default texture target for native GpuMemoryBuffers is
   // GL_TEXTURE_RECTANGLE_ARB. This is due to CGL's requirements for creating
-  // a GL surface. However, when ANGLE is used on top of SwiftShader, it's
-  // necessary to use GL_TEXTURE_2D instead.
+  // a GL surface. However, when ANGLE is used on top of SwiftShader or Metal,
+  // it's necessary to use GL_TEXTURE_2D instead.
   // TODO(crbug.com/1056312): The proper behavior is to check the config
   // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
-  bool is_rect = !gl_version_info.is_angle_swiftshader;
+  bool is_rect =
+      !gl_version_info.is_angle_swiftshader && !gl_version_info.is_angle_metal;
   source_texture_target_ = (is_rect ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D);
 
   const char* fragment_header = nullptr;

@@ -678,9 +678,7 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
         "viz", "Delegated Ink Metadata was aggregated for DrawAndSwap.",
         TRACE_EVENT_SCOPE_THREAD, "ink metadata",
         frame.delegated_ink_metadata->ToString());
-    // TODO(1052145): This metadata will be stored here and used to determine
-    // which points should be drawn onto the back buffer (via Skia or OS APIs)
-    // before being swapped onto the screen.
+    renderer_->SetDelegatedInkMetadata(std::move(frame.delegated_ink_metadata));
   }
 
 #if defined(OS_ANDROID)
@@ -1273,6 +1271,10 @@ base::ScopedClosureRunner Display::GetCacheBackBufferCb() {
 void Display::DisableGPUAccessByDefault() {
   DCHECK(resource_provider_);
   resource_provider_->SetAllowAccessToGPUThread(false);
+}
+
+DelegatedInkPointRendererBase* Display::GetDelegatedInkPointRenderer() {
+  return renderer_->GetDelegatedInkPointRenderer();
 }
 
 }  // namespace viz

@@ -8,6 +8,10 @@ package affiliation_pb;
 
 option optimize_for = LITE_RUNTIME;
 
+// The messages below mirror the corresponding messages on the server side.
+// These should be updated once the server side changes.
+// Synced version: http://shortn/_g0W3toNGei
+
 // Contains a list of affiliated facets.
 // Affiliated facets are allowed to share credentials among each other.
 message Affiliation {
@@ -37,6 +41,11 @@ message Facet {
   // http://somethinginvalid$%#^ -> somethinginvalid$%#^
   // android://xyz@com.facebook -> field is not populated
   optional string main_domain = 3;
+
+  // Info about where the user can change a password stored for this Facet. This
+  // info should be considered valid for any other Facet in the same FacetGroup.
+  // Only present for Facets in a FacetGroup.
+  optional ChangePasswordInfo change_password_info = 4;
 }
 
 // Message representing set of facets that should be grouped together in the UI.
@@ -93,9 +102,17 @@ message BrandingInfo {
   optional int32 icon_height = 5;
 }
 
+// Various methods through which a user can change a password for a single
+// facet.
+message ChangePasswordInfo {
+  // A URL to a change password form or flow.
+  optional string change_password_url = 1;
+}
+
 // Request mask for LookupAffiliationRequest.
+// Next id: 8
 message LookupAffiliationMask {
-  // If true, branding info for Android apps will be returned.
+  // If true, branding info for all facets will be returned.
   optional bool branding_info = 1;
 
   // Preferred size of the icon returned in BrandingInfo or
@@ -118,6 +135,10 @@ message LookupAffiliationMask {
   // grouping response. Can be set only if grouping_info and branding_info is
   // set to true.
   optional bool group_branding_info = 5;
+
+  // Whether to include change password infos in the response. Can be set only
+  // if grouping_info is set to true, as this is only populated for FacetGroups.
+  optional bool change_password_info = 7;
 }
 
 // Request message for AffiliationService.Lookup.

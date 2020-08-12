@@ -1632,10 +1632,6 @@ bool EventHandler::IsScrollbarHandlingGestures() const {
 
 bool EventHandler::ShouldApplyTouchAdjustment(
     const WebGestureEvent& event) const {
-  if (frame_->GetSettings() &&
-      !frame_->GetSettings()->GetTouchAdjustmentEnabled())
-    return false;
-
   if (event.primary_pointer_type == WebPointerProperties::PointerType::kPen)
     return false;
 

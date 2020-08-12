@@ -17,6 +17,7 @@ namespace machine_learning {
 
 class TFLitePredictorTest : public ::testing::Test {
  public:
+  const int32_t kTFLiteNumThreads = 4;
   const int32_t kInputTensorNum = 1;
   const int32_t kOutputTensorNum = 1;
 
@@ -52,7 +53,7 @@ class TFLitePredictorTest : public ::testing::Test {
 TEST_F(TFLitePredictorTest, TFLiteInitializationTest) {
   // Initialize the model
   std::string model_path = GetTFLiteTestPath();
-  TFLitePredictor predictor(model_path);
+  TFLitePredictor predictor(model_path, kTFLiteNumThreads);
   TfLiteStatus status = predictor.Initialize();
   EXPECT_EQ(status, kTfLiteOk);
 }
@@ -60,7 +61,7 @@ TEST_F(TFLitePredictorTest, TFLiteInitializationTest) {
 TEST_F(TFLitePredictorTest, TFLiteTensorsCountTest) {
   // Initialize the model
   std::string model_path = GetTFLiteTestPath();
-  TFLitePredictor predictor(model_path);
+  TFLitePredictor predictor(model_path, kTFLiteNumThreads);
   TfLiteStatus status = predictor.Initialize();
   EXPECT_EQ(status, kTfLiteOk);
 
@@ -71,7 +72,7 @@ TEST_F(TFLitePredictorTest, TFLiteTensorsCountTest) {
 TEST_F(TFLitePredictorTest, TFLiteTensorsTest) {
   // Initialize the model
   std::string model_path = GetTFLiteTestPath();
-  TFLitePredictor predictor(model_path);
+  TFLitePredictor predictor(model_path, kTFLiteNumThreads);
   TfLiteStatus status = predictor.Initialize();
   EXPECT_EQ(status, kTfLiteOk);
 
@@ -98,7 +99,7 @@ TEST_F(TFLitePredictorTest, TFLiteEvaluationTest) {
 
   // Initialize the model
   std::string model_path = GetTFLiteTestPath();
-  TFLitePredictor predictor(model_path);
+  TFLitePredictor predictor(model_path, kTFLiteNumThreads);
   predictor.Initialize();
 
   // Initialize model input tensor

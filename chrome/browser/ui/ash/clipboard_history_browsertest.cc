@@ -110,10 +110,10 @@ class ClipboardHistoryWithMultiProfileBrowserTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-// Verify that the clipboard data history belonging to different users does not
-// interfere with each other.
+// Verify that the clipboard data history is recorded as expected in the
+// Multiuser environment.
 IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
-                       DisconflictInMultiUser) {
+                       VerifyClipboardHistoryAcrossMultiUser) {
   LoginUser(account_id1_);
   EXPECT_TRUE(GetClipboardData().empty());
 
@@ -127,10 +127,10 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
     EXPECT_EQ(copypaste_data1, data.front().text());
   }
 
-  // Log in as the user2. The clipboard history should be empty.
+  // Log in as the user2. The clipboard history should be non-empty.
   chromeos::UserAddingScreen::Get()->Start();
   AddUser(account_id2_);
-  EXPECT_TRUE(GetClipboardData().empty());
+  EXPECT_FALSE(GetClipboardData().empty());
 
   // Store text when the user2 is active.
   const std::string copypaste_data2("user2_text1");
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
 
   {
     const std::list<ui::ClipboardData>& data = GetClipboardData();
-    EXPECT_EQ(1u, data.size());
+    EXPECT_EQ(2u, data.size());
     EXPECT_EQ(copypaste_data2, data.front().text());
   }
 
@@ -151,12 +151,15 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
 
   {
     const std::list<ui::ClipboardData>& data = GetClipboardData();
-    EXPECT_EQ(2u, data.size());
+    EXPECT_EQ(3u, data.size());
 
     // Note that items in |data| follow the time ordering. The most recent item
     // is always the first one.
     auto it = data.begin();
     EXPECT_EQ(copypaste_data3, it->text());
+
+    std::advance(it, 1u);
+    EXPECT_EQ(copypaste_data2, it->text());
 
     std::advance(it, 1u);
     EXPECT_EQ(copypaste_data1, it->text());

@@ -678,8 +678,8 @@
   },
   {
     "name": "cross-origin-opener-policy-reporting",
-    "owners": [ "ahemery", "clamy", "pmeuleman" ],
-    "expiry_milestone": 85
+    "owners": [ "ahemery", "arthursonzogni", "clamy", "pmeuleman" ],
+    "expiry_milestone": 86
   },
   {
     "name": "crostini-disk-resizing",
@@ -743,7 +743,7 @@
   },
   {
     "name": "d3d11-video-decoder",
-    "owners": [ "liberato", "tmathmeyer", "videostack-eng" ],
+    "owners": [ "liberato", "tmathmeyer", "//media/OWNERS" ],
     "expiry_milestone": 78
   },
   {
@@ -909,11 +909,6 @@
     // This flag is a useful debugging control when investigating scrolling
     // issues.
     "expiry_milestone": -1
-  },
-  {
-    "name": "disable-touch-adjustment",
-    "owners": [ "eirage", "input-dev" ],
-    "expiry_milestone": 76
   },
   {
     "name": "disable-webrtc-hw-decoding",
@@ -1516,7 +1511,7 @@
   },
   {
     "name": "enable-filtering-scroll-events",
-    "owners": [ "axantoine", "eirage", "nzolghadr", "input-dev" ],
+    "owners": [ "eirage", "nzolghadr", "input-dev" ],
     "expiry_milestone": 85
   },
   {
@@ -2026,6 +2021,11 @@
     "owners": [ "kolos" ],
     // Used for debugging and QA by the autofill team for the indefinite future.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-sign-in-profile-creation-flow",
+    "owners": [ "dizg", "droger", "msalama" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-site-isolation-for-password-sites",
@@ -3828,7 +3828,7 @@
   {
     "name": "safe-browsing-available",
     "owners": [ "//ios/chrome/browser/safe_browsing/OWNERS", "bling-flags" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "safe-browsing-enhanced-protection-android",

@@ -68,6 +68,19 @@ ScriptPromise FetchEvent::preloadResponse(ScriptState* script_state) {
   return preload_response_property_->Promise(script_state->World());
 }
 
+ScriptPromise FetchEvent::handled(ScriptState* script_state) {
+  return handled_property_->Promise(script_state->World());
+}
+
+void FetchEvent::ResolveHandledPromise() {
+  handled_property_->ResolveWithUndefined();
+}
+
+void FetchEvent::RejectHandledPromise(const String& error_message) {
+  handled_property_->Reject(ServiceWorkerError::GetException(
+      nullptr, mojom::blink::ServiceWorkerErrorType::kNetwork, error_message));
+}
+
 const AtomicString& FetchEvent::InterfaceName() const {
   return event_interface_names::kFetchEvent;
 }
@@ -96,6 +109,10 @@ FetchEvent::FetchEvent(ScriptState* script_state,
       observer_(respond_with_observer),
       preload_response_property_(MakeGarbageCollected<PreloadResponseProperty>(
           ExecutionContext::From(script_state))),
+      handled_property_(
+          MakeGarbageCollected<ScriptPromiseProperty<ToV8UndefinedGenerator,
+                                                     Member<DOMException>>>(
+              ExecutionContext::From(script_state))),
       worker_timing_remote_(ExecutionContext::From(script_state)) {
   worker_timing_remote_.Bind(std::move(worker_timing_remote),
                              ExecutionContext::From(script_state)
@@ -231,6 +248,7 @@ void FetchEvent::Trace(Visitor* visitor) const {
   visitor->Trace(request_);
   visitor->Trace(preload_response_property_);
   visitor->Trace(body_completion_notifier_);
+  visitor->Trace(handled_property_);
   visitor->Trace(worker_timing_remote_);
   ExtendableEvent::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

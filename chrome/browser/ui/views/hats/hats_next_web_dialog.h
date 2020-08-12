@@ -85,6 +85,10 @@ class HatsNextWebDialog : public ui::WebDialogDelegate,
   // closed. Virtual to allow mocking in tests.
   virtual void CloseWidget();
 
+  // Updates dialog size, provided via state update by the webpage. Virtual to
+  // allow mocking in tests.
+  virtual void UpdateWidgetSize(gfx::Size size);
+
   // Returns whether the dialog is still waiting for the survey to load.
   bool IsWaitingForSurveyForTesting();
 
@@ -99,6 +103,11 @@ class HatsNextWebDialog : public ui::WebDialogDelegate,
 
   // The HaTS Next survey trigger ID that is provided to the HaTS webpage.
   const std::string& trigger_id_;
+
+  // The size of the dialog. Desired dimensions are provided by the site loaded
+  // in the web contents. Initialised to arbitrary non-zero value as creation
+  // of 0 sized windows is disallowed on OSX.
+  gfx::Size size_ = gfx::Size(10, 10);
 
   views::WebDialogView* web_view_ = nullptr;
   views::Widget* widget_ = nullptr;

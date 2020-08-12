@@ -230,12 +230,9 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         mActionOptions = actionOptions;
 
         Resources resources = mActivity.getResources();
-        mDefaultMargin = resources.getDimensionPixelSize(mV2Enabled
-                        ? R.dimen.content_suggestions_card_modern_margin_v2
-                        : R.dimen.content_suggestions_card_modern_margin);
-        mWideMargin = resources.getDimensionPixelSize(mV2Enabled
-                        ? R.dimen.ntp_wide_card_lateral_margins_v2
-                        : R.dimen.ntp_wide_card_lateral_margins);
+        mDefaultMargin =
+                resources.getDimensionPixelSize(R.dimen.content_suggestions_card_modern_margin);
+        mWideMargin = resources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
 
         mRootView = new RootView(mActivity);
         mRootView.setPadding(0, resources.getDimensionPixelOffset(R.dimen.tab_strip_height), 0, 0);

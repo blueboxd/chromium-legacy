@@ -612,7 +612,7 @@ class VIEWS_EXPORT MenuController
                              SelectionIncrementDirectionType direction);
 
   // Updates the current |hot_button_| and its hot tracked state.
-  void SetHotTrackedButton(Button* hot_button);
+  void SetHotTrackedButton(Button* new_hot_button);
 
   // Returns whether typing a new character will continue the existing prefix
   // selection. If this returns false, typing a new character will start a new

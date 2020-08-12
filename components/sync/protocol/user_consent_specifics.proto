@@ -57,6 +57,8 @@ message UserConsentSpecifics {
 
     UserConsentTypes.AssistantActivityControlConsent
         assistant_activity_control_consent = 14;
+
+    UserConsentTypes.AccountPasswordsConsent account_passwords_consent = 15;
   }
   reserved "arc_metrics_and_usage_consent";
   reserved 11;

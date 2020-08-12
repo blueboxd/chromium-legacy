@@ -22,8 +22,8 @@ inline gfx::Vector2dF GetPositionAtTime(const gfx::Vector2dF& end_point,
 
 inline gfx::Vector2dF GetVelocityAtTime(const gfx::Vector2dF& current_offset,
                                         const gfx::Vector2dF& prev_offset,
-                                        double delta) {
-  return gfx::ScaleVector2d(current_offset - prev_offset, (1 / delta));
+                                        base::TimeDelta delta) {
+  return gfx::ScaleVector2d(current_offset - prev_offset, delta.ToHz());
 }
 
 float GetOffset(float velocity, float deceleration, float duration) {
@@ -123,9 +123,8 @@ bool PhysicsBasedFlingCurve::ComputeScrollOffset(base::TimeTicks time,
   if (x < 1.0f) {
     double progress = bezier_.Solve(x);
     *offset = GetPositionAtTime(distance_, progress);
-    *velocity =
-        GetVelocityAtTime(*offset, prev_offset_,
-                          (elapsed_time - previous_time_delta_).InSecondsF());
+    *velocity = GetVelocityAtTime(*offset, prev_offset_,
+                                  elapsed_time - previous_time_delta_);
     prev_offset_ = *offset;
     previous_time_delta_ = elapsed_time;
     still_active = true;

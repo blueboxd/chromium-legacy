@@ -654,6 +654,9 @@ void WizardController::ShowLoginScreen() {
   if (login_screen_started_)
     return;
 
+  // Landed on the login screen. No longer skipping enrollment for tests.
+  wizard_context_->skip_to_login_for_tests = false;
+
   if (!time_eula_accepted_.is_null()) {
     base::TimeDelta delta = base::TimeTicks::Now() - time_eula_accepted_;
     UMA_HISTOGRAM_MEDIUM_TIMES("OOBE.EULAToSignInTime", delta);
@@ -662,9 +665,6 @@ void WizardController::ShowLoginScreen() {
   UpdateStatusAreaVisibilityForScreen(GaiaView::kScreenId);
   GetLoginDisplayHost()->StartSignInScreen();
   login_screen_started_ = true;
-
-  // Landed on the login screen. No longer skipping to login for tests.
-  wizard_context_->skip_to_login_for_tests = false;
 }
 
 void WizardController::ShowGaiaPasswordChangedScreen(

@@ -118,10 +118,12 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
         int newState = (int) newValue;
         @SafeBrowsingState
         int currentState = SafeBrowsingBridge.getSafeBrowsingState();
+        if (newState == currentState) {
+            return true;
+        }
         // If the user selects no protection from another Safe Browsing state, show a confirmation
         // dialog to double check if they want to select no protection.
-        if (newState == SafeBrowsingState.NO_SAFE_BROWSING
-                && currentState != SafeBrowsingState.NO_SAFE_BROWSING) {
+        if (newState == SafeBrowsingState.NO_SAFE_BROWSING) {
             // The user hasn't confirmed to select no protection, keep the radio button / UI checked
             // state at the currently selected level.
             mSafeBrowsingPreference.setCheckedState(currentState);

@@ -117,7 +117,7 @@ std::unique_ptr<FrameNodeImpl> PerformanceManagerImpl::CreateFrameNode(
     FrameNodeImpl* parent_frame_node,
     int frame_tree_node_id,
     int render_frame_id,
-    const FrameToken& frame_token,
+    const blink::LocalFrameToken& frame_token,
     int32_t browsing_instance_id,
     int32_t site_instance_id,
     FrameNodeCreationCallback creation_callback) {
@@ -154,7 +154,7 @@ std::unique_ptr<WorkerNodeImpl> PerformanceManagerImpl::CreateWorkerNode(
     const std::string& browser_context_id,
     WorkerNode::WorkerType worker_type,
     ProcessNodeImpl* process_node,
-    const WorkerToken& worker_token) {
+    const blink::WorkerToken& worker_token) {
   return CreateNodeImpl<WorkerNodeImpl>(
       base::OnceCallback<void(WorkerNodeImpl*)>(), browser_context_id,
       worker_type, process_node, worker_token);

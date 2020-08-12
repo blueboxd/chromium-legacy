@@ -103,7 +103,7 @@ ExecutionContextRegistryImpl::GetExecutionContextByToken(
 }
 
 const FrameNode* ExecutionContextRegistryImpl::GetFrameNodeByFrameToken(
-    const FrameToken& token) {
+    const blink::LocalFrameToken& token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The casting is safe because ExecutionContextToken guarantees it has the
   // same layout as base::UnguessableToken.
@@ -115,7 +115,7 @@ const FrameNode* ExecutionContextRegistryImpl::GetFrameNodeByFrameToken(
 }
 
 const WorkerNode* ExecutionContextRegistryImpl::GetWorkerNodeByWorkerToken(
-    const WorkerToken& token) {
+    const blink::WorkerToken& token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The casting is safe because ExecutionContextToken guarantees it has the
   // same layout as base::UnguessableToken.

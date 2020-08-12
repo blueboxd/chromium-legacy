@@ -1622,6 +1622,27 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   EXPECT_TRUE(registry->enabled_extensions().GetByID(kGoodCrxId));
 }
 
+// Verifies that the browser doesn't crash on shutdown. If the extensions are
+// being installed, and the browser is shutdown, it should not lead to a crash
+// as in (crbug/1114191).
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionInstallForcelistShutdownBeforeInstall) {
+  ExtensionRequestInterceptor interceptor;
+
+  extensions::ExtensionRegistry* registry = extension_registry();
+  ASSERT_FALSE(registry->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
+
+  PolicyMap policies;
+  AddExtensionToForceList(&policies, kGoodCrxId, url);
+  UpdateProviderPolicy(policies);
+  // The extension is not yet installed, shutdown the browser now and there
+  // should be no crash.
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
                        ExtensionRecommendedInstallationMode) {
   // Verifies that extensions that are recommended-installed by policies are

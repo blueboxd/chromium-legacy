@@ -1035,6 +1035,7 @@
         'NativePrintersBulkAccessMode',
         'NativePrintersBulkBlacklist',
         'NativePrintersBulkWhitelist',
+        'Printers',
         'DeviceNativePrinters',
         'DeviceNativePrintersAccessMode',
         'DeviceNativePrintersBlacklist',
@@ -6881,7 +6882,7 @@
       'name': 'PolicyRefreshRate',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'int',
-      'schema': { 'type': 'integer' },
+      'schema': { 'type': 'integer', 'minimum': 1800000, 'maximum': 86400000 },
       'supported_on': ['chrome_os:11-', 'chrome.*:79-'],
       'features': {
         'dynamic_refresh': True,
@@ -6903,7 +6904,7 @@
       'name': 'MaxInvalidationFetchDelay',
       'owners': ['stepco@chromium.org', 'poromov@chromium.org'],
       'type': 'int',
-      'schema': { 'type': 'integer' },
+      'schema': { 'type': 'integer', 'minimum': 1000, 'maximum': 30000 },
       'supported_on': ['chrome.*:30-', 'chrome_os:30-'],
       'features': {
         'dynamic_refresh': True,
@@ -14948,6 +14949,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       # example_value is split onto multiple lines here for readability, but the
       # 'type': 'list' above means that each element has to fit inside a single-
       # line textbox in the GPO UI - so the example string is a single line.
@@ -14964,6 +14966,83 @@
       ],
       'id': 350,
       'caption': '''Native Printing''',
+      'tags': [],
+      'desc': '''Configures a list of printers.
+
+      This policy allows administrators to provide printer configurations for
+      their users.
+
+      <ph name="PRINTER_DISPLAY_NAME">display_name</ph> and <ph name="PRINTER_DESCRIPTION">description</ph> are free-form strings that can be customized for ease of printer selection. <ph name="PRINTER_MANUFACTURER">manufacturer</ph> and <ph name="PRINTER_MODEL">model</ph> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI">uri</ph> should be an address reachable from a client computer including the <ph name="URI_SCHEME">scheme</ph>, <ph name="URI_PORT">port</ph>, and <ph name="URI_QUEUE">queue</ph>. <ph name="PRINTER_UUID">uuid</ph> is optional. If provided, it is used to help deduplicate <ph name="ZEROCONF_DISCOVERY">zeroconf</ph> printers.
+
+      Either <ph name="PRINTER_EFFECTIVE_MODEL">effective_model</ph> should contain the name of the printer or <ph name="PRINTER_AUTOCONF">autoconf</ph> should be set to true. The printers with both or without any properties will be ignored.
+
+      Printer setup is completed upon the first use of a printer.  PPDs are not downloaded until the printer is used.  After that time, frequently used PPDs are cached.
+
+      This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
+
+      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE">${MACHINE_NAME[,pos[,count]]}</ph> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE">CHROMEBOOK</ph>, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE">${MACHINE_NAME,6,4}</ph> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE">BOOK</ph>. Note that the position is zero-based.
+
+      This policy is deprecated, please use <ph name="PRINTERS_POLICY_NAME">Printers</ph> instead.
+      ''',
+    },
+    {
+      'name': 'Printers',
+      'owners': ['file://chromeos/printing/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'validation_schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'id': 'PrinterTypeInclusive',
+          'properties': {
+            'display_name': { 'type': 'string' },
+            'description': { 'type': 'string' },
+            'manufacturer': { 'type': 'string' },
+            'model': { 'type': 'string' },
+            'uri': { 'type': 'string' },
+            'uuid': { 'type': 'string' },
+            'ppd_resource': {
+              'type': 'object',
+              'id': 'PpdResourceInclusive',
+              'properties': {
+                'effective_model': {
+                  'type': 'string',
+                  'description': 'This field must match one of the strings which represent a <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.'
+                },
+                'autoconf': {
+                  'type': 'boolean',
+                  'description': 'Boolean flag indicating whether IPP Everywhere should be used to set up the printer.'
+                }
+              }
+            }
+          }
+        }
+      },
+      'supported_on': [ 'chrome_os:86-' ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      # example_value is split onto multiple lines here for readability, but the
+      # 'type': 'list' above means that each element has to fit inside a single-
+      # line textbox in the GPO UI - so the example string is a single line.
+      'example_value': [
+        '{ '
+        '"display_name": "Color Laser", '
+        '"description": "The printer next to the water cooler.", '
+        '"manufacturer": "Printer Manufacturer", '
+        '"model": "Color Laser 2004", '
+        '"uri": "ipps://print-server.intranet.example.com:443/ipp/cl2k4", '
+        '"uuid": "1c395fdb-5d93-4904-b246-b2c046e79d12", '
+        '"ppd_resource": { "effective_model": "Printer Manufacturer ColorLaser2k4", "autoconf": false } '
+        '}'
+      ],
+      'id': 769,
+      'caption': '''Configures a list of printers''',
       'tags': [],
       'desc': '''Configures a list of printers.
 
@@ -17361,6 +17440,7 @@
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:72-'],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -22730,16 +22810,12 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'id': 758,
       'caption': '''Control the <ph name="PRODUCT_NAME">BackForwardCache</ph> feature.''',
       'tags': [],
-      'desc': '''When enabled the <ph name="PRODUCT_NAME">BackForwardCache</ph> feature causes web pages to be preserved in its current state (document tree, script, etc.) into the back-forward cache when navigated away from the page.
-          If we navigated back to the page, the page will be restored from the back-forward cache, showing it in the state it was in when cached before.
+      'desc': '''When enabled the <ph name="PRODUCT_NAME">BackForwardCache</ph> feature allows the use of the back-forward cache. When navigating away from a page, its current state (document tree, script, etc.) may be preserved in the back-forward cache. If the browser navigates back to the page, the page may be restored from the back-forward cache and displayed in the state it was in before being cached.
 
-          This feature might break some websites that does not expect itself to
-          get cached, particularly websites that depend on unload handlers being
-          fired when navigated away from the page, as the unload event will
-          not be dispatched when navigated away from a page and it gets saved
-          in the back-forward cache.
+          This feature might cause issues for some websites that do not expect this caching. In particular, some websites depend on the "<ph name="UNLOAD_HANDLER_NAME">unload</ph>" event being dispatched when the browser navigates away from the page. The "<ph name="UNLOAD_HANDLER_NAME">unload</ph>" event will not be dispatched if the page enters the back-forward cache.
 
-          If this policy is set to enabled or not set, the <ph name="PRODUCT_NAME">BackForwardCache</ph> feature will be enabled.
+          If this policy is set to enabled or not set,
+          the <ph name="PRODUCT_NAME">BackForwardCache</ph> feature will be enabled.
 
           If this policy is set to disabled then the feature will be force disabled.
           ''',
@@ -23822,6 +23898,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 768,
+  'highest_id_currently_used': 769,
   'highest_atomic_group_id_currently_used': 40
 }

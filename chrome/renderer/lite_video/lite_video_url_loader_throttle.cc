@@ -36,10 +36,13 @@ LiteVideoURLLoaderThrottle::MaybeCreateThrottle(
   // TODO(rajendrant): Also allow the throttle to be stopped when LiteMode gets
   // disabled or ECT worsens. This logic should probably be in the browser
   // process.
-  if (IsLiteVideoEnabled() &&
-      GetLiteVideoHintAgent(render_frame_id)->HasLiteVideoHint()) {
+  if (!IsLiteVideoEnabled())
+    return nullptr;
+
+  auto* lite_video_hint_agent = GetLiteVideoHintAgent(render_frame_id);
+  if (lite_video_hint_agent && lite_video_hint_agent->HasLiteVideoHint())
     return std::make_unique<LiteVideoURLLoaderThrottle>(render_frame_id);
-  }
+
   return nullptr;
 }
 

@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_DIRECT_RENDERER_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -14,7 +15,9 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "components/viz/common/delegated_ink_metadata.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/service/display/delegated_ink_point_renderer_base.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/overlay_processor_interface.h"
@@ -134,8 +137,12 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     return last_root_render_pass_scissor_rect_;
   }
 
+  DelegatedInkPointRendererBase* GetDelegatedInkPointRenderer();
+  void SetDelegatedInkMetadata(std::unique_ptr<DelegatedInkMetadata> metadata);
+
  protected:
   friend class BspWalkActionDrawPolygon;
+  FRIEND_TEST_ALL_PREFIXES(DisplayTest, SkiaDelegatedInkRenderer);
 
   enum SurfaceInitializationMode {
     SURFACE_INITIALIZATION_MODE_PRESERVE,
@@ -298,6 +305,12 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     DCHECK(current_frame_valid_);
     return &current_frame_;
   }
+
+  // Return a bool to inform the caller if the delegated ink renderer was
+  // actually created or not. If the renderer doesn't support drawing delegated
+  // ink trails, then the delegated ink renderer won't be created.
+  virtual bool CreateDelegatedInkPointRenderer();
+  std::unique_ptr<DelegatedInkPointRendererBase> delegated_ink_point_renderer_;
 
  private:
   bool initialized_ = false;

@@ -37,8 +37,8 @@ ArcAppInstallEventLogManager::ArcAppInstallEventLogManager(
     : InstallEventLogManagerBase(log_task_runner_wrapper, profile),
       uploader_(uploader) {
   uploader_->SetDelegate(this);
-  app_log_upload_ = std::make_unique<AppLogUpload>(this);
   log_ = std::make_unique<ArcLog>();
+  app_log_upload_ = std::make_unique<AppLogUpload>(this);
   base::PostTaskAndReplyWithResult(
       log_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ArcLog::Init, base::Unretained(log_.get()),
@@ -49,8 +49,11 @@ ArcAppInstallEventLogManager::ArcAppInstallEventLogManager(
 }
 
 ArcAppInstallEventLogManager::~ArcAppInstallEventLogManager() {
-  app_log_upload_.reset();
   logger_.reset();
+  // Destroy |app_log_upload_| after |logger_| otherwise it is possible
+  // that when we add new logs created through |logger_| cause the crash as
+  // |app_log_upload_| will be destroyed already.
+  app_log_upload_.reset();
   uploader_->SetDelegate(nullptr);
   log_task_runner_->DeleteSoon(FROM_HERE, std::move(log_));
 }
@@ -76,7 +79,7 @@ void ArcAppInstallEventLogManager::Add(
       base::BindOnce(&ArcLog::Add, base::Unretained(log_.get()), packages,
                      event),
       base::BindOnce(&ArcAppInstallEventLogManager::AppLogUpload::OnLogChange,
-                     base::Unretained(app_log_upload_.get())));
+                     app_log_upload_->log_weak_factory_.GetWeakPtr()));
 }
 
 void ArcAppInstallEventLogManager::GetAndroidId(

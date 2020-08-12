@@ -698,8 +698,7 @@ void Compositor::DidSubmitCompositorFrame() {
 }
 
 void Compositor::FrameIntervalUpdated(base::TimeDelta interval) {
-  refresh_rate_ =
-      base::Time::kMicrosecondsPerSecond / interval.InMicrosecondsF();
+  refresh_rate_ = interval.ToHz();
 }
 
 void Compositor::OnFirstSurfaceActivation(

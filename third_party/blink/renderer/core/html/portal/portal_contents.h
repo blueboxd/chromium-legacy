@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_PORTAL_CONTENTS_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "base/unguessable_token.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -53,7 +53,7 @@ class PortalContents : public GarbageCollected<PortalContents>,
 
   // Returns an unguessable token which uniquely identifies the contents, if
   // valid.
-  const PortalToken& GetToken() const { return portal_token_; }
+  const base::Optional<PortalToken>& GetToken() const { return portal_token_; }
 
   // Returns the RemoteFrame associated with this portal, if any.
   RemoteFrame* GetFrame() const;
@@ -103,7 +103,8 @@ class PortalContents : public GarbageCollected<PortalContents>,
   // TODO(jbroman): Should this be a ExecutionContextLifecycleObserver instead?
   Member<Document> document_;
 
-  // The element which owns this contents, if any.
+  // The element which owns this contents, if any. This is set to nullptr once
+  // Destroy has been called.
   Member<HTMLPortalElement> portal_element_;
 
   // Set if the portal contents is currently being activated.
@@ -111,10 +112,12 @@ class PortalContents : public GarbageCollected<PortalContents>,
   // DocumentPortals.
   Member<PortalActivationDelegate> activation_delegate_;
 
-  // Uniquely identifies the portal, this token is used by the browser process
-  // to reference this portal when communicating with the renderer.
-  PortalToken portal_token_;
+  // Uniquely identifies the portal. This token is used by the browser process
+  // to reference this portal when communicating with the renderer. This is set
+  // to base::nullopt once Destroy has been called.
+  base::Optional<PortalToken> portal_token_;
 
+  // Both of these will be reset once Destroy has been called.
   mojo::AssociatedRemote<mojom::blink::Portal> remote_portal_;
   mojo::AssociatedReceiver<mojom::blink::PortalClient> portal_client_receiver_;
 };

@@ -107,7 +107,6 @@
 <translation id="2085470240340828803">Le fichier "<ph name="FILENAME" />" existe déjà. Que voulez-vous faire ?</translation>
 <translation id="2121825465123208577">Redimensionner</translation>
 <translation id="2136953289241069843">Translittération (namaste → नमस्कार)</translation>
-<translation id="2138867954865495510">Impossible d'ouvrir "<ph name="PATH" />" : <ph name="ERROR_MESSAGE" /></translation>
 <translation id="2163152940313951844">Caractère non valide : <ph name="CHARACTER_NAME" /></translation>
 <translation id="2164862903024139959">Clavier vietnamien (TCVN)</translation>
 <translation id="2168214441502403371">Clavier persan</translation>

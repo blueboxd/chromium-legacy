@@ -1636,6 +1636,8 @@ TEST_F(ManagePasswordsUIControllerTest, ReauthenticateBeforeMove) {
   // A submitted form triggers the move dialog.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility())
       .Times(AtLeast(1));
+  EXPECT_CALL(*client().GetPasswordFeatureManager(),
+              RecordMoveOfferedToNonOptedInUser);
   controller()->OnShowMoveToAccountBubble(std::move(test_form_manager));
   EXPECT_TRUE(controller()->opened_automatic_bubble());
   ExpectIconAndControllerStateIs(
@@ -1662,6 +1664,8 @@ TEST_F(ManagePasswordsUIControllerTest, ReauthenticateFailsBeforeMove) {
 
   // A submitted form triggers the move dialog.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  EXPECT_CALL(*client().GetPasswordFeatureManager(),
+              RecordMoveOfferedToNonOptedInUser);
   controller()->OnShowMoveToAccountBubble(std::move(test_form_manager));
   EXPECT_TRUE(controller()->opened_automatic_bubble());
   ExpectIconAndControllerStateIs(

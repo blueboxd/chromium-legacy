@@ -714,6 +714,9 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
 
     DoDrawQuad(&quad, nullptr);
   }
+  if (is_root_render_pass && delegated_ink_point_renderer_)
+    delegated_ink_point_renderer_->DrawDelegatedInkTrail();
+
   FlushPolygons(&poly_list, render_pass_scissor_in_draw_space,
                 render_pass_requires_scissor);
   FinishDrawingQuadList();
@@ -929,6 +932,25 @@ gfx::ColorSpace DirectRenderer::CurrentRenderPassColorSpace() const {
   return current_frame()->display_color_spaces.GetCompositingColorSpace(
       current_frame()->current_render_pass->has_transparent_background,
       current_frame()->current_render_pass->content_color_usage);
+}
+
+bool DirectRenderer::CreateDelegatedInkPointRenderer() {
+  return false;
+}
+
+DelegatedInkPointRendererBase* DirectRenderer::GetDelegatedInkPointRenderer() {
+  if (!delegated_ink_point_renderer_ && !CreateDelegatedInkPointRenderer())
+    return nullptr;
+
+  return delegated_ink_point_renderer_.get();
+}
+
+void DirectRenderer::SetDelegatedInkMetadata(
+    std::unique_ptr<DelegatedInkMetadata> metadata) {
+  if (!delegated_ink_point_renderer_ && !CreateDelegatedInkPointRenderer())
+    return;
+
+  delegated_ink_point_renderer_->SetDelegatedInkMetadata(std::move(metadata));
 }
 
 }  // namespace viz

@@ -48,9 +48,7 @@ SharedWorkerThread::SharedWorkerThread(
           ThreadCreationParams(GetThreadType()))),
       token_(token),
       appcache_host_id_(appcache_host_id),
-      ukm_source_id_(ukm_source_id) {
-  DCHECK(token);
-}
+      ukm_source_id_(ukm_source_id) {}
 
 SharedWorkerThread::~SharedWorkerThread() = default;
 

@@ -33,10 +33,6 @@ const base::FilePath GetLatestSodaDirectory();
 // installed.
 const base::FilePath GetSodaBinaryPath();
 
-// Get the path to the dictation.ascii_proto config file used by SODA. Returns
-// an empty path if SODA is not installed.
-const base::FilePath GetSodaConfigPath();
-
 }  // namespace speech
 
 #endif  // COMPONENTS_SODA_CONSTANTS_H_

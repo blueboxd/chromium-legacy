@@ -11,6 +11,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,7 +30,7 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     policy_.SetDefaultInitialSigningKey();
     policy_.policy_data().set_policy_type(
-        dm_protocol::kChromeMachineLevelUserCloudPolicyType);
+        GetMachineLevelUserCloudPolicyTypeForCurrentOS());
     policy_.payload().mutable_searchsuggestenabled()->set_value(false);
     policy_.Build();
   }

@@ -105,7 +105,7 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
                                    const SharedWorkerInstance& instance,
                                    RenderProcessHost* worker_process_host)
     : service_(service),
-      token_(blink::SharedWorkerToken::Create()),
+      token_(blink::SharedWorkerToken()),
       instance_(instance),
       worker_process_host_(worker_process_host),
       scoped_process_host_ref_(

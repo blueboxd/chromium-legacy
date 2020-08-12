@@ -155,7 +155,7 @@ void WorkerWatcher::OnWorkerCreated(
   auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kDedicated,
       process_node_source_->GetProcessNode(worker_process_id),
-      WorkerToken(dedicated_worker_token.value()));
+      dedicated_worker_token);
   auto insertion_result = dedicated_worker_nodes_.emplace(
       dedicated_worker_token, std::move(worker_node));
   DCHECK(insertion_result.second);
@@ -202,7 +202,7 @@ void WorkerWatcher::OnWorkerCreated(
   auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kShared,
       process_node_source_->GetProcessNode(worker_process_id),
-      WorkerToken(shared_worker_token.value()));
+      shared_worker_token);
 
   bool inserted =
       shared_worker_nodes_.emplace(shared_worker_token, std::move(worker_node))
@@ -259,7 +259,7 @@ void WorkerWatcher::OnVersionStartedRunning(
   auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kService,
       process_node_source_->GetProcessNode(running_info.render_process_id),
-      WorkerToken(running_info.token.value()));
+      running_info.token);
   bool inserted =
       service_worker_nodes_.emplace(version_id, std::move(worker_node)).second;
   DCHECK(inserted);

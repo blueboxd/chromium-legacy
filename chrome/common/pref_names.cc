@@ -1390,8 +1390,7 @@ const char kDeviceExternalPrintServersAllowlist[] =
     "native_printing.device_external_print_servers_allowlist";
 
 // List of printers configured by policy.
-const char kRecommendedNativePrinters[] =
-    "native_printing.recommended_printers";
+const char kRecommendedPrinters[] = "native_printing.recommended_printers";
 
 // Enum designating the type of restrictions bulk printers are using.
 const char kRecommendedNativePrintersAccessMode[] =

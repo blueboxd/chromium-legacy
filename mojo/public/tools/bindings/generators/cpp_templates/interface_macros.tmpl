@@ -24,29 +24,54 @@ base::OnceCallback<void(
 {%-   endif -%}
 {%- endmacro -%}
 
-{%- macro trace_event(prefix, method_parameters, qualified_method_name) -%}
+{%- macro trace_event(prefix, method_parameters, method_name, parameter_group,
+                      trace_event_type='', dereference_parameters=False) -%}
 {#- This macro assumes that the argument names are the ones declared by -#}
-{#- |declare_request_params|. Namely the |prefix| should be the same here as -#}
-{#- in |declare_request_params|. -#}
+{#- |declare_request_params/declare_sync_method_params|. Namely the |prefix| -#}
+{#- must be the same here as in -#}
+{#- |declare_request_params/declare_sync_method_params|. -#}
+{#- |trace_event_type| can be set to: -#}
+{#-   '' just standalone trace. -#}
+{#-     Parameter names must match |declare_request_params|. -#}
+{#-   '_BEGIN' input parameters to be later merged, must be before the _END. -#}
+{#-     Parameter names must match |declare_request_params|. -#}
+{#-   '_END' merge corresponding sync response parameters. -#}
+{#-     Parameter names must match |declare_sync_method_params|. -#}
+{#- |dereference_parameters| the parameters type is actually |kind*|. -#}
 {%-   if method_parameters -%}
-  TRACE_EVENT1(
-    "mojom", "{{qualified_method_name}}", "input_parameters",
+  TRACE_EVENT{{trace_event_type}}1(
+    "mojom", "{{method_name}}", "{{parameter_group}}",
     [&](){
       auto value = std::make_unique<base::trace_event::TracedValue>();
       base::trace_event::TracedValue* raw_value = value.get();
 {%-     for param in method_parameters %}
-{%-       for line in param.kind|write_input_param_for_tracing(
-                                   parameter_name=param.name,
-                                   cpp_parameter_name=prefix+param.name,
-                                   value='raw_value') %}
+{%-       if dereference_parameters -%}
+{%-         set cpp_parameter_ptr = prefix + param.name %}
+{%-         set cpp_parameter_name = "(*%s)" % cpp_parameter_ptr %}
+      if ({{cpp_parameter_ptr}}) {
+{%-         for line in param.kind|write_input_param_for_tracing(
+                                     parameter_name=param.name,
+                                     cpp_parameter_name=cpp_parameter_name,
+                                     value='raw_value') %}
+        {{line}}
+{%-         endfor %}
+      } else {
+        raw_value->SetString("{{param.name}}", "nullptr");
+      }
+{%-       else %}  {#- if dereference_parameters #}
+{%-         for line in param.kind|write_input_param_for_tracing(
+                                     parameter_name=param.name,
+                                     cpp_parameter_name=prefix+param.name,
+                                     value='raw_value') %}
       {{line}}
-{%-       endfor -%}
+{%-         endfor %}
+{%-       endif  %}  {#- if dereference_parameters #}
 {%-     endfor %}
       return value;
     }());
-{%-   else -%}
-  TRACE_EVENT0("mojom", "{{qualified_method_name}}");
-{%-   endif %}
+{%-   else -%}  {#- if method_parameters -#}
+  TRACE_EVENT{{trace_event_type}}0("mojom", "{{method_name}}");
+{%-   endif %}  {#- if method_parameters #}
 {%- endmacro -%}
 
 {%- macro declare_sync_method_params(prefix, method) -%}

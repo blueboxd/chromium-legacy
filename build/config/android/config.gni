@@ -129,6 +129,12 @@ if (is_android || is_chromeos) {
         "//third_party/android_deps:com_google_android_material_material_java"
   }
 
+  if (!defined(android_protoc_bin)) {
+    android_protoc_bin = "//third_party/android_protoc/protoc"
+    android_proto_runtime =
+        "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java"
+  }
+
   webview_public_framework_dep =
       "//third_party/android_sdk:public_framework_system_java"
   if (!defined(webview_framework_dep)) {

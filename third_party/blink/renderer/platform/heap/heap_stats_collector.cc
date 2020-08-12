@@ -90,14 +90,21 @@ void ThreadHeapStatsCollector::DecreaseAllocatedSpace(size_t bytes) {
   });
 }
 
+ThreadHeapStatsCollector::Event::Event() {
+  static std::atomic<size_t> counter{0};
+  unique_id = counter.fetch_add(1);
+}
+
 void ThreadHeapStatsCollector::NotifyMarkingStarted(
     BlinkGC::CollectionType collection_type,
-    BlinkGC::GCReason reason) {
+    BlinkGC::GCReason reason,
+    bool is_forced_gc) {
   DCHECK(!is_started_);
   DCHECK(current_.marking_time().is_zero());
   is_started_ = true;
   current_.reason = reason;
   current_.collection_type = collection_type;
+  current_.is_forced_gc = is_forced_gc;
 }
 
 void ThreadHeapStatsCollector::NotifyMarkingCompleted(size_t marked_bytes) {

@@ -888,10 +888,7 @@ TEST_P(PaintLayerScrollableAreaTest, ScrollDoesNotInvalidate) {
 }
 
 TEST_P(PaintLayerScrollableAreaTest,
-       ScrollWithFixedNeedsCompositingInputsUpdate) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
-                                    false);
+       ScrollWithStickyNeedsCompositingInputsUpdate) {
   SetBodyInnerHTML(R"HTML(
     <style>
       * {
@@ -901,23 +898,22 @@ TEST_P(PaintLayerScrollableAreaTest,
         height: 610px;
         width: 820px;
       }
-      #fixed {
+      #sticky {
         height: 10px;
         left: 50px;
-        position: fixed;
+        position: sticky;
         top: 50px;
         width: 10px;
       }
     </style>
-    <div id=fixed></div>
+    <div id=sticky></div>
   )HTML");
 
   auto* scrollable_area = GetLayoutView().GetScrollableArea();
   EXPECT_EQ(FloatSize(0, 0), scrollable_area->GetScrollOffset());
 
-  // Changing the scroll offset requires a compositing inputs update when
-  // kMaxOverlapBoundsForFixed is disabled as changing the scroll offset can
-  // require updates to overlap testing.
+  // Changing the scroll offset requires a compositing inputs update to rerun
+  // overlap testing.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 1),
                                    mojom::blink::ScrollType::kProgrammatic);
   if (GetParam() & kCompositeAfterPaint) {
@@ -932,9 +928,6 @@ TEST_P(PaintLayerScrollableAreaTest,
 
 TEST_P(PaintLayerScrollableAreaTest,
        ScrollWithFixedDoesNotNeedCompositingInputsUpdate) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
-                                    true);
   SetBodyInnerHTML(R"HTML(
     <style>
       * {

@@ -15,6 +15,10 @@ import json
 from writers import writer_unittest_common
 
 
+def _JsonFormat(input):
+  return json.dumps(input, indent=2, sort_keys=True, separators=(',', ': '))
+
+
 class JamfWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
   '''Unit tests for JamfWriter.'''
 
@@ -53,10 +57,7 @@ class JamfWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
         'placeholders': [],
         'messages': {},
     }
-    return json.dumps(template,
-                      indent=2,
-                      sort_keys=True,
-                      separators=(',', ': '))
+    return _JsonFormat(template)
 
   def _GetExpectedOutput(self, policy_name, policy_type, policy_caption,
                          initial_type):
@@ -96,7 +97,7 @@ class JamfWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
           'title': 'title_obj'
       }
 
-    return json.dumps(output, indent=2, sort_keys=True, separators=(',', ': '))
+    return _JsonFormat(output)
 
   def testStringPolicy(self):
     policy_json = self._GetTestPolicyTemplate('stringPolicy', 'string', '',
@@ -113,6 +114,48 @@ class JamfWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
                                        'int')
     output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'jamf')
     self.assertEquals(output.strip(), expected.strip())
+
+  def testIntPolicyWithMinAndMax(self):
+    template = {
+        'policy_definitions': [{
+            'name': 'intPolicyWithMinAndMax',
+            'id': 1,
+            'type': 'int',
+            'supported_on': ['chrome.mac:*-'],
+            'caption': 'An int policy with min and max',
+            'desc': '',
+            'schema': {
+                'type': 'int',
+                'minimum': 0,
+                'maximum': 10
+            }
+        }],
+        'policy_atomic_group_definitions': [],
+        'placeholders': [],
+        'messages': {},
+    }
+    policy_json = _JsonFormat(template)
+
+    expected = {
+        'description': 'Google Chrome',
+        'options': {
+            'remove_empty_properties': True
+        },
+        'properties': {
+            'intPolicyWithMinAndMax': {
+                'description': 'An int policy with min and max',
+                'maximum': 10,
+                'minimum': 0,
+                'title': 'intPolicyWithMinAndMax',
+                'type': 'integer'
+            }
+        },
+        'title': 'com.google.chrome'
+    }
+    expected_json = _JsonFormat(expected)
+
+    output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'jamf')
+    self.assertEquals(output.strip(), expected_json.strip())
 
   def testIntEnumPolicy(self):
     policy_json = self._GetTestPolicyTemplate('intPolicy', 'int-enum', '',
@@ -203,10 +246,7 @@ class JamfWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
         'placeholders': [],
         'messages': {},
     }
-    policy_json = json.dumps(template,
-                             indent=2,
-                             sort_keys=True,
-                             separators=(',', ': '))
+    policy_json = _JsonFormat(template)
 
     expected = {
         'description': 'Google Chrome',
@@ -237,10 +277,7 @@ class JamfWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
           'items': copy.deepcopy(expected['properties']['name']['items'])
       }
 
-    output_expected = json.dumps(expected,
-                                 indent=2,
-                                 sort_keys=True,
-                                 separators=(',', ': '))
+    output_expected = _JsonFormat(expected)
     output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'jamf')
     self.assertEquals(output.strip(), output_expected.strip())
 

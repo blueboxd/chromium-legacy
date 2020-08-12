@@ -408,6 +408,10 @@ class TestMetricsReporter : public MetricsReporter {
     MetricsReporter::OnLoadStream(load_from_store_status, final_status,
                                   std::move(latencies));
   }
+  void OnLoadMoreBegin(SurfaceId surface_id) override {
+    load_more_surface_id = surface_id;
+    MetricsReporter::OnLoadMoreBegin(surface_id);
+  }
   void OnLoadMore(LoadStreamStatus final_status) override {
     load_more_status = final_status;
     MetricsReporter::OnLoadMore(final_status);
@@ -425,6 +429,7 @@ class TestMetricsReporter : public MetricsReporter {
 
   base::Optional<int> slice_viewed_index;
   base::Optional<LoadStreamStatus> load_stream_status;
+  base::Optional<SurfaceId> load_more_surface_id;
   base::Optional<LoadStreamStatus> load_more_status;
   base::Optional<LoadStreamStatus> background_refresh_status;
   base::Optional<base::TimeDelta> time_since_last_clear;
@@ -1168,6 +1173,8 @@ TEST_F(FeedStreamTest, LoadMoreAppendsContent) {
   response_translator_.InjectResponse(MakeTypicalNextPageState(2));
   CallbackReceiver<bool> callback;
   stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
+  // Ensure metrics reporter was informed at the start of the operation.
+  EXPECT_EQ(surface.GetSurfaceId(), metrics_reporter_->load_more_surface_id);
   WaitForIdleTaskQueue();
   ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
   EXPECT_EQ("2 slices +spinner -> 4 slices", surface.DescribeUpdates());
@@ -1294,6 +1301,9 @@ TEST_F(FeedStreamTest, LoadMoreAbortsIfNoNextPageToken) {
   EXPECT_EQ(base::Optional<bool>(false), callback.GetResult());
   ASSERT_EQ(1, network_.send_query_call_count);
   EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
+  EXPECT_EQ(base::nullopt, metrics_reporter_->load_more_surface_id)
+      << "metrics reporter was informed about a load more operation which "
+         "didn't begin";
 }
 
 TEST_F(FeedStreamTest, LoadMoreFail) {

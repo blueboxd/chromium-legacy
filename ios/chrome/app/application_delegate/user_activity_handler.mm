@@ -208,11 +208,11 @@ std::vector<GURL> createGURLVectorFromIntentURLs(NSArray<NSURL*>* intentURLs) {
         base::mac::ObjCCastStrict<OpenInChromeIncognitoIntent>(
             userActivity.interaction.intent);
 
-    if (!intent.urls || intent.urls.count == 0) {
+    if (!intent.url || intent.url.count == 0) {
       return NO;
     }
 
-    std::vector<GURL> URLs = createGURLVectorFromIntentURLs(intent.urls);
+    std::vector<GURL> URLs = createGURLVectorFromIntentURLs(intent.url);
 
     AppStartupParameters* startupParams =
         [[AppStartupParameters alloc] initWithURLs:URLs];

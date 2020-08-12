@@ -416,9 +416,8 @@ TEST_F(DrmOverlayValidatorTest,
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
   ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
 
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
@@ -462,9 +461,8 @@ TEST_F(DrmOverlayValidatorTest,
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
   ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
 
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
@@ -505,9 +503,8 @@ TEST_F(DrmOverlayValidatorTest,
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
   ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
 
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
@@ -548,9 +545,8 @@ TEST_F(DrmOverlayValidatorTest, OptimalFormatXRGB_MirroredControllers) {
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
   ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
 
@@ -585,9 +581,8 @@ TEST_F(DrmOverlayValidatorTest,
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
   ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
 
@@ -621,9 +616,8 @@ TEST_F(DrmOverlayValidatorTest,
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
   ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
 

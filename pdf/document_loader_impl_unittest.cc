@@ -12,6 +12,8 @@
 
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/test/scoped_feature_list.h"
+#include "pdf/pdf_features.h"
 #include "pdf/ppapi_migration/callback.h"
 #include "pdf/url_loader_wrapper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -265,9 +267,49 @@ class MockClient : public TestClient {
 
 }  // namespace
 
-using DocumentLoaderImplTest = ::testing::Test;
+class DocumentLoaderImplTest : public testing::Test {
+ protected:
+  DocumentLoaderImplTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kPdfPartialLoading);
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(DocumentLoaderImplTest, PartialLoadingFeatureDefault) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.Init();
+
+  // Test that partial loading is enabled when feature is defaulted.
+  TestClient client;
+  client.SetCanUsePartialLoading();
+  DocumentLoaderImpl loader(&client);
+  loader.Init(client.CreateFullPageLoader(), "http://url.com");
+  loader.RequestData(1000000, 1);
+  EXPECT_FALSE(loader.is_partial_loader_active());
+  // Always send initial data from FullPageLoader.
+  client.full_page_loader_data()->CallReadCallback(kDefaultRequestSize);
+  EXPECT_TRUE(loader.is_partial_loader_active());
+}
+
+TEST_F(DocumentLoaderImplTest, PartialLoadingFeatureDisabled) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndDisableFeature(features::kPdfPartialLoading);
+
+  // Test that partial loading is disabled when feature is disabled.
+  TestClient client;
+  client.SetCanUsePartialLoading();
+  DocumentLoaderImpl loader(&client);
+  loader.Init(client.CreateFullPageLoader(), "http://url.com");
+  loader.RequestData(1000000, 1);
+  EXPECT_FALSE(loader.is_partial_loader_active());
+  // Always send initial data from FullPageLoader.
+  client.full_page_loader_data()->CallReadCallback(kDefaultRequestSize);
+  EXPECT_FALSE(loader.is_partial_loader_active());
+}
 
 TEST_F(DocumentLoaderImplTest, PartialLoadingEnabled) {
+  // Test that partial loading is enabled. (Fixture enables PdfPartialLoading.)
   TestClient client;
   client.SetCanUsePartialLoading();
   DocumentLoaderImpl loader(&client);

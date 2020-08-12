@@ -762,6 +762,9 @@ crbug.com/703779 [ opengl linux nvidia-0x1cb3 ] deqp/functional/gles3/fbocomplet
 # Linux / OpenGL / NVIDIA failures
 crbug.com/angleproject/4555 [ linux opengl passthrough nvidia ] conformance/misc/type-conversion-test.html [ Skip ]
 
+# Linux GTX 1660
+crbug.com/1115314 [ linux nvidia-0x2184 opengl passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
+
 # Linux AMD only.
 # It looks like AMD shader compiler rejects many valid ES3 semantics.
 crbug.com/766776 [ linux amd ] conformance2/attribs/gl-vertex-attrib-normalized-int.html [ Failure ]

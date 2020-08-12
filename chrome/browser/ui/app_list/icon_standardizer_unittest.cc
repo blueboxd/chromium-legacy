@@ -7,16 +7,40 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
+namespace {
+
+constexpr int kIconSize = 64;
+
+constexpr float kMaxCircleIconSize = 176.0f / 192.0f;
+constexpr float kStandardCircleRadius = kIconSize * kMaxCircleIconSize / 2.0f;
+
+// Returns whether the bitmaps are equal.
+bool AreBitmapsEqual(const SkBitmap& first_bitmap,
+                     const SkBitmap& second_bitmap) {
+  const size_t size = first_bitmap.computeByteSize();
+  bool bitmaps_equal = true;
+
+  uint8_t* first_data = reinterpret_cast<uint8_t*>(first_bitmap.getPixels());
+  uint8_t* second_data = reinterpret_cast<uint8_t*>(second_bitmap.getPixels());
+  for (size_t i = 0; i < size; ++i) {
+    if (first_data[i] != second_data[i]) {
+      bitmaps_equal = false;
+      break;
+    }
+  }
+
+  return bitmaps_equal;
+}
+
+}  // namespace
+
 using CreateStandardIconTest = testing::Test;
 
 // Test that a square icon gets scaled down and drawn on top of a circular
 // background when converted to a standard icon.
 TEST_F(CreateStandardIconTest, SquareIconToStandardIcon) {
-  const int test_width = 64;
-  const int test_height = 64;
-
   SkBitmap square_icon_bitmap;
-  square_icon_bitmap.allocN32Pixels(test_width, test_height);
+  square_icon_bitmap.allocN32Pixels(kIconSize, kIconSize);
   square_icon_bitmap.eraseColor(SK_ColorRED);
 
   gfx::ImageSkia standard_icon = app_list::CreateStandardIconImage(
@@ -25,77 +49,81 @@ TEST_F(CreateStandardIconTest, SquareIconToStandardIcon) {
   // Create |test_standard_bitmap| which will be a manually created standard
   // icon, with background circle and a scaled down square icon inside.
   SkBitmap test_standard_bitmap;
-  test_standard_bitmap.allocN32Pixels(test_width, test_height);
+  test_standard_bitmap.allocN32Pixels(kIconSize, kIconSize);
   test_standard_bitmap.eraseColor(SK_ColorTRANSPARENT);
 
   SkCanvas canvas(test_standard_bitmap);
 
-  float circle_diameter = test_width * (176.0f / 192.0f);
   SkPaint paint_background_circle;
   paint_background_circle.setAntiAlias(true);
   paint_background_circle.setColor(SK_ColorWHITE);
   paint_background_circle.setStyle(SkPaint::kFill_Style);
   canvas.drawCircle(
-      SkPoint::Make((test_width - 1) / 2.0f, (test_width - 1) / 2.0f),
-      circle_diameter / 2.0f, paint_background_circle);
+      SkPoint::Make((kIconSize - 1) / 2.0f, (kIconSize - 1) / 2.0f),
+      kStandardCircleRadius, paint_background_circle);
 
   const SkBitmap scaled_bitmap = skia::ImageOperations::Resize(
       square_icon_bitmap, skia::ImageOperations::RESIZE_BEST, 36, 36);
   canvas.drawBitmap(scaled_bitmap, 14, 14);
 
-  // Test that |standard_icon| has an identical bitmap to
-  // |test_standard_bitmap|.
-  const size_t size = standard_icon.bitmap()->computeByteSize();
-  bool bitmaps_equal = true;
-
-  uint8_t* first_data =
-      reinterpret_cast<uint8_t*>(standard_icon.bitmap()->getPixels());
-  uint8_t* second_data =
-      reinterpret_cast<uint8_t*>(test_standard_bitmap.getPixels());
-  for (size_t i = 0; i < size; ++i) {
-    if (first_data[i] != second_data[i]) {
-      bitmaps_equal = false;
-      break;
-    }
-  }
-  EXPECT_TRUE(bitmaps_equal);
+  EXPECT_TRUE(AreBitmapsEqual(*standard_icon.bitmap(), test_standard_bitmap));
 }
 
-// Test that a circular icon stays the same when converted to a standard icon.
+// Test that a large circular icon gets scaled down when converted to a standard
+// icon.
 TEST_F(CreateStandardIconTest, CircularIconToStandardIcon) {
-  const int test_width = 64;
-  const int test_height = 64;
-
-  // Create a bitmap with a red circle as a placeholder circular icon.
+  // Create a bitmap for drawing a red circle as a placeholder circular icon.
   SkBitmap circle_icon_bitmap;
-  circle_icon_bitmap.allocN32Pixels(test_width, test_height);
+  circle_icon_bitmap.allocN32Pixels(kIconSize, kIconSize);
   circle_icon_bitmap.eraseColor(SK_ColorTRANSPARENT);
 
   SkCanvas canvas(circle_icon_bitmap);
-  SkPaint paint_cirlce_icon;
-  paint_cirlce_icon.setAntiAlias(true);
-  paint_cirlce_icon.setColor(SK_ColorRED);
-  paint_cirlce_icon.setStyle(SkPaint::kFill_Style);
-  canvas.drawCircle(SkPoint::Make(test_width / 2, test_width / 2),
-                    test_width / 2, paint_cirlce_icon);
+  SkPaint paint_circle_icon;
+  paint_circle_icon.setAntiAlias(true);
+  paint_circle_icon.setColor(SK_ColorRED);
+  paint_circle_icon.setStyle(SkPaint::kFill_Style);
+  canvas.drawCircle(SkPoint::Make(kIconSize / 2, kIconSize / 2), kIconSize / 2,
+                    paint_circle_icon);
+
+  // Get the standard icon version of the red circle icon.
+  gfx::ImageSkia generated_standard_icon = app_list::CreateStandardIconImage(
+      gfx::ImageSkia(gfx::ImageSkiaRep(circle_icon_bitmap, 2.0f)));
+
+  // Scale the bitmap to fit the size of a standardized circle icon.
+  SkBitmap scaled_bitmap = skia::ImageOperations::Resize(
+      circle_icon_bitmap, skia::ImageOperations::RESIZE_BEST, 58, 58);
+
+  // Draw the |scaled_bitmap| to |manually_scaled_bitmap| to ensure the size
+  // of the bitmap is the same as the |generated_standard_icon| for comparison.
+  SkBitmap manually_scaled_bitmap;
+  manually_scaled_bitmap.allocN32Pixels(kIconSize, kIconSize);
+  manually_scaled_bitmap.eraseColor(SK_ColorTRANSPARENT);
+  SkCanvas canvas2(manually_scaled_bitmap);
+  canvas2.drawBitmap(scaled_bitmap, 3, 3);
+
+  EXPECT_TRUE(AreBitmapsEqual(*generated_standard_icon.bitmap(),
+                              manually_scaled_bitmap));
+}
+
+// Test that a circle icon that is already standard size, keeps the same size
+// when standardized.
+TEST_F(CreateStandardIconTest, StandardCircularIconToStandardIcon) {
+  // Create a bitmap with a red circle as a placeholder circular icon.
+  SkBitmap circle_icon_bitmap;
+  circle_icon_bitmap.allocN32Pixels(kIconSize, kIconSize);
+  circle_icon_bitmap.eraseColor(SK_ColorTRANSPARENT);
+
+  SkCanvas canvas(circle_icon_bitmap);
+  SkPaint paint_circle_icon;
+  paint_circle_icon.setAntiAlias(true);
+  paint_circle_icon.setColor(SK_ColorRED);
+  paint_circle_icon.setStyle(SkPaint::kFill_Style);
+  canvas.drawCircle(SkPoint::Make(kIconSize / 2.0f, kIconSize / 2.0f),
+                    kStandardCircleRadius, paint_circle_icon);
 
   // Get the standard icon version of the red circle icon.
   gfx::ImageSkia standard_icon = app_list::CreateStandardIconImage(
       gfx::ImageSkia(gfx::ImageSkiaRep(circle_icon_bitmap, 2.0f)));
 
-  // Test that |standard_icon| has an identical bitmap to  |circle_icon_bitmap|.
-  const size_t size = standard_icon.bitmap()->computeByteSize();
-  bool bitmaps_equal = true;
-
-  uint8_t* first_data =
-      reinterpret_cast<uint8_t*>(standard_icon.bitmap()->getPixels());
-  uint8_t* second_data =
-      reinterpret_cast<uint8_t*>(circle_icon_bitmap.getPixels());
-  for (size_t i = 0; i < size; ++i) {
-    if (first_data[i] != second_data[i]) {
-      bitmaps_equal = false;
-      break;
-    }
-  }
-  EXPECT_TRUE(bitmaps_equal);
+  EXPECT_TRUE(AreBitmapsEqual(*standard_icon.bitmap(), circle_icon_bitmap));
 }

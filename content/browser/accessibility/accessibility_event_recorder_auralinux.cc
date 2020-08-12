@@ -168,6 +168,8 @@ void AccessibilityEventRecorderAuraLinux::AddATKEventListeners() {
   AddATKEventListener("ATK:AtkText:text-caret-moved");
   AddATKEventListener("ATK:AtkText:text-attributes-changed");
   AddATKEventListener("ATK:AtkSelection:selection-changed");
+  AddATKEventListener("ATK:AtkTable:column-reordered");
+  AddATKEventListener("ATK:AtkTable:row-reordered");
 }
 
 void AccessibilityEventRecorderAuraLinux::RemoveATKEventListeners() {

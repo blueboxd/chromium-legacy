@@ -87,6 +87,12 @@ class NearbySharePrivateCertificate {
   base::Optional<std::vector<uint8_t>> Sign(
       base::span<const uint8_t> payload) const;
 
+  // Creates a hash of the |authentication_token|, using |secret_key_|. The use
+  // of HKDF and the output vector size is part of the Nearby Share protocol and
+  // conforms with the GmsCore implementation.
+  std::vector<uint8_t> HashAuthenticationToken(
+      base::span<const uint8_t> authentication_token) const;
+
   // Converts this private certificate to a public certificate proto that can be
   // shared with select contacts. Returns base::nullopt if the conversion was
   // unsuccessful.
@@ -132,8 +138,9 @@ class NearbySharePrivateCertificate {
   std::unique_ptr<crypto::ECPrivateKey> key_pair_;
 
   // A 32-byte AES key used, along with a salt, to encrypt the
-  // |metadata_encryption_key_|, after which it can be safely advertised.
-  // Included in the public certificate.
+  // |metadata_encryption_key_|, after which it can be safely advertised.  Also,
+  // used to generate an authentication token hash. Included in the public
+  // certificate.
   std::unique_ptr<crypto::SymmetricKey> secret_key_;
 
   // A 14-byte symmetric key used to encrypt |unencrypted_metadata_|. Not

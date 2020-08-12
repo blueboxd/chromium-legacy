@@ -568,11 +568,37 @@
   },
 
   "NativePrinters": {
+    "note": "This policy is deprecated by 'Printers' policy. See http://crbug.com/1113362.",
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
           "NativePrinters": [
+            {
+              "display_name": "Break Room",
+              "description": "The blue one",
+              "manufacturer": "PrtrMfgr",
+              "model": "MegaLazer",
+              "uri": "ipps://192.168.2.14",
+              "uuid": "aaaa-aaaa-eeee-eeee-1234",
+              "ppd_resource": {
+                "effective_manufacturer": "Printers, Ink",
+                "effective_model": "LaserMaster 2100"
+              }
+            }
+          ]
+        },
+        "prefs": { "native_printing.recommended_printers": {} }
+      }
+    ]
+  },
+
+  "Printers": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "Printers": [
             {
               "display_name": "Break Room",
               "description": "The blue one",

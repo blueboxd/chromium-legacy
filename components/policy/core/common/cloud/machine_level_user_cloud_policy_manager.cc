@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/policy/core/common/features.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -30,7 +31,7 @@ MachineLevelUserCloudPolicyManager::MachineLevelUserCloudPolicyManager(
     const base::FilePath& policy_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     network::NetworkConnectionTrackerGetter network_connection_tracker_getter)
-    : CloudPolicyManager(dm_protocol::kChromeMachineLevelUserCloudPolicyType,
+    : CloudPolicyManager(GetMachineLevelUserCloudPolicyTypeForCurrentOS(),
                          std::string(),
                          store.get(),
                          task_runner,

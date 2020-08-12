@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/util/type_safety/token_type.h"
 #include "components/performance_manager/public/graph/node.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 class GURL;
 
@@ -19,10 +20,6 @@ namespace performance_manager {
 class WorkerNodeObserver;
 class FrameNode;
 class ProcessNode;
-
-// TODO(chrisha): Once a variant-like WorkerToken is defined in blink, use that
-// instead.
-using WorkerToken = util::TokenType<class WorkerTokenTag>;
 
 // Represents a running instance of a WorkerGlobalScope.
 // See https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope.
@@ -72,7 +69,7 @@ class WorkerNode : public Node {
   virtual const ProcessNode* GetProcessNode() const = 0;
 
   // Returns the unique token identifying this worker.
-  virtual const WorkerToken& GetWorkerToken() const = 0;
+  virtual const blink::WorkerToken& GetWorkerToken() const = 0;
 
   // Returns the URL of the worker script. This is the final response URL which
   // takes into account redirections.

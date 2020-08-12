@@ -1567,7 +1567,12 @@ void ProfileSyncService::OnSyncRequestedPrefChange(bool is_sync_requested) {
     }
 
     // Try to start up again (in transport-only mode).
-    startup_controller_->TryStart(/*force_immediate=*/true);
+    // TODO(crbug.com/1035874): There's no real need to delay the startup here,
+    // i.e. it should be fine to set force_immediate to true. However currently
+    // some tests depend on the startup *not* happening immediately (because
+    // they want to check that Sync (the feature) got disabled, which is hard to
+    // do if the engine starts up again immediately).
+    startup_controller_->TryStart(/*force_immediate=*/false);
   }
 }
 

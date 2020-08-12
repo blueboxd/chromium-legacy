@@ -26,8 +26,8 @@ int CalculateEventsPerSecond(uint64_t event_count,
   }
 
   int64_t events_delta = event_count - *last_event_count;
-  double time_delta = (time - *last_calculated).InSecondsF();
-  if (time_delta == 0) {
+  base::TimeDelta time_delta = time - *last_calculated;
+  if (time_delta == base::TimeDelta()) {
     NOTREACHED();
     return 0;
   }
@@ -35,7 +35,7 @@ int CalculateEventsPerSecond(uint64_t event_count,
   *last_calculated = time;
   *last_event_count = event_count;
 
-  return base::ClampRound(events_delta / time_delta);
+  return base::ClampRound(events_delta / time_delta.InSecondsF());
 }
 
 }  // namespace

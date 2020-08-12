@@ -62,7 +62,7 @@ DeviceMode TranslateProtobufDeviceMode(
 bool IsChromePolicy(const std::string& type) {
   return type == dm_protocol::kChromeDevicePolicyType ||
          type == dm_protocol::kChromeUserPolicyType ||
-         type == dm_protocol::kChromeMachineLevelUserCloudPolicyType;
+         IsMachineLevelUserCloudPolicyType(type);
 }
 
 em::PolicyValidationReportRequest::ValidationResultType

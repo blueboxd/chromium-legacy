@@ -662,7 +662,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetAvailableHoverTypes(prefs.available_hover_types);
   settings->SetPrimaryHoverType(
       static_cast<blink::HoverType>(prefs.primary_hover_type));
-  settings->SetEnableTouchAdjustment(prefs.touch_adjustment_enabled);
   settings->SetBarrelButtonForDragEnabled(prefs.barrel_button_for_drag_enabled);
 
   settings->SetEditingBehavior(

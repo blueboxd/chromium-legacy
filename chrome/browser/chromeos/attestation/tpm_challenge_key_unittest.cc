@@ -4,944 +4,235 @@
 
 #include "chrome/browser/chromeos/attestation/tpm_challenge_key.h"
 
-#include <mutex>
-#include <string>
-#include <utility>
-
 #include "base/bind.h"
-#include "base/location.h"
-#include "base/memory/ptr_util.h"
-#include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/values.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/attestation/mock_attestation_flow.h"
-#include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/cryptohome/mock_async_method_caller.h"
-#include "chromeos/dbus/constants/attestation_constants.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
-#include "components/account_id/account_id.h"
-#include "components/policy/core/common/cloud/cloud_policy_constants.h"
-#include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "components/user_manager/scoped_user_manager.h"
-#include "extensions/common/extension_builder.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
+#include "chrome/browser/chromeos/attestation/mock_tpm_challenge_key_subtle.h"
+#include "chrome/browser/chromeos/attestation/tpm_challenge_key_result.h"
+#include "chrome/browser/chromeos/attestation/tpm_challenge_key_subtle.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
+using base::test::RunOnceCallback;
 using testing::_;
-using testing::Invoke;
-using testing::NiceMock;
-using testing::Return;
-using testing::WithArgs;
+using testing::StrictMock;
 
-namespace utils = extension_function_test_utils;
+class Profile;
 
 namespace chromeos {
 namespace attestation {
-
 namespace {
 
-const char kUserEmail[] = "test@google.com";
-const char kChallenge[] = "challenge";
-const char kResponse[] = "response";
-const char kPublicKey[] = "fake_public_key_for_test";
-const char kKeyNameForSpkac[] = "attest-ent-machine-123456";
-const char kNonDefaultKeyName[] = "fake_key_name_1";
+constexpr char kEmptyKeyName[] = "";
+constexpr char kNonDefaultKeyName[] = "key_name_123";
 
-void RegisterKeyCallbackTrue(chromeos::attestation::AttestationKeyType key_type,
-                             const cryptohome::Identification& user_id,
-                             const std::string& key_name,
-                             cryptohome::AsyncMethodCaller::Callback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), true, cryptohome::MOUNT_ERROR_NONE));
+std::string GetChallenge() {
+  constexpr uint8_t kBuffer[] = {0x0, 0x1, 0x2,  'c',  'h',
+                                 'a', 'l', 0xfd, 0xfe, 0xff};
+  return std::string(reinterpret_cast<const char*>(kBuffer), sizeof(kBuffer));
 }
 
-void RegisterKeyCallbackFalse(
-    chromeos::attestation::AttestationKeyType key_type,
-    const cryptohome::Identification& user_id,
-    const std::string& key_name,
-    cryptohome::AsyncMethodCaller::Callback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), false, cryptohome::MOUNT_ERROR_NONE));
+std::string GetChallengeResponse() {
+  constexpr uint8_t kBuffer[] = {0x0, 0x1, 0x2,  'r',  'e',
+                                 's', 'p', 0xfd, 0xfe, 0xff};
+  return std::string(reinterpret_cast<const char*>(kBuffer), sizeof(kBuffer));
 }
 
-void SignChallengeCallbackTrue(
-    chromeos::attestation::AttestationKeyType key_type,
-    const cryptohome::Identification& user_id,
-    const std::string& key_name,
-    const std::string& domain,
-    const std::string& device_id,
-    chromeos::attestation::AttestationChallengeOptions options,
-    const std::string& challenge,
-    const std::string& key_name_for_spkac,
-    cryptohome::AsyncMethodCaller::DataCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true, "response"));
+std::string GetPublicKey() {
+  constexpr uint8_t kBuffer[] = {0x0, 0x1, 0x2,  'p',  'u',
+                                 'b', 'k', 0xfd, 0xfe, 0xff};
+  return std::string(reinterpret_cast<const char*>(kBuffer), sizeof(kBuffer));
 }
 
-void SignChallengeCallbackFalse(
-    chromeos::attestation::AttestationKeyType key_type,
-    const cryptohome::Identification& user_id,
-    const std::string& key_name,
-    const std::string& domain,
-    const std::string& device_id,
-    chromeos::attestation::AttestationChallengeOptions options,
-    const std::string& challenge,
-    const std::string& key_name_for_spkac,
-    cryptohome::AsyncMethodCaller::DataCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), false, ""));
-}
-
-void GetCertificateCallbackTrue(
-    chromeos::attestation::AttestationCertificateProfile certificate_profile,
-    const AccountId& account_id,
-    const std::string& request_origin,
-    bool force_new_key,
-    const std::string& key_name,
-    chromeos::attestation::AttestationFlow::CertificateCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback),
-                                chromeos::attestation::ATTESTATION_SUCCESS,
-                                "certificate"));
-}
-
-void GetCertificateCallbackUnspecifiedFailure(
-    chromeos::attestation::AttestationCertificateProfile certificate_profile,
-    const AccountId& account_id,
-    const std::string& request_origin,
-    bool force_new_key,
-    const std::string& key_name,
-    chromeos::attestation::AttestationFlow::CertificateCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback),
-                     chromeos::attestation::ATTESTATION_UNSPECIFIED_FAILURE,
-                     ""));
-}
-
-void GetCertificateCallbackBadRequestFailure(
-    chromeos::attestation::AttestationCertificateProfile certificate_profile,
-    const AccountId& account_id,
-    const std::string& request_origin,
-    bool force_new_key,
-    const std::string& key_name,
-    chromeos::attestation::AttestationFlow::CertificateCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          std::move(callback),
-          chromeos::attestation::ATTESTATION_SERVER_BAD_REQUEST_FAILURE, ""));
-}
-
-class TpmChallengeKeyTestBase : public BrowserWithTestWindowTest {
+class TpmChallengeKeyTest : public ::testing::Test {
  public:
-  enum class ProfileType { kUserProfile, kSigninProfile };
-
- protected:
-  TpmChallengeKeyTestBase(ProfileType profile_type,
-                          chromeos::attestation::AttestationKeyType key_type)
-      : profile_type_(profile_type),
-        fake_user_manager_(new chromeos::FakeChromeUserManager()),
-        user_manager_enabler_(base::WrapUnique(fake_user_manager_)),
-        key_type_(key_type) {
-    mock_async_method_caller_ =
-        new NiceMock<cryptohome::MockAsyncMethodCaller>();
-    // Ownership of mock_async_method_caller_ is transferred to
-    // AsyncMethodCaller::InitializeForTesting.
-    cryptohome::AsyncMethodCaller::InitializeForTesting(
-        mock_async_method_caller_);
-
-    // Set up the default behavior of mocks.
-    ON_CALL(*mock_async_method_caller_, TpmAttestationRegisterKey)
-        .WillByDefault(Invoke(RegisterKeyCallbackTrue));
-    ON_CALL(*mock_async_method_caller_, TpmAttestationSignEnterpriseChallenge)
-        .WillByDefault(Invoke(SignChallengeCallbackTrue));
-    ON_CALL(mock_attestation_flow_, GetCertificate)
-        .WillByDefault(Invoke(GetCertificateCallbackTrue));
-    ON_CALL(mock_attestation_flow_, GetCertificate)
-        .WillByDefault(Invoke(GetCertificateCallbackTrue));
-
-    GetInstallAttributes()->SetCloudManaged("google.com", "device_id");
-
-    GetCrosSettingsHelper()->ReplaceDeviceSettingsProviderWithStub();
-    GetCrosSettingsHelper()->SetBoolean(chromeos::kDeviceAttestationEnabled,
-                                        true);
-
-    cryptohome_client_.set_tpm_attestation_public_key(
-        CryptohomeClient::TpmAttestationDataResult{true, kPublicKey});
-  }
-
-  ~TpmChallengeKeyTestBase() { cryptohome::AsyncMethodCaller::Shutdown(); }
-
-  void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
-    if (profile_type_ == ProfileType::kUserProfile) {
-      prefs_ = GetProfile()->GetPrefs();
-      SetAuthenticatedUser();
-    }
-  }
-
-  void TearDown() override { BrowserWithTestWindowTest::TearDown(); }
-
-  // This will be called by BrowserWithTestWindowTest::SetUp();
-  TestingProfile* CreateProfile() override {
-    switch (profile_type_) {
-      case ProfileType::kUserProfile:
-        fake_user_manager_->AddUserWithAffiliation(
-            AccountId::FromUserEmail(kUserEmail), true);
-        return profile_manager()->CreateTestingProfile(kUserEmail);
-
-      case ProfileType::kSigninProfile:
-        return profile_manager()->CreateTestingProfile(chrome::kInitialProfile);
-    }
-    NOTREACHED() << "Invalid profile type: " << static_cast<int>(profile_type_);
-  }
-
-  // Derived classes can override this method to set the required authenticated
-  // user in the IdentityManager class.
-  virtual void SetAuthenticatedUser() {
-    auto* identity_manager =
-        IdentityManagerFactory::GetForProfile(GetProfile());
-    signin::MakePrimaryAccountAvailable(identity_manager, kUserEmail);
-  }
-
-  void RunBuildResponse(const std::string& challenge,
-                        bool register_key,
-                        const std::string& key_name,
-                        TpmChallengeKeyResult* res) {
-    auto callback = [](base::OnceClosure done_closure,
-                       TpmChallengeKeyResult* res,
-                       const TpmChallengeKeyResult& tpm_result) {
-      *res = tpm_result;
-      std::move(done_closure).Run();
-    };
-
+  TpmChallengeKeyTest() {
+    auto mock_challenge_key_subtle =
+        std::make_unique<StrictMock<MockTpmChallengeKeySubtle>>();
+    mock_tpm_challenge_key_subtle_ = mock_challenge_key_subtle.get();
     TpmChallengeKeySubtleFactory::SetForTesting(
-        std::make_unique<TpmChallengeKeySubtleImpl>(&mock_attestation_flow_));
+        std::move(mock_challenge_key_subtle));
 
-    challenge_key_impl_ = TpmChallengeKeyFactory::Create();
-
-    base::RunLoop loop;
-    challenge_key_impl_->BuildResponse(
-        key_type_, GetProfile(),
-        base::BindOnce(callback, loop.QuitClosure(), res), challenge,
-        register_key, key_name);
-    loop.Run();
+    challenge_key_ = TpmChallengeKeyFactory::Create();
   }
 
-  void RunMultistepFlow(const std::string& challenge,
-                        bool register_key,
-                        const std::string& key_name,
-                        TpmChallengeKeyResult* public_key_res,
-                        TpmChallengeKeyResult* challenge_response_res,
-                        TpmChallengeKeyResult* register_key_res) {
-    auto callback = [](base::OnceClosure done_closure,
-                       TpmChallengeKeyResult* res,
-                       const TpmChallengeKeyResult& tpm_result) {
-      *res = tpm_result;
-      std::move(done_closure).Run();
-    };
-
-    TpmChallengeKeySubtleFactory::SetForTesting(
-        std::make_unique<TpmChallengeKeySubtleImpl>(&mock_attestation_flow_));
-
-    challenge_key_subtle_impl_ = TpmChallengeKeySubtleFactory::Create();
-
-    // Prepare key.
-    {
-      base::RunLoop loop;
-      challenge_key_subtle_impl_->StartPrepareKeyStep(
-          key_type_, /*will_register_key=*/register_key, key_name, GetProfile(),
-          base::BindOnce(callback, loop.QuitClosure(), public_key_res));
-      loop.Run();
-    }
-
-    TpmChallengeKeySubtleFactory::SetForTesting(
-        std::make_unique<TpmChallengeKeySubtleImpl>(&mock_attestation_flow_));
-
-    // Destroy existing object and create a new one.
-    challenge_key_subtle_impl_ =
-        TpmChallengeKeySubtleFactory::CreateForPreparedKey(
-            key_type_, /*will_register_key=*/register_key, key_name,
-            GetProfile());
-
-    // Continue building challenge response.
-    {
-      base::RunLoop loop;
-      challenge_key_subtle_impl_->StartSignChallengeStep(
-          challenge,
-          base::BindOnce(callback, loop.QuitClosure(), challenge_response_res));
-      loop.Run();
-    }
-
-    if (!register_key) {
-      return;
-    }
-
-    TpmChallengeKeySubtleFactory::SetForTesting(
-        std::make_unique<TpmChallengeKeySubtleImpl>(&mock_attestation_flow_));
-
-    // Destroy existing object and create a new one.
-    challenge_key_subtle_impl_ =
-        TpmChallengeKeySubtleFactory::CreateForPreparedKey(
-            key_type_, /*will_register_key=*/register_key, key_name,
-            GetProfile());
-
-    // Register key.
-    {
-      base::RunLoop loop;
-      challenge_key_subtle_impl_->StartRegisterKeyStep(
-          base::BindOnce(callback, loop.QuitClosure(), register_key_res));
-      loop.Run();
-    }
-  }
-
-  chromeos::FakeCryptohomeClient cryptohome_client_;
-  cryptohome::MockAsyncMethodCaller* mock_async_method_caller_ = nullptr;
-  NiceMock<chromeos::attestation::MockAttestationFlow> mock_attestation_flow_;
-  ProfileType profile_type_;
-  // fake_user_manager_ is owned by user_manager_enabler_.
-  chromeos::FakeChromeUserManager* fake_user_manager_;
-  user_manager::ScopedUserManager user_manager_enabler_;
-  PrefService* prefs_ = nullptr;
-  std::unique_ptr<TpmChallengeKey> challenge_key_impl_;
-  std::unique_ptr<TpmChallengeKeySubtle> challenge_key_subtle_impl_;
-  chromeos::attestation::AttestationKeyType key_type_;
-};
-
-class TpmChallengeMachineKeyTest : public TpmChallengeKeyTestBase {
  protected:
-  explicit TpmChallengeMachineKeyTest(
-      ProfileType profile_type = ProfileType::kUserProfile)
-      : TpmChallengeKeyTestBase(profile_type,
-                                chromeos::attestation::KEY_DEVICE) {}
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
+  MockTpmChallengeKeySubtle* mock_tpm_challenge_key_subtle_ = nullptr;
+  std::unique_ptr<TpmChallengeKey> challenge_key_;
+  // In the current implementation of TpmChallengeKey the profile is just
+  // forwarded, so actual value does not matter.
+  TestingProfile profile_;
 };
 
-TEST_F(TpmChallengeMachineKeyTest, NonEnterpriseDevice) {
-  GetInstallAttributes()->SetConsumerOwned();
+class CallbackObserver {
+ public:
+  TpmChallengeKeyCallback GetCallback() {
+    return base::BindOnce(&CallbackObserver::Callback, base::Unretained(this));
+  }
 
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
+  const TpmChallengeKeyResult& GetResult() const {
+    CHECK(result_.has_value()) << "Callback was never called";
+    return result_.value();
+  }
 
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kNonEnterpriseDeviceErrorMsg,
-            res.GetErrorMessage());
-}
+  void WaitForCallback() { loop_.Run(); }
 
-TEST_F(TpmChallengeMachineKeyTest, DevicePolicyDisabled) {
-  GetCrosSettingsHelper()->SetBoolean(chromeos::kDeviceAttestationEnabled,
-                                      false);
+ private:
+  void Callback(const TpmChallengeKeyResult& result) {
+    CHECK(!result_.has_value()) << "Callback was called more than once";
+    result_ = result;
+    loop_.Quit();
+  }
 
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kDevicePolicyDisabledErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeMachineKeyTest, DoesKeyExistDbusFailed) {
-  cryptohome_client_.set_tpm_attestation_does_key_exist_should_succeed(false);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kDbusErrorMsg, res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeMachineKeyTest, GetCertificateFailed) {
-  EXPECT_CALL(mock_attestation_flow_, GetCertificate)
-      .WillRepeatedly(Invoke(GetCertificateCallbackUnspecifiedFailure));
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kGetCertificateFailedErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeMachineKeyTest, SignChallengeFailed) {
-  EXPECT_CALL(*mock_async_method_caller_, TpmAttestationSignEnterpriseChallenge)
-      .WillRepeatedly(Invoke(SignChallengeCallbackFalse));
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kSignChallengeFailedErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeMachineKeyTest, KeyExists) {
-  cryptohome_client_.SetTpmAttestationDeviceCertificate("attest-ent-machine",
-                                                        std::string());
-  // GetCertificate must not be called if the key exists.
-  EXPECT_CALL(mock_attestation_flow_, GetCertificate).Times(0);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
-
-  EXPECT_TRUE(res.IsSuccess());
-  EXPECT_EQ(kResponse, res.challenge_response);
-}
-
-TEST_F(TpmChallengeMachineKeyTest, AttestationNotPrepared) {
-  cryptohome_client_.set_tpm_attestation_is_prepared(false);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kResetRequiredErrorMsg,
-            res.GetErrorMessage());
-}
-
-// Test that we get proper error message in case we don't have TPM.
-TEST_F(TpmChallengeMachineKeyTest, AttestationUnsupported) {
-  cryptohome_client_.set_tpm_attestation_is_prepared(false);
-  cryptohome_client_.set_tpm_is_enabled(false);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kAttestationUnsupportedErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeMachineKeyTest, AttestationPreparedDbusFailed) {
-  cryptohome_client_.SetServiceIsAvailable(false);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kDbusErrorMsg, res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeMachineKeyTest, KeyRegistrationFailed) {
-  EXPECT_CALL(*mock_async_method_caller_, TpmAttestationRegisterKey)
-      .WillRepeatedly(Invoke(RegisterKeyCallbackFalse));
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, kKeyNameForSpkac, &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kKeyRegistrationFailedErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeMachineKeyTest, KeyNotRegisteredSuccess) {
-  EXPECT_CALL(*mock_async_method_caller_, TpmAttestationRegisterKey).Times(0);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
-
-  EXPECT_TRUE(res.IsSuccess());
-  EXPECT_EQ(kResponse, res.challenge_response);
-}
-
-TEST_F(TpmChallengeMachineKeyTest, KeyRegisteredSuccess) {
-  // GetCertificate must be called exactly once.
-  EXPECT_CALL(mock_attestation_flow_,
-              GetCertificate(
-                  chromeos::attestation::PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
-                  _, _, _, _, _))
-      .Times(1);
-  // TpmAttestationRegisterKey must be called exactly once.
-  EXPECT_CALL(*mock_async_method_caller_,
-              TpmAttestationRegisterKey(chromeos::attestation::KEY_DEVICE,
-                                        _ /* Unused by the API. */,
-                                        kKeyNameForSpkac, _))
-      .Times(1);
-  // SignEnterpriseChallenge must be called exactly once.
-  EXPECT_CALL(
-      *mock_async_method_caller_,
-      TpmAttestationSignEnterpriseChallenge(
-          chromeos::attestation::KEY_DEVICE, _, "attest-ent-machine",
-          "google.com", "device_id", _, "challenge", kKeyNameForSpkac, _))
-      .Times(1);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, kKeyNameForSpkac, &res);
-
-  EXPECT_TRUE(res.IsSuccess());
-  EXPECT_EQ(kResponse, res.challenge_response);
-}
-
-// Tests the API with all profiles types as determined by the test parameter.
-class TpmChallengeMachineKeyAllProfilesTest
-    : public TpmChallengeMachineKeyTest,
-      public ::testing::WithParamInterface<
-          TpmChallengeKeyTestBase::ProfileType> {
- protected:
-  TpmChallengeMachineKeyAllProfilesTest()
-      : TpmChallengeMachineKeyTest(GetParam()) {}
+  base::RunLoop loop_;
+  base::Optional<TpmChallengeKeyResult> result_;
 };
 
-TEST_P(TpmChallengeMachineKeyAllProfilesTest, DontRegisterKeySuccess) {
-  // GetCertificate must be called exactly once.
-  EXPECT_CALL(mock_attestation_flow_,
-              GetCertificate(
-                  chromeos::attestation::PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
-                  _, _, _, _, _))
-      .Times(1);
-  // SignEnterpriseChallenge must be called exactly once.
-  EXPECT_CALL(*mock_async_method_caller_,
-              TpmAttestationSignEnterpriseChallenge(
-                  chromeos::attestation::KEY_DEVICE, _, "attest-ent-machine",
-                  "google.com", "device_id", _, "challenge",
-                  /*key_name_for_spkac=*/"", _))
-      .Times(1);
+TEST_F(TpmChallengeKeyTest, PrepareKeyFailed) {
+  const AttestationKeyType kKeyType = KEY_DEVICE;
+  const bool kRegisterKey = false;
+  const char* const kKeyName = kEmptyKeyName;
 
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartPrepareKeyStep(kKeyType, kRegisterKey, kKeyName, &profile_,
+                                  /*callback=*/_))
+      .WillOnce(RunOnceCallback<4>(TpmChallengeKeyResult::MakeError(
+          TpmChallengeKeyResultCode::kGetCertificateFailedError)));
 
-  EXPECT_TRUE(res.IsSuccess());
-  EXPECT_EQ(kResponse, res.challenge_response);
+  CallbackObserver callback_observer;
+  challenge_key_->BuildResponse(kKeyType, &profile_,
+                                callback_observer.GetCallback(), GetChallenge(),
+                                kRegisterKey, kKeyName);
+  callback_observer.WaitForCallback();
+
+  EXPECT_EQ(callback_observer.GetResult(),
+            TpmChallengeKeyResult::MakeError(
+                TpmChallengeKeyResultCode::kGetCertificateFailedError));
 }
 
-TEST_P(TpmChallengeMachineKeyAllProfilesTest, RegisterSuccess) {
-  // GetCertificate must be called exactly once.
-  EXPECT_CALL(mock_attestation_flow_,
-              GetCertificate(
-                  chromeos::attestation::PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
-                  _, _, _, _, _))
-      .Times(1);
-  // SignEnterpriseChallenge must be called exactly once.
-  EXPECT_CALL(*mock_async_method_caller_,
-              TpmAttestationSignEnterpriseChallenge(
-                  chromeos::attestation::KEY_DEVICE, _, "attest-ent-machine",
-                  "google.com", "device_id", _, "challenge",
-                  /*key_name_for_spkac=*/kNonDefaultKeyName, _))
-      .Times(1);
+TEST_F(TpmChallengeKeyTest, SignChallengeFailed) {
+  const AttestationKeyType kKeyType = KEY_USER;
+  const bool kRegisterKey = true;
+  const char* const kKeyName = kNonDefaultKeyName;
 
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true,
-                   /*key_name=*/kNonDefaultKeyName, &res);
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartPrepareKeyStep(kKeyType, kRegisterKey, kKeyName, &profile_,
+                                  /*callback=*/_))
+      .WillOnce(RunOnceCallback<4>(
+          TpmChallengeKeyResult::MakePublicKey(GetPublicKey())));
 
-  EXPECT_TRUE(res.IsSuccess());
-  EXPECT_EQ(kResponse, res.challenge_response);
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartSignChallengeStep(GetChallenge(), /*callback=*/_))
+      .WillOnce(RunOnceCallback<1>(TpmChallengeKeyResult::MakeError(
+          TpmChallengeKeyResultCode::kSignChallengeFailedError)));
+
+  CallbackObserver callback_observer;
+  challenge_key_->BuildResponse(kKeyType, &profile_,
+                                callback_observer.GetCallback(), GetChallenge(),
+                                kRegisterKey, kKeyName);
+  callback_observer.WaitForCallback();
+
+  EXPECT_EQ(callback_observer.GetResult(),
+            TpmChallengeKeyResult::MakeError(
+                TpmChallengeKeyResultCode::kSignChallengeFailedError));
 }
 
-TEST_P(TpmChallengeMachineKeyAllProfilesTest, DontRegisterKeyMultistepSuccess) {
-  // GetCertificate must be called exactly once.
-  EXPECT_CALL(mock_attestation_flow_,
-              GetCertificate(
-                  chromeos::attestation::PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
-                  _, _, _, _, _))
-      .Times(1);
-  // SignEnterpriseChallenge must be called exactly once.
-  EXPECT_CALL(*mock_async_method_caller_,
-              TpmAttestationSignEnterpriseChallenge(
-                  chromeos::attestation::KEY_DEVICE, _, "attest-ent-machine",
-                  "google.com", "device_id", _, "challenge",
-                  /*key_name_for_spkac=*/"", _))
-      .Times(1);
+TEST_F(TpmChallengeKeyTest, RegisterKeyFailed) {
+  const AttestationKeyType kKeyType = KEY_USER;
+  const bool kRegisterKey = true;
+  const char* const kKeyName = kNonDefaultKeyName;
 
-  TpmChallengeKeyResult public_key_res;
-  TpmChallengeKeyResult challenge_response_res;
-  TpmChallengeKeyResult register_key_res;
-  RunMultistepFlow(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &public_key_res, &challenge_response_res,
-                   &register_key_res);
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartPrepareKeyStep(kKeyType, kRegisterKey, kKeyName, &profile_,
+                                  /*callback=*/_))
+      .WillOnce(RunOnceCallback<4>(
+          TpmChallengeKeyResult::MakePublicKey(GetPublicKey())));
 
-  EXPECT_TRUE(public_key_res.IsSuccess());
-  EXPECT_EQ(kPublicKey, public_key_res.public_key);
-  EXPECT_TRUE(challenge_response_res.IsSuccess());
-  EXPECT_EQ(kResponse, challenge_response_res.challenge_response);
-  EXPECT_TRUE(register_key_res.IsSuccess());
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartSignChallengeStep(GetChallenge(), /*callback=*/_))
+      .WillOnce(RunOnceCallback<1>(TpmChallengeKeyResult::MakeChallengeResponse(
+          GetChallengeResponse())));
+
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartRegisterKeyStep(/*callback=*/_))
+      .WillOnce(RunOnceCallback<0>(TpmChallengeKeyResult::MakeError(
+          TpmChallengeKeyResultCode::kKeyRegistrationFailedError)));
+
+  CallbackObserver callback_observer;
+  challenge_key_->BuildResponse(kKeyType, &profile_,
+                                callback_observer.GetCallback(), GetChallenge(),
+                                kRegisterKey, kKeyName);
+  callback_observer.WaitForCallback();
+
+  EXPECT_EQ(callback_observer.GetResult(),
+            TpmChallengeKeyResult::MakeError(
+                TpmChallengeKeyResultCode::kKeyRegistrationFailedError));
 }
 
-TEST_P(TpmChallengeMachineKeyAllProfilesTest, RegisterKeyMultistepSuccess) {
-  // GetCertificate must be called exactly once.
-  EXPECT_CALL(mock_attestation_flow_,
-              GetCertificate(
-                  chromeos::attestation::PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
-                  _, _, _, _, _))
-      .Times(1);
-  // SignEnterpriseChallenge must be called exactly once.
-  EXPECT_CALL(*mock_async_method_caller_,
-              TpmAttestationSignEnterpriseChallenge(
-                  chromeos::attestation::KEY_DEVICE, _, "attest-ent-machine",
-                  "google.com", "device_id", _, "challenge",
-                  /*key_name_for_spkac=*/kNonDefaultKeyName, _))
-      .Times(1);
+TEST_F(TpmChallengeKeyTest, DontRegisterSuccess) {
+  const AttestationKeyType kKeyType = KEY_USER;
+  const bool kRegisterKey = false;
+  const char* const kKeyName = kEmptyKeyName;
 
-  TpmChallengeKeyResult public_key_res;
-  TpmChallengeKeyResult challenge_response_res;
-  TpmChallengeKeyResult register_key_res;
-  RunMultistepFlow(kChallenge, /*register_key=*/true,
-                   /*key_name=*/kNonDefaultKeyName, &public_key_res,
-                   &challenge_response_res, &register_key_res);
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartPrepareKeyStep(kKeyType, kRegisterKey, kKeyName, &profile_,
+                                  /*callback=*/_))
+      .WillOnce(RunOnceCallback<4>(
+          TpmChallengeKeyResult::MakePublicKey(GetPublicKey())));
 
-  EXPECT_TRUE(public_key_res.IsSuccess());
-  EXPECT_EQ(kPublicKey, public_key_res.public_key);
-  EXPECT_TRUE(challenge_response_res.IsSuccess());
-  EXPECT_EQ(kResponse, challenge_response_res.challenge_response);
-  EXPECT_TRUE(register_key_res.IsSuccess());
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartSignChallengeStep(GetChallenge(), /*callback=*/_))
+      .WillOnce(RunOnceCallback<1>(TpmChallengeKeyResult::MakeChallengeResponse(
+          GetChallengeResponse())));
+
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartRegisterKeyStep(/*callback=*/_))
+      .Times(0);
+
+  CallbackObserver callback_observer;
+  challenge_key_->BuildResponse(kKeyType, &profile_,
+                                callback_observer.GetCallback(), GetChallenge(),
+                                kRegisterKey, kKeyName);
+  callback_observer.WaitForCallback();
+
+  EXPECT_EQ(
+      callback_observer.GetResult(),
+      TpmChallengeKeyResult::MakeChallengeResponse(GetChallengeResponse()));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    AllProfiles,
-    TpmChallengeMachineKeyAllProfilesTest,
-    ::testing::Values(TpmChallengeKeyTestBase::ProfileType::kUserProfile,
-                      TpmChallengeKeyTestBase::ProfileType::kSigninProfile));
+TEST_F(TpmChallengeKeyTest, RegisterSuccess) {
+  const AttestationKeyType kKeyType = KEY_USER;
+  const bool kRegisterKey = true;
+  const char* const kKeyName = kEmptyKeyName;
 
-class TpmChallengeUserKeyTest : public TpmChallengeKeyTestBase {
- protected:
-  explicit TpmChallengeUserKeyTest(
-      ProfileType profile_type = ProfileType::kUserProfile)
-      : TpmChallengeKeyTestBase(profile_type, chromeos::attestation::KEY_USER) {
-  }
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartPrepareKeyStep(kKeyType, kRegisterKey, kKeyName, &profile_,
+                                  /*callback=*/_))
+      .WillOnce(RunOnceCallback<4>(
+          TpmChallengeKeyResult::MakePublicKey(GetPublicKey())));
 
-  void SetUp() override {
-    TpmChallengeKeyTestBase::SetUp();
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartSignChallengeStep(GetChallenge(), /*callback=*/_))
+      .WillOnce(RunOnceCallback<1>(TpmChallengeKeyResult::MakeChallengeResponse(
+          GetChallengeResponse())));
 
-    if (profile_type_ == ProfileType::kUserProfile) {
-      GetProfile()->GetTestingPrefService()->SetManagedPref(
-          prefs::kAttestationEnabled, std::make_unique<base::Value>(true));
-    }
-  }
-};
+  EXPECT_CALL(*mock_tpm_challenge_key_subtle_,
+              StartRegisterKeyStep(/*callback=*/_))
+      .WillOnce(RunOnceCallback<0>(TpmChallengeKeyResult::MakeSuccess()));
 
-TEST_F(TpmChallengeUserKeyTest, UserPolicyDisabled) {
-  GetProfile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kAttestationEnabled, std::make_unique<base::Value>(false));
+  CallbackObserver callback_observer;
+  challenge_key_->BuildResponse(kKeyType, &profile_,
+                                callback_observer.GetCallback(), GetChallenge(),
+                                kRegisterKey, kKeyName);
+  callback_observer.WaitForCallback();
 
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kUserPolicyDisabledErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeUserKeyTest, DevicePolicyDisabled) {
-  GetCrosSettingsHelper()->SetBoolean(chromeos::kDeviceAttestationEnabled,
-                                      false);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kDevicePolicyDisabledErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeUserKeyTest, DoesKeyExistDbusFailed) {
-  cryptohome_client_.set_tpm_attestation_does_key_exist_should_succeed(false);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kDbusErrorMsg, res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeUserKeyTest, GetCertificateFailedWithUnspecifiedFailure) {
-  EXPECT_CALL(mock_attestation_flow_, GetCertificate)
-      .WillRepeatedly(Invoke(GetCertificateCallbackUnspecifiedFailure));
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kGetCertificateFailedErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeUserKeyTest, GetCertificateFailedWithBadRequestFailure) {
-  EXPECT_CALL(mock_attestation_flow_, GetCertificate)
-      .WillRepeatedly(Invoke(GetCertificateCallbackBadRequestFailure));
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kGetCertificateFailedErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeUserKeyTest, SignChallengeFailed) {
-  EXPECT_CALL(*mock_async_method_caller_, TpmAttestationSignEnterpriseChallenge)
-      .WillRepeatedly(Invoke(SignChallengeCallbackFalse));
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kSignChallengeFailedErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeUserKeyTest, KeyRegistrationFailed) {
-  EXPECT_CALL(*mock_async_method_caller_, TpmAttestationRegisterKey)
-      .WillRepeatedly(Invoke(RegisterKeyCallbackFalse));
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kKeyRegistrationFailedErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeUserKeyTest, KeyExists) {
-  cryptohome_client_.SetTpmAttestationUserCertificate(
-      cryptohome::CreateAccountIdentifierFromAccountId(
-          AccountId::FromUserEmail(kUserEmail)),
-      "attest-ent-user", std::string());
-  // GetCertificate must not be called if the key exists.
-  EXPECT_CALL(mock_attestation_flow_, GetCertificate).Times(0);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_TRUE(res.IsSuccess());
-  EXPECT_EQ(kResponse, res.challenge_response);
-}
-
-TEST_F(TpmChallengeUserKeyTest, KeyNotRegisteredSuccess) {
-  EXPECT_CALL(*mock_async_method_caller_, TpmAttestationRegisterKey).Times(0);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
-
-  EXPECT_TRUE(res.IsSuccess());
-  EXPECT_EQ(kResponse, res.challenge_response);
-}
-
-TEST_F(TpmChallengeUserKeyTest, PersonalDevice) {
-  GetInstallAttributes()->SetConsumerOwned();
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  // Currently personal devices are not supported.
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kUserRejectedErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeUserKeyTest, Success) {
-  // GetCertificate must be called exactly once.
-  EXPECT_CALL(
-      mock_attestation_flow_,
-      GetCertificate(chromeos::attestation::PROFILE_ENTERPRISE_USER_CERTIFICATE,
-                     _, _, _, _, _))
-      .Times(1);
-  const AccountId account_id = AccountId::FromUserEmail(kUserEmail);
-  // SignEnterpriseChallenge must be called exactly once.
-  EXPECT_CALL(*mock_async_method_caller_,
-              TpmAttestationSignEnterpriseChallenge(
-                  chromeos::attestation::KEY_USER,
-                  cryptohome::Identification(account_id), "attest-ent-user",
-                  cryptohome::Identification(account_id).id(), "device_id", _,
-                  "challenge", /*key_name_for_spkac=*/"", _))
-      .Times(1);
-  // RegisterKey must be called exactly once.
-  EXPECT_CALL(*mock_async_method_caller_,
-              TpmAttestationRegisterKey(chromeos::attestation::KEY_USER,
-                                        cryptohome::Identification(account_id),
-                                        "attest-ent-user", _))
-      .Times(1);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_TRUE(res.IsSuccess());
-  EXPECT_EQ(kResponse, res.challenge_response);
-}
-
-TEST_F(TpmChallengeUserKeyTest, MultistepSuccess) {
-  // GetCertificate must be called exactly once.
-  EXPECT_CALL(
-      mock_attestation_flow_,
-      GetCertificate(chromeos::attestation::PROFILE_ENTERPRISE_USER_CERTIFICATE,
-                     _, _, _, _, _))
-      .Times(1);
-  const AccountId account_id = AccountId::FromUserEmail(kUserEmail);
-  // SignEnterpriseChallenge must be called exactly once.
-  EXPECT_CALL(*mock_async_method_caller_,
-              TpmAttestationSignEnterpriseChallenge(
-                  chromeos::attestation::KEY_USER,
-                  cryptohome::Identification(account_id), kNonDefaultKeyName,
-                  cryptohome::Identification(account_id).id(), "device_id", _,
-                  "challenge", /*key_name_for_spkac=*/"", _))
-      .Times(1);
-  // RegisterKey must be called exactly once.
-  EXPECT_CALL(*mock_async_method_caller_,
-              TpmAttestationRegisterKey(chromeos::attestation::KEY_USER,
-                                        cryptohome::Identification(account_id),
-                                        kNonDefaultKeyName, _))
-      .Times(1);
-
-  TpmChallengeKeyResult public_key_res;
-  TpmChallengeKeyResult challenge_response_res;
-  TpmChallengeKeyResult register_key_res;
-  RunMultistepFlow(kChallenge, /*register_key=*/true,
-                   /*key_name=*/kNonDefaultKeyName, &public_key_res,
-                   &challenge_response_res, &register_key_res);
-
-  EXPECT_TRUE(public_key_res.IsSuccess());
-  EXPECT_EQ(kPublicKey, public_key_res.public_key);
-  EXPECT_TRUE(challenge_response_res.IsSuccess());
-  EXPECT_EQ(kResponse, challenge_response_res.challenge_response);
-  EXPECT_TRUE(register_key_res.IsSuccess());
-}
-
-TEST_F(TpmChallengeUserKeyTest, AttestationNotPrepared) {
-  cryptohome_client_.set_tpm_attestation_is_prepared(false);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kResetRequiredErrorMsg,
-            res.GetErrorMessage());
-}
-
-TEST_F(TpmChallengeUserKeyTest, AttestationPreparedDbusFailed) {
-  cryptohome_client_.SetServiceIsAvailable(false);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kDbusErrorMsg, res.GetErrorMessage());
-}
-
-class TpmChallengeUserKeySigninProfileTest : public TpmChallengeUserKeyTest {
- protected:
-  TpmChallengeUserKeySigninProfileTest()
-      : TpmChallengeUserKeyTest(ProfileType::kSigninProfile) {}
-};
-
-TEST_F(TpmChallengeUserKeySigninProfileTest, UserKeyNotAvailable) {
-  GetCrosSettingsHelper()->SetBoolean(chromeos::kDeviceAttestationEnabled,
-                                      false);
-
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kUserKeyNotAvailableErrorMsg,
-            res.GetErrorMessage());
-}
-
-class TpmChallengeMachineKeyUnmanagedUserTest
-    : public TpmChallengeMachineKeyTest {
- protected:
-  void SetAuthenticatedUser() override {
-    signin::MakePrimaryAccountAvailable(
-        IdentityManagerFactory::GetForProfile(GetProfile()),
-        account_id_.GetUserEmail());
-  }
-
-  TestingProfile* CreateProfile() override {
-    fake_user_manager_->AddUser(account_id_);
-    return profile_manager()->CreateTestingProfile(account_id_.GetUserEmail());
-  }
-
-  const std::string email = "test@chromium.com";
-  const AccountId account_id_ =
-      AccountId::FromUserEmailGaiaId(email,
-                                     signin::GetTestGaiaIdForEmail(email));
-};
-
-TEST_F(TpmChallengeMachineKeyUnmanagedUserTest, UserNotManaged) {
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/false,
-                   /*key_name=*/"", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kUserNotManagedErrorMsg,
-            res.GetErrorMessage());
-}
-
-class TpmChallengeUserKeyUnmanagedUserTest : public TpmChallengeUserKeyTest {
- protected:
-  void SetAuthenticatedUser() override {
-    signin::MakePrimaryAccountAvailable(
-        IdentityManagerFactory::GetForProfile(GetProfile()),
-        account_id_.GetUserEmail());
-  }
-
-  TestingProfile* CreateProfile() override {
-    fake_user_manager_->AddUser(account_id_);
-    return profile_manager()->CreateTestingProfile(account_id_.GetUserEmail());
-  }
-
-  const std::string email = "test@chromium.com";
-  const AccountId account_id_ =
-      AccountId::FromUserEmailGaiaId(email,
-                                     signin::GetTestGaiaIdForEmail(email));
-};
-
-TEST_F(TpmChallengeUserKeyUnmanagedUserTest, UserNotManaged) {
-  TpmChallengeKeyResult res;
-  RunBuildResponse(kChallenge, /*register_key=*/true, "", &res);
-
-  EXPECT_FALSE(res.IsSuccess());
-  EXPECT_EQ("", res.challenge_response);
-  EXPECT_EQ(TpmChallengeKeyResult::kUserNotManagedErrorMsg,
-            res.GetErrorMessage());
+  EXPECT_EQ(
+      callback_observer.GetResult(),
+      TpmChallengeKeyResult::MakeChallengeResponse(GetChallengeResponse()));
 }
 
 }  // namespace

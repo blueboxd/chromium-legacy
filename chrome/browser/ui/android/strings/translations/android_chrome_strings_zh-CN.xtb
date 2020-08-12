@@ -331,7 +331,6 @@
 <translation id="3568688522516854065">要访问您在其他设备上的标签页，请登录您的帐号并开启同步功能</translation>
 <translation id="3587482841069643663">全部</translation>
 <translation id="3587596251841506391">帮助我们改善网络安全环境</translation>
-<translation id="3590487821116122040">Chrome 认为不重要的网站（例如未保存任何设置的网站或您不常访问的网站）存储的数据</translation>
 <translation id="3594780231884063836">将视频静音</translation>
 <translation id="3599863153486145794">清除所有登录过的设备上的历史记录。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="3616113530831147358">音频</translation>
@@ -384,7 +383,6 @@
 <translation id="3987993985790029246">复制链接</translation>
 <translation id="3988213473815854515">允许访问位置信息</translation>
 <translation id="3988466920954086464">您可以在此面板查看即时搜索结果</translation>
-<translation id="3997476611815694295">不重要网站的存储数据</translation>
 <translation id="4000212216660919741">离线版首页</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 小时}other{# 小时}}</translation>
 <translation id="4056223980640387499">棕色调</translation>
@@ -562,7 +560,6 @@
 <translation id="5433691172869980887">已复制用户名</translation>
 <translation id="543509235395288790">正在下载 <ph name="COUNT" /> 个文件（共 <ph name="MEGABYTES" />）。</translation>
 <translation id="5441522332038954058">跳转到地址栏</translation>
-<translation id="5447201525962359567">所有网站存储数据，包括 Cookie 及其他本地存储的数据</translation>
 <translation id="545042621069398927">正在加快您的下载速度。</translation>
 <translation id="5456381639095306749">下载网页</translation>
 <translation id="548278423535722844">在地图应用中打开</translation>

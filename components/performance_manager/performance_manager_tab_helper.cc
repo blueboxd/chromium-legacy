@@ -22,6 +22,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace performance_manager {
 
@@ -166,7 +167,7 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
           process_node, page_node_.get(), parent_frame_node,
           render_frame_host->GetFrameTreeNodeId(),
           render_frame_host->GetRoutingID(),
-          FrameToken(render_frame_host->GetFrameToken()),
+          blink::LocalFrameToken(render_frame_host->GetFrameToken()),
           site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
           base::BindOnce(
               [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {

@@ -2264,7 +2264,6 @@
 <translation id="3748706263662799310">バグを報告</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">マイ デバイス</translation>
-<translation id="3752757212511661046">仕事用プロフィールを作成しますか？</translation>
 <translation id="3753033997400164841">一度保存すればどこでも使用可能</translation>
 <translation id="3755411799582650620"><ph name="PHONE_NAME" /> でもこの <ph name="DEVICE_TYPE" /> のロックを解除できるようになりました。</translation>
 <translation id="375636864092143889">サイトでマイクが使用されています</translation>
@@ -2385,7 +2384,6 @@
 <translation id="3873423927483480833">PIN を表示</translation>
 <translation id="3873915545594852654">ARC++ で問題が発生しました。</translation>
 <translation id="3874164307099183178">Google アシスタントをオンにする</translation>
-<translation id="387531380970557479">「<ph name="EXTENSION_NAME" />」はマルウェアが含まれるため無効になっています。</translation>
 <translation id="3879748587602334249">ダウンロード マネージャ</translation>
 <translation id="3881478300875776315">表示する行数を減らす</translation>
 <translation id="3882165008614329320">カメラやファイルに保存されている動画</translation>
@@ -2904,7 +2902,6 @@
 <translation id="4562155214028662640">指紋を追加</translation>
 <translation id="4562494484721939086">サービスなし</translation>
 <translation id="4563210852471260509">初期の入力言語を中国語にする</translation>
-<translation id="4563404051166505887">1 枚の写真</translation>
 <translation id="4563880231729913339">指 3</translation>
 <translation id="4565377596337484307">パスワードを表示しない</translation>
 <translation id="4565917129334815774">システムログを保存</translation>

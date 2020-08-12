@@ -38,9 +38,14 @@ class MockCupsOptionProvider : public CupsOptionProvider {
       return std::vector<base::StringPiece>();
 
     std::vector<base::StringPiece> strings;
-    int size = ippGetCount(attr);
+    const int size = ippGetCount(attr);
+    strings.reserve(size);
     for (int i = 0; i < size; ++i) {
-      strings.emplace_back(ippGetString(attr, i, nullptr));
+      const char* const value = ippGetString(attr, i, nullptr);
+      if (!value) {
+        continue;
+      }
+      strings.push_back(value);
     }
 
     return strings;

@@ -209,15 +209,15 @@ base::TimeDelta AdaptiveCongestionControl::DeadTime(const FrameStats& a,
 
 double AdaptiveCongestionControl::CalculateSafeBitrate() {
   DCHECK(!frame_stats_.empty());
-  const double transmit_time =
-      (GetFrameStats(last_checkpoint_frame_)->ack_time -
-       frame_stats_.front().enqueue_time - dead_time_in_history_)
-          .InSecondsF();
+  base::TimeDelta transmit_time =
+      GetFrameStats(last_checkpoint_frame_)->ack_time -
+      frame_stats_.front().enqueue_time - dead_time_in_history_;
 
-  if (acked_bits_in_history_ == 0 || transmit_time <= 0.0) {
+  if (acked_bits_in_history_ == 0 || transmit_time <= base::TimeDelta()) {
     return min_bitrate_configured_;
   }
-  return acked_bits_in_history_ / std::max(transmit_time, 1E-3);
+  transmit_time = std::max(transmit_time, base::TimeDelta::FromMilliseconds(1));
+  return acked_bits_in_history_ / transmit_time.InSecondsF();
 }
 
 AdaptiveCongestionControl::FrameStats* AdaptiveCongestionControl::GetFrameStats(

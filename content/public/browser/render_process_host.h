@@ -213,6 +213,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // RenderProcessExited may never be called.
   virtual bool Shutdown(int exit_code) = 0;
 
+  // Returns true if shutdown was started by calling |Shutdown()|.
+  virtual bool ShutdownRequested() = 0;
+
   // Try to shut down the associated renderer process as fast as possible.
   // If a non-zero |page_count| value is provided, then a fast shutdown will
   // only happen if the count matches the active view count. If

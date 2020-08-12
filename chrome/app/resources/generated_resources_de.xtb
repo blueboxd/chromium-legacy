@@ -2260,7 +2260,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3748706263662799310">Programmfehler melden</translation>
 <translation id="3752582316358263300">Ok</translation>
 <translation id="3752673729237782832">Meine Geräte</translation>
-<translation id="3752757212511661046">Arbeitsprofil erstellen?</translation>
 <translation id="3753033997400164841">Einmal speichern. Überall verwenden.</translation>
 <translation id="3755411799582650620">Sie können mit Ihrem <ph name="PHONE_NAME" /> jetzt Ihr <ph name="DEVICE_TYPE" /> entsperren.</translation>
 <translation id="375636864092143889">Die Website verwendet Ihr Mikrofon</translation>
@@ -2381,7 +2380,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3873423927483480833">PINs anzeigen</translation>
 <translation id="3873915545594852654">Ein Problem mit ARC++ ist aufgetreten.</translation>
 <translation id="3874164307099183178">Google Assistant einschalten</translation>
-<translation id="387531380970557479">Die Erweiterung "<ph name="EXTENSION_NAME" />" wurde deaktiviert, weil sie Malware enthält</translation>
 <translation id="3879748587602334249">Download-Manager</translation>
 <translation id="3881478300875776315">Weniger Zeilen anzeigen</translation>
 <translation id="3882165008614329320">Vorhandenes Video von der Kamera oder als Datei</translation>
@@ -2900,7 +2898,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4562155214028662640">Fingerabdruck hinzufügen</translation>
 <translation id="4562494484721939086">Dienst nicht verfügbar</translation>
 <translation id="4563210852471260509">Anfängliche Eingabesprache ist Chinesisch.</translation>
-<translation id="4563404051166505887">1 Foto</translation>
 <translation id="4563880231729913339">Finger 3</translation>
 <translation id="4565377596337484307">Passwort ausblenden</translation>
 <translation id="4565917129334815774">Systemprotokolle speichern</translation>

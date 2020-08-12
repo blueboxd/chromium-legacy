@@ -108,6 +108,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
  public:
   TSFTextStore();
   virtual ~TSFTextStore();
+  HRESULT Initialize();
 
   // ITextStoreACP:
   IFACEMETHODIMP_(ULONG) AddRef() override;

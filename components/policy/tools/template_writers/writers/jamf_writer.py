@@ -108,7 +108,7 @@ class JamfWriter(template_writer.TemplateWriter):
         if 'minimum' in policy['schema']:
           policy_output['minimum'] = policy['schema']['minimum']
         if 'maximum' in policy['schema']:
-          policy_output['properties']['maximum'] = policy['schema']['maximum']
+          policy_output['maximum'] = policy['schema']['maximum']
       elif policy['type'] == 'list':
         policy_output['items'] = policy['schema']['items']
       elif policy['type'] == 'string-enum-list' or policy[

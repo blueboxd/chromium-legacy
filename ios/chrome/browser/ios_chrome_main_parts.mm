@@ -49,6 +49,7 @@
 #include "ios/chrome/browser/install_time_util.h"
 #include "ios/chrome/browser/metrics/ios_expired_histograms_array.h"
 #include "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
+#include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
@@ -250,6 +251,14 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
     variations_service->set_policy_pref_service(
         last_used_browser_state->GetPrefs());
     variations_service->PerformPreMainMessageLoopStartup();
+  }
+
+  // Initialize Chrome Browser Cloud Management.
+  auto* policy_connector = application_context_->GetBrowserPolicyConnector();
+  if (policy_connector) {
+    policy_connector->chrome_browser_cloud_management_controller()->Init(
+        application_context_->GetLocalState(),
+        application_context_->GetSharedURLLoaderFactory());
   }
 
   if (base::FeatureList::IsEnabled(

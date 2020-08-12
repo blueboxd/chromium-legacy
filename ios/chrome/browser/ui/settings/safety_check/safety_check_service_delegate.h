@@ -15,6 +15,13 @@
 // Called when item is tapped.
 - (void)didSelectItem:(TableViewItem*)item;
 
+// Checks if |item| should have an error popover.
+- (BOOL)isItemWithErrorInfo:(TableViewItem*)item;
+
+// Notifies the mediator that an info button was tapped for |itemType|.
+- (void)infoButtonWasTapped:(UIButton*)buttonView
+              usingItemType:(NSInteger)itemType;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SAFETY_CHECK_SAFETY_CHECK_SERVICE_DELEGATE_H_

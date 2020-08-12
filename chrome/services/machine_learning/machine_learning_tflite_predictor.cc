@@ -8,8 +8,8 @@
 
 namespace machine_learning {
 
-TFLitePredictor::TFLitePredictor(std::string filename)
-    : model_file_name_(filename) {}
+TFLitePredictor::TFLitePredictor(std::string filename, int32_t num_threads)
+    : model_file_name_(filename), num_threads_(num_threads) {}
 
 TFLitePredictor::~TFLitePredictor() = default;
 
@@ -51,6 +51,8 @@ bool TFLitePredictor::BuildInterpreter() {
   if (options_ == nullptr)
     return false;
 
+  TfLiteInterpreterOptionsSetNumThreads(options_.get(), num_threads_);
+
   // We create the pointer using this approach since |TfLiteInterpreter| is a
   // structure without the delete operator.
   interpreter_ = std::unique_ptr<TfLiteInterpreter,
@@ -81,7 +83,6 @@ int32_t TFLitePredictor::GetOutputTensorCount() const {
   return TfLiteInterpreterGetOutputTensorCount(interpreter_.get());
 }
 
-// TODO: change this to private
 TfLiteTensor* TFLitePredictor::GetInputTensor(int32_t index) const {
   if (interpreter_ == nullptr)
     return nullptr;

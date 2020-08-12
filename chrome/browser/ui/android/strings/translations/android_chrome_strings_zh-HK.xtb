@@ -331,7 +331,6 @@
 <translation id="3568688522516854065">如要取得其他裝置上的分頁，請登入並開啟同步處理功能</translation>
 <translation id="3587482841069643663">全部</translation>
 <translation id="3587596251841506391">協助改善網絡安全</translation>
-<translation id="3590487821116122040">Chrome 認為不重要的網站 (例如未儲存任何設定的網站，或您不常瀏覽的網站) 儲存空間的資料</translation>
 <translation id="3594780231884063836">將影片靜音</translation>
 <translation id="3599863153486145794">清除所有已登入裝置上的記錄。您的 Google 帳戶在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的瀏覽記錄。</translation>
 <translation id="3616113530831147358">音效檔案</translation>
@@ -384,7 +383,6 @@
 <translation id="3987993985790029246">複製連結</translation>
 <translation id="3988213473815854515">位置已獲允許</translation>
 <translation id="3988466920954086464">您可以在此面板查看即時搜尋結果</translation>
-<translation id="3997476611815694295">不重要網站的儲存空間資料量</translation>
 <translation id="4000212216660919741">離線首頁</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 小時}other{# 小時}}</translation>
 <translation id="4056223980640387499">棕褐色</translation>
@@ -562,7 +560,6 @@
 <translation id="5433691172869980887">已複製使用者名稱</translation>
 <translation id="543509235395288790">正在下載 <ph name="COUNT" /> 個檔案 (<ph name="MEGABYTES" />)。</translation>
 <translation id="5441522332038954058">跳至網址列</translation>
-<translation id="5447201525962359567">所有網站儲存空間的資料，包括 Cookie 和其他儲存在本機上的資料</translation>
 <translation id="545042621069398927">正在加快下載速度。</translation>
 <translation id="5456381639095306749">下載網頁</translation>
 <translation id="548278423535722844">在地圖應用程式中開啟</translation>

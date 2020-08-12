@@ -316,6 +316,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   int GetOutstandingThrottledLimit() const override;
 
   const ServiceWorkerToken& token() const { return token_; }
+  void ResolveFetchEventHandledPromise(int event_id);
+  void RejectFetchEventHandledPromise(int event_id,
+                                      const String& error_message);
 
  protected:
   // EventTarget
@@ -687,6 +690,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       fetch_response_callbacks_;
 
   HeapHashMap<int, Member<FetchEvent>> pending_preload_fetch_events_;
+
+  // Fetch events that are being handled are stored here and will be removed
+  // after being handled.
+  HeapHashMap<int, Member<FetchEvent>> pending_fetch_events_;
 
   // Track outstanding FetchEvent objects still waiting for a response by
   // request URL.  This information can be used as a hint that cache_storage

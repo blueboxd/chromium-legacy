@@ -10,12 +10,9 @@
 
 @protocol SafetyCheckServiceDelegate;
 @class SafetyCheckTableViewController;
-@protocol SafetyCheckTableViewControllerModelDelegate;
 
 // The accessibility identifier of the privacy settings collection view.
 extern NSString* const kSafetyCheckTableViewId;
-
-@protocol SafetyCheckNavigationCommands;
 
 // Delegate for presentation events related to
 // SafetyCheckTableViewController.
@@ -39,9 +36,6 @@ extern NSString* const kSafetyCheckTableViewId;
 
 // Handler for taps on items on the safety check page.
 @property(nonatomic, weak) id<SafetyCheckServiceDelegate> serviceDelegate;
-
-// Handler used to navigate inside the safety check.
-@property(nonatomic, weak) id<SafetyCheckNavigationCommands> handler;
 
 @end
 

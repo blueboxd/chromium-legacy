@@ -6,6 +6,8 @@
 
 #import "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
+#import "ios/chrome/browser/ui/settings/safety_check/safety_check_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -95,6 +97,33 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   [self.serviceDelegate didSelectItem:item];
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+#pragma mark - UITableViewDataSource
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  if ([self.serviceDelegate isItemWithErrorInfo:item]) {
+    SettingsCheckCell* settingsCheckCell =
+        base::mac::ObjCCastStrict<SettingsCheckCell>(cell);
+    settingsCheckCell.infoButton.tag = item.type;
+    [settingsCheckCell.infoButton addTarget:self
+                                     action:@selector(didTapErrorInfoButton:)
+                           forControlEvents:UIControlEventTouchUpInside];
+  }
+  return cell;
+}
+
+#pragma mark - Private
+
+// Called when user tapped on the information button of an
+// item. Shows popover with detailed description of an error if needed.
+- (void)didTapErrorInfoButton:(UIButton*)buttonView {
+  [self.serviceDelegate infoButtonWasTapped:buttonView
+                              usingItemType:buttonView.tag];
 }
 
 @end

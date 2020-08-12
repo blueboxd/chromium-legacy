@@ -259,13 +259,13 @@ TEST_F(FeatureStatusProviderImplTest, NotEligibleForFeature) {
 
   // Set all properties to true so that there is an eligible phone. Since
   // |fake_multidevice_setup_client_| defaults to kProhibitedByPolicy, the
-  // status should change to this default.
+  // status should still be kNotEligibleForFeature.
   SetSyncedDevices(CreateLocalDevice(/*supports_phone_hub_client=*/true,
                                      /*has_bluetooth_address=*/true),
                    CreatePhoneDevice(/*supports_better_together_host=*/true,
                                      /*supports_phone_hub_host=*/true,
                                      /*has_bluetooth_address=*/true));
-  EXPECT_EQ(FeatureStatus::kProhibitedByPolicy, GetStatus());
+  EXPECT_EQ(FeatureStatus::kNotEligibleForFeature, GetStatus());
 }
 
 TEST_F(FeatureStatusProviderImplTest, EligiblePhoneButNotSetUp) {
@@ -290,14 +290,6 @@ TEST_F(FeatureStatusProviderImplTest, PhoneSelectedAndPendingSetup) {
   SetMultiDeviceState(HostStatus::kHostVerified,
                       FeatureState::kNotSupportedByPhone);
   EXPECT_EQ(FeatureStatus::kPhoneSelectedAndPendingSetup, GetStatus());
-}
-
-TEST_F(FeatureStatusProviderImplTest, ProhibitedByPolicy) {
-  SetEligibleSyncedDevices();
-
-  SetMultiDeviceState(HostStatus::kHostVerified,
-                      FeatureState::kProhibitedByPolicy);
-  EXPECT_EQ(FeatureStatus::kProhibitedByPolicy, GetStatus());
 }
 
 TEST_F(FeatureStatusProviderImplTest, Disabled) {
@@ -346,23 +338,18 @@ TEST_F(FeatureStatusProviderImplTest, TransitionBetweenStatuses) {
   EXPECT_EQ(FeatureStatus::kPhoneSelectedAndPendingSetup, GetStatus());
   EXPECT_EQ(2u, GetNumObserverCalls());
 
-  SetMultiDeviceState(HostStatus::kHostVerified,
-                      FeatureState::kProhibitedByPolicy);
-  EXPECT_EQ(FeatureStatus::kProhibitedByPolicy, GetStatus());
-  EXPECT_EQ(3u, GetNumObserverCalls());
-
   SetMultiDeviceState(HostStatus::kHostVerified, FeatureState::kDisabledByUser);
   EXPECT_EQ(FeatureStatus::kDisabled, GetStatus());
-  EXPECT_EQ(4u, GetNumObserverCalls());
+  EXPECT_EQ(3u, GetNumObserverCalls());
 
   SetAdapterPoweredState(false);
   SetMultiDeviceState(HostStatus::kHostVerified, FeatureState::kEnabledByUser);
   EXPECT_EQ(FeatureStatus::kUnavailableBluetoothOff, GetStatus());
-  EXPECT_EQ(5u, GetNumObserverCalls());
+  EXPECT_EQ(4u, GetNumObserverCalls());
 
   SetAdapterPoweredState(true);
   EXPECT_EQ(FeatureStatus::kEnabledButDisconnected, GetStatus());
-  EXPECT_EQ(6u, GetNumObserverCalls());
+  EXPECT_EQ(5u, GetNumObserverCalls());
 }
 
 }  // namespace phonehub

@@ -1222,11 +1222,8 @@ static int CalculateBitrate(AVFormatContext* format_context,
     return 0;
   }
 
-  // Do math in floating point as we'd overflow an int64_t if the filesize was
-  // larger than ~1073GB.
-  double bytes = filesize_in_bytes;
-  double duration_us = duration.InMicroseconds();
-  return base::ClampRound(bytes * 8000000.0 / duration_us);
+  // Don't multiply by 8 first; it will overflow if (filesize_in_bytes >= 2^60).
+  return base::ClampRound(filesize_in_bytes * duration.ToHz() * 8);
 }
 
 void FFmpegDemuxer::OnOpenContextDone(bool result) {

@@ -92,7 +92,7 @@ void AmbientBackendModel::Clear() {
   next_image_.Clear();
 }
 
-PhotoWithDetails AmbientBackendModel::GetNextImage() const {
+const PhotoWithDetails& AmbientBackendModel::GetNextImage() const {
   if (!next_image_.IsNull())
     return next_image_;
 

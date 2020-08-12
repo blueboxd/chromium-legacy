@@ -368,13 +368,12 @@ void WebFrameWidgetBase::CancelDrag() {
   doing_drag_and_drop_ = false;
 }
 
-void WebFrameWidgetBase::StartDragging(network::mojom::ReferrerPolicy policy,
-                                       const WebDragData& data,
+void WebFrameWidgetBase::StartDragging(const WebDragData& data,
                                        WebDragOperationsMask mask,
                                        const SkBitmap& drag_image,
                                        const gfx::Point& drag_image_offset) {
   doing_drag_and_drop_ = true;
-  Client()->StartDragging(policy, data, mask, drag_image, drag_image_offset);
+  Client()->StartDragging(data, mask, drag_image, drag_image_offset);
 }
 
 WebDragOperation WebFrameWidgetBase::DragTargetDragEnterOrOver(

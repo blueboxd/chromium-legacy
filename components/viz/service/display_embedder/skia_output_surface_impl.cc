@@ -598,7 +598,9 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
             image_context->color_space(), Fulfill, DoNothing, DoNothing,
             image_context.get()),
         backend_format);
-    DCHECK(image_context->has_image());
+    if (!image_context->has_image()) {
+      return nullptr;
+    }
   }
   images_in_current_paint_.push_back(image_context.get());
   return image_context->image();

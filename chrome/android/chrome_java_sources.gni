@@ -460,6 +460,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabsConnectionService.java",
   "java/src/org/chromium/chrome/browser/customtabs/FirstMeaningfulPaintObserver.java",
   "java/src/org/chromium/chrome/browser/customtabs/HiddenTabHolder.java",
+  "java/src/org/chromium/chrome/browser/customtabs/IncognitoCustomTabIntentDataProvider.java",
   "java/src/org/chromium/chrome/browser/customtabs/NavigationInfoCaptureTrigger.java",
   "java/src/org/chromium/chrome/browser/customtabs/PageLoadMetricsObserver.java",
   "java/src/org/chromium/chrome/browser/customtabs/PaymentHandlerActivity.java",

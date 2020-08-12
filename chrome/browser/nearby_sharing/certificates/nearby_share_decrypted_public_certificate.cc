@@ -14,7 +14,6 @@
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
 #include "crypto/signature_verifier.h"
-#include "crypto/symmetric_key.h"
 
 namespace {
 
@@ -161,30 +160,48 @@ NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
   }
 
   return NearbyShareDecryptedPublicCertificate(
-      not_before, not_after, std::move(public_key), std::move(id),
-      std::move(unencrypted_metadata));
+      not_before, not_after, std::move(secret_key), std::move(public_key),
+      std::move(id), std::move(unencrypted_metadata));
 }
 
 NearbyShareDecryptedPublicCertificate::NearbyShareDecryptedPublicCertificate(
     base::Time not_before,
     base::Time not_after,
+    std::unique_ptr<crypto::SymmetricKey> secret_key,
     std::vector<uint8_t> public_key,
     std::vector<uint8_t> id,
     nearbyshare::proto::EncryptedMetadata unencrypted_metadata)
     : not_before_(not_before),
       not_after_(not_after),
+      secret_key_(std::move(secret_key)),
       public_key_(std::move(public_key)),
       id_(std::move(id)),
       unencrypted_metadata_(std::move(unencrypted_metadata)) {}
 
 NearbyShareDecryptedPublicCertificate::NearbyShareDecryptedPublicCertificate(
-    const NearbyShareDecryptedPublicCertificate&) = default;
+    const NearbyShareDecryptedPublicCertificate& other) {
+  *this = other;
+}
+
 NearbyShareDecryptedPublicCertificate&
 NearbyShareDecryptedPublicCertificate::operator=(
-    const NearbyShareDecryptedPublicCertificate&) = default;
+    const NearbyShareDecryptedPublicCertificate& other) {
+  if (this == &other)
+    return *this;
+
+  not_before_ = other.not_before_;
+  not_after_ = other.not_after_;
+  secret_key_ = crypto::SymmetricKey::Import(
+      crypto::SymmetricKey::Algorithm::AES, other.secret_key_->key());
+  public_key_ = other.public_key_;
+  id_ = other.id_;
+  unencrypted_metadata_ = other.unencrypted_metadata_;
+  return *this;
+}
 
 NearbyShareDecryptedPublicCertificate::NearbyShareDecryptedPublicCertificate(
     NearbyShareDecryptedPublicCertificate&&) = default;
+
 NearbyShareDecryptedPublicCertificate&
 NearbyShareDecryptedPublicCertificate::operator=(
     NearbyShareDecryptedPublicCertificate&&) = default;
@@ -205,4 +222,12 @@ bool NearbyShareDecryptedPublicCertificate::VerifySignature(
   verifier.VerifyUpdate(payload);
 
   return verifier.VerifyFinal();
+}
+
+std::vector<uint8_t>
+NearbyShareDecryptedPublicCertificate::HashAuthenticationToken(
+    base::span<const uint8_t> authentication_token) const {
+  return ComputeAuthenticationTokenHash(
+      authentication_token,
+      base::as_bytes(base::make_span(secret_key_->key())));
 }

@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_HTML_PORTAL_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_HTML_PORTAL_ELEMENT_H_
 
-#include "base/unguessable_token.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -34,9 +34,12 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // |portal_token|, |remote_portal| and |portal_client_receiver| are all empty
+  // when an empty HTMLPortalElement is constructed, (it hasn't yet been
+  // attached to an actual contents).
   explicit HTMLPortalElement(
       Document& document,
-      const PortalToken& portal_token = PortalToken::Null(),
+      const PortalToken* portal_token = nullptr,
       mojo::PendingAssociatedRemote<mojom::blink::Portal> remote_portal = {},
       mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
           portal_client_receiver = {});

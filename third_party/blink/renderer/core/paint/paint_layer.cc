@@ -48,7 +48,6 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/containers/adapters.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -1084,6 +1083,28 @@ void PaintLayer::SetChildNeedsCompositingInputsUpdateUpToAncestor(
     layer->child_needs_compositing_inputs_update_ = true;
 
   ancestor->child_needs_compositing_inputs_update_ = true;
+}
+
+const IntRect PaintLayer::ClippedAbsoluteBoundingBox() const {
+  if (RuntimeEnabledFeatures::CompositingOptimizationsEnabled()) {
+    PhysicalRect mapping_rect = BoundingBoxForCompositingOverlapTest();
+    GetLayoutObject().MapToVisualRectInAncestorSpace(
+        GetLayoutObject().View(), mapping_rect, kUseGeometryMapper);
+    return EnclosingIntRect(mapping_rect);
+  } else {
+    return GetAncestorDependentCompositingInputs()
+        .clipped_absolute_bounding_box;
+  }
+}
+const IntRect PaintLayer::UnclippedAbsoluteBoundingBox() const {
+  if (RuntimeEnabledFeatures::CompositingOptimizationsEnabled()) {
+    return EnclosingIntRect(GetLayoutObject().LocalToAbsoluteRect(
+        BoundingBoxForCompositingOverlapTest(),
+        kUseGeometryMapperMode | kIgnoreScrollOffset));
+  } else {
+    return GetAncestorDependentCompositingInputs()
+        .unclipped_absolute_bounding_box;
+  }
 }
 
 void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
@@ -2620,32 +2641,29 @@ PhysicalRect PaintLayer::BoundingBoxForCompositingOverlapTest() const {
         style.BackdropFilter().MapRect(FloatRect(bounding_box)));
   }
 
-  if (FixedToViewport()) {
-    if (base::FeatureList::IsEnabled(features::kMaxOverlapBoundsForFixed) &&
-        !bounding_box.IsEmpty()) {
-      DCHECK_EQ(style.GetPosition(), EPosition::kFixed);
-      // Note that we only expand the bounding box for overlap testing when the
-      // fixed's containing block is the viewport. This keeps us from expanding
-      // the bounds when the fixed is a child of an ancestor with transform,
-      // filters, etc. and the fixed is no longer scroll position dependent.
+  if (FixedToViewport() && !bounding_box.IsEmpty()) {
+    DCHECK_EQ(style.GetPosition(), EPosition::kFixed);
+    // Note that we only expand the bounding box for overlap testing when the
+    // fixed's containing block is the viewport. This keeps us from expanding
+    // the bounds when the fixed is a child of an ancestor with transform,
+    // filters, etc. and the fixed is no longer scroll position dependent.
 
-      // Expand the bounding box by the amount that scrolling the
-      // viewport can expand the area that this fixed-pos element could
-      // cover. Compute how much we could still scroll in each direction.
-      // |max_scroll_delta| is the amount we could still scroll in
-      // increasing offset direction. |min_scroll_delta| is the amount we
-      // can still scroll in a decreasing scroll offset direction.
-      PaintLayerScrollableArea* scrollable_area =
-          GetLayoutObject().View()->GetScrollableArea();
-      ScrollOffset current_scroll_offset = scrollable_area->GetScrollOffset();
-      ScrollOffset max_scroll_delta =
-          scrollable_area->MaximumScrollOffset() - current_scroll_offset;
-      ScrollOffset min_scroll_delta =
-          current_scroll_offset - scrollable_area->MinimumScrollOffset();
-      bounding_box.Expand(LayoutRectOutsets(
-          min_scroll_delta.Height(), max_scroll_delta.Width(),
-          max_scroll_delta.Height(), min_scroll_delta.Width()));
-    }
+    // Expand the bounding box by the amount that scrolling the
+    // viewport can expand the area that this fixed-pos element could
+    // cover. Compute how much we could still scroll in each direction.
+    // |max_scroll_delta| is the amount we could still scroll in
+    // increasing offset direction. |min_scroll_delta| is the amount we
+    // can still scroll in a decreasing scroll offset direction.
+    PaintLayerScrollableArea* scrollable_area =
+        GetLayoutObject().View()->GetScrollableArea();
+    ScrollOffset current_scroll_offset = scrollable_area->GetScrollOffset();
+    ScrollOffset max_scroll_delta =
+        scrollable_area->MaximumScrollOffset() - current_scroll_offset;
+    ScrollOffset min_scroll_delta =
+        current_scroll_offset - scrollable_area->MinimumScrollOffset();
+    bounding_box.Expand(
+        LayoutRectOutsets(min_scroll_delta.Height(), max_scroll_delta.Width(),
+                          max_scroll_delta.Height(), min_scroll_delta.Width()));
   }
   return bounding_box;
 }

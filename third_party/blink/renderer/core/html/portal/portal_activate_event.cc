@@ -140,7 +140,7 @@ HTMLPortalElement* PortalActivateEvent::adoptPredecessor(
 
   DCHECK(!adopted_portal_);
   adopted_portal_ = MakeGarbageCollected<HTMLPortalElement>(
-      *document_, predecessor_portal_token_, std::move(predecessor_portal_),
+      *document_, &predecessor_portal_token_, std::move(predecessor_portal_),
       std::move(predecessor_portal_client_receiver_));
   std::move(on_portal_activated_callback_)
       .Run(mojom::blink::PortalActivateResult::kPredecessorWasAdopted);

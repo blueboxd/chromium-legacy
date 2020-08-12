@@ -200,6 +200,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool IsForGuestsOnly() override;
   StoragePartition* GetStoragePartition() override;
   bool Shutdown(int exit_code) override;
+  bool ShutdownRequested() override;
   bool FastShutdownIfPossible(size_t page_count = 0,
                               bool skip_unload_handlers = false) override;
   const base::Process& GetProcess() override;
@@ -690,6 +691,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // True if fast shutdown has been performed on this RPH.
   bool fast_shutdown_started_;
+
+  // True if shutdown from started by the |Shutdown()| method.
+  bool shutdown_requested_ = false;
 
   // True if we've posted a DeleteTask and will be deleted soon.
   bool deleting_soon_;

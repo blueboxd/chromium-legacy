@@ -2262,7 +2262,6 @@
 <translation id="3748706263662799310">Сообщить об ошибке</translation>
 <translation id="3752582316358263300">ОК...</translation>
 <translation id="3752673729237782832">Мои устройства</translation>
-<translation id="3752757212511661046">Создать рабочий профиль?</translation>
 <translation id="3753033997400164841">Автозаполнение паролей</translation>
 <translation id="3755411799582650620">Теперь <ph name="PHONE_NAME" /> может разблокировать <ph name="DEVICE_TYPE" />.</translation>
 <translation id="375636864092143889">Сайт использует микрофон</translation>
@@ -2383,7 +2382,6 @@
 <translation id="3873423927483480833">Показать PIN-коды</translation>
 <translation id="3873915545594852654">Не удалось запустить ARC++.</translation>
 <translation id="3874164307099183178">Включить Google Ассистента</translation>
-<translation id="387531380970557479">Расширение "<ph name="EXTENSION_NAME" />" отключено, поскольку оно содержит вредоносное ПО.</translation>
 <translation id="3879748587602334249">Диспетчер загрузки</translation>
 <translation id="3881478300875776315">Показать меньше строк</translation>
 <translation id="3882165008614329320">Видео с камеры или из файла</translation>
@@ -2902,7 +2900,6 @@
 <translation id="4562155214028662640">Добавить отпечаток пальца</translation>
 <translation id="4562494484721939086">Сеть не найдена</translation>
 <translation id="4563210852471260509">Первоначальный язык ввода – китайский</translation>
-<translation id="4563404051166505887">1 фото</translation>
 <translation id="4563880231729913339">3-й палец</translation>
 <translation id="4565377596337484307">Скрыть пароль</translation>
 <translation id="4565917129334815774">Сохранить системные журналы</translation>

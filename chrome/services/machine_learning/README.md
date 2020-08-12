@@ -19,15 +19,30 @@ model = tf.keras.models.Sequential([
 ```
 
 Build Tensorflow Lite library:
-    - clone https://github.com/tensorflow/tensorflow
-    - cd tensorflow
-    - bazel build tensorflow/lite/c:libtensorflowlite_c.so
-    - copy 'libtensorflowlite_c.so' file to chromium/src/third_party/tensorflow
+
+  clone https://github.com/tensorflow/tensorflow
+
+  cd tensorflow
+
+  for x86 architecture:
+    
+    bazel build tensorflow/lite/c:libtensorflowlite_c.so
+
+  for android:
+
+    bazel build --config=android_arm64 tensorflow/lite/c:libtensorflowlite_c.so
+
+  copy 'libtensorflowlite_c.so' file to chromium/src/third_party/tensorflow
+
+  link the library to a soft link in system library directory under /lib/
 
 Copy libraries:
-    - c_api.h and common.h [here](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/c) to into third_party/tensorflow/lite/c
+  
+  c_api.h and common.h [here](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/c) to into third_party/tensorflow/lite/c
 
 Build TFLite in chrome:
-    - Set flag build_with_tflite_lib=true
-    - Uncomment thirdparty library in [machine learning header file](./machine_learning_tflite_predictor.h).
-    
+  
+  Set flag build_with_tflite_lib=true
+  
+  Uncomment thirdparty library in [machine learning header file](./machine_learning_tflite_predictor.h).
+  

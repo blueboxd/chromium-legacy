@@ -14,6 +14,7 @@
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h"
 #include "chrome/browser/nearby_sharing/proto/encrypted_metadata.pb.h"
 #include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
+#include "crypto/symmetric_key.h"
 
 // Stores decrypted metadata and crypto keys for the remote device that uploaded
 // this certificate to the Nearby Share server. Use DecryptPublicCertificate()
@@ -32,9 +33,9 @@ class NearbyShareDecryptedPublicCertificate {
       const NearbyShareEncryptedMetadataKey& encrypted_metadata_key);
 
   NearbyShareDecryptedPublicCertificate(
-      const NearbyShareDecryptedPublicCertificate&);
+      const NearbyShareDecryptedPublicCertificate& other);
   NearbyShareDecryptedPublicCertificate& operator=(
-      const NearbyShareDecryptedPublicCertificate&);
+      const NearbyShareDecryptedPublicCertificate& other);
   NearbyShareDecryptedPublicCertificate(
       NearbyShareDecryptedPublicCertificate&&);
   NearbyShareDecryptedPublicCertificate& operator=(
@@ -54,10 +55,17 @@ class NearbyShareDecryptedPublicCertificate {
   bool VerifySignature(base::span<const uint8_t> payload,
                        base::span<const uint8_t> signature) const;
 
+  // Creates a hash of the |authentication_token|, using |secret_key_|. The use
+  // of HKDF and the output vector size is part of the Nearby Share protocol and
+  // conforms with the GmsCore implementation.
+  std::vector<uint8_t> HashAuthenticationToken(
+      base::span<const uint8_t> authentication_token) const;
+
  private:
   NearbyShareDecryptedPublicCertificate(
       base::Time not_before,
       base::Time not_after,
+      std::unique_ptr<crypto::SymmetricKey> secret_key,
       std::vector<uint8_t> public_key,
       std::vector<uint8_t> id,
       nearbyshare::proto::EncryptedMetadata unencrypted_metadata);
@@ -67,6 +75,10 @@ class NearbyShareDecryptedPublicCertificate {
   // private certificate.
   base::Time not_before_;
   base::Time not_after_;
+
+  // A 32-byte AES key that was used for metadata key and metadata decryption.
+  // Also, used to generate an authentication token hash.
+  std::unique_ptr<crypto::SymmetricKey> secret_key_;
 
   // A P-256 public key used for verification. The bytes comprise a DER-encoded
   // ASN.1 SubjectPublicKeyInfo from the X.509 specification (RFC 5280).

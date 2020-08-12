@@ -2264,7 +2264,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3748706263662799310">Hata bildir</translation>
 <translation id="3752582316358263300">Tamam...</translation>
 <translation id="3752673729237782832">Cihazlarım</translation>
-<translation id="3752757212511661046">İş Profili oluşturulsun mu?</translation>
 <translation id="3753033997400164841">Bir kere depolayın. Her yerde kullanın</translation>
 <translation id="3755411799582650620"><ph name="PHONE_NAME" /> cihazınız bu <ph name="DEVICE_TYPE" /> cihazın kilidini de açabilir.</translation>
 <translation id="375636864092143889">Site, mikrofonunuzu kullanıyor</translation>
@@ -2385,7 +2384,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3873423927483480833">PIN numaralarını göster</translation>
 <translation id="3873915545594852654">ARC++ ile ilgili bir sorun oluştu.</translation>
 <translation id="3874164307099183178">Google Asistan'ı aç</translation>
-<translation id="387531380970557479">Kötü amaçlı yazılım içerdiğinden "<ph name="EXTENSION_NAME" />" uzantısı devre dışı bırakıldı.</translation>
 <translation id="3879748587602334249">İndirme yöneticisi</translation>
 <translation id="3881478300875776315">Daha az satır göster</translation>
 <translation id="3882165008614329320">Kameradan veya dosyadan mevcut video</translation>
@@ -2904,7 +2902,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4562155214028662640">Parmak İzi Ekle</translation>
 <translation id="4562494484721939086">Hizmet yok</translation>
 <translation id="4563210852471260509">Başlangıç giriş dili Çince</translation>
-<translation id="4563404051166505887">1 fotoğraf</translation>
 <translation id="4563880231729913339">3. parmak</translation>
 <translation id="4565377596337484307">Şifreyi gizle</translation>
 <translation id="4565917129334815774">Sistem günlüklerini depola</translation>

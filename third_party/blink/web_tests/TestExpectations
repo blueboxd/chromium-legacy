@@ -1827,7 +1827,7 @@ crbug.com/922618 external/wpt/html/semantics/document-metadata/the-link-element/
 # Flaking on Linux Leak
 crbug.com/1049599 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Pass Failure Timeout ]
 crbug.com/1081237 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Pass Timeout ]
-crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger/js-with-inline-stylesheets.js [ Pass Failure ]
+crbug.com/1049641 http/tests/devtools/sources/debugger/js-with-inline-stylesheets.js [ Pass Failure ]
 crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger-breakpoints/set-breakpoint.js [ Pass Failure ]
 crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger-breakpoints/set-conditional-breakpoint.js [ Pass Failure ]
 crbug.com/1049641 http/tests/devtools/sources/debugger/debugger-disable-enable.js [ Pass Timeout ]
@@ -6369,10 +6369,7 @@ crbug.com/1054916 [ Linux ] external/wpt/webxr/dom-overlay/ar_dom_overlay.https.
 
 crbug.com/1048597 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Pass Timeout ]
 
-crbug.com/1056022 [ Fuchsia ] http/tests/uri/escaped-entity.html [ Skip ]
-crbug.com/1056022 [ Fuchsia ] http/tests/uri/utf8-path.html [ Skip ]
-crbug.com/1056022 [ Fuchsia ] virtual/text-antialias/international/001.html [ Skip ]
-crbug.com/1056022 [ Fuchsia ] http/tests/eventsource/eventsource-bad-mime-type.html [ Skip ]
+crbug.com/1056022 [ Fuchsia ] virtual/text-antialias/international/001.html [ Timeout ]
 
 # Sheriff 2020-02-28
 crbug.com/1056879 [ Win7 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Pass Failure Timeout ]
@@ -6393,8 +6390,6 @@ crbug.com/1058403 external/wpt/webaudio/the-audio-api/the-audioworklet-interface
 
 # Ecosystem-Infra Sheriff 2020-04-15
 crbug.com/1070995 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/blob-data.https.html [ Pass Failure Timeout ]
-
-crbug.com/1057020 [ Fuchsia ] http/tests/streams/chromium/get-reader-byob.html [ Skip ]
 
 # Sheriff 2020-03-05
 crbug.com/1058073 [ Mac10.14 ] accessibility/content-changed-notification-causes-crash.html [ Pass Failure ]
@@ -6733,5 +6728,5 @@ crbug.com/1113791 [ Win ] media/video-zoom.html [ Pass Failure ]
 
 # Sheriff 2020-08-11
 crbug.com/1095540 virtual/threaded-prefer-compositing/fast/scrolling/resize-corner-tracking-touch.html [ Pass Failure ]
-
 crbug.com/1113521 [ Mac ] fast/events/mouse-cursor-image-set.html [ Pass Crash ]
+crbug.com/1046784 http/tests/devtools/network/network-content-replacement-xhr.js [ Pass Failure ]

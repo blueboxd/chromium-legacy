@@ -2,5 +2,6 @@ include_rules = [
   "+chromeos/components/multidevice",
   "+chromeos/services/device_sync/public/cpp",
   "+chromeos/services/multidevice_setup/public/cpp",
+  "+components/keyed_service/core/keyed_service.h",
   "+device/bluetooth",
 ]

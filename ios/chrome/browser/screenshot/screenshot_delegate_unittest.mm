@@ -45,7 +45,7 @@ class ScreenshotDelegateTest : public PlatformTest {
 
 // Tests that ScreenshotDelegate can be init with browserInterfaceProvider can
 // be set and that data can be generated from it.
-TEST_F(ScreenshotDelegateTest, screenshotService) {
+TEST_F(ScreenshotDelegateTest, ScreenshotService) {
   // Expected: Empty NSData.
   if (@available(iOS 13, *)) {
     auto web_state = std::make_unique<web::TestWebState>();
@@ -80,7 +80,7 @@ TEST_F(ScreenshotDelegateTest, screenshotService) {
 
 // Tests that when ScreenshotDelegate's browserInterfaceProvider has a nil
 // Browser screenshotService will return nil.
-TEST_F(ScreenshotDelegateTest, nilBrowser) {
+TEST_F(ScreenshotDelegateTest, NilBrowser) {
   // Expected: nil NSData.
   if (@available(iOS 13, *)) {
     // Add the StubBrowserInterface with no set Browser to
@@ -104,7 +104,7 @@ TEST_F(ScreenshotDelegateTest, nilBrowser) {
 
 // Tests that when ScreenshotDelegate's browserInterfaceProvider has a nil
 // WebSatate screenshotService will return nil.
-TEST_F(ScreenshotDelegateTest, nilWebState) {
+TEST_F(ScreenshotDelegateTest, NilWebState) {
   // Expected: nil NSData.
   if (@available(iOS 13, *)) {
     TestBrowser browser;

@@ -187,8 +187,7 @@ class WebWidgetClient {
   }
 
   // Called when a drag-and-drop operation should begin.
-  virtual void StartDragging(network::mojom::ReferrerPolicy,
-                             const WebDragData&,
+  virtual void StartDragging(const WebDragData&,
                              WebDragOperationsMask,
                              const SkBitmap& drag_image,
                              const gfx::Point& drag_image_offset) {}

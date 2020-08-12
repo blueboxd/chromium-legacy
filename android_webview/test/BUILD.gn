@@ -206,8 +206,8 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_deps:com_google_guava_failureaccess_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//third_party/android_deps:espresso_java",
+    "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings_java",
@@ -515,7 +515,7 @@ junit_binary("android_webview_junit_tests") {
     "//base:base_junit_test_support",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:androidx_test_runner_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
+    "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/android_support_test_runner:runner_java",
   ]
 

@@ -332,7 +332,6 @@
 <translation id="3568688522516854065">За да ги добиете вашите картички од другите уреди, најавете се и вклучете ја синхронизацијата</translation>
 <translation id="3587482841069643663">Сите</translation>
 <translation id="3587596251841506391">Подобра безбедноста на интернет</translation>
-<translation id="3590487821116122040">Достапен простор на сајтот за кој Chrome смета дека не е важен (на пр., сајтови без зачувани поставки или коишто не ги посетувате често)</translation>
 <translation id="3594780231884063836">Исклучете звук на видео</translation>
 <translation id="3599863153486145794">Ја чисти историјата од сите најавени уреди. Вашата сметка на Google можеби има други видови историја на прелистување на <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3616113530831147358">Аудио</translation>
@@ -386,7 +385,6 @@
 <translation id="3987993985790029246">Копирај линк</translation>
 <translation id="3988213473815854515">Локацијата е дозволена</translation>
 <translation id="3988466920954086464">Гледајте инстант резултати од пребарување на таблава</translation>
-<translation id="3997476611815694295">Неважен простор</translation>
 <translation id="4000212216660919741">Офлајн</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ч.}one{# ч.}other{# ч.}}</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -565,7 +563,6 @@
 <translation id="5433691172869980887">Корисничкото име е копирано</translation>
 <translation id="543509235395288790">Се преземаат <ph name="COUNT" /> датотеки (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Скокнете на лентата за адреса</translation>
-<translation id="5447201525962359567">Целиот простор на сајтот, вклучувајќи ги колачињата и другите локално зачувани податоци</translation>
 <translation id="545042621069398927">Го забрзуваме вашето преземање.</translation>
 <translation id="5456381639095306749">Преземете ја страницата</translation>
 <translation id="548278423535722844">Отвори во апликацијата „Карти“</translation>

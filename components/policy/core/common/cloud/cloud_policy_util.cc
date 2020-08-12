@@ -5,6 +5,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 
 #include "build/build_config.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 #if defined(OS_WIN)
 #include <Windows.h>  // For GetComputerNameW()
@@ -218,6 +219,18 @@ std::unique_ptr<em::BrowserDeviceIdentifier> GetBrowserDeviceIdentifier() {
   device_identifier->set_serial_number("");
 #endif
   return device_identifier;
+}
+
+bool IsMachineLevelUserCloudPolicyType(const std::string& type) {
+  return type == GetMachineLevelUserCloudPolicyTypeForCurrentOS();
+}
+
+std::string GetMachineLevelUserCloudPolicyTypeForCurrentOS() {
+#if defined(OS_IOS)
+  return dm_protocol::kChromeMachineLevelUserCloudPolicyIOSType;
+#else
+  return dm_protocol::kChromeMachineLevelUserCloudPolicyType;
+#endif
 }
 
 }  // namespace policy

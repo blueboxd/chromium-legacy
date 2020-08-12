@@ -655,7 +655,7 @@ void WorkerTask(base::JobDelegate* job_delegate) {
 }
 
 // Returns the latest thread-safe number of incomplete work items.
-void NumIncompleteWorkItems();
+void NumIncompleteWorkItems(size_t worker_count);
 
 base::PostJob(FROM_HERE, {},
               base::BindRepeating(&WorkerTask),

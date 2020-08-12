@@ -72,8 +72,7 @@ class WebWidgetTestProxy : public RenderWidget {
       bool request_unadjusted_movement) override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
-  void StartDragging(network::mojom::ReferrerPolicy policy,
-                     const blink::WebDragData& data,
+  void StartDragging(const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,
                      const gfx::Point& image_offset) override;

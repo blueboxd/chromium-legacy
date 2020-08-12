@@ -559,15 +559,5 @@ void TpmChallengeKeySubtleImpl::RegisterKeyCallback(
   std::move(callback_).Run(Result::MakeSuccess());
 }
 
-void TpmChallengeKeySubtleImpl::RunCallback(
-    const TpmChallengeKeyResult& result) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!callback_.is_null());
-  TpmChallengeKeyCallback local_callback = std::move(callback_);
-  callback_.Reset();
-  std::move(local_callback).Run(result);
-  // |this| may be destructed after |callback_| is run.
-}
-
 }  // namespace attestation
 }  // namespace chromeos

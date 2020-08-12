@@ -116,6 +116,11 @@
 #define EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE 0x3450
 #endif /* EGL_ANGLE_platform_angle_vulkan */
 
+#ifndef EGL_ANGLE_platform_angle_metal
+#define EGL_ANGLE_platform_angle_metal 1
+#define EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE 0x3489
+#endif /* EGL_ANGLE_platform_angle_metal */
+
 #ifndef EGL_ANGLE_x11_visual
 #define EGL_ANGLE_x11_visual 1
 #define EGL_X11_VISUAL_ID_ANGLE 0x33A3
@@ -462,6 +467,19 @@ EGLDisplay GetDisplayFromType(
           native_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
+    case ANGLE_METAL:
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
+    case ANGLE_METAL_NULL:
+      extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+      extra_display_attribs.push_back(
+          EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     default:
       NOTREACHED();
       return EGL_NO_DISPLAY;
@@ -490,6 +508,9 @@ ANGLEImplementation GetANGLEImplementationFromDisplayType(
       return ANGLEImplementation::kVulkan;
     case ANGLE_SWIFTSHADER:
       return ANGLEImplementation::kSwiftShader;
+    case ANGLE_METAL:
+    case ANGLE_METAL_NULL:
+      return ANGLEImplementation::kMetal;
     default:
       return ANGLEImplementation::kNone;
   }
@@ -529,6 +550,10 @@ const char* DisplayTypeString(DisplayType display_type) {
       return "OpenGLEGL";
     case ANGLE_OPENGLES_EGL:
       return "OpenGLESEGL";
+    case ANGLE_METAL:
+      return "Metal";
+    case ANGLE_METAL_NULL:
+      return "MetalNull";
     default:
       NOTREACHED();
       return "Err";
@@ -753,6 +778,7 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
                         bool supports_angle_vulkan,
                         bool supports_angle_swiftshader,
                         bool supports_angle_egl,
+                        bool supports_angle_metal,
                         const base::CommandLine* command_line,
                         std::vector<DisplayType>* init_displays) {
   // SwiftShader does not use the platform extensions
@@ -848,6 +874,18 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
   if (supports_angle_swiftshader) {
     if (requested_renderer == kANGLEImplementationSwiftShaderName) {
       AddInitDisplay(init_displays, ANGLE_SWIFTSHADER);
+    }
+  }
+
+  if (supports_angle_metal) {
+    if (use_angle_default) {
+      if (!supports_angle_opengl) {
+        AddInitDisplay(init_displays, ANGLE_METAL);
+      }
+    } else if (requested_renderer == kANGLEImplementationMetalName) {
+      AddInitDisplay(init_displays, ANGLE_METAL);
+    } else if (requested_renderer == kANGLEImplementationMetalNULLName) {
+      AddInitDisplay(init_displays, ANGLE_METAL_NULL);
     }
   }
 
@@ -1185,6 +1223,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
   bool supports_angle_vulkan = false;
   bool supports_angle_swiftshader = false;
   bool supports_angle_egl = false;
+  bool supports_angle_metal = false;
   // Check for availability of ANGLE extensions.
   if (client_extensions &&
       ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle")) {
@@ -1200,11 +1239,13 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
         client_extensions, "EGL_ANGLE_platform_angle_device_type_swiftshader");
     supports_angle_egl = ExtensionsContain(
         client_extensions, "EGL_ANGLE_platform_angle_device_type_egl_angle");
+    supports_angle_metal =
+        ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_metal");
   }
 
   bool supports_angle = supports_angle_d3d || supports_angle_opengl ||
                         supports_angle_null || supports_angle_vulkan ||
-                        supports_angle_swiftshader;
+                        supports_angle_swiftshader || supports_angle_metal;
 
   if (client_extensions) {
     g_egl_angle_feature_control_supported =
@@ -1216,7 +1257,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
   GetEGLInitDisplays(supports_angle_d3d, supports_angle_opengl,
                      supports_angle_null, supports_angle_vulkan,
                      supports_angle_swiftshader, supports_angle_egl,
-                     command_line, &init_displays);
+                     supports_angle_metal, command_line, &init_displays);
 
   std::vector<std::string> enabled_angle_features =
       GetStringVectorFromCommandLine(command_line,

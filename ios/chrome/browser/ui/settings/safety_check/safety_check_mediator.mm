@@ -5,6 +5,10 @@
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_mediator.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -14,18 +18,26 @@
 #include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #include "ios/chrome/browser/passwords/password_store_observer_bridge.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_consumer.h"
+#import "ios/chrome/browser/ui/settings/safety_check/safety_check_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/string_util.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -132,7 +144,7 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 @property(nonatomic, assign) PasswordCheckRowStates passwordCheckRowState;
 
 // Row button to start the safety check.
-@property(nonatomic, strong) SettingsMultilineDetailItem* checkStartItem;
+@property(nonatomic, strong) TableViewTextItem* checkStartItem;
 
 // Current state of the start safety check row button.
 @property(nonatomic, assign) CheckStartStates checkStartState;
@@ -151,6 +163,12 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 // How many safety check items are still running (max 3).
 @property(nonatomic, assign) int checkRunningRemaining;
 
+// Service used to check if user is signed in.
+@property(nonatomic, assign) AuthenticationService* authService;
+
+// Service to check if passwords are synced.
+@property(nonatomic, assign) SyncSetupService* syncService;
+
 @end
 
 @implementation SafetyCheckMediator
@@ -158,11 +176,18 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 - (instancetype)initWithUserPrefService:(PrefService*)userPrefService
                    passwordCheckManager:
                        (scoped_refptr<IOSChromePasswordCheckManager>)
-                           passwordCheckManager {
+                           passwordCheckManager
+                            authService:(AuthenticationService*)authService
+                            syncService:(SyncSetupService*)syncService {
   self = [super init];
   if (self) {
     DCHECK(userPrefService);
     DCHECK(passwordCheckManager);
+    DCHECK(authService);
+    DCHECK(syncService);
+
+    _authService = authService;
+    _syncService = syncService;
 
     _passwordCheckManager = passwordCheckManager;
     _currentPasswordCheckState = _passwordCheckManager->GetPasswordCheckState();
@@ -196,8 +221,9 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 
     _checkStartState = CheckStartStateDefault;
     _checkStartItem =
-        [[SettingsMultilineDetailItem alloc] initWithType:CheckStartItemType];
+        [[TableViewTextItem alloc] initWithType:CheckStartItemType];
     _checkStartItem.text = GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
+    _checkStartItem.textColor = [UIColor colorNamed:kBlueColor];
   }
   return self;
 }
@@ -261,13 +287,10 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
         case PasswordCheckRowStateSafe:     // No tap action.
           break;
         case PasswordCheckRowStateUnSafe:
-          // Link to compromised password page.
+          [self.handler showPasswordIssuesPage];
           break;
-        case PasswordCheckRowStateDisabled:
-          // Popover for no passwords.
-          break;
-        case PasswordCheckRowStateError:
-          // Various popover states
+        case PasswordCheckRowStateDisabled:  // Popover handled by cellitem.
+        case PasswordCheckRowStateError:     // Popover handled by cellitem.
           break;
       }
       break;
@@ -295,6 +318,23 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
   }
 }
 
+- (BOOL)isItemWithErrorInfo:(TableViewItem*)item {
+  ItemType type = static_cast<ItemType>(item.type);
+  return (type != CheckStartItemType);
+}
+
+- (void)infoButtonWasTapped:(UIButton*)buttonView
+              usingItemType:(NSInteger)itemType {
+  NSAttributedString* info = [self getPopoverInfoForType:itemType];
+
+  // If |info| is empty there is no popover to display.
+  if (!info)
+    return;
+
+  // Push popover to coordinator.
+  [self.handler showErrorInfoFrom:buttonView withText:info];
+}
+
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
@@ -304,6 +344,19 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 }
 
 #pragma mark - Private methods
+
+// Computes the text needed for a popover on |itemType| if available.
+- (NSAttributedString*)getPopoverInfoForType:(NSInteger)itemType {
+  ItemType type = static_cast<ItemType>(itemType);
+  switch (type) {
+    case PasswordItemType:
+      return [self passwordCheckErrorInfo];
+    case SafeBrowsingItemType:
+    case UpdateItemType:
+    case CheckStartItemType:
+      return nil;
+  }
+}
 
 // Computes the appropriate display state of the password check row based on
 // currentPasswordCheckState.
@@ -317,7 +370,7 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
     case PasswordCheckState::kRunning:
       return PasswordCheckRowStateRunning;
     case PasswordCheckState::kNoPasswords:
-      return PasswordCheckRowStateDisabled;
+      return PasswordCheckRowStateDefault;
     case PasswordCheckState::kSignedOut:
     case PasswordCheckState::kOffline:
     case PasswordCheckState::kQuotaLimit:
@@ -340,6 +393,84 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
   }
 }
 
+// Computes the appropriate error info to be displayed in the passwords popover.
+- (NSAttributedString*)passwordCheckErrorInfo {
+  if (!self.passwordCheckManager->GetCompromisedCredentials().empty())
+    return nil;
+
+  NSString* message;
+  GURL linkURL;
+
+  switch (self.currentPasswordCheckState) {
+    case PasswordCheckState::kRunning:
+    case PasswordCheckState::kNoPasswords:
+      message =
+          l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_NO_PASSWORDS);
+      break;
+    case PasswordCheckState::kCanceled:
+    case PasswordCheckState::kIdle:
+      return nil;
+    case PasswordCheckState::kSignedOut:
+      message = l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_SIGNED_OUT);
+      break;
+    case PasswordCheckState::kOffline:
+      message = l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_OFFLINE);
+      break;
+    case PasswordCheckState::kQuotaLimit:
+      if ([self canUseAccountPasswordCheckup]) {
+        message = l10n_util::GetNSString(
+            IDS_IOS_PASSWORD_CHECK_ERROR_QUOTA_LIMIT_VISIT_GOOGLE);
+        linkURL = password_manager::GetPasswordCheckupURL(
+            password_manager::PasswordCheckupReferrer::kPasswordCheck);
+      } else {
+        message =
+            l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_QUOTA_LIMIT);
+      }
+      break;
+    case PasswordCheckState::kOther:
+      message = l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_OTHER);
+      break;
+  }
+  return [self attributedStringWithText:message link:linkURL];
+}
+
+// Computes whether user is capable to run password check in Google Account.
+- (BOOL)canUseAccountPasswordCheckup {
+  return (self.authService->IsAuthenticated() &&
+          self.authService->GetAuthenticatedIdentity()) &&
+         (self.syncService->IsSyncEnabled() &&
+          !self.syncService->IsEncryptEverythingEnabled());
+}
+
+// Configures check passwords error info with a link.
+- (NSAttributedString*)attributedStringWithText:(NSString*)text
+                                           link:(GURL)link {
+  NSRange range;
+
+  NSString* strippedText = ParseStringWithLink(text, &range);
+
+  NSRange fullRange = NSMakeRange(0, strippedText.length);
+  NSMutableAttributedString* attributedText =
+      [[NSMutableAttributedString alloc] initWithString:strippedText];
+  [attributedText addAttribute:NSForegroundColorAttributeName
+                         value:[UIColor colorNamed:kTextSecondaryColor]
+                         range:fullRange];
+
+  [attributedText
+      addAttribute:NSFontAttributeName
+             value:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+             range:fullRange];
+
+  if (range.location != NSNotFound && range.length != 0) {
+    NSURL* URL = net::NSURLWithGURL(link);
+    id linkValue = URL ? URL : @"";
+    [attributedText addAttribute:NSLinkAttributeName
+                           value:linkValue
+                           range:range];
+  }
+  return attributedText;
+}
+
 // Upon a tap of checkStartItem either starts or cancels a safety check.
 - (void)checkStartOrCancel {
   // If a check is already running cancel it.
@@ -354,6 +485,9 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 
     // Set remaining check running counter to 0.
     self.checkRunningRemaining = 0;
+
+    // Stop any running checks.
+    self.passwordCheckManager->StopPasswordCheck();
 
   } else {
     // Otherwise start a check.
@@ -375,6 +509,27 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
   [self reconfigurePasswordCheckItem];
   [self reconfigureSafeBrowsingCheckItem];
   [self reconfigureCheckStartSection];
+
+  // The display should be changed to loading icons before any checks are
+  // started.
+  if (self.checkRunningRemaining > 0) {
+    // This handles a discrepancy between password check and safety check.  In
+    // password check a user cannot start a check if they have no passwords, but
+    // in safety check they can, but the |passwordCheckManager| won't even start
+    // a check. This if block below allows safety check to push the disabled
+    // state after check now is pressed.
+    if (self.currentPasswordCheckState == PasswordCheckState::kNoPasswords) {
+      self.passwordCheckRowState = PasswordCheckRowStateDisabled;
+      // Want to show the loading wheel momentarily.
+      dispatch_after(
+          dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)),
+          dispatch_get_main_queue(), ^{
+            [self reconfigurePasswordCheckItem];
+          });
+    } else {
+      self.passwordCheckManager->StartPasswordCheck();
+    }
+  }
 }
 
 // Reconfigures the display of the |updateCheckItem| based on current state of
@@ -386,12 +541,11 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
   self.updateCheckItem.infoButtonHidden = YES;
   self.updateCheckItem.detailText = nil;
   self.updateCheckItem.trailingImage = nil;
+  self.updateCheckItem.trailingImageTintColor = nil;
 
   switch (self.updateCheckRowState) {
-    case UpdateCheckRowStateDefault: {
-      self.updateCheckItem.enabled = NO;
+    case UpdateCheckRowStateDefault:
       break;
-    }
     case UpdateCheckRowStateRunning: {
       self.updateCheckItem.indicatorHidden = NO;
       break;
@@ -414,21 +568,49 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
   self.passwordCheckItem.infoButtonHidden = YES;
   self.passwordCheckItem.detailText = nil;
   self.passwordCheckItem.trailingImage = nil;
+  self.passwordCheckItem.trailingImageTintColor = nil;
+  self.passwordCheckItem.accessoryType = UITableViewCellAccessoryNone;
 
   switch (self.passwordCheckRowState) {
-    case PasswordCheckRowStateDefault: {
-      self.passwordCheckItem.enabled = NO;
+    case PasswordCheckRowStateDefault:
       break;
-    }
     case PasswordCheckRowStateRunning: {
       self.passwordCheckItem.indicatorHidden = NO;
       break;
     }
-    case PasswordCheckRowStateSafe:
-    case PasswordCheckRowStateUnSafe:
-    case PasswordCheckRowStateDisabled:
-    case PasswordCheckRowStateError:
+    case PasswordCheckRowStateSafe: {
+      DCHECK(self.passwordCheckManager->GetCompromisedCredentials().empty());
+      UIImage* safeIconImage = [[UIImage imageNamed:@"settings_safe_state"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      self.passwordCheckItem.detailText =
+          base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+              IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT, 0));
+      self.passwordCheckItem.trailingImage = safeIconImage;
+      self.passwordCheckItem.trailingImageTintColor =
+          [UIColor colorNamed:kGreenColor];
       break;
+    }
+    case PasswordCheckRowStateUnSafe: {
+      self.passwordCheckItem.detailText =
+          base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+              IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT,
+              self.passwordCheckManager->GetCompromisedCredentials().size()));
+      UIImage* unSafeIconImage = [[UIImage imageNamed:@"settings_unsafe_state"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      self.passwordCheckItem.trailingImage = unSafeIconImage;
+      self.passwordCheckItem.trailingImageTintColor =
+          [UIColor colorNamed:kRedColor];
+      self.passwordCheckItem.accessoryType =
+          UITableViewCellAccessoryDisclosureIndicator;
+      break;
+    }
+    case PasswordCheckRowStateDisabled:
+    case PasswordCheckRowStateError: {
+      self.passwordCheckItem.detailText =
+          l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR);
+      self.passwordCheckItem.infoButtonHidden = NO;
+      break;
+    }
   }
 
   [self.consumer reconfigureCellsForItems:@[ self.passwordCheckItem ]];
@@ -443,12 +625,11 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
   self.safeBrowsingCheckItem.infoButtonHidden = YES;
   self.safeBrowsingCheckItem.detailText = nil;
   self.safeBrowsingCheckItem.trailingImage = nil;
+  self.safeBrowsingCheckItem.trailingImageTintColor = nil;
 
   switch (self.safeBrowsingCheckRowState) {
-    case SafeBrowsingCheckRowStateDefault: {
-      self.safeBrowsingCheckItem.enabled = NO;
+    case SafeBrowsingCheckRowStateDefault:
       break;
-    }
     case SafeBrowsingCheckRowStateRunning: {
       self.safeBrowsingCheckItem.indicatorHidden = NO;
       break;

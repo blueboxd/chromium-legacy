@@ -331,7 +331,6 @@
 <translation id="3568688522516854065">तुमच्या इतर डिव्हाइसवरून तुमचे टॅब मिळविण्यासाठी, साइन इन करा आणि सिंक सुरू करा</translation>
 <translation id="3587482841069643663">सर्व</translation>
 <translation id="3587596251841506391">वेबवरील सुरक्षेमध्ये सुधारणा करण्यात मदत करा</translation>
-<translation id="3590487821116122040">Chrome साइट स्टोरेज यास महत्त्व देत नाही (उदा. ज्या साइटमध्ये सेटिंग्ज सेव्ह केलेल्या नसतात किंवा तुम्ही सहसा भेट देत नाही अशा साइट)</translation>
 <translation id="3594780231884063836">व्हिडिओ म्‍यूट करा</translation>
 <translation id="3599863153486145794">साइन-इन केलेल्या सर्व डिव्हाइसमधून इतिहास साफ करते. तुमच्या Google खात्यामध्ये <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> वर कदाचित ब्राउझिंगचे इतर फॉर्म असतील.</translation>
 <translation id="3616113530831147358">ऑडिओ</translation>
@@ -384,7 +383,6 @@
 <translation id="3987993985790029246">लिंक कॉपी करा</translation>
 <translation id="3988213473815854515">स्थानास अनुमती आहे</translation>
 <translation id="3988466920954086464">या पॅनलमध्ये इंस्टंट शोध परिणाम पहा</translation>
-<translation id="3997476611815694295">महत्त्वाचा नसलेले स्टोरेज</translation>
 <translation id="4000212216660919741">ऑफलाइन होम</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# तास}other{# तास}}</translation>
 <translation id="4056223980640387499">सेपिया</translation>
@@ -562,7 +560,6 @@
 <translation id="5433691172869980887">वापरकर्तानाव कॉपी केले</translation>
 <translation id="543509235395288790">(<ph name="MEGABYTES" />) च्या <ph name="COUNT" /> फाइल डाउनलोड करत आहे.</translation>
 <translation id="5441522332038954058">अ‍ॅड्रेस बारवर जा</translation>
-<translation id="5447201525962359567">कुकीज आणि इतर स्थानिकरित्या स्टोरेज डेटासह, सर्व साइट स्टोरेज</translation>
 <translation id="545042621069398927">तुमच्या डाउनलोडचा वेग वाढवत आहे.</translation>
 <translation id="5456381639095306749">पेज डाउनलोड करा</translation>
 <translation id="548278423535722844">नकाशे ॲपमध्ये उघडा</translation>

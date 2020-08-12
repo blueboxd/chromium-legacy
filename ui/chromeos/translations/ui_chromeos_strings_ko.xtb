@@ -107,7 +107,6 @@
 <translation id="2085470240340828803">이름이 '<ph name="FILENAME" />'인 파일이 이미 존재합니다. 원하는 작업을 선택하세요.</translation>
 <translation id="2121825465123208577">크기 조정</translation>
 <translation id="2136953289241069843">음역(namaste → नमस्कार)</translation>
-<translation id="2138867954865495510">'<ph name="PATH" />'을(를) 열 수 없음. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="2163152940313951844">잘못된 문자: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2164862903024139959">베트남어 키보드(TCVN)</translation>
 <translation id="2168214441502403371">페르시아어 키보드</translation>

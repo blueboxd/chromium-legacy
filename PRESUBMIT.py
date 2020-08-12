@@ -7,7 +7,7 @@
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
-
+PRESUBMIT_VERSION = '2.0.0'
 
 _EXCLUDED_PATHS = (
     # Generated file.
@@ -1458,7 +1458,7 @@ def _IsJavaFile(input_api, file_path):
 def _IsProtoFile(input_api, file_path):
   return input_api.os_path.splitext(file_path)[1] == ".proto"
 
-def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
+def CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   """Attempts to prevent use of functions intended only for testing in
   non-testing code. For now this is just a best-effort implementation
   that ignores header files and may have some false positives. A
@@ -1501,7 +1501,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
     return []
 
 
-def _CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
+def CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
   """This is a simplified version of
   _CheckNoProductionCodeUsingTestOnlyFunctions for Java files.
   """
@@ -1547,7 +1547,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
     return []
 
 
-def _CheckNoIOStreamInHeaders(input_api, output_api):
+def CheckNoIOStreamInHeaders(input_api, output_api):
   """Checks to make sure no .h files include <iostream>."""
   files = []
   pattern = input_api.re.compile(r'^#include\s*<iostream>',
@@ -1590,7 +1590,7 @@ def _CheckNoStrCatRedefines(input_api, output_api):
   return []
 
 
-def _CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
+def CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
   """Checks to make sure no source files use UNIT_TEST."""
   problems = []
   for f in input_api.AffectedFiles():
@@ -1606,7 +1606,7 @@ def _CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
   return [output_api.PresubmitPromptWarning('UNIT_TEST is only for headers.\n' +
       '\n'.join(problems))]
 
-def _CheckNoDISABLETypoInTests(input_api, output_api):
+def CheckNoDISABLETypoInTests(input_api, output_api):
   """Checks to prevent attempts to disable tests with DISABLE_ prefix.
 
   This test warns if somebody tries to disable a test with the DISABLE_ prefix
@@ -1660,7 +1660,7 @@ def _CheckNoDISABLETypoInTests(input_api, output_api):
   ]
 
 
-def _CheckDCHECK_IS_ONHasBraces(input_api, output_api):
+def CheckDCHECK_IS_ONHasBraces(input_api, output_api):
   """Checks to make sure DCHECK_IS_ON() does not skip the parentheses."""
   errors = []
   pattern = input_api.re.compile(r'DCHECK_IS_ON\b(?!\(\))',
@@ -1698,7 +1698,7 @@ def _FindHistogramNameInChunk(histogram_name, chunk):
   return histogram_name in chunk
 
 
-def _CheckUmaHistogramChanges(input_api, output_api):
+def CheckUmaHistogramChangesOnUpload(input_api, output_api):
   """Check that UMA histogram names in touched lines can still be found in other
   lines of the patch or in histograms.xml. Note that this check would not catch
   the reverse: changes in histograms.xml not matched in the code itself."""
@@ -1784,7 +1784,7 @@ def _CheckUmaHistogramChanges(input_api, output_api):
     '%s or the modifications of it:' % (histograms_xml_path),  problems)]
 
 
-def _CheckFlakyTestUsage(input_api, output_api):
+def CheckFlakyTestUsage(input_api, output_api):
   """Check that FlakyTest annotation is our own instead of the android one"""
   pattern = input_api.re.compile(r'import android.test.FlakyTest;')
   files = []
@@ -1800,7 +1800,7 @@ def _CheckFlakyTestUsage(input_api, output_api):
   return []
 
 
-def _CheckNoNewWStrings(input_api, output_api):
+def CheckNoNewWStrings(input_api, output_api):
   """Checks to make sure we don't introduce use of wstrings."""
   problems = []
   for f in input_api.AffectedFiles():
@@ -1829,7 +1829,7 @@ def _CheckNoNewWStrings(input_api, output_api):
       '\n'.join(problems))]
 
 
-def _CheckNoDEPSGIT(input_api, output_api):
+def CheckNoDEPSGIT(input_api, output_api):
   """Make sure .DEPS.git is never modified manually."""
   if any(f.LocalPath().endswith('.DEPS.git') for f in
       input_api.AffectedFiles()):
@@ -1843,7 +1843,7 @@ def _CheckNoDEPSGIT(input_api, output_api):
   return []
 
 
-def _CheckValidHostsInDEPS(input_api, output_api):
+def CheckValidHostsInDEPSOnUpload(input_api, output_api):
   """Checks that DEPS file deps are from allowed_hosts."""
   # Run only if DEPS file has been modified to annoy fewer bystanders.
   if all(f.LocalPath() != 'DEPS' for f in input_api.AffectedFiles()):
@@ -1892,7 +1892,7 @@ def _GetMessageForMatchingType(input_api, affected_file, line_number, line,
   return result
 
 
-def _CheckNoBannedFunctions(input_api, output_api):
+def CheckNoBannedFunctions(input_api, output_api):
   """Make sure that banned functions are not used."""
   warnings = []
   errors = []
@@ -1993,7 +1993,7 @@ def _CheckAndroidNoBannedImports(input_api, output_api):
   return result
 
 
-def _CheckNoDeprecatedMojoTypes(input_api, output_api):
+def CheckNoDeprecatedMojoTypes(input_api, output_api):
   """Make sure that old Mojo types are not used."""
   warnings = []
   errors = []
@@ -2031,7 +2031,7 @@ def _CheckNoDeprecatedMojoTypes(input_api, output_api):
   return result
 
 
-def _CheckNoPragmaOnce(input_api, output_api):
+def CheckNoPragmaOnce(input_api, output_api):
   """Make sure that banned functions are not used."""
   files = []
   pattern = input_api.re.compile(r'^#pragma\s+once',
@@ -2051,7 +2051,7 @@ def _CheckNoPragmaOnce(input_api, output_api):
   return []
 
 
-def _CheckNoTrinaryTrueFalse(input_api, output_api):
+def CheckNoTrinaryTrueFalse(input_api, output_api):
   """Checks to make sure we don't introduce use of foo ? true : false."""
   problems = []
   pattern = input_api.re.compile(r'\?\s*(true|false)\s*:\s*(true|false)')
@@ -2070,7 +2070,7 @@ def _CheckNoTrinaryTrueFalse(input_api, output_api):
       '\n'.join(problems))]
 
 
-def _CheckUnwantedDependencies(input_api, output_api):
+def CheckUnwantedDependencies(input_api, output_api):
   """Runs checkdeps on #include and import statements added in this
   change. Breaking - rules is an error, breaking ! rules is a
   warning.
@@ -2109,6 +2109,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
   warning_descriptions = []
   error_subjects = set()
   warning_subjects = set()
+
   for path, rule_type, rule_description in deps_checker.CheckAddedCppIncludes(
       added_includes):
     path = input_api.os_path.relpath(path, input_api.PresubmitLocalPath())
@@ -2158,7 +2159,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
   return results
 
 
-def _CheckFilePermissions(input_api, output_api):
+def CheckFilePermissions(input_api, output_api):
   """Check that all files have their permissions properly set."""
   if input_api.platform == 'win32':
     return []
@@ -2183,7 +2184,7 @@ def _CheckFilePermissions(input_api, output_api):
           long_text=error.output)]
 
 
-def _CheckNoAuraWindowPropertyHInHeaders(input_api, output_api):
+def CheckNoAuraWindowPropertyHInHeaders(input_api, output_api):
   """Makes sure we don't include ui/aura/window_property.h
   in header files.
   """
@@ -2216,7 +2217,7 @@ def _CheckForVersionControlConflictsInFile(input_api, f):
   return errors
 
 
-def _CheckForVersionControlConflicts(input_api, output_api):
+def CheckForVersionControlConflicts(input_api, output_api):
   """Usually this is not intentional and will cause a compile failure."""
   errors = []
   for f in input_api.AffectedFiles():
@@ -2229,7 +2230,7 @@ def _CheckForVersionControlConflicts(input_api, output_api):
   return results
 
 
-def _CheckGoogleSupportAnswerUrl(input_api, output_api):
+def CheckGoogleSupportAnswerUrlOnUpload(input_api, output_api):
   pattern = input_api.re.compile('support\.google\.com\/chrome.*/answer')
   errors = []
   for f in input_api.AffectedFiles():
@@ -2245,7 +2246,7 @@ def _CheckGoogleSupportAnswerUrl(input_api, output_api):
   return results
 
 
-def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
+def CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
   def FilterFile(affected_file):
     """Filter function for use with input_api.AffectedSourceFiles,
     below.  This filters out everything except non-test files from
@@ -2279,7 +2280,7 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
     return []
 
 
-def _CheckChromeOsSyncedPrefRegistration(input_api, output_api):
+def CheckChromeOsSyncedPrefRegistration(input_api, output_api):
   """Warns if Chrome OS C++ files register syncable prefs as browser prefs."""
   def FileFilter(affected_file):
     """Includes directories known to be Chrome OS only."""
@@ -2320,7 +2321,7 @@ def _CheckChromeOsSyncedPrefRegistration(input_api, output_api):
 
 
 # TODO: add unit tests.
-def _CheckNoAbbreviationInPngFileName(input_api, output_api):
+def CheckNoAbbreviationInPngFileName(input_api, output_api):
   """Makes sure there are no abbreviations in the name of PNG files.
   The native_client_sdk directory is excluded because it has auto-generated PNG
   files for documentation.
@@ -2414,7 +2415,7 @@ def _CalculateAddedDeps(os_path, old_contents, new_contents):
   return results
 
 
-def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
+def CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   """When a dependency prefixed with + is added to a DEPS file, we
   want to make sure that the change is reviewed by an OWNER of the
   target file or directory, to avoid layering violations from being
@@ -2493,7 +2494,7 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
 
 
 # TODO: add unit tests.
-def _CheckSpamLogging(input_api, output_api):
+def CheckSpamLogging(input_api, output_api):
   file_inclusion_pattern = [r'.+%s' % _IMPLEMENTATION_EXTENSIONS]
   files_to_skip = (_EXCLUDED_PATHS +
                    _TEST_CODE_EXCLUDED_PATHS +
@@ -2572,7 +2573,7 @@ def _CheckSpamLogging(input_api, output_api):
   return []
 
 
-def _CheckForAnonymousVariables(input_api, output_api):
+def CheckForAnonymousVariables(input_api, output_api):
   """These types are all expected to hold locks while in scope and
      so should never be anonymous (which causes them to be immediately
      destroyed)."""
@@ -2628,7 +2629,7 @@ def _CheckForAnonymousVariables(input_api, output_api):
   return []
 
 
-def _CheckUniquePtr(input_api, output_api):
+def CheckUniquePtrOnUpload(input_api, output_api):
   # Returns whether |template_str| is of the form <T, U...> for some types T
   # and U. Assumes that |template_str| is already in the form <...>.
   def HasMoreThanOneArg(template_str):
@@ -2726,7 +2727,7 @@ def _CheckUniquePtr(input_api, output_api):
   return errors
 
 
-def _CheckUserActionUpdate(input_api, output_api):
+def CheckUserActionUpdate(input_api, output_api):
   """Checks if any new user action has been added."""
   if any('actions.xml' == input_api.os_path.basename(f) for f in
          input_api.LocalPaths()):
@@ -2798,7 +2799,7 @@ def _GetIDLParseError(input_api, filename):
     return e
 
 
-def _CheckParseErrors(input_api, output_api):
+def CheckParseErrors(input_api, output_api):
   """Check that IDL and JSON files do not contain syntax errors."""
   actions = {
     '.idl': _GetIDLParseError,
@@ -2852,7 +2853,7 @@ def _CheckParseErrors(input_api, output_api):
   return results
 
 
-def _CheckJavaStyle(input_api, output_api):
+def CheckJavaStyle(input_api, output_api):
   """Runs checkstyle on changed java files and returns errors if any exist."""
   import sys
   original_sys_path = sys.path
@@ -2869,7 +2870,7 @@ def _CheckJavaStyle(input_api, output_api):
       files_to_skip=_EXCLUDED_PATHS + input_api.DEFAULT_FILES_TO_SKIP)
 
 
-def _CheckPythonDevilInit(input_api, output_api):
+def CheckPythonDevilInit(input_api, output_api):
   """Checks to make sure devil is initialized correctly in python scripts."""
   script_common_initialize_pattern = input_api.re.compile(
       r'script_common\.InitializeEnvironment\(')
@@ -3068,7 +3069,7 @@ def _AddOwnersFilesToCheckForFuchsiaSecurityOwners(input_api, to_check):
   return to_check
 
 
-def _CheckSecurityOwners(input_api, output_api):
+def CheckSecurityOwners(input_api, output_api):
   """Checks that affected files involving IPC have an IPC OWNERS rule."""
   to_check = _GetOwnersFilesToCheckForIpcOwners(input_api)
   _AddOwnersFilesToCheckForFuchsiaSecurityOwners(input_api, to_check)
@@ -3158,7 +3159,7 @@ def _GetFilesUsingSecurityCriticalFunctions(input_api):
   return files_to_functions
 
 
-def _CheckSecurityChanges(input_api, output_api):
+def CheckSecurityChanges(input_api, output_api):
   """Checks that changes involving security-critical functions are reviewed
   by the security team.
   """
@@ -3194,7 +3195,7 @@ def _CheckSecurityChanges(input_api, output_api):
   return []
 
 
-def _CheckSetNoParent(input_api, output_api):
+def CheckSetNoParent(input_api, output_api):
   """Checks that set noparent is only used together with an OWNERS file in
      //build/OWNERS.setnoparent (see also
      //docs/code_reviews.md#owners-files-details)
@@ -3259,7 +3260,7 @@ def _CheckSetNoParent(input_api, output_api):
   return results
 
 
-def _CheckUselessForwardDeclarations(input_api, output_api):
+def CheckUselessForwardDeclarations(input_api, output_api):
   """Checks that added or removed lines in non third party affected
      header files do not lead to new useless class or struct forward
      declaration.
@@ -3730,7 +3731,7 @@ def _ParseGclientArgs():
   return args
 
 
-def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
+def CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   """Checks if a .pydeps file needs to be regenerated."""
   # This check is for Python dependency lists (.pydeps files), and involves
   # paths not only in the PRESUBMIT.py, but also in the .pydeps files. It
@@ -3792,7 +3793,7 @@ def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   return results
 
 
-def _CheckSingletonInHeaders(input_api, output_api):
+def CheckSingletonInHeaders(input_api, output_api):
   """Checks to make sure no header files have |Singleton<|."""
   def FileFilter(affected_file):
     # It's ok for base/memory/singleton.h to have |Singleton<|.
@@ -3852,7 +3853,7 @@ _DEPRECATED_CSS = [
 
 
 # TODO: add unit tests
-def _CheckNoDeprecatedCss(input_api, output_api):
+def CheckNoDeprecatedCss(input_api, output_api):
   """ Make sure that we don't use deprecated CSS
       properties, functions or values. Our external
       documentation and iOS CSS for dom distiller
@@ -3880,7 +3881,7 @@ def _CheckNoDeprecatedCss(input_api, output_api):
   return results
 
 
-def _CheckForRelativeIncludes(input_api, output_api):
+def CheckForRelativeIncludes(input_api, output_api):
   bad_files = {}
   for f in input_api.AffectedFiles(include_deletes=False):
     if (f.LocalPath().startswith('third_party') and
@@ -3918,7 +3919,7 @@ def _CheckForRelativeIncludes(input_api, output_api):
   return results
 
 
-def _CheckForCcIncludes(input_api, output_api):
+def CheckForCcIncludes(input_api, output_api):
   """Check that nobody tries to include a cc file. It's a relatively
   common error which results in duplicate symbols in object
   files. This may not always break the build until someone later gets
@@ -4058,7 +4059,7 @@ def _CheckWATCHLISTSSyntax(expression, input_api):
   return _CheckWATCHLISTSEntries(first_value, second_value, input_api)
 
 
-def _CheckWATCHLISTS(input_api, output_api):
+def CheckWATCHLISTS(input_api, output_api):
   for f in input_api.AffectedFiles(include_deletes=False):
     if f.LocalPath() == 'WATCHLISTS':
       contents = input_api.ReadFile(f, 'r')
@@ -4087,7 +4088,7 @@ def _CheckWATCHLISTS(input_api, output_api):
   return []
 
 
-def _CheckNewHeaderWithoutGnChange(input_api, output_api):
+def CheckNewHeaderWithoutGnChangeOnUpload(input_api, output_api):
   """Checks that newly added header files have corresponding GN changes.
   Note that this is only a heuristic. To be precise, run script:
   build/check_gn_headers.py.
@@ -4127,7 +4128,7 @@ def _CheckNewHeaderWithoutGnChange(input_api, output_api):
   return []
 
 
-def _CheckCorrectProductNameInMessages(input_api, output_api):
+def CheckCorrectProductNameInMessages(input_api, output_api):
   """Check that Chromium-branded strings don't include "Chrome" or vice versa.
 
   This assumes we won't intentionally reference one product from the other
@@ -4171,7 +4172,7 @@ def _CheckCorrectProductNameInMessages(input_api, output_api):
   return all_problems
 
 
-def _CheckBuildtoolsRevisionsAreInSync(input_api, output_api):
+def CheckBuildtoolsRevisionsAreInSync(input_api, output_api):
   # TODO(crbug.com/941824): We need to make sure the entries in
   # //buildtools/DEPS are kept in sync with the entries in //DEPS
   # so that users of //buildtools in other projects get the same tooling
@@ -4211,7 +4212,7 @@ def _CheckBuildtoolsRevisionsAreInSync(input_api, output_api):
     return []
 
 
-def _CheckForTooLargeFiles(input_api, output_api):
+def CheckForTooLargeFiles(input_api, output_api):
   """Avoid large files, especially binary files, in the repository since
   git doesn't scale well for those. They will be in everyone's repo
   clones forever, forever making Chromium slower to clone and work
@@ -4243,7 +4244,7 @@ def _CheckForTooLargeFiles(input_api, output_api):
     return []
 
 
-def _CheckFuzzTargets(input_api, output_api):
+def CheckFuzzTargetsOnUpload(input_api, output_api):
   """Checks specific for fuzz target sources."""
   EXPORTED_SYMBOLS = [
       'LLVMFuzzerInitialize',
@@ -4324,7 +4325,7 @@ def _CheckNewImagesWarning(input_api, output_api):
   return errors
 
 
-def _AndroidSpecificOnUploadChecks(input_api, output_api):
+def ChecksAndroidSpecificOnUpload(input_api, output_api):
   """Groups upload checks that target android code."""
   results = []
   results.extend(_CheckAndroidCrLogUsage(input_api, output_api))
@@ -4340,7 +4341,7 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   results.extend(_CheckAndroidNoBannedImports(input_api, output_api))
   return results
 
-def _AndroidSpecificOnCommitChecks(input_api, output_api):
+def ChecksAndroidSpecificOnCommit(input_api, output_api):
   """Groups commit checks that target android code."""
   results = []
   results.extend(_CheckAndroidXmlStyle(input_api, output_api, False))
@@ -4361,7 +4362,7 @@ _ACCESSIBILITY_PATHS = (
     r"^ui[\\/]views[\\/]accessibility[\\/]",
 )
 
-def _CheckAccessibilityRelnotesField(input_api, output_api):
+def CheckAccessibilityRelnotesField(input_api, output_api):
   """Checks that commits to accessibility code contain an AX-Relnotes field in
   their commit message."""
   def FileFilter(affected_file):
@@ -4395,7 +4396,7 @@ def _CheckAccessibilityRelnotesField(input_api, output_api):
 
   return [output_api.PresubmitNotifyResult(message)]
 
-def _CommonChecks(input_api, output_api):
+def ChecksCommon(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
   results.extend(input_api.canned_checks.PanProjectChecks(
@@ -4407,67 +4408,13 @@ def _CommonChecks(input_api, output_api):
     results.extend(
         input_api.canned_checks.CheckAuthorizedAuthor(input_api, output_api))
 
-  results.extend(_CheckAccessibilityRelnotesField(input_api, output_api))
-  results.extend(
-      _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
-  results.extend(
-      _CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api))
-  results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
-  results.extend(_CheckNoUNIT_TESTInSourceFiles(input_api, output_api))
-  results.extend(_CheckNoDISABLETypoInTests(input_api, output_api))
-  results.extend(_CheckDCHECK_IS_ONHasBraces(input_api, output_api))
-  results.extend(_CheckNoNewWStrings(input_api, output_api))
-  results.extend(_CheckNoDEPSGIT(input_api, output_api))
-  results.extend(_CheckNoBannedFunctions(input_api, output_api))
-  results.extend(_CheckNoDeprecatedMojoTypes(input_api, output_api))
-  results.extend(_CheckNoPragmaOnce(input_api, output_api))
-  results.extend(_CheckNoTrinaryTrueFalse(input_api, output_api))
-  results.extend(_CheckUnwantedDependencies(input_api, output_api))
-  results.extend(_CheckFilePermissions(input_api, output_api))
-  results.extend(_CheckNoAuraWindowPropertyHInHeaders(input_api, output_api))
-  results.extend(_CheckForVersionControlConflicts(input_api, output_api))
-  results.extend(_CheckPatchFiles(input_api, output_api))
-  results.extend(_CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api))
-  results.extend(_CheckChromeOsSyncedPrefRegistration(input_api, output_api))
-  results.extend(_CheckNoAbbreviationInPngFileName(input_api, output_api))
-  results.extend(_CheckBuildConfigMacrosWithoutInclude(input_api, output_api))
-  results.extend(_CheckForInvalidOSMacros(input_api, output_api))
-  results.extend(_CheckForInvalidIfDefinedMacros(input_api, output_api))
-  results.extend(_CheckFlakyTestUsage(input_api, output_api))
-  results.extend(_CheckAddedDepsHaveTargetApprovals(input_api, output_api))
   results.extend(
       input_api.canned_checks.CheckChangeHasNoTabs(
           input_api,
           output_api,
           source_file_filter=lambda x: x.LocalPath().endswith('.grd')))
-  results.extend(_CheckSpamLogging(input_api, output_api))
-  results.extend(_CheckForAnonymousVariables(input_api, output_api))
-  results.extend(_CheckUserActionUpdate(input_api, output_api))
-  results.extend(_CheckNoDeprecatedCss(input_api, output_api))
-  results.extend(_CheckParseErrors(input_api, output_api))
-  results.extend(_CheckForIPCRules(input_api, output_api))
-  results.extend(_CheckForLongPathnames(input_api, output_api))
-  results.extend(_CheckForIncludeGuards(input_api, output_api))
-  results.extend(_CheckForWindowsLineEndings(input_api, output_api))
-  results.extend(_CheckSingletonInHeaders(input_api, output_api))
-  results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
-  results.extend(_CheckJavaStyle(input_api, output_api))
-  results.extend(_CheckSecurityOwners(input_api, output_api))
-  results.extend(_CheckSecurityChanges(input_api, output_api))
-  results.extend(_CheckSetNoParent(input_api, output_api))
-  results.extend(_CheckUselessForwardDeclarations(input_api, output_api))
-  results.extend(_CheckForRelativeIncludes(input_api, output_api))
-  results.extend(_CheckForCcIncludes(input_api, output_api))
-  results.extend(_CheckWATCHLISTS(input_api, output_api))
   results.extend(input_api.RunTests(
     input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))
-  results.extend(_CheckStrings(input_api, output_api))
-  results.extend(_CheckTranslationExpectations(input_api, output_api))
-  results.extend(_CheckCorrectProductNameInMessages(input_api, output_api))
-  results.extend(_CheckBuildtoolsRevisionsAreInSync(input_api, output_api))
-  results.extend(_CheckForTooLargeFiles(input_api, output_api))
-  results.extend(_CheckPythonDevilInit(input_api, output_api))
-  results.extend(_CheckStableMojomChanges(input_api, output_api))
 
   dirmd_bin = input_api.os_path.join(
       input_api.PresubmitLocalPath(), 'third_party', 'depot_tools', 'dirmd')
@@ -4493,7 +4440,7 @@ def _CommonChecks(input_api, output_api):
   return results
 
 
-def _CheckPatchFiles(input_api, output_api):
+def CheckPatchFiles(input_api, output_api):
   problems = [f.LocalPath() for f in input_api.AffectedFiles()
       if f.LocalPath().endswith(('.orig', '.rej'))]
   if problems:
@@ -4503,7 +4450,7 @@ def _CheckPatchFiles(input_api, output_api):
     return []
 
 
-def _CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
+def CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
   # Excludes OS_CHROMEOS, which is not defined in build_config.h.
   macro_re = input_api.re.compile(r'^\s*#(el)?if.*\bdefined\(((OS_(?!CHROMEOS)|'
                                   'COMPILER_|ARCH_CPU_|WCHAR_T_IS_)[^)]*)')
@@ -4585,7 +4532,7 @@ def _CheckForInvalidOSMacrosInFile(input_api, f):
   return results
 
 
-def _CheckForInvalidOSMacros(input_api, output_api):
+def CheckForInvalidOSMacros(input_api, output_api):
   """Check all affected files for invalid OS macros."""
   bad_macros = []
   for f in input_api.AffectedSourceFiles(None):
@@ -4632,7 +4579,7 @@ def _CheckForInvalidIfDefinedMacrosInFile(input_api, f):
   return results
 
 
-def _CheckForInvalidIfDefinedMacros(input_api, output_api):
+def CheckForInvalidIfDefinedMacros(input_api, output_api):
   """Check all affected files for invalid "if defined" macros."""
   bad_macros = []
   skipped_paths = ['third_party/sqlite/', 'third_party/abseil-cpp/']
@@ -4651,7 +4598,7 @@ def _CheckForInvalidIfDefinedMacros(input_api, output_api):
       bad_macros)]
 
 
-def _CheckForIPCRules(input_api, output_api):
+def CheckForIPCRules(input_api, output_api):
   """Check for same IPC rules described in
   http://www.chromium.org/Home/chromium-security/education/security-tips-for-ipc
   """
@@ -4676,7 +4623,7 @@ def _CheckForIPCRules(input_api, output_api):
     return []
 
 
-def _CheckForLongPathnames(input_api, output_api):
+def CheckForLongPathnames(input_api, output_api):
   """Check to make sure no files being submitted have long paths.
   This causes issues on Windows.
   """
@@ -4694,7 +4641,7 @@ def _CheckForLongPathnames(input_api, output_api):
     return []
 
 
-def _CheckForIncludeGuards(input_api, output_api):
+def CheckForIncludeGuards(input_api, output_api):
   """Check that header files have proper guards against multiple inclusion.
   If a file should not have such guards (and it probably should) then it
   should include the string "no-include-guard-because-multiply-included".
@@ -4806,7 +4753,7 @@ def _CheckForIncludeGuards(input_api, output_api):
   return errors
 
 
-def _CheckForWindowsLineEndings(input_api, output_api):
+def CheckForWindowsLineEndings(input_api, output_api):
   """Check source code and known ascii text files for Windows style line
   endings.
   """
@@ -4836,10 +4783,10 @@ def _CheckForWindowsLineEndings(input_api, output_api):
   return []
 
 
-def _CheckSyslogUseWarning(input_api, output_api, source_file_filter=None):
+def CheckSyslogUseWarningOnUpload(input_api, output_api, src_file_filter=None):
   """Checks that all source files use SYSLOG properly."""
   syslog_files = []
-  for f in input_api.AffectedSourceFiles(source_file_filter):
+  for f in input_api.AffectedSourceFiles(src_file_filter):
     for line_number, line in f.ChangedContents():
       if 'SYSLOG' in line:
         syslog_files.append(f.LocalPath() + ':' + str(line_number))
@@ -4852,18 +4799,13 @@ def _CheckSyslogUseWarning(input_api, output_api, source_file_filter=None):
 
 
 def CheckChangeOnUpload(input_api, output_api):
+  if input_api.version < [2, 0, 0]:
+    return [output_api.PresubmitError("Your depot_tools is out of date. "
+        "This PRESUBMIT.py requires at least presubmit_support version 2.0.0, "
+        "but your version is %d.%d.%d" % tuple(input_api.version))]
   results = []
-  results.extend(_CommonChecks(input_api, output_api))
-  results.extend(_CheckValidHostsInDEPS(input_api, output_api))
   results.extend(
       input_api.canned_checks.CheckPatchFormatted(input_api, output_api))
-  results.extend(_CheckUmaHistogramChanges(input_api, output_api))
-  results.extend(_AndroidSpecificOnUploadChecks(input_api, output_api))
-  results.extend(_CheckSyslogUseWarning(input_api, output_api))
-  results.extend(_CheckGoogleSupportAnswerUrl(input_api, output_api))
-  results.extend(_CheckUniquePtr(input_api, output_api))
-  results.extend(_CheckNewHeaderWithoutGnChange(input_api, output_api))
-  results.extend(_CheckFuzzTargets(input_api, output_api))
   return results
 
 
@@ -4892,9 +4834,12 @@ def GetTryServerMasterForBot(bot):
 
 
 def CheckChangeOnCommit(input_api, output_api):
+  if input_api.version < [2, 0, 0]:
+    return [output_api.PresubmitError("Your depot_tools is out of date. "
+        "This PRESUBMIT.py requires at least presubmit_support version 2.0.0, "
+        "but your version is %d.%d.%d" % tuple(input_api.version))]
+
   results = []
-  results.extend(_CommonChecks(input_api, output_api))
-  results.extend(_AndroidSpecificOnCommitChecks(input_api, output_api))
   # Make sure the tree is 'open'.
   results.extend(input_api.canned_checks.CheckTreeIsOpen(
       input_api,
@@ -4912,7 +4857,7 @@ def CheckChangeOnCommit(input_api, output_api):
   return results
 
 
-def _CheckStrings(input_api, output_api):
+def CheckStrings(input_api, output_api):
   """Check string ICU syntax validity and if translation screenshots exist."""
   # Skip translation screenshots check if a SkipTranslationScreenshotsCheck
   # footer is set to true.
@@ -5223,7 +5168,7 @@ def _CheckStrings(input_api, output_api):
   return results
 
 
-def _CheckTranslationExpectations(input_api, output_api,
+def CheckTranslationExpectations(input_api, output_api,
                                   repo_root=None,
                                   translation_expectations_path=None,
                                   grd_files=None):
@@ -5268,7 +5213,7 @@ def _CheckTranslationExpectations(input_api, output_api,
   return []
 
 
-def _CheckStableMojomChanges(input_api, output_api):
+def CheckStableMojomChanges(input_api, output_api):
   """Changes to [Stable] mojom types must preserve backward-compatibility."""
   changed_mojoms = input_api.AffectedFiles(
       include_deletes=True,

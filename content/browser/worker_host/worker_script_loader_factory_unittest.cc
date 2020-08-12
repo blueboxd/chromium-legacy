@@ -95,8 +95,7 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
 TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerContainerHost) {
   // Make the factory.
   auto factory = std::make_unique<WorkerScriptLoaderFactory>(
-      kProcessId, blink::DedicatedWorkerToken::Null(),
-      blink::SharedWorkerToken::Null(), service_worker_handle_.get(),
+      kProcessId, DedicatedOrSharedWorkerToken(), service_worker_handle_.get(),
       /*appcache_host=*/nullptr, browser_context_getter_,
       network_loader_factory_);
 
@@ -121,8 +120,7 @@ TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerContainerHost) {
 TEST_F(WorkerScriptLoaderFactoryTest, NullServiceWorkerHandle) {
   // Make the factory.
   auto factory = std::make_unique<WorkerScriptLoaderFactory>(
-      kProcessId, blink::DedicatedWorkerToken::Null(),
-      blink::SharedWorkerToken::Null(), service_worker_handle_.get(),
+      kProcessId, DedicatedOrSharedWorkerToken(), service_worker_handle_.get(),
       nullptr /* appcache_host */, browser_context_getter_,
       network_loader_factory_);
 
@@ -146,8 +144,7 @@ TEST_F(WorkerScriptLoaderFactoryTest, NullServiceWorkerHandle) {
 TEST_F(WorkerScriptLoaderFactoryTest, NullBrowserContext) {
   // Make the factory.
   auto factory = std::make_unique<WorkerScriptLoaderFactory>(
-      kProcessId, blink::DedicatedWorkerToken::Null(),
-      blink::SharedWorkerToken::Null(), service_worker_handle_.get(),
+      kProcessId, DedicatedOrSharedWorkerToken(), service_worker_handle_.get(),
       nullptr /* appcache_host */, browser_context_getter_,
       network_loader_factory_);
 

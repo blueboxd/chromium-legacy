@@ -34,8 +34,8 @@
 namespace {
 
 // Mode of size 6x4.
-const drmModeModeInfo kDefaultMode =
-    {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
+const drmModeModeInfo kDefaultMode = {0, 6, 0, 0, 0, 0, 4,     0,
+                                      0, 0, 0, 0, 0, 0, {'\0'}};
 
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 const uint32_t kDefaultCrtc = 1;
@@ -68,7 +68,7 @@ SkBitmap AllocateBitmap(const gfx::Size& size) {
 
 class DrmWindowTest : public testing::Test {
  public:
-  DrmWindowTest() {}
+  DrmWindowTest() = default;
 
   void SetUp() override;
   void TearDown() override;

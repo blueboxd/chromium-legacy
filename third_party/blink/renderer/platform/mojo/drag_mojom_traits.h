@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
+#include "services/network/public/mojom/referrer_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/drag.mojom-shared.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
@@ -102,6 +103,8 @@ struct StructTraits<blink::mojom::DragDataDataView, blink::WebDragData> {
   static blink::WebVector<blink::WebDragData::Item> items(
       const blink::WebDragData& drag_data);
   static WTF::String file_system_id(const blink::WebDragData& drag_data);
+  static network::mojom::ReferrerPolicy referrer_policy(
+      const blink::WebDragData& drag_data);
   static bool Read(blink::mojom::DragDataDataView data,
                    blink::WebDragData* out);
 };

@@ -27,8 +27,8 @@ const char* LCDTextDisallowedReasonToString(LCDTextDisallowedReason reason) {
       return "non-integral-y-offset";
     case LCDTextDisallowedReason::kWillChangeTransform:
       return "will-change-transform";
-    case LCDTextDisallowedReason::kLayerHasFilterEffect:
-      return "layer-has-filter-effect";
+    case LCDTextDisallowedReason::kPixelOrColorEffect:
+      return "pixel-or-color-effect";
   }
   NOTREACHED();
   return "";

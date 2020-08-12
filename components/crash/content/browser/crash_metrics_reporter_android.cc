@@ -117,6 +117,7 @@ void CrashMetricsReporter::ChildProcessExited(
           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
       info.app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES;
   const bool intentional_kill = info.was_killed_intentionally_by_browser;
+  // TODO(crbug.com/1115517): Take into account renderer_shutdown_requested.
   const bool android_oom_kill = !info.was_killed_intentionally_by_browser &&
                                 !crashed && !info.normal_termination;
   const bool renderer_visible = info.renderer_has_visible_clients;
@@ -259,6 +260,12 @@ void CrashMetricsReporter::ChildProcessExited(
       ReportCrashCount(ProcessedCrashCounts::kUtilityCrashAll,
                        &reported_counts);
     }
+  }
+
+  if (!info.was_killed_intentionally_by_browser && !crashed &&
+      !info.normal_termination && info.renderer_shutdown_requested) {
+    ReportCrashCount(ProcessedCrashCounts::kRendererProcessHostShutdown,
+                     &reported_counts);
   }
 
   if (app_foreground && android_oom_kill &&

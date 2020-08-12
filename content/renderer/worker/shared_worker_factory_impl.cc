@@ -48,7 +48,6 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker,
     ukm::SourceId ukm_source_id) {
-  DCHECK(token);
   // Bound to the lifetime of the underlying blink::WebSharedWorker instance.
   new EmbeddedSharedWorkerStub(
       std::move(info), token, constructor_origin, user_agent, ua_metadata,

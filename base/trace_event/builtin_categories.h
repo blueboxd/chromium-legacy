@@ -185,6 +185,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"))                     \
   X(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"))              \
   X(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.now"))                 \
+  X(TRACE_DISABLED_BY_DEFAULT("content.verbose"))                        \
   X(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"))                           \
   X(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"))                     \
   X(TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"))                    \

@@ -46,7 +46,7 @@ function registerTest(testName, module, deps) {
   this[className] = class extends PolymerTest {
     /** @override */
     get browsePreload() {
-      return `chrome://os-settings/test_loader.html?module=cr_components/chromeos/${module}`;
+      return `chrome://internet-config-dialog/test_loader.html?module=cr_components/chromeos/${module}`;
     }
 
     /** @override */

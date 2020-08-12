@@ -32,6 +32,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/skia_helper.h"
+#include "components/viz/service/display/delegated_ink_point_renderer_skia.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -2519,6 +2520,10 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
     }
   }
 
+  if (!content_image) {
+    return;
+  }
+
   // If the RP generated mipmaps when it was created, set quality to medium,
   // which turns on mipmap filtering in Skia.
   if (backing.generate_mipmap)
@@ -2771,6 +2776,13 @@ gfx::Size SkiaRenderer::GetRenderPassBackingPixelSize(
   auto it = render_pass_backings_.find(render_pass_id);
   DCHECK(it != render_pass_backings_.end());
   return it->second.size;
+}
+
+bool SkiaRenderer::CreateDelegatedInkPointRenderer() {
+  DCHECK(!delegated_ink_point_renderer_);
+  delegated_ink_point_renderer_ =
+      std::make_unique<DelegatedInkPointRendererSkia>();
+  return true;
 }
 
 }  // namespace viz

@@ -28,15 +28,16 @@
       <GraphFilterItems
           id="graph-filter-items"
           :node-filter-data="displaySettingsData.nodeFilterData"
-          :shorten-name="filterShortenName"
-          @[CUSTOM_EVENTS.FILTER_REMOVE]="filterRemoveNode"
+          :get-display-data="filterGetDisplayData"
+          @[CUSTOM_EVENTS.FILTER_DELIST]="filterDelistNode"
           @[CUSTOM_EVENTS.FILTER_CHECK_ALL]="filterCheckAll"
-          @[CUSTOM_EVENTS.FILTER_UNCHECK_ALL]="filterUncheckAll"/>
+          @[CUSTOM_EVENTS.FILTER_UNCHECK_ALL]="filterUncheckAll"
+          @[CUSTOM_EVENTS.FILTER_DELIST_UNCHECKED]="filterDelistUnchecked"/>
       <GraphFilterInput
           :node-ids="pageModel.getNodeIds()"
           :nodes-already-in-filter="
             displaySettingsData.nodeFilterData.filterList"
-          :shorten-name="filterShortenName"
+          :get-short-name="filterGetShortName"
           @[CUSTOM_EVENTS.FILTER_SUBMITTED]="filterAddOrCheckNode"/>
       <MdSubheader class="sidebar-subheader">
         Display Options
@@ -67,9 +68,10 @@
       <GraphSelectedNodeDetails
           :selected-node-details-data="pageModel.selectedNodeDetailsData"
           @[CUSTOM_EVENTS.DETAILS_CHECK_NODE]="filterAddOrCheckNode"
-          @[CUSTOM_EVENTS.DETAILS_UNCHECK_NODE]="filterUncheckNode"/>
-      <PackageDetailsPanel
-          :selected-package="pageModel.selectedNodeDetailsData.selectedNode"/>
+          @[CUSTOM_EVENTS.DETAILS_UNCHECK_NODE]="filterUncheckNode">
+        <PackageDetailsPanel
+            :selected-package="pageModel.selectedNodeDetailsData.selectedNode"/>
+      </GraphSelectedNodeDetails>
     </div>
   </div>
 </template>
@@ -177,9 +179,15 @@ const PackageGraphPage = {
       const pageUrl = urlProcessor.getUrl(document.URL, PagePathName.PACKAGE);
       history.replaceState(null, '', pageUrl);
     },
-    filterShortenName: shortenPackageName,
-    filterRemoveNode: function(nodeName) {
-      this.displaySettingsData.nodeFilterData.removeNode(nodeName);
+    filterGetShortName: shortenPackageName,
+    filterGetDisplayData: function(fullPackageName) {
+      return {
+        firstLine: shortenPackageName(fullPackageName),
+        secondLine: '',
+      };
+    },
+    filterDelistNode: function(nodeName) {
+      this.displaySettingsData.nodeFilterData.delistNode(nodeName);
     },
     filterAddOrCheckNode: function(nodeName) {
       this.displaySettingsData.nodeFilterData.addOrFindNode(
@@ -194,6 +202,9 @@ const PackageGraphPage = {
     },
     filterUncheckAll: function() {
       this.displaySettingsData.nodeFilterData.uncheckAll();
+    },
+    filterDelistUnchecked: function() {
+      this.displaySettingsData.nodeFilterData.delistUnchecked();
     },
     /**
      * @param {number} depth The new inbound depth.
@@ -260,7 +271,7 @@ export default PackageGraphPage;
   flex-direction: column;
   flex-grow: 0;
   overflow-y: scroll;
-  padding: 0 20px;
+  padding: 0 20px 20px 20px;
   width: 30vw;
 }
 

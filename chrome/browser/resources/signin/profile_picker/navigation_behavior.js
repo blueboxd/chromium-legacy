@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
+import './strings.js';
 
 /**
  * Valid route pathnames.
@@ -36,7 +39,11 @@ function computeStep(route) {
       // TODO(msalama): Add support in profile creation mode for policies like:
       // - ForceSignIn --> load signin page directly.
       // - DisallowSignIn --> open local profile customization.
-      return ProfileCreationSteps.PROFILE_TYPE_CHOICE;
+      if (loadTimeData.getBoolean('signInProfileCreationFlow')) {
+        return ProfileCreationSteps.PROFILE_TYPE_CHOICE;
+      } else {
+        return ProfileCreationSteps.LOCAL_PROFILE_CUSTOMIZATION;
+      }
     default:
       assertNotReached();
   }

@@ -31,6 +31,14 @@ bool IsNearbyShareCertificateWithinValidityPeriod(
     base::Time not_after,
     bool use_public_certificate_tolerance);
 
+// Uses HKDF to create a hash of the |authentication_token|, using the
+// |secret_key|. A trivial info parameter is used, and the output length is
+// fixed to be kNearbyShareNumBytesAuthenticationTokenHash to conform with the
+// GmsCore implementation.
+std::vector<uint8_t> ComputeAuthenticationTokenHash(
+    base::span<const uint8_t> authentication_token,
+    base::span<const uint8_t> secret_key);
+
 // Uses HKDF to generate a new key of length |new_num_bytes| from |key|. To
 // conform with the GmsCore implementation, trivial salt and info are used.
 std::vector<uint8_t> DeriveNearbyShareKey(base::span<const uint8_t> key,

@@ -119,9 +119,10 @@ void DedicatedWorkerObjectProxy::DidEvaluateTopLevelScript(bool success) {
 
 DedicatedWorkerObjectProxy::DedicatedWorkerObjectProxy(
     DedicatedWorkerMessagingProxy* messaging_proxy_weak_ptr,
-    ParentExecutionContextTaskRunners* parent_execution_context_task_runners)
+    ParentExecutionContextTaskRunners* parent_execution_context_task_runners,
+    const DedicatedWorkerToken& token)
     : ThreadedObjectProxyBase(parent_execution_context_task_runners),
-      token_(messaging_proxy_weak_ptr->GetDedicatedWorkerToken()),
+      token_(token),
       messaging_proxy_weak_ptr_(messaging_proxy_weak_ptr) {}
 
 CrossThreadWeakPersistent<ThreadedMessagingProxyBase>

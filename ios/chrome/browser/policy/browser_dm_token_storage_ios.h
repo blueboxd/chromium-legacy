@@ -38,6 +38,12 @@ class BrowserDMTokenStorageIOS : public BrowserDMTokenStorage::Delegate {
   scoped_refptr<base::TaskRunner> SaveDMTokenTaskRunner() override;
 
   scoped_refptr<base::TaskRunner> task_runner_;
+
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageIOSTest, InitClientId);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageIOSTest, InitEnrollmentToken);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageIOSTest, StoreAndLoadDMToken);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageIOSTest,
+                           InitDMTokenWithoutDirectory);
 };
 
 }  // namespace policy

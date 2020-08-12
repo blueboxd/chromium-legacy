@@ -304,7 +304,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     private void updateTabText() {
         String title = null;
         String url = null;
-        if (mTab != null) {
+        if (mTab != null && mTab.isInitialized()) {
             title = mTab.getTitle();
             url = mTab.getUrlString();
             if (TextUtils.isEmpty(title)) title = url;

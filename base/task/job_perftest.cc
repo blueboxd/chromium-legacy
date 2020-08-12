@@ -109,7 +109,7 @@ class WorkList {
     return num_incomplete_items_.fetch_sub(1, std::memory_order_relaxed) > 1;
   }
 
-  size_t NumIncompleteWorkItems() const {
+  size_t NumIncompleteWorkItems(size_t /*worker_count*/) const {
     // memory_order_relaxed is sufficient since this is not synchronized with
     // other state.
     return num_incomplete_items_.load(std::memory_order_relaxed);
@@ -160,31 +160,31 @@ class JobPerfTest : public testing::Test {
     const TimeTicks job_run_start = TimeTicks::Now();
 
     WaitableEvent complete;
-    auto handle = PostJob(FROM_HERE, {TaskPriority::USER_VISIBLE},
-                          BindRepeating(
-                              [](WorkList* work_list, WaitableEvent* complete,
-                                 JobDelegate* delegate) {
-                                for (size_t i = 0;
-                                     i < work_list->NumWorkItems() &&
-                                     work_list->NumIncompleteWorkItems() != 0 &&
-                                     !delegate->ShouldYield();
-                                     ++i) {
-                                  if (!work_list->TryAcquire(i))
-                                    continue;
-                                  if (!work_list->ProcessWorkItem(i)) {
-                                    complete->Signal();
-                                    return;
-                                  }
-                                }
-                              },
-                              Unretained(&work_list), Unretained(&complete)),
-                          BindRepeating(&WorkList::NumIncompleteWorkItems,
-                                        Unretained(&work_list)));
+    auto handle = PostJob(
+        FROM_HERE, {TaskPriority::USER_VISIBLE},
+        BindRepeating(
+            [](WorkList* work_list, WaitableEvent* complete,
+               JobDelegate* delegate) {
+              for (size_t i = 0; i < work_list->NumWorkItems() &&
+                                 work_list->NumIncompleteWorkItems(0) != 0 &&
+                                 !delegate->ShouldYield();
+                   ++i) {
+                if (!work_list->TryAcquire(i))
+                  continue;
+                if (!work_list->ProcessWorkItem(i)) {
+                  complete->Signal();
+                  return;
+                }
+              }
+            },
+            Unretained(&work_list), Unretained(&complete)),
+        BindRepeating(&WorkList::NumIncompleteWorkItems,
+                      Unretained(&work_list)));
 
     complete.Wait();
     handle.Join();
     const TimeDelta job_duration = TimeTicks::Now() - job_run_start;
-    EXPECT_EQ(0U, work_list.NumIncompleteWorkItems());
+    EXPECT_EQ(0U, work_list.NumIncompleteWorkItems(0));
     perf_test::PrintResult(
         "Work throughput", "", trace,
         size_t(num_work_items / job_duration.InMilliseconds()), "tasks/ms",
@@ -214,7 +214,7 @@ class JobPerfTest : public testing::Test {
         BindRepeating(
             [](IndexGenerator* generator, WorkList* work_list,
                WaitableEvent* complete, JobDelegate* delegate) {
-              while (work_list->NumIncompleteWorkItems() != 0 &&
+              while (work_list->NumIncompleteWorkItems(0) != 0 &&
                      !delegate->ShouldYield()) {
                 Optional<size_t> index = generator->GetNext();
                 if (!index)
@@ -243,7 +243,7 @@ class JobPerfTest : public testing::Test {
     complete.Wait();
     handle.Join();
     const TimeDelta job_duration = TimeTicks::Now() - job_run_start;
-    EXPECT_EQ(0U, work_list.NumIncompleteWorkItems());
+    EXPECT_EQ(0U, work_list.NumIncompleteWorkItems(0));
     perf_test::PrintResult(
         "Work throughput", "", trace,
         size_t(num_work_items / job_duration.InMilliseconds()), "tasks/ms",
@@ -305,7 +305,7 @@ class JobPerfTest : public testing::Test {
     complete.Wait();
     handle.Join();
     const TimeDelta job_duration = TimeTicks::Now() - job_run_start;
-    EXPECT_EQ(0U, work_list.NumIncompleteWorkItems());
+    EXPECT_EQ(0U, work_list.NumIncompleteWorkItems(0));
     perf_test::PrintResult(
         "Work throughput", "", trace,
         size_t(num_work_items / job_duration.InMilliseconds()), "tasks/ms",

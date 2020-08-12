@@ -47,21 +47,27 @@ bool GetWindowClientRect(HWND window_handle,
 
 }  // namespace
 
-TSFTextStore::TSFTextStore() {
-  if (FAILED(::CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_ALL,
-                                IID_PPV_ARGS(&category_manager_)))) {
-    LOG(FATAL) << "Failed to initialize CategoryMgr.";
-    return;
-  }
-  if (FAILED(::CoCreateInstance(CLSID_TF_DisplayAttributeMgr, nullptr,
-                                CLSCTX_ALL,
-                                IID_PPV_ARGS(&display_attribute_manager_)))) {
-    LOG(FATAL) << "Failed to initialize DisplayAttributeMgr.";
-    return;
-  }
-}
+TSFTextStore::TSFTextStore() {}
 
 TSFTextStore::~TSFTextStore() {}
+
+HRESULT TSFTextStore::Initialize() {
+  HRESULT hr = ::CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_ALL,
+                                  IID_PPV_ARGS(&category_manager_));
+  if (FAILED(hr)) {
+    DVLOG(1) << "Failed to initialize CategoryMgr.";
+    return hr;
+  }
+
+  hr = ::CoCreateInstance(CLSID_TF_DisplayAttributeMgr, nullptr, CLSCTX_ALL,
+                          IID_PPV_ARGS(&display_attribute_manager_));
+  if (FAILED(hr)) {
+    DVLOG(1) << "Failed to initialize DisplayAttributeMgr.";
+    return hr;
+  }
+
+  return S_OK;
+}
 
 ULONG STDMETHODCALLTYPE TSFTextStore::AddRef() {
   return InterlockedIncrement(&ref_count_);

@@ -25,12 +25,6 @@ import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 public final class ChildProcessServiceImpl extends IChildProcessService.Stub {
     private ChildProcessService mService;
 
-    // This should only be called in M80 or below.
-    @UsedByReflection("WebLayer")
-    public static IBinder create(Service service, Context appContext) {
-        return create(service, appContext, WebLayerImpl.createRemoteContextV80(appContext));
-    }
-
     @UsedByReflection("WebLayer")
     public static IBinder create(Service service, Context appContext, Context remoteContext) {
         ClassLoaderContextWrapperFactory.setResourceOverrideContext(remoteContext);

@@ -11,38 +11,29 @@ namespace util {
 using FooToken = TokenType<class Foo>;
 
 TEST(TokenType, TokenApi) {
-  // Test static builders.
-  EXPECT_TRUE(FooToken::Null().is_empty());
-  EXPECT_FALSE(FooToken::Create().is_empty());
-
   // Test default initialization.
   FooToken token1;
-  EXPECT_TRUE(token1.is_empty());
+  EXPECT_FALSE(token1.value().is_empty());
 
   // Test copy construction.
-  FooToken token2(FooToken::Create());
-  EXPECT_FALSE(token2.is_empty());
+  FooToken token2(token1);
+  EXPECT_FALSE(token2.value().is_empty());
+  EXPECT_EQ(token1.value(), token2.value());
 
   // Test assignment.
   FooToken token3;
-  EXPECT_TRUE(token3.is_empty());
   token3 = token2;
-  EXPECT_FALSE(token3.is_empty());
+  EXPECT_FALSE(token3.value().is_empty());
+  EXPECT_EQ(token2.value(), token3.value());
 
-  // Test bool conversion.
-  EXPECT_FALSE(token1);
-  EXPECT_TRUE(token2);
-  EXPECT_TRUE(token3);
+  FooToken token4;
 
   // Test comparison operators.
-  EXPECT_TRUE(token1 == FooToken::Null());
-  EXPECT_FALSE(token1 == token2);
+  EXPECT_TRUE(token1 == token2);
   EXPECT_TRUE(token2 == token3);
-  EXPECT_FALSE(token1 != FooToken::Null());
-  EXPECT_TRUE(token1 != token2);
-  EXPECT_FALSE(token2 != token3);
-  EXPECT_TRUE(token1 < token2);
-  EXPECT_FALSE(token2 < token3);
+  EXPECT_TRUE((token4 < token1) ^ (token1 < token4));
+  EXPECT_FALSE(token1 != token2);
+  EXPECT_TRUE(token1 != token4);
 
   // Test hasher.
   EXPECT_EQ(FooToken::Hasher()(token2),

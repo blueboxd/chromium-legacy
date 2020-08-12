@@ -45,6 +45,14 @@ std::vector<uint8_t> DeriveNearbyShareKey(base::span<const uint8_t> key,
                             new_num_bytes);
 }
 
+std::vector<uint8_t> ComputeAuthenticationTokenHash(
+    base::span<const uint8_t> authentication_token,
+    base::span<const uint8_t> secret_key) {
+  return crypto::HkdfSha256(authentication_token, secret_key,
+                            /*info=*/base::span<const uint8_t>(),
+                            kNearbyShareNumBytesAuthenticationTokenHash);
+}
+
 std::unique_ptr<crypto::Encryptor> CreateNearbyShareCtrEncryptor(
     const crypto::SymmetricKey* secret_key,
     base::span<const uint8_t> salt) {

@@ -19,39 +19,8 @@
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/media/base/vp9_profile.h"
 
-#if defined(USE_H264_ENCODER)
-#include "media/video/h264_parser.h"
-#endif
-
 namespace remoting {
 namespace protocol {
-
-#if defined(USE_H264_ENCODER)
-namespace {
-
-// Populates struct webrtc::RTPFragmentationHeader for H264 codec.
-// Each entry specifies the offset and length (excluding start code) of a NALU.
-// Returns true if successful.
-bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
-                                   const uint8_t* data, uint32_t length) {
-  std::vector<media::H264NALU> nalu_vector;
-  if (!media::H264Parser::ParseNALUs(data, length, &nalu_vector)) {
-    // H264Parser::ParseNALUs() has logged the errors already.
-    return false;
-  }
-
-  // TODO(zijiehe): Find a right place to share the following logic between
-  // //content and //remoting.
-  header->VerifyAndAllocateFragmentationHeader(nalu_vector.size());
-  for (size_t i = 0; i < nalu_vector.size(); ++i) {
-    header->fragmentationOffset[i] = nalu_vector[i].data - data;
-    header->fragmentationLength[i] = nalu_vector[i].size;
-  }
-  return true;
-}
-
-}  // namespace
-#endif
 
 WebrtcDummyVideoEncoder::WebrtcDummyVideoEncoder(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -201,25 +170,8 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     NOTREACHED();
   }
 
-  webrtc::RTPFragmentationHeader header;
-  if (frame.codec == webrtc::kVideoCodecH264) {
-#if defined(USE_H264_ENCODER)
-    if (!GetRTPFragmentationHeaderH264(&header, buffer, buffer_size)) {
-      return webrtc::EncodedImageCallback::Result(
-          webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED);
-    }
-#else
-    NOTREACHED();
-#endif
-  } else {
-    header.VerifyAndAllocateFragmentationHeader(1);
-    header.fragmentationOffset[0] = 0;
-    header.fragmentationLength[0] = buffer_size;
-  }
-
   DCHECK(encoded_callback_);
-  return encoded_callback_->OnEncodedImage(encoded_image, &codec_specific_info,
-                                           &header);
+  return encoded_callback_->OnEncodedImage(encoded_image, &codec_specific_info);
 }
 
 webrtc::VideoEncoder::EncoderInfo WebrtcDummyVideoEncoder::GetEncoderInfo()

@@ -1317,7 +1317,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
                                browser:_browser
                   passwordCheckManager:_passwordCheck.get()];
   _passwordIssuesCoordinator.delegate = self;
-  _passwordIssuesCoordinator.dispatcher = self.dispatcher;
   _passwordIssuesCoordinator.reauthModule = _reauthenticationModule;
   [_passwordIssuesCoordinator start];
 }

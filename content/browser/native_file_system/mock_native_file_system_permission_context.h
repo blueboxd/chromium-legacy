@@ -21,7 +21,6 @@ class MockNativeFileSystemPermissionContext
                    const url::Origin& origin,
                    const base::FilePath& path,
                    HandleType handle_type,
-
                    NativeFileSystemPermissionContext::UserAction user_action));
 
   MOCK_METHOD4(GetWritePermissionGrant,
@@ -29,19 +28,7 @@ class MockNativeFileSystemPermissionContext
                    const url::Origin& origin,
                    const base::FilePath& path,
                    HandleType handle_type,
-
                    NativeFileSystemPermissionContext::UserAction user_action));
-
-  void ConfirmDirectoryReadAccess(
-      const url::Origin& origin,
-      const base::FilePath& path,
-      GlobalFrameRoutingId frame_id,
-      base::OnceCallback<void(PermissionStatus)> callback) override;
-  MOCK_METHOD4(ConfirmDirectoryReadAccess_,
-               void(const url::Origin& origin,
-                    const base::FilePath& path,
-                    GlobalFrameRoutingId frame_id,
-                    base::OnceCallback<void(PermissionStatus)>& callback));
 
   void ConfirmSensitiveDirectoryAccess(
       const url::Origin& origin,

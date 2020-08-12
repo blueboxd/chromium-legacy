@@ -321,8 +321,7 @@ void WebViewPlugin::WebViewHelper::SetToolTipText(
   }
 }
 
-void WebViewPlugin::WebViewHelper::StartDragging(network::mojom::ReferrerPolicy,
-                                                 const WebDragData&,
+void WebViewPlugin::WebViewHelper::StartDragging(const WebDragData&,
                                                  WebDragOperationsMask,
                                                  const SkBitmap&,
                                                  const gfx::Point&) {

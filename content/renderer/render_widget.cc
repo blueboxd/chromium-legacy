@@ -1574,8 +1574,7 @@ bool RenderWidget::IsPointerLocked() {
       webwidget_mouse_lock_target_.get());
 }
 
-void RenderWidget::StartDragging(network::mojom::ReferrerPolicy policy,
-                                 const WebDragData& data,
+void RenderWidget::StartDragging(const WebDragData& data,
                                  WebDragOperationsMask mask,
                                  const SkBitmap& drag_image,
                                  const gfx::Point& web_image_offset) {
@@ -1583,7 +1582,6 @@ void RenderWidget::StartDragging(network::mojom::ReferrerPolicy policy,
                                   0);
   ConvertViewportToWindow(&offset_in_window);
   DropData drop_data(DropDataBuilder::Build(data));
-  drop_data.referrer_policy = policy;
   gfx::Vector2d image_offset(offset_in_window.x, offset_in_window.y);
   Send(new DragHostMsg_StartDragging(routing_id(), drop_data, mask, drag_image,
                                      image_offset, possible_drag_event_info_));

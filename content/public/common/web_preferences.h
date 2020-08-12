@@ -152,7 +152,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool enable_scroll_animator;
   bool prefers_reduced_motion;
   bool touch_event_feature_detection_enabled;
-  bool touch_adjustment_enabled;
   int pointer_events_max_touch_points;
   int available_pointer_types;
   ui::PointerType primary_pointer_type;

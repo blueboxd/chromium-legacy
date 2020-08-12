@@ -2263,7 +2263,6 @@
 <translation id="3748706263662799310">回報錯誤</translation>
 <translation id="3752582316358263300">確定...</translation>
 <translation id="3752673729237782832">我的裝置</translation>
-<translation id="3752757212511661046">要建立工作用的設定檔嗎？</translation>
 <translation id="3753033997400164841">只要儲存一次，即可在所有裝置上使用。</translation>
 <translation id="3755411799582650620">你的 <ph name="PHONE_NAME" /> 現在也可以解鎖這台 <ph name="DEVICE_TYPE" />。</translation>
 <translation id="375636864092143889">網站正在使用你的麥克風</translation>
@@ -2384,7 +2383,6 @@
 <translation id="3873423927483480833">顯示 PIN 碼</translation>
 <translation id="3873915545594852654">ARC++ 發生問題。</translation>
 <translation id="3874164307099183178">開啟 Google 助理</translation>
-<translation id="387531380970557479">「<ph name="EXTENSION_NAME" />」含有惡意軟體，因此已遭到停用。</translation>
 <translation id="3879748587602334249">下載管理員</translation>
 <translation id="3881478300875776315">顯示較少行</translation>
 <translation id="3882165008614329320">相機或檔案中的現有影片</translation>
@@ -2902,7 +2900,6 @@
 <translation id="4562155214028662640">新增指紋</translation>
 <translation id="4562494484721939086">不提供服務</translation>
 <translation id="4563210852471260509">初始輸入語言為中文</translation>
-<translation id="4563404051166505887">1 張相片</translation>
 <translation id="4563880231729913339">手指 3</translation>
 <translation id="4565377596337484307">隱藏密碼</translation>
 <translation id="4565917129334815774">儲存系統記錄</translation>

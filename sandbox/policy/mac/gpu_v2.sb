@@ -35,6 +35,11 @@
   (allow mach-lookup (xpc-service-name "com.apple.MTLCompilerService"))
 )
 
+; Needed for VideoToolbox H.264 SW and VP9 decoding - https://crbug.com/1113936
+(if (>= os-version 1016)
+  (allow mach-lookup (global-name "com.apple.trustd.agent"))
+)
+
 ; Needed for WebGL - https://crbug.com/75343
 (allow iokit-open
   (iokit-connection "IOAccelerator")

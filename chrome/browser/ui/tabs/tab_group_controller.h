@@ -18,6 +18,7 @@ class WebContents;
 class TabGroupController {
  public:
   virtual void CreateTabGroup(const tab_groups::TabGroupId& group) = 0;
+  virtual void OpenTabGroupEditor(const tab_groups::TabGroupId& group) = 0;
   virtual void ChangeTabGroupContents(const tab_groups::TabGroupId& group) = 0;
   virtual void ChangeTabGroupVisuals(const tab_groups::TabGroupId& group) = 0;
   virtual void MoveTabGroup(const tab_groups::TabGroupId& group) = 0;

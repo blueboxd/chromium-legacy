@@ -34,7 +34,8 @@ public class ContextualSearchSelectionController {
     /**
      * The type of selection made by the user.
      */
-    @IntDef({SelectionType.UNDETERMINED, SelectionType.TAP, SelectionType.LONG_PRESS})
+    @IntDef({SelectionType.UNDETERMINED, SelectionType.TAP, SelectionType.LONG_PRESS,
+            SelectionType.RESOLVING_LONG_PRESS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SelectionType {
         int UNDETERMINED = 0;

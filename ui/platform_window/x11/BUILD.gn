@@ -25,7 +25,7 @@ component("x11") {
     "//ui/platform_window",
     "//ui/platform_window/common",
     "//ui/platform_window/extensions",
-    "//ui/platform_window/handlers",
+    "//ui/platform_window/wm",
   ]
 
   defines = [ "X11_WINDOW_IMPLEMENTATION" ]

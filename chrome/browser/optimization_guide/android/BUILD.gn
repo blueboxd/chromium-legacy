@@ -20,7 +20,7 @@ android_library("java") {
     "//components/optimization_guide/proto:optimization_guide_proto_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
+    "//third_party/android_deps:protobuf_lite_runtime_java",
   ]
 
   srcjar_deps =

@@ -18,9 +18,11 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninUtils;
+import org.chromium.chrome.browser.signin.WebSigninBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
+import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -32,12 +34,13 @@ import org.chromium.ui.base.WindowAndroid;
  * It is responsible for the sign-in and adding account functions needed for the
  * web sign-in flow.
  */
-public class AccountPickerDelegate {
+public class AccountPickerDelegate implements WebSigninBridge.Listener {
     private final WindowAndroid mWindowAndroid;
     private final ChromeActivity mChromeActivity;
     private final Tab mTab;
     private final String mContinueUrl;
     private final SigninManager mSigninManager;
+    private WebSigninBridge mWebSigninBridge;
 
     public AccountPickerDelegate(WindowAndroid windowAndroid, String continueUrl) {
         mWindowAndroid = windowAndroid;
@@ -52,7 +55,10 @@ public class AccountPickerDelegate {
      * Releases resources used by this class.
      */
     public void onDismiss() {
-        // TODO(https://crbug.com/1093741): Destroys WebSigninBridge in the delegate
+        if (mWebSigninBridge != null) {
+            mWebSigninBridge.destroy();
+            mWebSigninBridge = null;
+        }
     }
 
     /**
@@ -111,4 +117,20 @@ public class AccountPickerDelegate {
      * Notifies when the user clicked the "Go incognito mode" button.
      */
     public void goIncognitoMode() {}
+
+    /**
+     * TODO(https://crbug.com/1092399): Redirect URL when web sign-in succeeded.
+     * Sign-in completed successfully and the primary account is available in the cookie jar.
+     */
+    @Override
+    public void onSigninSucceded() {}
+
+    /**
+     * TODO(https//crbug.com/1114589): Handle web sign-in errors.
+     * Sign-in process failed.
+     *
+     * @param error Details about the error that occurred in the sign-in process.
+     */
+    @Override
+    public void onSigninFailed(GoogleServiceAuthError error) {}
 }

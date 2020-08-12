@@ -30,15 +30,16 @@
       <GraphFilterItems
           id="graph-filter-items"
           :node-filter-data="displaySettingsData.nodeFilterData"
-          :shorten-name="filterShortenName"
-          @[CUSTOM_EVENTS.FILTER_REMOVE]="filterRemoveNode"
+          :get-display-data="filterGetDisplayData"
+          @[CUSTOM_EVENTS.FILTER_DELIST]="filterDelistNode"
           @[CUSTOM_EVENTS.FILTER_CHECK_ALL]="filterCheckAll"
-          @[CUSTOM_EVENTS.FILTER_UNCHECK_ALL]="filterUncheckAll"/>
+          @[CUSTOM_EVENTS.FILTER_UNCHECK_ALL]="filterUncheckAll"
+          @[CUSTOM_EVENTS.FILTER_DELIST_UNCHECKED]="filterDelistUnchecked"/>
       <GraphFilterInput
           :node-ids="pageModel.getNodeIds()"
           :nodes-already-in-filter="
             displaySettingsData.nodeFilterData.filterList"
-          :shorten-name="filterShortenName"
+          :get-short-name="filterGetShortName"
           @[CUSTOM_EVENTS.FILTER_SUBMITTED]="filterAddOrCheckNode"/>
       <MdSubheader class="sidebar-subheader">
         Display Options
@@ -72,9 +73,10 @@
       <GraphSelectedNodeDetails
           :selected-node-details-data="pageModel.selectedNodeDetailsData"
           @[CUSTOM_EVENTS.DETAILS_CHECK_NODE]="filterAddOrCheckNode"
-          @[CUSTOM_EVENTS.DETAILS_UNCHECK_NODE]="filterUncheckNode"/>
-      <ClassDetailsPanel
-          :selected-class="pageModel.selectedNodeDetailsData.selectedNode"/>
+          @[CUSTOM_EVENTS.DETAILS_UNCHECK_NODE]="filterUncheckNode">
+        <ClassDetailsPanel
+            :selected-class="pageModel.selectedNodeDetailsData.selectedNode"/>
+      </GraphSelectedNodeDetails>
     </div>
   </div>
 </template>
@@ -91,7 +93,7 @@ import {
   DisplaySettingsPreset,
 } from '../display_settings_data.js';
 import {parseClassGraphModelFromJson} from '../process_graph_json.js';
-import {shortenClassNameWithPackage} from '../chrome_hooks.js';
+import {shortenPackageName, splitClassName} from '../chrome_hooks.js';
 
 import ClassDetailsPanel from './class_details_panel.vue';
 import ClassGraphHullSettings from './class_graph_hull_settings.vue';
@@ -203,9 +205,19 @@ const ClassGraphPage = {
       const pageUrl = urlProcessor.getUrl(document.URL, PagePathName.CLASS);
       history.replaceState(null, '', pageUrl);
     },
-    filterShortenName: shortenClassNameWithPackage,
-    filterRemoveNode: function(nodeName) {
-      this.displaySettingsData.nodeFilterData.removeNode(nodeName);
+    filterGetShortName: function(fullClassName) {
+      const [packageName, className] = splitClassName(fullClassName);
+      return `${className} (${shortenPackageName(packageName)})`;
+    },
+    filterGetDisplayData: function(fullClassName) {
+      const [packageName, className] = splitClassName(fullClassName);
+      return {
+        firstLine: className,
+        secondLine: shortenPackageName(packageName),
+      };
+    },
+    filterDelistNode: function(nodeName) {
+      this.displaySettingsData.nodeFilterData.delistNode(nodeName);
     },
     filterAddOrCheckNode: function(nodeName) {
       this.displaySettingsData.nodeFilterData.addOrFindNode(
@@ -220,6 +232,9 @@ const ClassGraphPage = {
     },
     filterUncheckAll: function() {
       this.displaySettingsData.nodeFilterData.uncheckAll();
+    },
+    filterDelistUnchecked: function() {
+      this.displaySettingsData.nodeFilterData.delistUnchecked();
     },
     /**
      * @param {number} depth The new inbound depth.
@@ -256,13 +271,6 @@ const ClassGraphPage = {
 export default ClassGraphPage;
 </script>
 
-<style>
-.user-input-group {
-  display: flex;
-  flex-direction: column;
-}
-</style>
-
 <style scoped>
 #title {
   padding: 10px;
@@ -286,7 +294,7 @@ export default ClassGraphPage;
   flex-direction: column;
   flex-grow: 0;
   overflow-y: scroll;
-  padding: 0 20px;
+  padding: 0 20px 20px 20px;
   width: 30vw;
 }
 

@@ -279,7 +279,6 @@ bool FeedStream::IsFeedEnabledByEnterprisePolicy() {
 
 void FeedStream::LoadMore(SurfaceId surface_id,
                           base::OnceCallback<void(bool)> callback) {
-  metrics_reporter_->OnLoadMoreBegin(surface_id);
   if (!model_) {
     DLOG(ERROR) << "Ignoring LoadMore() before the model is loaded";
     return std::move(callback).Run(false);
@@ -292,6 +291,7 @@ void FeedStream::LoadMore(SurfaceId surface_id,
     return std::move(callback).Run(false);
   }
 
+  metrics_reporter_->OnLoadMoreBegin(surface_id);
   surface_updater_->SetLoadingMore(true);
 
   // Have at most one in-flight LoadMore() request. Send the result to all
@@ -411,6 +411,16 @@ std::string FeedStream::DumpStateForDebugging() {
   if (model_) {
     ss << "model loaded, " << model_->GetContentList().size() << " contents\n";
   }
+  RequestSchedule schedule = prefs::GetRequestSchedule(*profile_prefs_);
+  if (schedule.refresh_offsets.empty()) {
+    ss << "No request schedule\n";
+  } else {
+    ss << "Request schedule reference " << schedule.anchor_time << '\n';
+    for (base::TimeDelta entry : schedule.refresh_offsets) {
+      ss << " fetch at " << entry << '\n';
+    }
+  }
+
   return ss.str();
 }
 

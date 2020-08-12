@@ -332,7 +332,6 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="3568688522516854065">Boshqa qurilmalaringizdagi brauzer sahifalarini ko‘rish uchun hisobingizga kiring va sinxronizatsiyani yoqing</translation>
 <translation id="3587482841069643663">Barchasi</translation>
 <translation id="3587596251841506391">Himoyani oshirishga yordam bering</translation>
-<translation id="3590487821116122040">Chrome muhim emas deb hisoblaydigan sayt xotirasi (masalan, saqlanmaydigan yoki kam kiriladigan saytlar)</translation>
 <translation id="3594780231884063836">Video ovozini oʻchirish</translation>
 <translation id="3599863153486145794">Barcha kirilgan qurilmalardagi tarix o‘chiriladi. Google hisobingiz orqali bajargan internetdagi faoliyatingizni  <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> orqali ko‘rishingiz mumkin.</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -386,7 +385,6 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="3987993985790029246">Nusxalash</translation>
 <translation id="3988213473815854515">Joylashuvni ishlatishga ruxsat berilgan</translation>
 <translation id="3988466920954086464">Qidiruv natijalari shu panelda paydo bo‘ladi</translation>
-<translation id="3997476611815694295">Muhim bo‘lmagan xotira</translation>
 <translation id="4000212216660919741">Uy oflayn</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# soat}other{# soat}}</translation>
 <translation id="4056223980640387499">Sepiya</translation>
@@ -565,7 +563,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5433691172869980887">Foydalanuvchi nomi nusxalandi</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> ta fayl yuklab olinmoqda (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Manzil qatoriga o‘tish</translation>
-<translation id="5447201525962359567">Barcha sayt ma’lumotlari saqlanadigan xotira, shuningdek, cookie-fayllar va boshqa kompyuterga saqlangan ma’lumotlar</translation>
 <translation id="545042621069398927">Yuklab olish tezlashtirilmoqda.</translation>
 <translation id="5456381639095306749">Sahifani yuklab olish</translation>
 <translation id="548278423535722844">Xaritalar ilovasida ochish</translation>

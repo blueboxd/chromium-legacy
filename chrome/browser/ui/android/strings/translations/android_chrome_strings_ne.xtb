@@ -331,7 +331,6 @@
 <translation id="3568688522516854065">आफ्ना अन्य यन्त्रहरूबाट आफ्ना ट्याबहरू प्राप्त गर्न साइन इन गरी सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
 <translation id="3587482841069643663">सबै</translation>
 <translation id="3587596251841506391">वेब प्रयोग गर्ने सबै जनालाई सुरक्षित रहन मद्दत गर्नुहोस्</translation>
-<translation id="3590487821116122040">साइटको Chrome लाई महत्वपूर्ण नलाग्ने भण्डारण (उदाहरणका लागि सुरक्षित गरिएका सेटिङहरू नभएका वा तपाईं प्रायजसो नजाने साइटहरू)</translation>
 <translation id="3594780231884063836">भिडियो म्युट गर्नुहोस्</translation>
 <translation id="3599863153486145794">साइन इन गरिएका सबै यन्त्रहरूबाट इतिहास खाली गर्दछ। तपाईंको Google खाताको <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> मा अन्य किसिमका ब्राउजिङ इतिहास रहेका हुन सक्छन्।</translation>
 <translation id="3616113530831147358">अडियो</translation>
@@ -384,7 +383,6 @@
 <translation id="3987993985790029246">लिंक प्रतिलिपि गर्नुहोस्</translation>
 <translation id="3988213473815854515">स्थानलाई अनुमति दिइएको छ</translation>
 <translation id="3988466920954086464">यस प्यानलमा खोजका तात्कालिक परिणामहरू हेर्नुहोस्</translation>
-<translation id="3997476611815694295">अनावश्यक भण्डारण</translation>
 <translation id="4000212216660919741">अफलाइन गृहपृष्ठ</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# घन्टा}other{# घन्टा}}</translation>
 <translation id="4056223980640387499">सेपिया</translation>
@@ -561,7 +559,6 @@
 <translation id="5433691172869980887">प्रयोगकर्ताको नाम प्रतिलिपि गरियो</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> फाइलहरू डाउनलोड गर्दै (<ph name="MEGABYTES" />)।</translation>
 <translation id="5441522332038954058">ठेगाना पट्टीमा जानुहोस्</translation>
-<translation id="5447201525962359567">कुकी र अन्य स्थानीय रूपमा भण्डारण गरिएको डेटा सहित साइटको सबै भण्डारण</translation>
 <translation id="545042621069398927">तपाईंको डाउनलोडको गति बढाउँदै।</translation>
 <translation id="5456381639095306749">पृष्ठ डाउनलोड गर्नुहोस्</translation>
 <translation id="548278423535722844">नक्सा अनुप्रयोगमा खोल्नुहोस्</translation>

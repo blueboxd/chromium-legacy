@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace performance_manager {
 
@@ -254,15 +255,17 @@ void NodeAttachedProcessData::OnPerFrameV8MemoryUsageData(
   uint64_t unassociated_v8_bytes_used = result->unassociated_bytes_used;
 
   // Create a mapping from token to per-frame usage for the merge below.
-  std::vector<std::pair<FrameToken, blink::mojom::PerFrameV8MemoryUsageDataPtr>>
+  std::vector<std::pair<blink::LocalFrameToken,
+                        blink::mojom::PerFrameV8MemoryUsageDataPtr>>
       tmp;
   for (auto& entry : result->associated_memory) {
-    tmp.emplace_back(
-        std::make_pair(FrameToken(entry->frame_token), std::move(entry)));
+    tmp.emplace_back(std::make_pair(blink::LocalFrameToken(entry->frame_token),
+                                    std::move(entry)));
   }
   DCHECK_EQ(tmp.size(), result->associated_memory.size());
 
-  base::flat_map<FrameToken, blink::mojom::PerFrameV8MemoryUsageDataPtr>
+  base::flat_map<blink::LocalFrameToken,
+                 blink::mojom::PerFrameV8MemoryUsageDataPtr>
       associated_memory(std::move(tmp));
   // Validate that the frame tokens were all unique. If there are duplicates,
   // the map will arbirarily drop all but one record per unique token.

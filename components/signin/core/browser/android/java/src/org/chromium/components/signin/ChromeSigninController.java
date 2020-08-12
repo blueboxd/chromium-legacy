@@ -14,8 +14,7 @@ import org.chromium.base.ContextUtils;
 public class ChromeSigninController {
     public static final String TAG = "ChromeSigninController";
 
-    // Used by ChromeBackupAgent and for testing.
-    public static final String SIGNED_IN_ACCOUNT_KEY = "google.services.username";
+    private static final String SIGNED_IN_ACCOUNT_KEY = "google.services.username";
 
     private static final Object LOCK = new Object();
 

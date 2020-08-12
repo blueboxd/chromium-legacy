@@ -79,12 +79,12 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
      */
     public static final String EXTRA_KEEP_ALIVE = "android.support.customtabs.extra.KEEP_ALIVE";
 
-    private static final String ANIMATION_BUNDLE_PREFIX =
+    public static final String ANIMATION_BUNDLE_PREFIX =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? "android:activity." : "android:";
-    private static final String BUNDLE_PACKAGE_NAME = ANIMATION_BUNDLE_PREFIX + "packageName";
-    private static final String BUNDLE_ENTER_ANIMATION_RESOURCE =
+    public static final String BUNDLE_PACKAGE_NAME = ANIMATION_BUNDLE_PREFIX + "packageName";
+    public static final String BUNDLE_ENTER_ANIMATION_RESOURCE =
             ANIMATION_BUNDLE_PREFIX + "animEnterRes";
-    private static final String BUNDLE_EXIT_ANIMATION_RESOURCE =
+    public static final String BUNDLE_EXIT_ANIMATION_RESOURCE =
             ANIMATION_BUNDLE_PREFIX + "animExitRes";
 
     /**
@@ -179,7 +179,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private final Integer mNavigationBarColor;
     @Nullable
     private final Integer mNavigationBarDividerColor;
-    private final boolean mIsIncognito;
     @Nullable
     private final List<String> mTrustedWebActivityAdditionalOrigins;
     @Nullable
@@ -276,15 +275,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 IntentUtils.safeGetIntExtra(intent, EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT);
         mUiType = verifiedUiType(requestedUiType);
 
-        // TODO(https://crbug.com/1023759): WARNING: Current implementation uses
-        // a common off-the-record profile with browser's incognito mode and is
-        // not privacy-safe.
-        mIsIncognito = isValidIncognitoIntent(intent);
-
         CustomTabColorSchemeParams params = getColorSchemeParams(intent, colorScheme);
         retrieveCustomButtons(intent, context);
-        retrieveToolbarColor(params, context);
-        retrieveBottomBarColor(params);
+        mToolbarColor = retrieveToolbarColor(params, context);
+        mBottomBarColor = retrieveBottomBarColor(params);
         mNavigationBarColor = params.navigationBarColor == null
                 ? null
                 : ColorUtils.getOpaqueColor(params.navigationBarColor);
@@ -310,17 +304,8 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
         List<Bundle> menuItems =
                 IntentUtils.getParcelableArrayListExtra(intent, CustomTabsIntent.EXTRA_MENU_ITEMS);
-        if (menuItems != null) {
-            for (int i = 0; i < Math.min(MAX_CUSTOM_MENU_ITEMS, menuItems.size()); i++) {
-                Bundle bundle = menuItems.get(i);
-                String title =
-                        IntentUtils.safeGetString(bundle, CustomTabsIntent.KEY_MENU_ITEM_TITLE);
-                PendingIntent pendingIntent =
-                        IntentUtils.safeGetParcelable(bundle, CustomTabsIntent.KEY_PENDING_INTENT);
-                if (TextUtils.isEmpty(title) || pendingIntent == null) continue;
-                mMenuEntries.add(new Pair<String, PendingIntent>(title, pendingIntent));
-            }
-        }
+
+        updateExtraMenuItems(menuItems);
 
         mActivityType = IntentUtils.safeGetBooleanExtra(
                                 intent, TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false)
@@ -362,6 +347,18 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 ScreenOrientation.DEFAULT));
 
         mGsaExperimentIds = IntentUtils.safeGetIntArrayExtra(intent, EXPERIMENT_IDS);
+    }
+
+    private void updateExtraMenuItems(List<Bundle> menuItems) {
+        if (menuItems == null) return;
+        for (int i = 0; i < Math.min(MAX_CUSTOM_MENU_ITEMS, menuItems.size()); i++) {
+            Bundle bundle = menuItems.get(i);
+            String title = IntentUtils.safeGetString(bundle, CustomTabsIntent.KEY_MENU_ITEM_TITLE);
+            PendingIntent pendingIntent =
+                    IntentUtils.safeGetParcelable(bundle, CustomTabsIntent.KEY_PENDING_INTENT);
+            if (TextUtils.isEmpty(title) || pendingIntent == null) continue;
+            mMenuEntries.add(new Pair<String, PendingIntent>(title, pendingIntent));
+        }
     }
 
     /**
@@ -416,28 +413,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         }
     }
 
-    // TODO(https://crbug.com/1023759): Remove this function and enable
-    // incognito CCT request for all apps.
-    private boolean isValidIncognitoIntent(Intent intent) {
-        if (!isIncognitoRequested(intent)) return false;
-        // Incognito requests for payments flow are supported without
-        // INCOGNITO_CCT flag as an exceptional case that can use Chrome
-        // incognito profile.
-        if (isForPaymentsFlow(intent)) return true;
-        assert ChromeFeatureList.isInitialized();
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_INCOGNITO);
-    }
-
-    private boolean isForPaymentsFlow(Intent intent) {
-        return isIncognitoRequested(intent) && isTrustedIntent() && isOpenedByChrome()
-                && isForPaymentRequest();
-    }
-
-    private static boolean isIncognitoRequested(Intent intent) {
-        return IntentUtils.safeGetBooleanExtra(
-                intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
-    }
-
     /**
      * Get the verified UI type, according to the intent extras, and whether the intent is trusted.
      * @param requestedUiType requested UI type in the intent, unqualified
@@ -481,31 +456,24 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     /**
-     * Processes the color passed from the client app and updates {@link #mToolbarColor}.
+     * Returns the color passed from the client app.
      */
-    private void retrieveToolbarColor(CustomTabColorSchemeParams schemeParams, Context context) {
-        int defaultColor = ChromeColors.getDefaultThemeColor(context.getResources(), isIncognito());
-        if (isIncognito()) {
-            mToolbarColor = defaultColor;
-            return; // Don't allow toolbar color customization for incognito tabs.
-        }
+    private int retrieveToolbarColor(CustomTabColorSchemeParams schemeParams, Context context) {
+        int defaultColor = ChromeColors.getDefaultThemeColor(
+                context.getResources(), /*forceDarkBgColor*/ false);
         mHasCustomToolbarColor = (schemeParams.toolbarColor != null);
         int color = mHasCustomToolbarColor ? schemeParams.toolbarColor : defaultColor;
-        mToolbarColor = ColorUtils.getOpaqueColor(color);
+        return ColorUtils.getOpaqueColor(color);
     }
 
     /**
      * Must be called after calling {@link #retrieveToolbarColor}.
      */
-    private void retrieveBottomBarColor(CustomTabColorSchemeParams schemeParams) {
-        if (isIncognito()) {
-            mBottomBarColor = mToolbarColor;
-            return;
-        }
+    private int retrieveBottomBarColor(CustomTabColorSchemeParams schemeParams) {
         int defaultColor = mToolbarColor;
         int color = schemeParams.secondaryToolbarColor != null ? schemeParams.secondaryToolbarColor
                 : defaultColor;
-        mBottomBarColor = ColorUtils.getOpaqueColor(color);
+        return ColorUtils.getOpaqueColor(color);
     }
 
     /**
@@ -796,7 +764,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
     @Override
     public boolean isIncognito() {
-        return mIsIncognito;
+        return false;
     }
 
     @Nullable

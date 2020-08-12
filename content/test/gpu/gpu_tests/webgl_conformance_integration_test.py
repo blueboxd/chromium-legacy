@@ -241,6 +241,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           'd3d9': ['d3d9'],
           'opengl': ['gl'],
           'opengles': ['gles'],
+          'metal': ['metal'],
           'vulkan': ['vulkan'],
           # Support setting VK_ICD_FILENAMES for swiftshader when requesting
           # the 'vulkan' backend.

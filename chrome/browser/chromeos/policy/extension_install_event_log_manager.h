@@ -103,11 +103,11 @@ class ExtensionInstallEventLogManager
   // to disk in its destructor.
   std::unique_ptr<ExtensionLog> log_;
 
-  // Collects log events and passes them to |this|.
-  std::unique_ptr<ExtensionInstallEventLogger> logger_;
-
   // Handles storing the logs and preparing them for upload.
   std::unique_ptr<ExtensionLogUpload> extension_log_upload_;
+
+  // Collects log events and passes them to |this|.
+  std::unique_ptr<ExtensionInstallEventLogger> logger_;
 };
 
 }  // namespace policy

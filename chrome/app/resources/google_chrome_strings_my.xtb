@@ -105,7 +105,7 @@
 <translation id="386202838227397562">ကျေးဇူးပြုပြီး Google Chrome ဝင်ဒိုးများကို ပိတ်ပြီ ထပ်စမ်းပါ။</translation>
 <translation id="3865754807470779944">Chrome ဗားရှင်း <ph name="PRODUCT_VERSION" /> ကို ထည့်သွင်းလိုက်သည်</translation>
 <translation id="3873044882194371212">Chrome ရုပ်ဖျက်ဝင်းဒိုးတွင် လင့်ခ်ကို ဖွင့်ရန်</translation>
-<translation id="3879568094278837081">ဤ space ၏ ဖွင့်ကြည့်ထားသည့်မှတ်တမ်းဒေတာကို ဤစက်မှ ဖျက်လိုက်မည်။ ဒေတာကို ပြန်လည်ရယူရန် အဖြစ် Chrome သို့ လက်မှတ်ထိုးဝင်ပါ</translation>
+<translation id="3879568094278837081">ဤ space ၏ ဖွင့်ကြည့်ထားသည့်မှတ်တမ်းဒေတာကို ဤစက်မှ ဖျက်လိုက်မည်။ ဒေတာကို ပြန်လည်ရယူရန် အောက်ပါဖြင့် Chrome သို့ လက်မှတ်ထိုးဝင်ပါ</translation>
 <translation id="3889417619312448367">Google Chrome ကို ဖြုတ်ရန်</translation>
 <translation id="4050175100176540509">အရေးကြီးလုံခြုံရေးဆိုင်ရာဖွံ့ဖြိုးတိုးတက်မှုများနှင့် အင်္ဂါရပ် အသစ်များအား နောက်ဆုံးပေါ် ဗားရှင်းဖြင့် ရရှိနိုင်ပါသည်။</translation>
 <translation id="4053720452172726777">Google Chrome ကို စိတ်ကြိုက် ပြုပြင်ရန် နှင့် ထိန်းချုပ်ရန်</translation>
@@ -187,7 +187,6 @@ Google Chrome သည် သင်၏ ဆက်တင်များကို ပ
 <translation id="6291549208091401781">သင့်ကွန်ပျူတာပေါ်ရှိ အသုံးပြုသူများအတွက် Google Chrome ကို ထည့်သွင်းထားပြီးဖြစ်ပါသည်။</translation>
 <translation id="6338556085225130112">Google Chrome ကို အပ်ဒိတ်လုပ်နေသည်</translation>
 <translation id="6368958679917195344">Chrome OS ကို ထပ်ဖြည့်ပေးခဲ့သည့် <ph name="BEGIN_LINK_CROS_OSS" />အခမဲ့ ရင်းမြစ် ဆော့ဝဲ<ph name="END_LINK_CROS_OSS" />များဖြင့် အားဖြည့်ပေးထားသည်။</translation>
-<translation id="6372315130616785175">အလုပ်သုံးအကောင့်ဖြင့် သင်လက်မှတ်ထိုးဝင်ခဲ့သည်။ သင့်ဒေတာကို ခွဲထားရန်အတွက် အလုပ်သုံး Chrome ပရိုဖိုင်အသစ်တစ်ခု ပြုလုပ်လိုသလား။</translation>
 <translation id="6454142105866844106">မလိုချင်သောဆော့ဖ်ဝဲကို Chrome က တစ်ပတ်တစ်ကြိမ် စစ်ဆေးသည်</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome ကို အပ်ဒိတ်လုပ်နေသည် (<ph name="PROGRESS_PERCENT" />)</translation>

@@ -13,9 +13,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
+#include "pdf/pdf_features.h"
 #include "pdf/url_loader_wrapper.h"
 #include "ppapi/c/pp_errors.h"
 #include "ui/gfx/range/range.h"
@@ -65,7 +67,10 @@ void DocumentLoaderImpl::Chunk::Clear() {
   chunk_data.reset();
 }
 
-DocumentLoaderImpl::DocumentLoaderImpl(Client* client) : client_(client) {}
+DocumentLoaderImpl::DocumentLoaderImpl(Client* client)
+    : client_(client),
+      partial_loading_enabled_(
+          base::FeatureList::IsEnabled(features::kPdfPartialLoading)) {}
 
 DocumentLoaderImpl::~DocumentLoaderImpl() = default;
 

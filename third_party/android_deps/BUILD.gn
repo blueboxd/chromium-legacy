@@ -83,6 +83,10 @@ java_group("material_design_java") {
   deps = [ "$material_design_target" ]
 }
 
+java_group("protobuf_lite_runtime_java") {
+  deps = [ "$android_proto_runtime" ]
+}
+
 java_annotation_processor("auto_service_processor") {
   main_class = "com.google.auto.service.processor.AutoServiceProcessor"
   deps = [ ":com_google_auto_service_auto_service_java" ]

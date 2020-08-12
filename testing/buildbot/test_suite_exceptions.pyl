@@ -1171,7 +1171,9 @@
       'linux-lacros-tester-rel': {
         'experiment_percentage': 100,
         'args': [
-          '--gtest_filter=-NativeExtensionBindingsSystemUnittest*',
+          '--gtest_filter=-NativeExtensionBindingsSystemUnittest*:'
+          'BluetoothSocketApiUnittest.CreateThenClose:'
+          'FeatureProviderTest.PermissionFeatureAvailability',
         ],
       },
     },
@@ -2646,7 +2648,9 @@
         'experiment_percentage': 100,
         'args': [
           '--gtest_filter=-NativeDesktopMediaListTest*:PermissionMessageCombinationsUnittest.USBSerialBluetoothCoalescing:'
-          'RelaunchNotificationControllerPlatformImplTest.SynchronousNotification:WindowSizerTest*',
+          'RelaunchNotificationControllerPlatformImplTest.SynchronousNotification:WindowSizerTest*:'
+          'ChromeContentBrowserClientTest.UserAgentStringOrdering:'
+          'ChromeMetricsServiceClientTest.TestRegisterMetricsServiceProviders',
         ],
       },
     },
@@ -2680,10 +2684,13 @@
           '--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:'
           'DesktopWidgetTest.GetWindowPlacement:'
           'DesktopWidgetTest.MinimumSizeConstraints:'
+          'EditableComboboxTest.AltLeftOrRightDoesNothing:'
           'EditableComboboxTest.EndOrHomeMovesToBeginningOrEndOfText:'
           'EditableComboboxTest.MenuCanAdaptToContentChange:'
           'TextfieldTest.ContextMenuDisplayTest:'
-          'TooltipControllerTest*',
+          'TextfieldTest.OverflowTest:'
+          'TextfieldTest.SwitchFocusInKeyDown:',
+          'TooltipControllerTest*'
         ],
       },
     },

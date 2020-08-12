@@ -15,23 +15,31 @@
           @click="uncheckAll">
         Uncheck All
       </MdButton>
+      <MdButton
+          class="md-primary md-raised md-dense"
+          @click="delistUnchecked">
+        Delist Unchecked
+      </MdButton>
     </div>
     <MdList
         id="filter-list"
-        class="md-scrollbar">
+        class="md-scrollbar md-double-line">
       <MdListItem
-          v-for="node in filterList"
+          v-for="(node, index) in filterList"
           :key="node.name">
         <MdButton
             class="numeric-input-button md-icon-button md-dense"
-            @click="removeFromFilter(node.name)">
+            @click="delistFromFilter(node.name)">
           <MdIcon>clear</MdIcon>
         </MdButton>
         <MdCheckbox
             v-model="node.checked"
             class="md-primary"/>
         <div class="filter-items-text md-list-item-text">
-          {{ shortenName(node.name) }}
+          <div>{{ filterListDisplayData[index].firstLine }}</div>
+          <div v-if="filterListDisplayData[index].secondLine !== ''">
+            {{ filterListDisplayData[index].secondLine }}
+          </div>
         </div>
       </MdListItem>
     </MdList>
@@ -45,14 +53,31 @@ import {CUSTOM_EVENTS} from '../vue_custom_events.js';
 const GraphFilterItems = {
   props: {
     nodeFilterData: Object,
-    shortenName: Function,
+    getDisplayData: Function,
   },
   data: function() {
     return this.nodeFilterData;
   },
+  computed: {
+    /**
+     * Computes an array of display values such that filterListDisplayData[i]
+     * corresponds to filterList[i].
+     *
+     * This is needed instead of computing a new array to iterate over in the
+     * template since checkboxes are v-model bound to `node.checked` in the
+     * template. If a new array were computed, the binding would be on the
+     * elements of the new array instead of `filterList`.
+     *
+     * @return {!Array<{firstLine: string, secondLine: string}>} Text lines to
+     *     display in UI.
+     */
+    filterListDisplayData: function() {
+      return this.filterList.map(node => this.getDisplayData(node.name));
+    },
+  },
   methods: {
-    removeFromFilter: function(nodeName) {
-      this.$emit(CUSTOM_EVENTS.FILTER_REMOVE, nodeName);
+    delistFromFilter: function(nodeName) {
+      this.$emit(CUSTOM_EVENTS.FILTER_DELIST, nodeName);
     },
     checkAll: function() {
       this.$emit(CUSTOM_EVENTS.FILTER_CHECK_ALL);
@@ -60,18 +85,14 @@ const GraphFilterItems = {
     uncheckAll: function() {
       this.$emit(CUSTOM_EVENTS.FILTER_UNCHECK_ALL);
     },
+    delistUnchecked: function() {
+      this.$emit(CUSTOM_EVENTS.FILTER_DELIST_UNCHECKED);
+    },
   },
 };
 
 export default GraphFilterItems;
 </script>
-
-<style>
-#filter-list .md-list-item-content {
-  min-height: 0;
-  padding: 0;
-}
-</style>
 
 <style scoped>
 ul {
@@ -96,6 +117,11 @@ ul {
 #filter-list {
   max-height: 30vh;
   overflow-y: scroll;
+}
+
+#filter-list >>> .md-list-item-content {
+  min-height: 0;
+  padding: 0;
 }
 
 #controls {

@@ -713,6 +713,14 @@ const T* OptionalOrNullptr(const base::Optional<T>& optional) {
   return optional.has_value() ? &optional.value() : nullptr;
 }
 
+// Helper for creating an Optional<T> from a potentially nullptr T*.
+template <class T>
+base::Optional<T> OptionalFromPtr(const T* value) {
+  if (value)
+    return base::Optional<T>(*value);
+  return base::nullopt;
+}
+
 }  // namespace base
 
 #endif  // BASE_STL_UTIL_H_

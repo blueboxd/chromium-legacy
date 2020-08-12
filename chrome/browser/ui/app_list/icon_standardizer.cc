@@ -278,9 +278,52 @@ gfx::ImageSkia CreateStandardIconImage(const gfx::ImageSkia& image) {
   gfx::ImageSkia final_image;
   gfx::ImageSkia standard_size_image = app_list::StandardizeSize(image);
 
-  // If icon is already circle shaped, then return the original image.
-  if (IsIconCircleShaped(standard_size_image))
-    return standard_size_image;
+  // If icon is already circle shaped, then return the original image and make
+  // sure the image is scaled down if its icon size takes up too much space
+  // within the bitmap.
+  if (IsIconCircleShaped(standard_size_image)) {
+    for (gfx::ImageSkiaRep rep : standard_size_image.image_reps()) {
+      SkBitmap unscaled_bitmap(rep.GetBitmap());
+      int width = unscaled_bitmap.width();
+      int height = unscaled_bitmap.height();
+
+      SkBitmap final_bitmap;
+      final_bitmap.allocN32Pixels(width, height);
+      final_bitmap.eraseColor(SK_ColorTRANSPARENT);
+
+      float dis_to_center = GetFarthestVisiblePointFromCenter(unscaled_bitmap);
+      float icon_to_bitmap_size_ratio = dis_to_center * 2.0f / width;
+
+      if (icon_to_bitmap_size_ratio > kBackgroundCircleScale) {
+        SkCanvas canvas(final_bitmap);
+        SkPaint paint_icon;
+        paint_icon.setMaskFilter(nullptr);
+        paint_icon.setBlendMode(SkBlendMode::kSrcOver);
+
+        float icon_scale = kBackgroundCircleScale / icon_to_bitmap_size_ratio;
+
+        gfx::Size scaled_icon_size =
+            gfx::ScaleToRoundedSize(rep.pixel_size(), icon_scale);
+        const SkBitmap scaled_bitmap = skia::ImageOperations::Resize(
+            unscaled_bitmap, skia::ImageOperations::RESIZE_BEST,
+            scaled_icon_size.width(), scaled_icon_size.height());
+
+        int target_left = (width - scaled_icon_size.width()) / 2;
+        int target_top = (height - scaled_icon_size.height()) / 2;
+
+        // Draw the scaled down bitmap and add that to the final image.
+        canvas.drawBitmap(scaled_bitmap, target_left, target_top, &paint_icon);
+        final_image.AddRepresentation(
+            gfx::ImageSkiaRep(final_bitmap, rep.scale()));
+      } else {
+        // No need to scale down the icon, so just use the |unscaled_bitmap|.
+        final_image.AddRepresentation(
+            gfx::ImageSkiaRep(unscaled_bitmap, rep.scale()));
+      }
+    }
+
+    return final_image;
+  }
 
   for (gfx::ImageSkiaRep rep : standard_size_image.image_reps()) {
     SkBitmap unscaled_bitmap(rep.GetBitmap());

@@ -5,24 +5,9 @@
 <template>
   <div class="selected-node-details">
     <template v-if="selectedNode !== null">
-      <MdList class="md-double-line">
-        <MdListItem>
-          <div class="md-list-item-text">
-            <span class="selected-node-details-text">
-              {{ selectedNode.id }}
-            </span>
-            <span>Name</span>
-          </div>
-        </MdListItem>
-        <MdListItem>
-          <div class="md-list-item-text">
-            <span class="selected-node-details-text">
-              {{ selectedNode.displayName }}
-            </span>
-            <span>Display Name</span>
-          </div>
-        </MdListItem>
-      </MdList>
+      <div class="md-title selected-node-title">
+        {{ selectedNode.displayName }}
+      </div>
       <MdButton
           v-if="selectedNode.visualizationState.selectedByFilter"
           class="md-primary md-raised md-dense"
@@ -35,6 +20,17 @@
           @click="checkNodeInFilter">
         Add/check in filter
       </MdButton>
+      <MdList class="md-double-line details-list">
+        <MdListItem>
+          <div class="md-list-item-text">
+            <span class="selected-node-details-text">
+              {{ selectedNode.id }}
+            </span>
+            <span>Full Name</span>
+          </div>
+        </MdListItem>
+      </MdList>
+      <slot/>
     </template>
     <div v-else>
       (Click a node for more details.)
@@ -72,8 +68,15 @@ export default GraphSelectedNodeDetails;
   flex-direction: column;
 }
 
-.selected-node-details-text{
-  display: inline-block;
+.details-list {
+  padding: 0;
+}
+
+.selected-node-title {
+  word-wrap: break-word;
+}
+
+.selected-node-details-text {
   white-space: normal;
   width: 100%;
   word-wrap: break-word;

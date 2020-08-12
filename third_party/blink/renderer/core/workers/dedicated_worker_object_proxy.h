@@ -57,7 +57,8 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
 
  public:
   DedicatedWorkerObjectProxy(DedicatedWorkerMessagingProxy*,
-                             ParentExecutionContextTaskRunners*);
+                             ParentExecutionContextTaskRunners*,
+                             const DedicatedWorkerToken&);
   ~DedicatedWorkerObjectProxy() override;
 
   void PostMessageToWorkerObject(BlinkTransferableMessage);

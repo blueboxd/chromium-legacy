@@ -41,6 +41,10 @@ class FakeConsentAuditor : public ConsentAuditor {
       const CoreAccountId& account_id,
       const sync_pb::UserConsentTypes::AssistantActivityControlConsent& consent)
       override;
+  void RecordAccountPasswordsConsent(
+      const CoreAccountId& account_id,
+      const sync_pb::UserConsentTypes::AccountPasswordsConsent& consent)
+      override;
 
   void RecordLocalConsent(const std::string& feature,
                           const std::string& description_text,

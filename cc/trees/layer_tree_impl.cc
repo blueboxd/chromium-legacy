@@ -12,6 +12,7 @@
 #include <limits>
 #include <memory>
 #include <set>
+#include <unordered_set>
 #include <utility>
 
 #include "base/containers/adapters.h"
@@ -2388,6 +2389,81 @@ bool LayerTreeImpl::PointHitsNonFastScrollableRegion(
                          layer.non_fast_scrollable_region(), &layer);
 }
 
+static ElementId GetFrameElementIdForLayer(const LayerImpl* layer) {
+  ElementId frame_element_id;
+  auto& transform_tree =
+      layer->layer_tree_impl()->property_trees()->transform_tree;
+  auto* node = transform_tree.Node(layer->transform_tree_index());
+  while (node && !frame_element_id) {
+    frame_element_id = node->frame_element_id;
+    node = transform_tree.parent(node);
+  }
+  return frame_element_id;
+}
+
+static void FindClosestMatchingLayerForAttribution(
+    const gfx::PointF& screen_space_point,
+    const LayerImpl* root_layer,
+    FindClosestMatchingLayerState* state) {
+  std::unordered_set<ElementId, ElementIdHash> hit_frame_element_ids;
+  // We want to iterate from front to back when hit testing.
+  for (auto* layer : base::Reversed(*root_layer->layer_tree_impl())) {
+    if (!layer->HitTestable())
+      continue;
+
+    float distance_to_intersection = 0.f;
+    bool hit = false;
+    if (layer->Is3dSorted()) {
+      hit =
+          PointHitsLayer(layer, screen_space_point, &distance_to_intersection);
+    } else {
+      hit = PointHitsLayer(layer, screen_space_point, nullptr);
+    }
+
+    if (!hit)
+      continue;
+
+    bool in_front_of_previous_candidate =
+        state->closest_match &&
+        layer->GetSortingContextId() ==
+            state->closest_match->GetSortingContextId() &&
+        distance_to_intersection >
+            state->closest_distance + std::numeric_limits<float>::epsilon();
+
+    if (!state->closest_match || in_front_of_previous_candidate) {
+      state->closest_distance = distance_to_intersection;
+      state->closest_match = layer;
+    }
+
+    ElementId frame_element_id = GetFrameElementIdForLayer(layer);
+    hit_frame_element_ids.insert(frame_element_id);
+  }
+
+  // Iterate through the transform tree of the hit layer in order to derive the
+  // frame path (which is a subset of the transform path). If we hit any frame
+  // layer in our hit testing that belonged to a frame outside of this
+  // hierarchy, bail out.
+  //
+  // We explicitly allow occluding layers whose frames are parents of the
+  // targeted frame so that we can properly attribute the (common) parent ->
+  // child frame relationship. This is made possible since we can accurately
+  // hit test within layerized subframes, but not for all occluders.
+  if (auto* layer = state->closest_match) {
+    auto& transform_tree =
+        layer->layer_tree_impl()->property_trees()->transform_tree;
+    for (auto* node = transform_tree.Node(layer->transform_tree_index()); node;
+         node = transform_tree.parent(node)) {
+      hit_frame_element_ids.erase(node->frame_element_id);
+      if (hit_frame_element_ids.size() == 0)
+        break;
+    }
+
+    if (hit_frame_element_ids.size() > 0) {
+      state->closest_distance = 0.f;
+      state->closest_match = nullptr;
+    }
+  }
+}
 
 ElementId LayerTreeImpl::FindFrameElementIdAtPoint(
     const gfx::PointF& screen_space_point) {
@@ -2396,19 +2472,10 @@ ElementId LayerTreeImpl::FindFrameElementIdAtPoint(
   if (!UpdateDrawProperties())
     return {};
   FindClosestMatchingLayerState state;
-  FindClosestMatchingLayer(screen_space_point, layer_list_[0].get(),
-                           HitTestVisibleScrollableOrTouchableFunctor(),
-                           &state);
+  FindClosestMatchingLayerForAttribution(screen_space_point,
+                                         layer_list_[0].get(), &state);
 
-  if (auto* layer = state.closest_match) {
-    ElementId frame_element_id;
-    auto* node =
-        property_trees()->transform_tree.Node(layer->transform_tree_index());
-    while (node && !frame_element_id) {
-      frame_element_id = node->frame_element_id;
-      node = property_trees()->transform_tree.parent(node);
-    }
-
+  if (const auto* layer = state.closest_match) {
     // TODO(https://crbug.com/1058870): Permit hit testing only if the framed
     // element hit has a simple mask/clip. We don't have enough information
     // about complex masks/clips on the impl-side to do accurate hit testing.
@@ -2417,8 +2484,9 @@ ElementId LayerTreeImpl::FindFrameElementIdAtPoint(
             layer->effect_tree_index());
 
     if (!layer_hit_test_region_is_masked)
-      return frame_element_id;
+      return GetFrameElementIdForLayer(layer);
   }
+
   return {};
 }
 

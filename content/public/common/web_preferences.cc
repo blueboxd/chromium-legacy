@@ -133,7 +133,6 @@ WebPreferences::WebPreferences()
       enable_scroll_animator(false),
       prefers_reduced_motion(false),
       touch_event_feature_detection_enabled(false),
-      touch_adjustment_enabled(true),
       pointer_events_max_touch_points(0),
       available_pointer_types(0),
       primary_pointer_type(ui::POINTER_TYPE_NONE),

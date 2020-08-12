@@ -20,7 +20,13 @@
 
 MediaFeedsContentsObserver::MediaFeedsContentsObserver(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents) {
+  // The cookie observer cannot be created at initialization of
+  // MediaFeedsService because the network service is not ready and therefore we
+  // should create it when we get a web contents.
+  if (auto* service = GetService())
+    service->EnsureCookieObserver();
+}
 
 MediaFeedsContentsObserver::~MediaFeedsContentsObserver() = default;
 
@@ -55,6 +61,9 @@ void MediaFeedsContentsObserver::DidFinishLoad(
       std::move(test_closure_).Run();
     return;
   }
+
+  // Clear the old binding for the old frame.
+  render_frame_.reset();
 
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &render_frame_);

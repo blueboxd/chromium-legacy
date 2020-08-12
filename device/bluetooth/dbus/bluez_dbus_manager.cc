@@ -15,6 +15,7 @@
 #include "base/system/sys_info.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "dbus/bus.h"
 #include "dbus/dbus_statistics.h"
 #include "dbus/message.h"
@@ -202,8 +203,6 @@ void BluezDBusManager::InitializeClients() {
                                                    bluetooth_service_name);
   client_bundle_->bluetooth_agent_manager_client()->Init(
       GetSystemBus(), bluetooth_service_name);
-  client_bundle_->bluetooth_battery_client()->Init(GetSystemBus(),
-                                                   bluetooth_service_name);
   client_bundle_->bluetooth_device_client()->Init(GetSystemBus(),
                                                   bluetooth_service_name);
   client_bundle_->bluetooth_gatt_characteristic_client()->Init(
@@ -225,6 +224,14 @@ void BluezDBusManager::InitializeClients() {
   client_bundle_->bluetooth_debug_manager_client()->Init(
       GetSystemBus(),
       bluetooth_object_manager::kBluetoothObjectManagerServiceName);
+
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kShowBluetoothDeviceBattery)) {
+    client_bundle_->bluetooth_battery_client()->Init(GetSystemBus(),
+                                                     bluetooth_service_name);
+  }
+#endif
 
   if (!alternate_bus_)
     return;

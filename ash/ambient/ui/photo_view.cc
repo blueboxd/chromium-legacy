@@ -5,6 +5,7 @@
 #include "ash/ambient/ui/photo_view.h"
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 
 #include "ash/ambient/ambient_constants.h"
@@ -14,6 +15,7 @@
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/compositor/animation_throughput_reporter.h"
@@ -82,7 +84,7 @@ void PhotoView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   for (const int index : {0, 1}) {
     auto image = images_unscaled_[index];
     auto image_resized = ResizeImage(image, size());
-    image_views_[index]->SetImage(image_resized);
+    image_views_[index]->UpdateImage(image_resized);
   }
 }
 
@@ -103,14 +105,16 @@ void PhotoView::Init() {
   layer()->SetFillsBoundsOpaquely(false);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  image_views_[0] =
-      AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
-  image_views_[1] =
-      AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
-  image_views_[0]->SetPaintToLayer();
-  image_views_[0]->layer()->SetFillsBoundsOpaquely(false);
-  image_views_[1]->SetPaintToLayer();
-  image_views_[1]->layer()->SetFillsBoundsOpaquely(false);
+  for (auto*& image_view : image_views_) {
+    // Creates image views.
+    image_view =
+        AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
+    // Each image view will be animated on its own layer.
+    image_view->SetPaintToLayer();
+    image_view->layer()->SetFillsBoundsOpaquely(false);
+  }
+
+  // Hides one image view initially for fade in animation.
   image_views_[1]->layer()->SetOpacity(0.0f);
 
   delegate_->GetAmbientBackendModel()->AddObserver(this);
@@ -118,12 +122,15 @@ void PhotoView::Init() {
 
 void PhotoView::UpdateImages() {
   auto* model = delegate_->GetAmbientBackendModel();
-  images_unscaled_[image_index_] = model->GetNextImage().photo;
+  auto& next_image = model->GetNextImage();
+  images_unscaled_[image_index_] = next_image.photo;
   if (images_unscaled_[image_index_].isNull())
     return;
 
   auto next_resized = ResizeImage(images_unscaled_[image_index_], size());
-  image_views_[image_index_]->SetImage(next_resized);
+  image_views_[image_index_]->UpdateImage(next_resized);
+  image_views_[image_index_]->UpdateImageDetails(
+      base::UTF8ToUTF16(next_image.details));
   image_index_ = 1 - image_index_;
 }
 
@@ -175,7 +182,7 @@ bool PhotoView::NeedToAnimateTransition() const {
 }
 
 const gfx::ImageSkia& PhotoView::GetCurrentImagesForTesting() {
-  return image_views_[image_index_]->GetImage();
+  return image_views_[image_index_]->GetCurrentImage();
 }
 
 }  // namespace ash

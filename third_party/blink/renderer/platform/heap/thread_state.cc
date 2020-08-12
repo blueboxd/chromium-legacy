@@ -548,7 +548,7 @@ void ThreadState::ScheduleConcurrentAndLazySweep() {
           WTF::CrossThreadBindRepeating(&ThreadState::PerformConcurrentSweep,
                                         WTF::CrossThreadUnretained(this))),
       ConvertToBaseRepeatingCallback(WTF::CrossThreadBindRepeating(
-          [](ThreadState* state) -> size_t {
+          [](ThreadState* state, size_t /*worker_count*/) -> size_t {
             return state->has_unswept_pages_.load(std::memory_order_relaxed)
                        ? 1
                        : 0;
@@ -682,8 +682,7 @@ void ThreadState::AtomicPauseMarkPrologue(
     BlinkGC::GCReason reason) {
   ThreadHeapStatsCollector::EnabledScope mark_prologue_scope(
       Heap().stats_collector(),
-      ThreadHeapStatsCollector::kAtomicPauseMarkPrologue, "epoch", gc_age_,
-      "forced", IsForcedGC(reason));
+      ThreadHeapStatsCollector::kAtomicPauseMarkPrologue);
   EnterAtomicPause();
   EnterNoAllocationScope();
   EnterGCForbiddenScope();
@@ -768,8 +767,7 @@ void ThreadState::CompleteSweep() {
     ScriptForbiddenScope script_forbidden;
     SweepForbiddenScope scope(this);
     ThreadHeapStatsCollector::EnabledScope stats_scope(
-        Heap().stats_collector(), ThreadHeapStatsCollector::kCompleteSweep,
-        "forced", IsForcedGC(current_gc_data_.reason));
+        Heap().stats_collector(), ThreadHeapStatsCollector::kCompleteSweep);
     // Boost priority of sweeping job to complete ASAP and avoid taking time on
     // the main thread.
     if (sweeper_handle_)
@@ -1114,7 +1112,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
   // Sweeping is performed in driver functions.
   DCHECK(!IsSweepingInProgress());
   Heap().stats_collector()->NotifyMarkingStarted(
-      BlinkGC::CollectionType::kMajor, reason);
+      BlinkGC::CollectionType::kMajor, reason, IsForcedGC(reason));
   {
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(),
@@ -1294,7 +1292,8 @@ void ThreadState::CollectGarbage(BlinkGC::CollectionType collection_type,
   if (should_do_full_gc) {
     CompleteSweep();
     SetGCState(kNoGCScheduled);
-    Heap().stats_collector()->NotifyMarkingStarted(collection_type, reason);
+    Heap().stats_collector()->NotifyMarkingStarted(collection_type, reason,
+                                                   IsForcedGC(reason));
     RunAtomicPause(collection_type, stack_state, marking_type, sweeping_type,
                    reason);
   }
@@ -1333,8 +1332,8 @@ void ThreadState::AtomicPauseMarkRoots(BlinkGC::StackState stack_state,
                                        BlinkGC::MarkingType marking_type,
                                        BlinkGC::GCReason reason) {
   ThreadHeapStatsCollector::EnabledScope advance_tracing_scope(
-      Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPauseMarkRoots,
-      "epoch", gc_age_, "forced", IsForcedGC(current_gc_data_.reason));
+      Heap().stats_collector(),
+      ThreadHeapStatsCollector::kAtomicPauseMarkRoots);
   MarkPhaseVisitRoots();
   MarkPhaseVisitNotFullyConstructedObjects();
 }
@@ -1342,8 +1341,7 @@ void ThreadState::AtomicPauseMarkRoots(BlinkGC::StackState stack_state,
 void ThreadState::AtomicPauseMarkTransitiveClosure() {
   ThreadHeapStatsCollector::EnabledScope advance_tracing_scope(
       Heap().stats_collector(),
-      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure, "epoch",
-      gc_age_, "forced", IsForcedGC(current_gc_data_.reason));
+      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure);
   // base::TimeTicks::Now() + base::TimeDelta::Max() == base::TimeTicks::Max()
   CHECK(MarkPhaseAdvanceMarking(base::TimeDelta::Max(),
                                 EphemeronProcessing::kFullProcessing));
@@ -1352,8 +1350,7 @@ void ThreadState::AtomicPauseMarkTransitiveClosure() {
 void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
   ThreadHeapStatsCollector::EnabledScope stats_scope(
       Heap().stats_collector(),
-      ThreadHeapStatsCollector::kAtomicPauseMarkEpilogue, "epoch", gc_age_,
-      "forced", IsForcedGC(current_gc_data_.reason));
+      ThreadHeapStatsCollector::kAtomicPauseMarkEpilogue);
   MarkPhaseEpilogue(marking_type);
   LeaveGCForbiddenScope();
   LeaveNoAllocationScope();
@@ -1367,8 +1364,7 @@ void ThreadState::AtomicPauseSweepAndCompact(
     BlinkGC::SweepingType sweeping_type) {
   ThreadHeapStatsCollector::EnabledScope stats(
       Heap().stats_collector(),
-      ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact, "epoch", gc_age_,
-      "forced", IsForcedGC(current_gc_data_.reason));
+      ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact);
   AtomicPauseScope atomic_pause_scope(this);
   ScriptForbiddenScope script_forbidden_scope;
 

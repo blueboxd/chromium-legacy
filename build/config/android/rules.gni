@@ -4009,10 +4009,6 @@ if (enable_java_templates) {
   #   proto_path (required)
   #       Root directory of .proto files.
   #
-  #   generate_nano (optional, default false)
-  #       Whether to generate nano protos. If false, this will use the lite proto generator.
-  #       Nano protos are deprecated, so please use lite new proto libraries.
-  #
   #   deps (optional)
   #       Additional dependencies. Passed through to both the action and the
   #       android_library targets.
@@ -4032,22 +4028,7 @@ if (enable_java_templates) {
   template("proto_java_library") {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
-    _generate_nano =
-        defined(invoker.generate_nano) && invoker.generate_nano == true
 
-    if (_generate_nano) {
-      # Use the legacy Android nano proto generator.
-      _protoc_dep =
-          "//third_party/android_protobuf:android_protoc($host_toolchain)"
-      _protoc_out_dir = get_label_info(_protoc_dep, "root_out_dir")
-      _protoc_bin = "$_protoc_out_dir/android_protoc"
-      _proto_runtime = "//third_party/android_protobuf:protobuf_nano_javalib"
-    } else {
-      # Use the regular proto library to generate lite protos.
-      _protoc_bin = "//third_party/android_protoc/protoc"
-      _proto_runtime = "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java"
-    }
-    _proto_path = invoker.proto_path
     _template_name = target_name
 
     action_with_pydeps("${_template_name}__protoc_java") {
@@ -4057,9 +4038,6 @@ if (enable_java_templates) {
       script = "//build/protoc_java.py"
 
       deps = []
-      if (defined(_protoc_dep)) {
-        deps += [ _protoc_dep ]
-      }
       if (defined(invoker.deps)) {
         deps += invoker.deps
       }
@@ -4071,9 +4049,9 @@ if (enable_java_templates) {
                "--depfile",
                rebase_path(depfile, root_build_dir),
                "--protoc",
-               rebase_path(_protoc_bin, root_build_dir),
+               rebase_path(android_protoc_bin, root_build_dir),
                "--proto-path",
-               rebase_path(_proto_path, root_build_dir),
+               rebase_path(invoker.proto_path, root_build_dir),
                "--srcjar",
                rebase_path(_srcjar_path, root_build_dir),
              ] + rebase_path(sources, root_build_dir)
@@ -4086,17 +4064,13 @@ if (enable_java_templates) {
           ]
         }
       }
-
-      if (_generate_nano) {
-        args += [ "--nano" ]
-      }
     }
 
     android_library(target_name) {
       chromium_code = false
       sources = []
       srcjar_deps = [ ":${_template_name}__protoc_java" ]
-      deps = [ _proto_runtime ]
+      deps = [ android_proto_runtime ]
       if (defined(invoker.deps)) {
         deps += invoker.deps
       }

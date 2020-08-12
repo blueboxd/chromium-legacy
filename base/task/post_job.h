@@ -98,6 +98,9 @@ class BASE_EXPORT JobHandle {
   // Returns true if associated with a Job.
   explicit operator bool() const { return task_source_ != nullptr; }
 
+  // Returns true if there's no work pending and no worker running.
+  bool IsCompleted() const;
+
   // Update this Job's priority.
   void UpdatePriority(TaskPriority new_priority);
 
@@ -161,8 +164,9 @@ class BASE_EXPORT JobHandle {
 //   }
 //
 // |max_concurrency_callback| controls the maximum number of threads calling
-// |worker_task| concurrently. |worker_task| is only invoked if the number of
-// threads previously running |worker_task| was less than the value returned by
+// |worker_task| concurrently, given the number of threads currently assigned to
+// this job. |worker_task| is only invoked if the number of threads previously
+// running |worker_task| was less than the value returned by
 // |max_concurrency_callback|. In general, |max_concurrency_callback| should
 // return the latest number of incomplete work items (smallest unit of work)
 // left to processed. JobHandle/JobDelegate::NotifyConcurrencyIncrease() *must*
@@ -181,7 +185,7 @@ JobHandle BASE_EXPORT
 PostJob(const Location& from_here,
         const TaskTraits& traits,
         RepeatingCallback<void(JobDelegate*)> worker_task,
-        RepeatingCallback<size_t()> max_concurrency_callback);
+        RepeatingCallback<size_t(size_t)> max_concurrency_callback);
 
 }  // namespace base
 

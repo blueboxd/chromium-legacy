@@ -37,11 +37,6 @@ class GPUBuffer : public DawnObject<WGPUBuffer> {
   void Trace(Visitor* visitor) const override;
 
   // gpu_buffer.idl
-  void setSubData(uint64_t dst_byte_offset,
-                  const FlexibleArrayBufferView& src,
-                  uint64_t src_byte_offset,
-                  uint64_t byte_length,
-                  ExceptionState& exception_state);
   ScriptPromise mapAsync(ScriptState* script_state,
                          uint32_t mode,
                          uint64_t offset,

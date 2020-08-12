@@ -3,3 +3,4 @@
 // found in the LICENSE file.
 
 import './profile_type_choice.js';
+import './local_profile_customization.js';

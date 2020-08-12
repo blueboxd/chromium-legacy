@@ -26,6 +26,7 @@ WGPUDeviceProperties AsDawnType(const GPUDeviceDescriptor* descriptor) {
   // TODO(crbug.com/1048603): We should validate that the extension_set is a
   // subset of the adapter's extension set.
   requested_device_properties.textureCompressionBC =
+      extension_set.Contains("texture-compression-bc") ||
       extension_set.Contains("textureCompressionBC");
 
   return requested_device_properties;
@@ -72,6 +73,7 @@ void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
 void GPUAdapter::InitializeExtensionNameList() {
   DCHECK(extension_name_list_.IsEmpty());
   if (adapter_properties_.textureCompressionBC) {
+    extension_name_list_.emplace_back("texture-compression-bc");
     extension_name_list_.emplace_back("textureCompressionBC");
   }
 }

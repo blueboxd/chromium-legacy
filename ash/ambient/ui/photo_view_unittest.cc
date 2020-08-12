@@ -32,7 +32,7 @@ TEST_F(AmbientPhotoViewTest, ShouldResizePortraitImageForPortraitScreen) {
 
   // Image should be full width. Image height should extend above and below the
   // visible part of the screen.
-  ASSERT_EQ(image_view->GetImageBounds(),
+  ASSERT_EQ(image_view->GetCurrentImageBoundsForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/-200, /*width=*/600, /*height=*/1200));
 }
 
@@ -52,7 +52,7 @@ TEST_F(AmbientPhotoViewTest, ShouldResizeLandscapeImageForPortraitScreen) {
 
   // Image should be full width. Image should have equal empty space top and
   // bottom.
-  ASSERT_EQ(image_view->GetImageBounds(),
+  ASSERT_EQ(image_view->GetCurrentImageBoundsForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/200, /*width=*/600, /*height=*/400));
 }
 
@@ -72,7 +72,7 @@ TEST_F(AmbientPhotoViewTest, ShouldResizePortraitImageForLandscapeScreen) {
 
   // Image should be full height. Image width should have equal empty space on
   // left and right.
-  ASSERT_EQ(image_view->GetImageBounds(),
+  ASSERT_EQ(image_view->GetCurrentImageBoundsForTesting(),
             gfx::Rect(/*x=*/250, /*y=*/0, /*width=*/300, /*height=*/600));
 }
 
@@ -93,7 +93,7 @@ TEST_F(AmbientPhotoViewTest, ShouldResizeLandscapeImageForFillLandscapeScreen) {
 
   // Image should be full height. Image width should extend equally to the left
   // and right of the visible part of the screen.
-  ASSERT_EQ(image_view->GetImageBounds(),
+  ASSERT_EQ(image_view->GetCurrentImageBoundsForTesting(),
             gfx::Rect(/*x=*/-50, /*y=*/0, /*width=*/900, /*height=*/600));
 }
 

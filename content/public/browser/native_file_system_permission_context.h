@@ -59,15 +59,6 @@ class NativeFileSystemPermissionContext {
                           HandleType handle_type,
                           UserAction user_action) = 0;
 
-  // Displays a dialog to confirm that the user intended to give read access to
-  // a specific directory.
-  using PermissionStatus = blink::mojom::PermissionStatus;
-  virtual void ConfirmDirectoryReadAccess(
-      const url::Origin& origin,
-      const base::FilePath& path,
-      GlobalFrameRoutingId frame_id,
-      base::OnceCallback<void(PermissionStatus)> callback) = 0;
-
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class SensitiveDirectoryResult {

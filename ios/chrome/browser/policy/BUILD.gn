@@ -20,6 +20,14 @@ source_set("policy") {
     "device_management_service_configuration_ios.mm",
     "policy_conversions_client_ios.h",
     "policy_conversions_client_ios.mm",
+    "reporting/browser_report_generator_ios.h",
+    "reporting/browser_report_generator_ios.mm",
+    "reporting/profile_report_generator_ios.h",
+    "reporting/profile_report_generator_ios.mm",
+    "reporting/report_generator_ios.h",
+    "reporting/report_generator_ios.mm",
+    "reporting/report_scheduler_ios.h",
+    "reporting/report_scheduler_ios.mm",
     "reporting/reporting_delegate_factory_ios.h",
     "reporting/reporting_delegate_factory_ios.mm",
     "schema_registry_factory.h",
@@ -35,6 +43,7 @@ source_set("policy") {
     "//components/password_manager/core/common",
     "//components/policy:generated",
     "//components/policy/core/common",
+    "//components/policy/proto",
     "//components/safe_browsing/core/common:safe_browsing_policy_handler",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/search_engines",
@@ -45,6 +54,9 @@ source_set("policy") {
     "//ios/chrome/browser",
     "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/common",
+    "//ios/public/provider/chrome/browser/signin",
     "//services/network/public/cpp",
   ]
 
@@ -117,7 +129,10 @@ bundle_data("test_resources") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [ "policy_unittest.mm" ]
+  sources = [
+    "browser_dm_token_storage_ios_unittest.mm",
+    "policy_unittest.mm",
+  ]
   deps = [
     ":policy",
     ":test_resources",

@@ -15,12 +15,14 @@
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/test_launcher_test_utils.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/multiprocess_test.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/multiprocess_func_list.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -708,12 +710,12 @@ TEST(MockUnitTests, DISABLED_FailTest) {
 TEST(MockUnitTests, DISABLED_CrashTest) {
   IMMEDIATE_CRASH();
 }
-// Basic test will not be reached with default batch size.
+// Basic test will not be reached, due to the preceding crash in the same batch.
 TEST(MockUnitTests, DISABLED_NoRunTest) {
   ASSERT_TRUE(true);
 }
 
-// Using TestLauncher to launch 3 simple unitests
+// Using TestLauncher to launch 3 basic unitests
 // and validate the resulting json file.
 TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   CommandLine command_line(CommandLine::ForCurrentProcess()->GetProgram());

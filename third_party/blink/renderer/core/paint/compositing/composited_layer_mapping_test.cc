@@ -1623,6 +1623,8 @@ TEST_F(CompositedLayerMappingTest,
 
   UpdateAllLifecyclePhasesForTest();
 
+  ASSERT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
+
   // 100px down from squashing's main graphics layer.
   EXPECT_EQ(IntPoint(0, 100),
             squashed->GraphicsLayerBacking()->GetOffsetFromTransformNode());

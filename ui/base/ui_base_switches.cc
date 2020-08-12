@@ -31,9 +31,6 @@ const char kDisableCompositedAntialiasing[] = "disable-composited-antialiasing";
 // Disables use of DWM composition for top level windows.
 const char kDisableDwmComposition[] = "disable-dwm-composition";
 
-// Disables touch adjustment.
-const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
-
 // Disables touch event based drag and drop.
 const char kDisableTouchDragDrop[] = "disable-touch-drag-drop";
 

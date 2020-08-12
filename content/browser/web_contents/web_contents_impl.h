@@ -1395,6 +1395,40 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     WebContentsImpl* focused_web_contents_;
   };
 
+  // Container for WebContentsObservers, which knows when we are iterating over
+  // observer set.
+  class WebContentsObserverList {
+   public:
+    WebContentsObserverList();
+    ~WebContentsObserverList();
+
+    void AddObserver(WebContentsObserver* observer);
+    void RemoveObserver(WebContentsObserver* observer);
+
+    template <class ForEachCallable>
+    void ForEachObserver(const ForEachCallable& callable) {
+      TRACE_EVENT0("content", "Iterating over WebContentsObservers");
+      base::AutoReset<bool> scope(&is_notifying_observers_, true);
+      for (WebContentsObserver& observer : observers_) {
+        TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("content.verbose"),
+                     "Dispatching WebContentsObserver callback");
+        callable(&observer);
+      }
+    }
+
+    bool is_notifying_observers() { return is_notifying_observers_; }
+
+    // Exposed to deal with IPC message handlers which need to stop iteration
+    // early.
+    const base::ObserverList<WebContentsObserver>::Unchecked& observer_list() {
+      return observers_;
+    }
+
+   private:
+    bool is_notifying_observers_ = false;
+    base::ObserverList<WebContentsObserver>::Unchecked observers_;
+  };
+
   // See WebContents::Create for a description of these parameters.
   explicit WebContentsImpl(BrowserContext* browser_context);
 
@@ -1719,7 +1753,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // This MUST be listed above frame_tree_ since at destruction time the
   // latter might cause RenderViewHost's destructor to call us and we might use
   // the observer list then.
-  base::ObserverList<WebContentsObserver>::Unchecked observers_;
+  WebContentsObserverList observers_;
 
   // Associated interface receiver sets attached to this WebContents.
   std::map<std::string, WebContentsReceiverSet*> receiver_sets_;

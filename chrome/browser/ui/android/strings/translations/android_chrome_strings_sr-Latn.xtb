@@ -331,7 +331,6 @@ Dodirnite i zadržite bilo koju reč za pretragu. Da biste precizirali pretragu,
 <translation id="3568688522516854065">Da bi vam kartice bile dostupne na drugim uređajima, prijavite se i uključite sinhronizaciju</translation>
 <translation id="3587482841069643663">Sve</translation>
 <translation id="3587596251841506391">Poboljšajte bezbednost na vebu</translation>
-<translation id="3590487821116122040">Memorijski prostor za sajtove koji Chrome ne smatra važnim (npr. sajtovi bez sačuvanih podešavanja ili sajtovi koje ne posećujete često)</translation>
 <translation id="3594780231884063836">Isključite zvuk videa</translation>
 <translation id="3599863153486145794">Briše istoriju sa svih uređaja na kojima ste prijavljeni. Google nalog može da ima druge oblike istorije pregledanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -384,7 +383,6 @@ Dodirnite i zadržite bilo koju reč za pretragu. Da biste precizirali pretragu,
 <translation id="3987993985790029246">Kopiraj link</translation>
 <translation id="3988213473815854515">Lokacija je dozvoljena</translation>
 <translation id="3988466920954086464">Pogledajte instant rezultate pretrage na ovoj tabli</translation>
-<translation id="3997476611815694295">Nevažan memorijski prostor</translation>
 <translation id="4000212216660919741">Oflajn početna stranica</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# č}one{# č}few{# č}other{# č}}</translation>
 <translation id="4056223980640387499">Sepija</translation>
@@ -562,7 +560,6 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5433691172869980887">Korisničko ime je kopirano</translation>
 <translation id="543509235395288790">Preuzimaju se datoteke (<ph name="COUNT" />: <ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Prelazak na traku za adresu</translation>
-<translation id="5447201525962359567">Celokupan memorijski prostor za sajt, uključujući kolačiće i druge lokalno sačuvane podatke</translation>
 <translation id="545042621069398927">Preuzimanje se ubrzava.</translation>
 <translation id="5456381639095306749">Preuzmi stranicu</translation>
 <translation id="548278423535722844">Otvorite u aplikaciji za mape</translation>

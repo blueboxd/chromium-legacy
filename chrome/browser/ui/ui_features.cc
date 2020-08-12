@@ -59,6 +59,11 @@ const base::Feature kReadLater{"ReadLater", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the signin promo page for the profile creation flow.
+// https:://crbug.com/1105865
+const base::Feature kSignInProfileCreationFlow{
+    "SignInProfileCreationFlow", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables grouping tabs together in the tab strip. https://crbug.com/905491
 const base::Feature kTabGroups{"TabGroups", base::FEATURE_DISABLED_BY_DEFAULT};
 

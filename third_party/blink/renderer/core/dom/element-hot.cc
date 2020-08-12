@@ -120,45 +120,45 @@ std::pair<wtf_size_t, const QualifiedName> Element::LookupAttributeQNameHinted(
                                  g_null_atom));
 }
 
-void Element::setAttribute(const QualifiedName& name, AtomicString value) {
+void Element::setAttribute(const QualifiedName& name,
+                           const AtomicString& value) {
   SynchronizeAttribute(name);
   wtf_size_t index = GetElementData()
                          ? GetElementData()->Attributes().FindIndex(name)
                          : kNotFound;
-  SetAttributeInternal(index, name, std::move(value),
+  SetAttributeInternal(index, name, value,
                        kNotInSynchronizationOfLazyAttribute);
 }
 
 void Element::setAttribute(const QualifiedName& name,
-                           AtomicString value,
+                           const AtomicString& value,
                            ExceptionState& exception_state) {
   SynchronizeAttribute(name);
   wtf_size_t index = GetElementData()
                          ? GetElementData()->Attributes().FindIndex(name)
                          : kNotFound;
 
-  AtomicString trusted_value(TrustedTypesCheckFor(
-      ExpectedTrustedTypeForAttribute(name), std::move(value),
-      GetExecutionContext(), exception_state));
+  AtomicString trusted_value(
+      TrustedTypesCheckFor(ExpectedTrustedTypeForAttribute(name), value,
+                           GetExecutionContext(), exception_state));
   if (exception_state.HadException())
     return;
 
-  SetAttributeInternal(index, name, std::move(trusted_value),
+  SetAttributeInternal(index, name, trusted_value,
                        kNotInSynchronizationOfLazyAttribute);
 }
 
 void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
-                                           AtomicString value) {
+                                           const AtomicString& value) {
   wtf_size_t index = GetElementData()
                          ? GetElementData()->Attributes().FindIndex(name)
                          : kNotFound;
-  SetAttributeInternal(index, name, std::move(value),
-                       kInSynchronizationOfLazyAttribute);
+  SetAttributeInternal(index, name, value, kInSynchronizationOfLazyAttribute);
 }
 
 void Element::SetAttributeHinted(const AtomicString& local_name,
                                  WTF::AtomicStringTable::WeakResult hint,
-                                 AtomicString value,
+                                 const AtomicString& value,
                                  ExceptionState& exception_state) {
   if (!Document::IsValidName(local_name)) {
     exception_state.ThrowDOMException(
@@ -178,7 +178,7 @@ void Element::SetAttributeHinted(const AtomicString& local_name,
   if (exception_state.HadException())
     return;
 
-  SetAttributeInternal(index, q_name, std::move(trusted_value),
+  SetAttributeInternal(index, q_name, trusted_value,
                        kNotInSynchronizationOfLazyAttribute);
 }
 
@@ -204,14 +204,14 @@ void Element::SetAttributeHinted(
       GetExecutionContext(), exception_state));
   if (exception_state.HadException())
     return;
-  SetAttributeInternal(index, q_name, std::move(value),
+  SetAttributeInternal(index, q_name, value,
                        kNotInSynchronizationOfLazyAttribute);
 }
 
 ALWAYS_INLINE void Element::SetAttributeInternal(
     wtf_size_t index,
     const QualifiedName& name,
-    AtomicString new_value,
+    const AtomicString& new_value,
     SynchronizationOfLazyAttribute in_synchronization_of_lazy_attribute) {
   if (new_value.IsNull()) {
     if (index != kNotFound)
@@ -220,32 +220,25 @@ ALWAYS_INLINE void Element::SetAttributeInternal(
   }
 
   if (index == kNotFound) {
-    AppendAttributeInternal(name, std::move(new_value),
+    AppendAttributeInternal(name, new_value,
                             in_synchronization_of_lazy_attribute);
     return;
   }
 
   const Attribute& existing_attribute =
       GetElementData()->Attributes().at(index);
+  AtomicString existing_attribute_value = existing_attribute.Value();
+  QualifiedName existing_attribute_name = existing_attribute.GetName();
 
   if (!in_synchronization_of_lazy_attribute) {
-    WillModifyAttribute(existing_attribute.GetName(),
-                        existing_attribute.Value(), new_value);
+    WillModifyAttribute(existing_attribute_name, existing_attribute_value,
+                        new_value);
   }
-
-  AtomicString old_value_storage;  // Keep the old value alive in an update.
-  const AtomicString* old_val_ptr = &existing_attribute.Value();
-  const AtomicString* new_val_ptr = &new_value;
-  if (new_value != *old_val_ptr) {
-    Attribute& attribute = EnsureUniqueElementData().Attributes().at(index);
-    old_value_storage = attribute.ExchangeValue(std::move(new_value));
-    old_val_ptr = &old_value_storage;
-    new_val_ptr = &attribute.Value();
-  }
-
+  if (new_value != existing_attribute_value)
+    EnsureUniqueElementData().Attributes().at(index).SetValue(new_value);
   if (!in_synchronization_of_lazy_attribute) {
-    DidModifyAttribute(existing_attribute.GetName(), *old_val_ptr,
-                       *new_val_ptr);
+    DidModifyAttribute(existing_attribute_name, existing_attribute_value,
+                       new_value);
   }
 }
 
@@ -308,7 +301,7 @@ Attr* Element::setAttributeNode(Attr* attr_node,
     }
   }
 
-  SetAttributeInternal(index, attr_node->GetQualifiedName(), std::move(value),
+  SetAttributeInternal(index, attr_node->GetQualifiedName(), value,
                        kNotInSynchronizationOfLazyAttribute);
 
   attr_node->AttachToElement(this, local_name);

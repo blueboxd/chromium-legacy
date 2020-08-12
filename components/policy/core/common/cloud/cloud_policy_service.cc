@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -133,8 +134,7 @@ void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
     } else if (policy_type_ == dm_protocol::kChromeDevicePolicyType) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Enterprise.PolicyUpdatePeriod.Device",
                                   age.InDays(), 1, 1000, 100);
-    } else if (policy_type_ ==
-               dm_protocol::kChromeMachineLevelUserCloudPolicyType) {
+    } else if (IsMachineLevelUserCloudPolicyType(policy_type_)) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Enterprise.PolicyUpdatePeriod.MachineLevelUser", age.InDays(), 1,
           1000, 100);

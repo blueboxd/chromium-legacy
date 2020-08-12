@@ -529,12 +529,15 @@ void RunSimulation(const base::FilePath& source_path,
   // Subtract fraction of dropped frames from |elapsed_time| before estimating
   // the average encoded bitrate.
   const base::TimeDelta elapsed_time_undropped =
-      total_video_frames <= 0 ? base::TimeDelta() :
-      (elapsed_time * (total_video_frames - dropped_video_frames) /
-           total_video_frames);
+      total_video_frames <= 0
+          ? base::TimeDelta()
+          : (elapsed_time * (total_video_frames - dropped_video_frames) /
+             total_video_frames);
+  constexpr double kKilobitsPerByte = 8.0 / 1000;
   const double avg_encoded_bitrate =
-      elapsed_time_undropped <= base::TimeDelta() ? 0 :
-      8.0 * encoded_size / elapsed_time_undropped.InSecondsF() / 1000;
+      elapsed_time_undropped <= base::TimeDelta()
+          ? 0
+          : encoded_size * kKilobitsPerByte * elapsed_time_undropped.ToHz();
   double avg_target_bitrate =
       !encoded_video_frames ? 0 : target_bitrate / encoded_video_frames / 1000;
 

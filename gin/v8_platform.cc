@@ -498,17 +498,19 @@ std::unique_ptr<v8::JobHandle> V8Platform::PostJob(
       task_traits = kBlockingTaskTraits;
       break;
   }
-  auto handle = base::PostJob(
-      FROM_HERE, task_traits,
-      base::BindRepeating(
-          [](v8::JobTask* job_task, base::JobDelegate* delegate) {
-            JobDelegateImpl delegate_impl(delegate);
-            job_task->Run(&delegate_impl);
-          },
-          base::Unretained(job_task.get())),
-      base::BindRepeating(
-          [](v8::JobTask* job_task) { return job_task->GetMaxConcurrency(); },
-          base::Unretained(job_task.get())));
+  auto handle =
+      base::PostJob(FROM_HERE, task_traits,
+                    base::BindRepeating(
+                        [](v8::JobTask* job_task, base::JobDelegate* delegate) {
+                          JobDelegateImpl delegate_impl(delegate);
+                          job_task->Run(&delegate_impl);
+                        },
+                        base::Unretained(job_task.get())),
+                    base::BindRepeating(
+                        [](v8::JobTask* job_task, size_t /*worker_count*/) {
+                          return job_task->GetMaxConcurrency();
+                        },
+                        base::Unretained(job_task.get())));
 
   return std::make_unique<JobHandleImpl>(std::move(handle),
                                          std::move(job_task));

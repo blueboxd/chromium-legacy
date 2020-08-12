@@ -331,7 +331,6 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="3568688522516854065">Oma teistest seadmetest vahelehtede hankimiseks logige sisse ja lülitage sünkroonimine sisse</translation>
 <translation id="3587482841069643663">Kõik</translation>
 <translation id="3587596251841506391">Aidake veebi turvalisemaks muuta</translation>
-<translation id="3590487821116122040">Saitide salvestusruum, mida Chrome peab ebatähtsaks (nt saidid, mida külastate harva või millel ei ole salvestatud seadeid)</translation>
 <translation id="3594780231884063836">Video vaigistamine</translation>
 <translation id="3599863153486145794">Kustutab ajaloo kõigist sisselogitud seadmetest. Aadressil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu.</translation>
 <translation id="3616113530831147358">Heli</translation>
@@ -384,7 +383,6 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="3987993985790029246">Kop. link</translation>
 <translation id="3988213473815854515">Asukoht on lubatud</translation>
 <translation id="3988466920954086464">Vaadake kiirotsingu tulemusi sellel paneelil</translation>
-<translation id="3997476611815694295">Ebatähtis salvestusruum</translation>
 <translation id="4000212216660919741">Võrguühenduseta avaleht</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4056223980640387499">Seepia</translation>
@@ -562,7 +560,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5433691172869980887">Kasutajanimi on kopeeritud</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> faili allalaadimine (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Aadressiribale liikumine</translation>
-<translation id="5447201525962359567">Saidi kogu salvestusruum, sh küpsised ja muud kohalikus seadmes talletatud andmed</translation>
 <translation id="545042621069398927">Allalaadimise kiirendamine.</translation>
 <translation id="5456381639095306749">Laadi leht alla</translation>
 <translation id="548278423535722844">Avage kaardirakenduses</translation>

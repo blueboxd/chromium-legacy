@@ -79,7 +79,7 @@ class DocumentLoaderImpl : public DocumentLoader {
   std::unique_ptr<URLLoaderWrapper> loader_;
 
   DataStream chunk_stream_;
-  bool partial_loading_enabled_ = true;
+  bool partial_loading_enabled_;  // Default determined by `kPdfPartialLoading`.
   bool is_partial_loader_active_ = false;
 
   static constexpr uint32_t kReadBufferSize = 256 * 1024;

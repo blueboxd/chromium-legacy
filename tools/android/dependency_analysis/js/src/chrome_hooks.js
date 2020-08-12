@@ -23,19 +23,19 @@ function shortenClassName(name) {
 }
 
 /**
- * Shortens a class name, including its package in parentheses at the end.
- * @param {string} name The full class name to shorten.
- * @return {string} The shortened class name.
+ * Splits a full class name into its package and class name.
+ * @param {string} name The full class name to split.
+ * @return {!Array<string>} An array of [packageName, className].
  */
-function shortenClassNameWithPackage(name) {
+function splitClassName(name) {
   const lastDotIdx = name.lastIndexOf('.');
   const packageName = name.substring(0, lastDotIdx);
   const className = name.substring(lastDotIdx + 1);
-  return `${className} (${shortenPackageName(packageName)})`;
+  return [packageName, className];
 }
 
 export {
   shortenPackageName,
   shortenClassName,
-  shortenClassNameWithPackage,
+  splitClassName,
 };

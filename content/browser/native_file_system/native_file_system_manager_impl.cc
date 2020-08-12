@@ -823,16 +823,15 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
   if (options.type() ==
       blink::mojom::ChooseFileSystemEntryType::kOpenDirectory) {
     DCHECK_EQ(entries.size(), 1u);
-    if (permission_context_) {
-      permission_context_->ConfirmDirectoryReadAccess(
-          binding_context.origin, entries.front(), binding_context.frame_id,
-          base::BindOnce(&NativeFileSystemManagerImpl::DidChooseDirectory, this,
-                         binding_context, entries.front(),
-                         std::move(callback)));
-    } else {
-      DidChooseDirectory(binding_context, entries.front(), std::move(callback),
-                         PermissionStatus::GRANTED);
-    }
+    SharedHandleState shared_handle_state = GetSharedHandleStateForPath(
+        entries.front(), binding_context.origin, {}, HandleType::kDirectory,
+        NativeFileSystemPermissionContext::UserAction::kOpen);
+    shared_handle_state.read_grant->RequestPermission(
+        binding_context.frame_id,
+        NativeFileSystemPermissionGrant::UserActivationState::kNotRequired,
+        base::BindOnce(&NativeFileSystemManagerImpl::DidChooseDirectory, this,
+                       binding_context, entries.front(), std::move(callback),
+                       shared_handle_state));
     return;
   }
 
@@ -881,20 +880,31 @@ void NativeFileSystemManagerImpl::DidChooseDirectory(
     const BindingContext& binding_context,
     const base::FilePath& path,
     ChooseEntriesCallback callback,
-    NativeFileSystemPermissionContext::PermissionStatus permission) {
+    const SharedHandleState& shared_handle_state,
+    NativeFileSystemPermissionGrant::PermissionRequestOutcome outcome) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::UmaHistogramEnumeration(
-      "NativeFileSystemAPI.ConfirmReadDirectoryResult", permission);
+      "NativeFileSystemAPI.ConfirmReadDirectoryResult",
+      shared_handle_state.read_grant->GetStatus());
 
   std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
-  if (permission != PermissionStatus::GRANTED) {
+  if (shared_handle_state.read_grant->GetStatus() !=
+      PermissionStatus::GRANTED) {
     std::move(callback).Run(native_file_system_error::FromStatus(
                                 NativeFileSystemStatus::kOperationAborted),
                             std::move(result_entries));
     return;
   }
 
-  result_entries.push_back(CreateDirectoryEntryFromPath(binding_context, path));
+  auto url = CreateFileSystemURLFromPath(binding_context.origin, path);
+
+  result_entries.push_back(blink::mojom::NativeFileSystemEntry::New(
+      blink::mojom::NativeFileSystemHandle::NewDirectory(CreateDirectoryHandle(
+          binding_context, url.url,
+          SharedHandleState(shared_handle_state.read_grant,
+                            shared_handle_state.write_grant,
+                            std::move(url.file_system)))),
+      url.base_name));
   std::move(callback).Run(native_file_system_error::Ok(),
                           std::move(result_entries));
 }

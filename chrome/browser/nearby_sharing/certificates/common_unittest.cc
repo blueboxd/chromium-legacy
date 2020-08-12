@@ -3,11 +3,21 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/nearby_sharing/certificates/common.h"
+
+#include "base/containers/span.h"
 #include "chrome/browser/nearby_sharing/certificates/constants.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_decrypted_public_certificate.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_private_certificate.h"
 #include "chrome/browser/nearby_sharing/certificates/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+TEST(NearbyShareCertificatesCommonTest, AuthenticationTokenHash) {
+  EXPECT_EQ(GetNearbyShareTestPayloadHashUsingSecretKey(),
+            ComputeAuthenticationTokenHash(
+                GetNearbyShareTestPayloadToSign(),
+                base::as_bytes(
+                    base::make_span(GetNearbyShareTestSecretKey()->key()))));
+}
 
 TEST(NearbyShareCertificatesCommonTest, ValidityPeriod_PrivateCertificate) {
   NearbySharePrivateCertificate cert =

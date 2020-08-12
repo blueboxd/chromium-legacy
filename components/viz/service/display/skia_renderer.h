@@ -92,6 +92,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void DidChangeVisibility() override;
   void FinishDrawingQuadList() override;
   void GenerateMipmap() override;
+  bool CreateDelegatedInkPointRenderer() override;
 
  private:
   enum class BypassMode;

@@ -31,7 +31,8 @@
 class HatsNextWebDialog::WebContentsDelegate
     : public content::WebContentsDelegate {
  public:
-  explicit WebContentsDelegate(Browser* browser) : browser_(browser) {}
+  explicit WebContentsDelegate(Browser* browser, HatsNextWebDialog* dialog)
+      : browser_(browser), dialog_(dialog) {}
 
   bool IsWebContentsCreationOverridden(
       content::SiteInstance* source_site_instance,
@@ -61,8 +62,23 @@ class HatsNextWebDialog::WebContentsDelegate
     return nullptr;
   }
 
+  void SetContentsBounds(content::WebContents* source,
+                         const gfx::Rect& bounds) override {
+    // Check that the provided bounds do not exceed the dummy window size
+    // provided to the HaTS library by the wrapper website. These are defined
+    // in the website source at google3/chrome/hats/website/www/index.html.
+    if (bounds.width() > 800 || bounds.height() > 600) {
+      LOG(ERROR) << "Desired dimensions provided by contents exceed maximum"
+                 << "allowable.";
+      dialog_->CloseWidget();
+      return;
+    }
+    dialog_->UpdateWidgetSize(bounds.size());
+  }
+
  private:
   Browser* browser_;
+  HatsNextWebDialog* dialog_;
 };
 
 // A thin wrapper that forwards the reference part of the URL associated with
@@ -147,11 +163,7 @@ bool HatsNextWebDialog::HandleContextMenu(
 }
 
 gfx::Size HatsNextWebDialog::CalculatePreferredSize() const {
-  // Default width/height of the dialog in screen size, these values are derived
-  // from the size of the HaTS HTML component displayed by this dialog.
-  constexpr int kDefaultHatsDialogWidth = 363;
-  constexpr int kDefaultHatsDialogHeight = 440;
-  return gfx::Size(kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
+  return size_;
 }
 
 void HatsNextWebDialog::OnProfileWillBeDestroyed(Profile* profile) {
@@ -183,12 +195,14 @@ HatsNextWebDialog::HatsNextWebDialog(Browser* browser,
   web_view_ = AddChildView(std::make_unique<views::WebDialogView>(
       otr_profile_, this, std::make_unique<ChromeWebContentsHandler>(),
       /* use_dialog_frame */ true));
+  set_margins(gfx::Insets());
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
 
   web_contents_observer_ =
       std::make_unique<WebContentsObserver>(web_view_->web_contents(), this);
 
-  web_contents_delegate_ = std::make_unique<WebContentsDelegate>(browser_);
+  web_contents_delegate_ =
+      std::make_unique<WebContentsDelegate>(browser_, this);
   web_view_->web_contents()->SetDelegate(web_contents_delegate_.get());
 
   loading_timer_.Start(FROM_HERE, timeout_,
@@ -231,6 +245,11 @@ void HatsNextWebDialog::ShowWidget() {
 
 void HatsNextWebDialog::CloseWidget() {
   widget_->Close();
+}
+
+void HatsNextWebDialog::UpdateWidgetSize(gfx::Size size) {
+  size_ = size;
+  SizeToContents();
 }
 
 bool HatsNextWebDialog::IsWaitingForSurveyForTesting() {

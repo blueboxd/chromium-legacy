@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 296 tests; 252 PASS, 44 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 296 tests; 253 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Navigator: original interface defined
@@ -216,7 +216,7 @@ PASS FetchEvent interface: attribute preloadResponse
 PASS FetchEvent interface: attribute clientId
 PASS FetchEvent interface: attribute resultingClientId
 FAIL FetchEvent interface: attribute replacesClientId assert_true: The prototype object must have a property "replacesClientId" expected true got false
-FAIL FetchEvent interface: attribute handled assert_true: The prototype object must have a property "handled" expected true got false
+PASS FetchEvent interface: attribute handled
 PASS FetchEvent interface: operation respondWith(Promise<Response>)
 FAIL FetchEvent must be primary interface of new FetchEvent("type") assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'FetchEvent': 2 arguments required, but only 1 present."
 FAIL Stringification of new FetchEvent("type") assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'FetchEvent': 2 arguments required, but only 1 present."

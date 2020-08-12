@@ -107,7 +107,6 @@
 <translation id="2085470240340828803">Файл <ph name="FILENAME" /> уже существует. Выберите необходимое действие.</translation>
 <translation id="2121825465123208577">Изменить размер</translation>
 <translation id="2136953289241069843">Транслитерация (namaste → नमस्कार)</translation>
-<translation id="2138867954865495510">Не удалось открыть <ph name="PATH" />. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="2163152940313951844">Недопустимый символ: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2164862903024139959">Вьетнамская раскладка (TCVN)</translation>
 <translation id="2168214441502403371">Персидская раскладка</translation>

@@ -17619,11 +17619,15 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlap) {
   occluding_frame_layer->SetBounds(gfx::Size(50, 50));
   occluding_frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), occluding_frame_layer);
-  CreateTransformNode(occluding_frame_layer).frame_element_id = ElementId(0x20);
+  CreateTransformNode(occluding_frame_layer,
+                      frame_layer->transform_tree_index())
+      .frame_element_id = ElementId(0x20);
   occluding_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
 
   UpdateDrawProperties(host_impl_->active_tree());
 
+  EXPECT_EQ(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(15, 15)),
+            ElementId(0x10));
   EXPECT_EQ(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(30, 30)),
             ElementId(0x20));
 }
@@ -17668,7 +17672,8 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlapRoundedCorners) {
   rounded_frame_layer->SetBounds(gfx::Size(50, 50));
   rounded_frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), rounded_frame_layer);
-  CreateTransformNode(rounded_frame_layer).frame_element_id = ElementId(0x20);
+  CreateTransformNode(rounded_frame_layer, frame_layer->transform_tree_index())
+      .frame_element_id = ElementId(0x20);
   rounded_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
 
   // Add rounded corners to the layer, which are unable to be hit tested by the
@@ -17680,6 +17685,36 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlapRoundedCorners) {
 
   // The lookup should bail out in the presence of a complex clip/mask on the
   // target chain.
+  EXPECT_FALSE(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(30, 30)));
+}
+
+TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlapSibling) {
+  SetupDefaultRootLayer(gfx::Size(100, 100));
+
+  LayerImpl* frame_layer = AddLayer();
+  frame_layer->SetBounds(gfx::Size(50, 50));
+  frame_layer->SetHitTestable(true);
+  CopyProperties(root_layer(), frame_layer);
+  CreateTransformNode(frame_layer, root_layer()->transform_tree_index())
+      .frame_element_id = ElementId(0x20);
+
+  LayerImpl* sibling_frame_layer = AddLayer();
+  sibling_frame_layer->SetBounds(gfx::Size(50, 50));
+  sibling_frame_layer->SetHitTestable(true);
+  CopyProperties(root_layer(), sibling_frame_layer);
+  CreateTransformNode(sibling_frame_layer, root_layer()->transform_tree_index())
+      .frame_element_id = ElementId(0x30);
+  sibling_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  UpdateDrawProperties(host_impl_->active_tree());
+
+  EXPECT_EQ(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(15, 15)),
+            ElementId(0x20));
+  EXPECT_EQ(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(60, 60)),
+            ElementId(0x30));
+
+  // If we have a layer occluded by a layer from another document, attributions
+  // should be discarded outside of the simple frame -> subframe case.
   EXPECT_FALSE(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(30, 30)));
 }
 

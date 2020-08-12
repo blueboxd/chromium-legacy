@@ -115,9 +115,9 @@ WGPUBufferCopyView AsDawnType(const GPUBufferCopyView* webgpu_view) {
   WGPUBufferCopyView dawn_view = {};
   dawn_view.nextInChain = nullptr;
   dawn_view.buffer = webgpu_view->buffer()->GetHandle();
-  dawn_view.offset = webgpu_view->offset();
-  dawn_view.bytesPerRow = webgpu_view->bytesPerRow();
-  dawn_view.rowsPerImage = webgpu_view->rowsPerImage();
+  dawn_view.layout.offset = webgpu_view->offset();
+  dawn_view.layout.bytesPerRow = webgpu_view->bytesPerRow();
+  dawn_view.layout.rowsPerImage = webgpu_view->rowsPerImage();
   return dawn_view;
 }
 

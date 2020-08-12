@@ -60,6 +60,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       has_connection_(false),
       browser_context_(browser_context),
       prev_routing_id_(0),
+      shutdown_requested_(false),
       fast_shutdown_started_(false),
       deletion_callback_called_(false),
       is_for_guests_only_(false),
@@ -202,7 +203,12 @@ void MockRenderProcessHost::AddWord(const base::string16& word) {
 }
 
 bool MockRenderProcessHost::Shutdown(int exit_code) {
+  shutdown_requested_ = true;
   return true;
+}
+
+bool MockRenderProcessHost::ShutdownRequested() {
+  return shutdown_requested_;
 }
 
 bool MockRenderProcessHost::FastShutdownIfPossible(size_t page_count,

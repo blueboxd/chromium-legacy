@@ -6,6 +6,8 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_issue_with_form.h"
@@ -52,6 +54,8 @@
   if (self) {
     _baseNavigationController = navigationController;
     _manager = manager;
+    _dispatcher = HandlerForProtocol(self.browser->GetCommandDispatcher(),
+                                     ApplicationCommands);
   }
   return self;
 }

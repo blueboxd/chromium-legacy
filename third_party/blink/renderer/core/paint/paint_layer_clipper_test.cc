@@ -429,6 +429,8 @@ TEST_F(PaintLayerClipperTest, ClearClipRectsRecursive) {
   // logic does not apply.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
+  if (RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
+    return;
 
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -463,6 +465,8 @@ TEST_F(PaintLayerClipperTest, ClearClipRectsRecursiveChild) {
   // CAP will re-use a global GeometryMapper, so this
   // logic does not apply.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+  if (RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(

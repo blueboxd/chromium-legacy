@@ -64,7 +64,6 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(
                         time_origin,
                         ukm_source_id),
       token_(token) {
-  DCHECK(token);
   appcache_host_ = MakeGarbageCollected<ApplicationCacheHostForWorker>(
       appcache_host_id, GetBrowserInterfaceBroker(),
       GetTaskRunner(TaskType::kInternalLoading), this);

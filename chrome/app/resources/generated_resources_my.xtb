@@ -63,7 +63,7 @@
 <translation id="1067048845568873861">ပြုလုပ်ပြီးပါပြီ</translation>
 <translation id="1067291318998134776">Linux (စမ်းသပ်ဆော့ဖ်ဝဲ)</translation>
 <translation id="1067922213147265141">အခြား Google ဝန်ဆောင်မှုများ</translation>
-<translation id="1068961867683064946">သင့်ကလေးအတွက် Google အကောင့်ဖွင့်ပါ</translation>
+<translation id="1068961867683064946">သင့်ကလေးအတွက် Google Account ဖွင့်ပါ</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">သင့်ကွန်ပျူတာသို့ Chrome အလုပ်လုပ်ပုံပြောင်းလဲစေမည့် ပရိုဂရမ်အဆက်တစ်ခုကို အခြားပရိုဂရမ်တစ်ခုမှ ပေါင်းတည့်ခဲ့ပါသည်။
 
@@ -1095,7 +1095,7 @@
 <translation id="2307462900900812319">ကွန်ရက် ပြုပြင်ရန်</translation>
 <translation id="230927227160767054">ဤစာမျက်နှာသည် ဝန်ဆောင်မှု ကိုင်တွယ်ကိရိယာအား ထည့်သွင်းလိုသည်။</translation>
 <translation id="2309620859903500144">သင်၏လှုပ်ရှားမှု သို့မဟုတ် အလင်းရောင် အာရုံခံကိရိယာ အသုံးပြုခွင့်ကို ဤဝဘ်ဆိုက်အတွက် ပိတ်ထားပါသည်။</translation>
-<translation id="2314873619957287124">သင့်ကလေး လေ့လာခြင်း၊ ကစားရာခြင်းနှင့် စူးစမ်းရှာဖွေခြင်းတို့တွင် ကူညီရန် အခြေခံဒစ်ဂျစ်တယ် စည်းမျဉ်းများ သတ်မှတ်ပါ</translation>
+<translation id="2314873619957287124">သင့်ကလေး လေ့လာခြင်း၊ ကစားခြင်းနှင့် စူးစမ်းရှာဖွေခြင်းတို့တွင် ကူညီရန် အခြေခံဒစ်ဂျစ်တယ် စည်းမျဉ်းများ သတ်မှတ်ပါ</translation>
 <translation id="2315414688463285945">Linux ဖိုင်များကို စီစဉ်သတ်မှတ်ရာတွင် အမှားအယွင်းရှိနေသည်။ ထပ်စမ်းကြည့်ပါ။</translation>
 <translation id="2315587498123194634">လင့်ခ်ကို <ph name="DEVICE_NAME" /> သို့ ပို့ရန်</translation>
 <translation id="2316129865977710310">မလိုပါ</translation>
@@ -1107,7 +1107,7 @@
 <translation id="2322318151094136999">ဝဘ်ဆိုက်က အစဉ်လိုက်ပို့တ်များကို အသုံးပြုလိုသည့်အခါ ခွင့်တောင်းရန် (အကြံပြုထားသည်)</translation>
 <translation id="2323018538045954000">သိမ်းထားသော Wi-Fi ကွန်ရက်များ</translation>
 <translation id="2325444234681128157">စကားဝှက်ကို မှတ်ထားရန်</translation>
-<translation id="2326160999284776503">သင့်ကလေး၏ 'Google အကောင့်' ဖြင့် လက်မှတ်ထိုးဝင်ပါ</translation>
+<translation id="2326160999284776503">သင့်ကလေး၏ Google Account ဖြင့် လက်မှတ်ထိုးဝင်ပါ</translation>
 <translation id="2326188115274135041">အလိုအလျောက်ဖွင့်ရန်ကို ဖွင့်ရန် ပင်နံပါတ်ကို အတည်ပြုပါ</translation>
 <translation id="2326931316514688470">အက်ပ်ကို ပြန်စရန်</translation>
 <translation id="2327492829706409234">အက်ပ်ကို ဖွင့်ထားရန်</translation>
@@ -2281,7 +2281,6 @@
 <translation id="3748706263662799310">ချွတ်ယွင်းမှုကို တိုင်ကြားရန်</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">ကျွန်ုပ်၏ စက်ပစ္စည်းများ</translation>
-<translation id="3752757212511661046">အလုပ်ပရိုဖိုင်ကို ဖန်တီးမလား။</translation>
 <translation id="3753033997400164841">တစ်ကြိမ် သိမ်းပါ။ နေရာတိုင်းတွင် အသုံးပြုပါ</translation>
 <translation id="3755411799582650620">သင်သည် ယခုတော့ သင်၏ <ph name="PHONE_NAME" /> ဖြင့် ဒီကိရိယာ <ph name="DEVICE_TYPE" />ကိုပါ သော့ဖွင့်ပေးနိုင်ပြီ။</translation>
 <translation id="375636864092143889">ဝဘ်ဆိုက်က သင့်မိုက်ခရိုဖုန်းကို အသုံးပြုနေသည်</translation>
@@ -2403,7 +2402,6 @@
 <translation id="3873423927483480833">ပင်နံပါတ်များ ပြရန်</translation>
 <translation id="3873915545594852654">ARC++ နှင့်ပက်သတ်၍ ပြဿနာရှိနေသည်။</translation>
 <translation id="3874164307099183178">Google Assistant ဖွင့်ရန်</translation>
-<translation id="387531380970557479">"<ph name="EXTENSION_NAME" />" တွင် မဲလ်ဝဲပါဝင်သည့်အတွက် ၎င်းကို ပိတ်လိုက်သည်။</translation>
 <translation id="3879748587602334249">ဒေါင်းလုဒ်မန်နေဂျာ</translation>
 <translation id="3881478300875776315">စာကြောင်းလျှော့၍ပြရန်</translation>
 <translation id="3882165008614329320">ကင်မရာ သို့မဟုတ် ဖိုင်မှ လက်ရှိဗီဒီယို</translation>
@@ -2923,7 +2921,6 @@
 <translation id="4562155214028662640">လက်ဗွေထည့်ရန်</translation>
 <translation id="4562494484721939086">ဝန်ဆောင်မှု မရှိပါ</translation>
 <translation id="4563210852471260509">အဦးဆုံးထည့်သွင်းရန် နည်းလမ်းမှာ တရုတ်ဖြစ်</translation>
-<translation id="4563404051166505887">ဓာတ်ပုံ 1 ပုံ</translation>
 <translation id="4563880231729913339">လက်ချောင်း ၃</translation>
 <translation id="4565377596337484307">စကားဝှက်ကို ဖျောက်ရန်</translation>
 <translation id="4565577809484439917">{NUM_DAYS,plural, =1{သင့်ဒေတာများ အရန်သိမ်းပြီး ဤ <ph name="DEVICE_TYPE" /> ကို ယနေ့ပြန်ပို့ရန် <ph name="DOMAIN" /> က သတ်မှတ်ထားသည်။}other{သင့်ဒေတာများ အရန်သိမ်းပြီး ဤ <ph name="DEVICE_TYPE" /> ကို နောက်ဆုံးသတ်မှတ်ရက်မတိုင်မီ ပြန်ပို့ရန် <ph name="DOMAIN" /> က သတ်မှတ်ထားသည်။}}</translation>

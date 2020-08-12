@@ -37,8 +37,6 @@ class ManagedByMenuItemViewBinder implements CustomViewBinder {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.managed_by_menu_item, parent, false);
         }
-
-        convertView.setEnabled(false);
         convertView.setFocusable(false);
 
         return convertView;

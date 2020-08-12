@@ -2280,7 +2280,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3748706263662799310">Report a bug</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">My devices</translation>
-<translation id="3752757212511661046">Create work profile?</translation>
 <translation id="3753033997400164841">Store once. Use everywhere</translation>
 <translation id="3755411799582650620">Your <ph name="PHONE_NAME" /> can now unlock this <ph name="DEVICE_TYPE" /> too.</translation>
 <translation id="375636864092143889">Site is using your microphone</translation>
@@ -2402,7 +2401,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3873423927483480833">Show PINs</translation>
 <translation id="3873915545594852654">A problem with ARC++ occurred.</translation>
 <translation id="3874164307099183178">Turn on Google Assistant</translation>
-<translation id="387531380970557479">'<ph name="EXTENSION_NAME" />' has been disabled because it contains malware.</translation>
 <translation id="3879748587602334249">Download manager</translation>
 <translation id="3881478300875776315">Show fewer lines</translation>
 <translation id="3882165008614329320">Existing video from camera or file</translation>
@@ -2923,7 +2921,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4562155214028662640">Add Fingerprint</translation>
 <translation id="4562494484721939086">No service</translation>
 <translation id="4563210852471260509">Initial input language is Chinese</translation>
-<translation id="4563404051166505887">1 photo</translation>
 <translation id="4563880231729913339">Finger 3</translation>
 <translation id="4565377596337484307">Hide password</translation>
 <translation id="4565577809484439917">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> requires you to back up your data and return this <ph name="DEVICE_TYPE" /> today.}other{<ph name="DOMAIN" /> requires you to back up your data and return this <ph name="DEVICE_TYPE" /> before the deadline.}}</translation>

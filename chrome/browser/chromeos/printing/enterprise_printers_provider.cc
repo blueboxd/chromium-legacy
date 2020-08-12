@@ -90,7 +90,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
     // Binds policy with recommended printers (deprecated). This method calls
     // indirectly RecalculateCurrentPrintersList() that prepares the first
     // version of final list of printers.
-    BindPref(prefs::kRecommendedNativePrinters,
+    BindPref(prefs::kRecommendedPrinters,
              &EnterprisePrintersProviderImpl::UpdateUserRecommendedPrinters);
   }
 
@@ -128,8 +128,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
   // printers. It is called when value of the policy changes.
   void UpdateUserRecommendedPrinters() {
     recommended_printers_.clear();
-    std::vector<std::string> data =
-        FromPrefs(prefs::kRecommendedNativePrinters);
+    std::vector<std::string> data = FromPrefs(prefs::kRecommendedPrinters);
     for (const auto& printer_json : data) {
       base::Optional<base::Value> printer_dictionary = base::JSONReader::Read(
           printer_json, base::JSON_ALLOW_TRAILING_COMMAS);
@@ -282,7 +281,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
 // static
 void EnterprisePrintersProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kRecommendedNativePrinters);
+  registry->RegisterListPref(prefs::kRecommendedPrinters);
   CalculatorsPoliciesBinder::RegisterProfilePrefs(registry);
 }
 

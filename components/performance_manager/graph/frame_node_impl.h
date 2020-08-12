@@ -18,6 +18,7 @@
 #include "components/performance_manager/public/render_frame_host_proxy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "url/gurl.h"
 
 namespace performance_manager {
@@ -70,7 +71,7 @@ class FrameNodeImpl
                 FrameNodeImpl* parent_frame_node,
                 int frame_tree_node_id,
                 int render_frame_id,
-                const FrameToken& frame_token,
+                const blink::LocalFrameToken& frame_token,
                 int32_t browsing_instance_id,
                 int32_t site_instance_id);
   ~FrameNodeImpl() override;
@@ -98,7 +99,7 @@ class FrameNodeImpl
   ProcessNodeImpl* process_node() const;
   int frame_tree_node_id() const;
   int render_frame_id() const;
-  const FrameToken& frame_token() const;
+  const blink::LocalFrameToken& frame_token() const;
   int32_t browsing_instance_id() const;
   int32_t site_instance_id() const;
   const RenderFrameHostProxy& render_frame_host_proxy() const;
@@ -169,7 +170,7 @@ class FrameNodeImpl
   const PageNode* GetPageNode() const override;
   const ProcessNode* GetProcessNode() const override;
   int GetFrameTreeNodeId() const override;
-  const FrameToken& GetFrameToken() const override;
+  const blink::LocalFrameToken& GetFrameToken() const override;
   int32_t GetBrowsingInstanceId() const override;
   int32_t GetSiteInstanceId() const override;
   bool VisitChildFrameNodes(const FrameNodeVisitor& visitor) const override;
@@ -263,7 +264,7 @@ class FrameNodeImpl
 
   // This is the unique token for this frame instance as per e.g.
   // RenderFrameHost::GetFrameToken().
-  const FrameToken frame_token_;
+  const blink::LocalFrameToken frame_token_;
 
   // The unique ID of the BrowsingInstance this frame belongs to. Frames in the
   // same BrowsingInstance are allowed to script each other at least

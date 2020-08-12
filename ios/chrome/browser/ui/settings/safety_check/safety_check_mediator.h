@@ -11,9 +11,12 @@
 
 #import <UIKit/UIKit.h>
 
+class AuthenticationService;
 class IOSChromePasswordCheckManager;
 class PrefService;
 @protocol SafetyCheckConsumer;
+@protocol SafetyCheckNavigationCommands;
+class SyncSetupService;
 
 @class SafetyCheckTableViewController;
 
@@ -27,12 +30,18 @@ class PrefService;
 - (instancetype)initWithUserPrefService:(PrefService*)userPrefService
                    passwordCheckManager:
                        (scoped_refptr<IOSChromePasswordCheckManager>)
-                           passwordCheckManager NS_DESIGNATED_INITIALIZER;
+                           passwordCheckManager
+                            authService:(AuthenticationService*)authService
+                            syncService:(SyncSetupService*)syncService
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 // The consumer for the Safety Check mediator.
 @property(nonatomic, weak) id<SafetyCheckConsumer> consumer;
+
+// Handler used to navigate inside the safety check.
+@property(nonatomic, weak) id<SafetyCheckNavigationCommands> handler;
 
 @end
 

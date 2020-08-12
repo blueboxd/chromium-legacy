@@ -71,9 +71,16 @@ if (build_with_tflite_lib) {
     outputs = [ "$root_out_dir/test_data/simple_test.tflite" ]
   }
 
-  copy("tflite_lib") {
-    sources = [ "//third_party/tensorflow/libtensorflowlite_c.so" ]
-    outputs = [ "$root_out_dir/libtensorflowlite_c.so" ]
+  if (is_android) {
+    copy("tflite_lib") {
+      sources = [ "//third_party/tensorflow/libtensorflowlite_c_arm64.so" ]
+      outputs = [ "$root_out_dir/libtensorflowlite_c.so" ]
+    }
+  } else {
+    copy("tflite_lib") {
+      sources = [ "//third_party/tensorflow/libtensorflowlite_c.so" ]
+      outputs = [ "$root_out_dir/libtensorflowlite_c.so" ]
+    }
   }
 }
 

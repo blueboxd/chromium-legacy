@@ -85,11 +85,11 @@ class NodeFilterData {
   }
 
   /**
-   * Removes a node from the filter list (i.e., set state to ignored) if it
+   * Delists a node from the filter list (i.e., set state to ignored) if it
    *   exists.
-   * @param {string} nodeName The name of the node to remove.
+   * @param {string} nodeName The name of the node to delist.
    */
-  removeNode(nodeName) {
+  delistNode(nodeName) {
     const deleteIndex = this.filterList.findIndex(
         filterEntry => filterEntry.name === nodeName);
     if (deleteIndex >= 0) {
@@ -115,6 +115,14 @@ class NodeFilterData {
     for (const filterEntry of this.filterList) {
       filterEntry.checked = false;
     }
+  }
+
+  /**
+   * Delists all unchecked nodes from the filter list.
+   */
+  delistUnchecked() {
+    this.filterList = this.filterList.filter(
+        filterEntry => filterEntry.checked);
   }
 
   /**

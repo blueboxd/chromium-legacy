@@ -244,8 +244,13 @@ class MemberBase {
 #endif  // DCHECK_IS_ON()
   }
 
+  template <TracenessMemberConfiguration = tracenessConfiguration>
   ALWAYS_INLINE void SetRaw(T* raw) {
     WTF::AsAtomicPtr(&raw_)->store(raw, std::memory_order_relaxed);
+  }
+  template <>
+  ALWAYS_INLINE void SetRaw<TracenessMemberConfiguration::kUntraced>(T* raw) {
+    raw_ = raw;
   }
   ALWAYS_INLINE T* GetRaw() const { return raw_; }
 

@@ -121,6 +121,9 @@ class MockMirroringActivity : public MirroringActivity {
 
   MOCK_METHOD(void, CreateMojoBindings, (mojom::MediaRouter * media_router));
   MOCK_METHOD(void, OnSessionSet, (const CastSession& session));
+  MOCK_METHOD(void,
+              SendStopSessionMessageToClients,
+              (const std::string& hash_token));
 };
 
 }  // namespace
@@ -155,7 +158,7 @@ class CastActivityManagerTest : public testing::Test,
 
     ON_CALL(message_handler_, StopSession)
         .WillByDefault(WithArg<3>([this](auto callback) {
-          stop_session_callback_ = std::move(callback);
+          std::move(callback).Run(stop_session_callback_arg_);
         }));
 
     RunUntilIdle();
@@ -178,8 +181,8 @@ class CastActivityManagerTest : public testing::Test,
       const MediaRoute& route,
       const std::string& app_id) override {
     auto activity = std::make_unique<MockAppActivity>(route, app_id);
-    cast_activity_ = activity.get();
-    cast_activity_callback_.Run(activity.get());
+    app_activity_ = activity.get();
+    app_activity_callback_.Run(activity.get());
     return activity;
   }
 
@@ -243,12 +246,12 @@ class CastActivityManagerTest : public testing::Test,
         MakeSourceId(app_id, app_params, client_id));
     ASSERT_TRUE(source);
 
-    cast_activity_callback_ =
+    app_activity_callback_ =
         base::BindLambdaForTesting([this](MockAppActivity* activity) {
           // TODO(jrw): Check parameters.
           EXPECT_CALL(*activity, AddClient);
           EXPECT_CALL(*activity, SendMessageToClient).RetiresOnSaturation();
-          cast_activity_callback_ = base::DoNothing();
+          app_activity_callback_ = base::DoNothing();
         });
 
     // Callback will be invoked synchronously.
@@ -261,15 +264,16 @@ class CastActivityManagerTest : public testing::Test,
     RunUntilIdle();
   }
 
-  cast_channel::LaunchSessionResponse GetSuccessLaunchResponse() {
+  cast_channel::LaunchSessionResponse GetSuccessLaunchResponse(
+      const std::string& app_id = kAppId1) {
     cast_channel::LaunchSessionResponse response;
     response.result = cast_channel::LaunchSessionResponse::Result::kOk;
-    response.receiver_status = MakeReceiverStatus(kAppId1);
+    response.receiver_status = MakeReceiverStatus(app_id);
     return response;
   }
 
-  void LaunchCastAppSession(const std::string& app_id = kAppId1,
-                            const std::string& app_params = "") {
+  void LaunchAppSession(const std::string& app_id = kAppId1,
+                        const std::string& app_params = "") {
     CallLaunchSession(app_id, app_params);
 
     // 3 things will happen:
@@ -278,15 +282,15 @@ class CastActivityManagerTest : public testing::Test,
     // (3) Route list will be updated.
 
     // TODO(jrw): Check more params.
-    EXPECT_CALL(*cast_activity_, SendMessageToClient("theClientId", _));
-    EXPECT_CALL(*cast_activity_, OnSessionSet).WillOnce([this]() {
-      EXPECT_EQ(sink_, cast_activity_->sink());
+    EXPECT_CALL(*app_activity_, SendMessageToClient("theClientId", _));
+    EXPECT_CALL(*app_activity_, OnSessionSet).WillOnce([this]() {
+      EXPECT_EQ(sink_, app_activity_->sink());
     });
 
     EXPECT_CALL(message_handler_,
                 EnsureConnection(kChannelId, "theClientId", "theTransportId"));
 
-    auto response = GetSuccessLaunchResponse();
+    auto response = GetSuccessLaunchResponse(app_id);
     session_tracker_->SetSessionForTest(
         route_->media_sink_id(),
         CastSession::From(sink_, *response.receiver_status));
@@ -295,8 +299,8 @@ class CastActivityManagerTest : public testing::Test,
     RunUntilIdle();
   }
 
-  void ExpectCastActivityStopped(int times = 1) {
-    EXPECT_CALL(*cast_activity_, SendStopSessionMessageToClients).Times(times);
+  void ExpectAppActivityStoppedTimes(int times) {
+    EXPECT_CALL(*app_activity_, SendStopSessionMessageToClients).Times(times);
 
     if (times == 0) {
       EXPECT_CALL(message_handler_, StopSession).Times(0);
@@ -307,27 +311,26 @@ class CastActivityManagerTest : public testing::Test,
     }
   }
 
-  void TerminateSession(bool expect_success) {
-    ExpectCastActivityStopped();
-
-    if (expect_success) {
-      ExpectEmptyRouteUpdate();
-    } else {
-      ExpectNoRouteUpdate();
-    }
-    manager_->TerminateSession(route_->media_route_id(),
-                               MakeTerminateRouteCallback(expect_success));
-    std::move(stop_session_callback_)
-        .Run(expect_success ? cast_channel::Result::kOk
-                            : cast_channel::Result::kFailed);
+  void LaunchMirroringSession() {
+    CallLaunchSession(kCastStreamingAppId);
+    auto response = GetSuccessLaunchResponse();
+    SetSessionForTest(route_->media_sink_id(),
+                      CastSession::From(sink_, *response.receiver_status));
+    std::move(launch_session_callback_).Run(std::move(response));
+    DCHECK(mirroring_activity_);
   }
 
-  void TerminateNoSession() {
-    // Stop session message not sent because session has not launched yet.
-    ExpectCastActivityStopped(0);
-    ExpectNoRouteUpdate();
+  void ExpectMirroringActivityStopped() {
+    DCHECK(mirroring_activity_);
+    EXPECT_CALL(message_handler_, StopSession).Times(1);
+    EXPECT_CALL(*mirroring_activity_, SendStopSessionMessageToClients).Times(1);
+  }
+
+  void TerminateSession(bool expect_success) {
+    stop_session_callback_arg_ = expect_success ? cast_channel::Result::kOk
+                                                : cast_channel::Result::kFailed;
     manager_->TerminateSession(route_->media_route_id(),
-                               MakeTerminateRouteCallback(true));
+                               MakeTerminateRouteCallback(expect_success));
   }
 
   mojom::MediaRouteProvider::TerminateRouteCallback MakeTerminateRouteCallback(
@@ -400,29 +403,29 @@ class CastActivityManagerTest : public testing::Test,
   MockCastAppDiscoveryService app_discovery_service_;
   std::unique_ptr<CastActivityManager> manager_;
   std::unique_ptr<CastSessionTracker> session_tracker_;
-  MockAppActivity* cast_activity_ = nullptr;
+  MockAppActivity* app_activity_ = nullptr;
   MockMirroringActivity* mirroring_activity_ = nullptr;
-  MockAppActivityCallback cast_activity_callback_ = base::DoNothing();
+  MockAppActivityCallback app_activity_callback_ = base::DoNothing();
   const url::Origin origin_ = url::Origin::Create(GURL(kOrigin));
   const MediaSource::Id route_query_ = "theRouteQuery";
   base::Optional<MediaRoute> updated_route_;
-  cast_channel::ResultCallback stop_session_callback_;
+  cast_channel::Result stop_session_callback_arg_ = cast_channel::Result::kOk;
   MockLogger logger_;
   mojom::RoutePresentationConnectionPtr presentation_connections_;
 };
 
-TEST_F(CastActivityManagerTest, LaunchCastAppSession) {
-  LaunchCastAppSession();
+TEST_F(CastActivityManagerTest, LaunchAppSession) {
+  LaunchAppSession();
   EXPECT_EQ(RouteControllerType::kGeneric, route_->controller_type());
 }
 
-TEST_F(CastActivityManagerTest, LaunchCastAppSessionWithAppParams) {
-  LaunchCastAppSession(kAppId1, kAppParams);
+TEST_F(CastActivityManagerTest, LaunchAppSessionWithAppParams) {
+  LaunchAppSession(kAppId1, kAppParams);
   EXPECT_EQ(RouteControllerType::kGeneric, route_->controller_type());
 }
 
 TEST_F(CastActivityManagerTest, LaunchMirroringSession) {
-  CallLaunchSession(kCastStreamingAppId);
+  LaunchMirroringSession();
   EXPECT_EQ(RouteControllerType::kMirroring, route_->controller_type());
 }
 
@@ -435,16 +438,8 @@ TEST_F(CastActivityManagerTest, LaunchSiteInitiatedMirroringSession) {
 }
 
 TEST_F(CastActivityManagerTest, MirroringSessionStopped) {
-  CallLaunchSession(kCastStreamingAppId);
-  auto response = GetSuccessLaunchResponse();
-
-  SetSessionForTest(route_->media_sink_id(),
-                    CastSession::From(sink_, *response.receiver_status));
-  std::move(launch_session_callback_).Run(std::move(response));
-  RunUntilIdle();
-
-  ASSERT_TRUE(mirroring_activity_);
-  EXPECT_CALL(message_handler_, StopSession).Times(1);
+  LaunchMirroringSession();
+  ExpectMirroringActivityStopped();
   mirroring_activity_->DidStop();
 }
 
@@ -458,7 +453,7 @@ TEST_F(CastActivityManagerTest, LaunchSessionFails) {
   CallLaunchSession();
 
   EXPECT_CALL(
-      *cast_activity_,
+      *app_activity_,
       ClosePresentationConnections(
           blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR));
 
@@ -471,7 +466,7 @@ TEST_F(CastActivityManagerTest, LaunchSessionFails) {
   RunUntilIdle();
 }
 
-TEST_F(CastActivityManagerTest, LaunchCastAppSessionFailsWithAppParams) {
+TEST_F(CastActivityManagerTest, LaunchAppSessionFailsWithAppParams) {
   auto source =
       CastMediaSource::FromMediaSourceId(MakeSourceId(kAppId1, "invalidjson"));
   ASSERT_TRUE(source);
@@ -487,8 +482,8 @@ TEST_F(CastActivityManagerTest, LaunchCastAppSessionFailsWithAppParams) {
 }
 
 TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
-  LaunchCastAppSession();
-  ExpectCastActivityStopped();
+  LaunchAppSession();
+  ExpectAppActivityStoppedTimes(1);
 
   {
     testing::InSequence dummy;
@@ -513,7 +508,6 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
       base::BindOnce(&CastActivityManagerTest::ExpectLaunchSessionSuccess,
                      base::Unretained(this)),
       data_decoder::DataDecoder::ValueOrError());
-  std::move(stop_session_callback_).Run(cast_channel::Result::kOk);
 
   // LaunchSession() should not be called until we notify |mananger_| that the
   // previous session was removed.
@@ -527,8 +521,8 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
 }
 
 TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionFromTab) {
-  LaunchCastAppSession();
-  ExpectCastActivityStopped();
+  LaunchAppSession();
+  ExpectAppActivityStoppedTimes(1);
 
   // Launch a new session on the same sink.
   auto source = CastMediaSource::FromMediaSourceId(MakeSourceId(kAppId2));
@@ -555,10 +549,10 @@ TEST_F(CastActivityManagerTest, AddRemoveNonLocalActivity) {
 }
 
 TEST_F(CastActivityManagerTest, UpdateNewlyCreatedSession) {
-  LaunchCastAppSession();
+  LaunchAppSession();
 
-  EXPECT_CALL(*cast_activity_, OnSessionUpdated).WillOnce([this]() {
-    EXPECT_EQ(sink_, cast_activity_->sink());
+  EXPECT_CALL(*app_activity_, OnSessionUpdated).WillOnce([this]() {
+    EXPECT_EQ(sink_, app_activity_->sink());
   });
   auto session = MakeSession(kAppId1);
   ExpectSingleRouteUpdate();
@@ -592,50 +586,57 @@ TEST_F(CastActivityManagerTest, UpdateNewlyCreatedMirroringSession) {
 }
 
 TEST_F(CastActivityManagerTest, OnSessionAddedOrUpdated) {
-  LaunchCastAppSession();
+  LaunchAppSession();
   auto session = MakeSession(kAppId1);
   ExpectSingleRouteUpdate();
-  EXPECT_CALL(*cast_activity_, OnSessionUpdated(_, "theHashToken"));
+  EXPECT_CALL(*app_activity_, OnSessionUpdated(_, "theHashToken"));
   manager_->OnSessionAddedOrUpdated(sink_, *session);
 }
 
 // TODO(takumif): Add a test case to terminate a session and launch another.
 TEST_F(CastActivityManagerTest, TerminateSession) {
-  LaunchCastAppSession();
+  LaunchAppSession();
+  ExpectAppActivityStoppedTimes(1);
+  ExpectEmptyRouteUpdate();
   TerminateSession(true);
 }
 
 TEST_F(CastActivityManagerTest, TerminateSessionFails) {
-  LaunchCastAppSession();
+  LaunchAppSession();
+  ExpectAppActivityStoppedTimes(1);
+  ExpectNoRouteUpdate();
   TerminateSession(false);
 }
 
 TEST_F(CastActivityManagerTest, TerminateSessionBeforeLaunchResponse) {
   CallLaunchSession();
-  TerminateNoSession();
+  // Stop session message not sent because session has not launched yet.
+  ExpectAppActivityStoppedTimes(0);
+  ExpectNoRouteUpdate();
+  TerminateSession(true);
   ExpectEmptyRouteUpdate();
   std::move(launch_session_callback_).Run(GetSuccessLaunchResponse());
 }
 
 TEST_F(CastActivityManagerTest, AppMessageFromReceiver) {
-  LaunchCastAppSession();
+  LaunchAppSession();
 
   // Destination ID matches client ID.
   cast::channel::CastMessage message = cast_channel::CreateCastMessage(
       "urn:x-cast:com.google.foo", base::Value(base::Value::Type::DICTIONARY),
       "sourceId", "theClientId");
 
-  EXPECT_CALL(*cast_activity_, OnAppMessage(IsCastChannelMessage(message)));
+  EXPECT_CALL(*app_activity_, OnAppMessage(IsCastChannelMessage(message)));
   manager_->OnAppMessage(kChannelId, message);
 }
 
 TEST_F(CastActivityManagerTest, OnMediaStatusUpdated) {
-  LaunchCastAppSession();
+  LaunchAppSession();
 
   const char status[] = R"({"foo": "bar"})";
   base::Optional<int> request_id(345);
 
-  EXPECT_CALL(*cast_activity_,
+  EXPECT_CALL(*app_activity_,
               SendMediaStatusToClients(IsJson(status), request_id));
   manager_->OnMediaStatusUpdated(sink_, ParseJson(status), request_id);
 }

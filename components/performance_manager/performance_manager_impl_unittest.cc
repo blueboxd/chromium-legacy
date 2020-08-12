@@ -16,6 +16,7 @@
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace performance_manager {
 
@@ -64,8 +65,7 @@ TEST_F(PerformanceManagerImplTest, InstantiateNodes) {
   std::unique_ptr<FrameNodeImpl> frame_node =
       PerformanceManagerImpl::CreateFrameNode(
           process_node.get(), page_node.get(), nullptr, 0,
-          ++next_render_frame_id, FrameToken(base::UnguessableToken::Create()),
-          0, 0);
+          ++next_render_frame_id, blink::LocalFrameToken(), 0, 0);
   EXPECT_NE(nullptr, frame_node.get());
 
   PerformanceManagerImpl::DeleteNode(std::move(frame_node));
@@ -87,35 +87,29 @@ TEST_F(PerformanceManagerImplTest, BatchDeleteNodes) {
   std::unique_ptr<FrameNodeImpl> parent1_frame =
       PerformanceManagerImpl::CreateFrameNode(
           process_node.get(), page_node.get(), nullptr, 0,
-          ++next_render_frame_id, FrameToken(base::UnguessableToken::Create()),
-          0, 0);
+          ++next_render_frame_id, blink::LocalFrameToken(), 0, 0);
   std::unique_ptr<FrameNodeImpl> parent2_frame =
       PerformanceManagerImpl::CreateFrameNode(
           process_node.get(), page_node.get(), nullptr, 1,
-          ++next_render_frame_id, FrameToken(base::UnguessableToken::Create()),
-          0, 0);
+          ++next_render_frame_id, blink::LocalFrameToken(), 0, 0);
 
   std::unique_ptr<FrameNodeImpl> child1_frame =
       PerformanceManagerImpl::CreateFrameNode(
           process_node.get(), page_node.get(), parent1_frame.get(), 2,
-          ++next_render_frame_id, FrameToken(base::UnguessableToken::Create()),
-          0, 0);
+          ++next_render_frame_id, blink::LocalFrameToken(), 0, 0);
   std::unique_ptr<FrameNodeImpl> child2_frame =
       PerformanceManagerImpl::CreateFrameNode(
           process_node.get(), page_node.get(), parent2_frame.get(), 3,
-          ++next_render_frame_id, FrameToken(base::UnguessableToken::Create()),
-          0, 0);
+          ++next_render_frame_id, blink::LocalFrameToken(), 0, 0);
 
   std::vector<std::unique_ptr<NodeBase>> nodes;
   for (size_t i = 0; i < 10; ++i) {
     nodes.push_back(PerformanceManagerImpl::CreateFrameNode(
         process_node.get(), page_node.get(), child1_frame.get(), 0,
-        ++next_render_frame_id, FrameToken(base::UnguessableToken::Create()), 0,
-        0));
+        ++next_render_frame_id, blink::LocalFrameToken(), 0, 0));
     nodes.push_back(PerformanceManagerImpl::CreateFrameNode(
         process_node.get(), page_node.get(), child1_frame.get(), 1,
-        ++next_render_frame_id, FrameToken(base::UnguessableToken::Create()), 0,
-        0));
+        ++next_render_frame_id, blink::LocalFrameToken(), 0, 0));
   }
 
   nodes.push_back(std::move(process_node));

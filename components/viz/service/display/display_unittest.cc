@@ -5,6 +5,7 @@
 #include "components/viz/service/display/display.h"
 
 #include <limits>
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +15,8 @@
 #include "base/test/null_task_runner.h"
 #include "cc/base/math_util.h"
 #include "cc/test/scheduler_test_common.h"
+#include "components/viz/common/delegated_ink_metadata.h"
+#include "components/viz/common/delegated_ink_point.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -25,6 +28,7 @@
 #include "components/viz/common/surfaces/aggregated_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/service/display/delegated_ink_point_renderer_base.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
@@ -36,6 +40,7 @@
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_output_surface.h"
+#include "components/viz/test/fake_skia_output_surface.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/viz_test_suite.h"
@@ -162,6 +167,17 @@ class DisplayTest : public testing::Test {
                                      std::move(output_surface));
   }
 
+  void SetUpGpuDisplaySkia(const RendererSettings& settings) {
+    scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
+    provider->BindToCurrentThread();
+    std::unique_ptr<FakeSkiaOutputSurface> skia_output_surface =
+        FakeSkiaOutputSurface::Create3d(std::move(provider));
+    skia_output_surface_ = skia_output_surface.get();
+
+    CreateDisplaySchedulerAndDisplay(settings, kArbitraryFrameSinkId,
+                                     std::move(skia_output_surface));
+  }
+
   void CreateDisplaySchedulerAndDisplay(
       const RendererSettings& settings,
       const FrameSinkId& frame_sink_id,
@@ -238,6 +254,7 @@ class DisplayTest : public testing::Test {
   std::unique_ptr<Display> display_;
   TestSoftwareOutputDevice* software_output_device_ = nullptr;
   FakeOutputSurface* output_surface_ = nullptr;
+  FakeSkiaOutputSurface* skia_output_surface_ = nullptr;
   TestDisplayScheduler* scheduler_ = nullptr;
 };
 
@@ -4548,6 +4565,89 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
     // Expect there is no pending
     EXPECT_EQ(pending_presentation_group_timings_size(), 0u);
   }
+}
+
+// Testing the delegated ink renderer when the skia renderer is in use.
+TEST_F(DisplayTest, SkiaDelegatedInkRenderer) {
+  // First set up the display to use the Skia renderer.
+  RendererSettings settings;
+  settings.use_skia_renderer = true;
+  SetUpGpuDisplaySkia(settings);
+
+  // Initialize the renderer and create an ink renderer.
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->renderer_for_testing()->CreateDelegatedInkPointRenderer();
+
+  std::unique_ptr<DelegatedInkPointRendererBase>& ink_renderer =
+      display_->renderer_for_testing()->delegated_ink_point_renderer_;
+
+  const std::map<base::TimeTicks, gfx::PointF>& stored_points =
+      ink_renderer->GetPointsMapForTest();
+
+  // First, a sanity check.
+  EXPECT_EQ(0, static_cast<int>(stored_points.size()));
+
+  // Insert 3 arbitrary points into the ink renderer to confirm that they go
+  // where we expect and are all stored correctly.
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  std::vector<DelegatedInkPoint> ink_points;
+  ink_points.emplace_back(gfx::PointF(10, 10), timestamp);
+  ink_points.emplace_back(gfx::PointF(20, 20),
+                          timestamp + base::TimeDelta::FromMicroseconds(5));
+  ink_points.emplace_back(gfx::PointF(30, 30),
+                          timestamp + base::TimeDelta::FromMicroseconds(10));
+  const int initial_delegated_points = 3;
+
+  for (DelegatedInkPoint point : ink_points)
+    ink_renderer->StoreDelegatedInkPoint(point);
+
+  EXPECT_EQ(initial_delegated_points, static_cast<int>(stored_points.size()));
+
+  // No metadata has been provided yet, so filtering shouldn't occur and all
+  // points should still exist after a DrawDelegatedInkTrail() call.
+  ink_renderer->DrawDelegatedInkTrail();
+
+  EXPECT_EQ(initial_delegated_points, static_cast<int>(stored_points.size()));
+
+  // Now provide metadata with a timestamp matching one of the points to
+  // confirm that earlier points are removed and later points remain.
+  const int ink_point_for_metadata = 1;
+  DelegatedInkMetadata metadata(
+      ink_points[ink_point_for_metadata].point(), 1, SK_ColorBLACK,
+      ink_points[ink_point_for_metadata].timestamp(), gfx::RectF());
+  ink_renderer->SetDelegatedInkMetadata(
+      std::make_unique<DelegatedInkMetadata>(metadata));
+  ink_renderer->DrawDelegatedInkTrail();
+
+  EXPECT_EQ(initial_delegated_points - ink_point_for_metadata,
+            static_cast<int>(stored_points.size()));
+  EXPECT_EQ(metadata.point(), stored_points.begin()->second);
+  EXPECT_EQ(ink_points[ink_points.size() - 1].point(),
+            stored_points.rbegin()->second);
+  EXPECT_FALSE(ink_renderer->GetMetadataForTest());
+
+  // Finally, add more points than the maximum that will be stored to confirm
+  // only the max is stored and the correct ones are removed first.
+  const int points_beyond_max_allowed = 2;
+  for (DelegatedInkPoint point : ink_points)
+    ink_renderer->StoreDelegatedInkPoint(point);
+  while (ink_points.size() <
+         kMaximumDelegatedInkPointsStored + points_beyond_max_allowed) {
+    gfx::PointF pt = ink_points[ink_points.size() - 1].point();
+    pt.Offset(5, 5);
+    base::TimeTicks ts = ink_points[ink_points.size() - 1].timestamp() +
+                         base::TimeDelta::FromMicroseconds(5);
+    ink_points.emplace_back(pt, ts);
+    ink_renderer->StoreDelegatedInkPoint(ink_points[ink_points.size() - 1]);
+  }
+
+  EXPECT_EQ(kMaximumDelegatedInkPointsStored,
+            static_cast<int>(stored_points.size()));
+  EXPECT_EQ(ink_points[points_beyond_max_allowed].point(),
+            stored_points.begin()->second);
+  EXPECT_EQ(ink_points[ink_points.size() - 1].point(),
+            stored_points.rbegin()->second);
 }
 
 }  // namespace viz

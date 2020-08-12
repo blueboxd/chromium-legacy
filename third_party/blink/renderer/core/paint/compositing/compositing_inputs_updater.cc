@@ -29,7 +29,10 @@ CompositingInputsUpdater::CompositingInputsUpdater(
     PaintLayer* root_layer,
     PaintLayer* compositing_inputs_root)
     : root_layer_(root_layer),
-      compositing_inputs_root_(compositing_inputs_root) {}
+      compositing_inputs_root_(compositing_inputs_root) {
+  if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
+    geometry_map_.emplace();
+}
 
 CompositingInputsUpdater::~CompositingInputsUpdater() = default;
 
@@ -88,7 +91,8 @@ void CompositingInputsUpdater::ApplyAncestorInfoToSelfAndAncestorsRecursively(
   // update this information).
   ApplyAncestorInfoToSelfAndAncestorsRecursively(layer->Parent(), update_type,
                                                  info);
-  geometry_map_.PushMappingsToAncestor(layer, layer->Parent());
+  if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
+    geometry_map_->PushMappingsToAncestor(layer, layer->Parent());
   UpdateAncestorInfo(layer, update_type, info);
   if (layer != compositing_inputs_root_ &&
       (layer->IsRootLayer() || layer->GetLayoutObject().HasOverflowClip()))
@@ -140,7 +144,8 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
   // UpdateAncestorInfo has been already computed in ApplyAncestorInfo() for
   // layers from root_layer_ down to compositing_inputs_root_ both included.
   if (layer != root_layer_ && layer != compositing_inputs_root_) {
-    geometry_map_.PushMappingsToAncestor(layer, layer->Parent());
+    if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
+      geometry_map_->PushMappingsToAncestor(layer, layer->Parent());
     UpdateAncestorInfo(layer, update_type, info);
   }
   if (layer->IsRootLayer() || layout_object.HasOverflowClip())
@@ -215,7 +220,8 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
   if (!recursion_blocked_by_display_lock)
     layer->ClearChildNeedsCompositingInputsUpdate();
 
-  geometry_map_.PopMappingsToAncestor(layer->Parent());
+  if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
+    geometry_map_->PopMappingsToAncestor(layer->Parent());
 
   if (layer->SelfPaintingStatusChanged()) {
     layer->ClearSelfPaintingStatusChanged();
@@ -441,51 +447,54 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   PaintLayer::AncestorDependentCompositingInputs properties;
   LayoutBoxModelObject& layout_object = layer->GetLayoutObject();
 
-  // The final value for |unclipped_absolute_bounding_box| needs to be
-  // in absolute, unscrolled space, without any scroll applied.
-  properties.unclipped_absolute_bounding_box =
-      EnclosingIntRect(geometry_map_.AbsoluteRect(
-          layer->BoundingBoxForCompositingOverlapTest()));
+  if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled()) {
+    // The final value for |unclipped_absolute_bounding_box| needs to be
+    // in absolute, unscrolled space, without any scroll applied.
 
-  bool affected_by_scroll = root_layer_->GetScrollableArea() &&
-                            layer->IsAffectedByScrollOf(root_layer_);
+    properties.unclipped_absolute_bounding_box =
+        EnclosingIntRect(geometry_map_->AbsoluteRect(
+            layer->BoundingBoxForCompositingOverlapTest()));
 
-  // At ths point, |unclipped_absolute_bounding_box| is in viewport space.
-  // To convert to absolute space, add scroll offset for non-fixed layers.
-  if (affected_by_scroll) {
-    properties.unclipped_absolute_bounding_box.Move(
-        RoundedIntSize(root_layer_->GetScrollableArea()->GetScrollOffset()));
-  }
+    bool affected_by_scroll = root_layer_->GetScrollableArea() &&
+                              layer->IsAffectedByScrollOf(root_layer_);
 
-  // For sticky-positioned elements, the scroll offset is sometimes included and
-  // sometimes not, depending on whether the sticky element is affixed or still
-  // scrolling. This makes caching difficult, as compared to Fixed position
-  // elements which have consistent behavior. So we disable caching for
-  // sticky-positioned subtrees.
-  ClipRectsCacheSlot cache_slot = info.is_under_position_sticky
-                                      ? kUncachedClipRects
+    // At ths point, |unclipped_absolute_bounding_box| is in viewport space.
+    // To convert to absolute space, add scroll offset for non-fixed layers.
+    if (affected_by_scroll) {
+      properties.unclipped_absolute_bounding_box.Move(
+          RoundedIntSize(root_layer_->GetScrollableArea()->GetScrollOffset()));
+    }
+
+    // For sticky-positioned elements, the scroll offset is sometimes included
+    // and sometimes not, depending on whether the sticky element is affixed or
+    // still scrolling. This makes caching difficult, as compared to Fixed
+    // position elements which have consistent behavior. So we disable caching
+    // for sticky-positioned subtrees.
+    ClipRectsCacheSlot cache_slot =
+        info.is_under_position_sticky ? kUncachedClipRects
                                       : kAbsoluteClipRectsIgnoringViewportClip;
 
-  ClipRect clip_rect;
-  layer->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
-      .CalculateBackgroundClipRect(
-          ClipRectsContext(root_layer_,
-                           &root_layer_->GetLayoutObject().FirstFragment(),
-                           cache_slot, kIgnorePlatformOverlayScrollbarSize,
-                           kIgnoreOverflowClipAndScroll),
-          clip_rect);
-  IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
-  // |snapped_clip_rect| is in absolute space space, but with scroll applied.
-  // To convert to absolute, unscrolled space, subtract scroll offsets for
-  // fixed layers.
-  if (root_layer_->GetScrollableArea() && !affected_by_scroll) {
-    snapped_clip_rect.Move(
-        RoundedIntSize(-root_layer_->GetScrollableArea()->GetScrollOffset()));
-  }
+    ClipRect clip_rect;
+    layer->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
+        .CalculateBackgroundClipRect(
+            ClipRectsContext(root_layer_,
+                             &root_layer_->GetLayoutObject().FirstFragment(),
+                             cache_slot, kIgnorePlatformOverlayScrollbarSize,
+                             kIgnoreOverflowClipAndScroll),
+            clip_rect);
+    IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
+    // |snapped_clip_rect| is in absolute space space, but with scroll applied.
+    // To convert to absolute, unscrolled space, subtract scroll offsets for
+    // fixed layers.
+    if (root_layer_->GetScrollableArea() && !affected_by_scroll) {
+      snapped_clip_rect.Move(
+          RoundedIntSize(-root_layer_->GetScrollableArea()->GetScrollOffset()));
+    }
 
-  properties.clipped_absolute_bounding_box =
-      properties.unclipped_absolute_bounding_box;
-  properties.clipped_absolute_bounding_box.Intersect(snapped_clip_rect);
+    properties.clipped_absolute_bounding_box =
+        properties.unclipped_absolute_bounding_box;
+    properties.clipped_absolute_bounding_box.Intersect(snapped_clip_rect);
+  }
 
   const PaintLayer* parent = layer->Parent();
   properties.opacity_ancestor =

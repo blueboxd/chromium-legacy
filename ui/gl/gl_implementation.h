@@ -47,7 +47,8 @@ enum class ANGLEImplementation {
   kNull = 5,
   kVulkan = 6,
   kSwiftShader = 7,
-  kMaxValue = kSwiftShader,
+  kMetal = 8,
+  kMaxValue = kMetal,
 };
 
 struct GL_EXPORT GLWindowSystemBindingInfo {

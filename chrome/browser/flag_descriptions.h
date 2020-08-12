@@ -831,6 +831,9 @@ extern const char kNewCanvas2DAPIDescription[];
 extern const char kNewProfilePickerName[];
 extern const char kNewProfilePickerDescription[];
 
+extern const char kSignInProfileCreationFlowName[];
+extern const char kSignInProfileCreationFlowDescription[];
+
 extern const char kNewUsbBackendName[];
 extern const char kNewUsbBackendDescription[];
 
@@ -1333,9 +1336,6 @@ extern const char kTouchAdjustmentDescription[];
 
 extern const char kTouchDragDropName[];
 extern const char kTouchDragDropDescription[];
-
-extern const char kTouchEventsName[];
-extern const char kTouchEventsDescription[];
 
 extern const char kTouchSelectionStrategyName[];
 extern const char kTouchSelectionStrategyDescription[];

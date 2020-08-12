@@ -106,8 +106,7 @@ TestDedicatedWorkerService::CreateDedicatedWorker(
     content::GlobalFrameRoutingId client_render_frame_host_id) {
   // Create a new token for the worker and add it to the map, along with its
   // client ID.
-  const blink::DedicatedWorkerToken token(
-      blink::DedicatedWorkerToken::Create());
+  const blink::DedicatedWorkerToken token;
 
   auto result = dedicated_worker_client_frame_.emplace(
       token, client_render_frame_host_id);
@@ -208,8 +207,7 @@ bool TestSharedWorkerService::TerminateWorker(
 blink::SharedWorkerToken TestSharedWorkerService::CreateSharedWorker(
     int worker_process_id) {
   // Create a new SharedWorkerToken for the worker and add it to the map.
-  const blink::SharedWorkerToken shared_worker_token =
-      blink::SharedWorkerToken::Create();
+  const blink::SharedWorkerToken shared_worker_token;
   GURL worker_url = GenerateWorkerUrl();
 
   bool inserted =
@@ -348,7 +346,7 @@ int64_t TestServiceWorkerContext::StartServiceWorker(int worker_process_id) {
     observer.OnVersionStartedRunning(
         version_id,
         content::ServiceWorkerRunningInfo(worker_url, GURL(), worker_process_id,
-                                          blink::ServiceWorkerToken::Create()));
+                                          blink::ServiceWorkerToken()));
   }
 
   return version_id;
@@ -553,7 +551,7 @@ content::GlobalFrameRoutingId TestFrameNodeSource::CreateFrameNode(
                                                      frame_id);
   auto frame_node = PerformanceManagerImpl::CreateFrameNode(
       process_node, page_node_.get(), nullptr, 0, frame_id,
-      FrameToken(base::UnguessableToken::Create()), 0, 0);
+      blink::LocalFrameToken(), 0, 0);
 
   bool inserted =
       frame_node_map_.insert({render_frame_host_id, std::move(frame_node)})

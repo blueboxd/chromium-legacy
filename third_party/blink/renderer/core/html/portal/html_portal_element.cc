@@ -55,7 +55,7 @@ namespace blink {
 
 HTMLPortalElement::HTMLPortalElement(
     Document& document,
-    const PortalToken& portal_token,
+    const PortalToken* portal_token,
     mojo::PendingAssociatedRemote<mojom::blink::Portal> remote_portal,
     mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
         portal_client_receiver)
@@ -65,12 +65,13 @@ HTMLPortalElement::HTMLPortalElement(
               SchedulingPolicy::Feature::kPortal,
               {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   if (remote_portal) {
+    DCHECK(portal_token);
     was_just_adopted_ = true;
     DCHECK(CanHaveGuestContents())
         << "<portal> element was created with an existing contents but is not "
            "permitted to have one";
     portal_ = MakeGarbageCollected<PortalContents>(
-        *this, portal_token, std::move(remote_portal),
+        *this, *portal_token, std::move(remote_portal),
         std::move(portal_client_receiver));
   }
   UseCounter::Count(document, WebFeature::kHTMLPortalElement);
@@ -391,7 +392,7 @@ void HTMLPortalElement::setOnmessageerror(EventListener* listener) {
 
 const PortalToken& HTMLPortalElement::GetToken() const {
   DCHECK(portal_ && portal_->IsValid());
-  return portal_->GetToken();
+  return portal_->GetToken().value();
 }
 
 Node::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
@@ -461,6 +462,7 @@ Node::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
     std::tie(portal_frame, portal_token) =
         GetDocument().GetFrame()->Client()->CreatePortal(
             this, std::move(portal_receiver), std::move(client));
+    DCHECK(portal_frame);
 
     portal_ = MakeGarbageCollected<PortalContents>(
         *this, portal_token, std::move(portal), std::move(client_receiver));

@@ -111,6 +111,11 @@ void AppendChromePolicyInfoIntoProfileReport(
 void AppendExtensionPolicyInfoIntoProfileReport(
     const base::Value& policies,
     em::ChromeUserProfileInfo* profile_info) {
+  if (!policies.FindKey("extensionPolicies")) {
+    // Android and iOS don't support extensions and their policies.
+    return;
+  }
+
   for (const auto& extension_iter :
        policies.FindKey("extensionPolicies")->DictItems()) {
     const base::Value& policies = extension_iter.second;

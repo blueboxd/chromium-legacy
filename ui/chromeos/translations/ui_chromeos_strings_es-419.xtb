@@ -107,7 +107,6 @@
 <translation id="2085470240340828803">Ya existe un archivo llamado "<ph name="FILENAME" />". ¿Qué acción quieres realizar?</translation>
 <translation id="2121825465123208577">Ajustar tamaño</translation>
 <translation id="2136953289241069843">Transliteración (namaste → नमस्कार)</translation>
-<translation id="2138867954865495510">No se puede abrir "<ph name="PATH" />": <ph name="ERROR_MESSAGE" /></translation>
 <translation id="2163152940313951844">Carácter no válido: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2164862903024139959">Teclado vietnamita (TCVN)</translation>
 <translation id="2168214441502403371">Teclado persa</translation>

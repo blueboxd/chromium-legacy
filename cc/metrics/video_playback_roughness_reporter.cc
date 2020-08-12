@@ -73,8 +73,8 @@ void VideoPlaybackRoughnessReporter::FrameSubmitted(
     }
 
     // Adjust frame window size to fit about 1 second of playback
-    int win_size = base::ClampRound(
-        kDesiredWindowDuration / info.intended_duration.value().InSecondsF());
+    int win_size = base::ClampRound(kDesiredWindowDuration *
+                                    info.intended_duration.value().ToHz());
     frames_window_size_ = std::max(kMinWindowSize, win_size);
     frames_window_size_ = std::min(frames_window_size_, kMaxWindowSize);
   }

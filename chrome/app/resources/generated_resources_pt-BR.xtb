@@ -2281,7 +2281,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3748706263662799310">Informar um bug</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Meus dispositivos</translation>
-<translation id="3752757212511661046">Criar perfil de trabalho?</translation>
 <translation id="3753033997400164841">Salve uma vez. Use em qualquer lugar</translation>
 <translation id="3755411799582650620">Seu <ph name="PHONE_NAME" /> agora pode desbloquear este <ph name="DEVICE_TYPE" /> também.</translation>
 <translation id="375636864092143889">O site está usando seu microfone</translation>
@@ -2403,7 +2402,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3873423927483480833">Mostrar PINs</translation>
 <translation id="3873915545594852654">Ocorreu um problema com o ARC++.</translation>
 <translation id="3874164307099183178">Ativar o Google Assistente</translation>
-<translation id="387531380970557479">"<ph name="EXTENSION_NAME" />" foi desativada porque contém malware.</translation>
 <translation id="3879748587602334249">Gerenciador de downloads</translation>
 <translation id="3881478300875776315">Mostrar menos linhas</translation>
 <translation id="3882165008614329320">Vídeo existente de uma câmera ou de um arquivo</translation>
@@ -2924,7 +2922,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4562155214028662640">Adicionar impressão digital</translation>
 <translation id="4562494484721939086">Sem serviço</translation>
 <translation id="4563210852471260509">O idioma de entrada inicial é o chinês</translation>
-<translation id="4563404051166505887">1 foto</translation>
 <translation id="4563880231729913339">Dedo 3</translation>
 <translation id="4565377596337484307">Ocultar senha</translation>
 <translation id="4565577809484439917">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> precisa que você faça backup dos seus dados e devolva este <ph name="DEVICE_TYPE" /> hoje.}one{<ph name="DOMAIN" /> precisa que você faça backup dos seus dados e devolva este <ph name="DEVICE_TYPE" /> antes do fim do prazo.}other{<ph name="DOMAIN" /> precisa que você faça backup dos seus dados e devolva este <ph name="DEVICE_TYPE" /> antes do fim do prazo.}}</translation>

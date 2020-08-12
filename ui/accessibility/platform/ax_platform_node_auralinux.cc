@@ -3861,13 +3861,17 @@ void AXPlatformNodeAuraLinux::OnDescriptionChanged() {
 }
 
 void AXPlatformNodeAuraLinux::OnSortDirectionChanged() {
-  // TODO(crbug.com/1074380) fire correct event for aria-sort change.
-  // AtkObject* atk_object = GetOrCreateAtkObject();
-  // if (!atk_object)
-  //   return;
+  AXPlatformNodeBase* table = GetTable();
+  if (!table)
+    return;
 
-  // std::string sort;
-  // GetStringAttribute(ax::mojom::StringAttribute::kSortDirection, &sort);
+  AtkObject* atk_table = table->GetNativeViewAccessible();
+  DCHECK(ATK_IS_TABLE(atk_table));
+
+  if (GetData().role == ax::mojom::Role::kColumnHeader)
+    g_signal_emit_by_name(atk_table, "row-reordered");
+  else if (GetData().role == ax::mojom::Role::kRowHeader)
+    g_signal_emit_by_name(atk_table, "column-reordered");
 }
 
 void AXPlatformNodeAuraLinux::OnValueChanged() {

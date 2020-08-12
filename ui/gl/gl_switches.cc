@@ -29,12 +29,14 @@ const char kANGLEImplementationOpenGLESEGLName[] = "gles-egl";
 const char kANGLEImplementationNullName[] = "null";
 const char kANGLEImplementationVulkanName[] = "vulkan";
 const char kANGLEImplementationSwiftShaderName[] = "swiftshader";
+const char kANGLEImplementationMetalName[] = "metal";
 
 // Special switches for "NULL"/stub driver implementations.
 const char kANGLEImplementationD3D11NULLName[] = "d3d11-null";
 const char kANGLEImplementationOpenGLNULLName[] = "gl-null";
 const char kANGLEImplementationOpenGLESNULLName[] = "gles-null";
 const char kANGLEImplementationVulkanNULLName[] = "vulkan-null";
+const char kANGLEImplementationMetalNULLName[] = "metal-null";
 
 // The command decoder names that can be passed to --use-cmd-decoder.
 const char kCmdDecoderValidatingName[] = "validating";

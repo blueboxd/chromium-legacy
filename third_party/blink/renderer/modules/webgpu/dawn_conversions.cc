@@ -772,15 +772,6 @@ WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view,
   dawn_view.mipLevel = webgpu_view->mipLevel();
   dawn_view.origin = AsDawnType(&webgpu_view->origin());
 
-  if (webgpu_view->hasArrayLayer()) {
-    device->AddConsoleWarning(
-        "GPUTextureCopyView.arrayLayer deprecated: use .origin.z");
-    dawn_view.arrayLayer = webgpu_view->arrayLayer();
-  } else {
-    dawn_view.arrayLayer = dawn_view.origin.z;
-    dawn_view.origin.z = 0;
-  }
-
   return dawn_view;
 }
 

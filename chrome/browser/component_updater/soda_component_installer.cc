@@ -36,9 +36,6 @@ static_assert(base::size(kSODAPublicKeySHA256) == crypto::kSHA256Length,
 
 const char kSODAManifestName[] = "SODA Library";
 
-constexpr base::FilePath::CharType kSodaBinaryRelativePath[] =
-    FILE_PATH_LITERAL("SODAFiles/libsoda.so");
-
 constexpr base::FilePath::CharType kSodaEnUsConfigFileRelativePath[] =
     FILE_PATH_LITERAL("SODAFiles/en_us/dictation.ascii_proto");
 
@@ -129,7 +126,7 @@ void UpdateSODAInstallDirPref(PrefService* prefs,
                               const base::FilePath& install_dir) {
 #if !defined(OS_ANDROID)
   prefs->SetFilePath(prefs::kSodaBinaryPath,
-                     install_dir.Append(kSodaBinaryRelativePath));
+                     install_dir.Append(speech::kSodaBinaryRelativePath));
   prefs->SetFilePath(prefs::kSodaEnUsConfigPath,
                      install_dir.Append(kSodaEnUsConfigFileRelativePath));
 #endif

@@ -199,6 +199,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [self scrollToPage:_currentPage animated:NO];
     [self configureViewControllerForCurrentSizeClassesAndPage];
     [self setInsetForRemoteTabs];
+    [self setInsetForGridViews];
   };
   [coordinator animateAlongsideTransition:animate completion:nil];
 }

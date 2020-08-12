@@ -162,9 +162,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // Passing g_null_atom as the second parameter removes the attribute when
   // calling either of these set methods.
-  void setAttribute(const QualifiedName&, AtomicString value);
-  void setAttribute(const QualifiedName&, AtomicString value, ExceptionState&);
-  void SetSynchronizedLazyAttribute(const QualifiedName&, AtomicString value);
+  void setAttribute(const QualifiedName&, const AtomicString& value);
+  void setAttribute(const QualifiedName&,
+                    const AtomicString& value,
+                    ExceptionState&);
+  void SetSynchronizedLazyAttribute(const QualifiedName&,
+                                    const AtomicString& value);
 
   void removeAttribute(const QualifiedName&);
 
@@ -230,7 +233,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void setAttribute(const AtomicString& name,
                     AtomicString value,
                     ExceptionState& exception_state = ASSERT_NO_EXCEPTION) {
-    SetAttributeHinted(name, WeakLowercaseIfNecessary(name), std::move(value),
+    SetAttributeHinted(name, WeakLowercaseIfNecessary(name), value,
                        exception_state);
   }
 
@@ -262,7 +265,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool toggleAttribute(const AtomicString&, bool force, ExceptionState&);
 
   const AtomicString& GetIdAttribute() const;
-  void SetIdAttribute(AtomicString);
+  void SetIdAttribute(const AtomicString&);
 
   const AtomicString& GetNameAttribute() const;
   const AtomicString& GetClassAttribute() const;
@@ -1099,10 +1102,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void SetAttributeInternal(wtf_size_t index,
                             const QualifiedName&,
-                            AtomicString value,
+                            const AtomicString& value,
                             SynchronizationOfLazyAttribute);
   void AppendAttributeInternal(const QualifiedName&,
-                               AtomicString value,
+                               const AtomicString& value,
                                SynchronizationOfLazyAttribute);
   void RemoveAttributeInternal(wtf_size_t index,
                                SynchronizationOfLazyAttribute);
@@ -1126,7 +1129,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       WTF::AtomicStringTable::WeakResult hint) const;
   void SetAttributeHinted(const AtomicString& name,
                           WTF::AtomicStringTable::WeakResult hint,
-                          AtomicString value,
+                          const AtomicString& value,
                           ExceptionState& = ASSERT_NO_EXCEPTION);
   void SetAttributeHinted(
       const AtomicString& name,
@@ -1326,8 +1329,8 @@ inline const AtomicString& Element::GetClassAttribute() const {
   return FastGetAttribute(html_names::kClassAttr);
 }
 
-inline void Element::SetIdAttribute(AtomicString value) {
-  setAttribute(html_names::kIdAttr, std::move(value));
+inline void Element::SetIdAttribute(const AtomicString& value) {
+  setAttribute(html_names::kIdAttr, value);
 }
 
 inline const SpaceSplitString& Element::ClassNames() const {

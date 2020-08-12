@@ -333,10 +333,6 @@ void PointerEventManager::HandlePointerInterruption(
 
 bool PointerEventManager::ShouldAdjustPointerEvent(
     const WebPointerEvent& pointer_event) const {
-  if (frame_->GetSettings() &&
-      !frame_->GetSettings()->GetTouchAdjustmentEnabled())
-    return false;
-
   return pointer_event.pointer_type ==
              WebPointerProperties::PointerType::kTouch &&
          pointer_event.GetType() == WebInputEvent::Type::kPointerDown &&

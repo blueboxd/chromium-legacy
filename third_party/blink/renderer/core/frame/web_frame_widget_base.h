@@ -11,7 +11,6 @@
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/trees/layer_tree_host.h"
-#include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-blink.h"
@@ -251,8 +250,7 @@ class CORE_EXPORT WebFrameWidgetBase
   bool HandlingSelectRange() override;
 
   // Called when a drag-n-drop operation should begin.
-  void StartDragging(network::mojom::ReferrerPolicy,
-                     const WebDragData&,
+  void StartDragging(const WebDragData&,
                      WebDragOperationsMask,
                      const SkBitmap& drag_image,
                      const gfx::Point& drag_image_offset);

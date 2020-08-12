@@ -10,7 +10,10 @@
 namespace chromeos {
 namespace phonehub {
 
-// Enum representing potential status values for the Phone Hub feature.
+// Enum representing potential status values for the Phone Hub feature. Note
+// that there is no value representing "prohibited" - when the feature is
+// prohibited by enterprise policy, we don't instantiate Phone Hub-related logic
+// at all.
 enum class FeatureStatus {
   // The user's devices are not eligible for the feature. This means that either
   // the Chrome OS device or the user's phone (or both) have not enrolled with
@@ -26,26 +29,23 @@ enum class FeatureStatus {
   // server and with the phone itself.
   kPhoneSelectedAndPendingSetup = 2,
 
-  // An enterprise policy has prohibited this feature from running.
-  kProhibitedByPolicy = 3,
-
   // The feature is disabled, but the user could enable it via settings.
-  kDisabled = 4,
+  kDisabled = 3,
 
   // The feature is enabled, but it is currently unavailable because Bluetooth
   // is disabled (the feature cannot run without Bluetooth).
-  kUnavailableBluetoothOff = 5,
+  kUnavailableBluetoothOff = 4,
 
   // The feature is enabled, but currently there is no active connection to
   // the phone.
-  kEnabledButDisconnected = 6,
+  kEnabledButDisconnected = 5,
 
   // The feature is enabled, and there is an active attempt to connect to the
   // phone.
-  kEnabledAndConnecting = 7,
+  kEnabledAndConnecting = 6,
 
   // The feature is enabled, and there is an active connection with the phone.
-  kEnabledAndConnected = 8
+  kEnabledAndConnected = 7
 };
 
 std::ostream& operator<<(std::ostream& stream, FeatureStatus status);
@@ -53,4 +53,4 @@ std::ostream& operator<<(std::ostream& stream, FeatureStatus status);
 }  // namespace phonehub
 }  // namespace chromeos
 
-#endif  // CHROMEOS_CO  MPONENTS_PHONEHUB_FEATURE_STATUS_H_
+#endif  // CHROMEOS_COMPONENTS_PHONEHUB_FEATURE_STATUS_H_

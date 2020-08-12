@@ -8,9 +8,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/svg/svg_g_element.h"
@@ -1227,6 +1229,53 @@ TEST_F(LayoutObjectTest, FirstLineBackgroundImageChangeStyleCrash) {
   auto* style_element = GetDocument().getElementById("style");
   style_element->setTextContent(style_element->textContent() + "dummy");
   UpdateAllLifecyclePhasesForTest();
+}
+
+TEST_F(LayoutObjectSimTest, FirstLineBackgroundImageDirtyStyleCrash) {
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(R"HTML(
+    <style id="style">
+      #target { display: list-item; }
+      div::first-line {
+        background-image: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
+      }
+    </style>
+    <div id="target">Text</div>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+
+  CSSStyleSheet* sheet =
+      To<HTMLStyleElement>(GetDocument().getElementById("style"))->sheet();
+  {
+    // "Mutate" the rules to clear the StyleSheetContents RuleSet member.
+    CSSStyleSheet::RuleMutationScope scope(sheet);
+  }
+  EXPECT_FALSE(sheet->Contents()->HasRuleSet());
+
+  auto* target = GetDocument().getElementById("target");
+  auto* target_object = target->GetLayoutObject();
+  auto* image_resource_content = target_object->FirstLineStyleRef()
+                                     .BackgroundLayers()
+                                     .GetImage()
+                                     ->CachedImage();
+  auto* image = image_resource_content->GetImage();
+  auto* image_observer = static_cast<ImageObserver*>(image_resource_content);
+
+  // LayoutBlock::ImageChanged() will be triggered which makes us look up the
+  // ::first-line style before marking for paint invalidation. We should not try
+  // to compute style if it doesn't exist. The first invocation will mark for
+  // paint invalidation which will clear the cached ::first-line styles.
+  image_observer->Changed(image);
+  EXPECT_TRUE(target_object->ShouldDoFullPaintInvalidation());
+
+  // For the second invocation, the ::first-line styles is null. If we try to
+  // compute the styles here, we will crash since the RuleSet is null and we
+  // need an active style update.
+  image_observer->Changed(image);
+  EXPECT_TRUE(target_object->ShouldDoFullPaintInvalidation());
 }
 
 TEST_F(LayoutObjectTest, NeedsLayoutOverflowRecalc) {

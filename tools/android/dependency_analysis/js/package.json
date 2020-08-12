@@ -20,6 +20,7 @@
     "eslint": "^7.2.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-vue": "^7.0.0-alpha.9",
+    "file-loader": "^6.0.0",
     "html-webpack-plugin": "^4.3.0",
     "http-server": "^0.12.3",
     "style-loader": "^1.2.1",

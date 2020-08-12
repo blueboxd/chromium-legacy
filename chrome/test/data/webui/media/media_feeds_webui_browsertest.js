@@ -343,7 +343,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'ConfigTable', function() {
         assertDeepEquals(
             [
               'Background Fetching Enabled (value)',
-              'Disabled',
+              'Enabled',
               'Background Fetching Enabled (pref)',
               'Disabled (Toggle)',
             ],
@@ -361,7 +361,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'ConfigTable', function() {
               assertDeepEquals(
                   [
                     'Background Fetching Enabled (value)',
-                    'Disabled',
+                    'Enabled',
                     'Background Fetching Enabled (pref)',
                     'Enabled (Toggle)',
                   ],

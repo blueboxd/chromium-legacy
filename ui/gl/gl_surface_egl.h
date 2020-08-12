@@ -70,7 +70,9 @@ enum DisplayType {
   ANGLE_SWIFTSHADER = 14,
   ANGLE_OPENGL_EGL = 15,
   ANGLE_OPENGLES_EGL = 16,
-  DISPLAY_TYPE_MAX = 17,
+  ANGLE_METAL = 17,
+  ANGLE_METAL_NULL = 18,
+  DISPLAY_TYPE_MAX = 19,
 };
 
 GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,
@@ -79,6 +81,7 @@ GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,
                                   bool supports_angle_vulkan,
                                   bool supports_angle_swiftshader,
                                   bool supports_angle_egl,
+                                  bool supports_angle_metal,
                                   const base::CommandLine* command_line,
                                   std::vector<DisplayType>* init_displays);
 

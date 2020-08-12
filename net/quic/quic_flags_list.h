@@ -451,3 +451,6 @@ QUIC_FLAG(bool,
 // If true, when server is silently closing connections due to idle timeout,
 // serialize the connection close packets which will be added to time wait list.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_add_silent_idle_timeout, false)
+
+// If true, do not send PING if ShouldKeepConnectionAlive is false.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_on_ping_timeout, false)

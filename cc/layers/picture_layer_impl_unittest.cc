@@ -6174,7 +6174,7 @@ TEST_P(LCDTextTest, Filter) {
   FilterOperations blur_filter;
   blur_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
   SetFilter(child_, blur_filter);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kLayerHasFilterEffect, child_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kPixelOrColorEffect, child_);
   // TODO(crbug.com/1114504): will-change:transform should apply to descendants.
   CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
 

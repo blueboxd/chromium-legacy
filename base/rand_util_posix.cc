@@ -14,6 +14,14 @@
 #include "base/files/file_util.h"
 #include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
+#include "build/build_config.h"
+
+#if defined(OS_MAC)
+// TODO(crbug.com/995996): Waiting for this header to appear in the iOS SDK.
+// (See below.) We'll also use this on other POSIX platforms in the future (and
+// change the #if condition then).
+#include <sys/random.h>
+#endif
 
 namespace {
 
@@ -48,6 +56,17 @@ class URandomFd {
 namespace base {
 
 void RandBytes(void* output, size_t output_length) {
+#if defined(OS_MAC)
+  // TODO(crbug.com/995996): Enable this on iOS too, when sys/random.h arrives
+  // in its SDK.
+  if (__builtin_available(macOS 10.12, *)) {
+    if (getentropy(output, output_length) == 0) {
+      return;
+    }
+  }
+  // Fall through to reading from urandom on < 10.12:
+#endif
+
   const int urandom_fd = GetUrandomFD();
   const bool success =
       ReadFromFD(urandom_fd, static_cast<char*>(output), output_length);

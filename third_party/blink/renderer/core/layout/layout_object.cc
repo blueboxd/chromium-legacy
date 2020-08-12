@@ -3022,7 +3022,8 @@ bool LayoutObject::LocalToAncestorRectFastPath(
     return true;
 
   AncestorSkipInfo skip_info(ancestor);
-  PropertyTreeState container_properties = PropertyTreeState::Uninitialized();
+  PropertyTreeStateOrAlias container_properties =
+      PropertyTreeState::Uninitialized();
   const LayoutObject* property_container =
       GetPropertyContainer(&skip_info, &container_properties);
   if (!property_container)

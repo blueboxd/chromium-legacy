@@ -29,6 +29,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "url/gurl.h"
 
 namespace performance_manager {
@@ -212,7 +213,7 @@ class V8PerFrameMemoryDecoratorTestBase {
 };
 
 void AddPerFrameIsolateMemoryUsage(
-    FrameToken frame_token,
+    const blink::LocalFrameToken& frame_token,
     int64_t world_id,
     uint64_t bytes_used,
     blink::mojom::PerProcessV8MemoryUsageData* data) {
@@ -490,8 +491,8 @@ TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     // Add data for an unknown frame.
-    AddPerFrameIsolateMemoryUsage(FrameToken(base::UnguessableToken::Create()),
-                                  0, 1024u, data.get());
+    AddPerFrameIsolateMemoryUsage(blink::LocalFrameToken(), 0, 1024u,
+                                  data.get());
 
     ExpectBindAndRespondToQuery(&reporter, std::move(data));
   }
@@ -511,11 +512,11 @@ TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
   // Create a couple of frames with specified IDs.
   auto page = CreateNode<PageNodeImpl>();
 
-  FrameToken frame1_id = FrameToken(base::UnguessableToken::Create());
+  blink::LocalFrameToken frame1_id = blink::LocalFrameToken();
   auto frame1 = CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 1,
                                           2, frame1_id);
 
-  FrameToken frame2_id = FrameToken(base::UnguessableToken::Create());
+  blink::LocalFrameToken frame2_id = blink::LocalFrameToken();
   auto frame2 = CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 3,
                                           4, frame2_id);
   {
@@ -542,8 +543,8 @@ TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     AddPerFrameIsolateMemoryUsage(frame1_id, 0, 1003u, data.get());
-    AddPerFrameIsolateMemoryUsage(FrameToken(base::UnguessableToken::Create()),
-                                  0, 2233u, data.get());
+    AddPerFrameIsolateMemoryUsage(blink::LocalFrameToken(), 0, 2233u,
+                                  data.get());
     ExpectQueryAndReply(&reporter, std::move(data));
   }
   task_env().FastForwardBy(kMinTimeBetweenRequests);
@@ -1142,7 +1143,7 @@ TEST_F(V8PerFrameMemoryRequestAnySeqTest, RequestIsSequenceSafe) {
   content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
   ASSERT_NE(nullptr, main_frame);
   const RenderProcessHostId process_id(main_frame->GetProcess()->GetID());
-  const FrameToken frame_token(main_frame->GetFrameToken());
+  const blink::LocalFrameToken frame_token(main_frame->GetFrameToken());
   const content::GlobalFrameRoutingId frame_id(process_id.value(),
                                                main_frame->GetRoutingID());
 

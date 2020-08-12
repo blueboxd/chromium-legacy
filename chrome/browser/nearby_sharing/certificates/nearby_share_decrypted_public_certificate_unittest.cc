@@ -95,3 +95,12 @@ TEST(NearbyShareDecryptedPublicCertificateTest, Verify_WrongSignature) {
       cert->VerifySignature(GetNearbyShareTestPayloadToSign(),
                             /*signature=*/base::span<const uint8_t>()));
 }
+
+TEST(NearbyShareDecryptedPublicCertificateTest, HashAuthenticationToken) {
+  base::Optional<NearbyShareDecryptedPublicCertificate> cert =
+      NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
+          GetNearbyShareTestPublicCertificate(),
+          GetNearbyShareTestEncryptedMetadataKey());
+  EXPECT_EQ(GetNearbyShareTestPayloadHashUsingSecretKey(),
+            cert->HashAuthenticationToken(GetNearbyShareTestPayloadToSign()));
+}

@@ -2259,7 +2259,6 @@
 <translation id="3748706263662799310">Алдааг мэдээлэх</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Миний төхөөрөмжүүд</translation>
-<translation id="3752757212511661046">Ажлын профайл үүсгэх үү?</translation>
 <translation id="3753033997400164841">Нэг удаа хадгалаад. Хүссэн газраа ашиглаарай</translation>
 <translation id="3755411799582650620">Таны <ph name="PHONE_NAME" /> одоо энэ <ph name="DEVICE_TYPE" /> -ийн түгжээг бас тайлж чадна.</translation>
 <translation id="375636864092143889">Сайт таны микрофоныг ашиглаж байна</translation>
@@ -2380,7 +2379,6 @@
 <translation id="3873423927483480833">ПИН харуулах</translation>
 <translation id="3873915545594852654">ARC++-д асуудал гарлаа.</translation>
 <translation id="3874164307099183178">Google Туслахыг асаах</translation>
-<translation id="387531380970557479">"<ph name="EXTENSION_NAME" />" хортой код агуулдаг тул үүнийг идэвхгүй болгосон.</translation>
 <translation id="3879748587602334249">Таталтын менежер</translation>
 <translation id="3881478300875776315">Арай цөөн мөр харуулах</translation>
 <translation id="3882165008614329320">Камер эсвэл файлд байгаа видео</translation>
@@ -2898,7 +2896,6 @@
 <translation id="4562155214028662640">Хурууны хээ нэмэх</translation>
 <translation id="4562494484721939086">Үйлчилгээ байхгүй</translation>
 <translation id="4563210852471260509">Эхний оролтын хэл бол Хятад хэл юм.</translation>
-<translation id="4563404051166505887">1 зураг</translation>
 <translation id="4563880231729913339">Хуруу 3</translation>
 <translation id="4565377596337484307">Нууц үгийг нуух</translation>
 <translation id="4565917129334815774">Системийн логуудыг хадгалах</translation>

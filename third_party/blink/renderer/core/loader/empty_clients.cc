@@ -132,7 +132,7 @@ std::pair<RemoteFrame*, PortalToken> EmptyLocalFrameClient::CreatePortal(
     HTMLPortalElement*,
     mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
     mojo::PendingAssociatedRemote<mojom::blink::PortalClient>) {
-  return std::pair<RemoteFrame*, PortalToken>(nullptr, PortalToken::Null());
+  return std::pair<RemoteFrame*, PortalToken>(nullptr, PortalToken());
 }
 
 RemoteFrame* EmptyLocalFrameClient::AdoptPortal(HTMLPortalElement*) {

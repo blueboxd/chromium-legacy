@@ -49,7 +49,7 @@ TEST_F(WorkerNodeImplTest, ConstProperties) {
   const std::string kTestBrowserContextId =
       base::UnguessableToken::Create().ToString();
   auto process = CreateNode<ProcessNodeImpl>();
-  static const WorkerToken kTestWorkerToken = WorkerToken::Create();
+  static const blink::WorkerToken kTestWorkerToken;
 
   auto worker_impl = CreateNode<WorkerNodeImpl>(
       kWorkerType, process.get(), kTestBrowserContextId, kTestWorkerToken);

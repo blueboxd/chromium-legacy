@@ -3794,7 +3794,7 @@ void Element::setAttributeNS(
   if (exception_state.HadException())
     return;
 
-  setAttribute(parsed_name, std::move(value));
+  setAttribute(parsed_name, value);
 }
 
 void Element::RemoveAttributeInternal(
@@ -3828,14 +3828,13 @@ void Element::RemoveAttributeInternal(
 
 void Element::AppendAttributeInternal(
     const QualifiedName& name,
-    AtomicString value,
+    const AtomicString& value,
     SynchronizationOfLazyAttribute in_synchronization_of_lazy_attribute) {
   if (!in_synchronization_of_lazy_attribute)
     WillModifyAttribute(name, g_null_atom, value);
-  const AtomicString& stored_value =
-      EnsureUniqueElementData().Attributes().Append(name, std::move(value));
+  EnsureUniqueElementData().Attributes().Append(name, value);
   if (!in_synchronization_of_lazy_attribute)
-    DidAddAttribute(name, stored_value);
+    DidAddAttribute(name, value);
 }
 
 void Element::removeAttributeNS(const AtomicString& namespace_uri,

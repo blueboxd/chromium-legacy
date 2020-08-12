@@ -1023,7 +1023,8 @@ void LayoutBlock::ImageChanged(WrappedImagePtr image,
   if (!StyleRef().HasPseudoElementStyle(kPseudoIdFirstLine))
     return;
 
-  const auto* first_line_style = FirstLineStyleWithoutFallback();
+  const auto* first_line_style =
+      StyleRef().GetCachedPseudoElementStyle(kPseudoIdFirstLine);
   if (!first_line_style)
     return;
   if (auto* first_line_container = NearestInnerBlockWithFirstLine()) {

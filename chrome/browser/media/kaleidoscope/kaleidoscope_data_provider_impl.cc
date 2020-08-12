@@ -81,17 +81,30 @@ KaleidoscopeDataProviderImpl::KaleidoscopeDataProviderImpl(
   }
 
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
-  DCHECK(identity_manager_);
 }
 
 KaleidoscopeDataProviderImpl::~KaleidoscopeDataProviderImpl() = default;
 
 void KaleidoscopeDataProviderImpl::GetCredentials(GetCredentialsCallback cb) {
+  // If the profile is incognito then disable Kaleidoscope.
+  if (profile_->IsOffTheRecord()) {
+    std::move(cb).Run(nullptr,
+                      media::mojom::CredentialsResult::kFailedIncognito);
+    return;
+  }
+
+  // If the profile is a child then disable Kaleidoscope.
+  if (profile_->IsSupervised() || profile_->IsChild()) {
+    std::move(cb).Run(nullptr, media::mojom::CredentialsResult::kFailedChild);
+    return;
+  }
+
   // If the user is not signed in, return the credentials without an access
   // token. Sync consent is not required to use Kaleidoscope.
   if (!identity_manager_->HasPrimaryAccount(
           signin::ConsentLevel::kNotRequired)) {
-    std::move(cb).Run(credentials_.Clone());
+    std::move(cb).Run(credentials_.Clone(),
+                      media::mojom::CredentialsResult::kSuccess);
     return;
   }
 
@@ -183,8 +196,10 @@ void KaleidoscopeDataProviderImpl::OnAccessTokenAvailable(
   if (error.state() == GoogleServiceAuthError::State::NONE)
     credentials_->access_token = access_token_info.token;
 
-  for (auto& callback : pending_callbacks_)
-    std::move(callback).Run(credentials_.Clone());
+  for (auto& callback : pending_callbacks_) {
+    std::move(callback).Run(credentials_.Clone(),
+                            media::mojom::CredentialsResult::kSuccess);
+  }
 
   pending_callbacks_.clear();
 }

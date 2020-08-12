@@ -204,10 +204,6 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     test_launcher_utils::RemoveCommandLineSwitch(
         default_command_line, switches::kDisableComponentUpdate, command_line);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    command_line->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures,
-        "EncryptedMediaEncryptionSchemeQuery,"
-        "EncryptedMediaPersistentUsageRecordSession");
   }
 
   void SetUpOnMainThread() override {

@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DRAG_DATA_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -121,9 +122,23 @@ class WebDragData {
     filesystem_id_ = filesystem_id;
   }
 
+  network::mojom::ReferrerPolicy ReferrerPolicy() const {
+    return referrer_policy_;
+  }
+
+  void SetReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
+    referrer_policy_ = referrer_policy;
+  }
+
  private:
   WebVector<Item> item_list_;
   WebString filesystem_id_;
+
+  // Used for items where string_type == "downloadurl". Stores the referrer
+  // policy for usage when dragging a link out of the webview results in a
+  // download.
+  network::mojom::ReferrerPolicy referrer_policy_ =
+      network::mojom::ReferrerPolicy::kDefault;
 };
 
 }  // namespace blink

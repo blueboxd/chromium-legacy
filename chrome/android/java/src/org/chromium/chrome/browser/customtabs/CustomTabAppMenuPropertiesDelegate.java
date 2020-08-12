@@ -174,6 +174,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
 
             if (mIsIncognito) {
                 addToHomeScreenVisible = false;
+                downloadItemVisible = false;
+                openInChromeItemVisible = false;
             }
 
             boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)

@@ -54,11 +54,6 @@ const base::Feature kFreezePurgeMemoryAllPagesFrozen{
 const base::Feature kFreezeUserAgent{"FreezeUserAgent",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, use the maximum possible bounds in compositing overlap testing
-// for fixed position elements.
-const base::Feature kMaxOverlapBoundsForFixed{"MaxOverlapBoundsForFixed",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kMeasureMemoryExperiment{"MeasureMemoryExperiment",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 

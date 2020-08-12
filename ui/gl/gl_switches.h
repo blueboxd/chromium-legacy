@@ -34,11 +34,13 @@ GL_EXPORT extern const char kANGLEImplementationOpenGLESEGLName[];
 GL_EXPORT extern const char kANGLEImplementationNullName[];
 GL_EXPORT extern const char kANGLEImplementationVulkanName[];
 GL_EXPORT extern const char kANGLEImplementationSwiftShaderName[];
+GL_EXPORT extern const char kANGLEImplementationMetalName[];
 
 GL_EXPORT extern const char kANGLEImplementationD3D11NULLName[];
 GL_EXPORT extern const char kANGLEImplementationOpenGLNULLName[];
 GL_EXPORT extern const char kANGLEImplementationOpenGLESNULLName[];
 GL_EXPORT extern const char kANGLEImplementationVulkanNULLName[];
+GL_EXPORT extern const char kANGLEImplementationMetalNULLName[];
 
 GL_EXPORT extern const char kCmdDecoderValidatingName[];
 GL_EXPORT extern const char kCmdDecoderPassthroughName[];

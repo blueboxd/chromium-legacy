@@ -304,9 +304,11 @@ bool PaymentHandlerWebFlowViewController::
 void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
     content::WebContents* source) {
   DCHECK_EQ(source, web_contents());
-  UpdateHeaderView();
-  if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(source))
+  if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(source)) {
     AbortPayment();
+  } else {
+    UpdateHeaderView();
+  }
 }
 
 void PaymentHandlerWebFlowViewController::DidStartNavigation(

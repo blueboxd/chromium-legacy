@@ -2280,7 +2280,6 @@
 <translation id="3748706263662799310">Αναφορά σφάλματος</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Οι συσκευές μου</translation>
-<translation id="3752757212511661046">Δημιουργία προφίλ εργασίας;</translation>
 <translation id="3753033997400164841">Αποθηκεύστε μία φορά. Χρησιμοποιήστε παντού.</translation>
 <translation id="3755411799582650620">Το τηλέφωνό σας <ph name="PHONE_NAME" /> μπορεί πλέον να απενεργοποιήσει και αυτή τη συσκευή <ph name="DEVICE_TYPE" />.</translation>
 <translation id="375636864092143889">Ο ιστότοπος χρησιμοποιεί το μικρόφωνό σας</translation>
@@ -2402,7 +2401,6 @@
 <translation id="3873423927483480833">Εμφάνιση PIN</translation>
 <translation id="3873915545594852654">Παρουσιάστηκε ένα πρόβλημα με το ARC++.</translation>
 <translation id="3874164307099183178">Ενεργοποίηση Βοηθού Google.</translation>
-<translation id="387531380970557479">Το στοιχείο "<ph name="EXTENSION_NAME" />" απενεργοποιήθηκε επειδή περιέχει κακόβουλο πρόγραμμα.</translation>
 <translation id="3879748587602334249">Διαχείριση λήψεων</translation>
 <translation id="3881478300875776315">Εμφάνιση λιγότερων γραμμών</translation>
 <translation id="3882165008614329320">Υπάρχον βίντεο από την κάμερα ή από αρχείο</translation>
@@ -2923,7 +2921,6 @@
 <translation id="4562155214028662640">Προσθήκη δακτυλικού αποτυπώματος</translation>
 <translation id="4562494484721939086">Εκτός υπηρεσίας</translation>
 <translation id="4563210852471260509">Η αρχική γλώσσα εισόδου είναι τα Κινέζικα</translation>
-<translation id="4563404051166505887">1 φωτογραφία</translation>
 <translation id="4563880231729913339">Δάκτυλο 3</translation>
 <translation id="4565377596337484307">Απόκρυψη κωδικού πρόσβασης</translation>
 <translation id="4565577809484439917">{NUM_DAYS,plural, =1{Ο τομέας <ph name="DOMAIN" /> απαιτεί τη δημιουργία αντιγράφων ασφαλείας για τα δεδομένα σας και την επιστροφή αυτής της συσκευής (<ph name="DEVICE_TYPE" />) σήμερα.}other{Ο τομέας <ph name="DOMAIN" /> απαιτεί τη δημιουργία αντιγράφων ασφαλείας για τα δεδομένα σας και την επιστροφή αυτής της συσκευής (<ph name="DEVICE_TYPE" />) πριν από τη λήξη της προθεσμίας.}}</translation>

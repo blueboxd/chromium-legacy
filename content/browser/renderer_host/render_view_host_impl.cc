@@ -612,6 +612,7 @@ void RenderViewHostImpl::RenderProcessExited(
 
   GetWidget()->RendererExited();
   delegate_->RenderViewTerminated(this, info.status, info.exit_code);
+  // |this| might have been deleted. Do not add code here.
 }
 
 bool RenderViewHostImpl::Send(IPC::Message* msg) {

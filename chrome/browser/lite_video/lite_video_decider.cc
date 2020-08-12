@@ -209,7 +209,9 @@ void LiteVideoDecider::OnConnectionChanged(
 void LiteVideoDecider::ClearBlocklist(const base::Time& delete_begin,
                                       const base::Time& delete_end) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  user_blocklist_->ClearBlockList(delete_begin, delete_end);
+  if (user_blocklist_) {
+    user_blocklist_->ClearBlockList(delete_begin, delete_end);
+  }
 }
 
 void LiteVideoDecider::OnBlocklistCleared(base::Time time) {
@@ -219,9 +221,10 @@ void LiteVideoDecider::OnBlocklistCleared(base::Time time) {
 void LiteVideoDecider::DidMediaRebuffer(const GURL& mainframe_url,
                                         base::Optional<GURL> subframe_url,
                                         bool opt_out) {
-  if (user_blocklist_)
+  if (user_blocklist_) {
     user_blocklist_->AddRebufferToBlocklist(mainframe_url, subframe_url,
                                             opt_out);
+  }
 }
 
 }  // namespace lite_video

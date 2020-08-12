@@ -7,6 +7,13 @@ module media.mojom;
 import "chrome/browser/media/feeds/media_feeds_store.mojom";
 import "url/mojom/origin.mojom";
 
+// The result of getting the credentials.
+enum CredentialsResult {
+  kSuccess,
+  kFailedIncognito,
+  kFailedChild,
+};
+
 // The credentials required to make Google API calls from JS.
 struct Credentials {
   // Chrome's API Key.
@@ -43,7 +50,7 @@ interface KaleidoscopeDataProvider {
   GetContinueWatchingMediaFeedItems(KaleidoscopeTab tab) => (array<media_feeds.mojom.MediaFeedItem> items);
 
   // Retrieves the current credentials.
-  GetCredentials() => (Credentials credentials);
+  GetCredentials() => (Credentials? credentials, CredentialsResult result);
 
   // Returns all the watch time origins from media history store that have
   // watch time above a threshold.

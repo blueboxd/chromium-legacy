@@ -20,7 +20,6 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "components/viz/service/display/delegated_ink_point_renderer.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/frame_rate_decider.h"
@@ -48,6 +47,7 @@ class ScopedAllowScheduleGpuTask;
 
 namespace viz {
 class AggregatedFrame;
+class DelegatedInkPointRendererBase;
 class DirectRenderer;
 class DisplayClient;
 class DisplayResourceProvider;
@@ -185,13 +185,10 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   bool IsRootFrameMissing() const;
   bool HasPendingSurfaces(const BeginFrameArgs& args) const;
 
-  // Set the delegated ink renderer, which will be responsible for rendering
-  // the delegated ink trails. This should only be called when the delegated
-  // ink trails feature is being used.
-  void set_delegated_ink_point_renderer(
-      std::unique_ptr<DelegatedInkPointRendererImpl> ink_renderer) {
-    delegated_ink_point_renderer_ = std::move(ink_renderer);
-  }
+  // Return the delegated ink point renderer from |renderer_|, creating it if
+  // one doesn't exist. Should only be used when the delegated ink trails web
+  // API has been used.
+  DelegatedInkPointRendererBase* GetDelegatedInkPointRenderer();
 
  private:
   friend class DisplayTest;
@@ -295,10 +292,6 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   // The height of the top-controls in the previously drawn frame.
   float last_top_controls_visible_height_ = 0.f;
-
-  // The renderer responsible for drawing delegated ink trails to the screen
-  // before swapping the buffers in DrawAndSwap().
-  std::unique_ptr<DelegatedInkPointRendererImpl> delegated_ink_point_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

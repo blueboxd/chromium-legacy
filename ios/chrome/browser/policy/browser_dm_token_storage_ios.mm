@@ -4,13 +4,20 @@
 
 #include "ios/chrome/browser/policy/browser_dm_token_storage_ios.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/base64url.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/hash/sha1.h"
+#include "base/ios/device_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "ios/chrome/browser/file_metadata_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,6 +30,7 @@ namespace {
 
 const char kDmTokenBaseDir[] =
     FILE_PATH_LITERAL("Google/Chrome Cloud Enrollment/");
+const char kEnrollmentTokenPolicyName[] = "CloudManagementEnrollmentToken";
 
 bool GetDmTokenFilePath(base::FilePath* token_file_path,
                         const std::string& client_id,
@@ -67,18 +75,34 @@ BrowserDMTokenStorageIOS::BrowserDMTokenStorageIOS()
 BrowserDMTokenStorageIOS::~BrowserDMTokenStorageIOS() {}
 
 std::string BrowserDMTokenStorageIOS::InitClientId() {
-  // TODO(crbug.com/1066495): Finish iOS CBCM implementation.
-  return "";
+  return ios::device_util::GetDeviceIdentifier(nullptr);
 }
 
 std::string BrowserDMTokenStorageIOS::InitEnrollmentToken() {
-  // TODO(crbug.com/1066495): Finish iOS CBCM implementation.
-  return "";
+  NSDictionary* raw_policies = [[NSUserDefaults standardUserDefaults]
+      dictionaryForKey:kPolicyLoaderIOSConfigurationKey];
+  NSString* token =
+      raw_policies[base::SysUTF8ToNSString(kEnrollmentTokenPolicyName)];
+
+  if (token) {
+    return base::TrimWhitespaceASCII(base::SysNSStringToUTF8(token),
+                                     base::TRIM_ALL)
+        .as_string();
+  }
+
+  return std::string();
 }
 
 std::string BrowserDMTokenStorageIOS::InitDMToken() {
-  // TODO(crbug.com/1066495): Finish iOS CBCM implementation.
-  return "";
+  base::FilePath token_file_path;
+  if (!GetDmTokenFilePath(&token_file_path, InitClientId(), false))
+    return std::string();
+
+  std::string token;
+  if (!base::ReadFileToString(token_file_path, &token))
+    return std::string();
+
+  return base::TrimWhitespaceASCII(token, base::TRIM_ALL).as_string();
 }
 
 bool BrowserDMTokenStorageIOS::InitEnrollmentErrorOption() {

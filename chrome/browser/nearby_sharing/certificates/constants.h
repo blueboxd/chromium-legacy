@@ -25,9 +25,8 @@ extern const base::TimeDelta
 // rotated on the local device.
 extern const size_t kNearbyShareNumPrivateCertificates;
 
-// The number of bytes that
-//     HMAC(/*key=*/|secret_key|, /*message=*/|authentication_token|)
-// is converted to via HKDF before advertising.
+// The number of bytes comprising the hash of the authentication token using the
+// secret key.
 extern const size_t kNearbyShareNumBytesAuthenticationTokenHash;
 
 // Length of key in bytes required by AES-GCM encryption.

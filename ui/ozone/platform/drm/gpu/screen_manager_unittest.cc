@@ -44,8 +44,8 @@ drmModeModeInfo Mode(uint16_t hdisplay, uint16_t vdisplay) {
 
 class ScreenManagerTest : public testing::Test {
  public:
-  ScreenManagerTest() {}
-  ~ScreenManagerTest() override {}
+  ScreenManagerTest() = default;
+  ~ScreenManagerTest() override = default;
 
   gfx::Rect GetPrimaryBounds() const {
     return gfx::Rect(0, 0, kDefaultMode.hdisplay, kDefaultMode.vdisplay);

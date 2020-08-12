@@ -94,7 +94,7 @@ class MockJobTask : public base::RefCountedThreadSafe<MockJobTask> {
     remaining_num_tasks_to_run_ = num_tasks_to_run;
   }
 
-  size_t GetMaxConcurrency() const;
+  size_t GetMaxConcurrency(size_t worker_count) const;
   void Run(JobDelegate* delegate);
 
   scoped_refptr<JobTaskSource> GetJobTaskSource(

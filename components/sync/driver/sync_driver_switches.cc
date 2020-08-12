@@ -48,7 +48,7 @@ const base::Feature kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
 
 // If enabled, the sync engine will be shut down in the "paused" state.
 const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable syncing of Wi-Fi configurations.
 const base::Feature kSyncWifiConfigurations{"SyncWifiConfigurations",

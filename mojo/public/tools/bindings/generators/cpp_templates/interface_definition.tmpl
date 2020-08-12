@@ -121,8 +121,11 @@ bool {{proxy_name}}::{{method.name}}(
 #if BUILDFLAG(MOJO_TRACE_ENABLED)
 {%-     set qualified_method_name = "%s::%s::%s" % (namespace_as_string,
                                                     class_name, method.name) %}
-  {{interface_macros.trace_event("param_", method.parameters,
-                                 qualified_method_name)}}
+  {{interface_macros.trace_event(prefix="param_",
+                                 method_parameters=method.parameters,
+                                 method_name=qualified_method_name,
+                                 parameter_group="input_parameters",
+                                 trace_event_type='_BEGIN')}}
 #endif
   const bool kExpectsResponse = true;
   const bool kIsSync = true;
@@ -133,13 +136,13 @@ bool {{proxy_name}}::{{method.name}}(
 {%-     for param in method.parameters -%}
       , std::move(param_{{param.name}})
 {%-     endfor %});
-{%-   else %}
+{%-   else %}  {#- if method|method_supports_lazy_serialization #}
   {{interface_macros.build_message_flags(False, "kIsSync", "kExpectsResponse",
                                          "kFlags")}}
   {{interface_macros.build_serialized_message(
       message_name, "param_%s", params_struct, params_description, "kFlags",
       "message")}}
-{%-   endif %}
+{%-   endif %}  {#- if method|method_supports_lazy_serialization #}
 
 #if defined(ENABLE_IPC_FUZZER)
   message.set_interface_name({{class_name}}::Name_);
@@ -154,18 +157,27 @@ bool {{proxy_name}}::{{method.name}}(
           , out_param_{{param.name}}
 {%-     endfor %}));
   ignore_result(receiver_->AcceptWithResponder(&message, std::move(responder)));
-  // TODO(karelkral) Trace the out_ parameters here
+#if BUILDFLAG(MOJO_TRACE_ENABLED)
+  {{interface_macros.trace_event(prefix="out_param_",
+                                 method_parameters=method.response_parameters,
+                                 method_name=qualified_method_name,
+                                 parameter_group="sync_response_parameters",
+                                 trace_event_type='_END',
+                                 dereference_parameters=True)}}
+#endif
   return result;
 }
-{%-   endif %}
+{%-   endif %}  {#- if method.sync #}
 
 void {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_request_params("in_", method)}}) {
 #if BUILDFLAG(MOJO_TRACE_ENABLED)
 {%- set qualified_method_name = "%s::%s::%s" % (namespace_as_string, class_name,
                                                 method.name) %}
-  {{interface_macros.trace_event("in_", method.parameters,
-                                 qualified_method_name)}}
+  {{interface_macros.trace_event(prefix="in_",
+                                 method_parameters=method.parameters,
+                                 method_name=qualified_method_name,
+                                 parameter_group="input_parameters")}}
 #endif
 {%- if method.response_parameters != None %}
   const bool kExpectsResponse = true;
@@ -321,6 +333,16 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
 
 void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
     {{interface_macros.declare_params("in_", method.response_parameters)}}) {
+#if BUILDFLAG(MOJO_TRACE_ENABLED)
+{%-     set qualified_method_name = "(Impl)%s::%s::%sCallback"
+		% (namespace_as_string, class_name, method.name) %}
+  {{interface_macros.trace_event(prefix="in_",
+                                 method_parameters=method.response_parameters,
+                                 method_name=qualified_method_name,
+                                 parameter_group="async_response_parameters",
+                                 trace_event_type='_BEGIN',
+                                 dereference_parameters=False)}}
+#endif
 {%-   if method|method_supports_lazy_serialization %}
   const bool kSerialize = responder_->PrefersSerializedMessages();
   auto message = {{response_message_typename}}::Build(kSerialize, is_sync_
@@ -335,8 +357,8 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
 {%-   endif %}
 
 #if BUILDFLAG(MOJO_TRACE_ENABLED)
-  TRACE_EVENT1("mojom", "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}Callback",
-               "message", message.name());
+  TRACE_EVENT_END1("mojom", "{{qualified_method_name}}", "message",
+                   message.name());
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

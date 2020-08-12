@@ -665,6 +665,10 @@ void BrowserTabStripController::OnTabGroupChanged(
       tabstrip_->OnGroupCreated(change.group);
       break;
     }
+    case TabGroupChange::kEditorOpened: {
+      tabstrip_->OnGroupEditorOpened(change.group);
+      break;
+    }
     case TabGroupChange::kContentsChanged: {
       tabstrip_->OnGroupContentsChanged(change.group);
       break;

@@ -220,6 +220,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // GCs. E.g., |atomic_marking_time()| report the marking time of the atomic
   // phase, independent of whether the GC was a stand-alone or unified heap GC.
   struct PLATFORM_EXPORT Event {
+    Event();
+
     // Overall time spent in the GC cycle. This includes marking time as well as
     // sweeping time.
     base::TimeDelta gc_cycle_time() const;
@@ -267,6 +269,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     double marking_time_in_bytes_per_second() const;
 
     // Marked bytes collected during sweeping.
+    size_t unique_id = -1;
     size_t marked_bytes = 0;
     size_t compaction_freed_bytes = 0;
     size_t compaction_freed_pages = 0;
@@ -280,10 +283,13 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     size_t partition_alloc_bytes_before_sweeping = 0;
     double live_object_rate = 0;
     base::TimeDelta gc_nested_in_v8;
+    bool is_forced_gc = true;
   };
 
   // Indicates a new garbage collection cycle.
-  void NotifyMarkingStarted(BlinkGC::CollectionType, BlinkGC::GCReason);
+  void NotifyMarkingStarted(BlinkGC::CollectionType,
+                            BlinkGC::GCReason,
+                            bool is_forced_gc);
 
   // Indicates that marking of the current garbage collection cycle is
   // completed.
@@ -437,8 +443,10 @@ template <ThreadHeapStatsCollector::TraceCategory trace_category,
           ThreadHeapStatsCollector::ScopeContext scope_category>
 void ThreadHeapStatsCollector::InternalScope<trace_category,
                                              scope_category>::StopTrace() {
-  TRACE_EVENT_END0(TraceCategory(),
-                   ToString(id_, tracer_->current_.collection_type));
+  TRACE_EVENT_END2(TraceCategory(),
+                   ToString(id_, tracer_->current_.collection_type), "epoch",
+                   tracer_->current_.unique_id, "forced",
+                   tracer_->current_.is_forced_gc);
 }
 
 template <ThreadHeapStatsCollector::TraceCategory trace_category,

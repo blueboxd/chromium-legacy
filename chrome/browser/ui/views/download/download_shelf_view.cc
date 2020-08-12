@@ -73,14 +73,15 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
   // cases, like when installing a theme. See DownloadShelf::AddDownload().
   SetVisible(false);
 
-  auto show_all_view = std::make_unique<views::MdTextButton>(
-      this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS));
-  show_all_view_ = AddChildView(std::move(show_all_view));
+  show_all_view_ = AddChildView(std::make_unique<views::MdTextButton>(
+      this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS)));
+  show_all_view_->SizeToPreferredSize();
 
-  auto close_button = views::CreateVectorImageButton(this);
-  close_button->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-  close_button->SetFocusForPlatform();
-  close_button_ = AddChildView(std::move(close_button));
+  close_button_ = AddChildView(views::CreateVectorImageButton(this));
+  close_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+  close_button_->SetFocusForPlatform();
+  close_button_->SizeToPreferredSize();
 
   accessible_alert_ = AddChildView(std::make_unique<views::View>());
 
@@ -144,11 +145,9 @@ void DownloadShelfView::Layout() {
   // Let our base class layout our child views
   views::View::Layout();
 
-  gfx::Size close_button_size = close_button_->GetPreferredSize();
-  gfx::Size show_all_size = show_all_view_->GetPreferredSize();
   int max_download_x =
-      std::max<int>(0, width() - kEndPadding - close_button_size.width() -
-                           kCloseAndLinkPadding - show_all_size.width());
+      std::max<int>(0, width() - kEndPadding - close_button_->width() -
+                           kCloseAndLinkPadding - show_all_view_->width());
   // If there is not enough room to show the first download item, show the
   // "Show all downloads" link to the left to make it more visible that there is
   // something to see.
@@ -161,12 +160,10 @@ void DownloadShelfView::Layout() {
     return std::max((height - item_height) / 2, kTopPadding);
   };
 
-  show_all_view_->SetBounds(next_x, center_y(show_all_size.height()),
-                            show_all_size.width(), show_all_size.height());
-  next_x += show_all_size.width() + kCloseAndLinkPadding;
-  close_button_->SizeToPreferredSize();
+  show_all_view_->SetPosition({next_x, center_y(show_all_view_->height())});
   close_button_->SetPosition(
-      gfx::Point(next_x, center_y(close_button_->height())));
+      {show_all_view_->bounds().right() + kCloseAndLinkPadding,
+       center_y(close_button_->height())});
   if (show_link_only) {
     // Let's hide all the items.
     for (auto ri = download_views_.rbegin(); ri != download_views_.rend(); ++ri)

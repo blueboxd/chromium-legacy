@@ -63,6 +63,7 @@ LEGACY_EMBEDDED_JSON_ALLOWLIST = [
     'DeviceLoginScreenAutoSelectCertificateForUrls',
     'DeviceOpenNetworkConfiguration',
     'NativePrinters',
+    'Printers',
     'OpenNetworkConfiguration',
     'RemoteAccessHostDebugOverridePolicies',
     # NOTE: Do not add any new policies to this list! Do not store policies with

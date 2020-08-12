@@ -47,10 +47,12 @@ std::vector<base::StringPiece> CupsPrinter::GetSupportedOptionValueStrings(
   if (!attr)
     return values;
 
-  base::StringPiece value;
   int num_options = ippGetCount(attr);
   for (int i = 0; i < num_options; ++i) {
-    value = ippGetString(attr, i, nullptr);
+    const char* const value = ippGetString(attr, i, nullptr);
+    if (!value) {
+      continue;
+    }
     values.push_back(value);
   }
 

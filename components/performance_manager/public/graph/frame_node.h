@@ -12,12 +12,9 @@
 #include "components/performance_manager/public/graph/node.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/performance_manager/public/mojom/lifecycle.mojom.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 class GURL;
-
-namespace base {
-class UnguessableToken;
-}  // namespace base
 
 namespace performance_manager {
 
@@ -26,10 +23,6 @@ class PageNode;
 class ProcessNode;
 class RenderFrameHostProxy;
 class WorkerNode;
-
-// A strongly typed unguessable token for the frame tokens.
-using FrameToken =
-    util::StrongAlias<class FrameTokenTag, base::UnguessableToken>;
 
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
 // is a FrameNode. Conceptually, a frame corresponds to a
@@ -92,7 +85,7 @@ class FrameNode : public Node {
 
   // Gets the unique token associated with this frame. This is a constant over
   // the lifetime of the frame and unique across all frames for all time.
-  virtual const FrameToken& GetFrameToken() const = 0;
+  virtual const blink::LocalFrameToken& GetFrameToken() const = 0;
 
   // Gets the ID of the browsing instance to which this frame belongs. This is a
   // constant over the lifetime of the frame.

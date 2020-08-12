@@ -12,12 +12,12 @@ import android.content.DialogInterface.OnClickListener;
 import android.security.KeyChain;
 import android.security.KeyChainAliasCallback;
 import android.security.KeyChainException;
-import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -46,7 +46,7 @@ import javax.security.auth.x500.X500Principal;
  */
 @JNINamespace("browser_ui")
 public class SSLClientCertificateRequest {
-    static final String TAG = "SSLClientCertificateRequest";
+    static final String TAG = "SSLClientCertRequest";
 
     /**
      * Implementation for anynchronous task of handling the certificate request. This
@@ -146,6 +146,7 @@ public class SSLClientCertificateRequest {
     private static class KeyChainCertSelectionCallback implements KeyChainAliasCallback {
         private final long mNativePtr;
         private final Context mContext;
+        private boolean mAliasCalled;
 
         KeyChainCertSelectionCallback(Context context, long nativePtr) {
             mContext = context;
@@ -154,6 +155,12 @@ public class SSLClientCertificateRequest {
 
         @Override
         public void alias(final String alias) {
+            if (mAliasCalled) {
+                Log.w(TAG, "KeyChainCertSelectionCallback called more than once ('" + alias + "')");
+                return;
+            }
+            mAliasCalled = true;
+
             // This is called by KeyChainActivity in a background thread. Post task to
             // handle the certificate selection on the UI thread.
             PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {

@@ -4,9 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
@@ -2604,52 +2602,7 @@ TEST_P(PaintLayerTest, InlineWithBackdropFilterHasPaintLayer) {
   EXPECT_NE(nullptr, paint_layer);
 }
 
-TEST_P(PaintLayerTest, FixedDoesNotUseExpandedBoundingBoxForOverlap) {
-  // TODO(samfort): Remove this test after kMaxOverlapBoundsForFixed ships.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
-                                    false);
-
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      * {
-        margin: 0;
-      }
-      body {
-        height: 610px;
-        width: 820px;
-      }
-      #fixed {
-        height: 10px;
-        left: 50px;
-        position: fixed;
-        top: 50px;
-        width: 10px;
-      }
-    </style>
-    <div id=fixed></div>
-  )HTML");
-
-  PaintLayer* fixed =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("fixed"))->Layer();
-  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
-            PhysicalRect(0, 0, 10, 10));
-
-  // Modify the scroll offset and ensure that the bounding box is still the
-  // same.
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(10, 10), mojom::blink::ScrollType::kProgrammatic);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
-            PhysicalRect(0, 0, 10, 10));
-}
-
 TEST_P(PaintLayerTest, FixedUsesExpandedBoundingBoxForOverlap) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
-                                    true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       * {
@@ -2686,10 +2639,6 @@ TEST_P(PaintLayerTest, FixedUsesExpandedBoundingBoxForOverlap) {
 }
 
 TEST_P(PaintLayerTest, FixedInScrollerUsesExpandedBoundingBoxForOverlap) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
-                                    true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       * {
@@ -2752,10 +2701,6 @@ TEST_P(PaintLayerTest, FixedInScrollerUsesExpandedBoundingBoxForOverlap) {
 }
 
 TEST_P(PaintLayerTest, FixedUnderTransformDoesNotExpandBoundingBoxForOverlap) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
-                                    true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       .anim {
@@ -2800,10 +2745,6 @@ TEST_P(PaintLayerTest, FixedUnderTransformDoesNotExpandBoundingBoxForOverlap) {
 }
 
 TEST_P(PaintLayerTest, NestedFixedUsesExpandedBoundingBoxForOverlap) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
-                                    true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       * {

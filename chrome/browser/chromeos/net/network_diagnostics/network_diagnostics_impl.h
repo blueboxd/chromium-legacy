@@ -38,6 +38,7 @@ class NetworkDiagnosticsImpl : public mojom::NetworkDiagnosticsRoutines {
   void DnsResolverPresent(DnsResolverPresentCallback callback) override;
   void DnsLatency(DnsLatencyCallback callback) override;
   void DnsResolution(DnsResolutionCallback callback) override;
+  void CaptivePortal(CaptivePortalCallback callback) override;
 
  private:
   mojo::ReceiverSet<mojom::NetworkDiagnosticsRoutines> receivers_;

@@ -81,8 +81,8 @@ class IsolationContextMetricsTest : public GraphTestHarness {
       FrameNodeImpl* parent_frame_node = nullptr) {
     return CreateNode<FrameNodeImpl>(
         process_node, page_node, parent_frame_node, 0 /* frame_tree_node_id */,
-        ++next_render_frame_id_, FrameToken(base::UnguessableToken::Create()),
-        browsing_instance_id, site_instance_id);
+        ++next_render_frame_id_, blink::LocalFrameToken(), browsing_instance_id,
+        site_instance_id);
   }
 
   // Advance time until the timer fires.

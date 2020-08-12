@@ -140,6 +140,7 @@ class TSFTextStoreTest : public testing::Test {
  protected:
   void SetUp() override {
     text_store_ = new TSFTextStore();
+    EXPECT_EQ(S_OK, text_store_->Initialize());
     sink_ = new MockStoreACPSink();
     EXPECT_EQ(S_OK, text_store_->AdviseSink(IID_ITextStoreACPSink, sink_.get(),
                                             TS_AS_ALL_SINKS));

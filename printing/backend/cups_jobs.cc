@@ -7,8 +7,10 @@
 #include <cups/ipp.h>
 
 #include <array>
+#include <cstring>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -244,8 +246,10 @@ void ParseCollection(ipp_attribute_t* attr,
                      std::vector<std::string>* collection) {
   int count = ippGetCount(attr);
   for (int i = 0; i < count; i++) {
-    base::StringPiece value = ippGetString(attr, i, nullptr);
-    collection->push_back(value.as_string());
+    const char* const value = ippGetString(attr, i, nullptr);
+    if (value) {
+      collection->push_back(value);
+    }
   }
 }
 
@@ -288,9 +292,9 @@ void ParseJobs(ipp_t* response,
   CupsJob* current_job = NewJob(printer_id, jobs);
   for (ipp_attribute_t* attr = starting_attr; attr != nullptr;
        attr = ippNextAttribute(response)) {
-    base::StringPiece attribute_name = ippGetName(attr);
+    const char* const attribute_name = ippGetName(attr);
     // Separators indicate a new job.  Separators have empty names.
-    if (attribute_name.empty()) {
+    if (!attribute_name || strlen(attribute_name) == 0) {
       current_job = NewJob(printer_id, jobs);
       continue;
     }
@@ -306,7 +310,11 @@ void ParseJobs(ipp_t* response,
 bool ParsePrinterInfo(ipp_t* response, PrinterInfo* printer_info) {
   for (ipp_attribute_t* attr = ippFirstAttribute(response); attr != nullptr;
        attr = ippNextAttribute(response)) {
-    base::StringPiece name = ippGetName(attr);
+    const char* const value = ippGetName(attr);
+    if (!value) {
+      continue;
+    }
+    base::StringPiece name(value);
     if (name == base::StringPiece(kPrinterMakeAndModel)) {
       DCHECK_EQ(IPP_TAG_TEXT, ippGetValueTag(attr));
       const char* make_and_model_string = ippGetString(attr, 0, nullptr);
@@ -421,10 +429,11 @@ void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status) {
 
   for (ipp_attribute_t* attr = ippFirstAttribute(response); attr != nullptr;
        attr = ippNextAttribute(response)) {
-    base::StringPiece name = ippGetName(attr);
-    if (name.empty()) {
+    const char* const value = ippGetName(attr);
+    if (!value) {
       continue;
     }
+    base::StringPiece name(value);
 
     if (name == kPrinterState) {
       DCHECK_EQ(IPP_TAG_ENUM, ippGetValueTag(attr));

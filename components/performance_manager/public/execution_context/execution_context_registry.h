@@ -8,6 +8,7 @@
 #include "components/performance_manager/public/execution_context/execution_context_token.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/worker_node.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace performance_manager {
 
@@ -48,12 +49,12 @@ class ExecutionContextRegistry {
   // Does a typed lookup of a FrameNode ExecutionContext by FrameToken, returns
   // nullptr if no such FrameNode exists.
   virtual const FrameNode* GetFrameNodeByFrameToken(
-      const FrameToken& token) = 0;
+      const blink::LocalFrameToken& token) = 0;
 
   // Does a typed lookup of a WorkerNode ExecutionContext by its DevToolsToken,
   // returns nullptr if no such WorkerNode exists.
   virtual const WorkerNode* GetWorkerNodeByWorkerToken(
-      const WorkerToken& token) = 0;
+      const blink::WorkerToken& token) = 0;
 
   // Returns the ExecutionContext associated with a node.
   virtual const ExecutionContext* GetExecutionContextForFrameNode(

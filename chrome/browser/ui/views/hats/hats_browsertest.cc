@@ -190,6 +190,7 @@ class MockHatsNextWebDialog : public HatsNextWebDialog {
 
   MOCK_METHOD0(ShowWidget, void());
   MOCK_METHOD0(CloseWidget, void());
+  MOCK_METHOD1(UpdateWidgetSize, void(gfx::Size));
 };
 
 typedef InProcessBrowserTest HatsNextWebDialogBrowserTest;
@@ -289,4 +290,37 @@ IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, NewWebContents) {
   EXPECT_EQ(
       GURL("http://foo.com"),
       browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, DialogResize) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto* dialog = new MockHatsNextWebDialog(
+      browser(), "resize_for_testing",
+      embedded_test_server()->GetURL("/hats/hats_next_mock.html"),
+      base::TimeDelta::FromSeconds(100));
+
+  // Check that the dialog attempts to resize with the sizes defined in
+  // hats_next_mock.html.
+  base::RunLoop run_loop;
+  EXPECT_CALL(*dialog, UpdateWidgetSize(gfx::Size(123, 456)))
+      .WillOnce(testing::Invoke([&run_loop] { run_loop.Quit(); }));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, InvalidSize) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Check that providing a size which is too large results in the dialog being
+  // closed.
+  auto* dialog = new MockHatsNextWebDialog(
+      browser(), "invalid_size_for_testing",
+      embedded_test_server()->GetURL("/hats/hats_next_mock.html"),
+      base::TimeDelta::FromSeconds(100));
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(*dialog, CloseWidget).WillOnce([&run_loop]() {
+    run_loop.Quit();
+  });
+  run_loop.Run();
 }

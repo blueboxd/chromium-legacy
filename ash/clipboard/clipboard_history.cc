@@ -5,10 +5,8 @@
 #include "ash/clipboard/clipboard_history.h"
 
 #include "ash/clipboard/clipboard_history_controller.h"
-#include "ash/session/session_controller_impl.h"
-#include "ash/shell.h"
 #include "base/stl_util.h"
-#include "components/account_id/account_id.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_non_backed.h"
 
@@ -17,10 +15,6 @@ namespace ash {
 namespace {
 
 constexpr size_t kMaxClipboardItemsShared = 5;
-
-AccountId GetActiveAccountId() {
-  return Shell::Get()->session_controller()->GetActiveAccountId();
-}
 
 }  // namespace
 
@@ -35,8 +29,6 @@ ClipboardHistory::ScopedPause::~ScopedPause() {
 
 ClipboardHistory::ClipboardHistory() {
   ui::ClipboardMonitor::GetInstance()->AddObserver(this);
-  Shell::Get()->session_controller()->AddObserver(this);
-  Shell::Get()->AddShellObserver(this);
 }
 
 ClipboardHistory::~ClipboardHistory() {
@@ -44,13 +36,11 @@ ClipboardHistory::~ClipboardHistory() {
 }
 
 const std::list<ui::ClipboardData>& ClipboardHistory::GetItems() const {
-  auto it = items_by_account_id_.find(GetActiveAccountId());
-  DCHECK(it != items_by_account_id_.cend());
-  return it->second;
+  return history_list_;
 }
 
 void ClipboardHistory::Clear() {
-  items_by_account_id_[GetActiveAccountId()] = std::list<ui::ClipboardData>();
+  history_list_ = std::list<ui::ClipboardData>();
 }
 
 bool ClipboardHistory::IsEmpty() const {
@@ -79,17 +69,15 @@ void ClipboardHistory::OnClipboardDataChanged() {
   // immediately by the long form URL.
   commit_data_weak_factory_.InvalidateWeakPtrs();
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClipboardHistory::CommitData,
-                                commit_data_weak_factory_.GetWeakPtr(),
-                                GetActiveAccountId(), *clipboard_data));
+      FROM_HERE,
+      base::BindOnce(&ClipboardHistory::CommitData,
+                     commit_data_weak_factory_.GetWeakPtr(), *clipboard_data));
 }
 
-void ClipboardHistory::CommitData(const AccountId& account_id,
-                                  ui::ClipboardData data) {
-  std::list<ui::ClipboardData>& items = items_by_account_id_[account_id];
-  items.push_front(std::move(data));
-  if (items.size() > kMaxClipboardItemsShared)
-    items.pop_back();
+void ClipboardHistory::CommitData(ui::ClipboardData data) {
+  history_list_.push_front(std::move(data));
+  if (history_list_.size() > kMaxClipboardItemsShared)
+    history_list_.pop_back();
 }
 
 void ClipboardHistory::Pause() {
@@ -98,19 +86,6 @@ void ClipboardHistory::Pause() {
 
 void ClipboardHistory::Resume() {
   --num_pause_;
-}
-
-void ClipboardHistory::OnActiveUserSessionChanged(
-    const AccountId& active_account_id) {
-  if (!base::Contains(items_by_account_id_, active_account_id))
-    items_by_account_id_[active_account_id] = std::list<ui::ClipboardData>();
-}
-
-void ClipboardHistory::OnShellDestroying() {
-  // ClipboardHistory depends on Shell to access the classes it observes. So
-  // remove itself from observer lists before the Shell instance is destroyed.
-  Shell::Get()->session_controller()->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
 }
 
 }  // namespace ash

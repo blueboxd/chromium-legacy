@@ -4623,7 +4623,7 @@
       },
       {
         "args": [
-          "--gtest_filter=-NativeExtensionBindingsSystemUnittest*"
+          "--gtest_filter=-NativeExtensionBindingsSystemUnittest*:BluetoothSocketApiUnittest.CreateThenClose:FeatureProviderTest.PermissionFeatureAvailability"
         ],
         "experiment_percentage": 100,
         "merge": {
@@ -5099,7 +5099,7 @@
       },
       {
         "args": [
-          "--gtest_filter=-NativeDesktopMediaListTest*:PermissionMessageCombinationsUnittest.USBSerialBluetoothCoalescing:RelaunchNotificationControllerPlatformImplTest.SynchronousNotification:WindowSizerTest*"
+          "--gtest_filter=-NativeDesktopMediaListTest*:PermissionMessageCombinationsUnittest.USBSerialBluetoothCoalescing:RelaunchNotificationControllerPlatformImplTest.SynchronousNotification:WindowSizerTest*:ChromeContentBrowserClientTest.UserAgentStringOrdering:ChromeMetricsServiceClientTest.TestRegisterMetricsServiceProviders"
         ],
         "experiment_percentage": 100,
         "merge": {
@@ -5127,7 +5127,8 @@
       },
       {
         "args": [
-          "--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:DesktopWidgetTest.GetWindowPlacement:DesktopWidgetTest.MinimumSizeConstraints:EditableComboboxTest.EndOrHomeMovesToBeginningOrEndOfText:EditableComboboxTest.MenuCanAdaptToContentChange:TextfieldTest.ContextMenuDisplayTest:TooltipControllerTest*"
+          "--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:DesktopWidgetTest.GetWindowPlacement:DesktopWidgetTest.MinimumSizeConstraints:EditableComboboxTest.AltLeftOrRightDoesNothing:EditableComboboxTest.EndOrHomeMovesToBeginningOrEndOfText:EditableComboboxTest.MenuCanAdaptToContentChange:TextfieldTest.ContextMenuDisplayTest:TextfieldTest.OverflowTest:TextfieldTest.SwitchFocusInKeyDown:",
+          "TooltipControllerTest*"
         ],
         "experiment_percentage": 100,
         "merge": {

@@ -306,20 +306,11 @@ public class WebLayer {
                 return;
             }
             try {
-                if (getMajorVersion() < 81) {
-                    getIWebLayer(appContext)
-                            .loadAsyncV80(ObjectWrapper.wrap(appContext),
-                                    ObjectWrapper.wrap((ValueCallback<Boolean>) result -> {
-                                        onWebLayerReady();
-                                    }));
-                } else {
-                    getIWebLayer(appContext)
-                            .loadAsync(ObjectWrapper.wrap(appContext),
-                                    ObjectWrapper.wrap(getOrCreateRemoteContext(appContext)),
-                                    ObjectWrapper.wrap((ValueCallback<Boolean>) result -> {
-                                        onWebLayerReady();
-                                    }));
-                }
+                getIWebLayer(appContext)
+                        .loadAsync(ObjectWrapper.wrap(appContext),
+                                ObjectWrapper.wrap(getOrCreateRemoteContext(appContext)),
+                                ObjectWrapper.wrap(
+                                        (ValueCallback<Boolean>) result -> { onWebLayerReady(); }));
             } catch (Exception e) {
                 throw new APICallException(e);
             }
@@ -335,13 +326,9 @@ public class WebLayer {
                 return null;
             }
             try {
-                if (getMajorVersion() < 81) {
-                    getIWebLayer(appContext).loadSyncV80(ObjectWrapper.wrap(appContext));
-                } else {
-                    getIWebLayer(appContext)
-                            .loadSync(ObjectWrapper.wrap(appContext),
-                                    ObjectWrapper.wrap(getOrCreateRemoteContext(appContext)));
-                }
+                getIWebLayer(appContext)
+                        .loadSync(ObjectWrapper.wrap(appContext),
+                                ObjectWrapper.wrap(getOrCreateRemoteContext(appContext)));
                 onWebLayerReady();
                 return mWebLayer;
             } catch (Exception e) {

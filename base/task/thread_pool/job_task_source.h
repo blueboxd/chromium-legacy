@@ -35,7 +35,7 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   JobTaskSource(const Location& from_here,
                 const TaskTraits& traits,
                 RepeatingCallback<void(JobDelegate*)> worker_task,
-                RepeatingCallback<size_t()> max_concurrency_callback,
+                RepeatingCallback<size_t(size_t)> max_concurrency_callback,
                 PooledTaskRunnerDelegate* delegate);
 
   static JobHandle CreateJobHandle(
@@ -68,6 +68,9 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   // TaskSource:
   ExecutionEnvironment GetExecutionEnvironment() override;
   size_t GetRemainingConcurrency() const override;
+
+  bool IsCompleted() const;
+  size_t GetWorkerCount() const;
 
   // Returns the maximum number of tasks from this TaskSource that can run
   // concurrently.
@@ -179,6 +182,8 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   // either there's no work remaining or Job was cancelled.
   bool WaitForParticipationOpportunity() EXCLUSIVE_LOCKS_REQUIRED(worker_lock_);
 
+  size_t GetMaxConcurrency(State::Value value) const;
+
   // TaskSource:
   RunStatus WillRunTask() override;
   Task TakeTask(TaskSource::Transaction* transaction) override;
@@ -202,7 +207,7 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   std::atomic<uint32_t> assigned_task_ids_{0};
 
   const Location from_here_;
-  RepeatingCallback<size_t()> max_concurrency_callback_;
+  RepeatingCallback<size_t(size_t)> max_concurrency_callback_;
 
   // Worker task set by the job owner.
   RepeatingCallback<void(JobDelegate*)> worker_task_;

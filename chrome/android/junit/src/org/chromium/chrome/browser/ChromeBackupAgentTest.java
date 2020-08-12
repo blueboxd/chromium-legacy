@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -185,7 +184,7 @@ public class ChromeBackupAgentTest {
         verify(backupData).writeEntityData(new byte[] {0}, 1);
         byte[] unameBytes = ApiCompatibilityUtils.getBytesUtf8(mAccountInfo.getEmail());
         verify(backupData)
-                .writeEntityHeader("AndroidDefault." + ChromeSigninController.SIGNED_IN_ACCOUNT_KEY,
+                .writeEntityHeader("AndroidDefault." + ChromeBackupAgent.SIGNED_IN_ACCOUNT_KEY,
                         unameBytes.length);
         verify(backupData).writeEntityData(unameBytes, unameBytes.length);
 
@@ -200,8 +199,7 @@ public class ChromeBackupAgentTest {
                 names, hasItem("AndroidDefault." + ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE));
         assertThat(names,
                 hasItem("AndroidDefault." + ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_SETUP));
-        assertThat(
-                names, hasItem("AndroidDefault." + ChromeSigninController.SIGNED_IN_ACCOUNT_KEY));
+        assertThat(names, hasItem("AndroidDefault." + ChromeBackupAgent.SIGNED_IN_ACCOUNT_KEY));
         ArrayList<byte[]> values = (ArrayList<byte[]>) newStateStream.readObject();
         assertThat(values.size(), equalTo(4));
         assertThat(values, hasItem(unameBytes));
@@ -385,8 +383,7 @@ public class ChromeBackupAgentTest {
 
         final String[] keys = {"native.pref1", "native.pref2",
                 "AndroidDefault." + ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE,
-                "AndroidDefault.junk",
-                "AndroidDefault." + ChromeSigninController.SIGNED_IN_ACCOUNT_KEY};
+                "AndroidDefault.junk", "AndroidDefault." + ChromeBackupAgent.SIGNED_IN_ACCOUNT_KEY};
         byte[] unameBytes = ApiCompatibilityUtils.getBytesUtf8(mAccountInfo.getEmail());
         final byte[][] values = {{0}, {1}, {1}, {23, 42}, unameBytes};
         when(backupData.getKey()).thenAnswer(new Answer<String>() {

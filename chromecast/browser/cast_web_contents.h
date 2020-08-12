@@ -14,7 +14,6 @@
 #include "base/optional.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_piece_forward.h"
 #include "chromecast/common/mojom/feature_manager.mojom.h"
 #include "content/public/common/media_playback_renderer_type.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -343,7 +342,7 @@ class CastWebContents {
 
   // Returns the script injector instance, which injects scripts at page load
   // time.
-  virtual on_load_script_injector::OnLoadScriptInjectorHost<base::StringPiece>*
+  virtual on_load_script_injector::OnLoadScriptInjectorHost<std::string>*
   script_injector() = 0;
 
   // Injects on-load scripts into the WebContents' main frame.

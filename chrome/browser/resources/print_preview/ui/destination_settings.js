@@ -22,6 +22,7 @@ import '../strings.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -152,6 +153,17 @@ Polymer({
 
     /** @private {!Array<string>} */
     users_: Array,
+
+    // <if expr="chromeos">
+    /** @private */
+    saveToDriveFlagEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('printSaveToDrive');
+      },
+      readOnly: true,
+    },
+    // </if>
   },
 
   /** @private {string} */
@@ -371,6 +383,13 @@ Polymer({
    *     Drive.
    */
   destinationIsDriveOrPdf_(destination) {
+    // <if expr="chromeos">
+    if (this.saveToDriveFlagEnabled_ &&
+        destination.id === Destination.GooglePromotedId.SAVE_TO_DRIVE_CROS) {
+      return true;
+    }
+    // </if>
+
     return destination.id === Destination.GooglePromotedId.SAVE_AS_PDF ||
         destination.id === Destination.GooglePromotedId.DOCS;
   },

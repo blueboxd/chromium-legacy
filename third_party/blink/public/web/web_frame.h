@@ -43,7 +43,6 @@
 namespace blink {
 
 class Frame;
-class OpenedFrameTracker;
 class Visitor;
 class WebLocalFrame;
 class WebRemoteFrame;
@@ -110,9 +109,6 @@ class BLINK_EXPORT WebFrame {
   // Returns the frame that opened this frame or 0 if there is none.
   WebFrame* Opener() const;
 
-  // Sets the frame that opened this one or 0 if there is none.
-  void SetOpener(WebFrame*);
-
   // Reset the frame that opened this frame to 0.
   // This is executed between web tests runs
   void ClearOpener();
@@ -177,7 +173,7 @@ class BLINK_EXPORT WebFrame {
  protected:
   explicit WebFrame(mojom::TreeScopeType,
                     const base::UnguessableToken& frame_token);
-  virtual ~WebFrame();
+  virtual ~WebFrame() = default;
 
   // Sets the parent WITHOUT fulling adding it to the frame tree.
   // Used to lie to a local frame that is replacing a remote frame,
@@ -194,7 +190,6 @@ class BLINK_EXPORT WebFrame {
 
  private:
 #if INSIDE_BLINK
-  friend class OpenedFrameTracker;
   friend class WebFrameTest;
 
   static void TraceFrame(Visitor*, const WebFrame*);
@@ -218,7 +213,6 @@ class BLINK_EXPORT WebFrame {
   WebFrame* last_child_;
 
   WebFrame* opener_;
-  std::unique_ptr<OpenedFrameTracker> opened_frame_tracker_;
 };
 
 }  // namespace blink

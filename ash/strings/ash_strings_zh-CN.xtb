@@ -506,6 +506,7 @@
 <translation id="6972754398087986839">开始使用</translation>
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="698231206551913481">移除该用户后，与其关联的所有文件和本地数据都会被永久删除。</translation>
+<translation id="7007983414944123363">无法验证您的 PIN 码或密码。请重试。</translation>
 <translation id="7015766095477679451">您需要等到<ph name="COME_BACK_TIME" /> 才能再次使用此设备。</translation>
 <translation id="7025533177575372252">将您的<ph name="DEVICE_NAME" />连接到手机</translation>
 <translation id="7026338066939101231">减少</translation>
@@ -551,6 +552,7 @@
 <translation id="7568294522609223312">关闭自动点击</translation>
 <translation id="7568637526529101738">只要您右键点击或长按所选内容，Google 助理即会显示与其相关的信息（例如定义或单位换算）。</translation>
 <translation id="7569509451529460200">已启用盲文和 ChromeVox</translation>
+<translation id="7579778809502851308">屏幕截图</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
 <translation id="7600875258240007829">查看所有通知</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> 华氏度</translation>
@@ -669,6 +671,7 @@
 <translation id="8841375032071747811">“返回”按钮</translation>
 <translation id="8843682306134542540">切换旋转锁定设置。<ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">仍然无法验证您的 PIN 码或密码。注意：如果您最近更改了密码，请使用旧密码。待您退出登录后，新密码才会付诸应用。</translation>
 <translation id="8870509716567206129">应用不支持分屏。</translation>
 <translation id="8874184842967597500">未连接</translation>
 <translation id="8877788021141246043">设置提醒</translation>

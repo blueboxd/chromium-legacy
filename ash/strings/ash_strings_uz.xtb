@@ -92,6 +92,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1962969542251276847">Ekran qulfi</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Salom <ph name="USERNAME" /></translation>
+<translation id="1975500003782052650">Oxirgi yuklanmalar</translation>
 <translation id="1978498689038657292">Matn kiritish</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> oxirgi yangilanishi haqida batafsil axborot</translation>
 <translation id="1995660704900986789">O‘chirish</translation>
@@ -254,6 +255,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="3798670284305777884">Karnay (ichki)</translation>
 <translation id="3799080171973636491">Butun ekran lupasi tezkor havolasini bosdingiz. Ishga tushirilsinmi?</translation>
 <translation id="380165613292957338">Salom, qanday yordamim tegishi mumkin?</translation>
+<translation id="3826099427150913765">Parol kiritish</translation>
 <translation id="383629559565718788">Klaviatura sozlamalarini ochish</translation>
 <translation id="3846575436967432996">Tarmoqqa oid ma’lumot mavjud emas</translation>
 <translation id="385051799172605136">Orqaga</translation>
@@ -284,6 +286,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="4181841719683918333">Tillar</translation>
 <translation id="4195877955194704651">Avtomatik bosish menyusi</translation>
 <translation id="4197790712631116042">Yoqilmagan</translation>
+<translation id="4212472694152630271">PIN kod kiritish</translation>
 <translation id="4215497585250573029">VPN sozlamalari</translation>
 <translation id="4217571870635786043">Ovoz bilan yozish</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -296,6 +299,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="4321776623976362024">Yuqori kontrastli rejim tezkor havolasini bosdingiz. Ishga tushirilsinmi?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
+<translation id="4350065043422286972">Mahkamlangan</translation>
 <translation id="4351433414020964307">Assistent yuklanmoqda...</translation>
 <translation id="4356930093361201197">yuqori kontrastli rejim</translation>
 <translation id="4368583494516669646">Xayrli tun, <ph name="GIVEN_NAME" /></translation>
@@ -357,6 +361,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> yangi telefonga ulandi</translation>
 <translation id="5035389544768382859">Displey sozlamalarini tasdiqlash</translation>
 <translation id="5083553833479578423">Assistentning boshqa imkoniyatlarini oching.</translation>
+<translation id="5114495209940374989">Skrinshotlar</translation>
 <translation id="5136175204352732067">Boshqa klaviatura ulandi</translation>
 <translation id="5168181903108465623">Translatsiya qurilmalari mavjud</translation>
 <translation id="5207949376430453814">Matn kiritish joyi ajratib ko‘rsatilsin</translation>
@@ -599,6 +604,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="8061464966246066292">Yuqori kontrast</translation>
 <translation id="8098591350844501178">Ekranni “<ph name="RECEIVER_NAME" />” qurilmasiga translatsiya qilishni to‘xtatish</translation>
 <translation id="8113423164597455979">Yoniq, hammasi</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8131740175452115882">Tasdiqlash</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> tarmog‘iga ulanilgan</translation>
 <translation id="813913629614996137">Ishga tushirilmoqda...</translation>

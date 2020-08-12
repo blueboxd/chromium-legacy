@@ -73,6 +73,7 @@
 
       如果將這項政策設為 False 或未設定，系統將不會回報這項資訊。
       如果設為 True，系統會回報裝置背光的資訊。</translation>
+<translation id="1076751984131277498">卸除式 USB 裝置允許清單</translation>
 <translation id="1079801999187584280">禁止使用開發人員工具</translation>
 <translation id="1087437665304381368">這項政策只能控管 <ph name="PRODUCT_OS_NAME" />開發人員模式。如要禁止他人存取 Android 開發人員選項，則必須設定 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 政策。</translation>
 <translation id="1087707496788636333">Chrome Enterprise 政策清單的網址已變更！請將你的書籤更新為 <ph name="POLICY_DOCUMENTATION_URL" />。</translation>
@@ -510,6 +511,9 @@
 
       如果未設定這項政策，系統會啟用網路預測功能，不過使用者可變更這項設定。</translation>
 <translation id="1865417998205858223">金鑰權限</translation>
+<translation id="1866563857170942397">這會定義可登入裝置的使用者清單，輸入項目格式為 <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> (例如 <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />)。如要允許特定網域的任意使用者登入裝置，請使用 <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" /> 格式輸入項目。
+
+      如果不設定這項政策，所有使用者均可登入裝置。請注意，想要建立新使用者，你仍需適當地設定 <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> 政策。</translation>
 <translation id="186719019195685253">使用 AC 電源的情況下，系統在達到閒置延遲時間時所採取的動作</translation>
 <translation id="187819629719252111">允許「<ph name="PRODUCT_NAME" />」顯示檔案選項對話方塊，即可允許本機檔案的存取權。如果你啟用這項設定，使用者就能照常開啟檔案選項對話方塊。如果你停用這項設定，只要使用者執行的動作會開啟檔案選項對話方塊 (例如匯入書籤、上傳檔案、儲存連結等)，螢幕上就會顯示訊息，並假設使用者已按下檔案選項對話方塊上的 [取消]。如果未調整這項設定，使用者就能照常開啟檔案選項對話方塊。</translation>
 <translation id="1885782360784839335">允許顯示完整分頁宣傳內容</translation>
@@ -1187,9 +1191,9 @@
 <translation id="2796714419743648316">個別應用程式時間限制允許清單</translation>
 <translation id="2796896367838042659">這項政策會指定哪些應用程式和網址應加入個別應用程式使用限制的許可清單。
         系統會將已設定的許可清單套用到 <ph name="PRODUCT_OS_NAME" />上安裝的應用程式，適用於設有個別應用程式時間限制的指定使用者。
-        已設定的許可清單只能套用到子使用者帳戶，且必須設定 <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> 政策才會生效。
+        已設定的許可清單只能套用到兒童使用者帳戶，且必須設定 <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> 政策才會生效。
         系統會將已設定的許可清單套用到應用程式和網址，如此一來，這些應用程式和網址就不會因個別應用程式的時間限制而遭到封鎖。
-        存取許可清單中的網址不會計入 Chrome 的時間限制。
+        也就是說，存取許可清單上的網址所花的時間不會計入 Chrome 的限制使用時間。
         將網址規則運算式新增到 |url_list|，即可將符合清單中任何規則運算式的網址加入許可清單。
         將應用程式的 |app_id| 和 |app_type| 新增到 |app_list|，即可將應用程式加入許可清單。
 
@@ -1772,6 +1776,9 @@
 <translation id="3647212518036289905">你可以透過這項政策指定要用於 HTTP 驗證的 GSSAPI 程式庫。請將這項政策設為程式庫名稱或完整路徑。
 
       如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設的程式庫名稱。</translation>
+<translation id="3653234084868565720">這項政策可控管 <ph name="PRODUCT_OS_NAME" />是否允許建立新的使用者帳戶。如果將這項政策設為 False，沒有帳戶的使用者將無法登入裝置。
+
+      如果將這項政策設為 True 或不設定，只要 <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> 未禁止使用者登入，使用者就能建立新的使用者帳戶。</translation>
 <translation id="3653237928288822292">預設搜尋引擎圖示</translation>
 <translation id="3654906736796256792">允許執行音訊沙箱</translation>
 <translation id="3657998022005237040">禁止下載不支援的檔案類型</translation>
@@ -3115,6 +3122,11 @@
 
       如果未指定這項政策，則系統不會修改變異版本種子網址。</translation>
 <translation id="5561811616825571914">在登入畫面自動為這些網站選取用戶端憑證</translation>
+<translation id="5564345250641049313">這會定義可登入裝置的使用者清單。輸入項目格式為 <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> (例如 <ph name="USER_ALLOWLIST_ENTRY_EXAMPLE" />)。如要允許特定網域的任意使用者登入裝置，請使用 <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" /> 格式輸入項目。
+
+      如果不設定這項政策，所有使用者均可登入裝置。請注意，想要建立新使用者，你仍需適當地設定 <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> 政策。
+
+      這項政策已遭淘汰，請改用 <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" />。</translation>
 <translation id="5564865786900450806">在 Google 已停止支援的電腦或作業系統執行 <ph name="PRODUCT_NAME" /> 時，不顯示警告訊息。
 
       如果將這項政策設為 False 或不予設定，不受支援的電腦或作業系統上將顯示警告訊息。</translation>
@@ -3329,19 +3341,19 @@
 
       如果目前版本在使用者工作階段期間成為過時版本，且目前的網路限制自動更新，系統會在畫面上顯示通知，要求使用者在通知中顯示的 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 期限內更新裝置。
       如果目前的網路允許自動更新，系統不會顯示通知，且使用者必須在 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 期限內更新裝置。
-      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 自系統套用政策時起算。
-      如果使用者未在 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 到期前更新裝置，系統會將使用者登出工作階段。
-      如果使用者登入時 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 已過期，且目前版本已過時，則使用者必須先更新裝置才能登入。
+      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 的期限自系統套用政策時起算。
+      如果使用者未在 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 期限內更新裝置，系統會將使用者登出工作階段。
+      如果使用者登入時已超過 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 的期限，且目前版本已過時，則使用者必須先更新裝置才能登入。
 
       如果目前版本在使用者工作階段期間成為過時版本，且裝置的自動更新期限已結束，系統會在畫面上顯示通知，要求使用者在 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 期限內退還裝置。
-      如果使用者登入時 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 已過期，且裝置的自動更新期限已結束，則系統會禁止任何使用者登入裝置。
+      如果使用者登入時已超過 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 的期限，且裝置的自動更新期限已結束，則系統會禁止任何使用者登入裝置。
 
       如果將 <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> 設為 False 或不設定，未受管理的使用者工作階段就不會收到通知，並且會強制登出。
 
       如果不設定這項政策或設為空白，系統不會套用任何限制，並會撤銷現有限制；不論使用哪種 <ph name="PRODUCT_OS_NAME" />版本，使用者皆可登入。
 
       此處的 <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> 可以指確切版本 (例如「13305.0.0」)，也可以指版本前置字元 (例如「13305」)。
-      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 和 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 是選用值，以天數為單位。這兩個期間的預設值是 0 天，表示沒有任何警告期間。
+      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 和 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 是選用值，以天數為單位。這兩個期間的預設值是 0 天，表示無警告期。
       <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> 是選用屬性，預設值為 False。</translation>
 <translation id="5879014913445067283">控制網路檔案共用功能是否透過 <ph name="NETBIOS_NAME" /> 搜尋檔案</translation>
 <translation id="588135807064822874">啟用「輕觸搜尋」功能</translation>
@@ -3482,6 +3494,11 @@
           如要在閒置狀態下鎖定螢幕，建議你啟用暫停時的螢幕鎖定功能，並且將 <ph name="PRODUCT_OS_NAME" /> 設為在閒置延遲時間過後暫停。只有在螢幕鎖定發生的時間比進入暫停狀態的時間提早許多時，或是完全不需閒置暫停功能時，才需要使用這項政策。
 
           指定政策值時需以毫秒為單位。該值必須小於閒置延遲時間值。</translation>
+<translation id="6096729330325888677">你可以透過這項政策來定義 USB 裝置清單，使用者可以從核心驅動程式中卸除這份清單中的 USB 裝置，並且直接透過 chrome.usb API 在網頁應用程式中使用。輸入項目為可識別特定硬體的 USB 供應商識別碼和產品識別碼組合。
+
+      如果未設定，卸除式 USB 裝置的清單會空白。
+
+      這項政策已遭淘汰，請改用 <ph name="USB_DETACHABLE_ALLOWLIST" />。</translation>
 <translation id="6097601282776163274">啟用輸入網址匿名資料收集功能</translation>
 <translation id="6099853574908182288">預設列印色彩模式</translation>
 <translation id="6102342563050263313">啟用捲動至網址片段所指定文字的功能</translation>
@@ -3637,9 +3654,9 @@
           只有當閒置動作設為登出或關機時，系統才會顯示警告訊息。</translation>
 <translation id="6334330017384340264">這項政策會指定哪些應用程式和網址應加入個別應用程式使用限制的允許清單。
         系統會將已設定的允許清單套用到 <ph name="PRODUCT_OS_NAME" />上安裝的應用程式，適用於設有個別應用程式時間限制的指定使用者。
-        已設定的允許清單只能套用到子使用者帳戶，且必須設定 <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> 政策才會生效。
+        已設定的允許清單只能套用到兒童使用者帳戶，且必須設定 <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> 政策才會生效。
         系統會將已設定的允許清單套用到應用程式和網址，如此一來，這些應用程式和網址就不會因個別應用程式的時間限制而遭到封鎖。
-        存取允許清單中的網址不會計入 Chrome 的時間限制。
+        也就是說，存取允許清單上的網址所花的時間不會計入 Chrome 的限制使用時間。
         將網址規則運算式新增到 |url_list|，即可將符合清單中任何規則運算式的網址加入允許清單。
         將應用程式的 |app_id| 和 |app_type| 新增到 |app_list|，即可將應用程式加入允許清單。
        </translation>
@@ -4126,6 +4143,16 @@
           如果不設定這項政策，檔案櫃預設會顯示在畫面底部，且使用者可以變更檔案櫃的位置。</translation>
 <translation id="7040229947030068419">範例值：</translation>
 <translation id="7044883996351280650">控制 Android 備份與還原服務</translation>
+<translation id="7063842402585660314"><ph name="PRODUCT_OS_NAME" />螢幕鎖定畫面上允許的應用程式清單。
+
+      如果已在螢幕鎖定畫面上啟用偏好的筆記應用程式，螢幕鎖定畫面將包含用來啟動偏好筆記應用程式的 UI 元素。
+      應用程式啟動後將可在螢幕鎖定畫面頂端建立應用程式視窗，並在螢幕鎖定的情況下建立資料項目 (筆記)。應用程式將可在工作階段解鎖後，將已建立的筆記匯入主要使用者的工作階段。目前螢幕鎖定畫面上僅支援 Chrome 筆記應用程式。
+
+      如果設定這項政策，只有當政策清單值包含應用程式的擴充功能 ID 時，使用者才能在螢幕鎖定畫面上啟用應用程式。
+      因此，如果將這項政策設為空白清單，系統會完全停用螢幕鎖定畫面上的筆記功能。
+      請注意，政策中包含了應用程式 ID 並不表示使用者將能在螢幕鎖定畫面上，以筆記應用程式的形式啟用應用程式。舉例來說，在 Chrome 61 版中，平台對於可用應用程式的組合設有額外限制。
+
+      如果不設定這項政策，在由這項政策所設定的螢幕鎖定畫面上，使用者可啟用的應用程式組合不會受到限制。</translation>
 <translation id="7063895219334505671">允許這些網站的彈出式視窗</translation>
 <translation id="706669471845501145">允許網站顯示桌面通知</translation>
 <translation id="7068108874199666656">這項政策可將網路設定強制套用至 <ph name="PRODUCT_OS_NAME" />裝置的所有使用者。這個網路設定是根據「開放式網路設定」格式所定義的 JSON 格式字串。</translation>
@@ -5018,6 +5045,7 @@
 
           如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="8357681633047935212">限制使用者工作階段的時間長度</translation>
+<translation id="8357989008292691856">登入使用者允許清單</translation>
 <translation id="8359734107661430198">從 2008 年 9 月 2 日開始啟用 ExampleDeprecatedFeature API</translation>
 <translation id="8367209241899435947">在 Windows 裝置上啟用 Chrome 清理功能</translation>
 <translation id="8367473200119029349">雲端報告</translation>

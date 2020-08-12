@@ -386,6 +386,12 @@ Se você desativar a política, essa rolagem será desativada.</translation>
 
       Se a política for definida como falsa ou não for definida, a não ser que os usuários desativem o plug-in de PDF, ele poderá abrir arquivos PDF.</translation>
 <translation id="1608755754295374538">URLs que terão acesso a dispositivos de captura de áudio sem solicitação</translation>
+<translation id="1611394564825535541">Permite controlar se os usuários podem acessar impressoras que não sejam de empresas
+
+      Se esta política for definida como verdadeira ou for deixada sem definição, os usuários poderão adicionar, configurar e imprimir usando as próprias impressoras.
+
+      Se ela for definida como falsa, os usuários não poderão adicionar e configurar as próprias impressoras. Eles também não poderão imprimir com impressoras configurada anteriormente.
+      </translation>
 <translation id="1615221548356595305">Permitir a união de conexões HTTP/2 para esses hosts mesmo quando certificados do cliente são utilizados</translation>
 <translation id="1615855314789673708">Fornece uma configuração do controlador de telemetria e diagnósticos (DTC, na sigla em inglês) wilco.
 
@@ -2281,6 +2287,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4313767483634435271">Endereço MAC designado da base para o dispositivo</translation>
 <translation id="4322842393287974810">Permitir que o aplicativo de quiosque aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adicionar um botão de logout à bandeja do sistema</translation>
+<translation id="4330372709562934569">Permitir que os sites listados façam solicitações para endpoints de uma rede mais privada a partir de contextos não seguros.</translation>
 <translation id="4332177773549877617">Registra eventos de instalações do app Android</translation>
 <translation id="4341199399451274159">Se a <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> estiver ativada, definir <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" /> especificará as codificações de caracteres compatíveis com o provedor de pesquisa. As codificações são nomes de páginas de código como UTF-8, GB2312 e ISO-8859-1. Elas são testadas na ordem fornecida.
 
@@ -2578,6 +2585,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
       <ph name="PAGE_SIZE_NAME" /> precisa conter um dos formatos listados ou "personalizado" se o tamanho do papel exigido não estiver na lista. Se um valor "personalizado" for fornecido, a propriedade <ph name="PAGE_SIZE_CUSTOM_SIZE" /> precisará ser especificada. Ela descreve a altura e a largura desejadas em micrômetros. Caso contrário, a propriedade <ph name="PAGE_SIZE_CUSTOM_SIZE" /> não precisa ser especificada. A política que violar essas regras será ignorada.
 
       Se o tamanho da página não estiver disponível na impressora escolhida pelo usuário, esta política será ignorada.</translation>
+<translation id="479290425281021210">Especifica se permite que sites não seguros façam solicitações para endpoints de uma rede mais privada.</translation>
 <translation id="4802744647065138872">Limita o número de snapshots de dados do usuário retidos para uso em caso de reversão de emergência.</translation>
 <translation id="4802905909524200151">Configurar o comportamento de atualização do firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">É sempre reinicializado quando o usuário sai.</translation>
@@ -3009,6 +3017,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5405289061476885481">Configura quais layouts de teclado são permitidos na tela de login do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política for definida como uma lista de identificadores de método de entrada, os métodos de entrada fornecidos ficarão disponíveis na tela de login. O primeiro método de entrada fornecido será pré-selecionado. Enquanto um grupo de usuários estiver focado na tela de login, o último método de entrada usado pelo usuário ficará disponível juntamente com os métodos de entrada fornecidos por esta política. Se esta política não for definida, os métodos de entrada na tela de login serão derivados da localidade em que a tela de login é exibida. Os valores que não forem identificadores de método de entrada válidos serão ignorados.</translation>
+<translation id="5407008856008996384">Permitir o acesso a impressoras CUPS</translation>
 <translation id="5416064504563346617">Se a política for definida, será possível configurar uma lista de padrões de URL que especifica quais sites não podem pedir que o usuário conceda permissão de acesso ao dispositivo USB.
 
       Se a política não tiver definição, <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> será aplicada a todos os sites, se estiver definida. Caso contrário, a configuração pessoal do usuário será aplicada.
@@ -3172,6 +3181,14 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
         Se a política não for definida ou for definida como verdadeira, os usuários poderão enviar feedback para o Google em "Menu" -&gt; "Ajuda" -&gt; "Informar um problema" ou usando uma combinação de teclas.</translation>
 <translation id="5579179012798142131">A não ser que o modo temporário ou o login múltiplo esteja ativado durante a sessão do usuário, a definição da política ArcEnabled como verdadeira ativará o ARC para o usuário. Se a política for definida como falsa ou não for definida, usuários corporativos não poderão usar o ARC.</translation>
+<translation id="5582429816116769246">Permite controlar se os usuários podem acessar impressoras que não sejam de empresas
+
+      Se esta política for definida como verdadeira ou for deixada sem definição, os usuários poderão adicionar, configurar e imprimir usando as próprias impressoras nativas.
+
+      Se ela for definida como falsa, os usuários não poderão adicionar e configurar as próprias impressoras nativas. Eles também não poderão imprimir usando impressoras nativas configuradas anteriormente.
+
+      Esta política está obsoleta. Use <ph name="USER_PRINTERS_ALLOWED" />.
+      </translation>
 <translation id="5583806683960333345">Se esta configuração for ativada, os usuários terão permissão para usar tethering instantâneo, o que permite que o smartphone Google deles compartilhe os dados móveis com o dispositivo.
 
       Se esta configuração for desativada, os usuários não terão permissão para usar tethering instantâneo.
@@ -3521,7 +3538,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem menores que o tempo de espera de inatividade.</translation>
 <translation id="6096729330325888677">Se a política for definida, será configurada uma lista de dispositivos USB que o usuário pode remover do driver de kernel dele para uso pela API chrome.usb diretamente dentro de um app da Web. As entradas são pares de um identificador de fornecedor e um identificador de produto USB para reconhecer um hardware específico.
 
-      Se não for definida, a lista de dispositivo USB que podem ser removidos ficará vazia.
+      Se não for definida, a lista de dispositivos USB que podem ser removidos ficará vazia.
 
       Esta política está obsoleta. Use a <ph name="USB_DETACHABLE_ALLOWLIST" />.</translation>
 <translation id="6097601282776163274">Ativar a coleta de dados anônimos inseridos no URL</translation>
@@ -3753,7 +3770,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6467613372414922590">Permitir hosts de mensagens nativas no nível do usuário (instalados sem permissão do administrador)</translation>
 <translation id="6468980648680553776">O uso desta política foi suspenso. Use RemoteAccessHostClientDomainList.</translation>
 <translation id="6473623140202114570">Configure a lista de domínios em que a política Navegação segura não acionará avisos.</translation>
-<translation id="647698599569353771">Permitir a ativação do Compartilhar por proximidade</translation>
+<translation id="647698599569353771">Permitir a ativação do recurso "Compartilhar por proximidade"</translation>
 <translation id="6491139795995924304">Permitir o Bluetooth no dispositivo</translation>
 <translation id="6491872498385040936">O uso desta política foi suspenso. Recomendamos que você use <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />, que substitui esta política e permite um ajuste mais refinado.
 
@@ -3993,6 +4010,13 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 
       A desativação da política faz com que uma mensagem de erro seja exibida.</translation>
 <translation id="6821268164692776674">Destinos do <ph name="CLOUD_PRINT_NAME" /> e "Salvar no Google Drive"</translation>
+<translation id="6823297401452148231">Controla se os sites não seguros têm permissão para fazer solicitações para endpoints de uma rede mais privada. Por exemplo, controla se http://evil.com tem permissão para fazer solicitações tanto para o "localhost" como para endpoints na rede privada. Nenhum deles é acessível pela Internet pública. Consulte https://wicg.github.io/cors-rfc1918/#goals (link em inglês) para ver mais detalhes.
+
+          Quando esta política for deixada sem definição, o comportamento padrão para solicitações de contexto não seguro para endpoints de uma rede mais privada dependerá da configuração pessoal do usuário para o recurso <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, que pode ser definido por um experimento público ou na linha de comando.
+
+          Quando esta política está definida como falsa, os sites não seguros não poderão fazer solicitações para endpoints de uma rede mais privada. Isto é, os sites não seguros veiculados de endereços IP públicos não poderão fazer solicitações tanto para o localhost quanto para endereços IP privados. Sites não seguros veiculados de endereços IP privados não poderão fazer solicitações ao localhost.
+
+          Quando a política for definida como verdadeira, os sites não seguros terão permissão para fazer solicitações para qualquer endpoint de rede, sujeito a outras verificações de origem cruzada.</translation>
 <translation id="6833064854262015312">Se esta política for definida como verdadeira, o modo de alto contraste será ativado na tela de login. Se esta política for definida como falsa, o modo de alto contraste será desativado na tela.
 
       Se você definir a política, os usuários poderão ativar ou desativar o modo de alto contraste temporariamente. Quando a tela de login for atualizada ou ficar inativa por um minuto, o modo de alto contraste retornará ao estado original.
@@ -4025,9 +4049,9 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       Especifica os sinalizadores a serem aplicados ao <ph name="PRODUCT_NAME" /> quando ele for iniciado. Os sinalizadores especificados são aplicados apenas na tela de login. Os sinalizadores definidos por meio desta política não são propagados em sessões de usuário.</translation>
 <translation id="685769593149966548">Aplicar o Modo restrito rigoroso para o YouTube</translation>
 <translation id="686079137349561371">Microsoft Windows 7 ou versão posterior</translation>
-<translation id="6863342574191774334">Se esta configuração estiver ativada, os usuários poderão usar o Compartilhar por proximidade, que permite que eles enviem e recebam arquivos de pessoas próximas.
+<translation id="6863342574191774334">Se esta configuração estiver ativada, os usuários poderão usar o recurso "Compartilhar por proximidade", que permite que eles enviem e recebam arquivos de pessoas próximas.
 
-      Se esta configuração estiver desativada, os usuários não terão permissão para usar o Compartilhar por proximidade.
+      Se esta configuração estiver desativada, os usuários não terão permissão para usar o recurso "Compartilhar por proximidade".
 
       Se esta política não for definida, o padrão será permitido tanto para usuários gerenciados por empresas quanto para usuários não gerenciados.</translation>
 <translation id="6864244339257535116">Permitir upload e download de arquivos protegidos por senha</translation>
@@ -5654,6 +5678,15 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
 <translation id="9106865192244721694">Permitir WebUSB nesses sites</translation>
 <translation id="9109086856618439290">Ativar TOS durante a primeira execução do CCT/PWA</translation>
 <translation id="9112727953998243860">Arquivo de configuração de impressora corporativa</translation>
+<translation id="9116740039944096995">Lista de padrões de URL. São permitidas solicitações de redes privadas iniciadas por sites não seguros veiculados por origens correspondentes.
+
+          Se esta política ficar sem definição, ela se comportará como se a lista tivesse sido definida como vazia.
+
+          No caso de origens não cobertas pelos padrões especificados aqui, o valor global padrão usado será o da política <ph name="INSECURE_PRIVATE_NETWORK_REQUESTS_ALLOWED_POLICY_NAME" />, se ela estiver definida, ou o da configuração pessoal do usuário.
+
+          Observe que esta política afeta apenas origens não seguras. Origens seguras incluídas nesta lista, como https://example.com, serão ignoradas.
+
+          Para ver informações detalhadas sobre padrões de URL válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="9117826695152538214">Se esta política for definida como verdadeira, as teclas de aderência serão ativadas. Se esta política for definida como falsa, as teclas de aderência serão desativadas.
 
       Se você definir a política, os usuários não poderão mudá-la. Se a política não for definida, as teclas de aderência serão desativadas inicialmente, mas os usuários poderão ativá-las quando quiserem.</translation>

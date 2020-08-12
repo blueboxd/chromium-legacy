@@ -507,6 +507,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="6972754398087986839">Başlarken</translation>
 <translation id="6981982820502123353">Erişilebilirlik</translation>
 <translation id="698231206551913481">Bu kullanıcıyla ilişkilendirilen tüm dosyalar ve yerel veriler, bu kullanıcı kaldırıldıktan sonra kalıcı olarak silinir.</translation>
+<translation id="7007983414944123363">PIN'iniz veya şifreniz doğrulanamadı. Tekrar deneyin.</translation>
 <translation id="7015766095477679451">Saat <ph name="COME_BACK_TIME" /> olduğunda geri gelin.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> cihazınızı telefonunuza bağlayın</translation>
 <translation id="7026338066939101231">Azalt</translation>
@@ -552,6 +553,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="7568294522609223312">Otomatik tıklamayı kapat</translation>
 <translation id="7568637526529101738">Sağ tıkladığınızda veya uzun bastığınızda Asistan, yaptığınız seçimin tanımı veya birimin dönüşümü gibi bilgiler gösterir.</translation>
 <translation id="7569509451529460200">Braille ve ChromeVox etkinleştirildi</translation>
+<translation id="7579778809502851308">Ekran görüntüsü</translation>
 <translation id="7593891976182323525">Arama veya Üst Karakter</translation>
 <translation id="7600875258240007829">Tüm bildirimleri göster</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -670,6 +672,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="8841375032071747811">Geri düğmesi</translation>
 <translation id="8843682306134542540">Döndürme kilidini aç/kapat. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Ara+Esc</translation>
+<translation id="8853703225951107899">PIN'iniz veya şifreniz hâlâ doğrulanamadı. Not: Şifrenizi yakın zamanda değiştirdiyseniz eski şifrenizi kullanın. Yeni şifreniz, oturumunuzu kapattıktan sonra geçerli olacaktır.</translation>
 <translation id="8870509716567206129">Uygulama bölünmüş ekranı desteklemiyor.</translation>
 <translation id="8874184842967597500">Bağlı değil</translation>
 <translation id="8877788021141246043">Hatırlatıcı oluştur</translation>

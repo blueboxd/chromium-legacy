@@ -4,6 +4,7 @@
 
 #include "ash/ambient/backdrop/ambient_backend_controller_impl.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -77,29 +78,66 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   return resource_request;
 }
 
+std::string BuildCuratedTopicDetails(
+    const backdrop::ScreenUpdate::Topic& topic) {
+  if (topic.has_metadata_line_1() && topic.has_metadata_line_2()) {
+    // Uses a space as the separator between.
+    return topic.metadata_line_1() + " " + topic.metadata_line_2();
+  } else if (topic.has_metadata_line_1()) {
+    return topic.metadata_line_1();
+  } else if (topic.has_metadata_line_2()) {
+    return topic.metadata_line_2();
+  } else {
+    return std::string();
+  }
+}
+
+std::string BuildPersonalTopicDetails(
+    const backdrop::ScreenUpdate::Topic& topic) {
+  // |metadata_line_1| contains the album name.
+  return topic.has_metadata_line_1() ? topic.metadata_line_1() : std::string();
+}
+
+void BuildBackdropTopicDetails(
+    const backdrop::ScreenUpdate::Topic& backdrop_topic,
+    AmbientModeTopic& ambient_topic) {
+  switch (backdrop_topic.topic_type()) {
+    case backdrop::TopicSource::CURATED:
+      ambient_topic.details = BuildCuratedTopicDetails(backdrop_topic);
+      break;
+    case backdrop::TopicSource::PERSONAL_PHOTO:
+      ambient_topic.details = BuildPersonalTopicDetails(backdrop_topic);
+      break;
+    default:
+      ambient_topic.details = std::string();
+      break;
+  }
+}
+
 // Helper function to save the information we got from the backdrop server to a
 // public struct so that they can be accessed by public codes.
-ash::ScreenUpdate ToScreenUpdate(
+ScreenUpdate ToScreenUpdate(
     const backdrop::ScreenUpdate& backdrop_screen_update) {
-  ash::ScreenUpdate screen_update;
+  ScreenUpdate screen_update;
   // Parse |AmbientModeTopic|.
   int topics_size = backdrop_screen_update.next_topics_size();
   if (topics_size > 0) {
-    for (auto backdrop_topic : backdrop_screen_update.next_topics()) {
-      ash::AmbientModeTopic topic;
+    for (auto& backdrop_topic : backdrop_screen_update.next_topics()) {
+      AmbientModeTopic ambient_topic;
       DCHECK(backdrop_topic.has_url());
-      topic.url = backdrop_topic.url();
+      ambient_topic.url = backdrop_topic.url();
       if (backdrop_topic.has_portrait_image_url())
-        topic.portrait_image_url = backdrop_topic.portrait_image_url();
-      screen_update.next_topics.emplace_back(topic);
+        ambient_topic.portrait_image_url = backdrop_topic.portrait_image_url();
+      BuildBackdropTopicDetails(backdrop_topic, ambient_topic);
+      screen_update.next_topics.emplace_back(ambient_topic);
     }
   }
 
   // Parse |WeatherInfo|.
   if (backdrop_screen_update.has_weather_info()) {
-    const auto& backdrop_weather_info = backdrop_screen_update.weather_info();
-    ash::WeatherInfo weather_info;
-
+    backdrop::WeatherInfo backdrop_weather_info =
+        backdrop_screen_update.weather_info();
+    WeatherInfo weather_info;
     if (backdrop_weather_info.has_condition_icon_url()) {
       weather_info.condition_icon_url =
           backdrop_weather_info.condition_icon_url();

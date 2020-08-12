@@ -8,6 +8,7 @@
 <translation id="1019413721762100891">desativado</translation>
 <translation id="1021110881106174305">Cartões aceitos</translation>
 <translation id="1021753677514347426">Esse problema acontece devido a um certificado que você ou outra pessoa instalou no dispositivo. O certificado é conhecido por ser usado para monitorar e interceptar redes, e o Chromium não o considera confiável. Embora casos legítimos de monitoramento existam, como em redes de escolas ou empresas, o Chromium quer ter certeza de que você está ciente de tudo o que está acontecendo, mesmo que você não possa fazer nada para impedir isso. O monitoramento pode acontecer em qualquer navegador ou aplicativo que acesse a Web.</translation>
+<translation id="1024111578869940408">Às vezes, os invasores imitam sites, fazendo modificações quase imperceptíveis no endereço da Web.</translation>
 <translation id="1030706264415084469"><ph name="URL" /> quer armazenar permanentemente um grande volume de dados no seu dispositivo</translation>
 <translation id="1032854598605920125">Girar no sentido horário</translation>
 <translation id="1036348656032585052">Desativar</translation>
@@ -198,6 +199,7 @@
 <translation id="1717494416764505390">Caixa de e-mails 3</translation>
 <translation id="1718029547804390981">O documento é grande demais para receber anotações</translation>
 <translation id="1721424275792716183">* Campo obrigatório</translation>
+<translation id="1724638245199909652">Acesso à fonte local</translation>
 <translation id="1727741090716970331">Adicione um Número de Cartão Válido</translation>
 <translation id="1728677426644403582">Você está vendo o código-fonte de uma página da Web.</translation>
 <translation id="173080396488393970">Esse tipo de cartão não é aceito</translation>
@@ -414,6 +416,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2677748264148917807">Sair</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Melhor ajuste</translation>
+<translation id="2688969097326701645">Sim, continuar</translation>
 <translation id="2691924980723297736">Alerta de segurança</translation>
 <translation id="2699302886720511147">Cartões aceitos</translation>
 <translation id="2701514975700770343">Virada para baixo</translation>
@@ -505,6 +508,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="3107591622054137333"><ph name="BEGIN_LINK" />verificar a configuração de DNS seguro<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Você não tem autorização para ver esta página.</translation>
 <translation id="3113284927548439113">Terceiro turno</translation>
+<translation id="3115874930288085374"><ph name="ENROLLMENT_DOMAIN" /> precisa que você faça backup dos seus dados e devolva este <ph name="DEVICE_TYPE" />.</translation>
 <translation id="3116158981186517402">Laminar</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Tente executar o Diagnóstico de Conectividade<ph name="END_LINK" />.</translation>
@@ -909,7 +913,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="4780900888022378816">Seu dispositivo é gerenciado por <ph name="ENROLLMENT_DOMAIN" />, e sua conta é gerenciada por <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Alternar para esta guia</translation>
 <translation id="4791134497475588553">Apps Linux instalados e quando eles foram usados pela última vez</translation>
-<translation id="4792686369684665359">As informações que você está prestes a enviar não são seguras</translation>
+<translation id="4792686369684665359">As informações que você está prestes a enviar não estão protegidas</translation>
 <translation id="4796594887379589189">ID da conta de trabalho</translation>
 <translation id="4798078619018708837">Informe a data de validade e o CVC do <ph name="CREDIT_CARD" /> para atualizar os detalhes do cartão. Depois da confirmação, os detalhes do cartão da sua Conta do Google serão compartilhados com este site.</translation>
 <translation id="4800132727771399293">Verifique sua data de validade e seu CVC e tente novamente</translation>
@@ -922,6 +926,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="484462545196658690">Automática</translation>
 <translation id="4850886885716139402">Visualizar</translation>
 <translation id="4854362297993841467">Esse método de entrega não está disponível. Tente um método diferente.</translation>
+<translation id="4875935965051941588">Você quis dizer <ph name="SUGGESTED_DOMAIN" />?</translation>
 <translation id="4876188919622883022">Visualização simplificada</translation>
 <translation id="4876305945144899064">Sem nome de usuário</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Nenhuma}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -1094,6 +1099,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5540224163453853">Não foi possível encontrar o artigo solicitado.</translation>
 <translation id="5541086400771735334">Caixa de e-mails 7</translation>
 <translation id="5541546772353173584">Adicione um E-mail</translation>
+<translation id="5544872699732646498">Às vezes, os invasores imitam sites, fazendo modificações quase imperceptíveis no endereço da Web.</translation>
 <translation id="5545756402275714221">Artigos para você</translation>
 <translation id="5552137475244467770">O Chrome verifica periodicamente se suas senhas estão em listas que foram publicadas on-line. Quando isso é feito, as senhas e os nomes de usuário são criptografados para que não possam ser lidos por ninguém, nem o Google.</translation>
 <translation id="5556459405103347317">Recarregar</translation>
@@ -1474,6 +1480,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> não adere aos padrões de segurança.</translation>
 <translation id="7210993021468939304">A atividade do Linux no contêiner, bem como instalar e executar apps do Linux no contêiner</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> sobre este problema.</translation>
+<translation id="7214062855724067749">Usar as fontes instaladas no seu computador para poder criar tipografias avançadas</translation>
 <translation id="7217745192097460130">Usar o Touch ID para verificar e concluir a compra?</translation>
 <translation id="7219179957768738017">A conexão usa a <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Processando</translation>

@@ -5,14 +5,17 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_VIEW_H_
 
+#include <memory>
 #include <vector>
 
 #include "chrome/browser/download/download_shelf.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/mouse_watcher.h"
+#include "ui/views/mouse_watcher_view_host.h"
 
 class Browser;
 class BrowserView;
@@ -85,17 +88,17 @@ class DownloadShelfView : public DownloadShelf,
   FRIEND_TEST_ALL_PREFIXES(DownloadShelfViewTest, ShowAllViewColors);
 
   // The animation for adding new items to the shelf.
-  gfx::SlideAnimation new_item_animation_;
+  gfx::SlideAnimation new_item_animation_{this};
 
   // The show/hide animation for the shelf itself.
-  gfx::SlideAnimation shelf_animation_;
+  gfx::SlideAnimation shelf_animation_{this};
 
   // The download views. These are also child Views, and deleted when
   // the DownloadShelfView is deleted.
   std::vector<DownloadItemView*> download_views_;
 
   // Button for showing all downloads (chrome://downloads).
-  views::MdTextButton* show_all_view_ = nullptr;
+  views::MdTextButton* show_all_view_;
 
   // Button for closing the downloads. This is contained as a child, and
   // deleted by View.
@@ -108,7 +111,8 @@ class DownloadShelfView : public DownloadShelf,
   // The window this shelf belongs to.
   BrowserView* parent_;
 
-  views::MouseWatcher mouse_watcher_;
+  views::MouseWatcher mouse_watcher_{
+      std::make_unique<views::MouseWatcherViewHost>(this, gfx::Insets()), this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_VIEW_H_

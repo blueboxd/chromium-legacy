@@ -8,7 +8,7 @@
 
 namespace blink {
 
-void ContextLifecycleObserver::ObserverListWillBeCleared() {
+void ContextLifecycleObserver::ObserverSetWillBeCleared() {
   notifier_ = nullptr;
 }
 

@@ -116,8 +116,6 @@ class WebAppsChromeOs : public WebAppsBase,
 
   apps::InstanceRegistry* instance_registry_;
 
-  std::vector<std::string> default_app_ids_;
-
   PausedApps paused_apps_;
 
   ArcAppListPrefs* arc_prefs_ = nullptr;

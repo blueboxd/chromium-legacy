@@ -112,7 +112,9 @@ export class BackgroundManager {
       this.loadTimeResolver_.reject();
       this.loadTimeResolver_ = null;
     }
-    this.backgroundImage_.src = url.href;
+    // We use |contentWindow.location.replace| because reloading the iframe by
+    // setting its |src| adds a history entry.
+    this.backgroundImage_.contentWindow.location.replace(url.href);
   }
 
   /**

@@ -1,0 +1,13 @@
+<style>
+  #thumbnails {
+    box-sizing: border-box;
+    height: 100%;
+    overflow: auto;
+    padding-bottom: 24px;
+  }
+</style>
+<div id="thumbnails">
+  <template is="dom-repeat" items="[[pageNumbers_]]">
+    <viewer-thumbnail page-number="[[item]]"></viewer-thumbnail>
+  </template>
+</div>

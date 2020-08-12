@@ -73,6 +73,9 @@ enum ModelType {
   // Usage counts and last use dates for Wallet cards and addresses. This data
   // is both readable and writable.
   AUTOFILL_WALLET_METADATA,
+  // Offers and rewards from the user's account. These are read-only on the
+  // client side.
+  AUTOFILL_WALLET_OFFER,
   // A theme object.
   THEMES,
   // A typed_url object, i.e. a URL the user has typed into the Omnibox.
@@ -227,7 +230,8 @@ enum class ModelTypeForHistograms {
   kOsPreferences = 46,
   kOsPriorityPreferences = 47,
   kSharingMessage = 48,
-  kMaxValue = kSharingMessage
+  kAutofillWalletOffer = 49,
+  kMaxValue = kAutofillWalletOffer
 };
 
 // Used to mark the type of EntitySpecifics that has no actual data.
@@ -250,9 +254,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
 constexpr ModelTypeSet ProtocolTypes() {
   return ModelTypeSet(
       BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL_PROFILE, AUTOFILL,
-      AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA, THEMES, TYPED_URLS,
-      EXTENSIONS, SEARCH_ENGINES, SESSIONS, APPS, APP_SETTINGS,
-      EXTENSION_SETTINGS, HISTORY_DELETE_DIRECTIVES, DICTIONARY,
+      AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA, AUTOFILL_WALLET_OFFER,
+      THEMES, TYPED_URLS, EXTENSIONS, SEARCH_ENGINES, SESSIONS, APPS,
+      APP_SETTINGS, EXTENSION_SETTINGS, HISTORY_DELETE_DIRECTIVES, DICTIONARY,
       DEPRECATED_FAVICON_IMAGES, DEPRECATED_FAVICON_TRACKING, DEVICE_INFO,
       PRIORITY_PREFERENCES, SUPERVISED_USER_SETTINGS, APP_LIST,
       SUPERVISED_USER_WHITELISTS, ARC_PACKAGE, PRINTERS, READING_LIST,

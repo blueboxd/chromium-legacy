@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">Creat</translation>
 <translation id="1067291318998134776">Linux (beta)</translation>
 <translation id="1067922213147265141">Alte servicii Google</translation>
+<translation id="1068961867683064946">Creează un Cont Google pentru copilul tău</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Un alt program de pe computerul tău a adăugat o extensie care poate schimba modul în care funcționează Chrome.
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660">Butonul Înapoi din pagina secundară <ph name="SUBPAGE_TITLE" /></translation>
 <translation id="1322046419516468189">Vezi și gestionează parolele salvate în <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1324106254079708331">Protejează Conturile Google personale ale utilizatorilor care pot fi ținta atacurilor direcționate</translation>
+<translation id="1325985428688410772">Adaugă un spațiu</translation>
 <translation id="1326317727527857210">Pentru a accesa filele de pe alte dispozitive, conectează-te la Chrome.</translation>
 <translation id="1327074568633507428">Imprimantă în Google Cloud Print</translation>
 <translation id="1327272175893960498">Tichete Kerberos</translation>
@@ -1082,6 +1084,7 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2307462900900812319">Configurați rețeaua</translation>
 <translation id="230927227160767054">Această pagină dorește să instaleze un handler de serviciu.</translation>
 <translation id="2309620859903500144">Accesul acestui site la senzorii de mișcare sau de lumină a fost blocat.</translation>
+<translation id="2314873619957287124">Stabilește reguli digitale de bază pentru a-l ajuta pe copil să învețe, să se joace și să exploreze</translation>
 <translation id="2315414688463285945">Eroare la configurarea fișierelor Linux. Încearcă din nou.</translation>
 <translation id="2315587498123194634">Trimite linkul la <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Nu, mulțumesc</translation>
@@ -1093,6 +1096,7 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2322318151094136999">Anunță-mă dacă un site vrea să acceseze porturile seriale (recomandat)</translation>
 <translation id="2323018538045954000">Rețele Wi-Fi salvate</translation>
 <translation id="2325444234681128157">Reține parola</translation>
+<translation id="2326160999284776503">Conectează-te cu Contul Google al copilului</translation>
 <translation id="2326188115274135041">Confirmă codul PIN pentru a activa deblocarea automată</translation>
 <translation id="2326931316514688470">&amp;Reîncarcă aplicația</translation>
 <translation id="2327492829706409234">Activați aplicația</translation>
@@ -1151,6 +1155,7 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2384436799579181135">A apărut o eroare. Verifică imprimanta și încearcă din nou.</translation>
 <translation id="2387052489799050037">Accesează ecranul de pornire</translation>
 <translation id="2387458720915042159">Tip de conexiune prin proxy</translation>
+<translation id="2391082728065870591">Trimite un raport de feedback</translation>
 <translation id="2391419135980381625">Font standard</translation>
 <translation id="2392163307141705938">Ai atins limita de timp setată de părintele tău pentru <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Activează</translation>
@@ -1281,6 +1286,7 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2537178555904266562">Eroare la sincronizarea parolelor</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> poate să vadă și să editeze fișierele și dosarele următoare</translation>
 <translation id="2537927931785713436">Se verifică imaginea mașinii virtuale</translation>
+<translation id="2538084450874617176">Cine folosește <ph name="DEVICE_TYPE" />?</translation>
 <translation id="2538361623464451692">Sincronizare dezactivată</translation>
 <translation id="2540449034743108469">Apasă „Pornește” ca să asculți activitățile extensiei</translation>
 <translation id="2541002089857695151">Optimizezi proiectarea pe ecran complet?</translation>
@@ -2742,6 +2748,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4364327530094270451">Pepene galben</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> trimite conținutul unei ferestre.</translation>
 <translation id="4364830672918311045">Afișează notificările</translation>
+<translation id="4368115171699243057">Configurează <ph name="DEVICE_TYPE" /> pentru copil</translation>
 <translation id="437004882363131692">Primește sfaturi, oferte și actualizări referitoare la <ph name="DEVICE_TYPE" /> și trimite feedback. Te poți dezabona în orice moment.</translation>
 <translation id="4370975561335139969">Adresa de e-mail și parola pe care le-ai introdus nu se potrivesc</translation>
 <translation id="4374831787438678295">Programul de instalare Linux</translation>
@@ -2902,6 +2909,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4565377596337484307">Ascunde parola</translation>
 <translation id="4565917129334815774">Stochează jurnalele de sistem</translation>
 <translation id="456717285308019641">Limba paginii de tradus</translation>
+<translation id="4567533462991917415">După configurare, poți oricând să adaugi mai multe persoane. Fiecare persoană poate să-și personalizeze contul și să-și păstreze datele private.</translation>
 <translation id="4567772783389002344">Adaugă un cuvânt</translation>
 <translation id="4568025708905928793">Se solicită o cheie de securitate</translation>
 <translation id="4568213207643490790">Ne pare rău, conturile Google nu sunt permise pe dispozitiv.</translation>
@@ -2953,6 +2961,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4628762811416793313">Configurarea containerului Linux nu s-a finalizat. Încearcă din nou.</translation>
 <translation id="4633003931260532286">Extensia necesită „<ph name="IMPORT_NAME" />” cu versiunea minimă „<ph name="IMPORT_VERSION" />”, dar numai versiunea „<ph name="INSTALLED_VERSION" />” este instalată</translation>
 <translation id="4633757335284074492">Fă backup în Google Drive. Restabilește datele sau schimbă dispozitivul cu ușurință, în orice moment. Acest backup include datele aplicațiilor. Backupurile sunt încărcate pe serverele Google și sunt criptate folosind parola pentru Contul Google al copilului tău.</translation>
+<translation id="4634575639321169635">Configurează dispozitivul pentru serviciu sau pentru uz personal</translation>
 <translation id="4634771451598206121">Conectați-vă din nou...</translation>
 <translation id="4635072447747973225">Dezinstalează Crostini</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> nu este disponibilă pentru utilizatorii invitați.</translation>
@@ -3371,6 +3380,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5185386675596372454">Cea mai nouă versiune a „<ph name="EXTENSION_NAME" />” a fost dezactivată, deoarece necesită permisiuni suplimentare.</translation>
 <translation id="5185500136143151980">Nu există conexiune la internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287">Meniu cu opțiuni pentru <ph name="PROFILE_LOCAL_NAME" /></translation>
 <translation id="5190926251776387065">Activează portul</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vrea să descarce mai multe fișiere</translation>
 <translation id="5192062846343383368">Deschide aplicația Family Link și vezi setările de supraveghere</translation>
@@ -3617,6 +3627,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5495597166260341369">Ecranul rămâne activ</translation>
 <translation id="5496587651328244253">Organizați</translation>
 <translation id="5497251278400702716">Acest fișier</translation>
+<translation id="5498967291577176373">Scrii mai rapid cu ajutorul sugestiilor inline pentru nume, adresă sau numărul de telefon</translation>
 <translation id="5499313591153584299">Este posibil ca acest fișier să fie dăunător pentru computer.</translation>
 <translation id="5499453227627332024">Este disponibil un upgrade pentru containerul Linux. Poți să faci upgrade și mai târziu, din aplicația Setări.</translation>
 <translation id="5500709606820808700">Verificarea de siguranță a rulat astăzi</translation>
@@ -3773,6 +3784,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5689516760719285838">Locație</translation>
 <translation id="56907980372820799">Conectați datele</translation>
 <translation id="5691511426247308406">Familie</translation>
+<translation id="5691581861107245578">Primește sugestii de emoji în funcție de ce tastezi</translation>
 <translation id="5691772641933328258">Amprenta nu a fost recunoscută</translation>
 <translation id="5692183275898619210">S-a finalizat printarea</translation>
 <translation id="569425414730375234">Sesiunea incognito actuală: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4132,6 +4144,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6124698108608891449">Acest site are nevoie de mai multe permisiuni.</translation>
 <translation id="6125479973208104919">Din păcate, va trebui să îți adaugi din nou contul pe acest dispozitiv <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6129691635767514872">Datele selectate au fost eliminate din Chrome și de pe dispozitivele sincronizate. Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi căutările și activitatea din alte servicii Google, la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="6129839611163153407">Copilul tău</translation>
 <translation id="6129938384427316298">Comentariu certificat Netscape</translation>
 <translation id="6129953537138746214">Spațiu</translation>
 <translation id="6130692320435119637">Adaugă o rețea Wi-Fi</translation>
@@ -4172,6 +4185,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6178664161104547336">Selectează un certificat</translation>
 <translation id="6181431612547969857">Descărcarea a fost blocată</translation>
 <translation id="6185132558746749656">Locația dispozitivului</translation>
+<translation id="6195446518998936840">Ca să configurezi opțiunile de control parental, copilul trebuie să aibă un Cont Google pe care îl vei ajuta să-l gestioneze. Poți să setezi limite pentru durata de folosire a dispozitivului să aprobi sau să blochezi site-uri și altele cu ajutorul aplicației Family Link.</translation>
 <translation id="6195693561221576702">Acest dispozitiv nu poate fi configurat în modul demo offline.</translation>
 <translation id="6196640612572343990">Blochează cookie-urile terță parte</translation>
 <translation id="6196854373336333322">Extensia „<ph name="EXTENSION_NAME" />” a preluat controlul asupra setărilor de proxy, ceea ce înseamnă că poate modifica, întrerupe sau intercepta tot ceea ce faci online. Dacă nu știi sigur de ce a apărut această modificare, probabil că nu ai aprobat-o.</translation>
@@ -5926,6 +5940,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8372369524088641025">Cheie WEP greșită</translation>
 <translation id="8372477600026034341">Gazde suplimentare</translation>
 <translation id="8373652277231415614">Directoare comune în Crostini</translation>
+<translation id="8376384591331888629">Inclusiv cookie-urile terță parte de pe acest site</translation>
 <translation id="8378714024927312812">Gestionat de organizația ta</translation>
 <translation id="8379878387931047019">Dispozitivul nu acceptă tipul de cheie de securitate solicitată de acest site</translation>
 <translation id="8379991678458444070">Marchează această filă pentru a o putea accesa din nou rapid</translation>
@@ -6009,6 +6024,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8481187309597259238">Confirmă permisiunea pentru USB</translation>
 <translation id="8483248364096924578">Adresă IP</translation>
 <translation id="8487678622945914333">Mărește</translation>
+<translation id="8489156414266187072">Sugestiile personale se afișează numai în contul tău</translation>
 <translation id="8490896350101740396">Următoarele aplicații de tip chioșc „<ph name="UPDATED_APPS" />” au fost actualizate. Repornește dispozitivul pentru a finaliza procesul de actualizare.</translation>
 <translation id="8493236660459102203">Microfon:</translation>
 <translation id="8496717697661868878">Rulează acest plugin</translation>

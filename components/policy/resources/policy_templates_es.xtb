@@ -73,6 +73,7 @@
 
       Si se asigna el valor "false" a esta política o no se establece, no se enviará ninguna información.
       Si se le asigna el valor "true", se enviará la información sobre la retroiluminación del dispositivo.</translation>
+<translation id="1076751984131277498">Lista de dispositivos USB desvinculables permitidos</translation>
 <translation id="1079801999187584280">No permitir el uso de herramientas para desarrolladores</translation>
 <translation id="1087437665304381368">Esta política permite controlar únicamente el modo desarrollador de <ph name="PRODUCT_OS_NAME" />. Si quieres impedir el acceso a las opciones para desarrolladores de Android, debes asignar un valor a la política <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">La lista de políticas de Chrome Enterprise se traslada a otra URL. Modifica tus marcadores para que incluyan la URL actualizada: <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -540,6 +541,9 @@ Si inhabilitas esta política, se inhabilitará el desplazamiento de una página
 
       Si no se habilita, la predicción de red se habilitará, pero los usuarios podrán cambiarla.</translation>
 <translation id="1865417998205858223">Permisos clave</translation>
+<translation id="1866563857170942397">Permite definir la lista de usuarios con permiso para iniciar sesión en el dispositivo. Las entradas tienen el formato <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> (por ejemplo, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />). Para permitir usuarios arbitrarios en un dominio, utiliza entradas similares a <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
+
+      Si no se configura esta política, no se aplicarán restricciones sobre los usuarios que pueden iniciar sesión. Ten en cuenta que sigue siendo necesario configurar adecuadamente la política <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> para crear nuevos usuarios.</translation>
 <translation id="186719019195685253">Acción a emprender si se alcanza el retraso de inactividad mientras el dispositivo está conectado a la red eléctrica</translation>
 <translation id="187819629719252111">Permite que <ph name="PRODUCT_NAME" /> muestre cuadros de diálogo de selección de archivos para acceder a los archivos locales del ordenador.
 
@@ -1241,11 +1245,11 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 
       A menos que el almacenamiento externo esté bloqueado, si se configura "ExternalStorageReadOnly" en "false" o no se le asigna ningún valor, los usuarios podrán crear y modificar archivos de dispositivos de almacenamiento externos en los que se pueda escribir físicamente. (El almacenamiento externo se bloquea asignándole a "ExternalStorageDisable" el valor "true").</translation>
 <translation id="2796714419743648316">Lista de aplicaciones y URL permitidas de límites de tiempo por aplicación</translation>
-<translation id="2796896367838042659">Esta política especifica qué aplicaciones y URL deben añadirse a la lista de aplicaciones y URL permitidas de restricciones de uso por aplicación.
+<translation id="2796896367838042659">Esta política especifica qué aplicaciones y URLs deben añadirse a la lista de aplicaciones y URLs permitidas de restricciones de uso por aplicación.
         La lista de permitidas establecida tendrá efecto en las aplicaciones que un determinado usuario haya instalado en <ph name="PRODUCT_OS_NAME" /> que tengan límites de tiempo por aplicación.
         La lista de permitidas establecida solo se puede aplicar a cuentas de usuarios menores de edad cuando se haya establecido la política <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> y solo entonces tendrá efecto.
-        La lista de permitidas establecida se usa con aplicaciones y URL para que no se bloqueen por límites de tiempo por aplicación.
-        El acceso a URL incluidas en la lista de permitidas no cuenta para el límite de tiempo de Chrome.
+        La lista de permitidas establecida se usa con aplicaciones y URLs para que no se bloqueen por límites de tiempo por aplicación.
+        El acceso a URLs incluidas en la lista de permitidas no cuenta para el límite de tiempo de Chrome.
         Añade expresiones regulares de URL a |url_list| para incluir en la lista de permitidas las URL que coincidan con cualquiera de las expresiones regulares de la lista.
         Añade una aplicación con su |app_id| y |app_type| a |app_list| para incluir la aplicación en la lista de permitidas.
 
@@ -1839,6 +1843,9 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
 <translation id="3647212518036289905">Si se define esta política, especificará qué biblioteca GSSAPI se debe usar para la autenticación HTTP. Puedes definirla como un nombre de biblioteca o una ruta completa.
 
       Si no se define esta política, <ph name="PRODUCT_NAME" /> usará un nombre de biblioteca predeterminado.</translation>
+<translation id="3653234084868565720">Permite controlar la creación de nuevas cuentas de usuario en <ph name="PRODUCT_OS_NAME" />. Si se asigna el valor false a esta política, los usuarios que no tengan una cuenta no podrán iniciar sesión.
+
+      Si se le asigna el valor true o no se configura, se permitirá crear nuevas cuentas de usuario siempre que <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> no impida que el usuario inicie sesión.</translation>
 <translation id="3653237928288822292">Icono del proveedor de búsquedas predeterminadas</translation>
 <translation id="3654906736796256792">Permite ejecutar la zona de pruebas de audio</translation>
 <translation id="3657998022005237040">Bloquear la descarga de tipos de archivo no admitidos</translation>
@@ -2402,7 +2409,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4508084713148633492">Permite habilitar o inhabilitar la notificación de poco espacio en disco. Se aplica a todos los usuarios del dispositivo.
       Si solo hay una cuenta de usuario en un dispositivo administrado, la notificación se muestra siempre, independientemente del valor asignado a esta política.
       Si hay varias cuentas de usuario en un dispositivo administrado, la notificación solo se muestra si se asigna el valor True a esta política.
-      En dispositivos no gestionados, la notificación se muestra siempre.</translation>
+      En dispositivos no administrados, la notificación se muestra siempre.</translation>
 <translation id="4510923771103268849">El usuario puede tener acceso root a los contenedores de Crostini</translation>
 <translation id="4515404363392014383">Habilitar Navegación Segura en fuentes de confianza</translation>
 <translation id="4517928394515633751">Analizar las descargas de los usuarios con Navegación Segura</translation>
@@ -3203,6 +3210,11 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
       Si no se especifica, no se modificará la URL de la base de las variaciones.</translation>
 <translation id="5561811616825571914">Seleccionar automáticamente certificados de cliente de estos sitios web en la pantalla de inicio de sesión</translation>
+<translation id="5564345250641049313">Define la lista de usuarios a los que se permite iniciar sesión en el dispositivo. Las entradas tienen el formato <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> (por ejemplo, <ph name="USER_ALLOWLIST_ENTRY_EXAMPLE" />). Para permitir usuarios arbitrarios en un dominio, utiliza entradas similares a <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
+
+      Si no se configura esta política, no se aplicarán restricciones sobre los usuarios que pueden iniciar sesión. Ten en cuenta que sigue siendo necesario configurar adecuadamente la política <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> para crear nuevos usuarios.
+
+      Esta política está obsoleta. Usa la política <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> en su lugar.</translation>
 <translation id="5564865786900450806">Suprime la advertencia que aparece cuando <ph name="PRODUCT_NAME" /> se ejecuta en un ordenador o en un sistema operativo que ya no es compatible.
 
       Si no se asigna ningún valor a esta política o se le asigna el valor "false", las advertencias aparecerán en los ordenadores o sistemas operativos no compatibles.</translation>
@@ -3573,6 +3585,11 @@ Ten en cuenta que se anunció que esta política se eliminaría en la versión 8
           El modo recomendado para bloquear la pantalla en modo de inactividad es habilitar el bloqueo de pantalla en modo de suspensión y hacer que <ph name="PRODUCT_OS_NAME" /> entre en modo de suspensión después del retraso de inactividad. Esta política solo debe utilizarse cuando el bloqueo se produce en un periodo de tiempo anterior a la suspensión o cuando no se quiere que se produzca la suspensión en modo de inactividad.
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores al retraso de inactividad.</translation>
+<translation id="6096729330325888677">Si se asigna un valor a esta política, se definirá la lista de dispositivos USB que los usuarios pueden desvincular de su controlador de kernel para utilizarse en la API chrome.usb directamente en una aplicación web. Las entradas son pares de identificador de producto e identificador de proveedor del USB que permiten identificar hardware específico.
+
+      Si no se le asigna ningún valor, la lista de dispositivos USB que se pueden desvincular estará vacía.
+
+      Esta política está obsoleta. Usa la política <ph name="USB_DETACHABLE_ALLOWLIST" /> en su lugar.</translation>
 <translation id="6097601282776163274">Habilitar la recogida de datos anónima con clave de URL</translation>
 <translation id="6099853574908182288">Modo predeterminado de impresión en color</translation>
 <translation id="6102342563050263313">Habilitar el desplazamiento a texto especificado en fragmentos de URL</translation>
@@ -3729,10 +3746,10 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           El valor de esta política debe especificarse en milisegundos. Los valores deben ser inferiores o iguales al retraso de inactividad.
 
           El mensaje de advertencia solo se muestra si el modo de inactividad cierra la sesión o apaga el equipo.</translation>
-<translation id="6334330017384340264">Esta política especifica qué aplicaciones y URL deben permitirse en las restricciones de uso por aplicación.
-        La lista de aplicaciones y URL permitidas establecida tendrá efecto en las aplicaciones que un determinado usuario haya instalado en <ph name="PRODUCT_OS_NAME" /> que tengan límites de tiempo por aplicación.
+<translation id="6334330017384340264">Esta política especifica qué aplicaciones y URLs deben permitirse en las restricciones de uso por aplicación.
+        La lista de aplicaciones y URLs permitidas establecida tendrá efecto en las aplicaciones que un determinado usuario haya instalado en <ph name="PRODUCT_OS_NAME" /> que tengan límites de tiempo por aplicación.
         La lista de permitidas establecida solo se puede aplicar a cuentas de usuarios menores de edad cuando se haya establecido la política <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> y solo entonces tendrá efecto.
-        La lista de permitidas establecida se usa con aplicaciones y URL para que no se bloqueen por límites de tiempo por aplicación.
+        La lista de permitidas establecida se usa con aplicaciones y URLs para que no se bloqueen por límites de tiempo por aplicación.
         El acceso a URL permitidas no cuenta para el límite de tiempo de Chrome.
         Añade expresiones regulares de URL a |url_list| para incluir en la lista de permitidas las URL que coincidan con cualquiera de las expresiones regulares de la lista.
         Añade una aplicación con su |app_id| y |app_type| a |app_list| para incluir la aplicación en la lista de permitidas.
@@ -4222,6 +4239,16 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       Si no le asignas ningún valor, la estantería se colocará en la parte inferior de la pantalla de forma predeterminada y el usuario podrá cambiar su posición.</translation>
 <translation id="7040229947030068419">Valor de ejemplo:</translation>
 <translation id="7044883996351280650">Controlar el servicio de copia de seguridad y restauración de Android</translation>
+<translation id="7063842402585660314">La lista de aplicaciones que están permitidas en la pantalla de bloqueo de <ph name="PRODUCT_OS_NAME" />.
+
+      Si la aplicación preferida para tomar notas está habilitada en la pantalla de bloqueo, esta contendrá un elemento de interfaz de usuario para iniciarla.
+      Una vez iniciada, la aplicación podrá abrir una ventana de aplicación sobre la pantalla de bloqueo y crear elementos de datos (notas) en el contexto de la pantalla de bloqueo. La aplicación podrá importar las notas creadas a la sesión del usuario principal una vez que se desbloquee la sesión. Actualmente, solo se admiten las aplicaciones para tomar notas de Chrome en la pantalla de bloqueo.
+
+      Si se establece la política, el usuario podrá habilitar una aplicación en la pantalla de bloqueo únicamente si el ID de extensión de la aplicación se encuentra entre los valores de la lista de la política.
+      Por lo tanto, si se configura esta política con una lista vacía, se inhabilitará por completo la toma de notas en la pantalla de bloqueo.
+      Ten en cuenta que, aunque la política incluya el ID de una aplicación, no significa necesariamente que el usuario pueda habilitarla como aplicación para tomar notas en la pantalla de bloqueo. Por ejemplo, en Chrome 61, la plataforma también restringe el conjunto de aplicaciones disponibles.
+
+      Si no se establece esta política, no habrá restricciones impuestas por la política en relación con el conjunto de aplicaciones que el usuario puede habilitar en la pantalla de bloqueo.</translation>
 <translation id="7063895219334505671">Permitir pop-ups en estos sitios</translation>
 <translation id="706669471845501145">Permitir que los sitios muestren notificaciones de escritorio</translation>
 <translation id="7068108874199666656">Permite aplicar la configuración de red a todos los usuarios de un dispositivo <ph name="PRODUCT_OS_NAME" />. La configuración de red es una cadena escrita en formato JSON, tal como se define en la especificación Open Network Configuration.</translation>
@@ -5130,6 +5157,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 
           Para obtener información detallada sobre los patrones de URL válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8357681633047935212">Limitar la duración de la sesión de un usuario</translation>
+<translation id="8357989008292691856">Lista de usuarios con permiso para iniciar sesión</translation>
 <translation id="8359734107661430198">Habilitar el API ExampleDeprecatedFeature hasta el 02/09/2008</translation>
 <translation id="8367209241899435947">Habilitar el Limpiador de Chrome en Windows</translation>
 <translation id="8367473200119029349">Informes en la nube</translation>

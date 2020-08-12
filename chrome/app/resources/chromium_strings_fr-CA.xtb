@@ -97,6 +97,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="4677944499843243528">Le profil semble être utilisé par un autre processus de Chromium (<ph name="PROCESS_ID" />) sur un autre ordinateur (<ph name="HOST_NAME" />). Chromium a verrouillé ce profil pour éviter qu'il ne soit endommagé. Si vous êtes sûr qu'aucun autre processus n'utilise ce profil, vous pouvez le déverrouiller et relancer Chromium.</translation>
 <translation id="469338717132742108">Obtenir de l'aide pour Chromium OS</translation>
 <translation id="4708774505295300557">Un utilisateur s'est récemment connecté à Chromium sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST" />. Veuillez créer un autre utilisateur Chromium pour séparer vos données.</translation>
+<translation id="4745225042341419983">Les données de navigation de cet espace seront supprimées de cet appareil. Pour récupérer ces données, connectez-vous à Chromium en tant que</translation>
 <translation id="4746050847053251315">Quitter Chromium quand même?</translation>
 <translation id="4748217263233248895">Une mise à jour de sécurité spéciale pour Chromium vient d'être effectuée. Redémarrez maintenant, et nous restaurerons vos onglets.</translation>
 <translation id="4750035648288509542">La mise à jour est presque terminée! Relancez Chromium pour terminer la mise à jour. Vos fenêtres de navigation privée ne seront pas rouvertes.</translation>

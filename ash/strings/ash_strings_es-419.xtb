@@ -507,6 +507,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6972754398087986839">Comenzar</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="698231206551913481">Todos los archivos y datos locales asociados a este usuario se borrarán de forma permanente una vez que se quite este usuario.</translation>
+<translation id="7007983414944123363">No se pudo verificar tu PIN o contraseña. Vuelve a intentarlo.</translation>
 <translation id="7015766095477679451">Regresa a las <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Conectar tu dispositivo <ph name="DEVICE_NAME" /> a tu teléfono</translation>
 <translation id="7026338066939101231">Disminuir</translation>
@@ -552,6 +553,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7568294522609223312">Desactivar los clics automáticos</translation>
 <translation id="7568637526529101738">Si haces clic con el botón derecho en la selección o la mantienes presionada, el Asistente te mostrará información adicional, como su definición o conversión de unidades.</translation>
 <translation id="7569509451529460200">Se habilitaron el braille y ChromeVox</translation>
+<translation id="7579778809502851308">Captura de pantalla</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7600875258240007829">Ver todas las notificaciones</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
@@ -670,6 +672,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8841375032071747811">Botón Atrás</translation>
 <translation id="8843682306134542540">Activar o desactivar el bloqueo de rotación: <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Tecla de búsqueda + Esc</translation>
+<translation id="8853703225951107899">Aún no se pudo verificar tu PIN o contraseña. Nota: Si recientemente cambiaste la contraseña, usa la anterior. Se aplicará la nueva cuando salgas de la cuenta.</translation>
 <translation id="8870509716567206129">La app no es compatible con la función de pantalla dividida.</translation>
 <translation id="8874184842967597500">No conectado</translation>
 <translation id="8877788021141246043">Establecer un recordatorio</translation>

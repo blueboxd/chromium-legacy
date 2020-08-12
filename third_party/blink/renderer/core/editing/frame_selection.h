@@ -294,10 +294,6 @@ class CORE_EXPORT FrameSelection final
 
   const CaretDisplayItemClient& CaretDisplayItemClientForTesting() const;
 
-  // Note: We have |selectionInFlatTree()| for unit tests, we should
-  // use |visibleSelection<EditingInFlatTreeStrategy>()|.
-  VisibleSelectionInFlatTree GetSelectionInFlatTree() const;
-
   void NotifyAccessibilityForSelectionChange();
   void NotifyCompositorForSelectionChange();
   void NotifyEventHandlerForSelectionChange();

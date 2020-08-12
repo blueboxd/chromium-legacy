@@ -9,6 +9,7 @@
 
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_controller.h"
+#include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/test/ambient_ash_test_base.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/shell.h"
@@ -55,46 +56,46 @@ TEST_F(AmbientPhotoControllerTest, ShouldStartToDownloadTopics) {
 // Test that image is downloaded when starting screen update.
 TEST_F(AmbientPhotoControllerTest, ShouldStartToDownloadImages) {
   auto image = photo_controller()->ambient_backend_model()->GetNextImage();
-  EXPECT_TRUE(image.isNull());
+  EXPECT_TRUE(image.IsNull());
 
   // Start to refresh images.
   photo_controller()->StartScreenUpdate();
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
   image = photo_controller()->ambient_backend_model()->GetNextImage();
-  EXPECT_FALSE(image.isNull());
+  EXPECT_FALSE(image.IsNull());
 
   // Stop to refresh images.
   photo_controller()->StopScreenUpdate();
   image = photo_controller()->ambient_backend_model()->GetNextImage();
-  EXPECT_TRUE(image.isNull());
+  EXPECT_TRUE(image.IsNull());
 }
 
 // Tests that photos are updated periodically when starting screen update.
 TEST_F(AmbientPhotoControllerTest, ShouldUpdatePhotoPeriodically) {
-  gfx::ImageSkia image1;
-  gfx::ImageSkia image2;
-  gfx::ImageSkia image3;
+  PhotoWithDetails image1;
+  PhotoWithDetails image2;
+  PhotoWithDetails image3;
 
   // Start to refresh images.
   photo_controller()->StartScreenUpdate();
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
   image1 = photo_controller()->ambient_backend_model()->GetNextImage();
-  EXPECT_FALSE(image1.isNull());
-  EXPECT_TRUE(image2.isNull());
+  EXPECT_FALSE(image1.IsNull());
+  EXPECT_TRUE(image2.IsNull());
 
   // Fastforward enough time to update the photo.
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
   image2 = photo_controller()->ambient_backend_model()->GetNextImage();
-  EXPECT_FALSE(image2.isNull());
-  EXPECT_FALSE(image1.BackedBySameObjectAs(image2));
-  EXPECT_TRUE(image3.isNull());
+  EXPECT_FALSE(image2.IsNull());
+  EXPECT_FALSE(image1.photo.BackedBySameObjectAs(image2.photo));
+  EXPECT_TRUE(image3.IsNull());
 
   // Fastforward enough time to update another photo.
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
   image3 = photo_controller()->ambient_backend_model()->GetNextImage();
-  EXPECT_FALSE(image3.isNull());
-  EXPECT_FALSE(image1.BackedBySameObjectAs(image3));
-  EXPECT_FALSE(image2.BackedBySameObjectAs(image3));
+  EXPECT_FALSE(image3.IsNull());
+  EXPECT_FALSE(image1.photo.BackedBySameObjectAs(image3.photo));
+  EXPECT_FALSE(image2.photo.BackedBySameObjectAs(image3.photo));
 
   // Stop to refresh images.
   photo_controller()->StopScreenUpdate();
@@ -139,7 +140,7 @@ TEST_F(AmbientPhotoControllerTest, ShouldSaveAndDeleteImagesOnDisk) {
   }
 
   auto image = photo_controller()->ambient_backend_model()->GetNextImage();
-  EXPECT_FALSE(image.isNull());
+  EXPECT_FALSE(image.IsNull());
 
   // Stop to refresh images.
   photo_controller()->StopScreenUpdate();
@@ -149,7 +150,7 @@ TEST_F(AmbientPhotoControllerTest, ShouldSaveAndDeleteImagesOnDisk) {
   EXPECT_TRUE(base::IsDirectoryEmpty(ambient_image_path));
 
   image = photo_controller()->ambient_backend_model()->GetNextImage();
-  EXPECT_TRUE(image.isNull());
+  EXPECT_TRUE(image.IsNull());
 }
 
 }  // namespace ash

@@ -506,6 +506,7 @@
 <translation id="6972754398087986839">Սկսել աշխատանքը</translation>
 <translation id="6981982820502123353">Մատչելիությունը</translation>
 <translation id="698231206551913481">Այս օգտատիրոջ հետ կապված բոլոր ֆայլերը և տեղային տվյալներն ընդմիշտ կջնջվեն, եթե հեռացնեք այս պրոֆիլը:</translation>
+<translation id="7007983414944123363">Չհաջողվեց հաստատել ձեր PIN կոդը կամ գաղտնաբառը։ Նորից փորձեք։</translation>
 <translation id="7015766095477679451">Վերադարձեք <ph name="COME_BACK_TIME" />։</translation>
 <translation id="7025533177575372252">Կապեք ձեր <ph name="DEVICE_NAME" /> սարքը ձեր հեռախոսի հետ</translation>
 <translation id="7026338066939101231">Նվազեցնել</translation>
@@ -551,6 +552,7 @@
 <translation id="7568294522609223312">Անջատել ավտոմատ սեղմումները</translation>
 <translation id="7568637526529101738">Օգնականը կցուցադրի տարրի մասին տեղեկություններ, օրինակ՝ սահմանումը կամ փոխարկման միավորը, երբ երկար սեղմեք դրա վրա կամ ուղղակի սեղմեք մկնիկի աջ կոճակով։</translation>
 <translation id="7569509451529460200">Բրայլյան գրատիպն ու ChromeVox-ը միացված են</translation>
+<translation id="7579778809502851308">Էկրանի լուսանկարում</translation>
 <translation id="7593891976182323525">Search կամ Shift</translation>
 <translation id="7600875258240007829">Տեսնել բոլոր ծանուցումները</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -669,6 +671,7 @@
 <translation id="8841375032071747811">«Հետ» կոճակ</translation>
 <translation id="8843682306134542540">Միացնել/անջատել պտտման կողպումը: <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Որոնել+Esc</translation>
+<translation id="8853703225951107899">Չհաջողվեց հաստատել ձեր PIN կոդը կամ գաղտնաբառը։ Նշում․ եթե դուք վերջերս փոխել եք ձեր գաղտնաբառը, ապա օգտագործեք հինը։ Ձեր նոր գաղտնաբառն ուժի մեջ կմտնի, երբ դուրս գաք հաշվից։</translation>
 <translation id="8870509716567206129">Հավելվածը չի աջակցում էկրանի տրոհումը:</translation>
 <translation id="8874184842967597500">Կապ չկա</translation>
 <translation id="8877788021141246043">Ստեղծել հիշեցում</translation>

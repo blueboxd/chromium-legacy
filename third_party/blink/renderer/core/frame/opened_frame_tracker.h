@@ -6,36 +6,35 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_OPENED_FRAME_TRACKER_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
-class WebFrame;
+class Frame;
 
-// Small helper class to track the set of frames that a WebFrame has opened.
+// Small helper class to track the set of frames that a Frame has opened.
 // Due to layering restrictions, we need to hide the implementation, since
 // public/web/ cannot depend on wtf/.
 class OpenedFrameTracker {
-  USING_FAST_MALLOC(OpenedFrameTracker);
+  DISALLOW_NEW();
 
  public:
   OpenedFrameTracker();
   ~OpenedFrameTracker();
+  void Trace(Visitor*) const;
 
   bool IsEmpty() const;
-  void Add(WebFrame*);
-  void Remove(WebFrame*);
+  void Add(Frame*);
+  void Remove(Frame*);
 
   // Helper used when swapping a frame into the frame tree: this updates the
   // opener for opened frames to point to the new frame being swapped in.
-  void TransferTo(WebFrame*);
-
-  // Helper function to clear the openers when the frame is being detached.
-  void Dispose() { TransferTo(nullptr); }
+  void TransferTo(Frame*) const;
 
  private:
-  WTF::HashSet<WebFrame*> opened_frames_;
+  HeapHashSet<WeakMember<Frame>> opened_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenedFrameTracker);
 };

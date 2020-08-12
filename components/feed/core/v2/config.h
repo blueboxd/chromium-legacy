@@ -34,6 +34,11 @@ struct Config {
   // How far ahead in number of items from last visible item to final item
   // before attempting to load more content.
   int load_more_trigger_lookahead = 5;
+  // Whether to attempt uploading actions when Chrome is hidden.
+  bool upload_actions_on_enter_background = true;
+
+  Config();
+  Config(const Config& other);
 };
 
 // Gets the current configuration.

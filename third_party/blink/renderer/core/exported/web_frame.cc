@@ -83,14 +83,15 @@ bool WebFrame::Swap(WebFrame* frame) {
     swap(next_sibling_, frame->next_sibling_);
   }
 
-  if (opener_) {
-    frame->SetOpener(opener_);
-    SetOpener(nullptr);
-  }
-  opened_frame_tracker_->TransferTo(frame);
-
   Page* page = old_frame->GetPage();
   AtomicString name = old_frame->Tree().GetName();
+
+  Frame* old_frame_opener = old_frame->Opener();
+  // Opener needs to be cleared here so Detach() would not call
+  // DidChangeOpener().
+  if (old_frame_opener) {
+    old_frame->SetOpenerDoNotNotify(nullptr);
+  }
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WindowProxyManager::GlobalProxyVector global_proxies;
@@ -135,6 +136,10 @@ bool WebFrame::Swap(WebFrame* frame) {
 
   Frame* new_frame = ToCoreFrame(*frame);
 
+  if (old_frame_opener)
+    new_frame->SetOpenerDoNotNotify(old_frame_opener);
+  old_frame->GetOpenedFrameTracker().TransferTo(new_frame);
+
   new_frame->GetWindowProxyManager()->SetGlobalProxies(global_proxies);
 
   parent_ = nullptr;
@@ -170,19 +175,13 @@ WebVector<unsigned> WebFrame::GetInsecureRequestToUpgrade() const {
 }
 
 WebFrame* WebFrame::Opener() const {
-  return opener_;
-}
-
-void WebFrame::SetOpener(WebFrame* opener) {
-  if (opener_)
-    opener_->opened_frame_tracker_->Remove(this);
-  if (opener)
-    opener->opened_frame_tracker_->Add(this);
-  opener_ = opener;
+  CHECK(ToCoreFrame(*this));
+  return FromFrame(ToCoreFrame(*this)->Opener());
 }
 
 void WebFrame::ClearOpener() {
-  SetOpener(nullptr);
+  CHECK(ToCoreFrame(*this));
+  ToCoreFrame(*this)->SetOpenerDoNotNotify(nullptr);
 }
 
 void WebFrame::InsertAfter(WebFrame* new_child, WebFrame* previous_sibling) {
@@ -297,13 +296,8 @@ WebFrame::WebFrame(mojom::blink::TreeScopeType scope,
       next_sibling_(nullptr),
       first_child_(nullptr),
       last_child_(nullptr),
-      opener_(nullptr),
-      opened_frame_tracker_(new OpenedFrameTracker) {
+      opener_(nullptr) {
   DCHECK(frame_token_);
-}
-
-WebFrame::~WebFrame() {
-  opened_frame_tracker_.reset(nullptr);
 }
 
 void WebFrame::TraceFrame(Visitor* visitor, const WebFrame* frame) {
@@ -326,7 +320,6 @@ void WebFrame::TraceFrames(Visitor* visitor, const WebFrame* frame) {
 }
 
 void WebFrame::Close() {
-  opened_frame_tracker_->Dispose();
 }
 
 void WebFrame::DetachFromParent() {

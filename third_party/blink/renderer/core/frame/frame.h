@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/frame/frame_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/navigation_rate_limiter.h"
+#include "third_party/blink/renderer/core/frame/opened_frame_tracker.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
@@ -311,6 +312,14 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // if opener is null. See http://html.spec.whatwg.org/#dom-opener.
   virtual void SetOpener(Frame* opener) = 0;
 
+  void SetOpenerDoNotNotify(Frame* opener);
+
+  Frame* Opener() const { return opener_; }
+
+  const OpenedFrameTracker& GetOpenedFrameTracker() const {
+    return opened_frame_tracker_;
+  }
+
  protected:
   // |inheriting_agent_factory| should basically be set to the parent frame or
   // opener's WindowAgentFactory. Pass nullptr if the frame is isolated from
@@ -429,6 +438,10 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // The reason it is stored here is so that it can handle both LocalFrames and
   // RemoteFrames, and so it can be canceled by FrameLoader.
   TaskHandle form_submit_navigation_task_;
+
+  OpenedFrameTracker opened_frame_tracker_;
+
+  Member<Frame> opener_;
 };
 
 inline FrameClient* Frame::Client() const {

@@ -23,6 +23,7 @@ import "components/sync/protocol/app_setting_specifics.proto";
 import "components/sync/protocol/app_specifics.proto";
 import "components/sync/protocol/arc_package_specifics.proto";
 import "components/sync/protocol/autofill_specifics.proto";
+import "components/sync/protocol/autofill_offer_specifics.proto";
 import "components/sync/protocol/bookmark_specifics.proto";
 import "components/sync/protocol/client_commands.proto";
 import "components/sync/protocol/client_debug_info.proto";
@@ -168,6 +169,7 @@ message EntitySpecifics {
     OsPreferenceSpecifics os_preference = 702141;
     OsPriorityPreferenceSpecifics os_priority_preference = 703915;
     SharingMessageSpecifics sharing_message = 728866;
+    AutofillOfferSpecifics autofill_offer = 774329;
   }
   reserved 218175;
   reserved "wifi_credential";

@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">بنائی گئی</translation>
 <translation id="1067291318998134776">‏Linux (بی ٹا)</translation>
 <translation id="1067922213147265141">‏دیگر Google سروسز</translation>
+<translation id="1068961867683064946">‏اپنے بچے کیلئے ایک Google اکاؤنٹ بنائیں</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">‏آپ کے کمپیوٹر پر موجود کسی دوسرے پروگرام نے ایک ایکسٹینشن شامل کیا ہے جو Chrome کے کام کرنے کا طریقہ تبدیل کر سکتا ہے۔
 
@@ -273,6 +274,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1319983966058170660"><ph name="SUBPAGE_TITLE" /> ذیلی صفحے کا پیچھے جانے کا بٹن</translation>
 <translation id="1322046419516468189">اپنے <ph name="SAVED_PASSWORDS_STORE" /> میں محفوظ کردہ پاسورڈز دیکھیں اور ان کا نظم کریں</translation>
 <translation id="1324106254079708331">‏ہدف بناکر کیے گئے حملوں کا خطرہ ہونے والے کسی کے بھی ذاتی Google اکاؤنٹس کی حفاظت کرتا ہے</translation>
+<translation id="1325985428688410772">‏Space شامل کریں</translation>
 <translation id="1326317727527857210">‏اپنے دیگر آلات سے اپنے ٹیبز حاصل کرنے کیلئے، Chrome میں سائن ان کریں۔</translation>
 <translation id="1327074568633507428">‏Google کلاؤڈ پرنٹ پر موجود پرنٹر</translation>
 <translation id="1327272175893960498">‏Kerberos ٹکٹس</translation>
@@ -1083,6 +1085,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2307462900900812319">نیٹ ورک کنفیگر کریں</translation>
 <translation id="230927227160767054">یہ صفحہ ایک سرور ہینڈلر انسٹال کرنا چاہتا ہے۔</translation>
 <translation id="2309620859903500144">اس سائٹ کو آپ کے موشن اور لائٹ سینسرز تک رسائی حاصل کرنے سے مسدود کر دیا گیا ہے۔</translation>
+<translation id="2314873619957287124">اپنے بچے کو سیکھنے، کھیلنے اور دریافت کرنے میں مدد کے لئے ڈیجیٹل گراؤنڈ اصول سیٹ کریں</translation>
 <translation id="2315414688463285945">‏Linux فائلز کو کنفیگر کرنے میں خرابی پیش آ گئی۔ براہ کرم دوبارہ کوشش کریں۔</translation>
 <translation id="2315587498123194634"><ph name="DEVICE_NAME" /> پر لنک بھیجیں</translation>
 <translation id="2316129865977710310">نہیں، شکریہ</translation>
@@ -1094,6 +1097,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2322318151094136999">جب کوئی سائٹ سیریل پورٹس تک رسائی حاصل کرنا چاہے تو پوچھیں (تجویز کردہ)</translation>
 <translation id="2323018538045954000">‏محفوظ کردہ Wi-Fi نیٹ ورکس</translation>
 <translation id="2325444234681128157">پاس ورڈ یاد رکھیں</translation>
+<translation id="2326160999284776503">‏اپنے بچے کے Google اکاؤنٹ سے سائن ان کریں</translation>
 <translation id="2326188115274135041">‏خودکار غیر مقفل کریں کو آن کرنے کے لیے PIN کی تصدیق کریں</translation>
 <translation id="2326931316514688470">ایپ &amp;دوبارہ لوڈ کریں</translation>
 <translation id="2327492829706409234">ایپ فعال کریں</translation>
@@ -1152,6 +1156,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2384436799579181135">ایک خرابی پیش آ گئی ہے۔ براہ کرم اپنا پرٹنر چیک کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="2387052489799050037">ہوم پر جائیں</translation>
 <translation id="2387458720915042159">پراکسی کنکشن کی قسم</translation>
+<translation id="2391082728065870591">تاثرات کی رپورٹ بھیجیں</translation>
 <translation id="2391419135980381625">معیاری فونٹ</translation>
 <translation id="2392163307141705938"><ph name="IDS_SHORT_PRODUCT_NAME" /> کے لیے آپ کے والدین کی سیٹ کی ہوئی آپ کی وقت کی حد پوری ہو گئی۔</translation>
 <translation id="2392369802118427583">فعال کریں</translation>
@@ -1282,6 +1287,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2537178555904266562">پاس ورڈز کی مطابقت پذیری کرنے میں خرابی</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> مندرجہ ذیل فائلز اور فولڈرز کو دیکھ اور ان میں ترمیم کر سکتا ہے</translation>
 <translation id="2537927931785713436">ورچوئل مشین کی امیج چیک ہو رہی ہے</translation>
+<translation id="2538084450874617176">یہ <ph name="DEVICE_TYPE" /> کون استعمال کر رہا ہے؟</translation>
 <translation id="2538361623464451692">مطابقت پذیری غیر فعال ہے</translation>
 <translation id="2540449034743108469">ایکسٹینشن کی سرگرمیوں کو سننے کے لئے "شروع کریں" کو دبائیں</translation>
 <translation id="2541002089857695151">پوری اسکرین پر کاسٹ کرنے کو بہتر بنائیں؟</translation>
@@ -2743,6 +2749,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4364327530094270451">خربوزہ</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> ایک ونڈو کا اشتراک کر رہی ہے۔</translation>
 <translation id="4364830672918311045">اطلاعات ڈسپلے کریں</translation>
+<translation id="4368115171699243057">اپنے بچے کے لیے اس <ph name="DEVICE_TYPE" /> کو سیٹ اپ کریں</translation>
 <translation id="437004882363131692"><ph name="DEVICE_TYPE" /> کی تجاویز، پیشکشیں اور اپ ڈیٹس حاصل کریں اور تاثرات کا اشتراک کریں۔ کسی بھی وقت اَن سبسکرائب کریں۔</translation>
 <translation id="4370975561335139969">آپ کی جانب سے درج کردہ ای میل اور پاس ورڈ مماثل نہیں ہیں</translation>
 <translation id="4374831787438678295">‏Linux انسٹالر</translation>
@@ -2903,6 +2910,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4565377596337484307">پاس ورڈ چھپائیں</translation>
 <translation id="4565917129334815774">سسٹم لاگز اسٹور کریں</translation>
 <translation id="456717285308019641">ترجمہ کرنے کیلئے صفحے کی زبان</translation>
+<translation id="4567533462991917415">آپ سیٹ اپ کے بعد کبھی بھی مزید لوگوں کو شامل کر سکتے ہیں۔ ہر شخص اپنے اکاؤنٹ کو ذاتی نوعیت بنا اور ڈیٹا کو نجی رکھ سکتا ہے۔</translation>
 <translation id="4567772783389002344">لفظ شامل کریں</translation>
 <translation id="4568025708905928793">سیکیورٹی کلید کی درخواست کی جا رہی ہے</translation>
 <translation id="4568213207643490790">‏معذرت، Google اکاؤنٹس اس آلہ پر اجازت یافتہ نہیں ہیں۔</translation>
@@ -2954,6 +2962,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4628762811416793313">‏Linux کنٹینر کا سیٹ اپ مکمل نہیں ہوا۔ براہ کرم دوبارہ کوشش کریں۔</translation>
 <translation id="4633003931260532286">ایکسٹینشن کیلئے کم از کم ورژن "<ph name="IMPORT_VERSION" />" کے ساتھ "<ph name="IMPORT_NAME" />" مطلوب ہے لیکن صرف ورژن "<ph name="INSTALLED_VERSION" />" انسٹال ہے</translation>
 <translation id="4633757335284074492">‏Google Drive میں بیک اپ لیں۔ آسانی سے ڈیٹا بحال کریں یا کسی بھی وقت آلہ کو سوئچ کریں۔ اس بیک اپ میں ایپ ڈیٹا شامل ہے۔ بیک اپس کو Google پر اپ لوڈ کیا جاتا ہے اور آپ کے بچے کے Google اکاؤنٹ کا پاس ورڈ استعمال کر کے انہیں مرموز کیا جاتا ہے۔</translation>
+<translation id="4634575639321169635">دفتر یا ذاتی استعمال کے لیے اس آلہ کو سیٹ اپ کریں</translation>
 <translation id="4634771451598206121">دوبارہ سائن ان کریں…</translation>
 <translation id="4635072447747973225">‏Crostini اَن انسٹال کریں</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> مہمان صارفین کے لئے دستیاب نہیں ہے۔</translation>
@@ -3372,6 +3381,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" کا جدید ترین ورژن غیر فعال کر دیا گیا ہے کیونکہ اس کیلئے مزید اجازتیں مطلوب ہیں۔</translation>
 <translation id="5185500136143151980">انٹرنیٹ نہیں ہے</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287"><ph name="PROFILE_LOCAL_NAME" /> کیلئے اختیارات مینو</translation>
 <translation id="5190926251776387065">پورٹ فعال کریں</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> متعدد فائلز ڈاؤن لوڈ کرنا چاہتا ہے</translation>
 <translation id="5192062846343383368">‏اپنی نگرانی کی ترتیبات دیکھنے کیلئے، Family Link ایپ کھولیں</translation>
@@ -3618,6 +3628,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5495597166260341369">ڈسپلے آن رکھیں</translation>
 <translation id="5496587651328244253">منظم کریں</translation>
 <translation id="5497251278400702716">یہ فائل</translation>
+<translation id="5498967291577176373">اپنے نام، پتہ یا فون نمبر کیلئے ان لائن تجاویز کے ساتھ زيادہ تیزی سے لکھیں</translation>
 <translation id="5499313591153584299">یہ فائل آپ کے کمپیوٹر کیلئے نقصاندہ ہو سکتی ہے۔</translation>
 <translation id="5499453227627332024">‏آپ کے Linux Container کیلئے ایک اپ گریڈ دستیاب ہے۔ آپ بعد میں ترتیبات ایپ سے بھی اپ گریڈ کر سکتے ہیں۔</translation>
 <translation id="5500709606820808700">سیفٹی چیک آج کیا گیا</translation>
@@ -3774,6 +3785,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5689516760719285838">مقام</translation>
 <translation id="56907980372820799">ڈیٹا کو لنک کریں</translation>
 <translation id="5691511426247308406">فیملی</translation>
+<translation id="5691581861107245578">آپ جو ٹائپ کر رہے ہیں اس کی بنیاد پر ایموجی کی تجاویز حاصل کریں</translation>
 <translation id="5691772641933328258">فنگر پرنٹ کی شناخت نہیں ہو سکی</translation>
 <translation id="5692183275898619210">پرنٹنگ مکمل ہو گئی</translation>
 <translation id="569425414730375234">موجودہ پوشیدگی سیشن: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4133,6 +4145,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6124698108608891449">اس سائٹ کو مزید اجازتوں کی ضرورت ہے۔</translation>
 <translation id="6125479973208104919">بد قسمتی سے، آپ کو اس <ph name="DEVICE_TYPE" /> کے لیے اپنا اکاؤنٹ دوبارہ شامل کرنا ہوگا۔</translation>
 <translation id="6129691635767514872">‏Chrome اور مطابقت پذیر آلات سے منتخب ڈیٹا کو ہٹا دیا گیا ہے۔ ممکن ہے کہ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> پر آپ کے Google اکاؤنٹ میں دیگر Google سروسز سے تلاش اور سرگرمی جیسی براؤزنگ کی سرگزشت کی دیگر صورتیں موجود ہوں۔</translation>
+<translation id="6129839611163153407">آپ کے بچے</translation>
 <translation id="6129938384427316298">‏Netscape سرٹیفیکیٹ کا تبصرہ</translation>
 <translation id="6129953537138746214">اسپیس</translation>
 <translation id="6130692320435119637">‏Wi-Fi شامل کریں</translation>
@@ -4173,6 +4186,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6178664161104547336">ایک سرٹیفکیٹ منتخب کریں</translation>
 <translation id="6181431612547969857">ڈاؤن لوڈ مسدود ہوگیا</translation>
 <translation id="6185132558746749656">آلہ کا مقام</translation>
+<translation id="6195446518998936840">‏پیرنٹل کنٹرولز کو سیٹ اپ کرنے کے لیے، آپ کے بچے کے پاس Google اکاؤنٹ ہونا ضروری ہے جس کا نظم کرنے میں آپ کو مدد ملے گی۔ Family Link ایپ کے ذریعہ آپ اسکرین ٹائم کی حدیں مقرر، ویب سائٹس کو منظوری دے یا بلاک کر اور بھی بہت کچھ کر سکتے ہیں۔</translation>
 <translation id="6195693561221576702">اس آلہ کو آف لائن ڈیمو موڈ میں سیٹ نہیں کیا جا سکتا ہے۔</translation>
 <translation id="6196640612572343990">فریق ثالث کوکیز کو مسدود کریں</translation>
 <translation id="6196854373336333322">ایکسٹینشن "<ph name="EXTENSION_NAME" />" نے آپ کی پراکسی ترتیبات کو کنٹرول میں لے لیا ہے، جس کا مطلب ہے کہ آپ آن لائن جو بھی کرتے ہیں وہ اسے تبدیل کر سکتی، بریک کر سکتی یا اس کی جاسوسی کر سکتی ہے۔ اگر آپ کو اس تبدیلی کی وجہ ٹھیک سے معلوم نہیں تو غالباً آپ کو اس کی ضرورت نہیں ہے۔</translation>
@@ -5927,6 +5941,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8372369524088641025">‏غلط WEP کلید</translation>
 <translation id="8372477600026034341">بہت زیادہ میزبان</translation>
 <translation id="8373652277231415614">‏Crostini کی اشتراک کردہ ڈائرکٹریز</translation>
+<translation id="8376384591331888629">اس سائٹ میں فریق ثالث کوکیز شامل ہے</translation>
 <translation id="8378714024927312812">آپ کی تنظیم کے زیر نظم</translation>
 <translation id="8379878387931047019">یہ آلہ اس ویب سائٹ کی درخواست کردہ سیکیورٹی کلید کی قسم کو سپورٹ نہیں کرتا ہے</translation>
 <translation id="8379991678458444070">اس ٹیب کو بُک مارک کر کے یہاں تیزی سے واپس آئیں</translation>
@@ -6010,6 +6025,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8481187309597259238">‏USB کی اجازت کی تصدیق کریں</translation>
 <translation id="8483248364096924578">‏IP پتہ</translation>
 <translation id="8487678622945914333">زوم ان</translation>
+<translation id="8489156414266187072">ذاتی تجاویز صرف آپ کے اکاؤنٹ پر دکھائے جاتے ہیں</translation>
 <translation id="8490896350101740396">مندرجہ ذیل کیوسک ایپس "<ph name="UPDATED_APPS" />" کو اپ ڈیٹ کر دیا گیا ہے۔ اپ ڈیٹ کی کارروائی کو مکمل کرنے کیلئے براہ کرم آلہ کو ریبوٹ کریں۔</translation>
 <translation id="8493236660459102203">مائیکروفون:</translation>
 <translation id="8496717697661868878">یہ پلگ اِن چلائیں</translation>

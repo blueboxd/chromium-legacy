@@ -213,6 +213,12 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       assertEquals(userActionRecorder.pageBlurCount, 1);
     });
 
+    test('userActionClickEvent', () => {
+      assertEquals(userActionRecorder.clickCount, 0);
+      ui.fire('click');
+      assertEquals(userActionRecorder.clickCount, 1);
+    });
+
     test('userActionFocusEvent', function() {
       assertEquals(userActionRecorder.pageFocusCount, 0);
       ui.fire('focus');

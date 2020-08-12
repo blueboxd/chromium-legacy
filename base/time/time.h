@@ -155,6 +155,9 @@ class BASE_EXPORT TimeDelta {
   static TimeDelta FromMachTime(uint64_t mach_time);
 #endif  // defined(OS_MAC)
 
+  // Converts a frequency in Hertz (cycles per second) into a period.
+  static constexpr TimeDelta FromHz(double frequency);
+
   // From Go's doc at https://golang.org/pkg/time/#ParseDuration
   //   [ParseDuration] parses a duration string. A duration string is
   //   a possibly signed sequence of decimal numbers, each with optional
@@ -227,6 +230,10 @@ class BASE_EXPORT TimeDelta {
 #if defined(OS_WIN)
   ABI::Windows::Foundation::DateTime ToWinrtDateTime() const;
 #endif
+
+  // Returns the frequency in Hertz (cycles per second) that has a period of
+  // *this.
+  constexpr double ToHz() const { return FromSeconds(1) / *this; }
 
   // Returns the time delta in some unit. Minimum argument values return as
   // -inf for doubles and min type values otherwise. Maximum ones are treated as
@@ -888,6 +895,11 @@ constexpr TimeDelta TimeDelta::FromMicrosecondsD(double us) {
 // static
 constexpr TimeDelta TimeDelta::FromNanosecondsD(double ns) {
   return FromDouble(ns / Time::kNanosecondsPerMicrosecond);
+}
+
+// static
+constexpr TimeDelta TimeDelta::FromHz(double frequency) {
+  return FromSeconds(1) / frequency;
 }
 
 constexpr int TimeDelta::InHours() const {

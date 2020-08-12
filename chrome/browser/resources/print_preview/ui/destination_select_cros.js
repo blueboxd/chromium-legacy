@@ -21,7 +21,7 @@ import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Base, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {CloudOrigins, Destination, DestinationOrigin, PDF_DESTINATION_KEY, RecentDestination} from '../data/destination.js';
+import {CloudOrigins, Destination, DestinationOrigin, PDF_DESTINATION_KEY, RecentDestination, SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from '../data/destination.js';
 import {ERROR_STRING_KEY_MAP, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity} from '../data/printer_status_cros.js';
 import {NativeLayer, NativeLayerImpl} from '../native_layer.js';
 import {getSelectDropdownBackground} from '../print_preview_utils.js';
@@ -108,6 +108,22 @@ Polymer({
       type: Boolean,
       computed: 'computeIsCurrentDestinationCrosLocal_(destination)',
       reflectToAttribute: true,
+    },
+
+    /** @private */
+    saveToDriveFlagEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('printSaveToDrive');
+      },
+      readOnly: true,
+    },
+
+    /** @private */
+    driveDestinationKeyCros_: {
+      type: String,
+      computed:
+          'computeDriveDestinationKeyCros_(driveDestinationKey, saveToDriveFlagEnabled_)',
     },
   },
 
@@ -403,5 +419,14 @@ Polymer({
         this.$$('#dropdown')
             .shadowRoot.querySelectorAll('.list-item:not([hidden])') :
         this.shadowRoot.querySelectorAll('option:not([hidden])');
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeDriveDestinationKeyCros_: function() {
+    return this.saveToDriveFlagEnabled_ ? SAVE_TO_DRIVE_CROS_DESTINATION_KEY :
+                                          this.driveDestinationKey;
   }
 });

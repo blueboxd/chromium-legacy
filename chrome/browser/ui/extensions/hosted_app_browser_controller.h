@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class Browser;
@@ -62,8 +63,16 @@ class HostedAppBrowserController : public web_app::AppBrowserController,
   // Will return nullptr if the extension has been uninstalled.
   const Extension* GetExtension() const;
 
+  // Helper function to call AppServiceProxy to load icon.
+  void LoadAppIcon(bool allow_placeholder_icon) const;
+  // Invoked when the icon is loaded.
+  void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
+
+  gfx::ImageSkia app_icon_;
+
   std::unique_ptr<ExtensionUninstallDialog> uninstall_dialog_;
 
+  base::WeakPtrFactory<HostedAppBrowserController> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(HostedAppBrowserController);
 };
 

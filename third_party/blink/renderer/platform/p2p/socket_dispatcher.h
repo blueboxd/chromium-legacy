@@ -82,6 +82,7 @@ class PLATFORM_EXPORT P2PSocketDispatcher
   void RequestNetworkEventsIfNecessary();
 
   void OnConnectionError();
+  void ReconnectP2PSocketManager();
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 

@@ -506,6 +506,7 @@
 <translation id="6972754398087986839">시작하기</translation>
 <translation id="6981982820502123353">접근성</translation>
 <translation id="698231206551913481">이 사용자를 제거하면 해당 사용자와 연결되어 있는 모든 파일 및 로컬 데이터가 영구적으로 삭제됩니다.</translation>
+<translation id="7007983414944123363">PIN 또는 비밀번호를 확인할 수 없습니다. 다시 시도하세요.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />에 다시 사용해 주세요.</translation>
 <translation id="7025533177575372252">휴대전화와 <ph name="DEVICE_NAME" /> 연결</translation>
 <translation id="7026338066939101231">줄이기</translation>
@@ -551,6 +552,7 @@
 <translation id="7568294522609223312">자동 클릭 사용 중지</translation>
 <translation id="7568637526529101738">마우스 오른쪽 버튼으로 클릭하거나 길게 누르면 어시스턴트가 선택한 항목의 정의 또는 단위 변환과 같은 정보를 표시합니다.</translation>
 <translation id="7569509451529460200">점자와 ChromeVox가 사용 설정되었습니다.</translation>
+<translation id="7579778809502851308">화면 캡처</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7600875258240007829">모든 알림 보기</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />°F</translation>
@@ -669,6 +671,7 @@
 <translation id="8841375032071747811">뒤로 버튼</translation>
 <translation id="8843682306134542540">회전 잠금을 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">여전히 PIN 또는 비밀번호를 확인할 수 없습니다. 참고: 최근에 비밀번호를 변경한 경우 이전 비밀번호를 사용해 보세요. 로그아웃하고 나면 새로운 비밀번호가 적용됩니다.</translation>
 <translation id="8870509716567206129">앱이 화면 분할을 지원하지 않습니다.</translation>
 <translation id="8874184842967597500">연결되지 않음</translation>
 <translation id="8877788021141246043">알림을 설정해 줘</translation>

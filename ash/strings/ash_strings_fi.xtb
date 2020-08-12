@@ -508,6 +508,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="6972754398087986839">Aloitusopas</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="698231206551913481">Kun käyttäjä poistetaan, kaikki kyseiseen käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan pysyvästi.</translation>
+<translation id="7007983414944123363">PIN-koodiasi tai salasanaasi ei voitu vahvistaa. Yritä uudelleen.</translation>
 <translation id="7015766095477679451">Palaa kello <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Yhdistä <ph name="DEVICE_NAME" /> puhelimeesi</translation>
 <translation id="7026338066939101231">Vähennä</translation>
@@ -553,6 +554,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="7568294522609223312">Lopeta automaattinen klikkaaminen</translation>
 <translation id="7568637526529101738">Kun klikkaat jotain kakkospainikkeella tai painat sitä pitkään, Assistant näyttää valintaasi liittyviä tietoja, kuten määritelmän tai yksikkömuunnoksen.</translation>
 <translation id="7569509451529460200">Pistekirjoitus ja ChromeVox käytössä</translation>
+<translation id="7579778809502851308">Kuvakaappaus</translation>
 <translation id="7593891976182323525">Haku tai Shift</translation>
 <translation id="7600875258240007829">Näytä kaikki ilmoitukset</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
@@ -671,6 +673,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="8841375032071747811">Takaisin-painike</translation>
 <translation id="8843682306134542540">Laita kierron lukitus päälle tai pois päältä. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Haku+Esc</translation>
+<translation id="8853703225951107899">PIN-koodiasi tai salasanaasi ei voitu vieläkään vahvistaa. Huom. Jos vaihdoit salasanasi äskettäin, käytä vanhaa salasanaa. Uusi salasana otetaan käyttöön kirjauduttuasi ulos.</translation>
 <translation id="8870509716567206129">Sovellus ei tue jaetun näytön tilaa.</translation>
 <translation id="8874184842967597500">Ei yhdistetty</translation>
 <translation id="8877788021141246043">Aseta muistutus</translation>

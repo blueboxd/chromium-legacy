@@ -73,6 +73,7 @@
 
       Si la règle est définie sur "False" ou n'est pas définie, ces informations ne sont pas transmises.
       Si elle est définie sur "True", les informations concernant le rétroéclairage de l'appareil sont transmises.</translation>
+<translation id="1076751984131277498">Liste d'autorisation des appareils USB amovibles</translation>
 <translation id="1079801999187584280">Interdire l'utilisation des outils pour les développeurs</translation>
 <translation id="1087437665304381368">Cette règle permet de ne contrôler que le mode développeur <ph name="PRODUCT_OS_NAME" />. Si vous voulez bloquer l'accès aux options pour les développeurs Android, vous devez définir la règle <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">La liste des règles Chrome Enterprise a changé d'adresse ! Pensez à mettre à jour vos favoris. Le lien correct est le suivant : <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -543,6 +544,9 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
 
       Si vous ne configurez pas cette règle, la prédiction réseau est activée, mais les utilisateurs peuvent la modifier.</translation>
 <translation id="1865417998205858223">Autorisations de clés</translation>
+<translation id="1866563857170942397">Définit la liste des utilisateurs autorisés à se connecter à l'appareil. Les entrées se présentent sous la forme suivante : <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> (<ph name="USER_WHITELIST_ENTRY_EXAMPLE" />, par exemple). Pour autoriser des utilisateurs arbitraires sur un domaine, utilisez les entrées sous la forme suivante : <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
+
+       Si cette règle n'est pas configurée, aucune restriction ne s'applique quant aux utilisateurs autorisés à se connecter. Notez que la création d'utilisateurs nécessite toujours de configurer correctement la règle <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
 <translation id="186719019195685253">Indique l'action à effectuer lorsque le délai d'inactivité est atteint en cas de fonctionnement sur une source d'alimentation CA.</translation>
 <translation id="187819629719252111">Autorise l'accès aux fichiers locaux de la machine en autorisant <ph name="PRODUCT_NAME" /> à afficher des boîtes de dialogue de sélection de fichiers. 
 
@@ -1243,11 +1247,11 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 <translation id="2787774054174244402">Si vous définissez cette règle sur "True", les utilisateurs ne peuvent pas modifier les fichiers stockés sur les périphériques de stockage externes.
 
       À moins que les supports de stockage externes ne soient bloqués, si vous définissez la règle ExternalStorageReadOnly sur "False" ou qu'elle n'est pas configurée, les utilisateurs peuvent créer et modifier des fichiers sur les périphériques de stockage externes accessibles en écriture. (Vous pouvez bloquer les supports de stockage externes en définissant la règle ExternalStorageDisable sur "True".)</translation>
-<translation id="2796714419743648316">Liste d'autorisation des restrictions temporelles spécifiques à chaque application</translation>
+<translation id="2796714419743648316">Liste d'autorisation des limites de temps spécifiques à chaque application</translation>
 <translation id="2796896367838042659">Cette règle détermine les applications et URL qui doivent être ajoutées à la liste blanche concernant les restrictions d'utilisation spécifiques pour chaque application.
-        La liste blanche configurée est appliquée aux applications installées sur <ph name="PRODUCT_OS_NAME" /> pour l'utilisateur concerné avec des restrictions temporelles spécifiques à chaque application.
+        La liste blanche configurée est appliquée aux applications installées sur <ph name="PRODUCT_OS_NAME" /> pour l'utilisateur concerné avec des limites de temps spécifiques à chaque application.
         La liste blanche configurée ne peut être appliquée qu'aux comptes utilisateur enfants et prend effet lorsque la règle <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> est définie.
-        La liste blanche configurée est appliquée aux applications et aux URL afin d'éviter tout blocage par des restrictions temporelles spécifiques à chaque application.
+        La liste blanche configurée est appliquée aux applications et aux URL afin d'éviter tout blocage par des limites de temps spécifiques à chaque application.
         L'accès aux URL figurant sur liste blanche n'est pas comptabilisé dans la limite de temps de Chrome.
         Ajoutez des expressions régulières d'URL à |url_list| pour ajouter à la liste blanche les URL correspondant à une expression régulière de la liste.
         Pour placer une application sur la liste blanche, ajoutez-la à |app_list| en indiquant son |app_id| et son |app_type|.
@@ -1836,6 +1840,9 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="3647212518036289905">Permet de spécifier la bibliothèque GSSAPI à utiliser pour l'authentification HTTP. Vous pouvez indiquer le nom de la bibliothèque ou son chemin d'accès complet.
 
       Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> utilise un nom de bibliothèque par défaut.</translation>
+<translation id="3653234084868565720">Permet de spécifier si <ph name="PRODUCT_OS_NAME" /> autorise la création de comptes utilisateur. Si cette règle est définie sur "False", les utilisateurs qui n'ont pas de compte ne pourront pas se connecter.
+
+      Si cette règle est définie sur "True" ou si elle n'est pas configurée, la création de comptes utilisateur est autorisée à condition que <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> n'empêche pas l'utilisateur de se connecter.</translation>
 <translation id="3653237928288822292">Icône du moteur de recherche par défaut</translation>
 <translation id="3654906736796256792">Autoriser l'exécution en bac à sable du processus audio</translation>
 <translation id="3657998022005237040">Bloquer le téléchargement des types de fichiers non acceptés</translation>
@@ -3191,6 +3198,11 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si elle n'est pas spécifiée, l'URL utilisée pour récupérer la valeur de départ des variantes n'est pas modifiée.</translation>
 <translation id="5561811616825571914">Sélectionner automatiquement des certificats client pour ces sites sur l'écran de connexion</translation>
+<translation id="5564345250641049313">Définit la liste des utilisateurs autorisés à se connecter à l'appareil. Les entrées se présentent sous la forme suivante : <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> (<ph name="USER_ALLOWLIST_ENTRY_EXAMPLE" />, par exemple). Pour autoriser des utilisateurs arbitraires sur un domaine, utilisez les entrées sous la forme suivante : <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
+
+      Si cette règle n'est pas configurée, aucune restriction ne s'applique quant aux utilisateurs autorisés à se connecter. Notez que la création d'utilisateurs nécessite toujours de configurer correctement la règle <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.
+
+      Cette règle étant obsolète, veuillez utiliser la règle <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> à la place.</translation>
 <translation id="5564865786900450806">Supprime l'avertissement qui s'affiche lorsque <ph name="PRODUCT_NAME" /> s'exécute sur un ordinateur ou un système d'exploitation qui n'est plus accepté.
 
       Si cette règle est définie sur "False" ou si elle n'est pas définie, les avertissements s'affichent sur les ordinateurs ou les systèmes d'exploitation non pris en charge.</translation>
@@ -3565,6 +3577,11 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
           La méthode recommandée pour verrouiller l'écran en cas d'inactivité consiste à activer le verrouillage de l'écran lors de l'arrêt de <ph name="PRODUCT_OS_NAME" />, qui survient au terme de la durée d'inactivité définie. Cette règle ne devrait être utilisée que lorsque le verrouillage de l'écran doit avoir lieu bien avant l'arrêt du système, ou lorsque l'arrêt du système en cas d'inactivité n'est absolument pas souhaitable.
           La valeur de la règle doit être définie en millisecondes. Les valeurs ne peuvent pas être supérieures au délai d'inactivité.</translation>
+<translation id="6096729330325888677">Permet d'établir la liste des appareils USB que les utilisateurs peuvent dissocier de leur pilote de noyau pour s'en servir via l'API chrome.usb directement au sein d'une application Web. Les entrées sont des paires composées d'un identifiant de fournisseur USB et d'un code de produit associé à un appareil spécifique.
+
+      Si cette règle n'est pas configurée, la liste des appareils USB amovibles est vide.
+
+      Cette règle étant obsolète, veuillez utiliser la règle <ph name="USB_DETACHABLE_ALLOWLIST" /> à la place.</translation>
 <translation id="6097601282776163274">Activer la collecte des données anonymes incluant les URL</translation>
 <translation id="6099853574908182288">Mode d'impression par défaut couleur</translation>
 <translation id="6102342563050263313">Activer le défilement jusqu'au texte spécifié dans des fragments d'URL</translation>
@@ -3719,10 +3736,10 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
           Le message d'avertissement ne s'affiche que si le dépassement du délai d'inactivité entraîne une déconnexion ou l'arrêt de l'appareil.</translation>
 <translation id="6334330017384340264">Cette règle détermine les applications et URL qui doivent être autorisées pour les restrictions d'utilisation spécifiques pour chaque application.
-        La liste d'autorisation configurée est destinée aux applications installées sur <ph name="PRODUCT_OS_NAME" /> pour l'utilisateur concerné avec des restrictions temporelles spécifiques à chaque application.
+        La liste d'autorisation configurée est destinée aux applications installées sur <ph name="PRODUCT_OS_NAME" /> pour l'utilisateur concerné avec des limites de temps spécifiques à chaque application.
         La liste d'autorisation configurée ne peut être appliquée qu'aux comptes utilisateur enfants et prend effet lorsque la règle <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> est définie.
-        La liste d'autorisation configurée est destinée aux applications et aux URL afin d'éviter tout blocage par des restrictions temporelles spécifiques à chaque application.
-        L'accès aux URL autorisés n'est pas comptabilisé dans la limite de temps de Chrome.
+        La liste d'autorisation configurée est destinée aux applications et aux URL afin d'éviter tout blocage par des limites de temps spécifiques à chaque application.
+        L'accès aux URL autorisées n'est pas comptabilisé dans la limite de temps de Chrome.
         Ajoutez des expressions régulières d'URL à |url_list| pour autoriser les URL correspondant à une des expressions régulières de la liste.
         Pour autoriser une application, ajoutez-la à |app_list| en indiquant son |app_id| et son |app_type|.
        </translation>
@@ -4206,6 +4223,16 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Si cette règle n'est pas configurée, l'étagère est placée par défaut au bas de l'écran. Toutefois, l'utilisateur peut la mettre à un autre endroit.</translation>
 <translation id="7040229947030068419">Exemple de valeur :</translation>
 <translation id="7044883996351280650">Gérer le service de sauvegarde et de restauration Android</translation>
+<translation id="7063842402585660314">Liste des applications autorisées sur l'écran de verrouillage de <ph name="PRODUCT_OS_NAME" />.
+
+      Si l'application de prise de notes préférée est activée sur l'écran de verrouillage, celui-ci inclut un élément d'interface utilisateur pour lancer l'application en question.
+      Une fois lancée, l'application peut créer une fenêtre en haut de l'écran de verrouillage, ainsi que des éléments de données (des notes) dans le contexte de l'écran de verrouillage. L'application peut importer les notes créées dans la session de l'utilisateur principal (lorsque la session est déverrouillée). Actuellement, seules les applications de prise de notes Chrome sont acceptées sur l'écran de verrouillage.
+
+      Si cette règle est configurée, l'utilisateur n'est autorisé à activer une application sur l'écran de verrouillage que si l'ID d'extension de l'application figure dans la liste.
+      Par conséquent, si la liste est vide, la prise de notes est entièrement désactivée sur l'écran de verrouillage.
+      Notez que si la règle inclut un ID d'application, cela ne signifie pas nécessairement que l'utilisateur peut activer l'application en question comme application de prise de notes sur l'écran de verrouillage. Par exemple, dans Chrome 61, l'accès de l'ensemble des applications disponibles est également limité par la plate-forme.
+
+      Si cette règle n'est pas configurée, aucune restriction qu'elle impose n'est appliquée à l'ensemble des applications que l'utilisateur peut activer sur l'écran de verrouillage.</translation>
 <translation id="7063895219334505671">Autoriser les fenêtres pop-up sur ces sites</translation>
 <translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le bureau</translation>
 <translation id="7068108874199666656">Permet de transférer l'application de la configuration réseau à tous les utilisateurs d'un appareil fonctionnant avec <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert.</translation>
@@ -5115,6 +5142,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
           Pour en savoir plus sur les formats d'URL valides, consultez cette page : https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8357681633047935212">Limiter la durée des sessions utilisateur</translation>
+<translation id="8357989008292691856">Liste des utilisateurs autorisés à se connecter</translation>
 <translation id="8359734107661430198">Activer l'API ExampleDeprecatedFeature jusqu'au 09/02/2008</translation>
 <translation id="8367209241899435947">Activer Chrome Cleanup sur Windows</translation>
 <translation id="8367473200119029349">Création de rapports cloud</translation>

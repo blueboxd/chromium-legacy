@@ -7,6 +7,7 @@ ContentSettingBubbleDialogTest.*
 ExtensionInstallDialogViewInteractiveBrowserTest.*
 ExtensionUninstallDialogViewInteractiveBrowserTest.*
 *EyeDropperBrowserTest.*
+OutdatedUpgradeBubbleTest.*
 
 # TODO(crbug.com/1102894): Re-enable the following tests.
 # FeaturePromoDialogTest.*
@@ -15,7 +16,6 @@ ExtensionUninstallDialogViewInteractiveBrowserTest.*
 # HungRendererDialogViewBrowserTest.*
 # ImportLockDialogViewBrowserTest.*
 # NativeFileSystemUsageBubbleViewTest.*
-# OutdatedUpgradeBubbleTest.*
 # PageInfoBubbleViewBrowserTest.*
 # *PasswordBubbleBrowserTest.*
 # PasswordReuseModalWarningTest.*
@@ -32,6 +32,6 @@ ExtensionUninstallDialogViewInteractiveBrowserTest.*
 
 # This test uses random network port and shows it on ui.
 -ContentSettingBubbleDialogTest.InvokeUi_popups
--OutdatedUpgradeBubbleTest.InvokeUi_Critical__windows
+-OutdatedUpgradeBubbleTest.InvokeUi_Critical
 # TODO(crbug.com/1108988): Fix this flakiness test.
 -BookmarkBubbleViewBrowserTest.InvokeUi_bookmark_details_signed_in

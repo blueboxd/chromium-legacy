@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">Vytvořeno</translation>
 <translation id="1067291318998134776">Linux (beta)</translation>
 <translation id="1067922213147265141">Další služby Google</translation>
+<translation id="1068961867683064946">Vytvořit dítěti účet Google</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Jiný program ve vašem počítači nainstaloval rozšíření, které může měnit funkce Chromu.
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660">Tlačítko zpět na podstránce <ph name="SUBPAGE_TITLE" /></translation>
 <translation id="1322046419516468189">K zobrazení a správě uložených hesel můžete použít svůj <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1324106254079708331">Chrání osobní účty Google kohokoliv, kdo by mohl být vystaven cíleným útokům</translation>
+<translation id="1325985428688410772">Přidat profil</translation>
 <translation id="1326317727527857210">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, přihlaste se do Chromu.</translation>
 <translation id="1327074568633507428">Tiskárna ve službě Google Cloud Print</translation>
 <translation id="1327272175893960498">Lístky Kerberos</translation>
@@ -1082,6 +1084,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2307462900900812319">Konfigurovat síť</translation>
 <translation id="230927227160767054">Stránka chce instalovat obslužný nástroj služby.</translation>
 <translation id="2309620859903500144">Tomuto webu byl zablokován přístup k senzorům pohybu nebo osvětlení.</translation>
+<translation id="2314873619957287124">Nastavte pravidla pro pohyb v digitálním světě, která vašemu dítěti pomohou při učení, hraní a objevování nových věcí</translation>
 <translation id="2315414688463285945">Při konfiguraci souborů systému Linux došlo k chybě. Zkuste to znovu.</translation>
 <translation id="2315587498123194634">Odeslat odkaz na zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Ne, děkuji</translation>
@@ -1093,6 +1096,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2322318151094136999">Zeptat se, když chce web získat přístup k sériovým portům (doporučeno)</translation>
 <translation id="2323018538045954000">Uložené sítě Wi-Fi</translation>
 <translation id="2325444234681128157">Zapamatovat heslo</translation>
+<translation id="2326160999284776503">Přihlásit se pomocí účtu Google dítěte</translation>
 <translation id="2326188115274135041">Pokud chcete zapnout automatické odemykání, potvrďte PIN</translation>
 <translation id="2326931316514688470">Znovu načíst &amp;aplikaci</translation>
 <translation id="2327492829706409234">Aktivovat aplikaci</translation>
@@ -1151,6 +1155,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2384436799579181135">Došlo k chybě. Zkontrolujte tiskárnu a zkuste to znovu.</translation>
 <translation id="2387052489799050037">Přechod na plochu</translation>
 <translation id="2387458720915042159">Typ připojení k proxy serveru</translation>
+<translation id="2391082728065870591">Odeslat zpětnou vazbu</translation>
 <translation id="2391419135980381625">Standardní písmo</translation>
 <translation id="2392163307141705938">Byl vyčerpán časový limit, který pro <ph name="IDS_SHORT_PRODUCT_NAME" /> nastavili rodiče.</translation>
 <translation id="2392369802118427583">Aktivovat</translation>
@@ -1280,6 +1285,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2537178555904266562">Při synchronizaci došlo k chybě</translation>
 <translation id="2537395079978992874">Web <ph name="ORIGIN" /> může zobrazovat a upravovat následující soubory a složky</translation>
 <translation id="2537927931785713436">Kontrola obrazu virtuálního počítače</translation>
+<translation id="2538084450874617176">Kdo toto zařízení <ph name="DEVICE_TYPE" /> používá?</translation>
 <translation id="2538361623464451692">Synchronizace deaktivována</translation>
 <translation id="2540449034743108469">Chcete-li naslouchat aktivitám rozšíření, stiskněte Spustit</translation>
 <translation id="2541002089857695151">Optimalizovat odesílání celé obrazovky?</translation>
@@ -2740,6 +2746,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4364327530094270451">Meloun</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> sdílí okno.</translation>
 <translation id="4364830672918311045">Zobrazování oznámení</translation>
+<translation id="4368115171699243057">Nastavení zařízení <ph name="DEVICE_TYPE" /> pro dítě</translation>
 <translation id="437004882363131692">Nechte si zasílat tipy, nabídky a aktuality týkající se zařízení <ph name="DEVICE_TYPE" /> a poskytujte nám zpětnou vazbu. Můžete se kdykoli odhlásit.</translation>
 <translation id="4370975561335139969">Zadaný e-mail a heslo se neshodují.</translation>
 <translation id="4374831787438678295">Instalační program Linuxu</translation>
@@ -2900,6 +2907,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4565377596337484307">Skrýt heslo</translation>
 <translation id="4565917129334815774">Ukládat systémové protokoly</translation>
 <translation id="456717285308019641">Jazyk stránky k překladu</translation>
+<translation id="4567533462991917415">Další uživatele můžete kdykoli přidat po dokončení nastavení. Každý uživatel si může svůj účet přizpůsobit a chránit soukromí svých dat.</translation>
 <translation id="4567772783389002344">Přidat slovo</translation>
 <translation id="4568025708905928793">Je požadován bezpečnostní klíč</translation>
 <translation id="4568213207643490790">Lituji, účty Google na tomto zařízení nejsou povoleny.</translation>
@@ -2951,6 +2959,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4628762811416793313">Nastavení kontejneru systému Linux nebylo dokončeno. Zkuste to znovu.</translation>
 <translation id="4633003931260532286">Rozšíření vyžaduje rozhraní <ph name="IMPORT_NAME" /> s minimální verzí <ph name="IMPORT_VERSION" />, máte však nainstalovanou pouze verzi <ph name="INSTALLED_VERSION" /></translation>
 <translation id="4633757335284074492">Zálohování na Disk Google. Snadno obnovte data nebo kdykoliv přejděte na jiné zařízení. Tato záloha obsahuje data aplikací. Zálohy se nahrávají do Googlu a šifrují pomocí hesla účtu Google dítěte.</translation>
+<translation id="4634575639321169635">Nastavte si toto zařízení jako pracovní nebo soukromé</translation>
 <translation id="4634771451598206121">Znovu přihlásit...</translation>
 <translation id="4635072447747973225">Odinstalovat Crostini</translation>
 <translation id="4635398712689569051">Stránka <ph name="PAGE_NAME" /> hostům není k dispozici.</translation>
@@ -3369,6 +3378,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5185386675596372454">Nejnovější verze rozšíření <ph name="EXTENSION_NAME" /> byla zakázána, protože vyžaduje další oprávnění.</translation>
 <translation id="5185500136143151980">Nejste připojeni k internetu</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287">Nabídka možností pro profil <ph name="PROFILE_LOCAL_NAME" /></translation>
 <translation id="5190926251776387065">Aktivovat port</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> se pokouší stáhnout několik souborů</translation>
 <translation id="5192062846343383368">Chcete-li zobrazit nastavení dohledu, otevřete aplikaci Family Link</translation>
@@ -3615,6 +3625,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5495597166260341369">Ponechat displej zapnutý</translation>
 <translation id="5496587651328244253">Uspořádat</translation>
 <translation id="5497251278400702716">Tento soubor</translation>
+<translation id="5498967291577176373">Rychlejší psaní pomocí vložených návrhů jména, adresy nebo telefonního čísla</translation>
 <translation id="5499313591153584299">Tento soubor může poškodit váš počítač.</translation>
 <translation id="5499453227627332024">K dispozici je upgrade kontejneru Linuxu. Upgrade také můžete spustit později v Nastavení.</translation>
 <translation id="5500709606820808700">Bezpečnostní kontrola proběhla dnes</translation>
@@ -3771,6 +3782,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5689516760719285838">Poloha</translation>
 <translation id="56907980372820799">Propojit data</translation>
 <translation id="5691511426247308406">Rodina</translation>
+<translation id="5691581861107245578">Zobrazovat návrhy emodži podle toho, co píšete</translation>
 <translation id="5691772641933328258">Otisk prstu nebyl rozpoznán</translation>
 <translation id="5692183275898619210">Tisk dokončen</translation>
 <translation id="569425414730375234">Aktuální anonymní relace: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4130,6 +4142,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6124698108608891449">Web potřebuje další oprávnění.</translation>
 <translation id="6125479973208104919">Do zařízení <ph name="DEVICE_TYPE" /> je nutné znovu přidat účet.</translation>
 <translation id="6129691635767514872">Vybraná data byla z Chromu a synchronizovaných zařízení odstraněna. Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google, například vyhledávací dotazy a aktivita z ostatních služeb Google.</translation>
+<translation id="6129839611163153407">Vaše dítě</translation>
 <translation id="6129938384427316298">Komentář certifikátu Netscape</translation>
 <translation id="6129953537138746214">Mezera</translation>
 <translation id="6130692320435119637">Přidat Wi-Fi</translation>
@@ -4170,6 +4183,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6178664161104547336">Vyberte certifikát</translation>
 <translation id="6181431612547969857">Stahování zablokováno</translation>
 <translation id="6185132558746749656">Poloha zařízení</translation>
+<translation id="6195446518998936840">Aby bylo možné nastavit rodičovskou kontrolu, vaše dítě musí mít účet Google, který mu pomůžete spravovat. Pomocí aplikace Family Link můžete nastavit limity času stráveného na zařízení, schválit nebo zablokovat webové stránky a provádět další akce.</translation>
 <translation id="6195693561221576702">Toto zařízení nelze nastavit v offline ukázkovém režimu.</translation>
 <translation id="6196640612572343990">Blokovat soubory cookie třetích stran</translation>
 <translation id="6196854373336333322">Rozšíření <ph name="EXTENSION_NAME" /> převzalo kontrolu nad nastavením proxy serveru, což znamená, že může změnit, narušit nebo sledovat vše, co děláte na internetu. Pokud si nejste jisti, proč k tomu došlo, zřejmě se jedná o nežádoucí změnu.</translation>
@@ -5923,6 +5937,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8372369524088641025">Chybný klíč WEP</translation>
 <translation id="8372477600026034341">Extra hostitelské servery</translation>
 <translation id="8373652277231415614">Sdílené adresáře Crostini</translation>
+<translation id="8376384591331888629">Včetně souborů cookie třetích stran na tomto webu</translation>
 <translation id="8378714024927312812">Spravováno vaší organizací</translation>
 <translation id="8379878387931047019">Toto zařízení typ bezpečnostního klíče požadovaný tímto webem nepodporuje</translation>
 <translation id="8379991678458444070">Přidejte si tuto kartu do záložek, abyste se sem mohli rychle vrátit</translation>
@@ -6006,6 +6021,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8481187309597259238">Potvrzení oprávnění USB</translation>
 <translation id="8483248364096924578">IP adresa</translation>
 <translation id="8487678622945914333">Přiblížit</translation>
+<translation id="8489156414266187072">Osobní návrhy jsou zobrazovány jen ve vašem účtu</translation>
 <translation id="8490896350101740396">Byly aktualizovány následující terminálové aplikace: <ph name="UPDATED_APPS" />. Chcete-li proces aktualizace dokončit, restartujte zařízení.</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
 <translation id="8496717697661868878">Spustit plugin</translation>

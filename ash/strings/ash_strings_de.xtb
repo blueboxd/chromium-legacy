@@ -506,6 +506,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="6972754398087986839">Erste Schritte</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="698231206551913481">Durch das Entfernen des Nutzers werden alle mit ihm verknüpften Dateien und lokalen Daten endgültig gelöscht.</translation>
+<translation id="7007983414944123363">Ihre PIN oder Ihr Passwort konnten nicht bestätigt werden. Versuchen Sie es noch einmal.</translation>
 <translation id="7015766095477679451">Um <ph name="COME_BACK_TIME" /> kannst du weitermachen.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> mit Ihrem Smartphone verbinden</translation>
 <translation id="7026338066939101231">Verringern</translation>
@@ -551,6 +552,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="7568294522609223312">Automatische Klicks deaktivieren</translation>
 <translation id="7568637526529101738">Wenn Sie mit der rechten Maustaste klicken oder lange drücken, zeigt Assistant Informationen wie die Definition oder das Umrechnen von Einheiten für Ihre Auswahl.</translation>
 <translation id="7569509451529460200">Braille und ChromeVox sind aktiviert</translation>
+<translation id="7579778809502851308">Bildschirmaufnahme</translation>
 <translation id="7593891976182323525">Suchen oder Umschalttaste</translation>
 <translation id="7600875258240007829">Alle Benachrichtigungen ansehen</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
@@ -669,6 +671,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="8841375032071747811">Schaltfläche "Zurück"</translation>
 <translation id="8843682306134542540">Rotationssperre an/aus. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Suche + Esc</translation>
+<translation id="8853703225951107899">Ihre PIN oder Ihr Passwort konnten noch immer nicht bestätigt werden. Hinweis: Wenn Sie kürzlich Ihr Passwort geändert haben, verwenden Sie Ihr altes Passwort. Ihr neues Passwort wird übernommen, sobald Sie sich abmelden.</translation>
 <translation id="8870509716567206129">Das Teilen des Bildschirms wird in dieser App nicht unterstützt.</translation>
 <translation id="8874184842967597500">Nicht verbun.</translation>
 <translation id="8877788021141246043">Erinnerungen einrichten</translation>

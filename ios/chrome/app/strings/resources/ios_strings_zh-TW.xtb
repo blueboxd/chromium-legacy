@@ -244,7 +244,7 @@
 <translation id="3638472932233958418">預先載入網頁</translation>
 <translation id="3670030362669914947">號碼</translation>
 <translation id="3691593122358196899">已將書籤加入「<ph name="FOLDER_TITLE" />」</translation>
-<translation id="3740397331642243698">在無痕模式中透過 Google Chrome 開啟輸入的網址。</translation>
+<translation id="3740397331642243698">在 Google Chrome 無痕模式中開啟輸入的網址。</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3775743491439407556">同步功能無法正常運作</translation>
 <translation id="3779810277399252432">沒有網際網路連線。</translation>
@@ -393,6 +393,7 @@
 <translation id="5614553682702429503">要儲存密碼嗎？</translation>
 <translation id="5626245204502895507">目前無法下載這個檔案。</translation>
 <translation id="5631164295104953411">新增付款方式</translation>
+<translation id="5653058065071344726">由貴機構管理。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="5659593005791499971">電子郵件</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">版本 <ph name="PRODUCT_VERSION" /></translation>
@@ -437,6 +438,7 @@
 <translation id="6108923351542677676">設定中…</translation>
 <translation id="6119050551270742952">目前的網頁處於無痕模式</translation>
 <translation id="6122191549521593678">線上</translation>
+<translation id="6125339936101702016">由「<ph name="COMPANY" />」管理。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">已移除項目</translation>
 <translation id="6136914049981179737">幾秒前</translation>
 <translation id="616831107264507309">稍後閱讀</translation>
@@ -614,7 +616,7 @@
 <translation id="8027581147000338959">在新視窗中開啟</translation>
 <translation id="804427445359061970">這裡會顯示你在其他裝置上查看的分頁</translation>
 <translation id="8059533439631660104">收合這個專區。</translation>
-<translation id="8065292699993359127">在無痕模式中透過 Chrome 開啟網址</translation>
+<translation id="8065292699993359127">在 Chrome 無痕模式中開啟網址</translation>
 <translation id="806745655614357130">分開保留我的資料</translation>
 <translation id="8073670137947914548">下載完成</translation>
 <translation id="8073872304774253879">改善搜尋和瀏覽體驗</translation>

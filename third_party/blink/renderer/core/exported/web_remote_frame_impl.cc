@@ -89,7 +89,6 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
   WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
       mojom::blink::TreeScopeType::kDocument, client, interface_registry,
       associated_interface_provider, frame_token);
-  frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   // It would be nice to DCHECK that the main frame is not set yet here.
   // Unfortunately, there is an edge case with a pending RenderFrameHost that
@@ -102,6 +101,8 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
   frame->InitializeCoreFrame(
       page, nullptr, g_null_atom,
       opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr);
+  Frame* opener_frame = opener ? ToCoreFrame(*opener) : nullptr;
+  ToCoreFrame(*frame)->SetOpenerDoNotNotify(opener_frame);
   return frame;
 }
 
@@ -223,7 +224,6 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
   auto* child = MakeGarbageCollected<WebRemoteFrameImpl>(
       scope, client, interface_registry, associated_interface_provider,
       frame_token);
-  child->SetOpener(opener);
   AppendChild(child);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
       frame_policy, WebFrameOwnerProperties(), frame_owner_element_type);
@@ -236,6 +236,8 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
 
   child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name,
                              window_agent_factory);
+  Frame* opener_frame = opener ? ToCoreFrame(*opener) : nullptr;
+  ToCoreFrame(*child)->SetOpenerDoNotNotify(opener_frame);
   return child;
 }
 

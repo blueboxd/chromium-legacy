@@ -80,6 +80,7 @@ class ChromeTestExtensionLoader {
   void set_wait_for_renderers(bool wait_for_renderers) {
     wait_for_renderers_ = wait_for_renderers;
   }
+  void set_pem_path(const base::FilePath& pem_path) { pem_path_ = pem_path; }
 
  private:
   // Packs the extension at |unpacked_path| and returns the path to the created

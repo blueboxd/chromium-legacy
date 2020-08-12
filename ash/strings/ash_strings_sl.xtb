@@ -92,6 +92,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="1962969542251276847">Zakleni zaslon</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Pozdravljeni, <ph name="USERNAME" /></translation>
+<translation id="1975500003782052650">Nedavni prenosi</translation>
 <translation id="1978498689038657292">Vnos besedila</translation>
 <translation id="1993072747612765854">Več informacij o najnovejši posodobitvi za <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Izklop</translation>
@@ -254,6 +255,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="3798670284305777884">Zvočnik (vgrajeni)</translation>
 <translation id="3799080171973636491">Pritisnili ste bližnjično tipko za celozaslonsko lupo. Ali jo želite vklopiti?</translation>
 <translation id="380165613292957338">Živijo. Kako lahko pomagam?</translation>
+<translation id="3826099427150913765">Preklopi na geslo</translation>
 <translation id="383629559565718788">Prikaz nastavitev tipkovnice</translation>
 <translation id="3846575436967432996">Ni podatkov o omrežju</translation>
 <translation id="385051799172605136">Nazaj</translation>
@@ -284,6 +286,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="4181841719683918333">Jeziki</translation>
 <translation id="4195877955194704651">Gumb za samodejne klike</translation>
 <translation id="4197790712631116042">Izklopljeno</translation>
+<translation id="4212472694152630271">Preklopi na kodo PIN</translation>
 <translation id="4215497585250573029">Nastavitve VPN-ja</translation>
 <translation id="4217571870635786043">Narek</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -296,6 +299,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="4321776623976362024">Pritisnili ste bližnjično tipko za visoki kontrast. Ali ga želite vklopiti?</translation>
 <translation id="4331809312908958774">OS Chrome</translation>
 <translation id="4338109981321384717">Povečevalno steklo</translation>
+<translation id="4350065043422286972">Pripeto</translation>
 <translation id="4351433414020964307">Pomočnik se nalaga ...</translation>
 <translation id="4356930093361201197">visokokontrastni način</translation>
 <translation id="4368583494516669646">Lahko noč, <ph name="GIVEN_NAME" /></translation>
@@ -357,6 +361,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="5035236842988137213">Naprava <ph name="DEVICE_NAME" /> je povezana z novim telefonom</translation>
 <translation id="5035389544768382859">Potrditev konfiguracije zaslona</translation>
 <translation id="5083553833479578423">Odklenite več funkcij Pomočnika.</translation>
+<translation id="5114495209940374989">Posnetki zaslona</translation>
 <translation id="5136175204352732067">Priklopljena je druga tipkovnica</translation>
 <translation id="5168181903108465623">Naprave za predvajanje so na voljo</translation>
 <translation id="5207949376430453814">Označitev kazalke v besedilu</translation>
@@ -599,6 +604,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="8061464966246066292">Visok kontrast</translation>
 <translation id="8098591350844501178">Ustavi predvajanje zaslona v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Vklop. za vse</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8132793192354020517">Povezava z <ph name="NAME" /> je vzpostavljena </translation>
 <translation id="813913629614996137">Inicializiranje ...</translation>

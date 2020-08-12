@@ -152,6 +152,7 @@
 <translation id="2154710561487035718">URL प्रतिलिपि गर्नुहोस्</translation>
 <translation id="2156074688469523661">बाँकी साइटहरू (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">तपाईंको फोनको कुनै कुरा अर्को यन्त्रसँग आदान प्रदान गर्न दुवै यन्त्रमा Chrome को सेटिङमा गई सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
+<translation id="2158408438301413340">Chrome ले सबै पासवर्डहरू जाँच्न सकेन</translation>
 <translation id="2169830938017475061">अहिले</translation>
 <translation id="2175927920773552910">QR कोड</translation>
 <translation id="218608176142494674">आदान प्रदान गर्दै</translation>
@@ -160,6 +161,7 @@
 <translation id="2239812875700136898">Discover का विकल्पहरू नामक बटन प्रयोग गरी आफ्नो समाचार फिडमा देखिने सामग्री नियन्त्रण गर्नुहोस्</translation>
 <translation id="2259659629660284697">पासवर्डहरू निर्यात गर्नुहोस्…</translation>
 <translation id="2268044343513325586">परिशुद्ध</translation>
+<translation id="2276696007612801991">आफ्ना पासवर्डहरू जाँच गर्न आफ्नो Google खातामा साइन इन गर्नुहोस्</translation>
 <translation id="2286841657746966508">बिल पठाउने ठेगाना</translation>
 <translation id="230115972905494466">कुनै पनि मिल्दाजुल्दा यन्त्र भेटिएनन्</translation>
 <translation id="2318045970523081853">कल गर्न ट्याप गर्नुहोस्</translation>
@@ -316,6 +318,7 @@
 <translation id="3493531032208478708">सुझाव दिइएको सामग्रीको बारेमा <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3507132249039706973">मानक सुरक्षा सक्रिय छ</translation>
+<translation id="3509330069915219067">अफलाइन छ। Chrome ले अपडेट उपलब्ध छन् कि छैनन् भन्ने कुरा जाँच गर्न सकेन।</translation>
 <translation id="3513704683820682405">अग्मेन्टेड रियालिटी</translation>
 <translation id="3518985090088779359">स्वीकार र जारी</translation>
 <translation id="3522247891732774234">अद्यावधिक उपलब्ध छ। थप विकल्पहरू</translation>
@@ -365,6 +368,7 @@
 <translation id="3895926599014793903">जूम सक्षम गर्न दबाब दिनु</translation>
 <translation id="3909763690984331376">सुरक्षा जाँच <ph name="BEGIN_NEW" />नयाँ<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">वेबका उत्कृष्ट सामग्रीहरू फेला पार्दै…</translation>
+<translation id="3924911262913579434">'<ph name="SAFE_BROWSING_MODE" />' अन छ</translation>
 <translation id="3927692899758076493">स्यान्स सेरिफ</translation>
 <translation id="3928666092801078803">मेरो डेटालाई संयोजन गर्नुहोस्</translation>
 <translation id="393697183122708255">कुनैपनि सक्षम गरिएको आवाज खोजी उपलब्ध छैन</translation>
@@ -372,6 +376,7 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{यन्त्र तयार भएपछि Chrome ले तपाईंको पृष्ठ लोड गर्ने छ}other{यन्त्र तयार भएपछि Chrome ले तपाईंका पृष्ठहरू लोड गर्ने छ}}</translation>
 <translation id="3963007978381181125">पासफ्रेजमार्फत इन्क्रिप्सन गर्ने कार्यअन्तर्गत Google Pay का भुक्तानी विधि र ठेगानाहरू समावेश हुँदैनन्। तपाईंको पासफ्रेज थाहा हुने व्यक्तिले मात्र तपाईंको इन्क्रिप्ट गरिएको डेटा पढ्न सक्छ। उक्त पासफ्रेज Google मा पठाइँदैन वा त्यहाँ भण्डारण गरिँदैन। तपाईंले आफ्नो पासफ्रेज बिर्सनुभयो वा तपाईं यो सेटिङ परिवर्तन गर्न चाहनुहुन्छ भने तपाईंले सिंक रिसेट गर्नु पर्ने हुन्छ। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">डाउनलोड पूर्ण भयो</translation>
+<translation id="3969142555815019568">Chrome ले तपाईंका पासवर्डहरू जाँच्न सकेन</translation>
 <translation id="3974987681202239636"><ph name="APP_NAME" /> Chrome मा खुल्ने छ। जारी राखेर तपाईं <ph name="BEGIN_LINK1" />Google का सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />Google Chrome र Chrome OS का सेवाका अतिरिक्त सर्तहरू<ph name="END_LINK2" />मा सहमति जनाउनुहुन्छ। <ph name="BEGIN_LINK3" />Family Link मार्फत व्यवस्थापन गरिएका Google खाताहरूको गोपनीयता सूचना<ph name="END_LINK3" /> पनि लागू हुन्छ।</translation>
 <translation id="397583555483684758">सिंकले काम गर्न छाड्यो</translation>
 <translation id="3976396876660209797">यो सर्टकट हटाउनुहोस्‌ र यसलाई पुन: सिर्जना गर्नुहोस्‌</translation>
@@ -446,6 +451,7 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> खोल्नुहोस्</translation>
 <translation id="4634124774493850572">पासवर्ड प्रयोग गर्नुहोस्</translation>
 <translation id="4650364565596261010">प्रणालीको पूर्वनिर्धारित सेटिङ</translation>
+<translation id="465657074423018424">Safe Browsing नामक सुविधाको सहयोगले तपाईं भ्रामक वेबसाइटहरूबाट सुरक्षित रहनुहुन्छ। तपाईंले यो सेटिङ अफ गर्नुभएको छ भने ब्राउजिङ गर्दा र त्यसमा पनि विशेष गरी पासवर्ड प्रविष्टि गर्दा अझ सतर्क रहनुहोला।</translation>
 <translation id="4662373422909645029">उपनाममा अङ्क प्रयोग गर्न पाइँदैन</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> पुस्तक चिन्हहरू मेटाइयो</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> लाई तपाईँको गृहपृष्ठ स्क्रिनमा थपियो</translation>
@@ -783,6 +789,7 @@
 <translation id="7071521146534760487">खाताको व्यवस्थापन गर्नुहोस्</translation>
 <translation id="7077143737582773186">SD कार्ड</translation>
 <translation id="7080806333218412752">यस सुविधाले URL हरूको जाँच गर्नका निम्ति तिनलाई सुरक्षित ब्राउजिङमा पठाउँछ। यस सुविधाले नयाँ जोखिमहरू पत्ता लगाउन पृष्ठ, डाउनलोड, एक्स्टेन्सनसम्बन्धी गतिविधि र प्रणालीसम्बन्धी जानकारीको सानो नमुना पनि सुरक्षित ब्राउजिङमा पठाउँछ। यस सुविधाले तपाईं साइन इन भएका बेला यो डेटा केही समयका लागि तपाईंको Google खातामा लिंक गर्छ। यसो गर्नुको उद्देश्य Google का एपहरूमा तपाईंको डेटा सुरक्षित राख्नु हो।</translation>
+<translation id="7088681679121566888">Chrome अपडेट छ</translation>
 <translation id="7121362699166175603">ठेगाना पट्टीका इतिहास र स्वतः पूर्णताहरूलाई खाली गर्छ। तपाईंको Google खाताको <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> मा अन्य किसिमका ब्राउजिङ इतिहास रहेका हुन सक्छन्।</translation>
 <translation id="7128355412245153445">होम बटनमा ट्याप गर्ने बित्तिकै आफ्ना शीर्ष साइट तथा ताजा समाचार देखिने बनाउनुहोस्</translation>
 <translation id="7138678301420049075">अन्य</translation>
@@ -804,6 +811,7 @@
 <translation id="7293171162284876153">सिंक गर्ने कार्य सुरु गर्न "Chrome को आफ्नो डेटा सिंक गर्नुहोस्"।</translation>
 <translation id="729975465115245577">तपाईंको यन्त्रमा पासवर्डहरूको फाइल भण्डारण गर्ने कुनै एप छैन।</translation>
 <translation id="7302081693174882195">विवरणहरू: बचत गरिएको डेटाको मात्राअनुसार क्रमबद्ध गरिएको</translation>
+<translation id="7304873321153398381">अफलाइन छ। Chrome ले तपाईंका पासवर्डहरू जाँच्न सकेन।</translation>
 <translation id="7328017930301109123">लाइट मोडमा हुँदा Chrome ले पृष्ठहरू अझ छिटो लोड गर्नुका साथै ६० प्रतिशतसम्म कम डेटा प्रयोग गर्छ।</translation>
 <translation id="7333031090786104871">अघिल्लो साइट अझै थपिँदै</translation>
 <translation id="7340958967809483333">Discover का विकल्पहरू</translation>
@@ -817,6 +825,7 @@
 <translation id="741204030948306876">हुन्छ, म सहमत छु</translation>
 <translation id="7413229368719586778">सुरु हुने मिति: <ph name="DATE" /></translation>
 <translation id="7431991332293347422">खोज र थप कुराहरू वैयक्तीकृत गर्ने प्रयोजनका लागि तपाईंको ब्राउजिङ इतिहासको प्रयोग गरिने तरिका नियन्त्रण गर्नुहोस्</translation>
+<translation id="7435356471928173109">तपाईंका एड्मिनले अफ गर्नुभएको</translation>
 <translation id="7437998757836447326">Chrome बाट साइन आउट गर्नुहोस्</translation>
 <translation id="7438641746574390233">लाइट मोड सक्रिय हुँदा, Chrome ले पृष्ठहरू अझ छिटो लोड गर्ने प्रयोजनका लागि Google का सर्भरहरूको प्रयोग गर्छ। लाइट मोडले अत्यावश्यक सामग्री मात्र लोड गर्नका निम्ति धेरै सुस्त पृष्ठहरू पुनर्लेखन गर्छ। इन्कोग्निटो ट्याबहरूमा भने लाइट मोड लागू हुँदैन।</translation>
 <translation id="7444811645081526538">थप कोटिहरू</translation>
@@ -1032,6 +1041,7 @@
 <translation id="9050666287014529139">पासफ्रेज</translation>
 <translation id="9063523880881406963">अनुरोध डेस्कटप साइट बन्द गर्नुहोस्</translation>
 <translation id="9065203028668620118">सम्पादन गर्नुहोस</translation>
+<translation id="9069543557624799859"><ph name="TIME" /> मा डाउनलोड सुरु हुने छ।</translation>
 <translation id="9070377983101773829">आवाज खोजी सुरु गर्नुहोस्</translation>
 <translation id="9074336505530349563">Google ले सिफारिस गरेका वैयक्तीकृत सामग्री प्राप्त गर्न साइन इन गरी सिंक गर्ने सुविधा सक्रिय गर्नुहोस्।</translation>
 <translation id="9086302186042011942">समक्रमण गर्दै</translation>

@@ -213,55 +213,11 @@
     },
     {
         "duration": "4.0",
-        "name": "blink_perf.canvas/draw-video-to-hw-accelerated-canvas-2d.html"
-    },
-    {
-        "duration": "10.0",
-        "name": "blink_perf.canvas/draw-video-to-hw-accelerated-canvas-2d_RAF.html?RAF"
-    },
-    {
-        "duration": "12.0",
-        "name": "blink_perf.canvas/drawimage-not-pixelaligned.html"
-    },
-    {
-        "duration": "12.0",
-        "name": "blink_perf.canvas/drawimage-not-pixelaligned_RAF.html?RAF"
-    },
-    {
-        "duration": "26.0",
-        "name": "blink_perf.canvas/drawimage.html"
-    },
-    {
-        "duration": "4.0",
         "name": "blink_perf.canvas/toBlob_duration.html"
     },
     {
         "duration": "4.0",
         "name": "blink_perf.canvas/toBlob_duration_RAF.html?RAF"
-    },
-    {
-        "duration": "16.0",
-        "name": "blink_perf.canvas/upload-video-to-sub-texture.html"
-    },
-    {
-        "duration": "6.0",
-        "name": "blink_perf.canvas/upload-video-to-sub-texture_RAF.html?RAF"
-    },
-    {
-        "duration": "4.0",
-        "name": "blink_perf.canvas/upload-video-to-texture.html"
-    },
-    {
-        "duration": "10.0",
-        "name": "blink_perf.canvas/upload-video-to-texture_RAF.html?RAF"
-    },
-    {
-        "duration": "4.0",
-        "name": "blink_perf.canvas/upload-webgl-to-texture.html"
-    },
-    {
-        "duration": "10.0",
-        "name": "blink_perf.canvas/upload-webgl-to-texture_RAF.html?RAF"
     },
     {
         "duration": "24.0",

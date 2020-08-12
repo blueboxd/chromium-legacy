@@ -58,9 +58,7 @@ std::vector<base::string16> GenerateMessage(
     int id = 0;
     if (disable_remotely_for_malware ||
         (blocklist_state == BlocklistState::BLOCKLISTED_MALWARE)) {
-      id = forbidden.size() == 1
-               ? IDS_EXTENSION_ALERT_ITEM_BLACKLISTED_MALWARE
-               : IDS_EXTENSION_ALERT_ITEM_BLACKLISTED_MALWARE_PLURAL;
+      id = IDS_EXTENSION_ALERT_ITEM_BLACKLISTED_MALWARE;
     } else {
       id = extension->is_app() ? IDS_APP_ALERT_ITEM_BLACKLISTED_OTHER
                                : IDS_EXTENSION_ALERT_ITEM_BLACKLISTED_OTHER;

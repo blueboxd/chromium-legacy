@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">생성됨</translation>
 <translation id="1067291318998134776">Linux(베타)</translation>
 <translation id="1067922213147265141">다른 Google 서비스</translation>
+<translation id="1068961867683064946">자녀의 Google 계정 만들기</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">컴퓨터의 다른 프로그램에서 Chrome 작동에 영향을 줄 수 있는 확장 프로그램을 추가했습니다. 
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660"><ph name="SUBPAGE_TITLE" /> 하위 페이지 뒤로 버튼</translation>
 <translation id="1322046419516468189"><ph name="SAVED_PASSWORDS_STORE" />에 저장된 비밀번호 보기 및 관리</translation>
 <translation id="1324106254079708331">개인 Google 계정을 표적 공격으로부터 보호합니다.</translation>
+<translation id="1325985428688410772">공간 추가</translation>
 <translation id="1326317727527857210">다른 기기에서 탭을 가져오려면 Chrome에 로그인하세요.</translation>
 <translation id="1327074568633507428">Google 클라우드 프린트의 프린터</translation>
 <translation id="1327272175893960498">Kerberos 티켓</translation>
@@ -1082,6 +1084,7 @@
 <translation id="2307462900900812319">네트워크 설정</translation>
 <translation id="230927227160767054">이 페이지에서 서비스 핸들러를 설치하려 합니다.</translation>
 <translation id="2309620859903500144">모션 센서 또는 조도 센서 액세스가 차단된 사이트입니다.</translation>
+<translation id="2314873619957287124">자녀가 배우고, 놀고, 탐험할 수 있도록 디지털 기기 사용 규칙을 설정하세요.</translation>
 <translation id="2315414688463285945">Linux 파일을 구성하는 중에 오류가 발생했습니다. 다시 시도해 보세요.</translation>
 <translation id="2315587498123194634"><ph name="DEVICE_NAME" />(으)로 링크 보내기</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
@@ -1093,6 +1096,7 @@
 <translation id="2322318151094136999">사이트가 직렬 포트에 액세스하려고 할 때 확인(권장)</translation>
 <translation id="2323018538045954000">저장된 Wi-Fi 네트워크</translation>
 <translation id="2325444234681128157">비밀번호 저장</translation>
+<translation id="2326160999284776503">자녀의 Google 계정으로 로그인</translation>
 <translation id="2326188115274135041">자동 잠금 해제를 사용 설정하려면 PIN을 확인하세요.</translation>
 <translation id="2326931316514688470">앱 새로고침(&amp;R)</translation>
 <translation id="2327492829706409234">앱 사용</translation>
@@ -1151,6 +1155,7 @@
 <translation id="2384436799579181135">오류가 발생했습니다. 프린터를 확인한 후 다시 시도해 주세요.</translation>
 <translation id="2387052489799050037">홈으로 이동</translation>
 <translation id="2387458720915042159">프록시 연결 유형</translation>
+<translation id="2391082728065870591">의견 보고서 보내기</translation>
 <translation id="2391419135980381625">표준 글꼴</translation>
 <translation id="2392163307141705938">부모님이 설정한 <ph name="IDS_SHORT_PRODUCT_NAME" /> 사용 제한 시간에 도달했습니다.</translation>
 <translation id="2392369802118427583">활성화</translation>
@@ -1281,6 +1286,7 @@
 <translation id="2537178555904266562">비밀번호 동기화 중 오류 발생</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" />에서 다음 파일과 폴더를 보고 수정할 수 있습니다.</translation>
 <translation id="2537927931785713436">가상 머신 이미지 확인 중</translation>
+<translation id="2538084450874617176">이 <ph name="DEVICE_TYPE" /> 기기는 누가 사용하시나요?</translation>
 <translation id="2538361623464451692">동기화 사용중지됨</translation>
 <translation id="2540449034743108469">확장 프로그램 활동을 감지하려면 '시작'을 누르세요.</translation>
 <translation id="2541002089857695151">전체화면 전송을 최적화하시겠습니까?</translation>
@@ -2740,6 +2746,7 @@
 <translation id="4364327530094270451">멜론</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" />이(가) 창을 공유합니다.</translation>
 <translation id="4364830672918311045">알림 표시</translation>
+<translation id="4368115171699243057"><ph name="DEVICE_TYPE" /> 기기를 자녀를 위해 설정하기</translation>
 <translation id="437004882363131692"><ph name="DEVICE_TYPE" /> 관련 도움말, 혜택 및 소식을 받아 보고 의견을 공유하세요. 구독은 언제든지 취소할 수 있습니다.</translation>
 <translation id="4370975561335139969">입력한 이메일과 비밀번호가 일치하지 않습니다.</translation>
 <translation id="4374831787438678295">Linux 설치 프로그램</translation>
@@ -2900,6 +2907,7 @@
 <translation id="4565377596337484307">비밀번호 숨김</translation>
 <translation id="4565917129334815774">시스템 로그 저장</translation>
 <translation id="456717285308019641">번역할 페이지 언어</translation>
+<translation id="4567533462991917415">설정이 완료된 후에도 언제든지 사용자를 추가할 수 있습니다. 모든 사용자는 자신의 계정을 맞춤설정하고 데이터를 비공개로 유지할 수 있습니다.</translation>
 <translation id="4567772783389002344">단어 추가</translation>
 <translation id="4568025708905928793">보안 키 요청됨</translation>
 <translation id="4568213207643490790">죄송합니다. 이 기기에서는 Google 계정을 사용할 수 없습니다.</translation>
@@ -2951,6 +2959,7 @@
 <translation id="4628762811416793313">Linux 컨테이너 설정이 완료되지 않았습니다. 다시 시도해 주세요.</translation>
 <translation id="4633003931260532286">확장 프로그램은 최소 버전 '<ph name="IMPORT_VERSION" />'의 '<ph name="IMPORT_NAME" />'을(를) 요구하지만 '<ph name="INSTALLED_VERSION" />' 버전만 설치되었습니다</translation>
 <translation id="4633757335284074492">Google 드라이브에 백업합니다. 언제든지 간편하게 데이터를 복원하거나 다른 기기로 전환할 수 있습니다. 앱 데이터도 백업에 포함됩니다. 백업 항목은 Google에 업로드되며 자녀의 Google 계정 비밀번호를 사용하여 암호화됩니다.</translation>
+<translation id="4634575639321169635">기기를 업무용 또는 개인용으로 설정합니다.</translation>
 <translation id="4634771451598206121">다시 로그인...</translation>
 <translation id="4635072447747973225">Crostini 제거</translation>
 <translation id="4635398712689569051">게스트 사용자는 <ph name="PAGE_NAME" />을(를) 사용할 수 없음</translation>
@@ -3369,6 +3378,7 @@
 <translation id="5185386675596372454">'<ph name="EXTENSION_NAME" />'의 최신 버전에 더 많은 권한이 필요하여 사용이 중지되었습니다.</translation>
 <translation id="5185500136143151980">인터넷 연결 없음</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" />(<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287"><ph name="PROFILE_LOCAL_NAME" />의 옵션 메뉴</translation>
 <translation id="5190926251776387065">포트 활성화</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" />에서 여러 파일을 다운로드하려고 합니다.</translation>
 <translation id="5192062846343383368">Family Link 앱을 열어 감독 설정을 확인합니다.</translation>
@@ -3615,6 +3625,7 @@
 <translation id="5495597166260341369">디스플레이를 켜진 상태로 유지</translation>
 <translation id="5496587651328244253">정리</translation>
 <translation id="5497251278400702716">이 파일</translation>
+<translation id="5498967291577176373">이름, 주소, 전화번호와 같은 인라인 추천 항목을 사용해 빠르게 작성하세요.</translation>
 <translation id="5499313591153584299">이 파일은 컴퓨터에 해로울 수 있습니다.</translation>
 <translation id="5499453227627332024">Linux 컨테이너를 업그레이드할 수 있습니다. 나중에 설정 앱에서 업그레이드해도 됩니다.</translation>
 <translation id="5500709606820808700">안전 확인이 오늘 실행됨</translation>
@@ -3771,6 +3782,7 @@
 <translation id="5689516760719285838">위치</translation>
 <translation id="56907980372820799">데이터 연결</translation>
 <translation id="5691511426247308406">가족</translation>
+<translation id="5691581861107245578">입력 중인 내용을 기반으로 이모티콘이 추천됩니다.</translation>
 <translation id="5691772641933328258">지문을 인식할 수 없음</translation>
 <translation id="5692183275898619210">인쇄 완료</translation>
 <translation id="569425414730375234">현재 시크릿 세션: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4130,6 +4142,7 @@
 <translation id="6124698108608891449">추가 권한이 필요한 사이트입니다.</translation>
 <translation id="6125479973208104919">이 <ph name="DEVICE_TYPE" />에 계정을 다시 추가해야 합니다.</translation>
 <translation id="6129691635767514872">선택한 데이터가 Chrome 및 동기화된 기기에서 삭제되었습니다. <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />에서 검색이나 기타 Google 서비스에서의 활동 등 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>
+<translation id="6129839611163153407">내 자녀</translation>
 <translation id="6129938384427316298">Netscape Certificate Comment</translation>
 <translation id="6129953537138746214">Space</translation>
 <translation id="6130692320435119637">Wi-Fi 추가</translation>
@@ -4170,6 +4183,7 @@
 <translation id="6178664161104547336">인증서 선택</translation>
 <translation id="6181431612547969857">다운로드 차단됨</translation>
 <translation id="6185132558746749656">기기 위치</translation>
+<translation id="6195446518998936840">자녀 보호 기능을 설정하려면 부모가 감독하는 Google 계정을 자녀가 보유하고 있어야 합니다. 부모님은 Family Link 앱을 사용해 기기 사용 시간 한도를 설정하고, 웹사이트를 승인하거나 차단하는 등의 작업을 할 수 있습니다.</translation>
 <translation id="6195693561221576702">이 기기는 오프라인 데모 모드에서 설정할 수 없습니다.</translation>
 <translation id="6196640612572343990">타사 쿠키 차단</translation>
 <translation id="6196854373336333322">'<ph name="EXTENSION_NAME" />' 확장 프로그램이 프록시 설정을 제어할 수 있게 되었으며, 따라서 사용자가 온라인에서 수행하는 모든 작업을 변경, 중단하거나 엿볼 수 있게 되었습니다. 이와 같이 변경된 이유를 잘 모른다면 이 설정을 사용하지 않는 것이 좋습니다.</translation>
@@ -4495,7 +4509,7 @@
 <translation id="6602956230557165253">오른쪽/왼쪽 화살표 키를 사용하여 탐색합니다.</translation>
 <translation id="6605847144724004692">아직 사용자 평가가 없습니다.</translation>
 <translation id="6607831829715835317">도구 더보기</translation>
-<translation id="6607890859198268021"><ph name="USER_EMAIL" /> 계정은 이미 <ph name="DOMAIN" />에서 관리하고 있습니다. 다른 Google 계정으로 자녀 보호 기능을 사용하려면 설정이 완료된 후 로그아웃하고 로그인 화면에서 '사용자 추가'를 선택하세요.</translation>
+<translation id="6607890859198268021"><ph name="USER_EMAIL" /> 계정은 이미 <ph name="DOMAIN" />에서 관리하고 있습니다. 다른 Google 계정에 자녀 보호 기능을 사용하려면 설정이 완료된 후 로그아웃하고 로그인 화면에서 '사용자 추가'를 선택하세요.</translation>
 <translation id="6611972847767394631">여기에서 탭 찾아보기</translation>
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
 <translation id="6615455863669487791">보기</translation>
@@ -5924,6 +5938,7 @@
 <translation id="8372369524088641025">잘못된 WEP 키</translation>
 <translation id="8372477600026034341">추가 호스트</translation>
 <translation id="8373652277231415614">Crostini 공유 디렉터리</translation>
+<translation id="8376384591331888629">사이트의 타사 쿠키 포함</translation>
 <translation id="8378714024927312812">조직에서 관리</translation>
 <translation id="8379878387931047019">이 기기는 이 웹사이트에서 요청하는 유형의 보안 키를 지원하지 않습니다.</translation>
 <translation id="8379991678458444070">이 탭을 북마크에 추가하여 간편하게 다시 방문하세요.</translation>
@@ -6007,6 +6022,7 @@
 <translation id="8481187309597259238">USB 권한 확인</translation>
 <translation id="8483248364096924578">IP 주소</translation>
 <translation id="8487678622945914333">확대</translation>
+<translation id="8489156414266187072">개인 추천 항목은 내 계정에만 표시됩니다.</translation>
 <translation id="8490896350101740396">다음 Kiosk 앱 '<ph name="UPDATED_APPS" />'이(가) 업데이트되었습니다. 기기를 재부팅하여 업데이트 절차를 완료하세요.</translation>
 <translation id="8493236660459102203">마이크:</translation>
 <translation id="8496717697661868878">이 플러그인 실행</translation>

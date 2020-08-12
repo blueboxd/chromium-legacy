@@ -869,7 +869,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
                                              base::UnguessableToken::Create(),
                                              nullptr, nullptr);
     frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
-    frame->Init();
+    frame->Init(nullptr);
   }
 
   FrameLoader& loader = frame->Loader();

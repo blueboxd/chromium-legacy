@@ -59,7 +59,7 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
       return {kAutofillTypeName,
               AUTOFILL,
               {AUTOFILL, AUTOFILL_PROFILE, AUTOFILL_WALLET_DATA,
-               AUTOFILL_WALLET_METADATA}};
+               AUTOFILL_WALLET_METADATA, AUTOFILL_WALLET_OFFER}};
     case UserSelectableType::kThemes:
       return {kThemesTypeName, THEMES, {THEMES}};
     case UserSelectableType::kHistory:

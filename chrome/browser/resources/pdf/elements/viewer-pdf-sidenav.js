@@ -5,6 +5,7 @@
 import './shared-vars.js';
 import '../pdf_viewer_shared_style.js';
 import './icons.js';
+import './viewer-thumbnail-bar.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -20,6 +21,8 @@ export class ViewerPdfSidenavElement extends PolymerElement {
 
   static get properties() {
     return {
+      docLength: Number,
+
       /** @private */
       thumbnailView_: {
         type: Boolean,

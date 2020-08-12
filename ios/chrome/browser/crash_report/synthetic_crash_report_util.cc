@@ -8,6 +8,7 @@
 
 #include "base/files/memory_mapped_file.h"
 #include "base/ios/device_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -79,10 +80,14 @@ void CreateSyntheticCrashReportForUte(
   // Breakpad may fail to upload config without minidump.
   base::MemoryMappedFile mapped_config_file;
   const base::MemoryMappedFile::Region region = {0, config_string.size()};
-  if (mapped_config_file.Initialize(
-          base::File(std::move(config_fd)), region,
-          base::MemoryMappedFile::READ_WRITE_EXTEND)) {
+  bool created_config =
+      mapped_config_file.Initialize(base::File(std::move(config_fd)), region,
+                                    base::MemoryMappedFile::READ_WRITE_EXTEND);
+  if (created_config) {
     std::strcpy(reinterpret_cast<char*>(mapped_config_file.data()),
                 config_string.data());
   }
+
+  UMA_STABILITY_HISTOGRAM_BOOLEAN(
+      "Stability.iOS.UTE.CreatedSyntheticCrashReportConfig", created_config);
 }

@@ -50,11 +50,6 @@
     "expiry_milestone": 81
   },
   {
-    "name": "aggregated-ml-search-ranking",
-    "owners": [ "thanhdng", "jiameng" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "align-font-display-auto-lcp",
     "owners": [ "xiaochengh" ],
     "expiry_milestone": 87
@@ -604,7 +599,7 @@
   {
     "name": "contextual-search-longpress-resolve",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "contextual-search-ml-tap-suppression",
@@ -624,7 +619,7 @@
   {
     "name": "contextual-search-translations",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "conversion-measurement-api",
@@ -2606,11 +2601,6 @@
     "owners": [ "thegreenfrog", "bling-flags" ],
     // Needed for manual testing of fallback flow on iOS.
     "expiry_milestone": -1
-  },
-  {
-    "name": "fuzzy-app-search",
-    "owners": [ "thanhdng", "jiameng" ],
-    "expiry_milestone": 82
   },
   {
     "name": "gaia-action-buttons",

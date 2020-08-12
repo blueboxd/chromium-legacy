@@ -660,7 +660,7 @@ TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateRunning) {
 
   ChangePasswordCheckState(PasswordCheckStateRunning);
 
-  CheckTextCellTextWithId(IDS_IOS_CANCEL_PASSWORD_CHECK_BUTTON,
+  CheckTextCellTextWithId(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON,
                           GetSectionIndex(PasswordCheck), 1);
   CheckDetailItemTextWithIds(IDS_IOS_CHECK_PASSWORDS,
                              IDS_IOS_CHECK_PASSWORDS_DESCRIPTION,
@@ -722,28 +722,6 @@ TEST_P(PasswordsTableViewControllerTest, StartPasswordCheck) {
       static_cast<PasswordsTableViewController*>(controller());
 
   EXPECT_CALL(GetMockPasswordCheckService(), CheckUsernamePasswordPairs);
-
-  [passwords_controller tableView:passwords_controller.tableView
-          didSelectRowAtIndexPath:[NSIndexPath
-                                      indexPathForItem:1
-                                             inSection:GetSectionIndex(
-                                                           PasswordCheck)]];
-}
-
-// Test verifies tapping cancel triggers correct function in service.
-TEST_P(PasswordsTableViewControllerTest, StopPasswordCheck) {
-  if (!GetParam().password_check_enabled)
-    return;
-  AddSavedForm1();
-  RunUntilIdle();
-
-  PasswordsTableViewController* passwords_controller =
-      static_cast<PasswordsTableViewController*>(controller());
-
-  ON_CALL(GetMockPasswordCheckService(), GetState())
-      .WillByDefault(Return(
-          password_manager::BulkLeakCheckServiceInterface::State::kRunning));
-  EXPECT_CALL(GetMockPasswordCheckService(), Cancel);
 
   [passwords_controller tableView:passwords_controller.tableView
           didSelectRowAtIndexPath:[NSIndexPath

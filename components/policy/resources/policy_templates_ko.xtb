@@ -73,6 +73,7 @@
 
       정책이 False로 설정되거나 설정되지 않으면 정보가 보고되지 않습니다.
       True로 설정된 경우 기기의 백라이트 정보가 보고됩니다.</translation>
+<translation id="1076751984131277498">USB 분리 가능 기기 허용 목록</translation>
 <translation id="1079801999187584280">Developer Tools 사용 금지</translation>
 <translation id="1087437665304381368">이 정책은 <ph name="PRODUCT_OS_NAME" /> 개발자 모드만 제어합니다. Android 개발자 옵션에 액세스하지 못하게 하려면 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 정책을 설정해야 합니다.</translation>
 <translation id="1087707496788636333">Chrome Enterprise 정책 목록이 이동됩니다. 북마크를 <ph name="POLICY_DOCUMENTATION_URL" /> 페이지로 업데이트하세요.</translation>
@@ -538,6 +539,9 @@
 
       정책이 설정되지 않으면 네트워크 예측이 사용 설정되지만 사용자가 변경할 수 있게 됩니다.</translation>
 <translation id="1865417998205858223">주요 권한</translation>
+<translation id="1866563857170942397">기기에 로그인할 수 있는 사용자 목록을 정의합니다. <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> 형식(예: <ph name="USER_WHITELIST_ENTRY_EXAMPLE" /> 형식)의 항목이 사용됩니다. 도메인에 임의의 사용자를 허용하려면 <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" /> 형식의 항목을 사용합니다.
+
+      이 정책이 구성되지 않으면 어떤 사용자가 로그인할 수 있는지에 관한 제한이 없습니다. 새 사용자를 만들기 위해서는 <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> 정책이 적절히 구성되어야 합니다.</translation>
 <translation id="186719019195685253">AC 전원으로 기기를 실행하는 동안 유휴 지연 시간에 도달했을 때 실행할 작업</translation>
 <translation id="187819629719252111"><ph name="PRODUCT_NAME" />이(가) 파일 선택 대화 상자를 표시하도록 하여 컴퓨터의 로컬 파일에 액세스할 수 있게 합니다.
 
@@ -1235,7 +1239,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 
       외부 저장소가 차단되어 있지 않은 한 ExternalStorageReadOnly를 False로 설정하거나 설정하지 않으면 사용자가 실제로 작성 가능한 외부 저장소의 파일을 생성하고 수정할 수 있습니다. ExternalStorageDisable을 True로 설정하여 외부 저장소를 차단할 수 있습니다.</translation>
 <translation id="2796714419743648316">앱별 시간 제한 허용 목록</translation>
-<translation id="2796896367838042659">이 정책은 앱별 사용 제한을 위해 허용 목록에 포함되어야 하는 애플리케이션과 URL을 지정합니다.
+<translation id="2796896367838042659">이 정책은 앱별 사용 제한으로 인해 차단되지 않는 허용 목록에 포함되어야 하는 애플리케이션과 URL을 지정합니다.
         구성된 허용 목록은 앱별 시간 제한이 있는 특정 사용자를 대상으로 <ph name="PRODUCT_OS_NAME" />에 설치된 앱에 적용됩니다.
         구성된 허용 목록은 자녀 사용자 계정에만 적용될 수 있으며, <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> 정책이 설정된 경우 유효합니다.
         구성된 허용 목록은 애플리케이션과 URL에 적용되어, 앱별 시간 제한으로 인해 차단되지 않도록 합니다.
@@ -1831,6 +1835,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="3647212518036289905">정책을 설정하면 HTTP 인증에 사용할 GSSAPI 라이브러리가 지정됩니다. 정책을 라이브러리 이름 또는 전체 경로 중 하나로 설정합니다.
 
       정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 기본 라이브러리 이름을 사용합니다.</translation>
+<translation id="3653234084868565720"><ph name="PRODUCT_OS_NAME" />이(가) 새 사용자 계정을 생성할 수 있는지를 조정합니다. 이 정책을 false로 설정하면 계정이 없는 사용자는 로그인할 수 없습니다.
+
+      이 정책을 true로 설정하거나 구성하지 않으면 <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" />이(가) 사용자 로그인을 차단하지 않을 경우 새 사용자 계정이 생성될 수 있습니다.</translation>
 <translation id="3653237928288822292">기본 검색 공급자 아이콘</translation>
 <translation id="3654906736796256792">오디오 샌드박스 실행 허용</translation>
 <translation id="3657998022005237040">지원되지 않는 파일 형식 다운로드 차단</translation>
@@ -3195,6 +3202,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       지정하지 않으면 버전 시드 URL을 수정할 수 없습니다.</translation>
 <translation id="5561811616825571914">로그인 화면에서 이 사이트의 클라이언트 인증서를 자동으로 선택합니다.</translation>
+<translation id="5564345250641049313">기기에 로그인할 수 있는 사용자 목록을 정의합니다. <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> 형식(예: <ph name="USER_ALLOWLIST_ENTRY_EXAMPLE" />)의 항목이 사용됩니다. 도메인에 임의의 사용자를 허용하려면 <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" /> 형식의 항목을 사용합니다.
+
+      이 정책이 구성되지 않으면 어떤 사용자가 로그인할 수 있는지에 관한 제한이 없습니다. 새 사용자를 만들기 위해서는 <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> 정책이 적절히 구성되어야 합니다.
+
+      이 정책은 지원 중단되었으므로 <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> 정책을 대신 사용하세요.</translation>
 <translation id="5564865786900450806">더 이상 지원되지 않는 컴퓨터 또는 운영체제에서 <ph name="PRODUCT_NAME" />이(가) 실행될 때 표시되는 경고를 무시합니다.
 
       정책이 false로 설정되어 있거나 설정되어 있지 않은 경우 지원되지 않는 컴퓨터 또는 운영체제에서 경고가 표시됩니다.</translation>
@@ -3570,6 +3582,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           유휴 시 화면을 잠글 때는 일시중지 시 화면 잠금을 사용하도록 설정하고 유휴 지연 시간 이후 <ph name="PRODUCT_OS_NAME" />을(를) 일시중지시키는 것이 좋습니다. 이 정책은 일시중지보다 훨씬 일찍 화면을 잠가야 할 때 또는 유휴 시 일시중지가 적합하지 않을 때에만 사용해야 합니다.
 
           정책 값은 밀리초 단위로 지정해야 하며, 유휴 지연 시간보다 적도록 값이 잘립니다.</translation>
+<translation id="6096729330325888677">정책을 설정하면 사용자가 웹 앱 내에서 직접 chrome.usb API를 통해 사용하기 위해 커널 드라이버에서 분리할 수 있는 USB 기기 목록을 정의합니다. 항목은 특정 하드웨어를 식별하는 USB 공급업체 식별자 및 제품 식별자의 쌍입니다.
+
+      설정하지 않으면 분리할 수 있는 USB 기기 목록이 빈 상태로 설정됩니다.
+
+      이 정책은 지원 중단되었으므로 <ph name="USB_DETACHABLE_ALLOWLIST" /> 정책을 대신 사용하세요.</translation>
 <translation id="6097601282776163274">URL로 입력되며 익명으로 처리되는 데이터 수집 사용 설정</translation>
 <translation id="6099853574908182288">기본 컬러 인쇄 모드</translation>
 <translation id="6102342563050263313">URL 프래그먼트에서 지정한 텍스트로 스크롤 사용 설정</translation>
@@ -3726,7 +3743,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           정책 값은 밀리초로 지정되어야 합니다. 유휴 지연 시간보다 작거나 같게 값이 잘립니다.
 
           유휴 작업이 로그아웃 또는 종료인 경우에만 경고 메시지가 표시됩니다.</translation>
-<translation id="6334330017384340264">이 정책은 앱별 사용 제한을 위해 허용되어야 하는 애플리케이션과 URL을 지정합니다.
+<translation id="6334330017384340264">이 정책은 앱별 사용 제한으로 인해 차단되지 않는 허용 목록에 포함되어야 하는 애플리케이션과 URL을 지정합니다.
         구성된 허용 목록은 앱별 시간 제한이 있는 특정 사용자를 대상으로 <ph name="PRODUCT_OS_NAME" />에 설치된 앱에 적용됩니다.
         구성된 허용 목록은 자녀 사용자 계정에만 적용될 수 있으며, <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> 정책이 설정된 경우 유효합니다.
         구성된 허용 목록은 애플리케이션과 URL에 적용되어, 앱별 시간 제한으로 인해 차단되지 않도록 합니다.
@@ -4079,7 +4096,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       설정을 사용 중지하면 사용자가 Nearby Share를 사용 설정할 수 없습니다.
 
-      정책을 설정하지 않으면 엔터프라이즈 관리 사용자 및 관리되지 않는 사용자 모두 기본적으로 Nearby Share를 사용 설정할 수 있습니다.</translation>
+      정책을 설정하지 않으면 기업 관리 사용자 및 관리되지 않는 사용자 모두 기본적으로 Nearby Share를 사용 설정할 수 있습니다.</translation>
 <translation id="6864244339257535116">비밀번호로 보호된 파일의 업로드 및 다운로드 허용</translation>
 <translation id="687046793986382807">이 정책은 <ph name="PRODUCT_NAME" /> 버전 35를 기준으로 지원이 중단되었습니다.
 
@@ -4221,6 +4238,16 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       정책이 설정되지 않으면 실행기가 기본적으로 화면 하단에 배치되며 사용자가 실행기의 위치를 변경할 수 있습니다.</translation>
 <translation id="7040229947030068419">예시:</translation>
 <translation id="7044883996351280650">Android 백업 및 복원 서비스 제어</translation>
+<translation id="7063842402585660314"><ph name="PRODUCT_OS_NAME" /> 잠금 화면에서 허용되는 앱 목록입니다.
+
+      선호하는 메모 앱을 잠금 화면에서 사용 설정하면 잠금 화면에 해당 메모 앱을 실행하기 위한 UI 요소가 표시됩니다.
+      앱을 실행하면 잠금 화면 상단에 앱 창이 표시되고 잠금 화면 컨텍스트에서 데이터 항목(메모)이 생성됩니다. 세션이 잠금 해제되면 앱에서는 생성된 메모를 기본 사용자 세션으로 가져올 수 있습니다. 현재 잠금 화면에서는 Chrome 메모 앱만 지원됩니다.
+
+      정책이 설정되면 사용자는 앱의 확장 프로그램 ID가 정책 목록 값에 포함된 경우에만 앱을 잠금 화면에서 사용 설정할 수 있습니다.
+      따라서 이 정책을 빈 목록으로 설정하면 잠금 화면에서 메모 기능이 완전히 사용 중지됩니다.
+      정책에 앱 ID가 포함되어 있다고 해서 반드시 사용자가 잠금 화면에서 메모 앱을 사용 설정할 수 있는 것은 아닙니다. 예를 들어, Chrome 61에서는 사용 가능한 앱 집합이 플랫폼에서 추가로 제한됩니다.
+
+      정책을 설정하지 않은 상태로 두면 사용자가 잠금 화면에서 사용 설정할 수 있는 앱 집합에 이 정책에 따른 제한이 적용되지 않습니다.</translation>
 <translation id="7063895219334505671">이러한 사이트에서 팝업 허용</translation>
 <translation id="706669471845501145">사이트에서 데스크톱 알림을 표시하도록 허용</translation>
 <translation id="7068108874199666656">네트워크 설정을 푸시하여 모든 <ph name="PRODUCT_OS_NAME" /> 기기 사용자의 기기에 적용할 수 있도록 합니다. 네트워크 설정은 오픈 네트워크 구성 형식에 정의된 JSON 형식 문자열입니다.</translation>
@@ -5133,6 +5160,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
           올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="8357681633047935212">사용자 세션의 길이를 제한합니다.</translation>
+<translation id="8357989008292691856">로그인 사용자 허용 목록</translation>
 <translation id="8359734107661430198">ExampleDeprecatedFeature API를 2008년 9월 2일까지 사용하도록 설정</translation>
 <translation id="8367209241899435947">Windows에서 Chrome 정리도구 사용 설정</translation>
 <translation id="8367473200119029349">클라우드 보고</translation>

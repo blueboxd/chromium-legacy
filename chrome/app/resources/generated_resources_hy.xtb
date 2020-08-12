@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">Ստեղծվել է</translation>
 <translation id="1067291318998134776">Linux (բետա)</translation>
 <translation id="1067922213147265141">Google-ի այլ ծառայություններ</translation>
+<translation id="1068961867683064946">Ստեղծել Google հաշիվ երեխայի համար</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Ձեր համակարգչի ծրագրերից մեկն ավելացրել է ընդլայնում, որը կարող է միջամտել Chrome-ի աշխատանքին:
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660"><ph name="SUBPAGE_TITLE" /> ենթաէջի «Հետ» կոճակ</translation>
 <translation id="1322046419516468189">Դիտեք և կառավարեք պահված գաղտնաբառերը ձեր Google հաշվում: Անցեք <ph name="SAVED_PASSWORDS_STORE" />:</translation>
 <translation id="1324106254079708331">Անձնական Google հաշիվների պաշտպանություն նրանց համար, ովքեր թիրախավորված հարձակման վտանգի տակ են</translation>
+<translation id="1325985428688410772">Ավելացնել տարածք</translation>
 <translation id="1326317727527857210">Ձեր մյուս սարքերում եղած ներդիրներն օգտագործելու համար մուտք գործեք Chrome:</translation>
 <translation id="1327074568633507428">Տպիչ Google Cloud Print-ում</translation>
 <translation id="1327272175893960498">Kerberos տոմսեր</translation>
@@ -1082,6 +1084,7 @@
 <translation id="2307462900900812319">Կազմաձևել ցանցը</translation>
 <translation id="230927227160767054">Այս էջը ծառայության մշակիչ է ուզում տեղադրել:</translation>
 <translation id="2309620859903500144">Այս կայքին արգելված է օգտագործել շարժման և լույսի ձեր տվիչները:</translation>
+<translation id="2314873619957287124">Սահմանեք հիմնական կանոններ՝ ընտրելով երեխայի համար սովորելու, խաղալու և կայքեր այցելելու ժամեր։</translation>
 <translation id="2315414688463285945">Չհաջողվեց կարգավորել Լինուքսի ֆայլերը: Նորից փորձեք:</translation>
 <translation id="2315587498123194634">Ուղարկել հղումը <ph name="DEVICE_NAME" /> սարքին</translation>
 <translation id="2316129865977710310">Ոչ</translation>
@@ -1093,6 +1096,7 @@
 <translation id="2322318151094136999">Հարցնել, երբ որևէ կայք ուզում է օգտագործել հաջորդական միացքներ (խորհուրդ է տրվում)</translation>
 <translation id="2323018538045954000">Պահված Wi-Fi ցանցեր</translation>
 <translation id="2325444234681128157">Հիշել գաղտնաբառը</translation>
+<translation id="2326160999284776503">Մտեք երեխայի Google հաշիվ</translation>
 <translation id="2326188115274135041">Ավտոմատ ապակողպումը միացնելու համար հաստատեք PIN կոդը</translation>
 <translation id="2326931316514688470">&amp;Վերաբեռնել հավելվածը</translation>
 <translation id="2327492829706409234">Միացնել հավելվածը</translation>
@@ -1151,6 +1155,7 @@
 <translation id="2384436799579181135">Սխալ առաջացավ: Ստուգեք ձեր տպիչը և նորից փորձեք:</translation>
 <translation id="2387052489799050037">Անցնել Գլխավոր էջ</translation>
 <translation id="2387458720915042159">Միջնորդ սերվերի միացման տեսակը</translation>
+<translation id="2391082728065870591">Ուղարկել կարծիքների վերաբերյալ հաշվետվություն</translation>
 <translation id="2391419135980381625">Ստանդարտ տառատեսակ</translation>
 <translation id="2392163307141705938">Դուք սպառել եք ձեր ծնողի կողմից <ph name="IDS_SHORT_PRODUCT_NAME" />-ի համար սահմանված ժամանակը։</translation>
 <translation id="2392369802118427583">Ակտիվացնել</translation>
@@ -1281,6 +1286,7 @@
 <translation id="2537178555904266562">Չհաջողվեց համաժամացնել գաղտնաբառերը</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> կայքը կարող է դիտել և փոփոխել հետևյալ ֆայլերն ու պանակները</translation>
 <translation id="2537927931785713436">Վիրտուալ մեքենայի պատկերը ստուգվում է</translation>
+<translation id="2538084450874617176">Ո՞վ է օգտագործում <ph name="DEVICE_TYPE" /> սարքը</translation>
 <translation id="2538361623464451692">Համաժամացումն անջատված է</translation>
 <translation id="2540449034743108469">Սեղմեք «Սկսել»՝ ընդլայնման գործողությունները լսելու համար</translation>
 <translation id="2541002089857695151">Օպտիմալացնե՞լ հեռարձակումը լիաէկրան ռեժիմում</translation>
@@ -2742,6 +2748,7 @@
 <translation id="4364327530094270451">Սեխ</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> հավելվածը կիսվում է պատուհանով:</translation>
 <translation id="4364830672918311045">Ցուցադրել ծանուցումները</translation>
+<translation id="4368115171699243057">Կարգավորեք այս <ph name="DEVICE_TYPE" /> սարքը երեխայի համար</translation>
 <translation id="437004882363131692">Ստացեք <ph name="DEVICE_TYPE" /> սարքի հետ կապված խորհուրդներ, առաջարկներ և նորություններ, ինչպես նաև կիսվեք ձեր դիտողություններով։ Դուք ցանկացած պահի կարող եք չեղարկել բաժանորդագրությունը։</translation>
 <translation id="4370975561335139969">Մուտքագրված էլփոստը և գաղտնաբառը չեն համընկնում</translation>
 <translation id="4374831787438678295">Լինուքսի տեղադրիչ</translation>
@@ -2902,6 +2909,7 @@
 <translation id="4565377596337484307">Թաքցնել գաղտնաբառը</translation>
 <translation id="4565917129334815774">Պահել համակարգի մատյանները</translation>
 <translation id="456717285308019641">Թարգմանվող էջի լեզուն</translation>
+<translation id="4567533462991917415">Կարգավորումից հետո դուք ցանկացած ժամանակ կարող եք նոր օգտատերեր ավելացնել։ Նրանցից յուրաքանչյուրը կարող է անհատականացնել հաշիվը և գաղտնի պահել իր տվյալները։</translation>
 <translation id="4567772783389002344">Ավելացնել բառը</translation>
 <translation id="4568025708905928793">Անհրաժեշտ է անվտանգության բանալի</translation>
 <translation id="4568213207643490790">Այս սարքում չի թույլատրվում օգտագործել Google հաշիվներ։</translation>
@@ -2953,6 +2961,7 @@
 <translation id="4628762811416793313">Չհաջողվեց ավարտել Linux-ի կոնտեյների կարգավորումը: Նորից փորձեք:</translation>
 <translation id="4633003931260532286">Ընդլայնումը պահանջում է «<ph name="IMPORT_NAME" />»՝ «<ph name="IMPORT_VERSION" />» նվազագույն տարբերակով, սակայն տեղադրված է «<ph name="INSTALLED_VERSION" />» տարբերակը</translation>
 <translation id="4633757335284074492">Կրկնօրինակ Google Drive-ում։ Ցանկացած ժամանակ հեշտությամբ վերականգնեք ձեր տվյալները կամ տեղափոխեք մեկ այլ սարք։ Պահուստավորումը ներառում է հավելվածների տվյալները։ Կրկնօրինակները վերբեռնվում են Google և գաղտնագրվում ձեր երեխայի Google հաշվի գաղտնաբառի միջոցով։</translation>
+<translation id="4634575639321169635">Կարգավորեք այս սարքը անձնական օգտագործման կամ աշխատանքի համար</translation>
 <translation id="4634771451598206121">Նորից մուտք գործել…</translation>
 <translation id="4635072447747973225">Ապատեղադրել Crostini-ն</translation>
 <translation id="4635398712689569051">«<ph name="PAGE_NAME" />» էջը հասանելի չէ հյուրի ռեժիմում:</translation>
@@ -3372,6 +3381,7 @@
 <translation id="5185386675596372454">«<ph name="EXTENSION_NAME" />»-ի նոր տարբերակն անջատվել է, քանի որ նրա համար լրացուցիչ թույլտվություններ են պահանջվում:</translation>
 <translation id="5185500136143151980">Կապ չկա</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287"><ph name="PROFILE_LOCAL_NAME" />՝ գործողությունների ընտրացանկ</translation>
 <translation id="5190926251776387065">Ակտիվացնել միացքը</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> հավելվածն ուզում է ներբեռնել մի քանի ֆայլ</translation>
 <translation id="5192062846343383368">Բացեք Family Link հավելվածը՝ ծնողական վերահսկողության կարգավորումները տեսնելու համար</translation>
@@ -3620,6 +3630,7 @@
 <translation id="5495597166260341369">Չանջատել էկրանը</translation>
 <translation id="5496587651328244253">Կազմակերպել</translation>
 <translation id="5497251278400702716">Այս ֆայլը</translation>
+<translation id="5498967291577176373">Գրեք ավելի արագ՝ անվան, հասցեի և հեռախոսահամարի ներկառուցված հուշումների օգնությամբ</translation>
 <translation id="5499313591153584299">Այս ֆայլը կարող է վնասաբեր լինել ձեր համակարգչի համար:</translation>
 <translation id="5499453227627332024">Լինուքսի կոնտեյների համար հասանելի է նոր տարբերակ։ Դուք նաև կարող եք նորացնել կոնտեյներն ավելի ուշ Կարգավորումներում։</translation>
 <translation id="5500709606820808700">Անվտանգության ստուգումն այսօր է արվել</translation>
@@ -3776,6 +3787,7 @@
 <translation id="5689516760719285838">Տեղորոշում</translation>
 <translation id="56907980372820799">Հղման տվյալներ</translation>
 <translation id="5691511426247308406">Ընտանիք</translation>
+<translation id="5691581861107245578">Ստացեք զմայլիկների առաջարկներ՝ ձեր մուտքագրած տեքստի հիման վրա</translation>
 <translation id="5691772641933328258">Չհաջողվեց ճանաչել մատնահետքը</translation>
 <translation id="5692183275898619210">Տպումն ավարտվեց</translation>
 <translation id="569425414730375234">Ընթացիկ ինկոգնիտո աշխատաշրջանը՝ <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4135,6 +4147,7 @@
 <translation id="6124698108608891449">Այս կայքին անհրաժեշտ են լրացուցիչ թույլտվություններ։</translation>
 <translation id="6125479973208104919">Հարկավոր է նորից ավելացնել հաշիվը <ph name="DEVICE_TYPE" /> սարքում:</translation>
 <translation id="6129691635767514872">Ընտրված տվյալները հեռացվել են Chrome-ից ու համաժամացված սարքերից: Պատմությունը կարող է պահվել նաև ձեր Google հաշվում, օրինակ՝ որոնումների և Google-ի ծառայություններում ձեր գործողությունների տեսքով: Այդ տվյալները կարող եք գտնել <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> էջում:</translation>
+<translation id="6129839611163153407">Ձեր երեխան</translation>
 <translation id="6129938384427316298">Netscape-ի վկայագրի մեկնաբանություն</translation>
 <translation id="6129953537138746214">Բացատ</translation>
 <translation id="6130692320435119637">Ավելացնել Wi-Fi</translation>
@@ -4175,6 +4188,7 @@
 <translation id="6178664161104547336">Ընտրեք վկայագիր</translation>
 <translation id="6181431612547969857">Ներբեռնումն արգելափակված է</translation>
 <translation id="6185132558746749656">Սարքի տեղադրությունը</translation>
+<translation id="6195446518998936840">Ծնողական վերահսկողությունը կարգավորելու համար երեխան պետք է ունենա Google հաշիվ, որը դուք կօգնեք կառավարել։ Family Link հավելվածում դուք կարող եք սահմանափակել սարքի օգտագործման ժամանակը, թույլատրել կամ արգելափակել կայքեր և շատ ավելին։</translation>
 <translation id="6195693561221576702">Անցանց դեմո ռեժիմն այս սարքի համար հասանելի չէ։</translation>
 <translation id="6196640612572343990">Արգելափակել երրորդ կողմի քուքիները</translation>
 <translation id="6196854373336333322">Ձեր պրոքսիի կարգավորումները վերահսկվում են «<ph name="EXTENSION_NAME" />» ընդլայնման կողմից: Դա նշանակում է, որ այն կարող է փոխել, խափանել կամ աննկատ գրառել այն ամենը, ինչ անում եք առցանց: Եթե չգիտեք, թե ինչու է այդ փոփոխությունը տեղի ունեցել, հավանաբար դուք դա չէիք ուզում:</translation>
@@ -5927,6 +5941,7 @@
 <translation id="8372369524088641025">WEP բանալին սխալ է</translation>
 <translation id="8372477600026034341">Լրացուցիչ հանգույցներ</translation>
 <translation id="8373652277231415614">Crostini-ի ընդհանուր գրացուցակներ</translation>
+<translation id="8376384591331888629">Ներառել երրորդ կողմի քուքիներն այս կայքում</translation>
 <translation id="8378714024927312812">Կառավարվում է ձեր կազմակերպության կողմից</translation>
 <translation id="8379878387931047019">Սարքը չի աջակցում այս կայքի պահանջած անվտանգության բանալու տեսակը</translation>
 <translation id="8379991678458444070">Էջանշեք այս ներդիրը՝ ավելի ուշ այցելելու համար</translation>
@@ -6010,6 +6025,7 @@
 <translation id="8481187309597259238">Հաստատեք USB-ի թույլտվությունները</translation>
 <translation id="8483248364096924578">IP հասցե</translation>
 <translation id="8487678622945914333">Zoom In</translation>
+<translation id="8489156414266187072">Անհատական առաջարկները ցուցադրվում են միայն ձեր հաշվում</translation>
 <translation id="8490896350101740396">Թարմացվել են հետևյալ kiosk հավելվածները՝ «<ph name="UPDATED_APPS" />»: Թարմացումն ավարտելու համար վերագործարկեք սարքը:</translation>
 <translation id="8493236660459102203">Խոսափող`</translation>
 <translation id="8496717697661868878">Գործարկել այս փլագինը</translation>

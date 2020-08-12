@@ -320,6 +320,12 @@ class CORE_EXPORT NativeValueTraitsStringAdapter {
     return *this;
   }
 
+  void Init(v8::Local<v8::String> value) {
+    DCHECK(v8_string_.IsEmpty());
+    DCHECK(wtf_string_.IsNull());
+    v8_string_ = value;
+  }
+
   // NOLINTNEXTLINE(google-explicit-constructor)
   operator String() const { return ToString<String>(); }
   // NOLINTNEXTLINE(google-explicit-constructor)

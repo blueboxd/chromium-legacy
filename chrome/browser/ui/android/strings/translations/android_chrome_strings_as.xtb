@@ -152,6 +152,7 @@
 <translation id="2154710561487035718">URL প্ৰতিলিপি কৰক</translation>
 <translation id="2156074688469523661">বাকী থকা ছাইটসমূহ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">আপোনাৰ ফ’নৰ পৰা অন্য ডিভাইচলৈ কোনো সমল শ্বেয়াৰ কৰিবলৈ দুয়োটা ডিভাইচৰ Chromeৰ ছেটিংসমূহলৈ গৈ ছিংক অন কৰক</translation>
+<translation id="2158408438301413340">Chromeএ সকলো পাছৱৰ্ড পৰীক্ষা কৰিব নোৱাৰিলে</translation>
 <translation id="2169830938017475061">Now</translation>
 <translation id="2175927920773552910">কিউআৰ ক’ড</translation>
 <translation id="218608176142494674">শ্বেয়াৰ কৰি থকা হৈছে</translation>
@@ -160,6 +161,7 @@
 <translation id="2239812875700136898">সন্ধান কৰক বুটামটোৰ বিকল্পসমূহৰ পৰা আপোনাৰ কাহিনীসমূহ নিয়ন্ত্ৰণ কৰক</translation>
 <translation id="2259659629660284697">পাছৱর্ডসমূহ ৰপ্তানি কৰক…</translation>
 <translation id="2268044343513325586">পৰিষ্কৰণ</translation>
+<translation id="2276696007612801991">আপোনাৰ পাছৱৰ্ডসমূহ পৰীক্ষা কৰিবলৈ আপোনাৰ Google একাউণ্টত ছাইন ইন কৰক</translation>
 <translation id="2286841657746966508">বিলিঙৰ ঠিকনা</translation>
 <translation id="230115972905494466">খাপ খোৱা কোনো ডিভাইচ বিচাৰি পোৱা নগ’ল</translation>
 <translation id="2318045970523081853">কল কৰিবলৈ টিপক</translation>
@@ -316,6 +318,7 @@
 <translation id="3493531032208478708">পৰামৰ্শ দিয়া সমলৰ বিষয়ে <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" /></translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3507132249039706973">সাধাৰণ সুৰক্ষা অন আছে</translation>
+<translation id="3509330069915219067">অফলাইন হৈ আছে। Chromeএ আপডে’ট আছেনে নাই পৰীক্ষা কৰিব নোৱাৰে।</translation>
 <translation id="3513704683820682405">পৰিৱৰ্ধিত বাস্তৱিকতা</translation>
 <translation id="3518985090088779359">গ্ৰহণ কৰি আগুৱাওক</translation>
 <translation id="3522247891732774234">আপডে’ট উপলব্ধ। অধিক বিকল্প</translation>
@@ -365,6 +368,7 @@
 <translation id="3895926599014793903">বলেৰে জুম সক্ষম কৰক</translation>
 <translation id="3909763690984331376">সুৰক্ষা পৰীক্ষা <ph name="BEGIN_NEW" />নতুন<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">ৱেবৰ পৰা উৎকৃষ্টসমূহ বিচাৰি উলিয়াই থকা হৈছে…</translation>
+<translation id="3924911262913579434"><ph name="SAFE_BROWSING_MODE" /> অন আছে</translation>
 <translation id="3927692899758076493">ছান্‌ছ-ছেৰিফ</translation>
 <translation id="3928666092801078803">মোৰ ডেটা সংযুক্ত কৰক</translation>
 <translation id="393697183122708255">সক্ষম কণ্ঠধ্বনিৰে সন্ধানৰ সুবিধা নাই</translation>
@@ -372,6 +376,7 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{আপোনাৰ পৃষ্ঠাটো সাজু হ'লে Chromeএ সেইটো ল'ড কৰিব}one{আপোনাৰ পৃষ্ঠাসমূহ সাজু হ'লে Chromeএ সেইটো ল'ড কৰিব}other{আপোনাৰ পৃষ্ঠাসমূহ সাজু হ'লে Chromeএ সেইটো ল'ড কৰিব}}</translation>
 <translation id="3963007978381181125">পাছফ্ৰেজ এনক্ৰিপশ্বনত Google Payৰ পৰিশোধ পদ্ধতি আৰু ঠিকনা অন্তৰ্ভুক্ত নহয়। আপোনাৰ পাছফ্ৰেজ জনা কোনোবাইহে আপুনি এনক্ৰিপ্ট কৰি থোৱা ডেটা পঢ়িব পাৰে। পাছফ্ৰেজটো ক’লৈকো পঠিওৱা নহয় আৰু সেইটো Googleত ষ্ট'ৰ কৰা নাথাকে। আপুনি যদি নিজৰ পাছফ্ৰেজটো পাহৰে বা এই ছেটিংটো সলাব বিচাৰে, ছিংক ৰিছেট কৰিব লাগিব। <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">ডাউনল’ড সম্পূৰ্ণ হ’ল</translation>
+<translation id="3969142555815019568">Chromeএ আপোনাৰ পাছৱৰ্ডসমূহ পৰীক্ষা কৰিব নোৱাৰে</translation>
 <translation id="3974987681202239636"><ph name="APP_NAME" /> Chromeত খুলিব। অব্যাহত ৰাখি আপুনি <ph name="BEGIN_LINK1" />Google সেৱাৰ চৰ্তাৱলী<ph name="END_LINK1" /> আৰু <ph name="BEGIN_LINK2" />Google Chrome আৰু Chrome OSৰ সেৱাৰ অতিৰিক্ত চৰ্তাৱলী<ph name="END_LINK2" />ত সন্মতি দিয়ে। <ph name="BEGIN_LINK3" />Family Linkৰ জৰিয়তে পৰিচালনা কৰা Google একাউণ্টৰ বাবে গোপনীয়তাৰ জাননী<ph name="END_LINK3" />টোও প্ৰযোজ্য হয়।</translation>
 <translation id="397583555483684758">ছিংক কৰা সুবিধাটোৱে কাম কৰা বন্ধ কৰিছে</translation>
 <translation id="3976396876660209797">এই শ্বৰ্টকাটটো আঁতৰাই ইয়াক আকৌ বনাওক</translation>
@@ -447,6 +452,7 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> খোলক</translation>
 <translation id="4634124774493850572">পাছৱৰ্ড দিয়ক</translation>
 <translation id="4650364565596261010">ছিষ্টেম ডিফ’ল্ট</translation>
+<translation id="465657074423018424">সুৰক্ষিত ব্ৰাউজিঙে আপোনাক প্ৰতাৰণামূলক ৱেবছাইটৰ পৰা সুৰক্ষা দিয়ে। আপুনি যদি এইটো অফ কৰে, ব্ৰাউজ কৰোঁতে অতি সাৱধান হওক, বিশেষকৈ পাছৱৰ্ড দিয়াৰ আগত।</translation>
 <translation id="4662373422909645029">উপনামত সংখ্যা থাকিব নোৱাৰে</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" />টা বুকমাৰ্ক মচা হ’ল</translation>
 <translation id="4665282149850138822">আপোনাৰ গৃহ স্ক্ৰীণত <ph name="NAME" />ক যোগ দিয়া হৈছে</translation>
@@ -783,6 +789,7 @@
 <translation id="7071521146534760487">একাউণ্ট পৰিচালনা কৰক</translation>
 <translation id="7077143737582773186">এছডি কাৰ্ড</translation>
 <translation id="7080806333218412752">URLসমূহ পৰীক্ষা কৰিবলৈ সুৰক্ষিত ব্ৰাউজিঙলৈ পঠিয়ায়। নতুন ভাবুকিবোৰ বিচাৰি পোৱাত সহায় কৰিবলৈ পৃষ্ঠা, ডাউনল’ড, এক্সটেনশ্বনৰ কাৰ্যকলাপ আৰু ছিষ্টেমৰ তথ্যৰ এটা সৰু নমুনাও পঠিয়ায়। আপুনি ছাইন ইন হৈ থকা অৱস্থাত আপোনাক Googleৰ সমগ্ৰ এপত সুৰক্ষা প্ৰদান কৰিবলৈ এই ডেটাখিনি অস্থায়ীভাৱে আপোনাৰ Google একাউণ্টৰ সৈতে লিংক কৰে।</translation>
+<translation id="7088681679121566888">Chrome আপ টু ডে’ট আছে</translation>
 <translation id="7121362699166175603">ঠিকনাৰ বাৰত ইতিহাস আৰু স্বয়ংক্ৰিয়ভাৱে পুৰ হোৱা তথ্য মচে। <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />ত আপোনাৰ Google একাউণ্টৰ অন্য প্ৰকাৰৰ ব্ৰাউজিং ইতিহাস থাকিব পাৰে।</translation>
 <translation id="7128355412245153445">আপুনি গৃহপৃষ্ঠাৰ বুটামটো টিপিলে আপোনাৰ শীর্ষ ছাইটসমূহ আৰু শেহতীয়া কাহিনীবোৰ দেখা পাওক</translation>
 <translation id="7138678301420049075">অন্য</translation>
@@ -803,6 +810,7 @@
 <translation id="7293171162284876153">ছিংক কৰা আৰম্ভ কৰিবলৈ "আপোনাৰ Chrome ডেটা ছিংক কৰক" অন কৰক।</translation>
 <translation id="729975465115245577">পাছৱৰ্ডৰ ফাইলটো সঞ্চয় কৰিবলৈ আপোনাৰ ডিভাইচত কোনো এপ্‌ নাই।</translation>
 <translation id="7302081693174882195">সবিশেষ: ছেভ কৰা ডেটাৰ পৰিমাণৰ ভিত্তিত সজোৱা হৈছে</translation>
+<translation id="7304873321153398381">অফলাইন হৈ আছে। Chromeএ আপোনাৰ পাছৱৰ্ডসমূহ পৰীক্ষা কৰিব নোৱাৰে</translation>
 <translation id="7328017930301109123">লাইট ম'ডত Chromeএ পৃষ্ঠা খৰতকীয়াকৈ ল'ড কৰে আৰু ৬০ শতাংশলৈকে কম ডেটা ব্যৱহাৰ কৰে।</translation>
 <translation id="7333031090786104871">এতিয়াও পূৰ্বৱৰ্তী ছাইট যোগ কৰি থকা হৈছে</translation>
 <translation id="7340958967809483333">Discoverৰ বিকল্পসমূহ</translation>
@@ -816,6 +824,7 @@
 <translation id="741204030948306876">হয়, মই সন্মত</translation>
 <translation id="7413229368719586778">আৰম্ভণি দিন <ph name="DATE" /></translation>
 <translation id="7431991332293347422">আপোনাক Search আৰু অন্য সেৱাসমূহত ব্যক্তিগতকৰণ কৰা অভিজ্ঞতা প্ৰদান কৰিবলৈ কেনেকৈ আপোনাৰ ব্ৰাউজিংৰ ইতিহাস ব্যৱহাৰ কৰা হয় সেয়া নিয়ন্ত্ৰণ কৰক</translation>
+<translation id="7435356471928173109">আপোনাৰ প্ৰশাসকে অফ কৰিছে</translation>
 <translation id="7437998757836447326">Chromeৰ পৰা ছাইন আউট কৰক</translation>
 <translation id="7438641746574390233">লাইট ম’ড অন কৰা থাকিলে, পৃষ্ঠাবোৰ দ্ৰুতভাৱে ল’ড কৰিবলৈ Chromeএ Google ছাৰ্ভাৰ ব্যৱহাৰ কৰে৷ লাইট ম’ডে অত্যন্ত লেহেমীয়া পৃষ্ঠাবোৰক দুনাই লিখে যাতে অত্যাৱশ্যকীয় সমলহে ল’ড হয়৷ লাইট ম’ড ইনক’গনিট’ টেবত প্ৰয়োগ নহয়৷</translation>
 <translation id="7444811645081526538">অধিক শ্ৰেণী</translation>
@@ -1030,6 +1039,7 @@
 <translation id="9050666287014529139">পাছফ্ৰেজ</translation>
 <translation id="9063523880881406963">ডেস্কটপ ছাইট অনুৰোধ কৰা সুবিধাটি বন্ধ কৰক</translation>
 <translation id="9065203028668620118">সম্পাদনা কৰক</translation>
+<translation id="9069543557624799859">ডাউনল’ডটো <ph name="TIME" />ত আৰম্ভ হ’ব।</translation>
 <translation id="9070377983101773829">কণ্ঠধ্বনিৰ জৰিয়তে সন্ধান আৰম্ভ কৰক</translation>
 <translation id="9074336505530349563">Googleএ পৰামৰ্শ কৰা ব্যক্তিগতকৰণ কৰা সমল পাবলৈ ছাইন ইন কৰি ছিংক অন কৰক</translation>
 <translation id="9086302186042011942">ছিংক কৰি থকা হৈছে</translation>

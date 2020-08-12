@@ -400,43 +400,47 @@ class CupsPrintersManagerImpl
                          PrinterStatusCallback cb,
                          PrinterQueryResult result,
                          const ::printing::PrinterStatus& printer_status) {
-    if (result == PrinterQueryResult::UNREACHABLE) {
-      PRINTER_LOG(ERROR)
-          << "Printer status request failed. Could not reach printer "
-          << printer_id;
-      CupsPrinterStatus error_printer_status(printer_id);
-      error_printer_status.AddStatusReason(
-          CupsPrinterStatus::CupsPrinterStatusReason::Reason::
-              kPrinterUnreachable,
-          CupsPrinterStatus::CupsPrinterStatusReason::Severity::kError);
-      std::move(cb).Run(std::move(error_printer_status));
-      return;
-    }
+    switch (result) {
+      case PrinterQueryResult::UNREACHABLE: {
+        PRINTER_LOG(ERROR)
+            << "Printer status request failed. Could not reach printer "
+            << printer_id;
+        CupsPrinterStatus error_printer_status(printer_id);
+        error_printer_status.AddStatusReason(
+            CupsPrinterStatus::CupsPrinterStatusReason::Reason::
+                kPrinterUnreachable,
+            CupsPrinterStatus::CupsPrinterStatusReason::Severity::kError);
+        std::move(cb).Run(std::move(error_printer_status));
+        break;
+      }
+      case PrinterQueryResult::UNKNOWN_FAILURE: {
+        PRINTER_LOG(ERROR) << "Printer status request failed. Unknown failure "
+                              "trying to reach printer "
+                           << printer_id;
+        CupsPrinterStatus error_printer_status(printer_id);
+        error_printer_status.AddStatusReason(
+            CupsPrinterStatus::CupsPrinterStatusReason::Reason::kUnknownReason,
+            CupsPrinterStatus::CupsPrinterStatusReason::Severity::kWarning);
+        std::move(cb).Run(std::move(error_printer_status));
+        break;
+      }
+      case PrinterQueryResult::SUCCESS: {
+        // Convert printing::PrinterStatus to printing::CupsPrinterStatus
+        CupsPrinterStatus cups_printers_status =
+            PrinterStatusToCupsPrinterStatus(printer_id, printer_status);
 
-    if (result == PrinterQueryResult::UNKNOWN_FAILURE) {
-      PRINTER_LOG(ERROR) << "Printer status request failed. Unknown failure "
-                            "trying to reach printer "
-                         << printer_id;
-      CupsPrinterStatus error_printer_status(printer_id);
-      error_printer_status.AddStatusReason(
-          CupsPrinterStatus::CupsPrinterStatusReason::Reason::kUnknownReason,
-          CupsPrinterStatus::CupsPrinterStatusReason::Severity::kWarning);
-      std::move(cb).Run(std::move(error_printer_status));
-      return;
-    }
+        // Save the PrinterStatus so it can be attached along side future
+        // Printer retrievals.
+        printers_.SavePrinterStatus(printer_id, cups_printers_status);
 
-    if (result == PrinterQueryResult::SUCCESS) {
-      // Convert printing::PrinterStatus to printing::CupsPrinterStatus
-      CupsPrinterStatus cups_printers_status =
-          PrinterStatusToCupsPrinterStatus(printer_id, printer_status);
-
-      // Save the PrinterStatus so it can be attached along side future Printer
-      // retrievals.
-      printers_.SavePrinterStatus(printer_id, cups_printers_status);
-
-      // Send status back to the handler through PrinterStatusCallback.
-      std::move(cb).Run(std::move(cups_printers_status));
-      return;
+        // Send status back to the handler through PrinterStatusCallback.
+        std::move(cb).Run(std::move(cups_printers_status));
+        break;
+      }
+      default: {
+        NOTREACHED();
+        break;
+      }
     }
   }
 

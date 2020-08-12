@@ -463,7 +463,8 @@ def make_v8_to_blink_value(blink_var_name,
                            v8_value_expr,
                            idl_type,
                            argument_index=None,
-                           default_value=None):
+                           default_value=None,
+                           cg_context=None):
     """
     Returns a SymbolNode whose definition converts a v8::Value to a Blink value.
     """
@@ -476,6 +477,25 @@ def make_v8_to_blink_value(blink_var_name,
 
     T = TextNode
     F = lambda *args, **kwargs: T(_format(*args, **kwargs))
+
+    # Use of fast path is a trade-off between speed and binary size, so apply
+    # it only when it's effective.  This hack is most significant on Android.
+    use_fast_path = (
+        cg_context and cg_context.operation
+        and not (cg_context.is_return_type_promise_type or
+                 "RaisesException" in cg_context.operation.extended_attributes)
+        and all(arg.idl_type.type_name == "String"
+                for arg in cg_context.operation.arguments))
+    fast_path_cond = None
+    fast_path_body_text = None
+    if not use_fast_path:
+        pass
+    elif idl_type.type_name == "String":
+        # A key point of this fast path is that it doesn't require an
+        # ExceptionState.
+        fast_path_cond = "LIKELY({}->IsString())".format(v8_value_expr)
+        fast_path_body_text = "{}.Init({}.As<v8::String>());".format(
+            blink_var_name, v8_value_expr)
 
     def create_definition(symbol_node):
         if argument_index is None:
@@ -496,48 +516,60 @@ def make_v8_to_blink_value(blink_var_name,
             _1=native_value_tag(idl_type),
             _2=func_name,
             _3=", ".join(arguments))
+        default_expr = (make_default_value_expr(idl_type, default_value)
+                        if default_value else None)
+        exception_exit_node = CxxUnlikelyIfNode(
+            cond="${exception_state}.HadException()", body=T("return;"))
 
-        if default_value is None:
+        if not (default_expr or fast_path_cond):
             return SymbolDefinitionNode(symbol_node, [
                 F("auto&& ${{{}}} = {};", blink_var_name, blink_value_expr),
-                CxxUnlikelyIfNode(
-                    cond="${exception_state}.HadException()",
-                    body=T("return;")),
+                exception_exit_node,
             ])
 
-        nodes = []
-        arg_type = _format(
+        blink_var_type = _format(
             "decltype(NativeValueTraits<{}>::NativeValue("
             "std::declval<v8::Isolate*>(), "
             "std::declval<v8::Local<v8::Value>>(), "
             "std::declval<ExceptionState&>()))", native_value_tag(idl_type))
-        default_expr = make_default_value_expr(idl_type, default_value)
-        if default_expr.is_initialization_lightweight:
-            nodes.append(
-                F("{} ${{{}}}{{{}}};", arg_type, blink_var_name,
-                  default_expr.initializer_expr))
+        if default_expr and default_expr.is_initialization_lightweight:
+            pattern = "{} ${{{}}}{{{}}};"
+            args = [
+                blink_var_type, blink_var_name, default_expr.initializer_expr
+            ]
         else:
-            nodes.append(F("{} ${{{}}};", arg_type, blink_var_name))
+            pattern = "{} ${{{}}};"
+            args = [blink_var_type, blink_var_name]
+        blink_var_def_node = F(pattern, *args)
         assignment = [
             F("${{{}}} = {};", blink_var_name, blink_value_expr),
-            CxxUnlikelyIfNode(
-                cond="${exception_state}.HadException()", body=T("return;")),
+            exception_exit_node,
         ]
-        if (default_expr.initializer_expr is None
-                or default_expr.is_initialization_lightweight):
-            nodes.append(
-                CxxLikelyIfNode(
-                    cond="!{}->IsUndefined()".format(v8_value_expr),
-                    body=assignment))
+        if not default_expr:
+            pass
+        elif (default_expr.initializer_expr is None
+              or default_expr.is_initialization_lightweight):
+            assignment = CxxLikelyIfNode(
+                cond="!{}->IsUndefined()".format(v8_value_expr),
+                body=assignment)
         else:
-            nodes.append(
-                CxxIfElseNode(cond="{}->IsUndefined()".format(v8_value_expr),
-                              then=F("${{{}}} = {};", blink_var_name,
-                                     default_expr.assignment_value),
-                              then_likeliness=Likeliness.LIKELY,
-                              else_=assignment,
-                              else_likeliness=Likeliness.LIKELY))
-        return SymbolDefinitionNode(symbol_node, nodes)
+            assignment = CxxIfElseNode(
+                cond="{}->IsUndefined()".format(v8_value_expr),
+                then=F("${{{}}} = {};", blink_var_name,
+                       default_expr.assignment_value),
+                then_likeliness=Likeliness.LIKELY,
+                else_=assignment,
+                else_likeliness=Likeliness.LIKELY)
+        if fast_path_cond:
+            assignment = CxxIfElseNode(cond=fast_path_cond,
+                                       then=T(fast_path_body_text),
+                                       then_likeliness=Likeliness.LIKELY,
+                                       else_=assignment,
+                                       else_likeliness=Likeliness.UNLIKELY)
+        return SymbolDefinitionNode(symbol_node, [
+            blink_var_def_node,
+            assignment,
+        ])
 
     return SymbolNode(blink_var_name, definition_constructor=create_definition)
 

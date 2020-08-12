@@ -9,6 +9,7 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser.h"
@@ -45,15 +46,22 @@ class WebAppIconManagerBrowserTest : public InProcessBrowserTest {
  protected:
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
+  void SetUpOnMainThread() override {
+    app_service_test_.SetUp(browser()->profile());
+  }
+
   // InProcessBrowserTest:
   void SetUp() override {
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
     InProcessBrowserTest::SetUp();
   }
 
+  apps::AppServiceTest& app_service_test() { return app_service_test_; }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
+  apps::AppServiceTest app_service_test_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppIconManagerBrowserTest);
 };
@@ -99,6 +107,15 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
     run_loop.Run();
   }
 
+#if defined(OS_CHROMEOS)
+  gfx::ImageSkia image_skia;
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    app_service_test().FlushMojoCalls();
+    image_skia = app_service_test().LoadAppIconBlocking(
+        apps::mojom::AppType::kWeb, app_id, web_app::kWebAppIconSmall);
+  }
+#endif
+
   WebAppBrowserController* controller;
   {
     apps::AppLaunchParams params(
@@ -115,6 +132,20 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
   }
 
   base::RunLoop run_loop;
+
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    controller->SetReadIconCallbackForTesting(base::BindLambdaForTesting(
+        [controller, &image_skia, &run_loop, this]() {
+          EXPECT_TRUE(app_service_test().AreIconImageEqual(
+              image_skia, controller->GetWindowAppIcon()));
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return;
+  }
+#endif
+
   controller->SetReadIconCallbackForTesting(
       base::BindLambdaForTesting([controller, &run_loop]() {
         const SkBitmap* bitmap = controller->GetWindowAppIcon().bitmap();

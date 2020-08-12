@@ -159,7 +159,7 @@ class CORE_EXPORT LocalFrame final
       InterfaceRegistry*,
       const base::TickClock* clock = base::DefaultTickClock::GetInstance());
 
-  void Init();
+  void Init(Frame* opener);
   void SetView(LocalFrameView*);
   void CreateView(const IntSize&, const Color&);
 

@@ -28,13 +28,13 @@ namespace {
 static const ModelType kStartOrder[] = {
     NIGORI,  //  Listed for completeness.
     DEVICE_INFO,
-    PROXY_TABS,              //  Listed for completeness.
+    PROXY_TABS,  //  Listed for completeness.
 
     // Kick off the association of the non-UI types first so they can associate
     // in parallel with the UI types.
     PASSWORDS, AUTOFILL, AUTOFILL_PROFILE, AUTOFILL_WALLET_DATA,
-    AUTOFILL_WALLET_METADATA, EXTENSION_SETTINGS, APP_SETTINGS, TYPED_URLS,
-    HISTORY_DELETE_DIRECTIVES,
+    AUTOFILL_WALLET_METADATA, AUTOFILL_WALLET_OFFER, EXTENSION_SETTINGS,
+    APP_SETTINGS, TYPED_URLS, HISTORY_DELETE_DIRECTIVES,
 
     // Chrome OS settings affect the initial desktop appearance before the
     // browser window opens, so start them before browser data types.

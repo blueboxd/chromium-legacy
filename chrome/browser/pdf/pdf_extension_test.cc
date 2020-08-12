@@ -866,6 +866,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPdfSidenav) {
   RunTestsInJsModule("viewer_pdf_sidenav_test.js", "test.pdf");
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerThumbnailBar) {
+  // Although this test file does not require a PDF to be loaded, loading the
+  // elements without loading a PDF is difficult.
+  RunTestsInJsModule("viewer_thumbnail_bar_test.js", "test.pdf");
+}
+
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ToolbarManager) {
   RunTestsInJsModule("toolbar_manager_test.js", "test.pdf");
 }

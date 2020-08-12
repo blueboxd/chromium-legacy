@@ -403,6 +403,7 @@ void AppListItemView::ScaleAppIcon(bool scale_up) {
   ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds((kDragDropAppIconScaleTransitionInMs)));
+  settings.SetTweenType(gfx::Tween::EASE_OUT_2);
   if (scale_up) {
     if (is_folder_) {
       const gfx::Rect bounds(layer()->bounds().size());

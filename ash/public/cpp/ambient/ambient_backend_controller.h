@@ -27,6 +27,13 @@ struct ASH_PUBLIC_EXPORT AmbientModeTopic {
   AmbientModeTopic& operator=(const AmbientModeTopic&);
   ~AmbientModeTopic();
 
+  // Returns a non-empty url to load the landscape or portrait image.
+  std::string GetUrl() const;
+
+  // Details, i.e. the attribution, to be displayed for the current photo on
+  // ambient.
+  std::string details;
+
   // Image url.
   std::string url;
 

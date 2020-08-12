@@ -73,6 +73,7 @@
 
       Se il criterio viene impostato su false o non viene impostato, le informazioni non vengono segnalate.
       Se viene impostato su true, le informazioni sulla retroilluminazione del dispositivo vengono segnalate.</translation>
+<translation id="1076751984131277498">Lista consentita di dispositivi USB scollegabili</translation>
 <translation id="1079801999187584280">Non consentire l'utilizzo degli Strumenti per sviluppatori</translation>
 <translation id="1087437665304381368">Questa norma consente di controllare esclusivamente la modalità sviluppatore di <ph name="PRODUCT_OS_NAME" />. Se vuoi impedire l'accesso alle Opzioni sviluppatore Android, devi impostare la norma <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">L'elenco dei criteri di Chrome Enterprise è in fase di trasferimento. Aggiorna i tuoi preferiti con l'URL <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -509,6 +510,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se questa norma non viene impostata, la previsione di rete verrà attivata ma l'utente potrà modificarla.</translation>
 <translation id="1865417998205858223">Autorizzazioni chiave</translation>
+<translation id="1866563857170942397">Consente di definire l'elenco di utenti autorizzati ad accedere al dispositivo. Le voci sono nel formato <ph name="USER_ALLOWLIST_ENTRY_FORMAT" />, ad esempio <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Per autorizzare utenti arbitrari su un dominio, le voci devono essere nel formato <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
+
+      Se questo criterio non viene configurato, non esistono limitazioni relative agli utenti autorizzati ad accedere. Tieni presente che la creazione di nuovi utenti richiede comunque la corretta configurazione del criterio <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
 <translation id="186719019195685253">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della corrente CA</translation>
 <translation id="187819629719252111">Consente di accedere ai file locali presenti sul computer, permettendo a <ph name="PRODUCT_NAME" /> di visualizzare le finestre di dialogo di selezione dei file. Se attivi questa impostazione, gli utenti potranno aprire le finestre di dialogo di selezione dei file come di consueto. Se disattivi questa impostazione, ogni volta che l'utente eseguirà un'azione che apre una finestra di dialogo di selezione file (ad esempio importazione di Preferiti, caricamento di file, salvataggio di link e così via), verrà visualizzato un messaggio e il sistema presupporrà che l'utente abbia fatto clic sul pulsante Annulla della finestra di dialogo stessa. Se questa impostazione non viene impostata, gli utenti potranno aprire le finestre di dialogo di selezione file come di consueto.</translation>
 <translation id="1885782360784839335">Attiva la visualizzazione di contenuti promozionali a scheda intera</translation>
@@ -1796,6 +1800,9 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
 <translation id="3647212518036289905">La configurazione del criterio consente di specificare quale libreria GSSAPI utilizzare per l'autenticazione HTTP. Imposta il criterio sul nome di una libreria o su un percorso completo.
 
       Se il criterio non viene configurato, <ph name="PRODUCT_NAME" /> utilizza un nome di libreria predefinito.</translation>
+<translation id="3653234084868565720">Consente di stabilire se <ph name="PRODUCT_OS_NAME" /> permette la creazione di nuovi account utente. Se questo criterio viene impostato su falso, gli utenti che non hanno ancora un account non potranno accedere.
+
+      Se questo criterio viene impostato su vero o non viene configurato, sarà possibile creare nuovi account utente purché <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> non impedisca all'utente di accedere.</translation>
 <translation id="3653237928288822292">Icona del provider di ricerca predefinito</translation>
 <translation id="3654906736796256792">Consenti l'esecuzione della sandbox dell'audio</translation>
 <translation id="3657998022005237040">Blocca download di tipi di file non supportati</translation>
@@ -3142,6 +3149,11 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se non è specificata, questa norma non modifica l'URL del numero di inizializzazione delle varianti.</translation>
 <translation id="5561811616825571914">Seleziona automaticamente i certificati client per questi siti nella schermata di accesso</translation>
+<translation id="5564345250641049313">Consente di definire l'elenco di utenti autorizzati ad accedere al dispositivo. Le voci sono nel formato <ph name="USER_ALLOWLIST_ENTRY_FORMAT" />, ad esempio <ph name="USER_ALLOWLIST_ENTRY_EXAMPLE" />. Per autorizzare utenti arbitrari su un dominio, le voci devono essere nel formato <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
+
+      Se questo criterio non viene configurato, non esistono limitazioni relative agli utenti autorizzati ad accedere. Tieni presente che la creazione di nuovi utenti richiede comunque la corretta configurazione del criterio <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.
+
+      Questo criterio è deprecato. Usa il criterio <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" />.</translation>
 <translation id="5564865786900450806">Consente di eliminare l'avviso che viene mostrato quando <ph name="PRODUCT_NAME" /> è in esecuzione su un computer o un sistema operativo non più supportato.
 
       Se questo criterio è impostato su False o non viene impostato, gli avvisi verranno mostrati su tali computer o sistemi operativi non supportati.</translation>
@@ -3512,6 +3524,11 @@ Se il periodo di tempo non viene impostato, viene utilizzato un periodo di tempo
 La modalità di blocco dello schermo per inattività consigliata è l'attivazione del blocco schermo in caso di sospensione e la sospensione di <ph name="PRODUCT_OS_NAME" /> una volta trascorso il ritardo di inattività. Questa norma dovrebbe essere utilizzata soltanto quando il blocco dello schermo deve avvenire molto prima della sospensione o quando non si desidera attivare la sospensione in caso di inattività.
 
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere minori del ritardo di inattività.</translation>
+<translation id="6096729330325888677">L'impostazione del criterio consente di definire l'elenco di dispositivi USB che gli utenti possono scollegare dal proprio driver del kernel per essere utilizzati tramite l'API chrome.usb direttamente all'interno di un'app web. Le voci sono coppie costituite dall'ID fornitore USB e dall'ID prodotto per identificare un hardware specifico.
+
+      Se non viene configurato, l'elenco di dispositivi USB scollegabili è vuoto.
+
+      Questo criterio è deprecato. Usa il criterio <ph name="USB_DETACHABLE_ALLOWLIST" />.</translation>
 <translation id="6097601282776163274">Attiva la raccolta di dati anonimizzati con chiave URL</translation>
 <translation id="6099853574908182288">Modalità di stampa a colori predefinita</translation>
 <translation id="6102342563050263313">Attiva scorrimento al testo specificato in frammenti di URL</translation>
@@ -4158,6 +4175,16 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Se il criterio non viene impostato, la shelf verrà posizionata per impostazione predefinita nella parte inferiore dello schermo, ma l'utente potrà cambiare la posizione.</translation>
 <translation id="7040229947030068419">Valore di esempio:</translation>
 <translation id="7044883996351280650">Controlla il servizio backup e ripristino di Android</translation>
+<translation id="7063842402585660314">L'elenco di app consentite nella schermata di blocco di <ph name="PRODUCT_OS_NAME" />.
+
+      Se nella schermata di blocco viene attivata l'app per scrivere note preferita, nella schermata sarà presente l'elemento dell'interfaccia utente per avviare tale app.
+      Quando viene avviata, l'app può creare una finestra sopra la schermata di blocco e creare dati (note) nel contesto della schermata di blocco. L'app può importare note create nella sessione utente principale, quando la sessione è sbloccata. Attualmente, nella schermata di blocco sono supportate soltanto le app per scrivere note di Chrome.
+
+      Se il criterio viene configurato, l'utente può attivare un'app nella schermata di blocco soltanto se l'ID estensione dell'app è presente come valore nell'elenco del criterio.
+      Di conseguenza, se l'elenco di questo criterio viene lasciato vuoto, non è consentito scrivere note nella schermata di blocco.
+      Tieni presente che l'esistenza dell'ID di un'app nel criterio non implica necessariamente che l'utente può attivare l'app in questione come app per scrivere note nella schermata di blocco. Ad esempio, su Chrome 61, il gruppo di app disponibili è limitato ulteriormente dalla piattaforma.
+
+      Se il criterio non viene configurato, non ci sono limitazioni imposte da tale criterio relative al gruppo di app che l'utente può attivare nella schermata di blocco.</translation>
 <translation id="7063895219334505671">Consenti popup su questi siti</translation>
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="7068108874199666656">Consente di forzare l'applicazione della configurazione di rete per tutti gli utenti di un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON come definita nel formato Open Network Configuration.</translation>
@@ -5059,6 +5086,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8357681633047935212">Limita la durata di una sessione utente</translation>
+<translation id="8357989008292691856">Lista consentita di utenti con accesso</translation>
 <translation id="8359734107661430198">Attiva l'API ExampleDeprecatedFeature valida fino al 02/09/2008</translation>
 <translation id="8367209241899435947">Attiva Chrome Software Cleaner su Windows</translation>
 <translation id="8367473200119029349">Reporting su cloud</translation>

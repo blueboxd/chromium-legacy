@@ -127,14 +127,14 @@ void AccessibilityFocusHighlight::UseDefaultColorForTesting() {
 }
 
 SkColor AccessibilityFocusHighlight::GetHighlightColor() {
-  SkColor theme_color = browser_view_->GetNativeTheme()->GetSystemColor(
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForWeb();
+  SkColor theme_color = native_theme->GetSystemColor(
       ui::NativeTheme::kColorId_FocusedBorderColor);
 
   if (theme_color == SK_ColorTRANSPARENT || use_default_color_for_testing_)
     return default_color_;
 
-  return browser_view_->GetNativeTheme()->FocusRingColorForBaseColor(
-      theme_color);
+  return native_theme->FocusRingColorForBaseColor(theme_color);
 }
 
 void AccessibilityFocusHighlight::CreateOrUpdateLayer(gfx::Rect node_bounds) {

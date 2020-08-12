@@ -506,6 +506,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="6972754398087986839">Mulai</translation>
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="698231206551913481">Semua file dan data lokal yang dikaitkan ke pengguna ini akan dihapus secara permanen setelah pengguna ini dihapus.</translation>
+<translation id="7007983414944123363">PIN atau sandi Anda tidak dapat diverifikasi. Coba lagi.</translation>
 <translation id="7015766095477679451">Coba lagi pukul <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Hubungkan <ph name="DEVICE_NAME" /> dengan ponsel Anda</translation>
 <translation id="7026338066939101231">Pengurangan</translation>
@@ -551,6 +552,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="7568294522609223312">Nonaktifkan klik otomatis</translation>
 <translation id="7568637526529101738">Dengan klik kanan atau tekan lama, Asisten akan menampilkan info seperti definisi atau konversi unit untuk pilihan Anda.</translation>
 <translation id="7569509451529460200">Braille dan ChromeVox diaktifkan</translation>
+<translation id="7579778809502851308">Screenshot</translation>
 <translation id="7593891976182323525">Telusuri atau Shift</translation>
 <translation id="7600875258240007829">Lihat semua notifikasi</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
@@ -669,6 +671,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="8841375032071747811">Tombol kembali</translation>
 <translation id="8843682306134542540">Alihkan kunci rotasi. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">PIN atau sandi Anda belum dapat diverifikasi. Catatan: Jika Anda baru-baru ini mengubah sandi, gunakan sandi lama Anda. Sandi baru akan diterapkan setelah Anda logout.</translation>
 <translation id="8870509716567206129">Aplikasi tidak mendukung layar terpisah.</translation>
 <translation id="8874184842967597500">Tak terhubung</translation>
 <translation id="8877788021141246043">Setel pengingat</translation>

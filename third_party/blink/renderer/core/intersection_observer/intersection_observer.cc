@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/macros.h"
 #include "base/numerics/clamped_math.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_callback.h"
@@ -48,6 +47,10 @@ class IntersectionObserverDelegateImpl final
       : context_(context),
         callback_(std::move(callback)),
         delivery_behavior_(delivery_behavior) {}
+  IntersectionObserverDelegateImpl(const IntersectionObserverDelegateImpl&) =
+      delete;
+  IntersectionObserverDelegateImpl& operator=(
+      const IntersectionObserverDelegateImpl&) = delete;
 
   IntersectionObserver::DeliveryBehavior GetDeliveryBehavior() const override {
     return delivery_behavior_;
@@ -69,7 +72,6 @@ class IntersectionObserverDelegateImpl final
   WeakMember<ExecutionContext> context_;
   IntersectionObserver::EventCallback callback_;
   IntersectionObserver::DeliveryBehavior delivery_behavior_;
-  DISALLOW_COPY_AND_ASSIGN(IntersectionObserverDelegateImpl);
 };
 
 void ParseMargin(String margin_parameter,

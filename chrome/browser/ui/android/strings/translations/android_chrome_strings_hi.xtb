@@ -152,6 +152,7 @@
 <translation id="2154710561487035718">URL की कॉपी बनाएं</translation>
 <translation id="2156074688469523661">बाकी साइटें (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">अपने फ़ोन से किसी दूसरे डिवाइस पर कुछ शेयर करने के लिए, दोनों डिवाइस पर Chrome की सेटिंग में जाकर सिंक की सुविधा चालू करें</translation>
+<translation id="2158408438301413340">Chrome सभी पासवर्ड की जांच नहीं कर सका</translation>
 <translation id="2169830938017475061">अभी</translation>
 <translation id="2175927920773552910">क्यूआर कोड</translation>
 <translation id="218608176142494674">शेयर किया जा रहा है</translation>
@@ -160,6 +161,7 @@
 <translation id="2239812875700136898">डिस्कवर बटन के विकल्पों से सामग्री को नियंत्रित करें</translation>
 <translation id="2259659629660284697">पासवर्ड निर्यात करें…</translation>
 <translation id="2268044343513325586">बेहतर बनाएं</translation>
+<translation id="2276696007612801991">अपने पासवर्ड की जांच करने के लिए, Google खाते में साइन इन करें</translation>
 <translation id="2286841657746966508">बिलिंग पता</translation>
 <translation id="230115972905494466">कोई संगत डिवाइस नहीं मिला</translation>
 <translation id="2318045970523081853">कॉल करने के लिए टैप करें</translation>
@@ -316,6 +318,7 @@
 <translation id="3493531032208478708">सुझाई गई सामग्री के बारे में <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3507132249039706973">मानक सुरक्षा की सुविधा चालू है</translation>
+<translation id="3509330069915219067">ऑफ़लाइन. Chrome, अपडेट की जांच नहीं कर सकता.</translation>
 <translation id="3513704683820682405">ऑगमेंटेड रिएलिटी (AR)</translation>
 <translation id="3518985090088779359">स्‍वीकार करें और जारी रखें</translation>
 <translation id="3522247891732774234">अपडेट उपलब्ध है. ज़्यादा विकल्प</translation>
@@ -365,6 +368,7 @@
 <translation id="3895926599014793903">ज़बरदस्ती ज़ूम करना चालू करें</translation>
 <translation id="3909763690984331376">सुरक्षा जांच <ph name="BEGIN_NEW" />नया<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">वेब की सबसे अच्छी जानकारी ढूंढी जा रही है…</translation>
+<translation id="3924911262913579434"><ph name="SAFE_BROWSING_MODE" /> चालू है</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">मेरा डेटा संयोजित करें</translation>
 <translation id="393697183122708255">कोई चालू बोलकर खोजने की सुविधा उपलब्‍ध नहीं है</translation>
@@ -372,6 +376,7 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{तैयार होने पर Chrome आपका पेज लोड करेगा}one{तैयार होने पर Chrome आपके पेज लोड करेगा}other{तैयार होने पर Chrome आपके पेज लोड करेगा}}</translation>
 <translation id="3963007978381181125">लंबा पासवर्ड सुरक्षित करने के तरीके में Google Pay से भुगतान करने की विधि और पते शामिल नहीं हैं. सिर्फ़ वह इंसान आपका सुरक्षित किया हुआ डेटा पढ़ सकता है जिसके पास आपका लंबा पासवर्ड है. Google की ओर से लंबा पासवर्ड भेजा या संग्रहित नहीं किया जाता है. अगर आप अपना लंबा पासवर्ड भूल जाते हैं या इस सेटिंग को बदलना चाहते हैं, तो आपको सिंक रीसेट करना होगा. <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">डाउनलोड पूरा हुआ</translation>
+<translation id="3969142555815019568">Chrome आपके पासवर्ड की जांच नहीं कर सकता</translation>
 <translation id="3974987681202239636"><ph name="APP_NAME" />, Chrome में खुलेगा. जारी रखने का मतलब है कि आप <ph name="BEGIN_LINK1" />Google की सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />Google Chrome और Chrome OS की सेवा की अतिरिक्त शर्तों<ph name="END_LINK2" /> से सहमत हैं. साथ ही, आप <ph name="BEGIN_LINK3" />Family Link से प्रबंधित होने वाले Google खातों के लिए निजता सूचना<ph name="END_LINK3" /> से भी सहमत हैं.</translation>
 <translation id="397583555483684758">समन्‍वयन ने काम करना बंद कर दिया है</translation>
 <translation id="3976396876660209797">इस शॉर्टकट को निकालें और इसे फिर से बनाएं</translation>
@@ -447,6 +452,7 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> को खोलें</translation>
 <translation id="4634124774493850572">पासवर्ड का इस्तेमाल करें</translation>
 <translation id="4650364565596261010">सिस्टम डिफ़ॉल्ट</translation>
+<translation id="465657074423018424">सुरक्षित ब्राउज़िंग की सुविधा, धोखाधड़ी करने वाली वेबसाइटों से आपकी सुरक्षा करती है. अगर आप इसे बंद करते हैं, तो ब्राउज़ करते समय ज़्यादा सावधानी बरतें, खास तौर पर पासवर्ड डालने से पहले.</translation>
 <translation id="4662373422909645029">प्रचलित नाम में अंक शामिल नहीं कर सकते</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> बुकमार्क का पता लगा</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> को आपकी होम स्क्रीन में जोड़ा गया था</translation>
@@ -784,6 +790,7 @@
 <translation id="7071521146534760487">खाता प्रबंधित करें</translation>
 <translation id="7077143737582773186">SD कार्ड</translation>
 <translation id="7080806333218412752">जांच करने के लिए, सुरक्षित ब्राउज़िंग की सेवा को यूआरएल भेजता है. नए खतरों का पता लगाने के लिए पेज के नमूने, डाउनलोड, एक्सटेंशन की गतिविधि, और सिस्टम की जानकारी भी भेजता है. आपके साइन इन होने पर, थोड़ी देर के लिए इस डेटा को आपके Google खाते से जोड़ता है. ऐसा सभी Google ऐप्लिकेशन पर आपको सुरक्षित रखने के लिए किया जाता है.</translation>
+<translation id="7088681679121566888">Chrome अप-टू-डेट है</translation>
 <translation id="7121362699166175603">पता बार मेंअपने-आपपूर्णता और इतिहास को हटाता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकतेे हैं.</translation>
 <translation id="7128355412245153445">होम बटन पर टैप करके, अपनी पसंदीदा साइटें और हाल ही की खबरें देखें</translation>
 <translation id="7138678301420049075">अन्य</translation>
@@ -805,6 +812,7 @@
 <translation id="7293171162284876153">सिंक शुरू करने के लिए, "अपना Chrome डेटा सिंक करें" को चालू करें.</translation>
 <translation id="729975465115245577">आपके डिवाइस में पासवर्ड फ़ाइल को स्टोर करने वाला कोई ऐप्लिकेशन नहीं है.</translation>
 <translation id="7302081693174882195">जानकारी: बचाए गए डेटा की मात्रा के अनुसार क्रम से लगाया गया</translation>
+<translation id="7304873321153398381">ऑफ़लाइन. Chrome आपके पासवर्ड की जांच नहीं कर सकता.</translation>
 <translation id="7328017930301109123">'लाइट मोड' में, Chrome पेजों को ज़्यादा तेज़ी से लोड करता है और 60 प्रतिशत तक कम डेटा इस्तेमाल करता है.</translation>
 <translation id="7333031090786104871">पिछली साइट अब भी जोड़ी जा रही है</translation>
 <translation id="7340958967809483333">'डिस्कवर' के लिए विकल्प</translation>
@@ -818,6 +826,7 @@
 <translation id="741204030948306876">हां मैं सहमत हूं</translation>
 <translation id="7413229368719586778">शुरू होने की तारीख: <ph name="DATE" /></translation>
 <translation id="7431991332293347422">यह नियंत्रित करें कि खोज वगैरह को मनमुताबिक बनाने के लिए आपके ब्राउज़िंग इतिहास का इस्तेमाल कैसे किया जाए</translation>
+<translation id="7435356471928173109">आपके एडमिन ने बंद किया</translation>
 <translation id="7437998757836447326">Chrome से साइन आउट करें</translation>
 <translation id="7438641746574390233">लाइट मोड चालू होने पर, Chrome तेज़ी से पेज लोड करने के लिए Google के सर्वरों का इस्तेमाल करता है. लाइट मोड धीमे पेजों को फिर से लिखता है, ताकि सिर्फ़ ज़रूरी सामग्री लोड हो. लाइट मोड 'गुप्त' टैब पर लागू नहीं होता.</translation>
 <translation id="7444811645081526538">ज़्यादा श्रेणियां</translation>
@@ -1033,6 +1042,7 @@
 <translation id="9050666287014529139">पासफ़्रेज़ (लंबा पासवर्ड)</translation>
 <translation id="9063523880881406963">अनुरोध डेस्कटॉप साइट बंद करें</translation>
 <translation id="9065203028668620118">बदलाव करें</translation>
+<translation id="9069543557624799859">डाउनलोड <ph name="TIME" /> पर शुरू होगा.</translation>
 <translation id="9070377983101773829">बोलकर खोज चालू करें</translation>
 <translation id="9074336505530349563">Google की ओर से सुझाई गई मनमुताबिक सामग्री पाने के लिए, साइन इन करें और 'सिंक करें' को चालू करें</translation>
 <translation id="9086302186042011942">समन्वयित हो रहा है</translation>

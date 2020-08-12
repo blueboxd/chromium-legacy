@@ -102,7 +102,7 @@
 <translation id="1348198688976932919">O site que pretende visitar contém aplicações perigosas</translation>
 <translation id="1348779747280417563">Confirmar nome</translation>
 <translation id="1357195169723583938">Quem utilizou o dispositivo recentemente e quando</translation>
-<translation id="1360955481084547712">Abra uma nova janela de navegação anónima para procurar em privado</translation>
+<translation id="1360955481084547712">Abra uma nova janela de navegação anónima para navegar em privado</translation>
 <translation id="1364822246244961190">Esta política está bloqueada e o valor será ignorado.</translation>
 <translation id="1374468813861204354">sugestões</translation>
 <translation id="1374692235857187091">Index-4x6 (Postcard)</translation>
@@ -1555,7 +1555,7 @@ Detalhes adicionais:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Saber mais<ph name="END_LINK" /> sobre este problema.</translation>
 <translation id="7455133967321480974">Utilizar predefinição global (Bloquear)</translation>
 <translation id="7460618730930299168">A apresentação é diferente daquilo que selecionou. Pretende continuar?</translation>
-<translation id="7469935732330206581">O formulário não está protegido</translation>
+<translation id="7469935732330206581">O formulário não é seguro</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7485870689360869515">Não foram encontrados dados.</translation>
@@ -1686,7 +1686,7 @@ Detalhes adicionais:
 <translation id="7947285636476623132">Verifique o ano de validade e tente novamente</translation>
 <translation id="7951415247503192394">32 bits</translation>
 <translation id="7953569069500808819">Coser extremidade superior</translation>
-<translation id="7954523986259449736">Uma vez que o site está utilizar uma ligação que não é totalmente segura, as suas informações podem vão ficar visíveis para as outras pessoas.</translation>
+<translation id="7954523986259449736">Uma vez que o site está utilizar uma ligação que não é totalmente segura, as suas informações vão ficar visíveis para as outras pessoas.</translation>
 <translation id="7956713633345437162">Marcadores telemóvel</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7966803981046576691">Tipo de conta da tarefa</translation>

@@ -393,6 +393,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="5614553682702429503">Salvare la password?</translation>
 <translation id="5626245204502895507">Il file non può essere scaricato in questo momento.</translation>
 <translation id="5631164295104953411">Aggiungi il metodo di pagamento</translation>
+<translation id="5653058065071344726">Gestito dalla tua organizzazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versione <ph name="PRODUCT_VERSION" /></translation>
@@ -437,6 +438,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6108923351542677676">Configurazione in corso…</translation>
 <translation id="6119050551270742952">Pagina web corrente in incognito</translation>
 <translation id="6122191549521593678">Online</translation>
+<translation id="6125339936101702016">Gestito da <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Elemento rimosso</translation>
 <translation id="6136914049981179737">Secondi fa</translation>
 <translation id="616831107264507309">Leggi dopo</translation>

@@ -1886,11 +1886,11 @@ void WebLocalFrameImpl::InitializeCoreFrame(
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
     frame_->SetOpenerFeatureState(opener_feature_state);
   frame_->Loader().ForceSandboxFlags(sandbox_flags);
-  SetOpener(opener);
+  Frame* opener_frame = opener ? ToCoreFrame(*opener) : nullptr;
 
   // We must call init() after frame_ is assigned because it is referenced
   // during init().
-  frame_->Init();
+  frame_->Init(opener_frame);
   CHECK(frame_);
   CHECK(frame_->Loader().StateMachine()->IsDisplayingInitialEmptyDocument());
   if (!Parent() && !Opener() &&

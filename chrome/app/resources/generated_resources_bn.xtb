@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">তৈরি হয়েছে</translation>
 <translation id="1067291318998134776">Linux (বিটা)</translation>
 <translation id="1067922213147265141">Google-এর অন্যান্য পরিষেবা</translation>
+<translation id="1068961867683064946">আপনার সন্তানের জন্য Google অ্যাকাউন্ট তৈরি করুন</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">আপনার কম্পিউটারের অন্য একটি প্রোগ্রাম একটি এক্সটেনশন যোগ করেছে যা Chrome-এর কাজ করার ধরন পাল্টে দিতে পারে।
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660"><ph name="SUBPAGE_TITLE" /> সাবপেজে ফিরে যাওয়ার বোতাম</translation>
 <translation id="1322046419516468189">আপনার <ph name="SAVED_PASSWORDS_STORE" />-এ সেভ করা পাসওয়ার্ড দেখুন এবং পরিচালনা করুন</translation>
 <translation id="1324106254079708331">টার্গেট করা অ্যাটাকের ঝুঁকি থেকে যেকোনও Google অ্যাকাউন্টকে রক্ষা করে</translation>
+<translation id="1325985428688410772">স্পেস যোগ করুন</translation>
 <translation id="1326317727527857210">আপনার অন্য ডিভাইসগুলি থেকে আপনার ট্যাবগুলি পেতে, Chrome-এ সাইন-ইন করুন।</translation>
 <translation id="1327074568633507428">Google ক্লাউড প্রিন্টারে থাকা প্রিন্টার</translation>
 <translation id="1327272175893960498">Kerberos টিকিট</translation>
@@ -1082,6 +1084,7 @@
 <translation id="2307462900900812319">নেটওয়ার্ক কনফিগার করুন</translation>
 <translation id="230927227160767054">এই পৃষ্ঠাটি একটি পরিষেবা নিয়ন্ত্রক ইনস্টল করতে চায়৷</translation>
 <translation id="2309620859903500144">এই সাইটটি আপনার মোশন এবং লাইট সেন্সর অ্যাক্সেস করতে পারবে না।</translation>
+<translation id="2314873619957287124">আপনার সন্তানকে শেখা, খেলা এবং বিভিন্ন জিনিস জানার ব্যাপারে সাহায্য করতে মূল ডিজিটাল নিয়ম সেট করুন</translation>
 <translation id="2315414688463285945">Linux ফাইল কনফিগার করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।</translation>
 <translation id="2315587498123194634"><ph name="DEVICE_NAME" />-এ লিঙ্ক পাঠান</translation>
 <translation id="2316129865977710310">না, ধন্যবাদ</translation>
@@ -1093,6 +1096,7 @@
 <translation id="2322318151094136999">কোনও সাইট সিরিয়াল পোর্ট অ্যাক্সেস করতে চাইলে আমাকে জিজ্ঞাসা করুন (সাজেস্ট করা হচ্ছে)</translation>
 <translation id="2323018538045954000">সেভ করা ওয়াই-ফাই নেটওয়ার্ক</translation>
 <translation id="2325444234681128157">পাসওয়ার্ড মনে রাখুন</translation>
+<translation id="2326160999284776503">আপনার সন্তানের Google অ্যাকাউন্ট ব্যবহার করে সাইন-ইন করুন</translation>
 <translation id="2326188115274135041">অটোমেটিক আনলক চালু করতে পিন কনফার্ম করুন</translation>
 <translation id="2326931316514688470">&amp;অ্যাপ্লিকেশান আবার লোড করুন</translation>
 <translation id="2327492829706409234">অ্যাপ্লিকেশন সক্ষম করুন</translation>
@@ -1151,6 +1155,7 @@
 <translation id="2384436799579181135">একটি ত্রুটি ঘটেছে৷ অনুগ্রহ করে আপনার প্রিন্টারটি পরীক্ষা করে আবার চেষ্টা করুন।</translation>
 <translation id="2387052489799050037">হোম স্ক্রিনে যান</translation>
 <translation id="2387458720915042159">প্রক্সি কানেকশনের ধরণ</translation>
+<translation id="2391082728065870591">মতামত জানানো সংক্রান্ত রিপোর্ট পাঠান</translation>
 <translation id="2391419135980381625">মানক হরফ</translation>
 <translation id="2392163307141705938"><ph name="IDS_SHORT_PRODUCT_NAME" />-এর জন্য আপনার অভিভাবক যে সময়সীমা সেট করেছেন তা পার হয়ে গেছে।</translation>
 <translation id="2392369802118427583">সক্রিয় করুন</translation>
@@ -1280,6 +1285,7 @@
 <translation id="2537178555904266562">পাসওয়ার্ড সিঙ্ক করতে সমস্যা হচ্ছে</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" />-এর কাছে নিচে উল্লেখ করা ফাইল এবং ফোল্ডার দেখার এবং এডিট করার অনুমতি আছে</translation>
 <translation id="2537927931785713436">ভার্চুয়াল মেশিন ইমেজ চেক করে দেখা হচ্ছে</translation>
+<translation id="2538084450874617176">এই <ph name="DEVICE_TYPE" /> কে ব্যবহার করছেন?</translation>
 <translation id="2538361623464451692">সিঙ্ক বন্ধ করা হয়েছে</translation>
 <translation id="2540449034743108469">এক্সটেনশন অ্যাক্টিভিটির উপর লক্ষ্য রাখতে "শুরু করুন" টিপুন</translation>
 <translation id="2541002089857695151">ফুল-স্ক্রিন কাস্টিং অপ্টিমাইজ করবেন?</translation>
@@ -2740,6 +2746,7 @@
 <translation id="4364327530094270451">ফুটি</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> একটি উইন্ডো শেয়ার করছে।</translation>
 <translation id="4364830672918311045">বিজ্ঞপ্তিগুলি প্রদর্শন করুন</translation>
+<translation id="4368115171699243057">আপনার সন্তানের জন্য এই <ph name="DEVICE_TYPE" /> সেট আপ করুন</translation>
 <translation id="437004882363131692"><ph name="DEVICE_TYPE" />-এর থেকে পরামর্শ, অফার ও বিভিন্ন আপডেট পান এবং মতামত শেয়ার করুন। যেকোনও সময় আনসাবস্ক্রাইব করুন।</translation>
 <translation id="4370975561335139969">আপনার লেখা ইমেল আইডি এবং পাসওয়ার্ড মিলছে না</translation>
 <translation id="4374831787438678295">Linux ইনস্টলার</translation>
@@ -2900,6 +2907,7 @@
 <translation id="4565377596337484307">পাসওয়ার্ড লুকান</translation>
 <translation id="4565917129334815774">সিস্টেম লগ সেভ করুন</translation>
 <translation id="456717285308019641">অনুবাদ করার জন্য পৃষ্ঠার ভাষা</translation>
+<translation id="4567533462991917415">সেট আপ করার পরেও যেকোনও সময় আরও লোকজন যোগ করতে পারবেন। প্রত্যেক ব্যক্তি নিজের অ্যাকাউন্ট পছন্দমতো সেট আপ করে ডেটা ব্যক্তিগত রাখতে পারবেন।</translation>
 <translation id="4567772783389002344">শব্দ যোগ করুন</translation>
 <translation id="4568025708905928793">একটি নিরাপত্তা কী লাগবে</translation>
 <translation id="4568213207643490790">দুঃখিত, এই ডিভাইসে Google অ্যাকাউন্টস অনুমোদিত নয়।</translation>
@@ -2951,6 +2959,7 @@
 <translation id="4628762811416793313">Linux কন্টেনার সেট-আপ সম্পূর্ণ করা যায়নি। আবার চেষ্টা করুন।</translation>
 <translation id="4633003931260532286">এক্সটেনশানের ন্যূনতম <ph name="IMPORT_VERSION" /> ভার্সনের <ph name="IMPORT_NAME" /> প্রয়োজন, কিন্তু শুধুমাত্র <ph name="INSTALLED_VERSION" /> ভার্সন ইনস্টল করা আছে</translation>
 <translation id="4633757335284074492">Google Drive-এ ব্যাক-আপ নিন। যেকোনও সময় সহজেই ডেটা রিস্টোর করুন অথবা অন্য ডিভাইস ব্যবহার করুন। এই ব্যাক-আপের মধ্যে অ্যাপের ডেটাও থাকে। ব্যাক-আপ ডেটা Google-এ আপলোড করা হবে এবং আপনার সন্তানের Google অ্যাকাউন্টের পাসওয়ার্ড ব্যবহার করে সেগুলিকে এনক্রিপ্ট করা হবে।</translation>
+<translation id="4634575639321169635">অফিস বা ব্যক্তিগত ব্যবহারের জন্য এই ডিভাইস সেট আপ করুন</translation>
 <translation id="4634771451598206121">আবার সাইন-ইন করুন...</translation>
 <translation id="4635072447747973225">Crostini আনইনস্টল করুন</translation>
 <translation id="4635398712689569051">অতিথি ব্যবহারকারীদের জন্য <ph name="PAGE_NAME" /> উপলভ্য নয়।</translation>
@@ -3369,6 +3378,7 @@
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />"-এর নতুনতম ভার্সনটি বন্ধ হয়েছে কারণ এটির আরও বেশি অনুমতির প্রয়োজন৷</translation>
 <translation id="5185500136143151980">ইন্টারনেট কানেকশন নেই</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287"><ph name="PROFILE_LOCAL_NAME" />-এর জন্য বিকল্পের মেনু</translation>
 <translation id="5190926251776387065">পোর্ট চালু করুন</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> একাধিক ফাইল ডাউনলোড করতে চায়</translation>
 <translation id="5192062846343383368">আপনার তত্ত্বাবধান সেটিংস দেখতে Family Link অ্যাপ খুলুন</translation>
@@ -3615,6 +3625,7 @@
 <translation id="5495597166260341369">ডিসপ্লে চালু রাখুন</translation>
 <translation id="5496587651328244253">সংগঠিত করুন</translation>
 <translation id="5497251278400702716">এই ফাইল</translation>
+<translation id="5498967291577176373">ইনলাইন সাজেশনের সাহায্যে আরও তাড়াতাড়ি নাম, ঠিকানা বা ফোন নম্বর লিখুন</translation>
 <translation id="5499313591153584299">এই ফাইলটি আপনার কম্পিউটারের জন্য ক্ষতিকারক হতে পারে৷</translation>
 <translation id="5499453227627332024">Linux কন্টেনারের আপগ্রেড ভার্সন এখন উপলভ্য। 'সেটিংস' অ্যাপ থেকে পরে এটি আপগ্রেড করে নিতে পারবেন।</translation>
 <translation id="5500709606820808700">আজ নিরাপত্তা সংক্রান্ত পরীক্ষা চালানো হয়েছে</translation>
@@ -3772,6 +3783,7 @@
 <translation id="5689516760719285838">লোকেশন</translation>
 <translation id="56907980372820799">ডেটা লিঙ্ক করুন</translation>
 <translation id="5691511426247308406">পরিবারিক</translation>
+<translation id="5691581861107245578">আপনি যা টাইপ করছেন তার ভিত্তিতে ইমোজির সাজেশন পান</translation>
 <translation id="5691772641933328258">আঙ্গুলের ছাপ শনাক্ত করা যায়নি</translation>
 <translation id="5692183275898619210">প্রিন্ট করা হয়ে গেছে</translation>
 <translation id="569425414730375234">বর্তমান ছদ্মবেশী সেশন: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4131,6 +4143,7 @@
 <translation id="6124698108608891449">এই সাইটকে আরও অনুমতি দিতে হবে।</translation>
 <translation id="6125479973208104919">দুর্ভাগ্যবশত, আপনাকে এই <ph name="DEVICE_TYPE" />এ আবার অ্যাকাউন্ট তৈরি করতে হবে।</translation>
 <translation id="6129691635767514872">বেছে নেওয়া ডেটা Chrome ও সিঙ্ক করা ডিভাইস থেকে সরিয়ে ফেলা হয়েছে। আপনার Google অ্যাকাউন্টের অন্যান্য ধরনের ব্রাউজিং ইতিহাস, যেমন বিভিন্ন Google পরিষেবায় করা সার্চ এবং অ্যাক্টিভিটির মতো তথ্য <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />-এ সেভ করা থাকতে পারে।</translation>
+<translation id="6129839611163153407">আপনার সন্তান</translation>
 <translation id="6129938384427316298">Netscape সার্টিফিকেট মন্তব্য</translation>
 <translation id="6129953537138746214">ব্যবধান</translation>
 <translation id="6130692320435119637">ওয়াই-ফাই নেটওয়ার্কে কানেক্ট করুন</translation>
@@ -4172,6 +4185,7 @@
 <translation id="6178664161104547336">একটি সার্টিফিকেট বেছে নিন</translation>
 <translation id="6181431612547969857">ডাউনলোড ব্লক করা হয়েছে</translation>
 <translation id="6185132558746749656">ডিভাইসের লোকেশন</translation>
+<translation id="6195446518998936840">অভিভাবকীয় নিয়ন্ত্রণ সেট আপ করতে আপনার সন্তানের অবশ্যই একটি Google অ্যাকাউন্ট থাকতে হবে যা আপনি ম্যানেজ করতে সাহায্য করবেন। আপনি Family Link অ্যাপের মাধ্যমে স্ক্রিনের সময়সীমা সেট করা, কোনও ওয়েবসাইট দেখার অনুমতি দেওয়া বা সেটি ব্লক করা এবং আরও অনেক কিছু করতে পারবেন।</translation>
 <translation id="6195693561221576702">এই ডিভাইসটি অফলাইন ডেমো মোডে সেট-আপ করা যাবে না।</translation>
 <translation id="6196640612572343990">তৃতীয় পক্ষের কুকিজ অবরুদ্ধ করুন</translation>
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" এক্সটেনশন আপনার প্রক্সী সেটিংস নিয়ন্ত্রণ করছে, যার মানে হল আপনি অনলাইনে যাই করুন না কেন এটি তার পরিবর্তন করতে, সেখানে জোর করে প্রবেশ বা সেটি লুকিয়ে দেখতে পারবে। আপনি যদি বুঝতে না পারেন কেন এই পরিবর্তনটি হয়েছে তাহলে আপনি সম্ভবত এটি চাইছেন না।</translation>
@@ -5924,6 +5938,7 @@
 <translation id="8372369524088641025">খারাপ WEP কী</translation>
 <translation id="8372477600026034341">এক্সট্রা হোস্ট</translation>
 <translation id="8373652277231415614">Crostini-এর শেয়ার করা ডিরেক্টরি</translation>
+<translation id="8376384591331888629">এই সাইটে থার্ড-পার্টি কুকি সহ</translation>
 <translation id="8378714024927312812">আপনার প্রতিষ্ঠানের দ্বারা ম্যানেজ করা</translation>
 <translation id="8379878387931047019">এই ওয়েবসাইটটি খুলতে যে নিরাপত্তা কী প্রয়োজন সেটি এই ডিভাইসে কাজ করে না</translation>
 <translation id="8379991678458444070">এই ট্যাবটি বুকমার্ক করে রাখুন যাতে আপনি এটি চটপট খুলতে পারেন</translation>
@@ -6007,6 +6022,7 @@
 <translation id="8481187309597259238">ইউএসবি অ্যাক্সেস করার অনুমতি নিশ্চিত করুন</translation>
 <translation id="8483248364096924578">আইপি অ্যাড্রেস</translation>
 <translation id="8487678622945914333">জুম বাড়ান</translation>
+<translation id="8489156414266187072">ব্যক্তিগত সাজেশন কেবলমাত্র আপনার অ্যাকাউন্টেই দেখানো হয়</translation>
 <translation id="8490896350101740396">নিম্নলিখিত কিয়স্ক অ্যাপগুলি "<ph name="UPDATED_APPS" />" আপডেট হয়েছে৷ আপডেট প্রসেস সম্পূর্ণ করতে অনুগ্রহ করে ডিভাইসটি রিবুট করুন৷</translation>
 <translation id="8493236660459102203">মাইক্রোফোন:</translation>
 <translation id="8496717697661868878">এই প্লাগ-ইনটি চালান</translation>

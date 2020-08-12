@@ -38,11 +38,10 @@ class MockCastWebContents : public CastWebContents {
   MOCK_METHOD(void, BlockMediaLoading, (bool), (override));
   MOCK_METHOD(void, BlockMediaStarting, (bool), (override));
   MOCK_METHOD(void, EnableBackgroundVideoPlayback, (bool), (override));
-  MOCK_METHOD(
-      on_load_script_injector::OnLoadScriptInjectorHost<base::StringPiece>*,
-      script_injector,
-      (),
-      (override));
+  MOCK_METHOD(on_load_script_injector::OnLoadScriptInjectorHost<std::string>*,
+              script_injector,
+              (),
+              (override));
   MOCK_METHOD(void, InjectScriptsIntoMainFrame, (), (override));
   MOCK_METHOD(void,
               PostMessageToMainFrame,

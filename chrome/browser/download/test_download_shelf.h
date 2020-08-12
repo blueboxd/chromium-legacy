@@ -5,10 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_TEST_DOWNLOAD_SHELF_H_
 #define CHROME_BROWSER_DOWNLOAD_TEST_DOWNLOAD_SHELF_H_
 
-#include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "content/public/browser/download_manager.h"
 
 class Profile;
 
@@ -36,8 +33,8 @@ class TestDownloadShelf : public DownloadShelf {
   base::TimeDelta GetTransientDownloadShowDelay() const override;
 
  private:
-  bool is_showing_;
-  bool did_add_download_;
+  bool is_showing_ = false;
+  bool did_add_download_ = false;
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_TEST_DOWNLOAD_SHELF_H_

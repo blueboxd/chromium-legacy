@@ -117,16 +117,18 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
 
   // If photo raw data is read successfully, call OnPhotoRawDataAvailable() to
   // decode data. Otherwise, download the raw data and save to disk.
-  void OnPhotoRawDataRead(const std::string& image_url,
+  void OnPhotoRawDataRead(const AmbientModeTopic& topic,
                           std::unique_ptr<std::string> data);
 
-  void OnPhotoRawDataAvailable(const std::string& image_url,
+  void OnPhotoRawDataAvailable(const AmbientModeTopic& topic,
                                bool need_to_save,
                                std::unique_ptr<std::string> response_body);
 
-  void DecodePhotoRawData(std::unique_ptr<std::string> data);
+  void DecodePhotoRawData(const AmbientModeTopic& topic,
+                          std::unique_ptr<std::string> data);
 
-  void OnPhotoDecoded(const gfx::ImageSkia& image);
+  void OnPhotoDecoded(const AmbientModeTopic& topic,
+                      const gfx::ImageSkia& image);
 
   void StartDownloadingWeatherConditionIcon(
       const base::Optional<WeatherInfo>& weather_info);

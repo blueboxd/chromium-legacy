@@ -66,7 +66,7 @@
 #include "third_party/blink/renderer/core/loader/font_preload_manager.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap_observer_list.h"
+#include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -1609,9 +1609,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void CancelPendingJavaScriptUrls();
 
-  HeapObserverList<SynchronousMutationObserver>&
-  SynchronousMutationObserverList() {
-    return synchronous_mutation_observer_list_;
+  HeapObserverSet<SynchronousMutationObserver>&
+  SynchronousMutationObserverSet() {
+    return synchronous_mutation_observer_set_;
   }
 
   void NotifyUpdateCharacterData(CharacterData* character_data,
@@ -2135,8 +2135,8 @@ class CORE_EXPORT Document : public ContainerNode,
   HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementsMap>>
       element_explicitly_set_attr_elements_map_;
 
-  HeapObserverList<SynchronousMutationObserver>
-      synchronous_mutation_observer_list_;
+  HeapObserverSet<SynchronousMutationObserver>
+      synchronous_mutation_observer_set_;
 
   Member<DisplayLockDocumentState> display_lock_document_state_;
 

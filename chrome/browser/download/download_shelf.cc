@@ -41,10 +41,7 @@ const int64_t kDownloadShowDelayInSeconds = 2;
 }  // namespace
 
 DownloadShelf::DownloadShelf(Browser* browser, Profile* profile)
-    : browser_(browser),
-      profile_(profile),
-      should_show_on_unhide_(false),
-      is_hidden_(false) {}
+    : browser_(browser), profile_(profile) {}
 
 DownloadShelf::~DownloadShelf() {}
 

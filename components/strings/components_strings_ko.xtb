@@ -1474,6 +1474,7 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" />에서 보안 기준을 준수하지 않습니다.</translation>
 <translation id="7210993021468939304">컨테이너 내 Linux 활동 및 컨테이너 내에서 Linux 앱 설치 및 실행 가능</translation>
 <translation id="721197778055552897">이 문제에 대해 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
+<translation id="7217745192097460130">Touch ID를 사용해 구매를 확인하고 완료하시겠습니까?</translation>
 <translation id="7219179957768738017"><ph name="SSL_VERSION" /> 연결입니다.</translation>
 <translation id="7220786058474068424">처리 중</translation>
 <translation id="7221855153210829124">알림 표시</translation>
@@ -1674,7 +1675,7 @@
 <translation id="7947285636476623132">유효기간 연도를 확인한 후 다시 시도해 주세요.</translation>
 <translation id="7951415247503192394">(32비트)</translation>
 <translation id="7953569069500808819">상단 에지 스티치</translation>
-<translation id="7954523986259449736">이 사이트에서 보안 상태가 확실하지 않은 연결을 사용하고 있으므로 내 정보가 다른 사용자에게 표시될 수 있습니다.</translation>
+<translation id="7954523986259449736">이 사이트에서 보안 상태가 확실하지 않은 연결을 사용하고 있으므로 내 정보가 다른 사용자에게 표시됩니다.</translation>
 <translation id="7956713633345437162">모바일 북마크</translation>
 <translation id="7961015016161918242">사용하지 않음</translation>
 <translation id="7966803981046576691">작업 계정 유형</translation>

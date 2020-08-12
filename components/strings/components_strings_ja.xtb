@@ -839,7 +839,7 @@
 <translation id="4435702339979719576">ポストカード</translation>
 <translation id="443673843213245140">プロキシの使用は無効ですが、プロキシの設定が明示的に指定されています。</translation>
 <translation id="4466881336512663640">フォームの変更内容は破棄されます。続行してもよろしいですか？</translation>
-<translation id="4476953670630786061">このフォームは安全ではありません。自動入力はオフになっています。</translation>
+<translation id="4476953670630786061">このフォームは安全ではないため、自動入力をオフにしました。</translation>
 <translation id="4477350412780666475">次の曲</translation>
 <translation id="4482953324121162758">このサイトは翻訳されません。</translation>
 <translation id="4490717597759821841">A7</translation>
@@ -1474,6 +1474,7 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ではセキュリティ規格が遵守されていません。</translation>
 <translation id="7210993021468939304">コンテナ内の Linux アクティビティ、コンテナ内での Linux アプリのインストールと実行</translation>
 <translation id="721197778055552897">この問題の詳細については、<ph name="BEGIN_LINK" />こちら<ph name="END_LINK" />をご覧ください。</translation>
+<translation id="7217745192097460130">Touch ID を使用して本人確認し、購入手続きを完了しますか？</translation>
 <translation id="7219179957768738017">この接続には <ph name="SSL_VERSION" /> を使用しています。</translation>
 <translation id="7220786058474068424">処理しています</translation>
 <translation id="7221855153210829124">通知の表示</translation>

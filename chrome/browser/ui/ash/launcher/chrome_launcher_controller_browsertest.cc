@@ -42,6 +42,7 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
@@ -225,6 +226,7 @@ class LauncherPlatformAppBrowserTest
     controller_ = ChromeLauncherController::instance();
     ASSERT_TRUE(controller_);
     extensions::PlatformAppBrowserTest::SetUpOnMainThread();
+    app_service_test_.SetUp(browser()->profile());
   }
 
   ash::ShelfModel* shelf_model() { return controller_->shelf_model(); }
@@ -243,9 +245,13 @@ class LauncherPlatformAppBrowserTest
     return shelf_model()->GetShelfItemDelegate(id);
   }
 
+  apps::AppServiceTest& app_service_test() { return app_service_test_; }
+
   ChromeLauncherController* controller_;
 
  private:
+  apps::AppServiceTest app_service_test_;
+
   DISALLOW_COPY_AND_ASSIGN(LauncherPlatformAppBrowserTest);
 };
 
@@ -876,21 +882,45 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
 
   int base_shelf_item_count = shelf_model()->item_count();
   ExtensionTestMessageListener ready_listener("ready", true);
-  LoadAndLaunchPlatformApp("app_icon", "Launched");
+  const Extension* extension = LoadAndLaunchPlatformApp("app_icon", "Launched");
+  ASSERT_TRUE(extension);
+
+  gfx::ImageSkia image_skia;
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    int32_t size_hint_in_dip = 48;
+    image_skia = app_service_test().LoadAppIconBlocking(
+        apps::mojom::AppType::kExtension, extension->id(), size_hint_in_dip);
+  }
 
   // Create non-shelf window.
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   ready_listener.Reply("createNonShelfWindow");
   ready_listener.Reset();
-  // Default app icon + extension icon updates.
-  test_observer.WaitForIconUpdates(2);
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    // Default app icon + extension icon updates + AppServiceProxy load icon
+    // updates.
+    test_observer.WaitForIconUpdates(3);
+    EXPECT_TRUE(app_service_test().AreIconImageEqual(
+        image_skia, test_observer.last_app_icon()));
+  } else {
+    // Default app icon + extension icon updates.
+    test_observer.WaitForIconUpdates(2);
+  }
 
   // Create shelf window.
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   ready_listener.Reply("createShelfWindow");
   ready_listener.Reset();
-  // Default app icon + extension icon updates.
-  test_observer.WaitForIconUpdates(2);
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    // Default app icon + extension icon updates + AppServiceProxy load icon
+    // updates.
+    test_observer.WaitForIconUpdates(3);
+    EXPECT_TRUE(app_service_test().AreIconImageEqual(
+        image_skia, test_observer.last_app_icon()));
+  } else {
+    // Default app icon + extension icon updates.
+    test_observer.WaitForIconUpdates(2);
+  }
 
   // Set shelf window icon.
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
@@ -903,8 +933,15 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   ready_listener.Reply("createShelfWindowWithCustomIcon");
   ready_listener.Reset();
-  // Default app icon + extension icon + custom icon updates.
-  test_observer.WaitForIconUpdates(3);
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    // Default app icon + extension icon + AppServiceProxy load icon + custom
+    // icon updates.
+    test_observer.WaitForIconUpdates(4);
+  } else {
+    // Default app icon + extension icon + custom icon updates.
+    test_observer.WaitForIconUpdates(3);
+  }
+
   const gfx::ImageSkia app_item_custom_image = test_observer.last_app_icon();
 
   const int shelf_item_count = shelf_model()->item_count();
@@ -935,7 +972,13 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
 
   // No more icon updates.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(8, test_observer.icon_updates());
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    // 3 + 3 + 1 + 4
+    EXPECT_EQ(11, test_observer.icon_updates());
+  } else {
+    // 2 + 2 + 1 + 3
+    EXPECT_EQ(8, test_observer.icon_updates());
+  }
 
   // Exit.
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());

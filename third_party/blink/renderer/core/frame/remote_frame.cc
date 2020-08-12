@@ -681,8 +681,7 @@ void RemoteFrame::UpdateOpener(
   if (auto* web_frame = WebFrame::FromFrame(this)) {
     auto* opener_frame = LocalFrame::ResolveFrame(
         opener_frame_token.value_or(base::UnguessableToken()));
-    auto* opener_web_frame = WebFrame::FromFrame(opener_frame);
-    web_frame->SetOpener(opener_web_frame);
+    SetOpenerDoNotNotify(opener_frame);
   }
 }
 
@@ -701,13 +700,14 @@ IntPoint RemoteFrame::GetMainFrameScrollOffset() const {
 }
 
 void RemoteFrame::SetOpener(Frame* opener_frame) {
-  auto* opener_web_frame = WebFrame::FromFrame(opener_frame);
-  auto* web_frame = WebFrame::FromFrame(this);
+  if (Opener() == opener_frame)
+    return;
 
-  if (web_frame && web_frame->Opener() != opener_web_frame) {
+  auto* web_frame = WebFrame::FromFrame(this);
+  if (web_frame) {
     // A proxy shouldn't normally be disowning its opener.  It is possible to
-    // get here when a proxy that is being detached clears its opener, in which
-    // case there is no need to notify the browser process.
+    // get here when a proxy that is being detached clears its opener, in
+    // which case there is no need to notify the browser process.
     if (opener_frame) {
       // Only a LocalFrame (i.e., the caller of window.open) should be able to
       // update another frame's opener.
@@ -717,8 +717,8 @@ void RemoteFrame::SetOpener(Frame* opener_frame) {
                              opener_frame->GetFrameToken())
                        : base::nullopt);
     }
-    web_frame->SetOpener(opener_web_frame);
   }
+  SetOpenerDoNotNotify(opener_frame);
 }
 
 void RemoteFrame::UpdateTextAutosizerPageInfo(

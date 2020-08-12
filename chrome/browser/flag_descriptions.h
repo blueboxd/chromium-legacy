@@ -2001,9 +2001,6 @@ extern const char kAcceleratedMjpegDecodeDescription[];
 extern const char kAggregatedMlAppRankingName[];
 extern const char kAggregatedMlAppRankingDescription[];
 
-extern const char kAggregatedMlSearchRankingName[];
-extern const char kAggregatedMlSearchRankingDescription[];
-
 extern const char kAllowDisableMouseAccelerationName[];
 extern const char kAllowDisableMouseAccelerationDescription[];
 
@@ -2340,9 +2337,6 @@ extern const char kFrameThrottleFps30[];
 
 extern const char kFsNosymfollowName[];
 extern const char kFsNosymfollowDescription[];
-
-extern const char kFuzzyAppSearchName[];
-extern const char kFuzzyAppSearchDescription[];
 
 extern const char kGaiaActionButtonsName[];
 extern const char kGaiaActionButtonsDescription[];

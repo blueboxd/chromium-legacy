@@ -507,6 +507,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="6972754398087986839">Inizia</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
 <translation id="698231206551913481">Tutti i file e i dati locali associati a questo utente verranno eliminati definitivamente in seguito alla rimozione dell'utente.</translation>
+<translation id="7007983414944123363">Impossibile verificare il PIN o la password. Riprova.</translation>
 <translation id="7015766095477679451">Ritorna alle ore <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Connetti il tuo dispositivo <ph name="DEVICE_NAME" /> con il telefono</translation>
 <translation id="7026338066939101231">Diminuisci</translation>
@@ -552,6 +553,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="7568294522609223312">Disattiva i clic automatici</translation>
 <translation id="7568637526529101738">Se fai clic con il pulsante destro del mouse o con una pressione prolungata, l'assistente ti mostra informazioni quali la definizione o la conversione di unità per gli elementi selezionati.</translation>
 <translation id="7569509451529460200">Braille e ChromeVox attivati</translation>
+<translation id="7579778809502851308">Acquisizione schermo</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
 <translation id="7600875258240007829">Visualizza tutte le notifiche</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
@@ -670,6 +672,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="8841375032071747811">Pulsante Indietro</translation>
 <translation id="8843682306134542540">Attiva/disattiva blocco rotazione. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Tasto di ricerca+ESC</translation>
+<translation id="8853703225951107899">Non è stato ancora possibile verificare il PIN o la password. Nota: se hai modificato la password di recente, usa la password precedente. La nuova password verrà applicata quando uscirai dall'account.</translation>
 <translation id="8870509716567206129">L'app non supporta la modalità Schermo diviso.</translation>
 <translation id="8874184842967597500">Non connesso</translation>
 <translation id="8877788021141246043">Imposta un promemoria</translation>

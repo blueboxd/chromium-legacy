@@ -506,6 +506,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="6972754398087986839">Kom i gang</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="698231206551913481">Alle filer og lokale data som er tilknyttet denne brukeren, slettes permanent når brukeren fjernes.</translation>
+<translation id="7007983414944123363">PIN-koden eller passordet kunne ikke verifiseres. Prøv på nytt.</translation>
 <translation id="7015766095477679451">Kom tilbake <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Koble <ph name="DEVICE_NAME" /> til telefonen</translation>
 <translation id="7026338066939101231">Reduser</translation>
@@ -551,6 +552,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="7568294522609223312">Slå av automatiske klikk</translation>
 <translation id="7568637526529101738">Med et høyreklikk eller langt trykk viser assistenten informasjon, som for eksempel definisjonen eller enhetsomregningen for det du har merket.</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er slått på</translation>
+<translation id="7579778809502851308">Skjermdump</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
 <translation id="7600875258240007829">Se alle varslene</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -669,6 +671,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="8841375032071747811">Tilbakeknapp</translation>
 <translation id="8843682306134542540">Slå av/på rotasjonslås. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Søk+Esc</translation>
+<translation id="8853703225951107899">PIN-koden eller passordet kunne fremdeles ikke verifiseres. Merk: Hvis du nylig har byttet passord, bruker du det gamle passordet. Det nye passordet blir tatt i bruk når du logger av.</translation>
 <translation id="8870509716567206129">Appen støtter ikke delt skjerm.</translation>
 <translation id="8874184842967597500">Ikke tilkoblet</translation>
 <translation id="8877788021141246043">Angi en påminnelse</translation>

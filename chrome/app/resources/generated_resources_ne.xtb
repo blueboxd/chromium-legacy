@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">सिर्जना गरियो</translation>
 <translation id="1067291318998134776">Linux (बिटा)</translation>
 <translation id="1067922213147265141">Google का अन्य सेवाहरू</translation>
+<translation id="1068961867683064946">आफ्ना बच्चाका लागि Google खाता बनाइदिनुहोस्</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">तपाईँको कम्प्युटरमा अर्को प्रोग्रामले एउटा विस्तार थप्यो जसले Chrome को कार्य गर्ने तरिकालाई बदल्न सक्छ। <ph name="EXTENSION_NAME" /></translation>
 <translation id="1070705170564860382"><ph name="COUNTDOWN_SECONDS" /> सेकेन्डमा वैकल्पिक ब्राउजरमा खोल्दै</translation>
@@ -270,6 +271,7 @@
 <translation id="1319983966058170660"><ph name="SUBPAGE_TITLE" /> को उपपृष्ठमा फर्कने बटन</translation>
 <translation id="1322046419516468189">आफ्नो <ph name="SAVED_PASSWORDS_STORE" /> मा सुरक्षित गरिएका पासवर्डहरू हेर्नुहोस् र व्यवस्थापन गर्नुहोस्</translation>
 <translation id="1324106254079708331">लक्षित हमलाको जोखिममा रहेका जुनसुकै व्यक्तिको व्यक्तिगत Google खाताहरूको सुरक्षा गर्दछ</translation>
+<translation id="1325985428688410772">प्रोफाइल थप्नुहोस्</translation>
 <translation id="1326317727527857210">आफ्ना अन्य यन्त्रहरूबाट आफ्ना ट्याबहरू प्राप्त गर्न Chrome मा साइन इन गर्नुहोस्।</translation>
 <translation id="1327074568633507428">Google क्लाउड प्रिन्टमा प्रिन्टर</translation>
 <translation id="1327272175893960498">Kerberos का टिकटहरू</translation>
@@ -1078,6 +1080,7 @@
 <translation id="2307462900900812319">नेटवर्क कन्फिगर गर्नुहोस्</translation>
 <translation id="230927227160767054">यस पृष्ठले एक सेवा सञ्चालनकर्ता स्थापना गर्न चाहन्छ।</translation>
 <translation id="2309620859903500144">यो साइटलाई तपाईंको चाल वा प्रकाशसम्बन्धी सेन्सरहरूको पहुँच राख्नबाट रोक लागाइएको छ।</translation>
+<translation id="2314873619957287124">आफ्ना बच्चालाई सिक्न, खेल्न र अन्वेषण गर्न सघाउन आधारभूत डिजिटल नियमहरू स्थापित गर्नुहोस्</translation>
 <translation id="2315414688463285945">Linux का फाइलहरू कन्फिगर गर्ने क्रममा त्रुटि भयो। कृपया फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="2315587498123194634"><ph name="DEVICE_NAME" /> मा लिंक पठाउनुहोस्</translation>
 <translation id="2316129865977710310">पर्दैन, धन्यवाद</translation>
@@ -1089,6 +1092,7 @@
 <translation id="2322318151094136999">कुनै साइटले सिरियल पोर्टहरूमाथि पहुँच गर्न खोज्दा सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="2323018538045954000">सुरक्षित गरिएका Wi-Fi नेटवर्कहरू</translation>
 <translation id="2325444234681128157">पासवर्ड सम्झनुहोस्</translation>
+<translation id="2326160999284776503">आफ्नो बच्चाको Google खातामार्फत साइन इन गर्नुहोस्</translation>
 <translation id="2326188115274135041">स्वतः अनलक हुने सुविधा सक्षम पार्न PIN पुष्टि गर्नुहोस्</translation>
 <translation id="2326931316514688470">एप पुन: &amp;लोड गर्नुहोस्</translation>
 <translation id="2327492829706409234">एप सक्षम गर्नुहोस्</translation>
@@ -1147,6 +1151,7 @@
 <translation id="2384436799579181135">एउटा त्रुटि भयो। कृपया आफ्नो प्रिन्टरको जाँच गरी फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="2387052489799050037">गृहपृष्ठमा जानुहोस्</translation>
 <translation id="2387458720915042159">प्रोक्सी जडानको प्रकार</translation>
+<translation id="2391082728065870591">फिडब्याक रिपोर्ट पठाउनुहोस्</translation>
 <translation id="2391419135980381625">मानक फन्ट</translation>
 <translation id="2392163307141705938">तपाईं आफ्ना अभिभावकले <ph name="IDS_SHORT_PRODUCT_NAME" /> मा निर्धारण गर्नुभएको समयको सीमामा पुग्नुभयो।</translation>
 <translation id="2392369802118427583">सक्रिय</translation>
@@ -1277,6 +1282,7 @@
 <translation id="2537178555904266562">पासवर्डहरू सिंक गर्ने क्रममा त्रुटि भयो</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> ले निम्न फाइलहरू हेर्न र सम्पादन गर्न सक्छ</translation>
 <translation id="2537927931785713436">भर्चुअल मेसिनको छवि छ छैन जाँच गरिँदै छ</translation>
+<translation id="2538084450874617176">यो <ph name="DEVICE_TYPE" /> कसले चलाउँदै हुनुहुन्छ?</translation>
 <translation id="2538361623464451692">सिंक असक्षम पारियो</translation>
 <translation id="2540449034743108469">विस्तारसम्बन्धी गतिविधि सुन्न सुरु गर्न "सुरु गर्नुहोस्" मा थिच्नुहोस्</translation>
 <translation id="2541002089857695151">पूर्ण स्क्रिनमा cast गर्ने सुविधा अप्टिमाइज गर्ने हो?</translation>
@@ -2738,6 +2744,7 @@
 <translation id="4364327530094270451">खरबुजो</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> एउटा विन्डोलाई साझेदारी गर्दैछ</translation>
 <translation id="4364830672918311045">सूचनाहरू देखाउनुहोस्</translation>
+<translation id="4368115171699243057">आफ्ना बच्चाका लागि यो <ph name="DEVICE_TYPE" /> सेटअप गरिदिनुहोस्</translation>
 <translation id="437004882363131692"><ph name="DEVICE_TYPE" /> सम्बन्धी सुझाव, योजना तथा अपडेटहरू प्राप्त गर्नुहोस् र प्रतिक्रिया दिनुहोस्। जुनसुकै बेला सदस्यता रद्द गर्नुहोस्।</translation>
 <translation id="4370975561335139969">तपाईँले प्रविष्टि गर्नुभएको इमेल र पासवर्ड मेल खाँदैनन्</translation>
 <translation id="4374831787438678295">Linux को स्थापनाकर्ता</translation>
@@ -2898,6 +2905,7 @@
 <translation id="4565377596337484307">पासवर्ड लुकाउनुहोस्</translation>
 <translation id="4565917129334815774">प्रणालीका लगहरू भण्डारण गर्नुहोस्</translation>
 <translation id="456717285308019641">अनुवाद गरिनु पर्ने पृष्ठको भाषा</translation>
+<translation id="4567533462991917415">तपाईं सेटअप गरिसकेपछि जुनसुकै बेला थप व्यक्तिहरू सामेल गर्न सक्नुहुन्छ। हरेक व्यक्ति आफ्नो खाता आफूले चाहेअनुसारको बनाउन र आफ्ना डेटा गोप्य राख्न सक्छन्।</translation>
 <translation id="4567772783389002344">शब्द थप्नुहोस्</translation>
 <translation id="4568025708905928793">सुरक्षा साँचो मागिँदै छ</translation>
 <translation id="4568213207643490790">माफ गर्नुहोस्, यस यन्त्रमा Google खाताहरूलाई अनुमति छैन।</translation>
@@ -2949,6 +2957,7 @@
 <translation id="4628762811416793313">Linux कन्टेनर सेटअप गर्ने कार्य पूरा भएन। कृपया फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="4633003931260532286">विस्तारलाई कम्तीमा "<ph name="IMPORT_VERSION" />" संस्करणको "<ph name="IMPORT_NAME" />" आवश्यक पर्छ तर स्थापना संस्करण भने केवल "<ph name="INSTALLED_VERSION" />" हो</translation>
 <translation id="4633757335284074492">Google ड्राइभमा ब्याकअप गर्नुहोस् जुनसुकै बेला सजिलैसँग डेटा पुनर्स्थापना गर्नुहोस् वा यन्त्र बदल्नुहोस्। यो ब्याकअपमा एपको डेटा समावेश हुन्छ। ब्याकअपहरू Google मा अपलोड गरी तपाईंका बच्चाको Google खाताको पासवर्ड प्रयोग गरेर इन्क्रिप्ट गरिन्छन्।</translation>
+<translation id="4634575639321169635">कार्यसम्बन्धी वा व्यक्तिगत प्रयोगका लागि यो यन्त्र सेटअप गर्नुहोस्</translation>
 <translation id="4634771451598206121">फेरि साइन इन गर्नुहोस्...</translation>
 <translation id="4635072447747973225">Crostini अनइन्स्टल गर्नुहोस्</translation>
 <translation id="4635398712689569051">अतिथि प्रयोगकर्ताहरूका लागि <ph name="PAGE_NAME" /> उपलब्ध छैन।</translation>
@@ -3367,6 +3376,7 @@
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" को नयाँ संस्करणलाई अक्षम गरिएको छ किनकी यसलाई धेरै अनुमतिहरूको आवश्यकता पर्छ।</translation>
 <translation id="5185500136143151980">इन्टरनेट छैन</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287"><ph name="PROFILE_LOCAL_NAME" /> का लागि विकल्पहरू देखाउने मेनु</translation>
 <translation id="5190926251776387065">पोर्ट सक्रिय गर्नुहोस्</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> एकभन्दा बढी फाइलहरू डाउनलोड गर्न चाहन्छ</translation>
 <translation id="5192062846343383368">आफ्नो सुपरिवेक्षणका सेटिङहरू हेर्न Family Link एप खोल्नुहोस्</translation>
@@ -3613,6 +3623,7 @@
 <translation id="5495597166260341369">प्रदर्शन सक्रिय राख्नुहोस्</translation>
 <translation id="5496587651328244253">सुव्यवस्थित गर्नुहोस्</translation>
 <translation id="5497251278400702716">यो फाइल</translation>
+<translation id="5498967291577176373">तपाईंको नाम, ठेगाना वा फोन नम्बर स्वतः टाइप गरिदिने सुविधाको सहयोगले गरेर अझ छिटो लेख्नुहोस्</translation>
 <translation id="5499313591153584299">यो फाइल तपाईंको कम्प्युटरका लागि हानिकारक हुन सक्छ।</translation>
 <translation id="5499453227627332024">Linux कन्टेनरको नयाँ संस्करण उपलब्ध छ। तपाईं पछि सेटिङ एपबाट पनि यसलाई अपग्रेड गर्न सक्नुहुन्छ।</translation>
 <translation id="5500709606820808700">आज सुरक्षा जाँच गरिएको थियो</translation>
@@ -3769,6 +3780,7 @@
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="56907980372820799">लिङ्क डाटा</translation>
 <translation id="5691511426247308406">परिवार</translation>
+<translation id="5691581861107245578">आफूले टाइप गरिरहेका कुराका आधारमा इमोजीसम्बन्धी सिफारिसहरू प्राप्त गर्नुहोस्</translation>
 <translation id="5691772641933328258">फिंगरप्रिन्ट पहिचान गरिएन</translation>
 <translation id="5692183275898619210">छाप्ने काम सम्पन्न भयो</translation>
 <translation id="569425414730375234">हालको इन्कोग्निटो सत्र: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4127,6 +4139,7 @@
 <translation id="6124698108608891449">यो साइटलाई थप अनुमति चाहिन्छ।</translation>
 <translation id="6125479973208104919">दुर्भाग्यवश, तपाईंले यो <ph name="DEVICE_TYPE" /> मा आफ्नो खाता फेरि थप्नु पर्नेछ।</translation>
 <translation id="6129691635767514872">चयन गरिएको डेटालाई Chrome र सिंक गरिएका यन्त्रहरूबाट हटाइएको छ। <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> मा तपाईंको Google खातासँग तपाईंका अन्य Google सेवाहरूका खोज र गतिविधि जस्ता ब्राउजिङसम्बन्धी इतिहासका अरू ढाँचाहरू हुन सक्छन्।</translation>
+<translation id="6129839611163153407">तपाईंको बच्चा</translation>
 <translation id="6129938384427316298">नेटस्केप प्रमाणपत्र टिप्पणी</translation>
 <translation id="6129953537138746214">क्षेत्र</translation>
 <translation id="6130692320435119637">Wi-Fi नेटवर्क थप्नुहोस्</translation>
@@ -4167,6 +4180,7 @@
 <translation id="6178664161104547336">एक प्रमाणपत्र चयन गर्नुहोस्</translation>
 <translation id="6181431612547969857">डाउनलोड रोकिएको</translation>
 <translation id="6185132558746749656">यन्त्र स्थान</translation>
+<translation id="6195446518998936840">अभिभावकीय नियन्त्रणहरू सेटअप गर्न तपाईंको बच्चासँग अनिवार्य रूपमा Google खाता हुनु पर्छ। तपाईं सोही खाता व्यवस्थापन गर्न मद्दत गर्नु हुने छ। तपाईं Family Link एप प्रयोग गरी आफ्ना बच्चाले यन्त्र चलाएर बिताउने समयको सीमा निर्धारण गर्न, वेबसाइटहरू अनुमोदन वा ब्लक गर्न र अन्य थुप्रै कुरा गर्न सक्नुहुन्छ।</translation>
 <translation id="6195693561221576702">यो यन्त्र अफलाइन डेमो मोडको प्रयोग गरी सेटअप गर्न सकिँदैन।</translation>
 <translation id="6196640612572343990">तेस्रो पक्षीय कुकीहरूमाथि रोक लगाउनुहोस्</translation>
 <translation id="6196854373336333322">विस्तार "<ph name="EXTENSION_NAME" />" ले तपाईंका प्रोक्सी सेटिङहरूको नियन्त्रण गरेको छ, मतलब तपाईंले अनलाइन गरेको जुनसुकै कुरालाई यसले परिवर्तन गर्न, बिगार्न वा चियो गर्न सक्छ। यो किन परिवर्तन भयो भन्नेमा सुनिश्चित हुनुहुन्न भने सायद तपाईं यसलाई चाहनुहुन्न।</translation>
@@ -5920,6 +5934,7 @@
 <translation id="8372369524088641025">खराब WEP कुञ्जी</translation>
 <translation id="8372477600026034341">अतिरिक्त होस्टहरू</translation>
 <translation id="8373652277231415614">Crostini बाट सेयर गरिएका डिरेक्टरीहरू</translation>
+<translation id="8376384591331888629">यस साइटका तेस्रो पक्षीय कुकीसमेत</translation>
 <translation id="8378714024927312812">तपाईंको सङ्गठनले व्यवस्थापन गरेको</translation>
 <translation id="8379878387931047019">यस यन्त्रले यो वेबसाइटले अनुरोध गरेको प्रकारको सुरक्षा साँचो प्रयोग गर्दैन</translation>
 <translation id="8379991678458444070">यो ट्याबमा पुस्तक चिन्ह लगाएर छिट्टै यहाँ फर्कनुहोस्</translation>
@@ -6003,6 +6018,7 @@
 <translation id="8481187309597259238">USB अनुमति निश्चित गर्नुहोस्</translation>
 <translation id="8483248364096924578">IP ठेगाना</translation>
 <translation id="8487678622945914333">जुम बढाउनुहोस्</translation>
+<translation id="8489156414266187072">व्यक्तिगत सिफारिस तपाईंको खातामा मात्र देखाइन्छन्</translation>
 <translation id="8490896350101740396">निम्न kisok एपहरू " <ph name="UPDATED_APPS" /> "अद्यावधिक गरिएका छन्। अद्यावधिक प्रक्रिया पूरा गर्न यन्त्रलाई रिबुट गर्नुहोस्।</translation>
 <translation id="8493236660459102203">माइक्रोफोन:</translation>
 <translation id="8496717697661868878">यो प्लगइन चलाउनुहोस्</translation>

@@ -92,6 +92,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="1962969542251276847">Zaključaj zaslon</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Zdravo, <ph name="USERNAME" /></translation>
+<translation id="1975500003782052650">Nedavna preuzimanja</translation>
 <translation id="1978498689038657292">Unos teksta</translation>
 <translation id="1993072747612765854">Saznajte više o najnovijem ažuriranju za aplikaciju <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Isključi</translation>
@@ -254,6 +255,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="3798670284305777884">Zvučnik (interni)</translation>
 <translation id="3799080171973636491">Pritisnite prečicu na tastaturi za povećalo preko cijelog ekrana. Želite li ga uključiti?</translation>
 <translation id="380165613292957338">Zdravo, kako vam mogu pomoći?</translation>
+<translation id="3826099427150913765">Prelazak na zaporku</translation>
 <translation id="383629559565718788">Prikaži postavke tastature</translation>
 <translation id="3846575436967432996">Informacije o mreži nisu dostupne</translation>
 <translation id="385051799172605136">Nazad</translation>
@@ -284,6 +286,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="4181841719683918333">Jezici</translation>
 <translation id="4195877955194704651">Automatski klikovi na dugme</translation>
 <translation id="4197790712631116042">Isključeno</translation>
+<translation id="4212472694152630271">Prelazak na PIN</translation>
 <translation id="4215497585250573029">Postavke za VPN</translation>
 <translation id="4217571870635786043">Diktiranje</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -296,6 +299,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="4321776623976362024">Pritisnuli ste prečicu na tastaturi za visoki kontrast. Želite li ga uključiti?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
+<translation id="4350065043422286972">Prikvačeno</translation>
 <translation id="4351433414020964307">Asistent se učitava…</translation>
 <translation id="4356930093361201197">način rada visokog kontrasta</translation>
 <translation id="4368583494516669646">Laku noć, <ph name="GIVEN_NAME" /></translation>
@@ -357,6 +361,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> je povezan na novi telefon</translation>
 <translation id="5035389544768382859">Potvrdite konfiguraciju ekrana</translation>
 <translation id="5083553833479578423">Otključajte više funkcija Asistenta.</translation>
+<translation id="5114495209940374989">Snimke zaslona</translation>
 <translation id="5136175204352732067">Povezana je drugačija tastatura</translation>
 <translation id="5168181903108465623">Dostupni su "cast" uređaji</translation>
 <translation id="5207949376430453814">Istakni kursor u tekstu</translation>
@@ -599,6 +604,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="8061464966246066292">Visoki kontrast</translation>
 <translation id="8098591350844501178">Prestanak emitiranja ekrana na prijemniku <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Uključeno, sve</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8132793192354020517">Povezano na <ph name="NAME" /></translation>
 <translation id="813913629614996137">Pokretanje…</translation>

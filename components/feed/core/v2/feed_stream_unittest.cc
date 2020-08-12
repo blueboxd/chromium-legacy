@@ -1498,6 +1498,27 @@ TEST_F(FeedStreamTest, LoadMoreUploadsActions) {
             network_.action_request_sent->feed_action(0).content_id().id());
 }
 
+TEST_F(FeedStreamTest, BackgroundingAppUploadsActions) {
+  stream_->UploadAction(MakeFeedAction(1ul), false, base::DoNothing());
+  stream_->OnEnterBackground();
+  WaitForIdleTaskQueue();
+  EXPECT_EQ(1, network_.action_request_sent->feed_action_size());
+  EXPECT_EQ(1ul,
+            network_.action_request_sent->feed_action(0).content_id().id());
+}
+
+TEST_F(FeedStreamTest, BackgroundingAppDoesNotUploadActions) {
+  Config config;
+  config.upload_actions_on_enter_background = false;
+  SetFeedConfigForTesting(config);
+
+  network_.action_request_call_count = 0;
+  stream_->UploadAction(MakeFeedAction(1ul), false, base::DoNothing());
+  stream_->OnEnterBackground();
+  WaitForIdleTaskQueue();
+  EXPECT_EQ(0, network_.action_request_call_count);
+}
+
 TEST_F(FeedStreamTest, UploadActionsOneBatch) {
   UploadActions(
       {MakeFeedAction(97ul), MakeFeedAction(98ul), MakeFeedAction(99ul)});

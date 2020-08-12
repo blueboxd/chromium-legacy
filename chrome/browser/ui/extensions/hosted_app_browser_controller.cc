@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/installable/installable_manager.h"
@@ -70,6 +72,25 @@ bool HostedAppBrowserController::HasMinimalUiButtons() const {
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
   // TODO(calamity): Use the app name to retrieve the app icon without using the
   // extensions tab helper to make icon load more immediate.
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
+      apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+          browser()->profile())) {
+    if (!app_icon_.isNull())
+      return app_icon_;
+
+    const Extension* extension = GetExtension();
+    if (extension &&
+        apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+                ->AppRegistryCache()
+                .GetAppType(extension->id()) !=
+            apps::mojom::AppType::kUnknown) {
+      LoadAppIcon(true /* allow_placeholder_icon */);
+      return GetFallbackAppIcon();
+    }
+  }
+#endif
+
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   if (!contents)
@@ -224,6 +245,27 @@ void HostedAppBrowserController::OnTabRemoved(content::WebContents* contents) {
 
   extensions::TabHelper::FromWebContents(contents)->SetExtensionApp(nullptr);
   web_app::ClearAppPrefsForWebContents(contents);
+}
+
+void HostedAppBrowserController::LoadAppIcon(
+    bool allow_placeholder_icon) const {
+  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+      ->LoadIcon(apps::mojom::AppType::kExtension, GetExtension()->id(),
+                 apps::mojom::IconType::kStandard,
+                 extension_misc::EXTENSION_ICON_SMALL, allow_placeholder_icon,
+                 base::BindOnce(&HostedAppBrowserController::OnLoadIcon,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void HostedAppBrowserController::OnLoadIcon(
+    apps::mojom::IconValuePtr icon_value) {
+  if (icon_value->icon_type != apps::mojom::IconType::kStandard)
+    return;
+
+  app_icon_ = icon_value->uncompressed;
+
+  if (icon_value->is_placeholder_icon)
+    LoadAppIcon(false /* allow_placeholder_icon */);
 }
 
 }  // namespace extensions

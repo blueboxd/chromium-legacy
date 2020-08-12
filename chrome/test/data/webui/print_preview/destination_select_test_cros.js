@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, getSelectDropdownBackground, NativeLayer, NativeLayerImpl, PrinterState, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity} from 'chrome://print/print_preview.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, getSelectDropdownBackground, NativeLayer, NativeLayerImpl, PrinterState, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity, SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Base, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
@@ -325,7 +326,8 @@ destination_select_test_cros.suiteName = 'DestinationSelectTestCros';
 destination_select_test_cros.TestNames = {
   UpdateStatus: 'update status',
   ChangeIcon: 'change icon',
-  EulaIsDisplayed: 'eula is displayed'
+  EulaIsDisplayed: 'eula is displayed',
+  SelectDriveDestination: 'select drive destination',
 };
 
 suite(destination_select_test_cros.suiteName, function() {
@@ -459,5 +461,40 @@ suite(destination_select_test_cros.suiteName, function() {
         destinationSelect.set(
             'destination.eulaUrl', 'chrome://os-credits/eula');
         assertFalse(destinationEulaWrapper.hidden);
+      });
+
+  // Tests that the correct drive destination is in the select based on value of
+  // printSaveToDrive flag.
+  test(
+      assert(destination_select_test_cros.TestNames.SelectDriveDestination),
+      function() {
+        const driveDestinationKey = `${Destination.GooglePromotedId.DOCS}/${
+            DestinationOrigin.COOKIES}/${account}`;
+        const printSaveToDriveEnabled =
+            loadTimeData.getBoolean('printSaveToDrive');
+        const expectedKey = printSaveToDriveEnabled ?
+            SAVE_TO_DRIVE_CROS_DESTINATION_KEY :
+            driveDestinationKey;
+        const wrongKey = !printSaveToDriveEnabled ?
+            SAVE_TO_DRIVE_CROS_DESTINATION_KEY :
+            driveDestinationKey;
+
+        return waitBeforeNextRender(destinationSelect)
+            .then(() => {
+              destinationSelect.driveDestinationKey = driveDestinationKey;
+              destinationSelect.destination = recentDestinationList[0];
+              destinationSelect.updateDestination();
+
+              assertTrue(
+                  !!Array.from(destinationSelect.$$('.md-select').options)
+                        .find(option => option.value === expectedKey));
+              assertTrue(!Array.from(destinationSelect.$$('.md-select').options)
+                              .find(option => option.value === wrongKey));
+              return selectOption(destinationSelect, expectedKey);
+            })
+            .then(() => {
+              assertEquals(
+                  expectedKey, destinationSelect.$$('.md-select').value);
+            });
       });
 });

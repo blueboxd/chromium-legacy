@@ -2375,7 +2375,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als de waarde van dit beleid 0 is, wordt de standaardcachegrootte gebruikt, maar kan de gebruiker deze niet wijzigen.
 
       Als dit beleid niet is ingesteld, wordt de standaardgrootte gebruikt en kan de gebruiker deze overschrijven met de markering --media-cache-size.</translation>
-<translation id="4508084713148633492">Hiermee kun je in- of uitschakelen dat er een melding wordt weergegeven bij weinig schijfruimte. Dit is van toepassing op alle gebruikers op het apparaat.
+<translation id="4508084713148633492">Hiermee kun je meldingen bij weinig schijfruimte in- of uitschakelen. Dit is van toepassing op alle gebruikers op het apparaat.
       Als er precies één gebruikersaccount is op een beheerd apparaat, wordt de melding altijd weergegeven, ongeacht de waarde van dit beleid.
       Als er meerdere gebruikersaccount zijn op een beheerd apparaat, wordt de melding alleen weergeven als het beleid is ingesteld op 'True'.
       Op niet-beheerde apparaten wordt de melding altijd weergegeven.</translation>
@@ -3391,7 +3391,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als dit beleid is ingesteld op een niet-lege lijst:
       Als geen van de items een <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> hoger dan de huidige versie van het apparaat heeft, worden er geen beperkingen toegepast en worden bestaande beperkingen ingetrokken.
-      Als ten minste één van de items een <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> hoger dan de huidige versie van het apparaat heeft, wordt het item gekozen waarvan de versie het dichtst in de buurt van de huidige versie komt.
+      Als minstens één van de items een <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> hoger dan de huidige versie van het apparaat heeft, wordt het item gekozen waarvan de versie het dichtst in de buurt van de huidige versie komt.
       In geval van een conflict wordt de voorkeur gegeven aan het item met de kortere <ph name="WARNING_PERIOD_PROPERTY_NAME" /> of <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> en wordt het beleid toegepast met dat item.
 
       Als de huidige versie verouderd raakt tijdens een gebruikerssessie en automatische updates door het huidige netwerk worden beperkt, wordt er een melding op het scherm weergegeven dat de gebruiker het apparaat moet updaten binnen de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> in de melding.
@@ -3401,11 +3401,11 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als blijkt dat de huidige versie verouderd is op het moment dat de gebruiker inlogt terwijl de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, moet de gebruiker het apparaat updaten voordat hij of zij inlogt.
 
       Als de huidige versie verouderd raakt tijdens een gebruikerssessie en het apparaat de vervaldatum voor automatische updates heeft bereikt, wordt er een melding op het scherm weergegeven dat de gebruiker het apparaat moet retourneren binnen de <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
-      Als het apparaat de vervaldatum voor het checken op automatische updates heeft bereikt op het moment dat de gebruiker inlogt en de <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, wordt het apparaat geblokkeerd zodat gebruikers niet kunnen inloggen.
+      Als het apparaat de vervaldatum voor het checken op automatische updates heeft bereikt op het moment dat de gebruiker inlogt en de <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> verlopen is, wordt het apparaat geblokkeerd zodat gebruikers niet kunnen inloggen.
 
-      Bij onbeheerde gebruikerssessies krijgen gebruikers geen meldingen en worden ze uitgelogd als <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> niet is ingesteld of is ingesteld op 'False'.
+      Bij onbeheerde gebruikerssessies krijgen gebruikers geen meldingen en worden ze uitgelogd als <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> niet is ingesteld of ingesteld is op 'False'.
 
-      Als dit beleid niet is ingesteld of is ingesteld op een lege waarde, worden er geen beperkingen toegepast, worden bestaande beperkingen ingetrokken en kan de gebruiker inloggen ongeacht de versie van <ph name="PRODUCT_OS_NAME" />.
+      Als dit beleid niet is ingesteld of ingesteld is op een lege waarde, worden er geen beperkingen toegepast, worden bestaande beperkingen ingetrokken en kan de gebruiker inloggen ongeacht de versie van <ph name="PRODUCT_OS_NAME" />.
 
       <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> kan in dit geval een exacte versie zijn (zoals '13305.0.0') of een versievoorvoegsel (zoals '13305').
       De <ph name="WARNING_PERIOD_PROPERTY_NAME" /> en <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> zijn optionele waarden die worden gespecificeerd als een aantal dagen. De standaardwaarde is 0 dagen, wat inhoudt dat er geen waarschuwingsperiode is.
@@ -3706,7 +3706,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           De beleidswaarde moet worden gespecificeerd in milliseconden. De opgegeven waarden moeten kleiner dan of gelijk zijn aan de inactieve vertraging.
 
           Het waarschuwingsbericht wordt alleen weergegeven als de inactieve actie 'uitloggen' of 'afsluiten' is.</translation>
-<translation id="6334330017384340264">Dit beleid geeft aan welke apps en URL's worden toegestaan voor gebruiksbeperkingen per app moeten worden gezet.
+<translation id="6334330017384340264">Dit beleid geeft aan welke apps en URL's worden toegestaan voor gebruiksbeperkingen per app.
         De geconfigureerde toelatingslijst wordt toegepast op de apps die zijn geïnstalleerd in <ph name="PRODUCT_OS_NAME" /> voor de betreffende gebruiker met tijdslimieten per app.
         De geconfigureerde toelatingslijst kan alleen worden toegepast op onderliggende gebruikersaccounts en wordt van kracht als het beleid <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> is ingesteld.
         De geconfigureerde toelatingslijst wordt toegepast op apps en URL's zodat ze niet worden geblokkeerd door tijdslimieten per app.
@@ -4054,9 +4054,9 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Hiermee worden de markeringen gespecificeerd die bij het starten moeten worden toegepast op <ph name="PRODUCT_NAME" />. De opgegeven markeringen worden alleen toegepast op het inlogscherm. Markeringen die worden ingesteld via dit beleid, worden niet doorgevoerd in gebruikerssessies.</translation>
 <translation id="685769593149966548">Strenge 'Beperkte modus' voor YouTube afdwingen</translation>
 <translation id="686079137349561371">Microsoft Windows 7 of later</translation>
-<translation id="6863342574191774334">Als deze instelling is ingeschakeld, kunnen gebruikers zich aanmelden voor 'Dichtbij delen'. Daarmee kunnen ze bestanden sturen naar en ontvangen van mensen in de buurt.
+<translation id="6863342574191774334">Als deze instelling ingeschakeld is, kunnen gebruikers zich aanmelden voor 'Dichtbij delen'. Daarmee kunnen ze bestanden sturen naar en ontvangen van mensen in de buurt.
 
-      Als deze instelling is uitgeschakeld, kunnen gebruikers zich niet aanmelden voor 'Dichtbij delen'.
+      Als deze instelling uitgeschakeld is, kunnen gebruikers zich niet aanmelden voor 'Dichtbij delen'.
 
       Als je dit beleid niet instelt, is de standaardoptie toegestaan voor zowel zakelijk beheerde gebruikers als niet-beheerde gebruikers.</translation>
 <translation id="6864244339257535116">Uploads en downloads van bestanden met wachtwoordbeveiliging toestaan</translation>

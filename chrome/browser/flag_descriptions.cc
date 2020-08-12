@@ -3472,11 +3472,6 @@ const char kAggregatedMlAppRankingName[] = "Rank suggested apps with ML.";
 const char kAggregatedMlAppRankingDescription[] =
     "Use the aggregated ML model to rank the suggested apps.";
 
-const char kAggregatedMlSearchRankingName[] = "Rank search results with ML.";
-const char kAggregatedMlSearchRankingDescription[] =
-    "Use the aggregated ML model to rank the non-app search results for "
-    "non-empty queries.";
-
 const char kAllowDisableMouseAccelerationName[] =
     "Allow disabling mouse acceleration";
 const char kAllowDisableMouseAccelerationDescription[] =
@@ -4026,10 +4021,6 @@ const char kFsNosymfollowDescription[] =
     "Causes user-supplied filesystems to be mounted with the 'nosymfollow'"
     " option, so the chromuimos LSM denies symlink traversal on the"
     " filesystem.";
-
-const char kFuzzyAppSearchName[] = "Fuzzy app search algorithm in launcher.";
-const char kFuzzyAppSearchDescription[] =
-    "Uses fuzzy search algorithm for app search in launcher.";
 
 const char kGaiaActionButtonsName[] =
     "Enable action buttons on Gaia login screen";

@@ -8,6 +8,7 @@
 <translation id="1019413721762100891">Off</translation>
 <translation id="1021110881106174305">Accepted cards</translation>
 <translation id="1021753677514347426">This problem happens because of a certificate that you or someone else installed on your device. The certificate is known to be used to monitor and intercept networks, and is not trusted by Chromium. While some legitimate cases for monitoring do exist, like on a school or company network, Chromium wants to make sure that you're aware it's happening, even if you can't stop it. Monitoring may happen in any browser or application that accesses the web.</translation>
+<translation id="1024111578869940408">Attackers sometimes mimic sites by making hard-to-see changes to the web address.</translation>
 <translation id="1030706264415084469"><ph name="URL" /> wants to permanently store large data on your device</translation>
 <translation id="1032854598605920125">Rotate clockwise</translation>
 <translation id="1036348656032585052">Turn off</translation>
@@ -198,6 +199,7 @@
 <translation id="1717494416764505390">Mailbox 3</translation>
 <translation id="1718029547804390981">Document is too large to be annotated</translation>
 <translation id="1721424275792716183">* Field is required</translation>
+<translation id="1724638245199909652">Local font access</translation>
 <translation id="1727741090716970331">Add Valid Card Number</translation>
 <translation id="1728677426644403582">You're viewing the source of a web page</translation>
 <translation id="173080396488393970">This type of card isn’t supported</translation>
@@ -417,6 +419,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2677748264148917807">Leave</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Best fit</translation>
+<translation id="2688969097326701645">Yes, continue</translation>
 <translation id="2691924980723297736">Safety warning</translation>
 <translation id="2699302886720511147">Accepted Cards</translation>
 <translation id="2701514975700770343">Face down</translation>
@@ -510,6 +513,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="3107591622054137333"><ph name="BEGIN_LINK" />Checking the secure DNS configuration<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">You don't have authorisation to view this page.</translation>
 <translation id="3113284927548439113">Third shift</translation>
+<translation id="3115874930288085374"><ph name="ENROLLMENT_DOMAIN" /> requires you to back up your data and return this <ph name="DEVICE_TYPE" />.</translation>
 <translation id="3116158981186517402">Laminate</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Try running Connectivity Diagnostics<ph name="END_LINK" />.</translation>
@@ -932,6 +936,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="484462545196658690">Auto</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4854362297993841467">This delivery method isn’t available. Try a different method.</translation>
+<translation id="4875935965051941588">Did you mean <ph name="SUGGESTED_DOMAIN" />?</translation>
 <translation id="4876188919622883022">Simplified view</translation>
 <translation id="4876305945144899064">No username</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{None}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -1104,6 +1109,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5540224163453853">Could not find the requested article.</translation>
 <translation id="5541086400771735334">Mailbox 7</translation>
 <translation id="5541546772353173584">Add Email</translation>
+<translation id="5544872699732646498">Attackers sometimes mimic sites by making hard-to-see changes to the web address.</translation>
 <translation id="5545756402275714221">Articles for You</translation>
 <translation id="5552137475244467770">Chrome periodically checks your passwords against lists that have been published online. When doing this, your passwords and usernames are encrypted, so they can’t be read by anyone, including Google.</translation>
 <translation id="5556459405103347317">Reload</translation>
@@ -1484,6 +1490,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> doesn't adhere to security standards.</translation>
 <translation id="7210993021468939304">Linux activity within the container, and can install and run Linux apps within the container</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /> about this problem.</translation>
+<translation id="7214062855724067749">Use the fonts installed on your computer so that you can create advanced typography</translation>
 <translation id="7217745192097460130">Use touch ID to verify and complete your purchase?</translation>
 <translation id="7219179957768738017">The connection uses <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Processing</translation>

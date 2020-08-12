@@ -213,6 +213,11 @@ void FeedStream::InitialStreamLoadComplete(LoadStreamTask::Result result) {
 
 void FeedStream::OnEnterBackground() {
   metrics_reporter_->OnEnterBackground();
+  if (GetFeedConfig().upload_actions_on_enter_background) {
+    task_queue_.AddTask(std::make_unique<UploadActionsTask>(
+        this, base::BindOnce(&FeedStream::UploadActionsComplete,
+                             base::Unretained(this))));
+  }
 }
 
 void FeedStream::AttachSurface(SurfaceInterface* surface) {

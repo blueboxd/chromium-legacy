@@ -11,6 +11,30 @@
 
 namespace ash {
 
+// PhotoWithDetails------------------------------------------------------------
+PhotoWithDetails::PhotoWithDetails() = default;
+
+PhotoWithDetails::PhotoWithDetails(const PhotoWithDetails&) = default;
+
+PhotoWithDetails& PhotoWithDetails::operator=(const PhotoWithDetails&) =
+    default;
+
+PhotoWithDetails::PhotoWithDetails(PhotoWithDetails&&) = default;
+
+PhotoWithDetails& PhotoWithDetails::operator=(PhotoWithDetails&&) = default;
+
+PhotoWithDetails::~PhotoWithDetails() = default;
+
+void PhotoWithDetails::Clear() {
+  photo = gfx::ImageSkia();
+  details = std::string();
+}
+
+bool PhotoWithDetails::IsNull() const {
+  return photo.isNull();
+}
+
+// AmbientBackendModel---------------------------------------------------------
 AmbientBackendModel::AmbientBackendModel() {
   SetPhotoRefreshInterval(kPhotoRefreshInterval);
 }
@@ -34,17 +58,18 @@ void AmbientBackendModel::AppendTopics(
 
 bool AmbientBackendModel::ShouldFetchImmediately() const {
   // Prefetch one image |next_image_| for photo transition animation.
-  return current_image_.isNull() || next_image_.isNull();
+  return current_image_.IsNull() || next_image_.IsNull();
 }
 
-void AmbientBackendModel::AddNextImage(const gfx::ImageSkia& image) {
-  if (current_image_.isNull()) {
-    current_image_ = image;
-  } else if (next_image_.isNull()) {
-    next_image_ = image;
+void AmbientBackendModel::AddNextImage(
+    const PhotoWithDetails& photo_with_details) {
+  if (current_image_.IsNull()) {
+    current_image_ = photo_with_details;
+  } else if (next_image_.IsNull()) {
+    next_image_ = photo_with_details;
   } else {
     current_image_ = next_image_;
-    next_image_ = image;
+    next_image_ = photo_with_details;
   }
 
   NotifyImagesChanged();
@@ -63,12 +88,12 @@ void AmbientBackendModel::SetPhotoRefreshInterval(base::TimeDelta interval) {
 
 void AmbientBackendModel::Clear() {
   topics_.clear();
-  current_image_ = gfx::ImageSkia();
-  next_image_ = gfx::ImageSkia();
+  current_image_.Clear();
+  next_image_.Clear();
 }
 
-gfx::ImageSkia AmbientBackendModel::GetNextImage() const {
-  if (!next_image_.isNull())
+PhotoWithDetails AmbientBackendModel::GetNextImage() const {
+  if (!next_image_.IsNull())
     return next_image_;
 
   return current_image_;

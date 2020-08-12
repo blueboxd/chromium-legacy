@@ -12,7 +12,7 @@ PageVisibilityObserver::PageVisibilityObserver(Page* page) {
   SetPage(page);
 }
 
-void PageVisibilityObserver::ObserverListWillBeCleared() {
+void PageVisibilityObserver::ObserverSetWillBeCleared() {
   page_ = nullptr;
 }
 
@@ -21,12 +21,12 @@ void PageVisibilityObserver::SetPage(Page* page) {
     return;
 
   if (page_)
-    page_->PageVisibilityObserverList().RemoveObserver(this);
+    page_->PageVisibilityObserverSet().RemoveObserver(this);
 
   page_ = page;
 
   if (page_)
-    page_->PageVisibilityObserverList().AddObserver(this);
+    page_->PageVisibilityObserverSet().AddObserver(this);
 }
 
 void PageVisibilityObserver::Trace(Visitor* visitor) const {

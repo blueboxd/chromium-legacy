@@ -193,6 +193,8 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       SchemeAndTrivialSubdomainElision);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest,
+                           SimplifiedDomainElisionWithNarrowOmnibox);
   FRIEND_TEST_ALL_PREFIXES(
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       HideOnInteractionAfterFocusAndBlur);

@@ -50,7 +50,7 @@ class SelectionControllerTest : public EditingTestBase {
   }
 
   VisibleSelectionInFlatTree GetVisibleSelectionInFlatTree() const {
-    return Selection().GetSelectionInFlatTree();
+    return Selection().ComputeVisibleSelectionInFlatTree();
   }
 
   bool SelectClosestWordFromHitTestResult(

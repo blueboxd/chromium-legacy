@@ -3,7 +3,7 @@
 <translationbundle lang="es-419">
 <translation id="1006017844123154345">Abrir en línea</translation>
 <translation id="1044891598689252897">Los sitios funcionarán normalmente</translation>
-<translation id="1124090076051167250">Esta acción borrará <ph name="DATASIZE" /> de datos y cookies almacenados por los sitios o las apps que aparecen en la Pantalla principal.</translation>
+<translation id="1124090076051167250">Esta acción borrará <ph name="DATASIZE" /> de datos y cookies almacenados por los sitios o las apps que aparecen en la pantalla principal.</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1178581264944972037">Detener</translation>
 <translation id="1181037720776840403">Quitar</translation>
@@ -141,7 +141,7 @@
 <translation id="5689516760719285838">Ubicación</translation>
 <translation id="5690795753582697420">La cámara está desactivada en la configuración de Android</translation>
 <translation id="5710871682236653961">Preguntar antes de permitir que los sitios envíen y reciban información cuando presionas dispositivos NFC (recomendado)</translation>
-<translation id="5719847187258001597">Esta acción borrará todos los datos y cookies almacenados por <ph name="ORIGIN" /> o su app que aparece en la Pantalla principal.</translation>
+<translation id="5719847187258001597">Esta acción borrará todos los datos y cookies almacenados por <ph name="ORIGIN" /> o su app que aparece en la pantalla principal.</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5916664084637901428">Activado</translation>
@@ -228,6 +228,7 @@
 <translation id="8261506727792406068">Borrar</translation>
 <translation id="8300705686683892304">Administrados por una app</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano para un sitio específico.</translation>
+<translation id="8376384591331888629">Habilitar también cookies de terceros en este sitio</translation>
 <translation id="83792324527827022">Un sitio está utilizando la cámara y el micrófono</translation>
 <translation id="8380167699614421159">Este sitio muestra anuncios intrusivos o engañosos</translation>
 <translation id="8394832520002899662">Presiona para volver al sitio</translation>

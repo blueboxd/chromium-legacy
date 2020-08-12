@@ -9,6 +9,7 @@
 
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_controller.h"
+#include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/public/cpp/image_downloader.h"
 #include "ash/shell.h"
@@ -328,9 +329,8 @@ void AmbientPhotoController::OnScreenUpdateInfoFetched(
 
 void AmbientPhotoController::TryReadPhotoRawData() {
   const AmbientModeTopic& topic = GetNextTopic();
-  const std::string& image_url = topic.portrait_image_url.value_or(topic.url);
 
-  base::FilePath path = photo_path_.Append(ToPhotoFileName(image_url));
+  base::FilePath path = photo_path_.Append(ToPhotoFileName(topic.GetUrl()));
   task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(
@@ -342,25 +342,25 @@ void AmbientPhotoController::TryReadPhotoRawData() {
           },
           path),
       base::BindOnce(&AmbientPhotoController::OnPhotoRawDataRead,
-                     weak_factory_.GetWeakPtr(), image_url));
+                     weak_factory_.GetWeakPtr(), topic));
 }
 
 void AmbientPhotoController::OnPhotoRawDataRead(
-    const std::string& image_url,
+    const AmbientModeTopic& topic,
     std::unique_ptr<std::string> data) {
   if (!data || data->empty()) {
     url_loader_->Download(
-        image_url,
+        topic.GetUrl(),
         base::BindOnce(&AmbientPhotoController::OnPhotoRawDataAvailable,
-                       weak_factory_.GetWeakPtr(), image_url,
+                       weak_factory_.GetWeakPtr(), topic,
                        /*need_to_save=*/true));
   } else {
-    OnPhotoRawDataAvailable(image_url, /*need_to_save=*/false, std::move(data));
+    OnPhotoRawDataAvailable(topic, /*need_to_save=*/false, std::move(data));
   }
 }
 
 void AmbientPhotoController::OnPhotoRawDataAvailable(
-    const std::string& image_url,
+    const AmbientModeTopic& topic,
     bool need_to_save,
     std::unique_ptr<std::string> response_body) {
   if (!response_body) {
@@ -377,7 +377,8 @@ void AmbientPhotoController::OnPhotoRawDataAvailable(
     return;
   }
 
-  const base::FilePath path = photo_path_.Append(ToPhotoFileName(image_url));
+  const base::FilePath path =
+      photo_path_.Append(ToPhotoFileName(topic.GetUrl()));
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(
@@ -388,24 +389,30 @@ void AmbientPhotoController::OnPhotoRawDataAvailable(
           },
           path, need_to_save, *response_body),
       base::BindOnce(&AmbientPhotoController::DecodePhotoRawData,
-                     weak_factory_.GetWeakPtr(), std::move(response_body)));
+                     weak_factory_.GetWeakPtr(), topic,
+                     std::move(response_body)));
 }
 
 void AmbientPhotoController::DecodePhotoRawData(
+    const AmbientModeTopic& topic,
     std::unique_ptr<std::string> data) {
   std::vector<uint8_t> image_bytes(data->begin(), data->end());
   image_decoder_->Decode(image_bytes,
                          base::BindOnce(&AmbientPhotoController::OnPhotoDecoded,
-                                        weak_factory_.GetWeakPtr()));
+                                        weak_factory_.GetWeakPtr(), topic));
 }
 
-void AmbientPhotoController::OnPhotoDecoded(const gfx::ImageSkia& image) {
+void AmbientPhotoController::OnPhotoDecoded(const AmbientModeTopic& topic,
+                                            const gfx::ImageSkia& image) {
   base::TimeDelta kDelay;
   if (image.isNull()) {
     LOG(WARNING) << "Image is null";
     kDelay = base::TimeDelta::FromMilliseconds(100);
   } else {
-    ambient_backend_model_.AddNextImage(image);
+    PhotoWithDetails detailed_photo;
+    detailed_photo.photo = image;
+    detailed_photo.details = topic.details;
+    ambient_backend_model_.AddNextImage(std::move(detailed_photo));
   }
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(

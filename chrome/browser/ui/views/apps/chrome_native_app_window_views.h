@@ -11,6 +11,10 @@
 #include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "extensions/components/native_app_window/native_app_window_views.h"
 
+namespace gfx {
+class ImageSkia;
+}
+
 class ExtensionKeybindingRegistryViews;
 
 class ChromeNativeAppWindowViews
@@ -71,10 +75,13 @@ class ChromeNativeAppWindowViews
       extensions::AppWindow* app_window,
       const extensions::AppWindow::CreateParams& create_params) override;
 
- private:
-  // Ensures that the Chrome app icon is created.
-  void EnsureAppIconCreated();
+  virtual gfx::Image GetCustomImage();
+  virtual gfx::Image GetAppIconImage();
 
+  // Ensures that the Chrome app icon is created.
+  virtual void EnsureAppIconCreated();
+
+ private:
   // extensions::ChromeAppIconDelegate:
   void OnIconUpdated(extensions::ChromeAppIcon* icon) override;
 

@@ -48,7 +48,7 @@ class FrameSelectionTest : public EditingTestBase {
     return Selection().ComputeVisibleSelectionInDOMTree();
   }
   VisibleSelectionInFlatTree GetVisibleSelectionInFlatTree() const {
-    return Selection().GetSelectionInFlatTree();
+    return Selection().ComputeVisibleSelectionInFlatTree();
   }
 
   Text* AppendTextNode(const String& data);

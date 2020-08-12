@@ -1518,6 +1518,28 @@ TEST(TimeDelta, WindowsEpoch) {
   // only compute years starting from 1900.
 }
 
+TEST(TimeDelta, Hz) {
+  static_assert(TimeDelta::FromHz(1) == TimeDelta::FromSeconds(1), "");
+  EXPECT_EQ(TimeDelta::FromHz(0), TimeDelta::Max());
+  static_assert(TimeDelta::FromHz(-1) == TimeDelta::FromSeconds(-1), "");
+  static_assert(TimeDelta::FromHz(1000) == TimeDelta::FromMilliseconds(1), "");
+  static_assert(TimeDelta::FromHz(0.5) == TimeDelta::FromSeconds(2), "");
+  EXPECT_EQ(TimeDelta::FromHz(std::numeric_limits<double>::infinity()),
+            TimeDelta());
+
+  static_assert(TimeDelta::FromSeconds(1).ToHz() == 1, "");
+  EXPECT_EQ(TimeDelta::Max().ToHz(), 0);
+  static_assert(TimeDelta::FromSeconds(-1).ToHz() == -1, "");
+  static_assert(TimeDelta::FromMilliseconds(1).ToHz() == 1000, "");
+  static_assert(TimeDelta::FromSeconds(2).ToHz() == 0.5, "");
+  EXPECT_EQ(TimeDelta().ToHz(), std::numeric_limits<double>::infinity());
+
+  // 60 Hz can't be represented exactly.
+  EXPECT_NE(TimeDelta::FromHz(60) * 60, TimeDelta::FromSeconds(1));
+  EXPECT_NE(TimeDelta::FromHz(60).ToHz(), 60);
+  EXPECT_EQ(base::ClampRound(TimeDelta::FromHz(60).ToHz()), 60);
+}
+
 // We could define this separately for Time, TimeTicks and TimeDelta but the
 // definitions would be identical anyway.
 template <class Any>

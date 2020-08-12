@@ -31,6 +31,10 @@ AmbientModeTopic& AmbientModeTopic::operator=(const AmbientModeTopic&) =
 
 AmbientModeTopic::~AmbientModeTopic() = default;
 
+std::string AmbientModeTopic::GetUrl() const {
+  return portrait_image_url.value_or(url);
+}
+
 // WeatherInfo------------------------------------------------------------------
 WeatherInfo::WeatherInfo() = default;
 

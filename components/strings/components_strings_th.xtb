@@ -102,7 +102,7 @@
 <translation id="1348198688976932919">เว็บไซต์ที่จะเปิดมีแอปอันตราย</translation>
 <translation id="1348779747280417563">ยืนยันชื่อ</translation>
 <translation id="1357195169723583938">ผู้ใดใช้อุปกรณ์เมื่อเร็วๆ นี้และใช้เมื่อใด</translation>
-<translation id="1360955481084547712">เปิดหน้าต่างที่ไม่ระบุตัวตนใหม่เพื่อท่องเว็บแบบส่วนตัว</translation>
+<translation id="1360955481084547712">เปิดหน้าต่างใหม่ที่ไม่ระบุตัวตนเพื่อท่องเว็บแบบส่วนตัว</translation>
 <translation id="1364822246244961190">นโยบายนี้ถูกล็อกอยู่ ระบบจะไม่สนใจค่าของนโยบายนี้</translation>
 <translation id="1374468813861204354">คำแนะนำ</translation>
 <translation id="1374692235857187091">Index-4x6 (โปสการ์ด)</translation>
@@ -1424,7 +1424,7 @@
 <translation id="6993898126790112050">6x9 (ซองจดหมาย)</translation>
 <translation id="6996312675313362352">แปลภาษา<ph name="ORIGINAL_LANGUAGE" />เสมอ</translation>
 <translation id="7004583254764674281">ใช้ Windows Hello เพื่อยืนยันบัตรได้เร็วขึ้น</translation>
-<translation id="7006930604109697472">ยืนยันที่จะส่ง</translation>
+<translation id="7006930604109697472">ส่งเลย</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">การเรียกเก็บเงินเหล่านี้อาจเกิดขึ้นครั้งเดียวหรือเป็นเกิดขึ้นซ้ำๆ และอาจไม่แสดงอย่างชัดแจ้ง</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
@@ -1473,6 +1473,7 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ไม่เป็นไปตามมาตรฐานความปลอดภัย</translation>
 <translation id="7210993021468939304">กิจกรรม Linux ในคอนเทนเนอร์ และติดตั้งรวมถึงเรียกใช้แอป Linux ในคอนเทนเนอร์ได้</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /> เกี่ยวกับปัญหานี้</translation>
+<translation id="7217745192097460130">ใช้ Touch ID เพื่อยืนยันและทำการซื้อให้เสร็จใช่ไหม</translation>
 <translation id="7219179957768738017">การเชื่อมต่อใช้ <ph name="SSL_VERSION" /></translation>
 <translation id="7220786058474068424">กำลังดำเนินการ</translation>
 <translation id="7221855153210829124">แสดงการแจ้งเตือน</translation>
@@ -1674,7 +1675,7 @@
 <translation id="7947285636476623132">ตรวจสอบปีหมดอายุแล้วลองอีกครั้ง</translation>
 <translation id="7951415247503192394">(32 บิต)</translation>
 <translation id="7953569069500808819">เย็บขอบด้านบน</translation>
-<translation id="7954523986259449736">บุคคลอื่นจะดูข้อมูลของคุณได้เนื่องจากเว็บไซต์นี้ใช้การเชื่อมต่อที่ไม่ปลอดภัยอย่างสมบูรณ์</translation>
+<translation id="7954523986259449736">คนอื่นจะมองเห็นข้อมูลของคุณได้เนื่องจากเว็บไซต์นี้ใช้การเชื่อมต่อที่ไม่ได้ปลอดภัยเต็มที่</translation>
 <translation id="7956713633345437162">บุ๊กมาร์กบนอุปกรณ์เคลื่อนที่</translation>
 <translation id="7961015016161918242">ไม่ต้องเลย</translation>
 <translation id="7966803981046576691">ประเภทบัญชีของงาน</translation>

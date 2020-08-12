@@ -264,6 +264,7 @@ source_set("web_applications_browser_tests") {
     ":web_applications_on_extensions_test_support",
     ":web_applications_test_support",
     "//chrome/app:command_ids",
+    "//chrome/browser/apps/app_service:test_support",
     "//chrome/browser/extensions:test_support",
     "//chrome/browser/web_applications/components",
     "//chrome/browser/web_applications/extensions",

@@ -110,6 +110,18 @@ void P2PSocketDispatcher::RequestNetworkEventsIfNecessary() {
 void P2PSocketDispatcher::OnConnectionError() {
   base::AutoLock lock(p2p_socket_manager_lock_);
   p2p_socket_manager_.reset();
+  // Attempt to reconnect in case the network service crashed in his being
+  // restarted.
+  PostCrossThreadTask(
+      *main_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&P2PSocketDispatcher::ReconnectP2PSocketManager,
+                          scoped_refptr<P2PSocketDispatcher>(this)));
+}
+
+void P2PSocketDispatcher::ReconnectP2PSocketManager() {
+  network_notification_client_receiver_.reset();
+  GetP2PSocketManager()->StartNetworkNotifications(
+      network_notification_client_receiver_.BindNewPipeAndPassRemote());
 }
 
 }  // namespace blink

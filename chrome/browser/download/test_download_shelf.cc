@@ -4,12 +4,10 @@
 
 #include "chrome/browser/download/test_download_shelf.h"
 
-#include "content/public/browser/download_manager.h"
+#include "base/time/time.h"
 
 TestDownloadShelf::TestDownloadShelf(Profile* profile)
-    : DownloadShelf(nullptr, profile),
-      is_showing_(false),
-      did_add_download_(false) {}
+    : DownloadShelf(nullptr, profile) {}
 
 TestDownloadShelf::~TestDownloadShelf() = default;
 

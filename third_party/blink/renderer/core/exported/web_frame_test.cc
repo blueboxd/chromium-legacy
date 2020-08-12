@@ -9638,10 +9638,11 @@ TEST_F(RemoteWindowCloseTest, WindowOpenRemoteClose) {
   frame_test_helpers::WebViewHelper popup;
   popup.InitializeRemote(remote_frame_client(), nullptr, nullptr);
   popup.GetWebView()->DidAttachRemoteMainFrame();
-  popup.RemoteMainFrame()->SetOpener(main_web_view.LocalMainFrame());
 
   LocalFrame* local_frame = main_web_view.LocalMainFrame()->GetFrame();
   RemoteFrame* remote_frame = popup.RemoteMainFrame()->GetFrame();
+
+  remote_frame->SetOpenerDoNotNotify(local_frame);
 
   // Attempt to close the window, which should fail as it isn't opened
   // by a script.
@@ -9691,7 +9692,8 @@ TEST_F(WebFrameTest, SwapWithOpenerCycle) {
   frame_test_helpers::WebViewHelper helper;
   helper.InitializeRemote();
   WebRemoteFrame* remote_frame = helper.RemoteMainFrame();
-  helper.RemoteMainFrame()->SetOpener(remote_frame);
+  WebFrame::ToCoreFrame(*helper.RemoteMainFrame())
+      ->SetOpenerDoNotNotify(WebFrame::ToCoreFrame(*remote_frame));
 
   // Now swap in a local frame. It shouldn't crash.
   WebLocalFrame* local_frame =
@@ -9780,7 +9782,9 @@ TEST_F(WebFrameTest, CrossDomainAccessErrorsUseCallingWindow) {
   TestConsoleMessageWebFrameClient popup_web_frame_client;
   WebViewImpl* popup_view = popup_web_view_helper.InitializeAndLoad(
       chrome_url_ + "hello_world.html", &popup_web_frame_client);
-  popup_view->MainFrame()->SetOpener(web_view_helper.GetWebView()->MainFrame());
+  WebFrame::ToCoreFrame(*popup_view->MainFrame())
+      ->SetOpenerDoNotNotify(
+          WebFrame::ToCoreFrame(*web_view_helper.GetWebView()->MainFrame()));
 
   // Attempt a blocked navigation of an opener's subframe, and ensure that
   // the error shows up on the popup (calling) window's console, rather than

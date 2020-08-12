@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">Үүсгэсэн</translation>
 <translation id="1067291318998134776">Linux (Бэта)</translation>
 <translation id="1067922213147265141">Google-н бусад үйлчилгээ</translation>
+<translation id="1068961867683064946">Хүүхдэдээ Google Бүртгэл үүсгэнэ үү</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Taны компьютерын өөр нэг программ өргөтгөл нэмсэн бөгөөд энэ нь Chrome-н ажиллах зарчмыг өөрчилж магад.
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660"><ph name="SUBPAGE_TITLE" /> дэд хуудасны буцах товчлуур</translation>
 <translation id="1322046419516468189"><ph name="SAVED_PASSWORDS_STORE" />-д хадгалсан нууц үгнүүдийг харах болон удирдах</translation>
 <translation id="1324106254079708331">Зорилтот халдлагын эрсдэлд байгаа аливаа хүний хувийн Google Бүртгэлийг хамгаалдаг</translation>
+<translation id="1325985428688410772">Орон зай нэмэх</translation>
 <translation id="1326317727527857210">Бусад төхөөрөмжөөс чихтэй хуудсаа авахын тулд Chrome-д нэвтэрнэ үү.</translation>
 <translation id="1327074568633507428">Google Cloud Print дээрх принтер</translation>
 <translation id="1327272175893960498">Kerberos тасалбар</translation>
@@ -1078,6 +1080,7 @@
 <translation id="2307462900900812319">Сүлжээг тохируулах</translation>
 <translation id="230927227160767054">Энэ хуудас нь үйлчилгээний зохицуулагчийг суулгахыг хүсч байна.</translation>
 <translation id="2309620859903500144">Энэ сайтад таны хөдөлгөөн болон гэрлийн мэдрэгчид хандахыг хориглосон байна.</translation>
+<translation id="2314873619957287124">Суралцах, тоглох, судлахад нь хүүхдэдээ туслахын тулд дижитал үндсэн дүрэм тохируулах</translation>
 <translation id="2315414688463285945">Linux-н файлуудыг тохируулахад алдаа гарлаа. Дахин оролдоно уу.</translation>
 <translation id="2315587498123194634">Холбоосыг <ph name="DEVICE_NAME" />-д илгээх</translation>
 <translation id="2316129865977710310">Үгүй ээ, баярлалаа</translation>
@@ -1089,6 +1092,7 @@
 <translation id="2322318151094136999">Сайт цуваа портод хандахыг хүсэх үед асуух (санал болгосон)</translation>
 <translation id="2323018538045954000">Хадгалсан Wi-Fi сүлжээнүүд</translation>
 <translation id="2325444234681128157">Нууц үг санах</translation>
+<translation id="2326160999284776503">Хүүхдийнхээ Google Бүртгэлээр нэвтрэх</translation>
 <translation id="2326188115274135041">Түгжээг автоматаар тайлах үйлдлийг идэвхжүүлэхийн тулд ПИН-г баталгаажуулна уу</translation>
 <translation id="2326931316514688470">Аппыг дахин ачаалла</translation>
 <translation id="2327492829706409234">Аппликейшнийг идэвхжүүл</translation>
@@ -1147,6 +1151,7 @@
 <translation id="2384436799579181135">Алдаа гарсан байна. Та хэвлэгч төхөөрөмжөө шалгаад дахин оролдоно уу.</translation>
 <translation id="2387052489799050037">Нүүр хуудас руу очих</translation>
 <translation id="2387458720915042159">Прокси холболтын төрөл</translation>
+<translation id="2391082728065870591">Санал хүсэлтийн тайлан илгээх</translation>
 <translation id="2391419135980381625">Стандарт үсгийн фонт</translation>
 <translation id="2392163307141705938">Та <ph name="IDS_SHORT_PRODUCT_NAME" /> дээр таны эцэг эхийн тохируулсан цагийн хязгаарт хүрсэн байна.</translation>
 <translation id="2392369802118427583">Идэвхжүүлэх</translation>
@@ -1276,6 +1281,7 @@
 <translation id="2537178555904266562">Нууц үгийг синк хийхэд алдаа гарлаа</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> нь дараах файл болон фолдерыг харж, засах боломжтой</translation>
 <translation id="2537927931785713436">Виртуал машины зургийг шалгаж байна</translation>
+<translation id="2538084450874617176">Хэн <ph name="DEVICE_TYPE" />-г ашиглаж байгаа вэ?</translation>
 <translation id="2538361623464451692">Синкийг идэвхгүй болгосон</translation>
 <translation id="2540449034743108469">Өргөтгөлийн үйл ажиллагааг сонсохын тулд "Эхлүүлэх" сонголтыг дарна уу</translation>
 <translation id="2541002089857695151">Бүтэн дэлгэцийн дамжуулалтыг оновчлох уу?</translation>
@@ -2736,6 +2742,7 @@
 <translation id="4364327530094270451">Амтат гуа</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> цонх хуваалцаж байна.</translation>
 <translation id="4364830672918311045">Дэлгэцийн мэдэгдэл</translation>
+<translation id="4368115171699243057">Энэ <ph name="DEVICE_TYPE" />-г хүүхдэдээ зориулж тохируулах</translation>
 <translation id="437004882363131692"><ph name="DEVICE_TYPE" />-н зөвлөгөө, санал болон шинэчлэлтийг авч, cанал хүсэлт хуваалцаарай. Хүссэн үедээ захиалгаа цуцална уу.</translation>
 <translation id="4370975561335139969">Таны оруулсан имэйл болон нууц үг таарахгүй байна</translation>
 <translation id="4374831787438678295">Linux суулгагч</translation>
@@ -2896,6 +2903,7 @@
 <translation id="4565377596337484307">Нууц үгийг нуух</translation>
 <translation id="4565917129334815774">Системийн логуудыг хадгалах</translation>
 <translation id="456717285308019641">Хуудсыг орчуулах хэл</translation>
+<translation id="4567533462991917415">Тохируулга хийснийхээ дараа та дахиад үргэлж хүн нэмэх боломжтой. Хүн бүр бүртгэлээ хувийн болгож, өгөгдлөө хувьдаа хадгалж болно.</translation>
 <translation id="4567772783389002344">Үг нэмэх</translation>
 <translation id="4568025708905928793">Аюулгүй байдлын түлхүүрийн хүсэлт гаргаж байна</translation>
 <translation id="4568213207643490790">Уучлаарай, энэ төхөөрөмжид Google бүртгэлийг зөвшөөрөөгүй байна.</translation>
@@ -2947,6 +2955,7 @@
 <translation id="4628762811416793313">Linux-н контейнерыг тохируулж дууссангүй. Дахин оролдоно уу.</translation>
 <translation id="4633003931260532286">Өргөтгөлд хамгийн бага "<ph name="IMPORT_VERSION" />" хувилбартай "<ph name="IMPORT_NAME" />" шаардлагатай хэдий ч зөвхөн "<ph name="INSTALLED_VERSION" />" хувилбарыг суулгасан байна</translation>
 <translation id="4633757335284074492">Google Драйвд хуулбарлана уу. Өгөгдлийг амархан сэргээх эсвэл хүссэн үедээ төхөөрөмж хооронд сэлгэнэ үү. Энэ нөөцлөлтөд аппын өгөгдөл багтана. Нөөцлөлтийг Google-д байршуулдаг бөгөөд таны хүүхдийн Google Бүртгэлийн нууц үгийг ашиглан шифрлэдэг.</translation>
+<translation id="4634575639321169635">Энэ төхөөрөмжийг ажлын эсвэл хувийн хэрэгцээндээ зориулж тохируулах</translation>
 <translation id="4634771451598206121">Дахин нэвтэрнэ үү...</translation>
 <translation id="4635072447747973225">Crostini-г устгах</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> Зочин хэрэглэгч ашиглах боломжгүй байна.</translation>
@@ -3365,6 +3374,7 @@
 <translation id="5185386675596372454"><ph name="EXTENSION_NAME" />-ийн хамгийн сүүлийн хувилбар нь олон зөвшөөрөл шаарддаг учир идэвхгүй болсон байна.</translation>
 <translation id="5185500136143151980">Интернэт алга</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> ( <ph name="DEVICE" /> )</translation>
+<translation id="5190392396417374287"><ph name="PROFILE_LOCAL_NAME" />-н сонголтын цэс</translation>
 <translation id="5190926251776387065">Портыг идэвхжүүлэх</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> хэд хэдэн файл татах хүсэлтэй байна</translation>
 <translation id="5192062846343383368">Хяналтынхаа тохиргоог харахын тулд Family Link аппыг нээнэ үү</translation>
@@ -3611,6 +3621,7 @@
 <translation id="5495597166260341369">Дэлгэцийг асаалттай байлгах</translation>
 <translation id="5496587651328244253">Зохион байгуулах</translation>
 <translation id="5497251278400702716">Энэ файл</translation>
+<translation id="5498967291577176373">Нэр, хаяг эсвэл утасны дугаараа мөрөн дэх зөвлөмжүүдийн тусламжтайгаар илүү хурдан бичээрэй</translation>
 <translation id="5499313591153584299">Энэ файл нь таны компьютерт хор хөнөөлтэй байж болно.</translation>
 <translation id="5499453227627332024">Таны Linux контейнерт сайжруулалт боломжтой байна. Та дараа нь мөн Тохиргоо аппаас сайжруулах боломжтой.</translation>
 <translation id="5500709606820808700">Аюулгүй байдлын шалгалтыг өнөөдөр хийсэн</translation>
@@ -3768,6 +3779,7 @@
 <translation id="5689516760719285838">Байршил</translation>
 <translation id="56907980372820799">Мэдээллийг холбо</translation>
 <translation id="5691511426247308406">Гэр бүл</translation>
+<translation id="5691581861107245578">Бичиж буй зүйл дээрээ тулгуурлан эможигийн санал аваарай</translation>
 <translation id="5691772641933328258">Хурууны хээг таньсангүй</translation>
 <translation id="5692183275898619210">Хэвлэж дууслаа</translation>
 <translation id="569425414730375234">Одоогийн нууцлалтай харилцан үйлдэл: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4126,6 +4138,7 @@
 <translation id="6124698108608891449">Энэ сайтад илүү зөвшөөрөл шаардлагатай.</translation>
 <translation id="6125479973208104919">Харамсалтай нь та бүртгэлээ <ph name="DEVICE_TYPE" />-д дахин нэмэх шаардлагатай болно.</translation>
 <translation id="6129691635767514872">Сонгосон датаг Chrome болон синк хийсэн төхөөрөмжүүдээс устгасан. Таны Google Бүртгэл <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> дээр Google-н бусад үйлчилгээнээс хайлт, ашиглалт зэрэг хөтчийн түүхийн өөр хэлбэртэй байж болзошгүй.</translation>
+<translation id="6129839611163153407">Таны хүүхэд</translation>
 <translation id="6129938384427316298">Нэтскейп гэрчилгээний тайлбар</translation>
 <translation id="6129953537138746214">Space</translation>
 <translation id="6130692320435119637">Wi-Fi нэмэх</translation>
@@ -4166,6 +4179,7 @@
 <translation id="6178664161104547336">Гэрчилгээг сонгоно уу</translation>
 <translation id="6181431612547969857">Татаж авах ажиллагаа хаагдлаа</translation>
 <translation id="6185132558746749656">Төхөөрөмжийн байршил</translation>
+<translation id="6195446518998936840">Эцэг эхийн хяналтыг тохируулахын тулд таны зүгээс удирдахад нь туслах Google Бүртгэл танай хүүхдэд байх шаардлагатай. Та Family Link аппыг ашиглан дэлгэцийн цагийн хязгаар тогтоох, вэб сайтуудыг зөвшөөрөх эсвэл блоклох зэрэг бусад тохируулгыг хийх боломжтой.</translation>
 <translation id="6195693561221576702">Энэ төхөөрөмжийг офлайн демо горимд тохируулах боломжгүй.</translation>
 <translation id="6196640612572343990">Гуравдагч талын күүкиг блоклох</translation>
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" өргөтгөл нь таны прокси тохиргоог удирдаж байгаа бөгөөд энэ нь таны онлайнаар хийсэн зүйлийг өөрчилж, гэмтээж, хуулбарлах боломжтой гэсэн үг юм. Энэ өөрчлөлт яагаад гарсныг та мэдэхгүй байгаа бол энэ таны хүссэн зүйл биш байна.</translation>
@@ -5916,6 +5930,7 @@
 <translation id="8372369524088641025">WEP сул түлхүүр байна</translation>
 <translation id="8372477600026034341">Нэмэлт хост</translation>
 <translation id="8373652277231415614">Crostini-н хуваалцсан лавлахууд</translation>
+<translation id="8376384591331888629">Энэ сайт дээрх гуравдагч талын күүкитэй цуг</translation>
 <translation id="8378714024927312812">Танай байгууллагаас удирддаг</translation>
 <translation id="8379878387931047019">Энэ төхөөрөмж энэ вэб сайтаас хүссэн аюулгүй байдлын түлхүүрийн төрлийг дэмждэггүй</translation>
 <translation id="8379991678458444070">Энэ табыг тэмдэглэснээр дараа олоход хялбар болно</translation>
@@ -5999,6 +6014,7 @@
 <translation id="8481187309597259238">USB-н зөвшөөрлийг баталгаажуулах</translation>
 <translation id="8483248364096924578">IP хаяг</translation>
 <translation id="8487678622945914333">Томруулж харах</translation>
+<translation id="8489156414266187072">Хувийн зөвлөмж зөвхөн таны бүртгэл дээр харагдана</translation>
 <translation id="8490896350101740396">Дараах киоск апп-ууд "<ph name="UPDATED_APPS" />" шинэчлэгдсэн байна. Шинэчлэх үйл явцыг дуусгахын тулд төхөөрөмжийг унтрааж асаах хэрэгтэй.</translation>
 <translation id="8493236660459102203">Микрофон:</translation>
 <translation id="8496717697661868878">Энэ нэмэлт өргөтгөлийг ажиллуул</translation>

@@ -184,7 +184,7 @@ Tampoco pueden usar cookies para ver la actividad de navegación en diferentes s
 <translation id="298306318844797842">Agregar forma de pago…</translation>
 <translation id="2989805286512600854">Abrir en una nueva pestaña</translation>
 <translation id="3037605927509011580">¡Oh, no!</translation>
-<translation id="3080525922482950719">Puedes guardar páginas para leerlas más tarde o sin conexión</translation>
+<translation id="3080525922482950719">Puedes guardar páginas para leerlas más tarde o sin conexión.</translation>
 <translation id="3081338492074632642">Asegúrate de que la contraseña que guardes coincida con la de <ph name="WEBSITE" /></translation>
 <translation id="3112556859945124369">Marcar…</translation>
 <translation id="3131206671572504478">Bloquear todas</translation>
@@ -393,6 +393,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5614553682702429503">¿Quieres guardar la contraseña?</translation>
 <translation id="5626245204502895507">No se pudo descargar el archivo esta vez.</translation>
 <translation id="5631164295104953411">Agregar forma de pago</translation>
+<translation id="5653058065071344726">Administrado por tu organización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="5659593005791499971">Correo</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versión <ph name="PRODUCT_VERSION" /></translation>
@@ -437,6 +438,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="6108923351542677676">Configuración en curso…</translation>
 <translation id="6119050551270742952">Pág. incógnito</translation>
 <translation id="6122191549521593678">En línea</translation>
+<translation id="6125339936101702016">Administrado por <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Se eliminó el elemento</translation>
 <translation id="6136914049981179737">Hace seg.</translation>
 <translation id="616831107264507309">Leer más tarde</translation>

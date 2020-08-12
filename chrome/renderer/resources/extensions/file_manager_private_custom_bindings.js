@@ -129,7 +129,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
 
     var onGetContentMimeType = function(blob, mimeType) {
       callback(mimeType ? mimeType : undefined);
-    }.bind(this, fileBlob);  // Bind a blob reference: crbug.com/415792.
+    }.bind(this, fileBlob);  // Bind a blob reference: crbug.com/415792#c12
 
     fileManagerPrivateInternal.getContentMimeType(uuid, onGetContentMimeType);
   });
@@ -145,7 +145,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
 
     var onGetContentMetadata = function(blob, metadata) {
       callback(metadata ? metadata : undefined);
-    }.bind(this, fileBlob);  // Bind a blob reference: crbug.com/415792.
+    }.bind(this, fileBlob);  // Bind a blob reference: crbug.com/415792#c12
 
     fileManagerPrivateInternal.getContentMetadata(
         uuid, mimeType, type, onGetContentMetadata);

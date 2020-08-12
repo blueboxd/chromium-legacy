@@ -337,7 +337,7 @@ LocalFrame* LocalFrame::FromFrameToken(
   return it == local_frames_map.end() ? nullptr : it->value.Get();
 }
 
-void LocalFrame::Init() {
+void LocalFrame::Init(Frame* opener) {
   CoreInitializer::GetInstance().InitLocalFrame(*this);
 
   GetRemoteNavigationAssociatedInterfaces()->GetInterface(
@@ -349,6 +349,7 @@ void LocalFrame::Init() {
       WTF::BindRepeating(&LocalFrame::BindToHighPriorityReceiver,
                          WrapWeakPersistent(this)),
       GetTaskRunner(blink::TaskType::kInternalHighPriorityLocalFrame));
+  SetOpenerDoNotNotify(opener);
   loader_.Init();
 }
 
@@ -1865,15 +1866,14 @@ void LocalFrame::SetOpener(Frame* opener_frame) {
   // Only a local frame should be able to update another frame's opener.
   DCHECK(!opener_frame || opener_frame->IsLocalFrame());
 
-  auto* opener_web_frame = WebFrame::FromFrame(opener_frame);
   auto* web_frame = WebFrame::FromFrame(this);
-  if (web_frame && web_frame->Opener() != opener_web_frame) {
+  if (web_frame && Opener() != opener_frame) {
     GetLocalFrameHostRemote().DidChangeOpener(
         opener_frame ? base::Optional<base::UnguessableToken>(
                            opener_frame->GetFrameToken())
                      : base::nullopt);
-    web_frame->SetOpener(opener_web_frame);
   }
+  SetOpenerDoNotNotify(opener_frame);
 }
 
 FrameOcclusionState LocalFrame::GetOcclusionState() const {
@@ -3029,8 +3029,7 @@ void LocalFrame::UpdateOpener(
   if (auto* web_frame = WebFrame::FromFrame(this)) {
     auto* opener_frame = LocalFrame::ResolveFrame(
         opener_frame_token.value_or(base::UnguessableToken()));
-    auto* opener_web_frame = WebFrame::FromFrame(opener_frame);
-    web_frame->SetOpener(opener_web_frame);
+    SetOpenerDoNotNotify(opener_frame);
   }
 }
 

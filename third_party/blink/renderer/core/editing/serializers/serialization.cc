@@ -794,7 +794,7 @@ static Document* CreateStagingDocumentForMarkupSanitization() {
   LocalFrameView* frame_view =
       MakeGarbageCollected<LocalFrameView>(*frame, IntSize(800, 600));
   frame->SetView(frame_view);
-  frame->Init();
+  frame->Init(nullptr);
 
   Document* document = frame->GetDocument();
   DCHECK(document);

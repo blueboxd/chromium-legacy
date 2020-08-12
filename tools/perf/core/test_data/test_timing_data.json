@@ -216,32 +216,8 @@
         "name": "blink_perf.bindings/undefined-id-getter.html"
     },
     {
-        "duration": "4.475043364646466",
-        "name": "blink_perf.canvas/draw-video-to-hw-accelerated-canvas-2d.html"
-    },
-    {
-        "duration": "7.343074614141415",
-        "name": "blink_perf.canvas/drawimage-not-pixelaligned.html"
-    },
-    {
-        "duration": "7.111080769696973",
-        "name": "blink_perf.canvas/drawimage.html"
-    },
-    {
         "duration": "5.406577264646463",
         "name": "blink_perf.canvas/toBlob_duration.html"
-    },
-    {
-        "duration": "8.077196209090912",
-        "name": "blink_perf.canvas/upload-video-to-sub-texture.html"
-    },
-    {
-        "duration": "2.463287210101009",
-        "name": "blink_perf.canvas/upload-video-to-texture.html"
-    },
-    {
-        "duration": "3.720329938383839",
-        "name": "blink_perf.canvas/upload-webgl-to-texture.html"
     },
     {
         "duration": "13.611388484848492",

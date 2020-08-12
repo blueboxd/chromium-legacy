@@ -12,14 +12,20 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/context_menu_controller.h"
+
+namespace gfx {
+class ImageSkia;
+}
 
 namespace ui {
 class MenuModel;
@@ -63,6 +69,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   bool ShouldRemoveStandardFrame() override;
   void AdjustBoundsToBeVisibleOnDisplayForNewWindows(
       gfx::Rect* out_bounds) override;
+  void EnsureAppIconCreated() override;
 
   // ui::BaseWindow:
   gfx::Rect GetRestoredBounds() const override;
@@ -78,6 +85,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
   ui::ModalType GetModalType() const override;
+  gfx::ImageSkia GetWindowIcon() override;
 
   // NativeAppWindow:
   void SetFullscreen(int fullscreen_types) override;
@@ -167,6 +175,18 @@ class ChromeNativeAppWindowViewsAuraAsh
   // app's and window manager's state.
   void UpdateImmersiveMode();
 
+  // Generates the standard custom icon
+  gfx::Image GetCustomImage() override;
+  // Generates the standard app icon
+  gfx::Image GetAppIconImage() override;
+
+  // Helper function to call AppServiceProxy to load icon.
+  void LoadAppIcon(bool allow_placeholder_icon);
+  // Invoked when the icon is loaded.
+  void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
+
+  gfx::ImageSkia app_icon_image_skia_;
+
   // Used to show the system menu.
   std::unique_ptr<ui::MenuModel> menu_model_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
@@ -181,6 +201,9 @@ class ChromeNativeAppWindowViewsAuraAsh
   ScopedObserver<aura::Window, aura::WindowObserver> observed_window_{this};
   ScopedObserver<ash::WindowState, ash::WindowStateObserver>
       observed_window_state_{this};
+
+  base::WeakPtrFactory<ChromeNativeAppWindowViewsAuraAsh> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViewsAuraAsh);
 };

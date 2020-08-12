@@ -506,6 +506,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="6972754398087986839">Bắt đầu</translation>
 <translation id="6981982820502123353">Hỗ trợ tiếp cận</translation>
 <translation id="698231206551913481">Tất cả các tệp và dữ liệu cục bộ liên quan tới người dùng này sẽ bị xóa vĩnh viễn sau khi người dùng này bị xóa.</translation>
+<translation id="7007983414944123363">Hệ thống chưa xác minh được mã PIN hoặc mật khẩu của bạn. Hãy thử lại.</translation>
 <translation id="7015766095477679451">Quay lại lúc <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Kết nối <ph name="DEVICE_NAME" /> với điện thoại của bạn</translation>
 <translation id="7026338066939101231">Giảm dần</translation>
@@ -551,6 +552,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="7568294522609223312">Tắt tính năng tự động nhấp</translation>
 <translation id="7568637526529101738">Khi nhấp chuột phải hoặc nhấn và giữ, Trợ lý sẽ hiển thị các thông tin như định nghĩa hoặc hoạt động chuyển đổi đơn vị để bạn lựa chọn.</translation>
 <translation id="7569509451529460200">Đã bật chữ nổi Braille và ChromeVox</translation>
+<translation id="7579778809502851308">Chụp ảnh màn hình</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7600875258240007829">Xem tất cả thông báo</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />°F</translation>
@@ -669,6 +671,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="8841375032071747811">Nút quay lại</translation>
 <translation id="8843682306134542540">Bật/tắt khóa xoay. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">Hệ thống vẫn chưa xác minh được mã PIN hoặc mật khẩu của bạn. Lưu ý: Nếu bạn đổi mật khẩu gần đây, hãy dùng mật khẩu cũ. Bạn có thể dùng mật khẩu mới sau khi đăng xuất.</translation>
 <translation id="8870509716567206129">Ứng dụng không hỗ trợ chế độ chia đôi màn hình.</translation>
 <translation id="8874184842967597500">Chưa kết nối</translation>
 <translation id="8877788021141246043">Đặt lời nhắc</translation>

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {ViewerPdfSidenavElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/elements/viewer-pdf-sidenav.js';
+import {ViewerThumbnailBarElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/elements/viewer-thumbnail-bar.js';
 
 /** @return {!ViewerPdfSidenavElement} */
 function createSidenav() {
@@ -24,30 +25,37 @@ const tests = [
     const buttons = /** @type {!NodeList<!CrIconButtonElement>} */ (
         sidenav.shadowRoot.querySelectorAll('cr-icon-button'));
 
-    let visibleContent = content.querySelector('div:not([hidden])');
+    const thumbnailBar =
+        /** @type {!ViewerThumbnailBarElement} */ (
+            content.querySelector('viewer-thumbnail-bar'));
+    const outline = /** @type {!HTMLElement} */ (content.querySelector('div'));
+
+    // Sidebar starts on thumbnail view.
     chrome.test.assertTrue(
         buttons[0].parentNode.classList.contains('selected'));
     chrome.test.assertFalse(
         buttons[1].parentNode.classList.contains('selected'));
-    chrome.test.assertEq('Thumbnails', visibleContent.textContent);
+    chrome.test.assertFalse(thumbnailBar.hidden);
+    chrome.test.assertTrue(outline.hidden);
 
     // Click on outline view.
     buttons[1].click();
-    visibleContent = content.querySelector('div:not([hidden])');
     chrome.test.assertFalse(
         buttons[0].parentNode.classList.contains('selected'));
     chrome.test.assertTrue(
         buttons[1].parentNode.classList.contains('selected'));
-    chrome.test.assertEq('Outline', visibleContent.textContent);
+    chrome.test.assertTrue(thumbnailBar.hidden);
+    chrome.test.assertFalse(outline.hidden);
 
     // Return to thumbnail view.
     buttons[0].click();
-    visibleContent = content.querySelector('div:not([hidden])');
     chrome.test.assertTrue(
         buttons[0].parentNode.classList.contains('selected'));
     chrome.test.assertFalse(
         buttons[1].parentNode.classList.contains('selected'));
-    chrome.test.assertEq('Thumbnails', visibleContent.textContent);
+    chrome.test.assertFalse(thumbnailBar.hidden);
+    chrome.test.assertTrue(outline.hidden);
+
     chrome.test.succeed();
   },
 ];

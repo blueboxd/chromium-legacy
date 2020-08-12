@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">Créé</translation>
 <translation id="1067291318998134776">Linux (bêta)</translation>
 <translation id="1067922213147265141">Autres services Google</translation>
+<translation id="1068961867683064946">Créer un compte Google pour votre enfant</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Un autre programme sur votre ordinateur a ajouté une extension qui risque de modifier le fonctionnement de Google Chrome.
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660">Bouton de retour pour la sous-page <ph name="SUBPAGE_TITLE" /></translation>
 <translation id="1322046419516468189">Affichez et gérez les mots de passe enregistrés dans votre <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1324106254079708331">Protège les comptes Google personnels des utilisateurs susceptibles d'être victimes d'attaques ciblées</translation>
+<translation id="1325985428688410772">Ajouter un espace</translation>
 <translation id="1326317727527857210">Pour synchroniser les onglets de vos autres appareils, connectez-vous à Chrome.</translation>
 <translation id="1327074568633507428">Imprimante connectée à Google Cloud Print</translation>
 <translation id="1327272175893960498">Tickets Kerberos</translation>
@@ -1082,6 +1084,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2307462900900812319">Configurer le réseau</translation>
 <translation id="230927227160767054">Cette page veut installer un gestionnaire de services.</translation>
 <translation id="2309620859903500144">L'accès à vos capteurs de mouvement et de luminosité a été bloqué pour ce site.</translation>
+<translation id="2314873619957287124">Définissez des règles numériques de base pour aider votre enfant à apprendre, à jouer et à explorer</translation>
 <translation id="2315414688463285945">Erreur lors de la configuration des fichiers Linux. Veuillez réessayer.</translation>
 <translation id="2315587498123194634">Envoyer le lien vers <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Non merci</translation>
@@ -1093,6 +1096,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2322318151094136999">Demander quand un site souhaite accéder aux ports série (recommandé)</translation>
 <translation id="2323018538045954000">Réseaux Wi-Fi enregistrés</translation>
 <translation id="2325444234681128157">Mémoriser le mot de passe</translation>
+<translation id="2326160999284776503">Se connecter avec le compte Google de votre enfant</translation>
 <translation id="2326188115274135041">Entrez de nouveau votre NIP pour activer le déverrouillage automatique</translation>
 <translation id="2326931316514688470">Actua&amp;liser l'application</translation>
 <translation id="2327492829706409234">Activer l'application</translation>
@@ -1151,6 +1155,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2384436799579181135">Une erreur s'est produite. Veuillez vérifier votre imprimante, puis réessayer.</translation>
 <translation id="2387052489799050037">Retour à la page d'accueil</translation>
 <translation id="2387458720915042159">Type de connexion de mandataire</translation>
+<translation id="2391082728065870591">Envoyer un rapport de commentaires</translation>
 <translation id="2391419135980381625">Police standard</translation>
 <translation id="2392163307141705938">Tu as atteint la durée autorisée par ton parent pour <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Activer</translation>
@@ -1281,6 +1286,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2537178555904266562">Erreur lors de la synchronisation des mots de passe</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> peut afficher et modifier les fichiers et les dossiers suivants</translation>
 <translation id="2537927931785713436">Vérification de l'image de la machine virtuelle en cours…</translation>
+<translation id="2538084450874617176">Qui utilise cet appareil <ph name="DEVICE_TYPE" />?</translation>
 <translation id="2538361623464451692">Synchronisation désactivée</translation>
 <translation id="2540449034743108469">Appuyez sur « Démarrer » pour écouter les activités des extensions</translation>
 <translation id="2541002089857695151">Optimiser la diffusion en plein écran?</translation>
@@ -2743,6 +2749,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> partage une fenêtre.</translation>
 <translation id="4364830672918311045">Afficher les notifications</translation>
+<translation id="4368115171699243057">Configurer cet appareil <ph name="DEVICE_TYPE" /> pour votre enfant</translation>
 <translation id="437004882363131692">Obtenez des conseils sur votre <ph name="DEVICE_TYPE" />, des offres et des mises à jour, et transmettez vos commentaires. Vous pouvez vous désabonner à tout moment.</translation>
 <translation id="4370975561335139969">L’adresse de courriel et le mot de passe que vous avez entrés ne correspondent pas</translation>
 <translation id="4374831787438678295">Installateur Linux</translation>
@@ -2903,6 +2910,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4565377596337484307">Masquer le mot de passe</translation>
 <translation id="4565917129334815774">Stocker les journaux système</translation>
 <translation id="456717285308019641">Langue de la page à traduire</translation>
+<translation id="4567533462991917415">Vous pouvez toujours ajouter des gens après la configuration. Et chaque personne peut personnaliser son compte et garder ses données privées.</translation>
 <translation id="4567772783389002344">Ajouter le mot</translation>
 <translation id="4568025708905928793">Une clé de sécurité a été demandée</translation>
 <translation id="4568213207643490790">Désolés, les comptes Google ne sont pas autorisés sur cet appareil.</translation>
@@ -2954,6 +2962,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4628762811416793313">Échec de la configuration du conteneur Linux. Veuillez réessayer.</translation>
 <translation id="4633003931260532286">L'extension requiert « <ph name="IMPORT_NAME" /> » avec au moins une version « <ph name="IMPORT_VERSION" /> », mais seule la version « <ph name="INSTALLED_VERSION" /> » est installée</translation>
 <translation id="4633757335284074492">Sauvegarder sur Google Disque. Restaurez facilement vos données ou changez d'appareil à tout moment. Les données des applications sont également sauvegardées. Les sauvegardes sont téléversées dans les serveurs de Google et sont chiffrées en utilisant le mot de passe du compte Google de votre enfant.</translation>
+<translation id="4634575639321169635">Configurer cet appareil pour le travail ou pour un usage personnel</translation>
 <translation id="4634771451598206121">Connectez-vous de nouveau...</translation>
 <translation id="4635072447747973225">Désinstaller Crostini</translation>
 <translation id="4635398712689569051">Les utilisateurs invités n'ont pas accès à la page <ph name="PAGE_NAME" />.</translation>
@@ -3372,6 +3381,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5185386675596372454">La nouvelle version de « <ph name="EXTENSION_NAME" /> » a été désactivée, car elle nécessite davantage d'autorisations.</translation>
 <translation id="5185500136143151980">Aucune connexion Internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287">Menu des options pour <ph name="PROFILE_LOCAL_NAME" /></translation>
 <translation id="5190926251776387065">Activer le port</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> veut télécharger plusieurs fichiers</translation>
 <translation id="5192062846343383368">Ouvrez l'application Family Link pour afficher vos paramètres de supervision</translation>
@@ -3618,6 +3628,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5495597166260341369">Maintenir l'écran activé</translation>
 <translation id="5496587651328244253">Organiser</translation>
 <translation id="5497251278400702716">Ce fichier</translation>
+<translation id="5498967291577176373">Entrez votre nom, votre adresse ou votre numéro de téléphone plus rapidement grâce aux suggestions intégrées</translation>
 <translation id="5499313591153584299">Ce fichier peut présenter un risque pour votre ordinateur.</translation>
 <translation id="5499453227627332024">Une mise à niveau est offerte pour votre conteneur Linux. Vous pouvez aussi effectuer la mise à niveau plus tard dans l'application Paramètres.</translation>
 <translation id="5500709606820808700">La vérification de sécurité s'est exécutée aujourd'hui</translation>
@@ -3774,6 +3785,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5689516760719285838">Lieu</translation>
 <translation id="56907980372820799">Associer les données</translation>
 <translation id="5691511426247308406">Famille</translation>
+<translation id="5691581861107245578">Recevez des suggestions d'émojis en fonction de ce que vous tapez au clavier</translation>
 <translation id="5691772641933328258">Empreinte digitale non reconnue</translation>
 <translation id="5692183275898619210">Impression terminée</translation>
 <translation id="569425414730375234">Session de navigation privée actuelle : <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4133,6 +4145,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6124698108608891449">Ce site a besoin d'autorisations supplémentaires.</translation>
 <translation id="6125479973208104919">Malheureusement, vous devez ajouter à nouveau votre compte à ce <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6129691635767514872">Les données sélectionnées ont été supprimées de Chrome et de vos appareils synchronisés. D'autres formes d'historique de navigation, telles que les recherches et l'activité d'autres services Google, peuvent exister sur votre compte à l'adresse <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="6129839611163153407">Votre enfant</translation>
 <translation id="6129938384427316298">Commentaire du certificat Netscape</translation>
 <translation id="6129953537138746214">Espace</translation>
 <translation id="6130692320435119637">Ajouter un réseau Wi-Fi</translation>
@@ -4173,6 +4186,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6178664161104547336">Sélectionner un certificat</translation>
 <translation id="6181431612547969857">Téléchargement bloqué</translation>
 <translation id="6185132558746749656">Position de l'appareil</translation>
+<translation id="6195446518998936840">Pour que vous puissiez configurer les contrôles parentaux, votre enfant doit posséder un compte Google que vous aiderez à gérer. Vous pouvez définir des limites de temps d'utilisation des écrans, approuver ou bloquer des sites Web et plus encore grâce à l'application Family Link.</translation>
 <translation id="6195693561221576702">Cet appareil ne peut pas être configuré en mode démo hors ligne.</translation>
 <translation id="6196640612572343990">Bloquer les témoins de tiers</translation>
 <translation id="6196854373336333322">L'extension « <ph name="EXTENSION_NAME" /> » a pris le contrôle de vos paramètres de mandataire, ce qui signifie qu'elle peut modifier ou espionner tout ce que vous faites en ligne. Si vous ne savez pas pourquoi ce changement s'est produit, vous ne voulez probablement pas l'accepter.</translation>
@@ -5926,6 +5940,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8372369524088641025">Clé WEP incorrecte</translation>
 <translation id="8372477600026034341">Hôtes supplémentaires</translation>
 <translation id="8373652277231415614">Répertoires partagés de Crostini</translation>
+<translation id="8376384591331888629">Y compris les témoins tiers sur ce site</translation>
 <translation id="8378714024927312812">Géré par votre organisation</translation>
 <translation id="8379878387931047019">Cet appareil ne prend pas en charge le type de clé de sécurité demandé par ce site Web</translation>
 <translation id="8379991678458444070">Revenez ici rapidement en ajoutant cet onglet aux favoris</translation>
@@ -6009,6 +6024,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8481187309597259238">Confirmer l'autorisation USB</translation>
 <translation id="8483248364096924578">Adresse IP</translation>
 <translation id="8487678622945914333">Zoom avant</translation>
+<translation id="8489156414266187072">Les suggestions personnelles s'affichent seulement sur votre compte</translation>
 <translation id="8490896350101740396">Les applications de kiosque suivantes « <ph name="UPDATED_APPS" /> » ont été mises à jour. Veuillez redémarrer l'appareil pour terminer le processus de mise à jour.</translation>
 <translation id="8493236660459102203">Microphone :</translation>
 <translation id="8496717697661868878">Exécuter ce plugiciel</translation>

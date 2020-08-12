@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -82,6 +83,11 @@ class WebAppBrowserController : public AppBrowserController,
 
  private:
   const AppRegistrar& registrar() const;
+
+  // Helper function to call AppServiceProxy to load icon.
+  void LoadAppIcon(bool allow_placeholder_icon) const;
+  // Invoked when the icon is loaded.
+  void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
 
   void OnReadIcon(const SkBitmap& bitmap);
   void PerformDigitalAssetLinkVerification(Browser* browser);

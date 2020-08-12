@@ -40,7 +40,7 @@ Run the following in your chromium checkout:
 
     $ gn gen out/Default --args='target_os="chromeos"'
     $ autoninja -C out/Default chrome
-    $ out/Default/chrome
+    $ out/Default/chrome --use-system-clipboard
 
 (`autoninja` is a wrapper that automatically provides optimal values for the
 arguments passed to `ninja`).
@@ -67,6 +67,28 @@ See [GN Build Configuration](https://www.chromium.org/developers/gn-build-config
 for more information about configuring your build.
 
 You can also build and run test targets like `unit_tests`, `browser_tests`, etc.
+
+## Flags
+
+Some useful flags:
+
+*    `--ash-debug-shortcuts`: Enable shortcuts such as Ctl+Alt+Shift+T to toggle
+     tablet mode.
+*    `--ash-host-window-bounds="0+0-800x600,800+0-800x600"`: Specify one or more
+     virtual screens, by display position and size.
+*    `--enable-features=Feature1,OtherFeature2`: Enable specified features.
+     Features are often listed in chrome://flags, or in source files such as
+     [chrome_features.cc](https://source.chromium.org/chromium/chromium/src/+/master:chrome/common/chrome_features.cc)
+     or [chromeos_features.cc](https://source.chromium.org/chromium/chromium/src/+/master:chromeos/constants/chromeos_features.cc).
+     Note that changing values in chrome://flags does not work for
+     linux-chromeos, and this flag must be used.
+*    `--enable-ui-devtools[=9223]`: Allow debugging of the system UI through
+     devtools either within linux-chromeos at chrome://inspect, or from a remote
+     browser at
+     devtools://devtools/bundled/devtools_app.html?uiDevTools=true&ws=127.0.0.1:9223/0
+*    `--remote-debugging-port=9222`: Allow debugging through devtools at
+     http://localhost:9222
+*    `--use-system-clipboard`: Integrate clipboard with the host X11 system.
 
 ## Login notes
 

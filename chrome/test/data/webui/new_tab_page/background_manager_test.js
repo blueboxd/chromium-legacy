@@ -35,6 +35,13 @@ suite('NewTabPageBackgroundManagerTest', () => {
 
     backgroundImage = document.createElement('div');
     backgroundImage.id = 'backgroundImage';
+    backgroundImage.contentWindow = {
+      location: {
+        replace: url => {
+          backgroundImage.url = url;
+        }
+      }
+    };
     document.body.appendChild(backgroundImage);
 
     backgroundManager = new BackgroundManager();
@@ -64,7 +71,7 @@ suite('NewTabPageBackgroundManagerTest', () => {
     backgroundManager.setBackgroundImage({url: {url: 'https://example.com'}});
 
     // Assert.
-    assertEquals(wrapImageUrl('https://example.com'), backgroundImage.src);
+    assertEquals(wrapImageUrl('https://example.com'), backgroundImage.url);
   });
 
   test('setting custom style updates src', () => {
@@ -86,7 +93,7 @@ suite('NewTabPageBackgroundManagerTest', () => {
         `url2x=${encodeURIComponent('https://example2x.com')}&` +
         'size=cover&repeatX=no-repeat&repeatY=repeat&positionX=left&' +
         'positionY=top';
-    assertEquals(expected, backgroundImage.src);
+    assertEquals(expected, backgroundImage.url);
   });
 
   test.skip('receiving load time resolves promise', async () => {

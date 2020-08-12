@@ -61,6 +61,11 @@ void OverrideWithFinch(Config* config) {
   config->load_more_trigger_lookahead = base::GetFieldTrialParamByFeatureAsInt(
       kInterestFeedV2, "load_more_trigger_lookahead",
       config->load_more_trigger_lookahead);
+
+  config->upload_actions_on_enter_background =
+      base::GetFieldTrialParamByFeatureAsBool(
+          kInterestFeedV2, "upload_actions_on_enter_background",
+          config->upload_actions_on_enter_background);
 }
 
 }  // namespace
@@ -77,5 +82,8 @@ const Config& GetFeedConfig() {
 void SetFeedConfigForTesting(const Config& config) {
   g_config = config;
 }
+
+Config::Config() = default;
+Config::Config(const Config& other) = default;
 
 }  // namespace feed

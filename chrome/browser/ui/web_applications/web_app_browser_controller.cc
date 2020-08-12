@@ -6,6 +6,8 @@
 
 #include "base/bind_helpers.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
@@ -98,6 +101,15 @@ gfx::ImageSkia WebAppBrowserController::GetWindowAppIcon() const {
   if (app_icon_)
     return *app_icon_;
   app_icon_ = GetFallbackAppIcon();
+
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
+      apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+          browser()->profile())) {
+    LoadAppIcon(true /* allow_placeholder_icon */);
+    return *app_icon_;
+  }
+#endif
 
   if (provider_.icon_manager().HasSmallestIcon(GetAppId(),
                                                web_app::kWebAppIconSmall)) {
@@ -209,6 +221,30 @@ void WebAppBrowserController::OnTabRemoved(content::WebContents* contents) {
 
 const AppRegistrar& WebAppBrowserController::registrar() const {
   return provider_.registrar();
+}
+
+void WebAppBrowserController::LoadAppIcon(bool allow_placeholder_icon) const {
+  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+      ->LoadIcon(apps::mojom::AppType::kWeb, GetAppId(),
+                 apps::mojom::IconType::kStandard, web_app::kWebAppIconSmall,
+                 allow_placeholder_icon,
+                 base::BindOnce(&WebAppBrowserController::OnLoadIcon,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebAppBrowserController::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
+  if (icon_value->icon_type != apps::mojom::IconType::kStandard)
+    return;
+
+  app_icon_ = icon_value->uncompressed;
+
+  if (icon_value->is_placeholder_icon)
+    LoadAppIcon(false /* allow_placeholder_icon */);
+
+  if (auto* contents = web_contents())
+    contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  if (callback_for_testing_)
+    std::move(callback_for_testing_).Run();
 }
 
 void WebAppBrowserController::OnReadIcon(const SkBitmap& bitmap) {

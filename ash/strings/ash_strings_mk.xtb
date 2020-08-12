@@ -92,6 +92,7 @@
 <translation id="1962969542251276847">Заклучен екран</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Здраво, <ph name="USERNAME" /></translation>
+<translation id="1975500003782052650">Неодамнешни преземања</translation>
 <translation id="1978498689038657292">Внесување текст</translation>
 <translation id="1993072747612765854">Дознајте повеќе за најновото ажурирање на <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Исклучи</translation>
@@ -255,6 +256,7 @@
 <translation id="3798670284305777884">Звучник (внатрешен)</translation>
 <translation id="3799080171973636491">Ја притиснавте кратенката од тастатура за лупата на цел екран. Дали сакате да ја вклучите?</translation>
 <translation id="380165613292957338">Здраво. Како може да помогнам?</translation>
+<translation id="3826099427150913765">Префрли на лозинка</translation>
 <translation id="383629559565718788">Прикажи ги поставките за тастатура</translation>
 <translation id="3846575436967432996">Нема достапни информации за мрежа</translation>
 <translation id="385051799172605136">Назад</translation>
@@ -285,6 +287,7 @@
 <translation id="4181841719683918333">Јазици</translation>
 <translation id="4195877955194704651">Копче за автоматско кликнување</translation>
 <translation id="4197790712631116042">Исклучено</translation>
+<translation id="4212472694152630271">Префрли на PIN</translation>
 <translation id="4215497585250573029">Поставки за VPN</translation>
 <translation id="4217571870635786043">Диктат</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -297,6 +300,7 @@
 <translation id="4321776623976362024">Ја притиснавте кратенката од тастатура за висок контраст. Дали сакате да ја вклучите?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Лупа</translation>
+<translation id="4350065043422286972">Закачени</translation>
 <translation id="4351433414020964307">„Помошникот“ се вчитува…</translation>
 <translation id="4356930093361201197">режим на висок контраст</translation>
 <translation id="4368583494516669646">Добра ноќ <ph name="GIVEN_NAME" /></translation>
@@ -358,6 +362,7 @@
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> е поврзан со нов телефон</translation>
 <translation id="5035389544768382859">Потврдете ја конфигурацијата на екранот</translation>
 <translation id="5083553833479578423">Отклучете повеќе функции на „Помошникот“.</translation>
+<translation id="5114495209940374989">Слики од екранот</translation>
 <translation id="5136175204352732067">Поврзана е друга тастатура</translation>
 <translation id="5168181903108465623">Достапни се уреди за емитување</translation>
 <translation id="5207949376430453814">Нагласи го каретот за текст</translation>
@@ -600,6 +605,7 @@
 <translation id="8061464966246066292">Висок контраст</translation>
 <translation id="8098591350844501178">Престани со емитување на екранот на <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Вкл. за сите апл.</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8131740175452115882">Потврди</translation>
 <translation id="8132793192354020517">Поврзано со <ph name="NAME" /></translation>
 <translation id="813913629614996137">Се иницијализира…</translation>

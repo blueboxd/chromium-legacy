@@ -19,7 +19,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "chromecast/browser/cast_media_blocker.h"
 #include "chromecast/browser/cast_web_contents.h"
@@ -71,7 +70,7 @@ class CastWebContentsImpl : public CastWebContents,
   void BlockMediaLoading(bool blocked) override;
   void BlockMediaStarting(bool blocked) override;
   void EnableBackgroundVideoPlayback(bool enabled) override;
-  on_load_script_injector::OnLoadScriptInjectorHost<base::StringPiece>*
+  on_load_script_injector::OnLoadScriptInjectorHost<std::string>*
   script_injector() override;
   void InjectScriptsIntoMainFrame() override;
   void PostMessageToMainFrame(
@@ -178,7 +177,7 @@ class CastWebContentsImpl : public CastWebContents,
   bool notifying_;
   int last_error_;
 
-  on_load_script_injector::OnLoadScriptInjectorHost<base::StringPiece>
+  on_load_script_injector::OnLoadScriptInjectorHost<std::string>
       script_injector_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;

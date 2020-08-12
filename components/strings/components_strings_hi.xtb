@@ -355,7 +355,7 @@
 <translation id="2367567093518048410">स्तर</translation>
 <translation id="2380886658946992094">कानूनी</translation>
 <translation id="2384307209577226199">एंटरप्राइज़ डिफ़ॉल्ट</translation>
-<translation id="2385809941344967209">अपनी Chrome की सेटिंग से Chrome को अपडेट करें</translation>
+<translation id="2385809941344967209">अपनी Chrome की सेटिंग में जाकर Chrome को अपडेट करें</translation>
 <translation id="2386255080630008482">सर्वर का प्रमाणपत्र निरस्त कर दिया गया है.</translation>
 <translation id="2392959068659972793">ऐसी नीतियां दिखाएं जिनके लिए कोई मान सेट नहीं किया गया है</translation>
 <translation id="239429038616798445">शिपिंग का यह तरीका उपलब्ध नहीं है. कोई दूसरा तरीका आज़माएं.</translation>
@@ -1120,7 +1120,7 @@
 <translation id="5608165884683734521">यह साइट नकली या धोखाधड़ी करने वाली हो सकती है. Chrome साइट छोड़ने का सुझाव देता है.</translation>
 <translation id="5610142619324316209">कनेक्शन की जाँच करें</translation>
 <translation id="5610807607761827392">आप <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में कार्ड और पते प्रबंधित कर सकते हैं.</translation>
-<translation id="561165882404867731">Google Translate से इस पेज का अनुवाद करें</translation>
+<translation id="561165882404867731">Google Translate की मदद से इस पेज का अनुवाद करें</translation>
 <translation id="5612720917913232150"><ph name="URL" /> आपके कंप्यूटर के स्थान का उपयोग करना चाहता है</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> ने आपको कई बार रीडायरेक्ट किया है.</translation>
 <translation id="5624120631404540903">पासवर्ड प्रबंधित करें</translation>
@@ -1482,6 +1482,7 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> सुरक्षा मानकों का पालन नहीं करता.</translation>
 <translation id="7210993021468939304">कंटेनर के अंदर Linux गतिविधि कर सकते हैं और Linux ऐप्लिकेशन इंस्टॉल करके चला सकते हैं</translation>
 <translation id="721197778055552897">इस समस्या के बारे में <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" />.</translation>
+<translation id="7217745192097460130">क्या आप खरीदारी की पुष्टि करने और इसे पूरा करने के लिए, Touch ID का इस्तेमाल करना चाहते हैं?</translation>
 <translation id="7219179957768738017">कनेक्‍शन <ph name="SSL_VERSION" /> का उपयोग करता है.</translation>
 <translation id="7220786058474068424">संसाधित हो रहा है</translation>
 <translation id="7221855153210829124">नोटिफ़िकेशन दिखाएं</translation>

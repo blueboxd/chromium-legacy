@@ -2309,8 +2309,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameMsg_SetPepperVolume, OnSetPepperVolume)
 #endif
-    IPC_MESSAGE_HANDLER(FrameMsg_VisualStateRequest,
-                        OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_Delete, OnDeleteFrame)
   IPC_END_MESSAGE_MAP()
@@ -2702,11 +2700,6 @@ base::Value RenderFrameImpl::GetJavaScriptExecutionResult(
       return std::move(*new_value);
   }
   return base::Value();
-}
-
-void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
-  GetLocalRootRenderWidget()->QueueMessage(
-      std::make_unique<FrameHostMsg_VisualStateResponse>(routing_id_, id));
 }
 
 void RenderFrameImpl::SwapIn() {

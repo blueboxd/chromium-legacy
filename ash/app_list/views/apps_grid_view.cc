@@ -113,10 +113,6 @@ constexpr int kMaximumTileSpacing = 96;
 // The duration in ms for most of the apps grid view animations.
 constexpr int kDefaultAnimationDuration = 200;
 
-// The duration in ms for the animation that ends the cardified state of the
-// apps grid view.
-constexpr int kEndCardifiedAnimationDuration = 350;
-
 // The opacity for the background cards when hidden.
 constexpr float kBackgroundCardOpacityHide = 0.0f;
 
@@ -128,6 +124,9 @@ constexpr gfx::Tween::Type kFolderFadeInTweenType = gfx::Tween::EASE_IN_2;
 // a folder.
 constexpr gfx::Tween::Type kFolderFadeOutTweenType =
     gfx::Tween::FAST_OUT_LINEAR_IN;
+
+// Animation curve used for entering and exiting cardified state.
+constexpr gfx::Tween::Type kCardifiedStateTweenType = gfx::Tween::EASE_OUT_2;
 
 // Presentation time histogram for apps grid scroll by dragging.
 constexpr char kPageDragScrollInClamshellHistogram[] =
@@ -2362,9 +2361,10 @@ void AppsGridView::AnimateCardifiedState() {
         entry_view->layer()->GetAnimator());
     animator.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    animator.SetTweenType(kCardifiedStateTweenType);
     if (!cardified_state_) {
       animator.SetTransitionDuration(
-          base::TimeDelta::FromMilliseconds(kEndCardifiedAnimationDuration));
+          base::TimeDelta::FromMilliseconds(kDefaultAnimationDuration));
     }
     // When the animations are done, discard the layer and reset view to
     // proper scale.
@@ -2381,11 +2381,12 @@ void AppsGridView::AnimateCardifiedState() {
       background_card->SetTransform(translate_transform);
     }
     ui::ScopedLayerAnimationSettings animator(background_card->GetAnimator());
+    animator.SetTweenType(kCardifiedStateTweenType);
     animator.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     if (!cardified_state_) {
       animator.SetTransitionDuration(
-          base::TimeDelta::FromMilliseconds(kEndCardifiedAnimationDuration));
+          base::TimeDelta::FromMilliseconds(kDefaultAnimationDuration));
     }
     animator.AddObserver(this);
     ui::AnimationThroughputReporter reporter(
@@ -3241,10 +3242,6 @@ void AppsGridView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
   items_need_layer_for_drag_ = false;
   for (const auto& entry : view_model_.entries())
     entry.view->DestroyLayer();
-  if (animator) {
-    animator->SetAnimationDuration(
-        base::TimeDelta::FromMilliseconds(kDefaultAnimationDuration));
-  }
 }
 
 void AppsGridView::MaybeCallOnBoundsAnimatorDone() {

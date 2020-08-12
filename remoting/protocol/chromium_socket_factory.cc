@@ -443,14 +443,13 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateClientTcpSocket(
     const rtc::ProxyInfo& proxy_info,
     const std::string& user_agent,
     const rtc::PacketSocketTcpOptions& opts) {
-  if (!session_options_provider_ ||
-      !session_options_provider_->session_options().GetBoolValue(
-          "Enable-TCP")) {
-    HOST_LOG << "Enable-TCP experiment is not enabled. Client TCP socket won't "
-             << "be created.";
+  if (session_options_provider_ &&
+      session_options_provider_->session_options().GetBoolValue(
+          "Disable-TCP")) {
+    HOST_LOG << "Disable-TCP experiment is enabled. Client TCP socket won't be "
+             << "created.";
     return nullptr;
   }
-  HOST_LOG << "Enable-TCP experiment is enabled. Creating client TCP socket...";
   auto socket = std::make_unique<StreamPacketSocket>();
   if (!socket->InitClientTcp(local_address, remote_address, proxy_info,
                              user_agent, opts)) {

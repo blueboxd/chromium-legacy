@@ -21,6 +21,7 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 преземање чека на ред.}one{# преземање чека на ред.}other{# преземања чекаат на ред.}}</translation>
 <translation id="1145536944570833626">Избришете ги постоечките податоци.</translation>
 <translation id="1146678959555564648">Влези во VR</translation>
+<translation id="1154704303112745282">Страницата е недостапна офлајн: <ph name="VIOLATED_URL" /></translation>
 <translation id="116280672541001035">Искористено</translation>
 <translation id="1171770572613082465">Допрете го копчето „Популарни“ за да ги разгледате популарните веб-сајтови</translation>
 <translation id="1173894706177603556">Преименувај</translation>
@@ -42,7 +43,7 @@
 <translation id="1283039547216852943">Допрете за да се прошири</translation>
 <translation id="1291207594882862231">Исчистете ги историјата, колачињата, податоците на сајтот, кешот…</translation>
 <translation id="129553762522093515">Неодамна затворено</translation>
-<translation id="1298077576058087471">Заштедете до 60 % од сообраќајот, читајте ги денешните вести</translation>
+<translation id="1298077576058087471">Прочитајте ги денешните вести и заштедете до 60 % мобилен интернет</translation>
 <translation id="1303339473099049190">Лозинката не може да се најде. Проверете дали ја внесувате правилно и обидете се повторно.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Испратено од <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Групирај картички</translation>
@@ -264,10 +265,10 @@
 <translation id="305593374596241526">Локацијата е исклучена, вклучете ја во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Може да ја исклучите синхронизацијата во секое време во „Поставки“</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> обележувач}one{<ph name="BOOKMARKS_COUNT_MANY" /> обележувач}other{<ph name="BOOKMARKS_COUNT_MANY" /> обележувачи}}</translation>
-<translation id="3062802207422175757">Статии за вашите интереси на Chrome</translation>
+<translation id="3062802207422175757">Статии за она што ве интересира на Chrome</translation>
 <translation id="3089395242580810162">Отвори во инкогнито картичка</translation>
 <translation id="3114012059975132928">Видеоплеер</translation>
-<translation id="3114507951000454849">Читајте ги денешните вести <ph name="NEWS_ICON" /></translation>
+<translation id="3114507951000454849">Прочитајте ги денешните вести <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Соопштенија</translation>
 <translation id="3137521801621304719">Напушти го инкогнито-режимот</translation>
 <translation id="3143515551205905069">Откажи ја синхронизацијата</translation>
@@ -366,6 +367,7 @@
 <translation id="3892148308691398805">Копирај текст</translation>
 <translation id="3894427358181296146">Додај папка</translation>
 <translation id="3895926599014793903">Присилно овозможи зумирање</translation>
+<translation id="3908308510347173149">Ажурирај го уредот <ph name="PRODUCT_NAME" /></translation>
 <translation id="3909763690984331376">Безбедносна проверка <ph name="BEGIN_NEW" />Нова<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Го наоѓаме најдоброто на интернет…</translation>
 <translation id="3924911262913579434">Распоредот „<ph name="SAFE_BROWSING_MODE" />“ е вклучен</translation>
@@ -419,6 +421,7 @@
 <translation id="4321739720395210191">Камерата не може да се отвори. Рестартирајте го уредот и обидете се повторно.</translation>
 <translation id="4351244548802238354">Затвори дијалог</translation>
 <translation id="4378154925671717803">Телефон</translation>
+<translation id="4382908510000698092">Користи го како јазик на Chrome</translation>
 <translation id="4384468725000734951">Се користи Sogou за пребарување</translation>
 <translation id="4404568932422911380">Нема обележувачи</translation>
 <translation id="4405224443901389797">Премести во…</translation>
@@ -595,6 +598,7 @@
 <translation id="568275469169136466">За да се најавите привремено</translation>
 <translation id="5683547024293500885">Chrome не може да провери за ажурирања</translation>
 <translation id="5686790454216892815">Името на датотеката е предолго</translation>
+<translation id="5687809546194252819"><ph name="APP_NAME" /> ќе користи <ph name="LANGUAGE" /> при рестартирањето.</translation>
 <translation id="5694049548840660018">Вратете се дома лесно</translation>
 <translation id="569536719314091526">Преведете ја страницава на кој било јазик со копчето „Повеќе опции“</translation>
 <translation id="5696597120588531049">Chrome може да ве штити од упад во податоците, небезбедни веб-сајтови и друго</translation>
@@ -697,6 +701,7 @@
 <translation id="6395288395575013217">ЛИНК</translation>
 <translation id="6397616442223433927">Повторно сте онлајн</translation>
 <translation id="6398765197997659313">Излези од цел екран</translation>
+<translation id="6402652558933147609"><ph name="ERROR_CODE" /> на <ph name="VIOLATED_URL" /></translation>
 <translation id="6404511346730675251">Измени обележувач</translation>
 <translation id="6406506848690869874">Синхронизација</translation>
 <translation id="6412673304250309937">Ги проверува URL-адресите во список со небезбедни сајтови меморирани во Chrome. Ако некој сајт се обиде да ви ја украде лозинката или кога ќе преземете штетна датотека, Chrome може да испрати и URL-адреси, вклучувајќи и делови од содржините на страницата, во „Безбедно прелистување“.</translation>
@@ -727,7 +732,7 @@
 <translation id="6573431926118603307">Картичките што сте ги отвориле во Chrome на другите уреди ќе се појават тука.</translation>
 <translation id="6583199322650523874">Ставете обележувач на тековната страница</translation>
 <translation id="6588043302623806746">Користете безбеден DNS</translation>
-<translation id="6590471736817333463">Заштедете до 60 % од сообраќајот</translation>
+<translation id="6590471736817333463">Заштедете до 60 % мобилен интернет</translation>
 <translation id="6593061639179217415">Сајт за десктоп</translation>
 <translation id="6597891566292541626">Ставете го QR/линискиот код во оваа рамка.</translation>
 <translation id="6600954340915313787">Копирано на Chrome</translation>
@@ -771,6 +776,7 @@
 <translation id="6896758677409633944">Копирај</translation>
 <translation id="6900532703269623216">Подобрена заштита</translation>
 <translation id="6903907808598579934">Вклучи синхронизирање</translation>
+<translation id="6929699136511445623">Овозможете синхронизација на системот Android</translation>
 <translation id="6942665639005891494">Променете ја стандардната локација за преземање во секое време со помош на опцијата „Поставки“ од менито</translation>
 <translation id="6945221475159498467">Избери</translation>
 <translation id="6955535239952325894">Поставкава е оневозможена на управувани прелистувачи</translation>
@@ -871,6 +877,7 @@
 <translation id="7698359219371678927">Создајте е-пошта во <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Автоматски довршувај ги пребарувањата и URL-адресите</translation>
 <translation id="7725024127233776428">Страниците што ќе ги обележите се појавуваат тука</translation>
+<translation id="7735637452482172701">Отклучете со заклучувањето екран</translation>
 <translation id="7746457520633464754">За да открие опасни апликации и сајтови, Chrome испраќа URL-адреси од некои страници што ги посетувате, ограничени информации за системот и некои содржини од страниците до Google</translation>
 <translation id="7757787379047923882">Текстот е споделен од <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Изберете датум и време</translation>
@@ -951,6 +958,7 @@
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8266862848225348053">Локација за преземањата</translation>
 <translation id="8274165955039650276">Видете ги преземањата</translation>
+<translation id="8278640294239011163">Потврдете ја синхронизацијата</translation>
 <translation id="8284326494547611709">Титлови</translation>
 <translation id="8310344678080805313">Стандардни картички</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> и други сајтови</translation>

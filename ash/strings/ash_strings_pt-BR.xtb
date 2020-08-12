@@ -92,6 +92,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1962969542251276847">Tela de bloqueio</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Olá, <ph name="USERNAME" /></translation>
+<translation id="1975500003782052650">Downloads recentes</translation>
 <translation id="1978498689038657292">Entrada de texto</translation>
 <translation id="1993072747612765854">Saiba mais sobre a última atualização do <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Desligar</translation>
@@ -254,6 +255,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="3798670284305777884">Alto-falante (interno)</translation>
 <translation id="3799080171973636491">Você pressionou o atalho de teclado para a lupa de tela cheia. Gostaria de ativá-la?</translation>
 <translation id="380165613292957338">Oi! Como posso ajudar?</translation>
+<translation id="3826099427150913765">Usar senha</translation>
 <translation id="383629559565718788">Mostrar configurações do teclado</translation>
 <translation id="3846575436967432996">Não há informações de rede disponíveis</translation>
 <translation id="385051799172605136">Voltar</translation>
@@ -284,6 +286,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botão de cliques automáticos</translation>
 <translation id="4197790712631116042">Desativado</translation>
+<translation id="4212472694152630271">Usar PIN</translation>
 <translation id="4215497585250573029">Configurações de VPN</translation>
 <translation id="4217571870635786043">Ditado</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -296,6 +299,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="4321776623976362024">Você pressionou o atalho de teclado para o alto contraste. Gostaria de ativá-lo?</translation>
 <translation id="4331809312908958774">Sistema operacional Chrome</translation>
 <translation id="4338109981321384717">Lupa</translation>
+<translation id="4350065043422286972">Fixado</translation>
 <translation id="4351433414020964307">O Assistente está sendo carregado…</translation>
 <translation id="4356930093361201197">modo de alto contraste</translation>
 <translation id="4368583494516669646">Boa noite, <ph name="GIVEN_NAME" /></translation>
@@ -357,6 +361,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> conectado a um novo smartphone</translation>
 <translation id="5035389544768382859">Confirmar configuração da tela</translation>
 <translation id="5083553833479578423">Desbloqueie mais recursos do Assistente.</translation>
+<translation id="5114495209940374989">Capturas de tela</translation>
 <translation id="5136175204352732067">Teclado diferente conectado</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
 <translation id="5207949376430453814">Destacar cursor de texto</translation>
@@ -600,6 +605,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8061464966246066292">Alto contraste</translation>
 <translation id="8098591350844501178">Parar de transmitir tela para <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Ativ. nos apps</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8132793192354020517">Conectado à <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
@@ -672,7 +678,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8841375032071747811">Botão "Voltar"</translation>
 <translation id="8843682306134542540">Alternar bloqueio de rotação. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Pesquisa+Esc</translation>
-<translation id="8853703225951107899">Ainda não foi possível verificar seu PIN ou sua senha. Observação: se você mudou a senha recentemente, use a senha antiga. A nova senha será aplicada depois que você sair.</translation>
+<translation id="8853703225951107899">Ainda não foi possível verificar seu PIN ou sua senha. Observação: se você mudou a senha recentemente, use a antiga. A nova senha será aplicada depois que você sair.</translation>
 <translation id="8870509716567206129">O app não é compatível com a divisão de tela.</translation>
 <translation id="8874184842967597500">Não conectado</translation>
 <translation id="8877788021141246043">Definir um lembrete</translation>

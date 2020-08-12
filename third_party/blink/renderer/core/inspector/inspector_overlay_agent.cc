@@ -1103,7 +1103,7 @@ void InspectorOverlayAgent::LoadFrameForTool(int data_resource_id) {
       dummy_local_frame_client, *overlay_page_, nullptr,
       base::UnguessableToken::Create(), nullptr, nullptr);
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
-  frame->Init();
+  frame->Init(nullptr);
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
 

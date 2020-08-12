@@ -911,7 +911,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="4780900888022378816">Twoim urządzeniem zarządza <ph name="ENROLLMENT_DOMAIN" />, a Twoim kontem – <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Przełącz na tę kartę</translation>
 <translation id="4791134497475588553">Zainstalowane aplikacje na Linuksa i czas ich ostatniego użycia</translation>
-<translation id="4792686369684665359">Informacje, które chcesz przesłać, nie są zabezpieczone</translation>
+<translation id="4792686369684665359">Dane, które chcesz przesłać, nie są zabezpieczone</translation>
 <translation id="4796594887379589189">Identyfikator konta zadania</translation>
 <translation id="4798078619018708837">Wpisz datę ważności i kod CVC karty <ph name="CREDIT_CARD" />, by zaktualizować jej dane. Po potwierdzeniu dane karty z Twojego konta Google zostaną udostępnione tej stronie.</translation>
 <translation id="4800132727771399293">Sprawdź datę ważności i kod CVC, a potem spróbuj ponownie</translation>
@@ -1678,7 +1678,7 @@ Dodatkowe informacje:
 <translation id="7947285636476623132">Sprawdź rok ważności i spróbuj ponownie</translation>
 <translation id="7951415247503192394">(32-bitowa)</translation>
 <translation id="7953569069500808819">Zszywanie wzdłuż górnej krawędzi</translation>
-<translation id="7954523986259449736">Twoje informacje będą widoczne dla innych, ponieważ ta strona używa połączenia, które nie jest całkowicie bezpieczne.</translation>
+<translation id="7954523986259449736">Twoje dane będą widoczne dla innych, ponieważ ta strona używa połączenia, które nie jest całkowicie bezpieczne.</translation>
 <translation id="7956713633345437162">Zakładki na komórce</translation>
 <translation id="7961015016161918242">Nigdy</translation>
 <translation id="7966803981046576691">Rodzaj konta zadania</translation>

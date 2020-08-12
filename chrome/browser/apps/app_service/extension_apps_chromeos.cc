@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -184,8 +183,6 @@ void ExtensionAppsChromeOs::Initialize() {
                             GetWeakPtr()));
     OnSystemFeaturesPrefChanged();
   }
-
-  chromeos::default_app_order::Get(&default_app_ids_);
 }
 
 void ExtensionAppsChromeOs::LaunchAppWithIntent(
@@ -659,8 +656,7 @@ IconEffects ExtensionAppsChromeOs::GetIconEffects(
     const extensions::Extension* extension,
     bool paused) {
   IconEffects icon_effects = IconEffects::kNone;
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
-      !base::Contains(default_app_ids_, (extension->id()))) {
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kCrOsStandardIcon);
   } else {

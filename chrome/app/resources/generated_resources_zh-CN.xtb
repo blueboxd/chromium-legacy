@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">创建时间</translation>
 <translation id="1067291318998134776">Linux（测试版）</translation>
 <translation id="1067922213147265141">其他 Google 服务</translation>
+<translation id="1068961867683064946">为孩子创建 Google 帐号</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">您计算机上的其他程序擅自安装了一个可能会更改 Chrome 工作方式的扩展程序。
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660">“<ph name="SUBPAGE_TITLE" />”子页面上的返回按钮</translation>
 <translation id="1322046419516468189">您可以查看和管理 <ph name="SAVED_PASSWORDS_STORE" />中保存的密码</translation>
 <translation id="1324106254079708331">为所有可能会遭到定向攻击的个人 Google 帐号提供保护</translation>
+<translation id="1325985428688410772">添加空间</translation>
 <translation id="1326317727527857210">要访问您在其他设备上的标签页，请登录 Chrome。</translation>
 <translation id="1327074568633507428">Google 云打印中的打印机</translation>
 <translation id="1327272175893960498">Kerberos 票据</translation>
@@ -1079,6 +1081,7 @@
 <translation id="2307462900900812319">配置网络</translation>
 <translation id="230927227160767054">此页面想要安装一个服务处理程序。</translation>
 <translation id="2309620859903500144">此网站已被禁止使用您的动态传感器或光传感器。</translation>
+<translation id="2314873619957287124">设置数字设备基本使用规则，帮助您的孩子学习、玩乐和探索</translation>
 <translation id="2315414688463285945">配置 Linux 文件时出错。请重试。</translation>
 <translation id="2315587498123194634">将链接发送到<ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">不用了，谢谢</translation>
@@ -1090,6 +1093,7 @@
 <translation id="2322318151094136999">在网站想访问串行端口时询问您（推荐）</translation>
 <translation id="2323018538045954000">保存的 WLAN 网络</translation>
 <translation id="2325444234681128157">记住密码</translation>
+<translation id="2326160999284776503">使用您孩子的 Google 帐号登录</translation>
 <translation id="2326188115274135041">请确认 PIN 码以开启自动解锁功能</translation>
 <translation id="2326931316514688470">重新加载应用(&amp;R)</translation>
 <translation id="2327492829706409234">启用应用</translation>
@@ -1148,6 +1152,7 @@
 <translation id="2384436799579181135">出错了。请检查您的打印机，然后重试。</translation>
 <translation id="2387052489799050037">转到主屏幕</translation>
 <translation id="2387458720915042159">代理连接类型</translation>
+<translation id="2391082728065870591">发送反馈报告</translation>
 <translation id="2391419135980381625">标准字体</translation>
 <translation id="2392163307141705938">您已达到您家长为 <ph name="IDS_SHORT_PRODUCT_NAME" /> 设定的使用时限。</translation>
 <translation id="2392369802118427583">激活</translation>
@@ -1277,6 +1282,7 @@
 <translation id="2537178555904266562">同步密码时出错</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> 可查看和修改以下文件和文件夹</translation>
 <translation id="2537927931785713436">正在检查虚拟机映像</translation>
+<translation id="2538084450874617176">谁在使用此 <ph name="DEVICE_TYPE" />？</translation>
 <translation id="2538361623464451692">同步功能已停用</translation>
 <translation id="2540449034743108469">请按“开始”以监听扩展程序活动</translation>
 <translation id="2541002089857695151">优化全屏投射？</translation>
@@ -2026,7 +2032,7 @@
 <translation id="3487007233252413104">匿名函数</translation>
 <translation id="348780365869651045">正在等待 AppCache...</translation>
 <translation id="3488065109653206955">部分激活</translation>
-<translation id="3491669675709357988">您孩子的帐号尚未设置 Family Link 家长控制功能。您只需完成设置，便可添加家长控制功能。您可在“探索”应用内找到与此功能相关的信息。</translation>
+<translation id="3491669675709357988">您孩子的帐号尚未设置 Family Link 家长控制功能。完成设置后，即可添加家长控制功能。您可在“探索”应用内找到与此功能相关的信息。</translation>
 <translation id="3492788708641132712">无法同步。请尝试重新登录。</translation>
 <translation id="3493486281776271508">需要互联网连接</translation>
 <translation id="3493881266323043047">有效期</translation>
@@ -2737,6 +2743,7 @@
 <translation id="4364327530094270451">甜瓜</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共享窗口。</translation>
 <translation id="4364830672918311045">显示通知</translation>
+<translation id="4368115171699243057">为您的孩子设置此 <ph name="DEVICE_TYPE" /></translation>
 <translation id="437004882363131692">接收 <ph name="DEVICE_TYPE" /> 相关提示、优惠和动态，并分享反馈。可随时退订。</translation>
 <translation id="4370975561335139969">您输入的电子邮件地址和密码不匹配。</translation>
 <translation id="4374831787438678295">Linux 安装程序</translation>
@@ -2897,6 +2904,7 @@
 <translation id="4565377596337484307">隐藏密码</translation>
 <translation id="4565917129334815774">存储系统日志</translation>
 <translation id="456717285308019641">要翻译的网页语言</translation>
+<translation id="4567533462991917415">待设置完毕后，您可以随时添加更多人员。每个人都可对自己的帐号进行个性化设置并确保数据的私密性。</translation>
 <translation id="4567772783389002344">添加字词</translation>
 <translation id="4568025708905928793">正在申请安全密钥</translation>
 <translation id="4568213207643490790">抱歉，您不能在此设备上登录 Google 帐号。</translation>
@@ -2948,6 +2956,7 @@
 <translation id="4628762811416793313">未完成 Linux 容器设置。请重试。</translation>
 <translation id="4633003931260532286">此扩展程序要求“<ph name="IMPORT_NAME" />”的版本不得低于“<ph name="IMPORT_VERSION" />”，但目前安装的版本只是“<ph name="INSTALLED_VERSION" />”</translation>
 <translation id="4633757335284074492">备份到 Google 云端硬盘。您随时可以轻松地恢复数据或更换设备。此类备份内容包含应用数据。备份内容将上传到 Google 并使用您孩子的 Google 帐号密码进行加密。</translation>
+<translation id="4634575639321169635">设置此设备以满足工作用途或个人用途</translation>
 <translation id="4634771451598206121">重新登录...</translation>
 <translation id="4635072447747973225">卸载 Crostini</translation>
 <translation id="4635398712689569051">访客用户无法使用“<ph name="PAGE_NAME" />”页面。</translation>
@@ -3366,6 +3375,7 @@
 <translation id="5185386675596372454">由于最新版的“<ph name="EXTENSION_NAME" />”需要更多权限，因此已将其停用。</translation>
 <translation id="5185500136143151980">未连接到互联网</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287">“<ph name="PROFILE_LOCAL_NAME" />”的选项菜单</translation>
 <translation id="5190926251776387065">启用此端口</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想下载多个文件</translation>
 <translation id="5192062846343383368">打开 Family Link 应用，查看您的监管设置</translation>
@@ -3612,6 +3622,7 @@
 <translation id="5495597166260341369">不关闭显示屏</translation>
 <translation id="5496587651328244253">整理</translation>
 <translation id="5497251278400702716">此文件</translation>
+<translation id="5498967291577176373">提供与您名字、地址或电话号码有关的内嵌建议，帮助您提高输入速度</translation>
 <translation id="5499313591153584299">此文件可能对您的计算机有害。</translation>
 <translation id="5499453227627332024">Linux 容器有可用的升级，您也可过段时间再从“设置”应用中升级。</translation>
 <translation id="5500709606820808700">今天运行过安全检查</translation>
@@ -3768,6 +3779,7 @@
 <translation id="5689516760719285838">位置信息</translation>
 <translation id="56907980372820799">关联数据</translation>
 <translation id="5691511426247308406">家用</translation>
+<translation id="5691581861107245578">根据您输入的内容，获取表情符号建议</translation>
 <translation id="5691772641933328258">无法识别指纹</translation>
 <translation id="5692183275898619210">打印完成</translation>
 <translation id="569425414730375234">当前的无痕式会话：<ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4127,6 +4139,7 @@
 <translation id="6124698108608891449">此网站需要更多权限。</translation>
 <translation id="6125479973208104919">抱歉，您需要再次向此 <ph name="DEVICE_TYPE" /> 添加您的帐号。</translation>
 <translation id="6129691635767514872">系统已从 Chrome 和同步的设备中移除了您所选的数据。不过，您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能还有其他形式的浏览记录（例如，在其他 Google 服务中的搜索记录和活动记录）。</translation>
+<translation id="6129839611163153407">您的孩子</translation>
 <translation id="6129938384427316298">Netscape 证书评论</translation>
 <translation id="6129953537138746214">空格</translation>
 <translation id="6130692320435119637">添加 Wi-Fi</translation>
@@ -4167,6 +4180,7 @@
 <translation id="6178664161104547336">选择证书</translation>
 <translation id="6181431612547969857">下载已被阻止</translation>
 <translation id="6185132558746749656">设备位置</translation>
+<translation id="6195446518998936840">如果您要设置家长控制功能，您的孩子必须有一个由您帮助管理的 Google 帐号。您可以使用 Family Link 应用来设定设备使用时限、允许/禁止访问网站以及执行其他操作。</translation>
 <translation id="6195693561221576702">无法在此设备上设置离线演示模式。</translation>
 <translation id="6196640612572343990">阻止第三方 Cookie</translation>
 <translation id="6196854373336333322">“<ph name="EXTENSION_NAME" />”扩展程序控制了您的代理设置，也就是说，它可以更改、中断或窃听您在网上执行的任何操作。如果您不确定出现这种变化的原因，那么这种变化可能并不是您所希望的。</translation>
@@ -4492,7 +4506,7 @@
 <translation id="6602956230557165253">使用左右箭头键进行导航。</translation>
 <translation id="6605847144724004692">还没有任何用户给出评分。</translation>
 <translation id="6607831829715835317">更多工具(&amp;L)</translation>
-<translation id="6607890859198268021"><ph name="USER_EMAIL" /> 已在接受 <ph name="DOMAIN" /> 的管理。若要通过另一 Google 帐号使用家长控制功能，请在完成设置后退出登录，然后在登录屏幕上选择“添加用户”。</translation>
+<translation id="6607890859198268021"><ph name="USER_EMAIL" /> 已由 <ph name="DOMAIN" /> 管理。若要通过另一 Google 帐号使用家长控制功能，请在完成设置后退出登录，然后在登录屏幕上选择“添加用户”。</translation>
 <translation id="6611972847767394631">您可在此处找到自己的标签页</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6615455863669487791">演示一下</translation>
@@ -5920,6 +5934,7 @@
 <translation id="8372369524088641025">WEP 密钥错误</translation>
 <translation id="8372477600026034341">多余的主机</translation>
 <translation id="8373652277231415614">Crostini 共享目录</translation>
+<translation id="8376384591331888629">包括此网站上的第三方 Cookie</translation>
 <translation id="8378714024927312812">由贵单位管理</translation>
 <translation id="8379878387931047019">此设备不支持该网站要求使用的安全密钥的类型</translation>
 <translation id="8379991678458444070">只需为此标签页添加书签，便可在需要时快速返回到此处</translation>
@@ -6003,6 +6018,7 @@
 <translation id="8481187309597259238">确认 USB 权限</translation>
 <translation id="8483248364096924578">IP 地址</translation>
 <translation id="8487678622945914333">放大</translation>
+<translation id="8489156414266187072">个性化建议仅会显示在您的帐号中</translation>
 <translation id="8490896350101740396">下列自助服务终端应用“<ph name="UPDATED_APPS" />”已更新完毕。请重启设备，以便完成更新流程。</translation>
 <translation id="8493236660459102203">麦克风：</translation>
 <translation id="8496717697661868878">运行此插件</translation>

@@ -393,6 +393,7 @@
 <translation id="5614553682702429503">비밀번호를 저장하시겠습니까?</translation>
 <translation id="5626245204502895507">현재 파일을 다운로드할 수 없습니다.</translation>
 <translation id="5631164295104953411">결제 수단 추가</translation>
+<translation id="5653058065071344726">조직에서 관리합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="5659593005791499971">이메일</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">버전 <ph name="PRODUCT_VERSION" /></translation>
@@ -437,6 +438,7 @@
 <translation id="6108923351542677676">설정 진행 중...</translation>
 <translation id="6119050551270742952">현재 시크릿 모드에서 웹페이지 사용 중</translation>
 <translation id="6122191549521593678">온라인</translation>
+<translation id="6125339936101702016"><ph name="COMPANY" />에서 관리합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">항목 삭제됨</translation>
 <translation id="6136914049981179737">초 전</translation>
 <translation id="616831107264507309">나중에 읽기</translation>

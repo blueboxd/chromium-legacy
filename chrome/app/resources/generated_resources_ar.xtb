@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">تم الإنشاء</translation>
 <translation id="1067291318998134776">‏نظام التشغيل Linux (نسخة تجريبية)</translation>
 <translation id="1067922213147265141">‏خدمات Google الأخرى</translation>
+<translation id="1068961867683064946">‏إنشاء حساب Google لطفلك</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">‏أضاف برنامج آخر بجهاز الكمبيوتر إضافة قد تؤدي إلى تغيير طريقة عمل Chrome.
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660">زر الرجوع إلى الصفحة الفرعية <ph name="SUBPAGE_TITLE" /></translation>
 <translation id="1322046419516468189">عرض كلمات المرور المحفوظة وإدارتها في <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1324106254079708331">‏يحمي حسابات Google الشخصية لأي شخص معرّض لخطر الهجمات الموجّهة</translation>
+<translation id="1325985428688410772">إضافة مساحة</translation>
 <translation id="1326317727527857210">‏للحصول على علامات التبويب من أجهزتك الأخرى، سجّل الدخول إلى Chrome.</translation>
 <translation id="1327074568633507428">‏طابعة مسجلة في الطباعة السحابية من Google</translation>
 <translation id="1327272175893960498">‏تذاكر Kerberos</translation>
@@ -1082,6 +1084,7 @@
 <translation id="2307462900900812319">تهيئة الشبكة</translation>
 <translation id="230927227160767054">تريد هذه الصفحة تثبيت معالج الخدمة.</translation>
 <translation id="2309620859903500144">تم حظر هذا الموقع من الوصول إلى أجهزة استشعار الإضاءة أو الحركة.</translation>
+<translation id="2314873619957287124">يمكنك ضبط القواعد الرقمية الأساسية لمساعدة طفلك على التعلّم واللعب والاستكشاف.</translation>
 <translation id="2315414688463285945">‏حدث خطأ أثناء تهيئة ملفات نظام التشغيل Linux. يُرجى إعادة المحاولة.</translation>
 <translation id="2315587498123194634">إرسال الرابط إلى <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
@@ -1093,6 +1096,7 @@
 <translation id="2322318151094136999">طلب الإذن في حال محاولة موقع إلكتروني الوصول إلى المنافذ التسلسلية (مُستحسَن)</translation>
 <translation id="2323018538045954000">‏شبكات Wi-Fi المحفوظة</translation>
 <translation id="2325444234681128157">تذكّر كلمة المرور</translation>
+<translation id="2326160999284776503">‏تسجيل الدخول من خلال حساب طفلك على Google</translation>
 <translation id="2326188115274135041">يُرجى تأكيد رقم التعريف الشخصي لتفعيل فتح القفل التلقائي.</translation>
 <translation id="2326931316514688470">&amp;إعادة تحميل التطبيق</translation>
 <translation id="2327492829706409234">تفعيل التطبيق</translation>
@@ -1151,6 +1155,7 @@
 <translation id="2384436799579181135">حدث خطأ ما. يُرجى التحقق من الطابعة وإعادة المحاولة.</translation>
 <translation id="2387052489799050037">الانتقال إلى الشاشة الرئيسية</translation>
 <translation id="2387458720915042159">نوع الاتصال بالخادم الوكيل</translation>
+<translation id="2391082728065870591">إرسال تقرير بالتعليقات</translation>
 <translation id="2391419135980381625">الخط العادي</translation>
 <translation id="2392163307141705938">لقد وصلت إلى الحدّ الزمني الذي ضبطه أحد الوالدَين لمنتج <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">تفعيل</translation>
@@ -1281,6 +1286,7 @@
 <translation id="2537178555904266562">حدث خطأ أثناء مزامنة كلمات المرور</translation>
 <translation id="2537395079978992874">بإمكان <ph name="ORIGIN" /> عرض الملفات والمجلدات التالية وتعديلها:</translation>
 <translation id="2537927931785713436">جارٍ التحقُّق من صورة الآلة الافتراضية</translation>
+<translation id="2538084450874617176">من يستخدم <ph name="DEVICE_TYPE" />؟</translation>
 <translation id="2538361623464451692">تم إيقاف المزامنة.</translation>
 <translation id="2540449034743108469">يُرجى الضغط على "البدء" للاستماع إلى أنشطة الإضافات</translation>
 <translation id="2541002089857695151">هل تريد تحسين الإرسال بوضع ملء الشاشة؟</translation>
@@ -1838,7 +1844,7 @@
 <translation id="3254715652085014625">‏افتح متصفِّح Chrome على هاتفك الذي يعمل بنظام التشغيل Android وانتقِل إلى "الإعدادات &gt; كلمات المرور &gt; استخدام الهاتف كمفتاح أمان"، ثم اتّبِع التعليمات.</translation>
 <translation id="3255355328033513170">سيتم حذف جميع البيانات المُخزَّنة من خلال <ph name="SITE_GROUP_NAME" /> وأي مواقع إلكترونية ضمنها. ويتضمن هذا ملفات تعريف الارتباط. سيتم تسجيل خروجك من المواقع الإلكترونية هذه، بما في ذلك علامات التبويب المفتوحة.</translation>
 <translation id="3259723213051400722">يُرجى إعادة المحاولة.</translation>
-<translation id="3261268979727295785">بالنسبة إلى الأطفال الأكبر سنًا، يمكنك إضافة أدوات الرقابة الأبوية بعد الانتهاء من الإعداد. وستجِد معلومات حول أدوات الرقابة الأبوية في تطبيق "استكشاف".</translation>
+<translation id="3261268979727295785">في حال الأطفال الأكبر سنًا، يمكنك إضافة أدوات الرقابة الأبوية بعد الانتهاء من الإعداد. يمكنك العثور على معلومات حول أدوات الرقابة الأبوية في تطبيق "استكشاف".</translation>
 <translation id="3264544094376351444">‏خط Sans-serif</translation>
 <translation id="3264582393905923483">السياق</translation>
 <translation id="3265459715026181080">إغلاق الإطار</translation>
@@ -2030,7 +2036,7 @@
 <translation id="3487007233252413104">وظيفة مجهولة</translation>
 <translation id="348780365869651045">‏في انتظار AppCache...</translation>
 <translation id="3488065109653206955">نشطة جزئيًا</translation>
-<translation id="3491669675709357988">‏لم يتم إعداد أدوات الرقابة الأبوية لحساب طفلك في تطبيق Family Link. يمكنك إضافة أدوات الرقابة الأبوية بعد الانتهاء من الإعداد. وستجِد معلومات حول أدوات الرقابة الأبوية في تطبيق "استكشاف".</translation>
+<translation id="3491669675709357988">‏لم يتم إعداد أدوات الرقابة الأبوية لحساب طفلك في تطبيق Family Link. يمكنك إضافة أدوات الرقابة الأبوية بعد الانتهاء من الإعداد. يمكنك العثور على معلومات حول أدوات الرقابة الأبوية في تطبيق "استكشاف".</translation>
 <translation id="3492788708641132712">المزامنة لا تعمل. حاول تسجيل الدخول مرة أخرى.</translation>
 <translation id="3493486281776271508">الاتصال بالإنترنت مطلوب</translation>
 <translation id="3493881266323043047">الصلاحية</translation>
@@ -2739,6 +2745,7 @@
 <translation id="4364327530094270451">شمام</translation>
 <translation id="4364567974334641491">يشارك <ph name="APP_NAME" /> نافذة.</translation>
 <translation id="4364830672918311045">عرض الإشعارات</translation>
+<translation id="4368115171699243057">إعداد جهاز <ph name="DEVICE_TYPE" /> هذا لطفلك</translation>
 <translation id="437004882363131692">يمكنك الحصول على آخر التحديثات والنصائح والعروض لجهاز <ph name="DEVICE_TYPE" /> ومشاركة التعليقات. ويمكنك إلغاء الاشتراك في أي وقت.</translation>
 <translation id="4370975561335139969">البريد الإلكتروني وكلمة المرور اللذان أدخلتهما غير متطابقين</translation>
 <translation id="4374831787438678295">‏أداة تثبيت Linux</translation>
@@ -2899,6 +2906,7 @@
 <translation id="4565377596337484307">إخفاء كلمة المرور</translation>
 <translation id="4565917129334815774">تخزين سجلّات النظام</translation>
 <translation id="456717285308019641">لغة الصفحة المُراد ترجمتها</translation>
+<translation id="4567533462991917415">يمكنك دائمًا إضافة المزيد من الأشخاص بعد إتمام الإعداد. ويمكن لكل شخص تخصيص حسابه والحفاظ على خصوصية بياناته.</translation>
 <translation id="4567772783389002344">إضافة كلمة</translation>
 <translation id="4568025708905928793">يتم طلب مفتاح أمان</translation>
 <translation id="4568213207643490790">‏عذرًا، غير مسموح بتسجيل دخول حسابات Google على هذا الجهاز.</translation>
@@ -2950,6 +2958,7 @@
 <translation id="4628762811416793313">‏لم يكتمل إعداد حاوية نظام التشغيل Linux. يُرجى إعادة المحاولة.</translation>
 <translation id="4633003931260532286">تتطلب الإضافة "<ph name="IMPORT_NAME" />" بإصدار لا يقل عن "<ph name="IMPORT_VERSION" />" لكن يتم تثبيت "<ph name="INSTALLED_VERSION" />" فقط.</translation>
 <translation id="4633757335284074492">‏يمكنك الاحتفاظ بنسخة احتياطية في Google Drive. ويمكنك استعادة البيانات أو تبديل الجهاز بسهولة وفي أي وقت. تتضمّن هذه النسخة الاحتياطية بيانات التطبيق. ويتم تحميل النسخ الاحتياطية إلى Google وترميزها باستخدام كلمة مرور حسابك الفرعي على Google.</translation>
+<translation id="4634575639321169635">يمكنك إعداد هذا الجهاز لاستخدامه في العمل أو للاستخدام الشخصي.</translation>
 <translation id="4634771451598206121">تسجيل الدخول مرة أخرى...</translation>
 <translation id="4635072447747973225">‏إلغاء تثبيت نظام التشغيل Crostini</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> غير متاحة للمستخدمين الضيوف.</translation>
@@ -3368,6 +3377,7 @@
 <translation id="5185386675596372454">تم إيقاف أحدث إصدار من "<ph name="EXTENSION_NAME" />" لأنه يتطلب المزيد من الأذونات.</translation>
 <translation id="5185500136143151980">لا يتوفّر اتصال بالإنترنت</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287">قائمة الخيارات لـ <ph name="PROFILE_LOCAL_NAME" /></translation>
 <translation id="5190926251776387065">تفعيل المنفذ</translation>
 <translation id="51918995459521422">يريد <ph name="ORIGIN" /> تنزيل ملفات متعددة.</translation>
 <translation id="5192062846343383368">‏فتح تطبيق Family Link للاطّلاع على إعدادات الإشراف</translation>
@@ -3615,6 +3625,7 @@
 <translation id="5495597166260341369">استمرار تشغيل الشاشة</translation>
 <translation id="5496587651328244253">تنظيم</translation>
 <translation id="5497251278400702716">هذا الملف</translation>
+<translation id="5498967291577176373">تساعدك الاقتراحات المضمّنة لاسمك أو عنوانك أو رقم هاتفك على الكتابة بشكلٍ أسرع.</translation>
 <translation id="5499313591153584299">قد يلحق هذا الملف الضرر بجهاز الكمبيوتر.</translation>
 <translation id="5499453227627332024">‏هناك ترقية متاحة لحاوية نظام التشغيل Linux. يمكنك أيضًا الترقية لاحقًا من تطبيق "الإعدادات".</translation>
 <translation id="5500709606820808700">تم تفعيل ميزة "تأكيد السلامة" اليوم.</translation>
@@ -3771,6 +3782,7 @@
 <translation id="5689516760719285838">الموقع الجغرافي</translation>
 <translation id="56907980372820799">ربط البيانات</translation>
 <translation id="5691511426247308406">العائلة</translation>
+<translation id="5691581861107245578">يمكنك الحصول على اقتراحات الرموز التعبيرية بناءً على النص الذي تتم كتابته.</translation>
 <translation id="5691772641933328258">لم يتمّ التعرُّف على البصمة</translation>
 <translation id="5692183275898619210">اكتملت الطباعة</translation>
 <translation id="569425414730375234">جلسة التصفّح المتخفي الحالية: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -4130,6 +4142,7 @@
 <translation id="6124698108608891449">يحتاج هذا الموقع الإلكتروني إلى مزيد من الأذونات.</translation>
 <translation id="6125479973208104919">عذرًا، ستحتاج إلى إضافة حسابك إلى جهاز <ph name="DEVICE_TYPE" /> هذا مرة أخرى.</translation>
 <translation id="6129691635767514872">‏تمت إزالة البيانات المحددة من Chrome والأجهزة التي تمت مزامنتها. قد يحتوي حسابك على Google على نماذج أخرى من سجل التصفح، مثل عمليات البحث والنشاط من خدمات Google الأخرى في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="6129839611163153407">حساب طفلك</translation>
 <translation id="6129938384427316298">‏التعليق على شهادة Netscape</translation>
 <translation id="6129953537138746214">مسافة</translation>
 <translation id="6130692320435119637">‏إضافة شبكة Wi-Fi</translation>
@@ -4171,6 +4184,7 @@
 <translation id="6178664161104547336">تحديد شهادة</translation>
 <translation id="6181431612547969857">تم حظر التنزيل</translation>
 <translation id="6185132558746749656">موقع الجهاز</translation>
+<translation id="6195446518998936840">‏لإعداد أدوات الرقابة الأبوية، يجب أن يمتلك طفلك حسابًا على Google لتساعده في إدارته. ويمكنك ضبط حدود وقت النظر إلى الشاشة والموافقة على المواقع الإلكترونية أو حظرها والمزيد باستخدام تطبيق Family Link.</translation>
 <translation id="6195693561221576702">لا يمكن إعداد الجهاز في الوضع التجريبي بلا إنترنت.</translation>
 <translation id="6196640612572343990">حظر ملفات تعريف الارتباط للجهات الخارجية</translation>
 <translation id="6196854373336333322">أصبح بإمكان الإضافة "<ph name="EXTENSION_NAME" />" التحكم في إعدادات الخادم الوكيل التابعة لك، مما يعني أن بإمكانها تغيير أي إجراء لك على الإنترنت أو قطعه أو التجسس عليه. إذا كنت غير متيقن من سبب حدوث هذا التغيير، فأنت لا ترغب فيه على الأرجح.</translation>
@@ -4496,7 +4510,7 @@
 <translation id="6602956230557165253">استخدام مفتاحي السهمين لليمين واليسار للتنقل.</translation>
 <translation id="6605847144724004692">لم يتم التقييم بواسطة أي مستخدمين بعد.</translation>
 <translation id="6607831829715835317">المزيد من &amp;الأدوات</translation>
-<translation id="6607890859198268021">‏تتم إدارة حساب <ph name="USER_EMAIL" /> حاليًا من خلال <ph name="DOMAIN" />. لاستخدام أدوات الرقابة الأبوية مع حساب آخر على Google، يجب تسجيل الخروج من الحساب بعد الانتهاء من الإعداد ثُم اختيار "إضافة شخص" على شاشة تسجيل الدخول.</translation>
+<translation id="6607890859198268021">‏تتم إدارة حساب <ph name="USER_EMAIL" /> حاليًا من خلال <ph name="DOMAIN" />. لاستخدام أدوات الرقابة الأبوية مع حساب آخر على Google، يجب تسجيل الخروج من الحساب بعد الانتهاء من الإعداد ثم اختيار "إضافة شخص" على شاشة تسجيل الدخول.</translation>
 <translation id="6611972847767394631">ستجد علامات التبويب هنا</translation>
 <translation id="6612358246767739896">المحتوى المحمي</translation>
 <translation id="6615455863669487791">عرض</translation>
@@ -5925,6 +5939,7 @@
 <translation id="8372369524088641025">‏مفتاح WEP غير صالح</translation>
 <translation id="8372477600026034341">المضيفون الإضافيون</translation>
 <translation id="8373652277231415614">‏مجلدات نظام التشغيل Crostini التي تمت مشاركتها</translation>
+<translation id="8376384591331888629">تضمين ملفات تعريف الارتباط التابعة لجهات خارجية على هذا الموقع الإلكتروني</translation>
 <translation id="8378714024927312812">بإدارة مؤسستك</translation>
 <translation id="8379878387931047019">لا يدعم هذا الجهاز نوع مفتاح الأمان الذي يطلبه هذا الموقع الإلكتروني.</translation>
 <translation id="8379991678458444070">يمكنك الرجوع إلى هنا بسرعة من خلال وضع إشارة مرجعية على علامة التبويب هذه.</translation>
@@ -6008,6 +6023,7 @@
 <translation id="8481187309597259238">‏تأكيد إذن USB</translation>
 <translation id="8483248364096924578">‏عنوان IP</translation>
 <translation id="8487678622945914333">تكبير</translation>
+<translation id="8489156414266187072">لا يتم عرض الاقتراحات الشخصية إلّا على حسابك.</translation>
 <translation id="8490896350101740396">‏تم تحديث تطبيقات kiosk التالية "<ph name="UPDATED_APPS" />". يُرجى إعادة تشغيل الجهاز لإكمال عملية الإعادة تحميل.</translation>
 <translation id="8493236660459102203">الميكروفون:</translation>
 <translation id="8496717697661868878">تشغيل هذا المكون الإضافي</translation>
@@ -6214,7 +6230,7 @@
 <translation id="8746654918629346731">لقد سبق أن طلبت "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="874689135111202667">{0,plural, =1{هل تريد تحميل ملف واحد إلى هذا الموقع؟}zero{هل تريد تحميل # ملف إلى هذا الموقع؟}two{هل تريد تحميل ملفين (#) إلى هذا الموقع؟}few{هل تريد تحميل # ملفات إلى هذا الموقع؟}many{هل تريد تحميل # ملفًا إلى هذا الموقع؟}other{هل تريد تحميل # ملف إلى هذا الموقع؟}}</translation>
 <translation id="8749556627204742888">تتم مشاركة هذه الشبكة مع مستخدمين آخرين لهذا الجهاز.</translation>
-<translation id="8749805710397399240">يتعذّر إرسال محتوى شاشتك. يُرجى التحقّق من إذن "مسجّل الشاشة" في قسم "الإعدادات المفضّلة للنظام".</translation>
+<translation id="8749805710397399240">يتعذّر إرسال محتوى شاشتك. يُرجى التحقّق من إذن "تسجيل الشاشة" في قسم "الإعدادات المفضّلة للنظام".</translation>
 <translation id="8749863574775030885">‏الدخول إلى أجهزة USB من مورد غير معروف</translation>
 <translation id="8750133148106010815">‏لبدء تشغيل Google Play، تتطلّب مؤسسة <ph name="ORGANIZATION_NAME" /> منك الاحتفاظ بنسخة احتياطية من بياناتك وإعادة ضبط جهاز Chromebook هذا على الإعدادات الأصلية.</translation>
 <translation id="8750155211039279868">يجب ربط <ph name="ORIGIN" /> بمنفذ تسلسلي</translation>

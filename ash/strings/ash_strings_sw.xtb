@@ -92,6 +92,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="1962969542251276847">Skrini Iliyofungwa</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Hujambo, <ph name="USERNAME" /></translation>
+<translation id="1975500003782052650">Zilizopakuliwa hivi majuzi</translation>
 <translation id="1978498689038657292">Uingizaji wa maandishi</translation>
 <translation id="1993072747612765854">Pata maelezo zaidi kuhusu sasisho la hivi majuzi la <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Zima</translation>
@@ -254,6 +255,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="3798670284305777884">Spika (ya ndani)</translation>
 <translation id="3799080171973636491">Umebofya mikato ya kibodi ya kikuzaji cha skrini nzima. Ungependa kukiwasha?</translation>
 <translation id="380165613292957338">Hujambo, ungependa nikusaidie vipi?</translation>
+<translation id="3826099427150913765">Tumia nenosiri</translation>
 <translation id="383629559565718788">Onyesha mipangilio ya kibodi</translation>
 <translation id="3846575436967432996">Hakuna maelezo ya mtandao yanayopatikana</translation>
 <translation id="385051799172605136">Rudi nyuma</translation>
@@ -284,6 +286,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="4181841719683918333">Lugha</translation>
 <translation id="4195877955194704651">Kitufe cha mibofyo ya kiotomatiki</translation>
 <translation id="4197790712631116042">Imezimwa</translation>
+<translation id="4212472694152630271">Tumia PIN</translation>
 <translation id="4215497585250573029">Mipangilio ya VPN</translation>
 <translation id="4217571870635786043">Kuandika kwa kutamka</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -296,6 +299,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="4321776623976362024">Umebofya mikato ya kibodi ya utofautishaji wa juu. Ungependa kuuwasha?</translation>
 <translation id="4331809312908958774">Mfumo wa Uendeshaji wa Chrome</translation>
 <translation id="4338109981321384717">Lenzi</translation>
+<translation id="4350065043422286972">Zilizobandikwa</translation>
 <translation id="4351433414020964307">Inapakia Mratibu...</translation>
 <translation id="4356930093361201197">hali ya juu ya utofautishaji</translation>
 <translation id="4368583494516669646">Habari ya usiku <ph name="GIVEN_NAME" /></translation>
@@ -357,6 +361,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> imeunganishwa kwenye simu mpya</translation>
 <translation id="5035389544768382859">Thibitisha Mipangilio ya Skrini</translation>
 <translation id="5083553833479578423">Fungua vipengele zaidi vya programu yako ya Mratibu.</translation>
+<translation id="5114495209940374989">Picha za skrini</translation>
 <translation id="5136175204352732067">Kibodi tofauti imeunganishwa</translation>
 <translation id="5168181903108465623">Vifaa vinavyorusha maudhui vinapatikana</translation>
 <translation id="5207949376430453814">Angazia kareti ya maandishi</translation>
@@ -600,6 +605,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8061464966246066292">Kilinganushi kikubwa</translation>
 <translation id="8098591350844501178">Acha kutuma skrini kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Imewashwa: zote</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8131740175452115882">Thibitisha</translation>
 <translation id="8132793192354020517">Imeunganishwa kwenye <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inaanzisha…</translation>

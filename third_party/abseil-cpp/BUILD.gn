@@ -191,20 +191,21 @@ if (!is_component_build) {
   }
 }
 
-test("absl_hardening_tests") {
-  testonly = true
-  sources = [ "absl_hardening_test.cc" ]
-  deps = [
-    "//third_party/abseil-cpp/absl/base:config",
-    "//third_party/abseil-cpp/absl/container:fixed_array",
-    "//third_party/abseil-cpp/absl/container:inlined_vector",
-    "//third_party/abseil-cpp/absl/strings",
-    "//third_party/abseil-cpp/absl/types:optional",
-    "//third_party/abseil-cpp/absl/types:span",
-    "//third_party/abseil-cpp/absl/types:variant",
-    "//third_party/googletest:gtest",
-  ]
-  if (build_with_chromium) {
-    deps += [ "//base/test:run_all_unittests" ]
+if (build_with_chromium) {
+  test("absl_hardening_tests") {
+    testonly = true
+    sources = [ "absl_hardening_test.cc" ]
+    deps = [
+      "//base/test:run_all_unittests",
+      "//third_party/abseil-cpp/absl/base:config",
+      "//third_party/abseil-cpp/absl/container:fixed_array",
+      "//third_party/abseil-cpp/absl/container:inlined_vector",
+      "//third_party/abseil-cpp/absl/strings",
+      "//third_party/abseil-cpp/absl/types:optional",
+      "//third_party/abseil-cpp/absl/types:span",
+      "//third_party/abseil-cpp/absl/types:variant",
+      "//third_party/googletest:gtest",
+    ]
   }
 }
+

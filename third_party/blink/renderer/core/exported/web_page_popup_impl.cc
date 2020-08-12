@@ -345,7 +345,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
         owner_settings->GetAllowUniversalAccessFromFileURLs());
   }
 
-  frame->Init();
+  frame->Init(nullptr);
   frame->View()->SetParentVisible(true);
   frame->View()->SetSelfVisible(true);
 

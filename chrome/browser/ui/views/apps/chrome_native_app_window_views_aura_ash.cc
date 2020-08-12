@@ -20,15 +20,20 @@
 #include "ash/public/cpp/window_state_type.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/ui/app_list/icon_standardizer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/session_manager/core/session_manager.h"
+#include "extensions/browser/app_window/app_delegate.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/hit_test.h"
@@ -37,6 +42,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -157,6 +163,16 @@ ui::ModalType ChromeNativeAppWindowViewsAuraAsh::GetModalType() const {
   return ChromeNativeAppWindowViewsAura::GetModalType();
 }
 
+gfx::ImageSkia ChromeNativeAppWindowViewsAuraAsh::GetWindowIcon() {
+  if (!base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+    return ChromeNativeAppWindowViews::GetWindowIcon();
+
+  const gfx::ImageSkia& image_skia =
+      ChromeNativeAppWindowViews::GetWindowIcon();
+  return !image_skia.isNull() ? app_list::CreateStandardIconImage(image_skia)
+                              : gfx::ImageSkia();
+}
+
 bool ChromeNativeAppWindowViewsAuraAsh::ShouldRemoveStandardFrame() {
   if (IsFrameless())
     return true;
@@ -187,6 +203,10 @@ void ChromeNativeAppWindowViewsAuraAsh::
   out_bounds->set_y(
       base::ClampToRange(out_bounds->y(), work_area.y(),
                          work_area.bottom() - out_bounds->height()));
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::EnsureAppIconCreated() {
+  LoadAppIcon(true /* allow_placeholder_icon */);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -557,4 +577,59 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
 void ChromeNativeAppWindowViewsAuraAsh::UpdateImmersiveMode() {
   ash::ImmersiveFullscreenController::EnableForWidget(
       widget(), ShouldEnableImmersiveMode());
+}
+
+gfx::Image ChromeNativeAppWindowViewsAuraAsh::GetCustomImage() {
+  if (!base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+    return ChromeNativeAppWindowViews::GetCustomImage();
+
+  gfx::Image image = ChromeNativeAppWindowViews::GetCustomImage();
+  return !image.IsEmpty() ? gfx::Image(app_list::CreateStandardIconImage(
+                                image.AsImageSkia()))
+                          : gfx::Image();
+}
+
+gfx::Image ChromeNativeAppWindowViewsAuraAsh::GetAppIconImage() {
+  if (!app_icon_image_skia_.isNull())
+    return gfx::Image(app_icon_image_skia_);
+
+  return ChromeNativeAppWindowViews::GetAppIconImage();
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::LoadAppIcon(
+    bool allow_placeholder_icon) {
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
+      apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+          Profile::FromBrowserContext(app_window()->browser_context()))) {
+    apps::AppServiceProxy* proxy = apps::AppServiceProxyFactory::GetForProfile(
+        Profile::FromBrowserContext(app_window()->browser_context()));
+
+    apps::mojom::AppType app_type =
+        proxy->AppRegistryCache().GetAppType(app_window()->extension_id());
+
+    if (app_type != apps::mojom::AppType::kUnknown) {
+      proxy->LoadIcon(
+          app_type, app_window()->extension_id(),
+          apps::mojom::IconType::kStandard,
+          app_window()->app_delegate()->PreferredIconSize(),
+          allow_placeholder_icon,
+          base::BindOnce(&ChromeNativeAppWindowViewsAuraAsh::OnLoadIcon,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
+  }
+
+  // Ensures the Chrome app icon is created to generate the default app icon.
+  // Otherwise, the test cases are broken.
+  ChromeNativeAppWindowViews::EnsureAppIconCreated();
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::OnLoadIcon(
+    apps::mojom::IconValuePtr icon_value) {
+  if (icon_value->icon_type != apps::mojom::IconType::kStandard)
+    return;
+
+  app_icon_image_skia_ = icon_value->uncompressed;
+
+  if (icon_value->is_placeholder_icon)
+    LoadAppIcon(false /* allow_placeholder_icon */);
 }

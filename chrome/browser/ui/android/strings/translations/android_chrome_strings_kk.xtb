@@ -152,6 +152,7 @@
 <translation id="2154710561487035718">URL сілтемесін көшіру</translation>
 <translation id="2156074688469523661">Қалған сайттар: (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Телефоннан басқа құрылғыға бірдеңе жіберу үшін екі құрылғының Chrome параметрлерінде синхрондауды іске қосыңыз.</translation>
+<translation id="2158408438301413340">Chrome барлық құпия сөзді тексере алмады.</translation>
 <translation id="2169830938017475061">Қазір</translation>
 <translation id="2175927920773552910">QR коды</translation>
 <translation id="218608176142494674">Бөлісу</translation>
@@ -160,6 +161,7 @@
 <translation id="2239812875700136898">Жаңалықтарды "Discover опциялары" түймесі арқылы басқарыңыз</translation>
 <translation id="2259659629660284697">Құпия сөздерді экспорттау...</translation>
 <translation id="2268044343513325586">Нақтылау</translation>
+<translation id="2276696007612801991">Құпия сөзіңізді тексеру үшін Google есептік жазбаңызға кіріңіз.</translation>
 <translation id="2286841657746966508">Төлем мекенжайы</translation>
 <translation id="230115972905494466">Үйлесімді құрылғылар табылмады</translation>
 <translation id="2318045970523081853">Қоңырау шалу үшін түртіңіз.</translation>
@@ -316,6 +318,7 @@
 <translation id="3493531032208478708">Ұсынылған мазмұн туралы <ph name="BEGIN_LINK" />толығырақ<ph name="END_LINK" /></translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3507132249039706973">Стандартты қорғаныс қосулы.</translation>
+<translation id="3509330069915219067">Желіден тыс. Chrome жаңа нұсқалардың бар-жоғын тексере алмайды.</translation>
 <translation id="3513704683820682405">Толықтырылған шындық</translation>
 <translation id="3518985090088779359">Қабылдап, жалғастыру</translation>
 <translation id="3522247891732774234">Жаңа нұсқа қолжетімді. Қосымша опциялар</translation>
@@ -365,6 +368,7 @@
 <translation id="3895926599014793903">Масштабтауды мәжбүрлі түрде қосу</translation>
 <translation id="3909763690984331376">Қауіпсіздік шарасы <ph name="BEGIN_NEW" />Жаңа<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Интернеттен деректер жүктелуде…</translation>
+<translation id="3924911262913579434"><ph name="SAFE_BROWSING_MODE" /> қосулы</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Деректерімді аралас пайдалану</translation>
 <translation id="393697183122708255">Дауыспен іздеу функциясы қосылмаған</translation>
@@ -372,6 +376,7 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Дайын болған кезде, Chrome бетті жүктейді.}other{Дайын болған кезде, Chrome беттерді жүктейді.}}</translation>
 <translation id="3963007978381181125">Google Pay қызметіндегі төлеу әдістері мен мекенжайлар құпия фразамен шифрланбайды. Құпия фразаны білетін адам ғана шифрланған деректерді оқи алады. Құпия фраза Google-ға жіберілмейді не онда сақталмайды. Оны ұмытып қалған жағдайда немесе бұл параметрді өзгертіңіз келгенде, синхрондауды бастапқы күйіне қайтару керек болады. <ph name="BEGIN_LINK" />Толығырақ<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Жүктеп алынды</translation>
+<translation id="3969142555815019568">Chrome сіздің құпия сөздеріңізді тексере алмайды.</translation>
 <translation id="3974987681202239636"><ph name="APP_NAME" /> қолданбасы Chrome браузерінде ашылады. Жалғастыру арқылы <ph name="BEGIN_LINK1" />Google Қызмет көрсету шарттарына<ph name="END_LINK1" /> және <ph name="BEGIN_LINK2" />Google Chrome және Chrome OS Қосымша қызмет көрсету шарттарына<ph name="END_LINK2" /> келісім бересіз. <ph name="BEGIN_LINK3" />Family Link арқылы басқарылатын Google есептік жазбаларына арналған Құпиялылық мәлімдемесі<ph name="END_LINK3" /> де қолданылады.</translation>
 <translation id="397583555483684758">Синхрондау тоқтап қалды</translation>
 <translation id="3976396876660209797">Таңбашаны өшіріңіз немесе қайта жасаңыз</translation>
@@ -447,6 +452,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> қолданбасын ашу</translation>
 <translation id="4634124774493850572">Құпия сөзді пайдалану</translation>
 <translation id="4650364565596261010">Жүйенің әдепкі параметрі</translation>
+<translation id="465657074423018424">"Қауіпсіз шолу" функциясы сізді жалған веб-сайттардан қорғайды. Оны өшірсеңіз, браузерді пайдаланған кезде, әсіресе құпия сөзді енгізбес бұрын, аса мұқият болыңыз.</translation>
 <translation id="4662373422909645029">Лақап атта сан болмауы керек</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> бетбелгі жойылды</translation>
 <translation id="4665282149850138822">Негізгі экранға <ph name="NAME" /> қосылды</translation>
@@ -784,6 +790,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7071521146534760487">Есептік жазбаны басқару</translation>
 <translation id="7077143737582773186">SD картасы</translation>
 <translation id="7080806333218412752">Оларды тексеру үшін URL сілтемелерін "Қауіпсіз шолу" функциясына жібереді. Сонымен қатар жаңа қауіптерді анықтауға көмектесу үшін беттердің, жүктеп алынған файлдардың, кеңейтімдерді пайдаланудың шағын үлгісін және жүйе туралы ақпаратты жібереді. Google қолданбаларында сізді қорғау үшін, есептік жазбаға кірген кезіңізде, деректер мен есептік жазбаны уақытша байланыстырады.</translation>
+<translation id="7088681679121566888">Chrome жаңартылған.</translation>
 <translation id="7121362699166175603">Мекенжай жолағында тарих пен автотолтыруларды өшіреді. <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> сайтында Google есептік жазбасымен шолу тарихының басқа да үлгілері болуы мүмкін.</translation>
 <translation id="7128355412245153445">Негізгі экран түймесін түрткен кезде, үздік сайттар мен соңғы жаңалықтарды көру</translation>
 <translation id="7138678301420049075">Басқа</translation>
@@ -805,6 +812,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7293171162284876153">Синхрондауды бастау үшін "Chrome деректерін синхрондау" параметрін қосыңыз.</translation>
 <translation id="729975465115245577">Құрылғыңызда құпия сөздер файлын сақтайтын қолданба орнатылмаған.</translation>
 <translation id="7302081693174882195">Мәліметтер: сақталған деректер көлемі бойынша сұрыпталды</translation>
+<translation id="7304873321153398381">Желіден тыс. Chrome сіздің құпия сөздеріңізді тексере алмайды.</translation>
 <translation id="7328017930301109123">Lite режимінде Chrome беттерді жылдамырақ жүктейді және трафикті 60 пайызға дейін аз жұмсайды.</translation>
 <translation id="7333031090786104871">Алдыңғы сайт әлі енгізілуде</translation>
 <translation id="7340958967809483333">Discover опциялары</translation>
@@ -818,6 +826,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="741204030948306876">Жарайды</translation>
 <translation id="7413229368719586778">Басталу күні: <ph name="DATE" /></translation>
 <translation id="7431991332293347422">Search және т.б. қызметтерді жекелендіру үшін шолу тарихын қалай пайдалану керектігін көрсетіңіз</translation>
+<translation id="7435356471928173109">Әкімші өшіріп қойған.</translation>
 <translation id="7437998757836447326">Chrome жүйесінен шығу</translation>
 <translation id="7438641746574390233">Lite режимі қосулы кезде, беттер жылдам жүктелуі үшін, Chrome браузері Google серверлерін пайдаланады. Lite режимі маңызды мазмұнды ғана жүктеу үшін тым баяу беттерді қайта жазады. Lite режимі инкогнито қойындыларына қолданылмайды.</translation>
 <translation id="7444811645081526538">Басқа санаттар</translation>
@@ -1033,6 +1042,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="9050666287014529139">Құпия фраза</translation>
 <translation id="9063523880881406963">Жұмыс үстелі сайтын сұрау: өшіру</translation>
 <translation id="9065203028668620118">Өзгерту</translation>
+<translation id="9069543557624799859">Жүктеп алу басталады: <ph name="TIME" />.</translation>
 <translation id="9070377983101773829">Дауыспен іздеуді іске қосу</translation>
 <translation id="9074336505530349563">Google ұсынған жекелендірілген мазмұнды алу үшін есептік жазбаға кіріп, синхрондау функциясын қосыңыз</translation>
 <translation id="9086302186042011942">Синхрондау</translation>

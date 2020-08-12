@@ -118,7 +118,7 @@ void PhotoView::Init() {
 
 void PhotoView::UpdateImages() {
   auto* model = delegate_->GetAmbientBackendModel();
-  images_unscaled_[image_index_] = model->GetNextImage();
+  images_unscaled_[image_index_] = model->GetNextImage().photo;
   if (images_unscaled_[image_index_].isNull())
     return;
 

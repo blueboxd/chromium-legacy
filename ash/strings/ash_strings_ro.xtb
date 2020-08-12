@@ -506,6 +506,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="6972754398087986839">Începe</translation>
 <translation id="6981982820502123353">Accesibilitate</translation>
 <translation id="698231206551913481">Toate fișierele și datele locale asociate acestui utilizator vor fi șterse definitiv după eliminarea utilizatorului.</translation>
+<translation id="7007983414944123363">Codul PIN sau parola nu au putut fi confirmate. Încearcă din nou.</translation>
 <translation id="7015766095477679451">Revino la <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Conectează-ți dispozitivul <ph name="DEVICE_NAME" /> cu telefonul</translation>
 <translation id="7026338066939101231">Micșorează</translation>
@@ -551,6 +552,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="7568294522609223312">Dezactivează clicurile automate</translation>
 <translation id="7568637526529101738">Dacă dai clic dreapta sau apeși lung, Asistentul îți arată informații cum ar fi definiția sau conversia unităților pentru selecția ta.</translation>
 <translation id="7569509451529460200">Braille și ChromeVox sunt activate</translation>
+<translation id="7579778809502851308">Captură de ecran</translation>
 <translation id="7593891976182323525">Căutare sau Shift</translation>
 <translation id="7600875258240007829">Vezi toate notificările</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -669,6 +671,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="8841375032071747811">Butonul Înapoi</translation>
 <translation id="8843682306134542540">Comută blocarea rotației. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Tasta de căutare + Esc</translation>
+<translation id="8853703225951107899">Codul PIN sau parola tot nu au putut fi confirmate. Notă: dacă ai schimbat parola recent, folosește vechea parolă. Noua parolă se va aplica după ce te deconectezi.</translation>
 <translation id="8870509716567206129">Aplicația nu acceptă ecranul împărțit.</translation>
 <translation id="8874184842967597500">Neconectat</translation>
 <translation id="8877788021141246043">Setează un memento</translation>

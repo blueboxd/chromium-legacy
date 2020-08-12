@@ -140,7 +140,8 @@
 
 <template is="dom-if" if="[[pdfViewerUpdateEnabled_]]">
   <div id="container">
-    <viewer-pdf-sidenav id="sidenav" hidden="[[sidenavCollapsed_]]">
+    <viewer-pdf-sidenav id="sidenav" hidden="[[sidenavCollapsed_]]"
+        doc-length="[[docLength_]]">
     </viewer-pdf-sidenav>
     <div id="main" on-scroll="onScroll_">
       <div id="sizer"></div>

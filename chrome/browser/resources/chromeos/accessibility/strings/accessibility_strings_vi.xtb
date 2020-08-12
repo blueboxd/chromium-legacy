@@ -8,7 +8,7 @@
 <translation id="1014370462248694370">Vuốt sang phải bằng hai ngón tay</translation>
 <translation id="1016393160682012902">Bạn có thể nhấn một phím trên bàn phím qwerty, phím chữ nổi có thể làm mới hoặc dùng cử chỉ chạm để tìm hiểu chức năng của chế độ này. Bạn cũng có thể nhấn tổ hợp phím Control và w hoặc phím Escape để thoát.</translation>
 <translation id="1022586497894531524">Đây là lần đầu tiên bạn sử dụng tính năng phản hồi bằng giọng nói của ChromeVox? Hướng dẫn nhanh này sẽ giải thích các thông tin cơ bản để bắt đầu với ChromeVox.</translation>
-<translation id="1025074108959230262">Đã tắt chế độ cố định</translation>
+<translation id="1025074108959230262">Đã tắt chế độ phím dính</translation>
 <translation id="1031961866430398710">sau đó</translation>
 <translation id="1038643060055067718">Dòng:</translation>
 <translation id="1038795173450935438">Để chuyển tiếp giữa các mục trên trang, nhấn phím Tìm kiếm + Mũi tên phải hoặc để quay lại, nhấn phím Tìm kiếm + Mũi tên trái. Để chuyển tới dòng tiếp theo, nhấn phím Tìm kiếm + Mũi tên xuống. Để chuyển về dòng trước, sử dụng phím Tìm kiếm + Mũi tên lên. Nếu tới một mục mà bạn muốn nhấp vào, nhấn phím Tìm kiếm + Dấu cách.</translation>
@@ -73,7 +73,7 @@
 <translation id="146450394670219700">Đối tượng đồ họa</translation>
 <translation id="1480046233931937785">Tín dụng</translation>
 <translation id="1487494366197411587">Trên Chromebook, phím Tìm kiếm ở ngay phía trên phím Shift bên trái.</translation>
-<translation id="1498498210836053409">Tắt chế độ cố định khi chỉnh sửa văn bản (Chế độ cố định thông minh)</translation>
+<translation id="1498498210836053409">Tắt chế độ phím dính khi chỉnh sửa văn bản (Chế độ phím dính thông minh)</translation>
 <translation id="1499041187027566160">tăng âm lượng</translation>
 <translation id="1502086903961450562">Hình trước</translation>
 <translation id="1506187449813838456">Tăng độ cao</translation>
@@ -89,7 +89,7 @@
 <translation id="161042844686301425">Lục lam</translation>
 <translation id="1611649489706141841">chuyển tiếp</translation>
 <translation id="1612960140435400149">Không có trường biểu mẫu nào tiếp theo</translation>
-<translation id="1613476421962910979">Bật kết nối tai nghe</translation>
+<translation id="1613476421962910979">Âm báo đang bật</translation>
 <translation id="1616111909442424068">Màu lúa mì</translation>
 <translation id="1618597272655350600">Thông báo mô tả đầy đủ của vị trí hiện tại</translation>
 <translation id="1627222324347828322">Màu trắng tinh</translation>
@@ -423,7 +423,7 @@
 <translation id="4217571870635786043">Nhập bằng giọng nói</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{dấu gạch ngang}other{# dấu gạch ngang}}</translation>
 <translation id="4221012616705981690">Không có danh sách nào trước đó</translation>
-<translation id="4225355998815256469">Thành phần điều khiển biểu mẫu</translation>
+<translation id="4225355998815256469">Nút điều khiển biểu mẫu</translation>
 <translation id="4230834257931120629">Màu xám đen nhạt</translation>
 <translation id="4231102694147661229">Bật Tùy chọn của nhà phát triển</translation>
 <translation id="423428485095722850">Nhấn tổ hợp phím Tìm kiếm + Dấu cách để bật/tắt</translation>
@@ -547,7 +547,7 @@
 <translation id="5304943142864553931"><ph name="TITLE" />, thẻ</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="5310788376443009632">đã xóa:</translation>
-<translation id="5320727453979144100">Đã bật chế độ cố định</translation>
+<translation id="5320727453979144100">Đã bật chế độ phím dính</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{dấu phẩy}other{# dấu phẩy}}</translation>
 <translation id="532485153932049746">Định dạng văn bản
     <ph name="FONT_SIZE_STRING" />
@@ -560,7 +560,7 @@
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Liên kết ngược</translation>
 <translation id="5355014376930441909">Không có phần nào tiếp theo</translation>
-<translation id="5368000168321181111">Tắt kết nối tai nghe</translation>
+<translation id="5368000168321181111">Âm báo đang tắt</translation>
 <translation id="5368505757342402527">Đã tải <ph name="FILE_NAME" /> được <ph name="PROGRESS" />%. Còn khoảng <ph name="TIME" /> <ph name="UNITS" /> nữa.</translation>
 <translation id="5400836586163650660">Màu xám</translation>
 <translation id="5402367795255837559">Chữ nổi</translation>
@@ -1019,7 +1019,7 @@
 <translation id="958854023026327378">Vuốt xuống dưới bằng một ngón tay</translation>
 <translation id="962913030769097253">Tiêu đề cấp 1 tiếp theo</translation>
 <translation id="966588271015727539">Chọn màn hình chữ nổi Bluetooth</translation>
-<translation id="973955474346881951">Bật/tắt chế độ cố định</translation>
+<translation id="973955474346881951">Bật/tắt chế độ phím dính</translation>
 <translation id="985654871861528815">Chuyển xuống một dòng</translation>
 <translation id="992256792861109788">Màu hồng</translation>
 </translationbundle>

@@ -2912,6 +2912,35 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
   }
 }
 
+// Tests that in the reveal-on-hover field trial variation, the RenderText does
+// not elide the domain if the omnibox is too narrow to fit it.
+TEST_P(OmniboxViewViewsRevealOnHoverTest,
+       SimplifiedDomainElisionWithNarrowOmnibox) {
+  const int kOmniboxWidth = 60;
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+  gfx::Rect current_bounds = omnibox_view()->GetLocalBounds();
+  gfx::Rect bounds(current_bounds.x(), current_bounds.y(), kOmniboxWidth,
+                   current_bounds.height());
+  omnibox_view()->SetBoundsRect(bounds);
+  SetUpSimplifiedDomainTest();
+
+  ASSERT_EQ(kSimplifiedDomainDisplayUrl, render_text->GetDisplayText());
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
+
+  // The omnibox should contain a substring of the domain.
+  gfx::Rect hostname_bounds;
+  for (const auto& rect : render_text->GetSubstringBounds(
+           gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                      kSimplifiedDomainDisplayUrlHostnameAndScheme.size()))) {
+    hostname_bounds.Union(rect);
+  }
+  EXPECT_FALSE(omnibox_view()->GetLocalBounds().Contains(hostname_bounds));
+}
+
 // Tests that in the hide-on-interaction field trial variation, the path is
 // faded out after omnibox focus and blur.
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,

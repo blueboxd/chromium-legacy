@@ -152,6 +152,7 @@
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2156074688469523661">其餘網站 (共 <ph name="NUMBER_OF_SITES" /> 個)</translation>
 <translation id="2157851137955077194">如要將手機上的內容分享至另一部裝置，請同時在這兩部裝置的 Chrome 設定中開啟同步功能</translation>
+<translation id="2158408438301413340">Chrome 無法檢查所有密碼</translation>
 <translation id="2169830938017475061">剛剛</translation>
 <translation id="2175927920773552910">二維條碼</translation>
 <translation id="218608176142494674">共用</translation>
@@ -160,6 +161,7 @@
 <translation id="2239812875700136898">按一下 [探索的選項] 按鈕來控制您的報導</translation>
 <translation id="2259659629660284697">匯出密碼…</translation>
 <translation id="2268044343513325586">修正搜尋</translation>
+<translation id="2276696007612801991">登入 Google 帳戶以檢查密碼</translation>
 <translation id="2286841657746966508">帳單地址</translation>
 <translation id="230115972905494466">找不到兼容的裝置</translation>
 <translation id="2318045970523081853">輕按即可撥打電話</translation>
@@ -316,6 +318,7 @@
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />建議的內容</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3507132249039706973">已開啟「標準保護功能」</translation>
+<translation id="3509330069915219067">離線。Chrome 無法檢查更新。</translation>
 <translation id="3513704683820682405">擴張實境</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
 <translation id="3522247891732774234">有可用的更新。更多選項</translation>
@@ -365,6 +368,7 @@
 <translation id="3895926599014793903">強制啟用縮放功能</translation>
 <translation id="3909763690984331376">安全檢查<ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">正在網上搜尋最佳結果…</translation>
+<translation id="3924911262913579434">已開啟「<ph name="SAFE_BROWSING_MODE" />」</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">合併我的資料</translation>
 <translation id="393697183122708255">沒有可用的語音搜尋功能</translation>
@@ -372,6 +376,7 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome 準備就緒後將載入您的網頁}other{Chrome 準備就緒後將載入您的網頁}}</translation>
 <translation id="3963007978381181125">密碼短語加密的資料不包括 Google Pay 的付款方法和地址。只有知道您密碼短語的使用者，才能讀取已加密的資料。系統不會將密碼短語傳送給 Google，Google 也不會儲存您的密碼短語。如果您忘記自己的密碼短語，或希望變更這項設定，則必須重設同步功能。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">下載完成</translation>
+<translation id="3969142555815019568">Chrome 無法檢查密碼</translation>
 <translation id="3974987681202239636">「<ph name="APP_NAME" />」將在 Chrome 中開啟。繼續即表示您同意《<ph name="BEGIN_LINK1" />Google 服務條款<ph name="END_LINK1" />》以及 <ph name="BEGIN_LINK2" />Google Chrome 和 Chrome 作業系統的《附加服務條款》<ph name="END_LINK2" />。須同時受《<ph name="BEGIN_LINK3" />透過 Family Link 管理的 Google 帳戶私隱聲明<ph name="END_LINK3" />》約束。</translation>
 <translation id="397583555483684758">同步處理功能已停止運作</translation>
 <translation id="3976396876660209797">移除並重新建立此捷徑</translation>
@@ -447,6 +452,7 @@
 <translation id="4616150815774728855">開啟 <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">使用密碼</translation>
 <translation id="4650364565596261010">系統預設</translation>
+<translation id="465657074423018424">「安全瀏覽」功能可保護您免受欺詐網站的威脅。如果您停用此功能，在瀏覽及輸入密碼時請提高警覺。</translation>
 <translation id="4662373422909645029">暱稱不可包含數字</translation>
 <translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS" /> 個書籤</translation>
 <translation id="4665282149850138822">已將 <ph name="NAME" /> 新增到主畫面</translation>
@@ -784,6 +790,7 @@
 <translation id="7071521146534760487">管理帳戶</translation>
 <translation id="7077143737582773186">SD 卡</translation>
 <translation id="7080806333218412752">將網址傳送至「安全瀏覽」功能檢查。同時傳送少量網頁、下載檔案、擴充程式活動及系統資料，以協助探索新威脅。當您登入 Google 帳戶時，這些資料會暫時連結至您的帳戶，保護各個 Google 應用程式的使用安全。</translation>
+<translation id="7088681679121566888">Chrome 目前是最新版本</translation>
 <translation id="7121362699166175603">清除記錄和網址列中的自動完成資料。您的 Google 帳戶在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的瀏覽記錄。</translation>
 <translation id="7128355412245153445">輕按首頁按鈕，即可隨時查看熱門網站和近期報導</translation>
 <translation id="7138678301420049075">其他</translation>
@@ -805,6 +812,7 @@
 <translation id="7293171162284876153">如要開始同步處理，請開啟「同步處理 Chrome 資料」。</translation>
 <translation id="729975465115245577">裝置沒有可儲存密碼檔案的應用程式。</translation>
 <translation id="7302081693174882195">詳情：依節省數據量排序</translation>
+<translation id="7304873321153398381">離線。Chrome 無法檢查密碼。</translation>
 <translation id="7328017930301109123">「精簡模式」可加快 Chrome 載入網頁的速度，並節省高達百分之 60 的數據用量。</translation>
 <translation id="7333031090786104871">仍在新增先前的網站</translation>
 <translation id="7340958967809483333">「探索」的選項</translation>
@@ -818,6 +826,7 @@
 <translation id="741204030948306876">確認</translation>
 <translation id="7413229368719586778">開始日期：<ph name="DATE" /></translation>
 <translation id="7431991332293347422">控制系統如何使用您的瀏覽記錄，為您提供個人化的搜尋內容和其他服務</translation>
+<translation id="7435356471928173109">已由管理員關閉</translation>
 <translation id="7437998757836447326">登出 Chrome</translation>
 <translation id="7438641746574390233">開啟精簡模式後，Chrome 會使用 Google 伺服器以加快網頁載入。精簡模式重新編寫緩慢的網頁，讓網頁只載入重要內容。 精簡模式不會套用至無痕分頁。</translation>
 <translation id="7444811645081526538">更多類別</translation>
@@ -1033,6 +1042,7 @@
 <translation id="9050666287014529139">複雜密碼</translation>
 <translation id="9063523880881406963">關閉「切換為電腦版網站」</translation>
 <translation id="9065203028668620118">編輯</translation>
+<translation id="9069543557624799859">下載將會在 <ph name="TIME" />開始。</translation>
 <translation id="9070377983101773829">開始語音搜尋</translation>
 <translation id="9074336505530349563">如要接收 Google 建議的個人化內容，請登入並開啟同步處理功能</translation>
 <translation id="9086302186042011942">正在同步處理</translation>

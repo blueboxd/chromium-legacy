@@ -21,6 +21,7 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{ဒေါင်းလုဒ် ၁ ခုကို စောင့်နေသည်။}other{ဒေါင်းလုဒ် # ခုကို စောင့်နေသည်။}}</translation>
 <translation id="1145536944570833626">လက်ရှိဒေတာများကို ဖျက်ပါ</translation>
 <translation id="1146678959555564648">VR သို့ ဝင်ပါ</translation>
+<translation id="1154704303112745282">အော့ဖ်လိုင်းတွင် စာမျက်နှာကိုမရနိုင်ပါ - <ph name="VIOLATED_URL" /></translation>
 <translation id="116280672541001035">သုံးထား</translation>
 <translation id="1171770572613082465">"ထိပ်တန်း ဝဘ်ဆိုက်များ" ခလုတ်ကို တို့ခြင်းဖြင့် လူကြိုက်များသော ဝဘ်ဆိုက်များ ကြည့်ရန်</translation>
 <translation id="1173894706177603556">အမည်ပြောင်းရန်</translation>
@@ -366,6 +367,7 @@
 <translation id="3892148308691398805">စာသား မိတ္တူကူးရန်</translation>
 <translation id="3894427358181296146">ဖိုလ်ဒါ ထည့်ရန်</translation>
 <translation id="3895926599014793903">ဇူးမ် အတင်း ဖွင့်ရန်</translation>
+<translation id="3908308510347173149"><ph name="PRODUCT_NAME" /> ကို အပ်ဒိတ်လုပ်ပါ</translation>
 <translation id="3909763690984331376">လုံခြုံရေး စစ်ဆေးမှု <ph name="BEGIN_NEW" />အသစ်<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">ဝဘ်မှ အကောင်းဆုံးကို ရှာနေသည်…</translation>
 <translation id="3924911262913579434"><ph name="SAFE_BROWSING_MODE" /> ကို ဖွင့်ထားသည်</translation>
@@ -419,6 +421,7 @@
 <translation id="4321739720395210191">သင့်ကင်မရာကို ဖွင့်၍မရပါ။ သင့်စက်ကို ပြန်စပြီး ထပ်စမ်းကြည့်ပါ။</translation>
 <translation id="4351244548802238354">ဒိုင်ယာလော့ ပိတ်ရန်</translation>
 <translation id="4378154925671717803">ဖုန်း</translation>
+<translation id="4382908510000698092">Chrome ၏ ဘာသာစကားအဖြစ် သုံးပါ</translation>
 <translation id="4384468725000734951">ရှာဖွေမှုအတွက် Sogou ကို အသုံးပြုသည်</translation>
 <translation id="4404568932422911380">မည်သည့်လိပ်စာမျှ မရှိပါ</translation>
 <translation id="4405224443901389797">ဤနေရာသို့ ရွှေ့ရန်…</translation>
@@ -595,6 +598,7 @@
 <translation id="568275469169136466">ယာယီလက်မှတ်ထိုးဝင်ရန်</translation>
 <translation id="5683547024293500885">Chrome က သင့်အပ်ဒိတ်များကို စစ်ဆေး၍မရပါ</translation>
 <translation id="5686790454216892815">ဖိုင်အမည် ရှည်လွန်းသည်</translation>
+<translation id="5687809546194252819">ပြန်စတင်ချိန်တွင် <ph name="APP_NAME" /> က <ph name="LANGUAGE" /> ကိုသုံးမည်။</translation>
 <translation id="5694049548840660018">အိမ်သို့ လွယ်ကူစွာ ပြန်လိုက်ပါ</translation>
 <translation id="569536719314091526">ဤစာမျက်နှာကို နှစ်သက်ရာဘာသာစကားအဖြစ်သို့ ဘာသာပြန်ရန် 'နောက်ထပ်ရွေးချယ်စရာများ' ခလုတ်ကို ခလုတ်ကို နှိပ်ပါ</translation>
 <translation id="5696597120588531049">ဒေတာပေါက်ကြားမှု၊ မလုံခြုံသော ဝဘ်ဆိုက်များနှင့် အခြားအန္တရာယ်များမှ သင့်ကိုလုံခြုံအောင် Chrome က ကူညီပေးနိုင်သည်</translation>
@@ -696,6 +700,7 @@
 <translation id="6395288395575013217">လင့်ခ်</translation>
 <translation id="6397616442223433927">အွန်လိုင်းပြန်ရပြီ</translation>
 <translation id="6398765197997659313">မျက်နှာပြင် အပြည့်မှ ထွက်ရန်</translation>
+<translation id="6402652558933147609"><ph name="VIOLATED_URL" /> ရှိ <ph name="ERROR_CODE" /></translation>
 <translation id="6404511346730675251">စာညှပ် တည်းဖြတ်ရန်</translation>
 <translation id="6406506848690869874">ထပ်တူပြုမည်</translation>
 <translation id="6412673304250309937">Chrome တွင် သိမ်းဆည်းထားသော လုံခြုံမှုမရှိသည့် ဝဘ်ဆိုက်များ၏ URL များကို စစ်ဆေးပေးသည်။ ဝဘ်ဆိုက်တစ်ခုက သင့်စကားဝှက်ကို ခိုးယူရန် ကြိုးပမ်းလာပါက သို့မဟုတ် အန္တရာယ်ရှိသည့်ဖိုင်တစ်ခုကို သင်ဒေါင်းလုဒ်လုပ်သည့်အခါ Chrome သည် Safe Browsing သို့ URL များအပြင် ဝဘ်ဆိုက်ပါ အကြောင်းအရာအချို့ကို ပို့နိုင်သည်။</translation>
@@ -770,6 +775,7 @@
 <translation id="6896758677409633944">ကူးယူရန်</translation>
 <translation id="6900532703269623216">အရည်အသွေးမြှင့်တင်ထားသည့် ကာကွယ်မှု</translation>
 <translation id="6903907808598579934">စင့်ခ်လုပ်ခြင်းကို ဖွင့်ပါ</translation>
+<translation id="6929699136511445623">Android စနစ်စင့်ခ်ကို ဖွင့်ရန်</translation>
 <translation id="6942665639005891494">'ဆက်တင်များ' မီနူးရွေးစရာကို အသုံးပြုပြီး ဒေါင်းလုဒ်လုပ်ရန် နေရာမူရင်းကို အချိန်မရွေး ပြောင်းနိုင်သည်</translation>
 <translation id="6945221475159498467">ရွေးရန်</translation>
 <translation id="6955535239952325894">ကြီးကြပ်ထားသောဘရောင်ဇာများတွင် ဤဆက်တင်ကို ပိတ်ထားသည်</translation>
@@ -870,6 +876,7 @@
 <translation id="7698359219371678927"><ph name="APP_NAME" />  တွင် အီးမေးလ်ရေးပါ</translation>
 <translation id="7704317875155739195">ရှာဖွေမှုများနှင့် URL များကို အလိုအလျောက်ဖြည့်ခြင်း</translation>
 <translation id="7725024127233776428">သင်သိမ်းဆည်းထားသည့် လိပ်စာ၏ စာမျက်နှာများကို ဤနေရာတွင် တွေ့ရပါမည်</translation>
+<translation id="7735637452482172701">ဖန်သားပြင် လော့ခ်ချခြင်းဖြင့် ဖွင့်ရန်</translation>
 <translation id="7746457520633464754">အန္တရာယ်ရှိသော အက်ပ်နှင့် ဝဘ်ဆိုက်များကို သိရှိရန် Chrome က သင်ဝင်ကြည့်ထားသော စာမျက်နှာအချို့၏ URL များ၊ ကန့်သတ်ထားသော စနစ် အချက်အလက်များနှင့် စာမျက်နှာ အကြောင်းအရာအချို့ကို Google သို့ ပို့ပါသည်</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> မှ မျှဝေထားသော စာသား</translation>
 <translation id="7761849928583394409">ရက်စွဲနှင့် အချိန်ရွေးရန်</translation>
@@ -950,6 +957,7 @@
 <translation id="8261506727792406068">ဖျက်ရန်</translation>
 <translation id="8266862848225348053">တည်နေရာ ဒေါင်းလုဒ်လုပ်ခြင်း</translation>
 <translation id="8274165955039650276">ဒေါင်းလုဒ်များကို ကြည့်ရန်</translation>
+<translation id="8278640294239011163">စင့်ခ်လုပ်ရန် အတည်ပြုပါ</translation>
 <translation id="8284326494547611709">စာတန်းများ</translation>
 <translation id="8310344678080805313">ပုံမှန် တဲဘ်များ</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> နှင့် နောက်ထပ် ဝဘ်ဆိုက်များ</translation>

@@ -351,7 +351,7 @@
 <translation id="2367567093518048410">等級</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">企業預設</translation>
-<translation id="2385809941344967209">從 Chrome 設定中更新 Chrome</translation>
+<translation id="2385809941344967209">前往 Chrome 設定更新 Chrome</translation>
 <translation id="2386255080630008482">伺服器憑證已遭撤銷。</translation>
 <translation id="2392959068659972793">顯示尚未設定任何值的政策</translation>
 <translation id="239429038616798445">不支援所選的運送方式，請改選其他方式。</translation>
@@ -909,7 +909,7 @@
 <translation id="4780900888022378816">你的裝置是由 <ph name="ENROLLMENT_DOMAIN" /> 管理，你的帳戶是由 <ph name="ACCOUNT_DOMAIN" /> 管理。</translation>
 <translation id="4785689107224900852">切換至這個分頁</translation>
 <translation id="4791134497475588553">已安裝的 Linux 應用程式及上次使用時間</translation>
-<translation id="4792686369684665359">你要提交的資訊並不安全</translation>
+<translation id="4792686369684665359">你要提交的資訊未受到保護</translation>
 <translation id="4796594887379589189">工作帳戶 ID</translation>
 <translation id="4798078619018708837">請輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡驗證碼，以更新信用卡詳細資料。你確認後，這個網站就會取得你 Google 帳戶中的信用卡詳細資料。</translation>
 <translation id="4800132727771399293">請檢查您的有效期限和信用卡驗證碼，然後再試一次</translation>
@@ -1474,6 +1474,7 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> 不符合安全性標準。</translation>
 <translation id="7210993021468939304">容器內的 Linux 活動，並可在容器內安裝及執行 Linux 應用程式</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />這個問題。</translation>
+<translation id="7217745192097460130">要使用 Touch ID 進行驗證並完成購物交易嗎？</translation>
 <translation id="7219179957768738017">這個連線使用 <ph name="SSL_VERSION" />。</translation>
 <translation id="7220786058474068424">處理中</translation>
 <translation id="7221855153210829124">顯示通知</translation>
@@ -1675,7 +1676,7 @@
 <translation id="7947285636476623132">請檢查信用卡到期年份，然後再試一次</translation>
 <translation id="7951415247503192394">(32 位元)</translation>
 <translation id="7953569069500808819">邊緣裝訂 (右側)</translation>
-<translation id="7954523986259449736">這個網站使用的連線有安全疑慮，因此其他使用者將可看到你的資訊。</translation>
+<translation id="7954523986259449736">這個網站使用的連線有安全疑慮，其他使用者將可看到你的資訊。</translation>
 <translation id="7956713633345437162">行動版書籤</translation>
 <translation id="7961015016161918242">一律不要</translation>
 <translation id="7966803981046576691">工作帳戶類型</translation>

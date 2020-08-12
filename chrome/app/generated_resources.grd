@@ -3815,9 +3815,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_EXTENSION_ALERT_ITEM_BLACKLISTED_MALWARE" desc="A statement that an extension has been newly blacklisted for malware.">
         "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been disabled because it contains malware
       </message>
-      <message name="IDS_EXTENSION_ALERT_ITEM_BLACKLISTED_MALWARE_PLURAL" desc="A statement that an extension has been newly blacklisted for malware.">
-        "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been disabled because it contains malware.
-      </message>
       <message name="IDS_APP_ALERT_ITEM_BLACKLISTED_OTHER" desc="A statement that a packaged app has been newly blacklisted. https://support.google.com/chrome/answer/1210215 contains the language on which we're basing the phrasing.">
         The app "<ph name="EXTENSION_NAME">$1<ex>Gmail</ex></ph>" was automatically removed.
       </message>

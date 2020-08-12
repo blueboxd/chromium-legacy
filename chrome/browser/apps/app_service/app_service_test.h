@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
+#include "ui/gfx/image/image_skia.h"
 
 class Profile;
 
@@ -28,6 +30,14 @@ class AppServiceTest {
   void UninstallAllApps(Profile* profile);
 
   std::string GetAppName(const std::string& app_id) const;
+
+  // Synchronously fetches the icon for |app_id| of type |app_type| for the
+  // specified |size_hint_in_dp|, and blocks until the fetching is completed.
+  gfx::ImageSkia LoadAppIconBlocking(apps::mojom::AppType app_type,
+                                     const std::string& app_id,
+                                     int32_t size_hint_in_dip);
+
+  bool AreIconImageEqual(const gfx::ImageSkia& src, const gfx::ImageSkia& dst);
 
   // Allow AppService async callbacks to run.
   void WaitForAppService();

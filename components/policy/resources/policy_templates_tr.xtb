@@ -74,6 +74,7 @@
 
       Bu politika false (yanlış) değerine ayarlanırsa veya ayarlanmadan bırakılırsa bilgi raporlanmaz.
       True (doğru) değerine ayarlanırsa cihazın arka ışık bilgileri raporlanır.</translation>
+<translation id="1076751984131277498">Çıkarılabilir USB cihazlarının izin verilenler listesi</translation>
 <translation id="1079801999187584280">Geliştirici Araçları'nın kullanımına izin verme</translation>
 <translation id="1087437665304381368">Bu politika yalnızca <ph name="PRODUCT_OS_NAME" /> geliştirici modunu kontrol eder. Android Geliştirici Seçenekleri'ne erişimi engellemek isterseniz <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> politikasını ayarlamanız gerekir.</translation>
 <translation id="1087707496788636333">Chrome Enterprise politika listesinin yeri değişiyor! Lütfen yer işaretlerinizi <ph name="POLICY_DOCUMENTATION_URL" /> adresi ile güncelleyin.</translation>
@@ -519,6 +520,9 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 
       Bu politika ayarlanmadan bırakılırsa ağ tahmini etkinleştirilir, ancak isteyen kullanıcı bu ayarı değiştirebilir.</translation>
 <translation id="1865417998205858223">Temel İzinler</translation>
+<translation id="1866563857170942397">Cihaza giriş yapmalarına izin verilen kullanıcıların listesini tanımlar. Girişler <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> biçimindedir (örneğin, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />). Bir etki alanı üzerinde keyfi kullanıcılara izin vermek için <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" /> biçiminde girişler kullanın.
+
+      Bu politika yapılandırılmazsa kullanıcıların nerelerde oturum açabileceğine dair herhangi bir kısıtlama olmaz. Yeni kullanıcı oluşturmak için yine de <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> politikasının uygun şekilde yapılandırılması gerekeceğini unutmayın.</translation>
 <translation id="186719019195685253">Cihaz AC güçle çalışırken boşta kalma süresine ulaşıldığında yapılacak işlem</translation>
 <translation id="187819629719252111"><ph name="PRODUCT_NAME" /> tarafından dosya seçme iletişim kutularının görüntülenmesine izin vererek makinedeki yerel dosyalara erişim olanağı sağlar.
 
@@ -1799,6 +1803,9 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3647212518036289905">Politikanın ayarlanması, HTTP kimlik doğrulaması için hangi GSSAPI kitaplığının kullanılacağını belirtir. Politikayı bir kitaplık adı veya tam yol olarak ayarlayın.
 
       Politika ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" />, varsayılan bir kitaplık adı kullanır.</translation>
+<translation id="3653234084868565720">Yeni kullanıcı hesaplarının oluşturulmasına <ph name="PRODUCT_OS_NAME" /> tarafından izin verilip verilmeyeceğini belirler. Bu politika false (yanlış) değerine ayarlanırsa, hesabı olmayan kullanıcılar giriş yapamaz.
+
+      Bu politika true (doğru) değerine ayarlanırsa veya yapılandırılmazsa <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> tarafından kullanıcıların giriş yapmasının engellenmemesi koşuluyla yeni kullanıcı hesaplarının oluşturulmasına izin verilir.</translation>
 <translation id="3653237928288822292">Varsayılan arama sağlayıcı simgesi</translation>
 <translation id="3654906736796256792">Sesli korumalı alanın çalışmasına izin ver</translation>
 <translation id="3657998022005237040">Desteklenmeyen dosya türlerinin indirilmesini engelle</translation>
@@ -3156,6 +3163,11 @@ politikayı geçersiz kılamaz.
 
       Belirtilmezse, Varyasyon temeli URL'sinde değişiklik yapılmaz.</translation>
 <translation id="5561811616825571914">Oturum açma ekranında bu siteler için istemci sertifikalarını otomatik olarak seç</translation>
+<translation id="5564345250641049313">Cihaza giriş yapmasına izin verilen kullanıcıların listesini tanımlar. Girişler <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> formundadır (örneğin,<ph name="USER_ALLOWLIST_ENTRY_EXAMPLE" />). Bir alan adı üzerinde rastgele kullanıcılara izin vermek için<ph name="USER_ALLOWLIST_ENTRY_WILDCARD" /> formunda girişler kullanın.
+
+      Bu politika yapılandırılmazsa hangi kullanıcıların oturum açmasına izin verileceğine dair herhangi bir kısıtlama olmaz. Ancak yeni kullanıcı oluşturmak için yine de <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> politikasının uygun şekilde yapılandırılması gerekeceğini unutmayın.
+
+      Bu politika kullanımdan kaldırıldı, bunun yerine lütfen <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> politikasını kullanın.</translation>
 <translation id="5564865786900450806"><ph name="PRODUCT_NAME" />, artık desteklenmeyen bir bilgisayarda veya işletim sisteminde çalışırken görüntülenen uyarıyı gizler.
 
       Bu politika False (Yanlış) değerine ayarlanır veya hiç ayarlanmazsa bu tür desteklenmeyen bilgisayarlarda veya işletim sistemlerinde uyarı görünür.</translation>
@@ -3527,6 +3539,11 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
           Boşta kalma durumunda ekranı kilitlemek için önerilen yöntem, askıya alındığında ekranın kilitlenmesini etkinleştirmek ve boşta kalma süresi beklendikten sonra <ph name="PRODUCT_OS_NAME" /> tarafından askıya alma işlemi yapılmasını sağlamaktır.
 
           Politikanın değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma bekleme süresinden az olacak şekilde ayarlanır.</translation>
+<translation id="6096729330325888677">Politikayı ayarlamak, kullanıcıların chrome.usb API'sı aracılığıyla doğrudan bir web uygulaması içinde kullanmak için çekirdek sürücüsünden çıkarabildikleri USB cihazlarının listesini tanımlar. Girişler, belirli bir donanımı tanımlamak için kullanılan USB Tedarikçi Tanımlayıcısı ve Ürün Tanımlayıcısı çiftlerinden oluşmaktadır.
+
+      Ayarlanmazsa çıkarılabilir USB cihazları listesi boştur.
+
+      Bu politika kullanımdan kaldırıldı, lütfen bunun yerine <ph name="USB_DETACHABLE_ALLOWLIST" /> politikasını kullanın.</translation>
 <translation id="6097601282776163274">URL içeren veya URL'lerle ilişkili anonim veri toplamayı etkinleştir</translation>
 <translation id="6099853574908182288">Varsayılan renkli yazdırma modu</translation>
 <translation id="6102342563050263313">URL parçalarında belirtilen metne kaydırma işlevini etkinleştirme</translation>
@@ -4174,6 +4191,16 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu politika ayarlanmadan bırakılırsa raf varsayılan olarak ekranın alt tarafında konumlandırılır ve kullanıcı rafın yerini değiştirebilir.</translation>
 <translation id="7040229947030068419">Örnek değer:</translation>
 <translation id="7044883996351280650">Android yedekleme ve geri yükleme hizmetini kontrol etme</translation>
+<translation id="7063842402585660314"><ph name="PRODUCT_OS_NAME" /> cihazının kilit ekranında izin verilen uygulamalar listesi
+
+      Tercih edilen not alma uygulaması kilit ekranında etkinleştirilmişse kilit ekranı bu uygulamayı başlatacak bir kullanıcı arayüzü öğesi barındırır.
+      Uygulama başlatıldığı zaman kilit ekranının üst kısmında bir uygulama penceresi ve kilit ekranı bağlamında veri öğeleri (notlar) oluşturulabilir. Oturumun kilidi açık olduğunda, uygulama, oluşturulan notları birincil kullanıcı oturumuna aktarabilecektir. Şu anda yalnızca Chrome not alma uygulamaları kilit ekranında desteklenmektedir.
+
+      Politika ayarlanırsa yalnızca uygulamanın uzantı kimliğinin politika listesi değerinde yer alması halinde, kullanıcı uygulamayı kilit ekranında etkinleştirilebilir.
+      Bu nedenle, bu politikayı boş bir listeye ayarlamak kilit ekranında not almayı tamamen devre dışı bırakır.
+      Uygulama kimliği içeren politikanın, kullanıcının uygulamayı kilit ekranında not alma uygulaması olarak etkinleştirebileceği anlamına gelmediğini unutmayın. Örneğin, Chrome 61 sürümünde, kullanılabilir uygulamalar dizisi platform tarafından ilave bir kısıtlamaya tabidir.
+
+      Politika ayarlanmadan bırakılırsa kullanıcının kilit ekranında etkinleştirebileceği uygulama dizisi üzerinde politika tarafından hiçbir kısıtlama söz konusu olmaz.</translation>
 <translation id="7063895219334505671">Bu sitelerde pop-up'lara izin ver</translation>
 <translation id="706669471845501145">Sitelerin masaüstü bildirimi göstermesine izin ver</translation>
 <translation id="7068108874199666656">Bir <ph name="PRODUCT_OS_NAME" /> cihazın tüm kullanıcıları için uygulanacak ağ yapılandırmasını aktarmaya olanak tanır. Ağ yapılandırması, Açık Ağ Yapılandırması biçimiyle tanımlanmış JSON biçimli bir dizedir.</translation>
@@ -5082,6 +5109,7 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 
           Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="8357681633047935212">Kullanıcı oturumunun süresini sınırla</translation>
+<translation id="8357989008292691856">Giriş yapabilen kullanıcı izin listesi</translation>
 <translation id="8359734107661430198">ExampleDeprecatedFeature API'sını 02.09.2008'e kadar etkinleştirin</translation>
 <translation id="8367209241899435947">Windows'da Chrome Temizleme Aracı'nı etkinleştir</translation>
 <translation id="8367473200119029349">Bulut Raporlaması</translation>

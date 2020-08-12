@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -282,6 +283,8 @@ class HostedOrWebAppTest : public extensions::ExtensionBrowserTest,
     web_app::WebAppProviderBase::GetProviderBase(profile())
         ->shortcut_manager()
         .SuppressShortcutsForTesting();
+
+    app_service_test_.SetUp(profile());
   }
 
   // Tests that performing |action| results in a new foreground tab
@@ -313,6 +316,8 @@ class HostedOrWebAppTest : public extensions::ExtensionBrowserTest,
     return provider->registrar();
   }
 
+  apps::AppServiceTest& app_service_test() { return app_service_test_; }
+
   std::string app_id_;
   Browser* app_browser_;
 
@@ -327,6 +332,7 @@ class HostedOrWebAppTest : public extensions::ExtensionBrowserTest,
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   AppType app_type_;
+  apps::AppServiceTest app_service_test_;
 
   net::EmbeddedTestServer https_server_;
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
@@ -469,6 +475,21 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, NotWebApp) {
   EXPECT_TRUE(app->is_hosted_app());
   EXPECT_FALSE(app->from_bookmark());
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_P(HostedAppTest, LoadIcon) {
+  if (!base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+    return;
+
+  SetupApp("hosted_app");
+
+  EXPECT_TRUE(app_service_test().AreIconImageEqual(
+      app_service_test().LoadAppIconBlocking(
+          apps::mojom::AppType::kExtension, app_id_,
+          extension_misc::EXTENSION_ICON_SMALL),
+      app_browser_->app_controller()->GetWindowAppIcon()));
+}
+#endif
 
 class HostedAppTestWithAutoupgradesDisabled : public HostedOrWebAppTest {
  public:

@@ -4,13 +4,16 @@
 
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 
+#include <stddef.h>
+
 #include <algorithm>
-#include <vector>
+#include <utility>
 
 #include "base/check.h"
-#include "base/notreached.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/download/download_item_model.h"
+#include "base/containers/adapters.h"
+#include "base/optional.h"
+#include "base/time/time.h"
+#include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -23,20 +26,24 @@
 #include "components/download/public/common/download_item.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/browser/download_manager.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/animation/animation.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/controls/link.h"
-#include "ui/views/mouse_watcher_view_host.h"
+#include "ui/views/controls/webview/webview.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 using download::DownloadItem;
 
@@ -61,12 +68,7 @@ constexpr int kCloseAndLinkPadding = 6;
 DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     : DownloadShelf(browser, browser->profile()),
       AnimationDelegateViews(this),
-      new_item_animation_(this),
-      shelf_animation_(this),
-      parent_(parent),
-      mouse_watcher_(
-          std::make_unique<views::MouseWatcherViewHost>(this, gfx::Insets()),
-          this) {
+      parent_(parent) {
   // Start out hidden: the shelf might be created but never shown in some
   // cases, like when installing a theme. See DownloadShelf::AddDownload().
   SetVisible(false);

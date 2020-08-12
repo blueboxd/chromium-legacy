@@ -185,6 +185,8 @@ bool BrowserManager::Start() {
 
   // Paths are UTF-8 safe on Chrome OS.
   std::string user_data_dir = browser_util::GetUserDataDir().AsUTF8Unsafe();
+  std::string crash_dir =
+      browser_util::GetUserDataDir().Append("crash_dumps").AsUTF8Unsafe();
 
   std::vector<std::string> argv = {chrome_path,
                                    "--ozone-platform=wayland",
@@ -192,7 +194,8 @@ bool BrowserManager::Start() {
                                    "--enable-gpu-rasterization",
                                    "--enable-oop-rasterization",
                                    "--lang=en-US",
-                                   "--enable-crashpad"};
+                                   "--enable-crashpad",
+                                   "--breakpad-dump-location=" + crash_dir};
 
   std::string additional_flags =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -215,6 +218,8 @@ bool BrowserManager::Start() {
 
   // Set up Mojo channel.
   base::CommandLine command_line(argv);
+  LOG(WARNING) << "Launching lacros with command: "
+               << command_line.GetCommandLineString();
   mojo::PlatformChannel channel;
   channel.PrepareToPassRemoteEndpoint(&options, &command_line);
 

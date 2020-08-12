@@ -18,6 +18,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {
  public:

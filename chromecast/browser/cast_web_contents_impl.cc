@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
@@ -335,7 +334,7 @@ void CastWebContentsImpl::ClearRenderWidgetHostView() {
   }
 }
 
-on_load_script_injector::OnLoadScriptInjectorHost<base::StringPiece>*
+on_load_script_injector::OnLoadScriptInjectorHost<std::string>*
 CastWebContentsImpl::script_injector() {
   return &script_injector_;
 }

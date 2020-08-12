@@ -8,6 +8,7 @@
 <translation id="1019413721762100891">Yoqilmagan</translation>
 <translation id="1021110881106174305">Qabul qilinadigan kartalar</translation>
 <translation id="1021753677514347426">Bu muammo qurilmangizda oʻrnatilgan sertifikat sababli yuz berishi ham mumkin. Bunday sertifikat ishonchli hisoblanmaydi, chunki u odatda tarmoqdagi maʼlumotlarni kuzatish va olish uchun foydalaniladi. Bunday funksiyadan ish joylarida yoki taʼlim muassasalarida foydalanishadi. Nima boʻlganda ham biz ushbu sertifikat mavjudligi haqida sizni ogohlantirmoqchimiz. Har qanday internetga ulangan brauzer yoki ilovada faoliyatni kuzatish mumkin.</translation>
+<translation id="1024111578869940408">Odatda shubhali kimsalar sayt manzilida kichik oʻzgarishlar kiritib, saytlarga soxta nusxalar yasaydi.</translation>
 <translation id="1030706264415084469"><ph name="URL" /> saytidan katta hajmdagi ma’lumotlarni mobil qurilmangizda saqlashga ruxsat so‘rovi keldi</translation>
 <translation id="1032854598605920125">Soat mili yo‘nalishida burish</translation>
 <translation id="1036348656032585052">O‘chirib qo‘yish</translation>
@@ -197,6 +198,7 @@
 <translation id="1717494416764505390">Pochta qutisi 3</translation>
 <translation id="1718029547804390981">Hujjat juda kattaligi uchun izohlanmaydi</translation>
 <translation id="1721424275792716183">* Bu maydoncha kiritilishi shart</translation>
+<translation id="1724638245199909652">Qurilmadagi shriftlarga ruxsat</translation>
 <translation id="1727741090716970331">Karta raqamini xatosiz kiriting</translation>
 <translation id="1728677426644403582">Siz veb-sahifa kodini ko‘rmoqdasiz.</translation>
 <translation id="173080396488393970">Bunday karta hozirda ishlamaydi</translation>
@@ -417,6 +419,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2677748264148917807">Tark etish</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Eng mos</translation>
+<translation id="2688969097326701645">Ha, davom etilsin</translation>
 <translation id="2691924980723297736">Ogohlantirish</translation>
 <translation id="2699302886720511147">Qabul qilinadigan kartalar</translation>
 <translation id="2701514975700770343">Orqa tomonida</translation>
@@ -510,6 +513,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="3107591622054137333"><ph name="BEGIN_LINK" />DNS sozlamalar himoyasini tekshirish<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Sizda bu sahifani ko‘rishga ruxsat yo‘q.</translation>
 <translation id="3113284927548439113">Uchinchi siljish</translation>
+<translation id="3115874930288085374"><ph name="ENROLLMENT_DOMAIN" /> maʼlumotlaringizni zaxiralash va bu <ph name="DEVICE_TYPE" /> qurilmasini qaytarishingizni talab qilmoqda.</translation>
 <translation id="3116158981186517402">Laminatsiyalash</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Aloqa diagnostikasi bilan tekshirib ko‘ring<ph name="END_LINK" /></translation>
@@ -845,7 +849,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Proksi-server o‘chiq, lekin uning sozlamalari aniq belgilangan.</translation>
 <translation id="4466881336512663640">Toʻldirilgan shakl tozalanadi. Davom ettirilsinmi?</translation>
-<translation id="4476953670630786061">Bu shakl xavfsiz emas. Avtomatik kiritish faolsizlantirilgan.</translation>
+<translation id="4476953670630786061">Bu shakl xavfsiz emas. Avtomatik kiritish faolsizlantirildi.</translation>
 <translation id="4477350412780666475">Keyingi trek</translation>
 <translation id="4482953324121162758">Bu sayt tarjima qilinmaydi</translation>
 <translation id="4490717597759821841">A7</translation>
@@ -928,6 +932,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="484462545196658690">Avto</translation>
 <translation id="4850886885716139402">Ko‘rish</translation>
 <translation id="4854362297993841467">Bu yetkazib berish usuli hozirda ishlamayapti. Boshqa usuldan foydalaning.</translation>
+<translation id="4875935965051941588">Buni nazarda tutdingizmi: <ph name="SUGGESTED_DOMAIN" />?</translation>
 <translation id="4876188919622883022">Soddalashgan shaklda</translation>
 <translation id="4876305945144899064">Ko‘satilmagan</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Yoʻq}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -1100,11 +1105,12 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="5540224163453853">So‘ralgan maqola topilmadi.</translation>
 <translation id="5541086400771735334">Pochta qutisi 7</translation>
 <translation id="5541546772353173584">Email manzilini qo‘shing</translation>
+<translation id="5544872699732646498">Odatda shubhali kimsalar sayt manzilida kichik oʻzgarishlar kiritib, saytlarga soxta nusxalar yasaydi.</translation>
 <translation id="5545756402275714221">Sizga atalgan maqolalar</translation>
 <translation id="5552137475244467770">Vaqti-vaqti bilan Chrome internetda oshkor etilgan roʻyxatlarda parolingiz borligini tekshirib turadi. Bunda parolingiz va foydalanuvchi nomingiz shifrlanadi, hatto Google xodimlariga ham koʻrinmaydi.</translation>
 <translation id="5556459405103347317">Qayta yuklash</translation>
 <translation id="5560088892362098740">Tugash muddati</translation>
-<translation id="55635442646131152">Hujjat tarkibi</translation>
+<translation id="55635442646131152">Hujjat mundarijasi</translation>
 <translation id="5565735124758917034">Faol</translation>
 <translation id="5570825185877910964">Hisobni himoyalash</translation>
 <translation id="5571083550517324815">Bu manzildan olib keta olmaymiz. Boshqa manzilni tanlang.</translation>
@@ -1479,6 +1485,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> sayti xavfsizlik standartlariga muvofiq kelmadi.</translation>
 <translation id="7210993021468939304">Konteyner ichidagi Linux jarayonlari va Linux ilovalarining konteyner ichida oʻrnatilishi va ishga tushirilishi</translation>
 <translation id="721197778055552897">Bu muammo haqidagi <ph name="BEGIN_LINK" />tafsilotlar<ph name="END_LINK" />.</translation>
+<translation id="7214062855724067749">Kengaytirilgan bosma yozuvlarni yaratish uchun kompyuteringizda oʻrnatilgan shriftlardan foydalaning</translation>
 <translation id="7217745192097460130">Xaridlarni tasdiqlash va yakunlashda Touch ID ishlatilsinmi?</translation>
 <translation id="7219179957768738017">Bu ulanishda <ph name="SSL_VERSION" /> protokoli ishlatilmoqda.</translation>
 <translation id="7220786058474068424">Amalga oshirilmoqda</translation>

@@ -152,6 +152,7 @@
 <translation id="2154710561487035718">ចម្លង URL</translation>
 <translation id="2156074688469523661">ទំព័រនៅសល់ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">ដើម្បី​ចែករំលែក​អ្វីមួយ​ពី​ទូរសព្ទរបស់អ្នកទៅឧបករណ៍​ផ្សេងទៀត សូមបើក​សមកាលកម្ម​នៅក្នុងការកំណត់ Chrome នៅលើឧបករណ៍ទាំងពីរ</translation>
+<translation id="2158408438301413340">Chrome មិនអាចពិនិត្យ​ពាក្យសម្ងាត់​ទាំងអស់បានទេ</translation>
 <translation id="2169830938017475061">ឥឡូវ​នេះ</translation>
 <translation id="2175927920773552910">កូដ QR</translation>
 <translation id="218608176142494674">ការចែករំលែក</translation>
@@ -160,6 +161,7 @@
 <translation id="2239812875700136898">គ្រប់គ្រងអត្ថបទរបស់អ្នកពី "ជម្រើស" សម្រាប់ប៊ូតុង Discover</translation>
 <translation id="2259659629660284697">នាំ​ចេញ​ពាក្យ​សម្ងាត់…</translation>
 <translation id="2268044343513325586">សម្រាំង</translation>
+<translation id="2276696007612801991">ចូលគណនី Google របស់អ្នក ដើម្បីពិនិត្យ​ពាក្យសម្ងាត់​របស់អ្នក</translation>
 <translation id="2286841657746966508">អាសយដ្ឋានទូទាត់​វិក្កយបត្រ</translation>
 <translation id="230115972905494466">រកមិន​ឃើញ​ឧបករណ៍​ដែល​ត្រូវគ្នាទេ</translation>
 <translation id="2318045970523081853">ចុច​ដើម្បី​ហៅទូរសព្ទ</translation>
@@ -316,6 +318,7 @@
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" />អំពីមាតិកាដែលបានណែនាំ</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3507132249039706973">ការការពារស្តង់ដារត្រូវបានបើក</translation>
+<translation id="3509330069915219067">គ្មានអ៊ីនធឺណិត។ Chrome មិនអាចពិនិត្យរក​កំណែថ្មីបានទេ។</translation>
 <translation id="3513704683820682405">AR</translation>
 <translation id="3518985090088779359">ព្រមទទួល និងបន្ត</translation>
 <translation id="3522247891732774234">មានផ្តល់ជូនការអាប់ដេត។ ជម្រើសច្រើនទៀត</translation>
@@ -365,6 +368,7 @@
 <translation id="3895926599014793903">បង្ខំបើកដំណើរការពង្រីក</translation>
 <translation id="3909763690984331376">ការពិនិត្យសុវត្ថិភាព <ph name="BEGIN_NEW" />ថ្មី<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">កំពុង​ស្វែងរក​អ្វីដែលល្អបំផុត​ពីបណ្ដាញ…</translation>
+<translation id="3924911262913579434"><ph name="SAFE_BROWSING_MODE" /> ត្រូវបាន​បើក</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">រួមបញ្ចូលទិន្នន័យរបស់ខ្ញុំ</translation>
 <translation id="393697183122708255">គ្មានការគាំទ្រការស្វែងរកដោយសម្លេងទេ</translation>
@@ -372,6 +376,7 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome នឹងផ្ទុកទំព័រ​របស់អ្នក នៅពេលរួចរាល់}other{Chrome នឹងផ្ទុកទំព័រ​របស់អ្នក នៅពេលរួចរាល់}}</translation>
 <translation id="3963007978381181125">ការ​អ៊ីនគ្រីបឃ្លា​សម្ងាត់​មិន​រួមបញ្ចូល​អាសយដ្ឋាន និងវិធី​បង់ប្រាក់​ពី Google Pay ទេ។ មានតែអ្នកដែលមានឃ្លាសម្ងាត់របស់អ្នកប៉ុណ្ណោះ ទើបអាចអានទិន្នន័យដែលបានអ៊ីនគ្រីបរបស់អ្នក។ ឃ្លាសម្ងាត់នេះមិនត្រូវបានផ្ញើ ឬផ្ទុកដោយ Google ទេ។ ប្រសិនបើអ្នកភ្លេចឃ្លាសម្ងាត់របស់អ្នក ឬចង់ផ្លាស់ប្ដូរ​ការកំណត់​នេះ​ អ្នក​នឹង​ត្រូវកំណត់​សមកាលកម្ម​ឡើងវិញ។ <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">ការទាញយកបានបញ្ចប់</translation>
+<translation id="3969142555815019568">Chrome មិន​អាចពិនិត្យ​ពាក្យសម្ងាត់របស់អ្នកបានទេ</translation>
 <translation id="3974987681202239636"><ph name="APP_NAME" /> នឹងបើកនៅក្នុង Chrome។ ប្រសិនបើបន្ត មានន័យថាអ្នកយល់ព្រមតាម<ph name="BEGIN_LINK1" />លក្ខខណ្ឌប្រើប្រាស់ Google<ph name="END_LINK1" /> និង<ph name="BEGIN_LINK2" />លក្ខខណ្ឌប្រើប្រាស់បន្ថែមរបស់ Google Chrome និង Chrome OS<ph name="END_LINK2" />។ <ph name="BEGIN_LINK3" />ការជូន​ដំណឹង​អំពី​ឯកជនភាព​សម្រាប់​គណនី Google ដែល​គ្រប់គ្រង​ដោយ​ប្រើ Family Link<ph name="END_LINK3" /> ក៏អនុវត្តផងដែរ។</translation>
 <translation id="397583555483684758">សមកាលកម្មបានឈប់ដំណើរការ</translation>
 <translation id="3976396876660209797">លុប និងបង្កើតផ្លូវកាត់នេះឡើងវិញ</translation>
@@ -447,6 +452,7 @@
 <translation id="4616150815774728855">បើក <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">ប្រើពាក្យសម្ងាត់​</translation>
 <translation id="4650364565596261010">លំនាំដើម​របស់ប្រព័ន្ធ</translation>
+<translation id="465657074423018424">មុខងាររុករក​ដោយ​សុវត្ថិភាពការពារអ្នកពី​គេហទំព័របញ្ឆោត។ ប្រសិនបើអ្នកបិទមុខងារនេះ សូមប្រុងប្រយ័ត្នបន្ថែមនៅពេលរុករក ជាពិសេស​មុនពេល​បញ្ចូលពាក្យសម្ងាត់។</translation>
 <translation id="4662373422909645029">ឈ្មោះហៅក្រៅមិនអាចមានលេខបានទេ</translation>
 <translation id="4663756553811254707">បានលុបចំណាំ <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ត្រូវបានបន្ថែមទៅអេក្រង់ដើមរបស់អ្នក</translation>
@@ -784,6 +790,7 @@
 <translation id="7071521146534760487">គ្រប់គ្រងគណនី</translation>
 <translation id="7077143737582773186">កាត​ SD</translation>
 <translation id="7080806333218412752">បញ្ជូន URL ទៅការរុករកដោយសុវត្ថិភាព ដើម្បី​ពិនិត្យមើល។ ក៏បញ្ជូន​គំរូមួយចំនួនតូចនៃទំព័រ ការទាញយក សកម្មភាពកម្មវិធីបន្ថែម និងព័ត៌មាន​ប្រព័ន្ធ ដើម្បីជួយរកមើល​ការគំរាមកំហែងថ្មីផងដែរ។ ភ្ជាប់​ទិន្នន័យនេះ​ជាមួយ​គណនី Google របស់អ្នក​ជាបណ្ដោះអាសន្ន នៅពេលអ្នក​ចូលគណនី ដើម្បី​ការពារអ្នក​នៅលើ​កម្មវិធីរបស់ Google។</translation>
+<translation id="7088681679121566888">Chrome ជា​កំណែថ្មី​ហើយ</translation>
 <translation id="7121362699166175603">សម្អាតប្រវត្តិ និងការបំពេញដោយស្វ័យប្រវត្តិនៅក្នុងរបារអាសយដ្ឋាននេះ។ គណនី Google របស់អ្នកអាចនឹងមានទម្រង់ប្រវត្តិរុករកផ្សេងទៀតនៅ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ។</translation>
 <translation id="7128355412245153445">មើលឃើញ​គេហទំព័រ​ពេញនិយម និង​អត្ថបទថ្មីៗ​របស់អ្នក រាល់ពេល​ដែលអ្នក​ចុចប៊ូតុងដើម</translation>
 <translation id="7138678301420049075">ផ្សេងទៀត</translation>
@@ -805,6 +812,7 @@
 <translation id="7293171162284876153">ដើម្បី​ចាប់ផ្ដើមសមកាលកម្ម សូមបើក​ "ធ្វើសមកាលកម្មទិន្នន័យ​ Chrome របស់អ្នក"។</translation>
 <translation id="729975465115245577">ឧបករណ៍​របស់អ្នក​មិន​មាន​កម្មវិធី ដើម្បី​ផ្ទុក​ឯកសារ​ពាក្យសម្ងាត់​ទេ។</translation>
 <translation id="7302081693174882195">ព័ត៌មាន​លម្អិត៖ ​តម្រៀប​តាមទំហំ​ទិន្នន័យ​ដែលបានរក្សាទុក</translation>
+<translation id="7304873321153398381">គ្មានអ៊ីនធឺណិត។ Chrome មិន​អាចពិនិត្យ​ពាក្យសម្ងាត់របស់អ្នកបានទេ។</translation>
 <translation id="7328017930301109123">នៅក្នុង​មុខងារស្រាល Chrome ផ្ទុកទំព័រ​រហ័សជាងមុន និងប្រើទិន្នន័យ​តិចជាងមុន​រហូតដល់ 60 ភាគរយ។</translation>
 <translation id="7333031090786104871">កំពុង​បញ្ចូល​ទំព័រ​ពីមុន​នៅឡើយ</translation>
 <translation id="7340958967809483333">ជម្រើសសម្រាប់ Discover</translation>
@@ -818,6 +826,7 @@
 <translation id="741204030948306876">បាទ/ចាស ខ្ញុំយល់ព្រម</translation>
 <translation id="7413229368719586778">កាល​បរិច្ឆេទ​ចាប់ផ្ដើម <ph name="DATE" /></translation>
 <translation id="7431991332293347422">គ្រប់គ្រង​របៀបដែល​ប្រវត្តិរុករក​របស់អ្នក​ត្រូវបាន​ប្រើប្រាស់ ដើម្បីកំណត់ឱ្យ​ការស្វែងរក​ និងអ្វី​ៗ​ជាច្រើន​ទៀតស្របនឹង​អ្នក</translation>
+<translation id="7435356471928173109">បានបិទដោយ​អ្នកគ្រប់គ្រងរបស់អ្នក</translation>
 <translation id="7437998757836447326">ចាកចេញពី Chrome</translation>
 <translation id="7438641746574390233">នៅពេលមុខងារស្រាល​បានបើក Chrome ប្រើម៉ាស៊ីនមេ Google ដើម្បីការផ្ទុកទំព័រ​រហ័សជាងមុន។ មុខងារស្រាល​សរសេរទំព័រយឺតខ្លាំង​ឡើងវិញ ដើម្បីផ្ទុកតែខ្លឹមសារដែលសំខាន់ប៉ុណ្ណោះ។ មុខងារស្រាលមិន​អនុវត្តចំពោះផ្ទាំងអនាមិកទេ។</translation>
 <translation id="7444811645081526538">ប្រភេទ​​ច្រើន​​ទៀត</translation>
@@ -1033,6 +1042,7 @@
 <translation id="9050666287014529139">ឃ្លាសម្ងាត់</translation>
 <translation id="9063523880881406963">បិទសំណើគេហទំព័រសម្រាប់កុំព្យូទ័រ</translation>
 <translation id="9065203028668620118">កែប្រែ</translation>
+<translation id="9069543557624799859">ការទាញយកនឹងចាប់ផ្ដើមនៅម៉ោង <ph name="TIME" />។</translation>
 <translation id="9070377983101773829">ចាប់ផ្តើមស្វែងរកដោយសម្លេង</translation>
 <translation id="9074336505530349563">ដើម្បីទទួលបានខ្លឹមសារស្របតាមបុគ្គលដែលណែនាំដោយ Google សូមបើកសមកាលកម្ម</translation>
 <translation id="9086302186042011942">កំពុងធ្វើសមកម្ម</translation>

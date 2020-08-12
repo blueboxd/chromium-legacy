@@ -8,6 +8,7 @@
 <translation id="1019413721762100891">Исклучено</translation>
 <translation id="1021110881106174305">Прифатени картички</translation>
 <translation id="1021753677514347426">Грешкава се случува поради сертификат што вие или некој друг сте го инсталирале на уредот. Сертификатов е познато дека се користи за надзор и пресретнување мрежи и Chromium нема доверба во него. Иако постојат и легитимни случаи за надзор, како на пр., во училишна или компаниска мрежа, Chromium сака да се увери дека знаете дека постои надзор, дури и ако не може да го сопрете. Надзорот може да се случи во кој било прелистувач или апликација што пристапува на интернет.</translation>
+<translation id="1024111578869940408">Напаѓачите понекогаш имитираат сајтови, така што вршат тешко забележливи промени во интернет-адресата.</translation>
 <translation id="1030706264415084469"><ph name="URL" /> сака трајно да складира податоци на вашиот уред</translation>
 <translation id="1032854598605920125">Ротирај надесно</translation>
 <translation id="1036348656032585052">Исклучи</translation>
@@ -198,6 +199,7 @@
 <translation id="1717494416764505390">Поштенско сандаче 3</translation>
 <translation id="1718029547804390981">Документот е премногу голем за да се стави прибелешка</translation>
 <translation id="1721424275792716183">* Полето е задолжително</translation>
+<translation id="1724638245199909652">Пристап до локалниот фонт</translation>
 <translation id="1727741090716970331">Додајте важечки број на картичка</translation>
 <translation id="1728677426644403582">Го гледате кодот на веб-страницата</translation>
 <translation id="173080396488393970">Овој тип картичка не е поддржан</translation>
@@ -418,6 +420,7 @@
 <translation id="2677748264148917807">Напушти</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Најдобро вклопување</translation>
+<translation id="2688969097326701645">Да, продолжи</translation>
 <translation id="2691924980723297736">Безбедносно предупредување</translation>
 <translation id="2699302886720511147">Прифатени картички</translation>
 <translation id="2701514975700770343">Со лицето надолу</translation>
@@ -511,6 +514,7 @@
 <translation id="3107591622054137333"><ph name="BEGIN_LINK" />да ја проверите конфигурацијата на безбедниот DNS<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Немате авторизација да ја видите страницата.</translation>
 <translation id="3113284927548439113">Трета смена</translation>
+<translation id="3115874930288085374"><ph name="ENROLLMENT_DOMAIN" /> бара да направите бекап на вашите податоци и да го вратите овој <ph name="DEVICE_TYPE" />.</translation>
 <translation id="3116158981186517402">Пластифицирање</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Обидете се да извршите дијагностика на поврзливоста<ph name="END_LINK" />.</translation>
@@ -933,6 +937,7 @@
 <translation id="484462545196658690">Автоматски</translation>
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="4854362297993841467">Овој метод за доставување не е достапен. Изберете друг.</translation>
+<translation id="4875935965051941588">Дали мислевте на <ph name="SUGGESTED_DOMAIN" />?</translation>
 <translation id="4876188919622883022">Поедноставен приказ</translation>
 <translation id="4876305945144899064">Нема корисничко име</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Ниеден}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -1105,6 +1110,7 @@
 <translation id="5540224163453853">Не може да го најде бараниот напис.</translation>
 <translation id="5541086400771735334">Поштенско сандаче 7</translation>
 <translation id="5541546772353173584">Додајте е-пошта</translation>
+<translation id="5544872699732646498">Напаѓачите понекогаш имитираат сајтови, така што вршат тешко забележливи промени во интернет-адресата.</translation>
 <translation id="5545756402275714221">Статии за вас</translation>
 <translation id="5552137475244467770">Chrome повремено ги споредува лозинките со списоци објавени онлајн. Кога го прави ова, вашите лозинки и кориснички имиња се шифрирани, па нив не може да ги прочита никој, вклучително и Google.</translation>
 <translation id="5556459405103347317">Повторно вчитај</translation>
@@ -1485,6 +1491,7 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> не се придржува до стандардите за безбедност.</translation>
 <translation id="7210993021468939304">Активноста на Linux во рамките на контејнерот и може да инсталира и извршува апликации на Linux во рамките на контејнерот</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Дознај повеќе<ph name="END_LINK" /> за овој проблем.</translation>
+<translation id="7214062855724067749">да ги користи фонтовите инсталирани на вашиот компјутер за да може да создадете напредна типографија</translation>
 <translation id="7217745192097460130">Да се користи ID на допир за потврда и завршување на купувањето?</translation>
 <translation id="7219179957768738017">Оваа врска користи <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Се обработува</translation>
@@ -1818,7 +1825,7 @@
 <translation id="8503813439785031346">Корисничко име</translation>
 <translation id="8508648098325802031">Икона за пребарување</translation>
 <translation id="8522552481199248698">Chrome може да ви помогне да ја заштитите сметката на Google и да ја промените лозинката.</translation>
-<translation id="8530813470445476232">Избришете ја историја на прелистувањето, колачињата, кешот и друго во поставките за Chrome</translation>
+<translation id="8530813470445476232">Избришете ја историјата на прелистување, колачињата, кешот и друго во поставките за Chrome</translation>
 <translation id="8541158209346794904">Уред со Bluetooth</translation>
 <translation id="8542014550340843547">Тројно спојување долу</translation>
 <translation id="8543181531796978784">Може да <ph name="BEGIN_ERROR_LINK" />пријавите проблем со откривањето<ph name="END_ERROR_LINK" /> или, доколку ги разбирате ризиците по безбедноста, <ph name="BEGIN_LINK" />посетете ја оваа небезбедна страница<ph name="END_LINK" />.</translation>

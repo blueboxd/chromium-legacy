@@ -60,6 +60,7 @@
 <translation id="1067048845568873861">建立時間</translation>
 <translation id="1067291318998134776">Linux (Beta 版)</translation>
 <translation id="1067922213147265141">其他 Google 服務</translation>
+<translation id="1068961867683064946">為貴子女建立 Google 帳戶</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">電腦中的其他程式新增了一個擴充功能，可能會使 Chrome 的運作方式發生變更。
 
@@ -272,6 +273,7 @@
 <translation id="1319983966058170660"><ph name="SUBPAGE_TITLE" />子頁面返回按鈕</translation>
 <translation id="1322046419516468189">你可以查看及管理 <ph name="SAVED_PASSWORDS_STORE" />中儲存的密碼</translation>
 <translation id="1324106254079708331">保護任何容易成為攻擊目標的使用者，確保他們的帳戶安全無虞</translation>
+<translation id="1325985428688410772">新增空間</translation>
 <translation id="1326317727527857210">如要存取您在其他裝置上開啟的分頁，請登入 Chrome。</translation>
 <translation id="1327074568633507428">Google 雲端列印中的印表機</translation>
 <translation id="1327272175893960498">Kerberos 票證</translation>
@@ -1082,6 +1084,7 @@
 <translation id="2307462900900812319">設定網路</translation>
 <translation id="230927227160767054">這個網頁想要安裝服務處理常式。</translation>
 <translation id="2309620859903500144">這個網站已遭封鎖，無法存取你的動作感應器或光源感應器。</translation>
+<translation id="2314873619957287124">設定數位裝置使用規範以協助子女學習、玩樂及探索</translation>
 <translation id="2315414688463285945">設定 Linux 檔案時發生錯誤，請再試一次。</translation>
 <translation id="2315587498123194634">傳送連結到「<ph name="DEVICE_NAME" />」</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
@@ -1093,6 +1096,7 @@
 <translation id="2322318151094136999">當網站要存取序列埠時，必須先詢問你 (建議)</translation>
 <translation id="2323018538045954000">已儲存的 Wi-Fi 網路</translation>
 <translation id="2325444234681128157">記住密碼</translation>
+<translation id="2326160999284776503">使用貴子女的 Google 帳戶登入</translation>
 <translation id="2326188115274135041">確認 PIN 碼以開啟自動解鎖功能</translation>
 <translation id="2326931316514688470">重新載入應用程式(&amp;R)</translation>
 <translation id="2327492829706409234">啟用應用程式</translation>
@@ -1115,7 +1119,7 @@
 <translation id="2347644257713614136">Hangouts 和 Cast for Education 的相關使用行為受到《Google 隱私權政策》所規範。</translation>
 <translation id="2348176352564285430">應用程式：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="234889437187286781">載入資料時發生錯誤</translation>
-<translation id="2349065708974079577">打造個人專屬的閒置顯示設定。當裝置充電時將螢幕保持開啟。</translation>
+<translation id="2349065708974079577">打造個人專屬的閒置顯示設定。當裝置充電時保持螢幕開啟。</translation>
 <translation id="2349896577940037438">如果你將「其他網路和應用程式活動」設定為開啟，這些資料可能會儲存在你的 Google 帳戶中。你可以前往 account.google.com 查看、刪除資料，以及變更帳戶設定。</translation>
 <translation id="2350133097354918058">已重新載入</translation>
 <translation id="2350182423316644347">正在初始化應用程式...</translation>
@@ -1151,6 +1155,7 @@
 <translation id="2384436799579181135">發生錯誤。請檢查你的印表機，然後再試一次。</translation>
 <translation id="2387052489799050037">前往主畫面</translation>
 <translation id="2387458720915042159">Proxy 連線類型</translation>
+<translation id="2391082728065870591">傳送意見回饋報告</translation>
 <translation id="2391419135980381625">標準字型</translation>
 <translation id="2392163307141705938">你已達到貴家長為 <ph name="IDS_SHORT_PRODUCT_NAME" /> 設定的使用時間限制。</translation>
 <translation id="2392369802118427583">啟用</translation>
@@ -1280,6 +1285,7 @@
 <translation id="2537178555904266562">同步密碼時發生錯誤</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> 可以查看及編輯下列檔案和資料夾</translation>
 <translation id="2537927931785713436">正在檢查虛擬機器映像檔</translation>
+<translation id="2538084450874617176">誰在使用這部 <ph name="DEVICE_TYPE" />？</translation>
 <translation id="2538361623464451692">同步處理已停用</translation>
 <translation id="2540449034743108469">按下 [開始] 即可監聽擴充功能活動</translation>
 <translation id="2541002089857695151">要讓全螢幕投放最佳化嗎？</translation>
@@ -1837,7 +1843,7 @@
 <translation id="3254715652085014625">在你的 Android 手機上開啟 Chrome，並依序前往 [設定] &gt; [密碼] &gt; [使用手機做為安全金鑰]，然後依照指示進行操作。</translation>
 <translation id="3255355328033513170">這樣做會刪除 <ph name="SITE_GROUP_NAME" /> 所儲存的所有資料，和這個群組中的所有網站。Cookie 也包括在內。系統會將你登出這些網站，包括在開啟的分頁中也一樣。</translation>
 <translation id="3259723213051400722">請再試一次。</translation>
-<translation id="3261268979727295785">針對年齡較大的子女，你可以在設定完成後新增家長監護功能。你可以在「探索」應用程式中找到家長監護功能的相關資訊。</translation>
+<translation id="3261268979727295785">針對年齡較大的子女，您可以在設定完成後新增家長監護功能。您可以在「探索」應用程式中找到家長監護功能的相關資訊。</translation>
 <translation id="3264544094376351444">Sans-serif 字型</translation>
 <translation id="3264582393905923483">內容</translation>
 <translation id="3265459715026181080">關閉視窗</translation>
@@ -2017,7 +2023,7 @@
 <translation id="3475843873335999118">很抱歉，系統仍然無法辨識你的指紋。請輸入你的密碼。</translation>
 <translation id="3476303763173086583">傳送使用狀況與診斷資料。讓系統自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google，協助改善你的 Android 使用體驗。這些資料將有助於系統和應用程式提高穩定性及做出其他改善，並不會用於識別貴子女的身分。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。這項<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />是由裝置擁有者執行。擁有者可選擇將這個裝置的診斷資料與使用狀況資料傳送給 Google。如果貴子女的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到他們的 Google 帳戶。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="347670947055184738">糟糕！系統無法擷取裝置政策。</translation>
-<translation id="3476903331946078194">你最佳的自動選取相片</translation>
+<translation id="3476903331946078194">自動精選最佳相片</translation>
 <translation id="347785443197175480">繼續允許 <ph name="HOST" /> 存取你的攝影機和麥克風</translation>
 <translation id="3478685642445675458">移除任何人之前，請先取消鎖定您的個人資料。</translation>
 <translation id="3479552764303398839">現在不要</translation>
@@ -2029,7 +2035,7 @@
 <translation id="3487007233252413104">匿名函式</translation>
 <translation id="348780365869651045">正在等待 AppCache...</translation>
 <translation id="3488065109653206955">部分已啟用</translation>
-<translation id="3491669675709357988">貴子女的帳戶並未設定 Family Link 家長監護功能。設定完成後，即可新增家長監護功能。你可以在「探索」應用程式中找到家長監護功能的相關資訊。</translation>
+<translation id="3491669675709357988">貴子女的帳戶並未設定 Family Link 家長監護功能。設定完成後，即可新增家長監護功能。您可以在「探索」應用程式中找到家長監護功能的相關資訊。</translation>
 <translation id="3492788708641132712">同步功能無法正常運作，請嘗試重新登入。</translation>
 <translation id="3493486281776271508">需要網際網路連線</translation>
 <translation id="3493881266323043047">有效性</translation>
@@ -2740,6 +2746,7 @@
 <translation id="4364327530094270451">瓜</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共用視窗。</translation>
 <translation id="4364830672918311045">顯示通知</translation>
+<translation id="4368115171699243057">為貴子女設定這部 <ph name="DEVICE_TYPE" /></translation>
 <translation id="437004882363131692">你可以取得 <ph name="DEVICE_TYPE" />的實用提示、優惠資訊與最新消息，並提供意見回饋。你隨時可以取消訂閱。</translation>
 <translation id="4370975561335139969">您所輸入的電子郵件和密碼不相符</translation>
 <translation id="4374831787438678295">Linux 安裝程式</translation>
@@ -2900,6 +2907,7 @@
 <translation id="4565377596337484307">隱藏密碼</translation>
 <translation id="4565917129334815774">儲存系統記錄</translation>
 <translation id="456717285308019641">要翻譯的網頁語言</translation>
+<translation id="4567533462991917415">設定完成後，你可以隨時新增更多使用者。每位使用者都可以建立個人專屬的帳戶，並保護資料的私密性。</translation>
 <translation id="4567772783389002344">新增字詞</translation>
 <translation id="4568025708905928793">已要求安全金鑰</translation>
 <translation id="4568213207643490790">很抱歉，你無法使用 Google 帳戶登入這個裝置。</translation>
@@ -2951,6 +2959,7 @@
 <translation id="4628762811416793313">無法完成 Linux 容器設定。請再試一次。</translation>
 <translation id="4633003931260532286">擴充功能要求的最低「<ph name="IMPORT_NAME" />」版本是「<ph name="IMPORT_VERSION" />」，但目前只安裝了版本「<ph name="INSTALLED_VERSION" />」</translation>
 <translation id="4633757335284074492">使用 Google 雲端硬碟備份你的資料。你隨時可以輕鬆還原資料或切換裝置。這個備份項目包含應用程式資料。備份內容會上傳到 Google，並使用貴子女的 Google 帳戶密碼加密。</translation>
+<translation id="4634575639321169635">將這部裝置設定為工作用或供個人使用</translation>
 <translation id="4634771451598206121">重新登入...</translation>
 <translation id="4635072447747973225">解除安裝 Crostini</translation>
 <translation id="4635398712689569051">訪客使用者無法使用<ph name="PAGE_NAME" />。</translation>
@@ -3369,6 +3378,7 @@
 <translation id="5185386675596372454">由於最新版本的 <ph name="EXTENSION_NAME" /> 需要更多權限，因此已經停用。</translation>
 <translation id="5185500136143151980">沒有網際網路連線</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190392396417374287">「<ph name="PROFILE_LOCAL_NAME" />」選項選單</translation>
 <translation id="5190926251776387065">啟用通訊埠</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想要下載多個檔案</translation>
 <translation id="5192062846343383368">開啟 Family Link 應用程式以查看監督功能設定</translation>
@@ -3615,6 +3625,7 @@
 <translation id="5495597166260341369">保持開啟螢幕</translation>
 <translation id="5496587651328244253">整理</translation>
 <translation id="5497251278400702716">這個檔案</translation>
+<translation id="5498967291577176373">透過內嵌建議快速輸入你的姓名、地址或電話號碼</translation>
 <translation id="5499313591153584299">這個檔案可能對你的電腦有害。</translation>
 <translation id="5499453227627332024">現在可以升級 Linux 容器。你也可以稍後再從「設定」應用程式中升級。</translation>
 <translation id="5500709606820808700">今天已執行安全檢查</translation>
@@ -3771,6 +3782,7 @@
 <translation id="5689516760719285838">位置</translation>
 <translation id="56907980372820799">連結資料</translation>
 <translation id="5691511426247308406">家用</translation>
+<translation id="5691581861107245578">根據輸入內容取得表情符號建議</translation>
 <translation id="5691772641933328258">指紋辨識失敗</translation>
 <translation id="5692183275898619210">列印完成</translation>
 <translation id="569425414730375234">目前的無痕模式工作階段：<ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
@@ -3866,7 +3878,7 @@
 <translation id="5804241973901381774">權限</translation>
 <translation id="5805697420284793859">視窗管理員</translation>
 <translation id="5806773519584576205">0° (預設)</translation>
-<translation id="5810809306422959727">這個帳戶不具有家長監護的資格</translation>
+<translation id="5810809306422959727">這個帳戶無法使用家長監護功能</translation>
 <translation id="5812674658566766066">全部展開</translation>
 <translation id="5814126672212206791">連線類型</translation>
 <translation id="5815645614496570556">X.400 地址</translation>
@@ -4130,6 +4142,7 @@
 <translation id="6124698108608891449">這個網站需要更多權限。</translation>
 <translation id="6125479973208104919">很抱歉，你需要重新在 <ph name="DEVICE_TYPE" /> 上新增帳戶。</translation>
 <translation id="6129691635767514872">系統已將所選資料從 Chrome 和其他同步的裝置中移除。你的 Google 帳戶仍可能保留了其他類型的瀏覽記錄，例如其他 Google 服務中的搜尋和活動記錄 (可前往 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 查詢)。</translation>
+<translation id="6129839611163153407">貴子女</translation>
 <translation id="6129938384427316298">Netscape 憑證評論</translation>
 <translation id="6129953537138746214">空格</translation>
 <translation id="6130692320435119637">新增 Wi-Fi</translation>
@@ -4170,6 +4183,7 @@
 <translation id="6178664161104547336">選取憑證</translation>
 <translation id="6181431612547969857">下載遭封鎖</translation>
 <translation id="6185132558746749656">裝置位置</translation>
+<translation id="6195446518998936840">如要設定家長監護功能，貴子女必須擁有你可協助管理的 Google 帳戶。你可以透過 Family Link 應用程式設定裝置使用時間限制、核准或封鎖網站等等。</translation>
 <translation id="6195693561221576702">這個裝置無法設為離線示範模式。</translation>
 <translation id="6196640612572343990">封鎖第三方 Cookie</translation>
 <translation id="6196854373336333322">您的 Proxy 設定已受到擴充功能「<ph name="EXTENSION_NAME" />」控制，該擴充功能可變更、中斷、或監視您在網路上的行為。如果您不確定這項變更的發生原因，建議您停用該擴充功能。</translation>
@@ -5923,6 +5937,7 @@
 <translation id="8372369524088641025">WEP 金鑰有誤</translation>
 <translation id="8372477600026034341">其他主機</translation>
 <translation id="8373652277231415614">Crostini 共用目錄</translation>
+<translation id="8376384591331888629">包括這個網站上的第三方 Cookie</translation>
 <translation id="8378714024927312812">由貴機構管理</translation>
 <translation id="8379878387931047019">這部裝置不支援這個網站所要求的安全金鑰類型</translation>
 <translation id="8379991678458444070">將此分頁加入書籤，日後便能快速開啟這個頁面</translation>
@@ -6006,6 +6021,7 @@
 <translation id="8481187309597259238">確認 USB 權限</translation>
 <translation id="8483248364096924578">IP 位址</translation>
 <translation id="8487678622945914333">放大</translation>
+<translation id="8489156414266187072">個人建議只會在你的帳戶上顯示</translation>
 <translation id="8490896350101740396">下列 Kiosk 應用程式「<ph name="UPDATED_APPS" />」已更新。請重新啟動裝置，以完成更新程序。</translation>
 <translation id="8493236660459102203">麥克風：</translation>
 <translation id="8496717697661868878">執行這個外掛程式</translation>

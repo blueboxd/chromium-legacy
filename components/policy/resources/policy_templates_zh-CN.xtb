@@ -73,6 +73,7 @@
 
       如果此政策设为 false 或未设置，系统将不会报告这些信息。
       如果此政策设为 true，系统将会报告设备的背光信息。</translation>
+<translation id="1076751984131277498">分离式 USB 设备许可名单</translation>
 <translation id="1079801999187584280">禁止使用开发者工具</translation>
 <translation id="1087437665304381368">此政策仅用于控制 <ph name="PRODUCT_OS_NAME" />开发者模式。如果您想阻止对 Android 开发者选项的访问，则需设置 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 政策。</translation>
 <translation id="1087707496788636333">Chrome 企业版政策列表迁址了！请更新您的书签以改用 <ph name="POLICY_DOCUMENTATION_URL" />。</translation>
@@ -509,6 +510,9 @@
 
       如果未设置此政策，系统将会启用网络联想查询功能，但用户将能够自行更改此设置。</translation>
 <translation id="1865417998205858223">密钥使用权限</translation>
+<translation id="1866563857170942397">以列表形式指定哪些用户能登录该设备。条目应采用 <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> 格式，例如 <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />。若要允许某个网域上的任意用户登录该设备，请使用 <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" /> 格式的条目。
+
+      如果此政策未配置，任何用户都能登录该设备。请注意，倘若涉及到创建新用户，您仍需适当配置 <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> 政策。</translation>
 <translation id="186719019195685253">当闲置延迟时间已过且使用交流电源供电时执行的操作</translation>
 <translation id="187819629719252111">允许 <ph name="PRODUCT_NAME" />显示文件选择对话框，从而允许用户访问计算机上的本地文件。如果您启用了此设置，用户就可以正常地打开文件选择对话框。如果您停用了此设置，那么只要用户执行了会触发文件选择对话框的操作（如导入书签、上传文件、保存链接等），系统就会显示一条讯息，并且假定用户已在该文件选择对话框中点击了“取消”。如果您未设定此设置，用户就可以正常地打开文件选择对话框。</translation>
 <translation id="1885782360784839335">允许使用整个标签页显示宣传内容</translation>
@@ -1187,7 +1191,7 @@
       除非外部存储设备已被禁用，否则如果您将 ExternalStorageReadOnly 设为 False 或不设置它，用户便能在没有使用防写入保护的外部存储设备上创建和修改文件。（您可以通过将 ExternalStorageDisable 设为 True 来禁用外部存储设备。）</translation>
 <translation id="2796714419743648316">针对应用级使用时限的许可名单</translation>
 <translation id="2796896367838042659">此政策用于指定应将哪些应用和网址列入针对应用级使用限制的白名单。
-        所配置的白名单会应用于在 <ph name="PRODUCT_OS_NAME" />上为给定用户安装的且设有应用级使用时限的应用。
+        所配置的白名单会应用于 <ph name="PRODUCT_OS_NAME" />上安装的应用，这些应用针对给定用户设置了应用级使用时限。
         所配置的白名单只能应用于儿童用户帐号，并且仅当已设置 <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> 政策后才会生效。
         所配置的白名单会应用于相符的应用和网址，使它们不受应用级使用时限的约束。
         对白名单所列网址的访问时长不会计入 Chrome 使用时限。
@@ -1776,6 +1780,9 @@
 <translation id="3647212518036289905">通过设置此政策，您可以指定要用于 HTTP 身份验证的 GSSAPI 库。您可以将此政策设为库名称或完整路径。
 
       如果您不设置此政策，<ph name="PRODUCT_NAME" /> 便会使用默认库名称。</translation>
+<translation id="3653234084868565720">控制 <ph name="PRODUCT_OS_NAME" />是否允许创建新的用户帐号。如果此政策设为 false，尚无帐号的用户将无法登录。
+
+      如果此政策设为 true 或未配置，只要 <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> 不阻止登录，用户便能创建新的用户帐号。</translation>
 <translation id="3653237928288822292">默认搜索服务提供商图标</translation>
 <translation id="3654906736796256792">允许音频沙盒运行</translation>
 <translation id="3657998022005237040">禁止下载不受支持的文件类型</translation>
@@ -2326,7 +2333,7 @@
 <translation id="4508084713148633492">借助此政策，您可以允许/禁止在磁盘空间不足时显示通知。此设置适用于设备上的所有用户。
       如果受管理的设备上只有 1 个用户帐号，无论此政策的值为何，系统始终都会显示通知。
       如果受管理的设备上有多个用户帐号，仅当此政策设为 True 时，系统才会显示通知。
-      在不未受管理的设备上，系统始终都会显示通知。</translation>
+      在不受管理的设备上，系统始终都会显示通知。</translation>
 <translation id="4510923771103268849">允许用户拥有 Crostini 容器的 root 权限</translation>
 <translation id="4515404363392014383">针对可信来源启用安全浏览功能</translation>
 <translation id="4517928394515633751">使用安全浏览功能扫描用户下载内容</translation>
@@ -3111,6 +3118,11 @@
 
       如果未指定，则不会修改变体种子网址。</translation>
 <translation id="5561811616825571914">在登录屏幕上自动为这些网站选择客户端证书</translation>
+<translation id="5564345250641049313">以列表形式指定哪些用户能登录该设备。条目应采用 <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> 格式，例如 <ph name="USER_ALLOWLIST_ENTRY_EXAMPLE" />。若要允许某个网域上的任意用户登录该设备，请使用 <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" /> 格式的条目。
+
+      如果此政策未配置，任何用户都能登录该设备。请注意，倘若涉及到创建新用户，您仍需适当配置 <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> 政策。
+
+      此政策已被弃用，请改用 <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" />。</translation>
 <translation id="5564865786900450806">当 <ph name="PRODUCT_NAME" /> 在不再受支持的计算机或操作系统中运行时，禁止显示警告。
 
       如果此政策设为 False 或未设置，系统将会在此类不受支持的计算机或操作系统上显示警告。</translation>
@@ -3475,6 +3487,11 @@
           要在设备闲置时锁定屏幕，建议您采用以下方式：启用在系统处于暂停状态时锁定屏幕，并指示<ph name="PRODUCT_OS_NAME" />在闲置延迟时间过后进入暂停状态。只有在以下情况下才应使用此政策：系统进入暂停状态之前的很长一段时间内便应锁定屏幕，或者完全不需要启用在设备闲置时暂停系统。
 
           此政策的值应以毫秒为单位，且必须小于闲置延迟时间。</translation>
+<translation id="6096729330325888677">通过设置此政策，您可以指定一个 USB 设备列表，在其中列出用户可从内核驱动程序分离以便直接在 Web 应用内通过 chrome.usb API 使用的 USB 设备。列表中的条目是成对的用于标识特定硬件的 USB 供应商标识符和产品标识符。
+
+      如果您不设置此政策，可分离式 USB 设备的列表便会是空的。
+
+      此政策已被弃用，请改用 <ph name="USB_DETACHABLE_ALLOWLIST" />。</translation>
 <translation id="6097601282776163274">启用以网址为键的匿名化数据收集功能</translation>
 <translation id="6099853574908182288">默认打印颜色模式</translation>
 <translation id="6102342563050263313">允许滚动至网址片段指定的文本所在的位置</translation>
@@ -3629,7 +3646,7 @@
 
           仅当闲置操作为注销或关机时，系统才会显示警告消息。</translation>
 <translation id="6334330017384340264">此政策用于指定哪些应用和网址可以不受应用级使用限制的约束。
-        所配置的许可名单会应用于在 <ph name="PRODUCT_OS_NAME" />上为给定用户安装的且设有应用级使用时限的应用。
+        所配置的许可名单会应用于 <ph name="PRODUCT_OS_NAME" />上安装的应用，这些应用针对给定用户设置了应用级使用时限。
         所配置的许可名单只能应用于儿童用户帐号，并且仅当已设置 <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> 政策后才会生效。
         所配置的许可名单会应用于相符的应用和网址，使它们不受应用级使用时限的约束。
         对所许可网址的访问时长不会计入 Chrome 使用时限。
@@ -3977,7 +3994,7 @@
       指定要在 <ph name="PRODUCT_NAME" /> 启动时向其应用的实验性设置。指定的实验性设置仅会应用于登录屏幕。通过此政策设定的实验性设置不会反映在用户会话中。</translation>
 <translation id="685769593149966548">强制启用 YouTube“严格”受限模式</translation>
 <translation id="686079137349561371">Microsoft Windows 7 或更高版本</translation>
-<translation id="6863342574191774334">如果您启用此设置，用户将能够选择启用“附近分享”功能，以便向附近的人发送文件并接收他们发来的文件。
+<translation id="6863342574191774334">如果您启用此设置，用户将能够选择启用“附近分享”功能，以便和附近的人互相发送文件。
 
       如果您停用此设置，用户将无法选择启用“附近分享”功能。
 
@@ -4119,6 +4136,16 @@
       如果未设置此政策，工具栏将默认放置在屏幕底部，但用户可以更改工具栏的位置。</translation>
 <translation id="7040229947030068419">值示例：</translation>
 <translation id="7044883996351280650">控制 Android 备份和恢复服务</translation>
+<translation id="7063842402585660314">以列表形式指定哪些应用可在 <ph name="PRODUCT_OS_NAME" />锁定屏幕中显示。
+
+      如果首选的笔记应用已在锁定屏幕中启用，锁定屏幕将会包含用于启动首选笔记应用的界面元素。
+      启动后，该应用将能在锁定屏幕之上创建应用窗口，并在锁定屏幕情境中创建数据项（笔记）。当主要用户会话解锁时，该应用将能把所创建的笔记导入此会话。目前，锁定屏幕上仅支持 Chrome 笔记应用。
+
+      如果您设置此政策，仅当某个应用的扩展程序 ID 包含在此政策的列表值中时，用户才能在锁定屏幕上启用该应用。
+      所以，如果您将此政策设为空列表，系统将会完全停用锁定屏幕上的笔记功能。
+      注意：此政策的值包含某个应用 ID 未必就意味着用户一定能在锁定屏幕上将该应用作为笔记应用启用 - 例如，在 Chrome 61 版中，可用应用集还会受到平台的限制。
+
+      如果您不设置此政策，系统便不会对用户可在锁定屏幕上启用的应用集施加任何限制。</translation>
 <translation id="7063895219334505671">在这些网站上允许弹出式窗口</translation>
 <translation id="706669471845501145">允许网站显示桌面通知</translation>
 <translation id="7068108874199666656">允许将要对所有用户应用的网络配置推送到 <ph name="PRODUCT_OS_NAME" />设备。网络配置是 JSON 格式的字符串，由开放网络配置格式定义。</translation>
@@ -5018,6 +5045,7 @@
 
           要详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="8357681633047935212">限制用户会话的长度</translation>
+<translation id="8357989008292691856">登录用户许可名单</translation>
 <translation id="8359734107661430198">从 2008 年 9 月 2 日开始启用 ExampleDeprecatedFeature API</translation>
 <translation id="8367209241899435947">在 Windows 系统上启用 Chrome 清理功能</translation>
 <translation id="8367473200119029349">云报告</translation>

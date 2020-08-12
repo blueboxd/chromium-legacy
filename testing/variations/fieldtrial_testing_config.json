@@ -4322,6 +4322,25 @@
             ]
         }
     ],
+    "MediaCapabilitiesQueryGpuFactories": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MediaCapabilitiesQueryGpuFactories"
+                    ]
+                }
+            ]
+        }
+    ],
     "MediaFoundationAsyncH264Encoding": [
         {
             "platforms": [
@@ -5006,6 +5025,21 @@
                     },
                     "enable_features": [
                         "OmniboxSearchEngineLogo"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxSpareRenderer": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxSpareRenderer"
                     ]
                 }
             ]

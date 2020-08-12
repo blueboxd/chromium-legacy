@@ -5,6 +5,7 @@
 #include "ash/ambient/model/ambient_backend_model.h"
 
 #include <memory>
+#include <string>
 
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
@@ -35,19 +36,24 @@ class AmbientBackendModelTest : public AshTestBase {
   // Adds n test images to the model.
   void AddNTestImages(int n) {
     while (n > 0) {
-      gfx::ImageSkia test_image =
+      PhotoWithDetails test_detailed_image;
+      test_detailed_image.photo =
           gfx::test::CreateImageSkia(/*width=*/10, /*height=*/10);
-      ambient_backend_model()->AddNextImage(test_image);
+      test_detailed_image.details = std::string("fake-photo-attribution");
+      ambient_backend_model()->AddNextImage(std::move(test_detailed_image));
       n--;
     }
   }
 
-  // Returns whether the image is equivalent to the test image.
-  bool EqualsToTestImage(const gfx::ImageSkia& image) {
+  // Returns whether the image and its details are equivalent to the test
+  // detailed image.
+  bool EqualsToTestImage(const PhotoWithDetails& detailed_image) {
     gfx::ImageSkia test_image =
         gfx::test::CreateImageSkia(/*width=*/10, /*height=*/10);
-    return !image.isNull() &&
-           gfx::test::AreBitmapsEqual(*image.bitmap(), *test_image.bitmap());
+    return !detailed_image.IsNull() &&
+           gfx::test::AreBitmapsEqual(*(detailed_image.photo).bitmap(),
+                                      *test_image.bitmap()) &&
+           (detailed_image.details == std::string("fake-photo-attribution"));
   }
 
   // Returns whether the image is null.
@@ -65,7 +71,7 @@ class AmbientBackendModelTest : public AshTestBase {
     return ambient_backend_model_.get();
   }
 
-  gfx::ImageSkia GetNextImage() {
+  PhotoWithDetails GetNextImage() {
     return ambient_backend_model_->GetNextImage();
   }
 

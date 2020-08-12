@@ -49,14 +49,8 @@
   {
     "repeat": 1,
     "stories": [
-      "draw-video-to-hw-accelerated-canvas-2d.html",
-      "drawimage-not-pixelaligned.html",
-      "drawimage.html",
       "toBlob_duration.html",
-      "toBlob-small-canvas-in-worker.html",
-      "upload-video-to-sub-texture.html",
-      "upload-video-to-texture.html",
-      "upload-webgl-to-texture.html"
+      "toBlob-small-canvas-in-worker.html"
     ],
     "name": "blink_perf.canvas"
   },

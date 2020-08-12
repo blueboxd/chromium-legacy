@@ -93,6 +93,8 @@ void Frame::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
   visitor->Trace(navigation_rate_limiter_);
   visitor->Trace(window_agent_factory_);
+  visitor->Trace(opened_frame_tracker_);
+  visitor->Trace(opener_);
 }
 
 void Frame::Detach(FrameDetachType type) {
@@ -430,6 +432,14 @@ void Frame::FocusPage(LocalFrame* originating_frame) {
   // Always report the attempt to focus the page to the Chrome client for
   // testing purposes (i.e. see WebViewTest.FocusExistingFrameOnNavigate()).
   GetPage()->GetChromeClient().DidFocusPage();
+}
+
+void Frame::SetOpenerDoNotNotify(Frame* opener) {
+  if (opener_)
+    opener_->opened_frame_tracker_.Remove(this);
+  if (opener)
+    opener->opened_frame_tracker_.Add(this);
+  opener_ = opener;
 }
 
 STATIC_ASSERT_ENUM(FrameDetachType::kRemove,

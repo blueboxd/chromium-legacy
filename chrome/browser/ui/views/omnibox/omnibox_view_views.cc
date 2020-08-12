@@ -2499,19 +2499,23 @@ void OmniboxViewViews::ElideURL() {
   gfx::Range simplified_domain_bounds =
       GetSimplifiedDomainBounds(&ranges_surrounding_simplified_domain);
 
-  // The simplified domain string must be a substring of the current display
-  // text in order to elide to it.
-  if (GetRenderText()->GetDisplayText().find(GetText().substr(
-          simplified_domain_bounds.start(), simplified_domain_bounds.end())) ==
-      std::string::npos) {
-    return;
-  }
-  SetCursorEnabled(false);
   // Setting the elision behavior to anything other than NO_ELIDE would result
   // in the string getting cut off shorter the simplified domain, because
   // display offset isn't taken into account when RenderText elides the string.
-  // See https://crbug.com/1099078.
+  // See https://crbug.com/1099078. It's important to set to NO_ELIDE before
+  // starting to calculate simplified domain bounds with GetSubstringBounds(),
+  // because GetSubstringBounds() will fail if the simplified domain isn't
+  // visible due to RenderText elision.
   GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
+
+  // The simplified domain string must be a substring of the current display
+  // text in order to elide to it.
+  DCHECK_NE(
+      GetRenderText()->GetDisplayText().find(GetText().substr(
+          simplified_domain_bounds.start(), simplified_domain_bounds.end())),
+      std::string::npos);
+
+  SetCursorEnabled(false);
 
   gfx::Rect simplified_domain_rect;
   for (const auto& rect :

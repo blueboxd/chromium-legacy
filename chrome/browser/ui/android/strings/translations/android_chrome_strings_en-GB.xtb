@@ -21,6 +21,7 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download pending.}other{# downloads pending.}}</translation>
 <translation id="1145536944570833626">Delete existing data.</translation>
 <translation id="1146678959555564648">Enter VR</translation>
+<translation id="1154704303112745282">Page unavailable offline: <ph name="VIOLATED_URL" /></translation>
 <translation id="116280672541001035">Used</translation>
 <translation id="1171770572613082465">See popular websites by tapping the 'Top sites' button</translation>
 <translation id="1173894706177603556">Rename</translation>
@@ -366,6 +367,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="3892148308691398805">Copy text</translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="3895926599014793903">Force enable zoom</translation>
+<translation id="3908308510347173149">Update <ph name="PRODUCT_NAME" /></translation>
 <translation id="3909763690984331376">Safety check <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Finding the best from the web…</translation>
 <translation id="3924911262913579434"><ph name="SAFE_BROWSING_MODE" /> is on</translation>
@@ -419,6 +421,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="4321739720395210191">Can't open your camera. Restart your device and try again.</translation>
 <translation id="4351244548802238354">Close dialogue</translation>
 <translation id="4378154925671717803">Phone</translation>
+<translation id="4382908510000698092">Use as Chrome’s language</translation>
 <translation id="4384468725000734951">Using Sogou for search</translation>
 <translation id="4404568932422911380">No bookmarks</translation>
 <translation id="4405224443901389797">Move to…</translation>
@@ -595,6 +598,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="568275469169136466">To sign in temporarily</translation>
 <translation id="5683547024293500885">Chrome can’t check for updates</translation>
 <translation id="5686790454216892815">File name too long</translation>
+<translation id="5687809546194252819"><ph name="APP_NAME" /> will use <ph name="LANGUAGE" /> on restart.</translation>
 <translation id="5694049548840660018">Get back home easily</translation>
 <translation id="569536719314091526">Translate this page to any language from the More options button</translation>
 <translation id="5696597120588531049">Chrome can help keep you safe from data breaches, unsafe websites and more</translation>
@@ -697,6 +701,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6397616442223433927">Back online</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
+<translation id="6402652558933147609"><ph name="ERROR_CODE" /> on <ph name="VIOLATED_URL" /></translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6412673304250309937">Checks URLs with a list of unsafe sites stored in Chrome. If a site tries to steal your password, or when you download a harmful file, Chrome may also send URLs, including bits of page content, to Safe Browsing.</translation>
@@ -771,6 +776,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6900532703269623216">Enhanced protection</translation>
 <translation id="6903907808598579934">Turn on sync</translation>
+<translation id="6929699136511445623">Enable Android system sync</translation>
 <translation id="6942665639005891494">Change the default download location at any time using the Settings menu option</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6955535239952325894">This setting is disabled on managed browsers</translation>
@@ -871,6 +877,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7698359219371678927">Create email in <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Auto-complete searches and URLs</translation>
 <translation id="7725024127233776428">Pages that you bookmark appear here</translation>
+<translation id="7735637452482172701">Unlock with screen lock</translation>
 <translation id="7746457520633464754">To detect dangerous apps and sites, Chrome sends URLs of some pages that you visit, limited system information and some page content to Google</translation>
 <translation id="7757787379047923882">Text shared from <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Select date and time</translation>
@@ -951,6 +958,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8266862848225348053">Download location</translation>
 <translation id="8274165955039650276">See downloads</translation>
+<translation id="8278640294239011163">Confirm sync</translation>
 <translation id="8284326494547611709">Captions</translation>
 <translation id="8310344678080805313">Standard tabs</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> and more sites</translation>

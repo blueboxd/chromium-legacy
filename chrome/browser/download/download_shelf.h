@@ -5,14 +5,17 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_
 
-#include <stdint.h>
-
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
-#include "build/build_config.h"
 #include "chrome/browser/download/download_ui_model.h"
 
 class Browser;
+class Profile;
+
+namespace base {
+template <typename T>
+class Optional;
+class TimeDelta;
+}  // namespace base
 
 namespace base {
 template <typename T>
@@ -97,8 +100,8 @@ class DownloadShelf {
 
   Browser* const browser_;
   Profile* const profile_;
-  bool should_show_on_unhide_;
-  bool is_hidden_;
+  bool should_show_on_unhide_ = false;
+  bool is_hidden_ = false;
   base::WeakPtrFactory<DownloadShelf> weak_ptr_factory_{this};
 };
 

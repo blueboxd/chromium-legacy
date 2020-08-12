@@ -240,12 +240,17 @@ cr.define('settings', function() {
 
       window.addEventListener('focus', settings.recordPageFocus);
       window.addEventListener('blur', settings.recordPageBlur);
+
+      // Clicks need to be captured because unlike focus/blur to the settings
+      // window, a click's propagation can be stopped by child elements.
+      window.addEventListener('click', settings.recordClick, /*capture=*/true);
     },
 
     /** @override */
     detached() {
       window.removeEventListener('focus', settings.recordPageFocus);
       window.removeEventListener('blur', settings.recordPageBlur);
+      window.removeEventListener('click', settings.recordClick);
       settings.Router.getInstance().resetRouteForTesting();
     },
 

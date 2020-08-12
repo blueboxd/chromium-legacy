@@ -22,6 +22,8 @@ constexpr AmbientModeTemperatureUnit kTemperatureUnit =
 
 constexpr char kFakeUrl[] = "chrome://ambient";
 
+constexpr char kFakeDetails[] = "fake-photo-attribution";
+
 AmbientSettings CreateFakeSettings() {
   AmbientSettings settings;
   settings.topic_source = kTopicSource;
@@ -68,6 +70,7 @@ void FakeAmbientBackendControllerImpl::FetchScreenUpdateInfo(
     OnScreenUpdateInfoFetchedCallback callback) {
   ash::AmbientModeTopic topic;
   topic.url = kFakeUrl;
+  topic.details = kFakeDetails;
 
   ash::WeatherInfo weather_info;
   weather_info.temp_f = .0f;

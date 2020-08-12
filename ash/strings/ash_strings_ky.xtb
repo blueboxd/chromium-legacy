@@ -506,6 +506,7 @@
 <translation id="6972754398087986839">Баштоо</translation>
 <translation id="6981982820502123353">Атайын мүмкүн-төр</translation>
 <translation id="698231206551913481">Колдонуучуга тийиштүү бардык файлдар менен жергиликтүү дайындар көзөмөлдөнгөн колдонуучу чыгарылып салынганда биротоло жок болот.</translation>
+<translation id="7007983414944123363">PIN кодуңуз же сырсөзүңүз ырасталган жок. Кайра аракет кылыңыз.</translation>
 <translation id="7015766095477679451">Саат <ph name="COME_BACK_TIME" /> болгондо кайтып келиңиз.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> түзмөгүңүздү телефонуңузга туташтырыңыз</translation>
 <translation id="7026338066939101231">Азайтуу</translation>
@@ -551,6 +552,7 @@
 <translation id="7568294522609223312">Автоматтык түрдө чыкылдатууларды өчүрүү</translation>
 <translation id="7568637526529101738">Чычкандын оң баскычын чыкылдатып же коё бербей басып турсаңыз, Жардамчы тандаган нерсенин аныктамасы же бирдикти которуу сыяктуу маалыматты көрсөтөт.</translation>
 <translation id="7569509451529460200">Брайль жана ChromeVox иштетилди</translation>
+<translation id="7579778809502851308">Экранды тартып алуу</translation>
 <translation id="7593891976182323525">Издөө же Shift</translation>
 <translation id="7600875258240007829">Бардык билдирмелерди көрүү</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
@@ -669,6 +671,7 @@
 <translation id="8841375032071747811">Артка баскычы</translation>
 <translation id="8843682306134542540">Буруу кулпусун өчүрүү/күйгүзүү. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8853703225951107899">PIN кодуңуз же сырсөзүңүз дагы эле ырасталган жок. Эскертүү: Эгер сырсөзүңүздү өзгөрткөн болсоңуз, эски сырсөзүңүздү колдонуңуз. Жаңы сырсөзүңүз аккаунтуңузга киргенден кийин колдонулат.</translation>
 <translation id="8870509716567206129">Колдонмодо экран бөлүнбөйт.</translation>
 <translation id="8874184842967597500">Интернет жок</translation>
 <translation id="8877788021141246043">Эстеткич коюу</translation>

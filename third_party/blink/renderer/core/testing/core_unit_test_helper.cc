@@ -29,7 +29,7 @@ LocalFrame* SingleChildLocalFrameClient::CreateFrame(
       base::UnguessableToken::Create(), &parent_frame->window_agent_factory(),
       nullptr);
   child_->CreateView(IntSize(500, 500), Color::kTransparent);
-  child_->Init();
+  child_->Init(nullptr);
 
   return child_.Get();
 }

@@ -393,6 +393,7 @@
 <translation id="5614553682702429503">Сохранение пароля</translation>
 <translation id="5626245204502895507">Не удалось скачать файлы.</translation>
 <translation id="5631164295104953411">Добавить способ оплаты</translation>
+<translation id="5653058065071344726">Браузером управляет ваша организация. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="5659593005791499971">Эл. почта</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Версия <ph name="PRODUCT_VERSION" /></translation>
@@ -437,6 +438,7 @@
 <translation id="6108923351542677676">Настройка…</translation>
 <translation id="6119050551270742952">Открыто в режиме инкогнито</translation>
 <translation id="6122191549521593678">Онлайн</translation>
+<translation id="6125339936101702016">Устройством управляет компания "<ph name="COMPANY" />". <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Быстрая ссылка удалена</translation>
 <translation id="6136914049981179737">только что</translation>
 <translation id="616831107264507309">Читать позже</translation>

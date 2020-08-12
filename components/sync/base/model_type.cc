@@ -83,6 +83,10 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      "Autofill Wallet Metadata",
      sync_pb::EntitySpecifics::kWalletMetadataFieldNumber,
      ModelTypeForHistograms::kAutofillWalletMetadata},
+    {AUTOFILL_WALLET_OFFER, "AUTOFILL_OFFER", "autofill_wallet_offer",
+     "Autofill Wallet Offer",
+     sync_pb::EntitySpecifics::kAutofillOfferFieldNumber,
+     ModelTypeForHistograms::kAutofillWalletOffer},
     {THEMES, "THEME", "themes", "Themes",
      sync_pb::EntitySpecifics::kThemeFieldNumber,
      ModelTypeForHistograms::kThemes},
@@ -187,11 +191,11 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(base::size(kModelTypeInfoMap) == ModelType::NUM_ENTRIES,
               "kModelTypeInfoMap should have ModelType::NUM_ENTRIES elements");
 
-static_assert(40 == syncer::ModelType::NUM_ENTRIES,
+static_assert(41 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(40 == syncer::ModelType::NUM_ENTRIES,
+static_assert(41 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update kAllocatorDumpNameAllowlist in "
               "base/trace_event/memory_infra_background_allowlist.cc.");
 
@@ -221,6 +225,9 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
       break;
     case AUTOFILL_WALLET_METADATA:
       specifics->mutable_wallet_metadata();
+      break;
+    case AUTOFILL_WALLET_OFFER:
+      specifics->mutable_autofill_offer();
       break;
     case THEMES:
       specifics->mutable_theme();
@@ -357,7 +364,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(40 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -434,17 +441,20 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return OS_PRIORITY_PREFERENCES;
   if (specifics.has_sharing_message())
     return SHARING_MESSAGE;
+  if (specifics.has_autofill_offer())
+    return AUTOFILL_WALLET_OFFER;
 
   return UNSPECIFIED;
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(40 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
   // Wallet data is not encrypted since it actually originates on the server.
   encryptable_user_types.Remove(AUTOFILL_WALLET_DATA);
+  encryptable_user_types.Remove(AUTOFILL_WALLET_OFFER);
   // Commit-only types are never encrypted since they are consumed server-side.
   encryptable_user_types.RemoveAll(CommitOnlyTypes());
   // Other types that are never encrypted because consumed server-side.

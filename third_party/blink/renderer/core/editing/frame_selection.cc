@@ -162,10 +162,6 @@ VisibleSelection FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated()
   return ComputeVisibleSelectionInDOMTree();
 }
 
-VisibleSelectionInFlatTree FrameSelection::GetSelectionInFlatTree() const {
-  return ComputeVisibleSelectionInFlatTree();
-}
-
 void FrameSelection::MoveCaretSelection(const IntPoint& point) {
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
 

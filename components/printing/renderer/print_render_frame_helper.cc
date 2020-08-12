@@ -47,6 +47,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_double_size.h"
+#include "third_party/blink/public/platform/web_scoped_page_pauser.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -1112,6 +1113,11 @@ void PrintRenderFrameHelper::DidStartNavigation(
     const GURL& url,
     base::Optional<blink::WebNavigationType> navigation_type) {
   is_loading_ = true;
+
+  // If the renderer navigates while paused, unpause to let the navigation
+  // proceed.
+  if (print_preview_context_.IsPaused())
+    auto pauser = print_preview_context_.TakePauser();
 }
 
 void PrintRenderFrameHelper::DidFailProvisionalLoad() {
@@ -1146,7 +1152,12 @@ void PrintRenderFrameHelper::ScriptedPrint(bool user_initiated) {
     web_frame->DispatchBeforePrintEvent();
     if (!weak_this)
       return;
-    Print(web_frame, blink::WebNode(), PrintRequestType::kScripted);
+
+    // Pause between onbeforeprint and onafterprint events.
+    // https://html.spec.whatwg.org/C/#printing-steps
+    Print(web_frame, blink::WebNode(), PrintRequestType::kScripted,
+          blink::WebScopedPagePauser::Create());
+
     if (weak_this)
       web_frame->DispatchAfterPrintEvent();
   }
@@ -1181,7 +1192,12 @@ void PrintRenderFrameHelper::PrintRequestedPages() {
   // If we are printing a PDF extension frame, find the plugin node and print
   // that instead.
   auto plugin = delegate_->GetPdfElement(frame);
-  Print(frame, plugin, PrintRequestType::kRegular);
+
+  // Pause between onbeforeprint and onafterprint events.
+  // https://html.spec.whatwg.org/C/#printing-steps
+  Print(frame, plugin, PrintRequestType::kRegular,
+        blink::WebScopedPagePauser::Create());
+
   if (!render_frame_gone_)
     frame->DispatchAfterPrintEvent();
   // WARNING: |this| may be gone at this point. Do not do any more work here and
@@ -1197,10 +1213,13 @@ void PrintRenderFrameHelper::PrintForSystemDialog() {
     NOTREACHED();
     return;
   }
-  Print(frame, print_preview_context_.source_node(),
-        PrintRequestType::kRegular);
+
+  // Hand over control, including Print Preview's WebScopedPagePauser, to the
+  // system print dialog.
+  Print(frame, print_preview_context_.source_node(), PrintRequestType::kRegular,
+        print_preview_context_.TakePauser());
   if (!render_frame_gone_)
-    frame->DispatchAfterPrintEvent();
+    print_preview_context_.DispatchAfterPrintEvent();
   // WARNING: |this| may be gone at this point. Do not do any more work here and
   // just return.
 }
@@ -1295,7 +1314,7 @@ void PrintRenderFrameHelper::PrintPreview(base::Value settings) {
 
 void PrintRenderFrameHelper::OnPrintPreviewDialogClosed() {
   ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
-  print_preview_context_.source_frame()->DispatchAfterPrintEvent();
+  print_preview_context_.DispatchAfterPrintEvent();
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -1345,6 +1364,9 @@ void PrintRenderFrameHelper::PrintFrameContent(
   // try to handle pdf plugin element until that bug is fixed.
   {
     TRACE_EVENT0("print", "PrintRenderFrameHelper::PrintFrameContent");
+    // Pause between onbeforeprint and onafterprint events.
+    // https://html.spec.whatwg.org/C/#printing-steps
+    auto page_pauser = blink::WebScopedPagePauser::Create();
     if (frame->PrintBegin(web_print_params,
                           /*constrain_to_node=*/blink::WebElement())) {
       frame->PrintPage(0, canvas);
@@ -1442,6 +1464,12 @@ void PrintRenderFrameHelper::PrepareFrameForPreviewDocument() {
   prep_frame_view_ = std::make_unique<PrepareFrameAndViewForPrint>(
       print_params, print_preview_context_.source_frame(),
       print_preview_context_.source_node(), ignore_css_margins_);
+
+  // The renderer needs to load a new page to print the selection. Must unpause
+  // to do that.
+  if (print_params.selection_only)
+    auto pauser_to_destroy = print_preview_context_.TakePauser();
+
   prep_frame_view_->CopySelectionIfNeeded(
       render_frame()->GetWebkitPreferences(),
       base::BindOnce(&PrintRenderFrameHelper::OnFramePreparedForPreviewDocument,
@@ -1453,7 +1481,16 @@ void PrintRenderFrameHelper::OnFramePreparedForPreviewDocument() {
     PrepareFrameForPreviewDocument();
     return;
   }
+
   CreatePreviewDocumentResult result = CreatePreviewDocument();
+
+  // Now that the renderer has finished generating the print preview for a
+  // selection, pause again. The system print dialog path in Print() does not
+  // need to do this, since that dialog is done, whereas the Print Preview
+  // dialog will continue to generate more previews.
+  if (print_pages_params_->params.selection_only)
+    print_preview_context_.Pause();
+
   if (result != CREATE_IN_PROGRESS)
     DidFinishPrinting(result == CREATE_SUCCESS ? OK : FAIL_PREVIEW);
 }
@@ -1779,7 +1816,7 @@ void PrintRenderFrameHelper::PrintNode(const blink::WebNode& node) {
       return;
 
     Print(duplicate_node.GetDocument().GetFrame(), duplicate_node,
-          PrintRequestType::kRegular);
+          PrintRequestType::kRegular, blink::WebScopedPagePauser::Create());
     // Check if |this| is still valid.
     if (!weak_this)
       return;
@@ -1792,9 +1829,11 @@ void PrintRenderFrameHelper::PrintNode(const blink::WebNode& node) {
   print_node_in_progress_ = false;
 }
 
-void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
-                                   const blink::WebNode& node,
-                                   PrintRequestType print_request_type) {
+void PrintRenderFrameHelper::Print(
+    blink::WebLocalFrame* frame,
+    const blink::WebNode& node,
+    PrintRequestType print_request_type,
+    std::unique_ptr<blink::WebScopedPagePauser> pauser) {
   // If still not finished with earlier print request simply ignore.
   if (prep_frame_view_)
     return;
@@ -1839,6 +1878,11 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
       return;
     }
   }
+
+  // The renderer needs to load a new page to print the selection. Must unpause
+  // to do that.
+  if (print_pages_params_->params.selection_only)
+    pauser.reset();
 
   // Render Pages for printing.
   if (!RenderPagesForPrint(frame_ref.GetFrame(), node)) {
@@ -2331,9 +2375,10 @@ void PrintRenderFrameHelper::ShowScriptedPrintPreview() {
 
 void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
   auto weak_this = weak_ptr_factory_.GetWeakPtr();
-  print_preview_context_.source_frame()->DispatchBeforePrintEvent();
+  print_preview_context_.DispatchBeforePrintEvent(weak_this);
   if (!weak_this)
     return;
+
   const bool is_from_arc = print_preview_context_.IsForArc();
   const bool is_modifiable = print_preview_context_.IsModifiable();
   const bool is_pdf = print_preview_context_.IsPdf();
@@ -2491,7 +2536,12 @@ void PrintRenderFrameHelper::OnPreviewDisconnect() {
 
 PrintRenderFrameHelper::PrintPreviewContext::PrintPreviewContext() = default;
 
-PrintRenderFrameHelper::PrintPreviewContext::~PrintPreviewContext() = default;
+PrintRenderFrameHelper::PrintPreviewContext::~PrintPreviewContext() {
+  // Make sure |pauser_| is null. If |pauser_| still exists, it will try to
+  // unpause during teardown, and that is too late.
+  // DispatchAfterPrintEvent() or TakePauser() should have destroyed it already.
+  DCHECK(!pauser_);
+}
 
 void PrintRenderFrameHelper::PrintPreviewContext::InitWithFrame(
     blink::WebLocalFrame* web_frame) {
@@ -2512,6 +2562,38 @@ void PrintRenderFrameHelper::PrintPreviewContext::InitWithNode(
   source_frame_.Reset(web_node.GetDocument().GetFrame());
   source_node_ = web_node;
   CalculatePluginAttributes();
+}
+
+bool PrintRenderFrameHelper::PrintPreviewContext::IsPaused() const {
+  return !!pauser_;
+}
+
+void PrintRenderFrameHelper::PrintPreviewContext::Pause() {
+  DCHECK(!pauser_);
+  pauser_ = blink::WebScopedPagePauser::Create();
+}
+
+std::unique_ptr<blink::WebScopedPagePauser>
+PrintRenderFrameHelper::PrintPreviewContext::TakePauser() {
+  DCHECK(pauser_);
+  return std::move(pauser_);
+}
+
+void PrintRenderFrameHelper::PrintPreviewContext::DispatchBeforePrintEvent(
+    base::WeakPtr<PrintRenderFrameHelper> weak_this) {
+  source_frame()->DispatchBeforePrintEvent();
+  if (!weak_this)
+    return;
+
+  DCHECK(!pauser_);
+  pauser_ = blink::WebScopedPagePauser::Create();
+}
+
+void PrintRenderFrameHelper::PrintPreviewContext::DispatchAfterPrintEvent() {
+  // No DCHECK(pauser_), as |pauser_| may have been reset by TakePauser().
+  pauser_.reset();
+
+  source_frame()->DispatchAfterPrintEvent();
 }
 
 void PrintRenderFrameHelper::PrintPreviewContext::OnPrintPreview() {

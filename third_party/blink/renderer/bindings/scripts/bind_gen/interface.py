@@ -250,12 +250,12 @@ const auto ${arg1_value} = arg1_value_maybe_enum.value();
         else:
             v8_value = "${{info}}[{}]".format(argument.index)
             code_node.register_code_symbol(
-                make_v8_to_blink_value(
-                    name,
-                    v8_value,
-                    argument.idl_type,
-                    argument_index=index,
-                    default_value=argument.default_value))
+                make_v8_to_blink_value(name,
+                                       v8_value,
+                                       argument.idl_type,
+                                       argument_index=index,
+                                       default_value=argument.default_value,
+                                       cg_context=cg_context))
 
 
 def bind_callback_local_vars(code_node, cg_context):

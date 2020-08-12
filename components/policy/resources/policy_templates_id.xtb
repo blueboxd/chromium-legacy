@@ -73,6 +73,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
 
       Jika kebijakan ditetapkan ke false, atau tidak ditetapkan, informasi tidak akan dilaporkan.
       Jika ditetapkan ke true, informasi lampu latar perangkat akan dilaporkan.</translation>
+<translation id="1076751984131277498">Daftar perangkat USB dapat dilepas yang diizinkan</translation>
 <translation id="1079801999187584280">Larang penggunaan Developer Tools</translation>
 <translation id="1087437665304381368">Kebijakan ini hanya mengontrol mode developer<ph name="PRODUCT_OS_NAME" />. Jika ingin mencegah akses ke Opsi Developer Android, Anda perlu menetapkan kebijakan <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">Daftar kebijakan Chrome Enterprise berpindah! Update bookmark ke <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -530,6 +531,9 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 
       Jika kebijakan ini dibiarkan tidak disetel, prediksi jaringan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
 <translation id="1865417998205858223">Izin Kunci</translation>
+<translation id="1866563857170942397">Menetapkan daftar pengguna yang diizinkan untuk login ke perangkat. Entri memiliki format <ph name="USER_ALLOWLIST_ENTRY_FORMAT" />, misalnya <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Untuk mengizinkan sembarang pengguna di suatu domain, gunakan entri berformat <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
+
+      Jika kebijakan ini tidak dikonfigurasi, semua pengguna akan diizinkan untuk login. Perlu diperhatikan bahwa pembuatan pengguna baru tetap mengharuskan kebijakan <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> dikonfigurasi dengan tepat.</translation>
 <translation id="186719019195685253">Kebijakan yang diambil saat penundaan nganggur tercapai ketika dijalankan pada daya AC</translation>
 <translation id="187819629719252111">Memungkinkan akses ke file lokal pada mesin dengan mengizinkan <ph name="PRODUCT_NAME" /> menampilkan dialog pemilihan file. Jika Anda mengaktifkan setelan ini, pengguna dapat membuka dialog pemilihan file seperti biasa. Jika Anda menonaktifkan setelan ini, setiap kali pengguna melakukan tindakan yang akan memicu dialog pemilihan file (seperti mengimpor bookmark, mengupload file, menyimpan link, dll.), yang akan ditampilkan adalah pesan, dan pengguna dianggap telah mengeklik Batal pada dialog pemilihan file. Jika setelan ini tidak disetel, pengguna dapat membuka dialog pemilihan file seperti biasa.</translation>
 <translation id="1885782360784839335">Mengaktifkan ditampilkannya konten promosi tab penuh</translation>
@@ -1818,6 +1822,9 @@ Jika ditetapkan ke False, <ph name="PRODUCT_NAME" /> tidak akan menggunakan noti
 <translation id="3647212518036289905">Menyetel kebijakan akan menentukan library GSSAPI mana yang akan digunakan untuk autentikasi HTTP. Setel kebijakan ke nama library atau jalur lengkap.
 
       Jika kebijakan tidak disetel, <ph name="PRODUCT_NAME" /> akan menggunakan nama library default.</translation>
+<translation id="3653234084868565720">Mengontrol apakah <ph name="PRODUCT_OS_NAME" /> mengizinkan akun pengguna baru dibuat atau tidak. Jika kebijakan ini disetel ke salah (false), pengguna yang belum memiliki akun tidak akan dapat login.
+
+      Jika kebijakan ini disetel ke benar (true) atau tidak dikonfigurasi, akun pengguna baru akan diizinkan untuk dibuat asalkan kebijakan <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" /> tidak mencegah pengguna untuk login.</translation>
 <translation id="3653237928288822292">Ikon penyedia penelusuran default</translation>
 <translation id="3654906736796256792">Mengizinkan sandbox audio berjalan</translation>
 <translation id="3657998022005237040">Blokir download jenis file yang tidak didukung</translation>
@@ -2371,9 +2378,9 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
       Jika kebijakan ini tidak disetel, ukuran default akan digunakan dan pengguna dapat menimpanya dengan tanda --media-cache-size.</translation>
 <translation id="4508084713148633492">Mengizinkan pengaktifan atau penonaktifan notifikasi saat ruang penyimpanan hampir penuh. Ini berlaku untuk semua pengguna pada perangkat.
-      Jika hanya ada satu akun pengguna di perangkat terkelola, notifikasi akan selalu ditampilkan, apa pun nilai kebijakan ini.
-      Jika ada beberapa akun pengguna di perangkat terkelola, notifikasi hanya akan ditampilkan saat kebijakan ini disetel ke Benar (True).
-      Notifikasi selalu ditampilkan di perangkat yang tidak terkelola.</translation>
+      Jika hanya ada satu akun pengguna di sebuah perangkat yang dikelola, notifikasi akan selalu ditampilkan, apa pun nilai yang ditetapkan untuk kebijakan ini.
+      Jika ada beberapa akun pengguna di sebuah perangkat yang dikelola, notifikasi hanya akan ditampilkan saat kebijakan ini disetel ke Benar (True).
+      Notifikasi selalu ditampilkan di perangkat yang tidak dikelola.</translation>
 <translation id="4510923771103268849">Pengguna diizinkan untuk memiliki akses root ke penampung Crostini</translation>
 <translation id="4515404363392014383">Aktifkan Safe Browsing untuk sumber tepercaya</translation>
 <translation id="4517928394515633751">Memindai download pengguna dengan Safe Browsing</translation>
@@ -3168,6 +3175,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika tidak ditentukan, tidak akan mengubah URL bibit Variasi.</translation>
 <translation id="5561811616825571914">Memilih sertifikat klien untuk situs ini secara otomatis di layar login</translation>
+<translation id="5564345250641049313">Menentukan daftar pengguna yang diizinkan untuk login ke perangkat. Entri memiliki format <ph name="USER_ALLOWLIST_ENTRY_FORMAT" />, misalnya <ph name="USER_ALLOWLIST_ENTRY_EXAMPLE" />. Untuk mengizinkan sembarang pengguna di suatu domain, gunakan entri berformat <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
+
+      Jika kebijakan ini tidak dikonfigurasi, semua pengguna akan diizinkan untuk login. Perlu diperhatikan bahwa pembuatan pengguna baru tetap mengharuskan kebijakan <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> dikonfigurasi dengan tepat.
+
+      Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" />.</translation>
 <translation id="5564865786900450806">Menyembunyikan peringatan yang muncul saat <ph name="PRODUCT_NAME" /> dijalankan di komputer atau sistem operasi yang tidak didukung lagi.
 
       Jika kebijakan ini ditetapkan ke false atau tidak ditetapkan, peringatan akan muncul di komputer atau sistem operasi yang tidak didukung tersebut.</translation>
@@ -3389,13 +3401,13 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika setidaknya salah satu entri memiliki <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> yang lebih baru daripada versi saat ini, entri yang memiliki versi lebih baru dan paling dekat dengan versi saat ini akan dipilih.
       Jika terjadi konflik, preferensi akan diberikan ke entri dengan <ph name="WARNING_PERIOD_PROPERTY_NAME" /> atau <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> yang lebih singkat dan kebijakan diterapkan menggunakan entri tersebut.
 
-      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung dan jaringan saat ini membatasi update otomatis, akan muncul notifikasi pada layar untuk mengupdate perangkat dalam <ph name="WARNING_PERIOD_PROPERTY_NAME" /> yang ditampilkan di notifikasi.
-      Tidak ada notifikasi yang ditampilkan jika jaringan saat ini mengizinkan update otomatis dan perangkat harus diupdate dalam <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
+      Jika versi saat ini dianggap usang saat sesi pengguna berlangsung dan jaringan saat ini membatasi update otomatis, akan muncul notifikasi pada layar untuk mengupdate perangkat dalam waktu sesuai dengan <ph name="WARNING_PERIOD_PROPERTY_NAME" /> yang ditampilkan di notifikasi.
+      Tidak ada notifikasi yang ditampilkan jika jaringan saat ini mengizinkan update otomatis dan perangkat harus diupdate dalam waktu sesuai dengan <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
       <ph name="WARNING_PERIOD_PROPERTY_NAME" /> akan dimulai dari saat kebijakan diterapkan.
       Jika perangkat tidak diupdate hingga <ph name="WARNING_PERIOD_PROPERTY_NAME" /> berakhir, pengguna akan dipaksa logout dari sesi.
-      Jika diketahui bahwa versi saat ini tidak terpakai saat login ketika <ph name="WARNING_PERIOD_PROPERTY_NAME" /> berakhir, pengguna harus mengupdate perangkat sebelum login.
+      Jika diketahui bahwa versi saat ini usang saat login ketika <ph name="WARNING_PERIOD_PROPERTY_NAME" /> berakhir, pengguna harus mengupdate perangkat sebelum login.
 
-      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung dan perangkat telah mencapai batas akhir update otomatis, akan muncul notifikasi pada layar untuk mengembalikan perangkat dalam <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
+      Jika versi saat ini dianggap usang saat sesi pengguna berlangsung dan perangkat telah mencapai batas akhir update otomatis, akan muncul notifikasi pada layar untuk mengembalikan perangkat dalam <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
       Jika diketahui bahwa perangkat telah mencapai batas akhir update otomatis saat login ketika <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> berakhir, perangkat akan diblokir bagi siapa pun yang ingin login.
 
       Sesi pengguna yang tidak terkelola tidak akan menerima notifikasi dan otomatis logout jika <ph name="UNMANAGED_USER_RESTRICTED_PROPERTY_NAME" /> tidak disetel atau disetel ke Salah (False).
@@ -3543,6 +3555,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
           Cara yang disarankan untuk mengunci layar saat menganggur adalah dengan mengaktifkan penangguhan penguncian layar dan meminta <ph name="PRODUCT_OS_NAME" /> menangguhkan setelah penundaan waktu menganggur. Sebaiknya hanya gunakan kebijakan ini saat penguncian layar perlu terjadi jauh lebih awal dibandingkan penangguhan atau saat penangguhan ketika menganggur tidak diinginkan sama sekali.
 
           Nilai kebijakan harus ditetapkan dalam milidetik. Nilai dijepit agar kurang dari penundaan waktu menganggur.</translation>
+<translation id="6096729330325888677">Menyetel kebijakan akan menentukan daftar perangkat USB yang dapat dilepas pengguna dari driver kernelnya, agar dapat langsung digunakan melalui chrome.usb API dalam aplikasi web. Entri berupa pasangan ID Vendor USB dan Kode Produk untuk mengidentifikasi hardware tertentu.
+
+      Jika tidak disetel, daftar perangkat USB yang dapat dilepas akan kosong.
+
+      Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan <ph name="USB_DETACHABLE_ALLOWLIST" />.</translation>
 <translation id="6097601282776163274">Mengaktifkan pengumpulan data anonim yang menyertakan URL</translation>
 <translation id="6099853574908182288">Mode warna pencetakan default</translation>
 <translation id="6102342563050263313">Mengaktifkan scroll ke teks yang ditentukan di fragmen URL</translation>
@@ -4052,7 +4069,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika setelan ini dinonaktifkan, pengguna tidak diizinkan memilih untuk menggunakan Berbagi Langsung.
 
-      Jika kebijakan ini tidak disetel, secara default pengguna yang dikelola perusahaan dan pengguna yang tidak dikelola akan diizinkan.</translation>
+      Jika kebijakan ini tidak disetel, baik pengguna yang dikelola maupun tidak dikelola perusahaan akan diizinkan secara default.</translation>
 <translation id="6864244339257535116">Izinkan upload dan download file yang dilindungi sandi</translation>
 <translation id="687046793986382807">Kebijakan ini telah dihentikan pada <ph name="PRODUCT_NAME" /> versi 35.
 
@@ -4192,6 +4209,16 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Jika kebijakan ini tidak ditetapkan, rak akan ditempatkan di bagian bawah layar secara default dan pengguna dapat mengubah posisi rak.</translation>
 <translation id="7040229947030068419">Nilai contoh:</translation>
 <translation id="7044883996351280650">Mengontrol layanan pencadangan dan pemulihan Android</translation>
+<translation id="7063842402585660314">Daftar aplikasi yang diizinkan di layar kunci <ph name="PRODUCT_OS_NAME" />.
+
+      Jika aplikasi pencatat pilihan diaktifkan di layar kunci, layar kunci akan memuat elemen UI untuk meluncurkan aplikasi pencatat pilihan.
+      Saat diluncurkan, aplikasi dapat membuat jendela aplikasi di bagian atas layar kunci, dan membuat item data (catatan) di konteks layar kunci. Saat sesi dibuka, aplikasi dapat mengimpor catatan yang dibuat ke sesi pengguna utama. Saat ini, hanya aplikasi pencatat Chrome yang didukung di layar kunci.
+
+      Jika kebijakan disetel, pengguna akan diizinkan untuk mengaktifkan aplikasi di layar kunci hanya jika ID ekstensi aplikasi dimuat dalam nilai daftar kebijakan.
+      Oleh karena itu, menyetel kebijakan ini ke daftar kosong akan sepenuhnya menonaktifkan pencatatan di layar kunci.
+      Perlu diperhatikan bahwa kebijakan berisi ID aplikasi tidak selalu berarti bahwa pengguna dapat mengaktifkan aplikasi sebagai pencatat di layar kunci. Misalnya, di Chrome 61, kumpulan aplikasi yang tersedia juga dibatasi oleh platform.
+
+      Jika kebijakan tidak disetel, tidak akan ada batasan pada kumpulan aplikasi yang dapat diaktifkan pengguna di layar kunci sebagaimana diberlakukan oleh kebijakan.</translation>
 <translation id="7063895219334505671">Izinkan pop-up di situs ini</translation>
 <translation id="706669471845501145">Izinkan situs menampilkan pemberitahuan desktop</translation>
 <translation id="7068108874199666656">Memungkinkan pendorongan konfigurasi jaringan untuk diterapkan pada semua pengguna ke perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka.</translation>
@@ -5087,6 +5114,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 
           Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8357681633047935212">Membatasi durasi sesi pengguna</translation>
+<translation id="8357989008292691856">Daftar pengguna login yang diizinkan</translation>
 <translation id="8359734107661430198">Aktifkan API ExampleDeprecatedFeature hingga 02/09/2008</translation>
 <translation id="8367209241899435947">Aktifkan Pembersih Chrome di Windows</translation>
 <translation id="8367473200119029349">Pelaporan Cloud</translation>

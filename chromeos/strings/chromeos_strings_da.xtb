@@ -34,7 +34,7 @@
 <translation id="3838338534323494292">Ny adgangskode</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> administrerer denne enhed og har adgang til al brugeraktivitet, bl.a. besøgte websider, adgangskoder og mails.</translation>
 <translation id="4003384961948020559">Handlingen mislykkedes – Fuld udskriftsbakke</translation>
-<translation id="4027485274696301677">Denne <ph name="DEVICE_TYPE" /> administreres af <ph name="ENROLLMENT_DOMAIN" />. Administratorer fjernkonfigurerer muligvis enheden.</translation>
+<translation id="4027485274696301677">Denne <ph name="DEVICE_TYPE" /> administreres af <ph name="ENROLLMENT_DOMAIN" />. Administratorer kan fjernkonfigurere enheden.</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Adgangskoden udløber om <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Ingen udskriftsjobs er i gang</translation>

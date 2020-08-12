@@ -393,6 +393,7 @@
 <translation id="5614553682702429503">パスワードを保存しますか？</translation>
 <translation id="5626245204502895507">今回は、ファイルをダウンロードできませんでした。</translation>
 <translation id="5631164295104953411">お支払い方法を追加</translation>
+<translation id="5653058065071344726">組織によって管理されています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="5659593005791499971">メール</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">バージョン <ph name="PRODUCT_VERSION" /></translation>
@@ -437,6 +438,7 @@
 <translation id="6108923351542677676">設定しています...</translation>
 <translation id="6119050551270742952">現在シークレット モードです</translation>
 <translation id="6122191549521593678">オンライン</translation>
+<translation id="6125339936101702016"><ph name="COMPANY" /> によって管理されています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">アイテムを削除しました</translation>
 <translation id="6136914049981179737">数秒前</translation>
 <translation id="616831107264507309">後で読む</translation>

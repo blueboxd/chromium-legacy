@@ -976,6 +976,11 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
     return true;
   }
 
+  // SVG roots are sufficiently self-contained to be a relayout boundary, even
+  // if their size is non-fixed.
+  if (is_svg_root)
+    return true;
+
   // If either dimension is percent-based, intrinsic, or anything but fixed,
   // this object cannot form a re-layout boundary. A non-fixed computed logical
   // height will allow the object to grow and shrink based on the content
@@ -985,9 +990,6 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
     return false;
 
   if (object->IsTextControl())
-    return true;
-
-  if (is_svg_root)
     return true;
 
   if (!object->HasOverflowClip())

@@ -15,6 +15,7 @@
 #include "chrome/grit/profile_picker_resources.h"
 #include "chrome/grit/profile_picker_resources_map.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -27,7 +28,7 @@ void AddStrings(content::WebUIDataSource* html_source) {
       {"addSpaceButton", IDS_PROFILE_PICKER_ADD_SPACE_BUTTON},
       {"askOnStartupCheckboxText", IDS_PROFILE_PICKER_ASK_ON_STARTUP},
       {"browseAsGuestButton", IDS_PROFILE_PICKER_BROWSE_AS_GUEST_BUTTON},
-      {"backButtonLabel", IDS_PROFILE_PICKER_BACK_BUTTON_LABEL},
+      {"menu", IDS_MENU},
       {"profileMenuName", IDS_PROFILE_PICKER_PROFILE_MENU_BUTTON_NAME},
       {"profileMenuRemoveText", IDS_PROFILE_PICKER_PROFILE_MENU_REMOVE_TEXT},
       {"removeWarningLocalProfile",
@@ -40,6 +41,7 @@ void AddStrings(content::WebUIDataSource* html_source) {
       {"removeWarningAutofill", IDS_PROFILE_PICKER_REMOVE_WARNING_AUTOFILL},
       {"removeWarningCalculating",
        IDS_PROFILE_PICKER_REMOVE_WARNING_CALCULATING},
+      {"backButtonLabel", IDS_PROFILE_PICKER_BACK_BUTTON_LABEL},
       {"profileTypeChoiceTitle",
        IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_PROFILE_TYPE_CHOICE_TITLE},
       {"profileTypeChoiceSubtitle",

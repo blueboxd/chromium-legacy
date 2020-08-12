@@ -14,9 +14,11 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.browser.signin.SigninPreferencesManager;
+import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
@@ -45,10 +47,11 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
             @Override
             public void finishNativeInitialization() {
                 PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+                    AccountTrackerService trackerService =
+                            IdentityServicesProvider.get().getAccountTrackerService(
+                                    Profile.getLastUsedRegularProfile());
                     // TODO(bsazonov): Check whether invalidateAccountSeedStatus is needed here.
-                    IdentityServicesProvider.get()
-                            .getAccountTrackerService()
-                            .invalidateAccountSeedStatus(false /* don't refresh right now */);
+                    trackerService.invalidateAccountSeedStatus(false /* don't refresh right now */);
                     SigninHelper.get().validateAccountSettings(true);
                 });
             }

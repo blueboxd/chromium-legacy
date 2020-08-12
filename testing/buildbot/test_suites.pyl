@@ -893,7 +893,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'cores': '2',
+              'cores': '8',
             },
           ],
         },

@@ -229,7 +229,7 @@ TEST_F(PasswordManagerClientHelperTest,
 
   // Simulate that no refusals happened so far. Moving should be offered.
   EXPECT_CALL(*client()->GetPasswordFeatureManager(),
-              GetMoveToAccountRefusedCount)
+              GetMoveOfferedToNonOptedInUserCount)
       .WillOnce(Return(0));
   EXPECT_CALL(*client(), PromptUserToMovePasswordToAccount);
   const PasswordForm form =
@@ -239,7 +239,7 @@ TEST_F(PasswordManagerClientHelperTest,
 
   // If the previous move was refused and the max is 1, shouldn't offer anymore.
   EXPECT_CALL(*client()->GetPasswordFeatureManager(),
-              GetMoveToAccountRefusedCount)
+              GetMoveOfferedToNonOptedInUserCount)
       .WillOnce(Return(1));
   EXPECT_CALL(*client(), PromptUserToMovePasswordToAccount).Times(0);
   helper()->NotifySuccessfulLoginWithExistingPassword(

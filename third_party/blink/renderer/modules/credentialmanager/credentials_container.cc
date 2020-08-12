@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/sms/sms_receiver_outcome.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
@@ -654,6 +655,8 @@ ScriptPromise CredentialsContainer::get(
         CredentialManagerProxy::From(script_state)->SmsReceiver();
     sms_receiver->Receive(WTF::Bind(&OnSmsReceive, WrapPersistent(resolver),
                                     base::TimeTicks::Now()));
+    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.Features",
+                              WebFeature::kSMSReceiverStart);
     return promise;
   }
 

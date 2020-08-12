@@ -4,6 +4,6 @@ PASS setRemoteDescription(offer) with m= section and no existing transceiver sho
 PASS setLocalDescription(rollback) should unset transceiver.mid
 PASS setLocalDescription(rollback) should only unset transceiver mids associated with current round
 PASS setRemoteDescription(rollback) should remove newly created transceiver from transceiver list
-FAIL setRemoteDescription should stop the transceiver if its corresponding m section is rejected promise_test: Unhandled rejection with value: object "TypeError: pc2.getTransceivers(...)[0].stop is not a function"
+FAIL setRemoteDescription should stop the transceiver if its corresponding m section is rejected assert_true: Transceiver is stopped expected true got false
 Harness: the test ran to completion.
 

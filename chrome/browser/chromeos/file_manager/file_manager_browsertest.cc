@@ -587,6 +587,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("driveOpenSidebarOffline"),
                       TestCase("driveOpenSidebarSharedWithMe"),
                       TestCase("driveAutoCompleteQuery"),
+                      TestCase("drivePinMultiple"),
                       TestCase("drivePinFileMobileNetwork"),
                       TestCase("driveClickFirstSearchResult"),
                       TestCase("drivePressEnterToSearch"),

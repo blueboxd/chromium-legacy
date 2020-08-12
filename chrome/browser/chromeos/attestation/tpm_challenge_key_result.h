@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ATTESTATION_TPM_CHALLENGE_KEY_RESULT_H_
 #define CHROME_BROWSER_CHROMEOS_ATTESTATION_TPM_CHALLENGE_KEY_RESULT_H_
 
+#include <ostream>
 #include <string>
 
 namespace chromeos {
@@ -71,10 +72,16 @@ struct TpmChallengeKeyResult {
   const char* GetErrorMessage() const;
   bool IsSuccess() const;
 
+  bool operator==(const TpmChallengeKeyResult& other) const;
+  bool operator!=(const TpmChallengeKeyResult& other) const;
+
   TpmChallengeKeyResultCode result_code = TpmChallengeKeyResultCode::kSuccess;
   std::string public_key;
   std::string challenge_response;
 };
+
+// For unit tests and debugging.
+std::ostream& operator<<(std::ostream& os, const TpmChallengeKeyResult& result);
 
 }  // namespace attestation
 }  // namespace chromeos

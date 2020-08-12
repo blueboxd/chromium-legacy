@@ -4,11 +4,14 @@
 
 package org.chromium.components.page_info;
 
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+
+import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 
 /**
  * Class for controlling the page info permissions section.
@@ -19,7 +22,7 @@ public class PageInfoPermissionsController implements PageInfoSubpageController 
     private PageInfoControllerDelegate mDelegate;
     private String mTitle;
     private String mPageUrl;
-    private Fragment mSubpageFragment;
+    private SingleWebsiteSettings mSubpageFragment;
 
     public PageInfoPermissionsController(PageInfoMainPageController mainController,
             PageInfoRowView view, PageInfoControllerDelegate delegate, String pageUrl) {
@@ -41,7 +44,12 @@ public class PageInfoPermissionsController implements PageInfoSubpageController 
     @Override
     public View createViewForSubpage(ViewGroup parent) {
         assert mSubpageFragment == null;
-        mSubpageFragment = mDelegate.getPermissionsSubpageFragmentForUrl(mPageUrl);
+        Bundle fragmentArgs = SingleWebsiteSettings.createFragmentArgsForSite(mPageUrl);
+        mSubpageFragment = (SingleWebsiteSettings) Fragment.instantiate(
+                mRowView.getContext(), SingleWebsiteSettings.class.getName(), fragmentArgs);
+        mSubpageFragment.setSiteSettingsClient(mDelegate.getSiteSettingsClient());
+        mSubpageFragment.setHideNonPermissionPreferences(true);
+        mSubpageFragment.setRefreshAfterReset(true);
         AppCompatActivity host = (AppCompatActivity) mRowView.getContext();
         host.getSupportFragmentManager().beginTransaction().add(mSubpageFragment, null).commitNow();
         return mSubpageFragment.getView();

@@ -206,7 +206,7 @@ TrustedTypePolicy* GetDefaultPolicy(const ExecutionContext* execution_context) {
 // and has a number of additional parameters to enable proper error reporting
 // for each case.
 String GetStringFromScriptHelper(
-    const String& script,
+    String script,
     ExecutionContext* context,
 
     // Parameters to customize error messages:
@@ -277,7 +277,7 @@ bool RequireTrustedTypesCheck(const ExecutionContext* execution_context) {
          !ContentSecurityPolicy::ShouldBypassMainWorld(execution_context);
 }
 
-String TrustedTypesCheckForHTML(const String& html,
+String TrustedTypesCheckForHTML(String html,
                                 const ExecutionContext* execution_context,
                                 ExceptionState& exception_state) {
   bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
@@ -302,6 +302,9 @@ String TrustedTypesCheckForHTML(const String& html,
       return html;
     }
   }
+  // TODO(ajwong): This can be optimized to avoid a AddRef in the
+  // StringCache::CreateStringAndInsertIntoCache() also, but it's a hard mess.
+  // Punt for now.
   TrustedHTML* result = default_policy->CreateHTML(
       execution_context->GetIsolate(), html,
       GetDefaultCallbackArgs(execution_context->GetIsolate(), "TrustedHTML",
@@ -323,7 +326,7 @@ String TrustedTypesCheckForHTML(const String& html,
   return result->toString();
 }
 
-String TrustedTypesCheckForScript(const String& script,
+String TrustedTypesCheckForScript(String script,
                                   const ExecutionContext* execution_context,
                                   ExceptionState& exception_state) {
   bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
@@ -348,6 +351,9 @@ String TrustedTypesCheckForScript(const String& script,
       return script;
     }
   }
+  // TODO(ajwong): This can be optimized to avoid a AddRef in the
+  // StringCache::CreateStringAndInsertIntoCache() also, but it's a hard mess.
+  // Punt for now.
   TrustedScript* result = default_policy->CreateScript(
       execution_context->GetIsolate(), script,
       GetDefaultCallbackArgs(execution_context->GetIsolate(), "TrustedScript",
@@ -370,7 +376,7 @@ String TrustedTypesCheckForScript(const String& script,
   return result->toString();
 }
 
-String TrustedTypesCheckForScriptURL(const String& script_url,
+String TrustedTypesCheckForScriptURL(String script_url,
                                      const ExecutionContext* execution_context,
                                      ExceptionState& exception_state) {
   bool require_trusted_type =
@@ -397,6 +403,9 @@ String TrustedTypesCheckForScriptURL(const String& script_url,
       return script_url;
     }
   }
+  // TODO(ajwong): This can be optimized to avoid a AddRef in the
+  // StringCache::CreateStringAndInsertIntoCache() also, but it's a hard mess.
+  // Punt for now.
   TrustedScriptURL* result = default_policy->CreateScriptURL(
       execution_context->GetIsolate(), script_url,
       GetDefaultCallbackArgs(execution_context->GetIsolate(),
@@ -446,7 +455,8 @@ String TrustedTypesCheckFor(
   }
 
   // In all other cases: run the full check against the string value.
-  return TrustedTypesCheckFor(type, value, execution_context, exception_state);
+  return TrustedTypesCheckFor(type, std::move(value), execution_context,
+                              exception_state);
 }
 
 String TrustedTypesCheckForScript(StringOrTrustedScript trusted,
@@ -468,41 +478,41 @@ String TrustedTypesCheckForScript(StringOrTrustedScript trusted,
 }
 
 String TrustedTypesCheckFor(SpecificTrustedType type,
-                            const String& trusted,
+                            String trusted,
                             const ExecutionContext* execution_context,
                             ExceptionState& exception_state) {
   switch (type) {
     case SpecificTrustedType::kHTML:
-      return TrustedTypesCheckForHTML(trusted, execution_context,
+      return TrustedTypesCheckForHTML(std::move(trusted), execution_context,
                                       exception_state);
     case SpecificTrustedType::kScript:
-      return TrustedTypesCheckForScript(trusted, execution_context,
+      return TrustedTypesCheckForScript(std::move(trusted), execution_context,
                                         exception_state);
     case SpecificTrustedType::kScriptURL:
-      return TrustedTypesCheckForScriptURL(trusted, execution_context,
-                                           exception_state);
+      return TrustedTypesCheckForScriptURL(std::move(trusted),
+                                           execution_context, exception_state);
     case SpecificTrustedType::kNone:
       return trusted;
   }
   NOTREACHED();
-  return "";
+  return g_empty_string;
 }
 
 String CORE_EXPORT
-GetStringForScriptExecution(const String& script,
+GetStringForScriptExecution(String script,
                             const ScriptElementBase::Type type,
                             ExecutionContext* context) {
-  return GetStringFromScriptHelper(script, context, GetElementName(type),
-                                   "text", kScriptExecution,
-                                   kScriptExecutionAndDefaultPolicyFailed);
+  return GetStringFromScriptHelper(
+      std::move(script), context, GetElementName(type), "text",
+      kScriptExecution, kScriptExecutionAndDefaultPolicyFailed);
 }
 
 String TrustedTypesCheckForJavascriptURLinNavigation(
-    const String& javascript_url,
+    String javascript_url,
     ExecutionContext* context) {
   return GetStringFromScriptHelper(
-      javascript_url, context, "Location", "href", kNavigateToJavascriptURL,
-      kNavigateToJavascriptURLAndDefaultPolicyFailed);
+      std::move(javascript_url), context, "Location", "href",
+      kNavigateToJavascriptURL, kNavigateToJavascriptURLAndDefaultPolicyFailed);
 }
 
 }  // namespace blink

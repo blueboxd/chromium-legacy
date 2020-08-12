@@ -71,11 +71,11 @@ WebViewPasswordFeatureManager::ComputePasswordAccountStorageUsageLevel() const {
       kUsingAccountStorage;
 }
 
-void WebViewPasswordFeatureManager::IncrementMoveToAccountRefusedCount() {
+void WebViewPasswordFeatureManager::RecordMoveOfferedToNonOptedInUser() {
   NOTREACHED();
 }
 
-int WebViewPasswordFeatureManager::GetMoveToAccountRefusedCount() const {
+int WebViewPasswordFeatureManager::GetMoveOfferedToNonOptedInUserCount() const {
   NOTREACHED();
   return 0;
 }

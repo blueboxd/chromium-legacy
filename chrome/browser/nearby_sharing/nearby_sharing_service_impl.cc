@@ -1129,7 +1129,10 @@ void NearbySharingServiceImpl::OnIncomingTransferUpdate(
     TransferMetadata metadata) {
   if (metadata.status() != TransferMetadata::Status::kCancelled &&
       metadata.status() != TransferMetadata::Status::kRejected) {
-    last_incoming_metadata_ = std::make_pair(share_target, metadata);
+    last_incoming_metadata_ =
+        std::make_pair(share_target, TransferMetadataBuilder::Clone(metadata)
+                                         .set_is_original(false)
+                                         .build());
   } else {
     last_incoming_metadata_ = base::nullopt;
   }

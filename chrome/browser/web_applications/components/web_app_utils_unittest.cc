@@ -23,7 +23,7 @@
 
 namespace web_app {
 
-class WebAppUtilsTest : public WebAppTest {};
+using WebAppUtilsTest = WebAppTest;
 
 TEST_F(WebAppUtilsTest, AreWebAppsEnabled) {
   Profile* regular_profile = profile();

@@ -506,7 +506,7 @@ TEST(PasswordFeatureManagerUtil, OptInOutHistograms) {
       "PasswordManager.AccountStorage.ClearedOptInForAllAccounts", 1, 1);
 }
 
-TEST(PasswordFeatureManagerUtil, MovePasswordToAccountStoreRefusedCount) {
+TEST(PasswordFeatureManagerUtil, MovePasswordToAccountStoreOfferedCount) {
   // Set up a user signed-in, not syncing and not opted-in.
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);
@@ -522,11 +522,14 @@ TEST(PasswordFeatureManagerUtil, MovePasswordToAccountStoreRefusedCount) {
   sync_service.SetIsAuthenticatedAccountPrimary(false);
   ASSERT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
 
-  EXPECT_EQ(0, GetMoveToAccountRefusedCount(&pref_service, &sync_service));
-  IncrementMoveToAccountRefusedCount(&pref_service, &sync_service);
-  EXPECT_EQ(1, GetMoveToAccountRefusedCount(&pref_service, &sync_service));
-  IncrementMoveToAccountRefusedCount(&pref_service, &sync_service);
-  EXPECT_EQ(2, GetMoveToAccountRefusedCount(&pref_service, &sync_service));
+  EXPECT_EQ(0,
+            GetMoveOfferedToNonOptedInUserCount(&pref_service, &sync_service));
+  RecordMoveOfferedToNonOptedInUser(&pref_service, &sync_service);
+  EXPECT_EQ(1,
+            GetMoveOfferedToNonOptedInUserCount(&pref_service, &sync_service));
+  RecordMoveOfferedToNonOptedInUser(&pref_service, &sync_service);
+  EXPECT_EQ(2,
+            GetMoveOfferedToNonOptedInUserCount(&pref_service, &sync_service));
 }
 
 }  // namespace features_util

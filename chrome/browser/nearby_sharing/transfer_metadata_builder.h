@@ -12,10 +12,14 @@
 
 class TransferMetadataBuilder {
  public:
+  static TransferMetadataBuilder Clone(const TransferMetadata& metadata);
+
   TransferMetadataBuilder();
+  TransferMetadataBuilder(TransferMetadataBuilder&&);
+  TransferMetadataBuilder& operator=(TransferMetadataBuilder&&);
   ~TransferMetadataBuilder();
 
-  TransferMetadataBuilder& set_is_final_status(bool is_final_status);
+  TransferMetadataBuilder& set_is_original(bool is_original);
 
   TransferMetadataBuilder& set_progress(double progress);
 
@@ -26,7 +30,7 @@ class TransferMetadataBuilder {
   TransferMetadata build() const;
 
  private:
-  bool is_final_status_ = false;
+  bool is_original_ = false;
   double progress_ = 0;
   TransferMetadata::Status status_ = TransferMetadata::Status::kInProgress;
   base::Optional<std::string> token_;

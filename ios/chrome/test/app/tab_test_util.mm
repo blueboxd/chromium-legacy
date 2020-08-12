@@ -18,7 +18,6 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/scene_controller.h"
 #import "ios/chrome/browser/ui/main/scene_controller_testing.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
@@ -58,10 +57,8 @@ void OpenNewTab() {
       Browser* browser =
           GetForegroundActiveScene().interfaceProvider.mainInterface.browser;
       UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
-      [GetForegroundActiveSceneController().tabSwitcher
-          dismissWithNewTabAnimationToBrowser:browser
-                            withUrlLoadParams:params
-                                      atIndex:INT_MAX];
+      [GetForegroundActiveSceneController() addANewTabAndPresentBrowser:browser
+                                                      withURLLoadParams:params];
       return;
     }
     id<ApplicationCommands, BrowserCommands> handler =
@@ -95,10 +92,8 @@ void OpenNewIncognitoTab() {
       Browser* browser = GetForegroundActiveScene()
                              .interfaceProvider.incognitoInterface.browser;
       UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
-      [GetForegroundActiveSceneController().tabSwitcher
-          dismissWithNewTabAnimationToBrowser:browser
-                            withUrlLoadParams:params
-                                      atIndex:INT_MAX];
+      [GetForegroundActiveSceneController() addANewTabAndPresentBrowser:browser
+                                                      withURLLoadParams:params];
       return;
     }
     id<ApplicationCommands, BrowserCommands> handler =

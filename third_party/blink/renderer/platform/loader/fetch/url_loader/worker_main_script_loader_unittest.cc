@@ -232,7 +232,8 @@ class WorkerMainScriptLoaderTest : public testing::Test {
     request.SetRequestContext(mojom::RequestContextType::SHARED_WORKER);
     request.SetRequestDestination(
         network::mojom::RequestDestination::kSharedWorker);
-    FetchParameters fetch_params(std::move(request), ResourceLoaderOptions());
+    FetchParameters fetch_params(std::move(request),
+                                 ResourceLoaderOptions(nullptr /* world */));
     WorkerMainScriptLoader* worker_main_script_loader =
         MakeGarbageCollected<WorkerMainScriptLoader>();
     worker_main_script_loader->Start(

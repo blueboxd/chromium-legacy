@@ -146,31 +146,38 @@ LayoutRect LegacyAbstractInlineTextBox::LocalBounds() const {
 
 unsigned LegacyAbstractInlineTextBox::Len() const {
   if (!inline_text_box_)
-    return 0;
+    return 0u;
 
-  return inline_text_box_->Len();
+  return NeedsTrailingSpace() ? inline_text_box_->Len() + 1
+                              : inline_text_box_->Len();
 }
 
 unsigned LegacyAbstractInlineTextBox::TextOffsetInContainer(
     unsigned offset) const {
   if (!inline_text_box_)
-    return 0;
-
-  unsigned offset_in_container = inline_text_box_->Start() + offset;
-
-  const NGOffsetMapping* offset_mapping = GetOffsetMapping();
-  if (!offset_mapping)
-    return offset_in_container;
+    return 0U;
 
   // The start offset of the inline text box returned by
   // inline_text_box_->Start() includes the collapsed white-spaces. Here, we
   // want the position in the parent node after white-space collapsing.
   // NGOffsetMapping can map an offset before whites-spaces are collapsed to the
   // offset after white-spaces are collapsed.
-  Position position(GetNode(), offset_in_container);
-  const NGOffsetMappingUnit* unit =
-      offset_mapping->GetMappingUnitForPosition(position);
-  return offset_in_container - unit->DOMStart() + unit->TextContentStart();
+  unsigned int offset_in_container = inline_text_box_->Start() + offset;
+  const Position position(GetNode(), offset_in_container);
+  LayoutBlockFlow* formatting_context =
+      NGOffsetMapping::GetInlineFormattingContextOf(position);
+  if (!formatting_context)
+    return offset_in_container;
+
+  // If "formatting_context" is not a Layout NG object, the offset mappings will
+  // be computed on demand and cached.
+  const NGOffsetMapping* offset_mapping =
+      NGInlineNode::GetOffsetMapping(formatting_context);
+  if (!offset_mapping)
+    return offset_in_container;
+
+  return offset_mapping->GetTextContentOffset(position).value_or(
+      offset_in_container);
 }
 
 AbstractInlineTextBox::Direction LegacyAbstractInlineTextBox::GetDirection()
@@ -198,6 +205,8 @@ void LegacyAbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
     return;
 
   inline_text_box_->CharacterWidths(widths);
+  if (NeedsTrailingSpace())
+    widths.push_back(inline_text_box_->NewlineSpaceWidth());
 }
 
 void AbstractInlineTextBox::GetWordBoundaries(
@@ -289,13 +298,8 @@ String LegacyAbstractInlineTextBox::GetText() const {
   }
 
   // Insert a space at the end of this if necessary.
-  if (InlineTextBox* next = inline_text_box_->NextForSameLayoutObject()) {
-    if (next->Start() > inline_text_box_->Start() + inline_text_box_->Len() &&
-        result.length() && !result.Right(1).ContainsOnlyWhitespaceOrEmpty() &&
-        next->GetText().length() &&
-        !next->GetText().Left(1).ContainsOnlyWhitespaceOrEmpty())
-      return result + " ";
-  }
+  if (NeedsTrailingSpace())
+    return result + " ";
 
   return result;
 }
@@ -351,25 +355,18 @@ bool LegacyAbstractInlineTextBox::IsLineBreak() const {
   return inline_text_box_->IsLineBreak();
 }
 
-const NGOffsetMapping* LegacyAbstractInlineTextBox::GetOffsetMapping() const {
-  const auto* text_node = DynamicTo<Text>(GetNode());
-  if (!text_node)
-    return nullptr;
-
-  LayoutBlockFlow& block_flow = *NGOffsetMapping::GetInlineFormattingContextOf(
-      *text_node->GetLayoutObject());
-  const NGOffsetMapping* offset_mapping =
-      NGInlineNode::GetOffsetMapping(&block_flow);
-
-  if (UNLIKELY(!offset_mapping)) {
-    // TODO(crbug.com/955678): There are certain cases where we fail to
-    // compute // |NGOffsetMapping| due to failures in layout. As the root
-    // cause is hard to fix at the moment, we work around it here so that the
-    // production build doesn't crash.
-    NOTREACHED();
-    return nullptr;
+bool LegacyAbstractInlineTextBox::NeedsTrailingSpace() const {
+  if (const InlineTextBox* next = inline_text_box_->NextForSameLayoutObject()) {
+    return next->Start() >
+               inline_text_box_->Start() + inline_text_box_->Len() &&
+           inline_text_box_->GetText().length() &&
+           !inline_text_box_->GetText()
+                .Right(1)
+                .ContainsOnlyWhitespaceOrEmpty() &&
+           next->GetText().length() &&
+           !next->GetText().Left(1).ContainsOnlyWhitespaceOrEmpty();
   }
-  return offset_mapping;
+  return false;
 }
 
 }  // namespace blink

@@ -34,6 +34,8 @@ class TransferMetadata {
     kMaxValue = kExternalProviderLaunched
   };
 
+  static bool IsFinalStatus(Status status);
+
   TransferMetadata(Status status,
                    float progress,
                    base::Optional<std::string> token,

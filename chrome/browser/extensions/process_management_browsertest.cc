@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -50,6 +52,13 @@ bool IsExtensionProcessSharingAllowed() {
 }
 
 class ProcessManagementTest : public ExtensionBrowserTest {
+ public:
+  ProcessManagementTest() {
+    // TODO(https://crbug.com/1110891): Remove this once Extensions are
+    // supported with BackForwardCache.
+    disabled_feature_list_.InitWithFeatures({}, {features::kBackForwardCache});
+  }
+
  private:
   // This is needed for testing isolated apps, which are still experimental.
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -62,6 +71,8 @@ class ProcessManagementTest : public ExtensionBrowserTest {
     ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
+
+  base::test::ScopedFeatureList disabled_feature_list_;
 };
 
 class ChromeWebStoreProcessTest : public ExtensionBrowserTest {

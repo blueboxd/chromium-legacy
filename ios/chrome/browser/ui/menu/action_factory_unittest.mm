@@ -284,6 +284,7 @@ TEST_F(ActionFactoryTest, hideAction) {
         [[ActionFactory alloc] initWithBrowser:test_browser_.get()
                                       scenario:kTestMenuScenario];
 
+    UIImage* expectedImage = [UIImage imageNamed:@"remove"];
     NSString* expectedTitle =
         l10n_util::GetNSString(IDS_IOS_RECENT_TABS_HIDE_MENU_OPTION);
 
@@ -291,7 +292,7 @@ TEST_F(ActionFactoryTest, hideAction) {
     }];
 
     EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
-    EXPECT_EQ(nil, action.image);
+    EXPECT_EQ(expectedImage, action.image);
   }
 }
 

@@ -14,7 +14,9 @@
 // Creates a context menu configuration instance for the given |item|, which is
 // represented on the UI by |view|.
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
-    (ContentSuggestionsMostVisitedItem*)item API_AVAILABLE(ios(13.0));
+                                   (ContentSuggestionsMostVisitedItem*)item
+                                                      fromView:(UIView*)view
+    API_AVAILABLE(ios(13.0));
 
 @end
 

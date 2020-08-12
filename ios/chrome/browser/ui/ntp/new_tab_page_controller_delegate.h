@@ -9,6 +9,10 @@
 @protocol NewTabPageControllerDelegate
 // Sets the toolbar location bar alpha and vertical offset based on |progress|.
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress;
+
+// The target for scribble events as forwarded by the NTP fakebox.
+- (UIResponder<UITextInput>*)fakeboxScribbleForwardingTarget;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_CONTROLLER_PROTOCOL_H_

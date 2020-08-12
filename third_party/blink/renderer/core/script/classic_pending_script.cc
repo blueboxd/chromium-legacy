@@ -43,8 +43,9 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
     const WTF::TextEncoding& encoding,
     ScriptElementBase* element,
     FetchParameters::DeferOption defer) {
+  ExecutionContext* context = element_document.GetExecutionContext();
   FetchParameters params(options.CreateFetchParameters(
-      url, element_document.GetExecutionContext()->GetSecurityOrigin(),
+      url, context->GetSecurityOrigin(), context->GetCurrentWorld(),
       cross_origin, encoding, defer));
 
   ClassicPendingScript* pending_script =

@@ -875,13 +875,17 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_YUV420P12:
     case PIXEL_FORMAT_YUV422P12:
     case PIXEL_FORMAT_YUV444P12:
-    case PIXEL_FORMAT_P016LE:
       return 2;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21: {
       static const int bytes_per_element[] = {1, 2};
       DCHECK_LT(plane, base::size(bytes_per_element));
       return bytes_per_element[plane];
+    }
+    case PIXEL_FORMAT_P016LE: {
+      static const int bytes_per_element[] = {1, 2};
+      DCHECK_LT(plane, base::size(bytes_per_element));
+      return bytes_per_element[plane] * 2;
     }
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:

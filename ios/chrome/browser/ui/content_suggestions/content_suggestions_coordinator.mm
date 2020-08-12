@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -58,6 +59,7 @@
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
+#import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
@@ -109,6 +111,8 @@
 @property(nonatomic) CGFloat discoverFeedHeight;
 // Authentication Service for the user's signed-in state.
 @property(nonatomic, assign) AuthenticationService* authService;
+// Coordinator in charge of handling sharing use cases.
+@property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
 
 @end
 
@@ -175,6 +179,7 @@
                      FakeboxFocuser>>(self.browser->GetCommandDispatcher());
   self.headerController.commandHandler = self.NTPMediator;
   self.headerController.delegate = self.NTPMediator;
+
   self.headerController.readingListModel =
       ReadingListModelFactory::GetForBrowserState(
           self.browser->GetBrowserState());
@@ -294,6 +299,8 @@
   self.NTPMediator = nil;
   [self.contentSuggestionsMediator disconnect];
   self.contentSuggestionsMediator = nil;
+  [self.sharingCoordinator stop];
+  self.sharingCoordinator = nil;
   self.headerController = nil;
   _visible = NO;
 }
@@ -532,7 +539,9 @@
 #pragma mark - ContentSuggestionsMenuProvider
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
-    (ContentSuggestionsMostVisitedItem*)item API_AVAILABLE(ios(13.0)) {
+                                   (ContentSuggestionsMostVisitedItem*)item
+                                                      fromView:(UIView*)view
+    API_AVAILABLE(ios(13.0)) {
   __weak __typeof(self) weakSelf = self;
 
   UIContextMenuActionProvider actionProvider =
@@ -585,6 +594,12 @@
 
         [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
 
+        [menuElements addObject:[actionFactory actionToShareWithBlock:^{
+                        [weakSelf shareURL:item.URL
+                                     title:item.title
+                                  fromView:view];
+                      }]];
+
         [menuElements addObject:[actionFactory actionToRemoveWithBlock:^{
                         [weakSelf.NTPMediator removeMostVisited:item];
                       }]];
@@ -618,6 +633,23 @@
     }
   }
   return discoverFeed;
+}
+
+// Triggers the URL sharing flow for the given |URL| and |title|, with the
+// origin |view| representing the UI component for that URL.
+- (void)shareURL:(const GURL&)URL
+           title:(NSString*)title
+        fromView:(UIView*)view {
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithURL:URL
+                                    title:title
+                                 scenario:ActivityScenario::MostVisitedEntry];
+  self.sharingCoordinator =
+      [[SharingCoordinator alloc] initWithBaseViewController:self.viewController
+                                                     browser:self.browser
+                                                      params:params
+                                                  originView:view];
+  [self.sharingCoordinator start];
 }
 
 @end

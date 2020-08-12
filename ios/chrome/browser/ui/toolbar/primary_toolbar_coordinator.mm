@@ -171,6 +171,12 @@
   }
 }
 
+#pragma mark - NewTabPageControllerDelegate
+
+- (UIResponder<UITextInput>*)fakeboxScribbleForwardingTarget {
+  return self.locationBarCoordinator.omniboxScribbleForwardingTarget;
+}
+
 #pragma mark - FakeboxFocuser
 
 - (void)focusOmniboxNoAnimation {

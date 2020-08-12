@@ -111,6 +111,7 @@ public class TopToolbarOverlayMediator {
             @Override
             public void onContentChanged(Tab tab) {
                 updateVisibility();
+                updateThemeColor(tab);
             }
         };
 

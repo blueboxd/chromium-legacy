@@ -1890,8 +1890,21 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
   // available IsolatedOriginEntries.
   BrowsingInstanceId browsing_instance_id(
       isolation_context.browsing_instance_id());
-  if (browsing_instance_id.is_null())
+
+  if (browsing_instance_id.is_null()) {
     browsing_instance_id = SiteInstanceImpl::NextBrowsingInstanceId();
+  } else {
+    // Check the opt-in isolation status of |origin| in |isolation_context|.
+    // Note that while IsolatedOrigins considers any sub-origin of an isolated
+    // origin as also being isolated, with opt-in we will always either return
+    // false, or true with result set to |origin|. We give priority to origins
+    // requesting opt-in isolation over command-line isolation, but don't check
+    // for opt-in if we didn't get a valid BrowsingInstance id.
+    if (ShouldOriginGetOptInIsolation(isolation_context, origin)) {
+      *result = origin;
+      return true;
+    }
+  }
 
   // Look up the list of origins corresponding to |origin|'s site.
   auto it = isolated_origins_.find(site_url);
@@ -1955,16 +1968,6 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
         }
       }
     }
-  }
-
-  // If no match was found via IsolatedOrigins, then check the opt-in
-  // isolation status of |origin| in |isolation_context|. Note that while
-  // IsolatedOrigins considers any sub-origin of an isolated origin as also
-  // being isolated, with opt-in we will always either return false, or true
-  // with result set to |origin|.
-  if (!found && ShouldOriginGetOptInIsolation(isolation_context, origin)) {
-    *result = origin;
-    found = true;
   }
 
   return found;

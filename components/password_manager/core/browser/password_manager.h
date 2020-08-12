@@ -54,21 +54,17 @@ class PasswordFormManager;
 class PasswordManagerMetricsRecorder;
 struct PossibleUsernameData;
 
-// Propmpt are disabled while Autofill Assistant is running. In case there is
-// bug in Autofill Assistant logic and Autofill Assistant fails to reset
-// AutofillAssistantMode, after this timeout the timer will re-enable prompts.
-const int kDisablePromptsTimeoutInSeconds = 120;
-
 // Define the modes of collaboration between Password Manager and Autofill
 // Assistant (who handles form submissions, whether to show prompts or not).
 enum class AutofillAssistantMode {
-  // Autofill Assistant is not running. Password Manager operates in the regular
+  // Autofill Assistant UI is not being shown. Password Manager operates in the
+  // regular
   // mode - it handles submissions and shows prompts.
-  kNotRunning = 0,
-  // Autofill Assistant is running. The password manager
+  kUINotShown = 0,
+  // Autofill Assistant UI is being shown. The password manager
   // is basically off - it does not handle submissions and therefore does not
   // show prompts. The script does all the work instead.
-  kRunning
+  kUIShown
 };
 
 // Per-tab password manager. Handles creation and management of UI elements,
@@ -152,7 +148,6 @@ class PasswordManager : public PasswordManagerInterface {
   // |PasswordManager.ResultOfSavingFlowAfterUnblacklistin|.
   void MarkWasUnblacklistedInFormManagers(CredentialCache* credential_cache);
 
-
   // Handles a password form being submitted, assumes that submission is
   // successful and does not do any checks on success of submission. For
   // example, this is called if |password_form| was filled upon in-page
@@ -210,10 +205,6 @@ class PasswordManager : public PasswordManagerInterface {
     leak_delegate_.set_leak_factory(std::move(factory));
   }
 
-  void SetDisablePromptsTimeoutToZero() {
-    disable_prompts_timeout_in_seconds_ = 0;
-  }
-
 #endif  // defined(UNIT_TEST)
 
 #if !defined(OS_IOS)
@@ -229,9 +220,7 @@ class PasswordManager : public PasswordManagerInterface {
   void NotifyStorePasswordCalled();
 
   // Sets the Autofill Assistant mode to disable prompts while |mode=kRunning|.
-  // A script start triggers a timer that will reset the mode to |kNotRunning|
-  // (default) to prevent disabling the password manager forever. A script
-  // finish will clear pending credentials in all form managers.
+  // A script finish will clear pending credentials in all form managers.
   void SetAutofillAssistantMode(AutofillAssistantMode mode);
 
   // Returns the currently set autofill-assistant mode.
@@ -405,15 +394,7 @@ class PasswordManager : public PasswordManagerInterface {
   // By default Autofill Assistant is not running. Password Manager handles
   // submissions and shows prompts.
   AutofillAssistantMode autofill_assistant_mode_ =
-      AutofillAssistantMode::kNotRunning;
-
-  // Timeout in seconds for disabling Password Manager's prompts.
-  int disable_prompts_timeout_in_seconds_ = kDisablePromptsTimeoutInSeconds;
-
-  // When Autofill Assistant is running, it disables the password manager's
-  // prompts. This timer re-enables the prompts in case Autofill Assistant
-  // didn't do that due to an unexpected failure.
-  base::OneShotTimer disable_prompts_timer_;
+      AutofillAssistantMode::kUINotShown;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

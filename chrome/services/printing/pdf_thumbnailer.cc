@@ -17,9 +17,6 @@ namespace printing {
 
 namespace {
 
-// The resolution of the bitmap in dots per inch; always 300.
-constexpr int kDpi = 300;
-
 // Whether or not to rotate PDF to fit the given size; always no.
 constexpr bool kAutorotate = false;
 
@@ -66,9 +63,10 @@ void PdfThumbnailer::GetThumbnail(printing::mojom::ThumbParamsPtr params,
   }
 
   // Convert PDF bytes into a bitmap thumbnail.
-  if (!chrome_pdf::RenderPDFPageToBitmap(pdf_buffer, 0, result.getPixels(),
-                                         width_px, height_px, kDpi, kDpi,
-                                         kAutorotate, kUseColor)) {
+  if (!chrome_pdf::RenderPDFPageToBitmap(
+          pdf_buffer, 0, result.getPixels(), width_px, height_px,
+          params->dpi.width(), params->dpi.height(), params->stretch,
+          params->keep_aspect, kAutorotate, kUseColor)) {
     DLOG(ERROR) << "Failed to render PDF buffer as bitmap image";
     std::move(callback).Run(SkBitmap());
     return;

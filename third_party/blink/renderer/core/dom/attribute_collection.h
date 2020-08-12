@@ -160,13 +160,15 @@ class MutableAttributeCollection
             attributes) {}
 
   // These functions do no error/duplicate checking.
-  void Append(const QualifiedName&, const AtomicString& value);
+  const AtomicString& Append(const QualifiedName&, AtomicString value);
   void Remove(unsigned index);
 };
 
-inline void MutableAttributeCollection::Append(const QualifiedName& name,
-                                               const AtomicString& value) {
-  attributes_.push_back(Attribute(name, value));
+inline const AtomicString& MutableAttributeCollection::Append(
+    const QualifiedName& name,
+    AtomicString value) {
+  attributes_.emplace_back(name, std::move(value));
+  return attributes_.back().Value();
 }
 
 inline void MutableAttributeCollection::Remove(unsigned index) {

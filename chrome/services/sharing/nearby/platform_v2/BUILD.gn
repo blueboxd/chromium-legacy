@@ -19,6 +19,8 @@ source_set("platform_v2") {
     "count_down_latch.cc",
     "count_down_latch.h",
     "crypto.cc",
+    "input_file.cc",
+    "input_file.h",
     "log_message.cc",
     "log_message.h",
     "mutex.cc",

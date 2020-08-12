@@ -56,6 +56,8 @@ Polymer({
   attached() {
     this.addWebUIListener(
         'profiles-list-changed', this.handleProfilesListChanged_.bind(this));
+    this.addWebUIListener(
+        'profile-removed', this.handleProfileRemoved_.bind(this));
     this.manageProfilesBrowserProxy_.initializeMainView();
   },
 
@@ -96,5 +98,16 @@ Polymer({
   /** @private */
   onLaunchGuestProfileClick_() {
     this.manageProfilesBrowserProxy_.launchGuestProfile();
+  },
+
+  /** @private */
+  handleProfileRemoved_(profilePath) {
+    for (let i = 0; i < this.profilesList_.length; i += 1) {
+      if (this.profilesList_[i].profilePath === profilePath) {
+        // TODO(crbug.com/1063856): Add animation.
+        this.splice('profilesList_', i, 1);
+        break;
+      }
+    }
   },
 });

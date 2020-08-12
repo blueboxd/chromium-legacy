@@ -176,11 +176,13 @@ class MODULES_EXPORT RTCRtpTransceiverImpl : public RTCRtpTransceiverPlatform {
   std::unique_ptr<RTCRtpReceiverPlatform> Receiver() const override;
   bool Stopped() const override;
   webrtc::RtpTransceiverDirection Direction() const override;
-  void SetDirection(webrtc::RtpTransceiverDirection direction) override;
+  webrtc::RTCError SetDirection(
+      webrtc::RtpTransceiverDirection direction) override;
   base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
       const override;
   base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
       const override;
+  webrtc::RTCError Stop() override;
   webrtc::RTCError SetCodecPreferences(
       Vector<webrtc::RtpCodecCapability>) override;
 

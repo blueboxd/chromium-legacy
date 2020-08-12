@@ -6,14 +6,12 @@ package org.chromium.chrome.browser.page_info;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import androidx.fragment.app.Fragment;
 
 import org.chromium.base.Consumer;
 import org.chromium.base.supplier.Supplier;
@@ -32,7 +30,7 @@ import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsClient;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsClient;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
@@ -272,14 +270,8 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
      */
     @Override
     @NonNull
-    public Fragment getPermissionsSubpageFragmentForUrl(String url) {
-        Bundle fragmentArgs = SingleWebsiteSettings.createFragmentArgsForSite(url);
-        SingleWebsiteSettings fragment = (SingleWebsiteSettings) Fragment.instantiate(
-                mContext, SingleWebsiteSettings.class.getName(), fragmentArgs);
-        fragment.setSiteSettingsClient(new ChromeSiteSettingsClient(mContext, getBrowserContext()));
-        fragment.setHideNonPermissionPreferences(true);
-        fragment.setRefreshAfterReset(true);
-        return fragment;
+    public SiteSettingsClient getSiteSettingsClient() {
+        return new ChromeSiteSettingsClient(mContext, getBrowserContext());
     }
 
     @VisibleForTesting

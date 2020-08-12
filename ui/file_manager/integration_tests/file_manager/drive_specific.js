@@ -192,6 +192,70 @@ testcase.drivePressClearSearch = async () => {
 };
 
 /**
+ * Tests that pinning multiple files affects the pin action of individual files.
+ */
+testcase.drivePinMultiple = async () => {
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
+
+  // Select world.ogv.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="world.ogv"]');
+  await remoteCall.waitForElement(appId, '[file-name="world.ogv"][selected]');
+
+  // Open the context menu once the file is selected.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, ['.table-row[selected]']));
+
+  // Check that the pin action is unticked, i.e. the action will pin the file.
+  await remoteCall.waitForElement(
+      appId,
+      '#file-context-menu:not([hidden]) ' +
+          '[command="#toggle-pinned"]:not([checked])');
+
+  // Additionally select hello.txt.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="hello.txt"]', {shift: true});
+  await remoteCall.waitForElement(appId, '[file-name="hello.txt"][selected]');
+
+  // Open the context menu with both files selected.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, ['.table-row[selected]']));
+
+  // Pin both files.
+  await remoteCall.waitAndClickElement(
+      appId,
+      '#file-context-menu:not([hidden]) ' +
+          '[command="#toggle-pinned"]:not([checked])');
+
+  // Wait the toggle pinned async action to finish, so the next call to display
+  // context menu is after the action has finished.
+  await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
+
+  // Wait the pinned action to finish, it's flagged in the file list by
+  // removing CSS class "dim-offline".
+  await remoteCall.waitForElementLost(
+      appId, '#file-list .dim-offline[file-name="world.ogv"]');
+
+  // Select world.ogv by itself.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="world.ogv"]');
+
+  // Wait for hello.txt to be unselected.
+  await remoteCall.waitForElement(
+      appId, '[file-name="hello.txt"]:not([selected])');
+
+  // Open the context menu for world.ogv.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, ['.table-row[selected]']));
+
+  // Check that the pin action is ticked, i.e. the action will unpin the file.
+  await remoteCall.waitForElement(
+      appId,
+      '#file-context-menu:not([hidden]) ' +
+          '[command="#toggle-pinned"][checked]');
+};
+
+/**
  * Tests pinning a file to a mobile network.
  */
 testcase.drivePinFileMobileNetwork = async () => {

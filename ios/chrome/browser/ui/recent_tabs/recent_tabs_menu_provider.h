@@ -5,14 +5,19 @@
 #ifndef IOS_CHROME_BROWSER_UI_RECENT_TABS_RECENT_TABS_MENU_PROVIDER_H_
 #define IOS_CHROME_BROWSER_UI_RECENT_TABS_RECENT_TABS_MENU_PROVIDER_H_
 
+#import <UIKit/UIKit.h>
+
 @class TableViewURLItem;
 
 // Protocol for instances that will provide menus to RecentTabs components.
 @protocol RecentTabsMenuProvider
 
-// Creates a context menu configuration instance for the given |item|.
+// Creates a context menu configuration instance for the given |item| and its
+// associated |view|.
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
-    (TableViewURLItem*)item API_AVAILABLE(ios(13.0));
+                                   (TableViewURLItem*)item
+                                                      fromView:(UIView*)view
+    API_AVAILABLE(ios(13.0));
 
 // Creates a context menu configuration instance for the header of the given
 // |sectionIdentifier|.

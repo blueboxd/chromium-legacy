@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -36,6 +37,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -197,6 +199,9 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
  public:
   ProcessManagerBrowserTest() {
     guest_view::GuestViewManager::set_factory_for_testing(&factory_);
+    // TODO(https://crbug.com/1110891): Remove this once Extensions are
+    // supported with BackForwardCache.
+    disabled_feature_list_.InitWithFeatures({}, {features::kBackForwardCache});
   }
 
   void SetUpOnMainThread() override {
@@ -298,6 +303,7 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
  private:
   guest_view::TestGuestViewManagerFactory factory_;
   std::vector<std::unique_ptr<TestExtensionDir>> temp_dirs_;
+  base::test::ScopedFeatureList disabled_feature_list_;
 };
 
 class DefaultProfileExtensionBrowserTest : public ExtensionBrowserTest {

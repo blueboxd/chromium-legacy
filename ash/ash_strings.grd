@@ -1961,6 +1961,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER" desc="Text to display as placeholder in the password field when both password and pin are allowed.">
         PIN or password
       </message>
+      <message name="IDS_ASH_LOGIN_POD_PASSWORD_PIN_INPUT_ACCESSIBLE_NAME" desc="The accessible name of the pin input field used for PIN Auto-submit">
+        Enter your PIN
+      </message>
       <message name="IDS_ASH_LOGIN_SWITCH_TO_PASSWORD" desc="Text to display on the button that is used for switching between PIN and password authentication">
         Switch to password
       </message>

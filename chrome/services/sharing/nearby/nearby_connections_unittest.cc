@@ -5,15 +5,18 @@
 #include "chrome/services/sharing/nearby/nearby_connections.h"
 
 #include <stdint.h>
+#include <algorithm>
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "chrome/services/sharing/nearby/nearby_connections_conversions.h"
 #include "chrome/services/sharing/nearby/test_support/fake_adapter.h"
 #include "chrome/services/sharing/nearby/test_support/mock_webrtc_dependencies.h"
 #include "chrome/services/sharing/public/mojom/nearby_decoder.mojom.h"
@@ -37,6 +40,8 @@ const char kRemoteEndpointInfo[] = {0x0d, 0x07, 0x06, 0x08, 0x09};
 const char kAuthenticationToken[] = "authentication_token";
 const char kRawAuthenticationToken[] = {0x00, 0x05, 0x04, 0x03, 0x02};
 const int32_t kQuality = 5201314;
+const int64_t kPayloadId = 612721831;
+const char kPayload[] = {0x0f, 0x0a, 0x0c, 0x0e};
 
 mojom::AdvertisingOptionsPtr CreateAdvertisingOptions() {
   auto allowed_mediums = mojom::MediumSelection::New(/*bluetooth=*/true,
@@ -108,6 +113,20 @@ class FakeConnectionLifecycleListener
       bandwidth_changed_cb = base::DoNothing();
 };
 
+class FakePayloadListener : public mojom::PayloadListener {
+ public:
+  void OnPayloadTransferUpdate(
+      const std::string& endpoint_id,
+      mojom::PayloadTransferUpdatePtr update) override {
+    payload_progress_cb.Run(endpoint_id, std::move(update));
+  }
+
+  mojo::Receiver<mojom::PayloadListener> receiver{this};
+  base::RepeatingCallback<void(const std::string&,
+                               mojom::PayloadTransferUpdatePtr)>
+      payload_progress_cb = base::DoNothing();
+};
+
 class NearbyConnectionsTest : public testing::Test {
  public:
   NearbyConnectionsTest() {
@@ -131,6 +150,101 @@ class NearbyConnectionsTest : public testing::Test {
   }
 
   void OnDisconnect() { disconnect_run_loop_.Quit(); }
+
+  ClientProxy* StartDiscovery(
+      FakeEndpointDiscoveryListener& fake_discovery_listener) {
+    ClientProxy* client_proxy;
+    EXPECT_CALL(*service_controller_ptr_, StartDiscovery)
+        .WillOnce([&client_proxy](ClientProxy* client,
+                                  const std::string& service_id,
+                                  const ConnectionOptions& options,
+                                  const DiscoveryListener& listener) {
+          client_proxy = client;
+          EXPECT_EQ(kServiceId, service_id);
+          EXPECT_EQ(Strategy::kP2pPointToPoint, options.strategy);
+          client->StartedDiscovery(service_id, options.strategy, listener,
+                                   /*mediums=*/{});
+          return Status{Status::kAlreadyDiscovering};
+        });
+
+    base::RunLoop start_discovery_run_loop;
+    nearby_connections_->StartDiscovery(
+        kServiceId,
+        mojom::DiscoveryOptions::New(mojom::Strategy::kP2pPointToPoint),
+        fake_discovery_listener.receiver.BindNewPipeAndPassRemote(),
+        base::BindLambdaForTesting([&](mojom::Status status) {
+          EXPECT_EQ(mojom::Status::kAlreadyDiscovering, status);
+          start_discovery_run_loop.Quit();
+        }));
+    start_discovery_run_loop.Run();
+
+    return client_proxy;
+  }
+
+  ClientProxy* RequestConnection(
+      FakeConnectionLifecycleListener& fake_connection_life_cycle_listener) {
+    ClientProxy* client_proxy;
+    EXPECT_CALL(*service_controller_ptr_, RequestConnection)
+        .WillOnce([&client_proxy](ClientProxy* client,
+                                  const std::string& endpoint_id,
+                                  const ConnectionRequestInfo& info) {
+          client_proxy = client;
+          EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+          EXPECT_EQ(
+              std::string(std::begin(kEndpointInfo), std::end(kEndpointInfo)),
+              info.name);
+          client_proxy->OnConnectionInitiated(
+              endpoint_id,
+              {.authentication_token = kAuthenticationToken,
+               .raw_authentication_token = ByteArray(
+                   kRawAuthenticationToken, sizeof(kRawAuthenticationToken)),
+               .endpoint_info =
+                   ByteArray(kRemoteEndpointInfo, sizeof(kRemoteEndpointInfo)),
+               .is_incoming_connection = false},
+              info.listener);
+          return Status{Status::kSuccess};
+        });
+
+    base::RunLoop request_connection_run_loop;
+    nearby_connections_->RequestConnection(
+        std::vector<uint8_t>(std::begin(kEndpointInfo),
+                             std::end(kEndpointInfo)),
+        kRemoteEndpointId,
+        fake_connection_life_cycle_listener.receiver.BindNewPipeAndPassRemote(),
+        base::BindLambdaForTesting([&](mojom::Status status) {
+          EXPECT_EQ(mojom::Status::kSuccess, status);
+          request_connection_run_loop.Quit();
+        }));
+    request_connection_run_loop.Run();
+
+    return client_proxy;
+  }
+
+  ClientProxy* AcceptConnection(FakePayloadListener& fake_payload_listener) {
+    ClientProxy* client_proxy;
+    EXPECT_CALL(*service_controller_ptr_, AcceptConnection)
+        .WillOnce([&client_proxy](ClientProxy* client,
+                                  const std::string& endpoint_id,
+                                  const PayloadListener& listener) {
+          client_proxy = client;
+          EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+          client_proxy->LocalEndpointAcceptedConnection(endpoint_id, listener);
+          client_proxy->OnConnectionAccepted(endpoint_id);
+          return Status{Status::kSuccess};
+        });
+
+    base::RunLoop accept_connection_run_loop;
+    nearby_connections_->AcceptConnection(
+        kRemoteEndpointId,
+        fake_payload_listener.receiver.BindNewPipeAndPassRemote(),
+        base::BindLambdaForTesting([&](mojom::Status status) {
+          EXPECT_EQ(mojom::Status::kSuccess, status);
+          accept_connection_run_loop.Quit();
+        }));
+    accept_connection_run_loop.Run();
+
+    return client_proxy;
+  }
 
  protected:
   base::test::TaskEnvironment task_environment_;
@@ -175,33 +289,9 @@ TEST_F(NearbyConnectionsTest, WebRtcSignalingMessengerDisconnect) {
   disconnect_run_loop_.Run();
 }
 
-TEST_F(NearbyConnectionsTest, StartStopDiscovery) {
-  ClientProxy* client_proxy;
-  EXPECT_CALL(*service_controller_ptr_, StartDiscovery)
-      .WillOnce([&client_proxy](ClientProxy* client,
-                                const std::string& service_id,
-                                const ConnectionOptions& options,
-                                const DiscoveryListener& listener) {
-        client_proxy = client;
-        EXPECT_EQ(kServiceId, service_id);
-        EXPECT_EQ(Strategy::kP2pPointToPoint, options.strategy);
-
-        client->StartedDiscovery(service_id, options.strategy, listener,
-                                 /*mediums=*/{});
-        return Status{Status::kAlreadyDiscovering};
-      });
-
-  base::RunLoop start_discovery_run_loop;
+TEST_F(NearbyConnectionsTest, StartDiscovery) {
   FakeEndpointDiscoveryListener fake_discovery_listener;
-  nearby_connections_->StartDiscovery(
-      kServiceId,
-      mojom::DiscoveryOptions::New(mojom::Strategy::kP2pPointToPoint),
-      fake_discovery_listener.receiver.BindNewPipeAndPassRemote(),
-      base::BindLambdaForTesting([&](mojom::Status status) {
-        EXPECT_EQ(mojom::Status::kAlreadyDiscovering, status);
-        start_discovery_run_loop.Quit();
-      }));
-  start_discovery_run_loop.Run();
+  ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
 
   base::RunLoop endpoint_found_run_loop;
   fake_discovery_listener.endpoint_found_cb =
@@ -229,6 +319,11 @@ TEST_F(NearbyConnectionsTest, StartStopDiscovery) {
       });
   client_proxy->OnEndpointLost(kServiceId, kRemoteEndpointId);
   endpoint_lost_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsTest, StopDiscovery) {
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  StartDiscovery(fake_discovery_listener);
 
   EXPECT_CALL(*service_controller_ptr_, StopDiscovery(testing::_)).Times(1);
 
@@ -244,61 +339,16 @@ TEST_F(NearbyConnectionsTest, StartStopDiscovery) {
   EXPECT_CALL(*service_controller_ptr_, StopDiscovery(testing::_)).Times(1);
 }
 
-TEST_F(NearbyConnectionsTest, RequestConnection) {
-  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
-
-  EXPECT_CALL(*service_controller_ptr_, StartDiscovery)
-      .WillOnce([](ClientProxy* client, const std::string& service_id,
-                   const ConnectionOptions& options,
-                   const DiscoveryListener& listener) {
-        client->StartedDiscovery(service_id, options.strategy, listener,
-                                 /*mediums=*/{});
-        client->OnEndpointFound(kServiceId, kRemoteEndpointId,
+TEST_F(NearbyConnectionsTest, RequestConnectionInitiated) {
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
+  client_proxy->OnEndpointFound(kServiceId, kRemoteEndpointId,
                                 std::string(std::begin(kRemoteEndpointInfo),
                                             std::end(kRemoteEndpointInfo)),
                                 /*mediums=*/{});
-        return Status{Status::kSuccess};
-      });
-
-  base::RunLoop start_discovery_run_loop;
-  FakeEndpointDiscoveryListener fake_discovery_listener;
-  nearby_connections_->StartDiscovery(
-      kServiceId,
-      mojom::DiscoveryOptions::New(mojom::Strategy::kP2pPointToPoint),
-      fake_discovery_listener.receiver.BindNewPipeAndPassRemote(),
-      base::BindLambdaForTesting([&](mojom::Status status) {
-        EXPECT_EQ(mojom::Status::kSuccess, status);
-        start_discovery_run_loop.Quit();
-      }));
-  start_discovery_run_loop.Run();
-
-  ClientProxy* client_proxy;
-  ConnectionListener connections_listener;
-  EXPECT_CALL(*service_controller_ptr_, RequestConnection)
-      .WillOnce([&client_proxy, &connections_listener](
-                    ClientProxy* client, const std::string& endpoint_id,
-                    const ConnectionRequestInfo& info) {
-        client_proxy = client;
-        connections_listener = info.listener;
-        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
-        EXPECT_EQ(
-            std::string(std::begin(kEndpointInfo), std::end(kEndpointInfo)),
-            info.name);
-        return Status{Status::kSuccess};
-      });
-
-  base::RunLoop request_connection_run_loop;
-  nearby_connections_->RequestConnection(
-      std::vector<uint8_t>(std::begin(kEndpointInfo), std::end(kEndpointInfo)),
-      kRemoteEndpointId,
-      fake_connection_life_cycle_listener.receiver.BindNewPipeAndPassRemote(),
-      base::BindLambdaForTesting([&](mojom::Status status) {
-        EXPECT_EQ(mojom::Status::kSuccess, status);
-        request_connection_run_loop.Quit();
-      }));
-  request_connection_run_loop.Run();
 
   base::RunLoop initiated_run_loop;
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
   fake_connection_life_cycle_listener.initiated_cb = base::BindLambdaForTesting(
       [&](const std::string& endpoint_id, mojom::ConnectionInfoPtr info) {
         EXPECT_EQ(kRemoteEndpointId, endpoint_id);
@@ -312,16 +362,44 @@ TEST_F(NearbyConnectionsTest, RequestConnection) {
         EXPECT_FALSE(info->is_incoming_connection);
         initiated_run_loop.Quit();
       });
-  client_proxy->OnConnectionInitiated(
-      kRemoteEndpointId,
-      {.authentication_token = kAuthenticationToken,
-       .raw_authentication_token =
-           ByteArray(kRawAuthenticationToken, sizeof(kRawAuthenticationToken)),
-       .endpoint_info =
-           ByteArray(kRemoteEndpointInfo, sizeof(kRemoteEndpointInfo)),
-       .is_incoming_connection = false},
-      connections_listener);
+
+  client_proxy = RequestConnection(fake_connection_life_cycle_listener);
   initiated_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsTest, RequestConnectionAccept) {
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
+  client_proxy->OnEndpointFound(kServiceId, kRemoteEndpointId,
+                                std::string(std::begin(kRemoteEndpointInfo),
+                                            std::end(kRemoteEndpointInfo)),
+                                /*mediums=*/{});
+
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  client_proxy = RequestConnection(fake_connection_life_cycle_listener);
+
+  base::RunLoop accepted_run_loop;
+  fake_connection_life_cycle_listener.accepted_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        accepted_run_loop.Quit();
+      });
+
+  FakePayloadListener fake_payload_listener;
+  client_proxy = AcceptConnection(fake_payload_listener);
+  accepted_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsTest, RequestConnectionOnRejected) {
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
+  client_proxy->OnEndpointFound(kServiceId, kRemoteEndpointId,
+                                std::string(std::begin(kRemoteEndpointInfo),
+                                            std::end(kRemoteEndpointInfo)),
+                                /*mediums=*/{});
+
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  client_proxy = RequestConnection(fake_connection_life_cycle_listener);
 
   base::RunLoop rejected_run_loop;
   fake_connection_life_cycle_listener.rejected_cb = base::BindLambdaForTesting(
@@ -330,31 +408,25 @@ TEST_F(NearbyConnectionsTest, RequestConnection) {
         EXPECT_EQ(mojom::Status::kConnectionRejected, status);
         rejected_run_loop.Quit();
       });
+
   client_proxy->OnConnectionRejected(kRemoteEndpointId,
                                      {Status::kConnectionRejected});
   rejected_run_loop.Run();
+}
 
-  // Initiate connection again to test accepted flow.
-  base::RunLoop initiated_run_loop_2;
-  fake_connection_life_cycle_listener.initiated_cb = base::BindLambdaForTesting(
-      [&](const std::string& endpoint_id, mojom::ConnectionInfoPtr info) {
-        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
-        EXPECT_FALSE(info->is_incoming_connection);
-        initiated_run_loop_2.Quit();
-      });
-  client_proxy->OnConnectionInitiated(kRemoteEndpointId,
-                                      {.is_incoming_connection = false},
-                                      connections_listener);
-  initiated_run_loop_2.Run();
+TEST_F(NearbyConnectionsTest, RequestConnectionOnBandwidthUpgrade) {
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
+  client_proxy->OnEndpointFound(kServiceId, kRemoteEndpointId,
+                                std::string(std::begin(kRemoteEndpointInfo),
+                                            std::end(kRemoteEndpointInfo)),
+                                /*mediums=*/{});
 
-  base::RunLoop accepted_run_loop;
-  fake_connection_life_cycle_listener.accepted_cb =
-      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
-        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
-        accepted_run_loop.Quit();
-      });
-  client_proxy->OnConnectionAccepted(kRemoteEndpointId);
-  accepted_run_loop.Run();
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  client_proxy = RequestConnection(fake_connection_life_cycle_listener);
+
+  FakePayloadListener fake_payload_listener;
+  client_proxy = AcceptConnection(fake_payload_listener);
 
   base::RunLoop bandwidth_changed_run_loop;
   fake_connection_life_cycle_listener.bandwidth_changed_cb =
@@ -364,8 +436,24 @@ TEST_F(NearbyConnectionsTest, RequestConnection) {
             EXPECT_EQ(kQuality, quality);
             bandwidth_changed_run_loop.Quit();
           });
+
   client_proxy->OnBandwidthChanged(kRemoteEndpointId, kQuality);
   bandwidth_changed_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsTest, RequestConnectionOnDisconnected) {
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
+  client_proxy->OnEndpointFound(kServiceId, kRemoteEndpointId,
+                                std::string(std::begin(kRemoteEndpointInfo),
+                                            std::end(kRemoteEndpointInfo)),
+                                /*mediums=*/{});
+
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  client_proxy = RequestConnection(fake_connection_life_cycle_listener);
+
+  FakePayloadListener fake_payload_listener;
+  client_proxy = AcceptConnection(fake_payload_listener);
 
   base::RunLoop disconnected_run_loop;
   fake_connection_life_cycle_listener.disconnected_cb =
@@ -373,35 +461,37 @@ TEST_F(NearbyConnectionsTest, RequestConnection) {
         EXPECT_EQ(kRemoteEndpointId, endpoint_id);
         disconnected_run_loop.Quit();
       });
+
   client_proxy->OnDisconnected(kRemoteEndpointId, /*notify=*/true);
   disconnected_run_loop.Run();
+}
 
-  // Initiate and accept connection again to test DisconnectFromEndpoint.
-  base::RunLoop initiated_run_loop_3;
-  fake_connection_life_cycle_listener.initiated_cb = base::BindLambdaForTesting(
-      [&](const std::string& endpoint_id, mojom::ConnectionInfoPtr info) {
-        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
-        EXPECT_FALSE(info->is_incoming_connection);
-        initiated_run_loop_3.Quit();
-      });
-  client_proxy->OnConnectionInitiated(kRemoteEndpointId,
-                                      {.is_incoming_connection = false},
-                                      connections_listener);
-  initiated_run_loop_3.Run();
+TEST_F(NearbyConnectionsTest, RequestConnectionDisconnect) {
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
+  client_proxy->OnEndpointFound(kServiceId, kRemoteEndpointId,
+                                std::string(std::begin(kRemoteEndpointInfo),
+                                            std::end(kRemoteEndpointInfo)),
+                                /*mediums=*/{});
 
-  base::RunLoop accepted_run_loop_2;
-  fake_connection_life_cycle_listener.accepted_cb =
-      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
-        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
-        accepted_run_loop_2.Quit();
-      });
-  client_proxy->OnConnectionAccepted(kRemoteEndpointId);
-  accepted_run_loop_2.Run();
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  client_proxy = RequestConnection(fake_connection_life_cycle_listener);
+
+  FakePayloadListener fake_payload_listener;
+  client_proxy = AcceptConnection(fake_payload_listener);
 
   EXPECT_CALL(*service_controller_ptr_, DisconnectFromEndpoint)
       .WillOnce([](ClientProxy* client, const std::string& endpoint_id) {
         EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        client->OnDisconnected(endpoint_id, /*notify=*/true);
         return Status{Status::kSuccess};
+      });
+
+  base::RunLoop disconnected_run_loop;
+  fake_connection_life_cycle_listener.disconnected_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        disconnected_run_loop.Quit();
       });
 
   base::RunLoop disconnect_from_endpoint_run_loop;
@@ -411,9 +501,128 @@ TEST_F(NearbyConnectionsTest, RequestConnection) {
         disconnect_from_endpoint_run_loop.Quit();
       }));
   disconnect_from_endpoint_run_loop.Run();
+  disconnected_run_loop.Run();
+}
 
-  // DisconnectFromEndpoint is also called when Core is destroyed.
-  EXPECT_CALL(*service_controller_ptr_, DisconnectFromEndpoint).Times(1);
+TEST_F(NearbyConnectionsTest, OnPayloadTransferUpdate) {
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
+  client_proxy->OnEndpointFound(kServiceId, kRemoteEndpointId,
+                                std::string(std::begin(kRemoteEndpointInfo),
+                                            std::end(kRemoteEndpointInfo)),
+                                /*mediums=*/{});
+
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  RequestConnection(fake_connection_life_cycle_listener);
+
+  FakePayloadListener fake_payload_listener;
+  client_proxy = AcceptConnection(fake_payload_listener);
+
+  base::RunLoop payload_progress_run_loop;
+  fake_payload_listener.payload_progress_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id,
+                                     mojom::PayloadTransferUpdatePtr info) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        payload_progress_run_loop.Quit();
+      });
+
+  client_proxy->OnPayloadProgress(kRemoteEndpointId, {});
+  payload_progress_run_loop.Run();
+}
+
+// TOOD(crbug/1076008): Re-enable test after upprev NearbyConnections.
+TEST_F(NearbyConnectionsTest, DISABLED_SendBytesPayload) {
+  const std::vector<uint8_t> expected_payload(std::begin(kPayload),
+                                              std::end(kPayload));
+
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
+  client_proxy->OnEndpointFound(kServiceId, kRemoteEndpointId,
+                                std::string(std::begin(kRemoteEndpointInfo),
+                                            std::end(kRemoteEndpointInfo)),
+                                /*mediums=*/{});
+
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  client_proxy = RequestConnection(fake_connection_life_cycle_listener);
+
+  FakePayloadListener fake_payload_listener;
+  client_proxy = AcceptConnection(fake_payload_listener);
+
+  EXPECT_CALL(*service_controller_ptr_, SendPayload)
+      .WillOnce([&](ClientProxy* client,
+                    const std::vector<std::string>& endpoint_ids,
+                    Payload payload) {
+        ASSERT_EQ(1u, endpoint_ids.size());
+        EXPECT_EQ(kRemoteEndpointId, endpoint_ids.front());
+        EXPECT_EQ(Payload::Type::kBytes, payload.GetType());
+        std::string payload_bytes(payload.AsBytes());
+        EXPECT_EQ(expected_payload, ByteArrayToMojom(payload.AsBytes()));
+      });
+
+  base::RunLoop send_payload_run_loop;
+  nearby_connections_->SendPayload(
+      {kRemoteEndpointId},
+      mojom::Payload::New(kPayloadId,
+                          mojom::PayloadContent::NewBytes(
+                              mojom::BytesPayload::New(expected_payload))),
+      base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        send_payload_run_loop.Quit();
+      }));
+  send_payload_run_loop.Run();
+}
+
+// TOOD(crbug/1076008): Re-enable test after upprev NearbyConnections.
+TEST_F(NearbyConnectionsTest, DISABLED_SendFilePayload) {
+  const std::vector<uint8_t> expected_payload(std::begin(kPayload),
+                                              std::end(kPayload));
+
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
+  client_proxy->OnEndpointFound(kServiceId, kRemoteEndpointId,
+                                std::string(std::begin(kRemoteEndpointInfo),
+                                            std::end(kRemoteEndpointInfo)),
+                                /*mediums=*/{});
+
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  client_proxy = RequestConnection(fake_connection_life_cycle_listener);
+
+  FakePayloadListener fake_payload_listener;
+  client_proxy = AcceptConnection(fake_payload_listener);
+
+  EXPECT_CALL(*service_controller_ptr_, SendPayload)
+      .WillOnce([&](ClientProxy* client,
+                    const std::vector<std::string>& endpoint_ids,
+                    Payload payload) {
+        ASSERT_EQ(1u, endpoint_ids.size());
+        EXPECT_EQ(kRemoteEndpointId, endpoint_ids.front());
+        EXPECT_EQ(Payload::Type::kFile, payload.GetType());
+        InputFile* file = payload.AsFile();
+        ASSERT_TRUE(file);
+        ExceptionOr<ByteArray> bytes = file->Read(file->GetTotalSize());
+        ASSERT_TRUE(bytes.ok());
+        EXPECT_EQ(expected_payload, ByteArrayToMojom(bytes.result()));
+      });
+
+  base::FilePath path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&path));
+  base::File file(path, base::File::Flags::FLAG_CREATE_ALWAYS |
+                            base::File::Flags::FLAG_READ |
+                            base::File::Flags::FLAG_WRITE);
+  EXPECT_TRUE(file.WriteAndCheck(
+      /*offset=*/0, base::make_span(expected_payload)));
+
+  base::RunLoop send_payload_run_loop;
+  nearby_connections_->SendPayload(
+      {kRemoteEndpointId},
+      mojom::Payload::New(kPayloadId,
+                          mojom::PayloadContent::NewFile(
+                              mojom::FilePayload::New(std::move(file)))),
+      base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        send_payload_run_loop.Quit();
+      }));
+  send_payload_run_loop.Run();
 }
 
 TEST_F(NearbyConnectionsTest, StartAdvertising) {

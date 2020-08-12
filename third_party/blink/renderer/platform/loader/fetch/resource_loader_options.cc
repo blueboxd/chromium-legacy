@@ -30,11 +30,14 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 
+#include <utility>
+
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 
 namespace blink {
 
-ResourceLoaderOptions::ResourceLoaderOptions()
+ResourceLoaderOptions::ResourceLoaderOptions(
+    scoped_refptr<const DOMWrapperWorld> world)
     : data_buffering_policy(kBufferData),
       content_security_policy_option(network::mojom::CSPDisposition::CHECK),
       request_initiator_context(kDocumentContext),
@@ -42,7 +45,8 @@ ResourceLoaderOptions::ResourceLoaderOptions()
       cors_handling_by_resource_fetcher(kEnableCorsHandlingByResourceFetcher),
       cors_flag(false),
       parser_disposition(kParserInserted),
-      cache_aware_loading_enabled(kNotCacheAwareLoadingEnabled) {}
+      cache_aware_loading_enabled(kNotCacheAwareLoadingEnabled),
+      world(std::move(world)) {}
 
 ResourceLoaderOptions::ResourceLoaderOptions(
     const ResourceLoaderOptions& other) = default;

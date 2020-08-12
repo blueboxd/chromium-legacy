@@ -1760,8 +1760,8 @@
   },
   {
     "name": "enable-native-notifications",
-    "owners": [ "peter", "finnur" ],
-    "expiry_milestone": 84
+    "owners": [ "peter", "finnur", "knollr" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-navigation-predictor",
@@ -2304,8 +2304,8 @@
   },
   {
     "name": "enable-webrtc-hybrid-agc",
-    "owners": [ "aleloi" ],
-    "expiry_milestone": 83
+    "owners": [ "alessiob" ],
+    "expiry_milestone": 103
   },
   {
     "name": "enable-webrtc-new-encode-cpu-load-estimator",
@@ -2589,7 +2589,7 @@
   {
     "name": "freeze-user-agent",
     "owners": [ "yoavweiss", "aarontag" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 89
   },
   {
     "name": "fullscreen-controller-browser-scoped",
@@ -2673,8 +2673,7 @@
     "owners": [ "//chrome/browser/ui/hats/OWNERS" ],
     // A debugging and demo flag to allow UI/dev/testing team to always show the UI
     // components for the survey without being limited by the triggering mechanism.
-    // This flag should expire along with the above feature flag.
-    "expiry_milestone": 84
+    "expiry_milestone": 90
   },
   {
     "name": "happiness-tracking-surveys-for-desktop-migration",

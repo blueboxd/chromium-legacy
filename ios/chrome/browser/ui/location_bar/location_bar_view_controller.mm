@@ -273,8 +273,23 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
       progress <= kFullscreenProgressBadgeViewThreshold;
   [self.locationBarSteadyView
       setFullScreenCollapsedMode:badgeViewShouldCollapse];
-  self.locationBarSteadyView.transform =
+
+  CGAffineTransform transform =
       CGAffineTransformMakeScale(scaleValue, scaleValue);
+  self.locationBarSteadyView.locationContainerView.transform = transform;
+  self.locationBarSteadyView.trailingButton.transform = transform;
+
+  UIView* badgeView = self.locationBarSteadyView.badgeView;
+  badgeView.transform = transform;
+  // The translation value is added in order to move badgeView for |dx| created
+  // by the difference of the separate animation of the locationbar's views.
+  if (badgeViewShouldCollapse) {
+    CGFloat dx =
+        self.locationBarSteadyView.locationContainerView.frame.origin.x -
+        badgeView.frame.origin.x - badgeView.frame.size.width;
+    badgeView.transform =
+        CGAffineTransformTranslate(badgeView.transform, dx, 0);
+  }
 }
 
 - (void)updateForFullscreenEnabled:(BOOL)enabled {
@@ -422,7 +437,7 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                        (UIScribbleElementIdentifier)elementIdentifier
     API_AVAILABLE(ios(14.0)) {
   DCHECK(elementIdentifier == kScribbleOmniboxElementId);
-  return self.delegate.scribbleForwardingTarget.isFirstResponder;
+  return self.delegate.omniboxScribbleForwardingTarget.isFirstResponder;
 }
 
 - (CGRect)
@@ -442,11 +457,11 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                          completion:
                              (void (^)(UIResponder<UITextInput>* focusedInput))
                                  completion API_AVAILABLE(ios(14.0)) {
-  if (!self.delegate.scribbleForwardingTarget.isFirstResponder) {
+  if (!self.delegate.omniboxScribbleForwardingTarget.isFirstResponder) {
     [self.delegate locationBarRequestScribbleTargetFocus];
   }
 
-  completion(self.delegate.scribbleForwardingTarget);
+  completion(self.delegate.omniboxScribbleForwardingTarget);
 }
 
 #endif  // defined(__IPHONE_14_0)

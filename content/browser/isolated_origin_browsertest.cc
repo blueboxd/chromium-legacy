@@ -146,15 +146,19 @@ class OriginIsolationOptInServerTest : public IsolatedOriginTestBase {
     IsolateAllSitesForTesting(command_line);
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
     feature_list_.InitAndEnableFeature(feature_switch());
-  }
 
-  void SetUpOnMainThread() override {
-    IsolatedOriginTestBase::SetUpOnMainThread();
+    // Start the HTTPS server here so derived tests can use it if they override
+    // SetUpCommandLine().
     https_server()->AddDefaultHandlers(GetTestDataFilePath());
     https_server()->RegisterRequestHandler(
         base::BindRepeating(&OriginIsolationOptInServerTest::HandleResponse,
                             base::Unretained(this)));
     ASSERT_TRUE(https_server()->Start());
+  }
+
+  void SetUpOnMainThread() override {
+    IsolatedOriginTestBase::SetUpOnMainThread();
+
     host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->StartAcceptingConnections();
   }
@@ -280,6 +284,81 @@ class OriginIsolationOptInHeaderTest : public OriginIsolationOptInServerTest {
 
   DISALLOW_COPY_AND_ASSIGN(OriginIsolationOptInHeaderTest);
 };
+
+// This class allows testing the interaction of OptIn isolation and command-line
+// isolation for origins. Tests using this class will isolate foo.com and
+// bar.com by default using command-line isolation, but any opt-in isolation
+// will override this.
+class OriginIsolationOptInOriginPolicyCommandLineTest
+    : public OriginIsolationOptInOriginPolicyTest {
+ public:
+  OriginIsolationOptInOriginPolicyCommandLineTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    OriginIsolationOptInOriginPolicyTest::SetUpCommandLine(command_line);
+    // The base class should already have started the HTTPS server so we can use
+    // it here to generate origins to specify on the command line.
+    ASSERT_TRUE(https_server()->Started());
+
+    std::string origin_list = https_server()->GetURL("foo.com", "/").spec() +
+                              "," +
+                              https_server()->GetURL("bar.com", "/").spec();
+    command_line->AppendSwitchASCII(switches::kIsolateOrigins, origin_list);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OriginIsolationOptInOriginPolicyCommandLineTest);
+};
+
+// This test verifies that opt-in isolation takes precedence over command-line
+// isolation. It loads an opt-in isolated base origin (which would have
+// otherwise been isolated via command-line isolation), and then loads a child
+// frame sub-origin which should-not be isolated (but would have been if the
+// base origin was command-line isolated).
+IN_PROC_BROWSER_TEST_F(OriginIsolationOptInOriginPolicyCommandLineTest,
+                       OptInOverridesCommandLine) {
+  SetOriginPolicyManifest(R"({ "ids": ["my-policy"], "isolation": true })");
+  // Start off with an isolated base-origin in an a(a) configuration, then
+  // navigate the subframe to a sub-origin not requesting isolation.
+  // Note: this works because we serve mock headers with the base origin's html
+  // file, requesting loading the origin policy.
+  GURL isolated_base_origin_url(https_server()->GetURL(
+      "foo.com", "/isolated_base_origin_with_subframe.html"));
+  GURL non_isolated_sub_origin(
+      https_server()->GetURL("non_isolated.foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_base_origin_url));
+  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child_frame_node = root->child_at(0);
+  NavigateFrameToURL(child_frame_node, non_isolated_sub_origin);
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_TRUE(policy->ShouldOriginGetOptInIsolation(
+      root->current_frame_host()->GetSiteInstance()->GetIsolationContext(),
+      url::Origin::Create(isolated_base_origin_url)));
+  EXPECT_FALSE(policy->ShouldOriginGetOptInIsolation(
+      root->current_frame_host()->GetSiteInstance()->GetIsolationContext(),
+      url::Origin::Create(non_isolated_sub_origin)));
+  // Make sure the child (i.e. sub-origin) is not isolated.
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child_frame_node->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(
+      GURL("https://foo.com"),
+      child_frame_node->current_frame_host()->GetSiteInstance()->GetSiteURL());
+  // The following test passes because IsIsolatedOrigin doesn't distinguish
+  // between command-line isolation and opt-in isolation.
+  EXPECT_TRUE(policy->IsIsolatedOrigin(
+      root->current_frame_host()->GetSiteInstance()->GetIsolationContext(),
+      url::Origin::Create(non_isolated_sub_origin)));
+
+  // Make sure the master opt-in list has the base origin isolated and the sub
+  // origin not isolated.
+  EXPECT_TRUE(policy->HasOriginEverRequestedOptInIsolation(
+      url::Origin::Create(isolated_base_origin_url)));
+  EXPECT_FALSE(policy->HasOriginEverRequestedOptInIsolation(
+      url::Origin::Create(non_isolated_sub_origin)));
+}
 
 // This tests that origin policy opt-in causes the origin to end up in the
 // isolated origins list.

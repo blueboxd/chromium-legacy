@@ -41,12 +41,11 @@ class FakeNearbyConnectionsManager
   void Disconnect(const std::string& endpoint_id) override;
   void Send(const std::string& endpoint_id,
             PayloadPtr payload,
-            PayloadStatusListener* listener,
-            ConnectionsCallback callback) override;
+            PayloadStatusListener* listener) override;
   void RegisterPayloadStatusListener(int64_t payload_id,
                                      PayloadStatusListener* listener) override;
   Payload* GetIncomingPayload(int64_t payload_id) override;
-  void Cancel(int64_t payload_id, ConnectionsCallback callback) override;
+  void Cancel(int64_t payload_id) override;
   void ClearIncomingPayloads() override;
   base::Optional<std::vector<uint8_t>> GetRawAuthenticationToken(
       const std::string& endpoint_id) override;

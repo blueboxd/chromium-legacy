@@ -405,9 +405,10 @@ webrtc::RtpTransceiverDirection RTCRtpReceiverOnlyTransceiver::Direction()
   return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
-void RTCRtpReceiverOnlyTransceiver::SetDirection(
+webrtc::RTCError RTCRtpReceiverOnlyTransceiver::SetDirection(
     webrtc::RtpTransceiverDirection direction) {
   NOTIMPLEMENTED();
+  return webrtc::RTCError::OK();
 }
 
 base::Optional<webrtc::RtpTransceiverDirection>

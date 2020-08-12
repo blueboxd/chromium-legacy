@@ -220,10 +220,10 @@ void PossiblyFetchBlockedDocWriteScript(
 
   EmitErrorBlocked(resource->Url(), element_document);
 
+  ExecutionContext* context = element_document.GetExecutionContext();
   FetchParameters params(options.CreateFetchParameters(
-      resource->Url(),
-      element_document.GetExecutionContext()->GetSecurityOrigin(), cross_origin,
-      resource->Encoding(), FetchParameters::kIdleLoad));
+      resource->Url(), context->GetSecurityOrigin(), context->GetCurrentWorld(),
+      cross_origin, resource->Encoding(), FetchParameters::kIdleLoad));
   AddHeader(&params);
   ScriptResource::Fetch(params, element_document.Fetcher(), nullptr,
                         ScriptResource::kNoStreaming);

@@ -9,14 +9,11 @@
 
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_constants.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -47,50 +44,6 @@ TEST(StoragePartitionImplMapTest, GarbageCollect) {
 
   EXPECT_TRUE(base::PathExists(active_path));
   EXPECT_FALSE(base::PathExists(inactive_path));
-}
-
-TEST(StoragePartitionImplMapTest, AppCacheCleanup) {
-  const auto kOnDiskConfig = content::StoragePartitionConfig::Create(
-      "foo", /*partition_name=*/"", /*in_memory=*/false);
-
-  base::test::ScopedFeatureList f;
-  f.InitAndDisableFeature(blink::features::kAppCache);
-  BrowserTaskEnvironment task_environment;
-  TestBrowserContext browser_context;
-  base::FilePath appcache_path;
-
-  {
-    base::RunLoop run_loop;
-    // Creating the partition in the map also does the deletion, so
-    // create it once, so we can find out what path the partition
-    // with this name is.
-    StoragePartitionImplMap map(&browser_context);
-
-    auto* partition = map.Get(kOnDiskConfig, true);
-    appcache_path = partition->GetPath().Append(kAppCacheDirname);
-
-    base::ThreadPool::PostTask(FROM_HERE, run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
-  // Create an AppCache directory that would have existed.
-  EXPECT_FALSE(base::PathExists(appcache_path));
-  EXPECT_TRUE(base::CreateDirectory(appcache_path));
-
-  {
-    base::RunLoop run_loop;
-    StoragePartitionImplMap map(&browser_context);
-    auto* partition = map.Get(kOnDiskConfig, true);
-
-    ASSERT_EQ(appcache_path, partition->GetPath().Append(kAppCacheDirname));
-
-    base::ThreadPool::PostTask(FROM_HERE, run_loop.QuitClosure());
-    run_loop.Run();
-
-    // Verify that creating this partition deletes any AppCache directory it may
-    // have had.
-    EXPECT_FALSE(base::PathExists(appcache_path));
-  }
 }
 
 }  // namespace content

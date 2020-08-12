@@ -77,14 +77,14 @@ PasswordFeatureManagerImpl::ComputePasswordAccountStorageUsageLevel() const {
                                                                 sync_service_);
 }
 
-void PasswordFeatureManagerImpl::IncrementMoveToAccountRefusedCount() {
-  features_util::IncrementMoveToAccountRefusedCount(pref_service_,
-                                                    sync_service_);
+void PasswordFeatureManagerImpl::RecordMoveOfferedToNonOptedInUser() {
+  features_util::RecordMoveOfferedToNonOptedInUser(pref_service_,
+                                                   sync_service_);
 }
 
-int PasswordFeatureManagerImpl::GetMoveToAccountRefusedCount() const {
-  return features_util::GetMoveToAccountRefusedCount(pref_service_,
-                                                     sync_service_);
+int PasswordFeatureManagerImpl::GetMoveOfferedToNonOptedInUserCount() const {
+  return features_util::GetMoveOfferedToNonOptedInUserCount(pref_service_,
+                                                            sync_service_);
 }
 
 }  // namespace password_manager

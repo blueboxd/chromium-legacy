@@ -145,6 +145,8 @@ String SerializeDirection(webrtc::RtpTransceiverDirection direction) {
       return "'recvonly'";
     case webrtc::RtpTransceiverDirection::kInactive:
       return "'inactive'";
+    case webrtc::RtpTransceiverDirection::kStopped:
+      return "'stopped'";
     default:
       NOTREACHED();
       return String();

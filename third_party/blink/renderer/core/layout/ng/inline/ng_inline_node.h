@@ -99,7 +99,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   // Returns the DOM to text content offset mapping of this block. If it is not
   // computed before, compute and store it in NGInlineNodeData.
-  // This funciton must be called with clean layout.
+  // This function must be called with clean layout.
   const NGOffsetMapping* ComputeOffsetMappingIfNeeded() const;
 
   // Get |NGOffsetMapping| for the |layout_block_flow|. |layout_block_flow|

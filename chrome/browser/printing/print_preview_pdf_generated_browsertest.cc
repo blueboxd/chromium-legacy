@@ -389,7 +389,8 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
       ASSERT_TRUE(chrome_pdf::RenderPDFPageToBitmap(
           pdf_span, i, page_bitmap_data.data(), settings.area.size().width(),
           settings.area.size().height(), settings.dpi.width(),
-          settings.dpi.height(), settings.autorotate, settings.use_color));
+          settings.dpi.height(), false, true, settings.autorotate,
+          settings.use_color));
       FillPng(&page_bitmap_data, width_in_pixels, max_width_in_pixels,
               settings.area.size().height());
       bitmap_data.insert(bitmap_data.end(),

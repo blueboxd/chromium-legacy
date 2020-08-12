@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -240,7 +242,8 @@ class ErrorScreenWatcher : public OobeUI::Observer {
 class WebviewLoginTest : public OobeBaseTest {
  public:
   WebviewLoginTest() {
-    scoped_feature_list_.InitWithFeatures({features::kGaiaActionButtons}, {});
+    scoped_feature_list_.InitWithFeatures(
+        {features::kGaiaActionButtons, features::kChildSpecificSignin}, {});
   }
   ~WebviewLoginTest() override = default;
 
@@ -303,9 +306,9 @@ class WebviewLoginTest : public OobeBaseTest {
  protected:
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(WebviewLoginTest);
 };
 
@@ -423,18 +426,16 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
   test::WaitForPrimaryUserSessionStart();
 }
 
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, ErrorScreenOnGaiaError) {
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackToUserCreationScreen) {
   WaitForGaiaPageLoadAndPropertyUpdate();
+
+  // Start with identifier page.
   ExpectIdentifierPage();
 
-  // Make gaia landing page unreachable
-  fake_gaia_.fake_gaia()->SetErrorResponse(
-      GaiaUrls::GetInstance()->embedded_setup_chromeos_url(2),
-      net::HTTP_NOT_FOUND);
-
-  // Click back to reload (unreachable) identifier page.
+  // Click back to exit gaia screen.
   test::OobeJS().ClickOnPath({"gaia-signin", "signin-back-button"});
-  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+  OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
 }
 
 // Create new account option should be available only if the settings allow it.
@@ -1325,6 +1326,30 @@ IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, DISABLED_ProxyAuthTransfer) {
   // Expect that we got back to the identifier page, as there are no known users
   // so the sign-in screen will not display user pods.
   ExpectIdentifierPage();
+}
+
+class WebviewLoginTestWithChildSigninDisabled : public WebviewLoginTest {
+ public:
+  WebviewLoginTestWithChildSigninDisabled() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitWithFeatures({features::kGaiaActionButtons},
+                                          {features::kChildSpecificSignin});
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebviewLoginTestWithChildSigninDisabled,
+                       ErrorScreenOnGaiaError) {
+  WaitForGaiaPageLoadAndPropertyUpdate();
+  ExpectIdentifierPage();
+
+  // Make gaia landing page unreachable
+  fake_gaia_.fake_gaia()->SetErrorResponse(
+      GaiaUrls::GetInstance()->embedded_setup_chromeos_url(2),
+      net::HTTP_NOT_FOUND);
+
+  // Click back to reload (unreachable) identifier page.
+  test::OobeJS().ClickOnPath({"gaia-signin", "signin-back-button"});
+  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 }
 
 }  // namespace chromeos

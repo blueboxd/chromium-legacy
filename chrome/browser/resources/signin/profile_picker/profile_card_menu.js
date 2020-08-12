@@ -86,11 +86,13 @@ Polymer({
       ],
     },
 
+    /** @private */
     profileMenuText_: {
       type: String,
       computed: 'computeProfileMenuText_(profileState)',
     },
 
+    /** @private */
     removeWarningText_: {
       type: String,
       computed: 'computeRemoveWarningText_(profileState)',
@@ -109,6 +111,10 @@ Polymer({
   /** @override */
   attached() {
     this.addWebUIListener(
+        'profiles-list-changed', () => this.handleProfilesUpdated_());
+    this.addWebUIListener(
+        'profile-removed', () => this.handleProfilesUpdated_());
+    this.addWebUIListener(
         'profile-statistics-received',
         this.handleProfileStatsReceived_.bind(this));
   },
@@ -126,10 +132,9 @@ Polymer({
    * @private
    */
   computeRemoveWarningText_() {
-    if (this.profileState.isSignedIn) {
-      return this.i18n('removeWarningSignedInProfile');
-    }
-    return this.i18n('removeWarningLocalProfile');
+    return this.i18n(
+        this.profileState.isSignedIn ? 'removeWarningSignedInProfile' :
+                                       'removeWarningLocalProfile');
   },
 
   /**
@@ -168,7 +173,7 @@ Polymer({
   },
 
   /**
-   * @param {string} dataType
+   * @param {ProfileStatistics} dataType
    * @return {string}
    * @private
    */
@@ -205,6 +210,16 @@ Polymer({
   onRemoveComfirationClicked_(e) {
     e.stopPropagation();
     e.preventDefault();
-    // TODO(crbug.com/1063856): Add implementation.
+    this.manageProfilesBrowserProxy_.removeProfile(
+        this.profileState.profilePath);
+  },
+
+  /**
+   * Ensure any menu is closed on profile list updated.
+   * @private
+   */
+  handleProfilesUpdated_() {
+    this.$.actionMenu.close();
+    this.$.removeActionMenu.close();
   },
 });

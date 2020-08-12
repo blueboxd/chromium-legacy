@@ -686,7 +686,7 @@ bool LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
     }
   }
 
-  root.UpdateLayout();
+  ToLayoutBox(root).LayoutSubtreeRoot();
   return true;
 }
 
@@ -1708,6 +1708,7 @@ void LocalFrameView::ScheduleRelayout() {
 
 void LocalFrameView::ScheduleRelayoutOfSubtree(LayoutObject* relayout_root) {
   DCHECK(frame_->View() == this);
+  DCHECK(relayout_root->IsBox());
 
   // TODO(crbug.com/590856): It's still broken when we choose not to crash when
   // the check fails.

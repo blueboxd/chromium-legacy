@@ -3117,6 +3117,10 @@ virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-restartIce-onneg
 
 crbug.com/1110833 external/wpt/webrtc/RTCPeerConnection-explicit-rollback-iceGatheringState.html [ Timeout ]
 
+# Tests that start hanging after implementing RTCRtpTransceiver.stop
+crbug.com/1115080 external/wpt/webrtc/RTCPeerConnection-iceGatheringState.html [ Timeout ]
+crbug.com/1115087 external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
+
 # See also crbug.com/920100 (sheriff 2019-01-09).
 crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/external-stylesheet.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/inline-style.html [ Timeout Failure ]

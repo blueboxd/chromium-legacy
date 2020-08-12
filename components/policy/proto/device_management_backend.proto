@@ -2885,7 +2885,7 @@ message ExtensionInstallReportLogEvent {
     CRX_FETCH_URL_EMPTY = 25;
 
     CRX_FETCH_URL_INVALID = 26;
-  };
+  }
 
   //  Stage of extension installing process. See InstallStageTracker::Stage for
   //  more details. InstallStageTracker::Stage is the main enum and this is
@@ -2909,7 +2909,7 @@ message ExtensionInstallReportLogEvent {
     INSTALLING = 3;
 
     COMPLETE = 4;
-  };
+  }
 
   // Type of current user. See user_manager::UserType for more details.
   // user_manager::UserType is the main enum and this is a copy used for
@@ -2958,7 +2958,7 @@ message ExtensionInstallReportLogEvent {
     DOWNLOADING_CRX_RETRY = 8;
 
     FINISHED = 9;
-  };
+  }
 
   // Timestamp, in microseconds since epoch. Set for all log
   // events.

@@ -46,6 +46,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -71,6 +72,9 @@ const int kDistanceBetweenUserViewAndPasswordDp = 24;
 
 // Distance between the password textfield and the the pin keyboard.
 const int kDistanceBetweenPasswordFieldAndPinKeyboardDp = 16;
+
+// The height of the password field.
+const int kPasswordFieldHeight = 37;
 
 // Distance from the end of pin keyboard to the bottom of the big user view.
 const int kDistanceFromPinKeyboardToBigUserViewBottomDp = 50;
@@ -748,6 +752,8 @@ struct LoginAuthUserView::AnimationState {
     had_pinpad = view->ShouldShowPinPad();
     had_password = view->ShouldShowPasswordField();
     had_fingerprint = view->HasAuthMethod(LoginAuthUserView::AUTH_FINGERPRINT);
+    had_challenge_response =
+        view->HasAuthMethod(LoginAuthUserView::AUTH_CHALLENGE_RESPONSE);
   }
 
   int non_pin_y_start_in_screen = 0;
@@ -755,6 +761,7 @@ struct LoginAuthUserView::AnimationState {
   bool had_pinpad = false;
   bool had_password = false;
   bool had_fingerprint = false;
+  bool had_challenge_response = false;
 };
 
 LoginAuthUserView::TestApi::TestApi(LoginAuthUserView* view) : view_(view) {}
@@ -838,10 +845,10 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
 
   auto pin_view = std::make_unique<LoginPinView>(
       LoginPinView::Style::kAlphanumeric, palette,
-      base::BindRepeating(&LoginPasswordView::InsertNumber,
-                          base::Unretained(password_view.get())),
-      base::BindRepeating(&LoginPasswordView::Backspace,
-                          base::Unretained(password_view.get())));
+      base::BindRepeating(&LoginAuthUserView::OnPinPadInsertDigit,
+                          base::Unretained(this)),
+      base::BindRepeating(&LoginAuthUserView::OnPinPadBackspace,
+                          base::Unretained(this)));
   pin_view_ = pin_view.get();
   DCHECK(pin_view_->layer());
 
@@ -849,6 +856,11 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   padding_below_password_view->SetPreferredSize(gfx::Size(
       kNonEmptyWidthDp, kDistanceBetweenPasswordFieldAndPinKeyboardDp));
   padding_below_password_view_ = padding_below_password_view.get();
+
+  auto padding_below_user_view = std::make_unique<NonAccessibleView>();
+  padding_below_user_view->SetPreferredSize(
+      gfx::Size(kNonEmptyWidthDp, kDistanceBetweenUserViewAndPasswordDp));
+  padding_below_user_view_ = padding_below_user_view.get();
 
   // Initialization of |password_view| is deferred because it needs the
   // |pin_view| pointer.
@@ -883,22 +895,9 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
 
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
-  // Wrap the password view with a container having the fill layout, so that
-  // it's possible to hide the password view while continuing to consume the
-  // same amount of space, which prevents the user view from shrinking. In the
-  // cases when other controls need to be rendered in this space, the whole
-  // container gets hidden.
-  auto password_view_container = std::make_unique<NonAccessibleView>();
-  password_view_container->SetLayoutManager(
-      std::make_unique<views::FillLayout>());
-  password_view_container->AddChildView(std::move(password_view));
-  password_view_container_ = password_view_container.get();
-
   // Build layout.
-  auto wrapped_password_view = std::make_unique<NonAccessibleView>();
-  wrapped_password_view->SetLayoutManager(
-      std::make_unique<views::FlexLayout>());
-  wrapped_password_view->AddChildView(std::move(password_view_container));
+  auto wrapped_password_view =
+      login_views_utils::WrapViewForPreferredSize(std::move(password_view));
   auto wrapped_online_sign_in_message_view =
       login_views_utils::WrapViewForPreferredSize(
           std::move(online_sign_in_message));
@@ -917,6 +916,9 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   auto wrapped_padding_below_password_view =
       login_views_utils::WrapViewForPreferredSize(
           std::move(padding_below_password_view));
+  auto wrapped_padding_below_user_view =
+      login_views_utils::WrapViewForPreferredSize(
+          std::move(padding_below_user_view));
 
   // Add views in tabbing order; they are rendered in a different order below.
   views::View* wrapped_password_view_ptr =
@@ -934,6 +936,8 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       AddChildView(std::move(wrapped_user_view));
   views::View* wrapped_padding_below_password_view_ptr =
       AddChildView(std::move(wrapped_padding_below_password_view));
+  views::View* wrapped_padding_below_user_view_ptr =
+      AddChildView(std::move(wrapped_padding_below_user_view));
 
   // Use views::GridLayout instead of views::BoxLayout because views::BoxLayout
   // lays out children according to the view->children order.
@@ -955,7 +959,7 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   // Add views in rendering order.
   add_padding(kDistanceFromTopOfBigUserViewToUserIconDp);
   add_view(wrapped_user_view_ptr);
-  add_padding(kDistanceBetweenUserViewAndPasswordDp);
+  add_view(wrapped_padding_below_user_view_ptr);
   add_view(wrapped_password_view_ptr);
   add_view(wrapped_online_sign_in_message_view_ptr);
   add_view(wrapped_disabled_auth_message_view_ptr);
@@ -974,7 +978,7 @@ LoginAuthUserView::~LoginAuthUserView() = default;
 
 void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
                                        AuthMethodsMetadata auth_metadata) {
-  bool had_password = HasAuthMethod(AUTH_PASSWORD);
+  bool had_password = ShouldShowPasswordField();
 
   // Apply changes and determine the new state of input fields.
   auth_methods_ = static_cast<AuthMethods>(auth_methods);
@@ -1005,7 +1009,6 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   password_view_->SetFocusEnabledForChildViews(has_password);
   password_view_->SetVisible(!hide_auth && has_password);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
-  password_view_container_->SetVisible(has_password || !has_challenge_response);
 
   if (!had_password && has_password)
     password_view_->RequestFocus();
@@ -1014,15 +1017,8 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   fingerprint_view_->SetCanUsePin(HasAuthMethod(AUTH_PIN));
   challenge_response_view_->SetVisible(has_challenge_response);
 
-  int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
-  if (has_fingerprint && !has_pinpad) {
-    padding_view_height = kDistanceBetweenPasswordFieldAndFingerprintViewDp;
-  } else if (has_challenge_response && !has_pinpad) {
-    padding_view_height =
-        kDistanceBetweenPasswordFieldAndChallengeResponseViewDp;
-  }
-  padding_below_password_view_->SetPreferredSize(
-      gfx::Size(kNonEmptyWidthDp, padding_view_height));
+  padding_below_user_view_->SetPreferredSize(GetPaddingBelowUserView());
+  padding_below_password_view_->SetPreferredSize(GetPaddingBelowPasswordView());
 
   password_view_->SetPlaceholderText(GetPasswordViewPlaceholder());
   const std::string& user_display_email =
@@ -1034,7 +1030,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   // Only the active auth user view has a password displayed. If that is the
   // case, then render the user view as if it was always focused, since clicking
   // on it will not do anything (such as swapping users).
-  user_view_->SetForceOpaque(HasAuthMethod(AUTH_PASSWORD) || hide_auth);
+  user_view_->SetForceOpaque(auth_methods_ != AUTH_NONE);
   user_view_->SetTapEnabled(!HasAuthMethod(AUTH_PASSWORD));
   // Tapping the user view will trigger the online sign-in flow when
   // |force_online_sign_in| is true.
@@ -1076,6 +1072,7 @@ void LoginAuthUserView::CaptureStateForAnimationPreLayout() {
   stop_animation(password_view_);
   stop_animation(pin_view_);
   stop_animation(fingerprint_view_);
+  stop_animation(challenge_response_view_);
 
   DCHECK(!cached_animation_state_);
   cached_animation_state_ = std::make_unique<AnimationState>(this);
@@ -1088,6 +1085,7 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
   bool had_password = cached_animation_state_->had_password;
   bool has_pinpad = ShouldShowPinPad();
   bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
+  bool has_challenge_response = HasAuthMethod(AUTH_CHALLENGE_RESPONSE);
 
   ////////
   // Animate the user info (ie, icon, name) up or down the screen.
@@ -1123,9 +1121,6 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
     float opacity_start = 0, opacity_end = 1;
     if (!has_password)
       std::swap(opacity_start, opacity_end);
-
-    if (had_password)
-      password_view_->SetVisible(true);
 
     password_view_->layer()->SetOpacity(opacity_start);
 
@@ -1202,6 +1197,26 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
     }
   }
 
+  ////////
+  // Fade the challenge response (Smart Card) if it is being hidden or shown.
+  if (cached_animation_state_->had_challenge_response !=
+      has_challenge_response) {
+    float opacity_start = 0, opacity_end = 1;
+    if (!has_challenge_response)
+      std::swap(opacity_start, opacity_end);
+
+    challenge_response_view_->layer()->SetOpacity(opacity_start);
+
+    {
+      ui::ScopedLayerAnimationSettings settings(
+          challenge_response_view_->layer()->GetAnimator());
+      settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+          login_constants::kChangeUserAnimationDurationMs));
+      settings.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
+      challenge_response_view_->layer()->SetOpacity(opacity_end);
+    }
+  }
+
   cached_animation_state_.reset();
 }
 
@@ -1235,6 +1250,10 @@ void LoginAuthUserView::SetAuthDisabledMessage(
 
 const LoginUserInfo& LoginAuthUserView::current_user() const {
   return user_view_->current_user();
+}
+
+views::View* LoginAuthUserView::GetAnchorView() {
+  return password_view_;
 }
 
 gfx::Size LoginAuthUserView::CalculatePreferredSize() const {
@@ -1326,6 +1345,16 @@ void LoginAuthUserView::OnOnlineSignInMessageTap() {
       current_user().basic_user_info.account_id);
 }
 
+void LoginAuthUserView::OnPinPadBackspace() {
+  DCHECK(password_view_);
+  password_view_->Backspace();
+}
+
+void LoginAuthUserView::OnPinPadInsertDigit(int digit) {
+  DCHECK(password_view_);
+  password_view_->InsertNumber(digit);
+}
+
 bool LoginAuthUserView::HasAuthMethod(AuthMethods auth_method) const {
   return (auth_methods_ & auth_method) != 0;
 }
@@ -1342,7 +1371,9 @@ void LoginAuthUserView::AttemptAuthenticateWithChallengeResponse() {
 }
 
 void LoginAuthUserView::UpdateInputFieldMode() {
-  if (!HasAuthMethod(AUTH_PASSWORD)) {
+  // Currently the challenge-response authentication can't be combined
+  // with the password or PIN based one.
+  if (!HasAuthMethod(AUTH_PASSWORD) || HasAuthMethod(AUTH_CHALLENGE_RESPONSE)) {
     input_field_mode_ = InputFieldMode::DISABLED;
     return;
   }
@@ -1371,6 +1402,28 @@ bool LoginAuthUserView::ShouldShowPinPad() const {
 bool LoginAuthUserView::ShouldShowPasswordField() const {
   return input_field_mode_ == InputFieldMode::PASSWORD_ONLY ||
          input_field_mode_ == InputFieldMode::PIN_AND_PASSWORD;
+}
+
+gfx::Size LoginAuthUserView::GetPaddingBelowUserView() const {
+  int height = kDistanceBetweenUserViewAndPasswordDp;
+
+  // Compensate with the height of the password field if there isn't
+  // an input field or smart card login (challenge response).
+  if (!ShouldShowPasswordField() && !HasAuthMethod(AUTH_CHALLENGE_RESPONSE))
+    height += kPasswordFieldHeight;
+
+  return gfx::Size(kNonEmptyWidthDp, height);
+}
+
+gfx::Size LoginAuthUserView::GetPaddingBelowPasswordView() const {
+  int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
+  if (HasAuthMethod(AUTH_FINGERPRINT) && !ShouldShowPinPad()) {
+    padding_view_height = kDistanceBetweenPasswordFieldAndFingerprintViewDp;
+  } else if (HasAuthMethod(AUTH_CHALLENGE_RESPONSE) && !ShouldShowPinPad()) {
+    padding_view_height =
+        kDistanceBetweenPasswordFieldAndChallengeResponseViewDp;
+  }
+  return gfx::Size(kNonEmptyWidthDp, padding_view_height);
 }
 
 base::string16 LoginAuthUserView::GetPasswordViewPlaceholder() const {

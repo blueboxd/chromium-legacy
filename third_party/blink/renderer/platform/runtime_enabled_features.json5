@@ -1612,6 +1612,11 @@
       origin_trial_feature_name: "RTCQuicTransport",
       status: "experimental",
     },
+    // Enables the use of |RTCRtpTransceiver::stop()|
+    {
+      name: "RTCRtpTransceiverStop",
+      status: "experimental",
+    },
     {
       name: "RTCStatsRelativePacketArrivalDelay",
       origin_trial_feature_name: "RTCStatsRelativePacketArrivalDelay",

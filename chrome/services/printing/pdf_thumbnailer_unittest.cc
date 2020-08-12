@@ -19,8 +19,12 @@ namespace printing {
 
 namespace {
 
-constexpr int kThumbWidth = 96;
-constexpr int kThumbHeight = 64;
+constexpr int kThumbWidth = 256;
+constexpr int kThumbHeight = 192;
+constexpr int kHorizontalDpi = 300;
+constexpr int kVerticalDpi = 300;
+constexpr bool kStretch = true;
+constexpr bool kKeepRatio = true;
 
 const char kPdfContent[] = R"(%PDF-1.2
 9 0 obj
@@ -62,7 +66,9 @@ trailer
 class PdfThumbnailerTest : public testing::Test {
  public:
   void SetUp() override {
-    params_ = mojom::ThumbParams::New(gfx::Size(kThumbWidth, kThumbHeight));
+    params_ = mojom::ThumbParams::New(gfx::Size(kThumbWidth, kThumbHeight),
+                                      gfx::Size(kHorizontalDpi, kVerticalDpi),
+                                      kStretch, kKeepRatio);
   }
 
   // Copies bytes from |bitmap| into |bitmap_|. This method is here due
@@ -104,6 +110,25 @@ TEST_F(PdfThumbnailerTest, CreatePdfThumbnail) {
   EXPECT_EQ(kThumbHeight, bitmap_.height());
 }
 
+// A low DPI, non-stretched thumbnail.
+TEST_F(PdfThumbnailerTest, CreateLowResUnstretchedPdfThumbnail) {
+  base::RunLoop run_loop;
+  auto pdf_region = CreatePdfRegion(kPdfContent);
+
+  auto params = mojom::ThumbParams::New(gfx::Size(kThumbWidth, kThumbHeight),
+                                        gfx::Size(15, 15), false, kKeepRatio);
+  thumbnailer_.GetThumbnail(
+      std::move(params), std::move(pdf_region),
+      base::BindOnce(&PdfThumbnailerTest::StoreResult,
+                     weak_factory_.GetWeakPtr(), run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_FALSE(bitmap_.isNull());
+  // The bitmap size is still the requested size, even though the thumbnail
+  // itself does not fill the entire bitmap.
+  EXPECT_EQ(kThumbWidth, bitmap_.width());
+  EXPECT_EQ(kThumbHeight, bitmap_.height());
+}
+
 // An invalid PDF should cause failure (null bitmap returned).
 TEST_F(PdfThumbnailerTest, CreatePdfThumbnailFailure) {
   base::RunLoop run_loop;
@@ -122,7 +147,9 @@ TEST_F(PdfThumbnailerTest, InvalidThumbnailSize) {
   base::RunLoop run_loop;
   auto pdf_region = CreatePdfRegion(kPdfContent);
 
-  auto params = mojom::ThumbParams::New(gfx::Size(0, 0));
+  auto params = mojom::ThumbParams::New(gfx::Size(0, 0),
+                                        gfx::Size(kHorizontalDpi, kVerticalDpi),
+                                        kStretch, kKeepRatio);
   thumbnailer_.GetThumbnail(
       std::move(params), std::move(pdf_region),
       base::BindOnce(&PdfThumbnailerTest::StoreResult,
@@ -138,7 +165,8 @@ TEST_F(PdfThumbnailerTest, TooLargeThumbnailSize) {
   auto pdf_region = CreatePdfRegion(kPdfContent);
 
   auto params = mojom::ThumbParams::New(
-      gfx::Size(PdfThumbnailer::kMaxWidth + 1, PdfThumbnailer::kMaxHeight + 1));
+      gfx::Size(PdfThumbnailer::kMaxWidth + 1, PdfThumbnailer::kMaxHeight + 1),
+      gfx::Size(kHorizontalDpi, kVerticalDpi), kStretch, kKeepRatio);
   thumbnailer_.GetThumbnail(
       std::move(params), std::move(pdf_region),
       base::BindOnce(&PdfThumbnailerTest::StoreResult,

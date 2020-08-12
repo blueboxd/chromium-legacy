@@ -163,6 +163,7 @@ source_set("unit_tests") {
     "web_app_icon_generator_unittest.cc",
     "web_app_install_utils_unittest.cc",
     "web_app_shortcut_unittest.cc",
+    "web_app_url_loader_unittest.cc",
     "web_app_utils_unittest.cc",
   ]
 

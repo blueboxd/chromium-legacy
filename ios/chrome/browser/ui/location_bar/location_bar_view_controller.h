@@ -31,7 +31,7 @@
 - (void)locationBarCopyTapped;
 
 // Returns the target that location bar scribble events should be forwarded to.
-- (UIResponder<UITextInput>*)scribbleForwardingTarget;
+- (UIResponder<UITextInput>*)omniboxScribbleForwardingTarget;
 
 // Request the scribble target to be focused.
 - (void)locationBarRequestScribbleTargetFocus;

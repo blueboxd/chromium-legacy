@@ -716,12 +716,18 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (void)setPasswordCheckUIState:(PasswordCheckUIState)state {
   _passwordCheckState = state;
-  if (_checkForProblemsItem) {
-    [self updatePasswordCheckButtonWithState:state];
-    [self reconfigureCellsForItems:@[ _checkForProblemsItem ]];
+  [self updatePasswordCheckButtonWithState:state];
+  [self updatePasswordCheckStatusLabelWithState:state];
+
+  // During searching Password Check section is hidden so cells should not be
+  // reconfigured.
+  if (self.navigationItem.searchController.active) {
+    return;
   }
+
+  if (_checkForProblemsItem)
+    [self reconfigureCellsForItems:@[ _checkForProblemsItem ]];
   if (_passwordProblemsItem) {
-    [self updatePasswordCheckStatusLabelWithState:state];
     [self reconfigureCellsForItems:@[ _passwordProblemsItem ]];
   }
 }
@@ -800,9 +806,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (void)willPresentSearchController:(UISearchController*)searchController {
   [self showScrim];
-  // Remove save passwords switch section.
+  // Remove save passwords switch section and password check section.
   [self
       performBatchTableViewUpdates:^{
+        if (base::FeatureList::IsEnabled(
+                password_manager::features::kPasswordCheck)) {
+          [self clearSectionWithIdentifier:SectionIdentifierPasswordCheck
+                          withRowAnimation:UITableViewRowAnimationTop];
+        }
+
         [self clearSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch
                         withRowAnimation:UITableViewRowAnimationTop];
       }
@@ -829,11 +841,34 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
           [model addItem:_managedSavePasswordItem
               toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
         }
+        NSInteger switchSection = [model
+            sectionForSectionIdentifier:SectionIdentifierSavePasswordsSwitch];
+        NSMutableArray<NSIndexPath*>* rowsIndexPaths = [NSMutableArray
+            arrayWithObjects:[NSIndexPath indexPathForRow:0
+                                                inSection:switchSection],
+                             nil];
 
-        [self.tableView
-            insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0
-                                                         inSection:0] ]
-                  withRowAnimation:UITableViewRowAnimationTop];
+        if (base::FeatureList::IsEnabled(
+                password_manager::features::kPasswordCheck)) {
+          [model insertSectionWithIdentifier:SectionIdentifierPasswordCheck
+                                     atIndex:1];
+          NSInteger checkSection = [model
+              sectionForSectionIdentifier:SectionIdentifierPasswordCheck];
+
+          [self.tableView insertSections:[NSIndexSet indexSetWithIndex:1]
+                        withRowAnimation:UITableViewRowAnimationTop];
+          [model addItem:_passwordProblemsItem
+              toSectionWithIdentifier:SectionIdentifierPasswordCheck];
+          [model addItem:_checkForProblemsItem
+              toSectionWithIdentifier:SectionIdentifierPasswordCheck];
+          [rowsIndexPaths addObject:[NSIndexPath indexPathForRow:0
+                                                       inSection:checkSection]];
+          [rowsIndexPaths addObject:[NSIndexPath indexPathForRow:1
+                                                       inSection:checkSection]];
+        }
+
+        [self.tableView insertRowsAtIndexPaths:rowsIndexPaths
+                              withRowAnimation:UITableViewRowAnimationTop];
       }
                completion:nil];
 }

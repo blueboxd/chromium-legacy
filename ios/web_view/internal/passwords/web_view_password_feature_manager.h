@@ -41,8 +41,8 @@ class WebViewPasswordFeatureManager
   password_manager::metrics_util::PasswordAccountStorageUsageLevel
   ComputePasswordAccountStorageUsageLevel() const override;
 
-  void IncrementMoveToAccountRefusedCount() override;
-  int GetMoveToAccountRefusedCount() const override;
+  void RecordMoveOfferedToNonOptedInUser() override;
+  int GetMoveOfferedToNonOptedInUserCount() const override;
 
  private:
   PrefService* const pref_service_;

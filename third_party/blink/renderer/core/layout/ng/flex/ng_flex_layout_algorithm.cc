@@ -7,6 +7,7 @@
 #include <memory>
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_button.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_child_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
@@ -1154,12 +1155,27 @@ void NGFlexLayoutAlgorithm::AdjustButtonBaseline(
   // first line.
   // However, we count the differences between it and the last-line baseline
   // of the anonymous block. crbug.com/690036.
+  // We also have a difference in empty buttons. See crbug.com/304848.
+
+  const LayoutObject* parent = Node().GetLayoutBox()->Parent();
+  if (!LayoutButton::ShouldCountWrongBaseline(
+          Style(), parent ? parent->Style() : nullptr))
+    return;
 
   // The button should have at most one child.
   const NGContainerFragmentBuilder::ChildrenVector& children =
       container_builder_.Children();
-  if (children.size() < 1)
+  if (children.size() < 1) {
+    const LayoutBlock* layout_block = To<LayoutBlock>(Node().GetLayoutBox());
+    base::Optional<LayoutUnit> baseline = layout_block->BaselineForEmptyLine(
+        layout_block->IsHorizontalWritingMode() ? kHorizontalLine
+                                                : kVerticalLine);
+    if (container_builder_.Baseline() != baseline) {
+      UseCounter::Count(Node().GetDocument(),
+                        WebFeature::kWrongBaselineOfEmptyLineButton);
+    }
     return;
+  }
   DCHECK_EQ(children.size(), 1u);
   const NGContainerFragmentBuilder::ChildWithOffset& child = children[0];
   DCHECK(!child.fragment->IsLineBox());
@@ -1174,7 +1190,7 @@ void NGFlexLayoutAlgorithm::AdjustButtonBaseline(
     child_baseline = *child_baseline + child.offset.block_offset;
   if (container_builder_.Baseline() != child_baseline) {
     UseCounter::Count(Node().GetDocument(),
-                      WebFeature::kWrongBaselineOfButtonElement);
+                      WebFeature::kWrongBaselineOfMultiLineButton);
   }
 }
 

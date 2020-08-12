@@ -370,7 +370,8 @@ class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
       EXPECT_TRUE(chrome_pdf::RenderPDFPageToBitmap(
           pdf_span, i, page_bitmap_data.data(), settings.area.size().width(),
           settings.area.size().height(), settings.dpi.width(),
-          settings.dpi.height(), settings.autorotate, settings.use_color));
+          settings.dpi.height(), /*stretch_to_bounds=*/false,
+          /*keep_aspect_ratio=*/true, settings.autorotate, settings.use_color));
       EXPECT_EQ(0x56, page_bitmap_data[0]);  // B
       EXPECT_EQ(0x34, page_bitmap_data[1]);  // G
       EXPECT_EQ(0x12, page_bitmap_data[2]);  // R

@@ -3040,6 +3040,8 @@ source_set("unit_tests") {
     "attestation/mock_tpm_challenge_key_subtle.cc",
     "attestation/mock_tpm_challenge_key_subtle.h",
     "attestation/platform_verification_flow_unittest.cc",
+    "attestation/tpm_challenge_key_result_unittest.cc",
+    "attestation/tpm_challenge_key_subtle_unittest.cc",
     "attestation/tpm_challenge_key_unittest.cc",
     "authpolicy/authpolicy_credentials_manager_unittest.cc",
     "authpolicy/authpolicy_helper.unittest.cc",

@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
@@ -21,6 +22,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
+#import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
@@ -49,6 +51,8 @@
     RecentTabsTransitioningDelegate* recentTabsTransitioningDelegate;
 @property(nonatomic, strong)
     RecentTabsTableViewController* recentTabsTableViewController;
+
+@property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
 
 @end
 
@@ -160,6 +164,23 @@
   [self openAllTabsFromSession:session];
 }
 
+// Triggers the URL sharing flow for the given |URL| and |title|, with the
+// origin |view| representing the UI component for that URL.
+- (void)shareURL:(const GURL&)URL
+           title:(NSString*)title
+        fromView:(UIView*)view {
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithURL:URL
+                                    title:title
+                                 scenario:ActivityScenario::RecentTabsEntry];
+  self.sharingCoordinator = [[SharingCoordinator alloc]
+      initWithBaseViewController:self.recentTabsTableViewController
+                         browser:self.browser
+                          params:params
+                      originView:view];
+  [self.sharingCoordinator start];
+}
+
 #pragma mark - RecentTabsPresentationDelegate
 
 - (void)openAllTabsFromSession:(const synced_sessions::DistantSession*)session {
@@ -208,7 +229,9 @@
 #pragma mark - RecentTabsMenuProvider
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
-    (TableViewURLItem*)item API_AVAILABLE(ios(13.0)) {
+                                   (TableViewURLItem*)item
+                                                      fromView:(UIView*)view
+    API_AVAILABLE(ios(13.0)) {
   __weak __typeof(self) weakSelf = self;
 
   UIContextMenuActionProvider actionProvider = ^(
@@ -253,6 +276,12 @@
     }
 
     [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
+
+    [menuElements addObject:[actionFactory actionToShareWithBlock:^{
+                    [strongSelf shareURL:item.URL
+                                   title:item.title
+                                fromView:view];
+                  }]];
 
     return [UIMenu menuWithTitle:@"" children:menuElements];
   };

@@ -496,7 +496,9 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
       base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
 
   return [self.menuProvider
-      contextMenuConfigurationForItem:contentSuggestionsItem];
+      contextMenuConfigurationForItem:contentSuggestionsItem
+                             fromView:[self.collectionView
+                                          cellForItemAtIndexPath:indexPath]];
 }
 
 #pragma mark - UICollectionViewDataSource

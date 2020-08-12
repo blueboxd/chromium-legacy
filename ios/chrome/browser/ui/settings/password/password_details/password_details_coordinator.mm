@@ -148,7 +148,8 @@
                          browser:self.browser
                            title:nil
                          message:message
-                   barButtonItem:nil];
+                   barButtonItem:self.viewController.navigationItem
+                                     .rightBarButtonItem];
 
   __weak __typeof(self) weakSelf = self;
 
@@ -177,7 +178,8 @@
                          browser:self.browser
                            title:nil
                          message:message
-                   barButtonItem:nil];
+                   barButtonItem:self.viewController.navigationItem
+                                     .rightBarButtonItem];
 
   __weak __typeof(self) weakSelf = self;
 

@@ -224,12 +224,17 @@ void OfflinePageTabHelper::ReadingListModelLoaded(
 void OfflinePageTabHelper::ReadingListModelBeingDeleted(
     const ReadingListModel* model) {
   DCHECK(reading_list_model_ == nullptr || reading_list_model_ == model);
+
+  // Detach will nullify web_state_, this keeps it local a bit longer
+  // to allow removing user data below.
+  web::WebState* webState = web_state_;
+
   Detach();
 
   // The call to RemoveUserData cause the destruction of the current instance,
   // so nothing should be done after that point (this is like "delete this;").
   // Unregistration as an observer happens in the destructor.
-  web_state_->RemoveUserData(UserDataKey());
+  webState->RemoveUserData(UserDataKey());
 }
 
 void OfflinePageTabHelper::PresentOfflinePageForOnlineUrl(const GURL& url) {

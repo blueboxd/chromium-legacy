@@ -132,7 +132,7 @@ bool PasswordManagerClientHelper::ShouldPromptToMovePasswordToAccount(
           features::kMaxMoveToAccountOffersForNonOptedInUser,
           features::kMaxMoveToAccountOffersForNonOptedInUserDefaultValue);
   return feature_manager->IsOptedInForAccountStorage() ||
-         feature_manager->GetMoveToAccountRefusedCount() <
+         feature_manager->GetMoveOfferedToNonOptedInUserCount() <
              max_move_to_account_offers_for_non_opted_in_user;
 }
 

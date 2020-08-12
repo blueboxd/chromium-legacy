@@ -77,6 +77,7 @@
                            browser:self.browser];
     self.contentSuggestionsCoordinator.webState = self.webState;
     self.contentSuggestionsCoordinator.toolbarDelegate = self.toolbarDelegate;
+
     [self.contentSuggestionsCoordinator start];
     base::RecordAction(base::UserMetricsAction("MobileNTPShowMostVisited"));
   }

@@ -158,6 +158,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
 
   const LoginUserInfo& current_user() const;
 
+  // Provides the view that should be the anchor to message bubbles. Either the
+  // password field, or the PIN field.
+  views::View* GetAnchorView();
   LoginPasswordView* password_view() { return password_view_; }
   LoginUserView* user_view() { return user_view_; }
 
@@ -191,8 +194,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // Called when the online sign-in message is tapped. It opens the Gaia screen.
   void OnOnlineSignInMessageTap();
 
-  // Called when the user presses the back button of the PIN keyboard.
-  void OnPinBack();
+  // Called from LoginPinView, forwards the calls to the active input field.
+  void OnPinPadBackspace();
+  void OnPinPadInsertDigit(int digit);
 
   // Helper method to check if an auth method is enable. Use it like this:
   // bool has_tap = HasAuthMethod(AUTH_TAP).
@@ -214,6 +218,10 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   bool ShouldShowPinPad() const;
   bool ShouldShowPasswordField() const;
 
+  // Convenience methods to determine the necessary paddings.
+  gfx::Size GetPaddingBelowUserView() const;
+  gfx::Size GetPaddingBelowPasswordView() const;
+
   // Convenience methods to determine UI text based on the InputFieldMode.
   base::string16 GetPasswordViewPlaceholder() const;
 
@@ -233,6 +241,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   FingerprintView* fingerprint_view_ = nullptr;
   ChallengeResponseView* challenge_response_view_ = nullptr;
 
+  // Padding below the user view. Grows when there isn't an input field
+  // or smart card login.
+  NonAccessibleView* padding_below_user_view_ = nullptr;
   // Displays padding between:
   // 1. Password field and pin keyboard
   // 2. Password field and fingerprint view, when pin is not available.

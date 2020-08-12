@@ -146,6 +146,12 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnShareTargetLost) {
 }
 
 TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_Invalid) {
+  MockShareTargetListener listener;
+  EXPECT_CALL(sharing_service(),
+              RegisterSendSurface(testing::_, testing::_, testing::_))
+      .WillOnce(testing::Return(NearbySharingService::StatusCodes::kOk));
+  manager().StartDiscovery(listener.Bind(), base::DoNothing());
+
   MockSelectShareTargetCallback callback;
   EXPECT_CALL(
       callback,

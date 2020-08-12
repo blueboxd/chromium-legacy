@@ -623,7 +623,6 @@ TEST_F(NearbyNotificationManagerTest, ProgressNotification_Cancelled) {
   manager()->OnTransferUpdate(
       share_target, TransferMetadataBuilder()
                         .set_status(TransferMetadata::Status::kCancelled)
-                        .set_is_final_status(true)
                         .build());
 
   // Notification should be closed.

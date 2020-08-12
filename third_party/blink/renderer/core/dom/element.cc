@@ -3788,13 +3788,13 @@ void Element::setAttributeNS(
                           exception_state))
     return;
 
-  String value = TrustedTypesCheckFor(
+  AtomicString value(TrustedTypesCheckFor(
       ExpectedTrustedTypeForAttribute(parsed_name), string_or_trusted,
-      GetExecutionContext(), exception_state);
+      GetExecutionContext(), exception_state));
   if (exception_state.HadException())
     return;
 
-  setAttribute(parsed_name, AtomicString(value));
+  setAttribute(parsed_name, std::move(value));
 }
 
 void Element::RemoveAttributeInternal(
@@ -3828,13 +3828,14 @@ void Element::RemoveAttributeInternal(
 
 void Element::AppendAttributeInternal(
     const QualifiedName& name,
-    const AtomicString& value,
+    AtomicString value,
     SynchronizationOfLazyAttribute in_synchronization_of_lazy_attribute) {
   if (!in_synchronization_of_lazy_attribute)
     WillModifyAttribute(name, g_null_atom, value);
-  EnsureUniqueElementData().Attributes().Append(name, value);
+  const AtomicString& stored_value =
+      EnsureUniqueElementData().Attributes().Append(name, std::move(value));
   if (!in_synchronization_of_lazy_attribute)
-    DidAddAttribute(name, value);
+    DidAddAttribute(name, stored_value);
 }
 
 void Element::removeAttributeNS(const AtomicString& namespace_uri,

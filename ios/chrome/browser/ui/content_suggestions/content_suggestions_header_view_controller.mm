@@ -40,11 +40,23 @@
 
 using base::UserMetricsAction;
 
+namespace {
+
+const NSString* kScribbleFakeboxElementId = @"fakebox";
+
+}  // namespace
+
 #if defined(__IPHONE_13_4)
 @interface ContentSuggestionsHeaderViewController (Pointer) <
     UIPointerInteractionDelegate>
 @end
 #endif  // defined(__IPHONE_13_4)
+
+#if defined(__IPHONE_14_0)
+@interface ContentSuggestionsHeaderViewController (Scribble) <
+    UIIndirectScribbleInteractionDelegate>
+@end
+#endif  // defined(__IPHONE14_0)
 
 @interface ContentSuggestionsHeaderViewController () <
     UserAccountImageUpdateDelegate>
@@ -314,6 +326,14 @@ using base::UserMetricsAction;
 
   [self.headerView addViewsToSearchField:self.fakeOmnibox];
 
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+  if (@available(iOS 14, *)) {
+    UIIndirectScribbleInteraction* scribbleInteraction =
+        [[UIIndirectScribbleInteraction alloc] initWithDelegate:self];
+    [self.fakeOmnibox addInteraction:scribbleInteraction];
+  }
+#endif  // defined(__IPHONE_14_0)
+
   [self.headerView.voiceSearchButton addTarget:self
                                         action:@selector(loadVoiceSearch:)
                               forControlEvents:UIControlEventTouchUpInside];
@@ -573,6 +593,61 @@ using base::UserMetricsAction;
 - (CGFloat)topInset {
   return self.parentViewController.view.safeAreaInsets.top;
 }
+
+#pragma mark - UIIndirectScribbleInteractionDelegate
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+
+- (void)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+              requestElementsInRect:(CGRect)rect
+                         completion:
+                             (void (^)(NSArray<UIScribbleElementIdentifier>*
+                                           elements))completion
+    API_AVAILABLE(ios(14.0)) {
+  completion(@[ kScribbleFakeboxElementId ]);
+}
+
+- (BOOL)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+                   isElementFocused:
+                       (UIScribbleElementIdentifier)elementIdentifier
+    API_AVAILABLE(ios(14.0)) {
+  DCHECK(elementIdentifier == kScribbleFakeboxElementId);
+  return self.toolbarDelegate.fakeboxScribbleForwardingTarget.isFirstResponder;
+}
+
+- (CGRect)
+    indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+                frameForElement:(UIScribbleElementIdentifier)elementIdentifier
+    API_AVAILABLE(ios(14.0)) {
+  DCHECK(elementIdentifier == kScribbleFakeboxElementId);
+
+  // Imitate the entire location bar being scribblable.
+  return interaction.view.bounds;
+}
+
+- (void)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+               focusElementIfNeeded:
+                   (UIScribbleElementIdentifier)elementIdentifier
+                     referencePoint:(CGPoint)focusReferencePoint
+                         completion:
+                             (void (^)(UIResponder<UITextInput>* focusedInput))
+                                 completion API_AVAILABLE(ios(14.0)) {
+  if (!self.toolbarDelegate.fakeboxScribbleForwardingTarget.isFirstResponder) {
+    [self.toolbarDelegate.fakeboxScribbleForwardingTarget becomeFirstResponder];
+  }
+
+  completion(self.toolbarDelegate.fakeboxScribbleForwardingTarget);
+}
+
+- (BOOL)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+         shouldDelayFocusForElement:
+             (UIScribbleElementIdentifier)elementIdentifier
+    API_AVAILABLE(ios(14.0)) {
+  DCHECK(elementIdentifier == kScribbleFakeboxElementId);
+  return YES;
+}
+
+#endif  // defined(__IPHONE_14_0)
 
 #pragma mark - LogoAnimationControllerOwnerOwner
 

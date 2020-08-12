@@ -28,6 +28,10 @@ ResultCallback ResultCallbackFromMojom(StatusCallback callback);
 
 std::vector<uint8_t> ByteArrayToMojom(const ByteArray& byte_array);
 
+ByteArray ByteArrayFromMojom(const std::vector<uint8_t>& byte_array);
+
+mojom::PayloadStatus PayloadStatusToMojom(PayloadProgressInfo::Status status);
+
 }  // namespace connections
 }  // namespace nearby
 }  // namespace location

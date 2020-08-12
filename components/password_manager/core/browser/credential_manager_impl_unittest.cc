@@ -1459,7 +1459,7 @@ TEST_P(CredentialManagerImplTest, AutofillAssistantZeroClickRequestCredential) {
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(testing::Exactly(0));
   EXPECT_CALL(*client_, IsIncognito()).WillRepeatedly(testing::Return(false));
   EXPECT_CALL(*client_, GetAutofillAssistantMode())
-      .WillRepeatedly(testing::Return(AutofillAssistantMode::kRunning));
+      .WillRepeatedly(testing::Return(AutofillAssistantMode::kUIShown));
 
   ExpectCredentialType(CredentialMediationRequirement::kOptional, true,
                        federations, CredentialType::CREDENTIAL_TYPE_EMPTY);

@@ -17,8 +17,10 @@ interface RTCRtpTransceiver {
     readonly attribute DOMString? mid;
     [SameObject] readonly attribute RTCRtpSender sender;
     [SameObject] readonly attribute RTCRtpReceiver receiver;
-    readonly attribute boolean stopped;
+    // Non-standard
+    [Measure] readonly attribute boolean stopped;
     [Measure, RaisesException=Setter] attribute RTCRtpTransceiverDirection direction;
     readonly attribute RTCRtpTransceiverDirection? currentDirection;
+    [Measure, RuntimeEnabled=RTCRtpTransceiverStop, RaisesException] void stop();
     [RaisesException] void setCodecPreferences(sequence<RTCRtpCodecCapability> codecs);
 };

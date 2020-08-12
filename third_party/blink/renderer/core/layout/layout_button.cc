@@ -104,10 +104,42 @@ LayoutUnit LayoutButton::BaselinePosition(
   }
   LayoutUnit result_baseline = LayoutFlexibleBox::BaselinePosition(
       baseline, first_line, direction, line_position_mode);
+  // See crbug.com/690036 and crbug.com/304848.
   LayoutUnit correct_baseline = LayoutBlock::InlineBlockBaseline(direction);
-  if (correct_baseline != result_baseline)
-    UseCounter::Count(GetDocument(), WebFeature::kWrongBaselineOfButtonElement);
+  if (correct_baseline != result_baseline &&
+      ShouldCountWrongBaseline(StyleRef(),
+                               Parent() ? Parent()->Style() : nullptr)) {
+    for (LayoutBox* child = FirstChildBox(); child;
+         child = child->NextSiblingBox()) {
+      if (!child->IsFloatingOrOutOfFlowPositioned()) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kWrongBaselineOfMultiLineButton);
+        return result_baseline;
+      }
+    }
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kWrongBaselineOfEmptyLineButton);
+  }
   return result_baseline;
+}
+
+bool LayoutButton::ShouldCountWrongBaseline(const ComputedStyle& style,
+                                            const ComputedStyle* parent_style) {
+  if (parent_style) {
+    EDisplay display = parent_style->Display();
+    if (display == EDisplay::kFlex || display == EDisplay::kInlineFlex ||
+        display == EDisplay::kGrid || display == EDisplay::kInlineGrid) {
+      StyleSelfAlignmentData alignment =
+          style.ResolvedAlignSelf(ItemPosition::kAuto, parent_style);
+      return alignment.GetPosition() == ItemPosition::kBaseline ||
+             alignment.GetPosition() == ItemPosition::kLastBaseline;
+    }
+  }
+  EVerticalAlign align = style.VerticalAlign();
+  return align == EVerticalAlign::kBaseline ||
+         align == EVerticalAlign::kBaselineMiddle ||
+         align == EVerticalAlign::kSub || align == EVerticalAlign::kSuper ||
+         align == EVerticalAlign::kLength;
 }
 
 }  // namespace blink

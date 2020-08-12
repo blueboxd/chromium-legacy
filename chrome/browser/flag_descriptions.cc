@@ -170,8 +170,7 @@ const char kAppCacheName[] = "AppCache web API and browser backend";
 const char kAppCacheDescription[] =
     "When disabled, turns off all AppCache code so that developers "
     "can test that their code works properly in the future when AppCache "
-    "has been removed.  If disabled, this will also delete any AppCache data "
-    "from profile directories.";
+    "has been removed.";
 
 const char kDnsHttpssvcName[] = "Support for HTTPSSVC records in DNS.";
 const char kDnsHttpssvcDescription[] =

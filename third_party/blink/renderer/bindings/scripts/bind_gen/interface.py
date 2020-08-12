@@ -1223,8 +1223,7 @@ def make_report_coop_access(cg_context):
     elif (cg_context.attribute_set and not ("Setter" in values)):
         return None
 
-    return TextNode("${blink_receiver}->ReportCoopAccess"
-                    "(${isolate}, ${property_name});")
+    return TextNode("${blink_receiver}->ReportCoopAccess(${property_name});")
 
 
 def make_report_deprecate_as(cg_context):

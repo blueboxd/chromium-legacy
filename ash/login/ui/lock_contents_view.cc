@@ -1097,7 +1097,7 @@ void LockContentsView::OnShowEasyUnlockIcon(const AccountId& user,
     tooltip_bubble_->Hide();
 
   if (icon.autoshow_tooltip) {
-    tooltip_bubble_->SetAnchorView(big_user->auth_user()->password_view());
+    tooltip_bubble_->SetAnchorView(big_user->auth_user()->GetAnchorView());
     tooltip_bubble_->SetText(icon.tooltip);
     tooltip_bubble_->Show();
     tooltip_bubble_->SetVisible(true);
@@ -1121,7 +1121,7 @@ void LockContentsView::OnWarningMessageUpdated(const base::string16& message) {
     warning_banner_bubble_->Hide();
   // Shows warning banner as a persistent error bubble.
   warning_banner_bubble_->SetAnchorView(
-      CurrentBigUserView()->auth_user()->password_view());
+      CurrentBigUserView()->auth_user()->GetAnchorView());
   warning_banner_bubble_->SetTextContent(message);
   warning_banner_bubble_->Show();
 }
@@ -1283,7 +1283,7 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
 
   detachable_base_error_bubble_->SetTextContent(error_text);
   detachable_base_error_bubble_->SetAnchorView(
-      CurrentBigUserView()->auth_user()->password_view());
+      CurrentBigUserView()->auth_user()->GetAnchorView());
   detachable_base_error_bubble_->Show();
 
   // Remove the focus from the password field, to make user less likely to enter
@@ -1887,7 +1887,7 @@ void LockContentsView::OnBigUserChanged() {
 
     supervised_user_deprecation_bubble_->SetTextContent(message);
     supervised_user_deprecation_bubble_->SetAnchorView(
-        CurrentBigUserView()->auth_user()->password_view());
+        CurrentBigUserView()->auth_user()->GetAnchorView());
     supervised_user_deprecation_bubble_->Show();
   } else if (supervised_user_deprecation_bubble_->GetVisible()) {
     supervised_user_deprecation_bubble_->Hide();
@@ -1997,7 +1997,7 @@ void LockContentsView::ShowAuthErrorMessage() {
   container->AddChildView(std::move(label));
   container->AddChildView(std::move(learn_more_button));
 
-  auth_error_bubble_->SetAnchorView(big_view->auth_user()->password_view());
+  auth_error_bubble_->SetAnchorView(big_view->auth_user()->GetAnchorView());
   auth_error_bubble_->SetContent(container.release());
   auth_error_bubble_->SetAccessibleName(error_text);
   auth_error_bubble_->SetPersistent(false);
@@ -2015,7 +2015,7 @@ void LockContentsView::OnEasyUnlockIconHovered() {
   DCHECK(state->easy_unlock_state);
 
   if (!state->easy_unlock_state->tooltip.empty()) {
-    tooltip_bubble_->SetAnchorView(big_view->auth_user()->password_view());
+    tooltip_bubble_->SetAnchorView(big_view->auth_user()->GetAnchorView());
     tooltip_bubble_->SetText(state->easy_unlock_state->tooltip);
     tooltip_bubble_->Show();
   }

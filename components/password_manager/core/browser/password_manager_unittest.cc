@@ -3663,7 +3663,7 @@ TEST_P(PasswordManagerTest, FormSubmittedOnIFrameMainFrameLoaded) {
 }
 
 TEST_P(PasswordManagerTest, NoPromptAutofillAssistantManuallyCuratedScript) {
-  manager()->SetAutofillAssistantMode(AutofillAssistantMode::kRunning);
+  manager()->SetAutofillAssistantMode(AutofillAssistantMode::kUIShown);
 
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(Return(true));
@@ -3701,7 +3701,7 @@ TEST_P(PasswordManagerTest,
     EXPECT_CALL(client_, IsSavingAndFillingEnabled)
         .WillRepeatedly(Return(true));
     EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr).Times(0);
-    manager()->SetAutofillAssistantMode(AutofillAssistantMode::kRunning);
+    manager()->SetAutofillAssistantMode(AutofillAssistantMode::kUIShown);
 
     // Make several forms ready for saving.
     PasswordForm form1(MakeFormWithOnlyNewPasswordField());
@@ -3719,7 +3719,7 @@ TEST_P(PasswordManagerTest,
     else
       OnPasswordFormSubmitted(form2.form_data);
 
-    manager()->SetAutofillAssistantMode(AutofillAssistantMode::kNotRunning);
+    manager()->SetAutofillAssistantMode(AutofillAssistantMode::kUINotShown);
 
     manager()->OnPasswordFormsRendered(&driver_, {} /* observed */,
                                        true /* did stop loading */);
@@ -3738,36 +3738,6 @@ TEST_P(PasswordManagerTest,
                                        true /* did stop loading */);
     Mock::VerifyAndClearExpectations(&client_);
   }
-}
-
-// Tests the following scenario:
-// 1. Password Manager's prompts are disabled by Autofill Assistant because it
-// runs a script.
-// 2. The timeout for prompts disabling expires.
-// 3. The timer re-enables the prompts.
-// 4. A prompt is shown after a form submission.
-TEST_P(PasswordManagerTest, ResetAutofillAssistantModeAfterTimeout) {
-  manager()->SetDisablePromptsTimeoutToZero();
-
-  manager()->SetAutofillAssistantMode(AutofillAssistantMode::kRunning);
-
-  PasswordForm form(MakeSimpleForm());
-  EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.url))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(*store_, GetLogins)
-      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
-  manager()->OnPasswordFormsParsed(&driver_, {form.form_data});
-  manager()->ShowManualFallbackForSaving(&driver_, form.form_data);
-
-  // Timer should reset |autofill_assistant_mode| after timeout.
-  base::RunLoop().RunUntilIdle();
-
-  // Check that a save prompt is shown.
-  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr);
-
-  manager()->DidNavigateMainFrame(true /* form_may_be_submitted */);
-  manager()->OnPasswordFormsRendered(&driver_, {} /* observed */,
-                                     true /* did stop loading */);
 }
 
 INSTANTIATE_TEST_SUITE_P(, PasswordManagerTest, testing::Bool());

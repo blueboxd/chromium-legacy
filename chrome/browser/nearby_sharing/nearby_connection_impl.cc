@@ -43,7 +43,7 @@ void NearbyConnectionImpl::Write(std::vector<uint8_t> bytes) {
   payload->content =
       PayloadContent::NewBytes(BytesPayload::New(std::move(bytes)));
   nearby_connections_manager_->Send(endpoint_id_, std::move(payload),
-                                    /*listener=*/nullptr, base::DoNothing());
+                                    /*listener=*/nullptr);
 }
 
 void NearbyConnectionImpl::Close() {

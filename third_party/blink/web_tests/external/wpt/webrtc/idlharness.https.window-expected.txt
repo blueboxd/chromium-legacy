@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 496 tests; 477 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 496 tests; 479 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Test driver for asyncInitCertificate
@@ -290,7 +290,7 @@ PASS RTCRtpTransceiver interface: attribute sender
 PASS RTCRtpTransceiver interface: attribute receiver
 PASS RTCRtpTransceiver interface: attribute direction
 PASS RTCRtpTransceiver interface: attribute currentDirection
-FAIL RTCRtpTransceiver interface: operation stop() assert_own_property: interface prototype object missing non-static operation expected property "stop" missing
+PASS RTCRtpTransceiver interface: operation stop()
 PASS RTCRtpTransceiver interface: operation setCodecPreferences(sequence<RTCRtpCodecCapability>)
 PASS RTCRtpTransceiver must be primary interface of new RTCPeerConnection().addTransceiver('audio')
 PASS Stringification of new RTCPeerConnection().addTransceiver('audio')
@@ -299,7 +299,7 @@ PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio'
 PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "receiver" with the proper type
 PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "direction" with the proper type
 PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "currentDirection" with the proper type
-FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "stop()" with the proper type assert_inherits: property "stop" not found in prototype chain
+PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "stop()" with the proper type
 PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "setCodecPreferences(sequence<RTCRtpCodecCapability>)" with the proper type
 PASS RTCRtpTransceiver interface: calling setCodecPreferences(sequence<RTCRtpCodecCapability>) on new RTCPeerConnection().addTransceiver('audio') with too few arguments must throw TypeError
 PASS RTCDtlsTransport interface: existence and properties of interface object

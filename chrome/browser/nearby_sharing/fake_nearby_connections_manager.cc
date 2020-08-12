@@ -66,8 +66,7 @@ void FakeNearbyConnectionsManager::Disconnect(const std::string& endpoint_id) {
 
 void FakeNearbyConnectionsManager::Send(const std::string& endpoint_id,
                                         PayloadPtr payload,
-                                        PayloadStatusListener* listener,
-                                        ConnectionsCallback callback) {
+                                        PayloadStatusListener* listener) {
   DCHECK(!IsShutdown());
   // TODO(alexchau): Implement.
 }
@@ -86,8 +85,7 @@ FakeNearbyConnectionsManager::GetIncomingPayload(int64_t payload_id) {
   return nullptr;
 }
 
-void FakeNearbyConnectionsManager::Cancel(int64_t payload_id,
-                                          ConnectionsCallback callback) {
+void FakeNearbyConnectionsManager::Cancel(int64_t payload_id) {
   DCHECK(!IsShutdown());
   // TODO(alexchau): Implement.
 }

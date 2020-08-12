@@ -181,23 +181,21 @@ void NearbyConnectionsManagerImpl::Disconnect(const std::string& endpoint_id) {
 
 void NearbyConnectionsManagerImpl::Send(const std::string& endpoint_id,
                                         PayloadPtr payload,
-                                        PayloadStatusListener* listener,
-                                        ConnectionsCallback callback) {
-  if (!nearby_connections_) {
-    std::move(callback).Run(ConnectionsStatus::kError);
+                                        PayloadStatusListener* listener) {
+  if (!nearby_connections_)
     return;
-  }
 
-  // TOOD(crbug/1076008): Implement.
+  if (listener)
+    RegisterPayloadStatusListener(payload->id, listener);
+
+  nearby_connections_->SendPayload({endpoint_id}, std::move(payload),
+                                   base::DoNothing());
 }
 
 void NearbyConnectionsManagerImpl::RegisterPayloadStatusListener(
     int64_t payload_id,
     PayloadStatusListener* listener) {
-  if (!nearby_connections_)
-    return;
-
-  // TOOD(crbug/1076008): Implement.
+  payload_status_listeners_.insert_or_assign(payload_id, listener);
 }
 
 NearbyConnectionsManagerImpl::Payload*
@@ -206,14 +204,20 @@ NearbyConnectionsManagerImpl::GetIncomingPayload(int64_t payload_id) {
   return nullptr;
 }
 
-void NearbyConnectionsManagerImpl::Cancel(int64_t payload_id,
-                                          ConnectionsCallback callback) {
-  if (!nearby_connections_) {
-    std::move(callback).Run(ConnectionsStatus::kError);
+void NearbyConnectionsManagerImpl::Cancel(int64_t payload_id) {
+  if (!nearby_connections_)
     return;
-  }
 
-  // TOOD(crbug/1076008): Implement.
+  auto it = payload_status_listeners_.find(payload_id);
+  if (it != payload_status_listeners_.end()) {
+    it->second->OnStatusUpdate(
+        PayloadTransferUpdate::New(payload_id, PayloadStatus::kCanceled,
+                                   /*total_bytes=*/0,
+                                   /*bytes_transferred=*/0));
+    payload_status_listeners_.erase(it);
+  }
+  nearby_connections_->CancelPayload(payload_id, base::DoNothing());
+  NS_LOG(INFO) << "Cancelling payload: " << payload_id;
 }
 
 void NearbyConnectionsManagerImpl::ClearIncomingPayloads() {
@@ -300,9 +304,13 @@ void NearbyConnectionsManagerImpl::OnConnectionInitiated(
     ConnectionInfoPtr info) {
   auto result = connection_info_map_.emplace(endpoint_id, std::move(info));
   DCHECK(result.second);
-  // TOOD(crbug/1076008): Implemnet AcceptConnection.
-  // nearby_connections_->AcceptConnection(
-  //     endpoint_id, payload_listener_.BindNewPipeAndPassRemote());
+
+  mojo::PendingRemote<PayloadListener> payload_listener;
+  payload_listeners_.Add(this,
+                         payload_listener.InitWithNewPipeAndPassReceiver());
+
+  nearby_connections_->AcceptConnection(
+      endpoint_id, std::move(payload_listener), base::DoNothing());
 }
 
 void NearbyConnectionsManagerImpl::OnConnectionAccepted(
@@ -372,6 +380,29 @@ void NearbyConnectionsManagerImpl::OnBandwidthChanged(
     int32_t quality) {
   NS_LOG(VERBOSE) << __func__;
   // TODO(crbug/1111458): Support TransferManager.
+}
+
+void NearbyConnectionsManagerImpl::OnPayloadTransferUpdate(
+    const std::string& endpoint_id,
+    PayloadTransferUpdatePtr update) {
+  // If this is a payload we've registered for, then forward its status to the
+  // PayloadStatusListener. We don't need to do anything more with the payload.
+  auto it = payload_status_listeners_.find(update->payload_id);
+  if (it != payload_status_listeners_.end()) {
+    PayloadStatusListener* listener = it->second;
+    switch (update->status) {
+      case PayloadStatus::kInProgress:
+        break;
+      case PayloadStatus::kSuccess:
+      case PayloadStatus::kCanceled:
+      case PayloadStatus::kFailure:
+        payload_status_listeners_.erase(it);
+        break;
+    }
+    listener->OnStatusUpdate(std::move(update));
+  }
+
+  // TOOD(crbug/1076008): Handle incoming  payload transfer.
 }
 
 bool NearbyConnectionsManagerImpl::BindNearbyConnections() {

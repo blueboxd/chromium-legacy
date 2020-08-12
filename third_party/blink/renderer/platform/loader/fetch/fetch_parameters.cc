@@ -44,11 +44,10 @@ FetchParameters::FetchParameters(ResourceRequest resource_request,
                                  scoped_refptr<const DOMWrapperWorld> world)
     : resource_request_(std::move(resource_request)),
       decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
+      options_(std::move(world)),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       defer_(kNoDefer),
-      image_request_behavior_(kNone) {
-  options_.world = std::move(world);
-}
+      image_request_behavior_(kNone) {}
 
 FetchParameters::FetchParameters(ResourceRequest resource_request,
                                  const ResourceLoaderOptions& options)

@@ -128,24 +128,22 @@ ComputePasswordAccountStorageUsageLevel(
     const PrefService* pref_service,
     const syncer::SyncService* sync_service);
 
-// Increases the count of how many times Chrome automatically offered to move a
-// password to the account and the user refused this, e.g. by ignoring the
-// bubble that's shown after successful sign-in with a device password. Should
-// only be called if the user is signed-in and not opted-in. |pref_service| and
-// |sync_service| must be non-null.
-// See PasswordFeatureManager::IncrementMoveToAccountRefusedCount().
-void IncrementMoveToAccountRefusedCount(
-    PrefService* pref_service,
-    const syncer::SyncService* sync_service);
+// Increases the count of how many times Chrome automatically offered a user
+// not opted-in to the account-scoped passwords storage to move a password to
+// their account. Should only be called if the user is signed-in and not
+// opted-in. |pref_service| and |sync_service| must be non-null.
+// See PasswordFeatureManager::RecordMoveOfferedToNonOptedInUser().
+void RecordMoveOfferedToNonOptedInUser(PrefService* pref_service,
+                                       const syncer::SyncService* sync_service);
 
-// Gets the count of how many times Chrome automatically offered to move a
-// password to the account and the user refused this, e.g. by ignoring the
-// bubble that's shown after successful sign-in with a device password. Should
-// only be called if the user is signed-in and not opted-in. |pref_service| and
-// |sync_service| must be non-null.
-// See PasswordFeatureManager::GetMoveToAccountRefusedCount().
-int GetMoveToAccountRefusedCount(const PrefService* pref_service,
-                                 const syncer::SyncService* sync_service);
+// Gets the count of how many times Chrome automatically offered a user
+// not opted-in to the account-scoped passwords storage to move a password to
+// their account. Should only be called if the user is signed-in and not
+// opted-in. |pref_service| and |sync_service| must be non-null.
+// See PasswordFeatureManager::GetMoveOfferedToNonOptedInUserCount().
+int GetMoveOfferedToNonOptedInUserCount(
+    const PrefService* pref_service,
+    const syncer::SyncService* sync_service);
 
 }  // namespace features_util
 

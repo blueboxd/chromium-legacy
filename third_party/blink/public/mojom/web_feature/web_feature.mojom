@@ -2533,7 +2533,6 @@ enum WebFeature {
   kCoopAndCoepIsolated = 3200,
   // The above items are available in M83 branch.
 
-  kWrongBaselineOfButtonElement = 3201,
   kV8Document_HasTrustToken_Method = 3202,
   kForceLoadAtTop = 3203,
   kLegacyLayoutByButton = 3204,
@@ -2701,6 +2700,10 @@ enum WebFeature {
   kWebSharePolicyDisallow = 3369,
   kFormAssociatedCustomElement = 3370,
   kWindowClosed = 3371,
+  kWrongBaselineOfMultiLineButton = 3372,
+  kWrongBaselineOfEmptyLineButton = 3373,
+  kV8RTCRtpTransceiver_Stopped_AttributeGetter = 3374,
+  kV8RTCRtpTransceiver_Stop_Method = 3375,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

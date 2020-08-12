@@ -88,7 +88,9 @@ class MemoryCacheTest : public testing::Test {
     FakeResource(const char* url, ResourceType type)
         : FakeResource(KURL(url), type) {}
     FakeResource(const KURL& url, ResourceType type)
-        : FakeResource(ResourceRequest(url), type, ResourceLoaderOptions()) {}
+        : FakeResource(ResourceRequest(url),
+                       type,
+                       ResourceLoaderOptions(nullptr /* world */)) {}
     FakeResource(const ResourceRequest& request,
                  ResourceType type,
                  const ResourceLoaderOptions& options)

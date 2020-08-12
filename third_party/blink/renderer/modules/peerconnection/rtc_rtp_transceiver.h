@@ -46,6 +46,7 @@ class RTCRtpTransceiver final : public ScriptWrappable {
   String direction() const;
   void setDirection(String direction, ExceptionState&);
   String currentDirection() const;
+  void stop(ExceptionState&);
   void setCodecPreferences(
       const HeapVector<Member<RTCRtpCodecCapability>>& codecs,
       ExceptionState& exception_state);

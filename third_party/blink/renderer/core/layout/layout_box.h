@@ -797,6 +797,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return extra_input_;
   }
 
+  void LayoutSubtreeRoot();
+
   void UpdateLayout() override;
   void Paint(const PaintInfo&) const override;
 

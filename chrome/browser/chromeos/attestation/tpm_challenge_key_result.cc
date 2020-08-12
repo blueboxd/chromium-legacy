@@ -6,11 +6,20 @@
 
 #include <ostream>
 
+#include "base/base64.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "base/values.h"
 
 namespace chromeos {
 namespace attestation {
+namespace {
+std::string Base64EncodeStr(const std::string& str) {
+  std::string result;
+  base::Base64Encode(str, &result);
+  return result;
+}
+}  // namespace
 
 // These messages are exposed to the extensions that using
 // chrome.enterprise.platformKeys API. Someone can rely on exectly these
@@ -137,6 +146,34 @@ const char* TpmChallengeKeyResult::GetErrorMessage() const {
 
 bool TpmChallengeKeyResult::IsSuccess() const {
   return result_code == TpmChallengeKeyResultCode::kSuccess;
+}
+
+bool TpmChallengeKeyResult::operator==(
+    const TpmChallengeKeyResult& other) const {
+  return ((result_code == other.result_code) &&
+          (public_key == other.public_key) &&
+          (challenge_response == other.challenge_response));
+}
+
+bool TpmChallengeKeyResult::operator!=(
+    const TpmChallengeKeyResult& other) const {
+  return !(*this == other);
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const TpmChallengeKeyResult& result) {
+  base::Value value(base::Value::Type::DICTIONARY);
+
+  value.SetIntKey("result_code", static_cast<int>(result.result_code));
+  if (!result.IsSuccess()) {
+    value.SetStringKey("error_message", result.GetErrorMessage());
+  }
+  value.SetStringKey("public_key", Base64EncodeStr(result.public_key));
+  value.SetStringKey("challenge_response",
+                     Base64EncodeStr(result.challenge_response));
+
+  os << value;
+  return os;
 }
 
 }  // namespace attestation

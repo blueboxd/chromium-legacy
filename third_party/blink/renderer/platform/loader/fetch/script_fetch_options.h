@@ -19,6 +19,7 @@
 
 namespace blink {
 
+class DOMWrapperWorld;
 class KURL;
 class SecurityOrigin;
 
@@ -82,11 +83,13 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
 
   // https://html.spec.whatwg.org/C/#fetch-a-classic-script
   // Steps 1 and 3.
-  FetchParameters CreateFetchParameters(const KURL&,
-                                        const SecurityOrigin*,
-                                        CrossOriginAttributeValue,
-                                        const WTF::TextEncoding&,
-                                        FetchParameters::DeferOption) const;
+  FetchParameters CreateFetchParameters(
+      const KURL&,
+      const SecurityOrigin*,
+      scoped_refptr<const DOMWrapperWorld> world,
+      CrossOriginAttributeValue,
+      const WTF::TextEncoding&,
+      FetchParameters::DeferOption) const;
 
  private:
   // https://html.spec.whatwg.org/C/#concept-script-fetch-options-nonce

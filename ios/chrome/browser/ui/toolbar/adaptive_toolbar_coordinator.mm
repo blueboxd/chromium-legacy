@@ -103,6 +103,11 @@
   [self.viewController setScrollProgressForTabletOmnibox:progress];
 }
 
+- (UIResponder<UITextInput>*)fakeboxScribbleForwardingTarget {
+  // Only works in primary toolbar.
+  return nil;
+}
+
 #pragma mark - ToolbarCommands
 
 - (void)triggerToolsMenuButtonAnimation {

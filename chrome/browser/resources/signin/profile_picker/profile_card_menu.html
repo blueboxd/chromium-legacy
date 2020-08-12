@@ -18,6 +18,7 @@
   }
 
   #removeConfirmation {
+    color: var(--cr-primary-text-color);
     margin-top: 16px;
     pointer-events: none;
     width: 234px;
@@ -60,7 +61,7 @@
     --bg-action: var(--google-red-700);
     --hover-bg-action: rgba(var(--google-red-700-rgb), .9);
     --hover-shadow-action-rgb: var(--google-red-500-rgb);
-    background-color: var(--google-red-700);
+    background-color: var(--bg-action);
     border-radius: 4px;
     color: var(--ink-color-action);
     font-weight: 500;
@@ -81,13 +82,13 @@
     aria-label$="[[profileMenuText_]]">
 </cr-icon-button>
 
-<cr-action-menu id="actionMenu" role-description="menu">
+<cr-action-menu id="actionMenu" role-description="$i18n{menu}">
   <button class="dropdown-item" on-click="onRemoveButtonClicked_">
     $i18n{profileMenuRemoveText}
   </button>
 </cr-action-menu>
 
-<cr-action-menu id="removeActionMenu" role-description="menu">
+<cr-action-menu id="removeActionMenu" role-description="$i18n{menu}">
   <div id="removeConfirmation">
     <div class="header">
       $i18n{profileMenuRemoveText}

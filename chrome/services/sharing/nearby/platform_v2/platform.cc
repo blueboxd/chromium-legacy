@@ -13,6 +13,7 @@
 #include "chrome/services/sharing/nearby/platform_v2/bluetooth_classic_medium.h"
 #include "chrome/services/sharing/nearby/platform_v2/condition_variable.h"
 #include "chrome/services/sharing/nearby/platform_v2/count_down_latch.h"
+#include "chrome/services/sharing/nearby/platform_v2/input_file.h"
 #include "chrome/services/sharing/nearby/platform_v2/log_message.h"
 #include "chrome/services/sharing/nearby/platform_v2/mutex.h"
 #include "chrome/services/sharing/nearby/platform_v2/recursive_mutex.h"
@@ -104,8 +105,12 @@ std::unique_ptr<AtomicBoolean> ImplementationPlatform::CreateAtomicBoolean(
 std::unique_ptr<InputFile> ImplementationPlatform::CreateInputFile(
     std::int64_t payload_id,
     std::int64_t total_size) {
-  return std::make_unique<shared::InputFile>(GetPayloadPath(payload_id),
-                                             total_size);
+  auto& connections = connections::NearbyConnections::GetInstance();
+  auto file = connections.ExtractFileForPayload(payload_id);
+  if (!file.IsValid())
+    return nullptr;
+
+  return std::make_unique<chrome::InputFile>(std::move(file));
 }
 
 std::unique_ptr<OutputFile> ImplementationPlatform::CreateOutputFile(

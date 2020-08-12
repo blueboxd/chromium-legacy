@@ -6,6 +6,25 @@
 
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 
+// static
+bool TransferMetadata::IsFinalStatus(Status status) {
+  switch (status) {
+    case Status::kAwaitingRemoteAcceptanceFailed:
+    case Status::kComplete:
+    case Status::kFailed:
+    case Status::kRejected:
+    case Status::kCancelled:
+    case Status::kTimedOut:
+    case Status::kMediaUnavailable:
+    case Status::kNotEnoughSpace:
+    case Status::kUnsupportedAttachmentType:
+    case Status::kExternalProviderLaunched:
+      return true;
+    default:
+      return false;
+  }
+}
+
 TransferMetadata::TransferMetadata(Status status,
                                    float progress,
                                    base::Optional<std::string> token,

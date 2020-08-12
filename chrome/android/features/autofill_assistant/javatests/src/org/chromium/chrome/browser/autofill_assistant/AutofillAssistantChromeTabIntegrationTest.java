@@ -17,6 +17,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilKeyboardMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
@@ -336,7 +337,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
         // Clicking location bar hides UI and shows the keyboard.
         onView(withId(org.chromium.chrome.R.id.url_bar)).perform(click());
-        waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
+        waitUntilViewMatchesCondition(withText("Prompt"), not(isCompletelyDisplayed()));
         waitUntilKeyboardMatchesCondition(mTestRule, /* isShowing= */ true);
 
         // Closing keyboard brings it back.

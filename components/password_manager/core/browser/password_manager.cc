@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -895,7 +894,7 @@ void PasswordManager::OnPasswordFormsRendered(
 }
 
 void PasswordManager::OnLoginSuccessful() {
-  if (autofill_assistant_mode_ == AutofillAssistantMode::kRunning) {
+  if (autofill_assistant_mode_ == AutofillAssistantMode::kUIShown) {
     // Suppress prompts while Autofill Assistant is running.
     return;
   }
@@ -1230,18 +1229,11 @@ void PasswordManager::ShowManualFallbackForSavingImpl(
 
 void PasswordManager::SetAutofillAssistantMode(AutofillAssistantMode mode) {
   if (autofill_assistant_mode_ == mode) {
-    NOTREACHED()
-        << "Autofill Assistant tried to disable/enable prompts twice in a row.";
     return;
   }
   autofill_assistant_mode_ = mode;
 
-  if (autofill_assistant_mode_ == AutofillAssistantMode::kRunning) {
-    disable_prompts_timer_.Start(FROM_HERE, GetTimeoutForDisablingPrompts(),
-                                 this,
-                                 &PasswordManager::ResetAutofillAssistantMode);
-  } else {
-    disable_prompts_timer_.Stop();
+  if (autofill_assistant_mode_ == AutofillAssistantMode::kUINotShown) {
     // Reset pending credentials as Autofill Assistant has handled the pending
     // submission.
     for (auto& form_manager : form_managers_)
@@ -1252,16 +1244,6 @@ void PasswordManager::SetAutofillAssistantMode(AutofillAssistantMode mode) {
 
 AutofillAssistantMode PasswordManager::GetAutofillAssistantMode() const {
   return autofill_assistant_mode_;
-}
-
-void PasswordManager::ResetAutofillAssistantMode() {
-  // The timeout is 0 only in the dedicated test. Otherwise, the call can happen
-  // only due to a bug.
-  DCHECK(disable_prompts_timeout_in_seconds_ == 0)
-      << "Autofill assistant failed to re-enable Password Manager's "
-         "prompts before timing out.";
-
-  autofill_assistant_mode_ = AutofillAssistantMode::kNotRunning;
 }
 
 #if defined(OS_IOS)
@@ -1282,9 +1264,5 @@ void PasswordManager::CheckForPotentialSubmission(
     OnLoginSuccessful();
 }
 #endif
-
-base::TimeDelta PasswordManager::GetTimeoutForDisablingPrompts() {
-  return base::TimeDelta::FromSeconds(disable_prompts_timeout_in_seconds_);
-}
 
 }  // namespace password_manager

@@ -9,10 +9,10 @@ import android.content.Intent;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
 import org.chromium.base.Consumer;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsClient;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
@@ -215,8 +215,8 @@ public abstract class PageInfoControllerDelegate {
     public abstract BrowserContextHandle getBrowserContext();
 
     /**
-     * @return Returns the fragment to be used for the permissions subpage of page info.
+     * @return Returns the SiteSettingsClient for this page info.
      */
     @NonNull
-    public abstract Fragment getPermissionsSubpageFragmentForUrl(String url);
+    public abstract SiteSettingsClient getSiteSettingsClient();
 }

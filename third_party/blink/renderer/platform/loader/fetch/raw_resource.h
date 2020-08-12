@@ -65,7 +65,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   // Exposed for testing
   static RawResource* CreateForTest(const ResourceRequest& request,
                                     ResourceType type) {
-    ResourceLoaderOptions options;
+    ResourceLoaderOptions options(nullptr /* world */);
     return MakeGarbageCollected<RawResource>(request, type, options);
   }
   static RawResource* CreateForTest(const KURL& url,

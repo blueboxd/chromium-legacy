@@ -42,7 +42,6 @@
 namespace blink {
 
 class InlineTextBox;
-class NGOffsetMapping;
 
 // High-level abstraction of InlineTextBox to allow the accessibility module to
 // get information about InlineTextBoxes without tight coupling.
@@ -78,6 +77,7 @@ class CORE_EXPORT AbstractInlineTextBox
   virtual scoped_refptr<AbstractInlineTextBox> NextOnLine() const = 0;
   virtual scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const = 0;
   virtual bool IsLineBreak() const = 0;
+  virtual bool NeedsTrailingSpace() const = 0;
 
  protected:
   explicit AbstractInlineTextBox(LineLayoutText line_layout_item);
@@ -123,7 +123,7 @@ class CORE_EXPORT LegacyAbstractInlineTextBox final
   scoped_refptr<AbstractInlineTextBox> NextOnLine() const final;
   scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const final;
   bool IsLineBreak() const final;
-  const NGOffsetMapping* GetOffsetMapping() const;
+  bool NeedsTrailingSpace() const final;
 
   InlineTextBox* inline_text_box_;
 

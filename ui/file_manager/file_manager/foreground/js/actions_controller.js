@@ -81,6 +81,9 @@ class ActionsController {
         'menushow', this.onMenuShow_.bind(this));
     this.ui_.gearButton.addEventListener(
         'menushow', this.onMenuShow_.bind(this));
+
+    this.metadataModel_.addEventListener(
+        'update', this.onMetadataUpdated_.bind(this));
   }
 
   /**
@@ -211,6 +214,27 @@ class ActionsController {
     this.currentDirKey_ = key;
 
     this.getActionsForEntries([entry]);
+  }
+
+  /**
+   * @param {?Event} event
+   * @private
+   */
+  onMetadataUpdated_(event) {
+    if (!event || !event.names.has('pinned')) {
+      return;
+    }
+
+    for (const key of this.readyModels_.keys()) {
+      if (key.split(';').some(url => event.entriesMap.has(url))) {
+        this.readyModels_.delete(key);
+      }
+    }
+    for (const key of this.initializingdModels_.keys()) {
+      if (key.split(';').some(url => event.entriesMap.has(url))) {
+        this.initializingdModels_.delete(key);
+      }
+    }
   }
 
   /**

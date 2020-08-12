@@ -176,7 +176,7 @@
   UIAction* action =
       [self actionWithTitle:l10n_util::GetNSString(
                                 IDS_IOS_RECENT_TABS_HIDE_MENU_OPTION)
-                      image:nil
+                      image:[UIImage imageNamed:@"remove"]
                        type:MenuActionType::Hide
                       block:block];
   action.attributes = UIMenuElementAttributesDestructive;

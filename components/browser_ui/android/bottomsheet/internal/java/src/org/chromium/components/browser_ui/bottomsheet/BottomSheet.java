@@ -494,6 +494,16 @@ class BottomSheet extends FrameLayout
             mSheetContent.getContentView().removeOnLayoutChangeListener(this);
         }
 
+        if (content != null && getParent() == null) {
+            mSheetContainer.addView(this);
+        } else if (content == null) {
+            if (mSheetContainer.getParent() == null) {
+                throw new RuntimeException(
+                        "Attempting to detach sheet that was not in the hierarchy!");
+            }
+            mSheetContainer.removeView(this);
+        }
+
         swapViews(content != null ? content.getContentView() : null,
                 mSheetContent != null ? mSheetContent.getContentView() : null,
                 mBottomSheetContentContainer);
@@ -624,13 +634,6 @@ class BottomSheet extends FrameLayout
         if (isSheetOpen() && MathUtils.areFloatsEqual(translationY, getTranslationY())) return;
 
         setTranslationY(translationY);
-
-        float hiddenHeight = getHiddenRatio() * mContainerHeight;
-        if (mCurrentOffsetPx <= hiddenHeight && this.getParent() != null) {
-            mSheetContainer.removeView(this);
-        } else if (mCurrentOffsetPx > hiddenHeight && this.getParent() == null) {
-            mSheetContainer.addView(this);
-        }
 
         // Do open/close computation based on the minimum allowed state by the sheet's content.
         // Note that when transitioning from hidden to peek, even dismissable sheets may want

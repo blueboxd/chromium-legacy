@@ -8,6 +8,8 @@
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/services/sharing/nearby/nearby_connections_conversions.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
+#include "third_party/nearby/src/cpp/platform_v2/public/file.h"
+#include "third_party/nearby/src/cpp/platform_v2/public/single_thread_executor.h"
 
 namespace location {
 namespace nearby {
@@ -274,6 +276,77 @@ void NearbyConnections::DisconnectFromEndpoint(
     DisconnectFromEndpointCallback callback) {
   core_->DisconnectFromEndpoint(endpoint_id,
                                 ResultCallbackFromMojom(std::move(callback)));
+}
+
+void NearbyConnections::AcceptConnection(
+    const std::string& endpoint_id,
+    mojo::PendingRemote<mojom::PayloadListener> listener,
+    AcceptConnectionCallback callback) {
+  mojo::SharedRemote<mojom::PayloadListener> remote(std::move(listener));
+  PayloadListener payload_listener = {
+      .payload_progress_cb = [remote](const std::string& endpoint_id,
+                                      const PayloadProgressInfo& info) {
+        if (!remote)
+          return;
+
+        DCHECK_GE(info.total_bytes, 0);
+        DCHECK_GE(info.bytes_transferred, 0);
+        remote->OnPayloadTransferUpdate(
+            endpoint_id, mojom::PayloadTransferUpdate::New(
+                             info.payload_id, PayloadStatusToMojom(info.status),
+                             info.total_bytes, info.bytes_transferred));
+      }};
+
+  core_->AcceptConnection(endpoint_id, std::move(payload_listener),
+                          ResultCallbackFromMojom(std::move(callback)));
+}
+
+void NearbyConnections::RejectConnection(const std::string& endpoint_id,
+                                         RejectConnectionCallback callback) {
+  core_->RejectConnection(endpoint_id,
+                          ResultCallbackFromMojom(std::move(callback)));
+}
+
+void NearbyConnections::SendPayload(
+    const std::vector<std::string>& endpoint_ids,
+    mojom::PayloadPtr payload,
+    SendPayloadCallback callback) {
+  std::unique_ptr<Payload> core_payload;
+  switch (payload->content->which()) {
+    case mojom::PayloadContent::Tag::BYTES:
+      core_payload = std::make_unique<Payload>(
+          payload->id,
+          ByteArrayFromMojom(payload->content->get_bytes()->bytes));
+      break;
+    case mojom::PayloadContent::Tag::FILE:
+      int64_t file_size = payload->content->get_file()->file.GetLength();
+      outgoing_file_map_.insert_or_assign(
+          payload->id, std::move(payload->content->get_file()->file));
+      core_payload = std::make_unique<Payload>(
+          payload->id, InputFile(payload->id, file_size));
+      break;
+  }
+
+  core_->SendPayload(absl::MakeSpan(endpoint_ids), std::move(*core_payload),
+                     ResultCallbackFromMojom(std::move(callback)));
+}
+
+void NearbyConnections::CancelPayload(int64_t payload_id,
+                                      CancelPayloadCallback callback) {
+  core_->CancelPayload(payload_id,
+                       ResultCallbackFromMojom(std::move(callback)));
+}
+
+base::File NearbyConnections::ExtractFileForPayload(int64_t payload_id) {
+  auto file_it = outgoing_file_map_.find(payload_id);
+  if (file_it == outgoing_file_map_.end())
+    return base::File();
+
+  base::File file = std::move(file_it->second);
+  outgoing_file_map_.erase(file_it);
+  return file;
+
+  // TOOD(crbug/1076008): Handle incoming file payload.
 }
 
 }  // namespace connections

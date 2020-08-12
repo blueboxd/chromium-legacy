@@ -136,6 +136,10 @@ bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
 // |bitmap_width| is the width of the output bitmap.
 // |bitmap_height| is the height of the output bitmap.
 // |dpi_x| and |dpi_y| is the resolution.
+// |stretch_to_bounds| specifies whether the output should be stretched to fit
+//     the supplied |bitmap_width| and |bitmap_height|.
+// |keep_aspect_ratio| If any scaling is needed, this parameter specifies
+//     whether the original aspect ratio of the page is preserved while scaling.
 // |autorotate| specifies whether the final image should be rotated to match
 //     the output bound.
 // |use_color| specifies color or grayscale.
@@ -147,6 +151,8 @@ bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
                            int bitmap_height,
                            int dpi_x,
                            int dpi_y,
+                           bool stretch_to_bounds,
+                           bool keep_aspect_ratio,
                            bool autorotate,
                            bool use_color);
 

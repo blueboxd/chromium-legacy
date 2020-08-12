@@ -62,6 +62,7 @@ enum {
   kGlobalToggleManagedSessionDisclosure,
   kGlobalShowParentAccess,
   kPerUserTogglePin,
+  kPerUserToggleChallengeResponse,
   kPerUserToggleTap,
   kPerUserCycleEasyUnlockState,
   kPerUserCycleFingerprintState,
@@ -112,6 +113,7 @@ struct UserMetadata {
   std::string display_name;
   bool enable_pin = false;
   bool enable_tap_to_unlock = false;
+  bool enable_challenge_response = false;  // Smart Card
   bool enable_auth = true;
   user_manager::UserType type = user_manager::USER_TYPE_REGULAR;
   EasyUnlockIconId easy_unlock_id = EasyUnlockIconId::NONE;
@@ -269,6 +271,17 @@ class LockDebugView::DebugDataDispatcherTransformer
     debug_user->enable_pin = !debug_user->enable_pin;
     debug_dispatcher_.SetPinEnabledForUser(debug_user->account_id,
                                            debug_user->enable_pin);
+  }
+
+  // Activates or deactivates challenge response for the user at
+  // |user_index|.
+  void ToggleChallengeResponseStateForUserIndex(size_t user_index) {
+    DCHECK(user_index < debug_users_.size());
+    UserMetadata* debug_user = &debug_users_[user_index];
+    debug_user->enable_challenge_response =
+        !debug_user->enable_challenge_response;
+    debug_dispatcher_.SetChallengeResponseAuthEnabledForUser(
+        debug_user->account_id, debug_user->enable_challenge_response);
   }
 
   // Activates or deactivates tap unlock for the user at |user_index|.
@@ -1015,6 +1028,12 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   if (sender->GetID() == ButtonId::kPerUserTogglePin)
     debug_data_dispatcher_->TogglePinStateForUserIndex(sender->tag());
 
+  // Enable or disable challenge response. (Smart Card)
+  if (sender->GetID() == ButtonId::kPerUserToggleChallengeResponse) {
+    debug_data_dispatcher_->ToggleChallengeResponseStateForUserIndex(
+        sender->tag());
+  }
+
   // Enable or disable tap.
   if (sender->GetID() == ButtonId::kPerUserToggleTap)
     debug_data_dispatcher_->ToggleTapStateForUserIndex(sender->tag());
@@ -1094,6 +1113,9 @@ void LockDebugView::UpdatePerUserActionContainer() {
     row->AddChildView(name);
 
     AddButton("Toggle PIN", ButtonId::kPerUserTogglePin, row)->set_tag(i);
+    AddButton("Toggle Smart card",
+              ButtonId::kPerUserToggleChallengeResponse, row)
+        ->set_tag(i);
     AddButton("Toggle Tap", ButtonId::kPerUserToggleTap, row)->set_tag(i);
     AddButton("Cycle easy unlock", ButtonId::kPerUserCycleEasyUnlockState, row)
         ->set_tag(i);

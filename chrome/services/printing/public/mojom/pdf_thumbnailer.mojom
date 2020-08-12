@@ -12,6 +12,15 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 struct ThumbParams {
   // The dimensions of the thumbnail.
   gfx.mojom.Size size_px;
+
+  // The resolution, in dots per inch, of the thumbnail.
+  gfx.mojom.Size dpi;
+
+  // Whether or not to stretch the thumbnail to fill the supplied size.
+  bool stretch;
+
+  // Whether or not to preserve the aspect ratio.
+  bool keep_aspect;
 };
 
 // Interface used to generate a thumbnail for a PDF contents given as a set of

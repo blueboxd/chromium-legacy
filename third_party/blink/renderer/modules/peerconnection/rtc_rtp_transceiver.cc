@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.h"
 
+#include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
@@ -28,6 +29,8 @@ String TransceiverDirectionToString(
       return "recvonly";
     case webrtc::RtpTransceiverDirection::kInactive:
       return "inactive";
+    case webrtc::RtpTransceiverDirection::kStopped:
+      return "stopped";
     default:
       NOTREACHED();
       return String();
@@ -147,7 +150,12 @@ void RTCRtpTransceiver::setDirection(String direction,
                                       "The transceiver is stopped.");
     return;
   }
-  platform_transceiver_->SetDirection(*webrtc_direction);
+  webrtc::RTCError error =
+      platform_transceiver_->SetDirection(*webrtc_direction);
+  if (!error.ok()) {
+    ThrowExceptionFromRTCError(error, exception_state);
+    return;
+  }
   UpdateMembers();
 }
 
@@ -195,6 +203,15 @@ bool RTCRtpTransceiver::FiredDirectionHasRecv() const {
   return fired_direction_ &&
          (*fired_direction_ == webrtc::RtpTransceiverDirection::kSendRecv ||
           *fired_direction_ == webrtc::RtpTransceiverDirection::kRecvOnly);
+}
+
+void RTCRtpTransceiver::stop(ExceptionState& exception_state) {
+  webrtc::RTCError error = platform_transceiver_->Stop();
+  if (!error.ok()) {
+    ThrowExceptionFromRTCError(error, exception_state);
+    return;
+  }
+  stopped_ = true;
 }
 
 void RTCRtpTransceiver::setCodecPreferences(

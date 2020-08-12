@@ -179,8 +179,9 @@ class DummyTransceiverInternal
     return std::make_unique<DummyRTCRtpReceiverPlatform>(receiver_);
   }
   webrtc::RtpTransceiverDirection direction() const { return direction_; }
-  void set_direction(webrtc::RtpTransceiverDirection direction) {
+  webrtc::RTCError set_direction(webrtc::RtpTransceiverDirection direction) {
     direction_ = direction;
+    return webrtc::RTCError::OK();
   }
 
  private:
@@ -223,8 +224,9 @@ class MockRTCPeerConnectionHandlerPlatform::DummyRTCRtpTransceiverPlatform
   webrtc::RtpTransceiverDirection Direction() const override {
     return internal_->direction();
   }
-  void SetDirection(webrtc::RtpTransceiverDirection direction) override {
-    internal_->set_direction(direction);
+  webrtc::RTCError SetDirection(
+      webrtc::RtpTransceiverDirection direction) override {
+    return internal_->set_direction(direction);
   }
   base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
       const override {

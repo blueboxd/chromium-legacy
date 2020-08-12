@@ -81,6 +81,23 @@ std::vector<uint8_t> ByteArrayToMojom(const ByteArray& byte_array) {
                               byte_array.data() + byte_array.size());
 }
 
+ByteArray ByteArrayFromMojom(const std::vector<uint8_t>& byte_array) {
+  return ByteArray(std::string(byte_array.begin(), byte_array.end()));
+}
+
+mojom::PayloadStatus PayloadStatusToMojom(PayloadProgressInfo::Status status) {
+  switch (status) {
+    case PayloadProgressInfo::Status::kSuccess:
+      return mojom::PayloadStatus::kSuccess;
+    case PayloadProgressInfo::Status::kFailure:
+      return mojom::PayloadStatus::kFailure;
+    case PayloadProgressInfo::Status::kInProgress:
+      return mojom::PayloadStatus::kInProgress;
+    case PayloadProgressInfo::Status::kCanceled:
+      return mojom::PayloadStatus::kCanceled;
+  }
+}
+
 }  // namespace connections
 }  // namespace nearby
 }  // namespace location

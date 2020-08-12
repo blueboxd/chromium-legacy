@@ -105,6 +105,10 @@
 // E.g., "*/foo/bar/*=2" would change the logging level for all code
 // in source files under a "foo/bar" directory.
 //
+// Note that for a Chromium binary built in release mode (is_debug = false) you
+// must pass "--enable-logging=stderr" in order to see the output of VLOG
+// statements.
+//
 // There's also VLOG_IS_ON(n) "verbose level" condition macro. To be used as
 //
 //   if (VLOG_IS_ON(2)) {
@@ -157,6 +161,9 @@
 //
 // Note that the visibility can be changed by setting preferences in
 // SetLogItems()
+//
+// Additional logging-related information can be found here:
+// https://chromium.googlesource.com/chromium/src/+/master/docs/linux/debugging.md#Logging
 
 namespace logging {
 

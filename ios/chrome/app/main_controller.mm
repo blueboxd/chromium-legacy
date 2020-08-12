@@ -717,6 +717,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Unregister the observer before the service is destroyed.
   _localStatePrefChangeRegistrar.RemoveAll();
 
+  // Under the UIScene API, the scene delegate does not receive
+  // sceneDidDisconnect: notifications on app termination. We mark remaining
+  // connected scene states as diconnected in order to allow services to
+  // properly unregister their observers and tear down remaining UI.
+  for (SceneState* sceneState in self.appState.connectedScenes) {
+    sceneState.activationLevel = SceneActivationLevelUnattached;
+  }
+
   _chromeMain.reset();
 }
 

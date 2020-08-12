@@ -58,11 +58,15 @@ class PLATFORM_EXPORT RTCRtpTransceiverPlatform {
   virtual std::unique_ptr<RTCRtpReceiverPlatform> Receiver() const = 0;
   virtual bool Stopped() const = 0;
   virtual webrtc::RtpTransceiverDirection Direction() const = 0;
-  virtual void SetDirection(webrtc::RtpTransceiverDirection) = 0;
+  virtual webrtc::RTCError SetDirection(webrtc::RtpTransceiverDirection) = 0;
   virtual base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
       const = 0;
   virtual base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
       const = 0;
+  virtual webrtc::RTCError Stop() {
+    NOTREACHED();
+    return webrtc::RTCError::OK();
+  }
   virtual webrtc::RTCError SetCodecPreferences(
       Vector<webrtc::RtpCodecCapability>) {
     return {};

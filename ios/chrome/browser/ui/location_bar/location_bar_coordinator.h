@@ -45,6 +45,9 @@
 // Returns the edit view animatee.
 - (id<EditViewAnimatee>)editViewAnimatee;
 
+// Target to forward omnibox-related scribble events to.
+- (UIResponder<UITextInput>*)omniboxScribbleForwardingTarget;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_COORDINATOR_H_

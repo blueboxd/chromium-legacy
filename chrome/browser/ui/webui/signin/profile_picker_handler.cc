@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/search/generated_colors_info.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -58,6 +59,10 @@ void ProfilePickerHandler::RegisterMessages() {
       base::BindRepeating(
           &ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "removeProfile",
+      base::BindRepeating(&ProfilePickerHandler::HandleRemoveProfile,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getProfileStatistics",
       base::BindRepeating(&ProfilePickerHandler::HandleGetProfileStatistics,
@@ -154,6 +159,20 @@ void ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo(
                     color_utils::SkColorToRgbaString(color_info.color));
 
   ResolveJavascriptCallback(callback_id, std::move(dict));
+}
+
+void ProfilePickerHandler::HandleRemoveProfile(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value& profile_path_value = args->GetList()[0];
+  base::Optional<base::FilePath> profile_path =
+      util::ValueToFilePath(profile_path_value);
+
+  if (!profile_path) {
+    NOTREACHED();
+    return;
+  }
+  webui::DeleteProfileAtPath(*profile_path,
+                             ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
 }
 
 void ProfilePickerHandler::HandleGetProfileStatistics(
@@ -259,7 +278,8 @@ void ProfilePickerHandler::OnProfileAdded(const base::FilePath& profile_path) {
 void ProfilePickerHandler::OnProfileWasRemoved(
     const base::FilePath& profile_path,
     const base::string16& profile_name) {
-  PushProfilesList();
+  DCHECK(IsJavascriptAllowed());
+  FireWebUIListener("profile-removed", util::FilePathToValue(profile_path));
 }
 
 void ProfilePickerHandler::OnProfileAvatarChanged(

@@ -24,7 +24,8 @@ class NearbyConnectionsManagerImpl
     : public NearbyConnectionsManager,
       public NearbyProcessManager::Observer,
       public location::nearby::connections::mojom::EndpointDiscoveryListener,
-      public location::nearby::connections::mojom::ConnectionLifecycleListener {
+      public location::nearby::connections::mojom::ConnectionLifecycleListener,
+      public location::nearby::connections::mojom::PayloadListener {
  public:
   NearbyConnectionsManagerImpl(NearbyProcessManager* process_manager,
                                Profile* profile);
@@ -52,12 +53,11 @@ class NearbyConnectionsManagerImpl
   void Disconnect(const std::string& endpoint_id) override;
   void Send(const std::string& endpoint_id,
             PayloadPtr payload,
-            PayloadStatusListener* listener,
-            ConnectionsCallback callback) override;
+            PayloadStatusListener* listener) override;
   void RegisterPayloadStatusListener(int64_t payload_id,
                                      PayloadStatusListener* listener) override;
   Payload* GetIncomingPayload(int64_t payload_id) override;
-  void Cancel(int64_t payload_id, ConnectionsCallback callback) override;
+  void Cancel(int64_t payload_id) override;
   void ClearIncomingPayloads() override;
   base::Optional<std::vector<uint8_t>> GetRawAuthenticationToken(
       const std::string& endpoint_id) override;
@@ -66,17 +66,23 @@ class NearbyConnectionsManagerImpl
  private:
   using AdvertisingOptions =
       location::nearby::connections::mojom::AdvertisingOptions;
-  using MediumSelection = location::nearby::connections::mojom::MediumSelection;
-  using DiscoveryOptions =
-      location::nearby::connections::mojom::DiscoveryOptions;
-  using EndpointDiscoveryListener =
-      location::nearby::connections::mojom::EndpointDiscoveryListener;
+  using ConnectionInfoPtr =
+      location::nearby::connections::mojom::ConnectionInfoPtr;
   using ConnectionLifecycleListener =
       location::nearby::connections::mojom::ConnectionLifecycleListener;
   using DiscoveredEndpointInfoPtr =
       location::nearby::connections::mojom::DiscoveredEndpointInfoPtr;
-  using ConnectionInfoPtr =
-      location::nearby::connections::mojom::ConnectionInfoPtr;
+  using DiscoveryOptions =
+      location::nearby::connections::mojom::DiscoveryOptions;
+  using EndpointDiscoveryListener =
+      location::nearby::connections::mojom::EndpointDiscoveryListener;
+  using MediumSelection = location::nearby::connections::mojom::MediumSelection;
+  using PayloadListener = location::nearby::connections::mojom::PayloadListener;
+  using PayloadTransferUpdate =
+      location::nearby::connections::mojom::PayloadTransferUpdate;
+  using PayloadStatus = location::nearby::connections::mojom::PayloadStatus;
+  using PayloadTransferUpdatePtr =
+      location::nearby::connections::mojom::PayloadTransferUpdatePtr;
   using Status = location::nearby::connections::mojom::Status;
 
   FRIEND_TEST_ALL_PREFIXES(NearbyConnectionsManagerImplTest,
@@ -87,12 +93,12 @@ class NearbyConnectionsManagerImpl
   void OnNearbyProcessStarted() override;
   void OnNearbyProcessStopped() override;
 
-  // mojom::EndpointDiscoveryListener:
+  // EndpointDiscoveryListener:
   void OnEndpointFound(const std::string& endpoint_id,
                        DiscoveredEndpointInfoPtr info) override;
   void OnEndpointLost(const std::string& endpoint_id) override;
 
-  // mojom::ConnectionLifecycleListener:
+  // ConnectionLifecycleListener:
   void OnConnectionInitiated(const std::string& endpoint_id,
                              ConnectionInfoPtr info) override;
   void OnConnectionAccepted(const std::string& endpoint_id) override;
@@ -101,6 +107,10 @@ class NearbyConnectionsManagerImpl
   void OnDisconnected(const std::string& endpoint_id) override;
   void OnBandwidthChanged(const std::string& endpoint_id,
                           int32_t quality) override;
+
+  // PayloadListener:
+  void OnPayloadTransferUpdate(const std::string& endpoint_id,
+                               PayloadTransferUpdatePtr update) override;
 
   void OnConnectionRequested(const std::string& endpoint_id,
                              NearbyConnectionCallback callback,
@@ -121,12 +131,15 @@ class NearbyConnectionsManagerImpl
   // A map of endpoint_id to NearbyConnection.
   base::flat_map<std::string, std::unique_ptr<NearbyConnectionImpl>>
       connections_;
+  // A map of payload_id to PayloadStatusListener*.
+  base::flat_map<int64_t, PayloadStatusListener*> payload_status_listeners_;
 
   ScopedObserver<NearbyProcessManager, NearbyProcessManager::Observer>
       nearby_process_observer_{this};
   mojo::Receiver<EndpointDiscoveryListener> endpoint_discovery_listener_{this};
   mojo::ReceiverSet<ConnectionLifecycleListener>
       connection_lifecycle_listeners_;
+  mojo::ReceiverSet<PayloadListener> payload_listeners_;
 
   location::nearby::connections::mojom::NearbyConnections* nearby_connections_ =
       nullptr;

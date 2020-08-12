@@ -38,7 +38,6 @@ class CORE_EXPORT NGAbstractInlineTextBox final : public AbstractInlineTextBox {
   NGInlineCursor GetCursor() const;
   NGInlineCursor GetCursorOnLine() const;
   String GetTextContent() const;
-  bool NeedsTrailingSpace() const;
 
   // Implementations of AbstractInlineTextBox member functions.
   void Detach() final;
@@ -54,6 +53,7 @@ class CORE_EXPORT NGAbstractInlineTextBox final : public AbstractInlineTextBox {
   scoped_refptr<AbstractInlineTextBox> NextOnLine() const final;
   scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const final;
   bool IsLineBreak() const final;
+  bool NeedsTrailingSpace() const final;
 
   union {
     const NGPaintFragment* fragment_;

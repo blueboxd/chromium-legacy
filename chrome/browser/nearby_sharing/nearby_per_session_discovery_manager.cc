@@ -44,6 +44,12 @@ void NearbyPerSessionDiscoveryManager::OnTransferUpdate(
                /*token=*/base::nullopt, mojo::NullRemote());
       break;
     default:
+      if (transfer_metadata.is_final_status() &&
+          select_share_target_callback_) {
+        std::move(select_share_target_callback_)
+            .Run(nearby_share::mojom::SelectShareTargetResult::kError,
+                 /*token=*/base::nullopt, mojo::NullRemote());
+      }
       break;
   }
 }
@@ -64,16 +70,6 @@ void NearbyPerSessionDiscoveryManager::OnShareTargetLost(
 void NearbyPerSessionDiscoveryManager::StartDiscovery(
     mojo::PendingRemote<nearby_share::mojom::ShareTargetListener> listener,
     StartDiscoveryCallback callback) {
-  DCHECK(!share_target_listener_.is_bound());
-
-  if (nearby_sharing_service_->RegisterSendSurface(
-          this, this, NearbySharingService::SendSurfaceState::kForeground) !=
-      NearbySharingService::StatusCodes::kOk) {
-    NS_LOG(WARNING) << "Failed to register send surface";
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-
   share_target_listener_.Bind(std::move(listener));
   // |share_target_listener_| owns the callbacks and is guaranteed to be
   // destroyed before |this|, therefore making base::Unretained() safe to use.
@@ -81,12 +77,22 @@ void NearbyPerSessionDiscoveryManager::StartDiscovery(
       base::BindOnce(&NearbyPerSessionDiscoveryManager::UnregisterSendSurface,
                      base::Unretained(this)));
 
+  if (nearby_sharing_service_->RegisterSendSurface(
+          this, this, NearbySharingService::SendSurfaceState::kForeground) !=
+      NearbySharingService::StatusCodes::kOk) {
+    NS_LOG(WARNING) << "Failed to register send surface";
+    share_target_listener_.reset();
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
   std::move(callback).Run(/*success=*/true);
 }
 
 void NearbyPerSessionDiscoveryManager::SelectShareTarget(
     const base::UnguessableToken& share_target_id,
     SelectShareTargetCallback callback) {
+  DCHECK(share_target_listener_.is_bound());
   DCHECK(!select_share_target_callback_);
 
   auto iter = discovered_share_targets_.find(share_target_id);
@@ -108,7 +114,10 @@ void NearbyPerSessionDiscoveryManager::SelectShareTarget(
 
 void NearbyPerSessionDiscoveryManager::OnSend(
     NearbySharingService::StatusCodes status) {
-  DCHECK(select_share_target_callback_);
+  // Nothing to do if the result has been returned already.
+  if (!select_share_target_callback_)
+    return;
+
   // If the send call succeeded, we expect OnTransferUpdate() to be called next.
   if (status == NearbySharingService::StatusCodes::kOk)
     return;

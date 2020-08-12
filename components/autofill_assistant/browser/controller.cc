@@ -1047,7 +1047,9 @@ void Controller::InitFromParameters() {
   const base::Optional<std::string> password_change_username =
       trigger_context_->GetParameter(kPasswordChangeUsernameParameterName);
   if (password_change_username) {
-    user_data_->selected_login_.emplace(web_contents()->GetLastCommittedURL(),
+    DCHECK(
+        GetCurrentURL().is_valid());  // At least |deeplink_url_| must be set.
+    user_data_->selected_login_.emplace(GetCurrentURL().GetOrigin(),
                                         *password_change_username);
   }
 
@@ -1087,20 +1089,10 @@ bool Controller::Start(const GURL& deeplink_url,
       state_ != AutofillAssistantState::TRACKING) {
     return false;
   }
-  // Verify a password change intent before running.
-  // TODO(b/151391231): Remove when intent signing is implemented.
-  if (trigger_context->GetParameter(kPasswordChangeUsernameParameterName)) {
-    auto* password_manager_client = client_->GetPasswordManagerClient();
-    if (!password_manager_client ||
-        !password_manager_client->WasCredentialLeakDialogShown()) {
-      VLOG(1) << "Failed to start a password change flow.";
-      return false;
-    }
-  }
 
   trigger_context_ = std::move(trigger_context);
-  InitFromParameters();
   deeplink_url_ = deeplink_url;
+  InitFromParameters();
 
   // Force a re-evaluation of the script, to get a chance to autostart.
   if (state_ == AutofillAssistantState::TRACKING)

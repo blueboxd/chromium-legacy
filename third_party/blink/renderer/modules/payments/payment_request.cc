@@ -98,6 +98,7 @@ const char kAndroidPayMethod[] = "https://android.com/pay";
 const char kGooglePlayBillingMethod[] = "https://play.google.com/billing";
 const char kUnknownCurrency[] = "ZZZ";
 const char kAppStoreBillingLabelPlaceHolder[] = "AppStoreBillingPlaceHolder";
+const char kSecurePaymentConfirmationMethod[] = "secure-payment-confirmation";
 
 }  // namespace
 
@@ -438,7 +439,7 @@ void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
   if (supported_method == "basic-card") {
     BasicCardHelper::ParseBasiccardData(input, output->supported_networks,
                                         exception_state);
-  } else if (supported_method == "secure-payment-confirmation" &&
+  } else if (supported_method == kSecurePaymentConfirmationMethod &&
              RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
                  &execution_context)) {
     SecurePaymentConfirmationHelper::ParseSecurePaymentConfirmationData(
@@ -673,6 +674,18 @@ void ValidateAndConvertPaymentMethodData(
     if (method_names.Contains(payment_method_data->supportedMethod())) {
       exception_state.ThrowRangeError(
           "Cannot have duplicate payment method identifiers");
+      return;
+    }
+
+    if (payment_method_data->supportedMethod() ==
+            kSecurePaymentConfirmationMethod &&
+        input.size() > 1 &&
+        RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
+            &execution_context)) {
+      exception_state.ThrowRangeError(
+          String(kSecurePaymentConfirmationMethod) +
+          " must be the only payment method identifier specified in the "
+          "PaymentRequest constructor.");
       return;
     }
 

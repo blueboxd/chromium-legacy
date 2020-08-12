@@ -686,6 +686,7 @@ TEST(VideoFrame, AllocationSize_OddSize) {
       case PIXEL_FORMAT_YUV420P9:
       case PIXEL_FORMAT_YUV420P10:
       case PIXEL_FORMAT_YUV420P12:
+      case PIXEL_FORMAT_P016LE:
         EXPECT_EQ(72u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
@@ -708,7 +709,6 @@ TEST(VideoFrame, AllocationSize_OddSize) {
       case PIXEL_FORMAT_I420A:
       case PIXEL_FORMAT_ABGR:
       case PIXEL_FORMAT_XBGR:
-      case PIXEL_FORMAT_P016LE:
       case PIXEL_FORMAT_XR30:
       case PIXEL_FORMAT_XB30:
         EXPECT_EQ(60u, VideoFrame::AllocationSize(format, size))

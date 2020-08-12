@@ -177,8 +177,8 @@ void V8SetReturnValue(const CallbackInfo& info, double value) {
 // the IDL type because Blink is not always respectful to IDL types.  These
 // functions fix such a type mismatch.
 template <typename CallbackInfo, typename BlinkType, typename IdlType>
-typename std::enable_if_t<std::is_arithmetic<BlinkType>::value ||
-                          std::is_enum<BlinkType>::value>
+inline typename std::enable_if_t<std::is_arithmetic<BlinkType>::value ||
+                                 std::is_enum<BlinkType>::value>
 V8SetReturnValue(const CallbackInfo& info,
                  BlinkType value,
                  V8ReturnValue::PrimitiveType<IdlType>) {
@@ -186,9 +186,9 @@ V8SetReturnValue(const CallbackInfo& info,
 }
 
 template <typename CallbackInfo, typename BlinkType>
-void V8SetReturnValue(const CallbackInfo& info,
-                      BlinkType* value,
-                      V8ReturnValue::PrimitiveType<bool>) {
+inline void V8SetReturnValue(const CallbackInfo& info,
+                             BlinkType* value,
+                             V8ReturnValue::PrimitiveType<bool>) {
   V8SetReturnValue(info, bool(value));
 }
 

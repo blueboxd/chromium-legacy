@@ -8,9 +8,9 @@ source_set("tab_grid") {
   sources = [
     "tab_grid_coordinator.h",
     "tab_grid_coordinator.mm",
+    "tab_grid_coordinator_delegate.h",
     "tab_grid_mediator.h",
     "tab_grid_mediator.mm",
-    "tab_switcher.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

@@ -54,12 +54,13 @@ class NearbyConnectionsManager {
   // A callback for tracking the status of a payload (both incoming and
   // outgoing).
   class PayloadStatusListener {
-    using PayloadTransferUpdate =
-        location::nearby::connections::mojom::PayloadTransferUpdate;
+   public:
+    using PayloadTransferUpdatePtr =
+        location::nearby::connections::mojom::PayloadTransferUpdatePtr;
 
     virtual ~PayloadStatusListener() = default;
 
-    virtual void OnStatusUpdate(PayloadTransferUpdate update) = 0;
+    virtual void OnStatusUpdate(PayloadTransferUpdatePtr update) = 0;
   };
 
   virtual ~NearbyConnectionsManager() = default;
@@ -102,8 +103,7 @@ class NearbyConnectionsManager {
   // OnStatusUpdate.
   virtual void Send(const std::string& endpoint_id,
                     PayloadPtr payload,
-                    PayloadStatusListener* listener,
-                    ConnectionsCallback callback) = 0;
+                    PayloadStatusListener* listener) = 0;
 
   // Register a |listener| with |payload_id|. Caller is expected to ensure
   // |listener| remains valid until kSuccess/kFailure/kCancelled is invoked with
@@ -116,7 +116,7 @@ class NearbyConnectionsManager {
   virtual Payload* GetIncomingPayload(int64_t payload_id) = 0;
 
   // Cancels a Payload currently in-flight to or from remote endpoints.
-  virtual void Cancel(int64_t payload_id, ConnectionsCallback callback) = 0;
+  virtual void Cancel(int64_t payload_id) = 0;
 
   // Clears all incoming payloads.
   virtual void ClearIncomingPayloads() = 0;

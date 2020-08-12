@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 496 tests; 410 PASS, 86 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 496 tests; 411 PASS, 85 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Test driver for asyncInitCertificate
@@ -290,7 +290,7 @@ PASS RTCRtpTransceiver interface: attribute sender
 PASS RTCRtpTransceiver interface: attribute receiver
 PASS RTCRtpTransceiver interface: attribute direction
 PASS RTCRtpTransceiver interface: attribute currentDirection
-FAIL RTCRtpTransceiver interface: operation stop() assert_own_property: interface prototype object missing non-static operation expected property "stop" missing
+PASS RTCRtpTransceiver interface: operation stop()
 PASS RTCRtpTransceiver interface: operation setCodecPreferences(sequence<RTCRtpCodecCapability>)
 FAIL RTCRtpTransceiver must be primary interface of new RTCPeerConnection().addTransceiver('audio') assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL Stringification of new RTCPeerConnection().addTransceiver('audio') assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."

@@ -5,10 +5,15 @@
 #ifndef CHROME_SERVICES_SHARING_NEARBY_NEARBY_CONNECTIONS_H_
 #define CHROME_SERVICES_SHARING_NEARBY_NEARBY_CONNECTIONS_H_
 
+#include <stdint.h>
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
+#include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/task/post_task.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 #include "chrome/services/sharing/public/mojom/webrtc_signaling_messenger.mojom.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
@@ -78,6 +83,19 @@ class NearbyConnections : public mojom::NearbyConnections {
       RequestConnectionCallback callback) override;
   void DisconnectFromEndpoint(const std::string& endpoint_id,
                               DisconnectFromEndpointCallback callback) override;
+  void AcceptConnection(const std::string& endpoint_id,
+                        mojo::PendingRemote<mojom::PayloadListener> listener,
+                        AcceptConnectionCallback callback) override;
+  void RejectConnection(const std::string& endpoint_id,
+                        RejectConnectionCallback callback) override;
+  void SendPayload(const std::vector<std::string>& endpoint_ids,
+                   mojom::PayloadPtr payload,
+                   SendPayloadCallback callback) override;
+  void CancelPayload(int64_t payload_id,
+                     CancelPayloadCallback callback) override;
+
+  // Return the file associated with |payload_id|.
+  base::File ExtractFileForPayload(int64_t payload_id);
 
  private:
   void OnDisconnect();
@@ -95,6 +113,7 @@ class NearbyConnections : public mojom::NearbyConnections {
       webrtc_signaling_messenger_;
 
   std::unique_ptr<Core> core_;
+  base::flat_map<int64_t, base::File> outgoing_file_map_;
 
   base::WeakPtrFactory<NearbyConnections> weak_ptr_factory_{this};
 };

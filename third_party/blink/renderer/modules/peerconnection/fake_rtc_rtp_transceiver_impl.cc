@@ -235,9 +235,10 @@ webrtc::RtpTransceiverDirection FakeRTCRtpTransceiverImpl::Direction() const {
   return direction_;
 }
 
-void FakeRTCRtpTransceiverImpl::SetDirection(
+webrtc::RTCError FakeRTCRtpTransceiverImpl::SetDirection(
     webrtc::RtpTransceiverDirection direction) {
   NOTIMPLEMENTED();
+  return webrtc::RTCError::OK();
 }
 
 base::Optional<webrtc::RtpTransceiverDirection>

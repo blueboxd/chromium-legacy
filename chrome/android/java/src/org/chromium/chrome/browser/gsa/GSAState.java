@@ -21,10 +21,12 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 
 import java.util.List;
 
@@ -102,9 +104,10 @@ public class GSAState {
      */
     public boolean doesGsaAccountMatchChrome() {
         if (!ProfileManager.isInitialized()) return false;
+        IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                Profile.getLastUsedRegularProfile());
         CoreAccountInfo chromeAccountInfo =
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
-                        ConsentLevel.SYNC);
+                identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC);
         return chromeAccountInfo != null && !TextUtils.isEmpty(mGsaAccount)
                 && TextUtils.equals(chromeAccountInfo.getEmail(), mGsaAccount);
     }

@@ -929,7 +929,10 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   TableViewURLItem* URLItem = base::mac::ObjCCastStrict<TableViewURLItem>(item);
 
-  return [self.menuProvider contextMenuConfigurationForItem:URLItem];
+  return [self.menuProvider
+      contextMenuConfigurationForItem:URLItem
+                             fromView:[tableView
+                                          cellForRowAtIndexPath:indexPath]];
 }
 
 #pragma mark - UIContextMenuInteractionDelegate

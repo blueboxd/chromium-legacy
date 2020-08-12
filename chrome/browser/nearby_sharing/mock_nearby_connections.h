@@ -19,6 +19,8 @@ using EndpointDiscoveryListener =
     location::nearby::connections::mojom::EndpointDiscoveryListener;
 using ConnectionLifecycleListener =
     location::nearby::connections::mojom::ConnectionLifecycleListener;
+using PayloadListener = location::nearby::connections::mojom::PayloadListener;
+using PayloadPtr = location::nearby::connections::mojom::PayloadPtr;
 
 class MockNearbyConnections : public NearbyConnectionsMojom {
  public:
@@ -54,6 +56,27 @@ class MockNearbyConnections : public NearbyConnectionsMojom {
   MOCK_METHOD(void,
               DisconnectFromEndpoint,
               (const std::string& endpoint_id, DisconnectFromEndpointCallback),
+              (override));
+  MOCK_METHOD(void,
+              AcceptConnection,
+              (const std::string& endpoint_id,
+               mojo::PendingRemote<PayloadListener> listener,
+               AcceptConnectionCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              RejectConnection,
+              (const std::string& endpoint_id,
+               RejectConnectionCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              SendPayload,
+              (const std::vector<std::string>& endpoint_ids,
+               PayloadPtr payload,
+               SendPayloadCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              CancelPayload,
+              (int64_t payload_id, CancelPayloadCallback callback),
               (override));
 };
 

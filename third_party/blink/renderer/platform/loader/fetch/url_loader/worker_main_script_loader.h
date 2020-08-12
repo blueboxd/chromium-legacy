@@ -109,7 +109,7 @@ class PLATFORM_EXPORT WorkerMainScriptLoader final
   Member<ResourceLoadObserver> resource_load_observer_;
 
   ResourceRequest initial_request_;
-  ResourceLoaderOptions resource_loader_options_;
+  ResourceLoaderOptions resource_loader_options_{nullptr /* world */};
   KURL initial_request_url_;
   KURL last_request_url_;
   ResourceResponse resource_response_;

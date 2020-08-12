@@ -88,7 +88,10 @@ struct PLATFORM_EXPORT ResourceLoaderOptions {
   // resource_loader_options.cc because they require the full definition of
   // URLLoaderFactory for |url_loader_factory| data member, and we'd like
   // to avoid to include huge url_loader_factory.mojom-blink.h.
-  ResourceLoaderOptions();
+  // TODO(crbug.com/896041): Make |world| non-optional by plumbing it for all
+  // requests.
+  explicit ResourceLoaderOptions(
+      scoped_refptr<const DOMWrapperWorld> world = nullptr);
   ResourceLoaderOptions(const ResourceLoaderOptions& other);
   ResourceLoaderOptions& operator=(const ResourceLoaderOptions& other);
   ~ResourceLoaderOptions();
@@ -118,7 +121,8 @@ struct PLATFORM_EXPORT ResourceLoaderOptions {
   CacheAwareLoadingEnabled cache_aware_loading_enabled;
 
   // The world in which this request initiated. This will be used for CSP checks
-  // if specified. If unspecified, the CSP bound to the FetchContext is used.
+  // if specified. If null, the CSP bound to the FetchContext is used.
+  // TODO(crbug.com/896041): Rename to |world_for_csp|.
   scoped_refptr<const DOMWrapperWorld> world;
 
   // If not null, this URLLoaderFactory should be used to load this resource

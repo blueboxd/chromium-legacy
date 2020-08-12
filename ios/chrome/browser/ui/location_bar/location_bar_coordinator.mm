@@ -262,6 +262,10 @@
   return self.omniboxCoordinator.animatee;
 }
 
+- (UIResponder<UITextInput>*)omniboxScribbleForwardingTarget {
+  return self.omniboxCoordinator.scribbleInput;
+}
+
 #pragma mark - LoadQueryCommands
 
 - (void)loadQuery:(NSString*)query immediately:(BOOL)immediately {
@@ -371,10 +375,6 @@
 
 - (LocationBarModel*)locationBarModel {
   return [self.delegate locationBarModel];
-}
-
-- (UIResponder<UITextInput>*)scribbleForwardingTarget {
-  return self.omniboxCoordinator.scribbleInput;
 }
 
 - (void)locationBarRequestScribbleTargetFocus {

@@ -46,6 +46,9 @@ enum class FontOrientation;
 class FontPlatformData;
 class FontVariationSettings;
 
+// Given a typeface and a variable axis, returns whether a new value for that
+// axis isn't clamped and therefore will effect a change to the typeface if
+// applied.
 bool PLATFORM_EXPORT VariableAxisChangeEffective(SkTypeface* typeface,
                                                  SkFourByteTag axis,
                                                  float new_value);

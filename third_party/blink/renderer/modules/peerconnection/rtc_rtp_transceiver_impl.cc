@@ -245,13 +245,18 @@ class RTCRtpTransceiverImpl::RTCRtpTransceiverInternal
     return receiver_.get();
   }
 
-  void SetDirection(webrtc::RtpTransceiverDirection direction) {
+  webrtc::RTCError SetDirection(webrtc::RtpTransceiverDirection direction) {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
     // This implicitly performs a blocking invoke on the webrtc signaling thread
     // due to use of PROXY references for |webrtc_transceiver_|.
-    webrtc_transceiver_->SetDirection(direction);
-    state_.set_direction(webrtc_transceiver_->direction());
+    auto error = webrtc_transceiver_->SetDirectionWithError(direction);
+    if (error.ok()) {
+      state_.set_direction(webrtc_transceiver_->direction());
+    }
+    return error;
   }
+
+  webrtc::RTCError Stop() { return webrtc_transceiver_->StopStandard(); }
 
   webrtc::RTCError setCodecPreferences(
       std::vector<webrtc::RtpCodecCapability> codec_preferences) {
@@ -383,9 +388,9 @@ webrtc::RtpTransceiverDirection RTCRtpTransceiverImpl::Direction() const {
   return internal_->state().direction();
 }
 
-void RTCRtpTransceiverImpl::SetDirection(
+webrtc::RTCError RTCRtpTransceiverImpl::SetDirection(
     webrtc::RtpTransceiverDirection direction) {
-  internal_->SetDirection(direction);
+  return internal_->SetDirection(direction);
 }
 
 base::Optional<webrtc::RtpTransceiverDirection>
@@ -396,6 +401,10 @@ RTCRtpTransceiverImpl::CurrentDirection() const {
 base::Optional<webrtc::RtpTransceiverDirection>
 RTCRtpTransceiverImpl::FiredDirection() const {
   return internal_->state().fired_direction();
+}
+
+webrtc::RTCError RTCRtpTransceiverImpl::Stop() {
+  return internal_->Stop();
 }
 
 webrtc::RTCError RTCRtpTransceiverImpl::SetCodecPreferences(

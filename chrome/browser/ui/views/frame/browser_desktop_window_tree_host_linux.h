@@ -17,6 +17,7 @@ using DesktopWindowTreeHostLinuxImpl = views::DesktopWindowTreeHostLinux;
 
 class BrowserFrame;
 class BrowserView;
+enum class TabDragKind;
 
 namespace views {
 class DesktopNativeWidgetAura;
@@ -33,8 +34,8 @@ class BrowserDesktopWindowTreeHostLinux
       BrowserFrame* browser_frame);
   ~BrowserDesktopWindowTreeHostLinux() override;
 
-  // Called when the window starts or stops moving because of a tab drag.
-  void TabDraggingStatusChanged(bool is_dragging);
+  // Called when the tab drag status changes for this window.
+  void TabDraggingKindChanged(TabDragKind tab_drag_kind);
 
  private:
   // BrowserDesktopWindowTreeHost:

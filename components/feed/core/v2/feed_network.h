@@ -11,7 +11,8 @@
 #include "components/feed/core/v2/public/types.h"
 
 namespace feedwire {
-class FeedActionRequest;
+class UploadActionsResponse;
+class UploadActionsRequest;
 class Request;
 class Response;
 }  // namespace feedwire
@@ -39,7 +40,7 @@ class FeedNetwork {
     ActionRequestResult& operator=(ActionRequestResult&&);
     NetworkResponseInfo response_info;
     // Response body if one was received.
-    std::unique_ptr<feedwire::Response> response_body;
+    std::unique_ptr<feedwire::UploadActionsResponse> response_body;
   };
 
   virtual ~FeedNetwork();
@@ -52,11 +53,11 @@ class FeedNetwork {
       bool force_signed_out_request,
       base::OnceCallback<void(QueryRequestResult)> callback) = 0;
 
-  // Send a feedwire::FeedActionRequest, and receive the response in |callback|.
-  // |callback| will be called unless the request is canceled with
+  // Send a feedwire::UploadActionsRequest, and receive the response in
+  // |callback|. |callback| will be called unless the request is canceled with
   // |CancelRequests()|.
   virtual void SendActionRequest(
-      const feedwire::FeedActionRequest& request,
+      const feedwire::UploadActionsRequest& request,
       base::OnceCallback<void(ActionRequestResult)> callback) = 0;
 
   // Cancels all pending requests immediately. This could be used, for example,

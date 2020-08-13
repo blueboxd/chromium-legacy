@@ -1364,6 +1364,13 @@ Portal* RenderFrameHostImpl::FindPortalByToken(
   return it == portals_.end() ? nullptr : it->get();
 }
 
+std::vector<Portal*> RenderFrameHostImpl::GetPortals() const {
+  std::vector<Portal*> result;
+  for (const auto& portal : portals_)
+    result.push_back(portal.get());
+  return result;
+}
+
 void RenderFrameHostImpl::DestroyPortal(Portal* portal) {
   auto it = portals_.find(portal);
   CHECK(it != portals_.end());
@@ -8485,17 +8492,47 @@ RenderFrameHostImpl::CommitAsTracedValue(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params) const {
   auto value = std::make_unique<base::trace_event::TracedValue>();
 
-  value->SetInteger("frame_tree_node", frame_tree_node_->frame_tree_node_id());
-  value->SetInteger("site id", site_instance_->GetId());
+  // TODO(nasko): Move the process lock into RenderProcessHost.
   value->SetString("process lock", ChildProcessSecurityPolicyImpl::GetInstance()
                                        ->GetProcessLock(process_->GetID())
                                        .ToString());
-  value->SetString("origin", params->origin.Serialize());
-  value->SetInteger("transition", params->transition);
 
+  value->SetInteger("nav_entry_id", params->nav_entry_id);
+  value->SetInteger("item_sequence_number", params->item_sequence_number);
+  value->SetInteger("document_sequence_number",
+                    params->document_sequence_number);
+  value->SetString("url", params->url.spec());
   if (!params->base_url.is_empty()) {
     value->SetString("base_url", params->base_url.possibly_invalid_spec());
   }
+  value->SetInteger("transition", params->transition);
+  value->BeginDictionary("referrer");
+  value->SetString("url", params->referrer.url.spec());
+  value->SetInteger("policy", static_cast<int>(params->referrer.policy));
+  value->EndDictionary();
+  value->SetBoolean("should_update_history", params->should_update_history);
+  value->SetString("contents_mime_type", params->contents_mime_type);
+
+  value->SetBoolean("intended_as_new_entry", params->intended_as_new_entry);
+  value->SetBoolean("did_create_new_entry", params->did_create_new_entry);
+  value->SetBoolean("should_replace_current_entry",
+                    params->should_replace_current_entry);
+  value->SetString("method", params->method);
+  value->SetInteger("post_id", params->post_id);
+  value->SetInteger("http_status_code", params->http_status_code);
+  value->SetBoolean("url_is_unreachable", params->url_is_unreachable);
+  value->SetString("original_request_url", params->original_request_url.spec());
+  value->SetBoolean("is_overriding_user_agent",
+                    params->is_overriding_user_agent);
+  value->SetBoolean("history_list_was_cleared",
+                    params->history_list_was_cleared);
+  value->SetString("origin", params->origin.GetDebugString());
+  value->SetBoolean("has_potentially_trustworthy_unique_origin",
+                    params->has_potentially_trustworthy_unique_origin);
+  value->SetInteger("request_id", params->request_id);
+  value->SetString("navigation_token", params->navigation_token.ToString());
+  if (params->embedding_token)
+    value->SetString("embedding_token", params->embedding_token->ToString());
 
   return value;
 }
@@ -8635,7 +8672,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
   RenderProcessHost* process = GetProcess();
 
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::DidCommitProvisionalLoad",
-               "url", params->url.possibly_invalid_spec(), "details",
+               "rfh", base::trace_event::ToTracedValue(this), "params",
                CommitAsTracedValue(params.get()));
 
   // If we're waiting for a cross-site beforeunload completion callback from

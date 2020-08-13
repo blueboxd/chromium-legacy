@@ -726,6 +726,14 @@ void EffectTree::UpdateEffectChanged(EffectNode* node,
   }
 }
 
+void EffectTree::UpdateHasFilters(EffectNode* node, EffectNode* parent_node) {
+  node->node_or_ancestor_has_filters = !node->filters.IsEmpty();
+  if (parent_node) {
+    node->node_or_ancestor_has_filters |=
+        parent_node->node_or_ancestor_has_filters;
+  }
+}
+
 void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
                                           EffectNode* parent_node) {
   if (parent_node && parent_node->hidden_by_backface_visibility) {
@@ -845,6 +853,7 @@ void EffectTree::UpdateEffects(int id) {
   UpdateSubtreeHidden(node, parent_node);
   UpdateIsDrawn(node, parent_node);
   UpdateEffectChanged(node, parent_node);
+  UpdateHasFilters(node, parent_node);
   UpdateBackfaceVisibility(node, parent_node);
   UpdateHasMaskingChild(node, parent_node);
   UpdateOnlyDrawsVisibleContent(node, parent_node);

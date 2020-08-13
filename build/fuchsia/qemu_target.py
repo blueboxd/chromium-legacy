@@ -56,7 +56,13 @@ class QemuTarget(emu_target.EmuTarget):
       return True
     elif self._require_kvm:
       if same_arch:
-        raise FuchsiaTargetException('KVM required but unavailable.')
+        if not os.path.exists('/dev/kvm'):
+          kvm_error = 'File /dev/kvm does not exist. Please install KVM first.'
+        else:
+          kvm_error = 'To use KVM acceleration, add user to the kvm group '\
+                      'through editing /etc/groups. Log out and back in for '\
+                      'the change to take effect.'
+        raise FuchsiaTargetException(kvm_error)
       else:
         raise FuchsiaTargetException('KVM unavailable when CPU architecture of'\
                                      ' host is different from that of target.')

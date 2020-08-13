@@ -128,6 +128,14 @@ imageset("settings_privacy") {
   ]
 }
 
+imageset("settings_safe_browsing") {
+  sources = [
+    "settings_safe_browsing.imageset/Contents.json",
+    "settings_safe_browsing.imageset/settings_safe_browsing@2x.png",
+    "settings_safe_browsing.imageset/settings_safe_browsing@3x.png",
+  ]
+}
+
 imageset("settings_search_engine") {
   sources = [
     "settings_search_engine.imageset/Contents.json",

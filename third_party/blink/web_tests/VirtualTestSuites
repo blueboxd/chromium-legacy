@@ -203,7 +203,8 @@
               "external/wpt/css/filter-effects",
               "external/wpt/largest-contentful-paint",
               "fast/hidpi/static",
-              "http/tests/csspaint/hidpi"],
+              "http/tests/csspaint/hidpi",
+              "http/tests/images/document-policy"],
     "args": ["--force-device-scale-factor=2"]
   },
   {

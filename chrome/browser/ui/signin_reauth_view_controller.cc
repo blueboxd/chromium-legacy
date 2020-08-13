@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/signin/reauth_tab_helper.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/webui/signin/signin_reauth_ui.h"
+#include "components/consent_auditor/consent_auditor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_instance.h"
@@ -125,9 +127,14 @@ void SigninReauthViewController::OnModalSigninClosed() {
   CompleteReauth(signin::ReauthResult::kDismissedByUser);
 }
 
-void SigninReauthViewController::OnReauthConfirmed() {
+void SigninReauthViewController::OnReauthConfirmed(
+    sync_pb::UserConsentTypes::AccountPasswordsConsent consent) {
   if (user_confirmed_reauth_)
     return;
+
+  // Cache the consent. It will be actually recorded later, in CompleteReauth(),
+  // if the user successfully completed the reauth.
+  consent_ = consent;
 
   user_confirmed_reauth_ = true;
   user_confirmed_reauth_time_ = base::TimeTicks::Now();
@@ -217,6 +224,12 @@ void SigninReauthViewController::CompleteReauth(signin::ReauthResult result) {
     if (!raw_reauth_web_contents_->IsBeingDestroyed())
       raw_reauth_web_contents_->ClosePage();
     raw_reauth_web_contents_ = nullptr;
+  }
+
+  if (result == signin::ReauthResult::kSuccess) {
+    CHECK(consent_.has_value());
+    ConsentAuditorFactory::GetForProfile(browser_->profile())
+        ->RecordAccountPasswordsConsent(account_id_, *consent_);
   }
 
   signin_ui_util::RecordTransactionalReauthResult(access_point_, result);

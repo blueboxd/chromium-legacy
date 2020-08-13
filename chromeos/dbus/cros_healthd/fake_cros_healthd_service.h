@@ -12,8 +12,11 @@
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace chromeos {
@@ -40,6 +43,10 @@ class FakeCrosHealthdService final
   void SendNetworkHealthService(
       mojo::PendingRemote<chromeos::network_health::mojom::NetworkHealthService>
           remote) override;
+  void SendNetworkDiagnosticsRoutines(
+      mojo::PendingRemote<
+          chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines>
+          network_diagnostics_routines) override;
 
   // CrosHealthdDiagnosticsService overrides:
   void GetAvailableRoutines(GetAvailableRoutinesCallback callback) override;
@@ -137,6 +144,11 @@ class FakeCrosHealthdService final
       chromeos::network_health::mojom::NetworkHealthService::
           GetHealthSnapshotCallback callback);
 
+  // Calls the LanConnectivity routine on |network_diagnostics_routines_|.
+  void RunLanConnectivityRoutineForTesting(
+      chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines::
+          LanConnectivityCallback callback);
+
  private:
   // Used as the response to any GetAvailableRoutines IPCs received.
   std::vector<mojom::DiagnosticRoutineEnum> available_routines_;
@@ -168,6 +180,11 @@ class FakeCrosHealthdService final
   mojo::RemoteSet<mojom::CrosHealthdLidObserver> lid_observers_;
   // Collection of registered power observers.
   mojo::RemoteSet<mojom::CrosHealthdPowerObserver> power_observers_;
+
+  // Allow |this| to call the methods on the NetworkDiagnosticsRoutines
+  // interface.
+  mojo::Remote<chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines>
+      network_diagnostics_routines_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCrosHealthdService);
 };

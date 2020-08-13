@@ -915,6 +915,8 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
       continue;
     if (attrib.value & VA_RT_FORMAT_YUV420)
       profile_info->supported_internal_formats.yuv420 = true;
+    if (attrib.value & VA_RT_FORMAT_YUV420_10)
+      profile_info->supported_internal_formats.yuv420_10 = true;
     if (attrib.value & VA_RT_FORMAT_YUV422)
       profile_info->supported_internal_formats.yuv422 = true;
     if (attrib.value & VA_RT_FORMAT_YUV444)
@@ -936,6 +938,7 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
   }
   const bool is_any_profile_supported =
       profile_info->supported_internal_formats.yuv420 ||
+      profile_info->supported_internal_formats.yuv420_10 ||
       profile_info->supported_internal_formats.yuv422 ||
       profile_info->supported_internal_formats.yuv444;
   DLOG_IF(ERROR, !is_any_profile_supported)
@@ -1215,6 +1218,8 @@ bool VaapiWrapper::IsDecodingSupportedForInternalFormat(
   switch (rt_format) {
     case VA_RT_FORMAT_YUV420:
       return supported_internal_formats->yuv420;
+    case VA_RT_FORMAT_YUV420_10:
+      return supported_internal_formats->yuv420_10;
     case VA_RT_FORMAT_YUV422:
       return supported_internal_formats->yuv422;
     case VA_RT_FORMAT_YUV444:

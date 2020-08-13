@@ -42,7 +42,10 @@ import java.util.Set;
  * The activity might be run more than once, e.g. 1) for ToS and sign-in, and 2) for intro.
  */
 public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPageDelegate {
-    /** Alerted about various events when FirstRunActivity performs them. */
+    /**
+     * Alerted about various events when FirstRunActivity performs them.
+     * TODO(crbug.com/1114319): Rework and use a better testing setup.
+     * */
     public interface FirstRunActivityObserver {
         /** See {@link #onFlowIsKnown}. */
         void onFlowIsKnown(Bundle freProperties);
@@ -58,6 +61,9 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
         /** See {@link #abortFirstRunExperience}. */
         void onAbortFirstRunExperience();
+
+        /** See {@link #exitFirstRun()}. */
+        void onExitFirstRun();
     }
 
     // UMA constants.
@@ -116,12 +122,21 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
      * Defines a sequence of pages to be shown (depending on parameters etc).
      */
     private void createPageSequence() {
-        mPages.add(sEnableEnterpriseCCT && mLaunchedFromCCT
-                        ? new TosAndUmaCctFirstRunFragment.Page()
+        mPages.add(shouldCreateEnterpriseCctTosPage()
+                        ? new TosAndUmaFirstRunFragmentWithEnterpriseSupport.Page()
                         : new ToSAndUMAFirstRunFragment.Page());
         mFreProgressStates.add(FRE_PROGRESS_WELCOME_SHOWN);
         // Other pages will be created by createPostNativePageSequence() after
         // native has been initialized.
+    }
+
+    private boolean shouldCreateEnterpriseCctTosPage() {
+        // TODO(crbug.com/1111490): Revisit case when #shouldSkipWelcomePage = true.
+        //  If the client has already accepted ToS (FirstRunStatus#shouldSkipWelcomePage), do not
+        //  use the subclass ToSAndUmaCCTFirstRunFragment. Instead, use the base class
+        //  (ToSAndUMAFirstRunFragment) which simply shows a loading spinner while waiting for
+        //  native to be loaded.
+        return sEnableEnterpriseCCT && mLaunchedFromCCT && !FirstRunStatus.shouldSkipWelcomePage();
     }
 
     private void createPostNativePageSequence() {
@@ -411,6 +426,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                 }
             });
         }
+
+        if (sObserver != null) sObserver.onExitFirstRun();
     }
 
     @Override

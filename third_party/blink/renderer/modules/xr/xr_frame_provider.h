@@ -32,7 +32,13 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
 
   void OnSessionStarted(XRSession* session,
                         device::mojom::blink::XRSessionPtr session_ptr);
+
+  // The FrameProvider needs to be notified before the page does that the
+  // session has been ended so that requesting a new session is possible.
+  // However, the non-immersive frame loop shouldn't start until after the page
+  // has been notified.
   void OnSessionEnded(XRSession* session);
+  void RestartNonImmersiveFrameLoop();
 
   void RequestFrame(XRSession*);
 

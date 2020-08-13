@@ -712,6 +712,15 @@ class CONTENT_EXPORT WebContentsDelegate {
       WebContents* predecessor_contents,
       std::unique_ptr<WebContents> portal_contents);
 
+  // If |old_contents| is being inspected by a DevTools window, it updates the
+  // window to inspect |new_contents| instead and calls |callback| after it
+  // finishes asynchronously. If no window is present, or no update is
+  // necessary, |callback| is run synchronously (immediately on the same stack).
+  virtual void UpdateInspectedWebContentsIfNecessary(
+      WebContents* old_contents,
+      WebContents* new_contents,
+      base::OnceCallback<void()> callback);
+
   // Returns true if the widget's frame content needs to be stored before
   // eviction and displayed until a new frame is generated. If false, a white
   // solid color is displayed instead.

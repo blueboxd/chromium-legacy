@@ -29,6 +29,7 @@ constexpr char kUsageMsg[] =
     "           --profile=<profile of input video>\n"
     "           [--frames=<number of frames to decode>]\n"
     "           [--out-prefix=<path prefix of decoded frame PNGs>]\n"
+    "           [--v=<log verbosity>]"
     "           [--help]";
 
 constexpr char kHelpMsg[] =
@@ -122,7 +123,7 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
   const gfx::Size size(file_header.width, file_header.height);
-  LOG(INFO) << "video size: " << size.ToString();
+  VLOG(1) << "video size: " << size.ToString();
 
   // Initialize VA stubs.
   StubPathMap paths;

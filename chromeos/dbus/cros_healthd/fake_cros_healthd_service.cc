@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+
 namespace chromeos {
 namespace cros_healthd {
 
@@ -31,6 +33,13 @@ void FakeCrosHealthdService::SendNetworkHealthService(
     mojo::PendingRemote<chromeos::network_health::mojom::NetworkHealthService>
         remote) {
   network_health_remote_.Bind(std::move(remote));
+}
+
+void FakeCrosHealthdService::SendNetworkDiagnosticsRoutines(
+    mojo::PendingRemote<
+        chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines>
+        network_diagnostics_routines) {
+  network_diagnostics_routines_.Bind(std::move(network_diagnostics_routines));
 }
 
 void FakeCrosHealthdService::GetAvailableRoutines(
@@ -204,6 +213,12 @@ void FakeCrosHealthdService::RequestNetworkHealthForTesting(
     chromeos::network_health::mojom::NetworkHealthService::
         GetHealthSnapshotCallback callback) {
   network_health_remote_->GetHealthSnapshot(std::move(callback));
+}
+
+void FakeCrosHealthdService::RunLanConnectivityRoutineForTesting(
+    chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines::
+        LanConnectivityCallback callback) {
+  network_diagnostics_routines_->LanConnectivity(std::move(callback));
 }
 
 }  // namespace cros_healthd

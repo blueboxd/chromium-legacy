@@ -25,7 +25,7 @@ class DesktopBrowserFrameAuraLinux : public DesktopBrowserFrameAura {
   // Overridden from NativeBrowserFrame:
   views::Widget::InitParams GetWidgetParams() override;
   bool UseCustomFrame() const override;
-  void TabDraggingStatusChanged(bool is_dragging) override;
+  void TabDraggingKindChanged(TabDragKind tab_drag_kind) override;
 
  private:
   // Called when the preference changes.

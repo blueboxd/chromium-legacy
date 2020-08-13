@@ -1266,7 +1266,10 @@ if (enable_java_templates) {
         _failure_file =
             "$_expectations_failure_dir/" +
             string_replace(invoker.expected_proguard_config, "/", "_")
-        outputs = [ _actual_file ]
+        outputs = [
+          _actual_file,
+          _failure_file,
+        ]
         args = _args + [
                  "--depfile",
                  rebase_path(depfile, root_build_dir),
@@ -2649,7 +2652,10 @@ if (enable_java_templates) {
           invoker.build_config,
           invoker.expected_android_manifest,
         ]
-        outputs = [ _actual_file ]
+        outputs = [
+          _actual_file,
+          _failure_file,
+        ]
         deps = [
           invoker.android_manifest_dep,
           invoker.build_config_dep,
@@ -2928,7 +2934,10 @@ if (enable_java_templates) {
           invoker.expected_libs_and_assets,
         ]
         deps = [ invoker.build_config_dep ]
-        outputs = [ _actual_file ]
+        outputs = [
+          _actual_file,
+          _failure_file,
+        ]
         script = _script
         args = _args + [
                  "--expected-file",
@@ -4156,7 +4165,10 @@ template("create_android_app_bundle_module") {
         inputs += [ invoker.secondary_abi_native_libraries_config ]
         deps += [ invoker.secondary_abi_native_libraries_config_target ]
       }
-      outputs = [ _actual_file ]
+      outputs = [
+        _actual_file,
+        _failure_file,
+      ]
       script = _script
       args = _args + [
                "--expected-file",

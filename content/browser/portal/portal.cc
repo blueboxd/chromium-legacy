@@ -307,169 +307,34 @@ void TakeHistoryForActivation(WebContentsImpl* activated_contents,
 void Portal::Activate(blink::TransferableMessage data,
                       base::TimeTicks activation_time,
                       ActivateCallback callback) {
-  WebContentsImpl* outer_contents = GetPortalHostContents();
-
-  if (outer_contents->portal()) {
+  if (GetPortalHostContents()->portal()) {
     mojo::ReportBadMessage("Portal::Activate called on nested portal");
-    DestroySelf();  // Also deletes |this|.
+    DestroySelf();
     return;
   }
 
-  DCHECK(owner_render_frame_host_->IsCurrent())
-      << "The binding should have been closed when the portal's outer "
-         "FrameTreeNode was deleted due to swap out.";
-
-  DCHECK(portal_contents_);
-  NavigationControllerImpl& portal_controller =
-      portal_contents_->GetController();
-  NavigationControllerImpl& predecessor_controller =
-      outer_contents->GetController();
-
-  // If no navigation has yet committed in the portal, it cannot be activated as
-  // this would lead to an empty tab contents (without even an about:blank).
-  if (portal_controller.GetLastCommittedEntryIndex() < 0) {
-    std::move(callback).Run(
-        blink::mojom::PortalActivateResult::kRejectedDueToPortalNotReady);
-    return;
-  }
-  DCHECK(predecessor_controller.GetLastCommittedEntry());
-
-  // Error pages and interstitials may not host portals due to the HTTP(S)
-  // restriction.
-  DCHECK_EQ(PAGE_TYPE_NORMAL,
-            predecessor_controller.GetLastCommittedEntry()->GetPageType());
-
-  // If the portal is crashed or is showing an error page, reject activation.
-  if (portal_contents_->IsCrashed() ||
-      portal_controller.GetLastCommittedEntry()->GetPageType() !=
-          PAGE_TYPE_NORMAL) {
-    std::move(callback).Run(
-        blink::mojom::PortalActivateResult::kRejectedDueToErrorInPortal);
+  if (is_activating_) {
+    mojo::ReportBadMessage("Portal::Activate called twice on the same portal");
+    DestroySelf();
     return;
   }
 
-  // If a navigation in the main frame is occurring, stop it if possible and
-  // reject the activation if it's too late or if an ongoing navigation takes
-  // precedence. There are a few cases here:
-  // - a different RenderFrameHost has been assigned to the FrameTreeNode
-  // - the same RenderFrameHost is being used, but it is committing a navigation
-  // - the FrameTreeNode holds a navigation request that can't turn back but has
-  //   not yet been handed off to a RenderFrameHost
-  FrameTreeNode* outer_root_node = owner_render_frame_host_->frame_tree_node();
-  NavigationRequest* outer_navigation = outer_root_node->navigation_request();
-  const bool has_user_gesture =
-      owner_render_frame_host_->HasTransientUserActivation();
-
-  // WILL_PROCESS_RESPONSE is slightly early: it happens
-  // immediately before READY_TO_COMMIT (unless it's deferred), but
-  // WILL_PROCESS_RESPONSE is easier to hook for tests using a
-  // NavigationThrottle.
-  if (owner_render_frame_host_->HasPendingCommitNavigation() ||
-      (outer_navigation &&
-       outer_navigation->state() >= NavigationRequest::WILL_PROCESS_RESPONSE) ||
-      Navigator::ShouldIgnoreIncomingRendererRequest(outer_navigation,
-                                                     has_user_gesture)) {
-    std::move(callback).Run(blink::mojom::PortalActivateResult::
-                                kRejectedDueToPredecessorNavigation);
-    return;
-  }
-  outer_root_node->navigator().CancelNavigation(outer_root_node);
-
-  DCHECK(!is_closing_) << "Portal should not be shutting down when contents "
-                          "ownership is yielded";
-
-  WebContentsDelegate* delegate = outer_contents->GetDelegate();
-  std::unique_ptr<WebContents> successor_contents;
-
-  if (portal_contents_->GetOuterWebContents()) {
-    FrameTreeNode* outer_frame_tree_node = FrameTreeNode::GloballyFindByID(
-        portal_contents_->GetOuterDelegateFrameTreeNodeId());
-    outer_frame_tree_node->RemoveObserver(this);
-    successor_contents = portal_contents_->DetachFromOuterWebContents();
-    owner_render_frame_host_->RemoveChild(outer_frame_tree_node);
-  } else {
-    // Portals created for predecessor pages during activation may not be
-    // attached to an outer WebContents, and may not have an outer frame tree
-    // node created (i.e. CreateProxyAndAttachPortal isn't called). In this
-    // case, we can skip a few of the detachment steps above.
-    for (auto& render_view_host :
-         portal_contents_->GetFrameTree()->render_view_hosts()) {
-      CreatePortalRenderWidgetHostView(portal_contents_.get(),
-                                       render_view_host.second);
+  for (Portal* portal : owner_render_frame_host()->GetPortals()) {
+    if (portal != this && portal->is_activating_) {
+      mojo::ReportBadMessage(
+          "Portal::Activate called on portal whose owner RenderFrameHost has "
+          "another portal that is activating");
+      DestroySelf();
+      return;
     }
-    successor_contents = portal_contents_.ReleaseOwnership();
-  }
-  DCHECK(!portal_contents_.OwnsContents());
-
-  // This assumes that the delegate keeps the new contents alive long enough to
-  // notify it of activation, at least.
-  WebContentsImpl* successor_contents_raw =
-      static_cast<WebContentsImpl*>(successor_contents.get());
-
-  auto* outer_contents_main_frame_view = static_cast<RenderWidgetHostViewBase*>(
-      outer_contents->GetMainFrame()->GetView());
-  DCHECK(!outer_contents->GetPendingMainFrame());
-  auto* portal_contents_main_frame_view =
-      static_cast<RenderWidgetHostViewBase*>(
-          successor_contents_raw->GetMainFrame()->GetView());
-
-  std::vector<std::unique_ptr<ui::TouchEvent>> touch_events;
-
-  if (outer_contents_main_frame_view) {
-    // Take fallback contents from previous WebContents so that the activation
-    // is smooth without flashes.
-    portal_contents_main_frame_view->TakeFallbackContentFrom(
-        outer_contents_main_frame_view);
-    touch_events =
-        outer_contents_main_frame_view->ExtractAndCancelActiveTouches();
-    FlushTouchEventQueues(outer_contents_main_frame_view->host());
   }
 
-  TakeHistoryForActivation(successor_contents_raw, outer_contents);
-
-  devtools_instrumentation::PortalActivated(outer_contents->GetMainFrame());
-  successor_contents_raw->set_portal(nullptr);
-
-  std::unique_ptr<WebContents> predecessor_web_contents =
-      delegate->ActivatePortalWebContents(outer_contents,
-                                          std::move(successor_contents));
-  DCHECK_EQ(predecessor_web_contents.get(), outer_contents);
-
-  if (outer_contents_main_frame_view) {
-    portal_contents_main_frame_view->TransferTouches(touch_events);
-    // Takes ownership of SyntheticGestureController from the predecessor's
-    // RenderWidgetHost. This allows the controller to continue sending events
-    // to the new RenderWidgetHostView.
-    portal_contents_main_frame_view->host()->TakeSyntheticGestureController(
-        outer_contents_main_frame_view->host());
-    outer_contents_main_frame_view->Destroy();
-  }
-
-  // These pointers are cleared so that they don't dangle in the event this
-  // object isn't immediately deleted. It isn't done sooner because
-  // ActivatePortalWebContents misbehaves if the WebContents doesn't appear to
-  // be a portal at that time.
-  portal_contents_.Clear();
-
-  mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal;
-  auto portal_receiver = pending_portal.InitWithNewEndpointAndPassReceiver();
-  mojo::PendingAssociatedRemote<blink::mojom::PortalClient> pending_client;
-  auto client_receiver = pending_client.InitWithNewEndpointAndPassReceiver();
-
-  RenderFrameHostImpl* successor_main_frame =
-      successor_contents_raw->GetMainFrame();
-  auto predecessor = std::make_unique<Portal>(
-      successor_main_frame, std::move(predecessor_web_contents));
-  predecessor->Bind(std::move(portal_receiver), std::move(pending_client));
-  successor_main_frame->OnPortalActivated(
-      std::move(predecessor), std::move(pending_portal),
-      std::move(client_receiver), std::move(data), std::move(callback));
-
-  // Notifying of activation happens later than ActivatePortalWebContents so
-  // that it is observed after predecessor_web_contents has been moved into a
-  // portal.
-  DCHECK(outer_contents->IsPortal());
-  successor_contents_raw->DidActivatePortal(outer_contents, activation_time);
+  is_activating_ = true;
+  WebContentsImpl* outer_contents = GetPortalHostContents();
+  outer_contents->GetDelegate()->UpdateInspectedWebContentsIfNecessary(
+      outer_contents, portal_contents_.get(),
+      base::BindOnce(&Portal::ActivateImpl, weak_factory_.GetWeakPtr(),
+                     std::move(data), activation_time, std::move(callback)));
 }
 
 void Portal::PostMessageToGuest(
@@ -572,6 +437,186 @@ WebContentsImpl* Portal::GetPortalContents() {
 WebContentsImpl* Portal::GetPortalHostContents() {
   return static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(owner_render_frame_host_));
+}
+
+std::pair<bool, blink::mojom::PortalActivateResult> Portal::CanActivate() {
+  WebContentsImpl* outer_contents = GetPortalHostContents();
+
+  DCHECK(owner_render_frame_host_->IsCurrent())
+      << "The binding should have been closed when the portal's outer "
+         "FrameTreeNode was deleted due to swap out.";
+
+  DCHECK(portal_contents_);
+  NavigationControllerImpl& portal_controller =
+      portal_contents_->GetController();
+  NavigationControllerImpl& predecessor_controller =
+      outer_contents->GetController();
+
+  // If no navigation has yet committed in the portal, it cannot be activated as
+  // this would lead to an empty tab contents (without even an about:blank).
+  if (portal_controller.GetLastCommittedEntryIndex() < 0) {
+    return std::make_pair(
+        false,
+        blink::mojom::PortalActivateResult::kRejectedDueToPortalNotReady);
+  }
+  DCHECK(predecessor_controller.GetLastCommittedEntry());
+
+  // Error pages and interstitials may not host portals due to the HTTP(S)
+  // restriction.
+  DCHECK_EQ(PAGE_TYPE_NORMAL,
+            predecessor_controller.GetLastCommittedEntry()->GetPageType());
+
+  // If the portal is crashed or is showing an error page, reject activation.
+  if (portal_contents_->IsCrashed() ||
+      portal_controller.GetLastCommittedEntry()->GetPageType() !=
+          PAGE_TYPE_NORMAL) {
+    return std::make_pair(
+        false, blink::mojom::PortalActivateResult::kRejectedDueToErrorInPortal);
+  }
+
+  // If a navigation in the main frame is occurring, stop it if possible and
+  // reject the activation if it's too late or if an ongoing navigation takes
+  // precedence. There are a few cases here:
+  // - a different RenderFrameHost has been assigned to the FrameTreeNode
+  // - the same RenderFrameHost is being used, but it is committing a navigation
+  // - the FrameTreeNode holds a navigation request that can't turn back but has
+  //   not yet been handed off to a RenderFrameHost
+  FrameTreeNode* outer_root_node = owner_render_frame_host_->frame_tree_node();
+  NavigationRequest* outer_navigation = outer_root_node->navigation_request();
+  const bool has_user_gesture =
+      owner_render_frame_host_->HasTransientUserActivation();
+
+  // WILL_PROCESS_RESPONSE is slightly early: it happens
+  // immediately before READY_TO_COMMIT (unless it's deferred), but
+  // WILL_PROCESS_RESPONSE is easier to hook for tests using a
+  // NavigationThrottle.
+  if (owner_render_frame_host_->HasPendingCommitNavigation() ||
+      (outer_navigation &&
+       outer_navigation->state() >= NavigationRequest::WILL_PROCESS_RESPONSE) ||
+      Navigator::ShouldIgnoreIncomingRendererRequest(outer_navigation,
+                                                     has_user_gesture)) {
+    return std::make_pair(false, blink::mojom::PortalActivateResult::
+                                     kRejectedDueToPredecessorNavigation);
+  }
+  return std::make_pair(true,
+                        blink::mojom::PortalActivateResult::kAbortedDueToBug);
+}
+
+void Portal::ActivateImpl(blink::TransferableMessage data,
+                          base::TimeTicks activation_time,
+                          ActivateCallback callback) {
+  WebContentsImpl* outer_contents = GetPortalHostContents();
+  WebContentsDelegate* delegate = outer_contents->GetDelegate();
+
+  is_activating_ = false;
+
+  bool can_activate;
+  blink::mojom::PortalActivateResult activate_error;
+  std::tie(can_activate, activate_error) = CanActivate();
+  if (!can_activate) {
+    outer_contents->GetDelegate()->UpdateInspectedWebContentsIfNecessary(
+        portal_contents_.get(), outer_contents, base::DoNothing());
+    std::move(callback).Run(activate_error);
+    return;
+  }
+
+  FrameTreeNode* outer_root_node = owner_render_frame_host_->frame_tree_node();
+  outer_root_node->navigator().CancelNavigation(outer_root_node);
+
+  DCHECK(!is_closing_) << "Portal should not be shutting down when contents "
+                          "ownership is yielded";
+
+  std::unique_ptr<WebContents> successor_contents;
+
+  if (portal_contents_->GetOuterWebContents()) {
+    FrameTreeNode* outer_frame_tree_node = FrameTreeNode::GloballyFindByID(
+        portal_contents_->GetOuterDelegateFrameTreeNodeId());
+    outer_frame_tree_node->RemoveObserver(this);
+    successor_contents = portal_contents_->DetachFromOuterWebContents();
+    owner_render_frame_host_->RemoveChild(outer_frame_tree_node);
+  } else {
+    // Portals created for predecessor pages during activation may not be
+    // attached to an outer WebContents, and may not have an outer frame tree
+    // node created (i.e. CreateProxyAndAttachPortal isn't called). In this
+    // case, we can skip a few of the detachment steps above.
+    for (auto& render_view_host :
+         portal_contents_->GetFrameTree()->render_view_hosts()) {
+      CreatePortalRenderWidgetHostView(portal_contents_.get(),
+                                       render_view_host.second);
+    }
+    successor_contents = portal_contents_.ReleaseOwnership();
+  }
+  DCHECK(!portal_contents_.OwnsContents());
+
+  // This assumes that the delegate keeps the new contents alive long enough to
+  // notify it of activation, at least.
+  WebContentsImpl* successor_contents_raw =
+      static_cast<WebContentsImpl*>(successor_contents.get());
+
+  auto* outer_contents_main_frame_view = static_cast<RenderWidgetHostViewBase*>(
+      outer_contents->GetMainFrame()->GetView());
+  DCHECK(!outer_contents->GetPendingMainFrame());
+  auto* portal_contents_main_frame_view =
+      static_cast<RenderWidgetHostViewBase*>(
+          successor_contents_raw->GetMainFrame()->GetView());
+
+  std::vector<std::unique_ptr<ui::TouchEvent>> touch_events;
+
+  if (outer_contents_main_frame_view) {
+    // Take fallback contents from previous WebContents so that the activation
+    // is smooth without flashes.
+    portal_contents_main_frame_view->TakeFallbackContentFrom(
+        outer_contents_main_frame_view);
+    touch_events =
+        outer_contents_main_frame_view->ExtractAndCancelActiveTouches();
+    FlushTouchEventQueues(outer_contents_main_frame_view->host());
+  }
+
+  TakeHistoryForActivation(successor_contents_raw, outer_contents);
+
+  devtools_instrumentation::PortalActivated(outer_contents->GetMainFrame());
+  successor_contents_raw->set_portal(nullptr);
+
+  std::unique_ptr<WebContents> predecessor_web_contents =
+      delegate->ActivatePortalWebContents(outer_contents,
+                                          std::move(successor_contents));
+  DCHECK_EQ(predecessor_web_contents.get(), outer_contents);
+
+  if (outer_contents_main_frame_view) {
+    portal_contents_main_frame_view->TransferTouches(touch_events);
+    // Takes ownership of SyntheticGestureController from the predecessor's
+    // RenderWidgetHost. This allows the controller to continue sending events
+    // to the new RenderWidgetHostView.
+    portal_contents_main_frame_view->host()->TakeSyntheticGestureController(
+        outer_contents_main_frame_view->host());
+    outer_contents_main_frame_view->Destroy();
+  }
+
+  // These pointers are cleared so that they don't dangle in the event this
+  // object isn't immediately deleted. It isn't done sooner because
+  // ActivatePortalWebContents misbehaves if the WebContents doesn't appear to
+  // be a portal at that time.
+  portal_contents_.Clear();
+
+  mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal;
+  auto portal_receiver = pending_portal.InitWithNewEndpointAndPassReceiver();
+  mojo::PendingAssociatedRemote<blink::mojom::PortalClient> pending_client;
+  auto client_receiver = pending_client.InitWithNewEndpointAndPassReceiver();
+
+  RenderFrameHostImpl* successor_main_frame =
+      successor_contents_raw->GetMainFrame();
+  auto predecessor = std::make_unique<Portal>(
+      successor_main_frame, std::move(predecessor_web_contents));
+  predecessor->Bind(std::move(portal_receiver), std::move(pending_client));
+  successor_main_frame->OnPortalActivated(
+      std::move(predecessor), std::move(pending_portal),
+      std::move(client_receiver), std::move(data), std::move(callback));
+
+  // Notifying of activation happens later than ActivatePortalWebContents so
+  // that it is observed after predecessor_web_contents has been moved into a
+  // portal.
+  DCHECK(outer_contents->IsPortal());
+  successor_contents_raw->DidActivatePortal(outer_contents, activation_time);
 }
 
 Portal::WebContentsHolder::WebContentsHolder(Portal* portal)

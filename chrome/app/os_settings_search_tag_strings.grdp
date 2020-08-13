@@ -713,10 +713,16 @@
   <message name="IDS_OS_SETTINGS_TAG_PLAY_STORE" desc="Text for search result item which, when clicked, navigates the user to Play Store (Android app store) settings.">
     Play Store
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS_WITH_PLAY_STORE" desc="Text for search result item which, when clicked, navigates the user to Android app settings, with a button to open Android settings.">
+  <message name="IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS_WITH_PLAY_STORE" desc="Text for search result item which, when clicked, navigates the user Android app settings, with a button to open Android settings. Alternate phrase for: 'Android settings'">
+    Android preferences
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS_WITH_PLAY_STORE_ALT1" desc="Text for search result item which, when clicked, navigates the user to Android app settings, with a button to open Android settings. Alternate phrase for: 'Android preferences'">
     Android settings
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS" desc="Text for search result item which, when clicked, navigates the user to apps settings, with a button to open Android settings.">
+  <message name="IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS" desc="Text for search result item which, when clicked, navigates the user to apps settings, with a button to open Android settings. Alternate phrase for: 'Android settings'">
+    Android preferences
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS_ALT1" desc="Text for search result item which, when clicked, navigates the user to apps settings, with a button to open Android settings. Alternate phrase for: 'Android preferences'">
     Android settings
   </message>
   <message name="IDS_OS_SETTINGS_TAG_ANDROID_TURN_ON_PLAY_STORE" desc="Text for search result item which, when clicked, navigates the user to apps settings, with a button to turn on the Play Store (Android app store). Alternate phrase for: 'Enable Play Store'">

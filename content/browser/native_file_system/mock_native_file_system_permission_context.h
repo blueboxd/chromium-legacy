@@ -53,6 +53,7 @@ class MockNativeFileSystemPermissionContext
                     GlobalFrameRoutingId frame_id,
                     base::OnceCallback<void(AfterWriteCheckResult)>& callback));
 
+  MOCK_METHOD1(CanObtainReadPermission, bool(const url::Origin& origin));
   MOCK_METHOD1(CanObtainWritePermission, bool(const url::Origin& origin));
 };
 

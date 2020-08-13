@@ -388,8 +388,8 @@ id<GREYMatcher> SearchIconButton() {
       selectElementWithMatcher:grey_allOf(
                                    grey_kindOfClassName(@"UITableViewCell"),
                                    grey_descendant(grey_text(bookmarkFolder)),
-                                   nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+                                   grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_notNil()];
 }
 
 - (void)scrollToBottom {

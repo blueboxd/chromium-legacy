@@ -19,6 +19,18 @@ constexpr base::TimeDelta DnsUdpTracker::kMaxAge;
 // static
 constexpr size_t DnsUdpTracker::kMaxRecordedQueries;
 
+// static
+constexpr base::TimeDelta DnsUdpTracker::kMaxRecognizedIdAge;
+
+// static
+constexpr size_t DnsUdpTracker::kUnrecognizedIdMismatchThreshold;
+
+// static
+constexpr size_t DnsUdpTracker::kRecognizedIdMismatchThreshold;
+
+// static
+constexpr int DnsUdpTracker::kPortReuseThreshold;
+
 struct DnsUdpTracker::QueryData {
   uint16_t port;
   uint16_t query_id;
@@ -31,7 +43,7 @@ DnsUdpTracker::DnsUdpTracker(DnsUdpTracker&&) = default;
 DnsUdpTracker& DnsUdpTracker::operator=(DnsUdpTracker&&) = default;
 
 void DnsUdpTracker::RecordQuery(uint16_t port, uint16_t query_id) {
-  PurgeOldQueries();
+  PurgeOldRecords();
 
   int reused_port_count = base::checked_cast<int>(std::count_if(
       recent_queries_.cbegin(), recent_queries_.cend(),
@@ -50,11 +62,15 @@ void DnsUdpTracker::RecordQuery(uint16_t port, uint16_t query_id) {
         now - most_recent_match->time);
   }
 
+  if (reused_port_count >= kPortReuseThreshold) {
+    low_entropy_ = true;
+  }
+
   SaveQuery({port, query_id, now});
 }
 
 void DnsUdpTracker::RecordResponseId(uint16_t query_id, uint16_t response_id) {
-  PurgeOldQueries();
+  PurgeOldRecords();
 
   // Used in UMA (DNS.UdpIdMismatchStatus). Do not renumber or remove values.
   enum class MismatchStatus {
@@ -68,6 +84,8 @@ void DnsUdpTracker::RecordResponseId(uint16_t query_id, uint16_t response_id) {
   if (query_id == response_id) {
     status = MismatchStatus::kSuccessfulParse;
   } else {
+    SaveIdMismatch(response_id);
+
     auto oldest_matching_id =
         std::find_if(recent_queries_.cbegin(), recent_queries_.cend(),
                      [&](const auto& recent_query) {
@@ -87,11 +105,20 @@ void DnsUdpTracker::RecordResponseId(uint16_t query_id, uint16_t response_id) {
   UMA_HISTOGRAM_ENUMERATION("Net.DNS.DnsTransaction.UDP.IdMismatch", status);
 }
 
-void DnsUdpTracker::PurgeOldQueries() {
+void DnsUdpTracker::PurgeOldRecords() {
   base::TimeTicks now = tick_clock_->NowTicks();
+
   while (!recent_queries_.empty() &&
          (now - recent_queries_.front().time) > kMaxAge) {
     recent_queries_.pop_front();
+  }
+  while (!recent_unrecognized_id_hits_.empty() &&
+         now - recent_unrecognized_id_hits_.front() > kMaxAge) {
+    recent_unrecognized_id_hits_.pop_front();
+  }
+  while (!recent_recognized_id_hits_.empty() &&
+         now - recent_recognized_id_hits_.front() > kMaxAge) {
+    recent_recognized_id_hits_.pop_front();
   }
 }
 
@@ -102,6 +129,46 @@ void DnsUdpTracker::SaveQuery(QueryData query) {
 
   DCHECK(recent_queries_.empty() || query.time >= recent_queries_.back().time);
   recent_queries_.push_back(std::move(query));
+}
+
+void DnsUdpTracker::SaveIdMismatch(uint16_t id) {
+  // No need to track mismatches if already flagged for low entropy.
+  if (low_entropy_)
+    return;
+
+  base::TimeTicks now = tick_clock_->NowTicks();
+  base::TimeTicks time_cutoff = now - kMaxRecognizedIdAge;
+  bool is_recognized = std::any_of(
+      recent_queries_.cbegin(), recent_queries_.cend(),
+      [&](const auto& recent_query) {
+        return recent_query.query_id == id && recent_query.time >= time_cutoff;
+      });
+
+  if (is_recognized) {
+    DCHECK_LT(recent_recognized_id_hits_.size(),
+              kRecognizedIdMismatchThreshold);
+    if (recent_recognized_id_hits_.size() ==
+        kRecognizedIdMismatchThreshold - 1) {
+      low_entropy_ = true;
+      return;
+    }
+
+    DCHECK(recent_recognized_id_hits_.empty() ||
+           now >= recent_recognized_id_hits_.back());
+    recent_recognized_id_hits_.push_back(now);
+  } else {
+    DCHECK_LT(recent_unrecognized_id_hits_.size(),
+              kUnrecognizedIdMismatchThreshold);
+    if (recent_unrecognized_id_hits_.size() ==
+        kUnrecognizedIdMismatchThreshold - 1) {
+      low_entropy_ = true;
+      return;
+    }
+
+    DCHECK(recent_unrecognized_id_hits_.empty() ||
+           now >= recent_unrecognized_id_hits_.back());
+    recent_unrecognized_id_hits_.push_back(now);
+  }
 }
 
 }  // namespace net

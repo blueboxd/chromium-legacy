@@ -1332,6 +1332,13 @@
         ],
         'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
       },
+      'pixel': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
+        ],
+      },
       'screenshot_sync': {
         'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
       },
@@ -3686,6 +3693,10 @@
       },
     },
 
+    'omaha_gtests': {
+      'updater_tests': {},
+    },
+
     'opus_tests': {
       'opus_tests': {
         'args': [
@@ -4088,6 +4099,16 @@
       },
     },
 
+    'telemetry_desktop_minidump_unittests_isolated_scripts': {
+      # Takes ~2.5 minutes of bot time to run.
+      'telemetry_desktop_minidump_unittests': {
+        'args': [
+          'BrowserMinidumpTest',
+        ],
+        'isolate_name': 'telemetry_perf_unittests',
+      },
+    },
+
     'telemetry_perf_unittests_isolated_scripts': {
       'telemetry_perf_unittests': {
         'args': [
@@ -4360,7 +4381,6 @@
           ],
         },
       },
-      'updater_tests': {},
       'zucchini_unittests': {},
     },
 
@@ -4749,6 +4769,7 @@
       'components_perftests_isolated_scripts',
       'desktop_chromium_isolated_scripts',
       'mojo_python_unittests_isolated_scripts',
+      'telemetry_desktop_minidump_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
       'win_specific_isolated_scripts',
     ],

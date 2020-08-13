@@ -274,6 +274,9 @@ bool UtilityProcessHost::StartProcess() {
       switches::kAlsaInputDevice,
       switches::kAlsaOutputDevice,
 #endif
+#if defined(USE_CRAS)
+      switches::kUseCras,
+#endif
 #if defined(OS_WIN)
       switches::kDisableHighResTimer,
       switches::kEnableExclusiveAudio,

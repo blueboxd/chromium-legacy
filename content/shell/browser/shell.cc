@@ -600,16 +600,39 @@ std::unique_ptr<WebContents> Shell::ActivatePortalWebContents(
   DCHECK_EQ(predecessor_contents, web_contents_.get());
   portal_contents->SetDelegate(this);
   web_contents_->SetDelegate(nullptr);
-  for (auto* shell_devtools_bindings :
-       ShellDevToolsBindings::GetInstancesForWebContents(
-           predecessor_contents)) {
-    shell_devtools_bindings->UpdateInspectedWebContents(portal_contents.get());
-  }
   std::swap(web_contents_, portal_contents);
   g_platform->SetContents(this);
   g_platform->SetAddressBarURL(this, web_contents_->GetVisibleURL());
   LoadingStateChanged(web_contents_.get(), true);
   return portal_contents;
+}
+
+namespace {
+class PendingCallback : public base::RefCounted<PendingCallback> {
+ public:
+  explicit PendingCallback(base::OnceCallback<void()> cb)
+      : callback_(std::move(cb)) {}
+
+ private:
+  friend class base::RefCounted<PendingCallback>;
+  ~PendingCallback() { std::move(callback_).Run(); }
+  base::OnceCallback<void()> callback_;
+};
+}  // namespace
+
+void Shell::UpdateInspectedWebContentsIfNecessary(
+    content::WebContents* old_contents,
+    content::WebContents* new_contents,
+    base::OnceCallback<void()> callback) {
+  scoped_refptr<PendingCallback> pending_callback =
+      base::MakeRefCounted<PendingCallback>(std::move(callback));
+  for (auto* shell_devtools_bindings :
+       ShellDevToolsBindings::GetInstancesForWebContents(old_contents)) {
+    shell_devtools_bindings->UpdateInspectedWebContents(
+        new_contents,
+        base::BindOnce(base::DoNothing::Once<scoped_refptr<PendingCallback>>(),
+                       pending_callback));
+  }
 }
 
 bool Shell::ShouldAllowRunningInsecureContent(WebContents* web_contents,

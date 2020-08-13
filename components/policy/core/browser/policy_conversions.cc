@@ -18,6 +18,7 @@ namespace policy {
 
 const webui::LocalizedString kPolicySources[POLICY_SOURCE_COUNT] = {
     {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
+    {"commandLine", IDS_POLICY_SOURCE_COMMAND_LINE},
     {"cloud", IDS_POLICY_SOURCE_CLOUD},
     {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},
     {"sourceDeviceLocalAccountOverride",

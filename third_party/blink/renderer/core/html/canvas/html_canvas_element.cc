@@ -814,7 +814,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
   if (!context_ && !OffscreenCanvasFrame())
     return;
 
-  if (HasResourceProvider() && !canvas_is_clear_)
+  if (!canvas_is_clear_)
     PaintTiming::From(GetDocument()).MarkFirstContentfulPaint();
 
   // If the canvas is gpu composited, it has another way of getting to screen

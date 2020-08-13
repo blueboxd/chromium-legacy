@@ -567,11 +567,12 @@ void NearbySharingServiceImpl::OnOutgoingAdvertisementDecoded(
 
   // Once get the advertisement, the first thing to do is decrypt the
   // certificate.
-  std::vector<uint8_t> encrypted_metadata = advertisement->encrypted_metadata;
+  std::vector<uint8_t> encrypted_metadata_key =
+      advertisement->encrypted_metadata_key;
   std::vector<uint8_t> salt = advertisement->salt;
 
   GetCertificateManager()->GetDecryptedPublicCertificate(
-      std::move(encrypted_metadata), std::move(salt),
+      std::move(encrypted_metadata_key), std::move(salt),
       base::BindOnce(&NearbySharingServiceImpl::OnOutgoingDecryptedCertificate,
                      weak_ptr_factory_.GetWeakPtr(), endpoint_id,
                      std::move(advertisement)));
@@ -1334,11 +1335,12 @@ void NearbySharingServiceImpl::OnIncomingAdvertisementDecoded(
     return;
   }
 
-  std::vector<uint8_t> encrypted_metadata = advertisement->encrypted_metadata;
+  std::vector<uint8_t> encrypted_metadata_key =
+      advertisement->encrypted_metadata_key;
   std::vector<uint8_t> salt = advertisement->salt;
 
   GetCertificateManager()->GetDecryptedPublicCertificate(
-      std::move(encrypted_metadata), std::move(salt),
+      std::move(encrypted_metadata_key), std::move(salt),
       base::BindOnce(&NearbySharingServiceImpl::OnIncomingDecryptedCertificate,
                      weak_ptr_factory_.GetWeakPtr(), endpoint_id, connection,
                      std::move(advertisement)));

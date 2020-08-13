@@ -341,7 +341,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bbr2_improve_adjust_network_parameters,
-    false)
+    true)
 
 // If true, try to coalesce packet of higher space with retransmissions to
 // mitigate RTT inflations.
@@ -358,11 +358,11 @@ QUIC_FLAG(bool,
 // If true, QuicSession will no longer need streams_waiting_for_acks_.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_remove_streams_waiting_for_acks,
-          false)
+          true)
 
 // When true, ParsedQuicVersionToString will print IETF drafts with format
 // draft29 instead of ff00001d.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_print_draft_version, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_print_draft_version, true)
 
 // If true, disable blackhole detection on server side.
 QUIC_FLAG(bool,
@@ -371,13 +371,11 @@ QUIC_FLAG(bool,
 
 // Remove ACK_DECIMATION_WITH_REORDERING mode and fast_ack_after_quiescence
 // option in QUIC received packet manager.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_remove_unused_ack_options,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_remove_unused_ack_options, true)
 
 // If true, QUIC subclasses will no longer directly access stream_map for its
 // content.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_use_stream_map, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_use_stream_map, true)
 
 // If true,
 //   server accepts GOAWAY (draft-28 behavior),
@@ -393,9 +391,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_use_stream_map, false)
 //     bidirectional stream ID closes connection with PROTOCOL_VIOLATION
 //     (draft-04 behavior),
 //   larger ID than previously received does not trigger connection close.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_http3_goaway_new_behavior,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_http3_goaway_new_behavior, true)
 
 // If true, QUIC connection will revert to a previously validated MTU (if
 // exists) after two PTOs.
@@ -406,7 +402,7 @@ QUIC_FLAG(bool,
 // Simplify the ACK code in quic_received_packet_manager.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_simplify_received_packet_manager_ack,
-          false)
+          true)
 
 // If true, when TLPR copt is used, enable half RTT as first PTO timeout.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_half_rtt_as_first_pto, true)
@@ -453,4 +449,10 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_add_silent_idle_timeout, false)
 
 // If true, do not send PING if ShouldKeepConnectionAlive is false.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_on_ping_timeout, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_on_ping_timeout, true)
+
+// When true, QUIC+TLS versions will send the key_update_not_yet_supported
+// transport parameter.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_send_key_update_not_yet_supported,
+          true)

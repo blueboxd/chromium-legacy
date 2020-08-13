@@ -21,6 +21,8 @@ class NetworkHealthService {
 
   mojo::PendingRemote<mojom::NetworkHealthService>
   GetHealthRemoteAndBindReceiver();
+  mojo::PendingRemote<network_diagnostics::mojom::NetworkDiagnosticsRoutines>
+  GetDiagnosticsRemoteAndBindReceiver();
 
   void BindHealthReceiver(
       mojo::PendingReceiver<mojom::NetworkHealthService> receiver);

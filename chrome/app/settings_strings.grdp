@@ -1223,6 +1223,9 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED_STANDARD" desc="This text points out that Safe Browsing is enabled as standard protection.">
     Standard Protection is on
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED_STANDARD_AVAILABLE_ENHANCED" desc="This text points out that Safe Browsing is enabled as standard protection, but the user can enable enhanced protection.">
+    Standard protection is on. For even more security, use enhanced protection.
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED_ENHANCED" desc="This text points out that Safe Browsing is enabled as enhanced protection.">
     Enhanced Protection is on
   </message>

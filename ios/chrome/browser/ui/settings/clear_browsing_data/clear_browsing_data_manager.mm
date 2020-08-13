@@ -90,8 +90,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
       @"clear_browsing_data_cookies",
   [NSNumber numberWithInteger:ItemTypeDataTypeCache] :
       @"clear_browsing_data_cached_images",
-  [NSNumber numberWithInteger:ItemTypeDataTypeSavedPasswords] :
-      @"clear_browsing_data_passwords",
+  [NSNumber numberWithInteger:ItemTypeDataTypeSavedPasswords] : @"password_key",
   [NSNumber numberWithInteger:ItemTypeDataTypeAutofill] :
       @"clear_browsing_data_autofill",
 };

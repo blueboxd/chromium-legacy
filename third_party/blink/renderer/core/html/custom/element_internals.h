@@ -54,6 +54,8 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
 
   bool HasState(const AtomicString& state) const;
 
+  ShadowRoot* shadowRoot() const;
+
   // We need these functions because we are reflecting ARIA attributes.
   // See dom/aria_attributes.idl.
   const AtomicString& FastGetAttribute(const QualifiedName&) const;

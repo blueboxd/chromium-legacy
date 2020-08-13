@@ -53,7 +53,8 @@ class SerialTest : public InProcessBrowserTest {
 };
 
 // TODO(crbug/1069695): Flaky on linux-chromeos-chrome.
-#if defined(OS_CHROMEOS)
+// TODO(crbug/1116072): Flaky on Linux Ozone Tester (X11).
+#if defined(OS_CHROMEOS) || defined(USE_OZONE)
 #define MAYBE_NavigateWithChooserCrossOrigin \
   DISABLED_NavigateWithChooserCrossOrigin
 #else

@@ -52,6 +52,16 @@ ChromeSpeechRecognitionClient::ChromeSpeechRecognitionClient(
   send_audio_callback_ = media::BindToCurrentLoop(base::BindRepeating(
       &ChromeSpeechRecognitionClient::SendAudioToSpeechRecognitionService,
       weak_factory_.GetWeakPtr()));
+
+  speech_recognition_context_.set_disconnect_handler(
+      base::BindOnce(&ChromeSpeechRecognitionClient::OnRecognizerDisconnected,
+                     base::Unretained(this)));
+  speech_recognition_recognizer_.set_disconnect_handler(
+      base::BindOnce(&ChromeSpeechRecognitionClient::OnRecognizerDisconnected,
+                     base::Unretained(this)));
+  caption_host_.set_disconnect_handler(
+      base::BindOnce(&ChromeSpeechRecognitionClient::OnCaptionHostDisconnected,
+                     base::Unretained(this)));
 }
 
 void ChromeSpeechRecognitionClient::OnRecognizerBound(
@@ -60,6 +70,15 @@ void ChromeSpeechRecognitionClient::OnRecognizerBound(
   is_recognizer_bound_ = true;
   if (on_ready_callback_)
     std::move(on_ready_callback_).Run();
+}
+
+void ChromeSpeechRecognitionClient::OnRecognizerDisconnected() {
+  is_recognizer_bound_ = false;
+  caption_host_->OnError();
+}
+
+void ChromeSpeechRecognitionClient::OnCaptionHostDisconnected() {
+  is_browser_requesting_transcription_ = false;
 }
 
 ChromeSpeechRecognitionClient::~ChromeSpeechRecognitionClient() = default;

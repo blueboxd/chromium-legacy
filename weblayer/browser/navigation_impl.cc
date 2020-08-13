@@ -9,6 +9,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_array.h"
@@ -158,8 +159,17 @@ Navigation::LoadError NavigationImpl::GetLoadError() {
 
 void NavigationImpl::SetRequestHeader(const std::string& name,
                                       const std::string& value) {
-  // Any headers coming from the client should be exempt from CORS checks.
-  navigation_handle_->SetCorsExemptRequestHeader(name, value);
+  if (base::ToLowerASCII(name) == "referer") {
+    // The referrer needs to be special cased as content maintains it
+    // separately.
+    auto referrer = blink::mojom::Referrer::New();
+    referrer->url = GURL(value);
+    referrer->policy = network::mojom::ReferrerPolicy::kDefault;
+    navigation_handle_->SetReferrer(std::move(referrer));
+  } else {
+    // Any headers coming from the client should be exempt from CORS checks.
+    navigation_handle_->SetCorsExemptRequestHeader(name, value);
+  }
 }
 
 void NavigationImpl::SetUserAgentString(const std::string& value) {

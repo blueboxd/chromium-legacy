@@ -70,8 +70,8 @@ void CaptionBubbleModel::OnReady() {
     observer_->OnReadyChanged();
 }
 
-void CaptionBubbleModel::SetHasError(bool has_error) {
-  has_error_ = has_error;
+void CaptionBubbleModel::OnError() {
+  has_error_ = true;
   if (observer_)
     observer_->OnErrorChanged();
 }
@@ -87,7 +87,11 @@ void CaptionBubbleModel::DidFinishNavigation(
   is_closed_ = false;
   is_ready_ = false;
   has_error_ = false;
-  OnTextChanged();
+  if (observer_) {
+    observer_->OnReadyChanged();
+    observer_->OnTextChanged();
+    observer_->OnErrorChanged();
+  }
 }
 
 void CaptionBubbleModel::CommitPartialText() {

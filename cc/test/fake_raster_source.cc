@@ -80,26 +80,6 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledWithPaintWorklet(
   return base::WrapRefCounted(new FakeRasterSource(recording_source.get()));
 }
 
-scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledLCD(
-    const gfx::Size& size) {
-  auto recording_source =
-      FakeRecordingSource::CreateFilledRecordingSource(size);
-
-  PaintFlags red_flags;
-  red_flags.setColor(SK_ColorRED);
-  recording_source->add_draw_rect_with_flags(gfx::Rect(size), red_flags);
-
-  gfx::Size smaller_size(size.width() - 10, size.height() - 10);
-  PaintFlags green_flags;
-  green_flags.setColor(SK_ColorGREEN);
-  recording_source->add_draw_rect_with_flags(gfx::Rect(smaller_size),
-                                             green_flags);
-
-  recording_source->Rerecord();
-
-  return base::WrapRefCounted(new FakeRasterSource(recording_source.get()));
-}
-
 scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledSolidColor(
     const gfx::Size& size) {
   auto recording_source =

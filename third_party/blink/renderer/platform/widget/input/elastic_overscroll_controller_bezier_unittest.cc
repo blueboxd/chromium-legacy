@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace blink {
 
@@ -210,29 +211,75 @@ TEST_F(ElasticOverscrollControllerBezierTest, VerifyBackwardAnimationTick) {
 
 // Tests that the bounce forward animation ticks as expected.
 TEST_F(ElasticOverscrollControllerBezierTest, VerifyForwardAnimationTick) {
+  // Test vertical forward bounce animations.
   EXPECT_EQ(controller_.state_, ElasticOverscrollController::kStateInactive);
   SendGestureScrollBegin(PhaseState::kNonMomentum);
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
   SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, -100));
-  controller_.scroll_velocity_ = gfx::Vector2dF(0.f, -500.f);
+  controller_.scroll_velocity_ = gfx::Vector2dF(0.f, -4000.f);
 
   // This signals that the finger has lifted off which triggers a fling.
   const base::TimeTicks now = base::TimeTicks::Now();
   SendGestureScrollEnd(now);
 
-  const int SAMPLES = 7;
-  const int frames[SAMPLES] = {1, 2, 3, 4, 5, 8, 19};
-  const int stretch_amount[SAMPLES] = {-33, -40, -43, -40, -26, -11, 0};
+  const int TOTAL_FRAMES = 26;
+  const int stretch_amount_y[TOTAL_FRAMES] = {
+      -19, -41, -55, -65, -72, -78, -82, -85, -88, -89, -64, -45, -34,
+      -26, -20, -16, -13, -10, -8,  -6,  -4,  -3,  -2,  -1,  -1,  0};
 
-  for (int i = 0; i < SAMPLES; i++) {
-    controller_.Animate(now +
-                        base::TimeDelta::FromMilliseconds(frames[i] * 16));
+  for (int i = 0; i < TOTAL_FRAMES; i++) {
+    controller_.Animate(now + base::TimeDelta::FromMilliseconds(i * 16));
     EXPECT_EQ(controller_.state_,
-              (stretch_amount[i] == 0
+              (stretch_amount_y[i] == 0
                    ? ElasticOverscrollController::kStateInactive
                    : ElasticOverscrollController::kStateMomentumAnimated));
-    ASSERT_FLOAT_EQ(helper_.StretchAmount().y(), stretch_amount[i]);
+    ASSERT_FLOAT_EQ(helper_.StretchAmount().y(), stretch_amount_y[i]);
   }
+
+  // Test horizontal forward bounce animations.
+  SendGestureScrollBegin(PhaseState::kNonMomentum);
+  SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(-50, 0));
+  controller_.scroll_velocity_ = gfx::Vector2dF(-3000.f, 0.f);
+  SendGestureScrollEnd(now);
+
+  const int stretch_amount_x[TOTAL_FRAMES] = {
+      -9,  -28, -40, -49, -55, -60, -64, -66, -68, -69, -50, -35, -26,
+      -20, -16, -12, -10, -8,  -6,  -5,  -3,  -2,  -2,  -1,  -1,  0};
+
+  for (int i = 0; i < TOTAL_FRAMES; i++) {
+    controller_.Animate(now + base::TimeDelta::FromMilliseconds(i * 16));
+    EXPECT_EQ(controller_.state_,
+              (stretch_amount_x[i] == 0
+                   ? ElasticOverscrollController::kStateInactive
+                   : ElasticOverscrollController::kStateMomentumAnimated));
+    ASSERT_FLOAT_EQ(helper_.StretchAmount().x(), stretch_amount_x[i]);
+  }
+}
+
+// Tests that the bounce forward animation is *not* played when the velocity is
+// less than kIgnoreForwardBounceVelocityThreshold. This can be verified by
+// checking bounce_forwards_distance_ (since it is a function of velocity)
+TEST_F(ElasticOverscrollControllerBezierTest,
+       VerifyForwardAnimationIsNotPlayed) {
+  EXPECT_EQ(Vector2dF(), helper_.StretchAmount());
+  controller_.scroll_velocity_ = gfx::Vector2dF(0.f, -199.f);
+  controller_.DidEnterMomentumAnimatedState();
+  EXPECT_TRUE(controller_.bounce_forwards_distance_.IsZero());
+
+  controller_.scroll_velocity_ = gfx::Vector2dF(-199.f, 0.f);
+  controller_.DidEnterMomentumAnimatedState();
+  EXPECT_TRUE(controller_.bounce_forwards_distance_.IsZero());
+
+  // When velocity > 200, forward animation is expected to be played.
+  controller_.scroll_velocity_ = gfx::Vector2dF(0.f, -201.f);
+  controller_.DidEnterMomentumAnimatedState();
+  EXPECT_EQ(gfx::Vector2dF(0, -16),
+            gfx::ToRoundedVector2d(controller_.bounce_forwards_distance_));
+
+  controller_.scroll_velocity_ = gfx::Vector2dF(-201.f, 0.f);
+  controller_.DidEnterMomentumAnimatedState();
+  EXPECT_EQ(gfx::Vector2dF(-16, 0),
+            gfx::ToRoundedVector2d(controller_.bounce_forwards_distance_));
 }
 
 // Tests initiating a scroll when a bounce back animation is in progress works

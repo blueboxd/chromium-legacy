@@ -474,6 +474,76 @@ IntPolicy_Part="Caption of policy."
 ''')
     self.CompareOutputs(output, expected_output)
 
+  def testIntPolicyWithRange(self):
+    # Tests a policy group with a single policy of type 'int' with a min and
+    # max value.
+    policy_json = '''
+      {
+        'policy_definitions': [
+          {
+            'name': 'IntPolicy',
+            'type': 'int',
+            'schema': { 'type': 'integer', 'minimum': 5, 'maximum': 10 },
+            'caption': 'Caption of policy.',
+            'features': { 'can_be_recommended': True },
+            'desc': 'Description of policy.',
+            'supported_on': ['chrome.win:8-']
+          },
+        ],
+        'policy_atomic_group_definitions': [],
+        'placeholders': [],
+        'messages': %s
+      }''' % MESSAGES
+    output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
+  CATEGORY !!chromium
+    KEYNAME "Software\\Policies\\Chromium"
+
+    POLICY !!IntPolicy_Policy
+      #if version >= 4
+        SUPPORTED !!SUPPORTED_WIN7
+      #endif
+      EXPLAIN !!IntPolicy_Explain
+
+      PART !!IntPolicy_Part  NUMERIC
+        VALUENAME "IntPolicy"
+        MIN 5 MAX 10
+      END PART
+    END POLICY
+
+  END CATEGORY
+
+  CATEGORY !!chromium_recommended
+    KEYNAME "Software\\Policies\\Chromium\\Recommended"
+
+    POLICY !!IntPolicy_Policy
+      #if version >= 4
+        SUPPORTED !!SUPPORTED_WIN7
+      #endif
+      EXPLAIN !!IntPolicy_Explain
+
+      PART !!IntPolicy_Part  NUMERIC
+        VALUENAME "IntPolicy"
+        MIN 5 MAX 10
+      END PART
+    END POLICY
+
+  END CATEGORY
+
+
+''', '''[Strings]
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
+chromium="Chromium"
+chromium_recommended="Chromium - Recommended"
+IntPolicy_Policy="Caption of policy."
+IntPolicy_Explain="Description of policy.\\n\\n\
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=IntPolicy"
+IntPolicy_Part="Caption of policy."
+''')
+    self.CompareOutputs(output, expected_output)
+
   def testIntEnumPolicy(self):
     # Tests a policy group with a single policy of type 'int-enum'.
     policy_json = '''

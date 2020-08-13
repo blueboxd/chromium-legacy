@@ -3859,11 +3859,40 @@ TEST_F(SchedulerTest, BeginFrameAckForFinishedImplFrame) {
   has_damage = false;
   EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
             client_->last_begin_frame_ack());
+  // The begin-main-frame sent has not been acknowledged yet (either by
+  // doing a commit, or aborting the draw from the main-thread).
   EXPECT_EQ(FrameSkippedReason::kWaitingOnMain,
             client_->last_frame_skipped_reason());
   client_->Reset();
 
-  // Draw succeeds, but 'swap' does not happen (i.e. no frame is submitted).
+  // Start another frame, and end the frame without drawing.
+  args = SendNextBeginFrame();
+  EXPECT_ACTIONS("WillBeginImplFrame");
+  EXPECT_TRUE(client_->IsInsideBeginImplFrame());
+  EXPECT_TRUE(scheduler_->begin_frames_expected());
+  client_->Reset();
+  client_->SetDrawWillHappen(false);
+  client_->SetSwapWillHappenIfDrawHappens(false);
+  task_runner_->RunPendingTasks();  // Run posted deadline.
+  EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
+  // Draw with no damage.
+  has_damage = false;
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
+  // The main thread still has not responded to the begin-main-frame.
+  EXPECT_EQ(FrameSkippedReason::kWaitingOnMain,
+            client_->last_frame_skipped_reason());
+  client_->Reset();
+
+  // Allow the commit now. NotifyReadyToCommit should trigger the commit.
+  scheduler_->NotifyBeginMainFrameStarted(task_runner_->NowTicks());
+  scheduler_->NotifyReadyToCommit(nullptr);
+  EXPECT_ACTIONS("ScheduledActionCommit");
+  EXPECT_TRUE(scheduler_->begin_frames_expected());
+  client_->Reset();
+
+  // Start another frame. For this frame, draw succeeds, but 'swap' does not
+  // happen (i.e. no frame is submitted).
   args = SendNextBeginFrame();
   EXPECT_ACTIONS("WillBeginImplFrame");
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());

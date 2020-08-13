@@ -272,10 +272,8 @@ void BrowserFrame::SetTabDragKind(TabDragKind tab_drag_kind) {
   if (tab_drag_kind_ == tab_drag_kind)
     return;
 
-  bool was_dragging_window = tab_drag_kind_ == TabDragKind::kAllTabs;
-  bool is_dragging_window = tab_drag_kind == TabDragKind::kAllTabs;
-  if (was_dragging_window != is_dragging_window && native_browser_frame_)
-    native_browser_frame_->TabDraggingStatusChanged(is_dragging_window);
+  if (native_browser_frame_)
+    native_browser_frame_->TabDraggingKindChanged(tab_drag_kind);
 
   bool was_dragging_any = tab_drag_kind_ != TabDragKind::kNone;
   bool is_dragging_any = tab_drag_kind != TabDragKind::kNone;

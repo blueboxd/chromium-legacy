@@ -172,6 +172,10 @@ public class Navigation extends IClientNavigation.Stub {
      * NavigationCallback.onNavigationRedirected}. When called during start, the header applies to
      * both the initial network request as well as redirects.
      *
+     * This method may be used to set the referer. If the referer is set in navigation start, it is
+     * reset during the redirect. In other words, if you need to set a referer that applies to
+     * redirects, then this must be called from {@link onNavigationRedirected}.
+     *
      * @param name The name of the header. The name must be rfc 2616 compliant.
      * @param value The value of the header. The value must not contain '\0', '\n' or '\r'.
      *

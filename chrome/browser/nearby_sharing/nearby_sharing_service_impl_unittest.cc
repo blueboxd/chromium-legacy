@@ -252,7 +252,10 @@ class NearbySharingServiceImplTest : public testing::Test {
         .WillRepeatedly(testing::Return(&mock_decoder_));
   }
 
-  void TearDown() override { profile_manager_.DeleteAllTestingProfiles(); }
+  void TearDown() override {
+    profile_manager_.DeleteAllTestingProfiles();
+    NearbyProcessManager::GetInstance().ClearActiveProfile();
+  }
 
   std::unique_ptr<NearbySharingServiceImpl> CreateService(
       const std::string& profile_name) {

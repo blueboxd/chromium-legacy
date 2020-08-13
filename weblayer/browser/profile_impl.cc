@@ -18,6 +18,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -25,6 +26,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
@@ -219,8 +221,12 @@ ProfileImpl::ProfileImpl(const std::string& name)
 }
 
 ProfileImpl::~ProfileImpl() {
-  if (browser_context_)
+  if (browser_context_) {
+    BrowserContextDependencyManager::GetInstance()
+        ->DestroyBrowserContextServices(browser_context_.get());
     browser_context_->ShutdownStoragePartitions();
+  }
+
   GetProfiles().erase(this);
   for (auto& observer : GetObservers())
     observer.ProfileDestroyed(this);
@@ -539,6 +545,10 @@ void ProfileImpl::RemoveBrowserPersistenceStorage(
       base::flat_set<std::string>(ids.begin(), ids.end()));
 }
 
+void ProfileImpl::PrepareForPossibleCrossOriginNavigation(JNIEnv* env) {
+  PrepareForPossibleCrossOriginNavigation();
+}
+
 #endif  // OS_ANDROID
 
 base::FilePath ProfileImpl::GetBrowserPersisterDataBaseDir() const {
@@ -620,6 +630,10 @@ void ProfileImpl::GetCachedFaviconForPageUrl(
 
   service->GetFaviconForPageUrl(page_url, std::move(callback),
                                 &cancelable_task_tracker_);
+}
+
+void ProfileImpl::PrepareForPossibleCrossOriginNavigation() {
+  content::RenderProcessHost::WarmupSpareRenderProcessHost(GetBrowserContext());
 }
 
 int ProfileImpl::GetNumberOfBrowsers() {

@@ -26,7 +26,7 @@ Polymer({
     },
 
     /** @private */
-    isWhitelistManaged_: {
+    isUserListManaged_: {
       type: Boolean,
       value: false,
     },
@@ -46,8 +46,8 @@ Polymer({
       this.isOwner_ = user.isOwner;
     });
 
-    chrome.usersPrivate.isWhitelistManaged(isWhitelistManaged => {
-      this.isWhitelistManaged_ = isWhitelistManaged;
+    chrome.usersPrivate.isUserListManaged(isUserListManaged => {
+      this.isUserListManaged_ = isUserListManaged;
     });
   },
 
@@ -67,28 +67,28 @@ Polymer({
 
   /**
    * @param {boolean} isOwner
-   * @param {boolean} isWhitelistManaged
+   * @param {boolean} isUserListManaged
    * @private
    * @return {boolean}
    */
-  isEditingDisabled_(isOwner, isWhitelistManaged) {
-    return !isOwner || isWhitelistManaged;
+  isEditingDisabled_(isOwner, isUserListManaged) {
+    return !isOwner || isUserListManaged;
   },
 
   /**
    * @param {boolean} isOwner
-   * @param {boolean} isWhitelistManaged
+   * @param {boolean} isUserListManaged
    * @param {boolean} allowGuest
    * @param {boolean} isChild
    * @private
    * @return {boolean}
    */
-  isEditingUsersEnabled_(isOwner, isWhitelistManaged, allowGuest, isChild) {
-    return isOwner && !isWhitelistManaged && !allowGuest && !isChild;
+  isEditingUsersEnabled_(isOwner, isUserListManaged, allowGuest, isChild) {
+    return isOwner && !isUserListManaged && !allowGuest && !isChild;
   },
 
   /** @return {boolean} */
   shouldHideModifiedByOwnerLabel_() {
-    return this.isWhitelistManaged_ || this.isOwner_;
+    return this.isUserListManaged_ || this.isOwner_;
   },
 });

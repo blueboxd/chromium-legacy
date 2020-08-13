@@ -333,7 +333,8 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
 };
 
 // Verify that certificate manager dialog opens.
-IN_PROC_BROWSER_TEST_F(KioskErrorScreenTest, OpenCertificateConfig) {
+// Disabled for being flaky. See crbug.com/1116058.
+IN_PROC_BROWSER_TEST_F(KioskErrorScreenTest, DISABLED_OpenCertificateConfig) {
   apps_loaded_waiter()->Wait();
   EXPECT_TRUE(ash::LoginScreenTestApi::LaunchApp(kTestKioskAppId));
 

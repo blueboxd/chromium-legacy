@@ -102,6 +102,15 @@ class Profile {
   virtual void GetCachedFaviconForPageUrl(
       const GURL& page_url,
       base::OnceCallback<void(gfx::Image)> callback) = 0;
+
+  // If an embedder knows that a cross-origin navigation is likely starting soon
+  // they can call this method to start a spare renderer process. A subsequent
+  // navigation may use this preinitialized process, improving performance.
+
+  // It is safe to call this multiple times or when it is not certain that the
+  // spare renderer will be used, although calling this too eagerly may reduce
+  // performance as unnecessary processes are created.
+  virtual void PrepareForPossibleCrossOriginNavigation() = 0;
 };
 
 }  // namespace weblayer

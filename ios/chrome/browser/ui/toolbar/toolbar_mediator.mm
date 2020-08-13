@@ -321,6 +321,8 @@
 
 // Updates the Share Menu button of the consumer.
 - (void)updateShareMenuForWebState:(web::WebState*)webState {
+  if (!self.webState)
+    return;
   const GURL& URL = webState->GetLastCommittedURL();
   BOOL shareMenuEnabled =
       URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);

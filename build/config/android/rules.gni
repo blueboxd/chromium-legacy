@@ -4099,6 +4099,9 @@ if (enable_java_templates) {
   #   ignore_native_libraries: Whether to ignore .so files found in the .aar.
   #       See also extract_native_libraries.
   #   ignore_proguard_configs: Whether to ignore proguard configs.
+  #   ignore_info_updates: Whether to ignore the info file when
+  #       update_android_aar_prebuilts gn arg is true. However, the info file
+  #       will still be verified regardless of the value of this flag.
   #   strip_resources: Whether to ignore android resources found in the .aar.
   #   custom_package: Java package for generated R.java files.
   #   extract_assets: Whether to extract and include assets found in the .aar.
@@ -4143,9 +4146,12 @@ if (enable_java_templates) {
     _strip_resources =
         defined(invoker.strip_resources) && invoker.strip_resources
 
+    _ignore_info_updates =
+        defined(invoker.ignore_info_updates) && invoker.ignore_info_updates
+
     # Scan the AAR file and determine the resources and jar files.
     # Some libraries might not have resources; others might have two jars.
-    if (update_android_aar_prebuilts) {
+    if (!_ignore_info_updates && update_android_aar_prebuilts) {
       print("Writing " + rebase_path(_info_path, "//"))
       exec_script("//build/android/gyp/aar.py",
                   [

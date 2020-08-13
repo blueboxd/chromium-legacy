@@ -58,7 +58,12 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
       delete;
   ~WaylandWindowDragController() override;
 
-  bool Drag(WaylandToplevelWindow* surface, const gfx::Vector2d& offset);
+  // Starts a new Wayland DND session for window dragging, if not done yet. A
+  // new data source is setup and the focused window is used as the origin
+  // surface.
+  bool StartDragSession();
+
+  bool Drag(WaylandToplevelWindow* window, const gfx::Vector2d& offset);
   void StopDragging();
 
   State state() const { return state_; }
@@ -87,9 +92,6 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   // WaylandWindowObserver:
   void OnWindowRemoved(WaylandWindow* window) override;
 
-  // Offers the focused window as available to be dragged. A new data source is
-  // setup and the underlying DnD session is started, if not done yet.
-  bool OfferWindow();
   // Handles drag/move mouse |event|, while in |kDetached| mode, forwarding it
   // as a bounds change event to the upper layer handlers.
   void HandleMotionEvent(MouseEvent* event);

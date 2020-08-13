@@ -35,4 +35,5 @@ interface IProfile {
   void getBrowserPersistenceIds(in IObjectWrapper resultCallback) = 9;
   void removeBrowserPersistenceStorage(in String[] ids,
                                        in IObjectWrapper resultCallback) = 10;
+  void prepareForPossibleCrossOriginNavigation() = 11;
 }

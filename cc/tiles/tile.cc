@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -22,8 +23,7 @@ Tile::Tile(TileManager* tile_manager,
            const CreateInfo& info,
            int layer_id,
            int source_frame_number,
-           int flags,
-           bool can_use_lcd_text)
+           int flags)
     : tile_manager_(tile_manager),
       tiling_(info.tiling),
       content_rect_(info.content_rect),
@@ -37,12 +37,10 @@ Tile::Tile(TileManager* tile_manager,
       required_for_activation_(false),
       required_for_draw_(false),
       is_solid_color_analysis_performed_(false),
-      can_use_lcd_text_(can_use_lcd_text),
-      id_(tile_manager->GetUniqueTileId()),
-      invalidated_id_(0),
-      scheduled_priority_(0) {
-  raster_rects_.push_back(
-      std::make_pair(info.content_rect, info.raster_transform));
+      can_use_lcd_text_(info.can_use_lcd_text),
+      raster_task_scheduled_with_checker_images_(false),
+      id_(tile_manager->GetUniqueTileId()) {
+  raster_rects_.emplace_back(info.content_rect, info.raster_transform);
 }
 
 Tile::~Tile() {

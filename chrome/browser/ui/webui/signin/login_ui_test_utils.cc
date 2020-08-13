@@ -254,10 +254,12 @@ bool IsElementReady(content::WebContents* web_contents,
       "  window.domAutomationController.send('DocumentNotReady');"
       "} else if (%s == null) {"
       "  window.domAutomationController.send('NotFound');"
+      "} else if (%s.hidden) {"
+      "  window.domAutomationController.send('Hidden');"
       "} else {"
       "  window.domAutomationController.send('Ok');"
       "}",
-      element_selector.c_str());
+      element_selector.c_str(), element_selector.c_str());
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents, find_element_js, &message));
   return message == "Ok";

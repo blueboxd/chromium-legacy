@@ -43,21 +43,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDockedMagnifier;
 // TODO(crbug.com/890029): Remove this when the feature is fully launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kDragToSnapInClamshellMode;
 
-// Enables resizing/moving the selection region for partial screenshot.
-ASH_PUBLIC_EXPORT extern const base::Feature kMovablePartialScreenshot;
-
-// Enables rounded corners in overview mode for testing.
-// TODO(crbug.com/903486): Remove this when new rounded corners implementation
-// has landed.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableOverviewRoundedCorners;
-
 // Limits the windows listed in Alt-Tab to the ones in the currently active
 // desk.
 ASH_PUBLIC_EXPORT extern const base::Feature kLimitAltTabToActiveDesk;
-
-// Limits the items on the shelf to the ones associated with windows the
-// currently active desk.
-ASH_PUBLIC_EXPORT extern const base::Feature kPerDeskShelf;
 
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
@@ -89,6 +77,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kManagedDeviceUIRedesign;
 // TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
 ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
 
+// Enables resizing/moving the selection region for partial screenshot.
+ASH_PUBLIC_EXPORT extern const base::Feature kMovablePartialScreenshot;
+
 // Enables multi-display support for overview and split view.
 // TODO(crbug.com/952461): Remove this when the feature is fully launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kMultiDisplayOverviewAndSplitView;
@@ -105,6 +96,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature
 
 // Enables notification scroll bar in UnifiedSystemTray.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationScrollBar;
+
+// Limits the items on the shelf to the ones associated with windows the
+// currently active desk.
+ASH_PUBLIC_EXPORT extern const base::Feature kPerDeskShelf;
 
 // Enables rounded corners for the Picture-in-picture window.
 ASH_PUBLIC_EXPORT extern const base::Feature kPipRoundedCorners;

@@ -479,15 +479,15 @@ class HistoryService : public KeyedService {
   // icon URL (e.g. http://www.google.com/favicon.ico) for which the favicon
   // data has changed. It is valid to call the callback with non-empty
   // "page URLs" and no "icon URL" and vice versa.
-  using OnFaviconsChangedCallback =
-      base::RepeatingCallback<void(const std::set<GURL>&, const GURL&)>;
+  using FaviconsChangedCallbackList =
+      base::RepeatingCallbackList<void(const std::set<GURL>&, const GURL&)>;
+  using FaviconsChangedCallback = FaviconsChangedCallbackList::CallbackType;
 
   // Add a callback to the list. The callback will remain registered until the
   // returned Subscription is destroyed. The Subscription must be destroyed
   // before HistoryService is destroyed.
-  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                          const GURL&)>::Subscription>
-  AddFaviconsChangedCallback(const OnFaviconsChangedCallback& callback)
+  std::unique_ptr<FaviconsChangedCallbackList::Subscription>
+  AddFaviconsChangedCallback(const FaviconsChangedCallback& callback)
       WARN_UNUSED_RESULT;
 
   // Testing -------------------------------------------------------------------
@@ -874,8 +874,7 @@ class HistoryService : public KeyedService {
   bool backend_loaded_;
 
   base::ObserverList<HistoryServiceObserver>::Unchecked observers_;
-  base::CallbackList<void(const std::set<GURL>&, const GURL&)>
-      favicon_changed_callback_list_;
+  FaviconsChangedCallbackList favicons_changed_callback_list_;
 
   std::unique_ptr<DeleteDirectiveHandler> delete_directive_handler_;
 

@@ -26,12 +26,30 @@ suite('MultiStoreExceptionEntry', function() {
     expectTrue(multiStoreAccountEntry.isPresentInAccount());
     expectEquals(multiStoreAccountEntry.getAnyId(), 1);
 
-    const multiStoreEntryFromBoth =
-        new MultiStoreExceptionEntry(deviceEntry, accountEntry);
+    const multiStoreEntryFromBoth = new MultiStoreExceptionEntry(deviceEntry);
+    expectTrue(multiStoreEntryFromBoth.mergeInPlace(accountEntry));
     expectTrue(multiStoreEntryFromBoth.isPresentOnDevice());
     expectTrue(multiStoreEntryFromBoth.isPresentInAccount());
     expectTrue(
         multiStoreEntryFromBoth.getAnyId() === 0 ||
         multiStoreEntryFromBoth.getAnyId() === 1);
+  });
+
+  test('mergeFailsForRepeatedStore', function() {
+    const deviceEntry1 =
+        createExceptionEntry({url: 'g.com', id: 0, fromAccountStore: false});
+    const deviceEntry2 =
+        createExceptionEntry({url: 'g.com', id: 1, fromAccountStore: false});
+    expectFalse(
+        new MultiStoreExceptionEntry(deviceEntry1).mergeInPlace(deviceEntry2));
+  });
+
+  test('mergeFailsForDifferentContents', function() {
+    const deviceEntry =
+        createExceptionEntry({url: 'a.com', id: 0, fromAccountStore: false});
+    const accountEntry =
+        createExceptionEntry({url: 'b.com', id: 1, fromAccountStore: true});
+    expectFalse(
+        new MultiStoreExceptionEntry(deviceEntry).mergeInPlace(accountEntry));
   });
 });

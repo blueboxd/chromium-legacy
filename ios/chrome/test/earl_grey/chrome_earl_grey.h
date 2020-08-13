@@ -353,11 +353,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // the operation fails.
 - (void)signOutAndClearIdentities;
 
-// Same as signOutAndClearIdentities.
-//
-// DEPRECATED in favor of signOutAndClearIdentities
-- (void)signOutAndClearAccounts;
-
 #pragma mark - Sync Utilities (EG2)
 
 // Waits for sync to be initialized or not. If not succeeded a GREYAssert is

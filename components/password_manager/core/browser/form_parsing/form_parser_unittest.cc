@@ -90,6 +90,7 @@ struct FormParsingTestCase {
   // null means no checking
   const autofill::ValueElementVector* all_possible_passwords = nullptr;
   const autofill::ValueElementVector* all_possible_usernames = nullptr;
+  bool server_side_classification_successful = true;
   bool username_may_use_prefilled_placeholder = false;
   base::Optional<FormDataParser::ReadonlyPasswordFields> readonly_status;
   base::Optional<FormDataParser::ReadonlyPasswordFields>
@@ -358,6 +359,8 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
         EXPECT_EQ(PasswordForm::Scheme::kHtml, parsed_form->scheme);
         EXPECT_FALSE(parsed_form->blocked_by_user);
         EXPECT_EQ(PasswordForm::Type::kManual, parsed_form->type);
+        EXPECT_EQ(test_case.server_side_classification_successful,
+                  parsed_form->server_side_classification_successful);
         EXPECT_EQ(test_case.username_may_use_prefilled_placeholder,
                   parsed_form->username_may_use_prefilled_placeholder);
         EXPECT_EQ(test_case.submission_event, parsed_form->submission_event);
@@ -1243,6 +1246,7 @@ TEST(FormParserTest, ServerHintsForDisabledPrefilledPlaceholderFeature) {
                    .prediction = {.type = autofill::PASSWORD,
                                   .may_use_prefilled_placeholder = true}},
               },
+          .server_side_classification_successful = true,
           .username_may_use_prefilled_placeholder = false,
       },
   });
@@ -1290,6 +1294,7 @@ TEST(FormParserTest, ServerHints) {
                    .prediction = {.type = autofill::PASSWORD,
                                   .may_use_prefilled_placeholder = true}},
               },
+          .server_side_classification_successful = true,
           .username_may_use_prefilled_placeholder = true,
       },
       {
@@ -1326,6 +1331,22 @@ TEST(FormParserTest, ServerHints) {
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = "password"},
               },
+      },
+      {
+          .description_for_logging = "Username not a placeholder",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS,
+                                  .may_use_prefilled_placeholder = false}},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .prediction = {.type = autofill::PASSWORD,
+                                  .may_use_prefilled_placeholder = false}},
+              },
+          .server_side_classification_successful = true,
+          .username_may_use_prefilled_placeholder = false,
       },
   });
 }

@@ -88,9 +88,9 @@ def CheckExpectations(actual_data, options):
   diff_text = _DiffFileContents(options.expected_file, actual_data)
 
   if not diff_text:
-    return
-
-  fail_msg = """
+    fail_msg = ''
+  else:
+    fail_msg = """
 Expectations need updating:
 https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/expectations/README.md
 
@@ -105,10 +105,10 @@ END_DIFF
 ############ END ############
 """.format(diff_text)
 
-  sys.stderr.write(fail_msg)
+    sys.stderr.write(fail_msg)
+
   if options.failure_file:
-    build_utils.MakeDirectory(os.path.dirname(options.failure_file))
     with open(options.failure_file, 'w') as f:
       f.write(fail_msg)
-  if options.fail_on_expectations:
+  if fail_msg and options.fail_on_expectations:
     sys.exit(1)

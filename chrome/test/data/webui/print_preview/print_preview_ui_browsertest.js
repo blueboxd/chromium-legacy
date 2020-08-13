@@ -1301,6 +1301,13 @@ TEST_F('PrintPreviewDestinationSelectTest', 'UpdateStatus', function() {
 TEST_F('PrintPreviewDestinationSelectTest', 'ChangeIcon', function() {
   this.runMochaTest(destination_select_test.TestNames.ChangeIcon);
 });
+
+TEST_F(
+    'PrintPreviewDestinationSelectTest', 'ChangeIconDeprecationWarnings',
+    function() {
+      this.runMochaTest(
+          destination_select_test.TestNames.ChangeIconDeprecationWarnings);
+    });
 GEN('#endif');
 
 // eslint-disable-next-line no-var

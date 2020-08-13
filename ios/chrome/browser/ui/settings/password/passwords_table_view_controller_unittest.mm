@@ -25,7 +25,7 @@
 #include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #include "ios/chrome/browser/passwords/save_passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
-#import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/legacy_password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"

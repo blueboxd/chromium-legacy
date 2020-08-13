@@ -5,7 +5,10 @@
 #include "chrome/browser/signin/dice_web_signin_interceptor.h"
 
 #include "base/scoped_observer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -180,6 +183,15 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, InterceptionTest) {
       IdentityManagerFactory::GetForProfile(new_profile);
   EXPECT_TRUE(new_identity_manager->HasAccountWithRefreshToken(
       account_info.account_id));
+
+  // Check the profile name.
+  ProfileAttributesEntry* entry = nullptr;
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  ASSERT_TRUE(
+      storage.GetProfileAttributesWithPath(new_profile->GetPath(), &entry));
+  ASSERT_TRUE(entry);
+  EXPECT_EQ("givenname", base::UTF16ToUTF8(entry->GetLocalProfileName()));
 
   // Add the account to the cookies (simulates the account reconcilor).
   EXPECT_EQ(BrowserList::GetInstance()->size(), 1u);

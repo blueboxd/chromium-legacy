@@ -2472,6 +2472,18 @@
           'gtest_tests': 'chromium_win_gtests',
         },
       },
+      'win10-omaha-tester-rel': {
+        'test_suites': {
+          'gtest_tests': 'omaha_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+            }
+          ]
+        },
+      },
       'win7-blink-rel-dummy': {
         'swarming': {
           'dimension_sets': [

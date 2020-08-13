@@ -95,7 +95,7 @@ CtapDeviceResponseCode ExtractPermissions(
     return CtapDeviceResponseCode::kCtap1ErrInvalidParameter;
   }
 
-  DCHECK((out_permissions.permissions & ~kSupportedPermissionsMask) == 0);
+  DCHECK_EQ(out_permissions.permissions & ~kSupportedPermissionsMask, 0);
 
   const auto permissions_rpid_it = request_map.find(
       cbor::Value(static_cast<int>(pin::RequestKey::kPermissionsRPID)));
@@ -238,7 +238,7 @@ CtapDeviceResponseCode ConfirmPresentedPIN(
   state->pin_retries--;
   state->pin_retries_since_insertion++;
 
-  DCHECK((encrypted_pin_hash.size() % AES_BLOCK_SIZE) == 0);
+  DCHECK_EQ(encrypted_pin_hash.size() % AES_BLOCK_SIZE, 0ul);
   uint8_t pin_hash[AES_BLOCK_SIZE];
   pin::Decrypt(shared_key, encrypted_pin_hash, pin_hash);
 
@@ -1510,7 +1510,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
           SetPIN(mutable_state(), shared_key, *encrypted_pin, *pin_auth);
       if (err != CtapDeviceResponseCode::kSuccess) {
         return err;
-      };
+      }
 
       AuthenticatorSupportedOptions options = device_info_->options;
       options.client_pin_availability = AuthenticatorSupportedOptions::
@@ -1550,12 +1550,12 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
           ConfirmPresentedPIN(mutable_state(), shared_key, *encrypted_pin_hash);
       if (err != CtapDeviceResponseCode::kSuccess) {
         return err;
-      };
+      }
 
       err = SetPIN(mutable_state(), shared_key, *encrypted_new_pin, *pin_auth);
       if (err != CtapDeviceResponseCode::kSuccess) {
         return err;
-      };
+      }
 
       break;
     }
@@ -1617,7 +1617,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
           ConfirmPresentedPIN(mutable_state(), shared_key, *encrypted_pin_hash);
       if (err != CtapDeviceResponseCode::kSuccess) {
         return err;
-      };
+      }
 
       mutable_state()->pin_retries = kMaxPinRetries;
 
@@ -1733,7 +1733,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
 
       const size_t num_remaining =
           config_.resident_credential_storage - num_resident;
-      DCHECK(0 <= num_remaining);
+      DCHECK_LE(0ul, num_remaining);
       response_map.emplace(
           static_cast<int>(CredentialManagementResponseKey::
                                kMaxPossibleRemainingResidentCredentialsCount),
@@ -1996,7 +1996,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
                  ++(*mutable_state()->bio_current_template_id)) !=
              mutable_state()->bio_templates.end()) {
         // Check for integer overflow (indicates full)
-        DCHECK(*mutable_state()->bio_current_template_id < 255);
+        DCHECK_LT(*mutable_state()->bio_current_template_id, 255);
       }
       mutable_state()->bio_remaining_samples =
           config_.bio_enrollment_samples_required;

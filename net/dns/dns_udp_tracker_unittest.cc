@@ -22,38 +22,75 @@ class DnsUdpTrackerTest : public testing::Test {
   base::SimpleTestTickClock test_tick_clock_;
 };
 
-// Just testing that nothing crashes given some standard calls.
-// TODO(ericorth@chromium.org): Actually test behavior once interesting
-// side effects or data access is added.
-
 TEST_F(DnsUdpTrackerTest, MatchingId) {
-  static const uint16_t kId = 56;
-  tracker_.RecordQuery(416 /* port */, kId);
-  tracker_.RecordResponseId(kId /* query_id */, kId /* response_id */);
+  uint16_t port = 416;
+  uint16_t id = 56;
+  for (size_t i = 0; i < DnsUdpTracker::kRecognizedIdMismatchThreshold; ++i) {
+    tracker_.RecordQuery(++port, ++id);
+    tracker_.RecordResponseId(id /* query_id */, id /* response_id */);
+    EXPECT_FALSE(tracker_.low_entropy());
+  }
 }
 
-TEST_F(DnsUdpTrackerTest, ReusedMismatch) {
+TEST_F(DnsUdpTrackerTest, ReusedMismatches) {
   static const uint16_t kOldId = 786;
   tracker_.RecordQuery(123 /* port */, kOldId);
-  static const uint16_t kNewId = 3456;
-  tracker_.RecordQuery(3889 /* port */, kNewId);
 
-  tracker_.RecordResponseId(kNewId /* query_id */, kOldId /* response_id */);
+  uint16_t port = 3889;
+  uint16_t id = 3456;
+  for (size_t i = 0; i < DnsUdpTracker::kRecognizedIdMismatchThreshold; ++i) {
+    EXPECT_FALSE(tracker_.low_entropy());
+    tracker_.RecordQuery(++port, ++id);
+    tracker_.RecordResponseId(id /* query_id */, kOldId /* response_id */);
+  }
+
+  EXPECT_TRUE(tracker_.low_entropy());
 }
 
-TEST_F(DnsUdpTrackerTest, ReusedMismatch_Expired) {
+TEST_F(DnsUdpTrackerTest, ReusedMismatches_Expired) {
   static const uint16_t kOldId = 786;
   tracker_.RecordQuery(123 /* port */, kOldId);
 
   test_tick_clock_.Advance(DnsUdpTracker::kMaxAge +
                            base::TimeDelta::FromMilliseconds(1));
-  static const uint16_t kNewId = 3456;
-  tracker_.RecordQuery(3889 /* port */, kNewId);
 
-  tracker_.RecordResponseId(kNewId /* query_id */, kOldId /* response_id */);
+  uint16_t port = 3889;
+  uint16_t id = 3456;
+
+  // Because the query record has expired, the ID should be treated as
+  // unrecognized.
+  for (size_t i = 0; i < DnsUdpTracker::kUnrecognizedIdMismatchThreshold; ++i) {
+    EXPECT_FALSE(tracker_.low_entropy());
+    tracker_.RecordQuery(++port, ++id);
+    tracker_.RecordResponseId(id /* query_id */, kOldId /* response_id */);
+  }
+
+  EXPECT_TRUE(tracker_.low_entropy());
 }
 
-TEST_F(DnsUdpTrackerTest, ReusedMismatch_Full) {
+// Test for ID mismatches using an ID still kept in recorded queries, but not
+// recent enough to be considered reognized.
+TEST_F(DnsUdpTrackerTest, ReusedMismatches_Old) {
+  static const uint16_t kOldId = 786;
+  tracker_.RecordQuery(123 /* port */, kOldId);
+
+  test_tick_clock_.Advance(DnsUdpTracker::kMaxRecognizedIdAge +
+                           base::TimeDelta::FromMilliseconds(1));
+
+  uint16_t port = 3889;
+  uint16_t id = 3456;
+
+  // Expect the ID to be treated as unrecognized.
+  for (size_t i = 0; i < DnsUdpTracker::kUnrecognizedIdMismatchThreshold; ++i) {
+    EXPECT_FALSE(tracker_.low_entropy());
+    tracker_.RecordQuery(++port, ++id);
+    tracker_.RecordResponseId(id /* query_id */, kOldId /* response_id */);
+  }
+
+  EXPECT_TRUE(tracker_.low_entropy());
+}
+
+TEST_F(DnsUdpTrackerTest, ReusedMismatches_Full) {
   static const uint16_t kOldId = 786;
   tracker_.RecordQuery(123 /* port */, kOldId);
 
@@ -63,22 +100,39 @@ TEST_F(DnsUdpTrackerTest, ReusedMismatch_Full) {
     tracker_.RecordQuery(++port, ++id);
   }
 
-  tracker_.RecordResponseId(id /* query_id */, kOldId /* response_id */);
+  // Expect the ID to be treated as unrecognized.
+  for (size_t i = 0; i < DnsUdpTracker::kUnrecognizedIdMismatchThreshold; ++i) {
+    EXPECT_FALSE(tracker_.low_entropy());
+    tracker_.RecordResponseId(id /* query_id */, kOldId /* response_id */);
+  }
+
+  EXPECT_TRUE(tracker_.low_entropy());
 }
 
-TEST_F(DnsUdpTrackerTest, UnknownMismatch) {
-  static const uint16_t kId = 4332;
-  tracker_.RecordQuery(10014 /* port */, kId);
-  tracker_.RecordResponseId(kId /* query_id */, 743 /* response_id */);
+TEST_F(DnsUdpTrackerTest, UnknownMismatches) {
+  uint16_t port = 10014;
+  uint16_t id = 4332;
+  for (size_t i = 0; i < DnsUdpTracker::kUnrecognizedIdMismatchThreshold; ++i) {
+    EXPECT_FALSE(tracker_.low_entropy());
+    tracker_.RecordQuery(++port, ++id);
+    tracker_.RecordResponseId(id /* query_id */, 743 /* response_id */);
+  }
+
+  EXPECT_TRUE(tracker_.low_entropy());
 }
 
 TEST_F(DnsUdpTrackerTest, ReusedPort) {
   static const uint16_t kPort = 2135;
   tracker_.RecordQuery(kPort, 579 /* query_id */);
 
-  static const uint16_t kId = 580;
-  tracker_.RecordQuery(kPort, kId);
-  tracker_.RecordResponseId(kId /* query_id */, kId /* response_id */);
+  uint16_t id = 580;
+  for (int i = 0; i < DnsUdpTracker::kPortReuseThreshold; ++i) {
+    EXPECT_FALSE(tracker_.low_entropy());
+    tracker_.RecordQuery(kPort, ++id);
+    tracker_.RecordResponseId(id /* query_id */, id /* response_id */);
+  }
+
+  EXPECT_TRUE(tracker_.low_entropy());
 }
 
 TEST_F(DnsUdpTrackerTest, ReusedPort_Expired) {
@@ -87,9 +141,15 @@ TEST_F(DnsUdpTrackerTest, ReusedPort_Expired) {
 
   test_tick_clock_.Advance(DnsUdpTracker::kMaxAge +
                            base::TimeDelta::FromMilliseconds(1));
-  static const uint16_t kId = 580;
-  tracker_.RecordQuery(kPort, kId);
-  tracker_.RecordResponseId(kId /* query_id */, kId /* response_id */);
+
+  EXPECT_FALSE(tracker_.low_entropy());
+
+  uint16_t id = 580;
+  for (int i = 0; i < DnsUdpTracker::kPortReuseThreshold; ++i) {
+    tracker_.RecordQuery(kPort, ++id);
+    tracker_.RecordResponseId(id /* query_id */, id /* response_id */);
+    EXPECT_FALSE(tracker_.low_entropy());
+  }
 }
 
 TEST_F(DnsUdpTrackerTest, ReusedPort_Full) {
@@ -102,8 +162,13 @@ TEST_F(DnsUdpTrackerTest, ReusedPort_Full) {
     tracker_.RecordQuery(++port, ++id);
   }
 
-  tracker_.RecordQuery(kPort, ++id);
-  tracker_.RecordResponseId(id /* query_id */, id /* response_id */);
+  EXPECT_FALSE(tracker_.low_entropy());
+
+  for (int i = 0; i < DnsUdpTracker::kPortReuseThreshold; ++i) {
+    tracker_.RecordQuery(kPort, ++id);
+    tracker_.RecordResponseId(id /* query_id */, id /* response_id */);
+    EXPECT_FALSE(tracker_.low_entropy());
+  }
 }
 
 }  // namespace

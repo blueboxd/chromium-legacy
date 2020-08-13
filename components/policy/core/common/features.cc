@@ -8,9 +8,6 @@ namespace policy {
 
 namespace features {
 
-const base::Feature kPolicyAtomicGroup{"PolicyAtomicGroup",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kCBCMPolicyInvalidations{"CBCMPolicyInvalidations",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 

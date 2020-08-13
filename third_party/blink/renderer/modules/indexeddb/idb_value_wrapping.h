@@ -79,7 +79,7 @@ class SerializedScriptValue;
 //               blobs: SSV Blob attachments + [wrapper Blob(SSV byte array)] ->
 //     LevelDB
 class MODULES_EXPORT IDBValueWrapper {
-  STACK_ALLOCATED();
+  DISALLOW_NEW();
 
  public:
   // Wrapper for an IndexedDB value.

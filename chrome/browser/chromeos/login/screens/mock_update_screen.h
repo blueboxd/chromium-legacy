@@ -41,6 +41,7 @@ class MockUpdateView : public UpdateView {
   MOCK_METHOD(void, SetShowEstimatedTimeLeft, (bool value));
   MOCK_METHOD(void, SetUpdateCompleted, (bool value));
   MOCK_METHOD(void, SetShowCurtain, (bool value));
+  MOCK_METHOD(void, SetManualRebootNeeded, (bool value));
   MOCK_METHOD(void, SetProgressMessage, (const base::string16& value));
   MOCK_METHOD(void, SetProgress, (int value));
   MOCK_METHOD(void, SetRequiresPermissionForCellular, (bool value));

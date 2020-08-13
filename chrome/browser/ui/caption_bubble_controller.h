@@ -37,6 +37,8 @@ class CaptionBubbleController {
 
   static std::unique_ptr<CaptionBubbleController> Create(Browser* browser);
 
+  // Called when speech recognition is ready to start for the given web
+  // contents.
   virtual bool OnSpeechRecognitionReady(content::WebContents* web_contents) = 0;
 
   // Called when a transcription is received from the service. Returns whether
@@ -45,6 +47,9 @@ class CaptionBubbleController {
   virtual bool OnTranscription(
       const chrome::mojom::TranscriptionResultPtr& transcription_result,
       content::WebContents* web_contents) = 0;
+
+  // Called when the speech service has an error.
+  virtual void OnError(content::WebContents* web_contents) = 0;
 
   // Called when the caption style changes.
   virtual void UpdateCaptionStyle(

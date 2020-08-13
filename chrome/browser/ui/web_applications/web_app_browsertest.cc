@@ -295,12 +295,16 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {
                           /*open_as_window=*/true));
   EXPECT_FALSE(has_buttons(DisplayMode::kStandalone,
                            /*open_as_window=*/true));
+  EXPECT_FALSE(has_buttons(DisplayMode::kFullscreen,
+                           /*open_as_window=*/true));
 
   EXPECT_TRUE(has_buttons(DisplayMode::kBrowser,
                           /*open_as_window=*/false));
   EXPECT_TRUE(has_buttons(DisplayMode::kMinimalUi,
                           /*open_as_window=*/false));
   EXPECT_FALSE(has_buttons(DisplayMode::kStandalone,
+                           /*open_as_window=*/false));
+  EXPECT_FALSE(has_buttons(DisplayMode::kFullscreen,
                            /*open_as_window=*/false));
 }
 
@@ -319,6 +323,63 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_DisplayOverride, DisplayOverride) {
   ASSERT_EQ(2u, app_display_mode_override.size());
   EXPECT_EQ(DisplayMode::kMinimalUi, app_display_mode_override[0]);
   EXPECT_EQ(DisplayMode::kStandalone, app_display_mode_override[1]);
+}
+
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_DisplayOverride, HasMinimalUiButtons) {
+  int index = 0;
+  auto has_buttons = [this, &index](DisplayMode display_override_mode,
+                                    bool open_as_window) -> bool {
+    base::HistogramTester tester;
+    const std::string base_url = "https://example.com/path";
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = GURL(base_url + base::NumberToString(index++));
+    web_app_info->scope = web_app_info->app_url;
+
+    DisplayMode display_mode = DisplayMode::kStandalone;
+
+    if (display_override_mode == DisplayMode::kFullscreen ||
+        display_override_mode == DisplayMode::kStandalone) {
+      display_mode = DisplayMode::kMinimalUi;
+    }
+
+    web_app_info->display_mode = display_mode;
+    web_app_info->open_as_window = open_as_window;
+    web_app_info->display_override.push_back(display_override_mode);
+
+    AppId app_id = InstallWebApp(std::move(web_app_info));
+    Browser* app_browser = LaunchWebAppBrowser(app_id);
+    DCHECK(app_browser->app_controller());
+    tester.ExpectUniqueSample(kLaunchWebAppDisplayModeHistogram, display_mode,
+                              1);
+
+    bool matches;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        app_browser->tab_strip_model()->GetActiveWebContents(),
+        "window.domAutomationController.send(window.matchMedia('(display-mode: "
+        "minimal-ui)').matches)",
+        &matches));
+    EXPECT_EQ(app_browser->app_controller()->HasMinimalUiButtons(), matches);
+
+    return matches;
+  };
+
+  EXPECT_TRUE(has_buttons(DisplayMode::kBrowser,
+                          /*open_as_window=*/true));
+  EXPECT_TRUE(has_buttons(DisplayMode::kMinimalUi,
+                          /*open_as_window=*/true));
+  EXPECT_FALSE(has_buttons(DisplayMode::kStandalone,
+                           /*open_as_window=*/true));
+  EXPECT_FALSE(has_buttons(DisplayMode::kFullscreen,
+                           /*open_as_window=*/true));
+
+  EXPECT_TRUE(has_buttons(DisplayMode::kBrowser,
+                          /*open_as_window=*/false));
+  EXPECT_TRUE(has_buttons(DisplayMode::kMinimalUi,
+                          /*open_as_window=*/false));
+  EXPECT_FALSE(has_buttons(DisplayMode::kStandalone,
+                           /*open_as_window=*/false));
+  EXPECT_FALSE(has_buttons(DisplayMode::kFullscreen,
+                           /*open_as_window=*/false));
 }
 
 // Tests that desktop PWAs open links in the browser.

@@ -146,8 +146,8 @@ class FaviconCache : public history::HistoryServiceObserver {
   base::MRUCache<Request, bool> responses_without_favicons_;
 
   // Subscription for notifications of changes to favicons.
-  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                          const GURL&)>::Subscription>
+  std::unique_ptr<
+      history::HistoryService::FaviconsChangedCallbackList::Subscription>
       favicons_changed_subscription_;
 
   base::WeakPtrFactory<FaviconCache> weak_factory_{this};

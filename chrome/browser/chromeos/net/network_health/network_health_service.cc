@@ -23,6 +23,14 @@ NetworkHealthService::GetHealthRemoteAndBindReceiver() {
   return remote;
 }
 
+mojo::PendingRemote<network_diagnostics::mojom::NetworkDiagnosticsRoutines>
+NetworkHealthService::GetDiagnosticsRemoteAndBindReceiver() {
+  mojo::PendingRemote<network_diagnostics::mojom::NetworkDiagnosticsRoutines>
+      remote;
+  BindDiagnosticsReceiver(remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
 void NetworkHealthService::BindHealthReceiver(
     mojo::PendingReceiver<mojom::NetworkHealthService> receiver) {
   network_health_.BindReceiver(std::move(receiver));

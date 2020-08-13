@@ -80,7 +80,8 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
                            raster_source,
                            client,
                            min_preraster_distance,
-                           max_preraster_distance) {}
+                           max_preraster_distance,
+                           /*can_use_lcd_text*/ false) {}
 };
 
 class PictureLayerTilingIteratorTest : public testing::Test {

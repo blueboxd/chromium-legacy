@@ -14,6 +14,8 @@
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 
+class AccountId;
+
 // Handles method calls sent from Ash to ChromeOS.
 class InSessionAuthDialogClient : public ash::InSessionAuthDialogClient,
                                   public chromeos::AuthStatusConsumer {
@@ -34,6 +36,10 @@ class InSessionAuthDialogClient : public ash::InSessionAuthDialogClient,
       const std::string& password,
       bool authenticated_by_pin,
       AuthenticateCallback callback) override;
+  bool IsFingerprintAuthAvailable(const AccountId& account_id) override;
+  void CheckPinAuthAvailability(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> callback) override;
 
   // AuthStatusConsumer:
   void OnAuthFailure(const chromeos::AuthFailure& error) override;

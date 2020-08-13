@@ -50,7 +50,26 @@
       </oobe-dialog>
     </div>
     <div hidden="[[!betterUpdateScreenFeatureEnabled_]]">
-      <oobe-dialog>
+      <oobe-dialog footer-shrinkable id="restarting-dialog"
+          hidden="[[!isRebootProgressBarShown_(manualRebootNeeded,
+                                               updateCompleted)]]"
+          title-key="updateCompeletedRebootingMsg"
+          aria-live="polite">
+        <hd-iron-icon slot="oobe-icon"
+            icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
+        </hd-iron-icon>
+        <paper-progress slot="progress" id="restarting-progress" indeterminate>
+        </paper-progress>
+      </oobe-dialog>
+      <oobe-dialog footer-shrinkable id="better-update-complete-dialog"
+          hidden="[[!manualRebootNeeded]]"
+          title-key="updateCompeletedMsg"
+          aria-live="polite">
+        <hd-iron-icon slot="oobe-icon"
+            icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
+        </hd-iron-icon>
+      </oobe-dialog>
+      <oobe-dialog hidden="[[!showLowBatteryWarning]]">
         <div hidden="[[!showLowBatteryWarning]]" id="battery-warning"
             slot="footer">
         </div>

@@ -33,8 +33,13 @@ data:
   - file: Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib
   - file: Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libswiftDemangle.dylib
   - file: Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/libexec/migcom
+  - file: Contents/Developer/usr/bin/atos
   - file: Contents/Resources/English.lproj/License.rtf
   - file: Contents/Resources/LicenseInfo.plist
+  - dir: Contents/SharedFrameworks/CoreSymbolicationDT.framework
+  - dir: Contents/SharedFrameworks/DebugSymbolsDT.framework
+  - dir: Contents/SharedFrameworks/MallocStackLoggingDT.framework
+  - dir: Contents/SharedFrameworks/SymbolicationDT.framework
   - file: Contents/version.plist
 # llvm-size and size are run on swarming, those are symlinked to out of
 # isolated tree and produce invdalid symlink if we don't use copy mode here.

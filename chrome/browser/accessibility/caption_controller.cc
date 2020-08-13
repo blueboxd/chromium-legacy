@@ -180,6 +180,13 @@ bool CaptionController::DispatchTranscription(
       transcription_result, web_contents);
 }
 
+void CaptionController::OnError(content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser || !caption_bubble_controllers_.count(browser))
+    return;
+  return caption_bubble_controllers_[browser]->OnError(web_contents);
+}
+
 CaptionBubbleController*
 CaptionController::GetCaptionBubbleControllerForBrowser(Browser* browser) {
   if (!browser || !caption_bubble_controllers_.count(browser))

@@ -277,6 +277,8 @@ class PLATFORM_EXPORT FontMatchingMetrics {
   const ukm::SourceId source_id_;
 
   TaskRunnerTimer<FontMatchingMetrics> identifiability_metrics_timer_;
+
+  const bool identifiability_study_enabled_;
 };
 
 }  // namespace blink

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -16,11 +17,13 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "printing/buildflags/buildflags.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
 namespace {
@@ -33,11 +36,17 @@ content::WebUIDataSource* CreateLocalDiscoveryWarningHTMLSource() {
   source->AddLocalizedString("devicesTitle",
                              IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE);
 
-  source->AddLocalizedString(
-      "cloudPrintDeprecationWarning",
-      webui::IsEnterpriseManaged()
-          ? IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING_ENTERPRISE
-          : IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING);
+  if (webui::IsEnterpriseManaged()) {
+    source->AddLocalizedString(
+        "cloudPrintDeprecationWarning",
+        IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING_ENTERPRISE);
+  } else {
+    source->AddString(
+        "cloudPrintDeprecationWarning",
+        l10n_util::GetStringFUTF16(
+            IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING,
+            base::ASCIIToUTF16(cloud_devices::kCloudPrintDeprecationHelpURL)));
+  }
 
   source->DisableDenyXFrameOptions();
 

@@ -175,8 +175,7 @@ class PlatformKeysTest : public PlatformKeysTestBase {
     std::string client_cert1_spki =
         chromeos::platform_keys::GetSubjectPublicKeyInfo(client_cert1_);
     permissions_for_ext->RegisterKeyForCorporateUsage(
-        client_cert1_spki,
-        {chromeos::platform_keys::KeyPermissions::KeyLocation::kUserSlot});
+        client_cert1_spki, {chromeos::platform_keys::TokenId::kUser});
     done_callback.Run();
   }
 

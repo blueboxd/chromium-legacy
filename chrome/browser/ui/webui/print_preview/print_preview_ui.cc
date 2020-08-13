@@ -220,6 +220,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"customMargins", IDS_PRINT_PREVIEW_CUSTOM_MARGINS},
     {"defaultMargins", IDS_PRINT_PREVIEW_DEFAULT_MARGINS},
     {"destinationLabel", IDS_PRINT_PREVIEW_DESTINATION_LABEL},
+    {"destinationNotSupportedWarning", IDS_DESTINATION_NOT_SUPPORTED_WARNING},
     {"destinationSearchTitle", IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE},
     {"dpiItemLabel", IDS_PRINT_PREVIEW_DPI_ITEM_LABEL},
     {"dpiLabel", IDS_PRINT_PREVIEW_DPI_LABEL},
@@ -373,6 +374,12 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
 #endif
 
   source->AddBoolean("isEnterpriseManaged", webui::IsEnterpriseManaged());
+
+  bool cloud_print_deprecation_warnings_suppressed =
+      profile->GetPrefs()->GetBoolean(
+          prefs::kCloudPrintDeprecationWarningsSuppressed);
+  source->AddBoolean("cloudPrintDeprecationWarningsSuppressed",
+                     cloud_print_deprecation_warnings_suppressed);
 
 #if defined(OS_CHROMEOS)
   source->AddBoolean(

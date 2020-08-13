@@ -20,11 +20,11 @@ cr.define('settings', function() {
   FakeUsersPrivate.prototype = {
     users: [],
 
-    addWhitelistedUser: function(user) {
+    addUser: function(user) {
       this.users.push(user);
     },
 
-    isWhitelistedUser: function(user, callback) {
+    isUserInList: function(user, callback) {
       callback(this.users.includes(user));
     },
   };

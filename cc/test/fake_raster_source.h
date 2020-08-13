@@ -26,7 +26,6 @@ class FakeRasterSource : public RasterSource {
       const gfx::Size& size);
   static scoped_refptr<FakeRasterSource> CreateFilledWithPaintWorklet(
       const gfx::Size& size);
-  static scoped_refptr<FakeRasterSource> CreateFilledLCD(const gfx::Size& size);
   static scoped_refptr<FakeRasterSource> CreateFilledSolidColor(
       const gfx::Size& size);
   static scoped_refptr<FakeRasterSource> CreatePartiallyFilled(

@@ -1458,17 +1458,6 @@ bool LayerTreeImpl::UpdateDrawProperties(
   return true;
 }
 
-void LayerTreeImpl::UpdateCanUseLCDText() {
-  // If this is not the sync tree, then it is not safe to update lcd text
-  // as it causes invalidations and the tiles may be in use.
-  DCHECK(IsSyncTree());
-  bool tile_priorities_updated = false;
-  for (auto* layer : picture_layers_)
-    tile_priorities_updated |= layer->UpdateCanUseLCDTextAfterCommit();
-  if (tile_priorities_updated)
-    DidModifyTilePriorities();
-}
-
 const RenderSurfaceList& LayerTreeImpl::GetRenderSurfaceList() const {
   // If this assert triggers, then the list is dirty.
   DCHECK(!needs_update_draw_properties_);

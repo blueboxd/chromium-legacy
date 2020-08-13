@@ -163,7 +163,13 @@ class AppRegistrar {
   // complete installation via the PendingAppManager.
   bool IsPlaceholderApp(const AppId& app_id) const;
 
+  // Computes and returns the DisplayMode, accounting for user preference
+  // to launch in a browser window and entries in the web app manifest.
   DisplayMode GetAppEffectiveDisplayMode(const AppId& app_id) const;
+
+  // Computes and returns the DisplayMode only accounting for
+  // entries in the web app manifest.
+  DisplayMode GetEffectiveDisplayModeFromManifest(const AppId& app_id) const;
 
   // TODO(crbug.com/897314): Finish experiment by legitimising it as a
   // DisplayMode or removing entirely.

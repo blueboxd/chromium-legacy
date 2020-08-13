@@ -9352,6 +9352,22 @@
       The user selected channel will be overridden by the ChromeOsReleaseChannel policy, but if the policy channel is more stable than the one that was installed on the device, then the channel will only switch after the version of the more stable channel reaches a higher version number than the one installed on the device.''',
     },
     {
+      'name': 'DeviceReleaseLtsTag',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome_os:86-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 'lts',
+      'id': 771,
+      'caption': '''Allow device to receive LTS updates''',
+      'tags': [],
+      'desc': '''If this policy is set to <ph name="DEVICE_LTS_TAG_VALUE">"lts"</ph> it allows the device to receive LTS (long term support) updates.''',
+    },
+    {
       'name': 'DeviceChannelDowngradeBehavior',
       'owners': ['mpolzer@google.com'],
       'type': 'int-enum',
@@ -23337,6 +23353,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'HeartbeatFrequency': 'device_heartbeat_settings.heartbeat_frequency',
     'ChromeOsReleaseChannel': 'release_channel.release_channel',
     'ChromeOsReleaseChannelDelegated': 'release_channel.release_channel_delegated',
+    'DeviceReleaseLtsTag': 'release_channel.release_lts_tag',
     'DeviceChannelDowngradeBehavior': 'auto_update_settings.channel_downgrade_behavior',
     'DeviceAutoUpdateDisabled': 'auto_update_settings.update_disabled',
     'DeviceTargetVersionPrefix': 'auto_update_settings.target_version_prefix',
@@ -23939,6 +23956,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 770,
+  'highest_id_currently_used': 771,
   'highest_atomic_group_id_currently_used': 40
 }

@@ -65,6 +65,11 @@
           type="chrome_html"
           compress="false"/>
       <structure
+          name="IDR_PROFILE_PICKER_POLICY_HELPER_JS"
+          file="policy_helper.js"
+          type="chrome_html"
+          compress="false"/>
+      <structure
           name="IDR_PROFILE_PICKER_ICONS_JS"
           file="icons.js"
           type="chrome_html"

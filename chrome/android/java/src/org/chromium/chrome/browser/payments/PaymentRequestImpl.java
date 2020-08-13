@@ -366,23 +366,20 @@ public class PaymentRequestImpl
         mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this,
                 /*params=*/this, mWebContents, mIsOffTheRecord, mJourneyLogger);
         mComponentPaymentRequestImpl = componentPaymentRequestImpl;
+        mComponentPaymentRequestImpl.registerPaymentRequestLifecycleObserver(mPaymentUIsManager);
     }
 
     // Implement BrowserPaymentRequest:
-    /**
-     * Called by the merchant website to initialize the payment request data.
-     */
     @Override
-    public void init(PaymentMethodData[] methodData, PaymentDetails details,
+    public boolean initAndValidate(PaymentMethodData[] methodData, PaymentDetails details,
             @Nullable PaymentOptions options, boolean googlePayBridgeEligible) {
         assert mComponentPaymentRequestImpl != null;
         mMethodData = new HashMap<>();
-        mComponentPaymentRequestImpl.registerPaymentRequestLifecycleObserver(mPaymentUIsManager);
 
         if (!OriginSecurityChecker.isOriginSecure(mWebContents.getLastCommittedUrl())) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.NOT_IN_A_SECURE_ORIGIN);
-            return;
+            return false;
         }
 
         mPaymentOptions = options;
@@ -403,7 +400,7 @@ public class PaymentRequestImpl
             // "NotSupportedError".
             mQueryForQuota = new HashMap<>();
             onDoneCreatingPaymentApps(/*factory=*/null);
-            return;
+            return true;
         }
 
         mJourneyLogger.setRequestedInformation(
@@ -419,7 +416,7 @@ public class PaymentRequestImpl
             // "NotSupportedError".
             mQueryForQuota = new HashMap<>();
             onDoneCreatingPaymentApps(/*factory=*/null);
-            return;
+            return true;
         }
 
         boolean googlePayBridgeActivated = googlePayBridgeEligible
@@ -430,7 +427,7 @@ public class PaymentRequestImpl
         if (mMethodData == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA);
-            return;
+            return false;
         }
 
         if (googlePayBridgeActivated) {
@@ -448,14 +445,14 @@ public class PaymentRequestImpl
             mQueryForQuota.put("basic-card-payment-options", paymentMethodData);
         }
 
-        if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
+        if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return true;
         mSpec = new PaymentRequestSpec(mPaymentOptions, details, mMethodData.values(),
                 LocaleUtils.getDefaultLocaleString());
 
         if (mRawTotal == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.TOTAL_REQUIRED);
-            return;
+            return false;
         }
         mId = details.id;
 
@@ -499,6 +496,7 @@ public class PaymentRequestImpl
         mJourneyLogger.setRequestedPaymentMethodTypes(
                 /*requestedBasicCard=*/mPaymentUIsManager.merchantSupportsAutofillCards(),
                 requestedMethodGoogle, requestedMethodOther);
+        return true;
     }
 
     /**
@@ -821,7 +819,8 @@ public class PaymentRequestImpl
             PaymentMethodData[] methodData, boolean googlePayBridgeEligible,
             CardEditor paymentMethodsCollector) {
         // Payment methodData are required.
-        if (methodData == null || methodData.length == 0) return null;
+        assert methodData != null;
+        if (methodData.length == 0) return null;
         Map<String, PaymentMethodData> result = new ArrayMap<>();
         for (int i = 0; i < methodData.length; i++) {
             String method = methodData[i].supportedMethod;
@@ -1702,7 +1701,7 @@ public class PaymentRequestImpl
         mHasClosed = true;
 
         assert mComponentPaymentRequestImpl != null;
-        mComponentPaymentRequestImpl.teardown();
+        mComponentPaymentRequestImpl.close();
         mComponentPaymentRequestImpl = null;
 
         closeUIAndDestroyNativeObjects();

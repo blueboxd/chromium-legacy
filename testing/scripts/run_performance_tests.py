@@ -246,9 +246,12 @@ class GtestCommandGenerator(object):
 
 
 def write_simple_test_results(return_code, output_filepath, benchmark_name):
-  # TODO(crbug.com/920002): Fix to output
+  # TODO(crbug.com/1115658): Fix to output
   # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/json_test_results_format.md
   # for each test rather than this summary.
+  # Append the shard index to the end of the name so that the merge script
+  # doesn't blow up trying to merge unmergeable results.
+  benchmark_name += '_shard_%s' % os.environ.get('GTEST_SHARD_INDEX', '0')
   output_json = {
       'tests': {
           benchmark_name: {

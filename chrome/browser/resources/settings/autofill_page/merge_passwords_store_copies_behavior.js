@@ -77,7 +77,16 @@ const MergePasswordsStoreCopiesBehaviorImpl = {
     const frontendIdToMergedEntry = new Map();
     for (const entry of passwordList) {
       if (frontendIdToMergedEntry.has(entry.frontendId)) {
-        frontendIdToMergedEntry.get(entry.frontendId).merge(entry);
+        const mergeSucceded =
+            frontendIdToMergedEntry.get(entry.frontendId).mergeInPlace(entry);
+        if (mergeSucceded) {
+          // The merge is in-place, so nothing to be done.
+        } else {
+          // The merge can fail in weird cases despite |frontendId| matching.
+          // If so, just create another entry in the UI for |entry|. See also
+          // crbug.com/1114697.
+          multiStoreEntries.push(new MultiStorePasswordUiEntry(entry));
+        }
       } else {
         const multiStoreEntry = new MultiStorePasswordUiEntry(entry);
         frontendIdToMergedEntry.set(entry.frontendId, multiStoreEntry);

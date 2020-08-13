@@ -9,7 +9,7 @@
 @protocol PasswordDetailsHandler
 
 // Called when the view controller was dismissed.
-- (void)passwordDetailsViewControllerDidDisappear;
+- (void)passwordDetailsTableViewControllerDidDisappear;
 
 // Shows a dialog offering the user to set a passcode in order to see the
 // password.

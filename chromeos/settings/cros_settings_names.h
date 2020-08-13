@@ -77,6 +77,7 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kStatsReportingPref[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReleaseChannel[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReleaseChannelDelegated[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReleaseLtsTag[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceChannelDowngradeBehavior[];
 

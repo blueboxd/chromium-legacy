@@ -9,15 +9,16 @@
 
 namespace cc {
 
-SwapPromiseMonitor::SwapPromiseMonitor(SwapPromiseManager* swap_promise_manager,
-                                       LayerTreeHostImpl* host_impl)
-    : swap_promise_manager_(swap_promise_manager), host_impl_(host_impl) {
-  DCHECK((swap_promise_manager && !host_impl) ||
-         (!swap_promise_manager && host_impl));
-  if (swap_promise_manager)
-    swap_promise_manager->InsertSwapPromiseMonitor(this);
-  if (host_impl_)
-    host_impl_->InsertSwapPromiseMonitor(this);
+SwapPromiseMonitor::SwapPromiseMonitor(SwapPromiseManager* swap_promise_manager)
+    : swap_promise_manager_(swap_promise_manager), host_impl_(nullptr) {
+  DCHECK(swap_promise_manager);
+  swap_promise_manager_->InsertSwapPromiseMonitor(this);
+}
+
+SwapPromiseMonitor::SwapPromiseMonitor(LayerTreeHostImpl* host_impl)
+    : swap_promise_manager_(nullptr), host_impl_(host_impl) {
+  DCHECK(host_impl);
+  host_impl_->InsertSwapPromiseMonitor(this);
 }
 
 SwapPromiseMonitor::~SwapPromiseMonitor() {

@@ -4,9 +4,13 @@
 
 package org.chromium.components.payments;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
+import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.payments.mojom.PaymentValidationErrors;
 
 /**
@@ -14,17 +18,36 @@ import org.chromium.payments.mojom.PaymentValidationErrors;
  * Android Chrome browser or the WebLayer "browser".
  */
 public interface BrowserPaymentRequest {
+    /** The factory that creates an instance of {@link BrowserPaymentRequest}. */
+    interface Factory {
+        /**
+         * Create an instance of {@link BrowserPaymentRequest}.
+         * @param renderFrameHost The RenderFrameHost of the merchant page.
+         * @param componentPaymentRequestImpl The ComponentPaymentRequestImpl to work together with
+         *         the BrowserPaymentRequest instance.
+         * @param isOffTheRecord Whether the merchant page is in an OffTheRecord (e.g., incognito,
+         *         guest mode) Tab.
+         * @param journeyLogger The logger that records the user journey of PaymentRequest.
+         * @return An instance of BrowserPaymentRequest, cannot be null.
+         */
+        BrowserPaymentRequest createBrowserPaymentRequest(RenderFrameHost renderFrameHost,
+                ComponentPaymentRequestImpl componentPaymentRequestImpl, boolean isOffTheRecord,
+                JourneyLogger journeyLogger);
+    }
+
     /**
-     * The browser part of the {@link PaymentRequest#init} implementation.
+     * Initialize the browser part of the {@link PaymentRequest} implementation and validate the raw
+     * payment request data coming from the untrusted mojo.
      * @param methodData The supported methods specified by the merchant.
      * @param details The payment details specified by the merchant.
-     * @param options The payment options specified by the merchant.
+     * @param options The payment options specified by the merchant, can be null.
      * @param googlePayBridgeEligible True when the renderer process deems the current request
      *         eligible for the skip-to-GPay experimental flow. It is ultimately up to the browser
      *         process to determine whether to trigger it
+     * @return whether the initialization is successful.
      */
-    void init(PaymentMethodData[] methodData, PaymentDetails details, PaymentOptions options,
-            boolean googlePayBridgeEligible);
+    boolean initAndValidate(PaymentMethodData[] methodData, PaymentDetails details,
+            @Nullable PaymentOptions options, boolean googlePayBridgeEligible);
 
     /**
      * The browser part of the {@link PaymentRequest#show} implementation.

@@ -378,7 +378,7 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
       unpremultiply_and_dither_low_bit_depth_tiles_(
           unpremultiply_and_dither_low_bit_depth_tiles),
       enable_oop_rasterization_(enable_oop_rasterization),
-      random_generator_((uint32_t)base::RandUint64()),
+      random_generator_(static_cast<uint32_t>(base::RandUint64())),
       bernoulli_distribution_(raster_metric_probability) {
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);

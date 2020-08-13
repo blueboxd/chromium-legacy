@@ -19,7 +19,7 @@ using infobars::InfoBar;
 
 namespace {
 // The name of the icon image for the save passwords banner.
-NSString* const kIconImageName = @"infobar_passwords_icon";
+NSString* const kIconImageName = @"password_key";
 }
 
 OVERLAY_USER_DATA_SETUP_IMPL(SavePasswordInfobarBannerOverlayRequestConfig);

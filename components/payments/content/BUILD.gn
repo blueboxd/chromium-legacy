@@ -136,6 +136,8 @@ static_library("utils") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "android_app_communication_test_support.h",
+    "android_app_communication_unittest.cc",
     "payment_method_manifest_table_unittest.cc",
     "service_worker_payment_app_finder_unittest.cc",
     "test_content_payment_request_delegate.cc",
@@ -164,6 +166,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser:test_support",
     "//components/payments/core",
     "//components/payments/core:error_strings",
+    "//components/payments/core:method_strings",
     "//components/payments/core:test_support",
     "//components/strings:components_strings_grit",
     "//components/webdata/common",
@@ -177,4 +180,18 @@ source_set("unit_tests") {
     "//third_party/icu",
     "//third_party/libaddressinput:test_support",
   ]
+
+  if (is_chromeos) {
+    sources += [ "android_app_communication_test_support_chrome_os.cc" ]
+
+    deps += [
+      "//components/arc",
+      "//components/arc:arc_test_support",
+      "//components/arc/mojom",
+    ]
+  }
+
+  if (!is_chromeos) {
+    sources += [ "android_app_communication_test_support_stub.cc" ]
+  }
 }

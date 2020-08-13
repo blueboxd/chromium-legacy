@@ -94,7 +94,8 @@ class CC_EXPORT PictureLayerTiling {
                      scoped_refptr<RasterSource> raster_source,
                      PictureLayerTilingClient* client,
                      float min_preraster_distance,
-                     float max_preraster_distance);
+                     float max_preraster_distance,
+                     bool can_use_lcd_text);
   PictureLayerTiling(const PictureLayerTiling&) = delete;
   ~PictureLayerTiling();
 
@@ -163,6 +164,8 @@ class CC_EXPORT PictureLayerTiling {
   void set_all_tiles_done(bool all_tiles_done) {
     all_tiles_done_ = all_tiles_done;
   }
+
+  bool can_use_lcd_text() const { return can_use_lcd_text_; }
 
   WhichTree tree() const { return tree_; }
 
@@ -398,6 +401,7 @@ class CC_EXPORT PictureLayerTiling {
   bool has_soon_border_rect_tiles_ = false;
   bool has_eventually_rect_tiles_ = false;
   bool all_tiles_done_ = true;
+  bool can_use_lcd_text_;
 };
 
 }  // namespace cc

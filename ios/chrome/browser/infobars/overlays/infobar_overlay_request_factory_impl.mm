@@ -32,6 +32,10 @@ InfobarOverlayRequestFactoryImpl::InfobarOverlayRequestFactoryImpl() {
                  CreateFactory<SavePasswordInfobarBannerOverlayRequestConfig>(),
                  /*detail_sheet_factory=*/nullptr,
                  CreateFactory<PasswordInfobarModalOverlayRequestConfig>());
+  SetUpFactories(InfobarType::kInfobarTypePasswordUpdate,
+                 CreateFactory<SavePasswordInfobarBannerOverlayRequestConfig>(),
+                 /*detail_sheet_factory=*/nullptr,
+                 CreateFactory<PasswordInfobarModalOverlayRequestConfig>());
   SetUpFactories(InfobarType::kInfobarTypeTranslate,
                  CreateFactory<TranslateBannerRequestConfig>(),
                  /*detail_sheet_factory=*/nullptr,

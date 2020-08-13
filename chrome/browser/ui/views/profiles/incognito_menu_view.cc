@@ -26,6 +26,12 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/style/typography.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
+#endif
+
 IncognitoMenuView::IncognitoMenuView(views::Button* anchor_button,
                                      Browser* browser)
     : ProfileMenuViewBase(anchor_button, browser) {
@@ -57,6 +63,19 @@ void IncognitoMenuView::BuildMenu() {
                                              incognito_window_count)
           : base::string16());
 
+#if defined(OS_WIN)
+  if (ProfileShortcutManager::IsFeatureEnabled() &&
+      base::FeatureList::IsEnabled(
+          features::kEnableIncognitoShortcutOnDesktop)) {
+    // TODO(crbug.com/1113162): Add desktop shortcut icon to the menu entry.
+    AddFeatureButton(
+        l10n_util::GetStringUTF16(
+            IDS_INCOGNITO_PROFILE_MENU_CREATE_SHORTCUT_BUTTON),
+        base::BindRepeating(&IncognitoMenuView::OnCreateShortcutButtonClicked,
+                            base::Unretained(this)));
+  }
+#endif
+
   AddFeatureButton(
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON),
       base::BindRepeating(&IncognitoMenuView::OnExitButtonClicked,
@@ -70,6 +89,19 @@ base::string16 IncognitoMenuView::GetAccessibleWindowTitle() const {
       BrowserList::GetOffTheRecordBrowsersActiveForProfile(
           browser()->profile()));
 }
+
+#if defined(OS_WIN)
+void IncognitoMenuView::OnCreateShortcutButtonClicked() {
+  RecordClick(ActionableItem::kCreateIncognitoShortcutButton);
+  ProfileShortcutManager* shortcut_manager =
+      g_browser_process->profile_manager()->profile_shortcut_manager();
+
+  DCHECK(shortcut_manager);
+  if (shortcut_manager)
+    shortcut_manager->CreateIncognitoProfileShortcut(
+        browser()->profile()->GetPath());
+}
+#endif
 
 void IncognitoMenuView::OnExitButtonClicked() {
   RecordClick(ActionableItem::kExitProfileButton);

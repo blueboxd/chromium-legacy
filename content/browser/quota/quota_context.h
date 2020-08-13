@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "content/browser/quota/quota_change_dispatcher.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -85,6 +86,9 @@ class QuotaContext : public base::RefCountedDeleteOnSequence<QuotaContext> {
   //
   // This is not const because of OverrideQuotaManagerForTesting().
   scoped_refptr<storage::QuotaManager> quota_manager_;
+
+  // Owning reference for the QuotaChangeDispatcher.
+  scoped_refptr<QuotaChangeDispatcher> quota_change_dispatcher_;
 
   // Owning reference for the QuotaPermissionContext.
   const scoped_refptr<QuotaPermissionContext> permission_context_;

@@ -1191,6 +1191,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Look up a portal by its token (as received from the renderer process).
   Portal* FindPortalByToken(const blink::PortalToken& portal_token);
 
+  // Return portals owned by |this|.
+  std::vector<Portal*> GetPortals() const;
+
   // Called when a Portal needs to be destroyed.
   void DestroyPortal(Portal* portal);
 

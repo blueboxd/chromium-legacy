@@ -77,6 +77,10 @@ class CaptionController : public BrowserListObserver, public KeyedService {
       content::WebContents* web_contents,
       const chrome::mojom::TranscriptionResultPtr& transcription_result);
 
+  // Alerts the CaptionBubbleController that belongs to the appropriate browser
+  // that there is an error in the speech recognition service.
+  void OnError(content::WebContents* web_contents);
+
   CaptionBubbleController* GetCaptionBubbleControllerForBrowser(
       Browser* browser);
 

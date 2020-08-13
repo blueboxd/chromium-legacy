@@ -17,8 +17,12 @@ export class SigninReauthBrowserProxy {
 
   /**
    * Called when the user confirms the signin reauth dialog.
+   * @param {!Array<string>} description Strings that the user was presented
+   *     with in the UI.
+   * @param {string} confirmation Text of the element that the user
+   *     clicked on.
    */
-  confirm() {}
+  confirm(description, confirmation) {}
 
   /**
    * Called when the user cancels the signin reauth.
@@ -34,8 +38,8 @@ export class SigninReauthBrowserProxyImpl {
   }
 
   /** @override */
-  confirm() {
-    chrome.send('confirm');
+  confirm(description, confirmation) {
+    chrome.send('confirm', [description, confirmation]);
   }
 
   /** @override */

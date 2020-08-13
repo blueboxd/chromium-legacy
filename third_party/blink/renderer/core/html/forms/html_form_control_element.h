@@ -25,6 +25,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_CONTROL_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_CONTROL_ELEMENT_H_
 
+#include "third_party/blink/public/common/metrics/form_element_pii_type.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_autofill_state.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -86,6 +87,14 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   bool IsSuccessfulSubmitButton() const;
   virtual bool IsActivatedSubmit() const { return false; }
   virtual void SetActivatedSubmit(bool) {}
+
+  // Getter and setter for the PII type of the element derived from the autofill
+  // field semantic prediction.
+  virtual FormElementPiiType GetFormElementPiiType() const {
+    return FormElementPiiType::kUnknown;
+  }
+  virtual void SetFormElementPiiType(FormElementPiiType form_element_pii_type) {
+  }
 
   bool willValidate() const override;
 

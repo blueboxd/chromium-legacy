@@ -156,21 +156,24 @@ void XRFrameProvider::OnSessionEnded(XRSession* session) {
         session->GetExecutionContext(),
         session->GetExecutionContext()->GetTaskRunner(
             TaskType::kMiscPlatformAPI));
-
-    // When we no longer have an active immersive session schedule all the
-    // outstanding frames that were requested while the immersive session was
-    // active.
-    if (requesting_sessions_.size() > 0) {
-      for (auto& session : requesting_sessions_) {
-        RequestNonImmersiveFrameData(session.key.Get());
-      }
-
-      ScheduleNonImmersiveFrame(nullptr);
-    }
   } else {
     non_immersive_data_providers_.erase(session);
     requesting_sessions_.erase(session);
   }
+}
+
+void XRFrameProvider::RestartNonImmersiveFrameLoop() {
+  // When we no longer have an active immersive session schedule all the
+  // outstanding frames that were requested while the immersive session was
+  // active.
+  if (immersive_session_ || requesting_sessions_.size() == 0)
+    return;
+
+  for (auto& session : requesting_sessions_) {
+    RequestNonImmersiveFrameData(session.key.Get());
+  }
+
+  ScheduleNonImmersiveFrame(nullptr);
 }
 
 // Schedule a session to be notified when the next XR frame is available.

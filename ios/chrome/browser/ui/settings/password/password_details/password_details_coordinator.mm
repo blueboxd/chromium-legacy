@@ -17,7 +17,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_handler.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
-#import "ios/chrome/browser/ui/settings/password/password_details/password_details_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -35,7 +35,7 @@
 }
 
 // Main view controller for this coordinator.
-@property(nonatomic, strong) PasswordDetailsViewController* viewController;
+@property(nonatomic, strong) PasswordDetailsTableViewController* viewController;
 
 // Main mediator for this coordinator.
 @property(nonatomic, strong) PasswordDetailsMediator* mediator;
@@ -83,7 +83,7 @@
                                : UITableViewStyleGrouped;
 
   self.viewController =
-      [[PasswordDetailsViewController alloc] initWithStyle:style];
+      [[PasswordDetailsTableViewController alloc] initWithStyle:style];
 
   self.mediator = [[PasswordDetailsMediator alloc] initWithPassword:_password
                                                passwordCheckManager:_manager];
@@ -105,7 +105,7 @@
 
 #pragma mark - PasswordDetailsHandler
 
-- (void)passwordDetailsViewControllerDidDisappear {
+- (void)passwordDetailsTableViewControllerDidDisappear {
   [self.delegate passwordDetailsCoordinatorDidRemove:self];
 }
 

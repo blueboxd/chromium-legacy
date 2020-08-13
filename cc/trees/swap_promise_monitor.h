@@ -30,11 +30,10 @@ class LayerTreeHostImpl;
 class CC_EXPORT SwapPromiseMonitor {
  public:
   // If the monitor lives on the main thread, pass in |swap_promise_manager|
-  // tied to the LayerTreeHost and set |host_impl| to nullptr. If the monitor
-  // lives on the impl thread, pass in |host_impl| and set |layer_tree_host| to
-  // nullptr.
-  SwapPromiseMonitor(SwapPromiseManager* swap_promise_managaer,
-                     LayerTreeHostImpl* host_impl);
+  // tied to the LayerTreeHost. If the monitor lives on the impl thread, pass in
+  // |host_impl|.
+  explicit SwapPromiseMonitor(SwapPromiseManager* swap_promise_managaer);
+  explicit SwapPromiseMonitor(LayerTreeHostImpl* host_impl);
   virtual ~SwapPromiseMonitor();
 
   virtual void OnSetNeedsCommitOnMain() = 0;

@@ -18,13 +18,17 @@ SafetyCheck::~SafetyCheck() = default;
 void SafetyCheck::CheckSafeBrowsing(PrefService* pref_service) {
   const PrefService::Preference* enabled_pref =
       pref_service->FindPreference(prefs::kSafeBrowsingEnabled);
-  bool enabled = pref_service->GetBoolean(prefs::kSafeBrowsingEnabled);
+  bool is_sb_enabled = pref_service->GetBoolean(prefs::kSafeBrowsingEnabled);
+  bool is_sb_managed = enabled_pref->IsManaged();
+
   SafeBrowsingStatus status;
-  if (enabled && pref_service->GetBoolean(prefs::kSafeBrowsingEnhanced)) {
+  if (is_sb_enabled && pref_service->GetBoolean(prefs::kSafeBrowsingEnhanced)) {
     status = SafeBrowsingStatus::kEnabledEnhanced;
-  } else if (enabled) {
+  } else if (is_sb_enabled && is_sb_managed) {
     status = SafeBrowsingStatus::kEnabledStandard;
-  } else if (enabled_pref->IsManaged()) {
+  } else if (is_sb_enabled && !is_sb_managed) {
+    status = SafeBrowsingStatus::kEnabledStandardAvailableEnhanced;
+  } else if (is_sb_managed) {
     status = SafeBrowsingStatus::kDisabledByAdmin;
   } else if (enabled_pref->IsExtensionControlled()) {
     status = SafeBrowsingStatus::kDisabledByExtension;

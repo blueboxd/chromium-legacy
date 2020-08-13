@@ -29,13 +29,11 @@
 
 import copy
 import logging
-import itertools
 import re
 
 from collections import defaultdict
 from collections import OrderedDict
 
-from blinkpy.common import path_finder
 from blinkpy.common.memoized import memoized
 from blinkpy.web_tests.models import typ_types
 
@@ -46,8 +44,7 @@ _log = logging.getLogger(__name__)
 SPECIAL_PREFIXES = ('# tags:', '# results:', '# conflicts_allowed:')
 
 _PLATFORM_TOKENS_LIST = [
-    'Android', 'Fuchsia', 'IOS', 'IOS12.2', 'IOS13.0', 'Linux', 'Mac',
-    'Mac10.10', 'Mac10.11', 'Retina', 'Mac10.12', 'Mac10.13', 'Mac10.14',
+    'Android', 'Fuchsia', 'Linux', 'Mac', 'Mac10.12', 'Mac10.13', 'Mac10.14',
     'Win', 'Win7', 'Win10'
 ]
 

@@ -73,8 +73,6 @@ using save_card_infobar_overlays::SaveCardMainAction;
   if (!self.consumer || !config)
     return;
 
-  [self.consumer setBannerAccessibilityLabel:base::SysUTF16ToNSString(
-                                                 config->button_label_text())];
   [self.consumer
       setButtonText:base::SysUTF16ToNSString(self.config->button_label_text())];
   [self.consumer setIconImage:[UIImage imageNamed:config->icon_image_name()]];

@@ -4,6 +4,8 @@
 
 static_library("core") {
   sources = [
+    "android_app_description.cc",
+    "android_app_description.h",
     "autofill_card_validation.cc",
     "autofill_card_validation.h",
     "basic_card_response.cc",

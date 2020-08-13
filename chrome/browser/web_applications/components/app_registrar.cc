@@ -275,6 +275,19 @@ DisplayMode AppRegistrar::GetAppEffectiveDisplayMode(
                                      user_display_mode);
 }
 
+DisplayMode AppRegistrar::GetEffectiveDisplayModeFromManifest(
+    const AppId& app_id) const {
+  if (base::FeatureList::IsEnabled(features::kWebAppManifestDisplayOverride)) {
+    std::vector<DisplayMode> display_mode_overrides =
+        GetAppDisplayModeOverride(app_id);
+
+    if (!display_mode_overrides.empty())
+      return display_mode_overrides[0];
+  }
+
+  return GetAppDisplayMode(app_id);
+}
+
 bool AppRegistrar::IsInExperimentalTabbedWindowMode(const AppId& app_id) const {
   return base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
          GetBoolWebAppPref(profile()->GetPrefs(), app_id,

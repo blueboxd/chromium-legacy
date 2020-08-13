@@ -2,22 +2,78 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
+#include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/threading/platform_thread.h"
+#include "components/prerender/browser/prerender_histograms.h"
 #include "components/prerender/browser/prerender_manager.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/url_loader_monitor.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "weblayer/browser/no_state_prefetch/prerender_link_manager_factory.h"
 #include "weblayer/browser/no_state_prefetch/prerender_manager_factory.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test.h"
+#include "weblayer/test/weblayer_browser_test_utils.h"
 
 namespace weblayer {
 
 class NoStatePrefetchBrowserTest : public WebLayerBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    prerendered_page_fetched_ = std::make_unique<base::RunLoop>();
+    script_resource_fetched_ = std::make_unique<base::RunLoop>();
+
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    https_server_->RegisterRequestHandler(base::BindRepeating(
+        &NoStatePrefetchBrowserTest::HandleRequest, base::Unretained(this)));
+    https_server_->AddDefaultHandlers(
+        base::FilePath(FILE_PATH_LITERAL("weblayer/test/data")));
+    ASSERT_TRUE(https_server_->Start());
+  }
+
+  // Helper methods.
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    if (request.GetURL().path().find("prerendered_page") != std::string::npos) {
+      if (prerendered_page_fetched_)
+        prerendered_page_fetched_->Quit();
+    }
+    if (request.GetURL().path().find("prefetch.js") != std::string::npos) {
+      script_fetched_ = true;
+      auto iter = request.headers.find("Purpose");
+      purpose_header_value_ = iter->second;
+      if (script_resource_fetched_)
+        script_resource_fetched_->Quit();
+    }
+    if (request.GetURL().path().find("prefetch_meta.js") != std::string::npos) {
+      script_executed_ = true;
+    }
+
+    // The default handlers will take care of this request.
+    return nullptr;
+  }
+
  protected:
   content::BrowserContext* GetBrowserContext() {
     Tab* tab = shell()->tab();
     TabImpl* tab_impl = static_cast<TabImpl*>(tab);
     return tab_impl->web_contents()->GetBrowserContext();
   }
+
+  std::unique_ptr<base::RunLoop> prerendered_page_fetched_;
+  std::unique_ptr<base::RunLoop> script_resource_fetched_;
+  bool script_fetched_ = false;
+  bool script_executed_ = false;
+  std::string purpose_header_value_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, CreatePrerenderManager) {
@@ -30,6 +86,44 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, CreatePrerenderLinkManager) {
   auto* prerender_link_manager =
       PrerenderLinkManagerFactory::GetForBrowserContext(GetBrowserContext());
   EXPECT_TRUE(prerender_link_manager);
+}
+
+// Test that adding a link-rel prerender tag causes a fetch.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       LinkRelPrerenderPageFetched) {
+  NavigateAndWaitForCompletion(GURL(https_server_->GetURL("/parent_page.html")),
+                               shell());
+  prerendered_page_fetched_->Run();
+}
+
+// Test that only render blocking resources are loaded during NoStatePrefetch.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       NSPLoadsRenderBlockingResource) {
+  NavigateAndWaitForCompletion(GURL(https_server_->GetURL("/parent_page.html")),
+                               shell());
+  script_resource_fetched_->Run();
+  EXPECT_EQ("prefetch", purpose_header_value_);
+  EXPECT_FALSE(script_executed_);
+}
+
+// Test that navigating to a no-state-prefetched page executes JS and reuses
+// prerendered resources.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, NavigateToPrerenderedPage) {
+  NavigateAndWaitForCompletion(GURL(https_server_->GetURL("/parent_page.html")),
+                               shell());
+  script_resource_fetched_->Run();
+
+  // Navigate to the prerendered page and wait for its title to change.
+  auto expected_title = base::ASCIIToUTF16("Prefetch Page");
+  content::TitleWatcher title_watcher(
+      static_cast<TabImpl*>(shell()->tab())->web_contents(), expected_title);
+  script_fetched_ = false;
+  NavigateAndWaitForCompletion(
+      GURL(https_server_->GetURL("/prerendered_page.html")), shell());
+  ASSERT_TRUE(expected_title == title_watcher.WaitAndGetTitle());
+
+  EXPECT_FALSE(script_fetched_);
+  EXPECT_TRUE(script_executed_);
 }
 
 }  // namespace weblayer

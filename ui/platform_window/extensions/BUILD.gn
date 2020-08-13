@@ -21,6 +21,8 @@ source_set("extensions") {
 
   if (is_linux || is_chromeos) {
     sources += [
+      "wayland_extension.cc",
+      "wayland_extension.h",
       "x11_extension.cc",
       "x11_extension.h",
       "x11_extension_delegate.h",

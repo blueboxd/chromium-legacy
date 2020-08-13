@@ -6,6 +6,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="HardcodedText">
+    <item android:id="@+id/toggle_top_view_id"
+        android:checkable="true"
+        android:title="Top view" />
     <item android:id="@+id/toggle_bottom_view_id"
           android:checkable="true"
         android:title="Bottom view" />
@@ -15,4 +18,10 @@
     <item android:id="@+id/toggle_top_view_pinned_to_top_id"
         android:checkable="true"
         android:title="Pin top view to content top" />
+    <item android:id="@+id/toggle_alt_top_view_id"
+        android:checkable="true"
+        android:title="Use alternative top view" />
+    <item android:id="@+id/toggle_controls_animations_id"
+        android:checkable="true"
+        android:title="Animate browser controls changes" />
 </menu>

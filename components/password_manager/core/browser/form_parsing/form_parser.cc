@@ -915,6 +915,7 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   result->scheme = PasswordForm::Scheme::kHtml;
   result->blocked_by_user = false;
   result->type = PasswordForm::Type::kManual;
+  result->server_side_classification_successful = form_predictions.has_value();
   result->username_may_use_prefilled_placeholder =
       GetMayUsePrefilledPlaceholder(form_predictions, significant_fields);
   result->is_new_password_reliable =

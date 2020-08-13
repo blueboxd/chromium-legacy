@@ -596,15 +596,6 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   // below.
   bool update_image_animation_controller = false;
   sync_tree()->UpdateDrawProperties(update_image_animation_controller);
-  // Because invalidations may be coming from the main thread, it's
-  // safe to do an update for lcd text at this point and see if lcd text needs
-  // to be disabled on any layers.
-  // It'd be ideal if this could be done earlier, but when the raster source
-  // is updated from the main thread during push properties, update draw
-  // properties has not occurred yet and so it's not clear whether or not the
-  // layer can or cannot use lcd text.  So, this is the cleanup pass to
-  // determine if lcd state needs to switch due to draw properties.
-  sync_tree()->UpdateCanUseLCDText();
 
   // Defer invalidating images until UpdateDrawProperties is performed since
   // that updates whether an image should be animated based on its visibility
@@ -952,8 +943,7 @@ bool LayerTreeHostImpl::HasBlockingWheelEventHandlerAt(
 std::unique_ptr<SwapPromiseMonitor>
 LayerTreeHostImpl::CreateLatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency) {
-  return base::WrapUnique(
-      new LatencyInfoSwapPromiseMonitor(latency, nullptr, this));
+  return base::WrapUnique(new LatencyInfoSwapPromiseMonitor(latency, this));
 }
 
 std::unique_ptr<EventsMetricsManager::ScopedMonitor>

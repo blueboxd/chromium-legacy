@@ -13,11 +13,19 @@
 #include "components/grit/components_scaled_resources.h"
 #include "components/js_injection/renderer/js_communication.h"
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
+#include "components/prerender/common/prerender_types.mojom.h"
+#include "components/prerender/common/prerender_url_loader_throttle.h"
+#include "components/prerender/renderer/prerender_helper.h"
+#include "components/prerender/renderer/prerender_render_frame_observer.h"
+#include "components/prerender/renderer/prerenderer_client.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "weblayer/common/features.h"
 #include "weblayer/renderer/error_page_helper.h"
+#include "weblayer/renderer/url_loader_throttle_provider.h"
 #include "weblayer/renderer/weblayer_render_frame_observer.h"
 #include "weblayer/renderer/weblayer_render_thread_observer.h"
 
@@ -29,7 +37,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
-#include "weblayer/renderer/url_loader_throttle_provider.h"
 #endif
 
 namespace weblayer {
@@ -82,6 +89,7 @@ void ContentRendererClientImpl::RenderThreadStarted() {
 void ContentRendererClientImpl::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   auto* render_frame_observer = new WebLayerRenderFrameObserver(render_frame);
+  new prerender::PrerenderRenderFrameObserver(render_frame);
 
   ErrorPageHelper::Create(render_frame);
 
@@ -106,6 +114,23 @@ void ContentRendererClientImpl::RenderFrameCreated(
                          local_interface_provider_.get());
 #endif
   new js_injection::JsCommunication(render_frame);
+
+  if (!render_frame->IsMainFrame()) {
+    auto* prerender_helper = prerender::PrerenderHelper::Get(
+        render_frame->GetRenderView()->GetMainRenderFrame());
+    if (prerender_helper) {
+      // Avoid any race conditions from having the browser tell subframes that
+      // they're prerendering.
+      new prerender::PrerenderHelper(render_frame,
+                                     prerender_helper->prerender_mode(),
+                                     prerender_helper->histogram_prefix());
+    }
+  }
+}
+
+void ContentRendererClientImpl::RenderViewCreated(
+    content::RenderView* render_view) {
+  new prerender::PrerendererClient(render_view);
 }
 
 SkBitmap* ContentRendererClientImpl::GetSadPluginBitmap() {
@@ -143,17 +168,8 @@ void ContentRendererClientImpl::PrepareErrorPage(
 std::unique_ptr<content::URLLoaderThrottleProvider>
 ContentRendererClientImpl::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType provider_type) {
-  if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing)) {
-#if defined(OS_ANDROID)
-    // Note: currently the throttle provider is only needed for safebrowsing.
-    return std::make_unique<URLLoaderThrottleProvider>(
-        browser_interface_broker_.get(), provider_type);
-#else
-    return nullptr;
-#endif
-  }
-
-  return nullptr;
+  return std::make_unique<URLLoaderThrottleProvider>(
+      browser_interface_broker_.get(), provider_type);
 }
 
 void ContentRendererClientImpl::AddSupportedKeySystems(
@@ -171,6 +187,13 @@ void ContentRendererClientImpl::
   // (for both Chrome and WebLayer).
   blink::WebRuntimeFeatures::EnableWebShare(true);
 #endif
+}
+
+bool ContentRendererClientImpl::IsPrefetchOnly(
+    content::RenderFrame* render_frame,
+    const blink::WebURLRequest& request) {
+  return prerender::PrerenderHelper::GetPrerenderMode(render_frame) ==
+         prerender::mojom::PrerenderMode::kPrefetchOnly;
 }
 
 }  // namespace weblayer

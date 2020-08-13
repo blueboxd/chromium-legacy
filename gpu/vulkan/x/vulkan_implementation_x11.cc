@@ -146,15 +146,11 @@ bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(
 
 std::vector<const char*>
 VulkanImplementationX11::GetRequiredDeviceExtensions() {
-  std::vector<const char*> extensions;
-  // TODO(samans): Add these extensions once Swiftshader supports them.
-  // https://crbug.com/963988
-  if (!use_swiftshader()) {
-    extensions.push_back(VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
-    extensions.push_back(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
-    extensions.push_back(VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
-    extensions.push_back(VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
-  }
+  std::vector<const char*> extensions = {
+      VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME};
   if (using_surface_)
     extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
   return extensions;

@@ -1254,7 +1254,10 @@ void XRSession::HandleShutdown() {
     return;
   }
 
-  // Notify the frame provider that we've ended
+  // Notify the frame provider that we've ended. Do this before notifying the
+  // page, so that if the page tries (and is able to) create a session within
+  // either the promise or the event callback, it's not blocked by the frame
+  // provider thinking there's still an active immersive session.
   xr_->frameProvider()->OnSessionEnded(this);
 
   if (end_session_resolver_) {
@@ -1265,6 +1268,11 @@ void XRSession::HandleShutdown() {
 
   DispatchEvent(*XRSessionEvent::Create(event_type_names::kEnd, this));
   DVLOG(3) << __func__ << ": session end event dispatched";
+
+  // Now that we've notified the page that we've ended, try to restart the non-
+  // immersive frame loop. Note that if the page was able to request a new
+  // session in the end event, this may be a no-op.
+  xr_->frameProvider()->RestartNonImmersiveFrameLoop();
 }
 
 double XRSession::NativeFramebufferScale() const {

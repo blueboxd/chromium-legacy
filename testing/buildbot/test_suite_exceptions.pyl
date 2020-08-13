@@ -837,7 +837,6 @@
       },
       # https://crbug.com/1111979,
       'linux-lacros-tester-rel': {
-        'experiment_percentage': 100,
         'args': [
           '--gtest_filter=-NetExportFileWriterTest*',
         ],
@@ -976,7 +975,6 @@
       },
       # https://crbug.com/1111979,
       'linux-lacros-tester-rel': {
-        'experiment_percentage': 100,
         'args': [
           '--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont',
         ],
@@ -1155,7 +1153,6 @@
       },
       # https://crbug.com/1111979,
       'linux-lacros-tester-rel': {
-        'experiment_percentage': 100,
         'args': [
           '--gtest_filter=-BluetoothShellApiTest.ApiSanityCheck:BluetoothSocketApiTest.Listen:BluetoothSocketApiTest.PermissionDenied',
         ],
@@ -2226,6 +2223,11 @@
       },
     },
   },
+  'pixel_tests': {
+    'remove_from': [
+      'Fuchsia x64' # https://crbug.com/1058255
+    ],
+  },
   'rendering_representative_perf_tests': {
     'modifications': {
       'Win10 FYI x64 Exp Release (Intel HD 630)': {
@@ -2352,7 +2354,9 @@
       'linux-lacros-tester-rel': {
         'experiment_percentage': 100,
         'args': [
-          '--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont',
+          '--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont:'
+          'All/AccessibilityHitTestingBrowserTest.CachingAsyncHitTest_WithPinchZoom/ZoomFactor2_UseZoomForDSFOff:'
+          'All/AccessibilityHitTestingBrowserTest.CachingAsyncHitTest_WithPinchZoom/ZoomFactor2_UseZoomForDSFOn',
         ],
       },
     },
@@ -2365,7 +2369,6 @@
       },
       # https://crbug.com/1111979,
       'linux-lacros-tester-rel': {
-        'experiment_percentage': 100,
         'args': [
           '--gtest_filter=-BluetoothShellApiTest.ApiSanityCheck:BluetoothSocketApiTest.Listen:BluetoothSocketApiTest.PermissionDenied',
         ],
@@ -2442,7 +2445,6 @@
       },
       # https://crbug.com/1111979,
       'linux-lacros-tester-rel': {
-        'experiment_percentage': 100,
         'args': [
           '--gtest_filter=-SingleClientSessionsSyncTestWithFaviconTestServer.ShouldDeleteOnDemandIconsOnSessionsDisabled',
         ],
@@ -2685,14 +2687,8 @@
           '--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:'
           'DesktopWidgetTest.GetWindowPlacement:'
           'DesktopWidgetTest.MinimumSizeConstraints:'
-          'EditableComboboxTest.AltLeftOrRightDoesNothing:'
-          'EditableComboboxTest.CtrlLeftOrRightMovesToNextWords:'
-          'EditableComboboxTest.EndOrHomeMovesToBeginningOrEndOfText:'
-          'EditableComboboxTest.MenuCanAdaptToContentChange:'
-          'TextfieldTest.ContextMenuDisplayTest:'
-          'TextfieldTest.CutCopyPasteWithEditCommand:'
-          'TextfieldTest.OverflowTest:'
-          'TextfieldTest.SwitchFocusInKeyDown:'
+          'EditableComboboxTest*:'
+          'TextfieldTest*:'
           'TooltipControllerTest*',
         ],
       },

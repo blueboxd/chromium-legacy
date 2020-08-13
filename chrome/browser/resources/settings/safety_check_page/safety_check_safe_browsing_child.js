@@ -86,6 +86,7 @@ Polymer({
         return SafetyCheckIconStatus.RUNNING;
       case SafetyCheckSafeBrowsingStatus.ENABLED_STANDARD:
       case SafetyCheckSafeBrowsingStatus.ENABLED_ENHANCED:
+      case SafetyCheckSafeBrowsingStatus.ENABLED_STANDARD_AVAILABLE_ENHANCED:
         return SafetyCheckIconStatus.SAFE;
       case SafetyCheckSafeBrowsingStatus.ENABLED:
         // ENABLED is deprecated.

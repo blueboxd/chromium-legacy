@@ -95,6 +95,7 @@ class SafetyCheckProperties {
                 return SafeBrowsingState.CHECKING;
             case SafeBrowsingStatus.ENABLED:
             case SafeBrowsingStatus.ENABLED_STANDARD:
+            case SafeBrowsingStatus.ENABLED_STANDARD_AVAILABLE_ENHANCED:
                 return SafeBrowsingState.ENABLED_STANDARD;
             case SafeBrowsingStatus.ENABLED_ENHANCED:
                 return SafeBrowsingState.ENABLED_ENHANCED;

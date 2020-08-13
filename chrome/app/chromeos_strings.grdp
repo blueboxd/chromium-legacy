@@ -365,6 +365,9 @@
   <message name="IDS_UPDATE_AVAILABLE" desc="Notification for available update">
     System update available. Preparing to download&#x2026;
   </message>
+  <message name="IDS_UPDATE_COMPLETED_REBOOTING" desc="Notification for update completed and reboot is in progress">
+    Restarting to apply updates
+  </message>
   <message name="IDS_UPDATE_COMPLETED" desc="Notification for update completed">
     System update complete. Please restart the system.
   </message>

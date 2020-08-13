@@ -12,4 +12,9 @@ mojom("mojom") {
     "cros_healthd_events.mojom",
     "cros_healthd_probe.mojom",
   ]
+
+  public_deps = [
+    "//chromeos/services/network_health/public/mojom",
+    "//mojo/public/mojom/base",
+  ]
 }

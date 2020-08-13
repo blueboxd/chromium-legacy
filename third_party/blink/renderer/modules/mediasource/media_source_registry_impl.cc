@@ -36,15 +36,17 @@
 namespace blink {
 
 // static
-MediaSourceRegistryImpl& MediaSourceRegistryImpl::EnsureRegistry() {
+void MediaSourceRegistryImpl::Init() {
   DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(MediaSourceRegistryImpl, instance, ());
-  return instance;
+  DVLOG(1) << __func__ << " instance=" << &instance;
 }
 
 void MediaSourceRegistryImpl::RegisterURL(SecurityOrigin*,
                                           const KURL& url,
                                           URLRegistrable* registrable) {
+  // TODO(https://crbug.com/878133): Allow dedicated workers to register
+  // MediaSource objectUrls, too.
   DCHECK(IsMainThread());
   DCHECK_EQ(&registrable->Registry(), this);
   DCHECK(!url.IsEmpty());  // Caller of interface should already enforce this.
@@ -58,6 +60,8 @@ void MediaSourceRegistryImpl::RegisterURL(SecurityOrigin*,
 
 void MediaSourceRegistryImpl::UnregisterURL(const KURL& url) {
   DVLOG(1) << __func__ << " url=" << url;
+  // TODO(https://crbug.com/878133): Allow dedicated workers to unregister
+  // MediaSource objectUrls, too.
   DCHECK(IsMainThread());
   DCHECK(!url.IsEmpty());  // Caller of interface should already enforce this.
 

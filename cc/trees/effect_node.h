@@ -130,6 +130,8 @@ struct CC_EXPORT EffectNode {
   // If set, the effect node tries to not trigger a render surface due to it
   // having a rounded corner.
   bool is_fast_rounded_corner : 1;
+  // If the node or it's parent has the filters, it sets to true.
+  bool node_or_ancestor_has_filters : 1;
   // RenderSurfaceReason::kNone if this effect node should not create a render
   // surface, or the reason that this effect node should create one.
   RenderSurfaceReason render_surface_reason;

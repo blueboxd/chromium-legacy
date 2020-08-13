@@ -14,6 +14,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "chrome/services/sharing/public/cpp/advertisement.h"
+#include "chrome/services/sharing/public/cpp/conversions.h"
 #include "chrome/services/sharing/public/mojom/nearby_decoder_types.mojom.h"
 #include "chrome/services/sharing/public/proto/wire_format.pb.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -35,55 +36,7 @@ void ExpectEquals(const Advertisement& self,
                   const mojom::AdvertisementPtr& other) {
   EXPECT_EQ(self.device_name(), other->device_name);
   EXPECT_EQ(self.salt(), other->salt);
-  EXPECT_EQ(self.encrypted_metadata_key(), other->encrypted_metadata);
-}
-
-sharing::nearby::FileMetadata_Type ConvertFileMetadataType(
-    mojom::FileMetadata::Type type) {
-  switch (type) {
-    case mojom::FileMetadata::Type::kImage:
-      return sharing::nearby::FileMetadata_Type_IMAGE;
-    case mojom::FileMetadata::Type::kVideo:
-      return sharing::nearby::FileMetadata_Type_VIDEO;
-    case mojom::FileMetadata::Type::kApp:
-      return sharing::nearby::FileMetadata_Type_APP;
-    case mojom::FileMetadata::Type::kAudio:
-      return sharing::nearby::FileMetadata_Type_AUDIO;
-    case mojom::FileMetadata::Type::kUnknown:
-      return sharing::nearby::FileMetadata_Type_UNKNOWN;
-  }
-}
-
-sharing::nearby::TextMetadata_Type ConvertTextMetadataType(
-    mojom::TextMetadata::Type type) {
-  switch (type) {
-    case mojom::TextMetadata::Type::kText:
-      return sharing::nearby::TextMetadata_Type_TEXT;
-    case mojom::TextMetadata::Type::kUrl:
-      return sharing::nearby::TextMetadata_Type_URL;
-    case mojom::TextMetadata::Type::kAddress:
-      return sharing::nearby::TextMetadata_Type_ADDRESS;
-    case mojom::TextMetadata::Type::kPhoneNumber:
-      return sharing::nearby::TextMetadata_Type_PHONE_NUMBER;
-    case mojom::TextMetadata::Type::kUnknown:
-      return sharing::nearby::TextMetadata_Type_UNKNOWN;
-  }
-}
-
-sharing::nearby::WifiCredentialsMetadata_SecurityType
-ConvertWifiCredentialsMetadataType(
-    mojom::WifiCredentialsMetadata::SecurityType type) {
-  switch (type) {
-    case mojom::WifiCredentialsMetadata::SecurityType::kOpen:
-      return sharing::nearby::WifiCredentialsMetadata_SecurityType_OPEN;
-    case mojom::WifiCredentialsMetadata::SecurityType::kWpaPsk:
-      return sharing::nearby::WifiCredentialsMetadata_SecurityType_WPA_PSK;
-    case mojom::WifiCredentialsMetadata::SecurityType::kWep:
-      return sharing::nearby::WifiCredentialsMetadata_SecurityType_WEP;
-    case mojom::WifiCredentialsMetadata::SecurityType::kUnknownSecurityType:
-      return sharing::nearby::
-          WifiCredentialsMetadata_SecurityType_UNKNOWN_SECURITY_TYPE;
-  }
+  EXPECT_EQ(self.encrypted_metadata_key(), other->encrypted_metadata_key);
 }
 
 void ExpectFrameContainsIntroduction(

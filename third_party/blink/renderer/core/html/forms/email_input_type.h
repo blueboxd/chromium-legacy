@@ -60,8 +60,6 @@ class EmailInputType final : public BaseTextInputType {
   ScriptRegexp& EnsureEmailRegexp() const;
   String ConvertEmailAddressToUnicode(const String&) const;
   String FindInvalidAddress(const String&) const;
-
-  mutable std::unique_ptr<ScriptRegexp> email_regexp_;
 };
 
 }  // namespace blink

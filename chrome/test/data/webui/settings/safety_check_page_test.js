@@ -647,6 +647,17 @@ suite('SafetyCheckSafeBrowsingChildUiTests', function() {
     });
   });
 
+  test('safeBrowsingEnabledStandardAvailableEnhancedUiTest', function() {
+    fireSafetyCheckSafeBrowsingEvent(
+        SafetyCheckSafeBrowsingStatus.ENABLED_STANDARD_AVAILABLE_ENHANCED);
+    flush();
+    assertSafetyCheckChild({
+      page: page,
+      iconStatus: SafetyCheckIconStatus.SAFE,
+      label: 'Safe Browsing',
+    });
+  });
+
   test('safeBrowsingEnabledEnhancedUiTest', function() {
     fireSafetyCheckSafeBrowsingEvent(
         SafetyCheckSafeBrowsingStatus.ENABLED_ENHANCED);

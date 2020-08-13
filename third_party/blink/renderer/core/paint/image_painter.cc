@@ -50,11 +50,16 @@ bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
   if (layout_size.IsEmpty() || image_size.IsEmpty())
     return false;
 
-  double dpr = layout_image.GetDocument().GetFrame()->DevicePixelRatio();
-  double downscale_ratio_width =
-      image_size.Width() / (dpr * layout_size.Width());
-  double downscale_ratio_height =
-      image_size.Height() / (dpr * layout_size.Height());
+  // Note: Do not use frame->GetDevicePixelRatio() here, because it
+  // leads to different behaviour on MacOS platform. https://crbug.com/716231.
+  // virtual/scalefactor200/http/tests/images/document-policy/document-policy-oversized-images-edge-cases.html
+  // verifies the behaviour.
+  const double dsf =
+      layout_image.GetDocument().GetPage()->DeviceScaleFactorDeprecated();
+  const double downscale_ratio_width =
+      image_size.Width() / layout_size.Width() / dsf;
+  const double downscale_ratio_height =
+      image_size.Height() / layout_size.Height() / dsf;
 
   const LayoutImageResource* image_resource = layout_image.ImageResource();
   const ImageResourceContent* cached_image =

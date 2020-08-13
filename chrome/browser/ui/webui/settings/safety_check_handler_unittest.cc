@@ -518,12 +518,11 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_DestroyedOnJavascriptDisallowed) {
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_EnabledStandard) {
-  Profile::FromWebUI(&test_web_ui_)
-      ->GetPrefs()
-      ->SetBoolean(prefs::kSafeBrowsingEnabled, true);
-  Profile::FromWebUI(&test_web_ui_)
-      ->GetPrefs()
-      ->SetBoolean(prefs::kSafeBrowsingEnhanced, false);
+  TestingProfile::FromWebUI(&test_web_ui_)
+      ->AsTestingProfile()
+      ->GetTestingPrefService()
+      ->SetManagedPref(prefs::kSafeBrowsingEnabled,
+                       std::make_unique<base::Value>(true));
   safety_check_->PerformSafetyCheck();
   const base::DictionaryValue* event =
       GetSafetyCheckStatusChangedWithDataIfExists(
@@ -535,6 +534,30 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_EnabledStandard) {
   histogram_tester_.ExpectBucketCount(
       "Settings.SafetyCheck.SafeBrowsingResult",
       SafetyCheckHandler::SafeBrowsingStatus::kEnabledStandard, 1);
+}
+
+TEST_F(SafetyCheckHandlerTest,
+       CheckSafeBrowsing_EnabledStandardAvailableEnhanced) {
+  Profile::FromWebUI(&test_web_ui_)
+      ->GetPrefs()
+      ->SetBoolean(prefs::kSafeBrowsingEnabled, true);
+  Profile::FromWebUI(&test_web_ui_)
+      ->GetPrefs()
+      ->SetBoolean(prefs::kSafeBrowsingEnhanced, false);
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kSafeBrowsing,
+          static_cast<int>(SafetyCheckHandler::SafeBrowsingStatus::
+                               kEnabledStandardAvailableEnhanced));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event,
+                      "Standard protection is on. For even more security, use "
+                      "enhanced protection.");
+  histogram_tester_.ExpectBucketCount(
+      "Settings.SafetyCheck.SafeBrowsingResult",
+      SafetyCheckHandler::SafeBrowsingStatus::kEnabledStandardAvailableEnhanced,
+      1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_EnabledEnhanced) {

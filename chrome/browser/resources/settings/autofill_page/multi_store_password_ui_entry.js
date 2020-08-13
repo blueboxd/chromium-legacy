@@ -18,42 +18,41 @@ import {PasswordManagerProxy} from './password_manager_proxy.js';
  */
 export class MultiStorePasswordUiEntry extends MultiStoreIdHandler {
   /**
-   * Creates a multi-store item from duplicates |entry1| and (optional)
-   * |entry2|. If both arguments are passed, they should have the same contents
-   * but should be from different stores.
-   * @param {!PasswordManagerProxy.PasswordUiEntry} entry1
-   * @param {PasswordManagerProxy.PasswordUiEntry=} entry2
+   * @param {!PasswordManagerProxy.PasswordUiEntry} entry
    */
-  constructor(entry1, entry2) {
+  constructor(entry) {
     super();
 
     /** @type {!MultiStorePasswordUiEntry.Contents} */
-    this.contents_ = MultiStorePasswordUiEntry.getContents_(entry1);
+    this.contents_ = MultiStorePasswordUiEntry.getContents_(entry);
 
     /** @type {string} */
     this.password_ = '';
 
-    this.setId(entry1.id, entry1.fromAccountStore);
-
-    if (entry2) {
-      this.merge(entry2);
-    }
+    this.setId(entry.id, entry.fromAccountStore);
   }
 
   /**
    * Incorporates the id of |otherEntry|, as long as |otherEntry| matches
-   * |contents_| and the id corresponding to its store is not set.
+   * |contents_| and the id corresponding to its store is not set. If these
+   * preconditions are not satisfied, results in a no-op.
    * @param {!PasswordManagerProxy.PasswordUiEntry} otherEntry
+   * @return {boolean} Returns whether the merge succeeded.
    */
   // TODO(crbug.com/1102294) Consider asserting frontendId as well.
-  merge(otherEntry) {
-    assert(
-        (this.isPresentInAccount() && !otherEntry.fromAccountStore) ||
-        (this.isPresentOnDevice() && otherEntry.fromAccountStore));
-    assert(
-        JSON.stringify(this.contents_) ===
-        JSON.stringify(MultiStorePasswordUiEntry.getContents_(otherEntry)));
+  mergeInPlace(otherEntry) {
+    const alreadyHasCopyFromStore =
+        (this.isPresentInAccount() && otherEntry.fromAccountStore) ||
+        (this.isPresentOnDevice() && !otherEntry.fromAccountStore);
+    if (alreadyHasCopyFromStore) {
+      return false;
+    }
+    if (JSON.stringify(this.contents_) !==
+        JSON.stringify(MultiStorePasswordUiEntry.getContents_(otherEntry))) {
+      return false;
+    }
     this.setId(otherEntry.id, otherEntry.fromAccountStore);
+    return true;
   }
 
   /** @return {!PasswordManagerProxy.UrlCollection} */

@@ -31,6 +31,8 @@ using ::testing::StrictMock;
 using ::testing::WithArgs;
 
 namespace chromeos {
+using network_diagnostics::mojom::NetworkDiagnosticsRoutines;
+using network_diagnostics::mojom::RoutineVerdict;
 namespace cros_healthd {
 namespace {
 
@@ -161,6 +163,58 @@ class MockNetworkHealthService : public NetworkHealthService {
 
  private:
   mojo::Receiver<NetworkHealthService> receiver_;
+};
+
+class MockNetworkDiagnosticsRoutines : public NetworkDiagnosticsRoutines {
+ public:
+  MockNetworkDiagnosticsRoutines() : receiver_{this} {}
+  MockNetworkDiagnosticsRoutines(const MockNetworkDiagnosticsRoutines&) =
+      delete;
+  MockNetworkDiagnosticsRoutines& operator=(
+      const MockNetworkDiagnosticsRoutines&) = delete;
+
+  MOCK_METHOD(void,
+              LanConnectivity,
+              (NetworkDiagnosticsRoutines::LanConnectivityCallback),
+              (override));
+  MOCK_METHOD(void,
+              SignalStrength,
+              (NetworkDiagnosticsRoutines::SignalStrengthCallback),
+              (override));
+  MOCK_METHOD(void,
+              GatewayCanBePinged,
+              (NetworkDiagnosticsRoutines::GatewayCanBePingedCallback),
+              (override));
+  MOCK_METHOD(void,
+              HasSecureWiFiConnection,
+              (NetworkDiagnosticsRoutines::HasSecureWiFiConnectionCallback),
+              (override));
+  MOCK_METHOD(void,
+              DnsResolverPresent,
+              (NetworkDiagnosticsRoutines::DnsResolverPresentCallback),
+              (override));
+  MOCK_METHOD(void,
+              DnsLatency,
+              (NetworkDiagnosticsRoutines::DnsLatencyCallback),
+              (override));
+  MOCK_METHOD(void,
+              DnsResolution,
+              (NetworkDiagnosticsRoutines::DnsResolutionCallback),
+              (override));
+  MOCK_METHOD(void,
+              CaptivePortal,
+              (NetworkDiagnosticsRoutines::CaptivePortalCallback),
+              (override));
+
+  mojo::PendingRemote<NetworkDiagnosticsRoutines> pending_remote() {
+    if (receiver_.is_bound()) {
+      receiver_.reset();
+    }
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+ private:
+  mojo::Receiver<NetworkDiagnosticsRoutines> receiver_;
 };
 
 class CrosHealthdServiceConnectionTest : public testing::Test {
@@ -497,6 +551,34 @@ TEST_F(CrosHealthdServiceConnectionTest, SetBindNetworkHealthService) {
             EXPECT_EQ(canned_response, response);
             run_loop.Quit();
           }));
+
+  run_loop.Run();
+}
+
+// Test that we can set the callback to get the NetworkDiagnosticsRoutines
+// remote and run the lan connectivity routine.
+TEST_F(CrosHealthdServiceConnectionTest, SetBindNetworkDiagnosticsRoutines) {
+  MockNetworkDiagnosticsRoutines network_diagnostics_routines;
+  ServiceConnection::GetInstance()->SetBindNetworkDiagnosticsRoutinesCallback(
+      base::BindLambdaForTesting([&network_diagnostics_routines] {
+        return network_diagnostics_routines.pending_remote();
+      }));
+
+  // Run the LanConnectivity routine so we know that
+  // |network_diagnostics_routines| is connected.
+  base::RunLoop run_loop;
+  RoutineVerdict routine_verdict = RoutineVerdict::kNoProblem;
+  EXPECT_CALL(network_diagnostics_routines, LanConnectivity(_))
+      .WillOnce(Invoke(
+          [&](NetworkDiagnosticsRoutines::LanConnectivityCallback callback) {
+            std::move(callback).Run(routine_verdict);
+          }));
+
+  FakeCrosHealthdClient::Get()->RunLanConnectivityRoutineForTesting(
+      base::BindLambdaForTesting([&](RoutineVerdict response) {
+        EXPECT_EQ(routine_verdict, response);
+        run_loop.Quit();
+      }));
 
   run_loop.Run();
 }

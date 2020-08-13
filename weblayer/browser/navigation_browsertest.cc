@@ -365,6 +365,28 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeader) {
   EXPECT_EQ(header_value, response_2.http_request()->headers.at(header_name));
 }
 
+// Verifies setting the 'referer' via SetRequestHeader() works as expected.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeaderWithReferer) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string header_name = "Referer";
+  const std::string header_value = "http://request.com";
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetRequestHeader(header_name, header_value);
+      }));
+
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
+  response.WaitForRequest();
+
+  // Verify 'referer' matches expected value.
+  EXPECT_EQ(GURL(header_value),
+            GURL(response.http_request()->headers.at(header_name)));
+}
+
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeaderInRedirect) {
   net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
                                                         "", true);

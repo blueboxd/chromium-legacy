@@ -31,6 +31,8 @@ class SafetyTipInfoBarDelegate : public ConfirmInfoBarDelegate {
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   void InfoBarDismissed() override;
+  base::string16 GetLinkText() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
 
   // This function is the equivalent of GetMessageText(), but for the portion of
   // the infobar below the 'message' title.

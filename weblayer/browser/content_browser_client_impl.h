@@ -64,6 +64,10 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       int frame_tree_node_id) override;
   bool IsHandledURL(const GURL& url) override;
   std::vector<url::Origin> GetOriginsRequiringDedicatedProcess() override;
+  bool MayReuseHost(content::RenderProcessHost* process_host) override;
+  void OverridePageVisibilityState(
+      content::RenderFrameHost* render_frame_host,
+      content::PageVisibilityState* visibility_state) override;
   bool ShouldDisableSiteIsolation() override;
   std::vector<std::string> GetAdditionalSiteIsolationModes() override;
   void PersistIsolatedOrigin(content::BrowserContext* context,

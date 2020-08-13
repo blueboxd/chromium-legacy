@@ -53,6 +53,9 @@ class MODULES_EXPORT WebIDBTransaction {
                    mojom::IDBPutMode,
                    std::unique_ptr<WebIDBCallbacks>,
                    Vector<IDBIndexKeys>) = 0;
+  virtual void PutAll(int64_t object_store_id,
+                      Vector<mojom::blink::IDBPutParamsPtr> puts,
+                      std::unique_ptr<WebIDBCallbacks> callbacks) = 0;
   virtual void Commit(int64_t num_errors_handled) = 0;
 
   virtual mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>

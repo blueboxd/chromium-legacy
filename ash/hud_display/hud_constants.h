@@ -12,6 +12,33 @@ namespace hud_display {
 
 constexpr SkAlpha kHUDAlpha = 204;  // = 0.8 * 255
 
+// Use light orange color.
+constexpr SkColor kHUDDefaultColor =
+    SkColorSetARGB(kHUDAlpha, 0xFF, 0xB2, 0x66);
+
+constexpr SkColor kHUDBackground = SkColorSetARGB(kHUDAlpha, 17, 17, 17);
+
+// Radius of rounded corners for tabs.
+// Must be be divisible by 3 to make kTabOverlayWidth integer.
+constexpr int kTabOverlayCornerRadius = 9;
+
+// Border around settings icon in the settings button.
+constexpr int kSettingsIconBorder = 5;
+
+// Settings button icon size.
+constexpr int kHUDSettingsIconSize = 18;
+
+// Visible border inside the HUDDisplayView rectangle around contents.
+// HUDDisplayView does not use insets itself. Children substitute this inset
+// where needed.
+constexpr int kHUDInset = 5;
+
+// HUD display modes.
+enum class DisplayModes {
+  MEMORY_DISPLAY,
+  DEFAULT = MEMORY_DISPLAY
+};
+
 }  // namespace hud_display
 }  // namespace ash
 

@@ -115,8 +115,14 @@ IN_PROC_BROWSER_TEST_F(GlobalMediaControlsPromoControllerDialogBrowserTest,
   ShowAndVerifyUi();
 }
 
+#if defined(OS_WIN)
+// Disabled for being flaky. See crbug.com/1116108.
+#define MAYBE_BubbleHidesAfter5Seconds DISABLED_BubbleHidesAfter5Seconds
+#else
+#define MAYBE_BubbleHidesAfter5Seconds BubbleHidesAfter5Seconds
+#endif
 IN_PROC_BROWSER_TEST_F(GlobalMediaControlsPromoControllerDialogBrowserTest,
-                       BubbleHidesAfter5Seconds) {
+                       MAYBE_BubbleHidesAfter5Seconds) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner);
 

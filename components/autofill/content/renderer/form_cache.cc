@@ -14,17 +14,18 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/strings/string_number_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/page_form_analyser_logger.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/blink/public/common/metrics/form_element_pii_type.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -84,6 +85,20 @@ static const char* kSupportedAutocompleteTypes[] = {"given-name",
                                                     "cc-type",
                                                     "cc-csc",
                                                     "organization"};
+
+blink::FormElementPiiType MapTypePredictionToFormElementPiiType(
+    base::StringPiece type) {
+  if (type == "NO_SERVER_DATA" || type == "UNKNOWN_TYPE" ||
+      type == "EMPTY_TYPE" || type == "") {
+    return blink::FormElementPiiType::kUnknown;
+  }
+
+  if (type.starts_with("EMAIL_"))
+    return blink::FormElementPiiType::kEmail;
+  if (type.starts_with("PHONE_"))
+    return blink::FormElementPiiType::kPhone;
+  return blink::FormElementPiiType::kOthers;
+}
 
 // For a given |type| (a string representation of enum values), return the
 // appropriate autocomplete value that should be suggested to the website
@@ -466,6 +481,9 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
                              predicted_autocomplete_attribute.c_str()),
           PageFormAnalyserLogger::kVerbose, element);
     }
+
+    element.SetFormElementPiiType(
+        MapTypePredictionToFormElementPiiType(field.overall_type));
 
     // If the flag is enabled, attach the prediction to the field.
     if (attach_predictions_to_dom) {

@@ -6,12 +6,16 @@ source_set("cpp") {
   sources = [
     "advertisement.cc",
     "advertisement.h",
+    "conversions.cc",
+    "conversions.h",
     "sharing_webrtc_metrics.cc",
     "sharing_webrtc_metrics.h",
   ]
 
   public_deps = [
     "//base",
+    "//chrome/services/sharing/public/mojom",
+    "//chrome/services/sharing/public/proto",
     "//mojo/public/cpp/bindings",
   ]
 }

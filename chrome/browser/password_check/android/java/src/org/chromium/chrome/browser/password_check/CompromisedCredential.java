@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.password_check;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.url.GURL;
 
@@ -13,7 +16,36 @@ import java.util.Objects;
  * This class holds the data used to represent a compromised credential in the Password Check
  * settings screen.
  */
-public class CompromisedCredential {
+public class CompromisedCredential implements Parcelable {
+    /** This static member is required to automagically deserialize credential parcels . */
+    public static final Parcelable.Creator<CompromisedCredential> CREATOR =
+            new Parcelable.Creator<CompromisedCredential>() {
+                @Override
+                public CompromisedCredential createFromParcel(Parcel in) {
+                    final String signonRealm = in.readString();
+                    final GURL origin = GURL.deserialize(in.readString());
+                    final String username = in.readString();
+                    final String displayOrigin = in.readString();
+                    final String displayUsername = in.readString();
+                    final String password = in.readString();
+                    final String passwordChangeUrl = in.readString();
+                    final String associatedApp = in.readString();
+                    boolean[] boolArguments = new boolean[2];
+                    in.readBooleanArray(boolArguments);
+                    final boolean phished = boolArguments[0];
+                    final boolean hasScript = boolArguments[1];
+
+                    return new CompromisedCredential(signonRealm, origin, username, displayOrigin,
+                            displayUsername, password, passwordChangeUrl, associatedApp, phished,
+                            hasScript);
+                }
+
+                @Override
+                public CompromisedCredential[] newArray(int size) {
+                    return new CompromisedCredential[size];
+                }
+            };
+
     private final String mSignonRealm;
     private final GURL mOrigin;
     private final String mUsername;
@@ -125,5 +157,23 @@ public class CompromisedCredential {
     public int hashCode() {
         return Objects.hash(mSignonRealm, mOrigin, mUsername, mDisplayOrigin, mDisplayUsername,
                 mPassword, mPasswordChangeUrl, mAssociatedApp, mPhished, mHasScript);
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeString(mSignonRealm);
+        parcel.writeString(mOrigin.serialize());
+        parcel.writeString(mUsername);
+        parcel.writeString(mDisplayOrigin);
+        parcel.writeString(mDisplayUsername);
+        parcel.writeString(mPassword);
+        parcel.writeString(mPasswordChangeUrl);
+        parcel.writeString(mAssociatedApp);
+        parcel.writeBooleanArray(new boolean[] {mPhished, mHasScript});
+    }
+
+    @Override
+    public int describeContents() {
+        return 0; // No file descriptor necessary.
     }
 }

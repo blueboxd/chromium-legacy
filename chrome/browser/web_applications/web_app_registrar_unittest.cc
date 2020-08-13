@@ -813,4 +813,28 @@ TEST_F(WebAppRegistrarTest_DisplayOverride,
             registrar().GetAppEffectiveDisplayMode(app_id));
 }
 
+TEST_F(WebAppRegistrarTest_DisplayOverride,
+       CheckDisplayOverrideFromGetEffectiveDisplayModeFromManifest) {
+  controller().Init();
+
+  auto web_app = CreateWebApp("https://example.com/path");
+  const AppId app_id = web_app->app_id();
+  std::vector<DisplayMode> display_mode_overrides;
+  display_mode_overrides.push_back(DisplayMode::kFullscreen);
+  display_mode_overrides.push_back(DisplayMode::kMinimalUi);
+
+  web_app->SetDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  web_app->SetDisplayModeOverride(display_mode_overrides);
+  web_app->SetIsLocallyInstalled(false);
+  RegisterApp(std::move(web_app));
+
+  EXPECT_EQ(DisplayMode::kFullscreen,
+            registrar().GetEffectiveDisplayModeFromManifest(app_id));
+
+  sync_bridge().SetAppIsLocallyInstalled(app_id, true);
+  EXPECT_EQ(DisplayMode::kFullscreen,
+            registrar().GetEffectiveDisplayModeFromManifest(app_id));
+}
+
 }  // namespace web_app

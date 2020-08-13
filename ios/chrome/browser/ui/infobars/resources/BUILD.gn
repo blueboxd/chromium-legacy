@@ -31,15 +31,6 @@ imageset("infobar_popup_blocker") {
   ]
 }
 
-imageset("infobar_passwords_icon") {
-  sources = [
-    "infobar_passwords_icon.imageset/Contents.json",
-    "infobar_passwords_icon.imageset/infobar_passwords_icon.png",
-    "infobar_passwords_icon.imageset/infobar_passwords_icon@2x.png",
-    "infobar_passwords_icon.imageset/infobar_passwords_icon@3x.png",
-  ]
-}
-
 imageset("infobar_reveal_password_icon") {
   sources = [
     "infobar_reveal_password_icon.imageset/Contents.json",

@@ -1675,6 +1675,25 @@
             ]
         }
     ],
+    "CompositingOptimizations": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CompositingOptimizations"
+                    ]
+                }
+            ]
+        }
+    ],
     "ContentCapture": [
         {
             "platforms": [
@@ -3545,6 +3564,21 @@
             ]
         }
     ],
+    "IOSMessagesOverlay": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InfobarOverlayUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSPageInfoRefactoring": [
         {
             "platforms": [
@@ -5151,26 +5185,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OverflowIconsForMediaControls"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PaintHolding": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PaintHolding"
                     ]
                 }
             ]
@@ -8370,6 +8384,21 @@
                         "TextfieldFocusOnTapUp",
                         "WebUITabStrip",
                         "WebUITabStripTabDragIntegration"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebViewHeaderInjection": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "SameDomainOnly",
+                    "enable_features": [
+                        "WebViewExtraHeadersSameDomainOnly"
                     ]
                 }
             ]

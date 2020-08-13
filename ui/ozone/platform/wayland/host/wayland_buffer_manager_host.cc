@@ -807,9 +807,18 @@ void WaylandBufferManagerHost::CommitOverlays(
   TRACE_EVENT0("wayland", "WaylandBufferManagerHost::CommitOverlays");
 
   DCHECK(error_message_.empty());
+
+  if (widget == gfx::kNullAcceleratedWidget) {
+    error_message_ = "Invalid widget.";
+    TerminateGpuProcess();
+  }
   WaylandWindow* window =
       connection_->wayland_window_manager()->GetWindow(widget);
-  DCHECK(window);
+  // In tab dragging, window may have been destroyed when buffers reach here. We
+  // omit buffer commits and OnSubmission, because the corresponding buffer
+  // queue in gpu process should be destroyed soon.
+  if (!window)
+    return;
 
   window->CommitOverlays(overlays);
 }

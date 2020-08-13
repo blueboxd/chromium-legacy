@@ -331,12 +331,20 @@ OriginScopedNativeFileSystemPermissionContext::GetReadPermissionGrant(
       existing_grant->SetStatus(PermissionStatus::GRANTED);
       break;
     case CONTENT_SETTING_ASK:
-      // Files automatically get read access when picked by the user,
-      // directories need to first be confirmed.
-      if (user_action != UserAction::kLoadFromStorage &&
-          handle_type == HandleType::kFile) {
-        existing_grant->SetStatus(PermissionStatus::GRANTED);
-        ScheduleUsageIconUpdate();
+      switch (user_action) {
+        case UserAction::kOpen:
+        case UserAction::kSave:
+          // Open and Save dialog only grant read access for individual files.
+          if (handle_type == HandleType::kDirectory)
+            break;
+          FALLTHROUGH;
+        case UserAction::kDragAndDrop:
+          // Drag&drop grants read access for all handles.
+          existing_grant->SetStatus(PermissionStatus::GRANTED);
+          ScheduleUsageIconUpdate();
+          break;
+        case UserAction::kLoadFromStorage:
+          break;
       }
       break;
     case CONTENT_SETTING_BLOCK:
@@ -391,9 +399,16 @@ OriginScopedNativeFileSystemPermissionContext::GetWritePermissionGrant(
       existing_grant->SetStatus(PermissionStatus::GRANTED);
       break;
     case CONTENT_SETTING_ASK:
-      if (user_action == UserAction::kSave) {
-        existing_grant->SetStatus(PermissionStatus::GRANTED);
-        ScheduleUsageIconUpdate();
+      switch (user_action) {
+        case UserAction::kSave:
+          // Only automatically grant write access for save dialogs.
+          existing_grant->SetStatus(PermissionStatus::GRANTED);
+          ScheduleUsageIconUpdate();
+          break;
+        case UserAction::kOpen:
+        case UserAction::kDragAndDrop:
+        case UserAction::kLoadFromStorage:
+          break;
       }
       break;
     case CONTENT_SETTING_BLOCK:

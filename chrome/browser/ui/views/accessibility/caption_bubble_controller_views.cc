@@ -98,6 +98,16 @@ bool CaptionBubbleControllerViews::OnTranscription(
   return true;
 }
 
+void CaptionBubbleControllerViews::OnError(content::WebContents* web_contents) {
+  if (!caption_bubble_ || !caption_bubble_models_.count(web_contents) ||
+      caption_bubble_models_[web_contents]->IsClosed())
+    return;
+
+  CaptionBubbleModel* caption_bubble_model =
+      caption_bubble_models_[web_contents].get();
+  caption_bubble_model->OnError();
+}
+
 void CaptionBubbleControllerViews::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,

@@ -251,8 +251,19 @@ class TestSocketFactory : public MockClientSocketFactory {
       return std::unique_ptr<DatagramClientSocket>(
           new FailingUDPClientSocket(&empty_data_, net_log));
     }
+
     SocketDataProvider* data_provider = mock_data().GetNext();
-    return std::make_unique<TestUDPClientSocket>(this, data_provider, net_log);
+    auto socket =
+        std::make_unique<TestUDPClientSocket>(this, data_provider, net_log);
+
+    // Even using DEFAULT_BIND, actual sockets have been measured to very rarely
+    // repeat the same source port multiple times in a row. Need to mimic that
+    // functionality here, so DnsUdpTracker doesn't misdiagnose repeated port
+    // as low entropy.
+    if (diverse_source_ports_)
+      socket->set_source_port(next_source_port_++);
+
+    return socket;
   }
 
   void OnConnect(const IPEndPoint& endpoint) {
@@ -271,9 +282,11 @@ class TestSocketFactory : public MockClientSocketFactory {
 
   std::vector<RemoteNameserver> remote_endpoints_;
   bool fail_next_socket_;
+  bool diverse_source_ports_ = true;
 
  private:
   StaticSocketDataProvider empty_data_;
+  uint16_t next_source_port_ = 123;
 
   DISALLOW_COPY_AND_ASSIGN(TestSocketFactory);
 };
@@ -2524,14 +2537,28 @@ TEST_F(DnsTransactionTest, TcpLookup_UdpRetry) {
 }
 
 TEST_F(DnsTransactionTest, TcpLookup_LowEntropy) {
-  session_->udp_tracker()->set_low_entropy_for_testing(true);
+  socket_factory_->diverse_source_ports_ = false;
+
+  for (int i = 0; i <= DnsUdpTracker::kPortReuseThreshold; ++i) {
+    AddQueryAndResponse(0 /* id */, kT0HostName, kT0Qtype, kT0ResponseDatagram,
+                        base::size(kT0ResponseDatagram), ASYNC, Transport::UDP);
+  }
 
   AddQueryAndResponse(0 /* id */, kT0HostName, kT0Qtype, kT0ResponseDatagram,
                       base::size(kT0ResponseDatagram), ASYNC, Transport::TCP);
 
+  for (int i = 0; i <= DnsUdpTracker::kPortReuseThreshold; ++i) {
+    TransactionHelper udp_helper(kT0HostName, kT0Qtype, false /* secure */,
+                                 kT0RecordCount, resolve_context_.get());
+    udp_helper.RunUntilDone(transaction_factory_.get());
+  }
+
+  ASSERT_TRUE(session_->udp_tracker()->low_entropy());
+
   TransactionHelper helper0(kT0HostName, kT0Qtype, false /* secure */,
                             kT0RecordCount, resolve_context_.get());
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+  EXPECT_TRUE(session_->udp_tracker()->low_entropy());
 }
 
 TEST_F(DnsTransactionTest, TCPFailure) {
@@ -2584,10 +2611,23 @@ TEST_F(DnsTransactionTestWithMockTime, TcpTimeout_UdpRetry) {
 
 TEST_F(DnsTransactionTestWithMockTime, TcpTimeout_LowEntropy) {
   ConfigureFactory();
-  session_->udp_tracker()->set_low_entropy_for_testing(true);
+  socket_factory_->diverse_source_ports_ = false;
+
+  for (int i = 0; i <= DnsUdpTracker::kPortReuseThreshold; ++i) {
+    AddQueryAndResponse(0 /* id */, kT0HostName, kT0Qtype, kT0ResponseDatagram,
+                        base::size(kT0ResponseDatagram), ASYNC, Transport::UDP);
+  }
 
   AddSocketData(std::make_unique<DnsSocketData>(
       1 /* id */, kT0HostName, kT0Qtype, ASYNC, Transport::TCP));
+
+  for (int i = 0; i <= DnsUdpTracker::kPortReuseThreshold; ++i) {
+    TransactionHelper udp_helper(kT0HostName, kT0Qtype, false /* secure */,
+                                 kT0RecordCount, resolve_context_.get());
+    udp_helper.RunUntilDone(transaction_factory_.get());
+  }
+
+  ASSERT_TRUE(session_->udp_tracker()->low_entropy());
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, false /* secure */,
                             ERR_DNS_TIMED_OUT, resolve_context_.get());

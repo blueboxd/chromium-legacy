@@ -321,12 +321,21 @@ group("vaapi_fuzzers") {
 
 executable("decode_test") {
   testonly = true
-  sources = [ "test/decode.cc" ]
+  sources = [
+    "test/decode.cc",
+    "test/macros.h",
+    "test/shared_va_surface.cc",
+    "test/shared_va_surface.h",
+    "test/vaapi_device.cc",
+    "test/vaapi_device.h",
+  ]
   deps = [
     ":libva_stubs",
     "//base",
     "//media",
     "//media:test_support",
+    "//third_party/libyuv",
+    "//ui/gfx/codec:codec",
     "//ui/gfx/geometry",
   ]
 }

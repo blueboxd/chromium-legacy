@@ -254,14 +254,12 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   ApplyVisualConstraints(@[ @"V:|[collection]|", @"H:|[collection]|" ],
                          @{@"collection" : self.collectionView});
 
-  if (!IsNativeContextMenuEnabled()) {
     UILongPressGestureRecognizer* longPressRecognizer =
         [[UILongPressGestureRecognizer alloc]
             initWithTarget:self
                     action:@selector(handleLongPress:)];
     longPressRecognizer.delegate = self;
     [self.collectionView addGestureRecognizer:longPressRecognizer];
-  }
 
   self.overscrollActionsController = [[OverscrollActionsController alloc]
       initWithScrollView:self.collectionView];
@@ -830,10 +828,12 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
                           readLaterAction:NO];
       break;
     case ContentSuggestionTypeMostVisited:
-      [self.suggestionCommandHandler
-          displayContextMenuForMostVisitedItem:touchedItem
-                                       atPoint:touchLocation
-                                   atIndexPath:touchedItemIndexPath];
+      if (!IsNativeContextMenuEnabled()) {
+        [self.suggestionCommandHandler
+            displayContextMenuForMostVisitedItem:touchedItem
+                                         atPoint:touchLocation
+                                     atIndexPath:touchedItemIndexPath];
+      }
       break;
     default:
       break;

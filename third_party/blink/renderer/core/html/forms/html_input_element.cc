@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/email_input_type.h"
 #include "third_party/blink/renderer/core/html/forms/file_input_type.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
@@ -85,6 +86,12 @@
 #include "ui/base/ui_base_features.h"
 
 namespace blink {
+
+namespace {
+
+const unsigned kMaxEmailFieldLength = 254;
+
+}  // namespace
 
 using ValueMode = InputType::ValueMode;
 
@@ -351,6 +358,8 @@ void HTMLInputElement::EndEditing() {
   LocalFrame* frame = GetDocument().GetFrame();
   frame->GetSpellChecker().DidEndEditingOnTextField(this);
   frame->GetPage()->GetChromeClient().DidEndEditingOnTextField(*this);
+
+  MaybeReportPiiMetrics();
 }
 
 void HTMLInputElement::DispatchFocusInEvent(
@@ -2003,6 +2012,43 @@ PaintLayerScrollableArea* HTMLInputElement::GetScrollableArea() const {
 
 bool HTMLInputElement::IsDraggedSlider() const {
   return input_type_view_->IsDraggedSlider();
+}
+
+ScriptRegexp& HTMLInputElement::EnsureEmailRegexp() const {
+  if (!email_regexp_)
+    email_regexp_ = EmailInputType::CreateEmailRegexp();
+  return *email_regexp_;
+}
+
+void HTMLInputElement::MaybeReportPiiMetrics() {
+  // Don't report metrics if the field is empty.
+  if (value().IsEmpty())
+    return;
+
+  // Report the PII types derived from autofill field semantic type prediction.
+  if (GetFormElementPiiType() != FormElementPiiType::kUnknown) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kAnyPiiFieldDetected_PredictedTypeMatch);
+
+    if (GetFormElementPiiType() == FormElementPiiType::kEmail) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kEmailFieldDetected_PredictedTypeMatch);
+    } else if (GetFormElementPiiType() == FormElementPiiType::kPhone) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kPhoneFieldDetected_PredictedTypeMatch);
+    }
+  }
+
+  // Report the PII types derived by matching the field value with patterns.
+
+  // For Email, we add a length limitation (based on
+  // https://www.rfc-editor.org/errata_search.php?rfc=3696) in addition to
+  // matching with the pattern given by the HTML standard.
+  if (value().length() <= kMaxEmailFieldLength &&
+      EmailInputType::IsValidEmailAddress(EnsureEmailRegexp(), value())) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kEmailFieldDetected_PatternMatch);
+  }
 }
 
 }  // namespace blink

@@ -10,6 +10,8 @@
 #include "base/callback_forward.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class PrefService;
+
 namespace chromeos {
 
 namespace device_sync {
@@ -23,6 +25,7 @@ class MultiDeviceSetupClient;
 namespace phonehub {
 
 class FeatureStatusProvider;
+class NotificationAccessManager;
 
 // Implements the core logic of the Phone Hub feature and exposes interfaces via
 // its public API. Implemented as a KeyedService which is keyed by the primary
@@ -37,6 +40,7 @@ class PhoneHubManager : public KeyedService {
   static PhoneHubManager* Get();
 
   PhoneHubManager(
+      PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
   PhoneHubManager(const PhoneHubManager&) = delete;
@@ -47,11 +51,16 @@ class PhoneHubManager : public KeyedService {
     return feature_status_provider_.get();
   }
 
+  NotificationAccessManager* notification_access_manager() {
+    return notification_access_manager_.get();
+  }
+
  private:
   // KeyedService:
   void Shutdown() override;
 
   std::unique_ptr<FeatureStatusProvider> feature_status_provider_;
+  std::unique_ptr<NotificationAccessManager> notification_access_manager_;
 };
 
 }  // namespace phonehub

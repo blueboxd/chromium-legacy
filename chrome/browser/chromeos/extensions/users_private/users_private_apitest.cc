@@ -52,7 +52,7 @@ class TestPrefsUtil : public PrefsUtil {
     pref_object->type = api::settings_private::PrefType::PREF_TYPE_LIST;
 
     base::ListValue* value = new base::ListValue();
-    for (auto& email : whitelisted_users_) {
+    for (auto& email : user_list_) {
       value->AppendString(email);
     }
     pref_object->value.reset(value);
@@ -65,12 +65,12 @@ class TestPrefsUtil : public PrefsUtil {
     std::string email;
     value.GetAsString(&email);
 
-    for (auto& user : whitelisted_users_) {
+    for (auto& user : user_list_) {
       if (email == user)
         return false;
     }
 
-    whitelisted_users_.push_back(email);
+    user_list_.push_back(email);
     return true;
   }
 
@@ -79,16 +79,15 @@ class TestPrefsUtil : public PrefsUtil {
     std::string email;
     value.GetAsString(&email);
 
-    auto iter =
-        std::find(whitelisted_users_.begin(), whitelisted_users_.end(), email);
-    if (iter != whitelisted_users_.end())
-      whitelisted_users_.erase(iter);
+    auto iter = std::find(user_list_.begin(), user_list_.end(), email);
+    if (iter != user_list_.end())
+      user_list_.erase(iter);
 
     return true;
   }
 
  private:
-  std::vector<std::string> whitelisted_users_;
+  std::vector<std::string> user_list_;
 };
 
 class TestDelegate : public UsersPrivateDelegate {
@@ -222,8 +221,8 @@ IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, AddAndRemoveUsers) {
   EXPECT_TRUE(RunSubtest("addAndRemoveUsers")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, IsWhitelistedUser) {
-  EXPECT_TRUE(RunSubtest("isWhitelistedUser")) << message_;
+IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, IsUserInList) {
+  EXPECT_TRUE(RunSubtest("isUserInList")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, IsOwner) {

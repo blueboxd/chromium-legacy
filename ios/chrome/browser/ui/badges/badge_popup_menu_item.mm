@@ -93,7 +93,7 @@ const CGFloat kBadgeCornerRadius = 5.0;
   switch (self.badgeType) {
     case BadgeType::kBadgeTypePasswordSave:
     case BadgeType::kBadgeTypePasswordUpdate:
-      badgeImage = [[UIImage imageNamed:@"infobar_passwords_icon"]
+      badgeImage = [[UIImage imageNamed:@"password_key"]
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       break;
     case BadgeType::kBadgeTypeSaveCard:

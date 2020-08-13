@@ -29,8 +29,9 @@ class SafetyCheck {
     kDisabledByExtension = 4,
     kEnabledStandard = 5,
     kEnabledEnhanced = 6,
+    kEnabledStandardAvailableEnhanced = 7,
     // New enum values must go above here.
-    kMaxValue = kEnabledEnhanced,
+    kMaxValue = kEnabledStandardAvailableEnhanced,
   };
 
   class SafetyCheckHandlerInterface {

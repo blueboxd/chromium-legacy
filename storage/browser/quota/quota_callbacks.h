@@ -29,6 +29,7 @@ struct UsageInfo;
 using UsageInfoEntries = std::vector<UsageInfo>;
 
 // Common callback types that are used throughout in the quota module.
+using AddChangeListenerCallback = base::OnceCallback<void()>;
 using GlobalUsageCallback =
     base::OnceCallback<void(int64_t usage, int64_t unlimited_usage)>;
 using QuotaCallback =

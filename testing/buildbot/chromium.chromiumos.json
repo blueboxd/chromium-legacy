@@ -4455,7 +4455,6 @@
         "args": [
           "--gtest_filter=-NetExportFileWriterTest*"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -4483,7 +4482,6 @@
         "args": [
           "--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -4499,7 +4497,7 @@
       {
         "args": [
           "--enable-features=StorageServiceOutOfProcess",
-          "--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont"
+          "--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont:All/AccessibilityHitTestingBrowserTest.CachingAsyncHitTest_WithPinchZoom/ZoomFactor2_UseZoomForDSFOff:All/AccessibilityHitTestingBrowserTest.CachingAsyncHitTest_WithPinchZoom/ZoomFactor2_UseZoomForDSFOn"
         ],
         "experiment_percentage": 100,
         "merge": {
@@ -4591,7 +4589,6 @@
         "args": [
           "--gtest_filter=-BluetoothShellApiTest.ApiSanityCheck:BluetoothSocketApiTest.Listen:BluetoothSocketApiTest.PermissionDenied"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -4608,7 +4605,6 @@
           "--enable-features=StorageServiceOutOfProcess",
           "--gtest_filter=-BluetoothShellApiTest.ApiSanityCheck:BluetoothSocketApiTest.Listen:BluetoothSocketApiTest.PermissionDenied"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5049,7 +5045,6 @@
         "args": [
           "--gtest_filter=-SingleClientSessionsSyncTestWithFaviconTestServer.ShouldDeleteOnDemandIconsOnSessionsDisabled"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5127,7 +5122,7 @@
       },
       {
         "args": [
-          "--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:DesktopWidgetTest.GetWindowPlacement:DesktopWidgetTest.MinimumSizeConstraints:EditableComboboxTest.AltLeftOrRightDoesNothing:EditableComboboxTest.CtrlLeftOrRightMovesToNextWords:EditableComboboxTest.EndOrHomeMovesToBeginningOrEndOfText:EditableComboboxTest.MenuCanAdaptToContentChange:TextfieldTest.ContextMenuDisplayTest:TextfieldTest.CutCopyPasteWithEditCommand:TextfieldTest.OverflowTest:TextfieldTest.SwitchFocusInKeyDown:TooltipControllerTest*"
+          "--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:DesktopWidgetTest.GetWindowPlacement:DesktopWidgetTest.MinimumSizeConstraints:EditableComboboxTest*:TextfieldTest*:TooltipControllerTest*"
         ],
         "experiment_percentage": 100,
         "merge": {

@@ -368,22 +368,6 @@ TEST(Int256, AliasTests) {
   EXPECT_EQ(x4, x3);
 }
 
-TEST(Int256, DivideByZeroCheckFails) {
-  uint256 a = 0;
-  uint256 b = 0;
-  EXPECT_DEATH(a / b, "Division or mod by zero:");
-  a = 123;
-  EXPECT_DEATH(a / b, "Division or mod by zero:");
-}
-
-TEST(Int256, ModByZeroCheckFails) {
-  uint256 a = 0;
-  uint256 b = 0;
-  EXPECT_DEATH(a % b, "Division or mod by zero:");
-  a = 123;
-  EXPECT_DEATH(a % b, "Division or mod by zero:");
-}
-
 TEST(Int256, DivideAndMod) {
   // a := q * b + r
   uint256 a, b, q, r;

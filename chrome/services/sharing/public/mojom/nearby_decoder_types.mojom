@@ -8,11 +8,14 @@ import "mojo/public/mojom/base/time.mojom";
 
 // An advertisement send by a device in receiving mode.
 struct Advertisement {
-  // Random data erived from a device's private key.
+  // Random bytes that were used as salt during encryption of public
+  // certificate metadata.
   array<uint8, 2> salt;
 
-  // Derived from a device's private key. Identifying data for the device.
-  array<uint8, 14> encrypted_metadata;
+  // An encrypted symmetric key that was used to encrypt public certificate
+  // metadata. The key can be decrypted using |salt| and the corresponding
+  // public certificate's secret/authenticity key.
+  array<uint8, 14> encrypted_metadata_key;
 
   // If present, the device is visible to everyone rather than contacts only.
   string? device_name;

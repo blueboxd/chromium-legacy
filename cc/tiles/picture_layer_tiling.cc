@@ -35,13 +35,15 @@ PictureLayerTiling::PictureLayerTiling(
     scoped_refptr<RasterSource> raster_source,
     PictureLayerTilingClient* client,
     float min_preraster_distance,
-    float max_preraster_distance)
+    float max_preraster_distance,
+    bool can_use_lcd_text)
     : raster_transform_(raster_transform),
       client_(client),
       tree_(tree),
       raster_source_(raster_source),
       min_preraster_distance_(min_preraster_distance),
-      max_preraster_distance_(max_preraster_distance) {
+      max_preraster_distance_(max_preraster_distance),
+      can_use_lcd_text_(can_use_lcd_text) {
   DCHECK(!raster_source->IsSolidColor());
   DCHECK_GE(raster_transform.translation().x(), 0.f);
   DCHECK_LT(raster_transform.translation().x(), 1.f);
@@ -301,8 +303,13 @@ Tile::CreateInfo PictureLayerTiling::CreateInfoForTile(int i, int j) const {
   tile_rect.set_size(tiling_data_.max_texture_size());
   gfx::Rect enclosing_layer_rect =
       EnclosingLayerRectFromContentsRect(tile_rect);
-  return Tile::CreateInfo(this, i, j, enclosing_layer_rect, tile_rect,
-                          raster_transform_);
+  return Tile::CreateInfo{this,
+                          i,
+                          j,
+                          enclosing_layer_rect,
+                          tile_rect,
+                          raster_transform_,
+                          can_use_lcd_text_};
 }
 
 bool PictureLayerTiling::ShouldCreateTileAt(

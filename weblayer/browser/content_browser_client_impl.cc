@@ -29,6 +29,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/prerender/browser/prerender_manager.h"
+#include "components/prerender/common/prerender_url_loader_throttle.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
@@ -39,6 +41,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/generated_code_cache_settings.h"
@@ -76,6 +79,8 @@
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/navigation_error_navigation_throttle.h"
+#include "weblayer/browser/no_state_prefetch/prerender_manager_factory.h"
+#include "weblayer/browser/no_state_prefetch/prerender_utils.h"
 #include "weblayer/browser/page_specific_content_settings_delegate.h"
 #include "weblayer/browser/password_manager_driver_factory.h"
 #include "weblayer/browser/popup_navigation_delegate_impl.h"
@@ -227,6 +232,14 @@ void RegisterPrefs(PrefRegistrySimple* pref_registry) {
   metrics::AndroidMetricsServiceClient::RegisterPrefs(pref_registry);
 #endif
   variations::VariationsService::RegisterPrefs(pref_registry);
+}
+
+mojo::PendingRemote<prerender::mojom::PrerenderCanceler> GetPrerenderCanceler(
+    content::WebContents* web_contents) {
+  mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler;
+  weblayer::PrerenderContentsFromWebContents(web_contents)
+      ->AddPrerenderCancelerReceiver(canceler.InitWithNewPipeAndPassReceiver());
+  return canceler;
 }
 
 }  // namespace
@@ -399,6 +412,18 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
   if (signin_throttle)
     result.push_back(std::move(signin_throttle));
 
+  // Create prerender URL throttle.
+  auto* web_contents = wc_getter.Run();
+  auto* prerender_contents = PrerenderContentsFromWebContents(web_contents);
+  if (prerender_contents && prerender_contents->prerender_mode() !=
+                                prerender::mojom::PrerenderMode::kNoPrerender) {
+    result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
+        prerender_contents->prerender_mode(),
+        prerender::PrerenderHistograms::GetHistogramPrefix(
+            prerender_contents->origin()),
+        GetPrerenderCanceler(web_contents)));
+  }
+
   return result;
 }
 
@@ -448,6 +473,40 @@ bool ContentBrowserClientImpl::IsHandledURL(const GURL& url) {
 std::vector<url::Origin>
 ContentBrowserClientImpl::GetOriginsRequiringDedicatedProcess() {
   return site_isolation::GetBrowserSpecificBuiltInIsolatedOrigins();
+}
+
+bool ContentBrowserClientImpl::MayReuseHost(
+    content::RenderProcessHost* process_host) {
+  // If there is currently a prerender in progress for the host provided,
+  // it may not be shared. We require prerenders to be by themselves in a
+  // separate process so that we can monitor their resource usage.
+  prerender::PrerenderManager* prerender_manager =
+      PrerenderManagerFactory::GetForBrowserContext(
+          process_host->GetBrowserContext());
+  if (prerender_manager &&
+      !prerender_manager->MayReuseProcessHost(process_host)) {
+    return false;
+  }
+
+  return true;
+}
+
+void ContentBrowserClientImpl::OverridePageVisibilityState(
+    content::RenderFrameHost* render_frame_host,
+    content::PageVisibilityState* visibility_state) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  DCHECK(web_contents);
+
+  prerender::PrerenderManager* prerender_manager =
+      PrerenderManagerFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+  if (prerender_manager &&
+      prerender_manager->IsWebContentsPrerendering(web_contents, nullptr)) {
+    *visibility_state = content::PageVisibilityState::kHiddenButPainting;
+  }
 }
 
 bool ContentBrowserClientImpl::ShouldDisableSiteIsolation() {

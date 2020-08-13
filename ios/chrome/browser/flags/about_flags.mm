@@ -708,6 +708,9 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
                                     web::BuildMobileUserAgent(product));
   }
 
+  // Shared policy dictionary for all enterprise experimental flags.
+  NSMutableDictionary* testing_policies = [[NSMutableDictionary alloc] init];
+
   // Set some sample policy values for testing if EnableSamplePolicies is
   // enabled.
   if ([defaults boolForKey:@"EnableSamplePolicies"]) {
@@ -726,7 +729,7 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     ];
 
     // Define sample policies to enable.
-    NSDictionary* testing_policies = @{
+    [testing_policies addEntriesFromDictionary:@{
       base::SysUTF8ToNSString(policy::key::kEnableExperimentalPolicies) :
           experimental_policies,
 
@@ -751,7 +754,22 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
       base::SysUTF8ToNSString(policy::key::kPasswordManagerEnabled) : @NO,
 
       base::SysUTF8ToNSString(policy::key::kTranslateEnabled) : @NO,
-    };
+    }];
+  }
+
+  // If a CBCM enrollment token is provided, force Chrome Browser Cloud
+  // Management to enabled and add the token to the list of policies.
+  NSString* token_key =
+      base::SysUTF8ToNSString(policy::key::kCloudManagementEnrollmentToken);
+  NSString* token = [defaults stringForKey:token_key];
+
+  if ([token length] > 0) {
+    command_line->AppendSwitch(switches::kEnableChromeBrowserCloudManagement);
+    [testing_policies setValue:token forKey:token_key];
+  }
+
+  // If some policies were set, commit them to the app's registration defaults.
+  if ([testing_policies count] > 0) {
     NSDictionary* registration_defaults =
         @{kPolicyLoaderIOSConfigurationKey : testing_policies};
     [defaults registerDefaults:registration_defaults];

@@ -265,11 +265,23 @@ void DiceWebSigninInterceptor::OnProfileCreationChoice(bool create) {
     return;
   }
 
+  std::string profile_name;
+  base::Optional<AccountInfo> account_info =
+      identity_manager_
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id_);
+  if (account_info) {
+    bool is_managed = !account_info->hosted_domain.empty() &&
+                      account_info->hosted_domain != kNoHostedDomainFound;
+    profile_name =
+        is_managed ? account_info->hosted_domain : account_info->given_name;
+  }
+
   DCHECK(!dice_signed_in_profile_creator_);
   // Unretained is fine because the profile creator is owned by this.
   dice_signed_in_profile_creator_ =
       std::make_unique<DiceSignedInProfileCreator>(
-          profile_, account_id_,
+          profile_, account_id_, profile_name,
           base::BindOnce(&DiceWebSigninInterceptor::OnNewSignedInProfileCreated,
                          base::Unretained(this)));
 }

@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "components/prerender/renderer/prerender_helper.h"
 #include "components/translate/content/renderer/translate_agent.h"
 #include "components/translate/core/common/translate_util.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -105,6 +106,10 @@ void WebLayerRenderFrameObserver::CapturePageText() {
 
   // Don't capture contents unless there is a translate agent to consume them.
   if (!translate_agent_)
+    return;
+
+  // Don't index/capture pages that are being prerendered.
+  if (prerender::PrerenderHelper::IsPrerendering(render_frame()))
     return;
 
   base::TimeTicks capture_begin_time = base::TimeTicks::Now();

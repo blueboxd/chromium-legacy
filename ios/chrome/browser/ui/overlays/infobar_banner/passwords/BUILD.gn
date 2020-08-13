@@ -46,6 +46,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/infobars/banners/test",
     "//ios/chrome/browser/ui/infobars/test",
     "//ios/chrome/browser/ui/overlays/test",
+    "//ios/chrome/browser/ui/resources:password_key",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",

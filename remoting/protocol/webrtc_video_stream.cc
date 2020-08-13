@@ -351,6 +351,16 @@ void WebrtcVideoStream::OnEncoderCreated(
     webrtc::VideoCodecType codec_type,
     const webrtc::SdpVideoFormat::Parameters& parameters) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Reset the encoder in case a previous one was being used and SDP
+  // re-negotiation selected a different one. The proper codec will be
+  // created after the next frame is captured.
+  // An optimization would be to reset only if the new encoder is different
+  // from the current one. However, SDP renegotiation is expected to occur
+  // infrequently (only when the user changes a setting), and should typically
+  // not cause the same codec to be repeatedly selected.
+  encoder_.reset();
+
   // The preferred codec id depends on the order of
   // |encoder_selector_|.RegisterEncoder().
   if (codec_type == webrtc::kVideoCodecVP8) {

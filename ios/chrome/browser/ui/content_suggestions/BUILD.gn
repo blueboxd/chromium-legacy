@@ -283,6 +283,7 @@ source_set("eg2_tests") {
     ":constants",
     ":content_suggestions_constant",
     ":eg_test_support+eg2",
+    ":feature_flags",
     "//base",
     "//base/test:test_support",
     "//components/strings",

@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.12 Mac10.13 Mac10.14 Mac10.15 Win Win7 Win10 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Mac10.14 Mac10.15 Win Win7 Win10 ]
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Skip ]
 
@@ -3324,8 +3324,6 @@ crbug.com/626703 [ Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.wo
 crbug.com/626703 [ Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
 
 crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeout Crash ]
-crbug.com/626703 [ IOS ] external/wpt/websockets/Create-Secure-extensions-empty.any.html [ Timeout ]
-crbug.com/626703 [ IOS ] external/wpt/websockets/Create-Secure-extensions-empty.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/history/joint-session-history/joint-session-history-remove-iframe.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-006.html [ Failure ]

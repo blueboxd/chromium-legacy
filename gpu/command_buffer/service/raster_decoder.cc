@@ -2436,9 +2436,17 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
     }
   }
 
+  size_t byte_size = src_info.computeByteSize(row_bytes);
+  if (byte_size > UINT32_MAX) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glWritePixels",
+        "Cannot request a memory chunk larger than UINT32_MAX bytes");
+    return;
+  }
+
   // The pixels are stored after the serialized SkColorSpace + padding
-  void* pixel_data = GetSharedMemoryAs<void*>(
-      shm_id, shm_offset + pixels_offset, src_info.computeByteSize(row_bytes));
+  void* pixel_data =
+      GetSharedMemoryAs<void*>(shm_id, shm_offset + pixels_offset, byte_size);
   if (!pixel_data) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixels",
                        "Couldn't retrieve pixel data.");
@@ -2553,15 +2561,24 @@ void RasterDecoderImpl::DoReadbackImagePixelsINTERNAL(
     return;
   }
 
-  void* shm_address = GetSharedMemoryAs<void*>(
-      shm_id, shm_offset + pixels_offset, dst_info.computeByteSize(row_bytes));
+  size_t byte_size = dst_info.computeByteSize(row_bytes);
+  if (byte_size > UINT32_MAX) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glReadbackImagePixels",
+        "Cannot request a memory chunk larger than UINT32_MAX bytes");
+    return;
+  }
+
+  void* shm_address =
+      GetSharedMemoryAs<void*>(shm_id, shm_offset + pixels_offset, byte_size);
   if (!shm_address) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
                        "Failed to retrieve memory for readPixels");
     return;
   }
 
-  bool success = sk_image->readPixels(dst_info, shm_address, row_bytes, 0, 0);
+  bool success =
+      sk_image->readPixels(dst_info, shm_address, row_bytes, src_x, src_y);
   if (!success) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
                        "Failed to read pixels from SkImage");

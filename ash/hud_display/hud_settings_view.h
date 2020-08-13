@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/hud_display/hud_constants.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -21,10 +20,6 @@ class HUDCheckboxHandler;
 class HUDSettingsView : public views::ButtonListener, public views::View {
  public:
   METADATA_HEADER(HUDSettingsView);
-
-  // Use light orange color.
-  static constexpr SkColor kDefaultColor =
-      SkColorSetARGB(kHUDAlpha, 0xFF, 0xB2, 0x66);
 
   HUDSettingsView();
   ~HUDSettingsView() override;

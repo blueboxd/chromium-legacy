@@ -73,7 +73,6 @@ def CommonChecks(input_api, output_api):
           output_api,
           unit_tests=[
               J('.', 'emma_coverage_stats_test.py'),
-              J('.', 'generate_jacoco_report_test.py'),
               J('.', 'list_class_verification_failures_test.py'),
               J('gyp', 'util', 'build_utils_test.py'),
               J('gyp', 'util', 'manifest_utils_test.py'),

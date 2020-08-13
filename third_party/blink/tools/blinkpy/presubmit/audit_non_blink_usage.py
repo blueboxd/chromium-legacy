@@ -46,6 +46,7 @@ _CONFIG = [
             'base::Location',
             'base::MakeRefCounted',
             'base::Optional',
+            'base::OptionalFromPtr',
             'base::OptionalOrNullptr',
             'base::PlatformThread',
             'base::PlatformThreadId',

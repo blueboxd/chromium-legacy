@@ -79,26 +79,23 @@ BEGIN_METADATA(HUDSettingsView)
 METADATA_PARENT_CLASS(View)
 END_METADATA()
 
-constexpr SkColor HUDSettingsView::kDefaultColor;
-
 HUDSettingsView::HUDSettingsView() {
   SetVisible(false);
 
-  auto layout_manager = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical);
+  views::BoxLayout* layout_manager =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
-  SetLayoutManager(std::move(layout_manager));
-  SetBorder(views::CreateSolidBorder(1, kDefaultColor));
+  SetBorder(views::CreateSolidBorder(1, kHUDDefaultColor));
 
   auto add_checkbox = [](HUDSettingsView* self,
                          const base::string16& text) -> views::Checkbox* {
-    auto checkbox = std::make_unique<views::Checkbox>(text, self);
-    views::Checkbox* result = checkbox.get();
-    checkbox->SetEnabledTextColors(kDefaultColor);
+    views::Checkbox* checkbox =
+        self->AddChildView(std::make_unique<views::Checkbox>(text, self));
+    checkbox->SetEnabledTextColors(kHUDDefaultColor);
     checkbox->SetProperty(kHUDClickHandler, HTCLIENT);
-    self->AddChildView(std::move(checkbox));
-    return result;
+    return checkbox;
   };
 
   checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(

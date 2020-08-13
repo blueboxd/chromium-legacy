@@ -57,7 +57,7 @@ class FeedNetworkImpl : public FeedNetwork {
       base::OnceCallback<void(QueryRequestResult)> callback) override;
 
   void SendActionRequest(
-      const feedwire::FeedActionRequest& request,
+      const feedwire::UploadActionsRequest& request,
       base::OnceCallback<void(ActionRequestResult)> callback) override;
 
   // Cancels all pending requests immediately. This could be used, for example,

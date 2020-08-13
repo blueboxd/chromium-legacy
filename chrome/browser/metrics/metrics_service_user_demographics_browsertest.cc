@@ -92,20 +92,12 @@ class MetricsServiceUserDemographicsBrowserTest
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceUserDemographicsBrowserTest);
 };
 
-// https://crbug.com/1102747
-#if defined(OS_ANDROID)
-#define MAYBE_AddSyncedUserBirthYearAndGenderToProtoData \
-  DISABLED_AddSyncedUserBirthYearAndGenderToProtoData
-#else
-#define MAYBE_AddSyncedUserBirthYearAndGenderToProtoData \
-  AddSyncedUserBirthYearAndGenderToProtoData
-#endif
 // TODO(crbug/1016118): Add the remaining test cases.
 // Keep this test in sync with testUMADemographicsReportingWithFeatureEnabled
 // and testUMADemographicsReportingWithFeatureDisabled in
 // ios/chrome/browser/metrics/demographics_egtest.mm.
 IN_PROC_BROWSER_TEST_P(MetricsServiceUserDemographicsBrowserTest,
-                       MAYBE_AddSyncedUserBirthYearAndGenderToProtoData) {
+                       AddSyncedUserBirthYearAndGenderToProtoData) {
   test::DemographicsTestParams param = GetParam();
 
   base::HistogramTester histogram;
@@ -126,10 +118,10 @@ IN_PROC_BROWSER_TEST_P(MetricsServiceUserDemographicsBrowserTest,
   Profile* test_profile = ProfileManager::GetActiveUserProfile();
 
   // Enable sync for the test profile.
-  std::unique_ptr<ProfileSyncServiceHarness> test_profile_harness =
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
       test::InitializeProfileForSync(test_profile,
                                      GetFakeServer()->AsWeakPtr());
-  test_profile_harness->SetupSync();
+  harness->SetupSync();
 
   // Make sure that there is only one Profile to allow reporting the user's
   // birth year and gender.
@@ -152,7 +144,12 @@ IN_PROC_BROWSER_TEST_P(MetricsServiceUserDemographicsBrowserTest,
     histogram.ExpectTotalCount("UMA.UserDemographics.Status", /*count=*/0);
   }
 
-  test_profile_harness->service()->GetUserSettings()->SetSyncRequested(false);
+#if !defined(OS_CHROMEOS)
+  // Sign out the user to revoke all refresh tokens. This prevents any posted
+  // tasks from successfully fetching an access token during the tear-down
+  // phase and crashing on a DCHECK. See crbug/1102746 for more details.
+  harness->SignOutPrimaryAccount();
+#endif  // !defined(OS_CHROMEOS)
 }
 
 #if defined(OS_CHROMEOS)

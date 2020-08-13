@@ -35,6 +35,7 @@ EffectNode::EffectNode()
       effect_changed(false),
       subtree_has_copy_request(false),
       is_fast_rounded_corner(false),
+      node_or_ancestor_has_filters(false),
       render_surface_reason(RenderSurfaceReason::kNone),
       transform_id(0),
       clip_id(0),
@@ -59,6 +60,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          backdrop_mask_element_id == other.backdrop_mask_element_id &&
          rounded_corner_bounds == other.rounded_corner_bounds &&
          is_fast_rounded_corner == other.is_fast_rounded_corner &&
+         node_or_ancestor_has_filters == other.node_or_ancestor_has_filters &&
          // The specific reason is just for tracing/testing/debugging, so just
          // check whether a render surface is needed.
          HasRenderSurface() == other.HasRenderSurface() &&
@@ -153,6 +155,8 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
     value->SetString("backdrop_filters", backdrop_filters.ToString());
   value->SetDouble("backdrop_filter_quality", backdrop_filter_quality);
   value->SetBoolean("is_fast_rounded_corner", is_fast_rounded_corner);
+  value->SetBoolean("node_or_ancestor_has_filters",
+                    node_or_ancestor_has_filters);
   if (!rounded_corner_bounds.IsEmpty()) {
     MathUtil::AddToTracedValue("rounded_corner_bounds", rounded_corner_bounds,
                                value);

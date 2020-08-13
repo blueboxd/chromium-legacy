@@ -141,7 +141,7 @@ def DumpAPK(apk):
                 match.group('cmpr') == 0))
   return apk_entries
 
-def VerifySameFile(monochrome_dict, apk, changes):
+def VerifySameFile(monochrome_dict, apk, changes, apk_name):
   """Verify apk file content matches same files in monochrome.
 
   Verify files from apk are same as those in monochrome except files
@@ -154,11 +154,16 @@ def VerifySameFile(monochrome_dict, apk, changes):
     if m and m.CRC != a.CRC and not changes.match(m.filename):
       diff.append(a.filename)
   if len(diff):
-    raise Exception("The following files are not same as Monochrome:\n %s" %
-                    '\n'.join(diff))
+    msg = """\
+Unless specifcially excepted, all files in {0} should be exactly the same as
+the similarly named file in Monochrome. However these files were present in
+both monochrome and {0}, but had different contents:
+{1}
+""".format(apk_name, '\n'.join(diff))
+    raise Exception(msg)
 
 
-def VerifyUncompressed(monochrome, apk):
+def VerifyUncompressed(monochrome, apk, apk_name):
   """Verify uncompressed files in apk are a subset of those in monochrome.
 
   Verify files not being compressed in apk are also uncompressed in
@@ -168,10 +173,15 @@ def VerifyUncompressed(monochrome, apk):
   monochrome_uncompressed = [i.filename for i in monochrome if i.uncompressed]
   compressed = [u for u in uncompressed if u not in monochrome_uncompressed]
   if len(compressed):
-    raise Exception("The following files are compressed in Monochrome:\n %s" %
-                    '\n'.join(compressed))
+    msg = """\
+Uncompressed files in {0} should also be uncompressed in Monochrome.
+However these files were uncompressed in {0} but compressed in Monochrome:
+{1}
+""".format(apk_name, '\n'.join(compressed))
+    raise Exception(msg)
 
-def SuperSetOf(monochrome, apk):
+
+def SuperSetOf(monochrome, apk, apk_name):
   """Verify Monochrome is super set of apk."""
 
   def exists_in_some_form(f):
@@ -189,8 +199,12 @@ def SuperSetOf(monochrome, apk):
 
   missing_files = [f for f in apk if not exists_in_some_form(f)]
   if len(missing_files):
-    raise Exception('The following files are missing in Monochrome:\n %s' %
-                    '\n'.join(missing_files))
+    msg = """\
+Monochrome is expected to have a superset of the files in {0}.
+However these files were present in {0} but not in Monochrome:
+{1}
+""".format(apk_name, '\n'.join(missing_files))
+    raise Exception(msg)
 
 
 def RemoveSpecific(apk_entries, specific):
@@ -228,20 +242,29 @@ def ParseArgs(args):
   Returns:
     An Namespace from argparse.parse_args()
   """
-  parser = argparse.ArgumentParser(prog='monochrome_apk_checker')
+  parser = argparse.ArgumentParser(
+      prog='monochrome_apk_checker',
+      description='This script enforces expectations about similarities '
+      'between Chrome, Monochrome and Webview APKs.',
+      epilog='If the release APK is obfuscated, you will find its pathmap next '
+      'to the apk in your output directory, ending with ".pathmap".')
 
-  parser.add_argument(
-      '--monochrome-apk', required=True, help='The monochrome APK path.')
+  required_args = parser.add_argument_group('required arguments')
+
+  required_args.add_argument(
+      '--monochrome-apk', required=True, help='The path to the monochrome APK.')
   parser.add_argument(
       '--monochrome-pathmap', help='The monochrome APK resources pathmap path.')
-  parser.add_argument('--chrome-apk',
-                      required=True,
-                      help='The chrome APK path.')
+  required_args.add_argument(
+      '--chrome-apk',
+      required=True,
+      help='The path to the chrome APK.')
   parser.add_argument(
       '--chrome-pathmap', help='The chrome APK resources pathmap path.')
-  parser.add_argument('--system-webview-apk',
-                      required=True,
-                      help='The system webview APK path.')
+  required_args.add_argument(
+      '--system-webview-apk',
+      required=True,
+      help='The path to the system webview APK.')
   parser.add_argument(
       '--system-webview-pathmap',
       help='The system webview APK resources pathmap path.')
@@ -265,25 +288,31 @@ def main():
   chrome = RemoveSpecific(DumpAPK(options.chrome_apk),
                           CHROME_SPECIFIC)
   if len(chrome) == 0:
-    raise Exception('Chrome should have common files with Monochrome')
+    raise Exception(
+        'Chrome should have common files with Monochrome. However the passed '
+        'in APKs do not have any files in common. Are you sure you are passing '
+        'in the right arguments?')
 
   webview = RemoveSpecific(DumpAPK(options.system_webview_apk),
                            WEBVIEW_SPECIFIC)
   if len(webview) == 0:
-    raise Exception('WebView should have common files with Monochrome')
+    raise Exception(
+        'Webview should have common files with Monochrome. However the passed '
+        'in APKs do not have any files in common. Are you sure you are passing '
+        'in the right arguments?')
 
-  def check_apk(apk, pathmap):
+  def check_apk(apk, pathmap, apk_name):
     apk_files = [DeobfuscateFilename(f.filename, pathmap) for f in apk]
-    SuperSetOf(monochrome_files, apk_files)
-    VerifyUncompressed(monochrome, apk)
-    VerifySameFile(monochrome_dict, chrome, CHROME_CHANGES)
-    VerifySameFile(monochrome_dict, webview, WEBVIEW_CHANGES)
+    SuperSetOf(monochrome_files, apk_files, apk_name)
+    VerifyUncompressed(monochrome, apk, apk_name)
 
   chrome_pathmap = LoadPathmap(options.chrome_pathmap)
-  check_apk(chrome, chrome_pathmap)
+  check_apk(chrome, chrome_pathmap, 'Chrome')
+  VerifySameFile(monochrome_dict, chrome, CHROME_CHANGES, 'Chrome')
 
   webview_pathmap = LoadPathmap(options.system_webview_pathmap)
-  check_apk(webview, webview_pathmap)
+  check_apk(webview, webview_pathmap, 'Webview')
+  VerifySameFile(monochrome_dict, webview, WEBVIEW_CHANGES, 'Webview')
 
 if __name__ == '__main__':
   sys.exit(main())

@@ -28,6 +28,10 @@ enum class ControlsVisibilityReason {
   // If accessibility is enabled, controls are forced shown.
   kAccessibility,
 
+  // Browser controls visibility can be set to force them to animate in/out when
+  // being set or cleared.
+  kAnimation,
+
   kReasonCount,
 };
 

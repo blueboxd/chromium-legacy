@@ -4959,35 +4959,69 @@ TEST_F(LegacySWPictureLayerImplTest, ScrollPropagatesToPending) {
                                 .ToString());
 }
 
-TEST_F(LegacySWPictureLayerImplTest, UpdateLCDInvalidatesPendingTree) {
-  host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
-
-  gfx::Size tile_size(102, 102);
+TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextInvalidatesPendingTree) {
   gfx::Size layer_bounds(100, 100);
-  gfx::Size viewport_size(100, 100);
-
-  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
-  SetInitialDeviceScaleFactor(1.f);
-
-  scoped_refptr<FakeRasterSource> pending_raster_source =
-      FakeRasterSource::CreateFilledLCD(layer_bounds);
-  SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
+  SetupPendingTree(FakeRasterSource::CreateFilled(layer_bounds));
 
   EXPECT_TRUE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
   std::vector<Tile*> tiles =
       pending_layer()->HighResTiling()->AllTilesForTesting();
+  for (Tile* tile : tiles)
+    EXPECT_TRUE(tile->can_use_lcd_text());
 
   pending_layer()->SetContentsOpaque(false);
-  pending_layer()->UpdateCanUseLCDTextAfterCommit();
+  pending_layer()->UpdateTiles();
 
   EXPECT_FALSE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
-  std::vector<Tile*> new_tiles =
-      pending_layer()->HighResTiling()->AllTilesForTesting();
-  ASSERT_EQ(tiles.size(), new_tiles.size());
-  for (size_t i = 0; i < tiles.size(); ++i)
-    EXPECT_NE(tiles[i], new_tiles[i]);
+  for (Tile* tile : pending_layer()->HighResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
+
+  pending_layer()->SetContentsOpaque(true);
+  pending_layer()->UpdateTiles();
+  // Once we disable lcd text, we don't re-enable it.
+  EXPECT_FALSE(pending_layer()->can_use_lcd_text());
+  EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
+  for (Tile* tile : pending_layer()->HighResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
+}
+
+TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextPushToActiveTree) {
+  SetupPendingTree(FakeRasterSource::CreateFilled(gfx::Size(200, 200)));
+  float page_scale = 4.f;
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), page_scale, 1.0f,
+                                    page_scale, 1.0f, 0.f, false);
+  EXPECT_TRUE(pending_layer()->can_use_lcd_text());
+  EXPECT_TRUE(pending_layer()->HighResTiling()->can_use_lcd_text());
+  ActivateTree();
+
+  EXPECT_TRUE(active_layer()->can_use_lcd_text());
+  ASSERT_EQ(2u, active_layer()->tilings()->num_tilings());
+  ASSERT_TRUE(active_layer()->HighResTiling()->has_tiles());
+  std::vector<Tile*> tiles =
+      active_layer()->HighResTiling()->AllTilesForTesting();
+  for (Tile* tile : tiles)
+    EXPECT_TRUE(tile->can_use_lcd_text());
+  for (Tile* tile : active_layer()->LowResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
+
+  SetupPendingTree(FakeRasterSource::CreateFilled(gfx::Size(200, 200)));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), page_scale, 1.0f,
+                                    page_scale, 1.0f, 0.f, false);
+  pending_layer()->SetContentsOpaque(false);
+  pending_layer()->UpdateTiles();
+  EXPECT_FALSE(pending_layer()->can_use_lcd_text());
+  EXPECT_FALSE(pending_layer()->HighResTiling()->can_use_lcd_text());
+  ActivateTree();
+
+  EXPECT_FALSE(active_layer()->can_use_lcd_text());
+  ASSERT_EQ(2u, active_layer()->tilings()->num_tilings());
+  ASSERT_TRUE(active_layer()->HighResTiling()->has_tiles());
+  for (Tile* tile : active_layer()->HighResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
+  for (Tile* tile : active_layer()->LowResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
 }
 
 TEST_F(LegacySWPictureLayerImplTest, TilingAllTilesDone) {
@@ -6174,9 +6208,7 @@ TEST_P(LCDTextTest, Filter) {
   FilterOperations blur_filter;
   blur_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
   SetFilter(child_, blur_filter);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kPixelOrColorEffect, child_);
-  // TODO(crbug.com/1114504): will-change:transform should apply to descendants.
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kPixelOrColorEffect);
 
   SetFilter(child_, FilterOperations());
   CheckCanUseLCDText(LCDTextDisallowedReason::kNone);

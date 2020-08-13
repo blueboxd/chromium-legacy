@@ -16,7 +16,7 @@ import './strings.js';
 
 import {ManageProfilesBrowserProxy, ManageProfilesBrowserProxyImpl, ProfileState} from './manage_profiles_browser_proxy.js';
 import {navigateTo, NavigationBehavior, Routes} from './navigation_behavior.js';
-
+import {isGuestModeEnabled, isProfileCreationAllowed} from './policy_helper.js';
 
 Polymer({
   is: 'profile-picker-main-view',
@@ -48,6 +48,14 @@ Polymer({
 
   /** @override */
   ready() {
+    if (!isGuestModeEnabled()) {
+      this.$.browseAsGuestButton.style.display = 'none';
+    }
+
+    if (!isProfileCreationAllowed()) {
+      this.$.addProfile.style.display = 'none';
+    }
+
     this.manageProfilesBrowserProxy_ =
         ManageProfilesBrowserProxyImpl.getInstance();
   },
@@ -92,11 +100,17 @@ Polymer({
 
   /** @private */
   onAddProfileClick_() {
+    if (!isProfileCreationAllowed()) {
+      return;
+    }
     navigateTo(Routes.NEW_PROFILE);
   },
 
   /** @private */
   onLaunchGuestProfileClick_() {
+    if (!isGuestModeEnabled()) {
+      return;
+    }
     this.manageProfilesBrowserProxy_.launchGuestProfile();
   },
 

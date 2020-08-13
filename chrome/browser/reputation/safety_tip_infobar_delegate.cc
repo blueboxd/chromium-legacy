@@ -100,6 +100,15 @@ void SafetyTipInfoBarDelegate::InfoBarDismissed() {
       ->SetUserIgnore(web_contents_, url_, action_taken_);
 }
 
+base::string16 SafetyTipInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_MORE_INFO_LINK);
+}
+
+bool SafetyTipInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+  OpenHelpCenterFromSafetyTip(web_contents_);
+  return false;
+}
+
 base::string16 SafetyTipInfoBarDelegate::GetDescriptionText() const {
   return GetSafetyTipDescription(safety_tip_status_, suggested_url_);
 }

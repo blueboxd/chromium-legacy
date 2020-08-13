@@ -9,7 +9,7 @@
 #include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
-#import "ios/chrome/browser/ui/settings/password/password_details/password_details_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -18,8 +18,9 @@
 using CompromisedCredentialsView =
     password_manager::CompromisedCredentialsManager::CredentialsView;
 
-@interface PasswordDetailsMediator () <PasswordCheckObserver,
-                                       PasswordDetailsViewControllerDelegate> {
+@interface PasswordDetailsMediator () <
+    PasswordCheckObserver,
+    PasswordDetailsTableViewControllerDelegate> {
   // Password Check manager.
   IOSChromePasswordCheckManager* _manager;
 
@@ -55,9 +56,10 @@ using CompromisedCredentialsView =
   _manager->RemoveObserver(_passwordCheckObserver.get());
 }
 
-#pragma mark - PasswordDetailsViewControllerDelegate
+#pragma mark - PasswordDetailsTableViewControllerDelegate
+
 - (void)passwordDetailsViewController:
-            (PasswordDetailsViewController*)viewController
+            (PasswordDetailsTableViewController*)viewController
                didEditPasswordDetails:(PasswordDetails*)password {
   if ([password.password length] != 0) {
     password.compromised

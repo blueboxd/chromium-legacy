@@ -140,6 +140,7 @@ source_set("headers") {
     "messaging/transferable_message_mojom_traits.h",
     "messaging/web_message_port.h",
     "metrics/document_update_reason.h",
+    "metrics/form_element_pii_type.h",
     "mime_util/mime_util.h",
     "navigation/triggering_event_info.h",
     "notifications/notification_constants.h",

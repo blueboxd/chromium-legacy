@@ -2706,6 +2706,11 @@ enum WebFeature {
   kV8RTCRtpTransceiver_Stop_Method = 3375,
   kSecurePaymentConfirmation = 3376,
   kCSSInvalidVariableUnset = 3377,
+  kElementInternalsShadowRoot = 3378,
+  kAnyPiiFieldDetected_PredictedTypeMatch = 3379,
+  kEmailFieldDetected_PredictedTypeMatch = 3380,
+  kPhoneFieldDetected_PredictedTypeMatch = 3381,
+  kEmailFieldDetected_PatternMatch = 3382,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

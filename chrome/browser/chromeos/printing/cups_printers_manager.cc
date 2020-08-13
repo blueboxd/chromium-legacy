@@ -425,6 +425,14 @@ class CupsPrintersManagerImpl
         break;
       }
       case PrinterQueryResult::SUCCESS: {
+        // Record results from PrinterStatus before converting to
+        // CupsPrinterStatus because the PrinterStatus enum contains more reason
+        // buckets.
+        for (const auto& reason : printer_status.reasons) {
+          base::UmaHistogramEnumeration("Printing.CUPS.PrinterStatusReasons",
+                                        reason.reason);
+        }
+
         // Convert printing::PrinterStatus to printing::CupsPrinterStatus
         CupsPrinterStatus cups_printers_status =
             PrinterStatusToCupsPrinterStatus(printer_id, printer_status);

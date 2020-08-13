@@ -39,6 +39,7 @@ class UpdateView {
   virtual void SetEstimatedTimeLeft(int value) = 0;
   virtual void SetShowEstimatedTimeLeft(bool value) = 0;
   virtual void SetUpdateCompleted(bool value) = 0;
+  virtual void SetManualRebootNeeded(bool value) = 0;
   virtual void SetShowCurtain(bool value) = 0;
   virtual void SetProgressMessage(const base::string16& value) = 0;
   virtual void SetProgress(int value) = 0;
@@ -63,6 +64,7 @@ class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
   void SetEstimatedTimeLeft(int value) override;
   void SetShowEstimatedTimeLeft(bool value) override;
   void SetUpdateCompleted(bool value) override;
+  void SetManualRebootNeeded(bool value) override;
   void SetShowCurtain(bool value) override;
   void SetProgressMessage(const base::string16& value) override;
   void SetProgress(int value) override;

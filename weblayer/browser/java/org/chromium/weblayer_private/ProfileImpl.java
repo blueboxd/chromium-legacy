@@ -199,6 +199,13 @@ public final class ProfileImpl extends IProfile.Stub implements BrowserContextHa
         ProfileImplJni.get().removeBrowserPersistenceStorage(mNativeProfile, ids, baseCallback);
     }
 
+    @Override
+    public void prepareForPossibleCrossOriginNavigation() {
+        StrictModeWorkaround.apply();
+        checkNotDestroyed();
+        ProfileImplJni.get().prepareForPossibleCrossOriginNavigation(mNativeProfile);
+    }
+
     void checkNotDestroyed() {
         if (!mBeingDeleted) return;
         throw new IllegalArgumentException("Profile being destroyed: " + mName);
@@ -266,5 +273,6 @@ public final class ProfileImpl extends IProfile.Stub implements BrowserContextHa
         void getBrowserPersistenceIds(long nativeProfileImpl, Callback<String[]> callback);
         void removeBrowserPersistenceStorage(
                 long nativeProfileImpl, String[] ids, Callback<Boolean> callback);
+        void prepareForPossibleCrossOriginNavigation(long nativeProfileImpl);
     }
 }

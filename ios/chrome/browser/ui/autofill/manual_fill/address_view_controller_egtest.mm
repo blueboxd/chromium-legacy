@@ -87,7 +87,15 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that the addresses view controller contains the "Manage Addresses..."
 // action.
-- (void)testAddressesViewControllerContainsManageAddressesAction {
+// TODO(crbug.com/1116043): Flaky on ios simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testAddressesViewControllerContainsManageAddressesAction \
+  DISABLED_testAddressesViewControllerContainsManageAddressesAction
+#else
+#define MAYBE_testAddressesViewControllerContainsManageAddressesAction \
+  testAddressesViewControllerContainsManageAddressesAction
+#endif
+- (void)MAYBE_testAddressesViewControllerContainsManageAddressesAction {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];

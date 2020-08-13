@@ -5544,11 +5544,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kContextualNudges)},
 #endif  // defined(OS_CHROMEOS)
 
-    {"policy-atomic-group-enabled",
-     flag_descriptions::kPolicyAtomicGroupsEnabledName,
-     flag_descriptions::kPolicyAtomicGroupsEnabledDescription, kOsAll,
-     FEATURE_VALUE_TYPE(policy::features::kPolicyAtomicGroup)},
-
     {"decode-jpeg-images-to-yuv",
      flag_descriptions::kDecodeJpeg420ImagesToYUVName,
      flag_descriptions::kDecodeJpeg420ImagesToYUVDescription, kOsAll,

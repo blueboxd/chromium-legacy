@@ -3238,7 +3238,7 @@
   {
     "name": "omnibox-autocomplete-titles",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 95
   },
   {
     "name": "omnibox-clobber-is-zero-suggest-entrypoint",
@@ -3273,7 +3273,7 @@
   {
     "name": "omnibox-drive-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 95
   },
   {
     "name": "omnibox-dynamic-max-autocomplete",
@@ -3308,7 +3308,7 @@
   {
     "name": "omnibox-local-entity-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "omnibox-max-url-matches",

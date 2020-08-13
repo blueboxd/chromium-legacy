@@ -912,6 +912,14 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
         ->GetHealthRemoteAndBindReceiver();
   }));
 
+  // Pass a callback to the CrosHealthd service connection that binds a pending
+  // remote to the interface.
+  cros_healthd->SetBindNetworkDiagnosticsRoutinesCallback(
+      base::BindRepeating([] {
+        return network_health::NetworkHealthService::GetInstance()
+            ->GetDiagnosticsRemoteAndBindReceiver();
+      }));
+
   // Initialize input methods.
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();

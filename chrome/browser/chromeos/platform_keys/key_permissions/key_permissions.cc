@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -146,9 +147,8 @@ bool PolicyAllowsCorporateKeyUsageForExtension(
   return allow_corporate_key_usage;
 }
 
-bool IsKeyOnUserSlot(
-    const std::vector<KeyPermissions::KeyLocation>& key_locations) {
-  return base::Contains(key_locations, KeyPermissions::KeyLocation::kUserSlot);
+bool IsKeyOnUserSlot(const std::vector<TokenId>& key_locations) {
+  return base::Contains(key_locations, TokenId::kUser);
 }
 
 }  // namespace
@@ -194,7 +194,7 @@ KeyPermissions::PermissionsForExtension::~PermissionsForExtension() {}
 
 bool KeyPermissions::PermissionsForExtension::CanUseKeyForSigning(
     const std::string& public_key_spki_der,
-    const std::vector<KeyLocation>& key_locations) {
+    const std::vector<TokenId>& key_locations) {
   if (key_locations.empty())
     return false;
 
@@ -227,7 +227,7 @@ bool KeyPermissions::PermissionsForExtension::CanUseKeyForSigning(
 
 void KeyPermissions::PermissionsForExtension::SetKeyUsedForSigning(
     const std::string& public_key_spki_der,
-    const std::vector<KeyLocation>& key_locations) {
+    const std::vector<TokenId>& key_locations) {
   if (key_locations.empty())
     return;
 
@@ -248,7 +248,7 @@ void KeyPermissions::PermissionsForExtension::SetKeyUsedForSigning(
 
 void KeyPermissions::PermissionsForExtension::RegisterKeyForCorporateUsage(
     const std::string& public_key_spki_der,
-    const std::vector<KeyLocation>& key_locations) {
+    const std::vector<TokenId>& key_locations) {
   if (key_locations.empty()) {
     NOTREACHED();
     return;
@@ -287,7 +287,7 @@ void KeyPermissions::PermissionsForExtension::RegisterKeyForCorporateUsage(
 
 void KeyPermissions::PermissionsForExtension::SetUserGrantedPermission(
     const std::string& public_key_spki_der,
-    const std::vector<KeyLocation>& key_locations) {
+    const std::vector<TokenId>& key_locations) {
   if (!key_permissions_->CanUserGrantPermissionFor(public_key_spki_der,
                                                    key_locations)) {
     LOG(WARNING) << "Tried to grant permission for a key although prohibited "
@@ -422,7 +422,7 @@ void KeyPermissions::GetPermissionsForExtension(
 
 bool KeyPermissions::CanUserGrantPermissionFor(
     const std::string& public_key_spki_der,
-    const std::vector<KeyLocation>& key_locations) const {
+    const std::vector<TokenId>& key_locations) const {
   if (key_locations.empty())
     return false;
 
@@ -480,14 +480,14 @@ std::vector<std::string> KeyPermissions::GetCorporateKeyUsageAllowedAppIds(
 
 bool KeyPermissions::IsCorporateKey(
     const std::string& public_key_spki_der_b64,
-    const std::vector<KeyPermissions::KeyLocation>& key_locations) const {
-  for (const KeyLocation key_location : key_locations) {
+    const std::vector<TokenId>& key_locations) const {
+  for (const auto key_location : key_locations) {
     switch (key_location) {
-      case KeyLocation::kUserSlot:
+      case TokenId::kUser:
         if (IsCorporateKeyForProfile(public_key_spki_der_b64, profile_prefs_))
           return true;
         break;
-      case KeyLocation::kSystemSlot:
+      case TokenId::kSystem:
         return true;
       default:
         NOTREACHED();

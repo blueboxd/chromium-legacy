@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/nss_context.h"
@@ -268,8 +269,7 @@ class ArcCertStoreBridgeTest : public MixinBasedInProcessBrowserTest {
         client_cert1_->derPublicKey.data,
         client_cert1_->derPublicKey.data + client_cert1_->derPublicKey.len);
     permissions_for_ext->RegisterKeyForCorporateUsage(
-        client_cert1_spki,
-        {chromeos::platform_keys::KeyPermissions::KeyLocation::kUserSlot});
+        client_cert1_spki, {chromeos::platform_keys::TokenId::kUser});
     done_callback.Run();
   }
 

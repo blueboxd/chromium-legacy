@@ -23,6 +23,7 @@ Polymer({
     'setEstimatedTimeLeft',
     'showEstimatedTimeLeft',
     'setUpdateCompleted',
+    'setManualRebootNeeded',
     'showUpdateCurtain',
     'setProgressMessage',
     'setUpdateProgress',
@@ -101,6 +102,14 @@ Polymer({
     },
 
     /**
+     * True if update is fully completed and manual action is required.
+     */
+    manualRebootNeeded: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * If update cancellation is allowed.
      */
     cancelAllowed: {
@@ -140,8 +149,10 @@ Polymer({
   },
 
   onBeforeShow() {
-    cr.ui.login.invokePolymerMethod(
-        this.$['checking-downloading-update'], 'onBeforeShow');
+    if (!this.betterUpdateScreenFeatureEnabled_) {
+      cr.ui.login.invokePolymerMethod(
+          this.$['checking-downloading-update'], 'onBeforeShow');
+    }
   },
 
   onBackClicked_() {
@@ -210,6 +221,13 @@ Polymer({
   },
 
   /**
+   * @param {boolean} is_needed True if manual reboot after update is needed.
+   */
+  setManualRebootNeeded(is_needed) {
+    this.manualRebootNeeded = is_needed;
+  },
+
+  /**
    * Shows or hides update curtain.
    * @param {boolean} visible Are curtains visible?
    */
@@ -225,5 +243,15 @@ Polymer({
     this.showLowBatteryWarning = visible;
   },
 
+  /**
+   * Calculates visibility of the reboot progress dialog.
+   * @param {Boolean} manualRebootNeeded If the automatic reboot timer has
+   * elapsed and manual reboot is needed.
+   * @param {Boolean} updateCompleted If update is completed and all
+   * intermediate status elements are hidden.
+   */
+  isRebootProgressBarShown_(manualRebootNeeded, updateCompleted) {
+    return updateCompleted && !manualRebootNeeded;
+  },
 });
 })();

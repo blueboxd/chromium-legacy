@@ -711,6 +711,9 @@ base::TimeDelta TabHoverCardBubbleView::GetDelay(int tab_width) const {
 }
 
 void TabHoverCardBubbleView::FadeInToShow() {
+  // Make sure the hover card isn't accidentally shown if the anchor is gone.
+  if (!GetAnchorView())
+    return;
   fade_animation_delegate_->FadeIn();
 }
 

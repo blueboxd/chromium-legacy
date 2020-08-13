@@ -108,38 +108,6 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg2_tests") {
-  defines = [ "CHROME_EARL_GREY_2" ]
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
-  testonly = true
-  sources = [ "translate_egtest.mm" ]
-  deps = [
-    ":eg_test_support+eg2",
-    "//base/test:test_support",
-    "//components/strings:components_strings_grit",
-    "//components/translate/core/browser:browser",
-    "//components/translate/core/common:common",
-    "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/browser:chrome_url_constants",
-    "//ios/chrome/browser/ui/infobars:feature_flags",
-    "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/translate:legacy_translate_constants",
-    "//ios/chrome/browser/ui/translate:translate_ui_constants",
-    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
-    "//ios/components/webui:url_constants",
-    "//ios/testing/earl_grey:eg_test_support+eg2",
-    "//ios/third_party/earl_grey2:test_lib",
-    "//ios/web/public:public",
-    "//ios/web/public/test/http_server:http_server",
-    "//ui/base:base",
-    "//url:url",
-  ]
-  frameworks = [ "UIKit.framework" ]
-}
-
 source_set("test_support") {
   testonly = true
   sources = [

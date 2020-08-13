@@ -63,15 +63,6 @@ String URLMediaSource::createObjectURL(ScriptState* script_state,
   MediaSourceAttachment* attachment = new MediaSourceAttachment(source);
   DCHECK(attachment->HasOneRef());
 
-  // Ensure the MediaSourceRegistryImpl singleton is constructed, such that the
-  // URLRegistrable implementation of ::Registry() in MediaSourceAttachment is
-  // available prior to MediaSourceAttachment's public URL creation, which uses
-  // it.
-  // TODO(https://crbug.com/878133): Remove this priming of the registry in
-  // favor of initialization of the registry singleton from the modules
-  // initializer.
-  MediaSourceRegistryImpl::EnsureRegistry();  // Ignore the return value.
-
   String url = DOMURL::CreatePublicURL(execution_context, attachment);
 
   // If attachment's registration failed, release its start-at-one reference to

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/check.h"
+#include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/webui_resources.h"
@@ -114,16 +116,16 @@ SigninReauthUI::SigninReauthUI(content::WebUI* web_ui)
   source->AddResourcePath(
       "images/signin_reauth_illustration_dark.svg",
       IDR_SIGNIN_REAUTH_IMAGES_ACCOUNT_PASSWORDS_REAUTH_ILLUSTRATION_DARK_SVG);
-  source->AddLocalizedString("signinReauthTitle",
-                             GetReauthTitleStringId(access_point));
-  source->AddLocalizedString("signinReauthDesc",
-                             IDS_ACCOUNT_PASSWORDS_REAUTH_DESC);
-  source->AddLocalizedString("signinReauthConfirmLabel",
-                             GetReauthConfirmButtonLabelStringId(access_point));
-  source->AddLocalizedString("signinReauthNextLabel",
-                             IDS_ACCOUNT_PASSWORDS_REAUTH_NEXT_BUTTON_LABEL);
-  source->AddLocalizedString("signinReauthCloseLabel",
-                             IDS_ACCOUNT_PASSWORDS_REAUTH_CLOSE_BUTTON_LABEL);
+  AddStringResource(source, "signinReauthTitle",
+                    GetReauthTitleStringId(access_point));
+  AddStringResource(source, "signinReauthDesc",
+                    IDS_ACCOUNT_PASSWORDS_REAUTH_DESC);
+  AddStringResource(source, "signinReauthConfirmLabel",
+                    GetReauthConfirmButtonLabelStringId(access_point));
+  AddStringResource(source, "signinReauthNextLabel",
+                    IDS_ACCOUNT_PASSWORDS_REAUTH_NEXT_BUTTON_LABEL);
+  AddStringResource(source, "signinReauthCloseLabel",
+                    IDS_ACCOUNT_PASSWORDS_REAUTH_CLOSE_BUTTON_LABEL);
 
   content::WebUIDataSource::Add(profile, source);
 }
@@ -132,8 +134,28 @@ SigninReauthUI::~SigninReauthUI() = default;
 
 void SigninReauthUI::InitializeMessageHandlerWithReauthController(
     SigninReauthViewController* controller) {
-  web_ui()->AddMessageHandler(
-      std::make_unique<SigninReauthHandler>(controller));
+  web_ui()->AddMessageHandler(std::make_unique<SigninReauthHandler>(
+      controller,
+      base::flat_map<std::string, int>(js_localized_string_to_ids_)));
 }
 
 void SigninReauthUI::InitializeMessageHandlerWithBrowser(Browser* browser) {}
+
+void SigninReauthUI::AddStringResource(content::WebUIDataSource* source,
+                                       base::StringPiece name,
+                                       int ids) {
+  source->AddLocalizedString(name, ids);
+
+  // When the strings are passed to the HTML, the Unicode NBSP symbol (\u00A0)
+  // will be automatically replaced with "&nbsp;". This change must be mirrored
+  // in the string-to-ids map. Note that "\u00A0" is actually two characters,
+  // so we must use base::ReplaceSubstrings* rather than base::ReplaceChars.
+  // TODO(treib): De-dupe this with the similar code in SyncConfirmationUI,
+  // SyncConsentScreenHandler, and possibly other places.
+  std::string sanitized_string =
+      base::UTF16ToUTF8(l10n_util::GetStringUTF16(ids));
+  base::ReplaceSubstringsAfterOffset(&sanitized_string, 0, "\u00A0" /* NBSP */,
+                                     "&nbsp;");
+
+  js_localized_string_to_ids_.emplace_back(sanitized_string, ids);
+}

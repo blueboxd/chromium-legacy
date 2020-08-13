@@ -47,7 +47,7 @@
 - (BadgeButton*)passwordsSaveBadgeButton {
   BadgeButton* button =
       [self createButtonForType:BadgeType::kBadgeTypePasswordSave
-                     imageNamed:@"infobar_passwords_icon"
+                     imageNamed:@"password_key"
                   renderingMode:UIImageRenderingModeAlwaysTemplate];
   [button addTarget:self.delegate
                 action:@selector(passwordsBadgeButtonTapped:)
@@ -62,7 +62,7 @@
 - (BadgeButton*)passwordsUpdateBadgeButton {
   BadgeButton* button =
       [self createButtonForType:BadgeType::kBadgeTypePasswordUpdate
-                     imageNamed:@"infobar_passwords_icon"
+                     imageNamed:@"password_key"
                   renderingMode:UIImageRenderingModeAlwaysTemplate];
   [button addTarget:self.delegate
                 action:@selector(passwordsBadgeButtonTapped:)

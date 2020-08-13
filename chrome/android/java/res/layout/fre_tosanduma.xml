@@ -45,7 +45,7 @@
                     tools:ignore="ContentDescription"
                     android:src="@drawable/fre_product_logo" />
 
-                <ProgressBar
+                <org.chromium.components.browser_ui.widget.LoadingView
                     android:id="@+id/progress_spinner_large"
                     style="@style/Widget.AppCompat.ProgressBar"
                     android:layout_marginTop="@dimen/fre_vertical_spacing"

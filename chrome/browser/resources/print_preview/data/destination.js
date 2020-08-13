@@ -408,6 +408,13 @@ export class Destination {
     this.certificateStatus_ = opt_params && opt_params.certificateStatus ||
         DestinationCertificateStatus.NONE;
 
+    /**
+     * Whether cloud print deprecation warnings are suppressed.
+     * @private {boolean}
+     */
+    this.cloudPrintDeprecationWarningsSuppressed_ =
+        loadTimeData.getBoolean('cloudPrintDeprecationWarningsSuppressed');
+
     // <if expr="chromeos">
     /**
      * EULA url for printer's PPD. Empty string indicates no provided EULA.
@@ -525,7 +532,9 @@ export class Destination {
    *     if it was not provided.
    */
   get description() {
-    return this.description_;
+    return this.shouldShowSaveToDriveWarning ?
+        loadTimeData.getString('destinationNotSupportedWarning') :
+        this.description_;
   }
 
   /**
@@ -657,6 +666,15 @@ export class Destination {
         !loadTimeData.getBoolean('isEnterpriseManaged');
   }
 
+  /**
+   * @return {boolean} Whether this destination's description and icon should
+   *     warn that "Save to Drive" is deprecated.
+   */
+  get shouldShowSaveToDriveWarning() {
+    return !isChromeOS && this.id_ === Destination.GooglePromotedId.DOCS &&
+        !this.cloudPrintDeprecationWarningsSuppressed_;
+  }
+
   /** @return {boolean} Whether the destination is considered offline. */
   get isOffline() {
     return [
@@ -713,6 +731,9 @@ export class Destination {
 
   /** @return {string} Path to the SVG for the destination's icon. */
   get icon() {
+    if (this.shouldShowSaveToDriveWarning) {
+      return 'print-preview:save-to-drive-not-supported';
+    }
     if (this.id_ === Destination.GooglePromotedId.DOCS) {
       return 'print-preview:save-to-drive';
     }
@@ -790,7 +811,7 @@ export class Destination {
   }
 
   /**
-   * @return (Object} Copies capability of this destination.
+   * @return {Object} Copies capability of this destination.
    * @private
    */
   copiesCapability_() {

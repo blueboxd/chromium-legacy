@@ -309,7 +309,8 @@ void Animation::setCurrentTime(base::Optional<double> new_current_time,
 
   // Synchronously resolve pending pause task.
   if (pending_pause_) {
-    hold_time_ = MillisecondsToSeconds(new_current_time.value());
+    SetHoldTimeAndPhase(MillisecondsToSeconds(new_current_time.value()),
+                        TimelinePhase::kActive);
     ApplyPendingPlaybackRate();
     start_time_ = base::nullopt;
     pending_pause_ = false;
@@ -339,13 +340,15 @@ void Animation::SetCurrentTimeInternal(double new_current_time) {
 
   base::Optional<double> previous_start_time = start_time_;
   base::Optional<double> previous_hold_time = hold_time_;
+  base::Optional<TimelinePhase> previous_hold_phase = hold_phase_;
 
   // Update either the hold time or the start time.
   if (hold_time_ || !start_time_ || !timeline_ || !timeline_->IsActive() ||
-      playback_rate_ == 0)
-    hold_time_ = new_current_time;
-  else
+      playback_rate_ == 0) {
+    SetHoldTimeAndPhase(new_current_time, TimelinePhase::kActive);
+  } else {
     start_time_ = CalculateStartTime(new_current_time);
+  }
 
   // Preserve invariant that we can only set a start time or a hold time in the
   // absence of an active timeline.
@@ -355,8 +358,24 @@ void Animation::SetCurrentTimeInternal(double new_current_time) {
   // Reset the previous current time.
   previous_current_time_ = base::nullopt;
 
-  if (previous_start_time != start_time_ || previous_hold_time != hold_time_)
+  if (previous_start_time != start_time_ || previous_hold_time != hold_time_ ||
+      previous_hold_phase != hold_phase_)
     SetOutdated();
+}
+
+void Animation::SetHoldTimeAndPhase(
+    base::Optional<double> new_hold_time /* in seconds */,
+    TimelinePhase new_hold_phase) {
+  // new_hold_time must be valid, unless new_hold_phase is inactive.
+  DCHECK(new_hold_time ||
+         (!new_hold_time && new_hold_phase == TimelinePhase::kInactive));
+  hold_time_ = new_hold_time;
+  hold_phase_ = new_hold_phase;
+}
+
+void Animation::ResetHoldTimeAndPhase() {
+  hold_time_ = base::nullopt;
+  hold_phase_ = base::nullopt;
 }
 
 base::Optional<double> Animation::startTime() const {
@@ -393,8 +412,20 @@ base::Optional<double> Animation::currentTime() const {
   return SecondsToMilliseconds(current_time);
 }
 
+bool Animation::ValidateHoldTimeAndPhase() const {
+  return (hold_phase_ && hold_time_) ||
+         ((!hold_phase_ || hold_phase_ == TimelinePhase::kInactive) &&
+          !hold_time_);
+}
+
 base::Optional<double> Animation::CurrentTimeInternal() const {
+  DCHECK(ValidateHoldTimeAndPhase());
   return hold_time_ ? hold_time_ : CalculateCurrentTime();
+}
+
+TimelinePhase Animation::CurrentPhaseInternal() const {
+  DCHECK(ValidateHoldTimeAndPhase());
+  return hold_phase_ ? hold_phase_.value() : CalculateCurrentPhase();
 }
 
 base::Optional<double> Animation::UnlimitedCurrentTime() const {
@@ -615,7 +646,7 @@ void Animation::CommitPendingPlay(double ready_time) {
       start_time_ = ready_time;
     } else {
       start_time_ = ready_time - hold_time_.value() / playback_rate_;
-      hold_time_ = base::nullopt;
+      ResetHoldTimeAndPhase();
     }
   } else if (start_time_ && pending_playback_rate_) {
     // B: If animation’s start time is resolved and animation has a pending
@@ -634,7 +665,7 @@ void Animation::CommitPendingPlay(double ready_time) {
         (ready_time - start_time_.value()) * playback_rate_;
     ApplyPendingPlaybackRate();
     if (playback_rate_ == 0) {
-      hold_time_ = current_time_to_match;
+      SetHoldTimeAndPhase(current_time_to_match, CalculateCurrentPhase());
       start_time_ = ready_time;
     } else {
       start_time_ = ready_time - current_time_to_match / playback_rate_;
@@ -665,8 +696,10 @@ void Animation::CommitPendingPause(double ready_time) {
   // 2. If animation’s start time is resolved and its hold time is not resolved,
   //    let animation’s hold time be the result of evaluating
   //    (ready time - start time) × playback rate.
-  if (start_time_ && !hold_time_)
-    hold_time_ = (ready_time - start_time_.value()) * playback_rate_;
+  if (start_time_ && !hold_time_) {
+    SetHoldTimeAndPhase((ready_time - start_time_.value()) * playback_rate_,
+                        CalculateCurrentPhase());
+  }
 
   // 3. Apply any pending playback rate on animation.
   // 4. Make animation’s start time unresolved.
@@ -721,6 +754,12 @@ base::Optional<double> Animation::CalculateCurrentTime() const {
   return (timeline_time.value() - start_time_.value()) * playback_rate_;
 }
 
+TimelinePhase Animation::CalculateCurrentPhase() const {
+  if (!start_time_ || !timeline_)
+    return TimelinePhase::kInactive;
+  return timeline_->Phase();
+}
+
 // https://drafts.csswg.org/web-animations/#setting-the-start-time-of-an-animation
 void Animation::setStartTime(base::Optional<double> start_time_ms,
                              ExceptionState& exception_state) {
@@ -739,11 +778,13 @@ void Animation::setStartTime(base::Optional<double> start_time_ms,
   // This preserves the invariant that when we don’t have an active timeline it
   // is only possible to set either the start time or the animation’s current
   // time.
-  if (!timeline_time && start_time_ms)
-    hold_time_ = base::nullopt;
+  if (!timeline_time && start_time_ms) {
+    ResetHoldTimeAndPhase();
+  }
 
   // 3. Let previous current time be animation’s current time.
   base::Optional<double> previous_current_time = CurrentTimeInternal();
+  TimelinePhase previous_current_phase = CurrentPhaseInternal();
 
   // 4. Apply any pending playback rate on animation.
   ApplyPendingPlaybackRate();
@@ -770,10 +811,11 @@ void Animation::setStartTime(base::Optional<double> start_time_ms,
   //      Set animation’s hold time to previous current time even if previous
   //      current time is unresolved.
   if (start_time_) {
-    if (playback_rate_ != 0)
-      hold_time_ = base::nullopt;
+    if (playback_rate_ != 0) {
+      ResetHoldTimeAndPhase();
+    }
   } else {
-    hold_time_ = previous_current_time;
+    SetHoldTimeAndPhase(previous_current_time, previous_current_phase);
   }
 
   // 7. If animation has a pending play task or a pending pause task, cancel
@@ -1035,10 +1077,11 @@ void Animation::pause(ExceptionState& exception_state) {
   base::Optional<double> current_time = CurrentTimeInternal();
   if (!current_time) {
     if (playback_rate_ >= 0) {
-      if (has_finite_timeline)
+      if (has_finite_timeline) {
         start_time_ = 0;
-      else
-        hold_time_ = 0;
+      } else {
+        SetHoldTimeAndPhase(0, TimelinePhase::kActive);
+      }
     } else {
       if (EffectEnd() == std::numeric_limits<double>::infinity()) {
         exception_state.ThrowDOMException(
@@ -1046,10 +1089,11 @@ void Animation::pause(ExceptionState& exception_state) {
             "Cannot play reversed Animation with infinite target effect end.");
         return;
       }
-      if (has_finite_timeline)
+      if (has_finite_timeline) {
         start_time_ = EffectEnd();
-      else
-        hold_time_ = EffectEnd();
+      } else {
+        SetHoldTimeAndPhase(EffectEnd(), TimelinePhase::kActive);
+      }
     }
   }
 
@@ -1160,10 +1204,11 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
   if (effective_playback_rate > 0 && auto_rewind == AutoRewind::kEnabled &&
       (!current_time || current_time < 0 || current_time >= EffectEnd())) {
     performed_seek = true;
-    if (has_finite_timeline)
+    if (has_finite_timeline) {
       start_time_ = 0;
-    else
-      hold_time_ = 0;
+    } else {
+      SetHoldTimeAndPhase(0, TimelinePhase::kActive);
+    }
   } else if (effective_playback_rate < 0 &&
              auto_rewind == AutoRewind::kEnabled &&
              (!current_time || current_time <= 0 ||
@@ -1175,21 +1220,23 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
       return;
     }
     performed_seek = true;
-    if (has_finite_timeline)
+    if (has_finite_timeline) {
       start_time_ = EffectEnd();
-    else
-      hold_time_ = EffectEnd();
+    } else {
+      SetHoldTimeAndPhase(EffectEnd(), TimelinePhase::kActive);
+    }
   } else if (effective_playback_rate == 0 && !current_time) {
     performed_seek = true;
-    if (has_finite_timeline)
+    if (has_finite_timeline) {
       start_time_ = 0;
-    else
-      hold_time_ = 0;
+    } else {
+      SetHoldTimeAndPhase(0, TimelinePhase::kActive);
+    }
   }
   // TODO(crbug.com/1081267): Update based on upcoming spec change.
   // https://github.com/w3c/csswg-drafts/pull/5059
   if (performed_seek && has_finite_timeline) {
-    hold_time_ = base::nullopt;
+    ResetHoldTimeAndPhase();
     ApplyPendingPlaybackRate();
   }
 
@@ -1299,7 +1346,7 @@ void Animation::finish(ExceptionState& exception_state) {
     start_time_ = CalculateStartTime(new_current_time);
 
   if (pending_pause_ && start_time_) {
-    hold_time_ = base::nullopt;
+    ResetHoldTimeAndPhase();
     pending_pause_ = false;
     if (ready_promise_)
       ResolvePromiseMaybeAsync(ready_promise_.Get());
@@ -1338,20 +1385,29 @@ void Animation::UpdateFinishedState(UpdateType update_type,
     // boundary. The value of previous current time is used to retain this
     // value.
     double playback_rate = EffectivePlaybackRate();
+    base::Optional<double> hold_time;
+    TimelinePhase hold_phase;
     if (playback_rate > 0 && unconstrained_current_time >= EffectEnd()) {
-      hold_time_ = did_seek ? unconstrained_current_time
-                            : Max(previous_current_time_, EffectEnd());
+      hold_time = did_seek ? unconstrained_current_time
+                           : Max(previous_current_time_, EffectEnd());
+      hold_phase = did_seek ? TimelinePhase::kActive : CalculateCurrentPhase();
+
+      SetHoldTimeAndPhase(hold_time, hold_phase);
     } else if (playback_rate < 0 && unconstrained_current_time <= 0) {
-      hold_time_ = did_seek ? unconstrained_current_time
-                            : Min(previous_current_time_, 0);
+      hold_time = did_seek ? unconstrained_current_time
+                           : Min(previous_current_time_, 0);
+      hold_phase = did_seek ? TimelinePhase::kActive : CalculateCurrentPhase();
+
       // Hack for resolving precision issue at zero.
-      if (hold_time_.value() == -0)
-        hold_time_ = 0;
+      if (hold_time.value() == -0)
+        hold_time = 0;
+
+      SetHoldTimeAndPhase(hold_time, hold_phase);
     } else if (playback_rate != 0) {
       // Update start time and reset hold time.
       if (did_seek && hold_time_)
         start_time_ = CalculateStartTime(hold_time_.value());
-      hold_time_ = base::nullopt;
+      ResetHoldTimeAndPhase();
     }
   }
 
@@ -1844,7 +1900,7 @@ bool Animation::Update(TimingUpdateReason reason) {
 
   if (content_) {
     base::Optional<double> inherited_time;
-    base::Optional<TimelinePhase> timeline_phase;
+    TimelinePhase inherited_phase = TimelinePhase::kInactive;
 
     if (!idle) {
       inherited_time = CurrentTimeInternal();
@@ -1852,10 +1908,10 @@ bool Animation::Update(TimingUpdateReason reason) {
       if (inherited_time == 0 && EffectivePlaybackRate() < 0)
         inherited_time = -1;
 
-      timeline_phase = timeline_->Phase();
+      inherited_phase = CurrentPhaseInternal();
     }
 
-    content_->UpdateInheritedTime(inherited_time, timeline_phase, reason);
+    content_->UpdateInheritedTime(inherited_time, inherited_phase, reason);
 
     // After updating the animation time if the animation is no longer current
     // blink will no longer composite the element (see
@@ -1977,7 +2033,7 @@ void Animation::cancel() {
     pending_pause_ = pending_play_ = false;
   }
 
-  hold_time_ = base::nullopt;
+  ResetHoldTimeAndPhase();
   start_time_ = base::nullopt;
 
   // Apply changes synchronously.
@@ -2093,7 +2149,7 @@ void Animation::PauseForTesting(double pause_time) {
   is_paused_for_testing_ = true;
   pending_pause_ = false;
   pending_play_ = false;
-  hold_time_ = pause_time;
+  SetHoldTimeAndPhase(pause_time, TimelinePhase::kActive);
   start_time_ = base::nullopt;
 }
 

@@ -48,53 +48,67 @@
 [ mac ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ android ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
-[ mac no-swiftshader-gl opengl ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-[ mac no-swiftshader-gl no-angle ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-crbug.com/808744 [ android no-swiftshader-gl no-angle ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
-crbug.com/808744 [ android no-swiftshader-gl opengles ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
-crbug.com/808744 [ fuchsia no-swiftshader-gl no-passthrough ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+[ mac ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+crbug.com/808744 [ android ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/808744 [ fuchsia ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
 
+# Extensions not available with SwiftShader
+crbug.com/1099955 [ swiftshader-gl no-angle linux ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/1099955 [ swiftshader-gl no-angle mac   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/1099955 [ swiftshader-gl no-angle win   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/1099955 [ swiftshader-gl no-angle linux ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+crbug.com/1099955 [ swiftshader-gl no-angle mac   ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+crbug.com/1099955 [ swiftshader-gl no-angle win   ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+crbug.com/1099955 [ swiftshader-gl no-angle linux ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+crbug.com/1099955 [ swiftshader-gl no-angle win   ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+crbug.com/1099955 [ swiftshader no-swiftshader-gl linux ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/1099955 [ swiftshader no-swiftshader-gl mac   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/1099955 [ swiftshader no-swiftshader-gl win   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/1099955 [ swiftshader no-swiftshader-gl linux ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+crbug.com/1099955 [ swiftshader no-swiftshader-gl mac   ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+crbug.com/1099955 [ swiftshader no-swiftshader-gl win   ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+crbug.com/1099955 [ swiftshader no-swiftshader-gl linux ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+crbug.com/1099955 [ swiftshader no-swiftshader-gl win   ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+
 # Extensions not available under D3D9
-[ win d3d9 no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Failure ]
-crbug.com/867718 [ win d3d9 no-swiftshader-gl ] WebglExtension_EXT_disjoint_timer_query [ Failure ]
-[ win amd d3d9 ] WebglExtension_WEBGL_depth_texture [ Failure ]
-[ win d3d9 ] WebglExtension_WEBGL_draw_buffers [ Failure ]
-[ win d3d9 ] WebglExtension_OES_fbo_render_mipmap [ Failure ]
-[ win d3d9 no-swiftshader-gl ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ win d3d9 no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Skip ]
+crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+[ win amd d3d9 ] WebglExtension_WEBGL_depth_texture [ Skip ]
+[ win d3d9 ] WebglExtension_WEBGL_draw_buffers [ Skip ]
+[ win d3d9 ] WebglExtension_OES_fbo_render_mipmap [ Skip ]
+[ win d3d9 ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ win d3d9 no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 
 # Android general
-[ android no-swiftshader-gl ] WebglExtension_EXT_frag_depth [ Failure ]
-[ android ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Failure ]
-[ android ] WebglExtension_WEBGL_compressed_texture_s3tc [ Failure ]
+[ android no-swiftshader-gl ] WebglExtension_EXT_frag_depth [ Skip ]
+[ android ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
+[ android ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 
 # Android hardware-specific
-[ android nvidia ] WebglExtension_EXT_float_blend [ Failure ]
-[ android nvidia no-swiftshader-gl no-angle ] WebglExtension_EXT_shader_texture_lod [ Failure ]
-[ android qualcomm ] WebglExtension_EXT_float_blend [ Failure ]
-[ android qualcomm no-swiftshader-gl no-angle ] WebglExtension_EXT_shader_texture_lod [ Failure ]
-[ android qualcomm no-swiftshader-gl opengles ] WebglExtension_EXT_shader_texture_lod [ Failure ]
-[ android qualcomm ] WebglExtension_WEBGL_draw_buffers [ Failure ]
-[ android qualcomm no-swiftshader-gl no-angle ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-[ android qualcomm no-swiftshader-gl opengles ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ android nvidia ] WebglExtension_EXT_float_blend [ Skip ]
+[ android nvidia ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+[ android qualcomm ] WebglExtension_EXT_float_blend [ Skip ]
+[ android qualcomm ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+[ android qualcomm ] WebglExtension_WEBGL_draw_buffers [ Skip ]
+[ android qualcomm ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ android qualcomm no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
-[ android qualcomm-adreno-(tm)-330 no-passthrough ] WebglExtension_OES_texture_float_linear [ Failure ]
-[ android qualcomm-adreno-(tm)-330 ] WebglExtension_WEBGL_depth_texture [ Failure ]
-[ android qualcomm-adreno-(tm)-330 ] WebglExtension_WEBGL_compressed_texture_astc [ Failure ]
-[ android qualcomm-adreno-(tm)-418 ] WebglExtension_WEBGL_depth_texture [ Failure ]
-[ android qualcomm-adreno-(tm)-418 no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Failure ]
-[ android qualcomm-adreno-(tm)-420 no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Failure ]
-[ android qualcomm-adreno-(tm)-430 no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Failure ]
+[ android qualcomm-adreno-(tm)-330 no-passthrough ] WebglExtension_OES_texture_float_linear [ Skip ]
+[ android qualcomm-adreno-(tm)-330 ] WebglExtension_WEBGL_depth_texture [ Skip ]
+[ android qualcomm-adreno-(tm)-330 ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+[ android qualcomm-adreno-(tm)-418 ] WebglExtension_WEBGL_depth_texture [ Skip ]
+[ android qualcomm-adreno-(tm)-418 no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Skip ]
+[ android qualcomm-adreno-(tm)-420 no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Skip ]
+[ android qualcomm-adreno-(tm)-430 no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Skip ]
 
 # Fuchsia specific
-[ fuchsia no-swiftshader-gl no-passthrough ] WebglExtension_EXT_shader_texture_lod [ Skip ]
-[ fuchsia no-swiftshader-gl no-passthrough ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ fuchsia ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+[ fuchsia ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 
 # Fails on Android Nvidia Tegra driver version 343, passes on 361
 # We don't have tags for specific driver version so just skip all
-[ android nvidia no-swiftshader-gl no-angle ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ android nvidia ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ android nvidia no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 
 # ========================
@@ -213,6 +227,8 @@ crbug.com/1097338 [ fuchsia ] conformance/glsl/variables/glsl-built-ins.html [ S
 crbug.com/1097338 [ fuchsia ] conformance/misc/invalid-passed-params.html [ Skip ]
 crbug.com/1096746 [ fuchsia ] conformance/rendering/line-rendering-quality.html [ Skip ]
 crbug.com/1096746 [ fuchsia ] conformance/rendering/many-draw-calls.html [ Skip ]
+crbug.com/1096746 [ fuchsia ] conformance/glsl/functions/glsl-function-fract.html [ Skip ]
+crbug.com/1096746 [ fuchsia ] conformance/uniforms/no-over-optimization-on-uniform-array-00.html [ Skip ]
 
 # Fails only on Swarming
 crbug.com/1096746 [ fuchsia ] conformance/glsl/functions/glsl-function-ceil.html [ Skip ]
@@ -492,8 +508,7 @@ crbug.com/1060632 [ linux amd opengl passthrough ] conformance/more/functions/bi
 # Android failures #
 ####################
 
-crbug.com/1081973 [ android no-swiftshader-gl no-angle ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
-crbug.com/1081973 [ android no-swiftshader-gl opengles ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/1081973 [ android ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
 
 crbug.com/903903 [ android qualcomm ] conformance/glsl/bugs/sampler-array-struct-function-arg.html [ Failure ]
 crbug.com/478572 [ android qualcomm ] conformance/glsl/bugs/sequence-operator-evaluation-order.html [ Failure ]
@@ -665,7 +680,7 @@ crbug.com/angleproject/2988 [ android opengles ] conformance/context/context-siz
 
 # ChromeOS: affecting all devices.
 crbug.com/957807 [ chromeos no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Skip ]
-crbug.com/957807 [ chromeos no-swiftshader-gl no-angle ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+crbug.com/957807 [ chromeos ] WebglExtension_EXT_shader_texture_lod [ Skip ]
 crbug.com/957807 [ chromeos ] WebglExtension_EXT_texture_filter_anisotropic [ Skip ]
 crbug.com/957807 [ chromeos ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 crbug.com/957807 [ chromeos ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Skip ]
@@ -678,14 +693,14 @@ crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
 # read-only.
 crbug.com/1043953 [ chromeos ] conformance/textures/misc/texture-size-limit.html [ RetryOnFailure ]
 
-crbug.com/1081973 [ chromeos no-swiftshader-gl no-angle ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/1081973 [ chromeos ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
 
 # ChromeOS: AMD
 crbug.com/995652 [ chromeos amd ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]
 crbug.com/1042897 [ chromeos amd ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
 
 # Texture compression is only expected to be available on desktop GPUs.
-crbug.com/1080360 [ chromeos arm-mali-t860 no-swiftshader-gl no-angle ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+crbug.com/1080360 [ chromeos arm-mali-t860 ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/1080401 [ chromeos arm-mali-t860 no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 crbug.com/1080408 [ chromeos arm-mali-t860 ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 crbug.com/1080377 [ chromeos arm-mali-t860 ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
@@ -724,16 +739,6 @@ crbug.com/1108368 [ chromeos-board-kevin ] conformance/misc/shader-precision-for
 ########################
 # SwiftShader failures #
 ########################
-
-# All platforms and backends
-crbug.com/1099955 [ swiftshader passthrough ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
-crbug.com/1099955 [ swiftshader passthrough ] WebglExtension_EXT_disjoint_timer_query [ Failure ]
-crbug.com/1099955 [ swiftshader passthrough ] WebglExtension_EXT_shader_texture_lod [ Failure ]
-crbug.com/1099955 [ swiftshader passthrough ] WebglExtension_EXT_texture_compression_bptc [ Failure ]
-crbug.com/1099955 [ swiftshader-gl no-passthrough ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
-crbug.com/1099955 [ swiftshader-gl no-passthrough ] WebglExtension_EXT_disjoint_timer_query [ Failure ]
-crbug.com/1099955 [ swiftshader-gl no-passthrough ] WebglExtension_EXT_shader_texture_lod [ Failure ]
-crbug.com/1099955 [ swiftshader-gl no-passthrough ] WebglExtension_EXT_texture_compression_bptc [ Failure ]
 
 # All platforms, GL backend
 crbug.com/1099959 [ swiftshader-gl no-passthrough ] conformance/extensions/oes-fbo-render-mipmap.html [ Failure ]

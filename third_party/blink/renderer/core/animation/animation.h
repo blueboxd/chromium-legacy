@@ -291,6 +291,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
   base::Optional<double> CurrentTimeInternal() const;
+  TimelinePhase CurrentPhaseInternal() const;
   virtual AnimationEffect::EventDelegate* CreateEventDelegate(
       Element* target,
       const AnimationEffect::EventDelegate* old_event_delegate) {
@@ -299,6 +300,11 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
  private:
   void SetCurrentTimeInternal(double new_current_time);
+  void SetHoldTimeAndPhase(
+      base::Optional<double> new_hold_time /* in seconds */,
+      TimelinePhase new_hold_phase);
+  void ResetHoldTimeAndPhase();
+  bool ValidateHoldTimeAndPhase() const;
 
   void ClearOutdated();
   void ForceServiceOnNextFrame();
@@ -314,6 +320,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   base::Optional<double> CalculateStartTime(double current_time) const;
   base::Optional<double> CalculateCurrentTime() const;
+  TimelinePhase CalculateCurrentPhase() const;
 
   void BeginUpdatingState();
   void EndUpdatingState();
@@ -377,6 +384,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   base::Optional<double> pending_playback_rate_;
   base::Optional<double> start_time_;
   base::Optional<double> hold_time_;
+  base::Optional<TimelinePhase> hold_phase_;
   base::Optional<double> previous_current_time_;
 
   unsigned sequence_number_;

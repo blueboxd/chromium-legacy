@@ -67,7 +67,16 @@ export const MergeExceptionsStoreCopiesBehavior = {
     const frontendIdToMergedEntry = new Map();
     for (const entry of exceptionList) {
       if (frontendIdToMergedEntry.has(entry.frontendId)) {
-        frontendIdToMergedEntry.get(entry.frontendId).merge(entry);
+        const mergeSucceded =
+            frontendIdToMergedEntry.get(entry.frontendId).mergeInPlace(entry);
+        if (mergeSucceded) {
+          // The merge is in-place, so nothing to be done.
+        } else {
+          // The merge can fail in weird cases despite |frontendId| matching.
+          // If so, just create another entry in the UI for |entry|. See also
+          // crbug.com/1114697.
+          multiStoreEntries.push(new MultiStoreExceptionEntry(entry));
+        }
       } else {
         const multiStoreEntry = new MultiStoreExceptionEntry(entry);
         frontendIdToMergedEntry.set(entry.frontendId, multiStoreEntry);

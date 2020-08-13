@@ -20,7 +20,7 @@ namespace ash {
 // completed.
 class InSessionAuthDialog {
  public:
-  InSessionAuthDialog();
+  explicit InSessionAuthDialog(uint32_t auth_methods);
   InSessionAuthDialog(const InSessionAuthDialog&) = delete;
   InSessionAuthDialog& operator=(const InSessionAuthDialog&) = delete;
   ~InSessionAuthDialog();

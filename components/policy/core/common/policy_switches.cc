@@ -21,5 +21,8 @@ const char kRealtimeReportingUrl[] = "realtime-reporting-url";
 // TODO(antrim): Remove once test servers correctly produce affiliation ids.
 const char kUserAlwaysAffiliated[]  = "user-always-affiliated";
 
+// Set policy value by command line.
+const char kChromePolicy[] = "policy";
+
 }  // namespace switches
 }  // namespace policy

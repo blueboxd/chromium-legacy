@@ -61,4 +61,6 @@ crbug.com/1078566 [ android ] GpuNormalTermination_NewWebGLNotBlocked [ Skip ]
 [ fuchsia ] ContextLost_WebGLContextLostInHiddenTab [ Skip ]
 
 # Flaky on Fuchsia.
-[ fuchsia ] ContextLost_WebGLContextLostFromGPUProcessExit [ Skip ]
+crbug.com/1105308 [ fuchsia ] ContextLost_WebGLContextLostFromGPUProcessExit [ Skip ]
+crbug.com/1105308 [ fuchsia ] ContextLost_WebGLBlockedAfterJSNavigation [ Skip ]
+crbug.com/1105308 [ fuchsia ] GpuNormalTermination_NewWebGLNotBlocked [ Skip ]

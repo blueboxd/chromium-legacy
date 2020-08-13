@@ -5,6 +5,7 @@
 #include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
@@ -114,10 +115,17 @@ class ServiceConnectionImpl : public ServiceConnection {
   void GetProbeService(mojom::CrosHealthdProbeServiceRequest service) override;
   void SetBindNetworkHealthServiceCallback(
       BindNetworkHealthServiceCallback callback) override;
+  void SetBindNetworkDiagnosticsRoutinesCallback(
+      BindNetworkDiagnosticsRoutinesCallback callback) override;
 
   // Uses |bind_network_health_callback_| if set to bind a remote to the
   // NetworkHealthService and send the PendingRemote to the CrosHealthdService.
   void BindAndSendNetworkHealthService();
+
+  // Uses |bind_network_diagnostics_callback_| if set to bind a remote to the
+  // NetworkDiagnosticsRoutines interface and send the PendingRemote to
+  // cros_healthd.
+  void BindAndSendNetworkDiagnosticsRoutines();
 
   // Binds the factory interface |cros_healthd_service_factory_| to an
   // implementation in the cros_healthd daemon, if it is not already bound. The
@@ -153,6 +161,10 @@ class ServiceConnectionImpl : public ServiceConnection {
   // Repeating callback that binds a mojo::PendingRemote to the
   // NetworkHealthService and returns it.
   BindNetworkHealthServiceCallback bind_network_health_callback_;
+
+  // Repeating callback that binds a mojo::PendingRemote to the
+  // NetworkDiagnosticsRoutines interface and returns it.
+  BindNetworkDiagnosticsRoutinesCallback bind_network_diagnostics_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -369,6 +381,12 @@ void ServiceConnectionImpl::SetBindNetworkHealthServiceCallback(
   BindAndSendNetworkHealthService();
 }
 
+void ServiceConnectionImpl::SetBindNetworkDiagnosticsRoutinesCallback(
+    BindNetworkDiagnosticsRoutinesCallback callback) {
+  bind_network_diagnostics_callback_ = std::move(callback);
+  BindAndSendNetworkDiagnosticsRoutines();
+}
+
 void ServiceConnectionImpl::BindAndSendNetworkHealthService() {
   if (bind_network_health_callback_.is_null())
     return;
@@ -377,6 +395,17 @@ void ServiceConnectionImpl::BindAndSendNetworkHealthService() {
   EnsureCrosHealthdServiceFactoryIsBound();
   auto remote = bind_network_health_callback_.Run();
   cros_healthd_service_factory_->SendNetworkHealthService(std::move(remote));
+}
+
+void ServiceConnectionImpl::BindAndSendNetworkDiagnosticsRoutines() {
+  if (bind_network_diagnostics_callback_.is_null())
+    return;
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureCrosHealthdServiceFactoryIsBound();
+  auto remote = bind_network_diagnostics_callback_.Run();
+  cros_healthd_service_factory_->SendNetworkDiagnosticsRoutines(
+      std::move(remote));
 }
 
 void ServiceConnectionImpl::GetProbeService(
@@ -458,6 +487,7 @@ void ServiceConnectionImpl::OnDisconnect() {
   // Chrome services to the CrosHealthd instance.
   if (cros_healthd_service_factory_.is_bound()) {
     BindAndSendNetworkHealthService();
+    BindAndSendNetworkDiagnosticsRoutines();
   }
 }
 

@@ -15,7 +15,9 @@
 namespace ash {
 namespace {
 
-constexpr gfx::Size kDefaultSize(340, 224);
+// The initial height does nothing except determining the vertical position of
+// the dialog, since the dialog is centered with the initial height.
+constexpr gfx::Size kDefaultSize(340, 490);
 
 class AuthDialogWidgetDelegate : public views::WidgetDelegate {
  public:
@@ -54,11 +56,16 @@ std::unique_ptr<views::Widget> CreateAuthDialogWidget(aura::Window* parent) {
 
 }  // namespace
 
-InSessionAuthDialog::InSessionAuthDialog() {
+InSessionAuthDialog::InSessionAuthDialog(uint32_t auth_methods) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kShowAuthDialogDevOverlay)) {
     widget_ = CreateAuthDialogWidget(nullptr);
-    widget_->SetContentsView(std::make_unique<AuthDialogDebugView>());
+    auto* contents_view = widget_->SetContentsView(
+        std::make_unique<AuthDialogDebugView>(auth_methods));
+    gfx::Rect bound = widget_->GetWindowBoundsInScreen();
+    // Calculate initial height based on which child views are shown.
+    bound.set_height(contents_view->GetPreferredSize().height());
+    widget_->SetBounds(bound);
 
     widget_->Show();
   }

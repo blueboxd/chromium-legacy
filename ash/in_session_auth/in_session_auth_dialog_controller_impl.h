@@ -13,6 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 
+class AccountId;
+
 namespace ash {
 
 class InSessionAuthDialogClient;
@@ -42,6 +44,9 @@ class InSessionAuthDialogControllerImpl : public InSessionAuthDialogController {
       OnAuthenticateCallback callback) override;
 
  private:
+  bool IsFingerprintAvailable(const AccountId& account_id);
+  void OnPinCanAuthenticate(uint32_t auth_methods, bool pin_auth_available);
+
   // Callback to execute when auth on ChromeOS side completes.
   void OnAuthenticateComplete(OnAuthenticateCallback callback, bool success);
 

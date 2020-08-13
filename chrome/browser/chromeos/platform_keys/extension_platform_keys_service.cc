@@ -54,26 +54,6 @@ bool IsExtensionAllowlisted(const extensions::Extension* extension) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-// Converts |token_ids| (string-based token identifiers used in the
-// platformKeys API) to a vector of KeyPermissions::KeyLocation.
-std::vector<platform_keys::KeyPermissions::KeyLocation> TokenIdsToKeyLocations(
-    const std::vector<platform_keys::TokenId>& token_ids) {
-  std::vector<platform_keys::KeyPermissions::KeyLocation> key_locations;
-  for (const auto& token_id : token_ids) {
-    switch (token_id) {
-      case platform_keys::TokenId::kUser:
-        key_locations.push_back(
-            platform_keys::KeyPermissions::KeyLocation::kUserSlot);
-        break;
-      case platform_keys::TokenId::kSystem:
-        key_locations.push_back(
-            platform_keys::KeyPermissions::KeyLocation::kSystemSlot);
-        break;
-    }
-  }
-  return key_locations;
-}
-
 }  // namespace
 
 class ExtensionPlatformKeysService::Task {
@@ -173,8 +153,7 @@ class ExtensionPlatformKeysService::GenerateKeyTask : public Task {
   }
 
   void UpdatePermissionsAndCallBack() {
-    std::vector<platform_keys::KeyPermissions::KeyLocation> key_locations =
-        TokenIdsToKeyLocations({token_id_});
+    std::vector<platform_keys::TokenId> key_locations = {token_id_};
     extension_permissions_->RegisterKeyForCorporateUsage(public_key_spki_der_,
                                                          key_locations);
     callback_.Run(public_key_spki_der_, platform_keys::Status::kSuccess);
@@ -369,7 +348,7 @@ class ExtensionPlatformKeysService::SignTask : public Task {
       return;
     }
 
-    key_locations_ = TokenIdsToKeyLocations(token_ids);
+    key_locations_ = token_ids;
     DoStep();
   }
 
@@ -425,7 +404,7 @@ class ExtensionPlatformKeysService::SignTask : public Task {
   std::unique_ptr<platform_keys::KeyPermissions::PermissionsForExtension>
       extension_permissions_;
   platform_keys::KeyPermissions* const key_permissions_;
-  std::vector<platform_keys::KeyPermissions::KeyLocation> key_locations_;
+  std::vector<platform_keys::TokenId> key_locations_;
   ExtensionPlatformKeysService* const service_;
   base::WeakPtrFactory<SignTask> weak_factory_{this};
 
@@ -616,17 +595,14 @@ class ExtensionPlatformKeysService::SelectTask : public Task {
     const std::string public_key_spki_der(
         platform_keys::GetSubjectPublicKeyInfo(certificate));
 
-    std::vector<platform_keys::KeyPermissions::KeyLocation> key_locations =
-        TokenIdsToKeyLocations(token_ids);
-
     // Use this key if the user can use it for signing or can grant permission
     // for it.
     if (key_permissions_->CanUserGrantPermissionFor(public_key_spki_der,
-                                                    key_locations) ||
+                                                    token_ids) ||
         extension_permissions_->CanUseKeyForSigning(public_key_spki_der,
-                                                    key_locations)) {
+                                                    token_ids)) {
       matches_.push_back(certificate);
-      key_locations_for_matches_[public_key_spki_der] = key_locations;
+      key_locations_for_matches_[public_key_spki_der] = token_ids;
     }
     DoStep();
   }
@@ -730,10 +706,9 @@ class ExtensionPlatformKeysService::SelectTask : public Task {
   std::deque<scoped_refptr<net::X509Certificate>>
       matches_pending_key_locations_;
   net::CertificateList matches_;
-  // Mapping of DER-encoded Subject Public Key Info to the KeyLocations
-  // determined for the corresponding private key.
-  base::flat_map<std::string,
-                 std::vector<platform_keys::KeyPermissions::KeyLocation>>
+  // Mapping of DER-encoded Subject Public Key Info to the TokenIds determined
+  // for the corresponding private key.
+  base::flat_map<std::string, std::vector<platform_keys::TokenId>>
       key_locations_for_matches_;
   scoped_refptr<net::X509Certificate> selected_cert_;
   platform_keys::ClientCertificateRequest request_;

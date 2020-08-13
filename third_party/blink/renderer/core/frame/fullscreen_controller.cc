@@ -155,16 +155,11 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
       fullscreen_options->display_id = options->screen()->DisplayId();
   }
 
-  // TODO(alexmos): currently, this assumes prefixed requests, but in the
-  // future, this should plumb in information about which request type
-  // (prefixed or unprefixed) to use for firing fullscreen events.
-  //
-  // This is basically implemented, but disabled for now since it's potentially
-  // an application-visible change in behavior. To enable, use the following:
-  //
-  //   fullscreen_options->is_prefixed =
-  //       request_type & FullscreenRequestType::kPrefixed;
-  fullscreen_options->is_prefixed = true;
+  // Propagate the type of fullscreen request (prefixed or unprefixed) to
+  // OOPIF ancestor frames so that they fire matching prefixed or unprefixed
+  // fullscreen events.
+  fullscreen_options->is_prefixed =
+      request_type & FullscreenRequestType::kPrefixed;
 
 #if DCHECK_IS_ON()
   DVLOG(2) << __func__ << ": request_type="

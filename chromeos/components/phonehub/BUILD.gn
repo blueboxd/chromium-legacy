@@ -14,8 +14,14 @@ static_library("phonehub") {
     "feature_status_provider.h",
     "feature_status_provider_impl.cc",
     "feature_status_provider_impl.h",
+    "notification_access_manager.cc",
+    "notification_access_manager.h",
+    "notification_access_manager_impl.cc",
+    "notification_access_manager_impl.h",
     "phone_hub_manager.cc",
     "phone_hub_manager.h",
+    "pref_names.cc",
+    "pref_names.h",
   ]
 
   deps = [
@@ -25,6 +31,7 @@ static_library("phonehub") {
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/multidevice_setup/public/cpp",
     "//components/keyed_service/core",
+    "//components/prefs",
     "//device/bluetooth",
   ]
 }
@@ -35,6 +42,8 @@ static_library("test_support") {
   sources = [
     "fake_feature_status_provider.cc",
     "fake_feature_status_provider.h",
+    "fake_notification_access_manager.cc",
+    "fake_notification_access_manager.h",
   ]
 
   public_deps = [ ":phonehub" ]
@@ -45,7 +54,10 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [ "feature_status_provider_impl_unittest.cc" ]
+  sources = [
+    "feature_status_provider_impl_unittest.cc",
+    "notification_access_manager_impl_unittest.cc",
+  ]
 
   deps = [
     ":phonehub",
@@ -58,6 +70,7 @@ source_set("unit_tests") {
     "//chromeos/services/device_sync/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/cpp",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
+    "//components/prefs:test_support",
     "//device/bluetooth:mocks",
     "//testing/gtest",
   ]

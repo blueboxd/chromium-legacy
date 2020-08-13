@@ -14,6 +14,7 @@
 ; Allow communication between the GPU process and the UI server.
 (allow mach-lookup
   (global-name "com.apple.bsd.dirhelper")
+  (global-name "com.apple.CARenderServer")
   (global-name "com.apple.cfprefsd.agent")
   (global-name "com.apple.cfprefsd.daemon")
   (global-name "com.apple.CoreServices.coreservicesd")

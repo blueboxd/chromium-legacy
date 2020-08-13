@@ -18,14 +18,18 @@ namespace blink {
 class KURL;
 
 // This singleton lives on the main thread. It allows registration and
-// deregistration of MediaSource objectUrls.
+// deregistration of MediaSource objectUrls. Lookups to retrieve a reference to
+// a registered MediaSource by its objectUrl are only allowed on the main
+// thread; the only intended Lookup() caller is invoked by HTMLMediaElement's
+// MSE attachment during element load.
 // TODO(https://crbug.com/878133): Refactor this to allow registration and
 // lookup of cross-thread (worker) MediaSource objectUrls.
 class MediaSourceRegistryImpl final : public MediaSourceRegistry {
  public:
-  // Returns the singleton instance of MediaSourceRegistry, constructing it if
-  // necessary.
-  static MediaSourceRegistryImpl& EnsureRegistry();
+  // Creates the singleton instance. Must be run on the main thread (expected to
+  // be done by modules initialization to ensure it happens early and on the
+  // main thread.)
+  static void Init();
 
   // MediaSourceRegistry : URLRegistry overrides for (un)registering blob URLs
   // referring to the specified media source attachment. RegisterURL creates a
@@ -44,6 +48,9 @@ class MediaSourceRegistryImpl final : public MediaSourceRegistry {
       const String& url) override;
 
  private:
+  // Construction of this singleton informs MediaSourceAttachment of this
+  // singleton, for it to use to service URLRegistry interface activities on
+  // this registry like lookup, registration and unregistration.
   MediaSourceRegistryImpl();
 
   HashMap<String, scoped_refptr<MediaSourceAttachment>> media_sources_;

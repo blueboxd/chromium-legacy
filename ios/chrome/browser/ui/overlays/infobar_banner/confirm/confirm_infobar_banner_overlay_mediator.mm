@@ -53,8 +53,6 @@ using confirm_infobar_overlays::ConfirmBannerRequestConfig;
   if (!self.consumer || !config)
     return;
 
-  [self.consumer setBannerAccessibilityLabel:base::SysUTF16ToNSString(
-                                                 config->button_label_text())];
   [self.consumer
       setButtonText:base::SysUTF16ToNSString(config->button_label_text())];
   if (!config->icon_image().IsEmpty())

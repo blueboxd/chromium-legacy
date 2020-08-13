@@ -1395,13 +1395,12 @@ void TileManager::OnRasterTaskCompleted(
 std::unique_ptr<Tile> TileManager::CreateTile(const Tile::CreateInfo& info,
                                               int layer_id,
                                               int source_frame_number,
-                                              int flags,
-                                              bool can_use_lcd_text) {
+                                              int flags) {
   // We need to have a tile task worker pool to do anything meaningful with
   // tiles.
   DCHECK(tile_task_manager_);
-  std::unique_ptr<Tile> tile(new Tile(this, info, layer_id, source_frame_number,
-                                      flags, can_use_lcd_text));
+  std::unique_ptr<Tile> tile(
+      new Tile(this, info, layer_id, source_frame_number, flags));
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
 
   tiles_[tile->id()] = tile.get();

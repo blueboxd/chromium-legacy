@@ -115,6 +115,17 @@ class CaptionControllerTest : public InProcessBrowserTest {
         chrome::mojom::TranscriptionResult::New(text, true /* is_final */));
   }
 
+  void OnError() { OnErrorOnBrowser(browser()); }
+
+  void OnErrorOnBrowser(Browser* browser) {
+    OnErrorOnBrowserForProfile(browser, browser->profile());
+  }
+
+  void OnErrorOnBrowserForProfile(Browser* browser, Profile* profile) {
+    GetControllerForProfile(profile)->OnError(
+        browser->tab_strip_model()->GetActiveWebContents());
+  }
+
   int NumBubbleControllers() {
     return NumBubbleControllersForProfile(browser()->profile());
   }
@@ -484,6 +495,62 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
 #endif
 }
 
+IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnError) {
+  OnError();
+  EXPECT_EQ(0, NumBubbleControllers());
+
+  SetLiveCaptionEnabled(true);
+  OnError();
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisible());
+#else
+  EXPECT_FALSE(IsWidgetVisible());
+#endif
+
+  SetLiveCaptionEnabled(false);
+  OnError();
+  EXPECT_EQ(0, NumBubbleControllers());
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnError_MultipleBrowsers) {
+  Browser* browser1 = browser();
+  Browser* browser2 = CreateBrowser(browser()->profile());
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  SetLiveCaptionEnabled(true);
+
+  // OnError routes to the right browser.
+  OnErrorOnBrowser(browser1);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser2));
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(incognito_browser));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser1));
+#endif
+
+  OnErrorOnBrowser(browser2);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser2));
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(incognito_browser));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser2));
+#endif
+
+  OnErrorOnBrowser(incognito_browser);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser2));
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(incognito_browser));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(incognito_browser));
+#endif
+}
+
 #if !defined(OS_CHROMEOS)  // No multi-profile on ChromeOS.
 
 IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
@@ -698,6 +765,47 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
             GetBubbleLabelTextOnBrowser(browser1));
   EXPECT_EQ("Mosquitos were around at the time of the dinosaurs.",
             GetBubbleLabelTextOnBrowser(browser2));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser2));
+#endif
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnError_MultipleProfiles) {
+  Profile* profile1 = browser()->profile();
+  Profile* profile2 = CreateProfile();
+  Browser* browser1 = browser();
+  Browser* browser2 = CreateBrowser(profile2);
+
+  // Enable live caption on both profiles.
+  SetLiveCaptionEnabled(true);
+  profile2->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled, true);
+
+  // OnError routes to the right browser on the right profile.
+  OnErrorOnBrowserForProfile(browser1, profile1);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser2));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser1));
+#endif
+
+  OnErrorOnBrowserForProfile(browser2, profile2);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser2));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser1));
+#endif
+
+  // OnError does nothing when sent to browsers on different profiles.
+  OnErrorOnBrowserForProfile(browser1, profile2);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser2));
 #else
   EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser1));
   EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser2));

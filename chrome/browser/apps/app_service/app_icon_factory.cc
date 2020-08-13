@@ -69,6 +69,7 @@ static const int kInvalidIconResource = 0;
 using SizeToImageSkiaRep = std::map<int, gfx::ImageSkiaRep>;
 using ScaleToImageSkiaReps = std::map<float, SizeToImageSkiaRep>;
 using MaskImageSkiaReps = std::pair<SkBitmap, ScaleToImageSkiaReps>;
+using ScaleToSize = std::map<float, int>;
 
 MaskImageSkiaReps& GetMaskResourceIconCache() {
   static base::NoDestructor<MaskImageSkiaReps> mask_cache;
@@ -111,20 +112,23 @@ const gfx::ImageSkiaRep& GetMaskAsImageSkiaRep(float scale,
   return image_rep;
 }
 
-gfx::ImageSkia LoadMaskImage(const gfx::ImageSkia& image) {
-  std::map<float, gfx::Size> scale_to_size;
-  if (image.image_reps().empty()) {
-    scale_to_size[1.0f] = image.size();
+ScaleToSize GetScaleToSize(const gfx::ImageSkia& image_skia) {
+  ScaleToSize scale_to_size;
+  if (image_skia.image_reps().empty()) {
+    scale_to_size[1.0f] = image_skia.size().width();
   } else {
-    for (const auto& rep : image.image_reps()) {
-      scale_to_size[rep.scale()] = rep.pixel_size();
+    for (const auto& rep : image_skia.image_reps()) {
+      scale_to_size[rep.scale()] = rep.pixel_width();
     }
   }
+  return scale_to_size;
+}
 
+gfx::ImageSkia LoadMaskImage(const ScaleToSize& scale_to_size) {
   gfx::ImageSkia mask_image;
   for (const auto& it : scale_to_size) {
     float scale = it.first;
-    int size_hint_in_dip = it.second.width();
+    int size_hint_in_dip = it.second;
     mask_image.AddRepresentation(
         GetMaskAsImageSkiaRep(scale, size_hint_in_dip));
   }
@@ -711,8 +715,7 @@ IconLoadingPipeline::CreateArcIconDecodeRequest(
 void IconLoadingPipeline::ApplyBackgroundAndMask(const gfx::ImageSkia& image) {
   std::move(image_skia_callback_)
       .Run(gfx::ImageSkiaOperations::CreateResizedImage(
-          gfx::ImageSkiaOperations::CreateButtonBackground(
-              SK_ColorWHITE, image, LoadMaskImage(image)),
+          apps::ApplyBackgroundAndMask(image),
           skia::ImageOperations::RESIZE_LANCZOS3,
           gfx::Size(size_hint_in_dip_, size_hint_in_dip_)));
 }
@@ -740,10 +743,8 @@ void IconLoadingPipeline::CompositeImagesAndApplyMask(
 
   std::move(image_skia_callback_)
       .Run(gfx::ImageSkiaOperations::CreateResizedImage(
-          gfx::ImageSkiaOperations::CreateMaskedImage(
-              gfx::ImageSkiaOperations::CreateSuperimposedImage(
-                  background_image_, foreground_image_),
-              LoadMaskImage(image)),
+          apps::CompositeImagesAndApplyMask(foreground_image_,
+                                            background_image_),
           skia::ImageOperations::RESIZE_BEST,
           gfx::Size(size_hint_in_dip_, size_hint_in_dip_)));
 }
@@ -939,6 +940,21 @@ std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image,
 }
 
 #if defined(OS_CHROMEOS)
+
+gfx::ImageSkia ApplyBackgroundAndMask(const gfx::ImageSkia& image) {
+  return gfx::ImageSkiaOperations::CreateButtonBackground(
+      SK_ColorWHITE, image, LoadMaskImage(GetScaleToSize(image)));
+}
+
+gfx::ImageSkia CompositeImagesAndApplyMask(
+    const gfx::ImageSkia& foreground_image,
+    const gfx::ImageSkia& background_image) {
+  return gfx::ImageSkiaOperations::CreateMaskedImage(
+      gfx::ImageSkiaOperations::CreateSuperimposedImage(background_image,
+                                                        foreground_image),
+      LoadMaskImage(GetScaleToSize(foreground_image)));
+}
+
 void ArcRawIconPngDataToImageSkia(
     arc::mojom::RawIconPngDataPtr icon,
     int size_hint_in_dip,
@@ -1015,7 +1031,7 @@ void ApplyIconEffects(IconEffects icon_effects,
   }
 
   if (icon_effects & IconEffects::kCrOsStandardMask) {
-    auto mask_image = LoadMaskImage(*image_skia);
+    auto mask_image = LoadMaskImage(GetScaleToSize(*image_skia));
     *image_skia =
         gfx::ImageSkiaOperations::CreateMaskedImage(*image_skia, mask_image);
   }

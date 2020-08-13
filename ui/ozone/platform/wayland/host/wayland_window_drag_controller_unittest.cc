@@ -31,6 +31,7 @@
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
+#include "ui/platform_window/extensions/wayland_extension.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/wm/wm_move_loop_handler.h"
 
@@ -209,10 +210,14 @@ TEST_P(WaylandWindowDragControllerTest, DragInsideWindowAndDrop) {
   SendPointerPress(window_.get(), &delegate_, BTN_LEFT);
   SendPointerMotion(window_.get(), &delegate_, {10, 10});
 
-  // Set up an "interaction flow" and RunMoveLoop:
+  // Set up an "interaction flow", start the drag session and run move loop:
   //  - Event dispatching and bounds changes are monitored
   //  - At each event, emulates a new event at server side and proceeds to the
   //  next test step.
+  auto* wayland_extension = GetWaylandExtension(*window_);
+  wayland_extension->StartWindowDraggingSessionIfNeeded();
+  EXPECT_EQ(State::kAttached, drag_controller()->state());
+
   auto* move_loop_handler = GetWmMoveLoopHandler(*window_);
   DCHECK(move_loop_handler);
 
@@ -296,10 +301,14 @@ TEST_P(WaylandWindowDragControllerTest, DragExitWindowAndDrop) {
   SendPointerPress(window_.get(), &delegate_, BTN_LEFT);
   SendPointerMotion(window_.get(), &delegate_, {10, 10});
 
-  // Sets up an "interaction flow" and RunMoveLoop:
+  // Sets up an "interaction flow", start the drag session and run move loop:
   //  - Event dispatching and bounds changes are monitored
   //  - At each event, emulates a new event on server side and proceeds to the
   //  next test step.
+  auto* wayland_extension = GetWaylandExtension(*window_);
+  wayland_extension->StartWindowDraggingSessionIfNeeded();
+  EXPECT_EQ(State::kAttached, drag_controller()->state());
+
   auto* move_loop_handler = GetWmMoveLoopHandler(*window_);
   DCHECK(move_loop_handler);
 
@@ -408,10 +417,14 @@ TEST_P(WaylandWindowDragControllerTest, DragToOtherWindowSnapDragDrop) {
   SendPointerPress(source_window, &delegate_, BTN_LEFT);
   SendPointerMotion(source_window, &delegate_, {10, 10});
 
-  // Sets up an "interaction flow" and RunMoveLoop:
+  // Sets up an "interaction flow", start the drag session and run move loop:
   //  - Event dispatching and bounds changes are monitored
   //  - At each event, emulates a new event on server side and proceeds to the
   //  next test step.
+  auto* wayland_extension = GetWaylandExtension(*window_);
+  wayland_extension->StartWindowDraggingSessionIfNeeded();
+  EXPECT_EQ(State::kAttached, drag_controller()->state());
+
   auto* move_loop_handler = GetWmMoveLoopHandler(*window_);
   DCHECK(move_loop_handler);
 

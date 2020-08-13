@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/settings/password/password_details/password_details_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller_delegate.h"
 
 class IOSChromePasswordCheckManager;
 @protocol PasswordDetailsConsumer;
@@ -18,7 +18,7 @@ struct PasswordForm;
 
 // This mediator fetches and organises the credentials for its consumer.
 @interface PasswordDetailsMediator
-    : NSObject <PasswordDetailsViewControllerDelegate>
+    : NSObject <PasswordDetailsTableViewControllerDelegate>
 
 // PasswordForm is converted to the PasswordDetails and passed to a consumer.
 - (instancetype)initWithPassword:(const autofill::PasswordForm&)passwordForm

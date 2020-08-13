@@ -49,8 +49,8 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/settings/password/legacy_password_details_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/legacy_password_details_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
@@ -177,7 +177,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 @interface PasswordsTableViewController () <
     BooleanObserver,
     ChromeIdentityServiceObserver,
-    PasswordDetailsTableViewControllerDelegate,
+    LegacyPasswordDetailsTableViewControllerDelegate,
     PasswordExporterDelegate,
     PasswordExportActivityViewControllerDelegate,
     PasswordsConsumer,
@@ -1208,8 +1208,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 }
 
 - (void)openDetailedViewForForm:(const autofill::PasswordForm&)form {
-  PasswordDetailsTableViewController* controller =
-      [[PasswordDetailsTableViewController alloc]
+  LegacyPasswordDetailsTableViewController* controller =
+      [[LegacyPasswordDetailsTableViewController alloc]
             initWithPasswordForm:form
                         delegate:self
           reauthenticationModule:_reauthenticationModule];
@@ -1462,10 +1462,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return cell;
 }
 
-#pragma mark PasswordDetailsTableViewControllerDelegate
+#pragma mark LegacyPasswordDetailsTableViewControllerDelegate
 
 - (void)passwordDetailsTableViewController:
-            (PasswordDetailsTableViewController*)controller
+            (LegacyPasswordDetailsTableViewController*)controller
                             deletePassword:(const autofill::PasswordForm&)form {
   _passwordStore->RemoveLogin(form);
 

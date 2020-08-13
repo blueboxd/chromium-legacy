@@ -19,6 +19,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/page_visibility_state.h"
 #include "content/public/common/url_constants.h"
 #include "services/service_manager/embedder/result_codes.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -27,6 +28,8 @@
 #include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/i18n_util.h"
+#include "weblayer/browser/no_state_prefetch/prerender_link_manager_factory.h"
+#include "weblayer/browser/no_state_prefetch/prerender_manager_factory.h"
 #include "weblayer/browser/permissions/weblayer_permissions_client.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/browser/translate_accept_languages_factory.h"
@@ -81,6 +84,8 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   CookieSettingsFactory::GetInstance();
   TranslateAcceptLanguagesFactory::GetInstance();
   TranslateRankerFactory::GetInstance();
+  PrerenderLinkManagerFactory::GetInstance();
+  PrerenderManagerFactory::GetInstance();
 }
 
 void StopMessageLoop(base::OnceClosure quit_closure) {

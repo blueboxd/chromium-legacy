@@ -677,7 +677,7 @@ void IsolatedPrerenderTabHelper::StartSinglePrefetch() {
       GetURLLoaderFactory(),
       base::BindOnce(&IsolatedPrerenderTabHelper::OnPrefetchComplete,
                      base::Unretained(this), loader.get(), url, isolation_info),
-      1024 * 1024 * 5 /* 5MB */);
+      IsolatedPrerenderMainframeBodyLengthLimit());
 
   page_->url_loaders_.emplace(std::move(loader));
 }

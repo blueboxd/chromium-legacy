@@ -15,6 +15,7 @@ public class FirstRunActivityTestObserver implements FirstRunActivity.FirstRunAc
     public final CallbackHelper jumpToPageCallback = new CallbackHelper();
     public final CallbackHelper updateCachedEngineCallback = new CallbackHelper();
     public final CallbackHelper abortFirstRunExperienceCallback = new CallbackHelper();
+    public final CallbackHelper exitFirstRunCallback = new CallbackHelper();
 
     public Bundle freProperties;
 
@@ -42,5 +43,10 @@ public class FirstRunActivityTestObserver implements FirstRunActivity.FirstRunAc
     @Override
     public void onAbortFirstRunExperience() {
         abortFirstRunExperienceCallback.notifyCalled();
+    }
+
+    @Override
+    public void onExitFirstRun() {
+        exitFirstRunCallback.notifyCalled();
     }
 }

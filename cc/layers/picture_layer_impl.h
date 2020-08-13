@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -94,8 +95,6 @@ class CC_EXPORT PictureLayerImpl
       const PictureLayerTilingSet* pending_set,
       const PaintWorkletRecordMap* pending_paint_worklet_records);
   bool UpdateTiles();
-  // Returns true if the LCD state changed.
-  bool UpdateCanUseLCDTextAfterCommit();
 
   // Mask-related functions.
   void GetContentsResourceId(viz::ResourceId* resource_id,
@@ -223,6 +222,8 @@ class CC_EXPORT PictureLayerImpl
           inputs);
 
   LCDTextDisallowedReason ComputeLCDTextDisallowedReason() const;
+  // Returns true if the LCD state changed.
+  bool UpdateCanUseLCDText();
 
   PictureLayerImpl* twin_layer_;
 

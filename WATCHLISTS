@@ -1541,6 +1541,10 @@
                   '|chrome/browser/content_settings/permission*'\
                   '|permission_context',
     },
+    'phonehub': {
+      'filepath': 'chrome/browser/chromeos/phonehub/|'\
+                  'chromeos/components/phonehub/',
+    },
     'picture_in_picture': {
       'filepath': 'third_party/blink/renderer/modules/picture_in_picture/'
     },
@@ -2670,6 +2674,9 @@
                     'hanxi+watch@chromium.org',
                     'mlamouri+watch-permissions@chromium.org',
                     'permissions-reviews@chromium.org'],
+    'phonehub': ['hsuregan+watch-phonehub@chromium.org',
+                 'khorimoto+watch-phonehub@chromium.org',
+                 'themaxli+watch-phonehub@chromium.org'],
     'picture_in_picture': ['beaufort.francois+pip@gmail.com'],
     'polymer': ['michaelpg+watch-polymer@chromium.org'],
     'popup_blocker': ['csharrison+watch-popups@chromium.org'],

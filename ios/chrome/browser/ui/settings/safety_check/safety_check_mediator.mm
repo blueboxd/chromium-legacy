@@ -206,18 +206,33 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
     _updateCheckItem = [[SettingsCheckItem alloc] initWithType:UpdateItemType];
     _updateCheckItem.text =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_TITLE);
+    UIImage* updateCheckIcon = [[UIImage imageNamed:@"settings_info"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _updateCheckItem.leadingImage = updateCheckIcon;
+    _updateCheckItem.leadingImageTintColor = [UIColor colorNamed:kGrey400Color];
 
     _passwordCheckRowState = PasswordCheckRowStateDefault;
     _passwordCheckItem =
         [[SettingsCheckItem alloc] initWithType:PasswordItemType];
     _passwordCheckItem.text =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_SAFETY_CHECK_PASSWORDS_TITLE);
+    UIImage* passwordCheckIcon = [[UIImage imageNamed:@"password_key"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _passwordCheckItem.leadingImage = passwordCheckIcon;
+    _passwordCheckItem.leadingImageTintColor =
+        [UIColor colorNamed:kGrey400Color];
 
     _safeBrowsingCheckRowState = SafeBrowsingCheckRowStateDefault;
     _safeBrowsingCheckItem =
         [[SettingsCheckItem alloc] initWithType:SafeBrowsingItemType];
     _safeBrowsingCheckItem.text = l10n_util::GetNSString(
         IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_TITLE);
+    UIImage* safeBrowsingCheckIcon =
+        [[UIImage imageNamed:@"settings_safe_browsing"]
+            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _safeBrowsingCheckItem.leadingImage = safeBrowsingCheckIcon;
+    _safeBrowsingCheckItem.leadingImageTintColor =
+        [UIColor colorNamed:kGrey400Color];
 
     _checkStartState = CheckStartStateDefault;
     _checkStartItem =

@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
@@ -30,6 +31,9 @@ class ServiceConnection {
   using BindNetworkHealthServiceCallback =
       base::RepeatingCallback<mojo::PendingRemote<
           chromeos::network_health::mojom::NetworkHealthService>()>;
+  using BindNetworkDiagnosticsRoutinesCallback =
+      base::RepeatingCallback<mojo::PendingRemote<
+          chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines>()>;
 
   // Retrieve a list of available diagnostic routines. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
@@ -207,11 +211,17 @@ class ServiceConnection {
   virtual void GetProbeService(
       mojom::CrosHealthdProbeServiceRequest service) = 0;
 
-  // Sets a callback to request bind a PendingRemote to the
+  // Sets a callback to request binding a PendingRemote to the
   // NetworkHealthService. This callback is invoked once when it is set, and
   // anytime the mojo connection to CrosHealthd is disconnected.
   virtual void SetBindNetworkHealthServiceCallback(
       BindNetworkHealthServiceCallback callback) = 0;
+
+  // Sets a callback to request binding a PendingRemote to the
+  // NetworkDiagnosticsRoutines interface. This callback is invoked once when it
+  // is set, and anytime the mojo connection to CrosHealthd is disconnected.
+  virtual void SetBindNetworkDiagnosticsRoutinesCallback(
+      BindNetworkDiagnosticsRoutinesCallback callback) = 0;
 
  protected:
   ServiceConnection() = default;

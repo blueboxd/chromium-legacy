@@ -1875,12 +1875,6 @@ const char kPointerLockOptionsDescription[] =
     "to true, pointer movements wil not be affected by the underlying platform "
     "modications such as mouse accelaration.";
 
-const char kPolicyAtomicGroupsEnabledName[] = "Policy Atomic Groups Enabled";
-const char kPolicyAtomicGroupsEnabledDescription[] =
-    "Enables the concept of policy atomic groups that makes policies of an "
-    "atomic group that do not share the highest priority source from that group"
-    "ignored.";
-
 const char kPreviewsAllowedName[] = "Previews Allowed";
 const char kPreviewsAllowedDescription[] =
     "Allows previews to be shown subject to specific preview types being "

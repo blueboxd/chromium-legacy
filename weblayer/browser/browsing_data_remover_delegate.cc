@@ -6,9 +6,11 @@
 
 #include "base/callback.h"
 #include "components/prefs/pref_service.h"
+#include "components/prerender/browser/prerender_manager.h"
 #include "components/site_isolation//pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
+#include "weblayer/browser/no_state_prefetch/prerender_manager_factory.h"
 
 namespace weblayer {
 
@@ -48,6 +50,19 @@ void BrowsingDataRemoverDelegate::RemoveEmbedderData(
     // list of isolated sites is not directly exposed to users, though, and
     // will be cleared on next restart.
   }
+
+  // The PrerenderManager keeps history of prerendered pages, so clear that.
+  // It also may have a prerendered page. If so, the page could be
+  // considered to have a small amount of historical information, so delete
+  // it, too.
+  prerender::PrerenderManager* prerender_manager =
+      PrerenderManagerFactory::GetForBrowserContext(browser_context_);
+  if (prerender_manager) {
+    prerender_manager->ClearData(
+        prerender::PrerenderManager::CLEAR_PRERENDER_CONTENTS |
+        prerender::PrerenderManager::CLEAR_PRERENDER_HISTORY);
+  }
+
   std::move(callback).Run(/*failed_data_types=*/0);
 }
 

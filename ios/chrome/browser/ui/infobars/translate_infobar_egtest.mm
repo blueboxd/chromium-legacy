@@ -740,6 +740,11 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that the target language can be changed. TODO(crbug.com/1046629):
 // implement test for changing source langauge.
 - (void)testInfobarChangeTargetLanguage {
+  // TODO(crbug.com/1116012): This test is failing flaky on iOS14.
+  if (@available(iOS 14, *)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS14.");
+  }
+
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));

@@ -50,6 +50,7 @@ target(link_target_type, "service_sources") {
     "image_manager.cc",
     "image_manager.h",
     "mailbox_manager.h",
+    "memory_tracking.cc",
     "memory_tracking.h",
     "scheduler.cc",
     "scheduler.h",

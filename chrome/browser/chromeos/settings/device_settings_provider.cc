@@ -685,6 +685,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           policy.release_channel().has_release_channel_delegated() &&
           policy.release_channel().release_channel_delegated());
 
+  if (policy.has_release_channel()) {
+    if (policy.release_channel().has_release_lts_tag()) {
+      new_values_cache->SetString(kReleaseLtsTag,
+                                  policy.release_channel().release_lts_tag());
+    }
+  }
+
   if (policy.has_system_timezone()) {
     if (policy.system_timezone().has_timezone()) {
       new_values_cache->SetString(kSystemTimezonePolicy,

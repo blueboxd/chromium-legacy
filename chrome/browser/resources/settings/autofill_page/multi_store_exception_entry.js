@@ -18,37 +18,37 @@ import {PasswordManagerProxy} from './password_manager_proxy.js';
  */
 export class MultiStoreExceptionEntry extends MultiStoreIdHandler {
   /**
-   * Creates a multi-store entry from duplicates |entry1| and (optional)
-   * |entry2|. If both arguments are passed, they should have the same contents
-   * but should be from different stores.
-   * @param {!PasswordManagerProxy.ExceptionEntry} entry1
-   * @param {PasswordManagerProxy.ExceptionEntry=} entry2
+   * @param {!PasswordManagerProxy.ExceptionEntry} entry
    */
-  constructor(entry1, entry2) {
+  constructor(entry) {
     super();
 
     /** @type {!PasswordManagerProxy.UrlCollection} */
-    this.urls_ = entry1.urls;
+    this.urls_ = entry.urls;
 
-    this.setId(entry1.id, entry1.fromAccountStore);
-
-    if (entry2) {
-      this.merge(entry2);
-    }
+    this.setId(entry.id, entry.fromAccountStore);
   }
 
   /**
    * Incorporates the id of |otherEntry|, as long as |otherEntry| matches
-   * |contents_| and the id corresponding to its store is not set.
+   * |contents_| and the id corresponding to its store is not set. If these
+   * preconditions are not satisfied, results in a no-op.
    * @param {!PasswordManagerProxy.ExceptionEntry} otherEntry
+   * @return {boolean} Returns whether the merge succeeded.
    */
   // TODO(crbug.com/1102294) Consider asserting frontendId as well.
-  merge(otherEntry) {
-    assert(
-        (this.isPresentInAccount() && !otherEntry.fromAccountStore) ||
-        (this.isPresentOnDevice() && otherEntry.fromAccountStore));
-    assert(JSON.stringify(this.urls_) === JSON.stringify(otherEntry.urls));
+  mergeInPlace(otherEntry) {
+    const alreadyHasCopyFromStore =
+        (this.isPresentInAccount() && otherEntry.fromAccountStore) ||
+        (this.isPresentOnDevice() && !otherEntry.fromAccountStore);
+    if (alreadyHasCopyFromStore) {
+      return false;
+    }
+    if (JSON.stringify(this.urls_) !== JSON.stringify(otherEntry.urls)) {
+      return false;
+    }
     this.setId(otherEntry.id, otherEntry.fromAccountStore);
+    return true;
   }
 
   get urls() {

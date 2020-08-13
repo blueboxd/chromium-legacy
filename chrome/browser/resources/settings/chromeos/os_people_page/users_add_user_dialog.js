@@ -91,15 +91,15 @@ Polymer({
       userEmail = emailMatches[1] + '@' + emailMatches[2];
     }
 
-    this.usersPrivate_.isWhitelistedUser(userEmail, doesUserExist => {
-      if (doesUserExist) {
+    this.usersPrivate_.isUserInList(userEmail, isUserInList => {
+      if (isUserInList) {
         // This user email had been saved previously
         this.errorCode_ = UserAddError.USER_EXISTS;
         return;
       }
 
       this.$.dialog.close();
-      this.usersPrivate_.addWhitelistedUser(
+      this.usersPrivate_.addUser(
           userEmail,
           /* callback */ function(success) {});
 

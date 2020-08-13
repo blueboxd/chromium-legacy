@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/trace_event/trace_conversion_helper.h"
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -1119,10 +1120,9 @@ NavigationRequest::NavigationRequest(
   DCHECK((IsInMainFrame() && browser_initiated) ||
          commit_params_->frame_policy.has_value());
 
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
-      "navigation", "NavigationRequest", navigation_id_, "frame_tree_node",
-      frame_tree_node_->frame_tree_node_id(), "url",
-      common_params_->url.possibly_invalid_spec());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("navigation", "NavigationRequest",
+                                    navigation_id_, "navigation_request",
+                                    base::trace_event::ToTracedValue(this));
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("navigation", "Initializing",
                                     navigation_id_);
   NavigationControllerImpl* controller = GetNavigationController();
@@ -4315,6 +4315,30 @@ url::Origin NavigationRequest::GetOriginForURLLoaderFactory() {
   return result;
 }
 
+void NavigationRequest::AsValueInto(
+    base::trace_event::TracedValue* traced_value) {
+  traced_value->SetPointer("this", this);
+  traced_value->SetInteger("navigation_id", navigation_id_);
+  traced_value->SetInteger("frame_tree_node",
+                           frame_tree_node_->frame_tree_node_id());
+  traced_value->SetString("url", common_params_->url.possibly_invalid_spec());
+  traced_value->SetBoolean("browser_initiated", browser_initiated_);
+  traced_value->SetBoolean("from_begin_navigation", from_begin_navigation_);
+  traced_value->SetBoolean("is_for_commit", is_for_commit_);
+  traced_value->SetInteger("reload_type", static_cast<int>(reload_type_));
+  traced_value->SetInteger("navigation_type",
+                           static_cast<int>(common_params_->navigation_type));
+  traced_value->SetInteger("state", static_cast<int>(state_));
+
+  if (IsServedFromBackForwardCache()) {
+    traced_value->SetBoolean("bf cached", true);
+    rfh_restored_from_back_forward_cache_->AsValueInto(traced_value);
+  }
+
+  if (state_ >= WILL_PROCESS_RESPONSE)
+    GetRenderFrameHost()->AsValueInto(traced_value);
+}
+
 void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {
   if (blocked)
     StopCommitTimeout();
@@ -4552,6 +4576,12 @@ bool NavigationRequest::IsPost() {
 
 const blink::mojom::Referrer& NavigationRequest::GetReferrer() {
   return *sanitized_referrer_;
+}
+
+void NavigationRequest::SetReferrer(blink::mojom::ReferrerPtr referrer) {
+  DCHECK(state_ == WILL_START_REQUEST || state_ == WILL_REDIRECT_REQUEST);
+  sanitized_referrer_ = std::move(referrer);
+  common_params_->referrer = sanitized_referrer_.Clone();
 }
 
 bool NavigationRequest::HasUserGesture() {

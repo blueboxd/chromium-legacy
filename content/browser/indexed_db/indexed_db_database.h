@@ -246,6 +246,22 @@ class CONTENT_EXPORT IndexedDBDatabase {
   leveldb::Status PutOperation(std::unique_ptr<PutOperationParams> params,
                                IndexedDBTransaction* transaction);
 
+  struct CONTENT_EXPORT PutAllOperationParams {
+    PutAllOperationParams();
+    ~PutAllOperationParams();
+    IndexedDBValue value;
+    std::unique_ptr<blink::IndexedDBKey> key;
+    std::vector<blink::IndexedDBIndexKeys> index_keys;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(PutAllOperationParams);
+  };
+  leveldb::Status PutAllOperation(
+      int64_t object_store_id,
+      std::vector<std::unique_ptr<PutAllOperationParams>> params,
+      blink::mojom::IDBTransaction::PutAllCallback callback,
+      IndexedDBTransaction* transaction);
+
   leveldb::Status SetIndexKeysOperation(
       int64_t object_store_id,
       std::unique_ptr<blink::IndexedDBKey> primary_key,

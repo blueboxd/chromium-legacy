@@ -62,6 +62,10 @@ void UpdateScreenHandler::SetUpdateCompleted(bool value) {
   CallJS("login.UpdateScreen.setUpdateCompleted", value);
 }
 
+void UpdateScreenHandler::SetManualRebootNeeded(bool value) {
+  CallJS("login.UpdateScreen.setManualRebootNeeded", value);
+}
+
 void UpdateScreenHandler::SetShowCurtain(bool value) {
   CallJS("login.UpdateScreen.showUpdateCurtain", value);
 }
@@ -92,6 +96,7 @@ void UpdateScreenHandler::DeclareLocalizedValues(
   builder->AddF("installingUpdateDesc", IDS_UPDATE_MSG,
                 ui::GetChromeOSDeviceName());
   builder->Add("updateCompeletedMsg", IDS_UPDATE_COMPLETED);
+  builder->Add("updateCompeletedRebootingMsg", IDS_UPDATE_COMPLETED_REBOOTING);
   builder->Add("updateScreenAccessibleTitle",
                IDS_UPDATE_SCREEN_ACCESSIBLE_TITLE);
   builder->Add("checkingForUpdates", IDS_CHECKING_FOR_UPDATES);

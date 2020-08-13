@@ -38,6 +38,8 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
   CaptionBubbleControllerViews& operator=(const CaptionBubbleControllerViews&) =
       delete;
 
+  // Called when speech recognition is ready to start for the given web
+  // contents.
   bool OnSpeechRecognitionReady(content::WebContents* web_contents) override;
 
   // Called when a transcription is received from the service. Returns whether
@@ -46,6 +48,9 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
   bool OnTranscription(
       const chrome::mojom::TranscriptionResultPtr& transcription_result,
       content::WebContents* web_contents) override;
+
+  // Called when the speech service has an error.
+  void OnError(content::WebContents* web_contents) override;
 
   // Called when the caption style changes.
   void UpdateCaptionStyle(

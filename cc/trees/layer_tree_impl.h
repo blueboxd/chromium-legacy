@@ -454,7 +454,6 @@ class CC_EXPORT LayerTreeImpl {
   bool UpdateDrawProperties(
       bool update_image_animation_controller = true,
       LayerImplList* output_update_layer_list_for_testing = nullptr);
-  void UpdateCanUseLCDText();
 
   void set_needs_update_draw_properties() {
     needs_update_draw_properties_ = true;

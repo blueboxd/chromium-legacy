@@ -107,6 +107,15 @@ class UpdateScreen : public BaseScreen,
     tick_clock_ = tick_clock;
   }
 
+  void set_wait_before_reboot_time_for_testing(
+      base::TimeDelta wait_before_reboot_time) {
+    wait_before_reboot_time_ = wait_before_reboot_time;
+  }
+
+  base::OneShotTimer* GetWaitRebootTimerForTesting() {
+    return &wait_reboot_timer_;
+  }
+
  protected:
   // BaseScreen:
   bool MaybeSkip(WizardContext* context) override;
@@ -143,6 +152,9 @@ class UpdateScreen : public BaseScreen,
   // Updates visibility of the low battery warning message during the update
   // stages. Called when power or update status changes.
   void UpdateBatteryWarningVisibility();
+
+  // Show reboot waiting screen.
+  void ShowRebootInProgress();
 
   UpdateView* view_;
   ErrorScreen* error_screen_;
@@ -186,6 +198,13 @@ class UpdateScreen : public BaseScreen,
   // If redirect did not happen during this delay, error message is shown
   // instead.
   base::OneShotTimer error_message_timer_;
+
+  // Timer for the interval to wait for the reboot progress screen to be shown
+  // for at least wait_before_reboot_time_ before reboot call.
+  base::OneShotTimer wait_reboot_timer_;
+
+  // Time in seconds after which we initiate reboot.
+  base::TimeDelta wait_before_reboot_time_;
 
   const base::TickClock* tick_clock_;
 

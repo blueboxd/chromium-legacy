@@ -15,9 +15,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "components/feed/core/common/pref_names.h"
-#include "components/feed/core/proto/v2/wire/action_request.pb.h"
-#include "components/feed/core/proto/v2/wire/feed_action_request.pb.h"
-#include "components/feed/core/proto/v2/wire/feed_action_response.pb.h"
+#include "components/feed/core/proto/v2/wire/discover_actions_service.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/feed/core/v2/test/callback_receiver.h"
@@ -59,15 +57,15 @@ feedwire::Response GetTestFeedResponse() {
   return response;
 }
 
-feedwire::FeedActionRequest GetTestActionRequest() {
-  feedwire::FeedActionRequest request;
-  request.add_feed_action()->mutable_content_id()->set_content_domain(
+feedwire::UploadActionsRequest GetTestActionRequest() {
+  feedwire::UploadActionsRequest request;
+  request.add_feed_actions()->mutable_content_id()->set_content_domain(
       "example.com");
   return request;
 }
 
-feedwire::FeedActionResponse GetTestActionResponse() {
-  feedwire::FeedActionResponse response;
+feedwire::UploadActionsResponse GetTestActionResponse() {
+  feedwire::UploadActionsResponse response;
   response.mutable_consistency_token()->set_token("tok");
   return response;
 }
@@ -166,6 +164,19 @@ class FeedNetworkTest : public testing::Test {
     return resource_request;
   }
 
+  network::ResourceRequest RespondToActionRequest(
+      const std::string& response_string,
+      net::HttpStatusCode code) {
+    task_environment_.RunUntilIdle();
+    network::TestURLLoaderFactory::PendingRequest* pending_request =
+        test_factory()->GetPendingRequest(0);
+    CHECK(pending_request);
+    network::ResourceRequest resource_request = pending_request->request;
+    Respond(pending_request->request.url, response_string, code);
+    task_environment_.FastForwardUntilNoTasksRemain();
+    return resource_request;
+  }
+
   network::ResourceRequest RespondToQueryRequest(
       feedwire::Response response_message,
       net::HttpStatusCode code) {
@@ -175,11 +186,11 @@ class FeedNetworkTest : public testing::Test {
   }
 
   network::ResourceRequest RespondToActionRequest(
-      feedwire::FeedActionResponse response_message,
+      feedwire::UploadActionsResponse response_message,
       net::HttpStatusCode code) {
     std::string binary_proto;
     response_message.SerializeToString(&binary_proto);
-    return RespondToQueryRequest(binary_proto, code);
+    return RespondToActionRequest(binary_proto, code);
   }
 
  protected:

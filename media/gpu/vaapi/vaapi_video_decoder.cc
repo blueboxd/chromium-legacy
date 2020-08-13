@@ -83,7 +83,7 @@ VaapiVideoDecoder::VaapiVideoDecoder(
       buffer_id_to_timestamp_(kTimestampCacheSize),
       weak_this_factory_(this) {
   VLOGF(2);
-  DCHECK(decoder_task_runner->RunsTasksInCurrentSequence());
+  DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   weak_this_ = weak_this_factory_.GetWeakPtr();

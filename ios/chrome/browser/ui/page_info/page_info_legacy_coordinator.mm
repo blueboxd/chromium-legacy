@@ -87,13 +87,14 @@
 
   CGPoint originPresentationCoordinates = [self.presentationProvider
       convertToPresentationCoordinatesForOrigin:self.originPoint];
+  // TODO(crbug.com/1045047): Use HandlerForProtocol() when BrowserCommands is
+  // broken up.
   self.pageInfoViewController = [[LegacyPageInfoViewController alloc]
              initWithModel:config
                sourcePoint:originPresentationCoordinates
       presentationProvider:self.presentationProvider
-                   handler:HandlerForProtocol(
-                               self.browser->GetCommandDispatcher(),
-                               BrowserCommands)];
+                   handler:static_cast<id<BrowserCommands>>(
+                               self.browser->GetCommandDispatcher())];
 }
 
 - (void)stop {

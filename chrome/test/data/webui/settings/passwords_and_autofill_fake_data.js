@@ -87,8 +87,13 @@ export function createMultiStorePasswordEntry(params) {
     });
   }
 
+  if (deviceEntry && accountEntry) {
+    const mergedEntry = new MultiStorePasswordUiEntry(deviceEntry);
+    mergedEntry.mergeInPlace(accountEntry);
+    return mergedEntry;
+  }
   if (deviceEntry) {
-    return new MultiStorePasswordUiEntry(deviceEntry, accountEntry);
+    return new MultiStorePasswordUiEntry(deviceEntry);
   }
   if (accountEntry) {
     return new MultiStorePasswordUiEntry(accountEntry);
@@ -158,8 +163,13 @@ export function createMultiStoreExceptionEntry(params) {
     });
   }
 
+  if (deviceEntry && accountEntry) {
+    const mergedEntry = new MultiStoreExceptionEntry(deviceEntry);
+    mergedEntry.mergeInPlace(accountEntry);
+    return mergedEntry;
+  }
   if (deviceEntry) {
-    return new MultiStoreExceptionEntry(deviceEntry, accountEntry);
+    return new MultiStoreExceptionEntry(deviceEntry);
   }
   if (accountEntry) {
     return new MultiStoreExceptionEntry(accountEntry);

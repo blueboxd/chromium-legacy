@@ -20,6 +20,7 @@ import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -32,7 +33,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 @JNINamespace("weblayer")
 public final class BrowserViewController
-        implements BrowserControlsContainerView.Listener,
+        implements BrowserControlsContainerView.Delegate,
                    WebContentsGestureStateTracker.OnGestureStateChangedListener,
                    ModalDialogManager.ModalDialogManagerObserver {
     private final ContentViewRenderView mContentViewRenderView;
@@ -60,6 +61,9 @@ public final class BrowserViewController
     private TabImpl mTab;
 
     private WebContentsGestureStateTracker mGestureStateTracker;
+
+    @BrowserControlsState
+    private int mBrowserControlsConstraint = BrowserControlsState.BOTH;
 
     /**
      * The value of mCachedDoBrowserControlsShrinkRendererSize is set when
@@ -166,6 +170,8 @@ public final class BrowserViewController
 
         if (mTab != null) {
             mTab.onDidLoseActive();
+            mTab.setBrowserControlsVisibilityConstraint(
+                    ImplControlsVisibilityReason.ANIMATION, BrowserControlsState.BOTH);
             // WebContentsGestureStateTracker is relatively cheap, easier to destroy rather than
             // update WebContents.
             mGestureStateTracker.destroy();
@@ -190,6 +196,8 @@ public final class BrowserViewController
         mTopControlsContainerView.setWebContents(webContents);
         mBottomControlsContainerView.setWebContents(webContents);
         if (mTab != null) {
+            mTab.setBrowserControlsVisibilityConstraint(
+                    ImplControlsVisibilityReason.ANIMATION, mBrowserControlsConstraint);
             mTab.onDidGainActive(mTopControlsContainerView.getNativeHandle(),
                     mBottomControlsContainerView.getNativeHandle());
             mContentView.requestFocus();
@@ -212,6 +220,10 @@ public final class BrowserViewController
         mTopControlsContainerView.setPinControlsToContentTop(pinToContentTop);
     }
 
+    public void setTopControlsAnimationsEnabled(boolean animationsEnabled) {
+        mTopControlsContainerView.setAnimationsEnabled(animationsEnabled);
+    }
+
     public void setBottomView(View view) {
         mBottomControlsContainerView.setView(view);
     }
@@ -229,8 +241,16 @@ public final class BrowserViewController
     }
 
     @Override
-    public void onBrowserControlsCompletelyExpandedOrCollapsed() {
+    public void refreshPageHeight() {
         adjustWebContentsHeightIfNecessary();
+    }
+
+    @Override
+    public void setAnimationConstraint(@BrowserControlsState int constraint) {
+        mBrowserControlsConstraint = constraint;
+        if (mTab == null) return;
+        mTab.setBrowserControlsVisibilityConstraint(
+                ImplControlsVisibilityReason.ANIMATION, constraint);
     }
 
     @Override
@@ -300,6 +320,10 @@ public final class BrowserViewController
                 ? mCachedDoBrowserControlsShrinkRendererSize
                 : (mTopControlsContainerView.isControlVisible()
                         || mBottomControlsContainerView.isControlVisible());
+    }
+
+    public boolean shouldAnimateBrowserControlsHeightChanges() {
+        return mTopControlsContainerView.shouldAnimateBrowserControlsHeightChanges();
     }
 
     /**

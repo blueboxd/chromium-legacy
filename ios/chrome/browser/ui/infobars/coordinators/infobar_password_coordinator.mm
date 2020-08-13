@@ -86,8 +86,7 @@
     self.bannerViewController.buttonText =
         base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
             ConfirmInfoBarDelegate::BUTTON_OK));
-    self.bannerViewController.iconImage =
-        [UIImage imageNamed:@"infobar_passwords_icon"];
+    self.bannerViewController.iconImage = [UIImage imageNamed:@"password_key"];
     NSString* hiddenPasswordText =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL);
     [self.bannerViewController

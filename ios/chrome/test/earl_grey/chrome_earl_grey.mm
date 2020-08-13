@@ -850,15 +850,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
                              @"Failed waiting for identities to be cleared");
 }
 
-- (void)signOutAndClearAccounts {
-  [self signOutAndClearIdentities];
-}
+#pragma mark - Bookmarks Utilities (EG2)
 
 - (void)addBookmarkWithSyncPassphrase:(NSString*)syncPassphrase {
   [ChromeEarlGreyAppInterface addBookmarkWithSyncPassphrase:syncPassphrase];
 }
-
-#pragma mark - Bookmarks Utilities (EG2)
 
 - (void)waitForBookmarksToFinishLoading {
   EG_TEST_HELPER_ASSERT_NO_ERROR(

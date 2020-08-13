@@ -1083,9 +1083,6 @@ extern const char kPermissionChipDescription[];
 extern const char kPointerLockOptionsName[];
 extern const char kPointerLockOptionsDescription[];
 
-extern const char kPolicyAtomicGroupsEnabledName[];
-extern const char kPolicyAtomicGroupsEnabledDescription[];
-
 extern const char kPreviewsAllowedName[];
 extern const char kPreviewsAllowedDescription[];
 

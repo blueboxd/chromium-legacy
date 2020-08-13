@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "components/prerender/renderer/prerender_helper.h"
 #include "components/safe_browsing/content/renderer/renderer_url_loader_throttle.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
@@ -63,6 +64,14 @@ URLLoaderThrottleProvider::CreateThrottles(
     throttles.push_back(
         std::make_unique<safe_browsing::RendererURLLoaderThrottle>(
             safe_browsing_.get(), render_frame_id));
+  }
+
+  if (type_ == content::URLLoaderThrottleProviderType::kFrame &&
+      !is_frame_resource) {
+    auto throttle =
+        prerender::PrerenderHelper::MaybeCreateThrottle(render_frame_id);
+    if (throttle)
+      throttles.push_back(std::move(throttle));
   }
 
   return throttles;

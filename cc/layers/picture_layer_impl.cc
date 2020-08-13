@@ -141,7 +141,6 @@ std::unique_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
 void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
 
-
   LayerImpl::PushPropertiesTo(base_layer);
 
   // Twin relationships should never change once established.
@@ -815,8 +814,11 @@ void PictureLayerImpl::UpdateRasterSource(
   }
 }
 
-bool PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
-  DCHECK(layer_tree_impl()->IsSyncTree());
+bool PictureLayerImpl::UpdateCanUseLCDText() {
+  // If we have pending/active trees, the active tree doesn't update lcd text
+  // status but copies it from the pending tree.
+  if (!layer_tree_impl()->IsSyncTree())
+    return false;
 
   // Once we disable lcd text, we don't re-enable it.
   if (!can_use_lcd_text())
@@ -827,11 +829,6 @@ bool PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
     return false;
 
   lcd_text_disallowed_reason_ = new_lcd_text_disallowed_reason;
-  // Synthetically invalidate everything.
-  gfx::Rect bounds_rect(bounds());
-  invalidation_ = Region(bounds_rect);
-  tilings_->Invalidate(invalidation_);
-  UnionUpdateRect(bounds_rect);
   return true;
 }
 
@@ -864,8 +861,7 @@ LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason()
     return LCDTextDisallowedReason::kWillChangeTransform;
 
   EffectNode* effect_node = GetEffectTree().Node(effect_tree_index());
-  // TODO(crbug.com/1114504): Should also consider ancestor filters.
-  if (!effect_node->filters.IsEmpty())
+  if (effect_node->node_or_ancestor_has_filters)
     return LCDTextDisallowedReason::kPixelOrColorEffect;
 
   return LCDTextDisallowedReason::kNone;
@@ -934,8 +930,7 @@ std::unique_ptr<Tile> PictureLayerImpl::CreateTile(
     flags |= Tile::IS_OPAQUE;
 
   return layer_tree_impl()->tile_manager()->CreateTile(
-      info, id(), layer_tree_impl()->source_frame_number(), flags,
-      can_use_lcd_text());
+      info, id(), layer_tree_impl()->source_frame_number(), flags);
 }
 
 const Region* PictureLayerImpl::GetPendingInvalidation() {
@@ -1185,12 +1180,15 @@ void PictureLayerImpl::LogDirectlyCompositedImageRasterScaleUMAs() const {
 }
 
 PictureLayerTiling* PictureLayerImpl::AddTiling(
-    const gfx::AxisTransform2d& contents_transform) {
+    const gfx::AxisTransform2d& raster_transform) {
   DCHECK(CanHaveTilings());
-  DCHECK_GE(contents_transform.scale(), MinimumContentsScale());
-  DCHECK_LE(contents_transform.scale(), MaximumContentsScale());
+  DCHECK_GE(raster_transform.scale(), MinimumContentsScale());
+  DCHECK_LE(raster_transform.scale(), MaximumContentsScale());
   DCHECK(raster_source_->HasRecordings());
-  return tilings_->AddTiling(contents_transform, raster_source_);
+  bool tiling_can_use_lcd_text =
+      can_use_lcd_text() && raster_transform.scale() == raster_contents_scale_;
+  return tilings_->AddTiling(raster_transform, raster_source_,
+                             tiling_can_use_lcd_text);
 }
 
 void PictureLayerImpl::RemoveAllTilings() {
@@ -1206,11 +1204,13 @@ void PictureLayerImpl::UpdateTilingsForRasterScaleAndTranslation(
 
   gfx::Vector2dF raster_translation =
       CalculateRasterTranslation(raster_contents_scale_);
+  bool can_use_lcd_text_changed = UpdateCanUseLCDText();
   if (high_res) {
-    if (high_res->raster_transform().translation() != raster_translation &&
-        layer_tree_impl()->IsSyncTree()) {
-      // We should recreate the high res tiling with the new raster translation,
-      // which is for the sync tree only to avoid flickering.
+    if (layer_tree_impl()->IsSyncTree() &&
+        (high_res->raster_transform().translation() != raster_translation ||
+         can_use_lcd_text_changed)) {
+      // We should recreate the high res tiling with the new raster translation
+      // and lcd text, which is for the sync tree only to avoid flickering.
       tilings_->Remove(high_res);
       high_res = nullptr;
     } else if (!adjusted_raster_scale) {

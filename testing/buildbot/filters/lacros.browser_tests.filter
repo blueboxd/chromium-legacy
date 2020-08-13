@@ -6,6 +6,7 @@
 -AdsPageLoadMetricsObserverBrowserTest.PageAdDensityMultipleFrames
 -AdsPageLoadMetricsObserverBrowserTest.PageAdDensityRecordsPageMax
 -All/CustomTabBarViewBrowserTest.BackToAppButtonIsNotVisibleInOutOfScopePopups/BookmarkApps
+-All/CustomTabBarViewBrowserTest.BackToAppButtonIsNotVisibleInOutOfScopePopups/WebApps
 -All/CustomTabBarViewBrowserTest.IsNotCreatedInPopup/BookmarkApps
 -All/CustomTabBarViewBrowserTest.IsNotCreatedInPopup/WebApps
 -All/CustomTabBarViewBrowserTest.RightClickMenuShowsCopyUrl/BookmarkApps
@@ -20,6 +21,8 @@
 -All/IntentPickerBubbleViewBrowserTest.NavigationInAppWindowToInScopeLinkDoesNotShowIntentPicker*
 -All/MultiActionAPITest.PopupCreation/1
 -All/MultiActionAPITest.SessionStorageDoesNotPersistBetweenOpenings/1
+-All/PopupBrowserTest.MoveClampedToCurrentDisplay/0
+-All/PopupBrowserTest.MoveClampedToCurrentDisplay/1
 -All/WebAppBrowserTest.CopyURL/BookmarkApps
 -All/WebAppBrowserTest.CopyURL/WebApps
 -All/WebAppBrowserTest.InScopePWAPopupsHaveCorrectSize/WebApps
@@ -96,15 +99,7 @@
 -ContentIndexTest.MetricsCollected
 -ContentSettingsTest.AllowCookiesForASessionUsingExceptions
 -ContentVerifierTest.PolicyCorrupted
--ContextMenuBrowserTest.GifImageDownscaleToJpeg
--ContextMenuBrowserTest.JpgImageDownscaleToJpg
--ContextMenuBrowserTest.OpenLinkInProfile
--ContextMenuBrowserTest.OpenLinkInProfileEntryPresent
--ContextMenuBrowserTest.OpenLinkInWebApp
--ContextMenuBrowserTest.PngImageDownscaleToPng
--ContextMenuBrowserTest.RealMenu
--ContextMenuBrowserTest.RequestPngForGifImage
--ContextMenuBrowserTest.SuggestedFileNameCrossOrigin
+-ContextMenuBrowserTest.*
 -CrComponentsCertificateManagerV3Test.All
 -CrComponentsManagedFootnoteV3Test.All
 -CreativeOriginAdsPageLoadMetricsObserverBrowserTest.CreativeOriginStatusWithThrottlingNestedThrottled

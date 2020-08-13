@@ -15,8 +15,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/feed/core/common/pref_names.h"
-#include "components/feed/core/proto/v2/wire/action_request.pb.h"
-#include "components/feed/core/proto/v2/wire/feed_action_response.pb.h"
+#include "components/feed/core/proto/v2/wire/discover_actions_service.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_query.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
@@ -87,17 +86,15 @@ struct FeedNetworkImpl::RawResponse {
 };
 
 namespace {
-template <typename RESULT, NetworkRequestType REQUEST_TYPE>
-void ParseAndForwardResponse(base::OnceCallback<void(RESULT)> result_callback,
-                             RawResponse raw_response) {
+
+void ParseAndForwardQueryResponse(
+    base::OnceCallback<void(FeedNetwork::QueryRequestResult)> result_callback,
+    RawResponse raw_response) {
   MetricsReporter::NetworkRequestComplete(
-      REQUEST_TYPE, raw_response.response_info.status_code);
-  RESULT result;
+      NetworkRequestType::kFeedQuery, raw_response.response_info.status_code);
+  FeedNetwork::QueryRequestResult result;
   result.response_info = raw_response.response_info;
   if (result.response_info.status_code == 200) {
-    auto response_message = std::make_unique<typename decltype(
-        result.response_body)::element_type>();
-
     ::google::protobuf::io::CodedInputStream input_stream(
         reinterpret_cast<const uint8_t*>(raw_response.response_bytes.data()),
         raw_response.response_bytes.size());
@@ -107,7 +104,25 @@ void ParseAndForwardResponse(base::OnceCallback<void(RESULT)> result_callback,
     int message_size;
     input_stream.ReadVarintSizeAsInt(&message_size);
 
+    auto response_message = std::make_unique<feedwire::Response>();
     if (response_message->ParseFromCodedStream(&input_stream)) {
+      result.response_body = std::move(response_message);
+    }
+  }
+  std::move(result_callback).Run(std::move(result));
+}
+
+void ParseAndForwardUploadResponse(
+    base::OnceCallback<void(FeedNetwork::ActionRequestResult)> result_callback,
+    RawResponse raw_response) {
+  MetricsReporter::NetworkRequestComplete(
+      NetworkRequestType::kUploadActions,
+      raw_response.response_info.status_code);
+  FeedNetwork::ActionRequestResult result;
+  result.response_info = raw_response.response_info;
+  if (result.response_info.status_code == 200) {
+    auto response_message = std::make_unique<feedwire::UploadActionsResponse>();
+    if (response_message->ParseFromString(raw_response.response_bytes)) {
       result.response_body = std::move(response_message);
     }
   }
@@ -436,13 +451,11 @@ void FeedNetworkImpl::SendQueryRequest(
                                   url);
   Send(url, "GET", /*request_body=*/{}, force_signed_out_request,
        /*allow_bless_auth=*/host_overridden,
-       base::BindOnce(&ParseAndForwardResponse<QueryRequestResult,
-                                               NetworkRequestType::kFeedQuery>,
-                      std::move(callback)));
+       base::BindOnce(&ParseAndForwardQueryResponse, std::move(callback)));
 }
 
 void FeedNetworkImpl::SendActionRequest(
-    const feedwire::FeedActionRequest& request,
+    const feedwire::UploadActionsRequest& request,
     base::OnceCallback<void(ActionRequestResult)> callback) {
   std::string binary_proto;
   request.SerializeToString(&binary_proto);
@@ -461,10 +474,7 @@ void FeedNetworkImpl::SendActionRequest(
   Send(url, "POST", std::move(binary_proto),
        /*force_signed_out_request=*/false,
        /*allow_bless_auth=*/false,
-       base::BindOnce(
-           &ParseAndForwardResponse<ActionRequestResult,
-                                    NetworkRequestType::kUploadActions>,
-           std::move(callback)));
+       base::BindOnce(&ParseAndForwardUploadResponse, std::move(callback)));
 }
 
 void FeedNetworkImpl::CancelRequests() {

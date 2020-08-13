@@ -63,7 +63,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
     kAddNewProfileButton = 15,
     kSyncSettingsButton = 16,
     kEditProfileButton = 17,
-    kMaxValue = kEditProfileButton,
+    kCreateIncognitoShortcutButton = 18,
+    kMaxValue = kCreateIncognitoShortcutButton,
   };
 
   enum class SyncInfoContainerBackgroundState {

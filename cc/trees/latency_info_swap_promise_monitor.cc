@@ -5,6 +5,8 @@
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 
 #include <stdint.h>
+#include <memory>
+#include <utility>
 
 #include "base/threading/platform_thread.h"
 #include "cc/trees/latency_info_swap_promise.h"
@@ -31,9 +33,13 @@ namespace cc {
 
 LatencyInfoSwapPromiseMonitor::LatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency,
-    SwapPromiseManager* swap_promise_manager,
+    SwapPromiseManager* swap_promise_manager)
+    : SwapPromiseMonitor(swap_promise_manager), latency_(latency) {}
+
+LatencyInfoSwapPromiseMonitor::LatencyInfoSwapPromiseMonitor(
+    ui::LatencyInfo* latency,
     LayerTreeHostImpl* host_impl)
-    : SwapPromiseMonitor(swap_promise_manager, host_impl), latency_(latency) {}
+    : SwapPromiseMonitor(host_impl), latency_(latency) {}
 
 LatencyInfoSwapPromiseMonitor::~LatencyInfoSwapPromiseMonitor() = default;
 

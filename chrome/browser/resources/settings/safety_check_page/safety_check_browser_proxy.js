@@ -88,6 +88,7 @@ export const SafetyCheckSafeBrowsingStatus = {
   DISABLED_BY_EXTENSION: 4,
   ENABLED_STANDARD: 5,
   ENABLED_ENHANCED: 6,
+  ENABLED_STANDARD_AVAILABLE_ENHANCED: 7,
 };
 
 /**

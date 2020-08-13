@@ -68,6 +68,12 @@ std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image,
                                            float rep_icon_scale);
 
 #if defined(OS_CHROMEOS)
+gfx::ImageSkia ApplyBackgroundAndMask(const gfx::ImageSkia& image);
+
+gfx::ImageSkia CompositeImagesAndApplyMask(
+    const gfx::ImageSkia& foreground_image,
+    const gfx::ImageSkia& background_image);
+
 void ArcRawIconPngDataToImageSkia(
     arc::mojom::RawIconPngDataPtr icon,
     int size_hint_in_dip,

@@ -124,15 +124,15 @@ class AdmWriter(gpo_editor_writer.GpoEditorWriter):
       builder.AddLine('VALUENAME "%s"' % policy['name'])
     if policy['type'] == 'int':
       # The default max for NUMERIC values is 9999 which is too small for us.
-      max = '2000000000'
-      min = '0'
+      max = 2000000000
+      min = 0
       if self.PolicyHasRestrictions(policy):
         schema = policy['schema']
         if 'minimum' in schema:
           min = schema['minimum']
         if 'maximum' in schema:
           max = schema['maximum']
-      builder.AddLine('MIN ' + str(min) + ' MAX ' + max)
+      builder.AddLine('MIN %d MAX %d' % (min, max))
     if policy['type'] in ('string', 'dict', 'external'):
       # The default max for EDITTEXT values is 1023, which is too small for
       # big JSON blobs and other string policies.

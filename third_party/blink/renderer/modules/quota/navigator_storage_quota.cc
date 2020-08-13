@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/modules/quota/navigator_storage_quota.h"
 
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/quota/deprecated_storage_quota.h"
@@ -84,8 +85,20 @@ DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage() const {
 
 StorageManager* NavigatorStorageQuota::storage() const {
   if (!storage_manager_) {
-    storage_manager_ =
-        MakeGarbageCollected<StorageManager>(GetSupplementable()->DomWindow());
+    mojo::Remote<mojom::blink::QuotaManagerHost> backend;
+
+    auto* supplementable = GetSupplementable();
+    auto* execution_context =
+        supplementable ? supplementable->GetExecutionContext() : nullptr;
+    if (execution_context) {
+      if (&execution_context->GetBrowserInterfaceBroker() !=
+          &GetEmptyBrowserInterfaceBroker()) {
+        execution_context->GetBrowserInterfaceBroker().GetInterface(
+            backend.BindNewPipeAndPassReceiver());
+      }
+    }
+    storage_manager_ = MakeGarbageCollected<StorageManager>(execution_context,
+                                                            std::move(backend));
   }
   return storage_manager_.Get();
 }

@@ -353,6 +353,15 @@ suite(destination_select_test_cros.suiteName, function() {
     destinationSelect.disabled = false;
     destinationSelect.loaded = false;
     destinationSelect.noDestinations = false;
+    populateRecentDestinationList();
+    destinationSelect.recentDestinationList = recentDestinationList;
+
+    document.body.appendChild(destinationSelect);
+  });
+
+  // Create three different destinations and use them to populate
+  // |recentDestinationList|.
+  function populateRecentDestinationList() {
     recentDestinationList = [
       new Destination(
           'ID1', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'One',
@@ -365,10 +374,7 @@ suite(destination_select_test_cros.suiteName, function() {
           DestinationConnectionStatus.ONLINE,
           {account: account, isOwned: true}),
     ];
-    destinationSelect.recentDestinationList = recentDestinationList;
-
-    document.body.appendChild(destinationSelect);
-  });
+  }
 
   function compareIcon(selectEl, expectedIcon) {
     const icon = selectEl.style['background-image'].replace(/ /gi, '');
@@ -378,26 +384,12 @@ suite(destination_select_test_cros.suiteName, function() {
     assertEquals(expected, icon);
   }
 
-  test(assert(destination_select_test_cros.TestNames.UpdateStatus), function() {
-    return waitBeforeNextRender(destinationSelect).then(() => {
-      assertFalse(destinationSelect.$$('.throbber-container').hidden);
-      assertTrue(destinationSelect.$$('.md-select').hidden);
-
-      destinationSelect.loaded = true;
-      assertTrue(destinationSelect.$$('.throbber-container').hidden);
-      assertFalse(destinationSelect.$$('.md-select').hidden);
-
-      destinationSelect.destination = recentDestinationList[0];
-      destinationSelect.updateDestination();
-      assertTrue(destinationSelect.$$('.destination-additional-info').hidden);
-
-      destinationSelect.destination = recentDestinationList[1];
-      destinationSelect.updateDestination();
-      assertFalse(destinationSelect.$$('.destination-additional-info').hidden);
-    });
-  });
-
-  test(assert(destination_select_test_cros.TestNames.ChangeIcon), function() {
+  /**
+   * Test that changing different destinations results in the correct icon being
+   * shown.
+   * @return {!Promise} Promise that resolves when the test finishes.
+   */
+  function testChangeIcon() {
     const cookieOrigin = DestinationOrigin.COOKIES;
     let selectEl;
 
@@ -444,6 +436,29 @@ suite(destination_select_test_cros.suiteName, function() {
         .then(() => {
           compareIcon(selectEl, 'print');
         });
+  }
+
+  test(assert(destination_select_test_cros.TestNames.UpdateStatus), function() {
+    return waitBeforeNextRender(destinationSelect).then(() => {
+      assertFalse(destinationSelect.$$('.throbber-container').hidden);
+      assertTrue(destinationSelect.$$('.md-select').hidden);
+
+      destinationSelect.loaded = true;
+      assertTrue(destinationSelect.$$('.throbber-container').hidden);
+      assertFalse(destinationSelect.$$('.md-select').hidden);
+
+      destinationSelect.destination = recentDestinationList[0];
+      destinationSelect.updateDestination();
+      assertTrue(destinationSelect.$$('.destination-additional-info').hidden);
+
+      destinationSelect.destination = recentDestinationList[1];
+      destinationSelect.updateDestination();
+      assertFalse(destinationSelect.$$('.destination-additional-info').hidden);
+    });
+  });
+
+  test(assert(destination_select_test_cros.TestNames.ChangeIcon), function() {
+    return testChangeIcon();
   });
 
   /**

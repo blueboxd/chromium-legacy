@@ -107,10 +107,10 @@ void OnArcAppIconCompletelyLoaded(
       if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
         iv->uncompressed =
             icon->is_adaptive_icon()
-                ? gfx::ImageSkiaOperations::CreateSuperimposedImage(
-                      icon->background_image_skia(),
-                      icon->foreground_image_skia())
-                : icon->foreground_image_skia();
+                ? apps::CompositeImagesAndApplyMask(
+                      icon->foreground_image_skia(),
+                      icon->background_image_skia())
+                : apps::ApplyBackgroundAndMask(icon->foreground_image_skia());
       } else {
         iv->uncompressed = icon->image_skia();
       }
@@ -1364,10 +1364,6 @@ void ArcApps::ConvertAndPublishPackageApps(
 IconEffects ArcApps::GetIconEffects(const std::string& app_id,
                                     const ArcAppListPrefs::AppInfo& app_info) {
   IconEffects icon_effects = IconEffects::kNone;
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kCrOsStandardMask);
-  }
   if (app_info.suspended) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);

@@ -17,6 +17,9 @@
 #     'nc_testset_1.nc',
 #     'nc_testset_2.nc',
 #   ]
+#
+#   # optional extra include dirs:
+#   include_dirs = [ ... ]
 # }
 #
 # The .nc files are C++ files that contain code we wish to assert will not
@@ -61,8 +64,8 @@ import("//testing/test.gni")
 
 declare_args() {
   # TODO(crbug.com/105388): make sure no-compile test is not flaky.
-  enable_nocompile_tests =
-      (is_linux || is_chromeos || is_apple) && is_clang && host_cpu == target_cpu
+  enable_nocompile_tests = (is_linux || is_chromeos || is_apple) && is_clang &&
+                           host_cpu == target_cpu
 }
 
 if (enable_nocompile_tests) {
@@ -103,6 +106,14 @@ if (enable_nocompile_tests) {
         # TODO(https://crbug.com/989932): Track build/config/compiler/BUILD.gn
         "-Wno-implicit-int-float-conversion",
       ]
+
+      # Iterate over any extra include dirs and append them to the command line.
+      if (defined(invoker.include_dirs)) {
+        foreach(include_dir, invoker.include_dirs) {
+          args += [ "-I" + rebase_path(include_dir, root_build_dir) ]
+        }
+      }
+
       if (sysroot != "") {
         args += [
           "--sysroot",

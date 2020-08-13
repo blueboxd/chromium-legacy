@@ -34,6 +34,10 @@ size_t IsolatedPrerenderMaximumNumberOfConcurrentPrefetches();
 base::Optional<size_t>
 IsolatedPrerenderMaximumNumberOfNoStatePrefetchAttempts();
 
+// The maximum body length allowed to be prefetched for mainframe responses in
+// bytes.
+size_t IsolatedPrerenderMainframeBodyLengthLimit();
+
 // Whether idle sockets should be closed after every prefetch.
 bool IsolatedPrerenderCloseIdleSockets();
 

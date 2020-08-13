@@ -76,7 +76,9 @@ const std::vector<SearchConcept>& GetAndroidSettingsSearchConcepts() {
        mojom::SearchResultIcon::kGooglePlay,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kManageAndroidPreferences}},
+       {.setting = mojom::Setting::kManageAndroidPreferences},
+       {IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS_WITH_PLAY_STORE_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -88,7 +90,8 @@ const std::vector<SearchConcept>& GetAndroidNoPlayStoreSearchConcepts() {
        mojom::SearchResultIcon::kAndroid,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kManageAndroidPreferences}},
+       {.setting = mojom::Setting::kManageAndroidPreferences},
+       {IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }

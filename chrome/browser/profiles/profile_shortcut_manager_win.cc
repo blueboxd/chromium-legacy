@@ -385,11 +385,13 @@ struct CreateOrUpdateShortcutsParams {
       base::FilePath profile_path,
       ProfileShortcutManagerWin::CreateOrUpdateMode create_mode,
       ProfileShortcutManagerWin::NonProfileShortcutAction action,
-      bool single_profile)
+      bool single_profile,
+      bool incognito = false)
       : create_mode(create_mode),
         action(action),
         profile_path(profile_path),
-        single_profile(single_profile) {}
+        single_profile(single_profile),
+        incognito(incognito) {}
   ~CreateOrUpdateShortcutsParams() {}
 
   ProfileShortcutManagerWin::CreateOrUpdateMode create_mode;
@@ -405,6 +407,10 @@ struct CreateOrUpdateShortcutsParams {
   // If true, this is for a shortcut to a single profile, which won't have a
   // badged icon or the name of profile in the shortcut name.
   bool single_profile;
+
+  // If true, this adds an incognito switch that allows the user to open an
+  // incognito window directly from the desktop shortcut.
+  bool incognito;
 
   // Avatar images for this profile.
   SkBitmap avatar_image_1x;
@@ -438,7 +444,8 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
   std::set<base::FilePath> desktop_contents = ListUserDesktopContents(nullptr);
 
   const base::string16 command_line =
-      profiles::internal::CreateProfileShortcutFlags(params.profile_path);
+      profiles::internal::CreateProfileShortcutFlags(params.profile_path,
+                                                     params.incognito);
   ChromeCommandLineFilter filter(
       chrome_exe, command_line,
       params.action == ProfileShortcutManagerWin::UPDATE_NON_PROFILE_SHORTCUTS);
@@ -689,10 +696,18 @@ bool ShortcutFilenameMatcher::IsCanonical(
                      iswdigit);
 }
 
-base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path) {
-  return base::StringPrintf(
+base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path,
+                                          const bool incognito) {
+  base::string16 flags = base::StringPrintf(
       L"--%ls=\"%ls\"", base::ASCIIToUTF16(switches::kProfileDirectory).c_str(),
       profile_path.BaseName().value().c_str());
+
+  if (incognito) {
+    flags.append(base::StringPrintf(
+        L" --%ls", base::ASCIIToUTF16(switches::kIncognito).c_str()));
+  }
+
+  return flags;
 }
 
 }  // namespace internal
@@ -748,13 +763,25 @@ ProfileShortcutManagerWin::~ProfileShortcutManagerWin() {
 void ProfileShortcutManagerWin::CreateOrUpdateProfileIcon(
     const base::FilePath& profile_path) {
   CreateOrUpdateShortcutsForProfileAtPath(
-      profile_path, CREATE_OR_UPDATE_ICON_ONLY, IGNORE_NON_PROFILE_SHORTCUTS);
+      profile_path, CREATE_OR_UPDATE_ICON_ONLY, IGNORE_NON_PROFILE_SHORTCUTS,
+      /*incognito=*/false);
+}
+
+// Creates an incognito desktop shortcut for the current profile.
+// TODO(crbug.com/1113162): Update the shortcut label and icon to chrome +
+// incognito.
+void ProfileShortcutManagerWin::CreateIncognitoProfileShortcut(
+    const base::FilePath& profile_path) {
+  CreateOrUpdateShortcutsForProfileAtPath(profile_path, CREATE_WHEN_NONE_FOUND,
+                                          IGNORE_NON_PROFILE_SHORTCUTS,
+                                          /*incognito=*/true);
 }
 
 void ProfileShortcutManagerWin::CreateProfileShortcut(
     const base::FilePath& profile_path) {
   CreateOrUpdateShortcutsForProfileAtPath(profile_path, CREATE_WHEN_NONE_FOUND,
-                                          IGNORE_NON_PROFILE_SHORTCUTS);
+                                          IGNORE_NON_PROFILE_SHORTCUTS,
+                                          /*incognito=*/false);
 }
 
 void ProfileShortcutManagerWin::RemoveProfileShortcuts(
@@ -815,9 +842,9 @@ void ProfileShortcutManagerWin::OnProfileAdded(
     // When the second profile is added, make existing non-profile and
     // non-badged shortcuts point to the first profile and be badged/named
     // appropriately.
-    CreateOrUpdateShortcutsForProfileAtPath(GetOtherProfilePath(profile_path),
-                                            UPDATE_EXISTING_ONLY,
-                                            UPDATE_NON_PROFILE_SHORTCUTS);
+    CreateOrUpdateShortcutsForProfileAtPath(
+        GetOtherProfilePath(profile_path), UPDATE_EXISTING_ONLY,
+        UPDATE_NON_PROFILE_SHORTCUTS, /*incognito=*/false);
   }
 }
 
@@ -834,7 +861,8 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
     // This is needed to unbadge the icon.
     CreateOrUpdateShortcutsForProfileAtPath(
         storage.GetAllProfilesAttributes().front()->GetPath(),
-        UPDATE_EXISTING_ONLY, IGNORE_NON_PROFILE_SHORTCUTS);
+        UPDATE_EXISTING_ONLY, IGNORE_NON_PROFILE_SHORTCUTS,
+        /*incognito=*/false);
   }
 
   base::FilePath first_profile_path;
@@ -853,7 +881,8 @@ void ProfileShortcutManagerWin::OnProfileNameChanged(
     const base::FilePath& profile_path,
     const base::string16& old_profile_name) {
   CreateOrUpdateShortcutsForProfileAtPath(profile_path, UPDATE_EXISTING_ONLY,
-                                          IGNORE_NON_PROFILE_SHORTCUTS);
+                                          IGNORE_NON_PROFILE_SHORTCUTS,
+                                          /*incognito=*/false);
 }
 
 void ProfileShortcutManagerWin::OnProfileAvatarChanged(
@@ -892,7 +921,8 @@ base::FilePath ProfileShortcutManagerWin::GetOtherProfilePath(
 void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
     const base::FilePath& profile_path,
     CreateOrUpdateMode create_mode,
-    NonProfileShortcutAction action) {
+    NonProfileShortcutAction action,
+    bool incognito) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   ProfileAttributesStorage& storage =
@@ -905,7 +935,8 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
   bool remove_badging = storage.GetNumberOfProfiles() == 1u;
 
   CreateOrUpdateShortcutsParams params(profile_path, create_mode, action,
-                                       /*single_profile=*/remove_badging);
+                                       /*single_profile=*/remove_badging,
+                                       incognito);
 
   params.old_profile_name = entry->GetShortcutName();
 

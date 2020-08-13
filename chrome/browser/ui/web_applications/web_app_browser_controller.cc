@@ -48,7 +48,8 @@ WebAppBrowserController::~WebAppBrowserController() = default;
 bool WebAppBrowserController::HasMinimalUiButtons() const {
   if (has_tab_strip())
     return false;
-  DisplayMode app_display_mode = registrar().GetAppDisplayMode(GetAppId());
+  DisplayMode app_display_mode =
+      registrar().GetEffectiveDisplayModeFromManifest(GetAppId());
   return app_display_mode == DisplayMode::kBrowser ||
          app_display_mode == DisplayMode::kMinimalUi;
 }

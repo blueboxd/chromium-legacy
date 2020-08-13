@@ -226,7 +226,9 @@ class PasswordFormMetricsRecorder
     kFoasFeature = 6,
     // Re-authenticaion for filling passwords is required.
     kReauthRequired = 7,
-    kMaxValue = kReauthRequired,
+    // Password is already filled
+    kPasswordPrefilled = 8,
+    kMaxValue = kPasswordPrefilled,
   };
 
   // This metric records the user experience with the passwords filling. The

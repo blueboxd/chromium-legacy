@@ -180,6 +180,10 @@ class CC_EXPORT BrowserControlsOffsetManager {
     // (clamped to min-max).
     base::Optional<float> Reset();
 
+    // Returns the value the animation will end on. This will be the stop_value
+    // passed to the constructor clamped by the currently configured bounds.
+    float FinalValue();
+
     // Return the bounds.
     float min_value() { return min_value_; }
     float max_value() { return max_value_; }

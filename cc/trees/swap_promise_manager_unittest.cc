@@ -4,6 +4,9 @@
 
 #include "cc/trees/swap_promise_manager.h"
 
+#include <memory>
+#include <utility>
+
 #include "cc/trees/swap_promise_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +19,7 @@ namespace {
 class MockSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
   explicit MockSwapPromiseMonitor(SwapPromiseManager* manager)
-      : SwapPromiseMonitor(manager, nullptr) {}
+      : SwapPromiseMonitor(manager) {}
   ~MockSwapPromiseMonitor() override = default;
 
   MOCK_METHOD0(OnSetNeedsCommitOnMain, void());

@@ -6,8 +6,11 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <limits>
+#include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
@@ -86,16 +89,19 @@ void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
   for (const auto& pending_twin_tiling : pending_twin_set->tilings_) {
     gfx::AxisTransform2d raster_transform =
         pending_twin_tiling->raster_transform();
+    bool can_use_lcd_text = pending_twin_tiling->can_use_lcd_text();
     PictureLayerTiling* this_tiling =
         FindTilingWithScaleKey(pending_twin_tiling->contents_scale_key());
-    if (this_tiling && this_tiling->raster_transform() != raster_transform) {
+    if (this_tiling && (this_tiling->raster_transform() != raster_transform ||
+                        this_tiling->can_use_lcd_text() != can_use_lcd_text)) {
       Remove(this_tiling);
       this_tiling = nullptr;
     }
     if (!this_tiling) {
-      std::unique_ptr<PictureLayerTiling> new_tiling(new PictureLayerTiling(
-          tree_, raster_transform, raster_source_, client_,
-          kMaxSoonBorderDistanceInScreenPixels, max_preraster_distance_));
+      std::unique_ptr<PictureLayerTiling> new_tiling(
+          new PictureLayerTiling(tree_, raster_transform, raster_source_,
+                                 client_, kMaxSoonBorderDistanceInScreenPixels,
+                                 max_preraster_distance_, can_use_lcd_text));
       tilings_.push_back(std::move(new_tiling));
       this_tiling = tilings_.back().get();
       tiling_sort_required = true;
@@ -268,7 +274,8 @@ void PictureLayerTilingSet::MarkAllTilingsNonIdeal() {
 
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(
     const gfx::AxisTransform2d& raster_transform,
-    scoped_refptr<RasterSource> raster_source) {
+    scoped_refptr<RasterSource> raster_source,
+    bool can_use_lcd_text) {
   if (!raster_source_)
     raster_source_ = raster_source;
 
@@ -281,7 +288,8 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(
 
   tilings_.push_back(std::make_unique<PictureLayerTiling>(
       tree_, raster_transform, raster_source, client_,
-      kMaxSoonBorderDistanceInScreenPixels, max_preraster_distance_));
+      kMaxSoonBorderDistanceInScreenPixels, max_preraster_distance_,
+      can_use_lcd_text));
   PictureLayerTiling* appended = tilings_.back().get();
   state_since_last_tile_priority_update_.added_tilings = true;
 

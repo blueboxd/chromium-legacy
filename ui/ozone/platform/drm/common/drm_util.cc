@@ -467,12 +467,9 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       GetDrmPropertyBlob(fd, info->connector(), "EDID"));
   base::UmaHistogramBoolean("DrmUtil.CreateDisplaySnapshot.HasEdidBlob",
                             !!edid_blob);
-  if (edid_blob) {
-    base::UmaHistogramBoolean("DrmUtil.CreateDisplaySnapshot.EdidBlobIsEmpty",
-                            edid_blob->length == 0);
-  }
   std::vector<uint8_t> edid;
-  if (edid_blob && edid_blob->length > 0) {
+  if (edid_blob) {
+    DCHECK(edid_blob->length);
     edid.assign(static_cast<uint8_t*>(edid_blob->data),
                 static_cast<uint8_t*>(edid_blob->data) + edid_blob->length);
 

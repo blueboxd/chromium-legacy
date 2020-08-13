@@ -176,9 +176,7 @@ const AtomicString& EmailInputType::FormControlType() const {
 }
 
 ScriptRegexp& EmailInputType::EnsureEmailRegexp() const {
-  if (!email_regexp_)
-    email_regexp_ = CreateEmailRegexp();
-  return *email_regexp_;
+  return GetElement().EnsureEmailRegexp();
 }
 
 // The return value is an invalid email address string if the specified string

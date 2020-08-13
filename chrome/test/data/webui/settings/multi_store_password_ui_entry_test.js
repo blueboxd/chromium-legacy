@@ -26,12 +26,30 @@ suite('MultiStorePasswordUiEntry', function() {
     expectTrue(multiStoreAccountEntry.isPresentInAccount());
     expectEquals(multiStoreAccountEntry.getAnyId(), 1);
 
-    const multiStoreEntryFromBoth =
-        new MultiStorePasswordUiEntry(deviceEntry, accountEntry);
+    const multiStoreEntryFromBoth = new MultiStorePasswordUiEntry(deviceEntry);
+    expectTrue(multiStoreEntryFromBoth.mergeInPlace(accountEntry));
     expectTrue(multiStoreEntryFromBoth.isPresentOnDevice());
     expectTrue(multiStoreEntryFromBoth.isPresentInAccount());
     expectTrue(
         multiStoreEntryFromBoth.getAnyId() === 0 ||
         multiStoreEntryFromBoth.getAnyId() === 1);
+  });
+
+  test('mergeFailsForRepeatedStore', function() {
+    const deviceEntry1 = createPasswordEntry(
+        {url: 'g.com', username: 'user', id: 0, fromAccountStore: false});
+    const deviceEntry2 = createPasswordEntry(
+        {url: 'g.com', username: 'user', id: 1, fromAccountStore: false});
+    expectFalse(
+        new MultiStorePasswordUiEntry(deviceEntry1).mergeInPlace(deviceEntry2));
+  });
+
+  test('mergeFailsForDifferentContents', function() {
+    const deviceEntry = createPasswordEntry(
+        {url: 'g.com', username: 'user', id: 0, fromAccountStore: false});
+    const accountEntry = createPasswordEntry(
+        {url: 'g.com', username: 'user2', id: 1, fromAccountStore: true});
+    expectFalse(
+        new MultiStorePasswordUiEntry(deviceEntry).mergeInPlace(accountEntry));
   });
 });

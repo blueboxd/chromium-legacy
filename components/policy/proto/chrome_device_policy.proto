@@ -93,6 +93,9 @@ message ReleaseChannelProto {
   // field is not set or left empty, the user can select the channel. If the
   // |release_channel| is specified it will always override users choice!
   optional bool release_channel_delegated = 2;
+
+  // |release_lts_tag| is forwarded as the "ltshint" attribute to Omaha.
+  optional string release_lts_tag = 3;
 }
 
 message DeviceOpenNetworkConfigurationProto {

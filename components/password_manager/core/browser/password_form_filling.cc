@@ -179,6 +179,13 @@ LikelyFormFilling SendFillInformationToRenderer(
   } else if (no_sign_in_form) {
     // If the parser did not find a current password element, don't fill.
     wait_for_username_reason = WaitForUsernameReason::kFormNotGoodForFilling;
+  } else if (observed_form.HasUsernameElement() &&
+             observed_form.HasNonEmptyPasswordValue() &&
+             observed_form.server_side_classification_successful &&
+             !observed_form.username_may_use_prefilled_placeholder) {
+    // Password is already filled in and we don't think the username is a
+    // placeholder, so don't overwrite.
+    wait_for_username_reason = WaitForUsernameReason::kPasswordPrefilled;
   } else if (!client->IsCommittedMainFrameSecure()) {
     wait_for_username_reason = WaitForUsernameReason::kInsecureOrigin;
   } else if (autofill::IsTouchToFillEnabled()) {

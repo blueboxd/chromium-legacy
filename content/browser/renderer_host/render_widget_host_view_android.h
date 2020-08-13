@@ -512,6 +512,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool controls_initialized_ = false;
 
   float prev_top_shown_pix_;
+  float prev_top_controls_pix_;
   float prev_top_controls_translate_;
   float prev_top_controls_min_height_offset_pix_;
   float prev_bottom_shown_pix_;

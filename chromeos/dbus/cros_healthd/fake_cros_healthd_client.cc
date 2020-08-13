@@ -97,5 +97,14 @@ void FakeCrosHealthdClient::RequestNetworkHealthForTesting(
   fake_service_.RequestNetworkHealthForTesting(std::move(callback));
 }
 
+void FakeCrosHealthdClient::RunLanConnectivityRoutineForTesting(
+    chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines::
+        LanConnectivityCallback callback) {
+  // Flush the receiver, so the NetworkDiagnosticsRoutines interface is
+  // registered before routines are called on it.
+  receiver_.FlushForTesting();
+  fake_service_.RunLanConnectivityRoutineForTesting(std::move(callback));
+}
+
 }  // namespace cros_healthd
 }  // namespace chromeos

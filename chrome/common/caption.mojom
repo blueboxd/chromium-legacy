@@ -14,6 +14,10 @@ interface CaptionHost {
   // speech service. Returns whether the transcription result was received
   // successfully. Transcriptions will halt if this returns false.
   OnTranscription(TranscriptionResult transcription_result) => (bool success);
+
+  // Called when there is an error in the speech recognition service. Informs
+  // the UI that it should show an error message to the user.
+  OnError();
 };
 
 // A transcription result created by the speech recognition client in the

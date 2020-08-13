@@ -12,10 +12,12 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/in_session_auth_dialog_controller.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
@@ -31,7 +33,7 @@ enum class ButtonId {
 };
 
 const char kTitle[] = "Verify it's you";
-const char kFingerprintPrompt[] = "Touch the fingerprint sensor";
+const char kFingerprintPrompt[] = "Authenticate with fingerprint";
 // If fingerprint option is available, password input field will be hidden
 // until the user taps the MoreOptions button.
 const char kMoreOptionsButtonText[] = "More options";
@@ -47,9 +49,60 @@ const int kButtonSpacing = 8;
 const int kTitleFontSize = 14;
 const int kPromptFontSize = 12;
 
+constexpr int kFingerprintIconSizeDp = 28;
+constexpr int kFingerprintIconTopSpacingDp = 20;
+constexpr int kSpacingBetweenFingerprintIconAndLabelDp = 15;
+constexpr int kFingerprintViewWidthDp = 204;
+
 }  // namespace
 
-AuthDialogDebugView::AuthDialogDebugView() {
+// Consists of fingerprint icon view and a label.
+class AuthDialogDebugView::FingerprintView : public views::View {
+ public:
+  FingerprintView() {
+    SetBorder(views::CreateEmptyBorder(kFingerprintIconTopSpacingDp, 0, 0, 0));
+
+    auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+        kSpacingBetweenFingerprintIconAndLabelDp));
+    layout->set_main_axis_alignment(
+        views::BoxLayout::MainAxisAlignment::kCenter);
+
+    icon_ = AddChildView(std::make_unique<AnimatedRoundedImageView>(
+        gfx::Size(kFingerprintIconSizeDp, kFingerprintIconSizeDp),
+        0 /*corner_radius*/));
+    icon_->SetImage(gfx::CreateVectorIcon(
+        kLockScreenFingerprintIcon, kFingerprintIconSizeDp, SK_ColorDKGRAY));
+
+    label_ = AddChildView(std::make_unique<views::Label>());
+    label_->SetSubpixelRenderingEnabled(false);
+    label_->SetAutoColorReadabilityEnabled(false);
+    label_->SetEnabledColor(SK_ColorDKGRAY);
+    label_->SetMultiLine(true);
+    label_->SetText(base::UTF8ToUTF16(kFingerprintPrompt));
+
+    SetVisible(true);
+  }
+  FingerprintView(const FingerprintView&) = delete;
+  FingerprintView& operator=(const FingerprintView&) = delete;
+  ~FingerprintView() override = default;
+
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    gfx::Size size = views::View::CalculatePreferredSize();
+    size.set_width(kFingerprintViewWidthDp);
+    return size;
+  }
+
+ private:
+  views::Label* label_ = nullptr;
+  AnimatedRoundedImageView* icon_ = nullptr;
+};
+
+AuthDialogDebugView::AuthDialogDebugView(uint32_t auth_methods)
+    : auth_methods_(auth_methods) {
+  DCHECK(auth_methods_ & kAuthPassword);
+
   SetLayoutManager(std::make_unique<views::FillLayout>());
   container_ = AddChildView(std::make_unique<NonAccessibleView>());
   container_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
@@ -60,17 +113,21 @@ AuthDialogDebugView::AuthDialogDebugView() {
   main_layout_->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kStart);
   main_layout_->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kStart);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   AddVerticalSpacing(kTopVerticalSpacing);
   AddTitleView();
   AddVerticalSpacing(kVerticalSpacingBetweenTitleAndPrompt);
-  AddPromptView();
   // TODO(b/156258540): Add proper spacing once all elements are determined.
   AddPasswordView();
   AddPinView();
   AddVerticalSpacing(kVerticalSpacingBetweenPasswordAndPINKeyboard);
-  // TODO(b/156258540): Add fingerprint icon view and proper spacing.
+
+  if (auth_methods_ & kAuthFingerprint) {
+    fingerprint_view_ =
+        container_->AddChildView(std::make_unique<FingerprintView>());
+  }
+
   AddActionButtonsView();
   AddVerticalSpacing(kBottomVerticalSpacing);
 
@@ -125,9 +182,11 @@ void AuthDialogDebugView::AddPasswordView() {
   password_view_->SetFocusEnabledForChildViews(true);
   password_view_->SetVisible(true);
 
-  // TODO(b/156258540): Set this text according to "has PIN or not".
   password_view_->SetPlaceholderText(
-      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER));
+      (auth_methods_ & kAuthPin)
+          ? l10n_util::GetStringUTF16(
+                IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER)
+          : l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PLACEHOLDER));
 }
 
 void AuthDialogDebugView::AddPinView() {
@@ -139,7 +198,7 @@ void AuthDialogDebugView::AddPinView() {
                           base::Unretained(password_view_)),
       base::BindRepeating(&LoginPasswordView::SubmitPassword,
                           base::Unretained(password_view_))));
-  pin_view_->SetVisible(true);
+  pin_view_->SetVisible(auth_methods_ & kAuthPin);
 }
 
 void AuthDialogDebugView::InitPasswordView() {

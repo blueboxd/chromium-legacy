@@ -288,6 +288,11 @@ class NavigationManager {
    * @private
    */
   onFocusChange_(event) {
+    // Ignore focus changes from our own actions.
+    if (event.eventFrom == 'action') {
+      return;
+    }
+
     if (this.node_.isEquivalentTo(event.target)) {
       return;
     }

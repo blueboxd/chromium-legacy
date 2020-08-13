@@ -8,10 +8,12 @@
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/components/phonehub/notification_access_manager_impl.h"
 #include "chromeos/components/phonehub/phone_hub_manager.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 namespace chromeos {
 namespace phonehub {
@@ -73,12 +75,18 @@ KeyedService* PhoneHubManagerFactory::BuildServiceInstanceFor(
     return nullptr;
 
   return new PhoneHubManager(
+      profile->GetPrefs(),
       device_sync::DeviceSyncClientFactory::GetForProfile(profile),
       multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(profile));
 }
 
 bool PhoneHubManagerFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
+}
+
+void PhoneHubManagerFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  NotificationAccessManagerImpl::RegisterPrefs(registry);
 }
 
 }  // namespace phonehub

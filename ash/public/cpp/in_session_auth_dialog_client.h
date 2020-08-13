@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
+#include "components/account_id/account_id.h"
 
 namespace ash {
 
@@ -23,6 +24,14 @@ class ASH_PUBLIC_EXPORT InSessionAuthDialogClient {
   virtual void AuthenticateUserWithPasswordOrPin(
       const std::string& password,
       bool authenticated_by_pin,
+      base::OnceCallback<void(bool)> callback) = 0;
+
+  // Check whether fingerprint auth is available for |account_id|.
+  virtual bool IsFingerprintAuthAvailable(const AccountId& account_id) = 0;
+
+  // Check whether PIN auth is available for |account_id|.
+  virtual void CheckPinAuthAvailability(
+      const AccountId& account_id,
       base::OnceCallback<void(bool)> callback) = 0;
 
  protected:

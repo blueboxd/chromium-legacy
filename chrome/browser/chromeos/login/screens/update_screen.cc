@@ -36,6 +36,10 @@ constexpr const char kUserActionCancelUpdateShortcut[] = "cancel-update";
 
 const char kUpdateDeadlineFile[] = "/tmp/update-check-response-deadline";
 
+// Time in seconds after which we initiate reboot.
+constexpr const base::TimeDelta kWaitBeforeRebootTime =
+    base::TimeDelta::FromSeconds(2);
+
 // Delay before showing error message if captive portal is detected.
 // We wait for this delay to let captive portal to perform redirect and show
 // its login page before error message appears.
@@ -108,6 +112,7 @@ UpdateScreen::UpdateScreen(UpdateView* view,
       histogram_helper_(
           std::make_unique<ErrorScreensHistogramHelper>("Update")),
       version_updater_(std::make_unique<VersionUpdater>(this)),
+      wait_before_reboot_time_(kWaitBeforeRebootTime),
       tick_clock_(base::DefaultTickClock::GetInstance()) {
   if (chromeos::features::IsBetterUpdateEnabled())
     PowerManagerClient::Get()->AddObserver(this);
@@ -216,8 +221,13 @@ void UpdateScreen::ExitUpdate(Result result) {
 void UpdateScreen::OnWaitForRebootTimeElapsed() {
   LOG(ERROR) << "Unable to reboot - asking user for a manual reboot.";
   MakeSureScreenIsShown();
-  if (view_)
+  if (!view_)
+    return;
+  if (chromeos::features::IsBetterUpdateEnabled()) {
+    view_->SetManualRebootNeeded(true);
+  } else {
     view_->SetUpdateCompleted(true);
+  }
 }
 
 void UpdateScreen::PrepareForUpdateCheck() {
@@ -344,7 +354,14 @@ void UpdateScreen::UpdateInfoChanged(
                            finalize_time_);
         RecordDownloadingTime(tick_clock_->NowTicks() -
                               start_update_downloading_);
-        version_updater_->RebootAfterUpdate();
+        if (chromeos::features::IsBetterUpdateEnabled()) {
+          ShowRebootInProgress();
+          wait_reboot_timer_.Start(FROM_HERE, wait_before_reboot_time_,
+                                   version_updater_.get(),
+                                   &VersionUpdater::RebootAfterUpdate);
+        } else {
+          version_updater_->RebootAfterUpdate();
+        }
       } else {
         hide_progress_on_exit_ = true;
         ExitUpdate(Result::UPDATE_NOT_REQUIRED);
@@ -385,6 +402,12 @@ void UpdateScreen::FinishExitUpdate(Result result) {
 void UpdateScreen::PowerChanged(
     const power_manager::PowerSupplyProperties& proto) {
   UpdateBatteryWarningVisibility();
+}
+
+void UpdateScreen::ShowRebootInProgress() {
+  MakeSureScreenIsShown();
+  if (view_)
+    view_->SetUpdateCompleted(true);
 }
 
 void UpdateScreen::UpdateBatteryWarningVisibility() {

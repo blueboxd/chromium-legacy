@@ -50,8 +50,8 @@ class CaptionBubbleModel : public content::WebContentsObserver {
   // Commits the partial text as final text.
   void CommitPartialText();
 
-  // Set whether the bubble has an error and alert the observer.
-  void SetHasError(bool has_error);
+  // Set that the bubble has an error and alert the observer.
+  void OnError();
 
   // Mark the bubble as closed, clear the partial and final text, and alert the
   // observer.

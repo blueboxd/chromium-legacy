@@ -18,7 +18,9 @@ namespace printing {
 // printer-state-reasons, and printer-state-message.
 struct PRINTING_EXPORT PrinterStatus {
   struct PrinterReason {
-    // Standardized reasons from RFC2911.
+    // This enum is used to record UMA histogram values and should not be
+    // reordered. Please keep in sync with PrinterStatusReasons in
+    // src/tools/metrics/histograms/enums.xml.
     enum class Reason {
       UNKNOWN_REASON = 0,
       NONE = 1,
@@ -53,7 +55,8 @@ struct PRINTING_EXPORT PrinterStatus {
       OPC_LIFE_OVER = 30,
       DEVELOPER_LOW = 31,
       DEVELOPER_EMPTY = 32,
-      INTERPRETER_RESOURCE_UNAVAILABLE = 33
+      INTERPRETER_RESOURCE_UNAVAILABLE = 33,
+      kMaxValue = INTERPRETER_RESOURCE_UNAVAILABLE
     };
 
     // Severity of the state-reason.

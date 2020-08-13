@@ -20,7 +20,8 @@ namespace cc {
 class CC_EXPORT LatencyInfoSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
   LatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency,
-                                SwapPromiseManager* swap_promise_manager,
+                                SwapPromiseManager* swap_promise_manager);
+  LatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency,
                                 LayerTreeHostImpl* host_impl);
   ~LatencyInfoSwapPromiseMonitor() override;
 

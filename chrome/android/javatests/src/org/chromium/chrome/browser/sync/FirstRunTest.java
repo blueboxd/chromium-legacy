@@ -113,6 +113,9 @@ public class FirstRunTest {
 
         @Override
         public void onAbortFirstRunExperience() {}
+
+        @Override
+        public void onExitFirstRun() {}
     }
 
     private final TestObserver mTestObserver = new TestObserver();

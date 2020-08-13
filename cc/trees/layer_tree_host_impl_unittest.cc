@@ -11846,14 +11846,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, HiddenSelectionBoundsStayHidden) {
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
-  SimpleSwapPromiseMonitor(LayerTreeHost* layer_tree_host,
-                           LayerTreeHostImpl* layer_tree_host_impl,
+  SimpleSwapPromiseMonitor(LayerTreeHostImpl* layer_tree_host_impl,
                            int* set_needs_commit_count,
                            int* set_needs_redraw_count)
-      : SwapPromiseMonitor(
-            (layer_tree_host ? layer_tree_host->GetSwapPromiseManager()
-                             : nullptr),
-            layer_tree_host_impl),
+      : SwapPromiseMonitor(layer_tree_host_impl),
         set_needs_commit_count_(set_needs_commit_count),
         set_needs_redraw_count_(set_needs_redraw_count) {}
 
@@ -11874,8 +11870,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
 
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
+        new SimpleSwapPromiseMonitor(host_impl_.get(), &set_needs_commit_count,
                                      &set_needs_redraw_count));
     host_impl_->SetNeedsRedraw();
     EXPECT_EQ(0, set_needs_commit_count);
@@ -11890,8 +11885,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
 
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
+        new SimpleSwapPromiseMonitor(host_impl_.get(), &set_needs_commit_count,
                                      &set_needs_redraw_count));
     // Redraw with damage.
     host_impl_->SetFullViewportDamage();
@@ -11902,8 +11896,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
 
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
+        new SimpleSwapPromiseMonitor(host_impl_.get(), &set_needs_commit_count,
                                      &set_needs_redraw_count));
     // Redraw without damage.
     host_impl_->SetNeedsRedraw();
@@ -11916,8 +11909,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
 
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
+        new SimpleSwapPromiseMonitor(host_impl_.get(), &set_needs_commit_count,
                                      &set_needs_redraw_count));
     SetupViewportLayersInnerScrolls(gfx::Size(50, 50), gfx::Size(100, 100));
 
@@ -13172,8 +13164,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollAnimated) {
     int set_needs_commit_count = 0;
     int set_needs_redraw_count = 0;
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
+        new SimpleSwapPromiseMonitor(host_impl_.get(), &set_needs_commit_count,
                                      &set_needs_redraw_count));
     EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD,
               host_impl_
@@ -13218,8 +13209,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollAnimated) {
     int set_needs_commit_count = 0;
     int set_needs_redraw_count = 0;
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
+        new SimpleSwapPromiseMonitor(host_impl_.get(), &set_needs_commit_count,
                                      &set_needs_redraw_count));
     // Update target.
     host_impl_->ScrollUpdate(

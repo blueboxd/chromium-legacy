@@ -19,10 +19,15 @@ constexpr double kBounceBackMaxDurationMilliseconds = 300.0;
 // Time taken by the bounce back animation (in milliseconds) to scroll 1 px.
 constexpr double kBounceBackMillisecondsPerPixel = 15.0;
 
-const double kOverbounceMaxDurationMilliseconds = 150.0;
-const double kOverbounceMillisecondsPerPixel = 2.5;
+// Threshold above which a forward animation should be played. Stray finger
+// movements can cause velocities to be non-zero. This in-turn may lead to minor
+// jerks when the bounce back animation is being played. Expressed in pixels per
+// second.
+constexpr double kIgnoreForwardBounceVelocityThreshold = 200;
 
-const float kOverbounceDistanceMultiplier = 35.f;
+constexpr double kOverbounceMaxDurationMilliseconds = 150.0;
+constexpr double kOverbounceMillisecondsPerPixel = 2.5;
+constexpr double kOverbounceDistanceMultiplier = 35.f;
 
 // Control points for the bounce forward Cubic Bezier curve.
 constexpr double kBounceForwardsX1 = 0.25;
@@ -72,8 +77,13 @@ gfx::Vector2dF ElasticOverscrollControllerBezier::OverscrollBoundary(
 
 void ElasticOverscrollControllerBezier::DidEnterMomentumAnimatedState() {
   // Express velocity in terms of milliseconds.
-  const gfx::Vector2dF velocity(scroll_velocity().x() / 1000.f,
-                                scroll_velocity().y() / 1000.f);
+  const gfx::Vector2dF velocity(
+      fabs(scroll_velocity().x()) > kIgnoreForwardBounceVelocityThreshold
+          ? scroll_velocity().x() / 1000.f
+          : 0.f,
+      fabs(scroll_velocity().y()) > kIgnoreForwardBounceVelocityThreshold
+          ? scroll_velocity().y() / 1000.f
+          : 0.f);
 
   gfx::Vector2dF bounce_forwards_delta(gfx::Vector2dF(
       sqrt(std::abs(velocity.x())), sqrt(std::abs(velocity.y()))));
@@ -102,6 +112,8 @@ void ElasticOverscrollControllerBezier::DidEnterMomentumAnimatedState() {
           ? std::copysign(bounce_forwards_distance_.y(), velocity.y())
           : std::copysign(bounce_forwards_distance_.y(),
                           momentum_animation_initial_stretch_.y()));
+  bounce_forwards_duration_x_ =
+      CalculateBounceForwardsDuration(bounce_forwards_delta.x());
   bounce_forwards_duration_y_ =
       CalculateBounceForwardsDuration(bounce_forwards_delta.y());
 

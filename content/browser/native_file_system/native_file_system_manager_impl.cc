@@ -246,16 +246,17 @@ void NativeFileSystemManagerImpl::ChooseEntries(
     return;
   }
 
-  // When site setting is block, it's better not to show file chooser for save.
-  if (type == blink::mojom::ChooseFileSystemEntryType::kSaveFile &&
-      permission_context_ &&
-      !permission_context_->CanObtainWritePermission(context.origin)) {
-    std::move(callback).Run(
-        native_file_system_error::FromStatus(
-            NativeFileSystemStatus::kPermissionDenied),
-        std::vector<blink::mojom::NativeFileSystemEntryPtr>());
-
-    return;
+  if (permission_context_) {
+    // When site setting is block, it's better not to show file chooser.
+    if (!permission_context_->CanObtainReadPermission(context.origin) ||
+        (type == blink::mojom::ChooseFileSystemEntryType::kSaveFile &&
+         !permission_context_->CanObtainWritePermission(context.origin))) {
+      std::move(callback).Run(
+          native_file_system_error::FromStatus(
+              NativeFileSystemStatus::kPermissionDenied),
+          std::vector<blink::mojom::NativeFileSystemEntryPtr>());
+      return;
+    }
   }
 
   RenderFrameHost* rfh = RenderFrameHost::FromID(context.frame_id);

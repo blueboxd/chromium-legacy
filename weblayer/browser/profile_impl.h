@@ -94,6 +94,7 @@ class ProfileImpl : public Profile {
   void GetCachedFaviconForPageUrl(
       const GURL& page_url,
       base::OnceCallback<void(gfx::Image)> callback) override;
+  void PrepareForPossibleCrossOriginNavigation() override;
 
 #if defined(OS_ANDROID)
   ProfileImpl(JNIEnv* env,
@@ -125,6 +126,7 @@ class ProfileImpl : public Profile {
       JNIEnv* env,
       const base::android::JavaRef<jobjectArray>& j_ids,
       const base::android::JavaRef<jobject>& j_callback);
+  void PrepareForPossibleCrossOriginNavigation(JNIEnv* env);
 #endif
 
   const base::FilePath& download_directory() { return download_directory_; }

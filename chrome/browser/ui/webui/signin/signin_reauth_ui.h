@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_REAUTH_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_REAUTH_UI_H_
 
+#include <string>
+#include <vector>
+
 #include "chrome/browser/ui/webui/signin/signin_web_dialog_ui.h"
 
 class Browser;
@@ -12,6 +15,7 @@ class SigninReauthViewController;
 
 namespace content {
 class WebUI;
+class WebUIDataSource;
 }
 
 // WebUI controller for the signin reauth dialog.
@@ -44,6 +48,18 @@ class SigninReauthUI : public SigninWebDialogUI {
   // This class relies on InitializeMessageHandlerWithReauthController() so this
   // method does nothing.
   void InitializeMessageHandlerWithBrowser(Browser* browser) override;
+
+ private:
+  // Adds a string resource with the given GRD |ids| to the WebUI data |source|
+  // named as |name|. Also stores a reverse mapping from the localized version
+  // of the string to the |ids| in order to later pass it to
+  // SigninReauthHandler.
+  void AddStringResource(content::WebUIDataSource* source,
+                         base::StringPiece name,
+                         int ids);
+
+  // For consent auditing.
+  std::vector<std::pair<std::string, int>> js_localized_string_to_ids_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_REAUTH_UI_H_

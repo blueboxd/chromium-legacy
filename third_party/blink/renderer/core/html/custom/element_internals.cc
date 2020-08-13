@@ -238,6 +238,10 @@ bool ElementInternals::HasState(const AtomicString& state) const {
   return custom_states_ && custom_states_->contains(state);
 }
 
+ShadowRoot* ElementInternals::shadowRoot() const {
+  return Target().AuthorShadowRoot();
+}
+
 const AtomicString& ElementInternals::FastGetAttribute(
     const QualifiedName& attribute) const {
   return accessibility_semantics_map_.at(attribute);

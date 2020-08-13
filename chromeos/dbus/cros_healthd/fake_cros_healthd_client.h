@@ -73,6 +73,12 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
       chromeos::network_health::mojom::NetworkHealthService::
           GetHealthSnapshotCallback callback);
 
+  // Calls the LanConnectivity routine using the NetworkDiagnosticsRoutines
+  // remote.
+  void RunLanConnectivityRoutineForTesting(
+      chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines::
+          LanConnectivityCallback);
+
  private:
   FakeCrosHealthdService fake_service_;
   mojo::Receiver<mojom::CrosHealthdServiceFactory> receiver_{&fake_service_};

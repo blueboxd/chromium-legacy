@@ -8,6 +8,7 @@
 #include "build/lacros_buildflags.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "ui/platform_window/extensions/wayland_extension.h"
 #include "ui/platform_window/wm/wm_drag_handler.h"
 #include "ui/platform_window/wm/wm_move_loop_handler.h"
 #include "ui/platform_window/wm/wm_move_resize_handler.h"
@@ -19,7 +20,8 @@ class ShellSurfaceWrapper;
 class WaylandToplevelWindow : public WaylandWindow,
                               public WmMoveResizeHandler,
                               public WmDragHandler,
-                              public WmMoveLoopHandler {
+                              public WmMoveLoopHandler,
+                              public WaylandExtension {
  public:
   WaylandToplevelWindow(PlatformWindowDelegate* delegate,
                         WaylandConnection* connection);
@@ -78,6 +80,9 @@ class WaylandToplevelWindow : public WaylandWindow,
   // WmMoveLoopHandler:
   bool RunMoveLoop(const gfx::Vector2d& drag_offset) override;
   void EndMoveLoop() override;
+
+  // WaylandExtension:
+  void StartWindowDraggingSessionIfNeeded() override;
 
   void TriggerStateChanges();
   void SetWindowState(PlatformWindowState state);

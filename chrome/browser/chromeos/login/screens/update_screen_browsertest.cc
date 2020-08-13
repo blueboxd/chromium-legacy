@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -66,6 +67,11 @@ const test::UIPath kLowBatteryWarningMessage = {"oobe-update",
                                                 "battery-warning"};
 const test::UIPath kErrorMessage = {"error-message"};
 
+// Paths for better update screen https://crbug.com/1101317
+const test::UIPath kRestartingDialog = {"oobe-update", "restarting-dialog"};
+const test::UIPath kBetterUpdateCompletedDialog = {
+    "oobe-update", "better-update-complete-dialog"};
+
 // UMA names for better test reading.
 const char kTimeCheck[] = "OOBE.UpdateScreen.StageTime.Check";
 const char kTimeDownload[] = "OOBE.UpdateScreen.StageTime.Download";
@@ -86,6 +92,8 @@ constexpr base::TimeDelta kTimeAdvanceSeconds10 =
     base::TimeDelta::FromSeconds(10);
 constexpr base::TimeDelta kTimeAdvanceSeconds60 =
     base::TimeDelta::FromSeconds(60);
+constexpr base::TimeDelta kTimeDefaultWaiting =
+    base::TimeDelta::FromSeconds(10);
 
 std::string GetDownloadingString(int status_resource_id) {
   return l10n_util::GetStringFUTF8(
@@ -180,6 +188,17 @@ class BetterUpdateScreenTest : public UpdateScreenTest {
                                    {});
   }
   ~BetterUpdateScreenTest() override = default;
+
+  void SetTickClockAndDefaultDelaysForTesting(
+      const base::TickClock* tick_clock) {
+    version_updater_->set_tick_clock_for_testing(tick_clock);
+    update_screen_->set_tick_clock_for_testing(tick_clock);
+    // Set time for waiting in the test to not update constants manually, if
+    // they change.
+    version_updater_->set_wait_for_reboot_time_for_testing(kTimeDefaultWaiting);
+    update_screen_->set_wait_before_reboot_time_for_testing(
+        kTimeDefaultWaiting);
+  }
 
  protected:
   chromeos::FakePowerManagerClient* power_manager_client() {
@@ -778,6 +797,9 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, TestInitialLowBatteryStatus) {
 
 IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
                        TestBatteryWarningDuringUpdateStages) {
+  base::ScopedMockTimeMessageLoopTaskRunner mocked_task_runner;
+  SetTickClockAndDefaultDelaysForTesting(
+      mocked_task_runner->GetMockTickClock());
   update_screen_->set_ignore_update_deadlines_for_testing(true);
   ShowUpdateScreen();
   EXPECT_TRUE(power_manager_client()->HasObserver(update_screen_));
@@ -832,6 +854,10 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
   update_engine_client()->set_default_status(status);
   update_engine_client()->NotifyObserversThatStatusChanged(status);
 
+  // Show waiting for reboot screen for several seconds.
+  ASSERT_TRUE(update_screen_->GetWaitRebootTimerForTesting()->IsRunning());
+  mocked_task_runner->FastForwardBy(kTimeDefaultWaiting);
+
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
   EXPECT_EQ(update_engine_client()->reboot_after_update_call_count(), 1);
   test::OobeJS().ExpectVisiblePath(kLowBatteryWarningMessage);
@@ -882,6 +908,44 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
   power_manager_client()->UpdatePowerProperties(props);
 
   test::OobeJS().ExpectHiddenPath(kLowBatteryWarningMessage);
+}
+
+IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
+                       TestUpdateCompletedRebootNeeded) {
+  base::ScopedMockTimeMessageLoopTaskRunner mocked_task_runner;
+  SetTickClockAndDefaultDelaysForTesting(
+      mocked_task_runner->GetMockTickClock());
+  update_screen_->set_ignore_update_deadlines_for_testing(true);
+  ShowUpdateScreen();
+
+  update_engine::StatusResult status;
+  status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
+  status.set_new_version("latest and greatest");
+  status.set_new_size(1'000'000'000);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
+
+  test::OobeJS().CreateVisibilityWaiter(true, kRestartingDialog)->Wait();
+  test::OobeJS().ExpectHiddenPath(kCheckingForUpdatesDialog);
+  test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
+  test::OobeJS().ExpectHiddenPath(kUpdatingDialog);
+  test::OobeJS().ExpectHiddenPath(kBetterUpdateCompletedDialog);
+
+  // Make sure that after the screen is shown waiting timer starts.
+  mocked_task_runner->RunUntilIdle();
+  // Show waiting for reboot screen for several seconds.
+  ASSERT_TRUE(update_screen_->GetWaitRebootTimerForTesting()->IsRunning());
+  mocked_task_runner->FastForwardBy(kTimeDefaultWaiting);
+
+  // UpdateStatusChanged(status) calls RebootAfterUpdate().
+  ASSERT_EQ(update_engine_client()->reboot_after_update_call_count(), 1);
+
+  // Simulate the situation where reboot does not happen in time.
+  ASSERT_TRUE(version_updater_->GetRebootTimerForTesting()->IsRunning());
+  mocked_task_runner->FastForwardBy(kTimeDefaultWaiting);
+
+  test::OobeJS().ExpectHiddenPath(kRestartingDialog);
+  test::OobeJS().ExpectVisiblePath(kBetterUpdateCompletedDialog);
 }
 
 }  // namespace chromeos

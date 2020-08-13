@@ -65,6 +65,12 @@ IsolatedPrerenderMaximumNumberOfNoStatePrefetchAttempts() {
   return max;
 }
 
+size_t IsolatedPrerenderMainframeBodyLengthLimit() {
+  return 1024 * base::GetFieldTrialParamByFeatureAsInt(
+                    features::kIsolatePrerenders,
+                    "max_mainframe_body_length_kb", 5 * 1024);
+}
+
 size_t IsolatedPrerenderMaximumNumberOfConcurrentPrefetches() {
   return static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
       features::kIsolatePrerenders, "max_concurrent_prefetches", 1));

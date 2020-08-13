@@ -17,6 +17,8 @@ class RenderFrameHost;
 
 namespace captions {
 
+class CaptionController;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Caption Host Impl
 //
@@ -42,11 +44,20 @@ class CaptionHostImpl : public chrome::mojom::CaptionHost,
   void OnTranscription(
       chrome::mojom::TranscriptionResultPtr transcription_result,
       OnTranscriptionCallback reply) override;
+  void OnError() override;
 
   // content::WebContentsObserver:
   void RenderFrameDeleted(content::RenderFrameHost* frame_host) override;
 
  private:
+  // Returns the WebContents if it exists. If it does not exist, sets the
+  // RenderFrameHost reference to nullptr and returns nullptr.
+  content::WebContents* GetWebContents();
+
+  // Returns the CaptionController for this WebContents. Returns nullptr if
+  // it does not exist.
+  CaptionController* GetCaptionController(content::WebContents*);
+
   content::RenderFrameHost* frame_host_;
 };
 

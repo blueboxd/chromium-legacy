@@ -8,6 +8,7 @@
 
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/test/arc_payment_app_bridge_test_support.h"
 #include "components/arc/test/test_browser_context.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,20 +16,6 @@
 
 namespace arc {
 namespace {
-
-class MockPaymentAppInstance : public mojom::PaymentAppInstance {
- public:
-  MOCK_METHOD2(
-      IsPaymentImplemented,
-      void(const std::string& package_name,
-           ArcPaymentAppBridge::IsPaymentImplementedCallback callback));
-  MOCK_METHOD2(IsReadyToPay,
-               void(mojom::PaymentParametersPtr,
-                    ArcPaymentAppBridge::IsReadyToPayCallback));
-  MOCK_METHOD2(InvokePaymentApp,
-               void(mojom::PaymentParametersPtr,
-                    ArcPaymentAppBridge::InvokePaymentAppCallback));
-};
 
 class ArcPaymentAppBridgeTest : public testing::Test {
  public:
@@ -52,46 +39,20 @@ class ArcPaymentAppBridgeTest : public testing::Test {
     invoke_app_ = std::move(response);
   }
 
-  // The |manager_| must be used on the same thread as where it was created, so
-  // create it in the test instead of using ArcServiceManager::Get().
-  ArcServiceManager manager_;
-  MockPaymentAppInstance instance_;
-
-  // Required for the TestBrowserContext.
-  content::BrowserTaskEnvironment task_environment_;
-
-  // Used for retrieving an instance of ArcPaymentAppBridge owned by a
-  // BrowserContext.
-  TestBrowserContext context_;
-
+  ArcPaymentAppBridgeTestSupport support_;
   mojom::IsPaymentImplementedResultPtr is_implemented_;
   mojom::IsReadyToPayResultPtr is_ready_to_pay_;
   mojom::InvokePaymentAppResultPtr invoke_app_;
 };
 
-class ScopedSetInstance {
- public:
-  ScopedSetInstance(ArcServiceManager* manager,
-                    MockPaymentAppInstance* instance)
-      : manager_(manager), instance_(instance) {
-    manager_->arc_bridge_service()->payment_app()->SetInstance(instance_);
-  }
-
-  ~ScopedSetInstance() {
-    manager_->arc_bridge_service()->payment_app()->CloseInstance(instance_);
-  }
-
- private:
-  ArcServiceManager* manager_;
-  MockPaymentAppInstance* instance_;
-};
-
 TEST_F(ArcPaymentAppBridgeTest, UnableToConnectInIsImplemented) {
   // Intentionally do not set an instance.
 
-  EXPECT_CALL(instance_, IsPaymentImplemented(testing::_, testing::_)).Times(0);
+  EXPECT_CALL(*support_.instance(),
+              IsPaymentImplemented(testing::_, testing::_))
+      .Times(0);
 
-  ArcPaymentAppBridge::GetForBrowserContextForTesting(&context_)
+  ArcPaymentAppBridge::GetForBrowserContextForTesting(support_.context())
       ->IsPaymentImplemented(
           "com.example.app",
           base::BindOnce(&ArcPaymentAppBridgeTest::OnPaymentImplementedResponse,
@@ -104,9 +65,10 @@ TEST_F(ArcPaymentAppBridgeTest, UnableToConnectInIsImplemented) {
 }
 
 TEST_F(ArcPaymentAppBridgeTest, IsImplemented) {
-  ScopedSetInstance scoped_set_instance(&manager_, &instance_);
+  auto scoped_set_instance = support_.CreateScopedSetInstance();
 
-  EXPECT_CALL(instance_, IsPaymentImplemented(testing::_, testing::_))
+  EXPECT_CALL(*support_.instance(),
+              IsPaymentImplemented(testing::_, testing::_))
       .WillOnce(testing::Invoke(
           [](const std::string& package_name,
              ArcPaymentAppBridge::IsPaymentImplementedCallback callback) {
@@ -117,7 +79,7 @@ TEST_F(ArcPaymentAppBridgeTest, IsImplemented) {
                 mojom::IsPaymentImplementedResult::NewValid(std::move(valid)));
           }));
 
-  ArcPaymentAppBridge::GetForBrowserContextForTesting(&context_)
+  ArcPaymentAppBridge::GetForBrowserContextForTesting(support_.context())
       ->IsPaymentImplemented(
           "com.example.app",
           base::BindOnce(&ArcPaymentAppBridgeTest::OnPaymentImplementedResponse,
@@ -134,9 +96,10 @@ TEST_F(ArcPaymentAppBridgeTest, IsImplemented) {
 }
 
 TEST_F(ArcPaymentAppBridgeTest, IsNotImplemented) {
-  ScopedSetInstance scoped_set_instance(&manager_, &instance_);
+  auto scoped_set_instance = support_.CreateScopedSetInstance();
 
-  EXPECT_CALL(instance_, IsPaymentImplemented(testing::_, testing::_))
+  EXPECT_CALL(*support_.instance(),
+              IsPaymentImplemented(testing::_, testing::_))
       .WillOnce(testing::Invoke(
           [](const std::string& package_name,
              ArcPaymentAppBridge::IsPaymentImplementedCallback callback) {
@@ -144,7 +107,7 @@ TEST_F(ArcPaymentAppBridgeTest, IsNotImplemented) {
                 mojom::IsPaymentImplementedValidResult::New()));
           }));
 
-  ArcPaymentAppBridge::GetForBrowserContextForTesting(&context_)
+  ArcPaymentAppBridge::GetForBrowserContextForTesting(support_.context())
       ->IsPaymentImplemented(
           "com.example.app",
           base::BindOnce(&ArcPaymentAppBridgeTest::OnPaymentImplementedResponse,
@@ -159,9 +122,10 @@ TEST_F(ArcPaymentAppBridgeTest, IsNotImplemented) {
 }
 
 TEST_F(ArcPaymentAppBridgeTest, ImplementationCheckError) {
-  ScopedSetInstance scoped_set_instance(&manager_, &instance_);
+  auto scoped_set_instance = support_.CreateScopedSetInstance();
 
-  EXPECT_CALL(instance_, IsPaymentImplemented(testing::_, testing::_))
+  EXPECT_CALL(*support_.instance(),
+              IsPaymentImplemented(testing::_, testing::_))
       .WillOnce(testing::Invoke(
           [](const std::string& package_name,
              ArcPaymentAppBridge::IsPaymentImplementedCallback callback) {
@@ -169,7 +133,7 @@ TEST_F(ArcPaymentAppBridgeTest, ImplementationCheckError) {
                 mojom::IsPaymentImplementedResult::NewError("Error message."));
           }));
 
-  ArcPaymentAppBridge::GetForBrowserContextForTesting(&context_)
+  ArcPaymentAppBridge::GetForBrowserContextForTesting(support_.context())
       ->IsPaymentImplemented(
           "com.example.app",
           base::BindOnce(&ArcPaymentAppBridgeTest::OnPaymentImplementedResponse,
@@ -184,12 +148,14 @@ TEST_F(ArcPaymentAppBridgeTest, ImplementationCheckError) {
 TEST_F(ArcPaymentAppBridgeTest, UnableToConnectInIsReadyToPay) {
   // Intentionally do not set an instance.
 
-  EXPECT_CALL(instance_, IsReadyToPay(testing::_, testing::_)).Times(0);
+  EXPECT_CALL(*support_.instance(), IsReadyToPay(testing::_, testing::_))
+      .Times(0);
 
-  ArcPaymentAppBridge::GetForBrowserContextForTesting(&context_)->IsReadyToPay(
-      mojom::PaymentParameters::New(),
-      base::BindOnce(&ArcPaymentAppBridgeTest::OnIsReadyToPayResponse,
-                     base::Unretained(this)));
+  ArcPaymentAppBridge::GetForBrowserContextForTesting(support_.context())
+      ->IsReadyToPay(
+          mojom::PaymentParameters::New(),
+          base::BindOnce(&ArcPaymentAppBridgeTest::OnIsReadyToPayResponse,
+                         base::Unretained(this)));
 
   ASSERT_FALSE(is_ready_to_pay_.is_null());
   EXPECT_FALSE(is_ready_to_pay_->is_response());
@@ -198,9 +164,9 @@ TEST_F(ArcPaymentAppBridgeTest, UnableToConnectInIsReadyToPay) {
 }
 
 TEST_F(ArcPaymentAppBridgeTest, IsReadyToPay) {
-  ScopedSetInstance scoped_set_instance(&manager_, &instance_);
+  auto scoped_set_instance = support_.CreateScopedSetInstance();
 
-  EXPECT_CALL(instance_, IsReadyToPay(testing::_, testing::_))
+  EXPECT_CALL(*support_.instance(), IsReadyToPay(testing::_, testing::_))
       .WillOnce(testing::Invoke(
           [](mojom::PaymentParametersPtr parameters,
              ArcPaymentAppBridge::IsReadyToPayCallback callback) {
@@ -208,10 +174,11 @@ TEST_F(ArcPaymentAppBridgeTest, IsReadyToPay) {
                 mojom::IsReadyToPayResult::NewResponse(true));
           }));
 
-  ArcPaymentAppBridge::GetForBrowserContextForTesting(&context_)->IsReadyToPay(
-      mojom::PaymentParameters::New(),
-      base::BindOnce(&ArcPaymentAppBridgeTest::OnIsReadyToPayResponse,
-                     base::Unretained(this)));
+  ArcPaymentAppBridge::GetForBrowserContextForTesting(support_.context())
+      ->IsReadyToPay(
+          mojom::PaymentParameters::New(),
+          base::BindOnce(&ArcPaymentAppBridgeTest::OnIsReadyToPayResponse,
+                         base::Unretained(this)));
 
   ASSERT_FALSE(is_ready_to_pay_.is_null());
   EXPECT_FALSE(is_ready_to_pay_->is_error());
@@ -220,9 +187,9 @@ TEST_F(ArcPaymentAppBridgeTest, IsReadyToPay) {
 }
 
 TEST_F(ArcPaymentAppBridgeTest, IsNotReadyToPay) {
-  ScopedSetInstance scoped_set_instance(&manager_, &instance_);
+  auto scoped_set_instance = support_.CreateScopedSetInstance();
 
-  EXPECT_CALL(instance_, IsReadyToPay(testing::_, testing::_))
+  EXPECT_CALL(*support_.instance(), IsReadyToPay(testing::_, testing::_))
       .WillOnce(testing::Invoke(
           [](mojom::PaymentParametersPtr parameters,
              ArcPaymentAppBridge::IsReadyToPayCallback callback) {
@@ -230,10 +197,11 @@ TEST_F(ArcPaymentAppBridgeTest, IsNotReadyToPay) {
                 mojom::IsReadyToPayResult::NewResponse(false));
           }));
 
-  ArcPaymentAppBridge::GetForBrowserContextForTesting(&context_)->IsReadyToPay(
-      mojom::PaymentParameters::New(),
-      base::BindOnce(&ArcPaymentAppBridgeTest::OnIsReadyToPayResponse,
-                     base::Unretained(this)));
+  ArcPaymentAppBridge::GetForBrowserContextForTesting(support_.context())
+      ->IsReadyToPay(
+          mojom::PaymentParameters::New(),
+          base::BindOnce(&ArcPaymentAppBridgeTest::OnIsReadyToPayResponse,
+                         base::Unretained(this)));
 
   ASSERT_FALSE(is_ready_to_pay_.is_null());
   EXPECT_FALSE(is_ready_to_pay_->is_error());
@@ -244,9 +212,10 @@ TEST_F(ArcPaymentAppBridgeTest, IsNotReadyToPay) {
 TEST_F(ArcPaymentAppBridgeTest, UnableToConnectInInvokePaymentApp) {
   // Intentionally do not set an instance.
 
-  EXPECT_CALL(instance_, InvokePaymentApp(testing::_, testing::_)).Times(0);
+  EXPECT_CALL(*support_.instance(), InvokePaymentApp(testing::_, testing::_))
+      .Times(0);
 
-  ArcPaymentAppBridge::GetForBrowserContextForTesting(&context_)
+  ArcPaymentAppBridge::GetForBrowserContextForTesting(support_.context())
       ->InvokePaymentApp(
           mojom::PaymentParameters::New(),
           base::BindOnce(&ArcPaymentAppBridgeTest::OnInvokePaymentAppResponse,
@@ -259,9 +228,9 @@ TEST_F(ArcPaymentAppBridgeTest, UnableToConnectInInvokePaymentApp) {
 }
 
 TEST_F(ArcPaymentAppBridgeTest, InvokePaymentAppResultOK) {
-  ScopedSetInstance scoped_set_instance(&manager_, &instance_);
+  auto scoped_set_instance = support_.CreateScopedSetInstance();
 
-  EXPECT_CALL(instance_, InvokePaymentApp(testing::_, testing::_))
+  EXPECT_CALL(*support_.instance(), InvokePaymentApp(testing::_, testing::_))
       .WillOnce(testing::Invoke(
           [](mojom::PaymentParametersPtr parameters,
              ArcPaymentAppBridge::InvokePaymentAppCallback callback) {
@@ -272,7 +241,7 @@ TEST_F(ArcPaymentAppBridgeTest, InvokePaymentAppResultOK) {
                 mojom::InvokePaymentAppResult::NewValid(std::move(valid)));
           }));
 
-  ArcPaymentAppBridge::GetForBrowserContextForTesting(&context_)
+  ArcPaymentAppBridge::GetForBrowserContextForTesting(support_.context())
       ->InvokePaymentApp(
           mojom::PaymentParameters::New(),
           base::BindOnce(&ArcPaymentAppBridgeTest::OnInvokePaymentAppResponse,
@@ -287,9 +256,9 @@ TEST_F(ArcPaymentAppBridgeTest, InvokePaymentAppResultOK) {
 }
 
 TEST_F(ArcPaymentAppBridgeTest, InvokePaymentAppResultCancelled) {
-  ScopedSetInstance scoped_set_instance(&manager_, &instance_);
+  auto scoped_set_instance = support_.CreateScopedSetInstance();
 
-  EXPECT_CALL(instance_, InvokePaymentApp(testing::_, testing::_))
+  EXPECT_CALL(*support_.instance(), InvokePaymentApp(testing::_, testing::_))
       .WillOnce(testing::Invoke(
           [](mojom::PaymentParametersPtr parameters,
              ArcPaymentAppBridge::InvokePaymentAppCallback callback) {
@@ -300,7 +269,7 @@ TEST_F(ArcPaymentAppBridgeTest, InvokePaymentAppResultCancelled) {
                 mojom::InvokePaymentAppResult::NewValid(std::move(valid)));
           }));
 
-  ArcPaymentAppBridge::GetForBrowserContextForTesting(&context_)
+  ArcPaymentAppBridge::GetForBrowserContextForTesting(support_.context())
       ->InvokePaymentApp(
           mojom::PaymentParameters::New(),
           base::BindOnce(&ArcPaymentAppBridgeTest::OnInvokePaymentAppResponse,
@@ -314,9 +283,9 @@ TEST_F(ArcPaymentAppBridgeTest, InvokePaymentAppResultCancelled) {
 }
 
 TEST_F(ArcPaymentAppBridgeTest, InvokePaymentAppError) {
-  ScopedSetInstance scoped_set_instance(&manager_, &instance_);
+  auto scoped_set_instance = support_.CreateScopedSetInstance();
 
-  EXPECT_CALL(instance_, InvokePaymentApp(testing::_, testing::_))
+  EXPECT_CALL(*support_.instance(), InvokePaymentApp(testing::_, testing::_))
       .WillOnce(testing::Invoke(
           [](mojom::PaymentParametersPtr parameters,
              ArcPaymentAppBridge::InvokePaymentAppCallback callback) {
@@ -324,7 +293,7 @@ TEST_F(ArcPaymentAppBridgeTest, InvokePaymentAppError) {
                 mojom::InvokePaymentAppResult::NewError("Error message."));
           }));
 
-  ArcPaymentAppBridge::GetForBrowserContextForTesting(&context_)
+  ArcPaymentAppBridge::GetForBrowserContextForTesting(support_.context())
       ->InvokePaymentApp(
           mojom::PaymentParameters::New(),
           base::BindOnce(&ArcPaymentAppBridgeTest::OnInvokePaymentAppResponse,

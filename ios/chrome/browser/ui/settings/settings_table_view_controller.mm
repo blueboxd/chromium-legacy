@@ -111,6 +111,7 @@ NSString* const kSettingsAutofillCreditCardImageName =
     @"settings_payment_methods";
 NSString* const kSettingsAutofillProfileImageName = @"settings_addresses";
 NSString* const kSettingsVoiceSearchImageName = @"settings_voice_search";
+NSString* const kSettingsSafetyCheckImageName = @"settings_safety_check";
 NSString* const kSettingsPrivacyImageName = @"settings_privacy";
 NSString* const kSettingsLanguageSettingsImageName =
     @"settings_language_settings";
@@ -635,7 +636,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   return [self detailItemWithType:ItemTypeSafetyCheck
                              text:safetyCheckTitle
                        detailText:nil
-                    iconImageName:kSettingsPrivacyImageName
+                    iconImageName:kSettingsSafetyCheckImageName
           accessibilityIdentifier:nil];
 }
 

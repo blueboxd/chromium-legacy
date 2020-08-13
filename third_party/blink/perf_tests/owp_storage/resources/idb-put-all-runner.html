@@ -46,8 +46,8 @@
       const store1 = txn.objectStore('books_with_index');
       const store2 = txn.objectStore('books');
       logToDocumentBody('Starting Benchmark IDB putAll');
-      store1.putAll(values);
-      store2.putAll(values);
+      store1.putAllValues(values);
+      store2.putAllValues(values);
       logToDocumentBody('Finished Benchmark IDB putAll');
       txn.oncomplete = () => {
         reportDone();

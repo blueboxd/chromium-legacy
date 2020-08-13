@@ -28,6 +28,7 @@
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
@@ -331,6 +332,17 @@ class CORE_EXPORT HTMLInputElement
 
   bool IsDraggedSlider() const;
 
+  FormElementPiiType GetFormElementPiiType() const override {
+    return form_element_pii_type_;
+  }
+
+  void SetFormElementPiiType(
+      FormElementPiiType form_element_pii_type) override {
+    form_element_pii_type_ = form_element_pii_type;
+  }
+
+  ScriptRegexp& EnsureEmailRegexp() const;
+
  protected:
   void DefaultEventHandler(Event&) override;
   void CreateShadowSubtree();
@@ -427,6 +439,8 @@ class CORE_EXPORT HTMLInputElement
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
   void DidRecalcStyle(const StyleRecalcChange) override;
 
+  void MaybeReportPiiMetrics();
+
   AtomicString name_;
   // The value string in |value| value mode.
   String non_attribute_value_;
@@ -456,6 +470,9 @@ class CORE_EXPORT HTMLInputElement
   // element lives on.
   Member<HTMLImageLoader> image_loader_;
   Member<ListAttributeTargetObserver> list_attribute_target_observer_;
+
+  FormElementPiiType form_element_pii_type_ = FormElementPiiType::kUnknown;
+  mutable std::unique_ptr<ScriptRegexp> email_regexp_;
 
   FRIEND_TEST_ALL_PREFIXES(HTMLInputElementTest, RadioKeyDownDCHECKFailure);
 };

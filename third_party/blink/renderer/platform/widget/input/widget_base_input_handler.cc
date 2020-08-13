@@ -350,8 +350,7 @@ void WidgetBaseInputHandler::HandleInputEvent(
   swap_latency_info.AddLatencyNumber(
       ui::LatencyComponentType::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT);
   cc::LatencyInfoSwapPromiseMonitor swap_promise_monitor(
-      &swap_latency_info, widget_->LayerTreeHost()->GetSwapPromiseManager(),
-      nullptr);
+      &swap_latency_info, widget_->LayerTreeHost()->GetSwapPromiseManager());
   auto scoped_event_metrics_monitor =
       widget_->LayerTreeHost()->GetScopedEventMetricsMonitor(
           cc::EventMetrics::Create(input_event.GetTypeAsUiEventType(),
@@ -659,7 +658,7 @@ void WidgetBaseInputHandler::HandleInjectedScrollGestures(
     {
       cc::LatencyInfoSwapPromiseMonitor swap_promise_monitor(
           &scrollbar_latency_info,
-          widget_->LayerTreeHost()->GetSwapPromiseManager(), nullptr);
+          widget_->LayerTreeHost()->GetSwapPromiseManager());
       auto scoped_event_metrics_monitor =
           widget_->LayerTreeHost()->GetScopedEventMetricsMonitor(
               cc::EventMetrics::Create(gesture_event->GetTypeAsUiEventType(),

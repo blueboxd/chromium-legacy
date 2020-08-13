@@ -56,6 +56,7 @@ class ChromeNativeFileSystemPermissionContext
       std::unique_ptr<content::NativeFileSystemWriteItem> item,
       content::GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(AfterWriteCheckResult)> callback) override;
+  bool CanObtainReadPermission(const url::Origin& origin) override;
   bool CanObtainWritePermission(const url::Origin& origin) override;
 
   ContentSetting GetReadGuardContentSetting(const url::Origin& origin);

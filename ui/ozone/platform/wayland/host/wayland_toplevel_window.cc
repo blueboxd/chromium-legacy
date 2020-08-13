@@ -17,7 +17,9 @@
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
+#include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_drag_controller.h"
+#include "ui/platform_window/extensions/wayland_extension.h"
 #include "ui/platform_window/wm/wm_drop_handler.h"
 
 namespace ui {
@@ -338,6 +340,7 @@ bool WaylandToplevelWindow::OnInitialize(
 #else
   wm_class_class_ = properties.wm_class_class;
 #endif
+  SetWaylandExtension(this, static_cast<WaylandExtension*>(this));
   SetWmMoveLoopHandler(this, static_cast<WmMoveLoopHandler*>(this));
   return true;
 }
@@ -350,6 +353,11 @@ bool WaylandToplevelWindow::RunMoveLoop(const gfx::Vector2d& drag_offset) {
 void WaylandToplevelWindow::EndMoveLoop() {
   DCHECK(connection()->window_drag_controller());
   connection()->window_drag_controller()->StopDragging();
+}
+
+void WaylandToplevelWindow::StartWindowDraggingSessionIfNeeded() {
+  DCHECK(connection()->window_drag_controller());
+  connection()->window_drag_controller()->StartDragSession();
 }
 
 void WaylandToplevelWindow::TriggerStateChanges() {

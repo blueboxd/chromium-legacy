@@ -94,6 +94,11 @@ class Navigation {
   // and redirect. When called during start, the header applies to both the
   // start and redirect. |name| must be rfc 2616 compliant and |value| must
   // not contain '\0', '\n' or '\r'.
+  //
+  // This function may be used to set the referer. If the referer is set in
+  // navigation start, it is reset during the redirect. In other words, if you
+  // need to set a referer that applies to redirects, then this must be called
+  // from NavigationRedirected().
   virtual void SetRequestHeader(const std::string& name,
                                 const std::string& value) = 0;
 

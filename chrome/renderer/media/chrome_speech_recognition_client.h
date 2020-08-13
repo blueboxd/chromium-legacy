@@ -83,6 +83,14 @@ class ChromeSpeechRecognitionClient
 
   bool IsUrlBlocked(const std::string& url) const;
 
+  // Called when the speech recognition context or the speech recognition
+  // recognizer is disconnected. Sends an error message to the UI and halts
+  // future transcriptions.
+  void OnRecognizerDisconnected();
+
+  // Called when the caption host is disconnected. Halts future transcriptions.
+  void OnCaptionHostDisconnected();
+
   media::SpeechRecognitionClient::OnReadyCallback on_ready_callback_;
 
   // Sends audio to the speech recognition thread on the renderer thread.
@@ -103,7 +111,7 @@ class ChromeSpeechRecognitionClient
   // format.
   std::unique_ptr<media::AudioBus> temp_audio_bus_;
 
-  // Whether the browser is still requesting transcriptions.
+  // Whether the UI in the browser is still requesting transcriptions.
   bool is_browser_requesting_transcription_ = true;
 
   bool is_recognizer_bound_ = false;

@@ -1202,5 +1202,37 @@ TEST(BrowserControlsOffsetManagerTest, PinTopControlsToContentTop) {
   manager->ScrollEnd();
 }
 
+// Tests that if the min-height changes while we're animating to the previous
+// min-height, the animation gets updated to end at the new value.
+TEST(BrowserControlsOffsetManagerTest, MinHeightChangeUpdatesAnimation) {
+  MockBrowserControlsOffsetManagerClient client(100, 0.5f, 0.5f);
+  client.SetBrowserControlsParams(
+      {/*top_controls_height=*/100, /*top_controls_min_height=*/50, 0, 0,
+       /*animate_browser_controls_height_changes=*/true, false, false});
+  BrowserControlsOffsetManager* manager = client.manager();
+
+  // Hide the controls to start an animation to min-height.
+  EXPECT_FLOAT_EQ(1.f, manager->TopControlsShownRatio());
+  manager->UpdateBrowserControlsState(BrowserControlsState::kHidden,
+                                      BrowserControlsState::kBoth, true);
+  base::TimeTicks time = base::TimeTicks::Now();
+  manager->Animate(time);
+  EXPECT_TRUE(manager->HasAnimation());
+
+  // Update the min-height to a smaller value.
+  client.SetBrowserControlsParams(
+      {/*top_controls_height=*/100, /*top_controls_min_height=*/10, 0, 0,
+       /*animate_browser_controls_height_changes=*/true, false, false});
+  EXPECT_TRUE(manager->HasAnimation());
+
+  // Make sure the animation finishes at the new min-height.
+  while (manager->HasAnimation()) {
+    time = base::TimeDelta::FromMicroseconds(100) + time;
+    manager->Animate(time);
+  }
+  EXPECT_FALSE(manager->HasAnimation());
+  EXPECT_FLOAT_EQ(0.1f, manager->TopControlsShownRatio());
+}
+
 }  // namespace
 }  // namespace cc

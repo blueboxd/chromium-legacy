@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
@@ -44,6 +45,8 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !flatten_composited_layers) {
     if (auto* layer = canvas->ContentsCcLayer()) {
+      PaintTiming::From(layout_html_canvas_.GetDocument())
+          .MarkFirstContentfulPaint();
       IntRect pixel_snapped_rect = PixelSnappedIntRect(paint_rect);
       layer->SetBounds(gfx::Size(pixel_snapped_rect.Size()));
       layer->SetIsDrawable(true);

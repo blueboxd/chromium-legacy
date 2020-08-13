@@ -36,8 +36,13 @@ class MODULES_EXPORT WebIDBTransactionImpl : public WebIDBTransaction {
            mojom::IDBPutMode,
            std::unique_ptr<WebIDBCallbacks> callbacks,
            Vector<IDBIndexKeys>) override;
+  void PutAll(int64_t object_store_id,
+              Vector<mojom::blink::IDBPutParamsPtr> puts,
+              std::unique_ptr<WebIDBCallbacks> callbacks) override;
   void PutCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
                    mojom::blink::IDBTransactionPutResultPtr result);
+  void PutAllCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
+                      mojom::blink::IDBTransactionPutAllResultPtr result);
   void Commit(int64_t num_errors_handled) override;
 
   mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction> CreateReceiver()

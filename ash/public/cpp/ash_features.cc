@@ -37,17 +37,8 @@ const base::Feature kDockedMagnifier{"DockedMagnifier",
 const base::Feature kDragToSnapInClamshellMode{
     "DragToSnapInClamshellMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kMovablePartialScreenshot{
-    "MovablePartialScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnableOverviewRoundedCorners{
-    "EnableOverviewRoundedCorners", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kLimitAltTabToActiveDesk{"LimitAltTabToActiveDesk",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPerDeskShelf{"PerDeskShelf",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -71,6 +62,9 @@ const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
 const base::Feature kMediaSessionNotification{"MediaSessionNotification",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kMovablePartialScreenshot{
+    "MovablePartialScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kMultiDisplayOverviewAndSplitView{
     "MultiDisplayOverviewAndSplitView", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -84,6 +78,9 @@ const base::Feature kNotificationExperimentalShortTimeouts{
 
 const base::Feature kNotificationScrollBar{"NotificationScrollBar",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPerDeskShelf{"PerDeskShelf",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPipRoundedCorners{"PipRoundedCorners",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

@@ -3956,94 +3956,6 @@ class LayerTreeHostTestCompositeImmediatelyStateTransitions
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestCompositeImmediatelyStateTransitions);
 
-class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
- public:
-  void SetupTree() override {
-    num_tiles_rastered_ = 0;
-
-    scoped_refptr<Layer> root_layer = PictureLayer::Create(&client_);
-    client_.set_fill_with_nonsolid_color(true);
-    root_layer->SetIsDrawable(true);
-    root_layer->SetBounds(gfx::Size(10, 10));
-    root_layer->SetContentsOpaque(true);
-
-    layer_tree_host()->SetRootLayer(root_layer);
-
-    // The expectations are based on the assumption that the default
-    // LCD settings are:
-    EXPECT_TRUE(layer_tree_host()->GetSettings().can_use_lcd_text);
-
-    LayerTreeHostTest::SetupTree();
-    client_.set_bounds(root_layer->bounds());
-  }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->SourceFrameNumber()) {
-      case 1:
-        PostSetNeedsCommitToMainThread();
-        break;
-      case 2:
-        // Change contents_opaque that should trigger lcd change.
-        layer_tree_host()->root_layer()->SetContentsOpaque(false);
-        break;
-      case 3:
-        // Change contents_opaque that should trigger lcd change.
-        layer_tree_host()->root_layer()->SetContentsOpaque(true);
-        break;
-      case 4:
-        EndTest();
-        break;
-    }
-  }
-
-  void NotifyTileStateChangedOnThread(LayerTreeHostImpl* host_impl,
-                                      const Tile* tile) override {
-    ++num_tiles_rastered_;
-  }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    PictureLayerImpl* root_layer =
-        static_cast<PictureLayerImpl*>(host_impl->active_tree()->root_layer());
-    bool can_use_lcd_text =
-        root_layer->ComputeLCDTextDisallowedReasonForTesting() ==
-        LCDTextDisallowedReason::kNone;
-    switch (host_impl->active_tree()->source_frame_number()) {
-      case 0:
-        // The first draw.
-        EXPECT_EQ(1, num_tiles_rastered_);
-        EXPECT_TRUE(can_use_lcd_text);
-        EXPECT_TRUE(root_layer->can_use_lcd_text());
-        break;
-      case 1:
-        // Nothing changed on the layer.
-        EXPECT_EQ(1, num_tiles_rastered_);
-        EXPECT_TRUE(can_use_lcd_text);
-        EXPECT_TRUE(root_layer->can_use_lcd_text());
-        break;
-      case 2:
-        // LCD text was disabled; it should be re-rastered with LCD text off.
-        EXPECT_EQ(2, num_tiles_rastered_);
-        EXPECT_FALSE(can_use_lcd_text);
-        EXPECT_FALSE(root_layer->can_use_lcd_text());
-        break;
-      case 3:
-        // LCD text was enabled, but it's sticky and stays off.
-        EXPECT_EQ(2, num_tiles_rastered_);
-        EXPECT_TRUE(can_use_lcd_text);
-        EXPECT_FALSE(root_layer->can_use_lcd_text());
-        break;
-    }
-  }
-
- private:
-  FakeContentLayerClient client_;
-  int num_tiles_rastered_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLCDChange);
-
 class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
     : public LayerTreeHostTest {
  public:
@@ -6135,13 +6047,11 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferSwapPromiseForVisibility);
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
   SimpleSwapPromiseMonitor(LayerTreeHost* layer_tree_host,
-                           LayerTreeHostImpl* layer_tree_host_impl,
                            int* set_needs_commit_count,
                            int* set_needs_redraw_count)
-      : SwapPromiseMonitor(
-            (layer_tree_host ? layer_tree_host->GetSwapPromiseManager()
-                             : nullptr),
-            layer_tree_host_impl),
+      : SwapPromiseMonitor(layer_tree_host
+                               ? layer_tree_host->GetSwapPromiseManager()
+                               : nullptr),
         set_needs_commit_count_(set_needs_commit_count) {}
 
   ~SimpleSwapPromiseMonitor() override = default;
@@ -6171,7 +6081,7 @@ class LayerTreeHostTestSwapPromiseDuringCommit : public LayerTreeHostTest {
 
     {
       std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(), nullptr,
+          new SimpleSwapPromiseMonitor(layer_tree_host(),
                                        &set_needs_commit_count,
                                        &set_needs_redraw_count));
       layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
@@ -6194,7 +6104,7 @@ class LayerTreeHostTestSwapPromiseDuringCommit : public LayerTreeHostTest {
 
     {
       std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(), nullptr,
+          new SimpleSwapPromiseMonitor(layer_tree_host(),
                                        &set_needs_commit_count,
                                        &set_needs_redraw_count));
       layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
@@ -6224,7 +6134,7 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
 
     {
       std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(), nullptr,
+          new SimpleSwapPromiseMonitor(layer_tree_host(),
                                        &set_needs_commit_count,
                                        &set_needs_redraw_count));
       layer_tree_host()->SetNeedsCommit();
@@ -6240,7 +6150,7 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
 
     {
       std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(), nullptr,
+          new SimpleSwapPromiseMonitor(layer_tree_host(),
                                        &set_needs_commit_count,
                                        &set_needs_redraw_count));
       layer_tree_host()->SetNeedsUpdateLayers();
@@ -6250,7 +6160,7 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
 
     {
       std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(), nullptr,
+          new SimpleSwapPromiseMonitor(layer_tree_host(),
                                        &set_needs_commit_count,
                                        &set_needs_redraw_count));
       layer_tree_host()->SetNeedsAnimate();
@@ -8294,10 +8204,10 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
         static_cast<PictureLayerImpl*>(host_impl->active_tree()->root_layer());
     switch (++draw_count_) {
       case 1:
-        // First draw, everything is invalid.
+        // First draw, everything is invalid. layer->update_rect() doesn't
+        // matter because a new layer always causes surface damage.
         EXPECT_EQ(layer->InvalidationForTesting().bounds(),
                   gfx::Rect(layer->bounds()));
-        EXPECT_EQ(layer->update_rect(), gfx::Rect(layer->bounds()));
         EXPECT_EQ(generator_->frames_decoded().size(), 1u);
         EXPECT_EQ(generator_->frames_decoded().count(0u), 1u);
         break;

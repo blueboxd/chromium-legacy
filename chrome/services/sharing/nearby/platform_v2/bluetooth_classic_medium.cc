@@ -4,6 +4,9 @@
 
 #include "chrome/services/sharing/nearby/platform_v2/bluetooth_classic_medium.h"
 
+#include "chrome/services/sharing/nearby/platform_v2/bluetooth_socket.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
+
 namespace location {
 namespace nearby {
 namespace chrome {
@@ -69,8 +72,26 @@ bool BluetoothClassicMedium::StopDiscovery() {
 std::unique_ptr<api::BluetoothSocket> BluetoothClassicMedium::ConnectToService(
     api::BluetoothDevice& remote_device,
     const std::string& service_uuid) {
-  // TODO(b/154849933): Implement this in a subsequent CL.
-  NOTIMPLEMENTED();
+  // TODO(hansberry): This currently assumes that the device was discovered via
+  // Bluetooth Classic (the remote device is in high visibility mode), meaning
+  // this address is the expected permanent BT MAC address. Once an
+  // implementation is in place to scan for devices over BLE, a new mechanism
+  // to query for the remote device's permanent BT MAC address from stored
+  // certificates.
+  // We provided this |remote_device|, so we can safely downcast it.
+  const std::string& address =
+      static_cast<chrome::BluetoothDevice&>(remote_device).GetAddress();
+
+  bluetooth::mojom::ConnectToServiceResultPtr result;
+  bool success = adapter_->ConnectToServiceInsecurely(
+      address, device::BluetoothUUID(service_uuid), &result);
+
+  if (success && result) {
+    return std::make_unique<chrome::BluetoothSocket>(
+        remote_device, std::move(result->socket),
+        std::move(result->receive_stream), std::move(result->send_stream));
+  }
+
   return nullptr;
 }
 

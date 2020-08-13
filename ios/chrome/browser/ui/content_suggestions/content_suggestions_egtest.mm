@@ -14,6 +14,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_app_interface.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -141,6 +142,9 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that the additional items (when more is pressed) are kept when
 // switching tabs.
 - (void)testAdditionalItemsKept {
+  if (IsDiscoverFeedEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Feed Test.");
+  }
   // Set server up.
   self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
@@ -175,6 +179,9 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that when the page is reloaded using the tools menu, the suggestions
 // are updated.
 - (void)testReloadPage {
+  if (IsDiscoverFeedEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Feed Test.");
+  }
   // Add 2 suggestions, persisted accross page loads.
   [ContentSuggestionsAppInterface addNumberOfSuggestions:2
                                 additionalSuggestionsURL:nil];
@@ -200,6 +207,9 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // disposition of the collection takes into account the previous scroll, even
 // when more is tapped.
 - (void)testOpenPageAndGoBackWithMoreContent {
+  if (IsDiscoverFeedEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Feed Test.");
+  }
   // Set server up.
   self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
@@ -248,6 +258,9 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that the "Learn More" cell is present only if there is a suggestion in
 // the section.
 - (void)testLearnMore {
+  if (IsDiscoverFeedEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Feed Test.");
+  }
   id<GREYAction> action =
       grey_scrollInDirectionWithStartPoint(kGREYDirectionDown, 200, 0.5, 0.5);
   [[[EarlGrey

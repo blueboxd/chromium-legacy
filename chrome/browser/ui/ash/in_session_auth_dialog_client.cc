@@ -10,8 +10,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,6 +50,22 @@ bool InSessionAuthDialogClient::HasInstance() {
 InSessionAuthDialogClient* InSessionAuthDialogClient::Get() {
   DCHECK(g_auth_dialog_client_instance);
   return g_auth_dialog_client_instance;
+}
+
+bool InSessionAuthDialogClient::IsFingerprintAuthAvailable(
+    const AccountId& account_id) {
+  chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      chromeos::quick_unlock::QuickUnlockFactory::GetForAccountId(account_id);
+  return quick_unlock_storage &&
+         quick_unlock_storage->fingerprint_storage()->IsFingerprintAvailable();
+}
+
+void InSessionAuthDialogClient::CheckPinAuthAvailability(
+    const AccountId& account_id,
+    base::OnceCallback<void(bool)> callback) {
+  // PinBackend may be using cryptohome backend or prefs backend.
+  chromeos::quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
+      account_id, std::move(callback));
 }
 
 void InSessionAuthDialogClient::AuthenticateUserWithPasswordOrPin(

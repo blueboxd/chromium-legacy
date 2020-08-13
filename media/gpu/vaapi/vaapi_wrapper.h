@@ -114,6 +114,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   using InternalFormats = struct {
     bool yuv420 : 1;
+    bool yuv420_10 : 1;
     bool yuv422 : 1;
     bool yuv444 : 1;
   };

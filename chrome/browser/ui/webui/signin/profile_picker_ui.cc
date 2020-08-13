@@ -7,6 +7,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/signin/profile_picker_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -22,6 +23,17 @@
 #include "ui/base/webui/web_ui_util.h"
 
 namespace {
+bool IsProfileCreationAllowed() {
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  return service->GetBoolean(prefs::kBrowserAddPersonEnabled);
+}
+
+bool IsGuestModeEnabled() {
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  return service->GetBoolean(prefs::kBrowserGuestModeEnabled);
+}
 
 void AddStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -60,8 +72,16 @@ void AddStrings(content::WebUIDataSource* html_source) {
                           g_browser_process->local_state()->GetBoolean(
                               prefs::kBrowserShowProfilePickerOnStartup));
   html_source->AddBoolean(
-      "signInProfileCreationFlow",
+      "signInProfileCreationFlowSupported",
       base::FeatureList::IsEnabled(features::kSignInProfileCreationFlow));
+
+  // Add policies.
+  html_source->AddBoolean("isForceSigninEnabled",
+                          signin_util::IsForceSigninEnabled());
+  html_source->AddBoolean("isGuestModeEnabled", IsGuestModeEnabled());
+  html_source->AddBoolean("isProfileCreationAllowed",
+                          IsProfileCreationAllowed());
+  // TODO(crbug.com/1063856): Check if |BrowserSignin| device policy exists.
 }
 
 }  // namespace

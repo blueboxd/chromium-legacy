@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 
 namespace views {
@@ -34,6 +35,9 @@ class IncognitoMenuView : public ProfileMenuViewBase {
   base::string16 GetAccessibleWindowTitle() const override;
 
   // Button actions.
+#if defined(OS_WIN)
+  void OnCreateShortcutButtonClicked();
+#endif
   void OnExitButtonClicked();
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoMenuView);

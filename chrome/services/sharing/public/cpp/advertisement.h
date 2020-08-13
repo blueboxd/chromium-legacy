@@ -56,11 +56,14 @@ class Advertisement {
   // ways of parsing the endpoint id.
   int version_;
 
-  // A randomized salt used in the hash of the account identifier.
+  // Random bytes that were used as salt during encryption of public certificate
+  // metadata.
   std::vector<uint8_t> salt_;
 
-  // A salted hash of an account identifier that signifies who the remote device
-  // is.
+  // An encrypted symmetric key that was used to encrypt public certificate
+  // metadata, including an account identifier signifying the remote device.
+  // The key can be decrypted using |salt| and the corresponding public
+  // certificate's secret/authenticity key.
   std::vector<uint8_t> encrypted_metadata_key_;
 
   // The human readable name of the remote device.

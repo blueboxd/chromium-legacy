@@ -35,6 +35,10 @@ class MockWebIDBTransaction : public testing::StrictMock<WebIDBTransaction> {
                     mojom::IDBPutMode,
                     std::unique_ptr<WebIDBCallbacks>,
                     Vector<IDBIndexKeys>));
+  MOCK_METHOD3(PutAll,
+               void(int64_t object_store_id,
+                    Vector<mojom::blink::IDBPutParamsPtr> puts,
+                    std::unique_ptr<WebIDBCallbacks> callbacks));
   MOCK_METHOD1(Commit, void(int64_t num_errors_handled));
 
   mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction> CreateReceiver()

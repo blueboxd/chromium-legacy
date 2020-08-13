@@ -16002,6 +16002,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="40" label="Tab moved to main panel"/>
   <int value="41" label="Capture CSS Overview clicked"/>
   <int value="42" label="Virtual authenticator environment enabled"/>
+  <int value="43" label="Source Order Overlay Activated"/>
 </enum>
 
 <enum name="DevToolsBackgroundService">
@@ -21419,6 +21420,7 @@ Called by update_document_policy_enum.py.-->
   <int value="768" label="UserPrintersAllowed"/>
   <int value="769" label="Printers"/>
   <int value="770" label="PrintersBulkConfiguration"/>
+  <int value="771" label="DeviceReleaseLtsTag"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -23723,11 +23725,11 @@ Called by update_extension_histograms.py.-->
   <int value="1042" label="DEVELOPERPRIVATE_SETSHORTCUTHANDLINGSUSPENDED"/>
   <int value="1043" label="DEVELOPERPRIVATE_UPDATEEXTENSIONCOMMAND"/>
   <int value="1044" label="INPUTMETHODPRIVATE_GETENCRYPTSYNCENABLED"/>
-  <int value="1045" label="USERSPRIVATE_GETWHITELISTEDUSERS"/>
-  <int value="1046" label="USERSPRIVATE_ADDWHITELISTEDUSER"/>
-  <int value="1047" label="USERSPRIVATE_REMOVEWHITELISTEDUSER"/>
+  <int value="1045" label="USERSPRIVATE_GETUSERS"/>
+  <int value="1046" label="USERSPRIVATE_ADDUSER"/>
+  <int value="1047" label="USERSPRIVATE_REMOVEUSER"/>
   <int value="1048" label="USERSPRIVATE_ISCURRENTUSEROWNER"/>
-  <int value="1049" label="USERSPRIVATE_ISWHITELISTMANAGED"/>
+  <int value="1049" label="USERSPRIVATE_ISUSERLISTMANAGED"/>
   <int value="1050" label="PRINTERPROVIDERINTERNAL_REPORTUSBPRINTERINFO"/>
   <int value="1051" label="WEBCAMPRIVATE_OPENSERIALWEBCAM"/>
   <int value="1052" label="WEBCAMPRIVATE_CLOSEWEBCAM"/>
@@ -24081,7 +24083,7 @@ Called by update_extension_histograms.py.-->
   <int value="1382" label="AUTOTESTPRIVATE_SETOVERVIEWMODESTATE"/>
   <int value="1383" label="AUTOTESTPRIVATE_TAKESCREENSHOTFORDISPLAY"/>
   <int value="1384" label="AUTOFILLPRIVATE_SETCREDITCARDFIDOAUTHENABLEDSTATE"/>
-  <int value="1385" label="USERSPRIVATE_ISWHITELISTEDUSER"/>
+  <int value="1385" label="USERSPRIVATE_ISUSERINLIST"/>
   <int value="1386" label="PRINTINGMETRICS_GETPRINTJOBS"/>
   <int value="1387" label="AUTOTESTPRIVATE_WAITFORASSISTANTQUERYSTATUS"/>
   <int value="1388" label="AUTOTESTPRIVATE_GETCLIPBOARDTEXTDATA"/>
@@ -28713,6 +28715,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3375" label="V8RTCRtpTransceiver_Stop_Method"/>
   <int value="3376" label="SecurePaymentConfirmation"/>
   <int value="3377" label="CSSInvalidVariableUnset"/>
+  <int value="3378" label="ElementInternalsShadowRoot"/>
+  <int value="3379" label="AnyPiiFieldDetected_PredictedTypeMatch"/>
+  <int value="3380" label="EmailFieldDetected_PredictedTypeMatch"/>
+  <int value="3381" label="PhoneFieldDetected_PredictedTypeMatch"/>
+  <int value="3382" label="EmailFieldDetected_PatternMatch"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -54499,6 +54506,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Reauth required">
     Re-authenticaion for filling passwords is required.
   </int>
+  <int value="8" label="Password is already filled">
+    Password field is already filled in and it doesn't look like a placeholder.
+  </int>
 </enum>
 
 <enum name="PasswordManagerHttpCredentialType">
@@ -57320,6 +57330,43 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Printer was setup via Extensions API"/>
 </enum>
 
+<enum name="PrinterStatusReasons">
+  <int value="0" label="UNKNOWN_REASON"/>
+  <int value="1" label="NONE"/>
+  <int value="2" label="MEDIA_NEEDED"/>
+  <int value="3" label="MEDIA_JAM"/>
+  <int value="4" label="MOVING_TO_PAUSED"/>
+  <int value="5" label="PAUSED"/>
+  <int value="6" label="SHUTDOWN"/>
+  <int value="7" label="CONNECTING_TO_DEVICE"/>
+  <int value="8" label="TIMED_OUT"/>
+  <int value="9" label="STOPPING"/>
+  <int value="10" label="STOPPED_PARTLY"/>
+  <int value="11" label="TONER_LOW"/>
+  <int value="12" label="TONER_EMPTY"/>
+  <int value="13" label="SPOOL_AREA_FULL"/>
+  <int value="14" label="COVER_OPEN"/>
+  <int value="15" label="INTERLOCK_OPEN"/>
+  <int value="16" label="DOOR_OPEN"/>
+  <int value="17" label="INPUT_TRAY_MISSING"/>
+  <int value="18" label="MEDIA_LOW"/>
+  <int value="19" label="MEDIA_EMPTY"/>
+  <int value="20" label="OUTPUT_TRAY_MISSING"/>
+  <int value="21" label="OUTPUT_AREA_ALMOST_FULL"/>
+  <int value="22" label="OUTPUT_AREA_FULL"/>
+  <int value="23" label="MARKER_SUPPLY_LOW"/>
+  <int value="24" label="MARKER_SUPPLY_EMPTY"/>
+  <int value="25" label="MARKER_WASTE_ALMOST_FULL"/>
+  <int value="26" label="MARKER_WASTE_FULL"/>
+  <int value="27" label="FUSER_OVER_TEMP"/>
+  <int value="28" label="FUSER_UNDER_TEMP"/>
+  <int value="29" label="OPC_NEAR_EOL"/>
+  <int value="30" label="OPC_LIFE_OVER"/>
+  <int value="31" label="DEVELOPER_LOW"/>
+  <int value="32" label="DEVELOPER_EMPTY"/>
+  <int value="33" label="INTERPRETER_RESOURCE_UNAVAILABLE"/>
+</enum>
+
 <enum name="PrintJobResult">
   <int value="0" label="Unknown"/>
   <int value="1" label="Successful Finish"/>
@@ -58003,6 +58050,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="15" label="Add new profile button"/>
   <int value="16" label="Sync settings(sync on) button"/>
   <int value="17" label="Edit profile button"/>
+  <int value="18" label="Create incognito shortcut button"/>
 </enum>
 
 <enum name="ProfileNameState">
@@ -61658,6 +61706,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="DISABLED_BY_EXTENSION"/>
   <int value="5" label="ENABLED_STANDARD"/>
   <int value="6" label="ENABLED_ENHANCED"/>
+  <int value="7" label="ENABLED_STANDARD_AVAILABLE_ENHANCED"/>
 </enum>
 
 <enum name="SafetyCheckUpdateStatus">

@@ -1503,7 +1503,7 @@ def CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
 
 def CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
   """This is a simplified version of
-  _CheckNoProductionCodeUsingTestOnlyFunctions for Java files.
+  CheckNoProductionCodeUsingTestOnlyFunctions for Java files.
   """
   javadoc_start_re = input_api.re.compile(r'^\s*/\*\*')
   javadoc_end_re = input_api.re.compile(r'^\s*\*/')
@@ -1865,7 +1865,7 @@ def CheckValidHostsInDEPSOnUpload(input_api, output_api):
 
 def _GetMessageForMatchingType(input_api, affected_file, line_number, line,
                                type_name, message):
-  """Helper method for _CheckNoBannedFunctions and _CheckNoDeprecatedMojoTypes.
+  """Helper method for CheckNoBannedFunctions and CheckNoDeprecatedMojoTypes.
 
   Returns an string composed of the name of the file, the line number where the
   match has been found and the additional text passed as |message| in case the
@@ -2388,7 +2388,7 @@ def _ParseDeps(contents):
 
 
 def _CalculateAddedDeps(os_path, old_contents, new_contents):
-  """Helper method for _CheckAddedDepsHaveTargetApprovals. Returns
+  """Helper method for CheckAddedDepsHaveTargetApprovals. Returns
   a set of DEPS entries that we should look up.
 
   For a directory (rather than a specific filename) we fake a path to

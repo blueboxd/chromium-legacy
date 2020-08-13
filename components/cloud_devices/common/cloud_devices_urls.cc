@@ -18,9 +18,9 @@ const char kCloudPrintAuthScope[] =
 
 const char kCloudPrintDeprecationHelpURL[] =
 #if defined(OS_CHROMEOS)
-    "https://www.google.com/chromebook/?p=cloudprint";
+    "https://support.google.com/chromebook/?p=cloudprint";
 #else
-    "https://www.google.com/chrome/?p=cloudprint";
+    "https://support.google.com/chrome/?p=cloudprint";
 #endif
 
 const char kCloudPrintLearnMoreURL[] =

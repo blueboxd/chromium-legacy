@@ -5,6 +5,7 @@
 package org.chromium.android_webview.common;
 
 import org.chromium.base.BaseSwitches;
+import org.chromium.cc.base.CcSwitches;
 import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.gpu.config.GpuSwitches;
 
@@ -36,7 +37,7 @@ public final class ProductionSupportedFlagList {
             Flag.commandLine(AwSwitches.WEBVIEW_VERBOSE_LOGGING,
                     "WebView will log additional debugging information to logcat, such as "
                             + "variations and commandline state."),
-            Flag.commandLine("show-composited-layer-borders",
+            Flag.commandLine(CcSwitches.SHOW_COMPOSITED_LAYER_BORDERS,
                     "Renders a border around compositor layers to help debug and study layer "
                             + "compositing."),
             Flag.commandLine(AwSwitches.FINCH_SEED_EXPIRATION_AGE,

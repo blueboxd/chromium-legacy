@@ -813,6 +813,11 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
           POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
           base::Value(container.release_channel_delegated()), nullptr);
     }
+    if (container.has_release_lts_tag()) {
+      policies->Set(key::kDeviceReleaseLtsTag, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    base::Value(container.release_lts_tag()), nullptr);
+    }
   }
 
   if (policy.has_auto_update_settings()) {

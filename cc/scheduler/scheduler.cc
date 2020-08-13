@@ -5,6 +5,7 @@
 #include "cc/scheduler/scheduler.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/auto_reset.h"
@@ -581,10 +582,12 @@ void Scheduler::FinishImplFrame() {
   // ack for any pending begin frame if we are going idle after this. This
   // ensures that the acks are sent in order.
   if (!state_machine_.did_submit_in_last_frame()) {
+    bool is_waiting_on_main = state_machine_.begin_main_frame_state() !=
+                              SchedulerStateMachine::BeginMainFrameState::IDLE;
     SendDidNotProduceFrame(begin_impl_frame_tracker_.Current(),
-                           state_machine_.draw_succeeded_in_last_frame()
-                               ? FrameSkippedReason::kNoDamage
-                               : FrameSkippedReason::kWaitingOnMain);
+                           is_waiting_on_main
+                               ? FrameSkippedReason::kWaitingOnMain
+                               : FrameSkippedReason::kNoDamage);
   }
 
   begin_impl_frame_tracker_.Finish();

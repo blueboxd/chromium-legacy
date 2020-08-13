@@ -7,6 +7,7 @@
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_token.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 
@@ -41,7 +42,9 @@ FontMatchingMetrics::FontMatchingMetrics(
       identifiability_metrics_timer_(
           task_runner,
           this,
-          &FontMatchingMetrics::IdentifiabilityMetricsTimerFired) {
+          &FontMatchingMetrics::IdentifiabilityMetricsTimerFired),
+      identifiability_study_enabled_(
+          IdentifiabilityStudySettings::Get()->IsActive()) {
   // Estimate of average page font use from anecdotal browsing session.
   constexpr unsigned kEstimatedFontCount = 7;
   local_fonts_succeeded_.ReserveCapacityForSize(kEstimatedFontCount);
@@ -84,6 +87,9 @@ void FontMatchingMetrics::ReportFontLookupByUniqueOrFamilyName(
     LocalFontLookupType check_type,
     SimpleFontData* resulting_font_data,
     bool is_loading_fallback) {
+  if (!identifiability_study_enabled_) {
+    return;
+  }
   OnFontLookup();
   uint64_t hash = GetHashForFontData(resulting_font_data);
   LocalFontLookupKey key(name, font_description.GetFontSelectionRequest());
@@ -96,6 +102,9 @@ void FontMatchingMetrics::ReportFontLookupByFallbackCharacter(
     const FontDescription& font_description,
     LocalFontLookupType check_type,
     SimpleFontData* resulting_font_data) {
+  if (!identifiability_study_enabled_) {
+    return;
+  }
   OnFontLookup();
   uint64_t hash = GetHashForFontData(resulting_font_data);
   LocalFontLookupKey key(fallback_character,
@@ -109,6 +118,9 @@ void FontMatchingMetrics::ReportLastResortFallbackFontLookup(
     const FontDescription& font_description,
     LocalFontLookupType check_type,
     SimpleFontData* resulting_font_data) {
+  if (!identifiability_study_enabled_) {
+    return;
+  }
   OnFontLookup();
   uint64_t hash = GetHashForFontData(resulting_font_data);
   LocalFontLookupKey key(font_description.GetFontSelectionRequest());
@@ -122,6 +134,9 @@ void FontMatchingMetrics::ReportFontFamilyLookupByGenericFamily(
     UScriptCode script,
     FontDescription::GenericFamilyType generic_family_type,
     const AtomicString& resulting_font_name) {
+  if (!identifiability_study_enabled_) {
+    return;
+  }
   OnFontLookup();
   GenericFontLookupKey key(generic_font_family_name, script,
                            generic_family_type);
@@ -130,6 +145,8 @@ void FontMatchingMetrics::ReportFontFamilyLookupByGenericFamily(
 }
 
 void FontMatchingMetrics::PublishIdentifiabilityMetrics() {
+  DCHECK(identifiability_study_enabled_);
+
   IdentifiabilityMetricBuilder builder(source_id_);
 
   for (const auto& entry : font_lookups_) {
@@ -188,6 +205,7 @@ void FontMatchingMetrics::PublishUkmMetrics() {
 }
 
 void FontMatchingMetrics::OnFontLookup() {
+  DCHECK(identifiability_study_enabled_);
   if (!identifiability_metrics_timer_.IsActive()) {
     identifiability_metrics_timer_.StartOneShot(base::TimeDelta::FromMinutes(1),
                                                 FROM_HERE);
@@ -199,7 +217,9 @@ void FontMatchingMetrics::IdentifiabilityMetricsTimerFired(TimerBase*) {
 }
 
 void FontMatchingMetrics::PublishAllMetrics() {
-  PublishIdentifiabilityMetrics();
+  if (identifiability_study_enabled_) {
+    PublishIdentifiabilityMetrics();
+  }
   PublishUkmMetrics();
 }
 

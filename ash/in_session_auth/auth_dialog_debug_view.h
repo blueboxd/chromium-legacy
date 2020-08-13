@@ -25,7 +25,15 @@ class LoginPinView;
 // AuthDialogController.
 class AuthDialogDebugView : public views::View, public views::ButtonListener {
  public:
-  AuthDialogDebugView();
+  // Flags which describe the set of currently visible auth methods.
+  enum AuthMethods {
+    kAuthNone = 0,              // No auth methods.
+    kAuthPassword = 1 << 0,     // Display password.
+    kAuthPin = 1 << 1,          // Display PIN keyboard.
+    kAuthFingerprint = 1 << 2,  // Use fingerprint to unlock.
+  };
+
+  explicit AuthDialogDebugView(uint32_t auth_methods);
   AuthDialogDebugView(const AuthDialogDebugView&) = delete;
   AuthDialogDebugView& operator=(const AuthDialogDebugView&) = delete;
   ~AuthDialogDebugView() override;
@@ -34,6 +42,8 @@ class AuthDialogDebugView : public views::View, public views::ButtonListener {
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
+  class FingerprintView;
+
   // Add a view for dialog title.
   void AddTitleView();
 
@@ -83,6 +93,11 @@ class AuthDialogDebugView : public views::View, public views::ButtonListener {
 
   // PIN pad view.
   LoginPinView* pin_view_ = nullptr;
+
+  FingerprintView* fingerprint_view_ = nullptr;
+
+  // Flags of auth methods that should be visible.
+  uint32_t auth_methods_ = 0u;
 
   // Show other authentication mechanisms if more than one.
   views::LabelButton* more_options_button_ = nullptr;

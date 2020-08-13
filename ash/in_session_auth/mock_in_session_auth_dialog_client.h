@@ -26,6 +26,17 @@ class MockInSessionAuthDialogClient : public InSessionAuthDialogClient {
                bool authenticated_by_pin,
                base::OnceCallback<void(bool)> callback),
               (override));
+
+  MOCK_METHOD(bool,
+              IsFingerprintAuthAvailable,
+              (const AccountId& account_id),
+              (override));
+
+  MOCK_METHOD(void,
+              CheckPinAuthAvailability,
+              (const AccountId& account_id,
+               base::OnceCallback<void(bool)> callback),
+              (override));
 };
 
 }  // namespace ash

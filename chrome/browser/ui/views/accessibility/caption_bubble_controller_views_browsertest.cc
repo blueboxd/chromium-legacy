@@ -152,14 +152,9 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
                                                      TabStripModel::CLOSE_NONE);
   }
 
-  void SetHasError(bool has_error) {
-    // TODO(crbug.com/1055150): Use a public function on the
-    // CaptionBubbleController to set an error once error messages are wired up
-    // from the speech service to the CaptionBubbleController.
-    GetController()
-        ->caption_bubble_models_
-            [browser()->tab_strip_model()->GetActiveWebContents()]
-        ->SetHasError(has_error);
+  void OnError(int tab_index = 0) {
+    GetController()->OnError(
+        browser()->tab_strip_model()->GetWebContentsAt(tab_index));
   }
 
  private:
@@ -380,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
   EXPECT_TRUE(GetLabel()->GetVisible());
   EXPECT_FALSE(GetErrorMessage()->GetVisible());
 
-  SetHasError(true);
+  OnError(0);
   EXPECT_FALSE(GetWaitText()->GetVisible());
   EXPECT_FALSE(GetLabel()->GetVisible());
   EXPECT_TRUE(GetErrorMessage()->GetVisible());
@@ -391,8 +386,27 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
   EXPECT_FALSE(GetLabel()->GetVisible());
   EXPECT_TRUE(GetErrorMessage()->GetVisible());
 
-  // Clear the error and everything should be visible again.
-  SetHasError(false);
+  // The error should not be visible on a new tab.
+  InsertNewTab();
+  ActivateTabAt(1);
+  OnSpeechRecognitionReady();
+  OnPartialTranscription("Elephants are vegetarians.");
+  EXPECT_TRUE(GetWaitText()->GetVisible());
+  EXPECT_TRUE(GetLabel()->GetVisible());
+  EXPECT_FALSE(GetErrorMessage()->GetVisible());
+
+  // The error should still be visible when switching back to the tab.
+  ActivateTabAt(0);
+  EXPECT_FALSE(GetWaitText()->GetVisible());
+  EXPECT_FALSE(GetLabel()->GetVisible());
+  EXPECT_TRUE(GetErrorMessage()->GetVisible());
+
+  // The error should disappear when the tab refreshes.
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  OnSpeechRecognitionReady();
+  OnPartialTranscription("Elephants can communicate through seismic signals.");
   EXPECT_TRUE(GetWaitText()->GetVisible());
   EXPECT_TRUE(GetLabel()->GetVisible());
   EXPECT_FALSE(GetErrorMessage()->GetVisible());
@@ -593,7 +607,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   // Set the error message.
   caption_style.text_size = "50%";
   GetController()->UpdateCaptionStyle(caption_style);
-  SetHasError(true);
+  OnError();
   EXPECT_EQ(lineHeight / 2, GetErrorText()->GetLineHeight());
   EXPECT_EQ(errorIconHeight / 2, GetErrorIcon()->GetImageBounds().height());
   EXPECT_GT(GetBubble()->GetPreferredSize().height(), lineHeight / 2);
@@ -623,10 +637,13 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesBubble) {
   GetController();
   EXPECT_FALSE(IsWidgetVisible());
 
-  // It is shown if there is an error, and hidden when that error goes away.
-  SetHasError(true);
+  // It is shown if there is an error, and hidden when the page refreshes and
+  // that error goes away.
+  OnError();
   EXPECT_TRUE(IsWidgetVisible());
-  SetHasError(false);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents());
   EXPECT_FALSE(IsWidgetVisible());
 
   // It is shown if the bubble is ready and should not show if it is not.
@@ -662,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesBubble) {
   // Close the bubble. It should not show, even when it has an error.
   ClickButton(GetCloseButton());
   EXPECT_FALSE(IsWidgetVisible());
-  SetHasError(true);
+  OnError();
   EXPECT_FALSE(IsWidgetVisible());
 }
 

@@ -300,6 +300,7 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
                        CancelReauthDialog) {
   ShowReauthPrompt();
+  RedirectGaiaChallengeTo(https_server()->GetURL(kReauthDonePath));
   ASSERT_TRUE(login_ui_test_utils::CancelReauthConfirmationDialog(
       browser(), kReauthDialogTimeout));
   EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kDismissedByUser);
@@ -312,17 +313,26 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
                        GaiaChallengeLoadFailed) {
   ShowReauthPrompt();
-  ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
-      browser(), kReauthDialogTimeout));
+
+  // Make the Gaia page fail to load.
   const GURL target_url = https_server()->GetURL("/close-socket");
   content::TestNavigationObserver target_content_observer(target_url);
   target_content_observer.WatchExistingWebContents();
   RedirectGaiaChallengeTo(target_url);
   target_content_observer.Wait();
+
   EXPECT_TRUE(browser()->signin_view_controller()->ShowsModalDialog());
   EXPECT_FALSE(target_content_observer.last_navigation_succeeded());
 
-  // Check that |kLoadFailed| is returned as the result.
+  // Now confirm the pre-reauth confirmation dialog, and wait for the Gaia page
+  // (an error page in this case) to show up.
+  ReauthTestObserver reauth_observer(signin_reauth_view_controller());
+  ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
+      browser(), kReauthDialogTimeout));
+  reauth_observer.WaitUntilGaiaReauthPageIsShown();
+
+  // Close the modal dialog and check that |kLoadFailed| is returned as the
+  // result.
   SimulateCloseButtonClick();
   EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kLoadFailed);
   EXPECT_THAT(
@@ -337,32 +347,11 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
 // Tests clicking on the confirm button in the reauth dialog. Reauth completes
 // before the confirmation.
 IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
-                       ConfirmReauthDialog_AfterReauthSuccess) {
+                       ConfirmReauthDialog) {
   ShowReauthPrompt();
   RedirectGaiaChallengeTo(https_server()->GetURL(kReauthDonePath));
   ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
       browser(), kReauthDialogTimeout));
-  EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kSuccess);
-  histogram_tester()->ExpectUniqueSample(
-      kReauthUserActionHistogramName,
-      SigninReauthViewController::UserAction::kClickConfirmButton, 1);
-  histogram_tester()->ExpectUniqueSample(
-      kReauthUserActionToFillPasswordHistogramName,
-      SigninReauthViewController::UserAction::kClickConfirmButton, 1);
-  histogram_tester()->ExpectTotalCount(
-      kReauthGaiaNavigationDurationFromReauthStartHistogramName, 1);
-  histogram_tester()->ExpectTotalCount(
-      kReauthGaiaNavigationDurationFromConfirmClickHistogramName, 1);
-}
-
-// Tests clicking on the confirm button in the reauth dialog. Reauth completes
-// after the confirmation.
-IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
-                       ConfirmReauthDialog_BeforeReauthSuccess) {
-  ShowReauthPrompt();
-  ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
-      browser(), kReauthDialogTimeout));
-  RedirectGaiaChallengeTo(https_server()->GetURL(kReauthDonePath));
   EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kSuccess);
   histogram_tester()->ExpectUniqueSample(
       kReauthUserActionHistogramName,

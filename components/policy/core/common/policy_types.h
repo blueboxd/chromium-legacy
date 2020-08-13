@@ -36,6 +36,9 @@ enum PolicySource {
   // The policy was set because we are running in an enterprise environment.
   POLICY_SOURCE_ENTERPRISE_DEFAULT,
 
+  // The policy was set by command line flag for testing purpose.
+  POLICY_SOURCE_COMMAND_LINE,
+
   // The policy was set by a cloud source.
   POLICY_SOURCE_CLOUD,
 

@@ -196,10 +196,11 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         }
 
         WebContents webContents = WebContentsStatics.fromRenderFrameHost(mRenderFrameHost);
-        return ComponentPaymentRequestImpl.create(mRenderFrameHost,
-                delegate.isOffTheRecord(webContents), delegate.skipUiForBasicCard(),
-                (componentPaymentRequest, isOffTheRecord, journeyLogger)
-                        -> new PaymentRequestImpl(mRenderFrameHost, componentPaymentRequest,
+        return ComponentPaymentRequestImpl.createPaymentRequest(mRenderFrameHost,
+                /*isOffTheRecord=*/delegate.isOffTheRecord(webContents),
+                /*skipUiForBasicCard=*/delegate.skipUiForBasicCard(),
+                (renderFrameHost, componentPaymentRequest, isOffTheRecord, journeyLogger)
+                        -> new PaymentRequestImpl(renderFrameHost, componentPaymentRequest,
                                 isOffTheRecord, journeyLogger, delegate));
     }
 }

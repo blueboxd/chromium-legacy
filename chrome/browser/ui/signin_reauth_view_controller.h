@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/sync/protocol/user_consent_types.pb.h"
 #include "google_apis/gaia/core_account_id.h"
 
 class Browser;
@@ -134,7 +135,8 @@ class SigninReauthViewController
   // Called when the user clicks the confirm button in the reauth confirmation
   // dialog.
   // This happens before the Gaia reauth page is shown.
-  void OnReauthConfirmed();
+  void OnReauthConfirmed(
+      sync_pb::UserConsentTypes::AccountPasswordsConsent consent);
   // Called when the user clicks the cancel button in the reauth confirmation
   // dialog.
   // This happens before the Gaia reauth page is shown.
@@ -199,6 +201,7 @@ class SigninReauthViewController
 
   // The state of the reauth flow.
   bool user_confirmed_reauth_ = false;
+  base::Optional<sync_pb::UserConsentTypes::AccountPasswordsConsent> consent_;
   GaiaReauthPageState gaia_reauth_page_state_ = GaiaReauthPageState::kStarted;
   base::Optional<signin::ReauthResult> gaia_reauth_page_result_;
 

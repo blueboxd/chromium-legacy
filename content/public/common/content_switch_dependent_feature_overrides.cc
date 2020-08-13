@@ -78,7 +78,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
       {switches::kEnableExperimentalCookieFeatures,
        std::cref(net::features::kSameSiteDefaultChecksMethodRigorously),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-      // TODO(crbug.com/1030938): Add Schemeful Same-Site.
+      {switches::kEnableExperimentalCookieFeatures,
+       std::cref(net::features::kSchemefulSameSite),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
   };
 
   std::vector<base::FeatureList::FeatureOverrideInfo> overrides;

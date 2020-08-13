@@ -540,13 +540,16 @@ void CaptionBubble::OnErrorChanged() {
 }
 
 void CaptionBubble::OnReadyChanged() {
+  DCHECK(model_);
   // There is a bug in RenderText in which the label text must not be empty when
   // it is displayed, or otherwise subsequent calculation of the number of lines
   // (CaptionBubble::GetNumLinesInLabel) will be incorrect. The label text here
   // is set to a space character.
   // TODO(1055150): Fix the bug in RenderText and then remove this workaround.
-  label_->SetText(base::ASCIIToUTF16("\u0020"));
-  UpdateBubbleAndWaitTextVisibility();
+  if (model_->IsReady()) {
+    label_->SetText(base::ASCIIToUTF16("\u0020"));
+    UpdateBubbleAndWaitTextVisibility();
+  }
 }
 
 void CaptionBubble::OnIsExpandedChanged() {

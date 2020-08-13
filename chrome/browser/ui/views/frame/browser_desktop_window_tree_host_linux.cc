@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/platform_window/extensions/wayland_extension.h"
 #include "ui/platform_window/extensions/x11_extension.h"
 
 #if defined(USE_DBUS_MENU)
@@ -78,16 +79,26 @@ bool BrowserDesktopWindowTreeHostLinux::UsesNativeSystemMenu() const {
   return false;
 }
 
-void BrowserDesktopWindowTreeHostLinux::TabDraggingStatusChanged(
-    bool is_dragging) {
+void BrowserDesktopWindowTreeHostLinux::TabDraggingKindChanged(
+    TabDragKind tab_drag_kind) {
   // If there's no tabs left, the browser window is about to close, so don't
   // call SetOverrideRedirect() to prevent the window from flashing.
   if (!browser_view_->tabstrip()->GetModelCount())
     return;
 
   auto* x11_extension = GetX11Extension();
-  if (x11_extension && x11_extension->IsWmTiling())
-    x11_extension->SetOverrideRedirect(is_dragging);
+  if (x11_extension && x11_extension->IsWmTiling()) {
+    bool was_dragging_window =
+        browser_frame_->tab_drag_kind() == TabDragKind::kAllTabs;
+    bool is_dragging_window = tab_drag_kind == TabDragKind::kAllTabs;
+    if (is_dragging_window != was_dragging_window)
+      x11_extension->SetOverrideRedirect(is_dragging_window);
+  }
+
+  if (auto* wayland_extension = ui::GetWaylandExtension(*platform_window())) {
+    if (tab_drag_kind != TabDragKind::kNone)
+      wayland_extension->StartWindowDraggingSessionIfNeeded();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

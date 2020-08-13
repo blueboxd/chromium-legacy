@@ -269,7 +269,7 @@ SystemFontTypeFromUndocumentedCTFontRefInternals(CTFontRef font) {
   // TODO(avi, etienneb): Figure out this font stuff.
   base::ScopedCFTypeRef<CTFontDescriptorRef> descriptor(
       CTFontCopyFontDescriptor(font));
-  if (CTFontDescriptorIsSystemUIFont(descriptor.get())) {
+  if (@available(macOS 10.10, *) && CTFontDescriptorIsSystemUIFont(descriptor.get())) {
     // Assume it's the standard system font. The fact that this much is known is
     // enough.
     return PlatformFontMac::SystemFontType::kGeneral;
@@ -360,8 +360,13 @@ Font PlatformFontMac::DeriveFont(int size_delta,
 #pragma clang diagnostic ignored "-Wunguarded-availability"
     // +[NSFont systemFontOfSize:weight:] is declared as available on 10.11+,
     // but actually it is there and works on 10.10.
-    NSFont* derived = [NSFont systemFontOfSize:font_spec_.size + size_delta
-                                        weight:ToNSFontWeight(weight)];
+    NSFont* derived;
+    if(@available(macOS 10.10, *)){
+      derived = [NSFont systemFontOfSize:font_spec_.size + size_delta
+                                          weight:ToNSFontWeight(weight)];
+	} else {
+      derived = [NSFont systemFontOfSize:font_spec_.size + size_delta];
+    }
 #pragma clang diagnostic pop
     NSFontTraitMask italic_trait_mask =
         (style & Font::ITALIC) ? NSItalicFontMask : NSUnitalicFontMask;

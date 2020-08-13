@@ -151,6 +151,9 @@ bool CreateVideoToolboxSession(const uint8_t* sps,
                                const uint8_t* pps,
                                size_t pps_size,
                                bool require_hardware) {
+  if(!__builtin_available(macOS 10.9,*)) {
+    return false;
+  }
   const uint8_t* data_ptrs[] = {sps, pps};
   const size_t data_sizes[] = {sps_size, pps_size};
 
@@ -499,6 +502,9 @@ bool VTVideoDecodeAccelerator::FinishDelayedFrames() {
 }
 
 bool VTVideoDecodeAccelerator::ConfigureDecoder() {
+  if(!__builtin_available(macOS 10.9,*)) {
+    return false;
+  }
   DVLOG(2) << __func__;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(!active_sps_.empty());

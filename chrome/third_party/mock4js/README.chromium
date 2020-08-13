@@ -11,3 +11,4 @@ application. Its syntax is very expressive and is closely based on jMock 1.
 
 Local Modifications:
 * Replace a fail() call with throwing Mock4JSException.
+* Changed `new Function()` call in order to avoid Trusted Types violation.

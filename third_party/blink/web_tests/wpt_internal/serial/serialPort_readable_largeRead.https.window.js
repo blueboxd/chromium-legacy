@@ -9,12 +9,12 @@
 serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
   // Select a buffer size smaller than the amount of data transferred.
-  await port.open({baudrate: 9600, buffersize: 64});
+  await port.open({baudRate: 9600, bufferSize: 64});
 
   const reader = port.readable.getReader();
 
   await fakePort.writable();
-  const data = new Uint8Array(1024);  // Much larger than buffersize above.
+  const data = new Uint8Array(1024);  // Much larger than bufferSize above.
   for (let i = 0; i < data.byteLength; ++i)
     data[i] = i & 0xff;
   fakePort.write(data);

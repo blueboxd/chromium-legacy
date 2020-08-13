@@ -25,6 +25,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -86,6 +87,7 @@ public class TrustedWebActivityLocationDelegationTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1113325")
     public void getLocationFromTestTwaService() throws TimeoutException, Exception {
         assertTrue(ChromeFeatureList.isEnabled(
                 ChromeFeatureList.TRUSTED_WEB_ACTIVITY_LOCATION_DELEGATION));

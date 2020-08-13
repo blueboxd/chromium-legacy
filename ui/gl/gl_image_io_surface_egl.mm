@@ -250,8 +250,11 @@ bool GLImageIOSurfaceEGL::CopyTexImage(unsigned target) {
     return false;
   }
 
-  if (format_ != gfx::BufferFormat::YUV_420_BIPLANAR)
+  // TODO(crbug.com/1115621): We should support gfx::BufferFormat::P010 here,
+  // but EGL doesn't seem to be able to sample from the P010 Y and UV textures.
+  if (format_ != gfx::BufferFormat::YUV_420_BIPLANAR) {
     return false;
+  }
 
   GLContext* gl_context = GLContext::GetCurrent();
   DCHECK(gl_context);
@@ -361,7 +364,8 @@ bool GLImageIOSurfaceEGL::CopyTexImage(unsigned target) {
     return false;
   }
 
-  yuv_to_rgb_converter->CopyYUV420ToRGB(target, size_, rgb_texture);
+  yuv_to_rgb_converter->CopyYUV420ToRGB(target, size_, rgb_texture,
+                                        GL_UNSIGNED_BYTE);
   if (glGetError() != GL_NO_ERROR) {
     LOG(ERROR) << "Failed converting from YUV to RGB";
     return false;

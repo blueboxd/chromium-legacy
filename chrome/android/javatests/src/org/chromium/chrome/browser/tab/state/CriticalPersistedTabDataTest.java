@@ -43,7 +43,7 @@ public class CriticalPersistedTabDataTest {
     private static final String APP_ID = "AppId";
     private static final String OPENER_APP_ID = "OpenerAppId";
     private static final int THEME_COLOR = 5;
-    private static final int LAUNCH_TYPE_AT_CREATION = 3;
+    private static final Integer LAUNCH_TYPE_AT_CREATION = 3;
 
     static {
         WEB_CONTENTS_STATE.buffer().put(WEB_CONTENTS_STATE_BYTES);

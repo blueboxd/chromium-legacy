@@ -10,14 +10,29 @@
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
+namespace WTF {
+class String;
+}  // namespace WTF
+
 namespace blink {
+
+enum class WebBundleErrorType {
+  kMetadataParseError,
+  kResponseParseError,
+  kResourceNotFound,
+};
+
+using WebBundleErrorCallback =
+    base::RepeatingCallback<void(WebBundleErrorType,
+                                 const WTF::String& message)>;
 
 // Creates a network::mojom::URLLoaderFactory that can load resources from a
 // WebBundle, and binds it to |factory_receiver|.
 PLATFORM_EXPORT void CreateWebBundleSubresourceLoaderFactory(
     CrossVariantMojoReceiver<network::mojom::URLLoaderFactoryInterfaceBase>
         factory_receiver,
-    mojo::ScopedDataPipeConsumerHandle bundle_body);
+    mojo::ScopedDataPipeConsumerHandle bundle_body,
+    WebBundleErrorCallback error_callback);
 
 }  // namespace blink
 

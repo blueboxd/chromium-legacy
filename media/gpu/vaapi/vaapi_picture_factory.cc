@@ -10,6 +10,7 @@
 #include "ui/gl/gl_bindings.h"
 
 #if defined(USE_X11)
+#include "media/gpu/vaapi/vaapi_picture_native_pixmap_angle.h"
 #include "media/gpu/vaapi/vaapi_picture_tfp.h"
 #endif
 #if defined(USE_OZONE)
@@ -26,6 +27,9 @@ VaapiPictureFactory::VaapiPictureFactory() {
       std::make_pair(gl::kGLImplementationEGLGLES2,
                      VaapiPictureFactory::kVaapiImplementationDrm));
 #if defined(USE_X11)
+  vaapi_impl_pairs_.insert(
+      std::make_pair(gl::kGLImplementationEGLANGLE,
+                     VaapiPictureFactory::kVaapiImplementationAngle));
   if (!features::IsUsingOzonePlatform()) {
     vaapi_impl_pairs_.insert(
         std::make_pair(gl::kGLImplementationDesktopGL,
@@ -146,6 +150,13 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::CreateVaapiPictureNative(
     case kVaapiImplementationX11:
       DCHECK(!features::IsUsingOzonePlatform());
       return std::make_unique<VaapiTFPPicture>(
+          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
+          picture_buffer.id(), picture_buffer.size(), visible_size,
+          service_texture_id, client_texture_id,
+          picture_buffer.texture_target());
+      break;
+    case kVaapiImplementationAngle:
+      return std::make_unique<VaapiPictureNativePixmapAngle>(
           std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
           picture_buffer.id(), picture_buffer.size(), visible_size,
           service_texture_id, client_texture_id,

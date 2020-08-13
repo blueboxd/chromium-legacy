@@ -17,7 +17,6 @@ import android.widget.TextView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
@@ -34,9 +33,6 @@ public class DebugLoggerTest {
     private static final String ERROR_TEXT_1 = "Interdimensional rift formation.";
     private static final String ERROR_TEXT_2 = "Exotic particle containment breach.";
     private static final String WARNING_TEXT = "Noncompliant meson entanglement.";
-
-    @Mock
-    private FrameContext mFrameContext;
 
     private Context mContext;
 

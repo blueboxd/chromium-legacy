@@ -273,6 +273,10 @@ int UDPSocketWin::Open(AddressFamily address_family) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(socket_, INVALID_SOCKET);
 
+  auto owned_socket_count = TryAcquireGlobalUDPSocketCount();
+  if (owned_socket_count.empty())
+    return ERR_INSUFFICIENT_RESOURCES;
+
   addr_family_ = ConvertAddressFamily(address_family);
   socket_ = CreatePlatformSocket(addr_family_, SOCK_DGRAM, IPPROTO_UDP);
   if (socket_ == INVALID_SOCKET)
@@ -283,11 +287,15 @@ int UDPSocketWin::Open(AddressFamily address_family) {
     read_write_event_.Set(WSACreateEvent());
     WSAEventSelect(socket_, read_write_event_.Get(), FD_READ | FD_WRITE);
   }
+
+  owned_socket_count_ = std::move(owned_socket_count);
   return OK;
 }
 
 void UDPSocketWin::Close() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  owned_socket_count_.Reset();
 
   if (socket_ == INVALID_SOCKET)
     return;

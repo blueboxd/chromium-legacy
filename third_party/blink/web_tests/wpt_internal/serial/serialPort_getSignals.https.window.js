@@ -13,29 +13,34 @@ serial_test(async (t, fake) => {
 
 serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
-  await port.open({baudrate: 9600});
+  await port.open({baudRate: 9600});
 
-  let expectedSignals = {dcd: false, cts: false, ri: false, dsr: false};
+  let expectedSignals = {
+    dataCarrierDetect: false,
+    clearToSend: false,
+    ringIndicator: false,
+    dataSetReady: false
+  };
   fakePort.simulateInputSignals(expectedSignals);
   let signals = await port.getSignals();
   assert_object_equals(signals, expectedSignals);
 
-  expectedSignals.dcd = true;
+  expectedSignals.dataCarrierDetect = true;
   fakePort.simulateInputSignals(expectedSignals);
   signals = await port.getSignals();
   assert_object_equals(signals, expectedSignals, 'DCD set');
 
-  expectedSignals.cts = true;
+  expectedSignals.clearToSend = true;
   fakePort.simulateInputSignals(expectedSignals);
   signals = await port.getSignals();
   assert_object_equals(signals, expectedSignals, 'CTS set');
 
-  expectedSignals.ri = true;
+  expectedSignals.ringIndicator = true;
   fakePort.simulateInputSignals(expectedSignals);
   signals = await port.getSignals();
   assert_object_equals(signals, expectedSignals, 'RI set');
 
-  expectedSignals.dsr = true;
+  expectedSignals.dataSetReady = true;
   fakePort.simulateInputSignals(expectedSignals);
   signals = await port.getSignals();
   assert_object_equals(signals, expectedSignals, 'DSR set');

@@ -180,6 +180,9 @@ IN_PROC_BROWSER_TEST_P(
 // This list was derived from chrome://about. :)
 static constexpr const char* const kChromeUrls[] = {
     "chrome://accessibility",
+    // TODO(crbug.com/1114074): DCHECK failure when opening
+    // chrome://appcache-internals.
+    // "chrome://appcache-internals",
     "chrome://apps",
     "chrome://autofill-internals",
     "chrome://blob-internals",
@@ -195,7 +198,11 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://crashes",
     "chrome://credits",
     "chrome://device-log",
+    // TODO(crbug.com/1114062): Crash when closing chrome://devices.
+    // "chrome://devices",
     "chrome://dino",
+    // TODO(crbug.com/1113446): Test failure due to excessive output.
+    // "chrome://discards",
     "chrome://domain-reliability-internals",
     "chrome://download-internals",
     "chrome://downloads",
@@ -243,14 +250,23 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://sandbox",
     "chrome://serviceworker-internals",
     "chrome://settings",
+    // TODO(crbug.com/1115600): DCHECK failure when opening
+    // chrome://signin-dice-web-intercept.
+    // "chrome://signin-dice-web-intercept",
     "chrome://signin-email-confirmation",
     "chrome://signin-internals",
     "chrome://site-engagement",
     "chrome://snippets-internals",
     "chrome://suggestions",
+    // TODO(crbug.com/1099564): Navigating to chrome://sync-confirmation and
+    // quickly navigating away cause DCHECK failure.
+    // "chrome://sync-confirmation",
     "chrome://sync-internals",
     "chrome://syncfs-internals",
     "chrome://system",
+    // TODO(crbug.com/1099565): Navigating to chrome://tab-strip and quickly
+    // navigating away cause DCHECK failure.
+    // "chrome://tab-strip",
     "chrome://terms",
     "chrome://tracing",
     "chrome://translate-internals",
@@ -271,6 +287,10 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://account-manager-welcome",
     "chrome://account-migration-welcome",
     "chrome://add-supervision",
+    // TODO(crbug.com/1102129): DCHECK failure in
+    // ArcGraphicsTracingHandler::ArcGraphicsTracingHandler.
+    // "chrome://arc-graphics-tracing",
+    // "chrome://arc-overview-tracing",
     "chrome://assistant-optin",
     "chrome://bluetooth-pairing",
     "chrome://cellular-setup",
@@ -280,6 +300,7 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://cryptohome",
     "chrome://drive-internals",
     "chrome://first-run",
+    "chrome://help-app",
     "chrome://internet-config-dialog",
     "chrome://internet-detail-dialog",
     "chrome://linux-proxy-config",
@@ -288,6 +309,7 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://network",
     "chrome://oobe",
     "chrome://os-credits",
+    "chrome://os-settings",
     "chrome://power",
     "chrome://proximity-auth/proximity_auth.html",
     "chrome://set-time",
@@ -296,6 +318,10 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://smb-share-dialog",
     "chrome://supervised-user-internals",
     "chrome://sys-internals",
+    // TODO(crbug.com/1115643): DCHECK failure when opening
+    // chrome-untrusted://crosh.
+    // "chrome-untrusted://crosh",
+    "chrome-untrusted://terminal",
 #endif
 };
 

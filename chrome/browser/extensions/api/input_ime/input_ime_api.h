@@ -25,8 +25,8 @@
 #include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
+#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/base/ime/ime_bridge_observer.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_flags.h"
 
 #if defined(OS_CHROMEOS)

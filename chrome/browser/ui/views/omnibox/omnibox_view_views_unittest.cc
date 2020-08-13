@@ -1715,6 +1715,94 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
 }
 
+// Tests the field trial variation that shows a simplified domain by default and
+// reveals the unsimplified URL on hover, using an IDN url.
+TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExitIDN) {
+  // The display URL used in simplified domain display tests.
+  const base::string16 kSimplifiedDomainDisplayIDNUrl =
+      base::UTF8ToUTF16("https://テスト.住所の例.test/bar");
+  const base::string16 kSimplifiedDomainDisplayIDNUrlHostnameAndScheme =
+      base::UTF8ToUTF16("https://テスト.住所の例.test");
+  const base::string16 kSimplifiedDomainDisplayIDNUrlSubdomainAndScheme =
+      base::UTF8ToUTF16("https://テスト.");
+  const base::string16 kSimplifiedDomainDisplayIDNUrlSubdomain =
+      base::UTF8ToUTF16("テスト.");
+  const base::string16 kSimplifiedDomainDisplayIDNUrlPath =
+      base::UTF8ToUTF16("/bar");
+  const base::string16 kSimplifiedDomainDisplayIDNUrlScheme =
+      base::UTF8ToUTF16("https://");
+  location_bar_model()->set_url(GURL(kSimplifiedDomainDisplayIDNUrl));
+  location_bar_model()->set_url_for_display(kSimplifiedDomainDisplayIDNUrl);
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+  // Call OnThemeChanged() to create the animations.
+  omnibox_view()->OnThemeChanged();
+
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), kSimplifiedDomainDisplayIDNUrlScheme,
+      kSimplifiedDomainDisplayIDNUrlSubdomain,
+      kSimplifiedDomainDisplayIDNUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayIDNUrlPath, ShouldElideToRegistrableDomain()));
+
+  // As soon as the mouse hovers over the omnibox, the unelide animation should
+  // start running.
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::ElideAnimation* hover_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(hover_animation);
+  EXPECT_TRUE(hover_animation->IsAnimating());
+
+  // Advance the clock through the animation.
+  gfx::AnimationContainerElement* hover_animation_as_element =
+      static_cast<gfx::AnimationContainerElement*>(
+          hover_animation->GetAnimationForTesting());
+  hover_animation_as_element->SetStartTime(base::TimeTicks());
+  hover_animation_as_element->Step(
+      base::TimeTicks() +
+      base::TimeDelta::FromMilliseconds(
+          OmniboxFieldTrial::UnelideURLOnHoverThresholdMs()));
+  // After the extended hover threshold has elapsed, the display text shouldn't
+  // have changed yet.
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), kSimplifiedDomainDisplayIDNUrlScheme,
+      kSimplifiedDomainDisplayIDNUrlSubdomain,
+      kSimplifiedDomainDisplayIDNUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayIDNUrlPath, ShouldElideToRegistrableDomain()));
+
+  // Now advance through the unelision and check the display text. We assume
+  // that the animation takes less than 1 second.
+  hover_animation_as_element->Step(base::TimeTicks() +
+                                   base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      render_text, gfx::Range(0, kSimplifiedDomainDisplayIDNUrl.size())));
+  EXPECT_FALSE(hover_animation->IsAnimating());
+  // Check that the path and subdomain are not transparent.
+  EXPECT_NE(SK_ColorTRANSPARENT,
+            omnibox_view()->GetLatestColorForRange(gfx::Range(
+                kSimplifiedDomainDisplayIDNUrlHostnameAndScheme.size(),
+                kSimplifiedDomainDisplayIDNUrl.size())));
+  EXPECT_NE(SK_ColorTRANSPARENT,
+            omnibox_view()->GetLatestColorForRange(gfx::Range(
+                0, kSimplifiedDomainDisplayIDNUrlSubdomainAndScheme.size())));
+
+  // Now exit the mouse. At this point the elision animation should run.
+  omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_EXITED, {0, 0}));
+  EXPECT_TRUE(hover_animation->IsAnimating());
+
+  hover_animation_as_element = static_cast<gfx::AnimationContainerElement*>(
+      hover_animation->GetAnimationForTesting());
+  hover_animation_as_element->SetStartTime(base::TimeTicks());
+  // We assume that the animation takes less than 1 second.
+  hover_animation_as_element->Step(base::TimeTicks() +
+                                   base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), kSimplifiedDomainDisplayIDNUrlScheme,
+      kSimplifiedDomainDisplayIDNUrlSubdomain,
+      kSimplifiedDomainDisplayIDNUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayIDNUrlPath, ShouldElideToRegistrableDomain()));
+}
+
 class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
     : public OmniboxViewViewsTest,
       public ::testing::WithParamInterface<std::pair<bool, bool>> {
@@ -2912,8 +3000,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
   }
 }
 
-// Tests that in the reveal-on-hover field trial variation, the RenderText does
-// not elide the domain if the omnibox is too narrow to fit it.
+// Tests that in the reveal-on-hover field trial variation, domains are aligned
+// to the right (truncated from the left) if the omnibox is too narrow to fit
+// the whole domain.
 TEST_P(OmniboxViewViewsRevealOnHoverTest,
        SimplifiedDomainElisionWithNarrowOmnibox) {
   const int kOmniboxWidth = 60;
@@ -2925,19 +3014,59 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest,
   SetUpSimplifiedDomainTest();
 
   ASSERT_EQ(kSimplifiedDomainDisplayUrl, render_text->GetDisplayText());
-  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
-      kSimplifiedDomainDisplayUrlSubdomain,
-      kSimplifiedDomainDisplayUrlHostnameAndScheme,
-      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
 
-  // The omnibox should contain a substring of the domain.
+  // The omnibox should contain a substring of the domain, aligned to the right.
   gfx::Rect hostname_bounds;
   for (const auto& rect : render_text->GetSubstringBounds(
            gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
                       kSimplifiedDomainDisplayUrlHostnameAndScheme.size()))) {
     hostname_bounds.Union(rect);
   }
+  EXPECT_LT(hostname_bounds.x(), omnibox_view()->GetLocalBounds().x());
+  EXPECT_FALSE(omnibox_view()->GetLocalBounds().Contains(hostname_bounds));
+
+  // No hover animations should run when the omnibox is too narrow to fit the
+  // simplified domain.
+
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_FALSE(elide_animation->IsAnimating());
+
+  omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  elide_animation = omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_FALSE(elide_animation->IsAnimating());
+}
+
+// Tests that in the reveal-on-hover and hide-on-interaction field trial
+// variation, domains are aligned to the right (truncated from the left) if the
+// omnibox is too narrow to fit the whole domain.
+TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+       SimplifiedDomainElisionWithNarrowOmnibox) {
+  const int kOmniboxWidth = 60;
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+  gfx::Rect current_bounds = omnibox_view()->GetLocalBounds();
+  gfx::Rect bounds(current_bounds.x(), current_bounds.y(), kOmniboxWidth,
+                   current_bounds.height());
+  omnibox_view()->SetBoundsRect(bounds);
+  SetUpSimplifiedDomainTest();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+
+  ASSERT_EQ(kSimplifiedDomainDisplayUrl, render_text->GetDisplayText());
+
+  // The omnibox should contain a substring of the domain, aligned to the right.
+  gfx::Rect hostname_bounds;
+  for (const auto& rect : render_text->GetSubstringBounds(
+           gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                      kSimplifiedDomainDisplayUrlHostnameAndScheme.size()))) {
+    hostname_bounds.Union(rect);
+  }
+  EXPECT_LT(hostname_bounds.x(), omnibox_view()->GetLocalBounds().x());
   EXPECT_FALSE(omnibox_view()->GetLocalBounds().Contains(hostname_bounds));
 }
 

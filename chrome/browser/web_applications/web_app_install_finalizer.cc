@@ -450,7 +450,10 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
 
   web_app->SetIconInfos(web_app_info.icon_infos);
   web_app->SetDownloadedIconSizes(
-      GetSquareSizePxs(web_app_info.icon_bitmaps_any));
+      IconPurpose::ANY, GetSquareSizePxs(web_app_info.icon_bitmaps_any));
+  web_app->SetDownloadedIconSizes(
+      IconPurpose::MASKABLE,
+      GetSquareSizePxs(web_app_info.icon_bitmaps_maskable));
   web_app->SetIsGeneratedIcon(web_app_info.is_generated_icon);
 
   web_app->SetShortcutsMenuItemInfos(web_app_info.shortcuts_menu_item_infos);
@@ -462,8 +465,11 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
   SetWebAppProtocolHandlers(web_app_info.protocol_handlers, web_app.get());
 
   AppId app_id = web_app->app_id();
+  IconBitmaps icon_bitmaps;
+  icon_bitmaps.any = web_app_info.icon_bitmaps_any;
+  icon_bitmaps.maskable = web_app_info.icon_bitmaps_maskable;
   icon_manager_->WriteData(
-      std::move(app_id), web_app_info.icon_bitmaps_any,
+      std::move(app_id), std::move(icon_bitmaps),
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(commit_callback),
                      std::move(web_app),

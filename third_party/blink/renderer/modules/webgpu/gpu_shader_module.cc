@@ -18,10 +18,11 @@ GPUShaderModule* GPUShaderModule::Create(
   DCHECK(device);
   DCHECK(webgpu_desc);
 
-  WGPUShaderModuleDescriptor dawn_desc = {};
+  std::string wgsl_code;
   WGPUShaderModuleWGSLDescriptor wgsl_desc = {};
   WGPUShaderModuleSPIRVDescriptor spirv_desc = {};
-  std::string wgsl_code;
+  std::string label;
+  WGPUShaderModuleDescriptor dawn_desc = {};
 
   auto wgsl_or_spirv = webgpu_desc->code();
   if (wgsl_or_spirv.IsUSVString()) {
@@ -49,7 +50,6 @@ GPUShaderModule* GPUShaderModule::Create(
     dawn_desc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&spirv_desc);
   }
 
-  std::string label;
   if (webgpu_desc->hasLabel()) {
     label = webgpu_desc->label().Utf8();
     dawn_desc.label = label.c_str();

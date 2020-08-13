@@ -16,7 +16,12 @@ NSString* const kLastSignificantUserEvent = @"lastSignificantUserEvent";
 // Time threshold before activity timestamps should be removed. Currently set to
 // seven days.
 const NSTimeInterval kUserActivityTimestampExpiration = 7 * 24 * 60 * 60;
+// Time threshold for the last URL open before no URL opens likely indicates
+// Chrome is no longer the default browser.
+const NSTimeInterval kLatestURLOpenForDefaultBrowser = 7 * 24 * 60 * 60;
 }
+
+NSString* const kLastHTTPURLOpenTime = @"lastHTTPURLOpenTime";
 
 void LogLikelyInterestedDefaultBrowserUserActivity() {
   NSMutableArray<NSDate*>* pastUserEvents =
@@ -41,4 +46,19 @@ void LogLikelyInterestedDefaultBrowserUserActivity() {
 
   [[NSUserDefaults standardUserDefaults] setObject:pastUserEvents
                                             forKey:kLastSignificantUserEvent];
+}
+
+bool IsChromeLikelyDefaultBrowser() {
+  NSDate* lastURLOpen =
+      [[NSUserDefaults standardUserDefaults] objectForKey:kLastHTTPURLOpenTime];
+  if (!lastURLOpen) {
+    return false;
+  }
+
+  NSDate* sevenDaysAgoDate =
+      [NSDate dateWithTimeIntervalSinceNow:-kLatestURLOpenForDefaultBrowser];
+  if ([lastURLOpen laterDate:sevenDaysAgoDate] == sevenDaysAgoDate) {
+    return false;
+  }
+  return true;
 }

@@ -1089,7 +1089,7 @@ CreateDefaultURLLoaderFactory() {
 //
 // AVOID: prefer to use an origin/frame/worker-specific factory (e.g. via
 // content::RenderFrameImpl::FrameURLLoaderFactory::CreateURLLoader).  See
-// also https://crbug.com/1098938.
+// also https://crbug.com/1114822.
 //
 // It is invalid to call this in an incomplete env where
 // RenderThreadImpl::current() returns nullptr (e.g. in some tests).

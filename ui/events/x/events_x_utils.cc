@@ -20,6 +20,7 @@
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
+#include "ui/events/devices/x11/xinput_util.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -226,7 +227,7 @@ int GetEventFlagsForButton(x11::Button button) {
 int GetButtonMaskForX2Event(const x11::Input::DeviceEvent& xievent) {
   int buttonflags = 0;
   for (size_t i = 0; i < 32 * xievent.button_mask.size(); i++) {
-    if (XIMaskIsSet(xievent.button_mask.data(), i)) {
+    if (ui::IsXinputMaskSet(xievent.button_mask.data(), i)) {
       int button =
           (xievent.sourceid == xievent.deviceid)
               ? ui::DeviceDataManagerX11::GetInstance()->GetMappedButton(i)

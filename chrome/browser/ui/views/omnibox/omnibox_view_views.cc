@@ -50,6 +50,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_fixer.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -156,6 +157,21 @@ void DrawGradientRect(const gfx::Rect& rect,
   flags.setShader(cc::PaintShader::MakeLinearGradient(points, colors, nullptr,
                                                       2, SkTileMode::kClamp));
   canvas->DrawRect(rect, flags);
+}
+
+// Returns true if  the substring indicated by |range| overflows
+// |omnibox_view|'s current local bounds.
+bool TextRangeOverflowsView(OmniboxViewViews* omnibox_view,
+                            gfx::RenderText* render_text,
+                            const gfx::Range& range) {
+  // The RenderText must be in NO_ELIDE mode to attempt to retrieve the bounds
+  // of |range| (which could be outside its display area).
+  DCHECK_EQ(gfx::NO_ELIDE, render_text->elide_behavior());
+
+  gfx::Rect range_rect;
+  for (const auto& rect : render_text->GetSubstringBounds(range))
+    range_rect.Union(rect);
+  return omnibox_view->GetLocalBounds().width() < range_rect.width();
 }
 
 }  // namespace
@@ -1250,24 +1266,46 @@ void OmniboxViewViews::OnMouseMoved(const ui::MouseEvent& event) {
             unelide_bounds) {
       return;
     }
+
     SkColor starting_color =
         hover_elide_or_unelide_animation_->GetCurrentColor();
     if (starting_color == gfx::kPlaceholderColor)
       starting_color = SK_ColorTRANSPARENT;
     hover_elide_or_unelide_animation_->Stop();
+
     // Figure out where we are uneliding from so that the hover animation can
-    // fade the surrounding text in. If the user has already interacted with the
-    // page, then we elided to the simplified domain and that is what we are
-    // uneliding from now. Otherwise, only the scheme and possibly a trivial
-    // subdomain have been elided and those components now need to be faded in.
+    // fade in the surrounding text (|ranges_to_fade_in|). If the user has
+    // already interacted with the page, then we elided to the simplified domain
+    // and that is what we are uneliding from now. Otherwise, only the scheme
+    // and possibly a trivial subdomain have been elided and those components
+    // now need to be faded in.
     std::vector<gfx::Range> ranges_to_fade_in;
+    // |minimum_visible_range| will contain either the simplified domain or the
+    // full hostname, depending on which is currently supposed to be showing. If
+    // |minimum_visible_range| does not currently fit in the omnibox bounds,
+    // then we don't do any hover animation. This is for simplicity, because
+    // ElideAnimation doesn't know how to position the text so that the most
+    // important part of the hostname is showing if it doesn't all fit.
+    // Furthermore, it doesn't seem necessary to do hover animation when the
+    // hostname doesn't fit because nothing is being elided beyond what has to
+    // be to fit in the local bounds.
+    gfx::Range minimum_visible_range;
     if (elide_after_web_contents_interaction_animation_ ||
         !OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
-      GetSimplifiedDomainBounds(&ranges_to_fade_in);
+      // The URL has been elided to the simplified domain. We want to fade in
+      // everything surrounding the simplified domain.
+      minimum_visible_range = GetSimplifiedDomainBounds(&ranges_to_fade_in);
     } else {
+      // The full URL is showing, except for the scheme and trivial subdomain.
+      // We want to fade in the scheme and trivial subdomain.
       url::Component host = GetHostComponentAfterTrivialSubdomain();
       ranges_to_fade_in.emplace_back(0, host.begin);
+      minimum_visible_range = gfx::Range(host.begin, host.end());
     }
+
+    if (TextRangeOverflowsView(this, GetRenderText(), minimum_visible_range))
+      return;
+
     hover_elide_or_unelide_animation_->Start(
         unelide_bounds, OmniboxFieldTrial::UnelideURLOnHoverThresholdMs(),
         ranges_to_fade_in, starting_color,
@@ -1304,6 +1342,7 @@ void OmniboxViewViews::OnMouseExited(const ui::MouseEvent& event) {
   // avoid over-eliding when some of the text is not visible due to display
   // offset.
   GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
+
   // Figure out where to elide to. If the user has already interacted with the
   // page or reveal-on-interaction is disabled, then elide to the simplified
   // domain; otherwise just hide the scheme and trivial subdomain (if any).
@@ -1312,6 +1351,10 @@ void OmniboxViewViews::OnMouseExited(const ui::MouseEvent& event) {
     std::vector<gfx::Range> ranges_surrounding_simplified_domain;
     gfx::Range simplified_domain =
         GetSimplifiedDomainBounds(&ranges_surrounding_simplified_domain);
+    // If the simplified domain overflows the local bounds, then hover
+    // animations are disabled for simplicity.
+    if (TextRangeOverflowsView(this, GetRenderText(), simplified_domain))
+      return;
     hover_elide_or_unelide_animation_->Start(
         simplified_domain, 0 /* delay_ms */,
         ranges_surrounding_simplified_domain, starting_color,
@@ -1319,6 +1362,12 @@ void OmniboxViewViews::OnMouseExited(const ui::MouseEvent& event) {
   } else {
     base::string16 text = GetText();
     url::Component host = GetHostComponentAfterTrivialSubdomain();
+    // If the hostname overflows the local bounds, then hover animations are
+    // disabled for simplicity.
+    if (TextRangeOverflowsView(this, GetRenderText(),
+                               gfx::Range(host.begin, host.end()))) {
+      return;
+    }
     hover_elide_or_unelide_animation_->Start(
         gfx::Range(host.begin, text.size()), 0 /* delay_ms */,
         std::vector<gfx::Range>{gfx::Range(0, host.begin)}, starting_color,
@@ -2406,9 +2455,9 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
   }
 
   // TODO(estark): push this inside ParseForEmphasizeComponents()?
-  std::string simplified_domain =
+  base::string16 simplified_domain = url_formatter::IDNToUnicode(
       net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
 
   if (simplified_domain.empty()) {
     ranges_surrounding_simplified_domain->emplace_back(0, host.begin);
@@ -2416,8 +2465,7 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
     return gfx::Range(host.begin, host.end());
   }
 
-  size_t simplified_domain_pos =
-      text.rfind(base::ASCIIToUTF16(simplified_domain), host.end());
+  size_t simplified_domain_pos = text.rfind(simplified_domain);
   DCHECK_NE(simplified_domain_pos, std::string::npos);
   ranges_surrounding_simplified_domain->emplace_back(0, simplified_domain_pos);
   ranges_surrounding_simplified_domain->emplace_back(host.end(), text.size());
@@ -2543,17 +2591,37 @@ void OmniboxViewViews::ElideURL() {
   gfx::Rect shifted_simplified_domain_rect(
       shifted_simplified_domain_x_pos, old_bounds.y(),
       simplified_domain_rect.width(), old_bounds.height());
-  GetRenderText()->SetDisplayRect(shifted_simplified_domain_rect);
-  // Scroll the text to where the simplified domain begins, relative to the
-  // leftmost (rightmost if UI is RTL) edge of the current display rect.
-  if (base::i18n::IsRTL()) {
-    GetRenderText()->SetDisplayOffset(
-        GetRenderText()->GetUpdatedDisplayOffset().x() + old_bounds.right() -
-        simplified_domain_rect.right());
-  } else {
+
+  // Now apply the display rect and offset so that exactly the simplified domain
+  // is visible.
+
+  // First check if the simplified domain fits in the local bounds. If it
+  // doesn't, then we need to scroll so that the rightmost side is visible (e.g.
+  // "evil.com" instead of "victim.com" if the full hostname
+  // "victim.com.evil.com"). This check is only necessary for LTR mode because
+  // in RTL mode, we scroll to the rightmost side of the domain automatically.
+  if (shifted_simplified_domain_rect.width() > GetLocalBounds().width() &&
+      !base::i18n::IsRTL()) {
+    FitToLocalBounds();
     GetRenderText()->SetDisplayOffset(
         GetRenderText()->GetUpdatedDisplayOffset().x() -
-        (simplified_domain_rect.x() - old_bounds.x()));
+        (simplified_domain_rect.right() -
+         GetRenderText()->display_rect().width()));
+  } else {
+    // The simplified domain fits in the local bounds, so we proceed to set the
+    // display rect and offset to make the simplified domain visible.
+    GetRenderText()->SetDisplayRect(shifted_simplified_domain_rect);
+    // Scroll the text to where the simplified domain begins, relative to the
+    // leftmost (rightmost if UI is RTL) edge of the current display rect.
+    if (base::i18n::IsRTL()) {
+      GetRenderText()->SetDisplayOffset(
+          GetRenderText()->GetUpdatedDisplayOffset().x() + old_bounds.right() -
+          simplified_domain_rect.right());
+    } else {
+      GetRenderText()->SetDisplayOffset(
+          GetRenderText()->GetUpdatedDisplayOffset().x() -
+          (simplified_domain_rect.x() - old_bounds.x()));
+    }
   }
 
   // GetSubstringBounds() rounds outward internally, so there may be small
@@ -2617,13 +2685,30 @@ void OmniboxViewViews::ShowFullURLWithoutSchemeAndTrivialSubdomain() {
   base::string16 text = GetText();
   url::Component host = GetHostComponentAfterTrivialSubdomain();
 
+  // First check if the full hostname can fit in the local bounds. If not, then
+  // show the rightmost portion of the hostname.
   gfx::Rect display_url_bounds;
-  for (const auto& rect : GetRenderText()->GetSubstringBounds(
-           gfx::Range(host.begin, text.size()))) {
-    display_url_bounds.Union(rect);
+  gfx::Range host_range(host.begin, host.end());
+  if (TextRangeOverflowsView(this, GetRenderText(), host_range)) {
+    gfx::Rect host_bounds;
+    for (const auto& rect : GetRenderText()->GetSubstringBounds(host_range))
+      host_bounds.Union(rect);
+    // The full hostname won't fit, so show as much of it as possible starting
+    // from the right side.
+    display_url_bounds.set_x(
+        current_display_rect.x() +
+        (host_bounds.right() - current_display_rect.right()));
+    display_url_bounds.set_y(current_display_rect.y());
+    display_url_bounds.set_width(current_display_rect.width());
+    display_url_bounds.set_height(current_display_rect.height());
+  } else {
+    for (const auto& rect : GetRenderText()->GetSubstringBounds(
+             gfx::Range(host.begin, text.size()))) {
+      display_url_bounds.Union(rect);
+    }
+    display_url_bounds.set_height(current_display_rect.height());
+    display_url_bounds.set_y(current_display_rect.y());
   }
-  display_url_bounds.set_height(current_display_rect.height());
-  display_url_bounds.set_y(current_display_rect.y());
 
   // Set the scheme and trivial subdomain to transparent. This isn't necessary
   // to hide this portion of the text because it will be scrolled out of

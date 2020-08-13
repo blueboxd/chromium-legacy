@@ -160,6 +160,9 @@ namespace media_history {
 const char MediaHistoryStore::kInitResultHistogramName[] =
     "Media.History.Init.Result";
 
+const char MediaHistoryStore::kInitResultAfterDeleteHistogramName[] =
+    "Media.History.Init.ResultAfterDelete";
+
 const char MediaHistoryStore::kPlaybackWriteResultHistogramName[] =
     "Media.History.Playback.WriteResult";
 
@@ -308,6 +311,19 @@ void MediaHistoryStore::Initialize(const bool should_reset) {
 
   base::UmaHistogramEnumeration(MediaHistoryStore::kInitResultHistogramName,
                                 result);
+
+  // In some edge cases the DB might be corrupted and unrecoverable so we should
+  // delete the database and recreate it.
+  if (result != InitResult::kSuccess) {
+    if (db_->is_open())
+      db_->Close();
+
+    sql::Database::Delete(db_path_);
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kInitResultAfterDeleteHistogramName,
+        InitializeInternal());
+  }
 }
 
 MediaHistoryStore::InitResult MediaHistoryStore::InitializeInternal() {

@@ -214,6 +214,10 @@ MEDIA_EXPORT extern const base::Feature kMediaFoundationVideoCapture;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationVP8Decoding;
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MAC)
+MEDIA_EXPORT extern const base::Feature kVideoToolboxVp9Decoding;
+#endif
+
 // Based on a |command_line| and the current platform, returns the effective
 // autoplay policy. In other words, it will take into account the default policy
 // if none is specified via the command line and options passed for testing.

@@ -19,6 +19,10 @@
 class WebAppGlassBrowserFrameViewTest : public InProcessBrowserTest {
  public:
   WebAppGlassBrowserFrameViewTest() = default;
+  WebAppGlassBrowserFrameViewTest(const WebAppGlassBrowserFrameViewTest&) =
+      delete;
+  WebAppGlassBrowserFrameViewTest& operator=(
+      const WebAppGlassBrowserFrameViewTest&) = delete;
   ~WebAppGlassBrowserFrameViewTest() override = default;
 
   GURL GetAppURL() { return GURL("https://test.org"); }
@@ -67,9 +71,6 @@ class WebAppGlassBrowserFrameViewTest : public InProcessBrowserTest {
   BrowserView* browser_view_ = nullptr;
   GlassBrowserFrameView* glass_frame_view_ = nullptr;
   WebAppFrameToolbarView* web_app_frame_toolbar_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebAppGlassBrowserFrameViewTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, ThemeColor) {

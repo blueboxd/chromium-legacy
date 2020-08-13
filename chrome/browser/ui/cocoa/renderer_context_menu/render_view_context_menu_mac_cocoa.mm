@@ -199,6 +199,7 @@ RenderViewContextMenuMacCocoa::~RenderViewContextMenuMacCocoa() {
 
 void RenderViewContextMenuMacCocoa::Show() {
   menu_controller_.reset([[MenuControllerCocoa alloc] initWithModel:&menu_model_
+                                                           delegate:nil
                                              useWithPopUpButtonCell:NO]);
 
   gfx::Point params_position(params_.x, params_.y);

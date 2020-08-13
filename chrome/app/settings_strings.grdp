@@ -953,6 +953,9 @@
   <message name="IDS_SETTINGS_PRINTING_GOOGLE_CLOUD_PRINT_NOT_SUPPORTED_WARNING" desc="Warning shown to the user to inform them that Google Cloud Print will no longer be supported.">
     Google Cloud Print will no longer be supported after December 31
   </message>
+  <message name="IDS_SETTINGS_PRINTING_GOOGLE_CLOUD_PRINT_NOT_SUPPORTED_FULL_WARNING" desc="Warning shown to the user to inform them that Google Cloud Print will no longer be supported. Same as above, with the addition of the learn more link.">
+    Google Cloud Print will no longer be supported after December 31. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+  </message>
   <message name="IDS_SETTINGS_PRINTING_GOOGLE_CLOUD_PRINT_NOT_SUPPORTED_WARNING_ENTERPRISE" desc="Warning shown to users managed by enterprise policy to inform them that Google Cloud Print will no longer be supported.">
     Google Cloud Print will no longer be supported after December 31. Contact your administrator.
   </message>

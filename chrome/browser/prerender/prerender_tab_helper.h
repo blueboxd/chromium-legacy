@@ -5,15 +5,9 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_
 
-#include <memory>
-
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
-#include "components/prerender/common/prerender_origin.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "url/gurl.h"
 
 namespace prerender {
 
@@ -26,34 +20,18 @@ class PrerenderTabHelper
       public content::WebContentsUserData<PrerenderTabHelper> {
  public:
   ~PrerenderTabHelper() override;
+  PrerenderTabHelper(const PrerenderTabHelper&) = delete;
+  PrerenderTabHelper& operator=(const PrerenderTabHelper&) = delete;
 
   // content::WebContentsObserver implementation.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  base::TimeTicks swap_ticks() const { return swap_ticks_; }
-
  private:
   explicit PrerenderTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PrerenderTabHelper>;
 
-  // Retrieves the PrerenderManager, or NULL, if none was found.
-  PrerenderManager* MaybeGetPrerenderManager() const;
-
-  // Returns the current TimeTicks synchronized with PrerenderManager ticks. In
-  // tests the clock can be mocked out in PrerenderManager, but in production
-  // this should be always TimeTicks::Now().
-  base::TimeTicks GetTimeTicksFromPrerenderManager() const;
-
-  // Returns whether the WebContents being observed is currently prerendering.
-  bool IsPrerendering();
-
-  // Record the most recent swap time.
-  base::TimeTicks swap_ticks_;
-
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(PrerenderTabHelper);
 };
 
 }  // namespace prerender

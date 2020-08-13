@@ -1164,22 +1164,6 @@ void ServiceWorkerRegistry::DidStoreRegistration(
     return;
   }
 
-  // Purge the deleted version's resources now if needed. This is subtle. The
-  // version might still be used for a long time even after it's deleted. We can
-  // only purge safely once the version is REDUNDANT, since it will never be
-  // used again.
-  //
-  // If the deleted version's ServiceWorkerVersion doesn't exist, we can assume
-  // it's effectively REDUNDANT so it's safe to purge now. This is because the
-  // caller is assumed to promote the new version to active unless the deleted
-  // version is doing work, and it can't be doing work if it's not live.
-  //
-  // If the ServiceWorkerVersion does exist, it triggers purging once it reaches
-  // REDUNDANT. Otherwise, purging happens on the next browser session (via
-  // DeleteStaleResources).
-  if (!context_->GetLiveVersion(deleted_version_id))
-    storage()->PurgeResources(newly_purgeable_resources);
-
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(stored_registration_id);
   if (registration) {
@@ -1214,9 +1198,6 @@ void ServiceWorkerRegistry::DidDeleteRegistration(
     std::move(callback).Run(status);
     return;
   }
-
-  if (!context_->GetLiveVersion(deleted_version_id))
-    storage()->PurgeResources(newly_purgeable_resources);
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(registration_id);

@@ -29,18 +29,6 @@ DialogModel::Builder& DialogModel::Builder::SetTitle(base::string16 title) {
   return *this;
 }
 
-DialogModel::Builder& DialogModel::Builder::SetAcceptCallback(
-    base::OnceClosure callback) {
-  model_->accept_callback_ = std::move(callback);
-  return *this;
-}
-
-DialogModel::Builder& DialogModel::Builder::SetCancelCallback(
-    base::OnceClosure callback) {
-  model_->cancel_callback_ = std::move(callback);
-  return *this;
-}
-
 DialogModel::Builder& DialogModel::Builder::SetCloseCallback(
     base::OnceClosure callback) {
   model_->close_callback_ = std::move(callback);
@@ -53,11 +41,25 @@ DialogModel::Builder& DialogModel::Builder::SetWindowClosingCallback(
   return *this;
 }
 
-DialogModel::Builder& DialogModel::Builder::AddDialogButton(
-    DialogButton button,
+DialogModel::Builder& DialogModel::Builder::AddOkButton(
+    base::OnceClosure callback,
     base::string16 label,
     const DialogModelButton::Params& params) {
-  model_->AddDialogButton(button, std::move(label), params);
+  DCHECK(!params.has_callback()) << "Use |callback| only.";
+  DCHECK(!model_->accept_callback_);
+  model_->accept_callback_ = std::move(callback);
+  model_->AddDialogButton(ui::DIALOG_BUTTON_OK, std::move(label), params);
+  return *this;
+}
+
+DialogModel::Builder& DialogModel::Builder::AddCancelButton(
+    base::OnceClosure callback,
+    base::string16 label,
+    const DialogModelButton::Params& params) {
+  DCHECK(!params.has_callback()) << "Use |callback| only.";
+  DCHECK(!model_->cancel_callback_);
+  model_->cancel_callback_ = std::move(callback);
+  model_->AddDialogButton(ui::DIALOG_BUTTON_CANCEL, std::move(label), params);
   return *this;
 }
 

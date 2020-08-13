@@ -112,6 +112,7 @@ struct TestCase {
     return *this;
   }
 
+  // TODO(crbug.com/912236) Remove once transition to new ZIP system is done.
   TestCase& ZipNoNaCl() {
     options.zip_no_nacl = true;
     return *this;

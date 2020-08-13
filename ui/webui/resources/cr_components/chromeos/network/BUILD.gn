@@ -252,7 +252,7 @@ js_type_check("closure_compile_module") {
     #  ":network_apnlist.m",
     #  ":network_choose_mobile.m",
     #  ":network_config.m",
-    #  ":network_config_element_behavior.m",
+    ":network_config_element_behavior.m",
     #  ":network_config_input.m",
     #  ":network_config_select.m",
     #  ":network_config_toggle.m",
@@ -333,9 +333,6 @@ js_library("network_config.m") {
 
 js_library("network_config_element_behavior.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/network_config_element_behavior.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
   extra_deps = [ ":modulize" ]
 }
 

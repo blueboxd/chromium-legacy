@@ -1013,6 +1013,8 @@ component("net") {
       "socket/udp_server_socket.cc",
       "socket/udp_server_socket.h",
       "socket/udp_socket.h",
+      "socket/udp_socket_global_limits.cc",
+      "socket/udp_socket_global_limits.h",
       "socket/websocket_endpoint_lock_manager.cc",
       "socket/websocket_endpoint_lock_manager.h",
       "socket/websocket_transport_client_socket_pool.cc",

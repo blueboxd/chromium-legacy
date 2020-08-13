@@ -3075,20 +3075,6 @@ TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
 }
 
 #if defined(OS_CHROMEOS)
-TEST_F(TextfieldTest, SetAutocorrectRangeTextWithNoInitalText) {
-  InitTextfield();
-  ui::TextInputClient* client = textfield_;
-  client->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
-                              gfx::Range(0, 0));
-
-  gfx::Range autocorrect_range = client->GetAutocorrectRange();
-  EXPECT_EQ(autocorrect_range, gfx::Range(0, 16));
-
-  base::string16 text;
-  client->GetTextFromRange(gfx::Range(0, 16), &text);
-  EXPECT_EQ(text, UTF8ToUTF16("text replacement"));
-}
-
 TEST_F(TextfieldTest, SetAutocorrectRangeText) {
   InitTextfield();
   ui::TextInputClient* client = textfield_;
@@ -3120,6 +3106,62 @@ TEST_F(TextfieldTest, SetAutocorrectRangeExplicitlySet) {
   base::string16 text;
   client->GetTextFromRange(gfx::Range(0, 24), &text);
   EXPECT_EQ(text, UTF8ToUTF16("Initial text replacement"));
+}
+
+TEST_F(TextfieldTest, DoesNotSetAutocorrectRangeWhenRangeGivenIsInvalid) {
+  InitTextfield();
+  ui::TextInputClient* client = textfield_;
+
+  ui::CompositionText composition;
+  composition.text = UTF8ToUTF16("Initial");
+  client->SetCompositionText(composition);
+
+  EXPECT_FALSE(client->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
+                                           gfx::Range(8, 11)));
+  EXPECT_EQ(gfx::Range(0, 0), client->GetAutocorrectRange());
+  gfx::Range range;
+  client->GetTextRange(&range);
+  base::string16 text;
+  client->GetTextFromRange(range, &text);
+  EXPECT_EQ(composition.text, text);
+}
+
+TEST_F(TextfieldTest,
+       ClearsAutocorrectRangeWhenSetAutocorrectRangeWithEmptyText) {
+  InitTextfield();
+  ui::TextInputClient* client = textfield_;
+
+  ui::CompositionText composition;
+  composition.text = UTF8ToUTF16("Initial");
+  client->SetCompositionText(composition);
+
+  EXPECT_TRUE(
+      client->SetAutocorrectRange(base::EmptyString16(), gfx::Range(0, 2)));
+  EXPECT_EQ(gfx::Range(0, 0), client->GetAutocorrectRange());
+  gfx::Range range;
+  client->GetTextRange(&range);
+  base::string16 text;
+  client->GetTextFromRange(range, &text);
+  EXPECT_EQ(composition.text, text);
+}
+
+TEST_F(TextfieldTest,
+       ClearsAutocorrectRangeWhenSetAutocorrectRangeWithEmptyRange) {
+  InitTextfield();
+  ui::TextInputClient* client = textfield_;
+
+  ui::CompositionText composition;
+  composition.text = UTF8ToUTF16("Initial");
+  client->SetCompositionText(composition);
+
+  EXPECT_TRUE(
+      client->SetAutocorrectRange(UTF8ToUTF16("Test"), gfx::Range(0, 0)));
+  EXPECT_EQ(gfx::Range(0, 0), client->GetAutocorrectRange());
+  gfx::Range range;
+  client->GetTextRange(&range);
+  base::string16 text;
+  client->GetTextFromRange(range, &text);
+  EXPECT_EQ(composition.text, text);
 }
 
 TEST_F(TextfieldTest, GetAutocorrectCharacterBoundsTest) {

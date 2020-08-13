@@ -26,6 +26,18 @@
       light: "$google_grey_700",
       dark: "$google_grey_500",
     },
+    text_color_alert: {
+      light: "$google_red_600",
+      dark: "$google_red_300",
+    },
+    text_color_warning: {
+      light: "$google_yellow_600",
+      dark: "$google_yellow_300",
+    },
+    text_color_positive: {
+      light: "$google_green_600",
+      dark: "$google_green_300",
+    },
 
     bg_color: {
       light: "#ffffff",
@@ -36,7 +48,18 @@
       light: "$google_grey_700",
       dark: "$google_grey_200",
     },
-
+    icon_color_alert: {
+      light: "$google_red_600",
+      dark: "$google_red_300",
+    },
+    icon_color_warning: {
+      light: "$google_yellow_600",
+      dark: "$google_yellow_300",
+    },
+    icon_color_positive: {
+      light: "$google_green_600",
+      dark: "$google_green_300",
+    },
     icon_color_prominent: {
       light: "$google_blue_600",
       dark: "$google_blue_300",
@@ -73,8 +96,7 @@
     link_color: "$google_blue_700",
 
     /* button-primary */
-    button_background_color_primary:
-        "$icon_color_prominent",
+    button_background_color_primary: "$icon_color_prominent",
     button_label_color_primary: {
       light: "$google_grey_200",
       dark: "$google_grey_900",
@@ -97,8 +119,7 @@
     },
 
     /* button-secondary */
-    button_label_color_secondary:
-        "$icon_color_prominent",
+    button_label_color_secondary: "$icon_color_prominent",
     button_stroke_color_secondary: {
       light: "$google_grey_300",
       dark: "$google_grey_700",

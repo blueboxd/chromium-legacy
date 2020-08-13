@@ -447,8 +447,8 @@ CARendererLayerTree::ContentLayer::ContentLayer(
         if (has_hdr_color_space)
           type = CALayerType::kHDRCopier;
         break;
-      // TODO(crbug.com/1103432): We'll likely need YpCbCr10 here for HDR.
       case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
+      case kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange:
         // Only allow 4:2:0 frames which fill the layer's contents to be
         // promoted to AV layers.
         if (tree->allow_av_sample_buffer_display_layer_ &&

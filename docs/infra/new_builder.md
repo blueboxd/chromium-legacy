@@ -218,7 +218,8 @@ Milo is responsible for displaying builders and build histories on a
 set of consoles. Its configuration includes the definitions of those
 consoles.
 
-Chromium's milo Starlark configuration is [here][25].
+Chromium's milo Starlark configuration is intermixed with the
+[builder definitions][23].
 Chromium's generated milo configuration is [here][10].
 Milo's configuration schema is [here][9].
 
@@ -374,6 +375,5 @@ reach out to infra-dev@chromium.org or [file a bug][19]!
 [20]: https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/proto/bots.proto
 [21]: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/chromium_tests/trybots.py
 [22]: /infra/config/main.star
-[23]: /infra/config/buckets
+[23]: /infra/config/subprojects/chromium
 [24]: /infra/config/lib/builders.star
-[25]: /infra/config/consoles

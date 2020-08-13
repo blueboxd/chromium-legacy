@@ -1,18 +1,26 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="languages_metrics_proxy.html">
+<link rel="import" href="../../controls/settings_toggle_button.html">
+<link rel="import" href="../../prefs/prefs_behavior.html">
+<link rel="import" href="../../settings_shared_css.html">
+
 <dom-module id="os-settings-input-page">
   <template>
-    <style include="settings-shared action-link">
+    <style include="settings-shared">
       h2 {
         padding-inline-start: var(--cr-section-padding);
       }
     </style>
 
     <div route-path="default">
-
-      <h2>$i18n{inputPageTitle}</h2>
-
+      <settings-toggle-button
+          class="first" id="showImeMenu"
+          pref="{{prefs.settings.language.ime_menu_activated}}"
+          label="$i18n{showImeMenu}"
+          on-settings-boolean-control-change="onShowImeMenuChange_">
+      </settings-toggle-button>
     </div>
-
   </template>
+  <script src="input_page.js"></script>
 </dom-module>

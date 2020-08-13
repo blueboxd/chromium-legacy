@@ -13,6 +13,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -55,7 +56,10 @@ class WebBundleSubresourceLoaderFactoryTest : public ::testing::Test {
     ASSERT_EQ(CreateDataPipe(nullptr, &bundle_data_destination_, &consumer),
               MOJO_RESULT_OK);
     CreateWebBundleSubresourceLoaderFactory(
-        loader_factory_.BindNewPipeAndPassReceiver(), std::move(consumer));
+        loader_factory_.BindNewPipeAndPassReceiver(), std::move(consumer),
+        base::BindRepeating(
+            &WebBundleSubresourceLoaderFactoryTest::OnWebBundleError,
+            base::Unretained(this)));
   }
 
   void WriteBundle(base::span<const uint8_t> data) {
@@ -73,6 +77,19 @@ class WebBundleSubresourceLoaderFactoryTest : public ::testing::Test {
 
   StartRequestResult StartRequest(const GURL& url) {
     return StartRequestWithLoaderFactory(loader_factory_, url);
+  }
+
+  void RunUntilBundleError() {
+    if (last_bundle_error_.has_value())
+      return;
+    base::RunLoop run_loop;
+    quit_closure_for_bundle_error_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  const base::Optional<std::pair<WebBundleErrorType, WTF::String>>&
+  last_bundle_error() const {
+    return last_bundle_error_;
   }
 
  protected:
@@ -95,8 +112,16 @@ class WebBundleSubresourceLoaderFactoryTest : public ::testing::Test {
   mojo::Remote<network::mojom::URLLoaderFactory> loader_factory_;
 
  private:
+  void OnWebBundleError(WebBundleErrorType type, const WTF::String& message) {
+    last_bundle_error_ = std::make_pair(type, message);
+    if (quit_closure_for_bundle_error_)
+      std::move(quit_closure_for_bundle_error_).Run();
+  }
+
   mojo::ScopedDataPipeProducerHandle bundle_data_destination_;
   base::test::TaskEnvironment task_environment;
+  base::Optional<std::pair<WebBundleErrorType, WTF::String>> last_bundle_error_;
+  base::OnceClosure quit_closure_for_bundle_error_;
 };
 
 TEST_F(WebBundleSubresourceLoaderFactoryTest, Basic) {
@@ -107,6 +132,7 @@ TEST_F(WebBundleSubresourceLoaderFactoryTest, Basic) {
   request.client->RunUntilComplete();
 
   EXPECT_EQ(net::OK, request.client->completion_status().error_code);
+  EXPECT_FALSE(last_bundle_error().has_value());
   std::string body;
   EXPECT_TRUE(mojo::BlockingCopyToString(
       request.client->response_body_release(), &body));
@@ -125,6 +151,7 @@ TEST_F(WebBundleSubresourceLoaderFactoryTest, Clone) {
   request.client->RunUntilComplete();
 
   EXPECT_EQ(net::OK, request.client->completion_status().error_code);
+  EXPECT_FALSE(last_bundle_error().has_value());
 }
 
 TEST_F(WebBundleSubresourceLoaderFactoryTest, MetadataParseError) {
@@ -136,9 +163,13 @@ TEST_F(WebBundleSubresourceLoaderFactoryTest, MetadataParseError) {
   FinishWritingBundle();
 
   request.client->RunUntilComplete();
+  RunUntilBundleError();
 
   EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
             request.client->completion_status().error_code);
+  EXPECT_EQ(last_bundle_error()->first,
+            WebBundleErrorType::kMetadataParseError);
+  EXPECT_EQ(last_bundle_error()->second, "Wrong magic bytes.");
 
   // Requests made after metadata parse error should also fail.
   auto request2 = StartRequest(GURL(kResourceUrl));
@@ -158,9 +189,14 @@ TEST_F(WebBundleSubresourceLoaderFactoryTest, ResponseParseError) {
 
   auto request = StartRequest(GURL(kResourceUrl));
   request.client->RunUntilComplete();
+  RunUntilBundleError();
 
   EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
             request.client->completion_status().error_code);
+  EXPECT_EQ(last_bundle_error()->first,
+            WebBundleErrorType::kResponseParseError);
+  EXPECT_EQ(last_bundle_error()->second,
+            ":status must be 3 ASCII decimal digits.");
 }
 
 TEST_F(WebBundleSubresourceLoaderFactoryTest, ResourceNotFoundInBundle) {
@@ -169,9 +205,14 @@ TEST_F(WebBundleSubresourceLoaderFactoryTest, ResourceNotFoundInBundle) {
 
   auto request = StartRequest(GURL("https://example.com/no-such-resource"));
   request.client->RunUntilComplete();
+  RunUntilBundleError();
 
   EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
             request.client->completion_status().error_code);
+  EXPECT_EQ(last_bundle_error()->first, WebBundleErrorType::kResourceNotFound);
+  EXPECT_EQ(
+      last_bundle_error()->second,
+      "https://example.com/no-such-resource is not found in the WebBundle.");
 }
 
 TEST_F(WebBundleSubresourceLoaderFactoryTest, StartRequestBeforeReadingBundle) {
@@ -261,9 +302,13 @@ TEST_F(WebBundleSubresourceLoaderFactoryTest, TruncatedBundle) {
 
   auto request = StartRequest(GURL(kResourceUrl));
   request.client->RunUntilComplete();
+  RunUntilBundleError();
 
   EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
             request.client->completion_status().error_code);
+  EXPECT_EQ(last_bundle_error()->first,
+            WebBundleErrorType::kResponseParseError);
+  EXPECT_EQ(last_bundle_error()->second, "Error reading response header.");
 }
 
 }  // namespace blink

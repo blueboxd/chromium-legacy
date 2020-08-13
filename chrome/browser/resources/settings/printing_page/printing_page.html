@@ -7,7 +7,9 @@
             on-click="onTapLocalPrinters_" external></cr-link-row>
 </if>
         <cr-link-row class="hr" id="cloudPrinters"
-            label="$i18n{cloudPrintersTitle}" on-click="onTapCloudPrinters_"
+            label="$i18n{cloudPrintersTitle}"
+            sub-label="$i18n{cloudPrintWarning}"
+            on-click="onTapCloudPrinters_"
             role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
       </div>

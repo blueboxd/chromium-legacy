@@ -62,6 +62,7 @@
 #include "weblayer/browser/infobar_service.h"
 #include "weblayer/browser/js_communication/web_message_host_factory_wrapper.h"
 #include "weblayer/browser/navigation_controller_impl.h"
+#include "weblayer/browser/no_state_prefetch/prerender_tab_helper.h"
 #include "weblayer/browser/page_load_metrics_initialize.h"
 #include "weblayer/browser/page_specific_content_settings_delegate.h"
 #include "weblayer/browser/password_manager_driver_factory.h"
@@ -340,6 +341,9 @@ TabImpl::TabImpl(ProfileImpl* profile,
       base::BindRepeating(&OpenCaptivePortalLoginTabInWebContents,
                           web_contents_.get()));
 #endif
+
+  // PrerenderTabHelper adds a WebContentsObserver.
+  PrerenderTabHelper::CreateForWebContents(web_contents_.get());
 }
 
 TabImpl::~TabImpl() {

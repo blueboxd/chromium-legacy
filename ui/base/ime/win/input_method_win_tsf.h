@@ -41,11 +41,11 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinTSF
                                  TextInputClient* focused) override;
   void OnDidChangeFocusedClient(TextInputClient* focused_before,
                                 TextInputClient* focused) override;
-  void ConfirmCompositionText(bool reset_engine, bool keep_selection) override;
-
   void ShowVirtualKeyboardIfEnabled() override;
 
  private:
+  void ConfirmCompositionText();
+
   class TSFEventObserver;
 
   // TSF event router and observer.

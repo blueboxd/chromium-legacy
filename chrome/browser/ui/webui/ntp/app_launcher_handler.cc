@@ -222,15 +222,17 @@ void AppLauncherHandler::CreateWebAppInfo(const web_app::AppId& app_id,
   base::Optional<std::string> icon_big;
   base::Optional<std::string> icon_small;
 
-  if (HasMatchingOrGreaterThanIcon(registrar.GetAppDownloadedIconSizes(app_id),
-                                   kWebAppIconLargeNonDefault)) {
+  if (HasMatchingOrGreaterThanIcon(
+          registrar.GetAppDownloadedIconSizesAny(app_id),
+          kWebAppIconLargeNonDefault)) {
     icon_big =
         apps::AppIconSource::GetIconURL(app_id, kWebAppIconLargeNonDefault)
             .spec();
   }
 
-  if (HasMatchingOrGreaterThanIcon(registrar.GetAppDownloadedIconSizes(app_id),
-                                   kWebAppIconSmallNonDefault)) {
+  if (HasMatchingOrGreaterThanIcon(
+          registrar.GetAppDownloadedIconSizesAny(app_id),
+          kWebAppIconSmallNonDefault)) {
     icon_small =
         apps::AppIconSource::GetIconURL(app_id, kWebAppIconSmallNonDefault)
             .spec();

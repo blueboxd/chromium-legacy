@@ -18,9 +18,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.base.annotations.DisabledCalledByNativeJavaTest;
-import org.chromium.chrome.browser.UnitTestUtils;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
 import org.chromium.url.GURL;
@@ -372,7 +372,7 @@ public class InstalledAppProviderTest {
                         called.set(true);
                     }
                 });
-        UnitTestUtils.pollUiThread(() -> called.get());
+        CriteriaHelper.pollUiThreadNested(() -> called.get());
     }
 
     @CalledByNative

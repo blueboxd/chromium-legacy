@@ -319,7 +319,8 @@ TEST_P(PaintLayerScrollableAreaTest,
             GetBackgroundPaintLocation("scroller15"));
 
   // css-clip doesn't affect background paint location.
-  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+  // TODO(crbug.com/1113269): Temporary.
+  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
             GetBackgroundPaintLocation("css-clip"));
 
   // #scroller17 can only be painted once as it is translucent, and it must

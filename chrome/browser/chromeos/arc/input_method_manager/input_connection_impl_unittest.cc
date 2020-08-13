@@ -10,9 +10,9 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 #include "ui/base/ime/chromeos/mock_input_method_manager.h"
 #include "ui/base/ime/dummy_text_input_client.h"
-#include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/events/keycodes/dom/dom_codes.h"
 

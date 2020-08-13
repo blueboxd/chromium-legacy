@@ -97,7 +97,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFilesNG;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFilesSWA;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kFilesTransferDetails;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFilesZipNoNaCl;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFilesZipMount;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFilesZipPack;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFilesZipUnpack;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMojoDBusRelay;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kClipboardHistory;

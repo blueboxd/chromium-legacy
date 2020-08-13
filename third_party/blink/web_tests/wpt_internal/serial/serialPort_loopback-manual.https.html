@@ -15,9 +15,9 @@
     </p>
     <script>
       manual_loopback_serial_test(async (t, port) => {
-        await port.open({baudrate: 115200, buffersize: 1024});
+        await port.open({baudRate: 115200, bufferSize: 1024});
 
-        // Create something much smaller than buffersize above.
+        // Create something much smaller than bufferSize above.
         const data = new Uint8Array(64);
         for (let i = 0; i < data.byteLength; ++i)
           data[i] = i & 0xff;
@@ -40,9 +40,9 @@
       }, 'Can perform a series of small writes.');
 
       manual_loopback_serial_test(async (t, port) => {
-        await port.open({baudrate: 115200, buffersize: 1024});
+        await port.open({baudRate: 115200, bufferSize: 1024});
 
-        // Create something much larger than buffersize above.
+        // Create something much larger than bufferSize above.
         const data = new Uint8Array(10 * 1024);
         for (let i = 0; i < data.byteLength; ++i)
           data[i] = (i / 1024) & 0xff;
@@ -65,7 +65,7 @@
       }, 'Can perform a series of large writes.');
 
       manual_loopback_serial_test(async (t, port) => {
-        await port.open({baudrate: 115200, buffersize: 64});
+        await port.open({baudRate: 115200, bufferSize: 64});
 
         const writer = port.writable.getWriter();
         // |data| is small enough to be completely transmitted.
@@ -94,9 +94,9 @@
       }, 'Canceling the reader discards buffered data.');
 
       manual_loopback_serial_test(async (t, port) => {
-        await port.open({baudrate: 115200, buffersize: 1024});
+        await port.open({baudRate: 115200, bufferSize: 1024});
 
-        // Create something much larger than buffersize above.
+        // Create something much larger than bufferSize above.
         const data = new Uint8Array(16 * 1024);
         for (let i = 0; i < data.byteLength; ++i)
           data[i] = (i / 1024) & 0xff;
@@ -141,7 +141,7 @@
       }, 'Overflowing the receive buffer triggers an error.');
 
       manual_loopback_serial_test(async (t, port) => {
-        await port.open({baudrate: 115200, buffersize: 1024});
+        await port.open({baudRate: 115200, bufferSize: 1024});
 
         let reader = port.readable.getReader();
         let readPromise = (async () => {

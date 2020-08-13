@@ -43,6 +43,20 @@ WebApp::WebApp(const WebApp& web_app) = default;
 
 WebApp& WebApp::operator=(WebApp&& web_app) = default;
 
+const std::vector<SquareSizePx>& WebApp::downloaded_icon_sizes(
+    IconPurpose purpose) const {
+  switch (purpose) {
+    case IconPurpose::ANY:
+      return downloaded_icon_sizes_any_;
+    case IconPurpose::MONOCHROME:
+      // TODO (crbug.com/1114638): Download monochrome icons.
+      NOTREACHED();
+      return downloaded_icon_sizes_monochrome_;
+    case IconPurpose::MASKABLE:
+      return downloaded_icon_sizes_maskable_;
+  }
+}
+
 void WebApp::AddSource(Source::Type source) {
   sources_[source] = true;
 }
@@ -186,9 +200,21 @@ void WebApp::SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos) {
   icon_infos_ = std::move(icon_infos);
 }
 
-void WebApp::SetDownloadedIconSizes(std::vector<SquareSizePx> sizes) {
+void WebApp::SetDownloadedIconSizes(IconPurpose purpose,
+                                    std::vector<SquareSizePx> sizes) {
   std::sort(sizes.begin(), sizes.end());
-  downloaded_icon_sizes_ = std::move(sizes);
+  switch (purpose) {
+    case IconPurpose::ANY:
+      downloaded_icon_sizes_any_ = std::move(sizes);
+      break;
+    case IconPurpose::MONOCHROME:
+      // TODO (crbug.com/1114638): Add monochrome icons support.
+      NOTREACHED();
+      break;
+    case IconPurpose::MASKABLE:
+      downloaded_icon_sizes_maskable_ = std::move(sizes);
+      break;
+  }
 }
 
 void WebApp::SetIsGeneratedIcon(bool is_generated_icon) {
@@ -284,8 +310,10 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       << "  is_generated_icon: " << app.is_generated_icon_ << std::endl;
   for (const WebApplicationIconInfo& icon : app.icon_infos_)
     out << "  icon_info: " << icon << std::endl;
-  for (SquareSizePx size : app.downloaded_icon_sizes_)
-    out << "  icon_size_on_disk: " << size << std::endl;
+  for (SquareSizePx size : app.downloaded_icon_sizes_any_)
+    out << "  downloaded_icon_sizes_any_: " << size << std::endl;
+  for (SquareSizePx size : app.downloaded_icon_sizes_maskable_)
+    out << "  downloaded_icon_sizes_maskable_: " << size << std::endl;
   for (const apps::FileHandler& file_handler : app.file_handlers_)
     out << "  file_handler: " << file_handler << std::endl;
   for (const std::string& additional_search_term : app.additional_search_terms_)
@@ -319,7 +347,8 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
   return std::tie(app1.app_id_, app1.sources_, app1.name_, app1.launch_url_,
                   app1.description_, app1.scope_, app1.theme_color_,
                   app1.background_color_, app1.icon_infos_,
-                  app1.downloaded_icon_sizes_, app1.is_generated_icon_,
+                  app1.downloaded_icon_sizes_any_,
+                  app1.downloaded_icon_sizes_maskable_, app1.is_generated_icon_,
                   app1.display_mode_, app1.display_mode_override_,
                   app1.user_display_mode_, app1.user_page_ordinal_,
                   app1.user_launch_ordinal_, app1.chromeos_data_,
@@ -330,7 +359,8 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
          std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
                   app2.description_, app2.scope_, app2.theme_color_,
                   app2.background_color_, app2.icon_infos_,
-                  app2.downloaded_icon_sizes_, app2.is_generated_icon_,
+                  app2.downloaded_icon_sizes_any_,
+                  app2.downloaded_icon_sizes_maskable_, app2.is_generated_icon_,
                   app2.display_mode_, app2.display_mode_override_,
                   app2.user_display_mode_, app2.user_page_ordinal_,
                   app2.user_launch_ordinal_, app2.chromeos_data_,

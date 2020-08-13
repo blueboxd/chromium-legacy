@@ -15,6 +15,7 @@ module promo_browser_command.mojom;
 // Please update enums.xml upon addition of new commands.
 enum Command {
   kUnknownCommand = 0,
+  kOpenSafetyCheck = 1,
 };
 
 // Click information needed to determine user's desired window disposition using

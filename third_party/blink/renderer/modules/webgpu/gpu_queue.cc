@@ -161,11 +161,13 @@ void GPUQueue::signal(GPUFence* fence, uint64_t signal_value) {
 GPUFence* GPUQueue::createFence(const GPUFenceDescriptor* descriptor) {
   DCHECK(descriptor);
 
+  std::string label;
   WGPUFenceDescriptor desc = {};
   desc.nextInChain = nullptr;
   desc.initialValue = descriptor->initialValue();
   if (descriptor->hasLabel()) {
-    desc.label = descriptor->label().Utf8().data();
+    label = descriptor->label().Utf8();
+    desc.label = label.c_str();
   }
 
   return MakeGarbageCollected<GPUFence>(

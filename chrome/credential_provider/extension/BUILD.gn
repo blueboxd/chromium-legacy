@@ -43,10 +43,24 @@ source_set("common") {
   configs += [ "//build/config/win:windowed" ]
 }
 
+source_set("extension_lib") {
+  sources = [
+    "service.cc",
+    "service.h",
+  ]
+  deps = [
+    ":common",
+    "../gaiacp:common",
+    "//base:base",
+  ]
+  configs += [ "//build/config/win:windowed" ]
+}
+
 executable("gcpw_extension") {
   sources = [ "extension_main.cc" ]
   deps = [
     ":common",
+    ":extension_lib",
     ":extension_resources",
     ":version",
     "../eventlog:gcp_eventlog_messages",

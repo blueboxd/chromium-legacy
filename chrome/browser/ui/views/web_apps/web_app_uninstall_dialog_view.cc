@@ -234,9 +234,11 @@ void WebAppUninstallDialogViews::ConfirmUninstall(
 
   registrar_observer_.Add(&provider->registrar());
 
-  provider->icon_manager().ReadAllIcons(
-      app_id, base::BindOnce(&WebAppUninstallDialogViews::OnAllIconsRead,
-                             weak_ptr_factory_.GetWeakPtr()));
+  provider->icon_manager().ReadIcons(
+      app_id, IconPurpose::ANY,
+      provider->registrar().GetAppDownloadedIconSizesAny(app_id),
+      base::BindOnce(&WebAppUninstallDialogViews::OnIconsRead,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppUninstallDialogViews::SetDialogShownCallbackForTesting(
@@ -244,7 +246,7 @@ void WebAppUninstallDialogViews::SetDialogShownCallbackForTesting(
   dialog_shown_callback_for_testing_ = std::move(callback);
 }
 
-void WebAppUninstallDialogViews::OnAllIconsRead(
+void WebAppUninstallDialogViews::OnIconsRead(
     std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 

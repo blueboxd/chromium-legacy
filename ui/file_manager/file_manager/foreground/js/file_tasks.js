@@ -128,9 +128,9 @@ class FileTasks {
             task.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID);
 
     // The Files App and the Zip Archiver are two extensions that can handle ZIP
-    // files. Depending on the state of the ZipNoNaCl flag, we want to filter
-    // out one of these extensions.
-    const toExclude = util.isZipNoNacl() ?
+    // files. Depending on the state of the FilesZipMount feature, we want to
+    // filter out one of these extensions.
+    const toExclude = util.isZipMountEnabled() ?
         FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID :
         FileTasks.FILES_OPEN_ZIP_TASK_ID;
     tasks = tasks.filter(task => task.taskId !== toExclude);

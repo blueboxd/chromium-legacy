@@ -410,11 +410,18 @@ bool VADisplayState::InitializeOnce() {
       break;
     case gl::kGLImplementationDesktopGL:
 #if defined(USE_X11)
-      if (!features::IsUsingOzonePlatform())
+      if (!features::IsUsingOzonePlatform()) {
         va_display_ = vaGetDisplay(gfx::GetXDisplay());
-#else
-      LOG(WARNING) << "VAAPI video acceleration not available without "
-                      "DesktopGL (GLX).";
+        if (!vaDisplayIsValid(va_display_))
+          va_display_ = vaGetDisplayDRM(drm_fd_.get());
+      }
+#endif  // USE_X11
+      break;
+    case gl::kGLImplementationEGLANGLE:
+#if defined(USE_X11)
+      va_display_ = vaGetDisplay(gfx::GetXDisplay());
+      if (vaDisplayIsValid(va_display_))
+        break;
 #endif  // USE_X11
       break;
     // Cannot infer platform from GL, try all available displays

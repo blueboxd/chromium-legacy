@@ -895,6 +895,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   const PaintLayer* MaskAncestor() const {
     return GetAncestorDependentCompositingInputs().mask_ancestor;
   }
+  // TODO(crbug.com/1113269): Temporary.
+  bool HasDescendantWithClipPath() const {
+    DCHECK(!needs_descendant_dependent_flags_update_);
+    return has_descendant_with_clip_path_;
+  }
   bool HasFixedPositionDescendant() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
     return has_fixed_position_descendant_;
@@ -1347,6 +1352,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   unsigned needs_paint_phase_descendant_outlines_ : 1;
   unsigned needs_paint_phase_float_ : 1;
+
+  // TODO(crbug.com/1113269): Temporary.
+  unsigned has_descendant_with_clip_path_ : 1;
 
   // These bitfields are part of ancestor/descendant dependent compositing
   // inputs.

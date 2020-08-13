@@ -34,7 +34,6 @@ CONTENT_EXPORT extern const char kDisable2dCanvasImageChromium[];
 CONTENT_EXPORT extern const char kDisable3DAPIs[];
 CONTENT_EXPORT extern const char kDisableAccelerated2dCanvas[];
 CONTENT_EXPORT extern const char kDisableYUVImageDecoding[];
-CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoEncode[];
 extern const char kDisableBackingStoreLimit[];
 CONTENT_EXPORT extern const char
@@ -254,6 +253,11 @@ CONTENT_EXPORT extern const char kWebXrRuntimeOculus[];
 CONTENT_EXPORT extern const char kWebXrRuntimeOpenVr[];
 CONTENT_EXPORT extern const char kWebXrRuntimeOpenXr[];
 CONTENT_EXPORT extern const char kWebXrRuntimeWMR[];
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+CONTENT_EXPORT extern const char kEnableAcceleratedVideoDecode[];
+#endif
+CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kDisableMediaSessionAPI[];

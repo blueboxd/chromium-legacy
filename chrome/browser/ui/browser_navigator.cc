@@ -529,7 +529,8 @@ void Navigate(NavigateParams* params) {
 #if defined(OS_CHROMEOS)
   if (source_browser) {
     // Open OS settings in PWA, even when user types in URL bar.
-    if (params->url.host() == chrome::kChromeUIOSSettingsHost &&
+    if (params->url.GetOrigin() ==
+            GURL(chrome::kChromeUIOSSettingsURL).GetOrigin() &&
         !allow_os_settings_in_tab) {
       chrome::SettingsWindowManager* settings_window_manager =
           chrome::SettingsWindowManager::GetInstance();

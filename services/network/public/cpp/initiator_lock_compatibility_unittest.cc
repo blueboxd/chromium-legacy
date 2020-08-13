@@ -66,24 +66,19 @@ TEST(InitiatorLockCompatibilityTest, VerifyRequestInitiatorSiteLock) {
   EXPECT_EQ(InitiatorLockCompatibility::kIncorrectLock,
             VerifyRequestInitiatorLock(foo_example_com, bar_example_com));
 
-  // Site-URL-based comparisons.
-  //
-  // TODO(lukasza): These should result in kIncorrectLock eventually (once
-  // request_initiator_site_lock becomes request_initiator_origin_lock - see
-  // https://crbug.com/1098938.
-  EXPECT_EQ(InitiatorLockCompatibility::kCompatibleLock,
+  // Site != origin.
+  EXPECT_EQ(InitiatorLockCompatibility::kIncorrectLock,
             VerifyRequestInitiatorLock(example_com, bar_foo_example_com));
-  EXPECT_EQ(InitiatorLockCompatibility::kCompatibleLock,
+  EXPECT_EQ(InitiatorLockCompatibility::kIncorrectLock,
             VerifyRequestInitiatorLock(foo_example_com, bar_foo_example_com));
   EXPECT_EQ(
-      InitiatorLockCompatibility::kCompatibleLock,
+      InitiatorLockCompatibility::kIncorrectLock,
       VerifyRequestInitiatorLock(ip_origin1, ip_origin1_with_different_port));
 
-  // The trailing dot is not important (at least for site-URL-based
-  // comparisons).
-  EXPECT_EQ(InitiatorLockCompatibility::kCompatibleLock,
+  // The trailing dot.
+  EXPECT_EQ(InitiatorLockCompatibility::kIncorrectLock,
             VerifyRequestInitiatorLock(foo_example_com_dot, foo_example_com));
-  EXPECT_EQ(InitiatorLockCompatibility::kCompatibleLock,
+  EXPECT_EQ(InitiatorLockCompatibility::kIncorrectLock,
             VerifyRequestInitiatorLock(foo_example_com, foo_example_com_dot));
 }
 

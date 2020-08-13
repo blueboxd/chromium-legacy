@@ -712,6 +712,11 @@ need to be translated for each locale.-->
           Win
         </message>
       </if>
+      <if expr="chromeos">
+        <message name="IDS_APP_FULLSCREEN_KEY" desc="This refers to the 'Fullscreen' media key on certain keyboards.">
+          Fullscreen
+        </message>
+      </if>
 
       <!-- Accelerator format -->
       <message name="IDS_APP_ACCELERATOR_WITH_MODIFIER" desc="Accelerator with a modifier key">

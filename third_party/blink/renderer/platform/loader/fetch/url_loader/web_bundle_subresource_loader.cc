@@ -14,6 +14,8 @@
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
@@ -251,7 +253,11 @@ class WebBundleSubresourceLoaderFactory
  public:
   WebBundleSubresourceLoaderFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      mojo::ScopedDataPipeConsumerHandle bundle_body) {
+      mojo::ScopedDataPipeConsumerHandle bundle_body,
+      scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner,
+      WebBundleErrorCallback error_callback)
+      : callback_task_runner_(callback_task_runner),
+        error_callback_(error_callback) {
     receivers_.Add(this, std::move(receiver));
     receivers_.set_disconnect_handler(base::BindRepeating(
         &WebBundleSubresourceLoaderFactory::OnMojoDisconnect,
@@ -322,6 +328,9 @@ class WebBundleSubresourceLoaderFactory
       return;
     auto it = metadata_->requests.find(loader->Url());
     if (it == metadata_->requests.end()) {
+      RunErrorCallback(WebBundleErrorType::kResourceNotFound,
+                       loader->Url().possibly_invalid_spec() +
+                           " is not found in the WebBundle.");
       loader->OnFail(net::ERR_INVALID_WEB_BUNDLE);
       return;
     }
@@ -340,7 +349,8 @@ class WebBundleSubresourceLoaderFactory
                  "WebBundleSubresourceLoaderFactory::OnMetadataParsed");
     if (error) {
       metadata_error_ = std::move(error);
-      // TODO(crbug.com/1082020): Log the error message to console output.
+      RunErrorCallback(WebBundleErrorType::kMetadataParseError,
+                       metadata_error_->message);
       for (auto loader : pending_loaders_) {
         if (loader)
           loader->OnFail(net::ERR_INVALID_WEB_BUNDLE);
@@ -363,7 +373,7 @@ class WebBundleSubresourceLoaderFactory
     if (!loader)
       return;
     if (error) {
-      // TODO(crbug.com/1082020): Log the error message to console output.
+      RunErrorCallback(WebBundleErrorType::kResponseParseError, error->message);
       loader->OnFail(net::ERR_INVALID_WEB_BUNDLE);
       return;
     }
@@ -383,12 +393,20 @@ class WebBundleSubresourceLoaderFactory
                        loader->GetWeakPtr()));
   }
 
+  void RunErrorCallback(WebBundleErrorType type, const std::string& message) {
+    PostCrossThreadTask(*callback_task_runner_, FROM_HERE,
+                        WTF::CrossThreadBindOnce(error_callback_, type,
+                                                 String(message.c_str())));
+  }
+
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
   std::unique_ptr<LinkWebBundleDataSource> source_;
   mojo::Remote<web_package::mojom::WebBundleParser> parser_;
   web_package::mojom::BundleMetadataPtr metadata_;
   web_package::mojom::BundleMetadataParseErrorPtr metadata_error_;
   std::vector<base::WeakPtr<WebBundleSubresourceLoader>> pending_loaders_;
+  scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;
+  WebBundleErrorCallback error_callback_;
 
   base::WeakPtrFactory<WebBundleSubresourceLoaderFactory> weak_ptr_factory_{
       this};
@@ -397,9 +415,12 @@ class WebBundleSubresourceLoaderFactory
 // Runs on a background thread.
 void CreateFactoryOnBackground(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    mojo::ScopedDataPipeConsumerHandle bundle_body) {
-  new WebBundleSubresourceLoaderFactory(std::move(receiver),
-                                        std::move(bundle_body));
+    mojo::ScopedDataPipeConsumerHandle bundle_body,
+    scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner,
+    WebBundleErrorCallback error_callback) {
+  new WebBundleSubresourceLoaderFactory(
+      std::move(receiver), std::move(bundle_body), callback_task_runner,
+      std::move(error_callback));
 }
 
 }  // namespace
@@ -407,13 +428,17 @@ void CreateFactoryOnBackground(
 void CreateWebBundleSubresourceLoaderFactory(
     CrossVariantMojoReceiver<network::mojom::URLLoaderFactoryInterfaceBase>
         factory_receiver,
-    mojo::ScopedDataPipeConsumerHandle bundle_body) {
+    mojo::ScopedDataPipeConsumerHandle bundle_body,
+    WebBundleErrorCallback error_callback) {
   auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  task_runner->PostTask(FROM_HERE, base::BindOnce(&CreateFactoryOnBackground,
-                                                  std::move(factory_receiver),
-                                                  std::move(bundle_body)));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CreateFactoryOnBackground, std::move(factory_receiver),
+                     std::move(bundle_body),
+                     base::ThreadTaskRunnerHandle::Get(),
+                     std::move(error_callback)));
 }
 
 }  // namespace blink

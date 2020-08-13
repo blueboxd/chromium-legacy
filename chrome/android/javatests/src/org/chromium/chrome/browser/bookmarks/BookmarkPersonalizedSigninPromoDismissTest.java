@@ -63,8 +63,8 @@ public class BookmarkPersonalizedSigninPromoDismissTest {
             BookmarkModel bookmarkModel = new BookmarkModel(Profile.fromWebContents(
                     mSyncTestRule.getActivity().getActivityTab().getWebContents()));
             bookmarkModel.loadFakePartnerBookmarkShimForTesting();
-            BookmarkTestUtil.waitForBookmarkModelLoaded();
         });
+        BookmarkTestUtil.waitForBookmarkModelLoaded();
     }
 
     @After

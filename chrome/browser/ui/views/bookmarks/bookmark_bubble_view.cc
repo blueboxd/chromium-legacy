@@ -180,18 +180,15 @@ void BookmarkBubbleView::ShowBubble(
           .SetTitle(l10n_util::GetStringUTF16(
               already_bookmarked ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK
                                  : IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED))
-          .SetAcceptCallback(base::BindOnce(&BookmarkBubbleDelegate::ApplyEdits,
-                                            base::Unretained(bubble_delegate)))
-          .SetCancelCallback(
-              base::BindOnce(&BookmarkBubbleDelegate::RemoveBookmark,
-                             base::Unretained(bubble_delegate)))
           .SetWindowClosingCallback(
               base::BindOnce(&BookmarkBubbleDelegate::OnWindowClosing,
                              base::Unretained(bubble_delegate)))
-          .AddDialogButton(ui::DIALOG_BUTTON_OK,
-                           l10n_util::GetStringUTF16(IDS_DONE))
-          .AddDialogButton(
-              ui::DIALOG_BUTTON_CANCEL,
+          .AddOkButton(base::BindOnce(&BookmarkBubbleDelegate::ApplyEdits,
+                                      base::Unretained(bubble_delegate)),
+                       l10n_util::GetStringUTF16(IDS_DONE))
+          .AddCancelButton(
+              base::BindOnce(&BookmarkBubbleDelegate::RemoveBookmark,
+                             base::Unretained(bubble_delegate)),
               l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK),
               ui::DialogModelButton::Params().AddAccelerator(
                   ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN)))

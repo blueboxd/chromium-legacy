@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/crosapi/cpp/window_snapshot.h"
+#include "chromeos/crosapi/cpp/bitmap.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -82,12 +82,12 @@ class ScreenManagerCrosapiBrowserTest : public InProcessBrowserTest {
 // Tests that taking a screen snapshot works.
 IN_PROC_BROWSER_TEST_F(ScreenManagerCrosapiBrowserTest, TakeScreenSnapshot) {
   base::RunLoop run_loop;
-  crosapi::WindowSnapshot snapshot;
+  crosapi::Bitmap snapshot;
 
   // Take a snapshot on a background sequence. The call is blocking, so when it
   // finishes, we can also unblock the main thread.
   auto take_snapshot_background = base::BindOnce(
-      [](SMRemote* remote, crosapi::WindowSnapshot* snapshot) {
+      [](SMRemote* remote, crosapi::Bitmap* snapshot) {
         mojo::ScopedAllowSyncCallForTesting allow_sync;
         (*remote)->TakeScreenSnapshot(snapshot);
       },
@@ -106,12 +106,12 @@ IN_PROC_BROWSER_TEST_F(ScreenManagerCrosapiBrowserTest, TakeScreenSnapshot) {
 IN_PROC_BROWSER_TEST_F(ScreenManagerCrosapiBrowserTest, TakeWindowSnapshot) {
   base::RunLoop run_loop;
   bool success;
-  crosapi::WindowSnapshot snapshot;
+  crosapi::Bitmap snapshot;
 
   // Take a snapshot on a background sequence. The call is blocking, so when it
   // finishes, we can also unblock the main thread.
   auto take_snapshot_background = base::BindOnce(
-      [](SMRemote* remote, bool* success, crosapi::WindowSnapshot* snapshot) {
+      [](SMRemote* remote, bool* success, crosapi::Bitmap* snapshot) {
         mojo::ScopedAllowSyncCallForTesting allow_sync;
         std::vector<crosapi::mojom::WindowDetailsPtr> windows;
         (*remote)->ListWindows(&windows);

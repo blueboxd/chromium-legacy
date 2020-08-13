@@ -74,7 +74,14 @@ def CombineHistogramsSorted(doc, trees):
                              key=lambda node: node.getAttribute('name').lower())
 
   for histogram in sorted_histograms:
-    combined_histograms.appendChild(histogram)
+    # Use unsafe version of `appendChild` function here because the safe one
+    # takes a lot longer (10000x) to append all children. The unsafe version
+    # is ok here because:
+    #   1. the node to be appended is a clean node.
+    #   2. The unsafe version only do less check but not changing any
+    #     behavior and it's documented to be usable if performance matters.
+    #     See https://github.com/python/cpython/blob/2.7/Lib/xml/dom/minidom.py#L276.
+    xml.dom.minidom._append_child(combined_histograms, histogram)
 
   return [combined_histograms]
 

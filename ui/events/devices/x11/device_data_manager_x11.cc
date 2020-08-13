@@ -263,7 +263,7 @@ void DeviceDataManagerX11::UpdateDeviceList(x11::Connection* connection) {
   // Find all the touchpad devices.
   const XDeviceList& dev_list =
       ui::DeviceListCacheX11::GetInstance()->GetXDeviceList(connection);
-  x11::Atom xi_touchpad = gfx::GetAtom(XI_TOUCHPAD);
+  x11::Atom xi_touchpad = gfx::GetAtom("TOUCHPAD");
   for (const auto& device : dev_list) {
     if (device.device_type == xi_touchpad)
       touchpads_[device.device_id] = true;

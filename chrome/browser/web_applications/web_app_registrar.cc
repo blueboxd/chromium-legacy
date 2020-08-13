@@ -4,7 +4,6 @@
 
 #include "chrome/browser/web_applications/web_app_registrar.h"
 
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -143,15 +142,15 @@ std::vector<WebApplicationIconInfo> WebAppRegistrar::GetAppIconInfos(
                  : std::vector<WebApplicationIconInfo>();
 }
 
-std::vector<SquareSizePx> WebAppRegistrar::GetAppDownloadedIconSizes(
+std::vector<SquareSizePx> WebAppRegistrar::GetAppDownloadedIconSizesAny(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->downloaded_icon_sizes()
+  return web_app ? web_app->downloaded_icon_sizes(IconPurpose::ANY)
                  : std::vector<SquareSizePx>();
 }
 
 std::vector<WebApplicationShortcutsMenuItemInfo>
-WebAppRegistrar::GetAppShortcutInfos(const AppId& app_id) const {
+WebAppRegistrar::GetAppShortcutsMenuItemInfos(const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   return web_app ? web_app->shortcuts_menu_item_infos()
                  : std::vector<WebApplicationShortcutsMenuItemInfo>();

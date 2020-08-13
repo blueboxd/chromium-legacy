@@ -121,6 +121,7 @@ class TestWebUIController : public WebUIController {
       data_source->OverrideContentSecurityPolicy(
           network::mojom::CSPDirectiveName::ScriptSrc,
           "script-src chrome://resources 'self' 'unsafe-eval';");
+      data_source->DisableTrustedTypesCSP();
       data_source->SetRequestFilter(
           base::BindRepeating([](const std::string& path) { return true; }),
           base::BindRepeating(&GetResource));

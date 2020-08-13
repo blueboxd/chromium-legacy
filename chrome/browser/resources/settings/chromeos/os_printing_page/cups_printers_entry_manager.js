@@ -41,22 +41,29 @@ cr.define('settings.printing', function() {
       /** @type {!Array<!PrinterListEntry>} */
       this.printServerPrinters = [];
 
-      /** @type {!Array<PrintersListCallback>} */
+      /** @private {!Array<PrintersListCallback>} */
       this.onNearbyPrintersChangedListeners_ = [];
+
+      /** @private {?WebUIListener} */
+      this.onNearbyPrintersChangedListener_ = null;
     }
 
     addWebUIListeners() {
       // TODO(1005905): Add on-printers-changed listener here once legacy code
       // is removed.
-      cr.addWebUIListener(
+      this.onNearbyPrintersChangedListener_ = cr.addWebUIListener(
           'on-nearby-printers-changed', this.setNearbyPrintersList.bind(this));
+
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .startDiscoveringPrinters();
     }
 
     removeWebUIListeners() {
-      cr.removeWebUIListener('on-nearby-printers-changed');
-      cr.removeWebUIListener('on-print-server-added');
+      if (this.onNearbyPrintersChangedListener_) {
+        cr.removeWebUIListener(/** @type {WebUIListener} */ (
+            this.onNearbyPrintersChangedListener_));
+        this.onNearbyPrintersChangedListener_ = null;
+      }
     }
 
     /** @return {!Array<!PrinterListEntry>} */

@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 
 #include <dwmapi.h>
+
+#include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/trace_event/common/trace_event_common.h"
@@ -82,11 +85,7 @@ SkColor GlassBrowserFrameView::GetReadableFeatureColor(
 
 GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
                                              BrowserView* browser_view)
-    : BrowserNonClientFrameView(frame, browser_view),
-      window_icon_(nullptr),
-      window_title_(nullptr),
-      throbber_running_(false),
-      throbber_frame_(0) {
+    : BrowserNonClientFrameView(frame, browser_view) {
   // We initialize all fields despite some of them being unused in some modes,
   // since it's possible for modes to flip dynamically (e.g. if the user enables
   // a high-contrast theme). Throbber icons are only used when ShowSystemIcon()
@@ -135,8 +134,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
       browser_view->browser()->is_focus_mode() ? 0 : kTopResizeFrameArea;
 }
 
-GlassBrowserFrameView::~GlassBrowserFrameView() {
-}
+GlassBrowserFrameView::~GlassBrowserFrameView() = default;
 
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, BrowserNonClientFrameView implementation:
@@ -564,9 +562,6 @@ SkColor GlassBrowserFrameView::GetTitlebarColor() const {
 void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   TRACE_EVENT0("views.frame", "GlassBrowserFrameView::PaintTitlebar");
 
-  cc::PaintFlags flags;
-  gfx::ScopedCanvas scoped_canvas(canvas);
-  float scale = canvas->UndoDeviceScaleFactor();
   // This is the pixel-accurate version of WindowTopY(). Scaling the DIP values
   // here compounds precision error, which exposes unpainted client area. When
   // restored it uses the system dsf instead of the per-monitor dsf to match
@@ -595,6 +590,9 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   const int color_id = ShouldPaintAsActive()
                            ? ThemeProperties::COLOR_ACCENT_BORDER_ACTIVE
                            : ThemeProperties::COLOR_ACCENT_BORDER_INACTIVE;
+  gfx::ScopedCanvas scoped_canvas(canvas);
+  float scale = canvas->UndoDeviceScaleFactor();
+  cc::PaintFlags flags;
   flags.setColor(color_utils::GetResultingPaintColor(
       GetThemeProvider()->GetColor(color_id), titlebar_color));
   canvas->DrawRect(gfx::RectF(0, 0, width() * scale, y), flags);
@@ -638,7 +636,6 @@ void GlassBrowserFrameView::LayoutTitleBar() {
   if (!ShowCustomIcon() && !ShowCustomTitle())
     return;
 
-  gfx::Rect window_icon_bounds;
   const int icon_size =
       display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSMICON);
   const int titlebar_visual_height =
@@ -654,7 +651,8 @@ void GlassBrowserFrameView::LayoutTitleBar() {
   int next_trailing_x = MinimizeButtonX();
 
   const int y = window_top + (titlebar_visual_height - icon_size) / 2;
-  window_icon_bounds = gfx::Rect(next_leading_x, y, icon_size, icon_size);
+  const gfx::Rect window_icon_bounds =
+      gfx::Rect(next_leading_x, y, icon_size, icon_size);
 
   constexpr int kIconTitleSpacing = 5;
   if (ShowCustomIcon()) {

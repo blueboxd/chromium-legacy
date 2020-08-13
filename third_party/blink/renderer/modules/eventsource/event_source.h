@@ -33,6 +33,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_EVENTSOURCE_EVENT_SOURCE_H_
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -47,6 +48,7 @@
 
 namespace blink {
 
+class DOMWrapperWorld;
 class EventSourceInit;
 class ExceptionState;
 class ResourceResponse;
@@ -134,6 +136,10 @@ class MODULES_EXPORT EventSource final
   uint64_t reconnect_delay_;
   String event_stream_origin_;
   uint64_t resource_identifier_ = 0;
+
+  // The world in which this EventSource was created. We need to store this
+  // because EventSource::Connect can be triggered by |connect_timer_|.
+  scoped_refptr<const DOMWrapperWorld> world_;
 };
 
 }  // namespace blink

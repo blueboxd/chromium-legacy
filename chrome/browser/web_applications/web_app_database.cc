@@ -156,8 +156,13 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   for (const WebApplicationIconInfo& icon_info : web_app.icon_infos())
     *(local_data->add_icon_infos()) = WebAppIconInfoToSyncProto(icon_info);
 
-  for (SquareSizePx size : web_app.downloaded_icon_sizes())
-    local_data->add_downloaded_icon_sizes(size);
+  for (SquareSizePx size : web_app.downloaded_icon_sizes(IconPurpose::ANY)) {
+    local_data->add_downloaded_icon_sizes_purpose_any(size);
+  }
+  for (SquareSizePx size :
+       web_app.downloaded_icon_sizes(IconPurpose::MASKABLE)) {
+    local_data->add_downloaded_icon_sizes_purpose_maskable(size);
+  }
 
   local_data->set_is_generated_icon(web_app.is_generated_icon());
 
@@ -371,10 +376,16 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetIconInfos(std::move(parsed_icon_infos.value()));
 
-  std::vector<SquareSizePx> icon_sizes_on_disk;
-  for (int32_t size : local_data.downloaded_icon_sizes())
-    icon_sizes_on_disk.push_back(size);
-  web_app->SetDownloadedIconSizes(std::move(icon_sizes_on_disk));
+  std::vector<SquareSizePx> icon_sizes_any;
+  for (int32_t size : local_data.downloaded_icon_sizes_purpose_any())
+    icon_sizes_any.push_back(size);
+  web_app->SetDownloadedIconSizes(IconPurpose::ANY, std::move(icon_sizes_any));
+
+  std::vector<SquareSizePx> icon_sizes_maskable;
+  for (int32_t size : local_data.downloaded_icon_sizes_purpose_maskable())
+    icon_sizes_maskable.push_back(size);
+  web_app->SetDownloadedIconSizes(IconPurpose::MASKABLE,
+                                  std::move(icon_sizes_maskable));
 
   web_app->SetIsGeneratedIcon(local_data.is_generated_icon());
 

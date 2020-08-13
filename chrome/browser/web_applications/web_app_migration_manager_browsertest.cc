@@ -234,11 +234,12 @@ IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
 
   const std::vector<SquareSizePx> icon_sizes_in_px = {32,  48,  64,  96, 128,
                                                       144, 192, 256, 512};
-  EXPECT_EQ(icon_sizes_in_px, web_app->downloaded_icon_sizes());
+  EXPECT_EQ(icon_sizes_in_px, web_app->downloaded_icon_sizes(IconPurpose::ANY));
 
   base::RunLoop run_loop;
   provider().icon_manager().ReadIcons(
-      app_id, web_app->downloaded_icon_sizes(),
+      app_id, IconPurpose::ANY,
+      web_app->downloaded_icon_sizes(IconPurpose::ANY),
       base::BindLambdaForTesting(
           [&](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
             EXPECT_EQ(9u, icon_bitmaps.size());
@@ -414,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTestWithShortcutsMenu,
   EXPECT_TRUE(provider().registrar().IsInstalled(app_id));
 
   std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos =
-      provider().registrar().GetAppShortcutInfos(app_id);
+      provider().registrar().GetAppShortcutsMenuItemInfos(app_id);
   EXPECT_EQ(shortcuts_menu_item_infos.size(), 2u);
   EXPECT_EQ(shortcuts_menu_item_infos[0].name, base::UTF8ToUTF16("shortcut1"));
   EXPECT_EQ(shortcuts_menu_item_infos[0].shortcut_icon_infos.size(), 1u);

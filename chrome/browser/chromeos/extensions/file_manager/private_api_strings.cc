@@ -51,8 +51,12 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean(
       "FILES_TRANSFER_DETAILS_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kFilesTransferDetails));
-  dict->SetBoolean("ZIP_NO_NACL", base::FeatureList::IsEnabled(
-                                      chromeos::features::kFilesZipNoNaCl));
+  dict->SetBoolean("ZIP_MOUNT", base::FeatureList::IsEnabled(
+                                    chromeos::features::kFilesZipMount));
+  dict->SetBoolean("ZIP_PACK", base::FeatureList::IsEnabled(
+                                   chromeos::features::kFilesZipPack));
+  dict->SetBoolean("ZIP_UNPACK", base::FeatureList::IsEnabled(
+                                     chromeos::features::kFilesZipUnpack));
   dict->SetBoolean("SHARESHEET_ENABLED",
                    base::FeatureList::IsEnabled(features::kSharesheet));
   dict->SetBoolean(

@@ -189,6 +189,7 @@ RENAME = {
     'COLORMAP': 'ColorMap',
     'Connection': 'RandRConnection',
     'CP': 'CreatePictureAttribute',
+    'CS': 'ClientSpec',
     'CW': 'CreateWindowAttribute',
     'DAMAGE': 'DamageId',
     'DIRECTFORMAT': 'DirectFormat',

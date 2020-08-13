@@ -31,6 +31,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // Constructs a non-client view for an BrowserFrame.
   GlassBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
+  GlassBrowserFrameView(const GlassBrowserFrameView&) = delete;
+  GlassBrowserFrameView& operator=(const GlassBrowserFrameView&) = delete;
   ~GlassBrowserFrameView() override;
 
   // BrowserNonClientFrameView:
@@ -74,7 +76,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   SkColor GetTitlebarColor() const;
 
-  views::Label* window_title_for_testing() { return window_title_; }
+  const views::Label* window_title_for_testing() const { return window_title_; }
 
  protected:
   // views::View:
@@ -156,8 +158,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   base::win::ScopedHICON big_window_icon_;
 
   // Icon and title. Only used when custom-drawing the titlebar for popups.
-  TabIconView* window_icon_;
-  views::Label* window_title_;
+  TabIconView* window_icon_ = nullptr;
+  views::Label* window_title_ = nullptr;
 
   // The container holding the caption buttons (minimize, maximize, close, etc.)
   //
@@ -170,10 +172,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   GlassBrowserCaptionButtonContainer* caption_button_container_;
 
   // Whether or not the window throbber is currently animating.
-  bool throbber_running_;
+  bool throbber_running_ = false;
 
   // The index of the current frame of the throbber animation.
-  int throbber_frame_;
+  int throbber_frame_ = 0;
 
   // How much extra space to reserve in non-maximized windows for a drag handle.
   int drag_handle_padding_;
@@ -181,8 +183,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   static const int kThrobberIconCount = 24;
   static HICON throbber_icons_[kThrobberIconCount];
   static void InitThrobberIcons();
-
-  DISALLOW_COPY_AND_ASSIGN(GlassBrowserFrameView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_GLASS_BROWSER_FRAME_VIEW_H_

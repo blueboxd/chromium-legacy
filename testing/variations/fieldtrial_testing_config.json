@@ -1129,6 +1129,7 @@
             "platforms": [
                 "android",
                 "android_weblayer",
+                "chromeos",
                 "ios",
                 "linux",
                 "mac",
@@ -1136,10 +1137,10 @@
             ],
             "experiments": [
                 {
-                    "name": "disable_timer-queues_until_onload",
+                    "name": "best-effort_timer-queues_until_onload",
                     "params": {
                         "delay_ms": "0",
-                        "method": "disable",
+                        "method": "best-effort",
                         "queues": "timer-queues",
                         "signal": "onload"
                     },

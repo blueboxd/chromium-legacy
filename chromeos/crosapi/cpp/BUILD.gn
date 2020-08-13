@@ -10,8 +10,8 @@ config("crosapi_implementation") {
 component("cpp") {
   output_name = "crosapi_public_cpp"
   sources = [
-    "window_snapshot.cc",
-    "window_snapshot.h",
+    "bitmap.cc",
+    "bitmap.h",
   ]
   configs += [ ":crosapi_implementation" ]
   deps = [ "//base" ]

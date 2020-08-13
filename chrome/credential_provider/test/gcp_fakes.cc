@@ -19,9 +19,11 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/extension/extension_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
@@ -1266,13 +1268,94 @@ FakeOSServiceManager::~FakeOSServiceManager() {
   *GetInstanceStorage() = os_service_manager_;
 }
 
-DWORD FakeOSServiceManager::GetServiceStatus(SERVICE_STATUS* service_status) {
-  return ERROR_SERVICE_DOES_NOT_EXIST;
+DWORD FakeOSServiceManager::StartServiceCtrlDispatcher(
+    LPSERVICE_MAIN_FUNCTION service_main) {
+  if (service_lookup_from_name_.find(extension::kGCPWExtensionServiceName) ==
+      service_lookup_from_name_.end()) {
+    return ERROR_INVALID_DATA;
+  }
+  LOGFN(INFO);
+  // Windows calls the service main by creating a new thread. This is simulated
+  // in the test by creating a new thread.
+  base::Thread t("ServiceMain Thread");
+  t.Start();
+  t.task_runner()->PostTask(FROM_HERE,
+                            base::BindOnce(service_main, 0, nullptr));
+
+  while (true) {
+    // Service looks for control requests so that it calls the service's control
+    // handler.
+    DWORD control_request = GetControlRequestForTesting();
+    LOGFN(INFO) << "Received control: " << control_request;
+
+    // This is a custom control to end the service process main when service is
+    // supposed to stop.
+    if (control_request == 100)
+      break;
+
+    service_lookup_from_name_[extension::kGCPWExtensionServiceName]
+        .control_handler_cb_(control_request);
+  }
+
+  return ERROR_SUCCESS;
+}
+
+DWORD FakeOSServiceManager::RegisterCtrlHandler(
+    LPHANDLER_FUNCTION handler_proc,
+    SERVICE_STATUS_HANDLE* service_status_handle) {
+  if (service_lookup_from_name_.find(extension::kGCPWExtensionServiceName) ==
+      service_lookup_from_name_.end()) {
+    return ERROR_SERVICE_DOES_NOT_EXIST;
+  }
+
+  service_lookup_from_name_[extension::kGCPWExtensionServiceName]
+      .control_handler_cb_ = handler_proc;
+  // Set some random integer here. Not needed in the tests.
+  *service_status_handle = (SERVICE_STATUS_HANDLE)1;
+
+  return ERROR_SUCCESS;
+}
+
+DWORD FakeOSServiceManager::SetServiceStatus(
+    SERVICE_STATUS_HANDLE service_status_handle,
+    SERVICE_STATUS service) {
+  LOGFN(INFO) << "Service state: " << service.dwCurrentState;
+  if (service_lookup_from_name_.find(extension::kGCPWExtensionServiceName) ==
+      service_lookup_from_name_.end()) {
+    return ERROR_SERVICE_DOES_NOT_EXIST;
+  }
+  service_lookup_from_name_[extension::kGCPWExtensionServiceName]
+      .service_status_ = service;
+
+  if (service.dwCurrentState == SERVICE_STOPPED)
+    SendControlRequestForTesting(100);
+  return ERROR_SUCCESS;
 }
 
 DWORD FakeOSServiceManager::InstallService(
     const base::FilePath& service_binary_path,
     extension::ScopedScHandle* sc_handle) {
+  LOGFN(INFO);
+
+  service_lookup_from_name_[extension::kGCPWExtensionServiceName]
+      .service_status_.dwCurrentState = SERVICE_STOPPED;
+  return ERROR_SUCCESS;
+}
+
+DWORD FakeOSServiceManager::GetServiceStatus(SERVICE_STATUS* service_status) {
+  LOGFN(INFO);
+  if (service_lookup_from_name_.find(extension::kGCPWExtensionServiceName) ==
+      service_lookup_from_name_.end()) {
+    return ERROR_SERVICE_DOES_NOT_EXIST;
+  }
+  *service_status =
+      service_lookup_from_name_[extension::kGCPWExtensionServiceName]
+          .service_status_;
+  return ERROR_SUCCESS;
+}
+
+DWORD FakeOSServiceManager::DeleteService() {
+  service_lookup_from_name_.erase(extension::kGCPWExtensionServiceName);
   return ERROR_SUCCESS;
 }
 

@@ -196,12 +196,13 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_MaskableIcon) {
 
   UpdateWebAppInfoFromManifest(manifest, &web_app_info);
   EXPECT_EQ(3U, web_app_info.icon_infos.size());
-  int maskable_count = 0;
+  std::map<IconPurpose, int> purpose_to_count;
   for (const auto& icon_info : web_app_info.icon_infos) {
-    if (icon_info.purpose == Purpose::MASKABLE)
-      maskable_count++;
+    purpose_to_count[icon_info.purpose]++;
   }
-  EXPECT_EQ(2, maskable_count);
+  EXPECT_EQ(1, purpose_to_count[IconPurpose::ANY]);
+  EXPECT_EQ(0, purpose_to_count[IconPurpose::MONOCHROME]);
+  EXPECT_EQ(2, purpose_to_count[IconPurpose::MASKABLE]);
 }
 
 // Tests that WebAppInfo is correctly updated when Manifest contains Shortcuts.
@@ -513,7 +514,8 @@ TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
 }
 
 // Tests that when FilterAndResizeIconsGenerateMissing is called with maskable
-// icons available, web_app_info.icon_bitmaps_any is correctly populated.
+// icons available, web_app_info.icon_bitmaps_{any,maskable} are correctly
+// populated.
 TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissing_MaskableIcons) {
   // Construct |icons_map| to pass to FilterAndResizeIconsGenerateMissing().
   IconsMap icons_map;
@@ -540,10 +542,11 @@ TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissing_MaskableIcons) {
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 
   EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
-  // Expect only icon at URL 1 to be used and resized.
+  // Expect only icon at URL 1 to be used and resized as.
   for (const auto& icon_bitmap : web_app_info.icon_bitmaps_any) {
     EXPECT_EQ(SK_ColorWHITE, icon_bitmap.second.getColor(0, 0));
   }
+  EXPECT_EQ(2u, web_app_info.icon_bitmaps_maskable.size());
 }
 
 // Tests that when FilterAndResizeIconsGenerateMissing is called with maskable

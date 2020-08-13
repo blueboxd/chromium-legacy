@@ -15,6 +15,13 @@ namespace ui {
 class MenuModel;
 }
 
+COMPONENT_EXPORT(UI_BASE)
+@protocol MenuControllerCocoaDelegate
+- (void)controllerWillAddItem:(NSMenuItem*)menuItem
+                    fromModel:(ui::MenuModel*)model
+                      atIndex:(NSInteger)index;
+@end
+
 // A controller for the cross-platform menu model. The menu that's created
 // has the tag and represented object set for each menu item. The object is a
 // NSValue holding a pointer to the model for that level of the menu (to
@@ -40,6 +47,7 @@ COMPONENT_EXPORT(UI_BASE)
 // slightly different form (0th item is empty). Note this attribute of the menu
 // cannot be changed after it has been created.
 - (instancetype)initWithModel:(ui::MenuModel*)model
+                     delegate:(id<MenuControllerCocoaDelegate>)delegate
        useWithPopUpButtonCell:(BOOL)useWithCell;
 
 // Programmatically close the constructed menu.

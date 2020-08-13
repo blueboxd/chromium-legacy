@@ -11,6 +11,7 @@ GEN('#include "content/public/test/browser_test.h"');
 // clang-format off
 [['CrPolicyNetworkBehaviorMojo', 'cr_policy_network_behavior_mojo_tests.m.js'],
  ['CrPolicyNetworkIndicatorMojo', 'cr_policy_network_indicator_mojo_tests.m.js'],
+ ['NetworkConfigElementBehavior', 'network_config_element_behavior_test.m.js'],
 ].forEach(test => registerTest(...test));
 // clang-format on
 

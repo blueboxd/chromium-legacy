@@ -242,7 +242,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   virtual gfx::Rect GetAutocorrectCharacterBounds() const = 0;
 
   // Set the autocorrect range and return if it has been set correctly as a
-  // boolean value.
+  // boolean value. If text or range is empty, existing autocorrect range is
+  // cleared. Out of range results in failure and no modification will be made.
   virtual bool SetAutocorrectRange(const base::string16& autocorrect_text,
                                    const gfx::Range& range) = 0;
 #endif

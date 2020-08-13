@@ -10,6 +10,12 @@
 <dom-module id="network-config-toggle">
   <template>
     <style include="network-shared">
+      :host {
+        cursor: pointer;
+      }
+      :host([disabled]) {
+        cursor: initial;
+      }
       cr-policy-network-indicator-mojo {
         --cr-tooltip-icon-margin-start: var(--cr-controlled-by-spacing);
       }
@@ -21,7 +27,7 @@
       }
     </style>
 
-    <div class="property-box" actionable>
+    <div class="property-box">
       <div class="start">
         <div aria-hidden="true">[[label]]</div>
         <div id="sub-label" class="cr-secondary-text" aria-hidden="true">

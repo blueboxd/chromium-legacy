@@ -48,7 +48,8 @@ void ReportAveragedDrain(int capacity_consumed,
         AddCount(capacity_consumed / num_sampling_periods,
                  num_sampling_periods),
         base::Histogram::FactoryGet(
-            kName, /*min_value=*/1, /*max_value=*/100000, /*bucket_count=*/50,
+            kExclusiveName, /*min_value=*/1, /*max_value=*/100000,
+            /*bucket_count=*/50,
             base::HistogramBase::kUmaTargetedHistogramFlag));
   }
 

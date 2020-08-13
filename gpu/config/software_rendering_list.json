@@ -336,22 +336,6 @@
       ]
     },
     {
-      "id": 48,
-      "description": "Accelerated video decode is unavailable on Linux",
-      "cr_bugs": [137247, 1032907],
-      "os": {
-        "type": "linux"
-      },
-      "exceptions": [
-        {
-          "machine_model_name": ["Chromecast"]
-        }
-      ],
-      "features": [
-        "accelerated_video_decode"
-      ]
-    },
-    {
       "id": 50,
       "description": "Disable VMware software renderer on older Mesa",
       "cr_bugs": [145531, 332596, 571899, 629434],

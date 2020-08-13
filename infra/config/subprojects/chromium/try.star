@@ -345,7 +345,7 @@ try_.chromium_linux_builder(
     },
     tryjob = try_.job(
         disable_reuse = True,
-        run_on_infra_config_changes = True,
+        add_default_excludes = False,
     ),
 )
 

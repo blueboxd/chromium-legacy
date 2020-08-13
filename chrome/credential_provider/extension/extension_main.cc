@@ -9,8 +9,11 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/process/memory.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/win/process_startup_helper.h"
 #include "chrome/credential_provider/eventlog/gcp_eventlog_messages.h"
+#include "chrome/credential_provider/extension/os_service_manager.h"
+#include "chrome/credential_provider/extension/service.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 
 int APIENTRY wWinMain(HINSTANCE hInstance,
@@ -48,7 +51,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   // Set the event logging source and category for GCPW Extension.
   logging::SetEventSource("GCPW", GCPW_EXTENSION_CATEGORY, MSG_LOG_MESSAGE);
 
-  LOGFN(VERBOSE) << "GCPW Extension started running.";
+  // This initializes and starts ThreadPoolInstance with default params.
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("gcpw_extension");
+
+  credential_provider::extension::Service::Get()->Run();
 
   return 0;
 }

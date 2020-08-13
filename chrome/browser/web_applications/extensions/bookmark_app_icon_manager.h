@@ -26,24 +26,29 @@ class BookmarkAppIconManager : public web_app::AppIconManager {
   void Shutdown() override;
   bool HasIcons(
       const web_app::AppId& app_id,
+      IconPurpose purpose,
       const std::vector<SquareSizePx>& icon_sizes_in_px) const override;
   bool HasSmallestIcon(const web_app::AppId& app_id,
+                       const std::vector<IconPurpose>& purposes,
                        SquareSizePx icon_size_in_px) const override;
   void ReadIcons(const web_app::AppId& app_id,
+                 IconPurpose purpose,
                  const std::vector<SquareSizePx>& icon_sizes_in_px,
                  ReadIconsCallback callback) const override;
   void ReadAllIcons(const web_app::AppId& app_id,
-                    ReadIconsCallback callback) const override;
+                    ReadIconBitmapsCallback callback) const override;
   void ReadAllShortcutsMenuIcons(
       const web_app::AppId& app_id,
       ReadShortcutsMenuIconsCallback callback) const override;
   void ReadSmallestIcon(const web_app::AppId& app_id,
+                        const std::vector<IconPurpose>& purposes,
                         SquareSizePx icon_size_in_px,
-                        ReadIconCallback callback) const override;
+                        ReadIconWithPurposeCallback callback) const override;
   void ReadSmallestCompressedIcon(
       const web_app::AppId& app_id,
+      const std::vector<IconPurpose>& purposes,
       SquareSizePx icon_size_in_px,
-      ReadCompressedIconCallback callback) const override;
+      ReadCompressedIconWithPurposeCallback callback) const override;
   SkBitmap GetFavicon(const web_app::AppId& app_id) const override;
 
  private:

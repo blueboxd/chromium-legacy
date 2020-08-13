@@ -7,6 +7,8 @@
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_token.h"
+#include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 
 namespace {
 
@@ -128,21 +130,20 @@ void FontMatchingMetrics::ReportFontFamilyLookupByGenericFamily(
 }
 
 void FontMatchingMetrics::PublishIdentifiabilityMetrics() {
+  IdentifiabilityMetricBuilder builder(source_id_);
+
   for (const auto& entry : font_lookups_) {
     const LocalFontLookupKey& key = entry.key;
     const LocalFontLookupResult& result = entry.value;
 
-    uint64_t input_digest = blink::IdentifiabilityDigestHelper(
-        key.name_hash, key.fallback_character, key.font_selection_request_hash);
-    uint64_t output_digest = blink::IdentifiabilityDigestHelper(
-        result.hash, result.check_type, result.is_loading_fallback);
+    IdentifiableToken input_token(key.name_hash, key.fallback_character,
+                                  key.font_selection_request_hash);
+    IdentifiableToken output_token(result.hash, result.check_type,
+                                   result.is_loading_fallback);
 
-    blink::IdentifiabilityMetricBuilder(
-        base::UkmSourceId::FromInt64(source_id_))
-        .Set(IdentifiableSurface::FromTypeAndInput(
-                 IdentifiableSurface::Type::kLocalFontLookup, input_digest),
-             output_digest)
-        .Record(ukm_recorder_);
+    builder.Set(IdentifiableSurface::FromTypeAndToken(
+                    IdentifiableSurface::Type::kLocalFontLookup, input_token),
+                output_token);
   }
   font_lookups_.clear();
 
@@ -150,18 +151,17 @@ void FontMatchingMetrics::PublishIdentifiabilityMetrics() {
     const GenericFontLookupKey& key = entry.key;
     const unsigned& result = entry.value;
 
-    uint64_t input_digest = blink::IdentifiabilityDigestHelper(
-        key.generic_font_family_name_hash, key.script, key.generic_family_type);
-    uint64_t output_digest = blink::IdentifiabilityDigestHelper(result);
+    IdentifiableToken input_token(key.generic_font_family_name_hash, key.script,
+                                  key.generic_family_type);
+    IdentifiableToken output_token(result);
 
-    blink::IdentifiabilityMetricBuilder(
-        base::UkmSourceId::FromInt64(source_id_))
-        .Set(IdentifiableSurface::FromTypeAndInput(
-                 IdentifiableSurface::Type::kGenericFontLookup, input_digest),
-             output_digest)
-        .Record(ukm_recorder_);
+    builder.Set(IdentifiableSurface::FromTypeAndToken(
+                    IdentifiableSurface::Type::kGenericFontLookup, input_token),
+                output_token);
   }
   generic_font_lookups_.clear();
+
+  builder.Record(ukm_recorder_);
 }
 
 void FontMatchingMetrics::PublishUkmMetrics() {

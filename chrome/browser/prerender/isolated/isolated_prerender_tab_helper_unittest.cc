@@ -1592,9 +1592,6 @@ class IsolatedPrerenderTabHelperRedirectTest
     GURL doc_url("https://www.google.com/search?q=cats");
     GURL prediction_url("https://www.cat-food.com/");
 
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
-
     MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
     VerifyCommonRequestState(prediction_url);
@@ -1604,13 +1601,9 @@ class IsolatedPrerenderTabHelperRedirectTest
   }
 };
 
-// Fails on TSAN builders: https://crbug.com/1078965.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_NoRedirect_Cookies DISABLED_NoRedirect_Cookies
-#else
-#define MAYBE_NoRedirect_Cookies NoRedirect_Cookies
-#endif
-TEST_F(IsolatedPrerenderTabHelperRedirectTest, MAYBE_NoRedirect_Cookies) {
+TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Cookies) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
   NavigateSomewhere();
 
   GURL site_with_cookies("https://cookies.com");
@@ -1632,6 +1625,8 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, MAYBE_NoRedirect_Cookies) {
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
   NavigateSomewhere();
 
   GURL url("http://insecure.com");
@@ -1653,6 +1648,8 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure) {
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure_Continued) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
   NavigateSomewhere();
 
   GURL url("http://insecure.com");
@@ -1690,6 +1687,8 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure_Continued) {
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Google) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
   NavigateSomewhere();
 
   GURL url("https://www.google.com");
@@ -1711,6 +1710,8 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Google) {
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_ServiceWorker) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
   NavigateSomewhere();
 
   GURL site_with_worker("https://service-worker.com");
@@ -1735,17 +1736,17 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_ServiceWorker) {
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
-  base::HistogramTester histogram_tester;
-  NavigateSomewhere();
-  GURL doc_url("https://www.google.com/search?q=cats");
-  GURL prediction_url("https://www.cat-food.com/");
-  GURL redirect_url("https://redirect-here.com");
-
   // Enable unlimited prefetches so we can follow the redirect chain all the
   // way.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kIsolatePrerenders, {{"max_srp_prefetches", "-1"}});
+
+  base::HistogramTester histogram_tester;
+  NavigateSomewhere();
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url("https://www.cat-food.com/");
+  GURL redirect_url("https://redirect-here.com");
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
   VerifyCommonRequestState(prediction_url);

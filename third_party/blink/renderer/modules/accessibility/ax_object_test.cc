@@ -153,13 +153,13 @@ TEST_F(AccessibilityTest, TreeNavigationWithIgnoredContainer) {
   // ++++B
   // ++C
   // So that nodes [A, B, C] are siblings
-  SetBodyInnerHTML(R"HTML(<body>
-    <p id="A">some text</p>
-    <div>
-      <p id="B">nested text</p>
-    </div>
-    <p id="C">more text</p>
-    </body>)HTML");
+  SetBodyInnerHTML(R"HTML(
+      <p id="A">some text</p>
+      <div>
+        <p id="B">nested text</p>
+      </div>
+      <p id="C">more text</p>
+      )HTML");
 
   const AXObject* root = GetAXRootObject();
   const AXObject* body = GetAXBodyObject();
@@ -228,6 +228,149 @@ TEST_F(AccessibilityTest, TreeNavigationWithIgnoredContainer) {
   EXPECT_EQ(obj_b_text, obj_c->UnignoredPreviousInPreOrder());
   EXPECT_EQ(obj_c_text, obj_c->NextInPreOrderIncludingIgnored());
   EXPECT_EQ(obj_c_text, obj_c->UnignoredNextInPreOrder());
+}
+
+TEST_F(AccessibilityTest, TreeNavigationWithContinuations) {
+  // Continuations found in the layout tree should not appear in the
+  // accessibility tree. For example, the following accessibility tree should
+  // result from the following HTML.
+  //
+  // WebArea
+  // ++HTMLElement
+  // ++++BodyElement
+  // ++++++Link
+  // ++++++++StaticText "Before block element."
+  // ++++++++GenericContainer
+  // ++++++++++Paragraph
+  // ++++++++++++StaticText "Inside block element."
+  // ++++++++StaticText "After block element."
+  SetBodyInnerHTML(R"HTML(
+      <a id="link" href="#">
+        Before block element.
+        <div id="div">
+          <p id="paragraph">
+            Inside block element.
+          </p>
+        </div>
+        After block element.
+      </a>
+      )HTML");
+
+  const AXObject* ax_root = GetAXRootObject();
+  ASSERT_NE(nullptr, ax_root);
+  const AXObject* ax_body = GetAXBodyObject();
+  ASSERT_NE(nullptr, ax_body);
+  const AXObject* ax_link = GetAXObjectByElementId("link");
+  ASSERT_NE(nullptr, ax_link);
+  const AXObject* ax_text_before = ax_link->FirstChildIncludingIgnored();
+  ASSERT_NE(nullptr, ax_text_before);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_text_before->RoleValue());
+  ASSERT_FALSE(ax_text_before->AccessibilityIsIgnored());
+  const AXObject* ax_div = GetAXObjectByElementId("div");
+  ASSERT_NE(nullptr, ax_div);
+  const AXObject* ax_paragraph = GetAXObjectByElementId("paragraph");
+  ASSERT_NE(nullptr, ax_paragraph);
+  const AXObject* ax_text_inside = ax_paragraph->FirstChildIncludingIgnored();
+  ASSERT_NE(nullptr, ax_text_inside);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_text_inside->RoleValue());
+  ASSERT_FALSE(ax_text_inside->AccessibilityIsIgnored());
+  const AXObject* ax_text_after = ax_link->LastChildIncludingIgnored();
+  ASSERT_NE(nullptr, ax_text_after);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_text_after->RoleValue());
+  ASSERT_FALSE(ax_text_after->AccessibilityIsIgnored());
+
+  //
+  // Test parent / child relationships individually. This is easier to debug
+  // than printing the whole accessibility tree as a string and comparing with
+  // an expected tree.
+  //
+
+  EXPECT_EQ(ax_root, ax_link->ParentObjectUnignored());
+  EXPECT_EQ(ax_body, ax_link->ParentObjectIncludedInTree());
+
+  EXPECT_EQ(ax_link, ax_text_before->ParentObjectUnignored());
+  EXPECT_EQ(ax_link, ax_text_before->ParentObjectIncludedInTree());
+  EXPECT_EQ(ax_link, ax_div->ParentObjectUnignored());
+  EXPECT_EQ(ax_link, ax_div->ParentObjectIncludedInTree());
+  EXPECT_EQ(ax_link, ax_text_after->ParentObjectUnignored());
+  EXPECT_EQ(ax_link, ax_text_after->ParentObjectIncludedInTree());
+
+  EXPECT_EQ(ax_div, ax_link->ChildAtIncludingIgnored(1));
+  EXPECT_EQ(ax_div, ax_link->UnignoredChildAt(1));
+
+  EXPECT_EQ(nullptr, ax_text_before->PreviousSiblingIncludingIgnored());
+  EXPECT_EQ(nullptr, ax_text_before->UnignoredPreviousSibling());
+  EXPECT_EQ(ax_div, ax_text_before->NextSiblingIncludingIgnored());
+  EXPECT_EQ(ax_div, ax_text_before->UnignoredNextSibling());
+  EXPECT_EQ(ax_div, ax_text_after->PreviousSiblingIncludingIgnored());
+  EXPECT_EQ(ax_div, ax_text_after->UnignoredPreviousSibling());
+  EXPECT_EQ(nullptr, ax_text_after->NextSiblingIncludingIgnored());
+  EXPECT_EQ(nullptr, ax_text_after->UnignoredNextSibling());
+
+  EXPECT_EQ(ax_paragraph, ax_div->ChildAtIncludingIgnored(0));
+  EXPECT_EQ(ax_paragraph, ax_div->UnignoredChildAt(0));
+
+  EXPECT_EQ(ax_div, ax_paragraph->ParentObjectUnignored());
+  EXPECT_EQ(ax_div, ax_paragraph->ParentObjectIncludedInTree());
+  EXPECT_EQ(ax_paragraph, ax_text_inside->ParentObjectUnignored());
+  EXPECT_EQ(ax_paragraph, ax_text_inside->ParentObjectIncludedInTree());
+}
+
+TEST_F(AccessibilityTest, TreeNavigationWithInlineTextBoxes) {
+  SetBodyInnerHTML(R"HTML(
+      Before paragraph element.
+      <p id="paragraph">
+        Inside paragraph element.
+      </p>
+      After paragraph element.
+      )HTML");
+
+  AXObject* ax_root = GetAXRootObject();
+  ASSERT_NE(nullptr, ax_root);
+  ax_root->LoadInlineTextBoxes();
+
+  const AXObject* ax_paragraph = GetAXObjectByElementId("paragraph");
+  ASSERT_NE(nullptr, ax_paragraph);
+  const AXObject* ax_text_inside = ax_paragraph->FirstChildIncludingIgnored();
+  ASSERT_NE(nullptr, ax_text_inside);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_text_inside->RoleValue());
+  const AXObject* ax_text_before = ax_paragraph->UnignoredPreviousSibling();
+  ASSERT_NE(nullptr, ax_text_before);
+  ASSERT_EQ(ax::mojom::blink::Role::kStaticText, ax_text_before->RoleValue());
+  const AXObject* ax_text_after = ax_paragraph->UnignoredNextSibling();
+  ASSERT_NE(nullptr, ax_text_after);
+  ASSERT_EQ(ax::mojom::blink::Role::kStaticText, ax_text_after->RoleValue());
+
+  //
+  // Verify parent / child relationships between static text and inline text
+  // boxes.
+  //
+
+  EXPECT_EQ(1, ax_text_before->ChildCountIncludingIgnored());
+  EXPECT_EQ(1, ax_text_before->UnignoredChildCount());
+  const AXObject* ax_inline_before =
+      ax_text_before->FirstChildIncludingIgnored();
+  EXPECT_EQ(ax::mojom::blink::Role::kInlineTextBox,
+            ax_inline_before->RoleValue());
+  EXPECT_EQ(ax_text_before, ax_inline_before->ParentObjectIncludedInTree());
+  EXPECT_EQ(ax_text_before, ax_inline_before->ParentObjectUnignored());
+
+  EXPECT_EQ(1, ax_text_inside->ChildCountIncludingIgnored());
+  EXPECT_EQ(1, ax_text_inside->UnignoredChildCount());
+  const AXObject* ax_inline_inside =
+      ax_text_inside->FirstChildIncludingIgnored();
+  EXPECT_EQ(ax::mojom::blink::Role::kInlineTextBox,
+            ax_inline_inside->RoleValue());
+  EXPECT_EQ(ax_text_inside, ax_inline_inside->ParentObjectIncludedInTree());
+  EXPECT_EQ(ax_text_inside, ax_inline_inside->ParentObjectUnignored());
+
+  EXPECT_EQ(1, ax_text_after->ChildCountIncludingIgnored());
+  EXPECT_EQ(1, ax_text_after->UnignoredChildCount());
+  const AXObject* ax_inline_after = ax_text_after->FirstChildIncludingIgnored();
+  EXPECT_EQ(ax::mojom::blink::Role::kInlineTextBox,
+            ax_inline_after->RoleValue());
+  EXPECT_EQ(ax_text_after, ax_inline_after->ParentObjectIncludedInTree());
+  EXPECT_EQ(ax_text_after, ax_inline_after->ParentObjectUnignored());
 }
 
 TEST_F(AccessibilityTest, AXObjectComparisonOperators) {

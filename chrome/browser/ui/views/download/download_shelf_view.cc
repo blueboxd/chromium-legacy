@@ -199,8 +199,7 @@ void DownloadShelfView::Layout() {
 
 void DownloadShelfView::AnimationProgressed(const gfx::Animation* animation) {
   if (animation == &new_item_animation_) {
-    Layout();
-    SchedulePaint();
+    InvalidateLayout();
   } else if (animation == &shelf_animation_) {
     // Force a re-layout of the parent, which will call back into
     // GetPreferredSize, where we will do our animation. In the case where the
@@ -242,15 +241,15 @@ void DownloadShelfView::AnimationEnded(const gfx::Animation* animation) {
     }
   }
 
-  // If we had keyboard focus, calling SetVisible(false) causes keyboard focus
-  // to be completely lost. To prevent this, we focus another view: the web
-  // contents. TODO(collinbaker): https://crbug.com/846466 Fix
-  // AccessiblePaneView::SetVisible or FocusManager to make this unnecessary.
+  // Make the shelf non-visible.
+  //
+  // If we had keyboard focus, calling SetVisible(false) will cause keyboard
+  // focus to be completely lost. To prevent this, focus the web contents.
+  // TODO(crbug.com/846466): Fix AccessiblePaneView::SetVisible() or
+  // FocusManager to make this unnecessary.
   auto* focus_manager = GetFocusManager();
-  if (focus_manager && Contains(focus_manager->GetFocusedView())) {
+  if (focus_manager && Contains(focus_manager->GetFocusedView()))
     parent_->contents_web_view()->RequestFocus();
-  }
-
   SetVisible(false);
 }
 
@@ -285,8 +284,7 @@ void DownloadShelfView::RemoveDownloadView(View* view) {
     Close();
   else
     AutoClose();
-  Layout();
-  SchedulePaint();
+  InvalidateLayout();
 }
 
 void DownloadShelfView::ConfigureButtonForTheme(views::MdTextButton* button) {

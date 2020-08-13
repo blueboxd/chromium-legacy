@@ -118,6 +118,36 @@ crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Fail
 #  display-lock
 # Some additional bugs that are caused by painting problems are also within this section.
 
+# TODO(crbug.com/1113629): Temporary disable these test for the experiment
+crbug.com/1113629 compositing/contents-opaque/overflow-hidden-child-layers.html [ Failure ]
+crbug.com/1113629 compositing/geometry/foreground-layer.html [ Failure ]
+crbug.com/1113629 compositing/iframes/become-composited-nested-iframes.html [ Failure ]
+crbug.com/1113629 compositing/iframes/become-overlapped-iframe.html [ Failure ]
+crbug.com/1113629 compositing/iframes/composited-parent-iframe.html [ Failure ]
+crbug.com/1113629 compositing/iframes/connect-compositing-iframe-delayed.html [ Failure ]
+crbug.com/1113629 compositing/iframes/connect-compositing-iframe.html [ Failure ]
+crbug.com/1113629 compositing/iframes/connect-compositing-iframe2.html [ Failure ]
+crbug.com/1113629 compositing/iframes/connect-compositing-iframe3.html [ Failure ]
+crbug.com/1113629 compositing/iframes/enter-compositing-iframe.html [ Failure ]
+crbug.com/1113629 compositing/iframes/iframe-resize.html [ Failure ]
+crbug.com/1113629 compositing/iframes/iframe-size-from-zero.html [ Failure ]
+crbug.com/1113629 compositing/iframes/invisible-nested-iframe-show.html [ Failure ]
+crbug.com/1113629 compositing/iframes/overlapped-iframe-iframe.html [ Failure ]
+crbug.com/1113629 compositing/iframes/overlapped-iframe.html [ Failure ]
+crbug.com/1113629 compositing/iframes/overlapped-nested-iframes.html [ Failure ]
+crbug.com/1113629 compositing/iframes/resizer.html [ Failure ]
+crbug.com/1113629 compositing/iframes/scrolling-iframe.html [ Failure ]
+crbug.com/1113629 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ]
+crbug.com/1113629 compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ]
+crbug.com/1113629 compositing/rtl/rtl-iframe-absolute.html [ Failure ]
+crbug.com/1113629 compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ]
+crbug.com/1113629 compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Crash ]
+crbug.com/1113629 compositing/rtl/rtl-iframe-fixed.html [ Failure ]
+crbug.com/1113629 fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
+crbug.com/1113629 paint/invalidation/compositing/overlap-test-with-filter.html [ Failure ]
+crbug.com/1113629 paint/invalidation/scroll/composited-iframe-scroll-repaint.html [ Failure ]
+crbug.com/1113629 paint/invalidation/scroll/repaint-during-scroll-with-zoom.html [ Failure ]
+
 # --- Begin CompositeAfterPaint Tests --
 # Only whitelisted tests run under the virtual suite.
 # More tests run with CompositeAfterPaint on the flag-specific try bot.

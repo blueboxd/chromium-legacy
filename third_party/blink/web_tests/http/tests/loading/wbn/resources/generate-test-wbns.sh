@@ -14,6 +14,13 @@ fi
 
 gen-bundle \
   -version b1 \
+  -baseURL http://127.0.0.1:8000/loading/wbn/resources/server/hello/ \
+  -primaryURL http://127.0.0.1:8000/loading/wbn/resources/server/hello/script.js \
+  -dir hello/ \
+  -o wbn/hello.wbn
+
+gen-bundle \
+  -version b1 \
   -baseURL https://localhost:8443/loading/wbn/resources/server/wbn-subresource-origin-trial/ \
   -primaryURL https://localhost:8443/loading/wbn/resources/server/wbn-subresource-origin-trial/script.js \
   -dir wbn-subresource-origin-trial/ \

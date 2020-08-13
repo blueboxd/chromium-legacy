@@ -1888,8 +1888,7 @@ bool Textfield::SetAutocorrectRange(const base::string16& autocorrect_text,
                                     const gfx::Range& range) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Count",
                                 TextInputClient::SubClass::kTextField);
-  model_->SetAutocorrectRange(autocorrect_text, range);
-  return true;
+  return model_->SetAutocorrectRange(autocorrect_text, range);
 }
 #endif
 

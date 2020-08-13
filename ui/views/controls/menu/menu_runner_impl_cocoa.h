@@ -14,6 +14,7 @@
 #include "ui/views/controls/menu/menu_runner_impl_interface.h"
 
 @class MenuControllerCocoa;
+@class MenuControllerDelegate;
 
 namespace views {
 namespace test {
@@ -44,6 +45,9 @@ class VIEWS_EXPORT MenuRunnerImplCocoa : public MenuRunnerImplInterface {
 
   // The Cocoa menu controller that this instance is bridging.
   base::scoped_nsobject<MenuControllerCocoa> menu_controller_;
+
+  // The delegate for the |menu_controller_|.
+  base::scoped_nsobject<MenuControllerDelegate> menu_delegate_;
 
   // Are we in run waiting for it to return?
   bool running_;

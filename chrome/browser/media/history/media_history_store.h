@@ -59,6 +59,7 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
                                    const base::TimeDelta& position)>;
 
   static const char kInitResultHistogramName[];
+  static const char kInitResultAfterDeleteHistogramName[];
   static const char kPlaybackWriteResultHistogramName[];
   static const char kSessionWriteResultHistogramName[];
   static const char kDatabaseSizeKbHistogramName[];

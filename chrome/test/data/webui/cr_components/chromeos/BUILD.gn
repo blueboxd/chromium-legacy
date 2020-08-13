@@ -8,5 +8,6 @@ js_modulizer("modulize") {
   input_files = [
     "cr_policy_network_behavior_mojo_tests.js",
     "cr_policy_network_indicator_mojo_tests.js",
+    "network_config_element_behavior_test.js",
   ]
 }

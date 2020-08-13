@@ -72,7 +72,6 @@ extern const base::Feature kDownloadFileProvider;
 extern const base::Feature kDownloadNotificationBadge;
 extern const base::Feature kDownloadProgressInfoBar;
 extern const base::Feature kDownloadRename;
-extern const base::Feature kDrawVerticallyEdgeToEdge;
 extern const base::Feature kDuetTabStripIntegrationAndroid;
 extern const base::Feature kEphemeralTabUsingBottomSheet;
 extern const base::Feature kExploreSites;

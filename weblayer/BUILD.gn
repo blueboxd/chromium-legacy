@@ -212,6 +212,8 @@ source_set("weblayer_lib_base") {
     "browser/no_state_prefetch/prerender_manager_factory.h",
     "browser/no_state_prefetch/prerender_processor_impl_delegate_impl.cc",
     "browser/no_state_prefetch/prerender_processor_impl_delegate_impl.h",
+    "browser/no_state_prefetch/prerender_tab_helper.cc",
+    "browser/no_state_prefetch/prerender_tab_helper.h",
     "browser/page_load_metrics_initialize.cc",
     "browser/page_load_metrics_initialize.h",
     "browser/page_specific_content_settings_delegate.cc",

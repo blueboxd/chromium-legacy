@@ -506,13 +506,15 @@ function Mock(mockedType) {
 	this._expectedInvocations = [];
 
 	// setup proxy
-	var IntermediateClass = new Function();
+	// TODO(crbug.com/1087743): Support Function constructor in Trusted Types
+	var IntermediateClass = (function(){});
 	IntermediateClass.prototype = mockedType.prototype;
-	var ChildClass = new Function();
+	// TODO(crbug.com/1087743): Support Function constructor in Trusted Types
+	var ChildClass = (function(){});
 	ChildClass.prototype = new IntermediateClass();
 	this._proxy = new ChildClass();
 	this._proxy.mock = this;
-	
+
 	for(property in mockedType.prototype) {
 		if(this._isPublicMethod(mockedType.prototype, property)) {
 			var publicMethodName = property;

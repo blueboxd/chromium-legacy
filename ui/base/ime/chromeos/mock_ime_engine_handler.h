@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
+#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/events/event.h"
 
 namespace chromeos {

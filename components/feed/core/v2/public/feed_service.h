@@ -48,6 +48,7 @@ class MetricsReporter;
 class FeedNetwork;
 class FeedStore;
 class FeedStream;
+class ImageFetcher;
 
 namespace internal {
 bool ShouldClearFeed(const history::DeletionInfo& deletion_info);
@@ -117,6 +118,7 @@ class FeedService : public KeyedService {
   std::unique_ptr<MetricsReporter> metrics_reporter_;
   std::unique_ptr<NetworkDelegateImpl> network_delegate_;
   std::unique_ptr<FeedNetwork> feed_network_;
+  std::unique_ptr<ImageFetcher> image_fetcher_;
   std::unique_ptr<FeedStore> store_;
   std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler_;
   std::unique_ptr<HistoryObserverImpl> history_observer_;

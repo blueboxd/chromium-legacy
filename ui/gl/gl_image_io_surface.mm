@@ -50,6 +50,7 @@ bool ValidInternalFormat(unsigned internalformat) {
     case GL_RGB10_A2_EXT:
     case GL_RGB_YCBCR_420V_CHROMIUM:
     case GL_RGB_YCBCR_422_CHROMIUM:
+    case GL_RGB_YCBCR_P010_CHROMIUM:
     case GL_RGBA:
       return true;
     default:
@@ -73,12 +74,13 @@ GLenum TextureFormat(gfx::BufferFormat format) {
       return GL_RGBA;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return GL_RGB_YCBCR_420V_CHROMIUM;
+    case gfx::BufferFormat::P010:
+      return GL_RGB_YCBCR_P010_CHROMIUM;
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_1010102:
     case gfx::BufferFormat::YVU_420:
-    case gfx::BufferFormat::P010:
       NOTREACHED() << gfx::BufferFormatToString(format);
       return 0;
   }
@@ -246,10 +248,13 @@ unsigned GLImageIOSurface::GetDataType() {
 }
 
 GLImageIOSurface::BindOrCopy GLImageIOSurface::ShouldBindOrCopy() {
-  // YUV_420_BIPLANAR is not supported by BindTexImage.
-  // CopyTexImage is supported by this format as that performs conversion to RGB
-  // as part of the copy operation.
-  return format_ == gfx::BufferFormat::YUV_420_BIPLANAR ? COPY : BIND;
+  // YUV_420_BIPLANAR and P010 are not supported by BindTexImage. CopyTexImage
+  // is supported by these formats as that performs conversion to RGB as part of
+  // the copy operation.
+  return (format_ == gfx::BufferFormat::YUV_420_BIPLANAR ||
+          format_ == gfx::BufferFormat::P010)
+             ? COPY
+             : BIND;
 }
 
 bool GLImageIOSurface::BindTexImage(unsigned target) {
@@ -339,12 +344,15 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
         glBindTexture(target, rgb_texture);
       })));
 
+  const auto src_type =
+      format_ == gfx::BufferFormat::P010 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE;
+
   CGLContextObj cgl_context = CGLGetCurrentContext();
   {
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, yuv_to_rgb_converter->y_texture());
     CGLError cgl_error = CGLTexImageIOSurface2D(
         cgl_context, GL_TEXTURE_RECTANGLE_ARB, GL_RED, size_.width(),
-        size_.height(), GL_RED, GL_UNSIGNED_BYTE, io_surface_, 0);
+        size_.height(), GL_RED, src_type, io_surface_, 0);
     if (cgl_error != kCGLNoError) {
       LOG(ERROR) << "Error in CGLTexImageIOSurface2D for the Y plane. "
                  << cgl_error;
@@ -355,7 +363,7 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, yuv_to_rgb_converter->uv_texture());
     CGLError cgl_error = CGLTexImageIOSurface2D(
         cgl_context, GL_TEXTURE_RECTANGLE_ARB, GL_RG, size_.width() / 2,
-        size_.height() / 2, GL_RG, GL_UNSIGNED_BYTE, io_surface_, 1);
+        size_.height() / 2, GL_RG, src_type, io_surface_, 1);
     if (cgl_error != kCGLNoError) {
       LOG(ERROR) << "Error in CGLTexImageIOSurface2D for the UV plane. "
                  << cgl_error;
@@ -363,7 +371,7 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
     }
   }
 
-  yuv_to_rgb_converter->CopyYUV420ToRGB(target, size_, rgb_texture);
+  yuv_to_rgb_converter->CopyYUV420ToRGB(target, size_, rgb_texture, src_type);
   return true;
 }
 
@@ -506,6 +514,7 @@ bool GLImageIOSurface::ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::BGRA_1010102:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::P010:
       return true;
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
@@ -514,7 +523,6 @@ bool GLImageIOSurface::ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_1010102:
     case gfx::BufferFormat::YVU_420:
-    case gfx::BufferFormat::P010:
       return false;
   }
 

@@ -165,6 +165,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       previous_paint_result_(kFullyPainted),
       needs_paint_phase_descendant_outlines_(false),
       needs_paint_phase_float_(false),
+      has_descendant_with_clip_path_(false),
       has_non_isolated_descendant_with_blend_mode_(false),
       has_fixed_position_descendant_(false),
       has_sticky_position_descendant_(false),
@@ -611,6 +612,7 @@ void PaintLayer::UpdateDescendantDependentFlags() {
         has_non_isolated_descendant_with_blend_mode_;
     has_visible_descendant_ = false;
     has_non_isolated_descendant_with_blend_mode_ = false;
+    has_descendant_with_clip_path_ = false;
     has_fixed_position_descendant_ = false;
     has_sticky_position_descendant_ = false;
     has_non_contained_absolute_position_descendant_ = false;
@@ -643,6 +645,9 @@ void PaintLayer::UpdateDescendantDependentFlags() {
           (!child->GetLayoutObject().IsStackingContext() &&
            child->HasNonIsolatedDescendantWithBlendMode()) ||
           child_style.HasBlendMode();
+
+      has_descendant_with_clip_path_ |= child->HasDescendantWithClipPath() ||
+                                        child->GetLayoutObject().HasClipPath();
 
       has_fixed_position_descendant_ |=
           child->HasFixedPositionDescendant() ||

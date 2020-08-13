@@ -15,6 +15,7 @@
     "videoCapture",
     "audioCapture",
     "storage",
+    "system.display",
     "unlimitedStorage",
     "chromeosInfoPrivate",
     "metricsPrivate",

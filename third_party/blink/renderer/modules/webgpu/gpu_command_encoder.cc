@@ -122,13 +122,16 @@ WGPUBufferCopyView AsDawnType(const GPUBufferCopyView* webgpu_view) {
 }
 
 WGPUCommandEncoderDescriptor AsDawnType(
-    const GPUCommandEncoderDescriptor* webgpu_desc) {
+    const GPUCommandEncoderDescriptor* webgpu_desc,
+    std::string* label) {
   DCHECK(webgpu_desc);
+  DCHECK(label);
 
   WGPUCommandEncoderDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   if (webgpu_desc->hasLabel()) {
-    dawn_desc.label = webgpu_desc->label().Utf8().data();
+    *label = webgpu_desc->label().Utf8();
+    dawn_desc.label = label->c_str();
   }
 
   return dawn_desc;
@@ -144,10 +147,11 @@ GPUCommandEncoder* GPUCommandEncoder::Create(
   DCHECK(webgpu_desc);
   ALLOW_UNUSED_LOCAL(webgpu_desc);
 
+  std::string label;
   WGPUCommandEncoderDescriptor dawn_desc = {};
   const WGPUCommandEncoderDescriptor* dawn_desc_ptr = nullptr;
   if (webgpu_desc) {
-    dawn_desc = AsDawnType(webgpu_desc);
+    dawn_desc = AsDawnType(webgpu_desc, &label);
     dawn_desc_ptr = &dawn_desc;
   }
 
@@ -189,11 +193,13 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
     }
   }
 
+  std::string label;
   WGPURenderPassDescriptor dawn_desc = {};
   dawn_desc.colorAttachmentCount = color_attachment_count;
   dawn_desc.colorAttachments = nullptr;
   if (descriptor->hasLabel()) {
-    dawn_desc.label = descriptor->label().Utf8().data();
+    label = descriptor->label().Utf8();
+    dawn_desc.label = label.c_str();
   }
 
   std::unique_ptr<WGPURenderPassColorAttachmentDescriptor[]> color_attachments;
@@ -218,9 +224,11 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
 
 GPUComputePassEncoder* GPUCommandEncoder::beginComputePass(
     const GPUComputePassDescriptor* descriptor) {
+  std::string label;
   WGPUComputePassDescriptor dawn_desc = {};
   if (descriptor->hasLabel()) {
-    dawn_desc.label = descriptor->label().Utf8().data();
+    label = descriptor->label().Utf8();
+    dawn_desc.label = label.c_str();
   }
 
   return MakeGarbageCollected<GPUComputePassEncoder>(
@@ -302,8 +310,8 @@ void GPUCommandEncoder::copyTextureToTexture(
 }
 
 void GPUCommandEncoder::pushDebugGroup(String groupLabel) {
-  GetProcs().commandEncoderPushDebugGroup(GetHandle(),
-                                          groupLabel.Utf8().data());
+  std::string label = groupLabel.Utf8();
+  GetProcs().commandEncoderPushDebugGroup(GetHandle(), label.c_str());
 }
 
 void GPUCommandEncoder::popDebugGroup() {
@@ -311,15 +319,17 @@ void GPUCommandEncoder::popDebugGroup() {
 }
 
 void GPUCommandEncoder::insertDebugMarker(String markerLabel) {
-  GetProcs().commandEncoderInsertDebugMarker(GetHandle(),
-                                             markerLabel.Utf8().data());
+  std::string label = markerLabel.Utf8();
+  GetProcs().commandEncoderInsertDebugMarker(GetHandle(), label.c_str());
 }
 
 GPUCommandBuffer* GPUCommandEncoder::finish(
     const GPUCommandBufferDescriptor* descriptor) {
+  std::string label;
   WGPUCommandBufferDescriptor dawn_desc = {};
   if (descriptor->hasLabel()) {
-    dawn_desc.label = descriptor->label().Utf8().data();
+    label = descriptor->label().Utf8();
+    dawn_desc.label = label.c_str();
   }
 
   return MakeGarbageCollected<GPUCommandBuffer>(

@@ -110,11 +110,13 @@ void StatusIconMac::CreateMenu(ui::MenuModel* model, NSString* toolTip) {
 
   if (!toolTip) {
     menu_.reset([[MenuControllerCocoa alloc] initWithModel:model
+                                                  delegate:nil
                                     useWithPopUpButtonCell:NO]);
   } else {
     // When using a popup button cell menu controller, an extra blank item is
     // added at index 0. Use this item for the tooltip.
     menu_.reset([[MenuControllerCocoa alloc] initWithModel:model
+                                                  delegate:nil
                                     useWithPopUpButtonCell:YES]);
     NSMenuItem* toolTipItem = [[menu_ menu] itemAtIndex:0];
     [toolTipItem setTitle:toolTip];

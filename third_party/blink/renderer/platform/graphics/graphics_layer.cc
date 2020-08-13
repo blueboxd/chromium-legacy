@@ -565,7 +565,8 @@ void GraphicsLayer::SetContentsOpaque(bool opaque) {
 }
 
 void GraphicsLayer::SetContentsOpaqueForText(bool opaque) {
-  CcLayer().SetContentsOpaqueForText(opaque);
+  // TODO(crbug.com/1113269): Temporarily disable this optimization.
+  // CcLayer().SetContentsOpaqueForText(opaque);
 }
 
 void GraphicsLayer::SetHitTestable(bool should_hit_test) {

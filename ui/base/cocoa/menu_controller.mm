@@ -107,14 +107,12 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 - (void)itemSelected:(id)sender;
 @end
 
-@interface ResponsiveNSMenuItem : NSMenuItem
-@end
-
 @implementation MenuControllerCocoa {
   base::WeakPtr<ui::MenuModel> _model;
   base::scoped_nsobject<NSMenu> _menu;
   BOOL _useWithPopUpButtonCell;  // If YES, 0th item is blank
   BOOL _isMenuOpen;
+  id<MenuControllerCocoaDelegate> _delegate;
 }
 
 @synthesize useWithPopUpButtonCell = _useWithPopUpButtonCell;
@@ -133,9 +131,11 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 }
 
 - (instancetype)initWithModel:(ui::MenuModel*)model
+                     delegate:(id<MenuControllerCocoaDelegate>)delegate
        useWithPopUpButtonCell:(BOOL)useWithCell {
   if ((self = [super init])) {
     _model = model->AsWeakPtr();
+    _delegate = delegate;
     _useWithPopUpButtonCell = useWithCell;
     [self menu];
   }
@@ -151,6 +151,10 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
   _model = nullptr;
 
   [super dealloc];
+}
+
+- (void)setDelegate:(id<MenuControllerCocoaDelegate>)delegate {
+  _delegate = delegate;
 }
 
 - (void)cancel {
@@ -239,6 +243,10 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
       }
     }
   }
+
+  if (_delegate)
+    [_delegate controllerWillAddItem:item fromModel:model atIndex:index];
+
   [menu insertItem:item atIndex:index];
 }
 

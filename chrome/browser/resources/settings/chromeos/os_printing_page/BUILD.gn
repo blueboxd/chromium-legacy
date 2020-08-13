@@ -15,6 +15,7 @@ js_type_check("closure_compile") {
     ":cups_printer_dialog_util",
     ":cups_printers",
     ":cups_printers_browser_proxy",
+    ":cups_printers_entry_manager",
     ":cups_settings_add_printer_dialog",
     ":os_printing_page",
   ]

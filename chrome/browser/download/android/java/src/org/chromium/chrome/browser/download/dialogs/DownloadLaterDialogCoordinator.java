@@ -70,6 +70,7 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
      * @param prefService {@link PrefService} to write download later prompt status preference.
      * @param model The data model that defines the UI details.
      */
+    // TODO(xingliu): The public showDialog API should use a param instead of exposing the model.
     public void showDialog(Context context, ModalDialogManager modalDialogManager,
             PrefService prefService, PropertyModel model) {
         if (context == null || modalDialogManager == null) {
@@ -88,10 +89,13 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
         mPropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(mDownloadLaterDialogModel, mCustomView,
                         DownloadLaterDialogView.Binder::bind, true /*performInitialBind*/);
-        mDownloadLaterChoice = model.get(DownloadLaterDialogProperties.INITIAL_CHOICE);
 
         // Set up the modal dialog.
         mDialogModel = getModalDialogModel(context, this);
+
+        // Adjust models based on initial choice.
+        onChoiceChanged(model.get(DownloadLaterDialogProperties.INITIAL_CHOICE));
+
         mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.APP);
     }
 
@@ -138,8 +142,6 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
     }
 
     private void onPositiveButtonClicked(@DownloadLaterDialogChoice int choice) {
-        mDownloadLaterChoice = choice;
-
         // Immediately show the date time picker when selecting the "Download later".
         if (choice == DownloadLaterDialogChoice.DOWNLOAD_LATER) {
             dismissDialog(DialogDismissalCause.ACTION_ON_CONTENT);
@@ -244,6 +246,10 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
 
     @Override
     public void onCheckedChanged(@DownloadLaterDialogChoice int choice) {
+        onChoiceChanged(choice);
+    }
+
+    private void onChoiceChanged(@DownloadLaterDialogChoice int choice) {
         @DownloadLaterDialogChoice
         int previousChoice = mDownloadLaterChoice;
         mDownloadLaterChoice = choice;

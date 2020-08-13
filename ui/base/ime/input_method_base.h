@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
-#include "ui/base/ime/ime_input_context_handler_interface.h"
+#include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/events/event_dispatcher.h"
 
@@ -33,8 +33,7 @@ class TextInputClient;
 // implementations.
 class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
     : public InputMethod,
-      public base::SupportsWeakPtr<InputMethodBase>,
-      public IMEInputContextHandlerInterface {
+      public base::SupportsWeakPtr<InputMethodBase> {
  public:
   ~InputMethodBase() override;
 
@@ -80,32 +79,6 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
                                          TextInputClient* focused) {}
   virtual void OnDidChangeFocusedClient(TextInputClient* focused_before,
                                         TextInputClient* focused) {}
-
-  // IMEInputContextHandlerInterface:
-  void CommitText(const std::string& text) override;
-  void UpdateCompositionText(const CompositionText& text,
-                             uint32_t cursor_pos,
-                             bool visible) override;
-
-#if defined(OS_CHROMEOS)
-  bool SetCompositionRange(
-      uint32_t before,
-      uint32_t after,
-      const std::vector<ui::ImeTextSpan>& text_spans) override;
-  gfx::Range GetAutocorrectRange() override;
-  gfx::Rect GetAutocorrectCharacterBounds() override;
-  bool SetAutocorrectRange(const base::string16& autocorrect_text,
-                           uint32_t start,
-                           uint32_t end) override;
-  bool SetSelectionRange(uint32_t start, uint32_t end) override;
-#endif
-
-  void DeleteSurroundingText(int32_t offset, uint32_t length) override;
-  SurroundingTextInfo GetSurroundingTextInfo() override;
-  void SendKeyEvent(KeyEvent* event) override;
-  InputMethod* GetInputMethod() override;
-  void ConfirmCompositionText(bool reset_engine, bool keep_selection) override;
-  bool HasCompositionText() override;
 
   // Sends a fake key event for IME composing without physical key events.
   // Returns true if the faked key event is stopped propagation.

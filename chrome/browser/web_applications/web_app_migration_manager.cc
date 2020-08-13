@@ -113,9 +113,8 @@ void WebAppMigrationManager::MigrateNextBookmarkAppIcons() {
                              weak_ptr_factory_.GetWeakPtr(), app_id));
 }
 
-void WebAppMigrationManager::OnBookmarkAppIconsRead(
-    const AppId& app_id,
-    std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
+void WebAppMigrationManager::OnBookmarkAppIconsRead(const AppId& app_id,
+                                                    IconBitmaps icon_bitmaps) {
   if (icon_bitmaps.empty()) {
     DLOG(ERROR) << "Read bookmark app icons failed.";
     MigrateNextBookmarkAppIcons();
@@ -236,12 +235,14 @@ std::unique_ptr<WebApp> WebAppMigrationManager::MigrateBookmarkApp(
       bookmark_app_registrar_.IsLocallyInstalled(app_id));
   web_app->SetIconInfos(bookmark_app_registrar_.GetAppIconInfos(app_id));
   web_app->SetDownloadedIconSizes(
-      bookmark_app_registrar_.GetAppDownloadedIconSizes(app_id));
+      IconPurpose::ANY,
+      bookmark_app_registrar_.GetAppDownloadedIconSizesAny(app_id));
+  // Migrated bookmark apps will have no IconPurpose::MASKABLE icons downloaded.
 
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu)) {
     web_app->SetShortcutsMenuItemInfos(
-        bookmark_app_registrar_.GetAppShortcutInfos(app_id));
+        bookmark_app_registrar_.GetAppShortcutsMenuItemInfos(app_id));
     web_app->SetDownloadedShortcutsMenuIconsSizes(
         bookmark_app_registrar_.GetAppDownloadedShortcutsMenuIconsSizes(
             app_id));

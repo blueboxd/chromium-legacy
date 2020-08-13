@@ -47,12 +47,6 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
 
   void LazyInitializeForTest();
 
-  // When enabled, the instance of this class manages when to purge resources
-  // (service worker scripts) which are no longer used.
-  // TODO(crbug.com/1055677): Remove this once resource purging logic is
-  // completely moved from ServiceWorkerRegistry to this class.
-  void EnableResourcePurgingOnNoLiveVersionForTest();
-
  private:
   // storage::mojom::ServiceWorkerStorageControl implementations:
   void GetRegisteredOrigins(GetRegisteredOriginsCallback callback) override;
@@ -198,8 +192,6 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
   base::flat_map<int64_t /*version_id*/,
                  std::unique_ptr<ServiceWorkerLiveVersionRefImpl>>
       live_versions_;
-
-  bool purge_resources_when_no_live_versions_ = false;
 
   base::WeakPtrFactory<ServiceWorkerStorageControlImpl> weak_ptr_factory_{this};
 };

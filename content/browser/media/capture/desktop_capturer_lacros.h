@@ -12,7 +12,7 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace crosapi {
-struct WindowSnapshot;
+struct Bitmap;
 }  // namespace crosapi
 
 namespace content {
@@ -46,7 +46,7 @@ class DesktopCapturerLacros : public webrtc::DesktopCapturer {
  private:
   // Callback for when ash-chrome returns a snapshot of the screen or window as
   // a bitmap.
-  void DidTakeSnapshot(bool success, const crosapi::WindowSnapshot& snapshot);
+  void DidTakeSnapshot(bool success, const crosapi::Bitmap& snapshot);
 
   // Whether this object is capturing screens or windows.
   const CaptureType capture_type_;

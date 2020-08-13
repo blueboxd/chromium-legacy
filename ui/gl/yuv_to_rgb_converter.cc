@@ -206,7 +206,8 @@ YUVToRGBConverter::~YUVToRGBConverter() {
 
 void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
                                         const gfx::Size& size,
-                                        unsigned rgb_texture) {
+                                        unsigned rgb_texture,
+                                        unsigned rgb_texture_type) {
   GLenum source_target_getter = 0;
   switch (source_texture_target_) {
     case GL_TEXTURE_2D:
@@ -233,8 +234,8 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
   // Allocate the rgb texture.
   glActiveTexture(old_active_texture);
   glBindTexture(target, rgb_texture);
-  glTexImage2D(target, 0, GL_RGB, size.width(), size.height(),
-               0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+  glTexImage2D(target, 0, GL_RGB, size.width(), size.height(), 0, GL_RGB,
+               rgb_texture_type, nullptr);
 
   // Set up and issue the draw call.
   glActiveTexture(GL_TEXTURE0);

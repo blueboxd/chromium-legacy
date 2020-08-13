@@ -237,7 +237,10 @@ class WebAppDatabaseTest : public WebAppTest {
       icon_infos[i] = icon;
     }
     app->SetIconInfos(icon_infos);
-    app->SetDownloadedIconSizes({size});
+    if (random.next_bool())
+      app->SetDownloadedIconSizes(IconPurpose::ANY, {size});
+    if (random.next_bool())
+      app->SetDownloadedIconSizes(IconPurpose::MASKABLE, {size});
     app->SetIsGeneratedIcon(random.next_bool());
 
     app->SetFileHandlers(CreateFileHandlers(random.next_uint()));
@@ -523,7 +526,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app->theme_color().has_value());
   EXPECT_FALSE(app->background_color().has_value());
   EXPECT_TRUE(app->icon_infos().empty());
-  EXPECT_TRUE(app->downloaded_icon_sizes().empty());
+  EXPECT_TRUE(app->downloaded_icon_sizes(IconPurpose::ANY).empty());
+  EXPECT_TRUE(app->downloaded_icon_sizes(IconPurpose::MASKABLE).empty());
   EXPECT_FALSE(app->is_generated_icon());
   EXPECT_FALSE(app->is_in_sync_install());
   EXPECT_TRUE(app->sync_fallback_data().name.empty());
@@ -577,7 +581,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->last_launch_time().is_null());
   EXPECT_TRUE(app_copy->install_time().is_null());
   EXPECT_TRUE(app_copy->icon_infos().empty());
-  EXPECT_TRUE(app_copy->downloaded_icon_sizes().empty());
+  EXPECT_TRUE(app_copy->downloaded_icon_sizes(IconPurpose::ANY).empty());
+  EXPECT_TRUE(app_copy->downloaded_icon_sizes(IconPurpose::MASKABLE).empty());
   EXPECT_FALSE(app_copy->is_generated_icon());
   EXPECT_FALSE(app_copy->is_in_sync_install());
   EXPECT_TRUE(app_copy->sync_fallback_data().name.empty());
@@ -611,7 +616,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
     icons.push_back(std::move(icon));
   }
   app->SetIconInfos(std::move(icons));
-  app->SetDownloadedIconSizes(std::move(sizes));
+  app->SetDownloadedIconSizes(IconPurpose::ANY, std::move(sizes));
   app->SetIsGeneratedIcon(false);
 
   controller().RegisterApp(std::move(app));

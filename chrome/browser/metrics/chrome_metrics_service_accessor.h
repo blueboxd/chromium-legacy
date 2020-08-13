@@ -120,6 +120,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class NavigationMetricsRecorder;
   friend class ChromeBrowserMainExtraPartsGpu;
   friend class Browser;
+  friend class OptimizationGuideKeyedService;
 
 #if defined(OS_CHROMEOS)
   friend class ChromeCameraAppUIDelegate;

@@ -381,10 +381,11 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
       break;
 
     case InitiatorLockCompatibility::kNoLock:
-      // TODO(lukasza): https://crbug.com/1098938: Browser process should always
+      // TODO(lukasza): https://crbug.com/1114906: Browser process should always
       // specify the request_initiator_site_lock in URLLoaderFactories given to
-      // a renderer process.  Once https://crbug.com/1098938 is fixed, the case
-      // below should return |false| (i.e. = bad message).
+      // a renderer process.  Once issues blocking https://crbug.com/1114906 are
+      // fixed, the case below should return |false| and call
+      // mojo::ReportBadMessage.
       break;
 
     case InitiatorLockCompatibility::kNoInitiator:

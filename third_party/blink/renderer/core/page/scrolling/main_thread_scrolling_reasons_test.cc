@@ -397,14 +397,17 @@ TEST_F(NonCompositedMainThreadScrollingReasonsTest,
       cc::MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText);
 }
 
+#if 0
+// TODO(crbug.com/1113269): Temporarily disabled.
 TEST_F(NonCompositedMainThreadScrollingReasonsTest, ClipTest) {
   TestNonCompositedReasons("clip",
                            cc::MainThreadScrollingReason::kNotScrollingOnMain);
 }
+#endif
 
 TEST_F(NonCompositedMainThreadScrollingReasonsTest, ClipPathTest) {
-  TestNonCompositedReasons("clip-path",
-                           cc::MainThreadScrollingReason::kNotScrollingOnMain);
+  TestNonCompositedReasons(
+      "clip-path", cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText);
 }
 
 TEST_F(NonCompositedMainThreadScrollingReasonsTest, BoxShadowTest) {
@@ -424,8 +427,9 @@ TEST_F(NonCompositedMainThreadScrollingReasonsTest, StackingContextTest) {
 }
 
 TEST_F(NonCompositedMainThreadScrollingReasonsTest, BorderRadiusTest) {
-  TestNonCompositedReasons("border-radius",
-                           cc::MainThreadScrollingReason::kNotScrollingOnMain);
+  TestNonCompositedReasons(
+      "border-radius",
+      cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText);
 }
 
 TEST_F(NonCompositedMainThreadScrollingReasonsTest,

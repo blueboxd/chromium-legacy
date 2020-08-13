@@ -22,8 +22,6 @@ namespace media {
 class MEDIA_GPU_EXPORT CodecOutputBufferRenderer {
  public:
   using BindingsMode = gpu::StreamTextureSharedImageInterface::BindingsMode;
-  // Whether RenderToTextureOwnerBackBuffer may block or not.
-  enum class BlockingMode { kForbidBlocking, kAllowBlocking };
 
   CodecOutputBufferRenderer(
       std::unique_ptr<CodecOutputBuffer> output_buffer,
@@ -52,11 +50,9 @@ class MEDIA_GPU_EXPORT CodecOutputBufferRenderer {
   // Renders this image to the back buffer of its texture owner. Only valid if
   // is_texture_owner_backed(). Returns true if the buffer is in the back
   // buffer. Returns false if the buffer was invalidated.
-  // |blocking_mode| indicates whether this should (a) wait for any previously
-  // pending rendered frame before rendering this one, or (b) fail if a wait
-  // is required.
-  bool RenderToTextureOwnerBackBuffer(
-      BlockingMode blocking_mode = BlockingMode::kAllowBlocking);
+  // RenderToTextureOwnerBackBuffer() will not block if there is any previously
+  // pending frame and will return false in this case.
+  bool RenderToTextureOwnerBackBuffer();
 
   // Whether the codec buffer has been rendered to the front buffer.
   bool was_rendered_to_front_buffer() const {

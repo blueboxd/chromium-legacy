@@ -127,7 +127,7 @@ void TestWebXRSessionEndWhenEventTriggered(
   t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestSessionEnded) {
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, DISABLED_TestSessionEnded) {
   TestWebXRSessionEndWhenEventTriggered(
       this, device_test::mojom::EventType::kSessionLost);
 }

@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/post_task.h"
@@ -454,11 +455,12 @@ void IconLoadingPipeline::LoadWebAppIcon(
   // constructor.
   icon_scale_for_compressed_response_ = icon_scale_;
 
-  if (icon_manager.HasSmallestIcon(web_app_id, icon_size_in_px_)) {
+  if (icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::ANY},
+                                   icon_size_in_px_)) {
     switch (icon_type_) {
       case apps::mojom::IconType::kCompressed:
         if (icon_effects_ == apps::IconEffects::kNone) {
-          icon_manager.ReadSmallestCompressedIcon(
+          icon_manager.ReadSmallestCompressedIconAny(
               web_app_id, icon_size_in_px_,
               base::BindOnce(&IconLoadingPipeline::CompleteWithCompressed,
                              base::WrapRefCounted(this)));
@@ -483,7 +485,7 @@ void IconLoadingPipeline::LoadWebAppIcon(
         // If |icon_effects| are requested, we must always load the
         // uncompressed image to apply the icon effects, and then re-encode the
         // image if the compressed icon is requested.
-        icon_manager.ReadSmallestIcon(
+        icon_manager.ReadSmallestIconAny(
             web_app_id, icon_size_in_px_,
             SkBitmapToImageSkiaCallback(
                 base::BindOnce(
@@ -948,6 +950,8 @@ void ArcRawIconPngDataToImageSkia(
 
   // For non-adaptive icons, add the white color background, and apply the mask.
   if (!icon->is_adaptive_icon) {
+    base::UmaHistogramBoolean("Arc.AdaptiveIconLoad.FromNonArcAppIcon", false);
+
     if (!icon->icon_png_data.has_value() ||
         icon->icon_png_data.value().empty()) {
       std::move(callback).Run(gfx::ImageSkia());
@@ -960,6 +964,8 @@ void ArcRawIconPngDataToImageSkia(
     icon_loader->LoadArcIconPngData(icon->icon_png_data.value());
     return;
   }
+
+  base::UmaHistogramBoolean("Arc.AdaptiveIconLoad.FromNonArcAppIcon", true);
 
   if (!icon->foreground_icon_png_data.has_value() ||
       icon->foreground_icon_png_data.value().empty() ||

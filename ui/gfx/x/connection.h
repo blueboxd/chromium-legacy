@@ -36,7 +36,7 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   // Gets or creates the singleton connection.
   static Connection* Get();
 
-  explicit Connection();
+  explicit Connection(const std::string& address = "");
   ~Connection();
 
   Connection(const Connection&) = delete;
@@ -92,6 +92,8 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
 
   // Access the event buffer.  Clients can add, delete, or modify events.
   std::list<Event>& events() { return events_; }
+
+  std::unique_ptr<Connection> Clone() const;
 
  private:
   friend class FutureBase;

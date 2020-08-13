@@ -14,8 +14,8 @@
 #include "ui/base/window_open_disposition.h"
 
 class CommandUpdater;
+class GURL;
 class Profile;
-class PromoBrowserCommandHandlerTest;
 
 // Handles promo browser commands send from JS.
 class PromoBrowserCommandHandler
@@ -40,12 +40,14 @@ class PromoBrowserCommandHandler
       int command_id,
       WindowOpenDisposition disposition) override;
 
- private:
-  friend class PromoBrowserCommandHandlerTest;
+ protected:
+  void EnableCommands();
 
-  void SetCommandUpdaterForTesting(
-      std::unique_ptr<CommandUpdater> command_updater);
-  CommandUpdater* command_updater() { return command_updater_.get(); }
+  virtual CommandUpdater* GetCommandUpdater();
+
+ private:
+  virtual void NavigateToURL(const GURL& url,
+                             WindowOpenDisposition disposition);
 
   Profile* profile_;
   std::unique_ptr<CommandUpdater> command_updater_;

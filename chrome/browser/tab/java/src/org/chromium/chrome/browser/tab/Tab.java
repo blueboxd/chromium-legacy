@@ -157,14 +157,6 @@ public interface Tab extends TabLifecycle {
     int getLaunchType();
 
     /**
-     * @return The reason the Tab was launched. This remains unchanged, while {@link
-     *         #getLaunchType()} can change over time.
-     */
-    @Nullable
-    @TabLaunchType
-    Integer getLaunchTypeAtInitialTabCreation();
-
-    /**
      * @return {@code true} if the Tab is in incognito mode.
      */
     boolean isIncognito();

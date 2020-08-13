@@ -9,17 +9,17 @@
 serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
 
-  await port.open({baudrate: 9600});
+  await port.open({baudRate: 9600});
   return promise_rejects_dom(
-      t, 'InvalidStateError', port.open({baudrate: 9600}));
+      t, 'InvalidStateError', port.open({baudRate: 9600}));
 }, 'A SerialPort cannot be opened if it is already open.');
 
 serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
 
-  const firstRequest = port.open({baudrate: 9600});
+  const firstRequest = port.open({baudRate: 9600});
   await promise_rejects_dom(
-      t, 'InvalidStateError', port.open({baudrate: 9600}));
+      t, 'InvalidStateError', port.open({baudRate: 9600}));
   await firstRequest;
 }, 'Simultaneous calls to open() are disallowed.');
 
@@ -29,21 +29,21 @@ serial_test(async (t, fake) => {
   await promise_rejects_js(t, TypeError, port.open({}));
 
   await Promise.all([-1, 0].map(
-      baudrate => {
-          return promise_rejects_js(t, TypeError, port.open({baudrate}))}));
+      baudRate => {
+          return promise_rejects_js(t, TypeError, port.open({baudRate}))}));
 }, 'Baud rate is required and must be greater than zero.');
 
 serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
 
-  await Promise.all([-1, 0, 6, 9].map(databits => {
+  await Promise.all([-1, 0, 6, 9].map(dataBits => {
     return promise_rejects_js(
-        t, TypeError, port.open({baudrate: 9600, databits}));
+        t, TypeError, port.open({baudRate: 9600, dataBits}));
   }));
 
-  await[undefined, 7, 8].reduce(async (previousTest, databits) => {
+  await[undefined, 7, 8].reduce(async (previousTest, dataBits) => {
     await previousTest;
-    await port.open({baudrate: 9600, databits});
+    await port.open({baudRate: 9600, dataBits});
     await port.close();
   }, Promise.resolve());
 }, 'Data bits must be 7 or 8');
@@ -53,14 +53,14 @@ serial_test(async (t, fake) => {
 
   await Promise.all([0, null, 'cats'].map(parity => {
     return promise_rejects_js(
-        t, TypeError, port.open({baudrate: 9600, parity}),
+        t, TypeError, port.open({baudRate: 9600, parity}),
         `Should reject parity option "${parity}"`);
   }));
 
   await[undefined, 'none', 'even', 'odd'].reduce(
       async (previousTest, parity) => {
         await previousTest;
-        await port.open({baudrate: 9600, parity});
+        await port.open({baudRate: 9600, parity});
         await port.close();
       },
       Promise.resolve());
@@ -69,14 +69,14 @@ serial_test(async (t, fake) => {
 serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
 
-  await Promise.all([-1, 0, 3, 4].map(stopbits => {
+  await Promise.all([-1, 0, 3, 4].map(stopBits => {
     return promise_rejects_js(
-        t, TypeError, port.open({baudrate: 9600, stopbits}));
+        t, TypeError, port.open({baudRate: 9600, stopBits}));
   }));
 
-  await[undefined, 1, 2].reduce(async (previousTest, stopbits) => {
+  await[undefined, 1, 2].reduce(async (previousTest, stopBits) => {
     await previousTest;
-    await port.open({baudrate: 9600, stopbits});
+    await port.open({baudRate: 9600, stopBits});
     await port.close();
   }, Promise.resolve());
 }, 'Stop bits must be 1 or 2');
@@ -85,15 +85,15 @@ serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
 
   await promise_rejects_js(
-      t, TypeError, port.open({baudrate: 9600, buffersize: -1}));
+      t, TypeError, port.open({baudRate: 9600, bufferSize: -1}));
   await promise_rejects_js(
-      t, TypeError, port.open({baudrate: 9600, buffersize: 0}));
+      t, TypeError, port.open({baudRate: 9600, bufferSize: 0}));
 }, 'Buffer size must be greater than zero.');
 
 serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
 
-  const buffersize = 1 * 1024 * 1024 * 1024 /* 1 GiB */;
+  const bufferSize = 1 * 1024 * 1024 * 1024 /* 1 GiB */;
   return promise_rejects_js(
-      t, TypeError, port.open({baudrate: 9600, buffersize}));
+      t, TypeError, port.open({baudRate: 9600, bufferSize}));
 }, 'Unreasonably large buffer sizes are rejected.');

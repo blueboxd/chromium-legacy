@@ -514,6 +514,8 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
 }
 
 void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
+  synthetic_gesture_controller_.reset();
+
   if (view) {
     view_ = view->GetWeakPtr();
     if (!create_frame_sink_callback_.is_null())
@@ -521,8 +523,6 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
   } else {
     view_.reset();
   }
-
-  synthetic_gesture_controller_.reset();
 }
 
 // static

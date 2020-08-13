@@ -84,10 +84,6 @@ const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
 // Enable in-progress canvas 2d API features.
 const char kEnableNewCanvas2DAPI[] = "new-canvas-2d-api";
 
-// Disables hardware acceleration of video decode, where available.
-const char kDisableAcceleratedVideoDecode[] =
-    "disable-accelerated-video-decode";
-
 // Disables hardware acceleration of video encode, where available.
 const char kDisableAcceleratedVideoEncode[] =
     "disable-accelerated-video-encode";
@@ -911,6 +907,9 @@ const char kWebRtcStunProbeTrialParameter[] = "webrtc-stun-probe-trial";
 // without restarting the browser and relaunching without this flag.
 const char kWebRtcLocalEventLogging[] = "webrtc-event-logging";
 
+// This switch disables the ScrollToTextFragment feature.
+const char kDisableScrollToTextFragment[] = "disable-scroll-to-text-fragment";
+
 // Forcibly enable and select the specified runtime for webxr.
 // Note that this provides an alternative means of enabling a runtime, and will
 // also functionally disable all other runtimes.
@@ -927,8 +926,14 @@ const char kWebXrRuntimeOpenVr[] = "openvr";
 const char kWebXrRuntimeOpenXr[] = "openxr";
 const char kWebXrRuntimeWMR[] = "windows-mixed-reality";
 
-// This switch disables the ScrollToTextFragment feature.
-const char kDisableScrollToTextFragment[] = "disable-scroll-to-text-fragment";
+// Disables hardware acceleration of video decode, where available.
+const char kDisableAcceleratedVideoDecode[] =
+    "disable-accelerated-video-decode";
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+// Enables hardware acceleration of video decoding on linux. (defaults to off)
+const char kEnableAcceleratedVideoDecode[] = "enable-accelerated-video-decode";
+#endif
 
 #if defined(OS_ANDROID)
 // Disable Media Session API

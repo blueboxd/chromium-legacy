@@ -22,6 +22,9 @@ struct TestUntrustedDataSourceCSP {
   base::Optional<std::string> child_src = base::nullopt;
   base::Optional<std::string> script_src = base::nullopt;
   base::Optional<std::string> default_src = base::nullopt;
+  // Trusted Types is enabled by default for TestUntrustedDataSource.
+  // Setting this to true will disable Trusted Types.
+  bool no_trusted_types = false;
   bool no_xfo = false;
   base::Optional<std::vector<std::string>> frame_ancestors = base::nullopt;
 };

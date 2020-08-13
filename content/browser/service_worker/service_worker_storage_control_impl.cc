@@ -49,9 +49,18 @@ class ServiceWorkerLiveVersionRefImpl
 
   void set_purgeable_resources(
       const std::vector<int64_t>& purgeable_resources) {
-    DCHECK(purgeable_resources_.empty());
+    if (!purgeable_resources_.empty()) {
+      // This setter method can be called multiple times but the resource ids
+      // should be the same.
+      DCHECK(std::set<int64_t>(purgeable_resources_.begin(),
+                               purgeable_resources_.end()) ==
+             std::set<int64_t>(purgeable_resources.begin(),
+                               purgeable_resources.end()));
+      return;
+    }
     purgeable_resources_ = purgeable_resources;
   }
+
   const std::vector<int64_t>& purgeable_resources() const {
     return purgeable_resources_;
   }
@@ -90,8 +99,7 @@ void ServiceWorkerStorageControlImpl::Bind(
 void ServiceWorkerStorageControlImpl::OnNoLiveVersion(int64_t version_id) {
   auto it = live_versions_.find(version_id);
   DCHECK(it != live_versions_.end());
-  if (purge_resources_when_no_live_versions_ &&
-      it->second->purgeable_resources().size() > 0) {
+  if (it->second->purgeable_resources().size() > 0) {
     storage_->PurgeResources(it->second->purgeable_resources());
   }
   live_versions_.erase(it);
@@ -99,11 +107,6 @@ void ServiceWorkerStorageControlImpl::OnNoLiveVersion(int64_t version_id) {
 
 void ServiceWorkerStorageControlImpl::LazyInitializeForTest() {
   storage_->LazyInitializeForTest();
-}
-
-void ServiceWorkerStorageControlImpl::
-    EnableResourcePurgingOnNoLiveVersionForTest() {
-  purge_resources_when_no_live_versions_ = true;
 }
 
 void ServiceWorkerStorageControlImpl::GetRegisteredOrigins(
@@ -469,8 +472,7 @@ ServiceWorkerStorageControlImpl::CreateLiveVersionReferenceRemote(
 void ServiceWorkerStorageControlImpl::MaybePurgeResources(
     int64_t version_id,
     const std::vector<int64_t>& purgeable_resources) {
-  if (!purge_resources_when_no_live_versions_ ||
-      version_id == blink::mojom::kInvalidServiceWorkerVersionId ||
+  if (version_id == blink::mojom::kInvalidServiceWorkerVersionId ||
       purgeable_resources.size() == 0) {
     return;
   }

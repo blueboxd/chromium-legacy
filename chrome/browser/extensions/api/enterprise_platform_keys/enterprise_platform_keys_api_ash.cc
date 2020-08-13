@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
+#include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api_ash.h"
 
 #include <utility>
 

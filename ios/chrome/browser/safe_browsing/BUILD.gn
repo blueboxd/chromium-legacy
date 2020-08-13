@@ -58,6 +58,7 @@ source_set("safe_browsing") {
     "//ios/chrome/browser/sync",
     "//ios/components/security_interstitials",
     "//ios/net",
+    "//ios/web/common:user_agent",
     "//ios/web/public",
     "//ios/web/public/init",
     "//mojo/public/cpp/bindings",

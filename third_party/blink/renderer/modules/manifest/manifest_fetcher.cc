@@ -32,7 +32,7 @@ void ManifestFetcher::Start(LocalDOMWindow& window,
                                  ? network::mojom::CredentialsMode::kInclude
                                  : network::mojom::CredentialsMode::kOmit);
 
-  ResourceLoaderOptions resource_loader_options;
+  ResourceLoaderOptions resource_loader_options(window.GetCurrentWorld());
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
   loader_ = MakeGarbageCollected<ThreadableLoader>(

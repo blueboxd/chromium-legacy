@@ -2544,6 +2544,18 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   return needs_composited_scrolling;
 }
 
+static bool IsOpaqueForLCDText(const PaintLayer& layer, const LayoutBox& box) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return box.TextIsKnownToBeOnOpaqueBackground();
+
+  // TODO(crbug.com/1113269): TextIsKnownToBeOnOpaqueBackground() is temporarily
+  // replaced with BackgroundIsKnownToBeOpaqueInRect() to evaluate the
+  // performance improvement. Will restore after 1 or 2 canary builds.
+  DisableCompositingQueryAsserts disabler;
+  return layer.BackgroundIsKnownToBeOpaqueInRect(box.PhysicalPaddingBoxRect(),
+                                                 true);
+}
+
 bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
     BackgroundPaintLocation background_paint_location_if_composited,
     bool force_prefer_compositing_to_lcd_text) {
@@ -2589,7 +2601,8 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
           cc::MainThreadScrollingReason::kHasTransformAndLCDText;
       needs_composited_scrolling = false;
     }
-    if (!box->TextIsKnownToBeOnOpaqueBackground()) {
+
+    if (!IsOpaqueForLCDText(*layer_, *box)) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText;
       needs_composited_scrolling = false;
@@ -2601,6 +2614,15 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
           MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText;
       needs_composited_scrolling = false;
     }
+  }
+
+  // TODO(crbug.com/1113269): Temporary.
+  if (box->HasClip() || layer_->HasDescendantWithClipPath() ||
+      !!layer_->ClipPathAncestor()) {
+    non_composited_main_thread_scrolling_reasons_ |=
+        // Just a random flag to disable composited scrolling.
+        cc::MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText;
+    needs_composited_scrolling = false;
   }
 
   DCHECK(!(non_composited_main_thread_scrolling_reasons_ &

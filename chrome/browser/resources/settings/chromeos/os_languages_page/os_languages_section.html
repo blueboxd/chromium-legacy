@@ -2,7 +2,9 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="input_page.html">
 <link rel="import" href="os_languages_page.html">
+<link rel="import" href="os_languages_page_v2.html">
 <link rel="import" href="smart_inputs_page.html">
 <link rel="import" href="input_method_options_page.html">
 <link rel="import" href="../../i18n_setup.html">
@@ -83,7 +85,11 @@
         <settings-subpage
             associated-control="[[$$('#languagesPageTrigger')]]"
             page-title="$i18n{languagesPageTitle}">
-          <os-settings-languages-page-v2>
+          <os-settings-languages-page-v2
+              language-helper="[[languageHelper]]"
+              languages="[[languages]]"
+              prefs="{{prefs}}">
+          </os-settings-languages-page-v2>
         </settings-subpage>
       </template>
 
@@ -92,7 +98,8 @@
         <settings-subpage
             associated-control="[[$$('#inputPageTrigger')]]"
             page-title="$i18n{inputPageTitle}">
-          <os-settings-input-page>
+          <os-settings-input-page prefs="{{prefs}}">
+          </os-settings-input-page>
         </settings-subpage>
       </template>
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_IME_ENGINE_HANDLER_INTERFACE_H_
-#define UI_BASE_IME_IME_ENGINE_HANDLER_INTERFACE_H_
+#ifndef UI_BASE_IME_CHROMEOS_IME_ENGINE_HANDLER_INTERFACE_H_
+#define UI_BASE_IME_CHROMEOS_IME_ENGINE_HANDLER_INTERFACE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -34,7 +34,7 @@ struct AssistiveWindowButton;
 #endif  // defined(OS_CHROMEOS)
 
 // A interface to handle the engine handler method call.
-class COMPONENT_EXPORT(UI_BASE_IME) IMEEngineHandlerInterface {
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) IMEEngineHandlerInterface {
  public:
   typedef base::OnceCallback<void(bool consumed)> KeyEventDoneCallback;
 
@@ -149,4 +149,4 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEEngineHandlerInterface {
 
 }  // namespace ui
 
-#endif  // UI_BASE_IME_IME_ENGINE_HANDLER_INTERFACE_H_
+#endif  // UI_BASE_IME_CHROMEOS_IME_ENGINE_HANDLER_INTERFACE_H_

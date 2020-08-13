@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "content/browser/isolation_context.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/content_export.h"
@@ -420,17 +419,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   static bool ShouldLockProcess(const IsolationContext& isolation_context,
                                 const GURL& site_url,
                                 const bool is_guest);
-
-  // Converts |lock| into an origin that can be used as
-  // |URLLoaderFactoryParams::request_initiator_site_lock|.
-  // This means that the returned origin can be safely used in a eTLD+1
-  // comparison against |network::ResourceRequest::request_initiator|.
-  //
-  // base::nullopt is returned if |lock| cannot be used as a
-  // |request_initiator_site_lock| (e.g. in case of site_url =
-  // chrome-guest://...).
-  static base::Optional<url::Origin> GetRequestInitiatorSiteLock(
-      const ProcessLock& lock);
 
   // Return an ID of the next BrowsingInstance to be created.  This ID is
   // guaranteed to be higher than any ID of an existing BrowsingInstance.

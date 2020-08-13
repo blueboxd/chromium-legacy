@@ -58,7 +58,7 @@ base::AtomicSequenceNumber g_memory_dump_ids;
 base::AtomicSequenceNumber g_cv_pixel_buffer_ids;
 
 // Only H.264 with 4:2:0 chroma sampling is supported.
-const VideoCodecProfile kSupportedProfiles[] = {
+constexpr VideoCodecProfile kSupportedProfiles[] = {
     H264PROFILE_BASELINE, H264PROFILE_EXTENDED, H264PROFILE_MAIN,
     H264PROFILE_HIGH,
 
@@ -77,7 +77,7 @@ const VideoCodecProfile kSupportedProfiles[] = {
 };
 
 // Size to use for NALU length headers in AVC format (can be 1, 2, or 4).
-const int kNALUHeaderLength = 4;
+constexpr int kNALUHeaderLength = 4;
 
 // We request 16 picture buffers from the client, each of which has a texture ID
 // that we can bind decoded frames to. The resource requirements are low, as we
@@ -96,7 +96,7 @@ const int kNALUHeaderLength = 4;
 //
 // Allocating more picture buffers than VideoRendererImpl is willing to queue
 // counterintuitively reduces memory usage in this case.
-const int kNumPictureBuffers = limits::kMaxVideoFrames * 4;
+constexpr int kNumPictureBuffers = limits::kMaxVideoFrames * 4;
 
 // Maximum number of frames to queue for reordering. (Also controls the maximum
 // number of in-flight frames, since NotifyEndOfBitstreamBuffer() is called when
@@ -104,7 +104,7 @@ const int kNumPictureBuffers = limits::kMaxVideoFrames * 4;
 //
 // Since the maximum possible |reorder_window| is 16 for H.264, 17 is the
 // minimum safe (static) size of the reorder queue.
-const int kMaxReorderQueueSize = 17;
+constexpr int kMaxReorderQueueSize = 17;
 
 // Build an |image_config| dictionary for VideoToolbox initialization.
 base::ScopedCFTypeRef<CFMutableDictionaryRef> BuildImageConfig(
@@ -140,96 +140,100 @@ base::ScopedCFTypeRef<CFMutableDictionaryRef> BuildImageConfig(
   return image_config;
 }
 
-// Create a VTDecompressionSession using the provided |pps| and |sps|. If
-// |require_hardware| is true, the session must uses real hardware decoding
-// (as opposed to software decoding inside of VideoToolbox) to be considered
-// successful.
-//
-// TODO(sandersd): Merge with ConfigureDecoder(), as the code is very similar.
-bool CreateVideoToolboxSession(const uint8_t* sps,
-                               size_t sps_size,
-                               const uint8_t* pps,
-                               size_t pps_size,
-                               bool require_hardware) {
-  if(!__builtin_available(macOS 10.9,*)) {
-    return false;
+// Create a CMFormatDescription using the provided |pps| and |sps|.
+base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateVideoFormatH264(
+    const std::vector<uint8_t>& sps,
+    const std::vector<uint8_t>& spsext,
+    const std::vector<uint8_t>& pps) {
+  if (@available(macOS 10.10, *)) {
+  	return false;
   }
-  const uint8_t* data_ptrs[] = {sps, pps};
-  const size_t data_sizes[] = {sps_size, pps_size};
+  DCHECK(!sps.empty());
+  DCHECK(!pps.empty());
 
+  // Build the configuration records.
+  std::vector<const uint8_t*> nalu_data_ptrs;
+  std::vector<size_t> nalu_data_sizes;
+  nalu_data_ptrs.reserve(3);
+  nalu_data_sizes.reserve(3);
+  nalu_data_ptrs.push_back(&sps.front());
+  nalu_data_sizes.push_back(sps.size());
+  if (!spsext.empty()) {
+    nalu_data_ptrs.push_back(&spsext.front());
+    nalu_data_sizes.push_back(spsext.size());
+  }
+  nalu_data_ptrs.push_back(&pps.front());
+  nalu_data_sizes.push_back(pps.size());
+
+  // Construct a new format description from the parameter sets.
   base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
   OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSets(
       kCFAllocatorDefault,
-      2,                  // parameter_set_count
-      data_ptrs,          // &parameter_set_pointers
-      data_sizes,         // &parameter_set_sizes
-      kNALUHeaderLength,  // nal_unit_header_length
+      nalu_data_ptrs.size(),     // parameter_set_count
+      &nalu_data_ptrs.front(),   // &parameter_set_pointers
+      &nalu_data_sizes.front(),  // &parameter_set_sizes
+      kNALUHeaderLength,         // nal_unit_header_length
       format.InitializeInto());
-  if (status) {
-    OSSTATUS_DLOG(WARNING, status)
-        << "Failed to create CMVideoFormatDescription";
-    return false;
-  }
+  OSSTATUS_DLOG_IF(WARNING, status != noErr, status)
+      << "CMVideoFormatDescriptionCreateFromH264ParameterSets()";
+  return format;
+}
 
+// Create a VTDecompressionSession using the provided |format|. If
+// |require_hardware| is true, the session will only use the hardware decoder.
+bool CreateVideoToolboxSession(
+    const CMFormatDescriptionRef format,
+    bool require_hardware,
+    const VTDecompressionOutputCallbackRecord* callback,
+    base::ScopedCFTypeRef<VTDecompressionSessionRef>* session,
+    gfx::Size* configured_size) {
+  // Prepare VideoToolbox configuration dictionaries.
   base::ScopedCFTypeRef<CFMutableDictionaryRef> decoder_config(
       CFDictionaryCreateMutable(kCFAllocatorDefault,
                                 1,  // capacity
                                 &kCFTypeDictionaryKeyCallBacks,
                                 &kCFTypeDictionaryValueCallBacks));
-  if (!decoder_config.get())
+  if (!decoder_config) {
+    DLOG(ERROR) << "Failed to create CFMutableDictionary";
     return false;
-
-  if (require_hardware) {
-    CFDictionarySetValue(
-        decoder_config,
-        // kVTVideoDecoderSpecification_RequireHardwareAcceleratedVideoDecoder
-        CFSTR("RequireHardwareAcceleratedVideoDecoder"), kCFBooleanTrue);
   }
 
+  CFDictionarySetValue(
+      decoder_config,
+      kVTVideoDecoderSpecification_EnableHardwareAcceleratedVideoDecoder,
+      kCFBooleanTrue);
+  CFDictionarySetValue(
+      decoder_config,
+      kVTVideoDecoderSpecification_RequireHardwareAcceleratedVideoDecoder,
+      require_hardware ? kCFBooleanTrue : kCFBooleanFalse);
+
+  // VideoToolbox scales the visible rect to the output size, so we set the
+  // output size for a 1:1 ratio. (Note though that VideoToolbox does not handle
+  // top or left crops correctly.) We expect the visible rect to be integral.
   CGRect visible_rect = CMVideoFormatDescriptionGetCleanAperture(format, true);
   CMVideoDimensions visible_dimensions = {visible_rect.size.width,
                                           visible_rect.size.height};
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
       BuildImageConfig(visible_dimensions));
-  if (!image_config.get())
+  if (!image_config) {
+    DLOG(ERROR) << "Failed to create decoder image configuration";
     return false;
-
-  // TODO(crbug.com/871280): Remove this once crash is resolved.
-  static crash_reporter::CrashKeyString<64> vt_decode_pref("vt_decode_pref");
-  static crash_reporter::CrashKeyString<64> hardware_interlaced_pref(
-      "hardware_interlaced");
-
-  base::ScopedCFTypeRef<CFPropertyListRef> prop_list(CFPreferencesCopyAppValue(
-      CFSTR("VTDecodeServer"), CFSTR("com.apple.coremedia")));
-  if (prop_list.get() && CFGetTypeID(prop_list) == CFStringGetTypeID()) {
-    vt_decode_pref.Set(
-        base::SysCFStringRefToUTF8(static_cast<CFStringRef>(prop_list.get())));
   }
 
-  base::ScopedCFTypeRef<CFPropertyListRef> interlaced_value(
-      CFPreferencesCopyValue(CFSTR("hardwareVideoDecoderInterlacedBypass"),
-                             CFSTR("com.apple.coremedia"),
-                             kCFPreferencesCurrentUser, kCFPreferencesAnyHost));
-  if (interlaced_value.get() &&
-      CFGetTypeID(interlaced_value) == CFStringGetTypeID()) {
-    hardware_interlaced_pref.Set(base::SysCFStringRefToUTF8(
-        static_cast<CFStringRef>(interlaced_value.get())));
-  }
-
-  VTDecompressionOutputCallbackRecord callback = {0};
-
-  base::ScopedCFTypeRef<VTDecompressionSessionRef> session;
-  status = VTDecompressionSessionCreate(
+  OSStatus status = VTDecompressionSessionCreate(
       kCFAllocatorDefault,
       format,          // video_format_description
       decoder_config,  // video_decoder_specification
       image_config,    // destination_image_buffer_attributes
-      &callback,       // output_callback
-      session.InitializeInto());
-  if (status) {
-    OSSTATUS_DVLOG(1, status) << "Failed to create VTDecompressionSession";
+      callback,        // output_callback
+      session->InitializeInto());
+  if (status != noErr) {
+    OSSTATUS_DLOG(WARNING, status) << "VTDecompressionSessionCreate()";
     return false;
   }
+
+  *configured_size =
+      gfx::Size(visible_rect.size.width, visible_rect.size.height);
 
   return true;
 }
@@ -241,27 +245,35 @@ bool CreateVideoToolboxSession(const uint8_t* sps,
 // session fails, hardware decoding will be disabled (Initialize() will always
 // return false).
 bool InitializeVideoToolboxInternal() {
+  VTDecompressionOutputCallbackRecord callback = {0};
+  base::ScopedCFTypeRef<VTDecompressionSessionRef> session;
+  gfx::Size configured_size;
+
   // Create a hardware decoding session.
   // SPS and PPS data are taken from a 480p sample (buck2.mp4).
-  const uint8_t sps_normal[] = {0x67, 0x64, 0x00, 0x1e, 0xac, 0xd9, 0x80, 0xd4,
-                                0x3d, 0xa1, 0x00, 0x00, 0x03, 0x00, 0x01, 0x00,
-                                0x00, 0x03, 0x00, 0x30, 0x8f, 0x16, 0x2d, 0x9a};
-  const uint8_t pps_normal[] = {0x68, 0xe9, 0x7b, 0xcb};
-  if (!CreateVideoToolboxSession(sps_normal, base::size(sps_normal), pps_normal,
-                                 base::size(pps_normal), true)) {
-    DVLOG(1) << "Hardware decoding with VideoToolbox is not supported";
+  const std::vector<uint8_t> sps_normal = {
+      0x67, 0x64, 0x00, 0x1e, 0xac, 0xd9, 0x80, 0xd4, 0x3d, 0xa1, 0x00, 0x00,
+      0x03, 0x00, 0x01, 0x00, 0x00, 0x03, 0x00, 0x30, 0x8f, 0x16, 0x2d, 0x9a};
+  const std::vector<uint8_t> pps_normal = {0x68, 0xe9, 0x7b, 0xcb};
+  if (!CreateVideoToolboxSession(
+          CreateVideoFormatH264(sps_normal, std::vector<uint8_t>(), pps_normal),
+          /*require_hardware=*/true, &callback, &session, &configured_size)) {
+    DVLOG(1) << "Hardware H264 decoding with VideoToolbox is not supported";
     return false;
   }
 
+  session.reset();
+
   // Create a software decoding session.
   // SPS and PPS data are taken from a 18p sample (small2.mp4).
-  const uint8_t sps_small[] = {0x67, 0x64, 0x00, 0x0a, 0xac, 0xd9, 0x89, 0x7e,
-                               0x22, 0x10, 0x00, 0x00, 0x3e, 0x90, 0x00, 0x0e,
-                               0xa6, 0x08, 0xf1, 0x22, 0x59, 0xa0};
-  const uint8_t pps_small[] = {0x68, 0xe9, 0x79, 0x72, 0xc0};
-  if (!CreateVideoToolboxSession(sps_small, base::size(sps_small), pps_small,
-                                 base::size(pps_small), false)) {
-    DLOG(WARNING) << "Software decoding with VideoToolbox is not supported";
+  const std::vector<uint8_t> sps_small = {
+      0x67, 0x64, 0x00, 0x0a, 0xac, 0xd9, 0x89, 0x7e, 0x22, 0x10, 0x00,
+      0x00, 0x3e, 0x90, 0x00, 0x0e, 0xa6, 0x08, 0xf1, 0x22, 0x59, 0xa0};
+  const std::vector<uint8_t> pps_small = {0x68, 0xe9, 0x79, 0x72, 0xc0};
+  if (!CreateVideoToolboxSession(
+          CreateVideoFormatH264(sps_small, std::vector<uint8_t>(), pps_small),
+          /*require_hardware=*/false, &callback, &session, &configured_size)) {
+    DVLOG(1) << "Software H264 decoding with VideoToolbox is not supported";
     return false;
   }
 
@@ -502,90 +514,32 @@ bool VTVideoDecodeAccelerator::FinishDelayedFrames() {
 }
 
 bool VTVideoDecodeAccelerator::ConfigureDecoder() {
-  if(!__builtin_available(macOS 10.9,*)) {
-    return false;
-  }
   DVLOG(2) << __func__;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!active_sps_.empty());
-  DCHECK(!active_pps_.empty());
 
-  // Build the configuration records.
-  std::vector<const uint8_t*> nalu_data_ptrs;
-  std::vector<size_t> nalu_data_sizes;
-  nalu_data_ptrs.reserve(3);
-  nalu_data_sizes.reserve(3);
-  nalu_data_ptrs.push_back(&active_sps_.front());
-  nalu_data_sizes.push_back(active_sps_.size());
-  if (!active_spsext_.empty()) {
-    nalu_data_ptrs.push_back(&active_spsext_.front());
-    nalu_data_sizes.push_back(active_spsext_.size());
-  }
-  nalu_data_ptrs.push_back(&active_pps_.front());
-  nalu_data_sizes.push_back(active_pps_.size());
-
-  // Construct a new format description from the parameter sets.
-  format_.reset();
-  OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSets(
-      kCFAllocatorDefault,
-      nalu_data_ptrs.size(),     // parameter_set_count
-      &nalu_data_ptrs.front(),   // &parameter_set_pointers
-      &nalu_data_sizes.front(),  // &parameter_set_sizes
-      kNALUHeaderLength,         // nal_unit_header_length
-      format_.InitializeInto());
-  if (status) {
-    NOTIFY_STATUS("CMVideoFormatDescriptionCreateFromH264ParameterSets()",
-                  status, SFT_PLATFORM_ERROR);
-    return false;
-  }
-
-  // Prepare VideoToolbox configuration dictionaries.
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> decoder_config(
-      CFDictionaryCreateMutable(kCFAllocatorDefault,
-                                1,  // capacity
-                                &kCFTypeDictionaryKeyCallBacks,
-                                &kCFTypeDictionaryValueCallBacks));
-  if (!decoder_config.get()) {
-    DLOG(ERROR) << "Failed to create CFMutableDictionary";
+  auto format = CreateVideoFormatH264(active_sps_, active_spsext_, active_pps_);
+  if (!format) {
     NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
     return false;
   }
 
-  CFDictionarySetValue(
-      decoder_config,
-      // kVTVideoDecoderSpecification_EnableHardwareAcceleratedVideoDecoder
-      CFSTR("EnableHardwareAcceleratedVideoDecoder"), kCFBooleanTrue);
-
-  // VideoToolbox scales the visible rect to the output size, so we set the
-  // output size for a 1:1 ratio. (Note though that VideoToolbox does not handle
-  // top or left crops correctly.) We expect the visible rect to be integral.
-  CGRect visible_rect = CMVideoFormatDescriptionGetCleanAperture(format_, true);
-  CMVideoDimensions visible_dimensions = {visible_rect.size.width,
-                                          visible_rect.size.height};
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
-      BuildImageConfig(visible_dimensions));
-  if (!image_config.get()) {
-    DLOG(ERROR) << "Failed to create decoder image configuration";
-    NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
-    return false;
-  }
+  // TODO(crbug.com/1103432): We should use
+  // VTDecompressionSessionCanAcceptFormatDescription() on |format| here to
+  // avoid the configuration change if possible.
 
   // Ensure that the old decoder emits all frames before the new decoder can
   // emit any.
   if (!FinishDelayedFrames())
     return false;
 
+  format_ = format;
   session_.reset();
-  status = VTDecompressionSessionCreate(
-      kCFAllocatorDefault,
-      format_,         // video_format_description
-      decoder_config,  // video_decoder_specification
-      image_config,    // destination_image_buffer_attributes
-      &callback_,      // output_callback
-      session_.InitializeInto());
-  if (status) {
-    NOTIFY_STATUS("VTDecompressionSessionCreate()", status,
-                  SFT_UNSUPPORTED_STREAM_PARAMETERS);
+
+  // Note: We can always require hardware once Flash and PPAPI are gone.
+  const bool require_hardware = false;
+  if (!CreateVideoToolboxSession(format_, require_hardware, &callback_,
+                                 &session_, &configured_size_)) {
+    NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
     return false;
   }
 
@@ -605,8 +559,6 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   configured_sps_ = active_sps_;
   configured_spsext_ = active_spsext_;
   configured_pps_ = active_pps_;
-  configured_size_.SetSize(visible_rect.size.width, visible_rect.size.height);
-
   return true;
 }
 

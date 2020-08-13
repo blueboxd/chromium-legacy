@@ -95,6 +95,8 @@ class DownloadShelfView : public DownloadShelf,
 
   // The download views. These are also child Views, and deleted when
   // the DownloadShelfView is deleted.
+  // TODO(pkasting): Remove this in favor of making these the children of a
+  // nested view, so they can easily be laid out and iterated.
   std::vector<DownloadItemView*> download_views_;
 
   // Button for showing all downloads (chrome://downloads).

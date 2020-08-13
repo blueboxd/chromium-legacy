@@ -200,42 +200,35 @@ void TouchFactory::SetupXI2ForXWindow(x11::Window window) {
   // the events from uninteresting devices. We do the latter because that's
   // simpler.
 
-  XDisplay* display = gfx::GetXDisplay();
+  auto* connection = x11::Connection::Get();
 
-  unsigned char mask[XIMaskLen(XI_LASTEVENT)];
-  memset(mask, 0, sizeof(mask));
+  x11::Input::EventMask mask{};
 
-  SetXinputMask(mask, x11::Input::CrossingEvent::Enter);
-  SetXinputMask(mask, x11::Input::CrossingEvent::Leave);
-  SetXinputMask(mask, x11::Input::CrossingEvent::FocusIn);
-  SetXinputMask(mask, x11::Input::CrossingEvent::FocusOut);
+  SetXinputMask(&mask, x11::Input::CrossingEvent::Enter);
+  SetXinputMask(&mask, x11::Input::CrossingEvent::Leave);
+  SetXinputMask(&mask, x11::Input::CrossingEvent::FocusIn);
+  SetXinputMask(&mask, x11::Input::CrossingEvent::FocusOut);
 
-  SetXinputMask(mask, x11::Input::DeviceEvent::TouchBegin);
-  SetXinputMask(mask, x11::Input::DeviceEvent::TouchUpdate);
-  SetXinputMask(mask, x11::Input::DeviceEvent::TouchEnd);
+  SetXinputMask(&mask, x11::Input::DeviceEvent::TouchBegin);
+  SetXinputMask(&mask, x11::Input::DeviceEvent::TouchUpdate);
+  SetXinputMask(&mask, x11::Input::DeviceEvent::TouchEnd);
 
-  SetXinputMask(mask, x11::Input::DeviceEvent::ButtonPress);
-  SetXinputMask(mask, x11::Input::DeviceEvent::ButtonRelease);
-  SetXinputMask(mask, x11::Input::DeviceEvent::Motion);
+  SetXinputMask(&mask, x11::Input::DeviceEvent::ButtonPress);
+  SetXinputMask(&mask, x11::Input::DeviceEvent::ButtonRelease);
+  SetXinputMask(&mask, x11::Input::DeviceEvent::Motion);
   // HierarchyChanged and DeviceChanged allow X11EventSource to still pick up
   // these events.
-  SetXinputMask(mask, x11::Input::HierarchyEvent::opcode);
-  SetXinputMask(mask, x11::Input::DeviceChangedEvent::opcode);
+  SetXinputMask(&mask, x11::Input::HierarchyEvent::opcode);
+  SetXinputMask(&mask, x11::Input::DeviceChangedEvent::opcode);
 #if defined(OS_CHROMEOS)
-  // XGrabKey() must be replaced with XI2 keyboard grab if XI2 key events are
-  // enabled on desktop Linux.
   if (base::SysInfo::IsRunningOnChromeOS()) {
-    SetXinputMask(mask, x11::Input::DeviceEvent::KeyPress);
-    SetXinputMask(mask, x11::Input::DeviceEvent::KeyRelease);
+    SetXinputMask(&mask, x11::Input::DeviceEvent::KeyPress);
+    SetXinputMask(&mask, x11::Input::DeviceEvent::KeyRelease);
   }
 #endif
 
-  XIEventMask evmask;
-  evmask.deviceid = XIAllDevices;
-  evmask.mask_len = sizeof(mask);
-  evmask.mask = mask;
-  XISelectEvents(display, static_cast<uint32_t>(window), &evmask, 1);
-  XFlush(display);
+  connection->xinput().XISelectEvents({window, {mask}});
+  connection->Flush();
 }
 
 void TouchFactory::SetTouchDeviceList(

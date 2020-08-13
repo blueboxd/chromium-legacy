@@ -55,6 +55,7 @@ struct WebUIControllerConfig {
   int bindings = BINDINGS_POLICY_WEB_UI;
   std::string child_src = "child-src 'self' chrome://web-ui-subframe/;";
   bool disable_xfo = false;
+  bool disable_trusted_types = false;
   std::vector<std::string> requestable_schemes;
   base::Optional<std::vector<std::string>> frame_ancestors;
 };
@@ -86,6 +87,8 @@ class TestWebUIController : public WebUIController {
     }
     if (config.disable_xfo)
       data_source->DisableDenyXFrameOptions();
+    if (config.disable_trusted_types)
+      data_source->DisableTrustedTypesCSP();
 
     WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                          data_source);
@@ -123,6 +126,8 @@ void AddUntrustedDataSource(BrowserContext* browser_context,
           network::mojom::CSPDirectiveName::DefaultSrc,
           csp->default_src.value());
     }
+    if (csp->no_trusted_types)
+      untrusted_data_source->DisableTrustedTypesCSP();
     if (csp->no_xfo)
       untrusted_data_source->DisableDenyXFrameOptions();
     if (csp->frame_ancestors.has_value()) {
@@ -161,6 +166,10 @@ TestWebUIControllerFactory::CreateWebUIControllerForURL(WebUI* web_ui,
     has_value = net::GetValueForKeyInQuery(url, "noxfo", &value);
     if (has_value && value == "true")
       config.disable_xfo = true;
+
+    has_value = net::GetValueForKeyInQuery(url, "notrustedtypes", &value);
+    if (has_value && value == "true")
+      config.disable_trusted_types = true;
 
     has_value = net::GetValueForKeyInQuery(url, "childsrc", &value);
     if (has_value)

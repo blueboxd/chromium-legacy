@@ -7,6 +7,7 @@ import("//testing/test.gni")
 
 test("gcp_unittests") {
   sources = [
+    "../extension/service_unittests.cc",
     "../gaiacp/associated_user_validator_unittests.cc",
     "../gaiacp/device_policies_manager_unittests.cc",
     "../gaiacp/gaia_credential_base_unittests.cc",
@@ -32,6 +33,7 @@ test("gcp_unittests") {
 
   deps = [
     "../extension:common",
+    "../extension:extension_lib",
     "../gaiacp:common",
     "../gaiacp:gaia_credential_provider_idl",
     "../gaiacp:gaiacp_lib",

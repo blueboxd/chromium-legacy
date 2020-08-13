@@ -62,9 +62,11 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
     bool browser = false;
 
     // Whether test requires zip/unzip support.
+    // TODO(crbug.com/912236) Remove once transition to new ZIP system is done.
     bool zip = false;
 
-    // Whether test should have zip-no-nacl active.
+    // Whether test uses the new ZIP system.
+    // TODO(crbug.com/912236) Remove once transition to new ZIP system is done.
     bool zip_no_nacl = false;
 
     // Whether Drive should act as if offline.

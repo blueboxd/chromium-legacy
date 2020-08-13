@@ -111,7 +111,6 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
 
   tray->tray_event_filter()->AddBubble(this);
   tray->shelf()->AddObserver(this);
-  Shell::Get()->display_manager()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
 }
@@ -120,14 +119,13 @@ UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
   Shell::Get()->activation_client()->RemoveObserver(this);
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->display_manager()->RemoveObserver(this);
   tray_->tray_event_filter()->RemoveBubble(this);
   tray_->shelf()->RemoveObserver(this);
   if (bubble_widget_) {
     bubble_widget_->RemoveObserver(this);
     bubble_widget_->Close();
   }
-  CHECK(!views::WidgetObserver::IsInObserverList());
+  CHECK(!IsInObserverList());
 }
 
 gfx::Rect UnifiedSystemTrayBubble::GetBoundsInScreen() const {
@@ -263,7 +261,7 @@ void UnifiedSystemTrayBubble::OnMessageCenterActivated() {
   bubble_view_->StopReroutingEvents();
 }
 
-void UnifiedSystemTrayBubble::OnDidProcessDisplayChanges() {
+void UnifiedSystemTrayBubble::OnDisplayConfigurationChanged() {
   UpdateBubbleBounds();
 }
 

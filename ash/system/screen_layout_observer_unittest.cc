@@ -353,11 +353,8 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotificationsDisabled) {
   base::RunLoop().RunUntilIdle();
 
   // Exit mirror mode manually. Now display mode should be extending mode.
-  // Exiting mirror mode counts as adding a display, which will show a
-  // notification.
   display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
-  EXPECT_TRUE(IsNotificationShown());
-  CloseNotification();
+  EXPECT_FALSE(IsNotificationShown());
 
   // Simulate that device can support at most two displays and user connects
   // it with three displays. Because device is in tablet mode, display mode
@@ -425,10 +422,10 @@ TEST_F(ScreenLayoutObserverTest, DisplayConfigurationChangedTwice) {
                 IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL),
             GetDisplayNotificationText());
 
-  // OnDidProcessDisplayChanges() may be called more than once for a single
+  // OnDisplayConfigurationChanged() may be called more than once for a single
   // update display in case of primary is swapped or recovered from dock mode.
   // Should not remove the notification in such case.
-  GetScreenLayoutObserver()->OnDidProcessDisplayChanges();
+  GetScreenLayoutObserver()->OnDisplayConfigurationChanged();
   EXPECT_EQ(l10n_util::GetStringUTF16(
                 IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL),
             GetDisplayNotificationText());

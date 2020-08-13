@@ -374,11 +374,9 @@ void ServiceWorkerVersion::SetStatus(Status status) {
   } else if (status == REDUNDANT) {
     embedded_worker_->OnWorkerVersionDoomed();
 
-    // Tell the storage system that this worker's script resources can now be
-    // deleted.
-    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
-    script_cache_map_.GetResources(&resources);
-    context_->storage()->PurgeResources(resources);
+    // Drop the remote reference to tell the storage system that the worker
+    // script resources can now be deleted.
+    remote_reference_.reset();
   }
 }
 

@@ -126,6 +126,11 @@ LayoutBoxModelObject::ComputeBackgroundPaintLocationIfComposited() const {
       return kBackgroundPaintInScrollingContents;
   }
 
+  // TODO(crbug.com/1113269): Temporarily disable composited scrolling for
+  // clipped layers.
+  if (HasClip())
+    return kBackgroundPaintInGraphicsLayer;
+
   // Inset box shadow is painted in the scrolling area above the background, and
   // it doesn't scroll, so the background can only be painted in the main layer.
   if (HasInsetBoxShadow(StyleRef()))

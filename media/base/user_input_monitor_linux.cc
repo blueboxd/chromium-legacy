@@ -21,9 +21,11 @@
 #include "base/task/current_thread.h"
 #include "media/base/keyboard_event_counter.h"
 #include "third_party/skia/include/core/SkPoint.h"
+#include "ui/events/devices/x11/xinput_util.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xinput.h"
 
 namespace media {
 namespace {
@@ -32,14 +34,19 @@ namespace {
 // UserInputMonitorLinux since it needs to be deleted on the IO thread.
 class UserInputMonitorLinuxCore
     : public base::SupportsWeakPtr<UserInputMonitorLinuxCore>,
-      public base::CurrentThread::DestructionObserver {
+      public base::CurrentThread::DestructionObserver,
+      public x11::Connection::Delegate {
  public:
   explicit UserInputMonitorLinuxCore(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~UserInputMonitorLinuxCore() override;
 
-  // DestructionObserver overrides.
+  // base::CurrentThread::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override;
+
+  // x11::Connection::Delegate:
+  bool ShouldContinueStream() const override;
+  void DispatchXEvent(x11::Event* event) override;
 
   uint32_t GetKeyPressCount() const;
   void StartMonitor();
@@ -47,11 +54,7 @@ class UserInputMonitorLinuxCore
   void StopMonitor();
 
  private:
-  void OnXEvent();
-
-  // Processes key events.
-  void ProcessXEvent(xEvent* event);
-  static void ProcessReply(XPointer self, XRecordInterceptData* data);
+  void OnConnectionData();
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
@@ -62,10 +65,7 @@ class UserInputMonitorLinuxCore
   // The following members should only be accessed on the IO thread.
   //
   std::unique_ptr<base::FileDescriptorWatcher::Controller> watch_controller_;
-  Display* x_control_display_;
-  Display* x_record_display_;
-  XRecordRange* x_record_range_;
-  XRecordContext x_record_context_;
+  std::unique_ptr<x11::Connection> connection_;
   KeyboardEventCounter counter_;
 
   DISALLOW_COPY_AND_ASSIGN(UserInputMonitorLinuxCore);
@@ -95,22 +95,41 @@ class UserInputMonitorLinux : public UserInputMonitorBase {
 
 UserInputMonitorLinuxCore::UserInputMonitorLinuxCore(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-    : io_task_runner_(io_task_runner),
-      x_control_display_(nullptr),
-      x_record_display_(nullptr),
-      x_record_range_(nullptr),
-      x_record_context_(0) {}
+    : io_task_runner_(io_task_runner) {}
 
 UserInputMonitorLinuxCore::~UserInputMonitorLinuxCore() {
-  DCHECK(!x_control_display_);
-  DCHECK(!x_record_display_);
-  DCHECK(!x_record_range_);
-  DCHECK(!x_record_context_);
+  DCHECK(!connection_);
 }
 
 void UserInputMonitorLinuxCore::WillDestroyCurrentMessageLoop() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   StopMonitor();
+}
+
+bool UserInputMonitorLinuxCore::ShouldContinueStream() const {
+  return true;
+}
+
+void UserInputMonitorLinuxCore::DispatchXEvent(x11::Event* event) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  auto* raw = event->As<x11::Input::RawDeviceEvent>();
+  DCHECK(raw);
+  DCHECK(raw->opcode == x11::Input::RawDeviceEvent::RawKeyPress ||
+         raw->opcode == x11::Input::RawDeviceEvent::RawKeyRelease);
+
+  ui::EventType type = raw->opcode == x11::Input::RawDeviceEvent::RawKeyPress
+                           ? ui::ET_KEY_PRESSED
+                           : ui::ET_KEY_RELEASED;
+
+  auto key_sym = connection_->KeycodeToKeysym(raw->detail, 0);
+  ui::KeyboardCode key_code =
+      ui::KeyboardCodeFromXKeysym(static_cast<uint32_t>(key_sym));
+  counter_.OnKeyboardEvent(type, key_code);
+
+  // Update count value in shared memory.
+  if (key_press_count_mapping_)
+    WriteKeyPressMonitorCount(*key_press_count_mapping_, GetKeyPressCount());
 }
 
 uint32_t UserInputMonitorLinuxCore::GetKeyPressCount() const {
@@ -120,74 +139,39 @@ uint32_t UserInputMonitorLinuxCore::GetKeyPressCount() const {
 void UserInputMonitorLinuxCore::StartMonitor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  if (!x_control_display_ || !x_record_display_) {
-    // TODO(jamiewalch): We should pass the display in.
-    if (auto* x_display = gfx::GetXDisplay()) {
-      if (!x_control_display_)
-        x_control_display_ = gfx::CloneXDisplay(x_display);
-
-      if (!x_record_display_)
-        x_record_display_ = gfx::CloneXDisplay(x_display);
-    }
-
-    if (!x_control_display_ || !x_record_display_) {
-      LOG(ERROR) << "Couldn't open X display";
+  if (!connection_) {
+    // TODO(jamiewalch): We should pass the connection in.
+    if (auto* connection = x11::Connection::Get()) {
+      connection_ = x11::Connection::Get()->Clone();
+    } else {
+      LOG(ERROR) << "Couldn't open X connection";
       StopMonitor();
       return;
     }
   }
 
-  int xr_opcode, xr_event, xr_error;
-  if (!XQueryExtension(x_control_display_, "RECORD", &xr_opcode, &xr_event,
-                       &xr_error)) {
-    LOG(ERROR) << "X Record extension not available.";
+  if (!connection_->xinput().present()) {
+    LOG(ERROR) << "X Input extension not available.";
     StopMonitor();
     return;
   }
+  // Let the server know the client XInput version.
+  connection_->xinput().XIQueryVersion(
+      {x11::Input::major_version, x11::Input::minor_version});
 
-  if (!x_record_range_)
-    x_record_range_ = XRecordAllocRange();
+  x11::Input::XIEventMask mask;
+  ui::SetXinputMask(&mask, x11::Input::RawDeviceEvent::RawKeyPress);
+  ui::SetXinputMask(&mask, x11::Input::RawDeviceEvent::RawKeyRelease);
+  connection_->xinput().XISelectEvents(
+      {connection_->default_root(),
+       {{x11::Input::DeviceId::AllMaster, {mask}}}});
+  connection_->Flush();
 
-  if (!x_record_range_) {
-    LOG(ERROR) << "XRecordAllocRange failed.";
-    StopMonitor();
-    return;
-  }
-
-  x_record_range_->device_events.first = x11::KeyEvent::Press;
-  x_record_range_->device_events.last = x11::KeyEvent::Release;
-
-  if (x_record_context_) {
-    XRecordDisableContext(x_control_display_, x_record_context_);
-    XFlush(x_control_display_);
-    XRecordFreeContext(x_record_display_, x_record_context_);
-    x_record_context_ = 0;
-  }
-  int number_of_ranges = 1;
-
-  XRecordClientSpec client_spec = XRecordAllClients;
-  x_record_context_ =
-      XRecordCreateContext(x_record_display_, 0, &client_spec, 1,
-                           &x_record_range_, number_of_ranges);
-  if (!x_record_context_) {
-    LOG(ERROR) << "XRecordCreateContext failed.";
-    StopMonitor();
-    return;
-  }
-
-  if (!XRecordEnableContextAsync(x_record_display_, x_record_context_,
-                                 &UserInputMonitorLinuxCore::ProcessReply,
-                                 reinterpret_cast<XPointer>(this))) {
-    LOG(ERROR) << "XRecordEnableContextAsync failed.";
-    StopMonitor();
-    return;
-  }
-
-  // Register OnXEvent() to be called every time there is something to read
-  // from |x_record_display_|.
+  // Register OnConnectionData() to be called every time there is something to
+  // read from |connection_|.
   watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
-      ConnectionNumber(x_record_display_),
-      base::BindRepeating(&UserInputMonitorLinuxCore::OnXEvent,
+      ConnectionNumber(connection_->display()),
+      base::BindRepeating(&UserInputMonitorLinuxCore::OnConnectionData,
                           base::Unretained(this)));
 
   // Start observing message loop destruction if we start monitoring the first
@@ -195,7 +179,7 @@ void UserInputMonitorLinuxCore::StartMonitor() {
   base::CurrentThread::Get()->AddDestructionObserver(this);
 
   // Fetch pending events if any.
-  OnXEvent();
+  OnConnectionData();
 }
 
 void UserInputMonitorLinuxCore::StartMonitorWithMapping(
@@ -208,72 +192,17 @@ void UserInputMonitorLinuxCore::StartMonitorWithMapping(
 void UserInputMonitorLinuxCore::StopMonitor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  if (x_record_range_) {
-    XFree(x_record_range_);
-    x_record_range_ = nullptr;
-  }
-
-  // Context must be disabled via the control channel because we can't send
-  // any X protocol traffic over the data channel while it's recording.
-  if (x_record_context_) {
-    XRecordDisableContext(x_control_display_, x_record_context_);
-    XFlush(x_control_display_);
-    XRecordFreeContext(x_record_display_, x_record_context_);
-    x_record_context_ = 0;
-
-    watch_controller_.reset();
-  }
-  if (x_record_display_) {
-    XCloseDisplay(x_record_display_);
-    x_record_display_ = nullptr;
-  }
-  if (x_control_display_) {
-    XCloseDisplay(x_control_display_);
-    x_control_display_ = nullptr;
-  }
-
+  watch_controller_.reset();
+  connection_.reset();
   key_press_count_mapping_.reset();
 
   // Stop observing message loop destruction if no event is being monitored.
   base::CurrentThread::Get()->RemoveDestructionObserver(this);
 }
 
-void UserInputMonitorLinuxCore::OnXEvent() {
+void UserInputMonitorLinuxCore::OnConnectionData() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  XEvent event;
-  // Fetch pending events if any.
-  while (XPending(x_record_display_)) {
-    XNextEvent(x_record_display_, &event);
-  }
-}
-
-void UserInputMonitorLinuxCore::ProcessXEvent(xEvent* event) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(event->u.u.type == x11::KeyEvent::Release ||
-         event->u.u.type == x11::KeyEvent::Press);
-
-  ui::EventType type = (event->u.u.type == x11::KeyEvent::Press)
-                           ? ui::ET_KEY_PRESSED
-                           : ui::ET_KEY_RELEASED;
-
-  KeySym key_sym =
-      XkbKeycodeToKeysym(x_control_display_, event->u.u.detail, 0, 0);
-  ui::KeyboardCode key_code = ui::KeyboardCodeFromXKeysym(key_sym);
-  counter_.OnKeyboardEvent(type, key_code);
-
-  // Update count value in shared memory.
-  if (key_press_count_mapping_)
-    WriteKeyPressMonitorCount(*key_press_count_mapping_, GetKeyPressCount());
-}
-
-// static
-void UserInputMonitorLinuxCore::ProcessReply(XPointer self,
-                                             XRecordInterceptData* data) {
-  if (data->category == XRecordFromServer) {
-    xEvent* event = reinterpret_cast<xEvent*>(data->data);
-    reinterpret_cast<UserInputMonitorLinuxCore*>(self)->ProcessXEvent(event);
-  }
-  XRecordFreeData(data);
+  connection_->Dispatch(this);
 }
 
 //

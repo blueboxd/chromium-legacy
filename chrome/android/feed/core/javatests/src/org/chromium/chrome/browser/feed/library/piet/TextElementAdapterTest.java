@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;
 import org.chromium.chrome.browser.feed.library.piet.TextElementAdapter.TextElementKey;
 import org.chromium.chrome.browser.feed.library.piet.host.AssetProvider;
-import org.chromium.chrome.browser.feed.library.piet.host.TypefaceProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.TypefaceProvider.GoogleSansTypeface;
 import org.chromium.components.feed.core.proto.ui.piet.BindingRefsProto.StyleBindingRef;
 import org.chromium.components.feed.core.proto.ui.piet.ElementsProto.CustomElement;
@@ -75,8 +74,6 @@ public class TextElementAdapterTest {
     private HostProviders mMockHostProviders;
     @Mock
     private AssetProvider mMockAssetProvider;
-    @Mock
-    private TypefaceProvider mMockTypefaceProvider;
 
     private AdapterParameters mAdapterParameters;
 

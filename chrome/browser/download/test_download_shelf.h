@@ -21,7 +21,6 @@ class TestDownloadShelf : public DownloadShelf {
   bool IsShowing() const override;
   bool IsClosing() const override;
 
-  // Return |true| if a download was added to this shelf.
   bool did_add_download() const { return did_add_download_; }
 
  protected:

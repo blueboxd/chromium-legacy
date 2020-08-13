@@ -53,6 +53,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/browsing_data/core/features.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -1203,7 +1204,26 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
-  html_source->AddString("devicesUrl", chrome::kChromeUIDevicesURL);
+  html_source->AddString("cloudPrintersUrl",
+                         cloud_devices::GetCloudPrintPrintersURL().spec());
+
+  const bool enterprise_managed = webui::IsEnterpriseManaged();
+  html_source->AddLocalizedString(
+      "cloudPrintWarning",
+      enterprise_managed
+          ? IDS_SETTINGS_PRINTING_GOOGLE_CLOUD_PRINT_NOT_SUPPORTED_WARNING_ENTERPRISE
+          : IDS_SETTINGS_PRINTING_GOOGLE_CLOUD_PRINT_NOT_SUPPORTED_WARNING);
+  if (enterprise_managed) {
+    html_source->AddLocalizedString(
+        "cloudPrintFullWarning",
+        IDS_SETTINGS_PRINTING_GOOGLE_CLOUD_PRINT_NOT_SUPPORTED_WARNING_ENTERPRISE);
+  } else {
+    html_source->AddString(
+        "cloudPrintFullWarning",
+        l10n_util::GetStringFUTF16(
+            IDS_SETTINGS_PRINTING_GOOGLE_CLOUD_PRINT_NOT_SUPPORTED_FULL_WARNING,
+            base::ASCIIToUTF16(cloud_devices::kCloudPrintDeprecationHelpURL)));
+  }
 }
 
 void AddPrivacyStrings(content::WebUIDataSource* html_source,

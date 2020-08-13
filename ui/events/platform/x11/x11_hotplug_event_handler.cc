@@ -35,12 +35,6 @@
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 
-#ifndef XI_PROP_PRODUCT_ID
-#define XI_PROP_PRODUCT_ID "Device Product ID"
-#endif
-
-#undef Absolute
-
 namespace ui {
 
 namespace {
@@ -79,21 +73,28 @@ struct UiCallbacks {
   base::OnceClosure hotplug_finished_callback;
 };
 
-// Stores a copy of the XIValuatorClassInfo values so X11 device processing can
-// happen on a worker thread. This is needed since X11 structs are not copyable.
+// Identical to FP3232_TO_DOUBLE from libxi's XExtInt.c
+double Fp3232ToDouble(const x11::Input::Fp3232& x) {
+  return static_cast<double>(x.integral) +
+         static_cast<double>(x.frac) / (1ULL << 32);
+}
+
+// Stores a copy of the x11::Input::ValuatorClass values so X11 device
+// processing can happen on a worker thread. This is needed since X11 structs
+// are not copyable.
 struct ValuatorClassInfo {
-  explicit ValuatorClassInfo(const XIValuatorClassInfo& info)
+  explicit ValuatorClassInfo(const x11::Input::ValuatorClass& info)
       : label(static_cast<x11::Atom>(info.label)),
-        max(info.max),
-        min(info.min),
+        max(Fp3232ToDouble(info.max)),
+        min(Fp3232ToDouble(info.min)),
         mode(info.mode),
         number(info.number) {}
 
   x11::Atom label;
   double max;
   double min;
-  int mode;
-  int number;
+  x11::Input::ValuatorMode mode;
+  uint16_t number;
 };
 
 // Stores a copy of the XITouchClassInfo values so X11 device processing can
@@ -155,12 +156,6 @@ struct DisplayState {
   x11::Atom mt_position_x;
   x11::Atom mt_position_y;
 };
-
-// Identical to FP3232_TO_DOUBLE from libxi's XExtInt.c
-double Fp3232ToDouble(const x11::Input::Fp3232& x) {
-  return static_cast<double>(x.integral) +
-         static_cast<double>(x.frac) / (1ULL << 32);
-}
 
 // Returns true if |name| is the name of a known invalid keyboard device. Note,
 // this may return false negatives.
@@ -414,13 +409,13 @@ void X11HotplugEventHandler::OnHotplugEvent() {
       continue;
 
     x11::Atom type = device.device_type;
-    if (type == gfx::GetAtom(XI_KEYBOARD))
+    if (type == gfx::GetAtom("KEYBOARD"))
       device_types[id] = DEVICE_TYPE_KEYBOARD;
-    else if (type == gfx::GetAtom(XI_MOUSE))
+    else if (type == gfx::GetAtom("MOUSE"))
       device_types[id] = DEVICE_TYPE_MOUSE;
-    else if (type == gfx::GetAtom(XI_TOUCHPAD))
+    else if (type == gfx::GetAtom("TOUCHPAD"))
       device_types[id] = DEVICE_TYPE_TOUCHPAD;
-    else if (type == gfx::GetAtom(XI_TOUCHSCREEN))
+    else if (type == gfx::GetAtom("TOUCHSCREEN"))
       device_types[id] = DEVICE_TYPE_TOUCHSCREEN;
   }
 

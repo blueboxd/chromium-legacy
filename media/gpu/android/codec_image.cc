@@ -186,11 +186,11 @@ bool CodecImage::RenderToFrontBuffer() {
   return output_buffer_renderer_->RenderToFrontBuffer();
 }
 
-bool CodecImage::RenderToTextureOwnerBackBuffer(BlockingMode blocking_mode) {
+bool CodecImage::RenderToTextureOwnerBackBuffer() {
   if (!output_buffer_renderer_)
     return false;
 
-  return output_buffer_renderer_->RenderToTextureOwnerBackBuffer(blocking_mode);
+  return output_buffer_renderer_->RenderToTextureOwnerBackBuffer();
 }
 
 bool CodecImage::RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode) {

@@ -6,7 +6,6 @@
 #define UI_GFX_X_EVENT_H_
 
 #include <X11/Xlib.h>
-#include <X11/extensions/XInput2.h>
 #include <xcb/xcb.h>
 
 #include <cstdint>

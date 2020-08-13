@@ -447,4 +447,15 @@ public class PseudoTabUnitTest {
         // UnsupportedOperationException
         Assert.assertEquals("", pseudoTab.getTitle());
     }
+
+    @Test
+    public void testTabDestroyedUrl() {
+        Tab tab = new MockTab(TAB4_ID, false);
+        PseudoTab pseudoTab = PseudoTab.fromTab(tab);
+        tab.destroy();
+        // Url was not set. Without the isInitialized() check,
+        // pseudoTab.getUrl() would crash here with
+        // UnsupportedOperationException
+        Assert.assertEquals("", pseudoTab.getUrl());
+    }
 }

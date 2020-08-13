@@ -50,12 +50,14 @@ auto CompareSequenceIds(T t, U u) {
   return static_cast<SignedType>(t0 - u0);
 }
 
-XDisplay* OpenNewXDisplay() {
+XDisplay* OpenNewXDisplay(const std::string& address) {
   if (!XInitThreads())
     return nullptr;
   std::string display_str =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kX11Display);
+      address.empty()
+          ? base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                switches::kX11Display)
+          : address;
   return XOpenDisplay(display_str.empty() ? nullptr : display_str.c_str());
 }
 
@@ -206,7 +208,8 @@ Connection* Connection::Get() {
   return instance;
 }
 
-Connection::Connection() : XProto(this), display_(OpenNewXDisplay()) {
+Connection::Connection(const std::string& address)
+    : XProto(this), display_(OpenNewXDisplay(address)) {
   if (display_) {
     XSetEventQueueOwner(display_, XCBOwnsEventQueue);
 
@@ -335,6 +338,10 @@ KeyCode Connection::KeysymToKeycode(KeySym keysym) {
 KeySym Connection::KeycodeToKeysym(uint32_t keycode, unsigned int modifiers) {
   auto sym = TranslateKey(keycode, modifiers);
   return sym == static_cast<KeySym>(XK_VoidSymbol) ? kNoSymbol : sym;
+}
+
+std::unique_ptr<Connection> Connection::Clone() const {
+  return std::make_unique<Connection>(XDisplayString(display_));
 }
 
 void Connection::Dispatch(Delegate* delegate) {

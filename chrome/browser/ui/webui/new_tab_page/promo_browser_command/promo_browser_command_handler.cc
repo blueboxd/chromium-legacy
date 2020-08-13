@@ -11,6 +11,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/webui_url_constants.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
 using promo_browser_command::mojom::ClickInfoPtr;
@@ -29,10 +33,7 @@ PromoBrowserCommandHandler::PromoBrowserCommandHandler(
       page_handler_(this, std::move(pending_page_handler)) {
   if (!base::FeatureList::IsEnabled(features::kPromoBrowserCommands))
     return;
-
-  // Explicitly enable supported commands.
-  command_updater_->UpdateCommandEnabled(
-      static_cast<int>(Command::kUnknownCommand), true);
+  EnableCommands();
 }
 
 PromoBrowserCommandHandler::~PromoBrowserCommandHandler() = default;
@@ -44,8 +45,9 @@ void PromoBrowserCommandHandler::ExecuteCommand(
   const auto disposition = ui::DispositionFromClick(
       click_info->middle_button, click_info->alt_key, click_info->ctrl_key,
       click_info->meta_key, click_info->shift_key);
-  const bool command_executed = command_updater_->ExecuteCommandWithDisposition(
-      static_cast<int>(command_id), disposition);
+  const bool command_executed =
+      GetCommandUpdater()->ExecuteCommandWithDisposition(
+          static_cast<int>(command_id), disposition);
   std::move(callback).Run(command_executed);
 }
 
@@ -59,13 +61,32 @@ void PromoBrowserCommandHandler::ExecuteCommandWithDisposition(
     case Command::kUnknownCommand:
       // Nothing to do.
       break;
+    case Command::kOpenSafetyCheck:
+      NavigateToURL(GURL(chrome::GetSettingsUrl(chrome::kSafetyCheckSubPage)),
+                    disposition);
+      break;
     default:
       NOTREACHED() << "Unspecified behavior for command " << id;
       break;
   }
 }
 
-void PromoBrowserCommandHandler::SetCommandUpdaterForTesting(
-    std::unique_ptr<CommandUpdater> command_updater) {
-  command_updater_ = std::move(command_updater);
+void PromoBrowserCommandHandler::EnableCommands() {
+  // Explicitly enable supported commands.
+  GetCommandUpdater()->UpdateCommandEnabled(
+      static_cast<int>(Command::kUnknownCommand), true);
+  GetCommandUpdater()->UpdateCommandEnabled(
+      static_cast<int>(Command::kOpenSafetyCheck), true);
+}
+
+CommandUpdater* PromoBrowserCommandHandler::GetCommandUpdater() {
+  return command_updater_.get();
+}
+
+void PromoBrowserCommandHandler::NavigateToURL(
+    const GURL& url,
+    WindowOpenDisposition disposition) {
+  NavigateParams params(profile_, url, ui::PAGE_TRANSITION_LINK);
+  params.disposition = disposition;
+  Navigate(&params);
 }

@@ -42,6 +42,10 @@ class InstallFinalizer;
 class WebAppDataRetriever;
 class WebAppUrlLoader;
 
+// Used to do a variety of tasks involving installing web applications. Only one
+// of the public Load*, Update*, or Install* methods can be called on a single
+// object. WebAppInstallManager is a queue of WebAppInstallTask jobs. Basically,
+// WebAppInstallTask is an implementation detail of WebAppInstallManager.
 class WebAppInstallTask : content::WebContentsObserver {
  public:
   using RetrieveWebApplicationInfoWithIconsCallback =
@@ -229,6 +233,10 @@ class WebAppInstallTask : content::WebContentsObserver {
   void OnOsHooksCreated(bool open_as_window,
                         const AppId& app_id,
                         const OsHooksResults os_hooks_results);
+
+  // Whether the install task has been 'initiated' by calling one of the public
+  // methods.
+  bool initiated_ = false;
 
   // Whether we should just obtain WebApplicationInfo instead of the actual
   // installation.

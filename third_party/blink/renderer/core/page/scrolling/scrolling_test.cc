@@ -1834,6 +1834,8 @@ TEST_P(UnifiedScrollingSimTest,
 // embedded in an iframe, by loading a document with an iframe that has a
 // scroller with an inset box shadow, and ensuring that scroller generates a
 // compositor scroll node with the proper noncomposited reasons set.
+// TODO(crbug.com/1113269): Temporarily disabled.
+#if 0
 TEST_P(UnifiedScrollingSimTest, ScrollNodeForEmbeddedScrollers) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1914,6 +1916,7 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForEmbeddedScrollers) {
                    ->property_trees()
                    ->scroll_tree.IsComposited(*child_scroll_node));
 }
+#endif
 
 // Similar to the above test, but for deeper nesting iframes to ensure we
 // generate scroll nodes that are deeper than the main frame's children.

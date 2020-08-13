@@ -41,11 +41,13 @@ void BidirectionalStream::OnIncomingStreamClosed(bool fin_received) {
   incoming_stream_->OnIncomingStreamClosed(fin_received);
   // TODO(ricea): Review this behaviour when adding detail to the specification.
   if (!sent_fin_) {
+    ScriptState::Scope scope(outgoing_stream_->GetScriptState());
     outgoing_stream_->Reset();
   }
 }
 
 void BidirectionalStream::Reset() {
+  ScriptState::Scope scope(outgoing_stream_->GetScriptState());
   outgoing_stream_->Reset();
   incoming_stream_->Reset();
 }
@@ -79,6 +81,7 @@ void BidirectionalStream::Trace(Visitor* visitor) const {
 
 void BidirectionalStream::OnIncomingStreamAbort() {
   quic_transport_->ForgetStream(stream_id_);
+  ScriptState::Scope scope(outgoing_stream_->GetScriptState());
   outgoing_stream_->Reset();
 }
 

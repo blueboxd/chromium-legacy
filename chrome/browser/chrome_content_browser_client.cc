@@ -4444,14 +4444,14 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
               web_contents);
       if (client_data_header_observer)
         client_data_header = client_data_header_observer->header();
-    }
 
-    auto* delegate = TabAndroid::FromWebContents(web_contents)
-                         ? static_cast<android::TabWebContentsDelegateAndroid*>(
-                               web_contents->GetDelegate())
-                         : nullptr;
-    if (delegate) {
-      night_mode_enabled = delegate->IsNightModeEnabled();
+      auto* delegate =
+          TabAndroid::FromWebContents(web_contents)
+              ? static_cast<android::TabWebContentsDelegateAndroid*>(
+                    web_contents->GetDelegate())
+              : nullptr;
+      if (delegate)
+        night_mode_enabled = delegate->IsNightModeEnabled();
     }
   }
 #endif

@@ -68,11 +68,19 @@ bool AreColorsEqual(SkColor expected_color,
          abs_error_b <= threshold && abs_error_a <= threshold;
 }
 
-base::FilePath GetAppIconsDir(Profile* profile, const AppId& app_id) {
+base::FilePath GetAppIconsAnyDir(Profile* profile, const AppId& app_id) {
   base::FilePath web_apps_root_directory = GetWebAppsRootDirectory(profile);
   base::FilePath app_dir =
       GetManifestResourcesDirectoryForApp(web_apps_root_directory, app_id);
   base::FilePath icons_dir = app_dir.AppendASCII("Icons");
+  return icons_dir;
+}
+
+base::FilePath GetAppIconsMaskableDir(Profile* profile, const AppId& app_id) {
+  base::FilePath web_apps_root_directory = GetWebAppsRootDirectory(profile);
+  base::FilePath app_dir =
+      GetManifestResourcesDirectoryForApp(web_apps_root_directory, app_id);
+  base::FilePath icons_dir = app_dir.AppendASCII("Icons Maskable");
   return icons_dir;
 }
 

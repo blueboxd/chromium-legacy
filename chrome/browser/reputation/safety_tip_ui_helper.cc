@@ -92,17 +92,10 @@ base::string16 GetSafetyTipTitle(
       return l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE);
     case security_state::SafetyTipStatus::kLookalike:
-#if defined(OS_ANDROID)
-      return l10n_util::GetStringFUTF16(
-          IDS_SAFETY_TIP_ANDROID_LOOKALIKE_TITLE,
-          security_interstitials::common_string_util::GetFormattedHostName(
-              suggested_url));
-#else
       return l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE,
           security_interstitials::common_string_util::GetFormattedHostName(
               suggested_url));
-#endif
     case security_state::SafetyTipStatus::kBadReputationIgnored:
     case security_state::SafetyTipStatus::kLookalikeIgnored:
     case security_state::SafetyTipStatus::kBadKeyword:
@@ -123,17 +116,10 @@ base::string16 GetSafetyTipDescription(
       return l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
     case security_state::SafetyTipStatus::kLookalike:
-#if defined(OS_ANDROID)
-      return l10n_util::GetStringFUTF16(
-          IDS_SAFETY_TIP_ANDROID_LOOKALIKE_DESCRIPTION,
-          security_interstitials::common_string_util::GetFormattedHostName(
-              suggested_url));
-#else
       return l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_DESCRIPTION,
           security_interstitials::common_string_util::GetFormattedHostName(
               suggested_url));
-#endif
     case security_state::SafetyTipStatus::kBadReputationIgnored:
     case security_state::SafetyTipStatus::kLookalikeIgnored:
     case security_state::SafetyTipStatus::kBadKeyword:
@@ -147,17 +133,10 @@ base::string16 GetSafetyTipDescription(
 
 int GetSafetyTipLeaveButtonId(security_state::SafetyTipStatus warning_type) {
   switch (warning_type) {
-#if defined(OS_ANDROID)
-    case security_state::SafetyTipStatus::kBadReputation:
-      return IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_LEAVE_BUTTON;
-    case security_state::SafetyTipStatus::kLookalike:
-      return IDS_SAFETY_TIP_ANDROID_LOOKALIKE_LEAVE_BUTTON;
-#else
     case security_state::SafetyTipStatus::kBadReputation:
       return IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_LEAVE_BUTTON;
     case security_state::SafetyTipStatus::kLookalike:
       return IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_LEAVE_BUTTON;
-#endif
     case security_state::SafetyTipStatus::kBadReputationIgnored:
     case security_state::SafetyTipStatus::kLookalikeIgnored:
     case security_state::SafetyTipStatus::kBadKeyword:

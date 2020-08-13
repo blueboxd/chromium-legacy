@@ -59,8 +59,10 @@ bool ValidateRangeCreation(ExceptionState& exception_state,
   return true;
 }
 
-WGPUBufferDescriptor AsDawnType(const GPUBufferDescriptor* webgpu_desc) {
+WGPUBufferDescriptor AsDawnType(const GPUBufferDescriptor* webgpu_desc,
+                                std::string* label) {
   DCHECK(webgpu_desc);
+  DCHECK(label);
 
   WGPUBufferDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
@@ -68,7 +70,8 @@ WGPUBufferDescriptor AsDawnType(const GPUBufferDescriptor* webgpu_desc) {
   dawn_desc.size = webgpu_desc->size();
   dawn_desc.mappedAtCreation = webgpu_desc->mappedAtCreation();
   if (webgpu_desc->hasLabel()) {
-    dawn_desc.label = webgpu_desc->label().Utf8().data();
+    *label = webgpu_desc->label().Utf8();
+    dawn_desc.label = label->c_str();
   }
 
   return dawn_desc;
@@ -81,7 +84,8 @@ GPUBuffer* GPUBuffer::Create(GPUDevice* device,
                              const GPUBufferDescriptor* webgpu_desc) {
   DCHECK(device);
 
-  WGPUBufferDescriptor dawn_desc = AsDawnType(webgpu_desc);
+  std::string label;
+  WGPUBufferDescriptor dawn_desc = AsDawnType(webgpu_desc, &label);
   return MakeGarbageCollected<GPUBuffer>(
       device, dawn_desc.size, dawn_desc.mappedAtCreation,
       device->GetProcs().deviceCreateBuffer(device->GetHandle(), &dawn_desc));
@@ -94,7 +98,8 @@ std::pair<GPUBuffer*, DOMArrayBuffer*> GPUBuffer::CreateMapped(
     ExceptionState& exception_state) {
   DCHECK(device);
 
-  WGPUBufferDescriptor dawn_desc = AsDawnType(webgpu_desc);
+  std::string label;
+  WGPUBufferDescriptor dawn_desc = AsDawnType(webgpu_desc, &label);
 
   if (!ValidateRangeCreation(exception_state, "createBufferMapped", 0,
                              dawn_desc.size, kLargestMappableSize)) {

@@ -940,7 +940,7 @@ class GetAuthTokenFunctionTest
   void SetCachedTokenForAccount(const CoreAccountId account_id,
                                 const IdentityTokenCacheValue& token_data) {
     ExtensionTokenKey key(extension_id_, account_id, oauth_scopes_);
-    id_api()->SetCachedToken(key, token_data);
+    id_api()->token_cache()->SetToken(key, token_data);
   }
 
   void SetCachedGaiaId(const std::string& gaia_id) {
@@ -952,7 +952,7 @@ class GetAuthTokenFunctionTest
     ExtensionTokenKey key(
         extension_id_, account_id.empty() ? GetPrimaryAccountId() : account_id,
         oauth_scopes_);
-    return id_api()->GetCachedToken(key);
+    return id_api()->token_cache()->GetToken(key);
   }
 
   base::Optional<std::string> GetCachedGaiaId() {
@@ -1603,7 +1603,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     func->set_extension(extension.get());
     // Make sure we don't get a cached issue_advice result, which would cause
     // flow to be leaked.
-    id_api()->EraseAllCachedTokens();
+    id_api()->token_cache()->EraseAllTokens();
     func->push_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
     func->set_scope_ui_oauth_error(test_case.oauth_error);
     std::string error = utils::RunFunctionAndReturnError(
@@ -2965,11 +2965,11 @@ class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
   void SetCachedToken(const IdentityTokenCacheValue& token_data) {
     ExtensionTokenKey key(kExtensionId, CoreAccountId("test@example.com"),
                           std::set<std::string>());
-    id_api()->SetCachedToken(key, token_data);
+    id_api()->token_cache()->SetToken(key, token_data);
   }
 
   const IdentityTokenCacheValue& GetCachedToken() {
-    return id_api()->GetCachedToken(
+    return id_api()->token_cache()->GetToken(
         ExtensionTokenKey(kExtensionId, CoreAccountId("test@example.com"),
                           std::set<std::string>()));
   }

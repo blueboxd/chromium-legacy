@@ -1352,7 +1352,8 @@ authorization from the authors.
 
     <!-- XIQueryPointer -->
 
-    <enum name="Device">
+    <!-- Chromium patch: Rename so that this will get merged with DeviceId -->
+    <enum name="DEVICE_ID">
         <item name="All">       <value>0</value> </item>
         <item name="AllMaster"> <value>1</value> </item>
     </enum>

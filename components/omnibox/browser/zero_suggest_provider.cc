@@ -611,11 +611,18 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
   const auto page_class = input.current_page_classification();
   const auto input_type = input.type();
 
+  if (client()->IsOffTheRecord())
+    return false;
+
   if (input.focus_type() == OmniboxFocusType::DEFAULT)
     return false;
 
-  if (client()->IsOffTheRecord())
+  if (input.focus_type() == OmniboxFocusType::ON_FOCUS &&
+      page_class == metrics::OmniboxEventProto::OTHER &&
+      !base::FeatureList::IsEnabled(
+          omnibox::kFocusGestureTriggersContextualWebZeroSuggest)) {
     return false;
+  }
 
   // When the omnibox is empty, only allow zero suggest for the ChromeOS
   // Launcher and NTP, unless the clobber flag is on.

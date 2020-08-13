@@ -61,7 +61,7 @@ class ScopedXGrabServer {
 
 // Make a connection to the X Server impervious to X Server grabs. Returns
 // true if successful or false if the required XTEST extension is not present.
-bool IgnoreXServerGrabs(Display* display, bool ignore);
+bool IgnoreXServerGrabs(x11::Connection* connection, bool ignore);
 
 }  // namespace remoting
 

@@ -75,9 +75,11 @@ BubbleDialogModelHost::BubbleDialogModelHost(
 
     button_mask |= field->model_field_id(GetPassKey());
     SetButtons(button_mask);
-    SetButtonLabel(
-        static_cast<ui::DialogButton>(field->model_field_id(GetPassKey())),
-        button->label());
+    if (!button->label().empty()) {
+      SetButtonLabel(
+          static_cast<ui::DialogButton>(field->model_field_id(GetPassKey())),
+          button->label());
+    }
   }
 
   // Populate dialog using the observer functions to make sure they use the same

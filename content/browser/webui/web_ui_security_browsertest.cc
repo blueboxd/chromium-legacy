@@ -508,6 +508,7 @@ IN_PROC_BROWSER_TEST_F(
   // Add a DataSource whose CSP allows chrome-untrusted://resources scripts.
   TestUntrustedDataSourceCSP csp;
   csp.script_src = "script-src chrome-untrusted://resources;";
+  csp.no_trusted_types = true;
   AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
                          "test-host", csp);
   GURL main_frame_url(GetChromeUntrustedUIURL("test-host/title1.html"));

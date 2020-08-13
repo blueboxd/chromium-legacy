@@ -42,7 +42,6 @@ import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.ProcessScopeDependencyProvider;
-import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
 import org.chromium.components.browser_ui.widget.FeatureHighlightProvider;
 import org.chromium.components.external_intents.AuthenticatorNavigationInterceptor;
 import org.chromium.components.signin.AccountManagerDelegate;
@@ -347,19 +346,6 @@ public abstract class AppHooks {
     public @Nullable ProcessScope getExternalSurfaceProcessScope(
             ProcessScopeDependencyProvider dependencies) {
         return null;
-    }
-
-    /**
-     * Returns a new {@link SurfaceRenderer} if the xsurface implementation is included in the
-     * apk. Otherwise null is returned.
-     *
-     * This API is deprecated, and will be removed after safely renaming SurfaceDependencyProvider
-     * to ProcessScopeDependencyProvider.
-     */
-    @Deprecated
-    public @Nullable ProcessScope getExternalSurfaceProcessScope(
-            SurfaceDependencyProvider dependencies) {
-        return getExternalSurfaceProcessScope((ProcessScopeDependencyProvider) dependencies);
     }
 
     /**

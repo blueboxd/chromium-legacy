@@ -26,7 +26,8 @@ ExtensionFunction::ResponseAction IdentityRemoveCachedAuthTokenFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   IdentityAPI::GetFactoryInstance()
       ->Get(browser_context())
-      ->EraseCachedToken(extension()->id(), params->details.token);
+      ->token_cache()
+      ->EraseToken(extension()->id(), params->details.token);
   return RespondNow(NoArguments());
 }
 

@@ -177,7 +177,7 @@ void AppShortcutManager::OnShortcutsMenuIconsReadRegisterShortcutsMenu(
     RegisterShortcutsMenuCallback callback,
     ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps) {
   std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos =
-      registrar_->GetAppShortcutInfos(app_id);
+      registrar_->GetAppShortcutsMenuItemInfos(app_id);
   if (!shortcuts_menu_item_infos.empty()) {
     RegisterShortcutsMenuWithOs(app_id, shortcuts_menu_item_infos,
                                 shortcuts_menu_icons_bitmaps);

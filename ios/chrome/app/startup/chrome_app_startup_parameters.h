@@ -38,10 +38,6 @@ enum MobileSessionCallerApp {
   MOBILE_SESSION_CALLER_APP_COUNT,
 };
 
-// UserDefaults key that saves the last time an HTTP(S) link was sent and opened
-// by the app.
-extern NSString* const kLastHTTPURLOpenTime;
-
 @interface ChromeAppStartupParameters : AppStartupParameters
 
 - (instancetype)initWithExternalURL:(const GURL&)externalURL

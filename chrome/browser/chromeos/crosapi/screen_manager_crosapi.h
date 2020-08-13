@@ -16,6 +16,10 @@
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/image/image.h"
 
+namespace crosapi {
+struct Bitmap;
+}  // namespace crosapi
+
 // This class is the ash-chrome implementation of the ScreenManager interface.
 // This class must only be used from the main thread.
 class ScreenManagerCrosapi : public crosapi::mojom::ScreenManager,
@@ -42,8 +46,7 @@ class ScreenManagerCrosapi : public crosapi::mojom::ScreenManager,
   void OnWindowDestroying(aura::Window* window) final;
 
  private:
-  using SnapshotCallback =
-      base::OnceCallback<void(const crosapi::WindowSnapshot&)>;
+  using SnapshotCallback = base::OnceCallback<void(const crosapi::Bitmap&)>;
   void DidTakeSnapshot(SnapshotCallback callback, gfx::Image image);
 
   // This class generates unique, non-reused IDs for windows on demand. The IDs

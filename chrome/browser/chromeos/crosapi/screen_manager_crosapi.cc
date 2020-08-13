@@ -13,7 +13,7 @@
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/crosapi/cpp/window_snapshot.h"
+#include "chromeos/crosapi/cpp/bitmap.h"
 #include "ui/snapshot/snapshot.h"
 
 ScreenManagerCrosapi::ScreenManagerCrosapi() = default;
@@ -93,7 +93,7 @@ void ScreenManagerCrosapi::TakeWindowSnapshot(
     TakeWindowSnapshotCallback callback) {
   auto it = id_to_window_.find(id);
   if (it == id_to_window_.end()) {
-    std::move(callback).Run(/*success=*/false, crosapi::WindowSnapshot());
+    std::move(callback).Run(/*success=*/false, crosapi::Bitmap());
     return;
   }
 
@@ -132,9 +132,9 @@ void ScreenManagerCrosapi::DidTakeSnapshot(SnapshotCallback callback,
   uint8_t* base = static_cast<uint8_t*>(bitmap.getPixels());
   std::vector<uint8_t> bytes(base, base + bitmap.computeByteSize());
 
-  crosapi::WindowSnapshot snapshot;
+  crosapi::Bitmap snapshot;
   snapshot.width = bitmap.width();
   snapshot.height = bitmap.height();
-  snapshot.bitmap.swap(bytes);
+  snapshot.pixels.swap(bytes);
   std::move(callback).Run(std::move(snapshot));
 }

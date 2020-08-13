@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
-#define UI_BASE_IME_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
+#ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
+#define UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
 
 #include <stdint.h>
 
 #include "base/component_export.h"
+#include "ui/base/ime/chromeos/ime_input_context_handler_interface.h"
 #include "ui/base/ime/composition_text.h"
-#include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/events/event.h"
 #include "ui/gfx/range/range.h"
 
 namespace ui {
 class InputMethod;
 
-class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockIMEInputContextHandler
     : public IMEInputContextHandlerInterface {
  public:
   struct UpdateCompositionTextArg {
@@ -99,6 +99,6 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
   UpdateCompositionTextArg last_update_composition_arg_;
   DeleteSurroundingTextArg last_delete_surrounding_text_arg_;
 };
-}  // ui
+}  // namespace ui
 
-#endif  // UI_BASE_IME_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
+#endif  // UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_

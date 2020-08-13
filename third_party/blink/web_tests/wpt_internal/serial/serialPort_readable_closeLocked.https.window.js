@@ -9,7 +9,7 @@
 serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
 
-  await port.open({baudrate: 9600});
+  await port.open({baudRate: 9600});
   assert_true(port.readable instanceof ReadableStream);
 
   const reader = port.readable.getReader();

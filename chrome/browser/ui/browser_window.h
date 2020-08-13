@@ -301,7 +301,7 @@ class BrowserWindow : public ui::BaseWindow {
   // Called from toolbar subviews during their show/hide animations.
   virtual void ToolbarSizeChanged(bool is_animating) = 0;
 
-  // Called when the accociated window's tab dragging status changed.
+  // Called when the associated window's tab dragging status changed.
   virtual void TabDraggingStatusChanged(bool is_dragging) = 0;
 
   // Focuses the app menu like it was a menu bar.

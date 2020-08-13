@@ -33,6 +33,12 @@ Polymer({
       notify: true,
     },
 
+    /** @private {?WebUIListener} */
+    onPrintersChangedListener_: {
+      type: Object,
+      value: null,
+    },
+
     searchTerm: {
       type: String,
     },
@@ -128,13 +134,17 @@ Polymer({
    */
   currentRouteChanged(route) {
     if (route != settings.routes.CUPS_PRINTERS) {
-      cr.removeWebUIListener('on-printers-changed');
+      if (this.onPrintersChangedListener_) {
+        cr.removeWebUIListener(
+            /** @type {WebUIListener} */ (this.onPrintersChangedListener_));
+        this.onPrintersChangedListener_ = null;
+      }
       this.entryManager_.removeWebUIListeners();
       return;
     }
 
     this.entryManager_.addWebUIListeners();
-    cr.addWebUIListener(
+    this.onPrintersChangedListener_ = cr.addWebUIListener(
         'on-printers-changed', this.onPrintersChanged_.bind(this));
     this.updateCupsPrintersList_();
   },

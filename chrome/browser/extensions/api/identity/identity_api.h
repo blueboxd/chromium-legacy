@@ -5,11 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_API_H_
 
-#include <map>
-#include <set>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/callback_list.h"
 #include "base/feature_list.h"
@@ -20,7 +17,6 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "chrome/browser/extensions/api/identity/extension_token_key.h"
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 #include "chrome/browser/extensions/api/identity/identity_get_accounts_function.h"
 #include "chrome/browser/extensions/api/identity/identity_get_auth_token_function.h"
@@ -28,6 +24,7 @@
 #include "chrome/browser/extensions/api/identity/identity_launch_web_auth_flow_function.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/api/identity/identity_remove_cached_auth_token_function.h"
+#include "chrome/browser/extensions/api/identity/identity_token_cache.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -42,53 +39,9 @@ class Profile;
 
 namespace extensions {
 
-class IdentityTokenCacheValue {
- public:
-  IdentityTokenCacheValue();
-  IdentityTokenCacheValue(const IdentityTokenCacheValue& other);
-  ~IdentityTokenCacheValue();
-
-  static IdentityTokenCacheValue CreateIssueAdvice(
-      const IssueAdviceInfo& issue_advice);
-  static IdentityTokenCacheValue CreateRemoteConsent(
-      const RemoteConsentResolutionData& resolution_data);
-  static IdentityTokenCacheValue CreateRemoteConsentApproved(
-      const std::string& consent_result);
-  static IdentityTokenCacheValue CreateToken(const std::string& token,
-                                             base::TimeDelta time_to_live);
-
-  // Order of these entries is used to determine whether or not new
-  // entries supersede older ones in SetCachedToken.
-  enum CacheValueStatus {
-    CACHE_STATUS_NOTFOUND,
-    CACHE_STATUS_ADVICE,
-    CACHE_STATUS_REMOTE_CONSENT,
-    CACHE_STATUS_REMOTE_CONSENT_APPROVED,
-    CACHE_STATUS_TOKEN
-  };
-
-  CacheValueStatus status() const;
-  const IssueAdviceInfo& issue_advice() const;
-  const RemoteConsentResolutionData& resolution_data() const;
-  const std::string& consent_result() const;
-  const std::string& token() const;
-  const base::Time& expiration_time() const;
-
- private:
-  bool is_expired() const;
-
-  CacheValueStatus status_ = CACHE_STATUS_NOTFOUND;
-  IssueAdviceInfo issue_advice_;
-  RemoteConsentResolutionData resolution_data_;
-  std::string consent_result_;
-  std::string token_;
-  base::Time expiration_time_;
-};
-
 class IdentityAPI : public BrowserContextKeyedAPI,
                     public signin::IdentityManager::Observer {
  public:
-  using CachedTokens = std::map<ExtensionTokenKey, IdentityTokenCacheValue>;
   using OnSetConsentResultSignature = void(const std::string&,
                                            const std::string&);
 
@@ -98,14 +51,7 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   // Request serialization queue for getAuthToken.
   IdentityMintRequestQueue* mint_queue();
 
-  // Token cache.
-  void SetCachedToken(const ExtensionTokenKey& key,
-                      const IdentityTokenCacheValue& token_data);
-  void EraseCachedToken(const std::string& extension_id,
-                        const std::string& token);
-  void EraseAllCachedTokens();
-  const IdentityTokenCacheValue& GetCachedToken(const ExtensionTokenKey& key);
-  const CachedTokens& GetAllCachedTokens();
+  IdentityTokenCache* token_cache();
 
   // GAIA id cache.
   void SetGaiaIdForExtension(const std::string& extension_id,
@@ -180,7 +126,7 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   EventRouter* const event_router_;
 
   IdentityMintRequestQueue mint_queue_;
-  CachedTokens token_cache_;
+  IdentityTokenCache token_cache_;
 
   OnSignInChangedCallback on_signin_changed_callback_for_testing_;
 

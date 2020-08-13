@@ -174,7 +174,7 @@ public class PseudoTab {
      * @return The URL
      */
     public String getUrl() {
-        if (mTab != null && mTab.get() != null) {
+        if (mTab != null && mTab.get() != null && mTab.get().isInitialized()) {
             return mTab.get().getUrlString();
         }
         assert mTabId != null;

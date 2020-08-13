@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
@@ -111,8 +112,12 @@ void OptimizationGuideKeyedService::Initialize(
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   top_host_provider_ = GetTopHostProviderIfUserPermitted(browser_context_);
+  bool optimization_guide_fetching_enabled = top_host_provider_ != nullptr;
   UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.RemoteFetchingEnabled",
-                        top_host_provider_ != nullptr);
+                        optimization_guide_fetching_enabled);
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "SyntheticOptimizationGuideRemoteFetching",
+      optimization_guide_fetching_enabled ? "Enabled" : "Disabled");
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();

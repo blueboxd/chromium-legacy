@@ -9,6 +9,7 @@
 #include "remoting/host/linux/unicode_to_keysym.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xtest.h"
 
 namespace {
 
@@ -30,12 +31,12 @@ bool FindKeycodeForKeySym(Display* display,
   };
 
   // TODO(sergeyu): Is there a better way to find modifiers state?
-  for (size_t i = 0; i < base::size(kModifiersToTry); ++i) {
+  for (auto i : kModifiersToTry) {
     unsigned long key_sym_with_mods;
-    if (XkbLookupKeySym(display, found_keycode, kModifiersToTry[i], nullptr,
+    if (XkbLookupKeySym(display, found_keycode, i, nullptr,
                         &key_sym_with_mods) &&
         key_sym_with_mods == key_sym) {
-      *modifiers = kModifiersToTry[i];
+      *modifiers = i;
       *keycode = found_keycode;
       return true;
     }
@@ -47,7 +48,8 @@ bool FindKeycodeForKeySym(Display* display,
 
 namespace remoting {
 
-X11KeyboardImpl::X11KeyboardImpl(Display* display) : display_(display) {}
+X11KeyboardImpl::X11KeyboardImpl(x11::Connection* connection)
+    : connection_(connection), display_(connection->display()) {}
 
 X11KeyboardImpl::~X11KeyboardImpl() = default;
 
@@ -80,8 +82,8 @@ std::vector<uint32_t> X11KeyboardImpl::GetUnusedKeycodes() {
 void X11KeyboardImpl::PressKey(uint32_t keycode, uint32_t modifiers) {
   XkbLockModifiers(display_, XkbUseCoreKbd, modifiers, modifiers);
 
-  XTestFakeKeyEvent(display_, keycode, x11::True, x11::CurrentTime);
-  XTestFakeKeyEvent(display_, keycode, x11::False, x11::CurrentTime);
+  connection_->xtest().FakeInput({x11::KeyEvent::Press, keycode});
+  connection_->xtest().FakeInput({x11::KeyEvent::Release, keycode});
 
   XkbLockModifiers(display_, XkbUseCoreKbd, modifiers, 0);
 }

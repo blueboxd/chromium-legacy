@@ -25,8 +25,6 @@
 
 namespace web_app {
 
-using Purpose = blink::Manifest::ImageResource::Purpose;
-
 namespace {
 
 // We restrict the number of icons to limit disk usage per installed PWA. This
@@ -35,8 +33,8 @@ constexpr int kMaxIcons = 20;
 constexpr SquareSizePx kMaxIconSize = 1024;
 
 // Append non-empty square icons from |icons_map| onto the |square_icons| list.
-void AddSquareIconsFromMap(const IconsMap& icons_map,
-                           std::vector<SkBitmap>* square_icons) {
+void AddSquareIconsFromMap(std::vector<SkBitmap>* square_icons,
+                           const IconsMap& icons_map) {
   for (const auto& url_icon : icons_map) {
     for (const SkBitmap& icon : url_icon.second) {
       if (!icon.empty() && icon.width() == icon.height())
@@ -45,17 +43,17 @@ void AddSquareIconsFromMap(const IconsMap& icons_map,
   }
 }
 
-// Append non-empty square icons from |icons_map| onto the
-// |square_icons| list, if they are also in |icon_infos| with Purpose::ANY.
+// Append non-empty square icons from |icons_map| onto the |square_icons| list,
+// if they are also in |icon_infos|.
 void AddSquareIconsFromMapMatchingIconInfos(
+    std::vector<SkBitmap>* square_icons,
     const std::vector<WebApplicationIconInfo>& icon_infos,
-    const IconsMap& icons_map,
-    std::vector<SkBitmap>* square_icons) {
+    const IconsMap& icons_map) {
   for (const auto& url_icon : icons_map) {
     for (const SkBitmap& icon : url_icon.second) {
       if (!icon.empty() && icon.width() == icon.height()) {
         for (const auto& info : icon_infos) {
-          if (info.url == url_icon.first && info.purpose == Purpose::ANY) {
+          if (info.url == url_icon.first) {
             square_icons->push_back(icon);
           }
         }
@@ -65,8 +63,9 @@ void AddSquareIconsFromMapMatchingIconInfos(
 }
 
 // Append non-empty square icons from |bitmaps| onto the |square_icons| list.
-void AddSquareIconsFromBitmaps(const std::map<SquareSizePx, SkBitmap>& bitmaps,
-                               std::vector<SkBitmap>* square_icons) {
+void AddSquareIconsFromBitmaps(
+    std::vector<SkBitmap>* square_icons,
+    const std::map<SquareSizePx, SkBitmap>& bitmaps) {
   for (const std::pair<const SquareSizePx, SkBitmap>& icon : bitmaps) {
     DCHECK_EQ(icon.first, icon.second.width());
     DCHECK_EQ(icon.first, icon.second.height());
@@ -167,8 +166,8 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
     // should have added ANY if there was no purpose specified in the manifest).
     DCHECK(!icon.purpose.empty());
 
-    for (Purpose purpose : icon.purpose) {
-      if (purpose != Purpose::ANY && purpose != Purpose::MASKABLE)
+    for (IconPurpose purpose : icon.purpose) {
+      if (purpose != IconPurpose::ANY && purpose != IconPurpose::MASKABLE)
         continue;
 
       WebApplicationIconInfo info;
@@ -191,7 +190,7 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
       info.purpose = purpose;
       web_app_icons.push_back(std::move(info));
 
-      if (purpose == Purpose::ANY)
+      if (purpose == IconPurpose::ANY)
         has_purpose_any = true;
 
       // Limit the number of icons we store on the user's machine.
@@ -273,29 +272,54 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
     PopulateShortcutItemIcons(web_app_info, icons_map);
   }
 
-  // Ensure that all top-level icons that are in web_app_info are present, by
-  // generating icons for any sizes that have failed to download. This ensures
-  // that the created manifest for the web app does not contain links to icons
-  // that are not actually created and linked on disk.
-  std::vector<SkBitmap> square_icons;
-  if (icons_map) {
-    AddSquareIconsFromMapMatchingIconInfos(web_app_info->icon_infos, *icons_map,
-                                           &square_icons);
-    // Fall back to using all icons from |icons_map| if none match icon_infos.
-    if (square_icons.empty())
-      AddSquareIconsFromMap(*icons_map, &square_icons);
+  std::vector<WebApplicationIconInfo> icon_infos_any;
+  std::vector<WebApplicationIconInfo> icon_infos_maskable;
+  for (WebApplicationIconInfo& icon_info : web_app_info->icon_infos) {
+    switch (icon_info.purpose) {
+      case IconPurpose::ANY:
+        icon_infos_any.push_back(icon_info);
+        break;
+      case IconPurpose::MASKABLE:
+        icon_infos_maskable.push_back(icon_info);
+        break;
+      case IconPurpose::MONOCHROME:
+        // Not used.
+        break;
+    }
   }
-  AddSquareIconsFromBitmaps(web_app_info->icon_bitmaps_any, &square_icons);
+
+  std::vector<SkBitmap> square_icons_any;
+  std::vector<SkBitmap> square_icons_maskable;
+  if (icons_map) {
+    AddSquareIconsFromMapMatchingIconInfos(&square_icons_any, icon_infos_any,
+                                           *icons_map);
+    AddSquareIconsFromMapMatchingIconInfos(&square_icons_maskable,
+                                           icon_infos_maskable, *icons_map);
+    // Fall back to using all icons from |icons_map| if none match icon_infos.
+    if (square_icons_any.empty())
+      AddSquareIconsFromMap(&square_icons_any, *icons_map);
+  }
+  AddSquareIconsFromBitmaps(&square_icons_any, web_app_info->icon_bitmaps_any);
+
+  for (SkBitmap& bitmap : square_icons_maskable) {
+    // Retain any bitmaps provided as input to the installation.
+    if (web_app_info->icon_bitmaps_maskable.count(bitmap.width()) == 0)
+      web_app_info->icon_bitmaps_maskable[bitmap.width()] = std::move(bitmap);
+  }
 
   base::char16 icon_letter =
       web_app_info->title.empty()
           ? GenerateIconLetterFromUrl(web_app_info->app_url)
           : GenerateIconLetterFromAppName(web_app_info->title);
   web_app_info->generated_icon_color = SK_ColorTRANSPARENT;
+  // Ensure that all top-level icons that are in web_app_info with  Purpose::ANY
+  // are present, by generating icons for any sizes that have failed to
+  // download. This ensures that the created manifest for the web app does not
+  // contain links to icons that are not actually created and linked on disk.
   // TODO(https://crbug.com/1029223): Don't resize before writing to disk, it's
   // not necessary and would simplify this code path to remove.
   SizeToBitmap size_to_icons = ResizeIconsAndGenerateMissing(
-      square_icons, SizesToGenerate(), icon_letter,
+      square_icons_any, SizesToGenerate(), icon_letter,
       &web_app_info->generated_icon_color, &web_app_info->is_generated_icon);
 
   for (auto& item : size_to_icons) {

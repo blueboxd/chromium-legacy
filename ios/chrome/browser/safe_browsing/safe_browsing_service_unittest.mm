@@ -417,6 +417,32 @@ TEST_F(SafeBrowsingServiceTest, ClearCookies) {
   run_loop5.Run();
 }
 
+// Verfies that http requests sent by SafeBrowsingServiceImpl's network context
+// have a non-empty User-Agent header.
+TEST_F(SafeBrowsingServiceTest, NonEmptyUserAgent) {
+  net::EmbeddedTestServer server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::test_server::RegisterDefaultHandlers(&server);
+  ASSERT_TRUE(server.Start());
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
+
+  // Ask the server to echo the User-Agent header and verify that the echoed
+  // value is non-empty.
+  resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = server.GetURL("/echoheader?User-Agent");
+  std::unique_ptr<network::SimpleURLLoader> url_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+  base::RunLoop run_loop;
+  url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      safe_browsing_service_->GetURLLoaderFactory().get(),
+      base::BindLambdaForTesting([&](std::unique_ptr<std::string> body) {
+        EXPECT_FALSE(body->empty());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
 using SafeBrowsingServiceInitializationTest = PlatformTest;
 
 // Verifies that GetURLLoaderFactory() has a non-null return value when called

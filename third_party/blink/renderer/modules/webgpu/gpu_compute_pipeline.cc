@@ -21,13 +21,15 @@ GPUComputePipeline* GPUComputePipeline::Create(
   DCHECK(device);
   DCHECK(webgpu_desc);
 
+  std::string label;
   WGPUComputePipelineDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   if (webgpu_desc->hasLayout()) {
     dawn_desc.layout = AsDawnType(webgpu_desc->layout());
   }
   if (webgpu_desc->hasLabel()) {
-    dawn_desc.label = webgpu_desc->label().Utf8().data();
+    label = webgpu_desc->label().Utf8();
+    dawn_desc.label = label.c_str();
   }
 
   auto compute_stage = AsDawnType(webgpu_desc->computeStage());

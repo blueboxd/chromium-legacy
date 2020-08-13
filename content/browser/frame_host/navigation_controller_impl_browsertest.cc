@@ -635,7 +635,10 @@ bool RendererLocationReplace(Shell* shell, const GURL& url) {
   WaitForLoadStop(web_contents);
   TestNavigationManager navigation_manager(web_contents, url);
   const GURL& current_url = web_contents->GetMainFrame()->GetLastCommittedURL();
-  EXPECT_TRUE(ExecJs(shell, JsReplace("window.location.replace($1)", url)));
+  // Execute script in an isolated world to avoid causing a Trusted Types
+  // violation due to eval.
+  EXPECT_TRUE(ExecJs(shell, JsReplace("window.location.replace($1)", url),
+                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1));
   // Observe pending entry if it's not a same-document navigation. We can't
   // observe same-document navigations because it might finish in the renderer,
   // only telling the browser side at the end.
@@ -718,13 +721,18 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   ShellAddedObserver observer;
   GURL page_url = embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html");
-  EXPECT_TRUE(
-      ExecJs(shell(), JsReplace("window.open($1, '_blank');", page_url)));
+  // Execute script in an isolated world to avoid causing a Trusted Types
+  // violation due to eval.
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("window.open($1, '_blank');", page_url),
+                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1));
   Shell* shell2 = observer.GetShell();
   EXPECT_TRUE(WaitForLoadStop(shell2->web_contents()));
 
   EXPECT_EQ(1, shell2->web_contents()->GetController().GetEntryCount());
-  EXPECT_EQ(1, EvalJs(shell2, "history.length"));
+  // Execute script in an isolated world to avoid causing a Trusted Types
+  // violation due to eval.
+  EXPECT_EQ(1, EvalJs(shell2, "history.length", EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                      /*world_id=*/1));
 
   // Again, as above, there's no way to access the renderer's notion of the
   // history offset via JavaScript. Checking just the history length, again,

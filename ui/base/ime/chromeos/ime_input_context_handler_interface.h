@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_IME_INPUT_CONTEXT_HANDLER_INTERFACE_H_
-#define UI_BASE_IME_IME_INPUT_CONTEXT_HANDLER_INTERFACE_H_
+#ifndef UI_BASE_IME_CHROMEOS_IME_INPUT_CONTEXT_HANDLER_INTERFACE_H_
+#define UI_BASE_IME_CHROMEOS_IME_INPUT_CONTEXT_HANDLER_INTERFACE_H_
 
 #include <stdint.h>
 
@@ -20,7 +20,7 @@ struct SurroundingTextInfo {
   gfx::Range selection_range;
 };
 
-class COMPONENT_EXPORT(UI_BASE_IME) IMEInputContextHandlerInterface {
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) IMEInputContextHandlerInterface {
  public:
   // Called when the engine commit a text.
   virtual void CommitText(const std::string& text) = 0;
@@ -72,4 +72,4 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEInputContextHandlerInterface {
 
 }  // namespace ui
 
-#endif  // UI_BASE_IME_IME_INPUT_CONTEXT_HANDLER_INTERFACE_H_
+#endif  // UI_BASE_IME_CHROMEOS_IME_INPUT_CONTEXT_HANDLER_INTERFACE_H_

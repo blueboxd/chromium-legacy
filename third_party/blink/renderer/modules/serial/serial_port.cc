@@ -196,14 +196,14 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
 
   auto mojo_options = device::mojom::blink::SerialConnectionOptions::New();
 
-  if (options->baudrate() == 0) {
+  if (options->baudRate() == 0) {
     exception_state.ThrowTypeError(
         "Requested baud rate must be greater than zero.");
     return ScriptPromise();
   }
-  mojo_options->bitrate = options->baudrate();
+  mojo_options->bitrate = options->baudRate();
 
-  switch (options->databits()) {
+  switch (options->dataBits()) {
     case 7:
       mojo_options->data_bits = device::mojom::blink::SerialDataBits::SEVEN;
       break;
@@ -226,7 +226,7 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
     NOTREACHED();
   }
 
-  switch (options->stopbits()) {
+  switch (options->stopBits()) {
     case 1:
       mojo_options->stop_bits = device::mojom::blink::SerialStopBits::ONE;
       break;
@@ -239,24 +239,24 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
       return ScriptPromise();
   }
 
-  if (options->buffersize() == 0) {
+  if (options->bufferSize() == 0) {
     exception_state.ThrowTypeError(String::Format(
         "Requested buffer size (%d bytes) must be greater than zero.",
-        options->buffersize()));
+        options->bufferSize()));
     return ScriptPromise();
   }
 
-  if (options->buffersize() > kMaxBufferSize) {
+  if (options->bufferSize() > kMaxBufferSize) {
     exception_state.ThrowTypeError(
         String::Format("Requested buffer size (%d bytes) is greater than "
                        "the maximum allowed (%d bytes).",
-                       options->buffersize(), kMaxBufferSize));
+                       options->bufferSize(), kMaxBufferSize));
     return ScriptPromise();
   }
-  buffer_size_ = options->buffersize();
+  buffer_size_ = options->bufferSize();
 
   mojo_options->has_cts_flow_control = true;
-  mojo_options->cts_flow_control = options->rtscts();
+  mojo_options->cts_flow_control = options->flowControl() == "hardware";
 
   mojo::PendingRemote<device::mojom::blink::SerialPortClient> client;
   parent_->GetPort(
@@ -360,19 +360,20 @@ ScriptPromise SerialPort::setSignals(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!signals->hasDtr() && !signals->hasRts() && !signals->hasBrk()) {
+  if (!signals->hasDataTerminalReady() && !signals->hasRequestToSend() &&
+      !signals->hasBrk()) {
     exception_state.ThrowTypeError(kNoSignals);
     return ScriptPromise();
   }
 
   auto mojo_signals = device::mojom::blink::SerialHostControlSignals::New();
-  if (signals->hasDtr()) {
+  if (signals->hasDataTerminalReady()) {
     mojo_signals->has_dtr = true;
-    mojo_signals->dtr = signals->dtr();
+    mojo_signals->dtr = signals->dataTerminalReady();
   }
-  if (signals->hasRts()) {
+  if (signals->hasRequestToSend()) {
     mojo_signals->has_rts = true;
-    mojo_signals->rts = signals->rts();
+    mojo_signals->rts = signals->requestToSend();
   }
   if (signals->hasBrk()) {
     mojo_signals->has_brk = true;
@@ -611,10 +612,10 @@ void SerialPort::OnGetSignals(
   }
 
   auto* signals = MakeGarbageCollected<SerialInputSignals>();
-  signals->setDcd(mojo_signals->dcd);
-  signals->setCts(mojo_signals->cts);
-  signals->setRi(mojo_signals->ri);
-  signals->setDsr(mojo_signals->dsr);
+  signals->setDataCarrierDetect(mojo_signals->dcd);
+  signals->setClearToSend(mojo_signals->cts);
+  signals->setRingIndicator(mojo_signals->ri);
+  signals->setDataSetReady(mojo_signals->dsr);
   resolver->Resolve(signals);
 }
 

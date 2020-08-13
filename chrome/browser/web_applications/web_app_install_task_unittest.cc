@@ -181,6 +181,15 @@ class WebAppInstallTaskTest : public WebAppTest {
     return base::NullableString16(base::UTF8ToUTF16(str), false);
   }
 
+  void ResetInstallTask() {
+    auto data_retriever = std::make_unique<TestDataRetriever>();
+    data_retriever_ = static_cast<TestDataRetriever*>(data_retriever.get());
+
+    install_task_ = std::make_unique<WebAppInstallTask>(
+        profile(), os_integration_manager_.get(), install_finalizer_.get(),
+        std::move(data_retriever));
+  }
+
   void SetInstallFinalizerForTesting() {
     auto test_install_finalizer = std::make_unique<TestInstallFinalizer>();
     test_install_finalizer_ = test_install_finalizer.get();
@@ -332,8 +341,9 @@ class WebAppInstallTaskTest : public WebAppTest {
   std::unique_ptr<InstallFinalizer> install_finalizer_;
   std::unique_ptr<TestOsIntegrationManager> os_integration_manager_;
 
-  // Owned by install_task_:
+  // Owned by icon_manager_:
   TestFileUtils* file_utils_ = nullptr;
+  // Owned by install_task_:
   TestDataRetriever* data_retriever_ = nullptr;
 
 #if defined(OS_CHROMEOS)
@@ -444,6 +454,7 @@ TEST_F(WebAppInstallTaskTest, ForceReinstall) {
 
   const AppId installed_web_app = InstallWebAppFromManifestWithFallback();
   EXPECT_EQ(app_id, installed_web_app);
+  ResetInstallTask();
 
   // Force reinstall:
   CreateRendererAppInfo(url, "Renderer Name2", "Renderer Description2");
@@ -1035,6 +1046,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
     EXPECT_EQ(DisplayMode::kBrowser,
               registrar().GetAppById(app_id)->user_display_mode());
   }
+  ResetInstallTask();
   {
     CreateDataToRetrieve(GURL("https://example.org/"), /*open_as_window*/ true);
 
@@ -1043,6 +1055,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
     EXPECT_EQ(DisplayMode::kStandalone,
               registrar().GetAppById(app_id)->user_display_mode());
   }
+  ResetInstallTask();
   {
     CreateDataToRetrieve(GURL("https://example.au/"), /*open_as_window*/ true);
 
@@ -1051,6 +1064,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
     EXPECT_EQ(DisplayMode::kBrowser,
               registrar().GetAppById(app_id)->user_display_mode());
   }
+  ResetInstallTask();
   {
     CreateDataToRetrieve(GURL("https://example.app/"),
                          /*open_as_window*/ false);
@@ -1076,6 +1090,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_ExpectAppId) {
     EXPECT_EQ(app_id1, result.app_id);
     EXPECT_TRUE(registrar().GetAppById(app_id1));
   }
+  ResetInstallTask();
   {
     CreateDefaultDataToRetrieve(url2);
     install_task().ExpectAppId(app_id1);
@@ -1099,6 +1114,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromManifestWithFallback) {
     EXPECT_TRUE(result.app_id.empty());
     EXPECT_FALSE(registrar().GetAppById(app_id));
   }
+  ResetInstallTask();
   {
     CreateDefaultDataToRetrieve(url);
     url_loader().SetNextLoadUrlResult(
@@ -1109,6 +1125,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromManifestWithFallback) {
     EXPECT_TRUE(result.app_id.empty());
     EXPECT_FALSE(registrar().GetAppById(app_id));
   }
+  ResetInstallTask();
   {
     CreateDefaultDataToRetrieve(url);
     url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
@@ -1118,6 +1135,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromManifestWithFallback) {
     EXPECT_EQ(app_id, result.app_id);
     EXPECT_TRUE(registrar().GetAppById(app_id));
   }
+  ResetInstallTask();
   {
     CreateDefaultDataToRetrieve(url);
     url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
@@ -1144,6 +1162,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebApplicationInfoWithIcons) {
         LoadAndRetrieveWebApplicationInfoWithIcons(url);
     EXPECT_FALSE(result);
   }
+  ResetInstallTask();
   {
     CreateDefaultDataToRetrieve(url);
     url_loader().SetNextLoadUrlResult(
@@ -1153,6 +1172,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebApplicationInfoWithIcons) {
         LoadAndRetrieveWebApplicationInfoWithIcons(url);
     EXPECT_FALSE(result);
   }
+  ResetInstallTask();
   {
     CreateDefaultDataToRetrieve(start_url);
     CreateRendererAppInfo(url, name, description);
@@ -1165,6 +1185,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebApplicationInfoWithIcons) {
     EXPECT_TRUE(result->icon_infos.empty());
     EXPECT_FALSE(result->icon_bitmaps_any.empty());
   }
+  ResetInstallTask();
   {
     // Verify the callback is always called.
     base::RunLoop run_loop;
@@ -1474,6 +1495,7 @@ TEST_F(WebAppInstallTaskTestWithShortcutsMenu,
     EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
     EXPECT_EQ(app_id, result.app_id);
   }
+  ResetInstallTask();
 
   // Update the installed app, adding a Shortcuts Menu in the process.
   {
@@ -1499,6 +1521,7 @@ TEST_F(WebAppInstallTaskTestWithShortcutsMenu,
     EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
     EXPECT_EQ(app_id, result.app_id);
   }
+  ResetInstallTask();
 
   // Update the installed app, Shortcuts Menu has changed.
   {
@@ -1523,6 +1546,7 @@ TEST_F(WebAppInstallTaskTestWithShortcutsMenu,
     EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
     EXPECT_EQ(app_id, result.app_id);
   }
+  ResetInstallTask();
 
   // Update the installed app. Only theme color changed, so Shortcuts Menu
   // should stay the same.

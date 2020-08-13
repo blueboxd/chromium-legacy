@@ -459,6 +459,7 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
     sources = [ "video_encode_accelerator_unittest.cc" ]
     if (use_x11) {
       deps += [ "//ui/gfx/x" ]
+      public_configs = [ "//build/config/linux/libva" ]
     }
     if (use_ozone) {
       deps += [ "//ui/ozone" ]

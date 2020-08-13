@@ -11,6 +11,7 @@
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
+#include "ui/events/devices/x11/xinput_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
@@ -227,7 +228,7 @@ void ScopedXI2Event::InitGenericButtonEvent(int deviceid,
   dev_event->detail = XButtonEventButton(type, flags);
   dev_event->event_x = ToFp1616(location.x()),
   dev_event->event_y = ToFp1616(location.y()),
-  XISetMask(dev_event->button_mask.data(), XButtonEventButton(type, flags));
+  SetXinputMask(dev_event->button_mask.data(), XButtonEventButton(type, flags));
 
   // Setup an empty valuator list for generic button events.
   SetUpValuators(std::vector<Valuator>());

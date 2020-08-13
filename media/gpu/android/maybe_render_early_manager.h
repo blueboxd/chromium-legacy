@@ -90,8 +90,7 @@ void MEDIA_GPU_EXPORT MaybeRenderEarly(std::vector<Image*>* image_vector_ptr) {
     // Try to render to the back buffer, but don't wait for any previous frame.
     // While this does make it more likely that we'll have to wait the next time
     // we draw, it does prevent us from waiting on frames we don't plan to draw.
-    images[back_buffer_index]->RenderToTextureOwnerBackBuffer(
-        CodecImage::BlockingMode::kForbidBlocking);
+    images[back_buffer_index]->RenderToTextureOwnerBackBuffer();
   }
 }
 

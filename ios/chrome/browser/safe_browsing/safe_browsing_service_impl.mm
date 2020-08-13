@@ -22,8 +22,10 @@
 #import "ios/chrome/browser/safe_browsing/real_time_url_lookup_service_factory.h"
 #import "ios/chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #import "ios/net/cookies/system_cookie_store.h"
+#import "ios/web/common/user_agent.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -242,6 +244,8 @@ void SafeBrowsingServiceImpl::IOThreadEnabler::SetUpURLRequestContext(
           /*system_cookie_store=*/nullptr, net::NetLog::Get());
 
   builder.SetCookieStore(std::move(cookie_store));
+  builder.set_user_agent(
+      web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE));
   url_request_context_ = builder.Build();
 }
 

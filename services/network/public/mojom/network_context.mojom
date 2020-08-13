@@ -601,8 +601,14 @@ struct URLLoaderFactoryParams {
 
   // If specified, then |request_initiator_site_lock| locks
   // |ResourceRequest::request_initiator| to the specified origin.
-  // TODO(lukasza): https://crbug.com/1098938: 1) Make this non-optional,
-  // 2) Make this an *origin* lock (rather than a *site* lock).
+  //
+  // SECURITY NOTE: |request_initiator_site_lock| should be present in all
+  // factories that may be vended to a Renderer process.
+  // |request_initiator_site_lock| may be missing only in factories used by the
+  // Browser process.
+  //
+  // TODO(lukasza): https://crbug.com/918967: Make this an *origin* lock
+  // (rather than a *site* lock).
   url.mojom.Origin? request_initiator_site_lock;
 
   // Cross-origin read blocking (CORB) configuration.

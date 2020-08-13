@@ -1,6 +1,6 @@
 diff -ru xcbproto/src/randr.xml src/src/randr.xml
---- xcbproto/src/randr.xml	2020-07-29 09:55:07.897405223 -0700
-+++ src/src/randr.xml	2020-07-29 09:52:58.484783705 -0700
+--- xcbproto/src/randr.xml	2020-08-03 10:33:29.404868416 -0700
++++ src/src/randr.xml	2020-08-03 10:29:36.503609230 -0700
 @@ -803,64 +803,6 @@
  		<item name="Lease">           <value>6</value></item>
  	</enum>
@@ -174,8 +174,8 @@ diff -ru xcbproto/src/randr.xml src/src/randr.xml
  	</event>
  </xcb>
 diff -ru xcbproto/src/xinput.xml src/src/xinput.xml
---- xcbproto/src/xinput.xml	2020-07-29 09:55:07.897405223 -0700
-+++ src/src/xinput.xml	2020-07-29 09:52:58.484783705 -0700
+--- xcbproto/src/xinput.xml	2020-08-03 10:33:29.408868437 -0700
++++ src/src/xinput.xml	2020-08-03 10:29:36.503609230 -0700
 @@ -200,7 +200,12 @@
              <list type="STR" name="names">
                  <fieldref>devices_len</fieldref>
@@ -190,9 +190,19 @@ diff -ru xcbproto/src/xinput.xml src/src/xinput.xml
          </reply>
      </request>
  
+@@ -1347,7 +1352,8 @@
+ 
+     <!-- XIQueryPointer -->
+ 
+-    <enum name="Device">
++    <!-- Chromium patch: Rename so that this will get merged with DeviceId -->
++    <enum name="DEVICE_ID">
+         <item name="All">       <value>0</value> </item>
+         <item name="AllMaster"> <value>1</value> </item>
+     </enum>
 diff -ru xcbproto/src/xproto.xml src/src/xproto.xml
---- xcbproto/src/xproto.xml	2020-07-29 09:55:07.901405242 -0700
-+++ src/src/xproto.xml	2020-07-29 09:52:58.484783705 -0700
+--- xcbproto/src/xproto.xml	2020-08-03 10:33:29.408868437 -0700
++++ src/src/xproto.xml	2020-08-03 10:29:36.503609230 -0700
 @@ -4686,7 +4686,7 @@
      <field type="CARD8" name="left_pad" />
      <field type="CARD8" name="depth" />

@@ -140,8 +140,8 @@ void IdentityInternalsUIMessageHandler::OnTokenRevokerDone(
   CHECK(api);
 
   // Remove token from the cache.
-  api->EraseCachedToken(token_revoker->extension_id(),
-                        token_revoker->access_token());
+  api->token_cache()->EraseToken(token_revoker->extension_id(),
+                                 token_revoker->access_token());
 
   // Update view about the token being removed.
   base::ListValue result;
@@ -223,16 +223,15 @@ IdentityInternalsUIMessageHandler::GetInfoForToken(
 void IdentityInternalsUIMessageHandler::GetInfoForAllTokens(
     const base::ListValue* args) {
   base::ListValue results;
-  extensions::IdentityAPI::CachedTokens tokens;
+  extensions::IdentityTokenCache::CachedTokens tokens;
   // The API can be null in incognito.
   extensions::IdentityAPI* api =
       extensions::IdentityAPI::GetFactoryInstance()->Get(
           Profile::FromWebUI(web_ui()));
   if (api)
-    tokens = api->GetAllCachedTokens();
-  for (extensions::IdentityAPI::CachedTokens::const_iterator
-           iter = tokens.begin(); iter != tokens.end(); ++iter) {
-    results.Append(GetInfoForToken(iter->first, iter->second));
+    tokens = api->token_cache()->GetAllTokens();
+  for (const auto& token : tokens) {
+    results.Append(GetInfoForToken(token.first, token.second));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe("identity_internals.returnTokens",

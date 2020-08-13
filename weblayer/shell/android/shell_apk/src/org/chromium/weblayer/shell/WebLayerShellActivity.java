@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer.shell;
 
+import static android.util.Patterns.WEB_URL;
+
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -19,7 +21,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.URLUtil;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
@@ -356,11 +357,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         if (getCurrentDisplayUrl() != null) {
             return;
         }
-        String startupUrl = getUrlFromIntent(getIntent());
-        if (TextUtils.isEmpty(startupUrl) || !URLUtil.isValidUrl(startupUrl)) {
-            startupUrl = "https://google.com";
-        }
-        loadUrl(startupUrl);
+        loadUrl(getUrlFromIntent(getIntent()));
     }
 
     /* Returns the Url for the current tab as a String, or null if there is no
@@ -515,8 +512,21 @@ public class WebLayerShellActivity extends FragmentActivity {
         return fragment;
     }
 
-    public void loadUrl(String url) {
-        mBrowser.getActiveTab().getNavigationController().navigate(Uri.parse(sanitizeUrl(url)));
+    public void loadUrl(String input) {
+        String sanitized = sanitizeUrl(input);
+
+        Uri uri;
+        if (WEB_URL.matcher(sanitized).matches()) {
+            uri = Uri.parse(sanitized);
+        } else if (TextUtils.isEmpty(input)) {
+            uri = Uri.parse("https://google.com");
+        } else {
+            uri = Uri.parse("https://google.com/search")
+                          .buildUpon()
+                          .appendQueryParameter("q", input)
+                          .build();
+        }
+        mBrowser.getActiveTab().getNavigationController().navigate(uri);
     }
 
     private static String getUrlFromIntent(Intent intent) {

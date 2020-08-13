@@ -65,7 +65,8 @@ public class TasksUma {
         if (totalTabCount == 0) return;
 
         for (int i = 0; i < totalTabCount; i++) {
-            Integer tabLaunchType = model.getTabAt(i).getLaunchTypeAtInitialTabCreation();
+            Integer tabLaunchType =
+                    CriticalPersistedTabData.from(model.getTabAt(i)).getTabLaunchTypeAtCreation();
             if (tabLaunchType == null) {
                 // This should not happen. Because @{link Tab#TabLaunchType} is never null, except
                 // for testing purpose or in the document-mode which it's deprecated.

@@ -22,7 +22,9 @@ loadTimeData.overrideValues({
   'PLUGIN_VM_ENABLED': true,
   'UNIFIED_MEDIA_VIEW_ENABLED': false,
   'UI_LOCALE': 'en_US',
-  'ZIP_NO_NACL': false,
+  'ZIP_MOUNT': false,
+  'ZIP_PACK': false,
+  'ZIP_UNPACK': false,
   'language': 'en-US',
   'textdirection': 'ltr',
 });

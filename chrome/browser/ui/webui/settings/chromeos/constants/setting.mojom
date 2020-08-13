@@ -168,6 +168,8 @@ enum Setting {
   kShowInputOptionsInShelf = 1201,
   kShowPersonalInformationSuggestions = 1202,
   kShowEmojiSuggestions = 1203,
+  kChangeSystemLanguage = 1204,
+  kOfferTranslation = 1205,
 
   // Files section.
   kGoogleDriveConnection = 1300,

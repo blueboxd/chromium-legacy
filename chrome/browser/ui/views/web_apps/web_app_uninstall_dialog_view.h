@@ -105,7 +105,7 @@ class WebAppUninstallDialogViews : public web_app::WebAppUninstallDialog,
   void OnWebAppUninstalled(const web_app::AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
 
-  void OnAllIconsRead(std::map<SquareSizePx, SkBitmap> icon_bitmaps);
+  void OnIconsRead(std::map<SquareSizePx, SkBitmap> icon_bitmaps);
 
   // The dialog's parent window.
   const gfx::NativeWindow parent_;

@@ -749,7 +749,7 @@
   {
     "name": "darken-websites-checkbox-in-themes-setting",
     "owners": [ "lazzzis@google.com", "twellington" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 92
   },
   {
     "name": "dcheck-is-fatal",
@@ -993,11 +993,6 @@
     "expiry_milestone": 86
   },
   {
-    "name": "draw-vertically-edge-to-edge",
-    "owners": [ "chrome-android-app@chromium.org" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "dynamic-color-gamut",
     "owners": [ "cblume", "khushalsagar", "ccameron" ],
     "expiry_milestone": 90
@@ -1028,6 +1023,11 @@
     "owners": [ "justincohen", "rohitrao", "bling-flags" ],
     // Needed for manual testing of fallback flow on iOS.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-accelerated-video-decode",
+    "owners": [ "videostack-eng@google.com" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-accessibility-expose-aria-annotations",
@@ -1168,6 +1168,11 @@
     "name": "enable-audio-focus-enforcement",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "enable-auto-select",
+    "owners": ["croissant-eng"],
+    "expiry_milestone": 88
   },
   {
     "name": "enable-autofill-account-wallet-storage",
@@ -1602,11 +1607,6 @@
     "name": "enable-hide-arc-media-notifications",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 80
-  },
-  {
-    "name": "enable-high-resolution-mouse-scrolling",
-    "owners": [ "hcutts", "chromeos-tango@google.com" ],
-    "expiry_milestone": 85
   },
   {
     "name": "enable-history-manipulation-intervention",
@@ -2466,9 +2466,19 @@
     "expiry_milestone": 87
   },
   {
-    "name": "files-zip-no-nacl",
+    "name": "files-zip-mount",
     "owners": [ "fdegros", "jboulic", "dats" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
+  },
+  {
+    "name": "files-zip-pack",
+    "owners": [ "fdegros", "jboulic", "dats" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "files-zip-unpack",
+    "owners": [ "fdegros", "jboulic", "dats" ],
+    "expiry_milestone": 90
   },
   {
     "name": "fill-on-account-select",
@@ -3281,6 +3291,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "omnibox-focus-gesture-triggers-contextual-web-zero-suggest",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "omnibox-history-quick-provider-allow-but-do-not-score-midword-terms",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 88
@@ -3456,7 +3471,7 @@
   },
   {
     "name": "overlay-new-layout",
-    "owners": [ "donnd", "jinsukkim", "contextual-search-eng" ],
+    "owners": [ "donnd", "jinsukkim", "contextual-search-eng@google.com" ],
     "expiry_milestone": 81
   },
   {

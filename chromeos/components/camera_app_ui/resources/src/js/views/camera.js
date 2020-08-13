@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {browserProxy} from '../browser_proxy/browser_proxy.js';
-import {assert, assertInstanceof} from '../chrome_util.js';
+import {assert, assertInstanceof, promisify} from '../chrome_util.js';
 import {
   PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
   VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
@@ -257,10 +257,6 @@ export class Camera extends View {
         this.start();
       }
     });
-
-    state.addObserver(state.State.SCREEN_OFF_AUTO, () => this.start());
-
-    this.configuring_ = null;
   }
 
   /**
@@ -280,6 +276,34 @@ export class Camera extends View {
     };
     const screenState = await helper.initScreenStateMonitor(setScreenOffAuto);
     setScreenOffAuto(screenState);
+
+    const updateExternalScreen = async () => {
+      const allInfo = await promisify(chrome.system.display.getInfo)(
+          {singleUnified: false});
+      const hasExternalScreen = allInfo.some(({isInternal}) => !isInternal);
+      state.set(state.State.HAS_EXTERNAL_SCREEN, hasExternalScreen);
+    };
+    await updateExternalScreen();
+    chrome.system.display.onDisplayChanged.addListener(updateExternalScreen);
+
+    const checkScreenOff = () => {
+      if (this.screenOff_) {
+        this.start();
+      }
+    };
+
+    state.addObserver(state.State.SCREEN_OFF_AUTO, checkScreenOff);
+    state.addObserver(state.State.HAS_EXTERNAL_SCREEN, checkScreenOff);
+  }
+
+  /**
+   * @return {boolean} If the App window is invisible to user with respect to
+   * screen off state.
+   * @private
+   */
+  get screenOff_() {
+    return state.get(state.State.SCREEN_OFF_AUTO) &&
+        !state.get(state.State.HAS_EXTERNAL_SCREEN);
   }
 
   /**
@@ -305,8 +329,8 @@ export class Camera extends View {
    */
   isSuspended() {
     return this.locked_ || browserProxy.isMinimized() ||
-        state.get(state.State.SUSPEND) ||
-        state.get(state.State.SCREEN_OFF_AUTO) || this.isTabletBackground_();
+        state.get(state.State.SUSPEND) || this.screenOff_ ||
+        this.isTabletBackground_();
   }
 
   /**

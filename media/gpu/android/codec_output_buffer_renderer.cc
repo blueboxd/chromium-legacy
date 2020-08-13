@@ -7,6 +7,7 @@
 
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_context.h"
@@ -37,6 +38,19 @@ std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
   return scoped_current;
 }
 
+class ScopedRestoreTextureBinding {
+ public:
+  ScopedRestoreTextureBinding() {
+    glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &bound_service_id_);
+  }
+  ~ScopedRestoreTextureBinding() {
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, bound_service_id_);
+  }
+
+ private:
+  GLint bound_service_id_;
+};
+
 }  // namespace
 
 CodecOutputBufferRenderer::CodecOutputBufferRenderer(
@@ -49,8 +63,7 @@ CodecOutputBufferRenderer::CodecOutputBufferRenderer(
 
 CodecOutputBufferRenderer::~CodecOutputBufferRenderer() = default;
 
-bool CodecOutputBufferRenderer::RenderToTextureOwnerBackBuffer(
-    BlockingMode blocking_mode) {
+bool CodecOutputBufferRenderer::RenderToTextureOwnerBackBuffer() {
   DCHECK_NE(phase_, Phase::kInFrontBuffer);
   if (phase_ == Phase::kInBackBuffer)
     return true;
@@ -65,12 +78,10 @@ bool CodecOutputBufferRenderer::RenderToTextureOwnerBackBuffer(
   if (!codec_buffer_wait_coordinator_)
     return false;
 
-  // Wait for a previous frame available so we don't confuse it with the one
-  // we're about to release.
+  // Don't render frame if one is already pending.
+  // RenderToTextureOwnerFrontBuffer will wait before calling this.
   if (codec_buffer_wait_coordinator_->IsExpectingFrameAvailable()) {
-    if (blocking_mode == BlockingMode::kForbidBlocking)
-      return false;
-    codec_buffer_wait_coordinator_->WaitForFrameAvailable();
+    return false;
   }
   if (!output_buffer_->ReleaseToSurface()) {
     phase_ = Phase::kInvalidated;
@@ -98,32 +109,45 @@ bool CodecOutputBufferRenderer::RenderToTextureOwnerFrontBuffer(
   if (phase_ == Phase::kInvalidated)
     return false;
 
+  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current =
+      MakeCurrentIfNeeded(
+          codec_buffer_wait_coordinator_->texture_owner().get());
+  // If updating the image will implicitly update the texture bindings then
+  // restore if requested or the update needed a context switch.
+  base::Optional<ScopedRestoreTextureBinding> scoped_restore_texture;
+  if (codec_buffer_wait_coordinator_->texture_owner()
+          ->binds_texture_on_update() &&
+      (bindings_mode == BindingsMode::kRestoreIfBound ||
+       !!scoped_make_current)) {
+    scoped_restore_texture.emplace();
+  }
+
   // Render it to the back buffer if it's not already there.
-  if (!RenderToTextureOwnerBackBuffer())
-    return false;
+  if (phase_ != Phase::kInBackBuffer) {
+    // Wait for a previous frame available so we don't confuse it with the one
+    // we're about to render.
+    if (codec_buffer_wait_coordinator_->IsExpectingFrameAvailable()) {
+      codec_buffer_wait_coordinator_->WaitForFrameAvailable();
+
+      // We must call update tex image if we did get OnFrameAvailable, otherwise
+      // we will stop receiving callbacks (see https://crbug.com/c/1113203)
+      codec_buffer_wait_coordinator_->texture_owner()->UpdateTexImage();
+    }
+    if (!RenderToTextureOwnerBackBuffer()) {
+      // RenderTotextureOwnerBackBuffer can fail now only if ReleaseToSurface
+      // failed.
+      DCHECK(phase_ == Phase::kInvalidated);
+      return false;
+    }
+  }
 
   // The image is now in the back buffer, so promote it to the front buffer.
   phase_ = Phase::kInFrontBuffer;
   if (codec_buffer_wait_coordinator_->IsExpectingFrameAvailable())
     codec_buffer_wait_coordinator_->WaitForFrameAvailable();
 
-  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current =
-      MakeCurrentIfNeeded(
-          codec_buffer_wait_coordinator_->texture_owner().get());
-  // If updating the image will implicitly update the texture bindings then
-  // restore if requested or the update needed a context switch.
-  bool should_restore_bindings =
-      codec_buffer_wait_coordinator_->texture_owner()
-          ->binds_texture_on_update() &&
-      (bindings_mode == BindingsMode::kRestoreIfBound || !!scoped_make_current);
-
-  GLint bound_service_id = 0;
-  if (should_restore_bindings)
-    glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &bound_service_id);
   codec_buffer_wait_coordinator_->texture_owner()->UpdateTexImage();
   EnsureBoundIfNeeded(bindings_mode);
-  if (should_restore_bindings)
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, bound_service_id);
   return true;
 }
 

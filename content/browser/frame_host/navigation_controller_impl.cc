@@ -63,6 +63,7 @@
 #include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
+#include "content/common/trace_utils.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -1252,10 +1253,14 @@ bool NavigationControllerImpl::RendererDidNavigate(
 NavigationType NavigationControllerImpl::ClassifyNavigation(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+  TraceReturnReason<TracingCategory::kNavigation> trace_return(
+      "ClassifyNavigation");
+
   if (params.did_create_new_entry) {
     // A new entry. We may or may not have a pending entry for the page, and
     // this may or may not be the main frame.
     if (!rfh->GetParent()) {
+      trace_return.set_return_reason("new entry, no parent, new page");
       return NAVIGATION_TYPE_NEW_PAGE;
     }
 
@@ -1264,10 +1269,13 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     // navigated on a popup navigated to about:blank (the iframe would be
     // written into the popup by script on the main page). For these cases,
     // there isn't any navigation stuff we can do, so just ignore it.
-    if (!GetLastCommittedEntry())
+    if (!GetLastCommittedEntry()) {
+      trace_return.set_return_reason("new entry, no last committed, ignore");
       return NAVIGATION_TYPE_NAV_IGNORE;
+    }
 
     // Valid subframe navigation.
+    trace_return.set_return_reason("new entry, new subframe");
     return NAVIGATION_TYPE_NEW_SUBFRAME;
   }
 
@@ -1277,11 +1285,14 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
   if (rfh->GetParent()) {
     // All manual subframes would be did_create_new_entry and handled above, so
     // we know this is auto.
-    if (GetLastCommittedEntry())
+    if (GetLastCommittedEntry()) {
+      trace_return.set_return_reason("subframe, last commmited, auto subframe");
       return NAVIGATION_TYPE_AUTO_SUBFRAME;
+    }
 
     // We ignore subframes created in non-committed pages; we'd appreciate if
     // people stopped doing that.
+    trace_return.set_return_reason("subframe, no last commmited, ignore");
     return NAVIGATION_TYPE_NAV_IGNORE;
   }
 
@@ -1293,14 +1304,18 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     // scribble onto an uncommitted page. Again, there isn't any navigation
     // stuff that we can do, so ignore it here as well.
     NavigationEntry* last_committed = GetLastCommittedEntry();
-    if (!last_committed)
+    if (!last_committed) {
+      trace_return.set_return_reason("nav entry 0, no last committed, ignore");
       return NAVIGATION_TYPE_NAV_IGNORE;
+    }
 
     // This is history.replaceState() or history.reload().
     // TODO(nasko): With error page isolation, reloading an existing session
     // history entry can result in change of SiteInstance. Check for such a case
     // here and classify it as NEW_PAGE, as such navigations should be treated
     // as new with replacement.
+    trace_return.set_return_reason(
+        "nav entry 0, last committed, existing page");
     return NAVIGATION_TYPE_EXISTING_PAGE;
   }
 
@@ -1312,6 +1327,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     // reloaded into a different SiteInstance.
     if (pending_entry_->site_instance() &&
         pending_entry_->site_instance() != rfh->GetSiteInstance()) {
+      trace_return.set_return_reason("pending matching nav entry, new page");
       return NAVIGATION_TYPE_NEW_PAGE;
     }
 
@@ -1323,6 +1339,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
       // we must treat it as NEW since the SiteInstance doesn't match the entry.
       if (!GetLastCommittedEntry() ||
           GetLastCommittedEntry()->site_instance() != rfh->GetSiteInstance()) {
+        trace_return.set_return_reason("no pending, new page");
         return NAVIGATION_TYPE_NEW_PAGE;
       }
 
@@ -1333,19 +1350,23 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
       // Therefore we want to just ignore the pending entry and go back to where
       // we were (the "existing entry").
       // TODO(creis,avi): Eliminate SAME_PAGE in https://crbug.com/536102.
+      trace_return.set_return_reason("no pending, same page");
       return NAVIGATION_TYPE_SAME_PAGE;
     }
   }
 
   // Everything below here is assumed to be an existing entry, but if there is
   // no last committed entry, we must consider it a new navigation instead.
-  if (!GetLastCommittedEntry())
+  if (!GetLastCommittedEntry()) {
+    trace_return.set_return_reason("no last committed, new page");
     return NAVIGATION_TYPE_NEW_PAGE;
+  }
 
   if (params.intended_as_new_entry) {
     // This was intended to be a navigation to a new entry but the pending entry
     // got cleared in the meanwhile. Classify as EXISTING_PAGE because we may or
     // may not have a pending entry.
+    trace_return.set_return_reason("indented as new entry, new page");
     return NAVIGATION_TYPE_EXISTING_PAGE;
   }
 
@@ -1355,19 +1376,25 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     // of an error, this is the case of the user trying to retry a failed load
     // by pressing return. Classify as EXISTING_PAGE because we probably don't
     // have a pending entry.
+    trace_return.set_return_reason(
+        "unreachable, matching pending, existing page");
     return NAVIGATION_TYPE_EXISTING_PAGE;
   }
 
   // Now we know that the notification is for an existing page. Find that entry.
   int existing_entry_index = GetEntryIndexWithUniqueID(params.nav_entry_id);
+  trace_return.traced_value()->SetInteger("existing_entry_index",
+                                          existing_entry_index);
   if (existing_entry_index == -1) {
     // The renderer has committed a navigation to an entry that no longer
     // exists. Because the renderer is showing that page, resurrect that entry.
+    trace_return.set_return_reason("existing entry -1, new page");
     return NAVIGATION_TYPE_NEW_PAGE;
   }
 
   // Since we weeded out "new" navigations above, we know this is an existing
   // (back/forward) navigation.
+  trace_return.set_return_reason("default return, existing page");
   return NAVIGATION_TYPE_EXISTING_PAGE;
 }
 

@@ -110,6 +110,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace {
+
 bool IsNeutralWithinTable(blink::AXObject* obj) {
   if (!obj)
     return false;
@@ -2465,9 +2466,9 @@ bool AXNodeObject::SupportsARIAOwns() const {
   return !aria_owns.IsEmpty();
 }
 
-// TODO : Aria-dropeffect and aria-grabbed are deprecated in aria 1.1
-// Also those properties are expected to be replaced by a new feature in
-// a future version of WAI-ARIA. After that we will re-implement them
+// TODO(accessibility): Aria-dropeffect and aria-grabbed are deprecated in
+// aria 1.1 Also those properties are expected to be replaced by a new feature
+// in a future version of WAI-ARIA. After that we will re-implement them
 // following new spec.
 bool AXNodeObject::SupportsARIADragging() const {
   const AtomicString& grabbed = GetAttribute(html_names::kAriaGrabbedAttr);
@@ -3138,9 +3139,9 @@ void AXNodeObject::AddInlineTextBoxChildren(bool force) {
     return;
 
   if (GetLayoutObject()->NeedsLayout()) {
-    // If a LayoutText needs layout, its inline text boxes are either
-    // nonexistent or invalid, so defer until the layout happens and
-    // the layoutObject calls AXObjectCacheImpl::inlineTextBoxesUpdated.
+    // If a LayoutText or a LayoutBR needs layout, its inline text boxes are
+    // either nonexistent or invalid, so defer until the layout happens and the
+    // layoutObject calls AXObjectCacheImpl::inlineTextBoxesUpdated.
     return;
   }
 
@@ -3148,9 +3149,16 @@ void AXNodeObject::AddInlineTextBoxChildren(bool force) {
   for (scoped_refptr<AbstractInlineTextBox> box =
            layout_text->FirstAbstractInlineTextBox();
        box.get(); box = box->NextInlineTextBox()) {
-    AXObject* ax_object = AXObjectCache().GetOrCreate(box.get());
-    if (ax_object->AccessibilityIsIncludedInTree())
-      children_.push_back(ax_object);
+    AXObject* ax_box = AXObjectCache().GetOrCreate(box.get());
+    if (!ax_box || !ax_box->AccessibilityIsIncludedInTree())
+      continue;
+
+    children_.push_back(ax_box);
+    // If |force| is set to true, it means that we are forcing the children to
+    // be added without going through the normal tree building mechanism, which
+    // would have also set the parent of each child to |this|.
+    if (force)
+      ax_box->SetParent(this);
   }
 }
 
@@ -3230,12 +3238,12 @@ void AXNodeObject::AddImageMapChildren() {
     AXObject* obj = AXObjectCache().GetOrCreate(&area);
     if (obj) {
       auto* area_object = To<AXImageMapLink>(obj);
-      area_object->SetParent(this);
       DCHECK_NE(area_object->AXObjectID(), 0U);
-      if (area_object->AccessibilityIsIncludedInTree())
+      if (area_object->AccessibilityIsIncludedInTree()) {
         children_.push_back(area_object);
-      else
+      } else {
         AXObjectCache().Remove(area_object->AXObjectID());
+      }
     }
   }
 }
@@ -3268,8 +3276,6 @@ void AXNodeObject::AddRemoteSVGChildren() {
   AXSVGRoot* root = RemoteSVGRootElement();
   if (!root)
     return;
-
-  root->SetParent(this);
 
   if (!root->AccessibilityIsIncludedInTree()) {
     for (const auto& child : root->ChildrenIncludingIgnored())
@@ -3352,19 +3358,14 @@ void AXNodeObject::AddChildren() {
   for (const auto& owned_child : owned_children)
     AddChild(owned_child);
 
-  bool is_continuation =
-      GetLayoutObject() && GetLayoutObject()->IsElementContinuation();
   for (const auto& child : children_) {
-    if (!is_continuation && !child->CachedParentObject()) {
-      // Never set continuations as a parent object. The first layout object
-      // in the chain must be used instead.
+    if (!child->CachedParentObject())
       child->SetParent(this);
-    }
   }
 }
 
 void AXNodeObject::AddChild(AXObject* child) {
-  unsigned index = children_.size();
+  unsigned int index = children_.size();
   InsertChild(child, index);
 }
 
@@ -3373,19 +3374,20 @@ void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
     return;
 
   // If the parent is asking for this child's children, then either it's the
-  // first time (and clearing is a no-op), or its visibility has changed. In the
-  // latter case, this child may have a stale child cached.  This can prevent
-  // aria-hidden changes from working correctly. Hence, whenever a parent is
-  // getting children, ensure data is not stale.
+  // first time (and clearing is a no-op), or its visibility has changed. In
+  // the latter case, this child may have a stale child cached.  This can
+  // prevent aria-hidden changes from working correctly. Hence, whenever a
+  // parent is getting children, ensure data is not stale.
   child->ClearChildren();
 
   if (!child->AccessibilityIsIncludedInTree()) {
+    // Re-computes child's children.
     const auto& children = child->ChildrenIncludingIgnored();
     wtf_size_t length = children.size();
     for (wtf_size_t i = 0; i < length; ++i)
       children_.insert(index + i, children[i]);
   } else if (!child->IsMenuListOption()) {
-    // MenuListOptions must only added in AXMenuListPopup::AddChildren
+    // MenuListOptions must only be added in AXMenuListPopup::AddChildren.
     children_.insert(index, child);
   }
 }

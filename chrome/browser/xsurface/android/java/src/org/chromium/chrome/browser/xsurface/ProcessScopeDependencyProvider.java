@@ -10,8 +10,6 @@ import androidx.annotation.Nullable;
 
 /**
  * Provides application-level dependencies for an external surface.
- *
- * Note: this will replace SurfaceDependencyProvider and so does not have any methods.
  */
 public interface ProcessScopeDependencyProvider {
     /** @return the context associated with the application. */

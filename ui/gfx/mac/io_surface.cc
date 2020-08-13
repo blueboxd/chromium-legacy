@@ -58,10 +58,16 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::RGBA_F16:
       DCHECK_EQ(plane, 0);
       return 8;
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      static int32_t bytes_per_element[] = {1, 2};
+    case gfx::BufferFormat::YUV_420_BIPLANAR: {
+      constexpr int32_t bytes_per_element[] = {1, 2};
       DCHECK_LT(static_cast<size_t>(plane), base::size(bytes_per_element));
       return bytes_per_element[plane];
+    }
+    case gfx::BufferFormat::P010: {
+      constexpr int32_t bytes_per_element[] = {2, 4};
+      DCHECK_LT(static_cast<size_t>(plane), base::size(bytes_per_element));
+      return bytes_per_element[plane];
+    }
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::BGR_565:
@@ -69,7 +75,6 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_1010102:
     case gfx::BufferFormat::YVU_420:
-    case gfx::BufferFormat::P010:
       NOTREACHED();
       return 0;
   }
@@ -92,6 +97,8 @@ int32_t PixelFormat(gfx::BufferFormat format) {
       return 'RGhA';
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return '420v';
+    case gfx::BufferFormat::P010:
+      return 'x420';
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::BGR_565:
@@ -101,7 +108,6 @@ int32_t PixelFormat(gfx::BufferFormat format) {
     // Technically RGBA_1010102 should be accepted as 'R10k', but then it won't
     // be supported by CGLTexImageIOSurface2D(), so it's best to reject it here.
     case gfx::BufferFormat::YVU_420:
-    case gfx::BufferFormat::P010:
       NOTREACHED();
       return 0;
   }

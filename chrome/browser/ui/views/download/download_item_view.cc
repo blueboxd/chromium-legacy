@@ -461,9 +461,9 @@ void DownloadItemView::OnDownloadUpdated() {
     return;
   }
 
-  base::string16 new_tip = model_->GetTooltipText();
-  if (new_tip != tooltip_text_) {
-    tooltip_text_ = new_tip;
+  const base::string16 new_tooltip_text = model_->GetTooltipText();
+  if (new_tooltip_text != tooltip_text_) {
+    tooltip_text_ = new_tooltip_text;
     TooltipTextChanged();
   }
 }
@@ -508,10 +508,10 @@ void DownloadItemView::AnimationEnded(const gfx::Animation* animation) {
 }
 
 void DownloadItemView::MaybeSubmitDownloadToFeedbackService(
-    DownloadCommands::Command download_command) {
+    DownloadCommands::Command command) {
   if (!model_->ShouldAllowDownloadFeedback() ||
-      !SubmitDownloadToFeedbackService(download_command))
-    ExecuteCommand(download_command);
+      !SubmitDownloadToFeedbackService(command))
+    ExecuteCommand(command);
 }
 
 gfx::Size DownloadItemView::CalculatePreferredSize() const {
@@ -1183,22 +1183,21 @@ void DownloadItemView::OpenDownloadDuringAsyncScanning() {
 }
 
 bool DownloadItemView::SubmitDownloadToFeedbackService(
-    DownloadCommands::Command download_command) {
+    DownloadCommands::Command command) const {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
   if (!sb_service)
     return false;
-  safe_browsing::DownloadProtectionService* download_protection_service =
+  safe_browsing::DownloadProtectionService* dp_service =
       sb_service->download_protection_service();
-  if (!download_protection_service)
+  if (!dp_service)
     return false;
   // TODO(shaktisahu): Enable feedback service for offline item.
   if (model_->download()) {
-    return download_protection_service->MaybeBeginFeedbackForDownload(
-        shelf_->browser()->profile(), model_->download(), download_command);
+    return dp_service->MaybeBeginFeedbackForDownload(
+        shelf_->browser()->profile(), model_->download(), command);
   }
-  // WARNING: |this| has been deleted!
   return true;
 #else
   NOTREACHED();

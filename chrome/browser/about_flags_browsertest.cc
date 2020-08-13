@@ -413,7 +413,10 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, FormRestore) {
           "const e = document.createEvent('HTMLEvents');"
           "e.initEvent('change', true, true);"
           "s.dispatchEvent(e);",
-          kFlagWithOptionSelectorName)));
+          kFlagWithOptionSelectorName),
+      // Execute script in an isolated world to avoid causing a Trusted Types
+      // violation due to eval.
+      content::EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1));
 }
 
 }  // namespace

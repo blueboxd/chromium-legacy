@@ -28,7 +28,8 @@ class YUVToRGBConverter {
 
   void CopyYUV420ToRGB(unsigned target,
                        const gfx::Size& size,
-                       unsigned rgb_texture);
+                       unsigned rgb_texture,
+                       unsigned rgb_texture_type);
 
  private:
   unsigned framebuffer_ = 0;

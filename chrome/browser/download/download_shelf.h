@@ -60,17 +60,15 @@ class DownloadShelf {
   // Closes the shelf.
   void Close();
 
-  // Hides the shelf. This closes the shelf if it is currently showing.
+  // Closes the shelf and prevents it from reopening until Unhide() is called.
   void Hide();
 
-  // Unhides the shelf. This will cause the shelf to be opened if it was open
-  // when it was hidden, or was shown while it was hidden.
+  // Allows the shelf to open after a previous call to Hide().  Opens the shelf
+  // if, had Hide() not been called, it would currently be open.
   void Unhide();
 
   Browser* browser() { return browser_; }
-
-  // Returns whether the download shelf is hidden.
-  bool is_hidden() { return is_hidden_; }
+  bool is_hidden() const { return is_hidden_; }
 
  protected:
   virtual void DoShowDownload(DownloadUIModel::DownloadUIModelPtr download) = 0;
@@ -86,7 +84,7 @@ class DownloadShelf {
   Profile* profile() { return profile_; }
 
  private:
-  // Show the download on the shelf immediately. Also displayes the download
+  // Shows the download on the shelf immediately. Also displays the download
   // started animation if necessary.
   void ShowDownload(DownloadUIModel::DownloadUIModelPtr download);
 

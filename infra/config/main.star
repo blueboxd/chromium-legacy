@@ -108,6 +108,10 @@ luci.realm(
             roles = "role/buildbucket.reader",
             groups = "all",
         ),
+        luci.binding(
+            roles = "role/resultdb.invocationCreator",
+            groups = "project-chromium-tryjob-access",
+        ),
         # Other roles are inherited from @root which grants them to group:all.
     ],
 )

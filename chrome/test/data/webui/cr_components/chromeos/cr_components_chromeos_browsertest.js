@@ -38,6 +38,9 @@ GEN('#endif');
       '../../chromeos/fake_network_config_mojom.js',
     ]
   ],
+  ['NetworkConfigElementBehavior', 'network_config_element_behavior_test.js',
+    []
+  ],
 ].forEach(test => registerTest(...test));
 // clang-format on
 
@@ -55,5 +58,5 @@ function registerTest(testName, module, deps) {
     }
   };
 
-  TEST_F(className, 'MAYBE_All', () => mocha.run());
+  TEST_F(className, 'All', () => mocha.run());
 }

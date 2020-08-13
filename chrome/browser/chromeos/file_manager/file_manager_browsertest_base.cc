@@ -1567,9 +1567,13 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   }
 
   if (options.zip_no_nacl) {
-    enabled_features.push_back(chromeos::features::kFilesZipNoNaCl);
+    enabled_features.push_back(chromeos::features::kFilesZipMount);
+    enabled_features.push_back(chromeos::features::kFilesZipPack);
+    enabled_features.push_back(chromeos::features::kFilesZipUnpack);
   } else {
-    disabled_features.push_back(chromeos::features::kFilesZipNoNaCl);
+    disabled_features.push_back(chromeos::features::kFilesZipMount);
+    disabled_features.push_back(chromeos::features::kFilesZipPack);
+    disabled_features.push_back(chromeos::features::kFilesZipUnpack);
   }
 
   // This is destroyed in |TearDown()|. We cannot initialize this in the

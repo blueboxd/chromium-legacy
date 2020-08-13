@@ -743,7 +743,8 @@
   },
   {
     "prefix": "subresource-web-bundles",
-    "bases": [ "external/wpt/web-bundle/subresource-loading" ],
+    "bases": [ "external/wpt/web-bundle/subresource-loading",
+               "http/tests/loading/wbn/subresource-loading" ],
     "args": [ "--enable-blink-features=SubresourceWebBundles" ]
   },
   {

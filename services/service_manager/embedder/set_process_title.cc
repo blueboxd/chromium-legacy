@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Define _GNU_SOURCE to ensure that <error.h> defines
+// Define _GNU_SOURCE to ensure that <errno.h> defines
 // program_invocation_short_name. Keep this at the top of the file since some
-// system headers might include <error.h> and the header could be skipped on
+// system headers might include <errno.h> and the header could be skipped on
 // subsequent includes.
 #if defined(OS_LINUX) && !defined(_GNU_SOURCE)
 #define _GNU_SOURCE
@@ -27,7 +27,7 @@
 #endif  // defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_SOLARIS)
 
 #if defined(OS_LINUX)
-#include <error.h>  // Get program_invocation_short_name declaration.
+#include <errno.h>  // Get program_invocation_short_name declaration.
 #include <sys/prctl.h>
 
 #include "base/files/file_path.h"

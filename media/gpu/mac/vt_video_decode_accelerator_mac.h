@@ -29,6 +29,7 @@
 #include "ui/gl/gl_image_io_surface.h"
 
 namespace media {
+class VP9ConfigChangeDetector;
 
 // Preload VideoToolbox libraries, needed for sandbox warmup.
 MEDIA_GPU_EXPORT bool InitializeVideoToolbox();
@@ -162,6 +163,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
 
   // |frame| is owned by |pending_frames_|.
   void DecodeTask(scoped_refptr<DecoderBuffer> buffer, Frame* frame);
+  void DecodeTaskVp9(scoped_refptr<DecoderBuffer> buffer, Frame* frame);
   void DecodeDone(Frame* frame);
 
   //
@@ -188,6 +190,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   // These methods returns true if a task was completed, false otherwise.
   bool ProcessTaskQueue();
   bool ProcessReorderQueue();
+  bool ProcessOutputQueue();
   bool ProcessFrame(const Frame& frame);
   bool SendFrame(const Frame& frame);
 
@@ -212,6 +215,12 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
                       std::vector<std::unique_ptr<Frame>>,
                       FrameOrder>
       reorder_queue_;
+
+  // Queue of decoded frames in presentation order. Used by codecs which don't
+  // require reordering (VP9 only at the moment).
+  std::deque<std::unique_ptr<Frame>> output_queue_;
+
+  std::unique_ptr<VP9ConfigChangeDetector> cc_detector_;
 
   // Size of assigned picture buffers.
   gfx::Size picture_size_;
@@ -257,6 +266,9 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   std::vector<uint8_t> configured_sps_;
   std::vector<uint8_t> configured_spsext_;
   std::vector<uint8_t> configured_pps_;
+
+  Config config_;
+  VideoCodec codec_;
 
   // Visible rect the decoder is configured to use.
   gfx::Size configured_size_;

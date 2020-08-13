@@ -22,6 +22,7 @@
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_store.h"
+#include "components/feed/core/v2/image_fetcher.h"
 #include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/offline_page_spy.h"
 #include "components/feed/core/v2/prefs.h"
@@ -131,6 +132,7 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
                        Delegate* delegate,
                        PrefService* profile_prefs,
                        FeedNetwork* feed_network,
+                       ImageFetcher* image_fetcher,
                        FeedStore* feed_store,
                        offline_pages::PrefetchService* prefetch_service,
                        offline_pages::OfflinePageModel* offline_page_model,
@@ -143,6 +145,7 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
       delegate_(delegate),
       profile_prefs_(profile_prefs),
       feed_network_(feed_network),
+      image_fetcher_(image_fetcher),
       store_(feed_store),
       clock_(clock),
       tick_clock_(tick_clock),
@@ -594,6 +597,12 @@ void FeedStream::FinishClearAll() {
   prefs::ClearClientInstanceId(*profile_prefs_);
   metadata_.Populate(feedstore::Metadata());
   delegate_->ClearAll();
+}
+
+void FeedStream::FetchImage(
+    const GURL& url,
+    base::OnceCallback<void(std::unique_ptr<std::string>)> callback) {
+  image_fetcher_->Fetch(url, std::move(callback));
 }
 
 void FeedStream::UploadAction(

@@ -20,10 +20,10 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "chromeos/system/devicemode.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/composition_text.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
@@ -314,6 +314,13 @@ void InputMethodChromeOS::OnWillChangeFocusedClient(
     TextInputClient* focused) {
   ConfirmCompositionText(/* reset_engine */ true, /* keep_selection */ false);
 
+  // Removes any autocorrect range in the unfocused TextInputClient.
+  gfx::Range text_range;
+  if (focused_before && focused_before->GetTextRange(&text_range)) {
+    // This is currently only implemented in RenderWidgetHostViewAura.
+    focused_before->SetAutocorrectRange(base::EmptyString16(), text_range);
+  }
+
   if (GetEngine())
     GetEngine()->FocusOut();
 }
@@ -403,7 +410,9 @@ bool InputMethodChromeOS::SetSelectionRange(uint32_t start, uint32_t end) {
 
 void InputMethodChromeOS::ConfirmCompositionText(bool reset_engine,
                                                  bool keep_selection) {
-  InputMethodBase::ConfirmCompositionText(reset_engine, keep_selection);
+  TextInputClient* client = GetTextInputClient();
+  if (client && client->HasCompositionText())
+    client->ConfirmCompositionText(keep_selection);
 
   // See https://crbug.com/984472.
   ResetContext(reset_engine);
@@ -687,6 +696,27 @@ void InputMethodChromeOS::HidePreeditText() {
   }
 }
 
+void InputMethodChromeOS::SendKeyEvent(KeyEvent* event) {
+  ui::EventDispatchDetails details = DispatchKeyEvent(event);
+  DCHECK(!details.dispatcher_destroyed);
+}
+
+SurroundingTextInfo InputMethodChromeOS::GetSurroundingTextInfo() {
+  gfx::Range text_range;
+  SurroundingTextInfo info;
+  TextInputClient* client = GetTextInputClient();
+  if (!client->GetTextRange(&text_range) ||
+      !client->GetTextFromRange(text_range, &info.surrounding_text) ||
+      !client->GetEditableSelectionRange(&info.selection_range)) {
+    return SurroundingTextInfo();
+  }
+  // Makes the |selection_range| be relative to the |surrounding_text|.
+  info.selection_range.set_start(info.selection_range.start() -
+                                 text_range.start());
+  info.selection_range.set_end(info.selection_range.end() - text_range.start());
+  return info;
+}
+
 void InputMethodChromeOS::DeleteSurroundingText(int32_t offset,
                                                 uint32_t length) {
   if (!GetTextInputClient())
@@ -804,6 +834,15 @@ bool InputMethodChromeOS::IsInputFieldFocused() {
 TextInputClient::FocusReason InputMethodChromeOS::GetClientFocusReason() const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->GetFocusReason() : TextInputClient::FOCUS_REASON_NONE;
+}
+
+bool InputMethodChromeOS::HasCompositionText() {
+  TextInputClient* client = GetTextInputClient();
+  return client && client->HasCompositionText();
+}
+
+InputMethod* InputMethodChromeOS::GetInputMethod() {
+  return this;
 }
 
 }  // namespace ui

@@ -22,7 +22,12 @@ load("@stdlib//internal/luci/common.star", "keys")
 load("./builders.star", "builders")
 load("./args.star", "args")
 
-INFRA_CONFIG_LOCATION_REGEXP = ".+/[+]/infra/config/.+"
+DEFAULT_EXCLUDE_REGEXPS = [
+    # Contains documentation that doesn't affect the outputs
+    ".+/[+]/docs/.+",
+    # Contains configuration files that aren't active until after committed
+    ".+/[+]/infra/config/.+",
+]
 
 defaults = args.defaults(
     extends = builders.defaults,
@@ -160,22 +165,24 @@ def tryjob(
         location_regexp = None,
         location_regexp_exclude = None,
         cancel_stale = None,
-        run_on_infra_config_changes = False):
+        add_default_excludes = True):
     """Specifies the details of a tryjob verifier.
 
     See https://chromium.googlesource.com/infra/luci/luci-go/+/refs/heads/master/lucicfg/doc/README.md#luci.cq_tryjob_verifier
     for details on the most of the arguments.
 
     Arguments:
-      run_on_infra_changes - A bool indicating whether the try job should be run
-        for changes against //infra/config.
+      add_default_excludes - A bool indicating whether to add exclude regexps
+        for certain directories that would have no impact when building chromium
+        with the patch applied (docs, config files that don't take effect until
+        landing, etc., see DEFAULT_EXCLUDE_REGEXPS).
 
     Returns:
       A struct that can be passed to the `tryjob` argument of `try_.builder` to
       enable the builder for CQ.
     """
-    if not run_on_infra_config_changes:
-        location_regexp_exclude = [INFRA_CONFIG_LOCATION_REGEXP] + (location_regexp_exclude or [])
+    if add_default_excludes:
+        location_regexp_exclude = DEFAULT_EXCLUDE_REGEXPS + (location_regexp_exclude or [])
     return struct(
         disable_reuse = disable_reuse,
         experiment_percentage = experiment_percentage,

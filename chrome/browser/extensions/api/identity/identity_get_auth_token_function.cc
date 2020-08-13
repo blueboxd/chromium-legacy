@@ -376,7 +376,7 @@ void IdentityGetAuthTokenFunction::StartSigninFlow() {
   // All cached tokens are invalid because the user is not signed in.
   IdentityAPI* id_api =
       extensions::IdentityAPI::GetFactoryInstance()->Get(GetProfile());
-  id_api->EraseAllCachedTokens();
+  id_api->token_cache()->EraseAllTokens();
 
   // If the signin flow fails, don't display the login prompt again.
   should_prompt_for_signin_ = false;
@@ -475,7 +475,8 @@ void IdentityGetAuthTokenFunction::StartMintToken(
 
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension());
   IdentityAPI* id_api = IdentityAPI::GetFactoryInstance()->Get(GetProfile());
-  IdentityTokenCacheValue cache_entry = id_api->GetCachedToken(token_key_);
+  IdentityTokenCacheValue cache_entry =
+      id_api->token_cache()->GetToken(token_key_);
   IdentityTokenCacheValue::CacheValueStatus cache_status = cache_entry.status();
 
   if (type == IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE) {
@@ -577,7 +578,8 @@ void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
       access_token, base::TimeDelta::FromSeconds(time_to_live));
   IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
-      ->SetCachedToken(token_key_, token);
+      ->token_cache()
+      ->SetToken(token_key_, token);
 
   CompleteMintTokenFlow();
   CompleteFunctionWithResult(access_token, granted_scopes);
@@ -617,7 +619,7 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
 
   IdentityAPI* identity_api =
       IdentityAPI::GetFactoryInstance()->Get(GetProfile());
-  identity_api->SetCachedToken(
+  identity_api->token_cache()->SetToken(
       token_key_, IdentityTokenCacheValue::CreateIssueAdvice(issue_advice));
   // IssueAdvice doesn't communicate back to Chrome which account has been
   // chosen by the user. Cached gaia id may contain incorrect information so
@@ -639,8 +641,9 @@ void IdentityGetAuthTokenFunction::OnRemoteConsentSuccess(
 
   IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
-      ->SetCachedToken(token_key_, IdentityTokenCacheValue::CreateRemoteConsent(
-                                       resolution_data));
+      ->token_cache()
+      ->SetToken(token_key_,
+                 IdentityTokenCacheValue::CreateRemoteConsent(resolution_data));
   should_prompt_for_signin_ = false;
   resolution_data_ = resolution_data;
   CompleteMintTokenFlow();
@@ -759,7 +762,8 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowCompleted(
         access_token, base::TimeDelta::FromSeconds(time_to_live));
     IdentityAPI::GetFactoryInstance()
         ->Get(GetProfile())
-        ->SetCachedToken(token_key_, token_value);
+        ->token_cache()
+        ->SetToken(token_key_, token_value);
   }
 
   CompleteMintTokenFlow();
@@ -842,7 +846,7 @@ void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowApproved(
   // as this call may start a new request synchronously and query the cache.
   ExtensionTokenKey new_token_key(token_key_);
   new_token_key.account_id = account->account_id;
-  id_api->SetCachedToken(
+  id_api->token_cache()->SetToken(
       new_token_key,
       IdentityTokenCacheValue::CreateRemoteConsentApproved(consent_result));
   CompleteMintTokenFlow();

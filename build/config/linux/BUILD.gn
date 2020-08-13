@@ -45,9 +45,7 @@ config("x11") {
     "Xdamage",
     "Xext",
     "Xfixes",
-    "Xi",
     "Xrender",
-    "Xtst",
   ]
 }
 
@@ -65,14 +63,6 @@ config("xfixes") {
 
 config("libcap") {
   libs = [ "cap" ]
-}
-
-config("xi") {
-  libs = [ "Xi" ]
-}
-
-config("xtst") {
-  libs = [ "Xtst" ]
 }
 
 config("libresolv") {

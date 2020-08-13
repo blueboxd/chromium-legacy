@@ -16,7 +16,7 @@
       manual_loopback_serial_test(async (t, port) => {
         const watcher = new EventWatcher(t, navigator.serial, ['disconnect']);
 
-        await port.open({baudrate: 115200, buffersize: 1024});
+        await port.open({baudRate: 115200, bufferSize: 1024});
 
         const disconnectPromise = watcher.wait_for(['disconnect'])
         const reader = port.readable.getReader();
@@ -50,7 +50,7 @@
       manual_loopback_serial_test(async (t, port) => {
         const watcher = new EventWatcher(t, navigator.serial, ['disconnect']);
 
-        await port.open({baudrate: 115200, buffersize: 1024});
+        await port.open({baudRate: 115200, bufferSize: 1024});
 
         const disconnectPromise = watcher.wait_for(['disconnect'])
         const writer = port.writable.getWriter();

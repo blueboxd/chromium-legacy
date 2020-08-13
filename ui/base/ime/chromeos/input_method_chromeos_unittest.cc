@@ -19,12 +19,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
 #include "ui/base/ime/chromeos/mock_input_method_manager.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/dummy_text_input_client.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
@@ -415,6 +415,17 @@ TEST_F(InputMethodChromeOSTest, GetInputTextType_WithoutFocusedClient) {
   ime_->SetFocusedTextInputClient(this);
   ime_->OnTextInputTypeChanged(this);
   EXPECT_EQ(TEXT_INPUT_TYPE_PASSWORD, ime_->GetTextInputType());
+}
+
+TEST_F(InputMethodChromeOSTest,
+       OnWillChangeFocusedClientClearAutocorrectRange) {
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->SetFocusedTextInputClient(this);
+  ime_->SetAutocorrectRange(base::UTF8ToUTF16("text"), 0, 5);
+  EXPECT_EQ(gfx::Range(0, 5), this->GetAutocorrectRange());
+
+  ime_->SetFocusedTextInputClient(nullptr);
+  EXPECT_EQ(gfx::Range(), this->GetAutocorrectRange());
 }
 
 // Confirm that IBusClient::FocusIn is called on "connected" if input_type_ is

@@ -43,6 +43,7 @@ void AddTestURLDataSource(const std::string& source_name,
                           content::BrowserContext* browser_context) {
   content::WebUIDataSource* data_source =
       content::WebUIDataSource::Create(source_name);
+  data_source->DisableTrustedTypesCSP();
   data_source->AddResourcePath("icon-256.png", IDR_PRODUCT_LOGO_256);
   data_source->SetRequestFilter(
       base::BindLambdaForTesting([](const std::string& path) {

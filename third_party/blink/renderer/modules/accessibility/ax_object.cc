@@ -560,6 +560,10 @@ bool AXObject::IsDetached() const {
   return !ax_object_cache_;
 }
 
+void AXObject::SetParent(AXObject* parent) {
+  parent_ = parent;
+}
+
 const AtomicString& AXObject::GetAOMPropertyOrARIAAttribute(
     AOMStringProperty property) const {
   Element* element = this->GetElement();
@@ -1866,8 +1870,8 @@ bool AXObject::IsSubWidget() const {
       // ARIA role at all, because if so then it must be a grid-related
       // role so it must be selectable.
       //
-      // TODO: an ARIA 1.1+ role of "cell", or a role of "row" inside
-      // an ARIA 1.1 role of "table", should not be selectable. We may
+      // TODO(accessibility): an ARIA 1.1+ role of "cell", or a role of "row"
+      // inside an ARIA 1.1 role of "table", should not be selectable. We may
       // need to create separate role enums for grid cells vs table cells
       // to implement this.
       if (AriaRoleAttribute() != ax::mojom::blink::Role::kUnknown)
@@ -2436,7 +2440,7 @@ int AXObject::IndexInParent() const {
   const AXObjectVector& siblings =
       ParentObjectIncludedInTree()->ChildrenIncludingIgnored();
   wtf_size_t index = siblings.Find(this);
-  DCHECK(index != kNotFound);
+  DCHECK_NE(index, kNotFound);
   return (index == kNotFound) ? 0 : static_cast<int>(index);
 }
 

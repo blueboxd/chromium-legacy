@@ -23,6 +23,7 @@ import android.test.mock.MockPackageManager;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -147,6 +148,8 @@ public class ExternalNavigationHandlerTest {
     private final TestExternalNavigationDelegate mDelegate;
     private ExternalNavigationHandlerForTesting mUrlHandler;
 
+    private Context mApplicationContextToRestore;
+
     public ExternalNavigationHandlerTest() {
         mDelegate = new TestExternalNavigationDelegate();
         mUrlHandler = new ExternalNavigationHandlerForTesting(mDelegate);
@@ -154,10 +157,17 @@ public class ExternalNavigationHandlerTest {
 
     @Before
     public void setUp() {
+        mApplicationContextToRestore = ContextUtils.getApplicationContext();
+
         mContext = new TestContext(InstrumentationRegistry.getTargetContext(), mDelegate);
         ContextUtils.initApplicationContextForTests(mContext);
 
         NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
+    }
+
+    @After
+    public void tearDown() {
+        ContextUtils.initApplicationContextForTests(mApplicationContextToRestore);
     }
 
     @Test

@@ -1239,6 +1239,24 @@ TEST_F('OSSettingsPrivacyPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// Tests for the Files section.
+// eslint-disable-next-line no-var
+var OSSettingsFilesPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'chromeos/os_files_page/os_files_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat(['os_files_page_test.js']);
+  }
+};
+
+TEST_F('OSSettingsFilesPageTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 // eslint-disable-next-line no-var
 var OSSettingsParentalControlsPageTest = class extends OSSettingsBrowserTest {
   /** @override */
@@ -1406,6 +1424,34 @@ TEST_F('OSSettingsLanguagesPageTest', 'InputMethods', function() {
 });
 
 // eslint-disable-next-line no-var
+var OSSettingsLanguagesPageV2Test = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/os_languages_page/os_languages_page_v2.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'fake_input_method_private.js',
+      BROWSER_SETTINGS_PATH + 'fake_language_settings_private.js',
+      BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      'os_languages_page_v2_tests.js',
+      'test_os_languages_browser_proxy.js',
+      'test_os_languages_metrics_proxy.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsLanguagesPageV2Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var OSSettingsSmartInputsPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -1444,6 +1490,27 @@ var OSSettingsInputMethodOptionsPageTest = class extends OSSettingsBrowserTest {
 };
 
 TEST_F('OSSettingsInputMethodOptionsPageTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var OSSettingsInputPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'chromeos/os_language_page/input_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'input_page_test.js',
+      'test_os_languages_metrics_proxy.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsInputPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 

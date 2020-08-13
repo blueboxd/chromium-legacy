@@ -59,5 +59,6 @@ void IdentityInternalsUIBrowserTest::AddTokenToCache(
       std::set<std::string>(scopes.begin(), scopes.end()));
   extensions::IdentityAPI::GetFactoryInstance()
       ->Get(browser()->profile())
-      ->SetCachedToken(key, token_cache_value);
+      ->token_cache()
+      ->SetToken(key, token_cache_value);
 }

@@ -1025,7 +1025,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Returns a mostly empty bundle, with a fallback that uses a process-wide,
   // direct-network factory.
   //
-  // TODO(lukasza): https://crbug.com/1098938: Remove once the fallback is no
+  // TODO(lukasza): https://crbug.com/1114822: Remove once the fallback is no
   // longer needed.
   scoped_refptr<ChildURLLoaderFactoryBundle> GetLoaderFactoryBundleFallback();
 

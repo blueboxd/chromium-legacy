@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCSPBypassTest, LoadWebAccessibleScript) {
   EXPECT_TRUE(CanLoadScript(ext_without_permission));
 
   // chrome-extension:-URLs can never bypass CSP in WebUI.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
 
   EXPECT_FALSE(CanLoadScript(component_ext_with_permission));
   EXPECT_FALSE(CanLoadScript(component_ext_without_permission));

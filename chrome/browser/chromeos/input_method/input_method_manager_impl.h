@@ -20,9 +20,9 @@
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/ime_service_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
 
 namespace ui {
 class IMEEngineHandlerInterface;

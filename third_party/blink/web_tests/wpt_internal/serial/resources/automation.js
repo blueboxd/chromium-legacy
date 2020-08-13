@@ -101,8 +101,17 @@ class DataPipeSink {
 // Implementation of blink.mojom.SerialPort.
 class FakeSerialPort {
   constructor() {
-    this.inputSignals_ = { dcd: false, cts: false, ri: false, dsr: false };
-    this.outputSignals_ = { dtr: false, rts: false, brk: false };
+    this.inputSignals_ = {
+      dataCarrierDetect: false,
+      clearToSend: false,
+      ringIndicator: false,
+      dataSetReady: false
+    };
+    this.outputSignals_ = {
+      dataTerminalReady: false,
+      requestToSend: false,
+      break: false
+    };
   }
 
   bind(request) {
@@ -197,7 +206,7 @@ class FakeSerialPort {
     this.options_ = options;
     this.client_ = client;
     // OS typically sets DTR on open.
-    this.outputSignals_.dtr = true;
+    this.outputSignals_.dataTerminalReady = true;
     return { success: true };
   }
 
@@ -242,18 +251,24 @@ class FakeSerialPort {
   }
 
   async getControlSignals() {
-    return { signals: this.inputSignals_ };
+    const signals = {
+      dcd: this.inputSignals_.dataCarrierDetect,
+      cts: this.inputSignals_.clearToSend,
+      ri: this.inputSignals_.ringIndicator,
+      dsr: this.inputSignals_.dataSetReady
+    };
+    return {signals};
   }
 
   async setControlSignals(signals) {
     if (signals.hasDtr) {
-      this.outputSignals_.dtr = signals.dtr;
+      this.outputSignals_.dataTerminalReady = signals.dtr;
     }
     if (signals.hasRts) {
-      this.outputSignals_.rts = signals.rts;
+      this.outputSignals_.requestToSend = signals.rts;
     }
     if (signals.hasBrk) {
-      this.outputSignals_.brk = signals.brk;
+      this.outputSignals_.break = signals.brk;
     }
     return { success: true };
   }
@@ -276,7 +291,7 @@ class FakeSerialPort {
 
   async close() {
     // OS typically clears DTR on close.
-    this.outputSignals_.dtr = false;
+    this.outputSignals_.dataTerminalReady = false;
     if (this.writer_) {
       this.writer_.close();
       this.writer_.releaseLock();

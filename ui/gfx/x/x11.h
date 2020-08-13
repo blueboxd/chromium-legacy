@@ -23,15 +23,9 @@ extern "C" {
 #include <X11/Xregion.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
-#include <X11/extensions/XI2.h>
-#include <X11/extensions/XInput.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/XIproto.h>
 #include <X11/extensions/XShm.h>
-#include <X11/extensions/XTest.h>
 #include <X11/extensions/Xfixes.h>
 #include <X11/extensions/Xrender.h>
-#include <X11/extensions/record.h>
 #include <X11/extensions/sync.h>
 
 // Define XK_xxx before the #include of <X11/keysym.h> so that <X11/keysym.h>
@@ -90,12 +84,6 @@ extern "C" {
 #undef RootWindow     // Defined by X11/Xlib.h
 #undef DestroyAll     // Defined by X11/X.h to 0
 #undef Always         // Defined by X11/X.h to 2
-#undef AddToList      // Defined by X11/extensions/XI.h to 0
-#undef COUNT          // Defined by X11/extensions/XI.h to 0
-#undef CREATE         // Defined by X11/extensions/XI.h to 1
-#undef DeviceAdded    // Defined by X11/extensions/XI.h to 0
-#undef DeviceMode     // Defined by X11/extensions/XI.h to 1
-#undef DeviceRemoved  // Defined by X11/extensions/XI.h to 1
 #undef FocusIn        // Defined by X.h to 9
 #undef FocusOut       // Defined by X.h to 10
 #undef None           // Defined by X11/X.h to 0L

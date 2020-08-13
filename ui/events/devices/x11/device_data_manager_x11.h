@@ -339,7 +339,7 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
       DeviceDataManagerX11::ScrollInfo::AxisInfo* axis,
       double valuator) const;
 
-  static const int kMaxXIEventType = XI_LASTEVENT + 1;
+  static const int kMaxXIEventType = 32;
   static const int kMaxSlotNum = 10;
 
   // Major opcode for the XInput extension. Used to identify XInput events.

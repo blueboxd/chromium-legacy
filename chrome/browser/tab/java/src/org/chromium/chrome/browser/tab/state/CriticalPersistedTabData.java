@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab.state;
 
 import android.graphics.Color;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.ByteString;
@@ -50,7 +51,12 @@ public class CriticalPersistedTabData extends PersistedTabData {
     private int mContentStateVersion;
     private String mOpenerAppId;
     private int mThemeColor;
-    private @TabLaunchType Integer mTabLaunchTypeAtCreation;
+    /**
+     * Saves how this tab was initially launched so that we can record metrics on how the
+     * tab was created. This is different than {@link Tab#getLaunchType()}, since {@link
+     * Tab#getLaunchType()} will be overridden to "FROM_RESTORE" during tab restoration.
+     */
+    private @Nullable @TabLaunchType Integer mTabLaunchTypeAtCreation;
 
     private ObserverList<CriticalPersistedTabDataObserver> mObservers =
             new ObserverList<CriticalPersistedTabDataObserver>();
@@ -79,7 +85,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     CriticalPersistedTabData(Tab tab, int parentId, int rootId, long timestampMillis,
             WebContentsState webContentsState, int contentStateVersion, String openerAppId,
-            int themeColor, int launchTypeAtCreation) {
+            int themeColor, @Nullable @TabLaunchType Integer launchTypeAtCreation) {
         this(tab);
         mParentId = parentId;
         mRootId = rootId;
@@ -142,10 +148,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
         // CriticalPersistedTabData is initialized with default values
         CriticalPersistedTabData criticalPersistedTabData =
                 new CriticalPersistedTabData(tab, Tab.INVALID_TAB_ID, tab.getId(),
-                        INVALID_TIMESTAMP, null, -1, "", UNSPECIFIED_THEME_COLOR,
-                        tab.getLaunchTypeAtInitialTabCreation() == null
-                                ? TabLaunchType.FROM_LINK
-                                : tab.getLaunchTypeAtInitialTabCreation());
+                        INVALID_TIMESTAMP, null, -1, "", UNSPECIFIED_THEME_COLOR, null);
         return criticalPersistedTabData;
     }
 
@@ -405,8 +408,12 @@ public class CriticalPersistedTabData extends PersistedTabData {
     /**
      * @return launch type at creation
      */
-    public @TabLaunchType int getTabLaunchTypeAtCreation() {
+    public @Nullable @TabLaunchType Integer getTabLaunchTypeAtCreation() {
         return mTabLaunchTypeAtCreation;
+    }
+
+    public void setLaunchTypeAtCreation(@Nullable @TabLaunchType Integer launchTypeAtCreation) {
+        mTabLaunchTypeAtCreation = launchTypeAtCreation;
     }
 
     /**

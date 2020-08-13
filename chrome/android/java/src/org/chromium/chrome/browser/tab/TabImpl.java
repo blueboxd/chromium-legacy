@@ -129,13 +129,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      */
     private final @Nullable @TabLaunchType Integer mLaunchType;
 
-    /**
-     * Saves how this tab was initially launched so that we can record metrics on how the
-     * tab was created. This is different than {@code mLaunchType}, since {@code mLaunchType} will
-     * be overridden to "FROM_RESTORE" during tab restoration.
-     */
-    private @Nullable @TabLaunchType Integer mLaunchTypeAtCreation;
-
     private @Nullable @TabCreationState Integer mCreationState;
 
     /**
@@ -404,11 +397,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     @Override
     public @TabLaunchType int getLaunchType() {
         return mLaunchType;
-    }
-
-    @Override
-    public @Nullable @TabLaunchType Integer getLaunchTypeAtInitialTabCreation() {
-        return mLaunchTypeAtCreation;
     }
 
     @Override
@@ -769,7 +757,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         try {
             TraceEvent.begin("Tab.initialize");
 
-            mLaunchTypeAtCreation = mLaunchType;
+            CriticalPersistedTabData.from(this).setLaunchTypeAtCreation(mLaunchType);
             mCreationState = creationState;
             mPendingLoadParams = loadUrlParams;
             if (loadUrlParams != null) mUrl = new GURL(loadUrlParams.getUrl());
@@ -837,7 +825,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         mUrl = new GURL(state.contentsState.getVirtualUrlFromState());
         CriticalPersistedTabData.from(this).setTitle(
                 state.contentsState.getDisplayTitleFromState());
-        mLaunchTypeAtCreation = state.tabLaunchTypeAtCreation;
+        CriticalPersistedTabData.from(this).setLaunchTypeAtCreation(state.tabLaunchTypeAtCreation);
         CriticalPersistedTabData.from(this).setRootId(
                 state.rootId == Tab.INVALID_TAB_ID ? mId : state.rootId);
     }

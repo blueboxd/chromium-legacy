@@ -151,8 +151,7 @@ void InputMethodWinImm32::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
   if (IsWindowFocused(focused_before))
-    ConfirmCompositionText(/* reset_engine */ true,
-                           /* keep_selection */ false);
+    ConfirmCompositionText();
 }
 
 void InputMethodWinImm32::OnDidChangeFocusedClient(
@@ -315,10 +314,7 @@ void InputMethodWinImm32::RefreshInputLanguage() {
   }
 }
 
-void InputMethodWinImm32::ConfirmCompositionText(bool reset_engine,
-                                                 bool keep_selection) {
-  InputMethodBase::ConfirmCompositionText(reset_engine, keep_selection);
-
+void InputMethodWinImm32::ConfirmCompositionText() {
   // Makes sure the native IME app can be informed about the composition is
   // cleared, so that it can clean up its internal states.
   if (composing_window_handle_)

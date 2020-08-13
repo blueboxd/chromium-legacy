@@ -344,7 +344,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   };
 
  protected:
-  AXObject(AXObjectCacheImpl&);
+  explicit AXObject(AXObjectCacheImpl&);
 
  public:
   virtual ~AXObject();
@@ -363,9 +363,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual void Detach();
   virtual bool IsDetached() const;
 
-  // If the parent of this object is known, this can be faster than using
-  // computeParent().
-  virtual void SetParent(AXObject* parent) { parent_ = parent; }
+  // Sets the parent AXObject directly. If the parent of this object is known,
+  // this can be faster than using computeParent().
+  virtual void SetParent(AXObject* parent);
 
   // The AXObjectCacheImpl that owns this object, and its unique ID within this
   // cache.
@@ -546,8 +546,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool HasInheritedPresentationalRole() const;
   bool IsPresentationalChild() const;
   bool CanBeActiveDescendant() const;
-  // Some objects, such as table cells, could be the children of more than one
-  // object but have only one primary parent.
+  // Some objects, such as table header containers, could be the children of
+  // more than one object but have only one primary parent.
   bool HasIndirectChildren() const;
 
   //
@@ -1007,8 +1007,25 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Low-level accessibility tree exploration, only for use within the
   // accessibility module.
+
+  // Returns the AXObject's first child, skipping over any children that
+  // represent continuations in the layout tree. If the AXObject has no
+  // children, returns the AXObject representing the next in pre-order
+  // continuation in the layout tree, if any.
+  //
+  // In the accessibility tree, this results in continuations becoming
+  // descendants of the nodes they "continue".
   virtual AXObject* RawFirstChild() const { return nullptr; }
+
+  // Returns the AXObject's next sibling, skipping over any siblings that
+  // represent continuations in the layout tree. If this is the last child,
+  // returns the AXObject representing the next in pre-order continuation in the
+  // layout tree, if any.
+  //
+  // In the accessibility tree, this results in continuations becoming
+  // descendants of the nodes they "continue".
   virtual AXObject* RawNextSibling() const { return nullptr; }
+
   virtual void AddChildren() {}
   virtual bool CanHaveChildren() const { return true; }
   bool HasChildren() const { return have_children_; }

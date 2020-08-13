@@ -17,8 +17,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/ime/character_composer.h"
+#include "ui/base/ime/chromeos/ime_input_context_handler_interface.h"
 #include "ui/base/ime/composition_text.h"
-#include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/text_input_client.h"
 
@@ -28,7 +28,8 @@ class TestableInputMethodChromeOS;
 
 // A ui::InputMethod implementation for ChromeOS.
 class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
-    : public InputMethodBase {
+    : public InputMethodBase,
+      public IMEInputContextHandlerInterface {
  public:
   explicit InputMethodChromeOS(internal::InputMethodDelegate* delegate);
   ~InputMethodChromeOS() override;
@@ -50,6 +51,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
                                  TextInputClient* focused) override;
   void OnDidChangeFocusedClient(TextInputClient* focused_before,
                                 TextInputClient* focused) override;
+
+  // ui::IMEInputContextHandlerInterface overrides:
+  void CommitText(const std::string& text) override;
   bool SetCompositionRange(
       uint32_t before,
       uint32_t after,
@@ -60,7 +64,15 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
                            uint32_t start,
                            uint32_t end) override;
   bool SetSelectionRange(uint32_t start, uint32_t end) override;
+  void UpdateCompositionText(const CompositionText& text,
+                             uint32_t cursor_pos,
+                             bool visible) override;
+  void DeleteSurroundingText(int32_t offset, uint32_t length) override;
+  SurroundingTextInfo GetSurroundingTextInfo() override;
+  void SendKeyEvent(KeyEvent* event) override;
+  InputMethod* GetInputMethod() override;
   void ConfirmCompositionText(bool reset_engine, bool keep_selection) override;
+  bool HasCompositionText() override;
 
  protected:
   // Converts |text| into CompositionText.
@@ -123,13 +135,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
   // Passes keyevent and executes character composition if necessary. Returns
   // true if character composer comsumes key event.
   bool ExecuteCharacterComposer(const ui::KeyEvent& event);
-
-  // ui::IMEInputContextHandlerInterface overrides:
-  void CommitText(const std::string& text) override;
-  void UpdateCompositionText(const CompositionText& text,
-                             uint32_t cursor_pos,
-                             bool visible) override;
-  void DeleteSurroundingText(int32_t offset, uint32_t length) override;
 
   // Hides the composition text.
   void HidePreeditText();

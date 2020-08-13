@@ -95,10 +95,15 @@ message WebAppProto {
   optional bool is_in_sync_install = 9;
   // A list of icon infos.
   repeated sync_pb.WebAppIconInfo icon_infos = 10;
-  // A list of icon sizes we successfully downloaded to store on disk.
-  repeated int32 downloaded_icon_sizes = 11;
+
+  // A list of icon sizes we successfully downloaded to store on disk, for icons
+  // that are suitable for any purpose (ie. IconPurpose::ANY). See also:
+  // |downloaded_icon_sizes_purpose_maskable|.
+  repeated int32 downloaded_icon_sizes_purpose_any = 11;
+
   // A list of file handlers.
   repeated WebAppFileHandlerProto file_handlers = 12;
+
   // A list of additional search terms to use when searching for the app.
   repeated string additional_search_terms = 13;
 
@@ -131,4 +136,9 @@ message WebAppProto {
 
   // A list of display modes specified in app manifest.
   repeated DisplayMode display_mode_override = 22;
+
+  // A list of icon sizes we successfully downloaded to store on disk, for icons
+  // that are designed for masking (ie. IconPurpose::MASKABLE). See also:
+  // |downloaded_icon_sizes_purpose_any|.
+  repeated int32 downloaded_icon_sizes_purpose_maskable = 23;
 }

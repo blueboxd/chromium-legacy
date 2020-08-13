@@ -132,7 +132,7 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 #if defined(USE_X11)
   if (!features::IsUsingOzonePlatform())
-    IgnoreXServerGrabs(desktop_capture_options().x_display()->display(), true);
+    desktop_capture_options().x_display()->IgnoreXServerGrabs();
 #elif defined(OS_WIN)
   // The options passed to this instance are determined by a process running in
   // Session 0.  Access to DirectX functions in Session 0 is limited so the

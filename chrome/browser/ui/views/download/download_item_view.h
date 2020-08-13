@@ -105,10 +105,9 @@ class DownloadItemView : public views::View,
   const DownloadUIModel* model() const { return model_.get(); }
 
   // Submits download to download feedback service if the user has approved and
-  // the download is suitable for submission, then applies |download_command|.
+  // the download is suitable for submission, then applies |command|.
   // If user hasn't seen SBER opt-in text before, show SBER opt-in dialog first.
-  void MaybeSubmitDownloadToFeedbackService(
-      DownloadCommands::Command download_command);
+  void MaybeSubmitDownloadToFeedbackService(DownloadCommands::Command command);
 
  protected:
   // views::View:
@@ -170,7 +169,7 @@ class DownloadItemView : public views::View,
   // buttons are given the same size).
   gfx::Size GetButtonSize() const;
 
-  // Returns the file name to report to user. It might be elided to fit into
+  // Returns the file name to report to the user. It might be elided to fit into
   // the text width. |label| dictates the default text style.
   base::string16 ElidedFilename(const views::StyledLabel& label) const;
 
@@ -202,10 +201,9 @@ class DownloadItemView : public views::View,
   void OpenDownloadDuringAsyncScanning();
 
   // Submits the downloaded file to the safebrowsing download feedback service.
-  // Applies |download_command| if submission succeeds. Returns whether
-  // submission was successful.
-  bool SubmitDownloadToFeedbackService(
-      DownloadCommands::Command download_command);
+  // Applies |command| if submission succeeds. Returns whether submission was
+  // successful.
+  bool SubmitDownloadToFeedbackService(DownloadCommands::Command command) const;
 
   // Forwards |command| to |commands_|; useful for callbacks.
   void ExecuteCommand(DownloadCommands::Command command);

@@ -4,6 +4,8 @@
 
 module crosapi.mojom;
 
+import "chromeos/crosapi/mojom/bitmap.mojom";
+
 // A unique identifier and title for a window.
 struct WindowDetails {
   // Guaranteed to be unique and never reused.
@@ -11,14 +13,6 @@ struct WindowDetails {
 
   // The title of the window in UTF-8 encoding.
   string title;
-};
-
-// A bitmap representation of the current contents of a window or screen. Each
-// pixel is represented by 4 bytes [RGBA].
-struct WindowSnapshot {
-  uint32 width;
-  uint32 height;
-  array<uint8> bitmap;
 };
 
 // This interface is implemented by ash-chrome. It allows lacros-chrome to query
@@ -45,7 +39,7 @@ interface ScreenManager {
   // The media screen capture implementation assumes that every platform
   // provides a synchronous method to take a snapshot of the screen.
   [Sync]
-  TakeScreenSnapshot@0() => (WindowSnapshot snapshot);
+  TakeScreenSnapshot@0() => (Bitmap snapshot);
 
   // Synchronously returns a list of visible, focusable windows. This method
   // needs to be synchronous to support cross-platform code that relies on the
@@ -56,6 +50,5 @@ interface ScreenManager {
   // Take a screenshot of a window with an id from ListWindows. If |success|
   // is false, then the window no longer exists.
   [Sync]
-  TakeWindowSnapshot@2(uint64 id) => (bool success, WindowSnapshot snapshot);
+  TakeWindowSnapshot@2(uint64 id) => (bool success, Bitmap snapshot);
 };
-

@@ -636,6 +636,11 @@ const base::Feature MEDIA_EXPORT kMediaFoundationVP8Decoding{
 
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MAC)
+const base::Feature MEDIA_EXPORT kVideoToolboxVp9Decoding{
+    "VideoToolboxVp9Decoding", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_MAC)
+
 std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
   // Return the autoplay policy set in the command line, if any.
   if (command_line.HasSwitch(switches::kAutoplayPolicy))

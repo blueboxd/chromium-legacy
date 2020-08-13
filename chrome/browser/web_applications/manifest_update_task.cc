@@ -172,7 +172,7 @@ bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu) &&
       web_application_info_->shortcuts_menu_item_infos !=
-          registrar_.GetAppShortcutInfos(app_id_)) {
+          registrar_.GetAppShortcutsMenuItemInfos(app_id_)) {
     return true;
   }
 
@@ -222,9 +222,8 @@ void ManifestUpdateTask::OnIconsDownloaded(bool success, IconsMap icons_map) {
                               std::move(icons_map)));
 }
 
-void ManifestUpdateTask::OnAllIconsRead(
-    IconsMap downloaded_icons_map,
-    std::map<SquareSizePx, SkBitmap> disk_icon_bitmaps) {
+void ManifestUpdateTask::OnAllIconsRead(IconsMap downloaded_icons_map,
+                                        IconBitmaps disk_icon_bitmaps) {
   DCHECK(stage_ == Stage::kPendingIconReadFromDisk);
 
   if (disk_icon_bitmaps.empty()) {
@@ -254,12 +253,20 @@ void ManifestUpdateTask::OnAllIconsRead(
 }
 
 bool ManifestUpdateTask::IsUpdateNeededForIconContents(
-    const std::map<SquareSizePx, SkBitmap>& disk_icon_bitmaps) const {
+    const IconBitmaps& disk_icon_bitmaps) const {
   DCHECK(web_application_info_.has_value());
-  const std::map<SquareSizePx, SkBitmap>& downloaded_icon_bitmaps =
+  const std::map<SquareSizePx, SkBitmap>& downloaded_icon_bitmaps_any =
       web_application_info_->icon_bitmaps_any;
-  if (HaveIconContentsChanged(disk_icon_bitmaps, downloaded_icon_bitmaps))
+  if (HaveIconContentsChanged(disk_icon_bitmaps.any,
+                              downloaded_icon_bitmaps_any)) {
     return true;
+  }
+  const std::map<SquareSizePx, SkBitmap>& downloaded_icon_bitmaps_maskable =
+      web_application_info_->icon_bitmaps_maskable;
+  if (HaveIconContentsChanged(disk_icon_bitmaps.maskable,
+                              downloaded_icon_bitmaps_maskable)) {
+    return true;
+  }
 
   return false;
 }

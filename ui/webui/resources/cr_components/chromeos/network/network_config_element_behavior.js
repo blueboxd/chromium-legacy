@@ -7,7 +7,7 @@
  */
 
 /** @polymerBehavior */
-const NetworkConfigElementBehavior = {
+/* #export */ const NetworkConfigElementBehavior = {
   properties: {
     disabled: {
       type: Boolean,

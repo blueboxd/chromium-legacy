@@ -4,15 +4,6 @@
 
 #include "ui/gfx/x/event.h"
 
-#include <X11/Xlibint.h>
-#include <X11/extensions/XInput2.h>
-
-// Xlibint.h defines those as macros, which breaks the C++ versions in
-// the std namespace.
-#undef max
-#undef min
-#undef Data
-
 #include <cstring>
 
 #include "base/check_op.h"

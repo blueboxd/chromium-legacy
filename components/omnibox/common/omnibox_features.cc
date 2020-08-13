@@ -224,6 +224,17 @@ const base::Feature kDynamicMaxAutocomplete{"OmniboxDynamicMaxAutocomplete",
 const base::Feature kClobberIsZeroSuggestEntrypoint{
     "OmniboxClobberIsZeroSuggestEntrypoint", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Disable this flag to prevent focus gestures (e.g. clicks, taps, Ctrl+L) from
+// triggering ZeroSuggest for the OTHER page classification (contextual web).
+// This is used to experiment with alternate ZeroSuggest triggers like clobber.
+//
+// Note, this flag is Enabled by default, as on-focus is the standard
+// ZeroSuggest trigger. This flag doesn't affect the NTP or SERP.
+// We don't want to accidentally unlaunch on-focus NTP ZeroSuggest.
+const base::Feature kFocusGestureTriggersContextualWebZeroSuggest{
+    "OmniboxFocusGestureTriggersContextualWebZeroSuggest",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // If enabled, ranks the local zero-prefix suggestions based on frecency
 // (combined frequency and recency).
 const base::Feature kOmniboxLocalZeroSuggestFrecencyRanking{

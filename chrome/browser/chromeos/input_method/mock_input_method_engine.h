@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
 
 namespace ui {
 class IMEEngineHandlerInterface;

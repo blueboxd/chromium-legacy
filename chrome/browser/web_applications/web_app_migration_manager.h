@@ -53,8 +53,7 @@ class WebAppMigrationManager {
   // Migrates next bookmark app in |bookmark_app_ids_| queue or starts
   // the registry migration if the queue is empty.
   void MigrateNextBookmarkAppIcons();
-  void OnBookmarkAppIconsRead(const AppId& app_id,
-                              std::map<SquareSizePx, SkBitmap> icon_bitmaps);
+  void OnBookmarkAppIconsRead(const AppId& app_id, IconBitmaps icon_bitmaps);
   void OnWebAppIconsWritten(const AppId& app_id, bool success);
   void OnBookmarkAppShortcutsMenuIconsRead(
       const AppId& app_id,

@@ -79,10 +79,10 @@ std::vector<blink::Manifest::ImageResource> ConvertWebAppIconsToImageResources(
   for (const WebApplicationIconInfo& icon_info : app.icon_infos()) {
     blink::Manifest::ImageResource icon;
     icon.src = icon_info.url;
-    icon.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
-    icon.sizes.push_back(
-        gfx::Size(icon_info.square_size_px.value_or(kDefaultImageSize),
-                  icon_info.square_size_px.value_or(kDefaultImageSize)));
+    icon.purpose.push_back(icon_info.purpose);
+    icon.sizes.emplace_back(
+        icon_info.square_size_px.value_or(kDefaultImageSize),
+        icon_info.square_size_px.value_or(kDefaultImageSize));
     icons.push_back(std::move(icon));
   }
   return icons;
@@ -372,11 +372,12 @@ class WebAppInstallManagerTest : public WebAppTest {
 
   std::map<SquareSizePx, SkBitmap> ReadIcons(
       const AppId& app_id,
+      IconPurpose purpose,
       std::vector<SquareSizePx> sizes_px) {
     std::map<SquareSizePx, SkBitmap> result;
     base::RunLoop run_loop;
     icon_manager().ReadIcons(
-        app_id, sizes_px,
+        app_id, purpose, sizes_px,
         base::BindLambdaForTesting(
             [&](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
               result = std::move(icon_bitmaps);
@@ -715,7 +716,7 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
     sizes.push_back(size);
   }
   expected_app->SetIconInfos(std::move(icon_infos));
-  expected_app->SetDownloadedIconSizes(std::move(sizes));
+  expected_app->SetDownloadedIconSizes(IconPurpose::ANY, std::move(sizes));
 
   {
     WebApp::SyncFallbackData sync_fallback_data;
@@ -791,7 +792,7 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
     sizes.push_back(size);
   }
   expected_app->SetIconInfos(std::move(icon_infos));
-  expected_app->SetDownloadedIconSizes(std::move(sizes));
+  expected_app->SetDownloadedIconSizes(IconPurpose::ANY, std::move(sizes));
   expected_app->SetIsGeneratedIcon(true);
 
   {
@@ -1168,14 +1169,16 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_TwoIcons_Success) {
   const WebApp* web_app = registrar().GetAppById(app_id);
 
   EXPECT_EQ(2U, web_app->icon_infos().size());
-  EXPECT_EQ(SizesToGenerate().size(), web_app->downloaded_icon_sizes().size());
+  EXPECT_EQ(SizesToGenerate().size(),
+            web_app->downloaded_icon_sizes(IconPurpose::ANY).size());
+  EXPECT_EQ(0u, web_app->downloaded_icon_sizes(IconPurpose::MASKABLE).size());
 
   EXPECT_EQ(icon1_url, web_app->icon_infos().at(0).url);
   EXPECT_EQ(icon2_url, web_app->icon_infos().at(1).url);
 
   // Read icons from disk to check pixel contents.
   std::map<SquareSizePx, SkBitmap> icon_bitmaps =
-      ReadIcons(app_id, {icon_size::k128, icon_size::k256});
+      ReadIcons(app_id, IconPurpose::ANY, {icon_size::k128, icon_size::k256});
   EXPECT_EQ(2u, icon_bitmaps.size());
 
   const auto& icon1 = icon_bitmaps[icon_size::k128];
@@ -1230,7 +1233,9 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_TwoIcons_Fallback) {
   const WebApp* web_app = registrar().GetAppById(app_id);
 
   EXPECT_EQ(2U, web_app->icon_infos().size());
-  EXPECT_EQ(SizesToGenerate().size(), web_app->downloaded_icon_sizes().size());
+  EXPECT_EQ(SizesToGenerate().size(),
+            web_app->downloaded_icon_sizes(IconPurpose::ANY).size());
+  EXPECT_EQ(0u, web_app->downloaded_icon_sizes(IconPurpose::MASKABLE).size());
 
   EXPECT_EQ(icon1_url, web_app->icon_infos().at(0).url);
   EXPECT_EQ(icon2_url, web_app->icon_infos().at(1).url);
@@ -1238,7 +1243,7 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_TwoIcons_Fallback) {
   // Read icons from disk. All icons get the E letter drawn into a rounded
   // blue background.
   std::map<SquareSizePx, SkBitmap> icon_bitmaps =
-      ReadIcons(app_id, {icon_size::k128, icon_size::k256});
+      ReadIcons(app_id, IconPurpose::ANY, {icon_size::k128, icon_size::k256});
   EXPECT_EQ(2u, icon_bitmaps.size());
 
   const auto& icon1 = icon_bitmaps[icon_size::k128];
@@ -1274,7 +1279,8 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_NoIcons) {
   const WebApp* web_app = registrar().GetAppById(app_id);
 
   std::map<SquareSizePx, SkBitmap> icon_bitmaps =
-      ReadIcons(app_id, web_app->downloaded_icon_sizes());
+      ReadIcons(app_id, IconPurpose::ANY,
+                web_app->downloaded_icon_sizes(IconPurpose::ANY));
 
   // Make sure that icons have been generated for all sub sizes.
   EXPECT_TRUE(ContainsOneIconOfEachSize(icon_bitmaps));
@@ -1313,7 +1319,8 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_ExpectAppIdFailed) {
   ASSERT_TRUE(web_app);
 
   std::map<SquareSizePx, SkBitmap> icon_bitmaps =
-      ReadIcons(expected_app_id, web_app->downloaded_icon_sizes());
+      ReadIcons(expected_app_id, IconPurpose::ANY,
+                web_app->downloaded_icon_sizes(IconPurpose::ANY));
 
   // Make sure that icons have been generated for all sub sizes.
   EXPECT_TRUE(ContainsOneIconOfEachSize(icon_bitmaps));
@@ -1338,7 +1345,8 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppFromInfo) {
   ASSERT_TRUE(web_app);
 
   std::map<SquareSizePx, SkBitmap> icon_bitmaps =
-      ReadIcons(expected_app_id, web_app->downloaded_icon_sizes());
+      ReadIcons(expected_app_id, IconPurpose::ANY,
+                web_app->downloaded_icon_sizes(IconPurpose::ANY));
 
   // Make sure that icons have been generated for all sub sizes.
   EXPECT_TRUE(ContainsOneIconOfEachSize(icon_bitmaps));

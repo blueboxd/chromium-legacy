@@ -102,6 +102,7 @@ class DummyTextInputClient : public TextInputClient {
   std::vector<base::string16> insert_text_history_;
   std::vector<CompositionText> composition_history_;
   std::vector<gfx::Range> selection_history_;
+  gfx::Range autocorrect_range_;
 };
 
 }  // namespace ui

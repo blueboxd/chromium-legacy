@@ -178,6 +178,7 @@ class OmniboxViewViews : public OmniboxView,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest, HoverAndExit);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest, HoverAndExitIDN);
   FRIEND_TEST_ALL_PREFIXES(
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       UserInteractionAndHover);
@@ -195,6 +196,9 @@ class OmniboxViewViews : public OmniboxView,
       SchemeAndTrivialSubdomainElision);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest,
                            SimplifiedDomainElisionWithNarrowOmnibox);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+      SimplifiedDomainElisionWithNarrowOmnibox);
   FRIEND_TEST_ALL_PREFIXES(
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       HideOnInteractionAfterFocusAndBlur);

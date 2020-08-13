@@ -85,7 +85,7 @@ void OnNotificationClicked(base::Optional<int> button_index) {
         UMA_STATUS_AREA_DISPLAY_NOTIFICATION_SHOW_SETTINGS);
   }
   message_center::MessageCenter::Get()->RemoveNotification(
-      ScreenLayoutObserver::kNotificationId, true /* by_user */);
+      ScreenLayoutObserver::kNotificationId, /*by_user=*/true);
 }
 
 // Returns the name of the currently connected external display whose ID is
@@ -180,6 +180,12 @@ base::string16 GetDisplayRemovedMessage(
 
 base::string16 GetDisplayAddedMessage(int64_t added_display_id,
                                       base::string16* additional_message_out) {
+  if (features::IsReduceDisplayNotificationsEnabled()) {
+    DCHECK(!display::Display::IsInternalDisplayId(added_display_id));
+    return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_ADDED,
+                                      GetExternalDisplayName(added_display_id));
+  }
+
   if (!display::Display::HasInternalDisplay()) {
     return l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL);
@@ -195,12 +201,12 @@ const char ScreenLayoutObserver::kNotificationId[] =
     "chrome://settings/display";
 
 ScreenLayoutObserver::ScreenLayoutObserver() {
-  Shell::Get()->display_manager()->AddObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
   UpdateDisplayInfo(nullptr);
 }
 
 ScreenLayoutObserver::~ScreenLayoutObserver() {
-  Shell::Get()->display_manager()->RemoveObserver(this);
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 }
 
 void ScreenLayoutObserver::SetDisplayChangedFromSettingsUI(int64_t display_id) {
@@ -282,6 +288,12 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
     for (const auto& iter : display_info_) {
       if (old_info.count(iter.first))
         continue;
+
+      // No notification if the internal display is connected.
+      if (features::IsReduceDisplayNotificationsEnabled() &&
+          display::Display::IsInternalDisplayId(iter.first)) {
+        return false;
+      }
 
       *out_message = GetDisplayAddedMessage(iter.first, out_additional_message);
       return true;
@@ -374,7 +386,7 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
   // Always remove the notification to make sure the notification appears
   // as a popup in any situation.
   message_center::MessageCenter::Get()->RemoveNotification(kNotificationId,
-                                                           false /* by_user */);
+                                                           /*by_user=*/false);
 
   if (message.empty() && additional_message.empty())
     return;
@@ -413,22 +425,7 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
       std::move(notification));
 }
 
-void ScreenLayoutObserver::OnDisplayAdded(const display::Display& new_display) {
-  if (!show_notifications_for_testing_)
-    return;
-
-  // The older way handles showing display added notifications as well. We will
-  // use that if display notifications are not suppressed.
-  if (!features::IsReduceDisplayNotificationsEnabled())
-    return;
-
-  base::string16 additional_message;
-  base::string16 message =
-      GetDisplayAddedMessage(new_display.id(), &additional_message);
-  CreateOrUpdateNotification(message, additional_message);
-}
-
-void ScreenLayoutObserver::OnDidProcessDisplayChanges() {
+void ScreenLayoutObserver::OnDisplayConfigurationChanged() {
   DisplayInfoMap old_info;
   UpdateDisplayInfo(&old_info);
 
@@ -467,13 +464,21 @@ void ScreenLayoutObserver::OnDidProcessDisplayChanges() {
   base::string16 additional_message;
   if (!GetDisplayMessageForNotification(old_info,
                                         should_notify_has_unassociated_display,
-                                        &message, &additional_message))
+                                        &message, &additional_message)) {
     return;
+  }
+
+  // Alerting user of display added and unassociated display are allowed even
+  // when suppressed.
+  const bool exited_mirror = old_display_mode_ == DisplayMode::MIRRORING &&
+                             current_display_mode_ != DisplayMode::MIRRORING;
+  const bool display_added =
+      !exited_mirror && old_info.size() < display_info_.size();
+  const bool allowed_notifications =
+      display_added || should_notify_has_unassociated_display;
 
   if (features::IsReduceDisplayNotificationsEnabled() &&
-      !should_notify_has_unassociated_display) {
-    // If display notifications should be suppressed and the notification is not
-    // to alert the user of an unassociated display, do not show a notification.
+      !allowed_notifications) {
     return;
   }
 

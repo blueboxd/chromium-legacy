@@ -111,9 +111,9 @@ gfx::ImageSkia WebAppBrowserController::GetWindowAppIcon() const {
   }
 #endif
 
-  if (provider_.icon_manager().HasSmallestIcon(GetAppId(),
+  if (provider_.icon_manager().HasSmallestIcon(GetAppId(), {IconPurpose::ANY},
                                                web_app::kWebAppIconSmall)) {
-    provider_.icon_manager().ReadSmallestIcon(
+    provider_.icon_manager().ReadSmallestIconAny(
         GetAppId(), web_app::kWebAppIconSmall,
         base::BindOnce(&WebAppBrowserController::OnReadIcon,
                        weak_ptr_factory_.GetWeakPtr()));

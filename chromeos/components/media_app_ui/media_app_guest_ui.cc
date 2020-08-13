@@ -60,6 +60,8 @@ content::WebUIDataSource* CreateMediaAppUntrustedDataSource(
   // Allow styles to include inline styling needed for Polymer elements.
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::StyleSrc, "style-src 'unsafe-inline';");
+  // TODO(crbug.com/1098685): Trusted Type remaining WebUI.
+  source->DisableTrustedTypesCSP();
   return source;
 }
 

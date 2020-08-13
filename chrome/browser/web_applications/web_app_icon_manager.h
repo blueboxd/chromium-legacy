@@ -38,11 +38,11 @@ class WebAppIconManager : public AppIconManager, public AppRegistrarObserver {
                     std::unique_ptr<FileUtilsWrapper> utils);
   ~WebAppIconManager() override;
 
-  // Writes all data (icons) for an app.
   using WriteDataCallback = base::OnceCallback<void(bool success)>;
 
+  // Writes all data (icons) for an app.
   void WriteData(AppId app_id,
-                 std::map<SquareSizePx, SkBitmap> icons,
+                 IconBitmaps icon_bitmaps,
                  WriteDataCallback callback);
   void WriteShortcutsMenuIconsData(
       AppId app_id,
@@ -55,47 +55,58 @@ class WebAppIconManager : public AppIconManager, public AppRegistrarObserver {
   void Shutdown() override;
   bool HasIcons(
       const AppId& app_id,
+      IconPurpose purpose,
       const std::vector<SquareSizePx>& icon_sizes_in_px) const override;
   bool HasSmallestIcon(const AppId& app_id,
-                       SquareSizePx icon_size_in_px) const override;
+                       const std::vector<IconPurpose>& purposes,
+                       SquareSizePx min_size_in_px) const override;
   void ReadIcons(const AppId& app_id,
-                 const std::vector<SquareSizePx>& icon_sizes_in_px,
+                 IconPurpose purpose,
+                 const std::vector<SquareSizePx>& icon_sizes,
                  ReadIconsCallback callback) const override;
   void ReadAllIcons(const AppId& app_id,
-                    ReadIconsCallback callback) const override;
+                    ReadIconBitmapsCallback callback) const override;
   void ReadAllShortcutsMenuIcons(
       const AppId& app_id,
       ReadShortcutsMenuIconsCallback callback) const override;
   void ReadSmallestIcon(const AppId& app_id,
-                        SquareSizePx icon_size_in_px,
-                        ReadIconCallback callback) const override;
+                        const std::vector<IconPurpose>& purposes,
+                        SquareSizePx min_size_in_px,
+                        ReadIconWithPurposeCallback callback) const override;
   void ReadSmallestCompressedIcon(
       const AppId& app_id,
-      SquareSizePx icon_size_in_px,
-      ReadCompressedIconCallback callback) const override;
+      const std::vector<IconPurpose>& purposes,
+      SquareSizePx min_size_in_px,
+      ReadCompressedIconWithPurposeCallback callback) const override;
   SkBitmap GetFavicon(const web_app::AppId& app_id) const override;
 
   // AppRegistrarObserver:
   void OnWebAppInstalled(const AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
 
-  // If there is no icon at the downloaded sizes, we may resize what we can get.
-  bool HasIconToResize(const AppId& app_id,
-                       SquareSizePx desired_icon_size) const;
-  // Looks for a larger icon first, a smaller icon second. (Resizing a large
-  // icon smaller is preferred to resizing a small icon larger)
+  // Calls back with an icon of the |desired_icon_size| and |purpose|, resizing
+  // an icon of a different size if necessary. If no icons were available, calls
+  // back with an empty map. Prefers resizing a large icon smaller over resizing
+  // a small icon larger.
   void ReadIconAndResize(const AppId& app_id,
+                         IconPurpose purpose,
                          SquareSizePx desired_icon_size,
                          ReadIconsCallback callback) const;
 
   void SetFaviconReadCallbackForTesting(FaviconReadCallback callback);
 
  private:
-  base::Optional<SquareSizePx> FindDownloadedSizeInPxMatchBigger(
+  struct SizeAndPurpose {
+    SquareSizePx size_px = 0;
+    IconPurpose purpose = IconPurpose::ANY;
+  };
+  base::Optional<WebAppIconManager::SizeAndPurpose>
+  FindDownloadedIconMatchBigger(const AppId& app_id,
+                                const std::vector<IconPurpose>& purposes,
+                                SquareSizePx desired_size) const;
+  base::Optional<SizeAndPurpose> FindDownloadedIconMatchSmaller(
       const AppId& app_id,
-      SquareSizePx desired_size) const;
-  base::Optional<SquareSizePx> FindDownloadedSizeInPxMatchSmaller(
-      const AppId& app_id,
+      const std::vector<IconPurpose>& purposes,
       SquareSizePx desired_size) const;
 
   void ReadFavicon(const AppId& app_id);

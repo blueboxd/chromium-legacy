@@ -26,7 +26,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.UnitTestUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -35,6 +34,7 @@ import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStor
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabRestoreDetails;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -88,7 +88,7 @@ public class TabPersistentStoreUnitTest {
         // Flush pending PersistentStore tasks.
         final AtomicBoolean flushed = new AtomicBoolean(false);
         mPersistentStore.getTaskRunnerForTests().postTask(() -> { flushed.set(true); });
-        UnitTestUtils.pollUiThread(() -> flushed.get());
+        CriteriaHelper.pollUiThreadNested(() -> flushed.get());
     }
 
     @CalledByNativeJavaTest

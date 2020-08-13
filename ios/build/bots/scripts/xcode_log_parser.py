@@ -15,6 +15,11 @@ import subprocess
 import test_runner
 
 
+# Some system errors are reported as failed tests in Xcode test result log in
+# Xcode 12, e.g. test app crash in xctest parallel testing. This are reported
+# as 'BUILD_INTERRUPTED' in failed test log of the attempt and will be removed
+# if all tests pass in re-attempts.
+SYSTEM_ERROR_TEST_NAME_SUFFIXES = ['encountered an error']
 LOGGER = logging.getLogger(__name__)
 
 
@@ -49,7 +54,7 @@ def format_test_case(test_case):
                `[TestClass/TestMethod]`
 
   Returns:
-    Test case id in format TestClass_TestMethod.
+    Test case id in format TestClass/TestMethod.
   """
   return test_case.replace('[', '').replace(']', '').replace(
       '-', '').replace(' ', '/')
@@ -175,6 +180,10 @@ class Xcode11LogParser(object):
           continue
         for test in test_suite['subtests']['_values']:
           test_name = test['identifier']['_value']
+          if any(
+              test_name.endswith(suffix)
+              for suffix in SYSTEM_ERROR_TEST_NAME_SUFFIXES):
+            test_name = 'BUILD_INTERRUPTED'
           if test['testStatus']['_value'] == 'Success':
             results['passed'].append(test_name)
           else:

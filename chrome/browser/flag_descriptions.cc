@@ -185,11 +185,6 @@ const char kDnsOverHttpsDescription[] =
     "try to use a secure HTTPS connection to look up the addresses of websites "
     "and other web resources.";
 
-const char kDrawVerticallyEdgeToEdgeName[] =
-    "Draw contents vertically from edge to edge.";
-const char kDrawVerticallyEdgeToEdgeDescription[] =
-    "Draw contents vertically from edge to edge.";
-
 const char kAutofillAlwaysReturnCloudTokenizedCardName[] =
     "Return cloud token details for server credit cards when possible";
 const char kAutofillAlwaysReturnCloudTokenizedCardDescription[] =
@@ -1487,6 +1482,16 @@ const char kOmniboxClobberIsZeroSuggestEntrypointDescription[] =
     "merely adds a new ZeroSuggest entrypoint. ZeroSuggest still must be "
     "enabled on the proper page classification (either by default or via a "
     "separate flag), or else this flag will do nothing.";
+
+const char kOmniboxFocusGestureTriggersContextualWebZeroSuggestName[] =
+    "Omnibox Focus Gesture Triggers Contextual Web ZeroSuggest";
+const char kOmniboxFocusGestureTriggersContextualWebZeroSuggestDescription[] =
+    "Disable this flag to prevent focus gestures (e.g. clicks, taps, Ctrl+L) "
+    "from triggering ZeroSuggest for the OTHER page classification (contextual "
+    "web). This is used to experiment with alternate ZeroSuggest triggers like "
+    "clobber. Note, this flag is Enabled by default, as on-focus is the "
+    "standard ZeroSuggest trigger. This flag doesn't affect the NTP or SERP. "
+    "We don't want to accidentally unlaunch on-focus NTP ZeroSuggest.";
 
 const char kOmniboxCompactSuggestionsName[] = "Omnibox: Compact suggestions";
 const char kOmniboxCompactSuggestionsDescription[] =
@@ -3775,6 +3780,10 @@ const char kEnableAssistantTimersV2Name[] = "Enable Assistant Timers V2";
 const char kEnableAssistantTimersV2Description[] =
     "Enables v2 of Assistant timers.";
 
+const char kEnableAutoSelectName[] = "Auto Select";
+const char kEnableAutoSelectDescription[] =
+    "Automatically select the word under cursor on contextual menu click.";
+
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Launcher, Shelf, Unified System Tray etc.";
@@ -3845,12 +3854,6 @@ const char kEnableHeuristicStylusPalmRejectionName[] =
 const char kEnableHeuristicStylusPalmRejectionDescription[] =
     "Enable additional heuristic palm rejection logic when interacting with "
     "stylus usage. Not intended for all devices.";
-
-const char kEnableHighResolutionMouseScrollingName[] =
-    "Enable high resolution mouse scrolling";
-const char kEnableHighResolutionMouseScrollingDescription[] =
-    "Enable use of high-resolution scrolling events from supported mice (those "
-    "which report REL_WHEEL_HI_RES from the Linux kernel).";
 
 const char kNewDragSpecInLauncherName[] = "Enable Launcher App Paging";
 const char kNewDragSpecInLauncherDescription[] =
@@ -3988,9 +3991,17 @@ const char kFilesTransferDetailsName[] = "Enable Files Transfer Details.";
 const char kFilesTransferDetailsDescription[] =
     "Enable transfer details like remaining time in the progress center panel.";
 
-const char kFilesZipNoNaClName[] = "New ZIP handling in Files App";
-const char kFilesZipNoNaClDescription[] =
-    "Enable new ZIP archive handling in Files App which does not rely on NaCl.";
+const char kFilesZipMountName[] = "New ZIP mounting in Files App";
+const char kFilesZipMountDescription[] =
+    "Enable new ZIP archive mounting system in File Manager.";
+
+const char kFilesZipPackName[] = "New ZIP packing in Files App";
+const char kFilesZipPackDescription[] =
+    "Enable new ZIP archive creation system in File Manager.";
+
+const char kFilesZipUnpackName[] = "New ZIP unpacking in Files App";
+const char kFilesZipUnpackDescription[] =
+    "Enable new ZIP archive extraction system in File Manager.";
 
 extern const char kFiltersInRecentsName[] = "Enable filters in Recents";
 extern const char kFiltersInRecentsDescription[] =

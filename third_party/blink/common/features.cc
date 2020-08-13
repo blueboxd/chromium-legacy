@@ -687,5 +687,8 @@ bool IsParkableStringsToDiskEnabled() {
 const base::Feature kCrOSAutoSelect{"CrOSAutoSelect",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCompositingOptimizations{
+    "CompositingOptimizations", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

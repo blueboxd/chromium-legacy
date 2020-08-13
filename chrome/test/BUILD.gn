@@ -4794,6 +4794,7 @@ test("unit_tests") {
       "../browser/extensions/api/identity/gaia_web_auth_flow_unittest.cc",
       "../browser/extensions/api/identity/identity_api_unittest.cc",
       "../browser/extensions/api/identity/identity_mint_queue_unittest.cc",
+      "../browser/extensions/api/identity/identity_token_cache_unittest.cc",
       "../browser/extensions/api/image_writer_private/destroy_partitions_operation_unittest.cc",
       "../browser/extensions/api/image_writer_private/image_writer_private_api_unittest.cc",
       "../browser/extensions/api/image_writer_private/operation_manager_unittest.cc",
@@ -6260,10 +6261,6 @@ if (!is_android) {
 
     if (enable_downgrade_processing) {
       sources += [ "../browser/downgrade/user_data_snapshot_browsertest.cc" ]
-    }
-
-    if (use_x11) {
-      configs += [ "//build/config/linux:xtst" ]
     }
 
     if (enable_extensions) {

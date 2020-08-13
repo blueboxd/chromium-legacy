@@ -80,6 +80,21 @@ bool operator==(const WebApplicationIconInfo& icon_info1,
                                                   icon_info2.purpose);
 }
 
+std::ostream& operator<<(std::ostream& out, IconPurpose purpose) {
+  switch (purpose) {
+    case IconPurpose::ANY:
+      out << "any";
+      break;
+    case IconPurpose::MONOCHROME:
+      out << "monochrome";
+      break;
+    case IconPurpose::MASKABLE:
+      out << "maskable";
+      break;
+  }
+  return out;
+}
+
 std::ostream& operator<<(std::ostream& out,
                          const WebApplicationIconInfo& icon_info) {
   out << "url: " << icon_info.url << " square_size_px: ";
@@ -87,18 +102,7 @@ std::ostream& operator<<(std::ostream& out,
     out << *icon_info.square_size_px;
   else
     out << "none";
-  out << " purpose: ";
-  switch (icon_info.purpose) {
-    case blink::Manifest::ImageResource::Purpose::ANY:
-      out << "any";
-      break;
-    case blink::Manifest::ImageResource::Purpose::MONOCHROME:
-      out << "monochrome";
-      break;
-    case blink::Manifest::ImageResource::Purpose::MASKABLE:
-      out << "maskable";
-      break;
-  }
+  out << " purpose: " << icon_info.purpose;
   return out;
 }
 

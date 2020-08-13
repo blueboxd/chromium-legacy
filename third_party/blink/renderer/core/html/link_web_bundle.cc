@@ -6,12 +6,14 @@
 
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/web_bundle_subresource_loader.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -68,9 +70,10 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
   void DidStartLoadingResponseBody(BytesConsumer& consumer) override {
     DCHECK(pending_factory_receiver_);
     CreateWebBundleSubresourceLoaderFactory(
-        std::move(pending_factory_receiver_), consumer.DrainAsDataPipe());
-    // TODO(crbug.com/1082020): Set |failed_| to true on metadata parse error,
-    // so that "error" event is dispatched.
+        std::move(pending_factory_receiver_), consumer.DrainAsDataPipe(),
+        ConvertToBaseRepeatingCallback(
+            CrossThreadBindRepeating(&WebBundleLoader::OnWebBundleError,
+                                     WrapCrossThreadWeakPersistent(this))));
   }
 
   void DidFinishLoading(uint64_t) override { link_web_bundle_->NotifyLoaded(); }
@@ -87,10 +90,17 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
       // |pending_factory_receiver_| are processed (and fail).
       CreateWebBundleSubresourceLoaderFactory(
           std::move(pending_factory_receiver_),
-          mojo::ScopedDataPipeConsumerHandle());
+          mojo::ScopedDataPipeConsumerHandle(), base::DoNothing());
     }
     failed_ = true;
     link_web_bundle_->NotifyLoaded();
+  }
+
+  void OnWebBundleError(WebBundleErrorType type, const String& message) {
+    // TODO(crbug.com/1082020): Dispatch "error" event on metadata parse error.
+    // Simply setting |failed_| here does not work because DidFinishLoading()
+    // may already be called.
+    link_web_bundle_->OnWebBundleError(url_.ElidedString() + ": " + message);
   }
 
   Member<LinkWebBundle> link_web_bundle_;
@@ -114,6 +124,17 @@ void LinkWebBundle::Trace(Visitor* visitor) const {
 void LinkWebBundle::NotifyLoaded() {
   if (owner_)
     owner_->ScheduleEvent();
+}
+
+void LinkWebBundle::OnWebBundleError(const String& message) {
+  if (!owner_)
+    return;
+  ExecutionContext* context = owner_->GetDocument().GetExecutionContext();
+  if (!context)
+    return;
+  context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::blink::ConsoleMessageSource::kOther,
+      mojom::blink::ConsoleMessageLevel::kWarning, message));
 }
 
 void LinkWebBundle::Process() {

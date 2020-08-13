@@ -185,7 +185,6 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
         /*quota_manager_proxy=*/nullptr);
     storage_impl_ =
         std::make_unique<ServiceWorkerStorageControlImpl>(std::move(storage));
-    storage_impl_->EnableResourcePurgingOnNoLiveVersionForTest();
   }
 
   void DestroyStorage() {

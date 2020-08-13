@@ -6130,37 +6130,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--one-frame-only",
-          "--shard-timeout=800"
-        ],
-        "isolate_name": "angle_perftests",
-        "merge": {
-          "args": [
-            "--smoke-test-mode"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "device_os": "M",
-              "device_os_type": "userdebug",
-              "device_type": "angler",
-              "os": "Android",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
-      },
-      {
-        "args": [
           "context_lost",
           "--show-stdout",
           "--browser=android-chromium",

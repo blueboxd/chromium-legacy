@@ -16,6 +16,13 @@ namespace cloud_devices {
 const char kCloudPrintAuthScope[] =
     "https://www.googleapis.com/auth/cloudprint";
 
+const char kCloudPrintDeprecationHelpURL[] =
+#if defined(OS_CHROMEOS)
+    "https://www.google.com/chromebook/?p=cloudprint";
+#else
+    "https://www.google.com/chrome/?p=cloudprint";
+#endif
+
 const char kCloudPrintLearnMoreURL[] =
     "https://www.google.com/support/cloudprint";
 
@@ -58,15 +65,6 @@ GURL GetCloudPrintRelativeURL(const std::string& relative_path) {
   return url.ReplaceComponents(replacements);
 }
 
-GURL GetCloudPrintSigninURL() {
-  GURL url(GaiaUrls::GetInstance()->service_login_url());
-  url = net::AppendQueryParameter(url, "service", "cloudprint");
-  url = net::AppendQueryParameter(url, "sarp", "1");
-  std::string continue_str = GetCloudPrintURL().spec();
-  url = net::AppendQueryParameter(url, "continue", continue_str);
-  return url;
-}
-
 GURL GetCloudPrintAddAccountURL() {
   GURL url(GaiaUrls::GetInstance()->add_account_url());
   url = net::AppendQueryParameter(url, "service", "cloudprint");
@@ -74,14 +72,6 @@ GURL GetCloudPrintAddAccountURL() {
   std::string continue_str = GetCloudPrintURL().spec();
   url = net::AppendQueryParameter(url, "continue", continue_str);
   return url;
-}
-
-bool IsCloudPrintURL(const GURL& url) {
-  const GURL& cloud_print_url = GetCloudPrintURL();
-  return url.host_piece() == cloud_print_url.host_piece() &&
-         url.scheme_piece() == cloud_print_url.scheme_piece() &&
-         base::StartsWith(url.path(), cloud_print_url.path(),
-                          base::CompareCase::SENSITIVE);
 }
 
 GURL GetCloudPrintEnableURL(const std::string& proxy_id) {
@@ -103,6 +93,29 @@ GURL GetCloudPrintManageDeviceURL(const std::string& device_id) {
   GURL::Replacements replacements;
   replacements.SetRefStr(ref);
   return GetCloudPrintURL().ReplaceComponents(replacements);
+}
+
+GURL GetCloudPrintPrintersURL() {
+  GURL::Replacements replacements;
+  replacements.SetRefStr("printers");
+  return GetCloudPrintURL().ReplaceComponents(replacements);
+}
+
+GURL GetCloudPrintSigninURL() {
+  GURL url(GaiaUrls::GetInstance()->service_login_url());
+  url = net::AppendQueryParameter(url, "service", "cloudprint");
+  url = net::AppendQueryParameter(url, "sarp", "1");
+  std::string continue_str = GetCloudPrintURL().spec();
+  url = net::AppendQueryParameter(url, "continue", continue_str);
+  return url;
+}
+
+bool IsCloudPrintURL(const GURL& url) {
+  const GURL& cloud_print_url = GetCloudPrintURL();
+  return url.host_piece() == cloud_print_url.host_piece() &&
+         url.scheme_piece() == cloud_print_url.scheme_piece() &&
+         base::StartsWith(url.path(), cloud_print_url.path(),
+                          base::CompareCase::SENSITIVE);
 }
 
 }  // namespace cloud_devices

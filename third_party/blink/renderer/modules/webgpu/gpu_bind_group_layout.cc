@@ -70,12 +70,14 @@ GPUBindGroupLayout* GPUBindGroupLayout::Create(
     entries = AsDawnType(webgpu_desc->entries(), device);
   }
 
+  std::string label;
   WGPUBindGroupLayoutDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.entryCount = entry_count;
   dawn_desc.entries = entries.get();
   if (webgpu_desc->hasLabel()) {
-    dawn_desc.label = webgpu_desc->label().Utf8().data();
+    label = webgpu_desc->label().Utf8();
+    dawn_desc.label = label.c_str();
   }
 
   return MakeGarbageCollected<GPUBindGroupLayout>(

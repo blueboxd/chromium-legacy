@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
@@ -196,6 +197,8 @@ static_library("extensions") {
     "api/identity/identity_private_api.h",
     "api/identity/identity_remove_cached_auth_token_function.cc",
     "api/identity/identity_remove_cached_auth_token_function.h",
+    "api/identity/identity_token_cache.cc",
+    "api/identity/identity_token_cache.h",
     "api/identity/web_auth_flow.cc",
     "api/identity/web_auth_flow.h",
     "api/idltest/idltest_api.cc",
@@ -753,6 +756,7 @@ static_library("extensions") {
     "//apps",
     "//base/util/values:values_util",
     "//build:branding_buildflags",
+    "//build:lacros_buildflags",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
@@ -923,6 +927,20 @@ static_library("extensions") {
     deps += [ "//components/autofill_assistant/browser" ]
   }
 
+  if (chromeos_is_browser_only || is_chromeos) {
+    sources += [ "api/enterprise_platform_keys/enterprise_platform_keys_api.h" ]
+    if (chromeos_is_browser_only) {
+      sources += [
+        "api/enterprise_platform_keys/enterprise_platform_keys_api_lacros.cc",
+        "api/enterprise_platform_keys/enterprise_platform_keys_api_lacros.h",
+      ]
+      deps += [
+        "//chromeos/crosapi/mojom",
+        "//chromeos/lacros",
+      ]
+    }
+  }
+
   if (is_chromeos) {
     sources += [
       "api/certificate_provider/certificate_provider_api.cc",
@@ -931,8 +949,8 @@ static_library("extensions") {
       "api/enterprise_device_attributes/enterprise_device_attributes_api.h",
       "api/enterprise_networking_attributes/enterprise_networking_attributes_api.cc",
       "api/enterprise_networking_attributes/enterprise_networking_attributes_api.h",
-      "api/enterprise_platform_keys/enterprise_platform_keys_api.cc",
-      "api/enterprise_platform_keys/enterprise_platform_keys_api.h",
+      "api/enterprise_platform_keys/enterprise_platform_keys_api_ash.cc",
+      "api/enterprise_platform_keys/enterprise_platform_keys_api_ash.h",
       "api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.cc",
       "api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h",
       "api/file_handlers/non_native_file_system_delegate_chromeos.cc",

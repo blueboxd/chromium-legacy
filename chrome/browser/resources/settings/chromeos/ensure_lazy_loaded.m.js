@@ -16,6 +16,8 @@ export function ensureLazyLoadedOs() {
       'os-settings-powerwash-dialog',
       'os-settings-privacy-page',
       'os-settings-reset-page',
+      'os-settings-files-page',
+      'settings-smb-shares-page',
     ].map(name => customElements.whenDefined(name)));
   }
   return lazyLoadPromise;

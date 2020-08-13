@@ -97,6 +97,7 @@ void WebAppInstallTask::LoadWebAppAndCheckManifest(
     WebAppUrlLoader* url_loader,
     LoadWebAppAndCheckManifestCallback callback) {
   DCHECK(url_loader);
+  CheckInstallPreconditions();
   // Create a WebContents instead of reusing a shared one because we will pass
   // it back to be used for opening the web app.
   // TODO(loyso): Implement stealing of shared web_contents in upcoming
@@ -233,6 +234,7 @@ void WebAppInstallTask::UpdateWebAppFromInfo(
     const AppId& app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
     InstallManager::OnceInstallCallback callback) {
+  CheckInstallPreconditions();
   Observe(web_contents);
   install_callback_ = std::move(callback);
   background_installation_ = true;
@@ -297,6 +299,9 @@ void WebAppInstallTask::CheckInstallPreconditions() {
   DCHECK(!web_contents());
   CHECK(!install_callback_);
   CHECK(!retrieve_info_callback_);
+
+  DCHECK(!initiated_);
+  initiated_ = true;
 }
 
 void WebAppInstallTask::RecordInstallEvent(

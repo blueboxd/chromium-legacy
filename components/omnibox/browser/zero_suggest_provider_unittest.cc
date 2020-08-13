@@ -207,6 +207,71 @@ void ZeroSuggestProviderTest::SetZeroSuggestVariantForAllContexts(
         variant}});
 }
 
+TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestionsContextualWeb) {
+  provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::OTHER);
+  std::string input_url = "https://example.com/";
+
+  AutocompleteInput prefix_input(base::ASCIIToUTF16(input_url),
+                                 metrics::OmniboxEventProto::OTHER,
+                                 TestSchemeClassifier());
+  prefix_input.set_focus_type(OmniboxFocusType::DEFAULT);
+
+  AutocompleteInput on_focus_input(base::ASCIIToUTF16(input_url),
+                                   metrics::OmniboxEventProto::OTHER,
+                                   TestSchemeClassifier());
+  on_focus_input.set_current_url(GURL(input_url));
+  on_focus_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+
+  AutocompleteInput on_clobber_input(base::string16(),
+                                     metrics::OmniboxEventProto::OTHER,
+                                     TestSchemeClassifier());
+  on_clobber_input.set_current_url(GURL(input_url));
+  on_clobber_input.set_focus_type(OmniboxFocusType::DELETED_PERMANENT_TEXT);
+
+  EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(prefix_input));
+  EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_focus_input));
+  EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_clobber_input));
+
+  // Enable on-clobber in addition to on-focus.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndEnableFeature(omnibox::kClobberIsZeroSuggestEntrypoint);
+    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(prefix_input));
+    EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_focus_input));
+    EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_clobber_input));
+  }
+
+  // Disable on-focus.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndDisableFeature(
+        omnibox::kFocusGestureTriggersContextualWebZeroSuggest);
+    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(prefix_input));
+    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_focus_input));
+    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_clobber_input));
+
+    // Sanity check that we don't accidentally disable on-focus for NTP here.
+    AutocompleteInput on_focus_ntp(
+        base::ASCIIToUTF16(input_url),
+        metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
+        TestSchemeClassifier());
+    on_focus_ntp.set_current_url(GURL(input_url));
+    on_focus_ntp.set_focus_type(OmniboxFocusType::ON_FOCUS);
+    EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_focus_ntp));
+  }
+
+  // Enable on-clobber and disable on-focus.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitWithFeatures(
+        {omnibox::kClobberIsZeroSuggestEntrypoint},
+        {omnibox::kFocusGestureTriggersContextualWebZeroSuggest});
+    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(prefix_input));
+    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_focus_input));
+    EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_clobber_input));
+  }
+}
+
 TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
   provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::OTHER);
   GURL current_url = GURL("https://example.com/");

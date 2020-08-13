@@ -40,6 +40,7 @@ CFStringRef GetPrimaries(media::VideoColorSpace::PrimaryID primary_id) {
   switch (primary_id) {
     case media::VideoColorSpace::PrimaryID::BT709:
     case media::VideoColorSpace::PrimaryID::UNSPECIFIED:  // Assume BT.709.
+    case media::VideoColorSpace::PrimaryID::INVALID:      // Assume BT.709.
       return kCMFormatDescriptionColorPrimaries_ITU_R_709_2;
 
     case media::VideoColorSpace::PrimaryID::BT2020:
@@ -100,6 +101,7 @@ CFStringRef GetTransferFunction(
     case media::VideoColorSpace::TransferID::SMPTE170M:
     case media::VideoColorSpace::TransferID::BT709:
     case media::VideoColorSpace::TransferID::UNSPECIFIED:  // Assume BT.709.
+    case media::VideoColorSpace::TransferID::INVALID:      // Assume BT.709.
       return kCMFormatDescriptionTransferFunction_ITU_R_709_2;
 
     case media::VideoColorSpace::TransferID::BT2020_10:
@@ -145,6 +147,7 @@ CFStringRef GetMatrix(media::VideoColorSpace::MatrixID matrix_id) {
   switch (matrix_id) {
     case media::VideoColorSpace::MatrixID::BT709:
     case media::VideoColorSpace::MatrixID::UNSPECIFIED:  // Assume BT.709.
+    case media::VideoColorSpace::MatrixID::INVALID:      // Assume BT.709.
       return kCMFormatDescriptionYCbCrMatrix_ITU_R_709_2;
 
     case media::VideoColorSpace::MatrixID::BT2020_NCL:

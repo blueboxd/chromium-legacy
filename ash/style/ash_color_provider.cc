@@ -321,16 +321,15 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       return cros_colors::ResolveColor(ColorName::kTextColorSecondary,
                                        color_mode);
     case ContentLayerType::kTextColorAlert:
-      light_color = gfx::kGoogleRed600;
-      dark_color = gfx::kGoogleRed300;
+      return cros_colors::ResolveColor(ColorName::kTextColorAlert, color_mode);
       break;
     case ContentLayerType::kTextColorWarning:
-      light_color = gfx::kGoogleYellow600;
-      dark_color = gfx::kGoogleYellow300;
+      return cros_colors::ResolveColor(ColorName::kTextColorWarning,
+                                       color_mode);
       break;
     case ContentLayerType::kTextColorPositive:
-      light_color = gfx::kGoogleGreen600;
-      dark_color = gfx::kGoogleGreen300;
+      return cros_colors::ResolveColor(ColorName::kTextColorPositive,
+                                       color_mode);
       break;
     case ContentLayerType::kIconColorPrimary:
       return cros_colors::ResolveColor(ColorName::kIconColorPrimary,
@@ -339,16 +338,15 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       light_color = dark_color = gfx::kGoogleGrey500;
       break;
     case ContentLayerType::kIconColorAlert:
-      light_color = gfx::kGoogleRed600;
-      dark_color = gfx::kGoogleRed300;
+      return cros_colors::ResolveColor(ColorName::kIconColorAlert, color_mode);
       break;
     case ContentLayerType::kIconColorWarning:
-      light_color = gfx::kGoogleYellow600;
-      dark_color = gfx::kGoogleYellow300;
+      return cros_colors::ResolveColor(ColorName::kIconColorWarning,
+                                       color_mode);
       break;
     case ContentLayerType::kIconColorPositive:
-      light_color = gfx::kGoogleGreen600;
-      dark_color = gfx::kGoogleGreen300;
+      return cros_colors::ResolveColor(ColorName::kIconColorPositive,
+                                       color_mode);
       break;
     case ContentLayerType::kIconColorProminent:
     case ContentLayerType::kSliderThumbColorEnabled:

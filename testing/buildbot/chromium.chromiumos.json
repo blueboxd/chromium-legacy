@@ -5127,8 +5127,7 @@
       },
       {
         "args": [
-          "--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:DesktopWidgetTest.GetWindowPlacement:DesktopWidgetTest.MinimumSizeConstraints:EditableComboboxTest.AltLeftOrRightDoesNothing:EditableComboboxTest.EndOrHomeMovesToBeginningOrEndOfText:EditableComboboxTest.MenuCanAdaptToContentChange:TextfieldTest.ContextMenuDisplayTest:TextfieldTest.OverflowTest:TextfieldTest.SwitchFocusInKeyDown:",
-          "TooltipControllerTest*"
+          "--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:DesktopWidgetTest.GetWindowPlacement:DesktopWidgetTest.MinimumSizeConstraints:EditableComboboxTest.AltLeftOrRightDoesNothing:EditableComboboxTest.CtrlLeftOrRightMovesToNextWords:EditableComboboxTest.EndOrHomeMovesToBeginningOrEndOfText:EditableComboboxTest.MenuCanAdaptToContentChange:TextfieldTest.ContextMenuDisplayTest:TextfieldTest.CutCopyPasteWithEditCommand:TextfieldTest.OverflowTest:TextfieldTest.SwitchFocusInKeyDown:TooltipControllerTest*"
         ],
         "experiment_percentage": 100,
         "merge": {

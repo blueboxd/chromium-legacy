@@ -51,13 +51,30 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
       bubble_first_hide_callback_(std::move(bubble_first_hide_callback)),
       animation_(new gfx::SlideAnimation(this)) {
   // Create the contents view.
+  view_ = new SubtleNotificationView();
+
+#if defined(OS_CHROMEOS)
+  // Technically the exit fullscreen key on ChromeOS is F11 and the
+  // "Fullscreen" key on the keyboard is just translated to F11 or F4 (which
+  // is also a toggle-fullscreen command on ChromeOS). However most Chromebooks
+  // have media keys - including "fullscreen" - but not function keys, so
+  // instructing the user to "Press [F11] to exit fullscreen" isn't useful.
+  //
+  // An obvious solution might be to change the primary accelerator to the
+  // fullscreen key, but since translation to a function key is done at system
+  // level we can't actually do that. Instead we provide specific messaging for
+  // the platform here. (See crbug.com/1110468 for details.)
+  browser_fullscreen_exit_accelerator_ =
+      l10n_util::GetStringUTF16(IDS_APP_FULLSCREEN_KEY);
+#else
   ui::Accelerator accelerator(ui::VKEY_UNKNOWN, ui::EF_NONE);
   bool got_accelerator =
       bubble_view_context_->GetAcceleratorProvider()
           ->GetAcceleratorForCommandId(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
-  view_ = new SubtleNotificationView();
   browser_fullscreen_exit_accelerator_ = accelerator.GetShortcutText();
+#endif
+
   UpdateViewContent(bubble_type_);
 
   // Initialize the popup.

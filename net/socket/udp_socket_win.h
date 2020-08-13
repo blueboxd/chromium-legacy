@@ -28,6 +28,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_socket.h"
 #include "net/socket/diff_serv_code_point.h"
+#include "net/socket/udp_socket_global_limits.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
@@ -484,6 +485,10 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
 
   // Maintains remote addresses for QWAVE qos management.
   std::unique_ptr<DscpManager> dscp_manager_;
+
+  // Manages decrementing the global open UDP socket counter when this
+  // UDPSocket is destroyed.
+  OwnedUDPSocketCount owned_socket_count_;
 
   THREAD_CHECKER(thread_checker_);
 

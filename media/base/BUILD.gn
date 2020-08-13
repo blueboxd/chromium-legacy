@@ -384,6 +384,7 @@ source_set("base") {
     sources += [ "user_input_monitor_linux.cc" ]
     deps += [
       "//ui/events:events_base",
+      "//ui/events/devices/x11",
       "//ui/gfx/x",
     ]
   } else if (is_mac) {

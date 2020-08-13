@@ -31,8 +31,6 @@ namespace media {
 class MEDIA_GPU_EXPORT CodecImage
     : public gpu::StreamTextureSharedImageInterface {
  public:
-  using BlockingMode = CodecOutputBufferRenderer::BlockingMode;
-
   // Callback to notify that a codec image is now unused in the sense of not
   // being out for display.  This lets us signal interested folks once a video
   // frame is destroyed and the sync token clears, so that that CodecImage may
@@ -134,11 +132,9 @@ class MEDIA_GPU_EXPORT CodecImage
   // Renders this image to the back buffer of its texture owner. Only valid if
   // is_texture_owner_backed(). Returns true if the buffer is in the back
   // buffer. Returns false if the buffer was invalidated.
-  // |blocking_mode| indicates whether this should (a) wait for any previously
-  // pending rendered frame before rendering this one, or (b) fail if a wait
-  // is required.
-  bool RenderToTextureOwnerBackBuffer(
-      BlockingMode blocking_mode = BlockingMode::kAllowBlocking);
+  // RenderToTextureOwnerBackBuffer() will not block if there is any previously
+  // pending frame and will return false in this case.
+  bool RenderToTextureOwnerBackBuffer();
 
   // Release any codec buffer without rendering, if we have one.
   virtual void ReleaseCodecBuffer();

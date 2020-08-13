@@ -131,7 +131,11 @@ const GpuFeatureData GetGpuFeatureData(
     {"video_decode",
      SafeGetFeatureStatus(gpu_feature_info,
                           gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
+#if defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+     !command_line.HasSwitch(switches::kEnableAcceleratedVideoDecode),
+#else
      command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
+#endif  // defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
      DisableInfo::Problem(
          "Accelerated video decode has been disabled, either via blocklist, "
          "about:flags or the command line."),

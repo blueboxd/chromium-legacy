@@ -112,9 +112,8 @@ class BrowserTabStripController::TabContextMenuContents
 
     // Because we use "new" badging for feature promos, we cannot use system-
     // native context menus. (See crbug.com/1109256.)
-    const int run_flags = views::MenuRunner::HAS_MNEMONICS |
-                          views::MenuRunner::CONTEXT_MENU |
-                          views::MenuRunner::FORCE_VIEWS;
+    const int run_flags =
+        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU;
     menu_runner_ = std::make_unique<views::MenuRunner>(model_.get(), run_flags);
   }
   TabContextMenuContents(const TabContextMenuContents&) = delete;

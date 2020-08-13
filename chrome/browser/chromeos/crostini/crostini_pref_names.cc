@@ -124,7 +124,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kCrostiniDefaultContainerConfigured, false);
   registry->RegisterDictionaryPref(
       kCrostiniTerminalSettings, base::DictionaryValue(),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
   registry->RegisterIntegerPref(
       kCrostiniArcAdbSideloadingUserPref,

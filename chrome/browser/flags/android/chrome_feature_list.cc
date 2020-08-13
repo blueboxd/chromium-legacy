@@ -157,7 +157,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadNotificationBadge,
     &kDownloadProgressInfoBar,
     &kDownloadRename,
-    &kDrawVerticallyEdgeToEdge,
     &kDuetTabStripIntegrationAndroid,
     &kEphemeralTabUsingBottomSheet,
     &kExploreSites,
@@ -446,9 +445,6 @@ const base::Feature kDarkenWebsitesCheckboxInThemesSetting{
 
 const base::Feature kDirectActions{"DirectActions",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kDrawVerticallyEdgeToEdge{
-    "DrawVerticallyEdgeToEdge", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};

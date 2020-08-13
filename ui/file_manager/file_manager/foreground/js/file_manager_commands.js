@@ -1796,7 +1796,7 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends Command {
       return;
     }
 
-    if (util.isZipNoNacl()) {
+    if (util.isZipPackEnabled()) {
       // TODO(crbug.com/912236) Implement and remove error notification.
       const item = new ProgressCenterItem();
       item.id = 'no_zip';

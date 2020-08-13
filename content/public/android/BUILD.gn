@@ -481,6 +481,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/ContentViewLocationTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewPointerTypeTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewScrollingTest.java",
+    "javatests/src/org/chromium/content/browser/CriteriaHelperTest.java",
     "javatests/src/org/chromium/content/browser/EncodeHtmlDataUriTest.java",
     "javatests/src/org/chromium/content/browser/GestureDetectorResetTest.java",
     "javatests/src/org/chromium/content/browser/GestureListenerManagerTest.java",
@@ -542,7 +543,6 @@ junit_binary("content_junit_tests") {
   sources = [
     "junit/src/org/chromium/content/browser/BindingManagerTest.java",
     "junit/src/org/chromium/content/browser/ChildProcessRankingTest.java",
-    "junit/src/org/chromium/content/browser/CriteriaHelperTest.java",
     "junit/src/org/chromium/content/browser/ScreenOrientationProviderImplTest.java",
     "junit/src/org/chromium/content/browser/SpareChildConnectionTest.java",
     "junit/src/org/chromium/content/browser/UiThreadTaskTraitsImplTest.java",

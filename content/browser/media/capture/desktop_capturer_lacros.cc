@@ -7,7 +7,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 
-#include "chromeos/crosapi/cpp/window_snapshot.h"
+#include "chromeos/crosapi/cpp/bitmap.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
 
 namespace content {
@@ -75,7 +75,7 @@ void DesktopCapturerLacros::Start(Callback* callback) {
 
 void DesktopCapturerLacros::CaptureFrame() {
   if (capture_type_ == kScreen) {
-    crosapi::WindowSnapshot snapshot;
+    crosapi::Bitmap snapshot;
     {
       // lacros-chrome is allowed to make sync calls to ash-chrome.
       mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
@@ -84,7 +84,7 @@ void DesktopCapturerLacros::CaptureFrame() {
     DidTakeSnapshot(/*success=*/true, snapshot);
   } else {
     bool success;
-    crosapi::WindowSnapshot snapshot;
+    crosapi::Bitmap snapshot;
     {
       // lacros-chrome is allowed to make sync calls to ash-chrome.
       mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
@@ -104,9 +104,8 @@ void DesktopCapturerLacros::SetSharedMemoryFactory(
 
 void DesktopCapturerLacros::SetExcludedWindow(webrtc::WindowId window) {}
 
-void DesktopCapturerLacros::DidTakeSnapshot(
-    bool success,
-    const crosapi::WindowSnapshot& snapshot) {
+void DesktopCapturerLacros::DidTakeSnapshot(bool success,
+                                            const crosapi::Bitmap& snapshot) {
   if (!success) {
     callback_->OnCaptureResult(Result::ERROR_PERMANENT,
                                std::unique_ptr<webrtc::DesktopFrame>());
@@ -120,7 +119,7 @@ void DesktopCapturerLacros::DidTakeSnapshot(
   // This code assumes that the stride is 4 * width. This relies on the
   // assumption that there's no padding and each pixel is 4 bytes.
   frame->CopyPixelsFrom(
-      snapshot.bitmap.data(), 4 * snapshot.width,
+      snapshot.pixels.data(), 4 * snapshot.width,
       webrtc::DesktopRect::MakeWH(snapshot.width, snapshot.height));
 
   callback_->OnCaptureResult(Result::SUCCESS, std::move(frame));

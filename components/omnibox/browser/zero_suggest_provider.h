@@ -90,6 +90,12 @@ class ZeroSuggestProvider : public BaseSearchProvider {
     return results_.hidden_group_ids;
   }
 
+  // Whether ZeroSuggest is allowed for |input|, given its page classification
+  // and OmniboxFocusType (triggering UI gesture). Invoked early, before
+  // TypeOfResultToRun, and confirms all the external conditions for ZeroSuggest
+  // are met.
+  bool AllowZeroSuggestSuggestions(const AutocompleteInput& input) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest, TypeOfResultToRun);
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,
@@ -171,11 +177,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // back to this function with the |loader| to pass its ownership to |this|.
   void OnRemoteSuggestionsLoaderAvailable(
       std::unique_ptr<network::SimpleURLLoader> loader);
-
-  // Whether zero suggest suggestions are allowed in the given context.
-  // Invoked early, confirms all the external conditions for ZeroSuggest are
-  // met.
-  bool AllowZeroSuggestSuggestions(const AutocompleteInput& input) const;
 
   // Checks whether we have a set of zero suggest results cached, and if so
   // populates |matches_| with cached results.

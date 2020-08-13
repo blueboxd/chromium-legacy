@@ -15,8 +15,11 @@ namespace blink {
 namespace {
 
 WGPUTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc,
+                                 std::string* label,
                                  GPUDevice* device) {
   DCHECK(webgpu_desc);
+  DCHECK(label);
+  DCHECK(device);
 
   WGPUTextureDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
@@ -29,15 +32,18 @@ WGPUTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc,
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
 
   if (webgpu_desc->hasLabel()) {
-    dawn_desc.label = webgpu_desc->label().Utf8().data();
+    *label = webgpu_desc->label().Utf8();
+    dawn_desc.label = label->c_str();
   }
 
   return dawn_desc;
 }
 
 WGPUTextureViewDescriptor AsDawnType(
-    const GPUTextureViewDescriptor* webgpu_desc) {
+    const GPUTextureViewDescriptor* webgpu_desc,
+    std::string* label) {
   DCHECK(webgpu_desc);
+  DCHECK(label);
 
   WGPUTextureViewDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
@@ -50,7 +56,8 @@ WGPUTextureViewDescriptor AsDawnType(
   dawn_desc.arrayLayerCount = webgpu_desc->arrayLayerCount();
   dawn_desc.aspect = AsDawnEnum<WGPUTextureAspect>(webgpu_desc->aspect());
   if (webgpu_desc->hasLabel()) {
-    dawn_desc.label = webgpu_desc->label().Utf8().data();
+    *label = webgpu_desc->label().Utf8();
+    dawn_desc.label = label->c_str();
   }
 
   return dawn_desc;
@@ -74,7 +81,8 @@ GPUTexture* GPUTexture::Create(GPUDevice* device,
     return nullptr;
   }
 
-  WGPUTextureDescriptor dawn_desc = AsDawnType(webgpu_desc, device);
+  std::string label;
+  WGPUTextureDescriptor dawn_desc = AsDawnType(webgpu_desc, &label, device);
 
   return MakeGarbageCollected<GPUTexture>(
       device,
@@ -98,7 +106,8 @@ GPUTextureView* GPUTexture::createView(
     const GPUTextureViewDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  WGPUTextureViewDescriptor dawn_desc = AsDawnType(webgpu_desc);
+  std::string label;
+  WGPUTextureViewDescriptor dawn_desc = AsDawnType(webgpu_desc, &label);
   return MakeGarbageCollected<GPUTextureView>(
       device_, GetProcs().textureCreateView(GetHandle(), &dawn_desc));
 }

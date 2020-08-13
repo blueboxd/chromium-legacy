@@ -1481,8 +1481,6 @@ TEST_F(ServiceWorkerResourceStorageTest,
 }
 
 TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
-  registration_->SetWaitingVersion(nullptr);
-
   // Deleting the registration should result in the resources being added to the
   // purgeable list and then doomed in the disk cache and removed from that
   // list.
@@ -1490,9 +1488,15 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
   storage()->SetPurgingCompleteCallbackForTest(loop.QuitClosure());
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             DeleteRegistration(registration_, scope_.GetOrigin()));
+  // At this point registration_->waiting_version() has a remote reference, so
+  // the resources should be in the purgeable list.
   EXPECT_EQ(2u, GetPurgeableResourceIdsFromDB().size());
+
+  registration_->SetWaitingVersion(nullptr);
   loop.Run();
 
+  // registration_->waiting_version() is cleared. The resources should be
+  // purged at this point.
   EXPECT_TRUE(GetPurgeableResourceIdsFromDB().empty());
   EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id1_, false));
   EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id2_, false));
@@ -1770,9 +1774,6 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
   live_version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
 
-  // Destroy the active version.
-  registration_->UnsetVersion(registration_->active_version());
-
   // Writing the registration should purge the old version's resources,
   // since it's not live.
   base::RunLoop loop;
@@ -1781,6 +1782,9 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
       blink::ServiceWorkerStatusCode::kOk,
       StoreRegistration(registration_.get(), registration_->waiting_version()));
   EXPECT_EQ(2u, GetPurgeableResourceIdsFromDB().size());
+
+  // Destroy the active version.
+  registration_->UnsetVersion(registration_->active_version());
 
   // The resources should be purged.
   loop.Run();

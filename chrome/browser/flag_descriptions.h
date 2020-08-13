@@ -248,9 +248,6 @@ extern const char kDnsOverHttpsDescription[];
 extern const char kDnsHttpssvcName[];
 extern const char kDnsHttpssvcDescription[];
 
-extern const char kDrawVerticallyEdgeToEdgeName[];
-extern const char kDrawVerticallyEdgeToEdgeDescription[];
-
 extern const char kEnablePasswordsAccountStorageName[];
 extern const char kEnablePasswordsAccountStorageDescription[];
 
@@ -870,6 +867,10 @@ extern const char kOmniboxAutocompleteTitlesDescription[];
 
 extern const char kOmniboxClobberIsZeroSuggestEntrypointName[];
 extern const char kOmniboxClobberIsZeroSuggestEntrypointDescription[];
+
+extern const char kOmniboxFocusGestureTriggersContextualWebZeroSuggestName[];
+extern const char
+    kOmniboxFocusGestureTriggersContextualWebZeroSuggestDescription[];
 
 extern const char kOmniboxCompactSuggestionsName[];
 extern const char kOmniboxCompactSuggestionsDescription[];
@@ -2186,6 +2187,9 @@ extern const char kEnableAssistantRoutinesDescription[];
 extern const char kEnableAssistantTimersV2Name[];
 extern const char kEnableAssistantTimersV2Description[];
 
+extern const char kEnableAutoSelectName[];
+extern const char kEnableAutoSelectDescription[];
+
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 
@@ -2221,9 +2225,6 @@ extern const char kEnableGoogleAssistantAecDescription[];
 
 extern const char kEnableHeuristicStylusPalmRejectionName[];
 extern const char kEnableHeuristicStylusPalmRejectionDescription[];
-
-extern const char kEnableHighResolutionMouseScrollingName[];
-extern const char kEnableHighResolutionMouseScrollingDescription[];
 
 extern const char kNewDragSpecInLauncherName[];
 extern const char kNewDragSpecInLauncherDescription[];
@@ -2319,8 +2320,14 @@ extern const char kFilesSWADescription[];
 extern const char kFilesTransferDetailsName[];
 extern const char kFilesTransferDetailsDescription[];
 
-extern const char kFilesZipNoNaClName[];
-extern const char kFilesZipNoNaClDescription[];
+extern const char kFilesZipMountName[];
+extern const char kFilesZipMountDescription[];
+
+extern const char kFilesZipPackName[];
+extern const char kFilesZipPackDescription[];
+
+extern const char kFilesZipUnpackName[];
+extern const char kFilesZipUnpackDescription[];
 
 extern const char kFiltersInRecentsName[];
 extern const char kFiltersInRecentsDescription[];

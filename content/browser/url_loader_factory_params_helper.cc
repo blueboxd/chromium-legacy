@@ -6,9 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/optional.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -35,14 +33,10 @@ namespace {
 // network::ResourceRequest::request_initiator, except when
 // |is_for_isolated_world|.  See also the doc comment for
 // extensions::URLLoaderFactoryManager::CreateFactory.
-//
-// TODO(kinuko, lukasza): https://crbug.com/1098938: Make
-// |request_initiator_site_lock| non-optional, once
-// URLLoaderFactoryParamsHelper::CreateForRendererProcess is removed.
 network::mojom::URLLoaderFactoryParamsPtr CreateParams(
     RenderProcessHost* process,
     const url::Origin& origin,
-    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const url::Origin& request_initiator_site_lock,
     bool is_trusted,
     const base::Optional<base::UnguessableToken>& top_frame_token,
     const net::IsolationInfo& isolation_info,
@@ -57,8 +51,7 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
 
   // "chrome-guest://..." is never used as a main or isolated world origin.
   DCHECK_NE(kGuestScheme, origin.scheme());
-  DCHECK(!request_initiator_site_lock.has_value() ||
-         request_initiator_site_lock->scheme() != kGuestScheme);
+  DCHECK_NE(kGuestScheme, request_initiator_site_lock.scheme());
 
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
@@ -205,13 +198,13 @@ URLLoaderFactoryParamsHelper::CreateForWorker(
 network::mojom::URLLoaderFactoryParamsPtr
 URLLoaderFactoryParamsHelper::CreateForRendererProcess(
     RenderProcessHost* process) {
-  // Attempt to use the process lock as |request_initiator_site_lock|.
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  ProcessLock process_lock = policy->GetProcessLock(process->GetID());
-  base::Optional<url::Origin> request_initiator_site_lock =
-      SiteInstanceImpl::GetRequestInitiatorSiteLock(process_lock);
+  // Lock the |request_initiator| to an opaque origin - before something commits
+  // in a frame, requests initiated by such frame should use an opaque
+  // |request_initiator|.  See also https://crbug.com/1105794 and
+  // https://crbug.com/1098938.
+  url::Origin request_initiator_site_lock = url::Origin();
 
-  // Since this function is about to get deprecated (crbug.com/1098938), it
+  // Since this function is about to get deprecated (crbug.com/1114822), it
   // should be fine to not add support for isolation info thus using an empty
   // NetworkIsolationKey.
   //

@@ -109,16 +109,16 @@ class AppRegistrar {
       const AppId& app_id) const = 0;
 
   // Represents which icon sizes we successfully downloaded from the IconInfos.
-  virtual std::vector<SquareSizePx> GetAppDownloadedIconSizes(
+  virtual std::vector<SquareSizePx> GetAppDownloadedIconSizesAny(
       const AppId& app_id) const = 0;
 
   // Returns the "shortcuts" field from the app manifest, use |AppIconManager|
   // to load shortcuts menu icons bitmaps data.
-  virtual std::vector<WebApplicationShortcutsMenuItemInfo> GetAppShortcutInfos(
-      const AppId& app_id) const = 0;
+  virtual std::vector<WebApplicationShortcutsMenuItemInfo>
+  GetAppShortcutsMenuItemInfos(const AppId& app_id) const = 0;
 
   // Represents which icon sizes we successfully downloaded from the
-  // ShortcutInfos.
+  // ShortcutsMenuItemInfos.
   virtual std::vector<std::vector<SquareSizePx>>
   GetAppDownloadedShortcutsMenuIconsSizes(const AppId& app_id) const = 0;
 

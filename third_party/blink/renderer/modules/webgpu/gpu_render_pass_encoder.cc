@@ -58,8 +58,8 @@ void GPURenderPassEncoder::setBindGroup(
 }
 
 void GPURenderPassEncoder::pushDebugGroup(String groupLabel) {
-  GetProcs().renderPassEncoderPushDebugGroup(GetHandle(),
-                                             groupLabel.Utf8().data());
+  std::string label = groupLabel.Utf8();
+  GetProcs().renderPassEncoderPushDebugGroup(GetHandle(), label.c_str());
 }
 
 void GPURenderPassEncoder::popDebugGroup() {
@@ -67,8 +67,8 @@ void GPURenderPassEncoder::popDebugGroup() {
 }
 
 void GPURenderPassEncoder::insertDebugMarker(String markerLabel) {
-  GetProcs().renderPassEncoderInsertDebugMarker(GetHandle(),
-                                                markerLabel.Utf8().data());
+  std::string label = markerLabel.Utf8();
+  GetProcs().renderPassEncoderInsertDebugMarker(GetHandle(), label.c_str());
 }
 
 void GPURenderPassEncoder::setPipeline(GPURenderPipeline* pipeline) {

@@ -19,6 +19,7 @@ cr.define('settings', function() {
         'recordAddLanguages',
         'recordManageInputMethods',
         'recordToggleShowInputOptionsOnShelf',
+        'recordToggleTranslate',
       ]);
     }
 
@@ -40,6 +41,11 @@ cr.define('settings', function() {
     /** @override */
     recordToggleShowInputOptionsOnShelf(value) {
       this.methodCalled('recordToggleShowInputOptionsOnShelf', value);
+    }
+
+    /** @override */
+    recordToggleTranslate(value) {
+      this.methodCalled('recordToggleTranslate', value);
     }
   }
   // #cr_define_end

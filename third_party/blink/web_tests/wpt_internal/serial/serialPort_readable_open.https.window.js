@@ -11,7 +11,7 @@ serial_test(async (t, fake) => {
 
   assert_equals(port.readable, null);
 
-  await port.open({baudrate: 9600});
+  await port.open({baudRate: 9600});
   const readable = port.readable;
   assert_true(readable instanceof ReadableStream);
 

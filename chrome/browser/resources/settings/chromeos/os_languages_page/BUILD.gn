@@ -10,10 +10,12 @@ js_type_check("closure_compile") {
   deps = [
     ":input_method_options_page",
     ":input_method_util",
+    ":input_page",
     ":languages_metrics_proxy",
     ":manage_input_methods_page",
     ":os_add_languages_dialog",
     ":os_languages_page",
+    ":os_languages_page_v2",
     ":os_languages_section",
     ":smart_inputs_page",
     "../../languages_page:languages",
@@ -34,6 +36,10 @@ js_library("input_method_options_page") {
 
 js_library("input_method_util") {
   deps = [ "//ui/webui/resources/js:cr" ]
+}
+
+js_library("input_page") {
+  deps = [ ":languages_metrics_proxy" ]
 }
 
 js_library("languages_metrics_proxy") {
@@ -88,6 +94,25 @@ js_library("os_languages_page") {
   ]
 }
 
+js_library("os_languages_page_v2") {
+  deps = [
+    ":languages_metrics_proxy",
+    "..:metrics_recorder",
+    "..:os_route",
+    "../..:router",
+    "../../languages_page:languages_types",
+    "../../settings_page:settings_animated_pages",
+    "../localized_link:localized_link",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
+    "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button",
+    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
+  ]
+}
+
 js_library("os_add_languages_dialog") {
   deps = [
     "../../languages_page:languages",
@@ -109,10 +134,12 @@ js_type_check("closure_compile_module") {
   deps = [
     ":input_method_options_page.m",
     ":input_method_util.m",
+    ":input_page.m",
     ":languages_metrics_proxy.m",
     ":manage_input_methods_page.m",
     ":os_add_languages_dialog.m",
     ":os_languages_page.m",
+    ":os_languages_page_v2.m",
     ":os_languages_section.m",
     ":smart_inputs_page.m",
   ]
@@ -132,6 +159,12 @@ js_library("input_method_options_page.m") {
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":input_method_options_page_module" ]
+}
+
+js_library("input_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/input_page.m.js" ]
+  deps = [ ":languages_metrics_proxy.m" ]
+  extra_deps = [ ":input_page_module" ]
 }
 
 js_library("languages_metrics_proxy.m") {
@@ -181,6 +214,27 @@ js_library("os_languages_page.m") {
   extra_deps = [ ":os_languages_page_module" ]
 }
 
+js_library("os_languages_page_v2.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/os_languages_page_v2.m.js" ]
+  deps = [
+    ":input_method_util.m",
+    ":languages_metrics_proxy.m",
+    "..:metrics_recorder.m",
+    "..:os_route.m",
+    "../..:i18n_setup",
+    "../..:router.m",
+    "../localized_link:localized_link.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button.m",
+    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+  ]
+  extra_deps = [ ":os_languages_page_v2_module" ]
+}
+
 js_library("os_languages_section.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/os_languages_section.m.js" ]
   deps = [
@@ -214,10 +268,12 @@ import("//tools/polymer/polymer.gni")
 group("polymer3_elements") {
   public_deps = [
     ":input_method_options_page_module",
+    ":input_page_module",
     ":manage_input_methods_page_module",
     ":modulize",
     ":os_add_languages_dialog_module",
     ":os_languages_page_module",
+    ":os_languages_page_v2_module",
     ":os_languages_section_module",
     ":smart_inputs_page_module",
     "../../languages_page:languages_module",
@@ -252,6 +308,15 @@ polymer_modulizer("os_languages_page") {
   auto_imports = os_settings_auto_imports
 }
 
+polymer_modulizer("os_languages_page_v2") {
+  js_file = "os_languages_page_v2.js"
+  html_file = "os_languages_page_v2.html"
+  html_type = "dom-module"
+  migrated_imports = settings_migrated_imports
+  namespace_rewrites = os_settings_namespace_rewrites
+  auto_imports = os_settings_auto_imports
+}
+
 polymer_modulizer("os_languages_section") {
   js_file = "os_languages_section.js"
   html_file = "os_languages_section.html"
@@ -264,6 +329,15 @@ polymer_modulizer("os_languages_section") {
 polymer_modulizer("input_method_options_page") {
   js_file = "input_method_options_page.js"
   html_file = "input_method_options_page.html"
+  html_type = "dom-module"
+  migrated_imports = settings_migrated_imports
+  namespace_rewrites = os_settings_namespace_rewrites
+  auto_imports = os_settings_auto_imports
+}
+
+polymer_modulizer("input_page") {
+  js_file = "input_page.js"
+  html_file = "input_page.html"
   html_type = "dom-module"
   migrated_imports = settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites

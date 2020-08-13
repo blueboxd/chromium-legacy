@@ -78,8 +78,6 @@ enum SearchExtensionAction {
 
 }  // namespace
 
-NSString* const kLastHTTPURLOpenTime = @"lastHTTPURLOpenTime";
-
 @implementation ChromeAppStartupParameters {
   NSString* _secureSourceApp;
   NSString* _declaredSourceApp;

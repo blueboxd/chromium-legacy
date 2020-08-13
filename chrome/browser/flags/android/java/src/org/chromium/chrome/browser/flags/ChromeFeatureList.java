@@ -288,7 +288,6 @@ public abstract class ChromeFeatureList {
             "UseDownloadOfflineContentProvider";
     public static final String DOWNLOADS_LOCATION_CHANGE = "DownloadsLocationChange";
     public static final String DOWNLOAD_LATER = "DownloadLater";
-    public static final String DRAW_VERTICALLY_EDGE_TO_EDGE = "DrawVerticallyEdgeToEdge";
     public static final String DUET_TABSTRIP_INTEGRATION_ANDROID = "DuetTabStripIntegrationAndroid";
     public static final String EPHEMERAL_TAB_USING_BOTTOM_SHEET = "EphemeralTabUsingBottomSheet";
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";

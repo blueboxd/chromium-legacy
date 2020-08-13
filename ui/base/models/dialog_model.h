@@ -64,14 +64,11 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelDelegate {
 // auto dialog_model =
 //     ui::DialogModel::Builder(std::move(model_delegate))
 //         .SetTitle(base::ASCIIToUTF16("Hello, world!"))
-//         .AddDialogButton(ui::DIALOG_BUTTON_OK,
-//                          l10n_util::GetStringUTF16(IDS_OK))
+//         .AddOkButton(base::BindOnce(&Delegate::OnDialogAccepted,
+//                                     base::Unretained(model_delegate_ptr)))
 //         .AddTextfield(
 //             base::ASCIIToUTF16("Name"), base::string16(),
 //             ui::DialogModelTextfield::Params().SetUniqueId(kNameTextfield))
-//         .SetAcceptCallback(
-//             base::BindOnce(&Delegate::OnDialogAccepted,
-//                            base::Unretained(model_delegate_ptr)))
 //         .Build();
 //
 // // DialogModelBase::Host specific. In this example, uses views-specific
@@ -96,12 +93,8 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
     Builder& SetShowCloseButton(bool show_close_button);
     Builder& SetTitle(base::string16 title);
 
-    // Called when the dialog is accepted, before it closes.
-    Builder& SetAcceptCallback(base::OnceClosure callback);
-    // Called when the dialog is cancelled.
-    Builder& SetCancelCallback(base::OnceClosure callback);
-    // Called when the dialog is explicitly closed (for instance, close-x). Not
-    // called during accept/cancel.
+    // Called when the dialog is explicitly closed (Esc, close-x). Not called
+    // during accept/cancel.
     Builder& SetCloseCallback(base::OnceClosure callback);
 
     // TODO(pbos): Clarify and enforce (through tests) that this is called after
@@ -110,12 +103,19 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
     // {accept,cancel,close} callbacks.
     Builder& SetWindowClosingCallback(base::OnceClosure callback);
 
-    // Adds a dialog button (ok, cancel) to the dialog. Note that the callbacks
-    // for these button actions should be set using SetAcceptCallback() and
-    // SetCancelCallback().
-    Builder& AddDialogButton(
-        DialogButton button,
-        base::string16 label,
+    // Adds a dialog button (ok, cancel) to the dialog. The |callback| is called
+    // when the dialog is accepted or cancelled, before it closes. Use
+    // base::DoNothing() as callback if you want nothing extra to happen as a
+    // result, besides the dialog closing.
+    // If no |label| is provided, default strings are chosen by the
+    // DialogModelHost implementation.
+    Builder& AddOkButton(
+        base::OnceClosure callback,
+        base::string16 label = base::string16(),
+        const DialogModelButton::Params& params = DialogModelButton::Params());
+    Builder& AddCancelButton(
+        base::OnceClosure callback,
+        base::string16 label = base::string16(),
         const DialogModelButton::Params& params = DialogModelButton::Params());
 
     // Use of the extra button in new dialogs are discouraged. If this is deemed

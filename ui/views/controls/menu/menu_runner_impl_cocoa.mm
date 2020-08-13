@@ -4,16 +4,177 @@
 
 #import "ui/views/controls/menu/menu_runner_impl_cocoa.h"
 
+#include "base/mac/mac_util.h"
 #import "base/message_loop/message_pump_mac.h"
+#import "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/menu_controller.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
+#include "ui/gfx/platform_font_mac.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/strings/grit/ui_strings.h"
+#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_runner_impl_adapter.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+
+NSImage* NewTagImage() {
+  static NSImage* new_tag = []() {
+    // 1. Make the attributed string.
+
+    NSString* badge_text = l10n_util::GetNSString(IDS_MENU_ITEM_NEW_BADGE);
+
+    // The preferred font is slightly smaller and slightly more bold than the
+    // menu font. The size change is required to make it look correct in the
+    // badge; we add a small degree of bold to prevent color smearing/blurring
+    // due to font smoothing. This ensures readability on all platforms and in
+    // both light and dark modes.
+    gfx::Font badge_font = gfx::Font(
+        new gfx::PlatformFontMac(gfx::PlatformFontMac::SystemFontType::kMenu));
+    badge_font =
+        badge_font.Derive(views::MenuConfig::kNewBadgeFontSizeAdjustment,
+                          gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM);
+
+    NSColor* badge_text_color = skia::SkColorToSRGBNSColor(
+        ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+            ui::NativeTheme::kColorId_TextOnProminentButtonColor));
+
+    NSDictionary* badge_attrs = @{
+      NSFontAttributeName : badge_font.GetNativeFont(),
+      NSForegroundColorAttributeName : badge_text_color,
+    };
+
+    NSMutableAttributedString* badge_attr_string =
+        [[NSMutableAttributedString alloc] initWithString:badge_text
+                                               attributes:badge_attrs];
+
+    if (base::mac::IsOS10_10()) {
+      // The system font for 10.10 is Helvetica Neue, and when used for this
+      // "new tag" the letters look cramped. Track it out so that there's some
+      // breathing room. There is no tracking attribute, so instead add kerning
+      // to all but the last character.
+      [badge_attr_string
+          addAttribute:NSKernAttributeName
+                 value:@0.4
+                 range:NSMakeRange(0, [badge_attr_string length] - 1)];
+    }
+
+    // 2. Calculate the size required.
+
+    NSSize badge_size = [badge_attr_string size];
+    badge_size.width = trunc(badge_size.width);
+    badge_size.height = trunc(badge_size.height);
+
+    badge_size.width += 2 * views::MenuConfig::kNewBadgeInternalPadding +
+                        2 * views::MenuConfig::kNewBadgeHorizontalMargin;
+    badge_size.height += views::MenuConfig::kNewBadgeInternalPaddingTopMac;
+
+    // 3. Craft the image.
+
+    return [[NSImage
+         imageWithSize:badge_size
+               flipped:NO
+        drawingHandler:^(NSRect dest_rect) {
+          NSRect badge_frame = NSInsetRect(
+              dest_rect, views::MenuConfig::kNewBadgeHorizontalMargin, 0);
+          NSBezierPath* rounded_badge_rect = [NSBezierPath
+              bezierPathWithRoundedRect:badge_frame
+                                xRadius:views::MenuConfig::kNewBadgeCornerRadius
+                                yRadius:views::MenuConfig::
+                                            kNewBadgeCornerRadius];
+          NSColor* badge_color = skia::SkColorToSRGBNSColor(
+              ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+                  ui::NativeTheme::kColorId_ProminentButtonColor));
+          [badge_color set];
+          [rounded_badge_rect fill];
+
+          NSPoint badge_text_location = NSMakePoint(
+              NSMinX(badge_frame) + views::MenuConfig::kNewBadgeInternalPadding,
+              NSMinY(badge_frame) +
+                  views::MenuConfig::kNewBadgeInternalPaddingTopMac);
+          [badge_attr_string drawAtPoint:badge_text_location];
+
+          return YES;
+        }] retain];
+  }();
+
+  return new_tag;
+}
+
+}  // namespace
+
+@interface NewTagAttachmentCell : NSTextAttachmentCell
+@end
+
+@implementation NewTagAttachmentCell
+
+- (instancetype)init {
+  if (self = [super init]) {
+    self.image = NewTagImage();
+  }
+  return self;
+}
+
+- (NSPoint)cellBaselineOffset {
+  return NSMakePoint(0, views::MenuConfig::kNewBadgeBaslineOffsetMac);
+}
+
+- (NSSize)cellSize {
+  return [self.image size];
+}
+
+@end
+
+@interface MenuControllerDelegate : NSObject <MenuControllerCocoaDelegate>
+@end
+
+@implementation MenuControllerDelegate
+
+- (void)controllerWillAddItem:(NSMenuItem*)menuItem
+                    fromModel:(ui::MenuModel*)model
+                      atIndex:(NSInteger)index {
+  static const bool feature_enabled =
+      base::FeatureList::IsEnabled(views::features::kEnableNewBadgeOnMenuItems);
+  if (!feature_enabled || !model->IsNewFeatureAt(index))
+    return;
+
+  // TODO(avi): When moving to 10.11 as the minimum macOS, switch to using
+  // NSTextAttachment's |image| and |bounds| properties and avoid the whole
+  // NSTextAttachmentCell subclassing mishegas.
+  base::scoped_nsobject<NSTextAttachment> attachment(
+      [[NSTextAttachment alloc] init]);
+  attachment.get().attachmentCell =
+      [[[NewTagAttachmentCell alloc] init] autorelease];
+
+  // Starting in 10.13, if an attributed string is set as a menu item title, and
+  // NSFontAttributeName is not specified for it, it is automatically rendered
+  // in a font matching other menu items. Prior to then, a menu item with no
+  // specified font is rendered in Helvetica. In addition, while the
+  // documentation says that -[NSFont menuFontOfSize:0] gives the standard menu
+  // font, that doesn't actually match up. Therefore, specify a font that
+  // visually matches.
+  NSDictionary* attrs = nil;
+  if (base::mac::IsAtMostOS10_12())
+    attrs = @{NSFontAttributeName : [NSFont menuFontOfSize:14]};
+
+  base::scoped_nsobject<NSMutableAttributedString> attrTitle(
+      [[NSMutableAttributedString alloc] initWithString:menuItem.title
+                                             attributes:attrs]);
+  [attrTitle
+      appendAttributedString:[NSAttributedString
+                                 attributedStringWithAttachment:attachment]];
+
+  menuItem.attributedTitle = attrTitle;
+}
+
+@end
 
 namespace views {
 namespace internal {
@@ -124,7 +285,7 @@ MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
     int32_t run_types,
     base::RepeatingClosure on_menu_closed_callback) {
   if ((run_types & MenuRunner::CONTEXT_MENU) &&
-      !(run_types & (MenuRunner::IS_NESTED | MenuRunner::FORCE_VIEWS))) {
+      !(run_types & (MenuRunner::IS_NESTED))) {
     return new MenuRunnerImplCocoa(menu_model,
                                    std::move(on_menu_closed_callback));
   }
@@ -139,8 +300,11 @@ MenuRunnerImplCocoa::MenuRunnerImplCocoa(
       delete_after_run_(false),
       closing_event_time_(base::TimeTicks()),
       on_menu_closed_callback_(std::move(on_menu_closed_callback)) {
-  menu_controller_.reset([[MenuControllerCocoa alloc] initWithModel:menu
-                                             useWithPopUpButtonCell:NO]);
+  menu_delegate_.reset([[MenuControllerDelegate alloc] init]);
+  menu_controller_.reset([[MenuControllerCocoa alloc]
+               initWithModel:menu
+                    delegate:menu_delegate_.get()
+      useWithPopUpButtonCell:NO]);
 }
 
 bool MenuRunnerImplCocoa::IsRunning() const {

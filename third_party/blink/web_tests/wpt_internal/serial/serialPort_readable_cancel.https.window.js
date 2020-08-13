@@ -8,7 +8,7 @@
 
 serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
-  await port.open({baudrate: 9600, buffersize: 64});
+  await port.open({baudRate: 9600, bufferSize: 64});
 
   const reader = port.readable.getReader();
   const readPromise = reader.read();
@@ -22,7 +22,7 @@ serial_test(async (t, fake) => {
 
 serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
-  await port.open({baudrate: 9600, buffersize: 64});
+  await port.open({baudRate: 9600, bufferSize: 64});
 
   const reader = port.readable.getReader();
 
@@ -37,7 +37,7 @@ serial_test(async (t, fake) => {
 serial_test(async (t, fake) => {
   const {port, fakePort} = await getFakeSerialPort(fake);
   // Select a buffer size smaller than the amount of data transferred.
-  await port.open({baudrate: 9600, buffersize: 64});
+  await port.open({baudRate: 9600, bufferSize: 64});
 
   const reader = port.readable.getReader();
 

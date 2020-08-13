@@ -12,6 +12,7 @@
 #include <tuple>
 
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_token.h"
 
 namespace blink {
 
@@ -113,6 +114,14 @@ class IdentifiableSurface {
   static constexpr IdentifiableSurface FromTypeAndInput(Type type,
                                                         uint64_t input) {
     return IdentifiableSurface(KeyFromSurfaceTypeAndInput(type, input));
+  }
+
+  // Construct an IdentifiableSurface based on a surface type and an input
+  // token.
+  static constexpr IdentifiableSurface FromTypeAndToken(
+      Type type,
+      IdentifiableToken token) {
+    return IdentifiableSurface(KeyFromSurfaceTypeAndInput(type, token.value_));
   }
 
   // Construct an invalid identifiable surface.

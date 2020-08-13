@@ -42,8 +42,8 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
+import org.chromium.chrome.browser.xsurface.ProcessScopeDependencyProvider;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
-import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
 import org.chromium.chrome.browser.xsurface.SurfaceScopeDependencyProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
@@ -116,7 +116,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     public static ProcessScope xSurfaceProcessScope() {
         if (sXSurfaceProcessScope == null) {
             sXSurfaceProcessScope = AppHooks.get().getExternalSurfaceProcessScope(
-                    new FeedSurfaceDependencyProvider());
+                    new FeedProcessScopeDependencyProvider());
         }
         return sXSurfaceProcessScope;
     }
@@ -201,8 +201,9 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      *
      * TODO(rogerm): Find a more global home for this.
      */
-    private static class FeedSurfaceDependencyProvider implements SurfaceDependencyProvider {
-        FeedSurfaceDependencyProvider() {}
+    private static class FeedProcessScopeDependencyProvider
+            implements ProcessScopeDependencyProvider {
+        FeedProcessScopeDependencyProvider() {}
 
         @Override
         public Context getContext() {

@@ -4,14 +4,9 @@
 
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 
-#include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/prerender/browser/prerender_manager.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
@@ -31,36 +26,14 @@ void PrerenderTabHelper::DidFinishNavigation(
     return;
   }
 
-  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
+  PrerenderManager* prerender_manager =
+      PrerenderManagerFactory::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
   if (!prerender_manager)
     return;
   if (prerender_manager->IsWebContentsPrerendering(web_contents(), nullptr))
     return;
   prerender_manager->RecordNavigation(navigation_handle->GetURL());
-}
-
-PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
-  return PrerenderManagerFactory::GetForBrowserContext(
-      web_contents()->GetBrowserContext());
-}
-
-base::TimeTicks PrerenderTabHelper::GetTimeTicksFromPrerenderManager() const {
-  // Prerender browser tests should always have a PrerenderManager when mocking
-  // out tick clock.
-  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (prerender_manager)
-    return prerender_manager->GetCurrentTimeTicks();
-
-  // Fall back to returning the same value as PrerenderManager would have
-  // returned in production.
-  return base::TimeTicks::Now();
-}
-
-bool PrerenderTabHelper::IsPrerendering() {
-  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (!prerender_manager)
-    return false;
-  return prerender_manager->IsWebContentsPrerendering(web_contents(), nullptr);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PrerenderTabHelper)

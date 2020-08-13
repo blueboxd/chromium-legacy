@@ -156,17 +156,23 @@ bool DummyTextInputClient::SetCompositionFromExistingText(
 
 #if defined(OS_CHROMEOS)
 gfx::Range DummyTextInputClient::GetAutocorrectRange() const {
-  return gfx::Range();
+  return autocorrect_range_;
 }
 gfx::Rect DummyTextInputClient::GetAutocorrectCharacterBounds() const {
   return gfx::Rect();
 }
 
-// TODO(crbug.com/1091088) Implement setAutocorrectRange
 bool DummyTextInputClient::SetAutocorrectRange(
     const base::string16& autocorrect_text,
     const gfx::Range& range) {
-  return false;
+  // Clears autocorrect range if text is empty.
+  // autocorrect_text content is ignored.
+  if (autocorrect_text.empty()) {
+    autocorrect_range_ = gfx::Range();
+  } else {
+    autocorrect_range_ = range;
+  }
+  return true;
 }
 #endif
 

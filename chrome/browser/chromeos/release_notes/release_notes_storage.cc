@@ -27,7 +27,7 @@ int GetMilestone() {
   return version_info::GetVersion().components()[0];
 }
 
-constexpr int kTimesToShowSuggestionChip = 1;
+constexpr int kTimesToShowSuggestionChip = 3;
 
 }  // namespace
 

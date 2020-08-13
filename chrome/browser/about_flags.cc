@@ -1378,9 +1378,15 @@ const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
 
 const FeatureEntry::FeatureParam kPromoBrowserCommandUnknownCommandParam[] = {
     {features::kPromoBrowserCommandIdParam, "0"}};
+const FeatureEntry::FeatureParam
+    kPromoBrowserCommandOpenSafetyCheckCommandParam[] = {
+        {features::kPromoBrowserCommandIdParam, "1"}};
 const FeatureEntry::FeatureVariation kPromoBrowserCommandsVariations[] = {
     {"- Unknown Command", kPromoBrowserCommandUnknownCommandParam,
      base::size(kPromoBrowserCommandUnknownCommandParam),
+     "t4237555" /* variation_id */},
+    {"- Open Safety Check", kPromoBrowserCommandOpenSafetyCheckCommandParam,
+     base::size(kPromoBrowserCommandOpenSafetyCheckCommandParam),
      "t4237555" /* variation_id */}};
 
 #if defined(OS_ANDROID)
@@ -2629,6 +2635,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSystemTrayMicGainDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSystemTrayMicGainSetting)},
 #endif  // OS_CHROMEOS
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+    {
+        "enable-accelerated-video-decode",
+        flag_descriptions::kAcceleratedVideoDecodeName,
+        flag_descriptions::kAcceleratedVideoDecodeDescription,
+        kOsLinux,
+        SINGLE_VALUE_TYPE(switches::kEnableAcceleratedVideoDecode),
+    },
+#else
     {
         "disable-accelerated-video-decode",
         flag_descriptions::kAcceleratedVideoDecodeName,
@@ -2636,6 +2652,7 @@ const FeatureEntry kFeatureEntries[] = {
         kOsMac | kOsWin | kOsCrOS | kOsAndroid,
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
     },
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
     {
         "disable-accelerated-video-encode",
         flag_descriptions::kAcceleratedVideoEncodeName,
@@ -3587,9 +3604,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-transfer-details", flag_descriptions::kFilesTransferDetailsName,
      flag_descriptions::kFilesTransferDetailsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesTransferDetails)},
-    {"files-zip-no-nacl", flag_descriptions::kFilesZipNoNaClName,
-     flag_descriptions::kFilesZipNoNaClDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kFilesZipNoNaCl)},
+    {"files-zip-mount", flag_descriptions::kFilesZipMountName,
+     flag_descriptions::kFilesZipMountDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesZipMount)},
+    {"files-zip-pack", flag_descriptions::kFilesZipPackName,
+     flag_descriptions::kFilesZipPackDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesZipPack)},
+    {"files-zip-unpack", flag_descriptions::kFilesZipUnpackName,
+     flag_descriptions::kFilesZipUnpackDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesZipUnpack)},
     {"files-unified-media-view", flag_descriptions::kUnifiedMediaViewName,
      flag_descriptions::kUnifiedMediaViewDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUnifiedMediaView)},
@@ -3659,6 +3682,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxClobberIsZeroSuggestEntrypointName,
      flag_descriptions::kOmniboxClobberIsZeroSuggestEntrypointDescription,
      kOsAll, FEATURE_VALUE_TYPE(omnibox::kClobberIsZeroSuggestEntrypoint)},
+
+    {"omnibox-focus-gesture-triggers-contextual-web-zero-suggest",
+     flag_descriptions::
+         kOmniboxFocusGestureTriggersContextualWebZeroSuggestName,
+     flag_descriptions::
+         kOmniboxFocusGestureTriggersContextualWebZeroSuggestDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         omnibox::kFocusGestureTriggersContextualWebZeroSuggest)},
 
     {"omnibox-on-device-head-suggestions-incognito",
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoName,
@@ -4694,12 +4726,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"use-angle", flag_descriptions::kUseAngleName,
      flag_descriptions::kUseAngleDescription, kOsWin,
      MULTI_VALUE_TYPE(kUseAngleChoices)},
-#endif
-#if defined(OS_ANDROID)
-    {"draw-vertically-edge-to-edge",
-     flag_descriptions::kDrawVerticallyEdgeToEdgeName,
-     flag_descriptions::kDrawVerticallyEdgeToEdgeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kDrawVerticallyEdgeToEdge)},
 #endif
 #if defined(OS_ANDROID)
     {"enable-ephemeral-tab-bottom-sheet",
@@ -6049,11 +6075,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePalmSuppressionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnablePalmSuppression)},
 
-    {"enable-high-resolution-mouse-scrolling",
-     flag_descriptions::kEnableHighResolutionMouseScrollingName,
-     flag_descriptions::kEnableHighResolutionMouseScrollingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ui::kEnableHighResolutionMouseScrolling)},
-
     {"movable-partial-screenshot-region",
      flag_descriptions::kMovablePartialScreenshotName,
      flag_descriptions::kMovablePartialScreenshotDescription, kOsCrOS,
@@ -6255,6 +6276,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(features::kCpuAffinityRestrictToLittleCores)},
 #endif  // OS_ANDROID
+
+#if defined(OS_CHROMEOS)
+    {"enable-auto-select", flag_descriptions::kEnableAutoSelectName,
+     flag_descriptions::kEnableAutoSelectDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(blink::features::kCrOSAutoSelect)},
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

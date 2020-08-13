@@ -68,6 +68,8 @@ class MODULES_EXPORT OutgoingStream final
 
   ScriptPromise WritingAborted() const { return writing_aborted_; }
 
+  ScriptState* GetScriptState() { return script_state_; }
+
   void AbortWriting(StreamAbortInfo*);
 
   // Called from QuicTransport via a WebTransportStream. Expects a JavaScript

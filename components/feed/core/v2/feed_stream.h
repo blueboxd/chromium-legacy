@@ -43,7 +43,6 @@ class PrefetchService;
 namespace feed {
 class FeedNetwork;
 class FeedStore;
-class ImageFetcher;
 class MetricsReporter;
 class OfflinePageSpy;
 class RefreshTaskScheduler;
@@ -103,7 +102,6 @@ class FeedStream : public FeedStreamApi,
              Delegate* delegate,
              PrefService* profile_prefs,
              FeedNetwork* feed_network,
-             ImageFetcher* image_fetcher,
              FeedStore* feed_store,
              offline_pages::PrefetchService* prefetch_service,
              offline_pages::OfflinePageModel* offline_page_model,
@@ -126,9 +124,6 @@ class FeedStream : public FeedStreamApi,
   bool IsArticlesListVisible() override;
   std::string GetClientInstanceId() override;
   void ExecuteRefreshTask() override;
-  void FetchImage(
-      const GURL& url,
-      base::OnceCallback<void(std::unique_ptr<std::string>)> callback) override;
   void LoadMore(SurfaceId surface_id,
                 base::OnceCallback<void(bool)> callback) override;
   void ExecuteOperations(
@@ -296,7 +291,6 @@ class FeedStream : public FeedStreamApi,
   Delegate* delegate_;
   PrefService* profile_prefs_;  // May be null.
   FeedNetwork* feed_network_;
-  ImageFetcher* image_fetcher_;
   FeedStore* store_;
   const base::Clock* clock_;
   const base::TickClock* tick_clock_;

@@ -72,6 +72,7 @@ class MockPageSchedulerImpl;
 FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest, ShouldIgnoreTaskForUkm);
 FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest, Tracing);
 }  // namespace main_thread_scheduler_impl_unittest
+class AgentGroupSchedulerImpl;
 class FrameSchedulerImpl;
 class PageSchedulerImpl;
 class TaskQueueThrottler;
@@ -218,6 +219,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
                            Thread::IdleTask) override;
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
+  AgentGroupSchedulerImpl* CreateAgentGroupScheduler();
   std::unique_ptr<PageScheduler> CreatePageScheduler(
       PageScheduler::Delegate*) override;
   std::unique_ptr<ThreadScheduler::RendererPauseHandle> PauseScheduler()
@@ -303,6 +305,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void DecrementVirtualTimePauseCount();
   void MaybeAdvanceVirtualTime(base::TimeTicks new_virtual_time);
 
+  void RemoveAgentGroupScheduler(AgentGroupSchedulerImpl*);
   void RemovePageScheduler(PageSchedulerImpl*);
 
   void OnFrameAdded(const FrameSchedulerImpl& frame_scheduler);
@@ -466,6 +469,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   static const char* TimeDomainTypeToString(TimeDomainType domain_type);
 
+  void AddAgentGroupScheduler(AgentGroupSchedulerImpl*);
   void AddPageScheduler(PageSchedulerImpl*);
 
   bool IsAnyMainFrameWaitingForFirstContentfulPaint() const;
@@ -1059,6 +1063,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   PollableThreadSafeFlag policy_may_need_update_;
   PollableThreadSafeFlag notify_agent_strategy_task_posted_;
+  WTF::HashSet<AgentGroupSchedulerImpl*> agent_group_schedulers_;
+  // TODO(crbug/1113102): tentatively, we hold AgentGroupSchedulerImpl here.
+  WTF::HashSet<std::unique_ptr<AgentGroupSchedulerImpl>>
+      agent_group_scheduler_set_;
 
   base::WeakPtrFactory<MainThreadSchedulerImpl> weak_factory_{this};
 

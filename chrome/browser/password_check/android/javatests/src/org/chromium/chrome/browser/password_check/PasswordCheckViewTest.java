@@ -15,9 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
@@ -43,6 +41,7 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.R
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollUiThread;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -56,7 +55,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.filters.MediumTest;
@@ -84,6 +82,8 @@ import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.url.GURL;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * View tests for the Password Check component ensure model changes are reflected in the check UI.
@@ -512,17 +512,25 @@ public class PasswordCheckViewTest {
     @Test
     @MediumTest
     public void testConfirmingDeletionDialogTriggersHandler() {
-        PasswordCheckDeletionDialogFragment.Handler mockHandler =
-                mock(PasswordCheckDeletionDialogFragment.Handler.class);
+        final AtomicInteger recordedConfirmation = new AtomicInteger(0);
+        PasswordCheckDeletionDialogFragment.Handler fakeHandler =
+                new PasswordCheckDeletionDialogFragment.Handler() {
+                    @Override
+                    public void onDismiss() {}
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        recordedConfirmation.incrementAndGet();
+                    }
+                };
         mModel.set(DELETION_ORIGIN, ANA.getDisplayOrigin());
-        runOnUiThreadBlocking(() -> mModel.set(DELETION_CONFIRMATION_HANDLER, mockHandler));
+        runOnUiThreadBlocking(() -> mModel.set(DELETION_CONFIRMATION_HANDLER, fakeHandler));
 
         onView(withText(R.string.password_check_delete_credential_dialog_confirm))
                 .inRoot(withDecorView(
                         not(is(mPasswordCheckView.getActivity().getWindow().getDecorView()))))
                 .perform(click());
 
-        verify(mockHandler).onClick(any(), eq(AlertDialog.BUTTON_POSITIVE));
+        assertThat(recordedConfirmation.get(), is(1));
     }
 
     private MVCListAdapter.ListItem buildHeader(@PasswordCheckUIStatus int status,

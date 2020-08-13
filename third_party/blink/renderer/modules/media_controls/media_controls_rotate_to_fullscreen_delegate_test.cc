@@ -64,7 +64,7 @@ class MockChromeClient : public EmptyChromeClient {
   }
   void EnterFullscreen(LocalFrame& frame,
                        const FullscreenOptions*,
-                       bool for_cross_process_descendant) override {
+                       FullscreenRequestType) override {
     Fullscreen::DidResolveEnterFullscreenRequest(*frame.GetDocument(),
                                                  true /* granted */);
   }

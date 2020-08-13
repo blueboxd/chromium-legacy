@@ -175,6 +175,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
       gfx::AcceleratedWidget widget) = 0;
   virtual PlatformGLEGLUtility* GetPlatformGLEGLUtility();
 
+  // Returns a bitmask of EventFlags showing the state of Alt, Shift and Ctrl
+  // keys that came with the most recent UI event.
+  virtual int GetKeyModifiers() const;
+
   // Returns true if the specified buffer format is supported.
   virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
                                              gfx::BufferUsage usage) const;

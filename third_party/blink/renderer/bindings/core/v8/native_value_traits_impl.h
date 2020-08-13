@@ -38,30 +38,13 @@ class DictionaryBase;
 class EnumerationBase;
 class UnionBase;
 
-CORE_EXPORT ScriptWrappable* NativeValueTraitsInterfaceNativeValue(
-    v8::Isolate* isolate,
+CORE_EXPORT void NativeValueTraitsInterfaceNotOfType(
     const WrapperTypeInfo* wrapper_type_info,
-    v8::Local<v8::Value> value,
     ExceptionState& exception_state);
 
-CORE_EXPORT ScriptWrappable* NativeValueTraitsInterfaceArgumentValue(
-    v8::Isolate* isolate,
+CORE_EXPORT void NativeValueTraitsInterfaceNotOfType(
     const WrapperTypeInfo* wrapper_type_info,
     int argument_index,
-    v8::Local<v8::Value> value,
-    ExceptionState& exception_state);
-
-CORE_EXPORT ScriptWrappable* NativeValueTraitsInterfaceOrNullNativeValue(
-    v8::Isolate* isolate,
-    const WrapperTypeInfo* wrapper_type_info,
-    v8::Local<v8::Value> value,
-    ExceptionState& exception_state);
-
-CORE_EXPORT ScriptWrappable* NativeValueTraitsInterfaceOrNullArgumentValue(
-    v8::Isolate* isolate,
-    const WrapperTypeInfo* wrapper_type_info,
-    int argument_index,
-    v8::Local<v8::Value> value,
     ExceptionState& exception_state);
 
 }  // namespace bindings
@@ -1208,22 +1191,29 @@ struct NativeValueTraits<
     T,
     typename std::enable_if_t<std::is_base_of<ScriptWrappable, T>::value>>
     : public NativeValueTraitsBase<T*> {
-  static T* NativeValue(v8::Isolate* isolate,
-                        v8::Local<v8::Value> value,
-                        ExceptionState& exception_state) {
-    return bindings::NativeValueTraitsInterfaceNativeValue(
-               isolate, T::GetStaticWrapperTypeInfo(), value, exception_state)
-        ->template ToImpl<T>();
+  static inline T* NativeValue(v8::Isolate* isolate,
+                               v8::Local<v8::Value> value,
+                               ExceptionState& exception_state) {
+    const WrapperTypeInfo* wrapper_type_info = T::GetStaticWrapperTypeInfo();
+    if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+      return ToScriptWrappable(value.As<v8::Object>())->template ToImpl<T>();
+
+    bindings::NativeValueTraitsInterfaceNotOfType(wrapper_type_info,
+                                                  exception_state);
+    return nullptr;
   }
 
-  static T* ArgumentValue(v8::Isolate* isolate,
-                          int argument_index,
-                          v8::Local<v8::Value> value,
-                          ExceptionState& exception_state) {
-    return bindings::NativeValueTraitsInterfaceArgumentValue(
-               isolate, T::GetStaticWrapperTypeInfo(), argument_index, value,
-               exception_state)
-        ->template ToImpl<T>();
+  static inline T* ArgumentValue(v8::Isolate* isolate,
+                                 int argument_index,
+                                 v8::Local<v8::Value> value,
+                                 ExceptionState& exception_state) {
+    const WrapperTypeInfo* wrapper_type_info = T::GetStaticWrapperTypeInfo();
+    if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+      return ToScriptWrappable(value.As<v8::Object>())->template ToImpl<T>();
+
+    bindings::NativeValueTraitsInterfaceNotOfType(
+        wrapper_type_info, argument_index, exception_state);
+    return nullptr;
   }
 };
 
@@ -1232,22 +1222,35 @@ struct NativeValueTraits<
     IDLNullable<T>,
     typename std::enable_if_t<std::is_base_of<ScriptWrappable, T>::value>>
     : public NativeValueTraitsBase<IDLNullable<T>> {
-  static T* NativeValue(v8::Isolate* isolate,
-                        v8::Local<v8::Value> value,
-                        ExceptionState& exception_state) {
-    return bindings::NativeValueTraitsInterfaceOrNullNativeValue(
-               isolate, T::GetStaticWrapperTypeInfo(), value, exception_state)
-        ->template ToImpl<T>();
+  static inline T* NativeValue(v8::Isolate* isolate,
+                               v8::Local<v8::Value> value,
+                               ExceptionState& exception_state) {
+    const WrapperTypeInfo* wrapper_type_info = T::GetStaticWrapperTypeInfo();
+    if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+      return ToScriptWrappable(value.As<v8::Object>())->template ToImpl<T>();
+
+    if (value->IsNullOrUndefined())
+      return nullptr;
+
+    bindings::NativeValueTraitsInterfaceNotOfType(wrapper_type_info,
+                                                  exception_state);
+    return nullptr;
   }
 
-  static T* ArgumentValue(v8::Isolate* isolate,
-                          int argument_index,
-                          v8::Local<v8::Value> value,
-                          ExceptionState& exception_state) {
-    return bindings::NativeValueTraitsInterfaceOrNullArgumentValue(
-               isolate, T::GetStaticWrapperTypeInfo(), argument_index, value,
-               exception_state)
-        ->template ToImpl<T>();
+  static inline T* ArgumentValue(v8::Isolate* isolate,
+                                 int argument_index,
+                                 v8::Local<v8::Value> value,
+                                 ExceptionState& exception_state) {
+    const WrapperTypeInfo* wrapper_type_info = T::GetStaticWrapperTypeInfo();
+    if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+      return ToScriptWrappable(value.As<v8::Object>())->template ToImpl<T>();
+
+    if (value->IsNullOrUndefined())
+      return nullptr;
+
+    bindings::NativeValueTraitsInterfaceNotOfType(
+        wrapper_type_info, argument_index, exception_state);
+    return nullptr;
   }
 };
 

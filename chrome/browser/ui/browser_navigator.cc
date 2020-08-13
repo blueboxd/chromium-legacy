@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -465,6 +466,37 @@ void Navigate(NavigateParams* params) {
     params->initiating_profile = source_browser->profile();
   DCHECK(params->initiating_profile);
 
+  if (source_browser &&
+      platform_util::IsBrowserLockedFullscreen(source_browser)) {
+    // Block any navigation requests in locked fullscreen mode.
+    return;
+  }
+
+  // Open System Apps in their standalone window if necessary.
+  // TODO(crbug.com/1096345): Remove this code after we integrate with intent
+  // handling.
+  const base::Optional<web_app::SystemAppType> capturing_system_app_type =
+      web_app::GetCapturingSystemAppForURL(params->initiating_profile,
+                                           params->url);
+  if (capturing_system_app_type &&
+      (!params->browser ||
+       !web_app::IsBrowserForSystemWebApp(params->browser,
+                                          capturing_system_app_type.value()))) {
+    params->browser = web_app::LaunchSystemWebApp(
+        params->initiating_profile, capturing_system_app_type.value(),
+        params->url);
+
+    // It's okay to early return here, because LaunchSystemWebApp uses a
+    // different logic to choose (and create if necessary) a browser window for
+    // system apps.
+    //
+    // It's okay to skip the checks and cleanups below. The link captured system
+    // app will either open in its own browser window, or navigate an existing
+    // browser window exclusively used by this app. For the initiating browser,
+    // the navigation should appear to be cancelled.
+    return;
+  }
+
   if (!AdjustNavigateParamsForURL(params))
     return;
 
@@ -477,12 +509,6 @@ void Navigate(NavigateParams* params) {
   if (extension && extension->is_platform_app())
     params->url = GURL(chrome::kExtensionInvalidRequestURL);
 #endif
-
-  if (source_browser &&
-      platform_util::IsBrowserLockedFullscreen(source_browser)) {
-    // Block any navigation requests in locked fullscreen mode.
-    return;
-  }
 
   // Trying to open a background tab when in an app browser results in
   // focusing a regular browser window an opening a tab in the background

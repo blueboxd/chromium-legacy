@@ -40,6 +40,11 @@ std::unique_ptr<content::WebUIController>
 TestSystemWebAppWebUIControllerFactory::CreateWebUIControllerForURL(
     content::WebUI* web_ui,
     const GURL& url) {
+  if (!url.SchemeIs(content::kChromeUIScheme) ||
+      url.host_piece() != source_name_) {
+    return nullptr;
+  }
+
   return std::make_unique<TestSystemWebAppWebUIController>(source_name_,
                                                            &manifest_, web_ui);
 }
@@ -47,7 +52,7 @@ TestSystemWebAppWebUIControllerFactory::CreateWebUIControllerForURL(
 content::WebUI::TypeID TestSystemWebAppWebUIControllerFactory::GetWebUIType(
     content::BrowserContext* browser_context,
     const GURL& url) {
-  if (url.SchemeIs(content::kChromeUIScheme))
+  if (UseWebUIForURL(browser_context, url))
     return reinterpret_cast<content::WebUI::TypeID>(1);
 
   return content::WebUI::kNoWebUI;
@@ -56,11 +61,12 @@ content::WebUI::TypeID TestSystemWebAppWebUIControllerFactory::GetWebUIType(
 bool TestSystemWebAppWebUIControllerFactory::UseWebUIForURL(
     content::BrowserContext* browser_context,
     const GURL& url) {
-  return url.SchemeIs(content::kChromeUIScheme);
+  return url.SchemeIs(content::kChromeUIScheme) &&
+         url.host_piece() == source_name_;
 }
 
 bool TestSystemWebAppWebUIControllerFactory::UseWebUIBindingsForURL(
     content::BrowserContext* browser_context,
     const GURL& url) {
-  return url.SchemeIs(content::kChromeUIScheme);
+  return UseWebUIForURL(browser_context, url);
 }

@@ -19,6 +19,9 @@ struct ContextMenuParams {
   ContextMenuParams(const ContextMenuParams& other);
   ~ContextMenuParams();
 
+  // Whether or not the context menu was triggered from the main frame.
+  bool is_main_frame;
+
   // The title of the menu.
   NSString* menu_title;
 

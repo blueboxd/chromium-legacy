@@ -29,6 +29,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
@@ -136,6 +137,12 @@ class OzonePlatformWayland : public OzonePlatform {
   PlatformClipboard* GetPlatformClipboard() override {
     DCHECK(connection_);
     return connection_->clipboard();
+  }
+
+  int GetKeyModifiers() const override {
+    DCHECK(connection_);
+    DCHECK(connection_->event_source());
+    return connection_->event_source()->keyboard_modifiers();
   }
 
   std::unique_ptr<InputMethod> CreateInputMethod(

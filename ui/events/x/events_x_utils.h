@@ -91,6 +91,10 @@ EVENTS_X_EXPORT bool GetFlingDataFromXEvent(const x11::Event& xev,
 // Uses the XModifierStateWatcher to determine if alt is pressed or not.
 EVENTS_X_EXPORT bool IsAltPressed();
 
+// Proxies the XModifierStateWatcher::state() to return the current state of
+// modifier keys.
+EVENTS_X_EXPORT int GetModifierKeyState();
+
 EVENTS_X_EXPORT void ResetTimestampRolloverCountersForTesting();
 
 }  // namespace ui

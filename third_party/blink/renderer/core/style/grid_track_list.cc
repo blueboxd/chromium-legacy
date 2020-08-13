@@ -190,6 +190,7 @@ GridTrackList::GridTrackList(Vector<GridTrackSize>& legacy_tracks)
     : legacy_track_list_(std::move(legacy_tracks)) {
   if (RuntimeEnabledFeatures::LayoutNGGridEnabled()) {
     ng_track_list_ = std::make_unique<NGGridTrackList>();
+    ng_track_list_->AddRepeater(legacy_track_list_, 1);
   }
 }
 

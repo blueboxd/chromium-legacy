@@ -66,7 +66,11 @@ class MockFrameDelegate : public FrameScheduler::Delegate {
 class MockFrameScheduler : public FrameSchedulerImpl {
  public:
   explicit MockFrameScheduler(FrameScheduler::FrameType frame_type)
-      : FrameSchedulerImpl(nullptr, nullptr, &delegate_, nullptr, frame_type) {}
+      : FrameSchedulerImpl(/*main_thread_scheduler=*/nullptr,
+                           /*parent_page_scheduler=*/nullptr,
+                           /*delegate=*/&delegate_,
+                           /*blame_context=*/nullptr,
+                           /*frame_type=*/frame_type) {}
 
  private:
   NiceMock<MockFrameDelegate> delegate_;

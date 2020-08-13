@@ -25,7 +25,7 @@ class FullscreenMockChromeClient : public EmptyChromeClient {
   MOCK_METHOD3(EnterFullscreen,
                void(LocalFrame&,
                     const FullscreenOptions*,
-                    bool for_cross_process_descendant));
+                    FullscreenRequestType));
   MOCK_METHOD1(ExitFullscreen, void(LocalFrame&));
 };
 

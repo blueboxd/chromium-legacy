@@ -19,7 +19,7 @@ void FakeRemoteFrame::Init(blink::AssociatedInterfaceProvider* provider) {
                           base::Unretained(this)));
 }
 
-void FakeRemoteFrame::WillEnterFullscreen() {}
+void FakeRemoteFrame::WillEnterFullscreen(blink::mojom::FullscreenOptionsPtr) {}
 
 void FakeRemoteFrame::AddReplicatedContentSecurityPolicies(
     std::vector<network::mojom::ContentSecurityPolicyHeaderPtr> headers) {}

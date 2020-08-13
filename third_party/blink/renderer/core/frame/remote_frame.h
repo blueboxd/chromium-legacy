@@ -112,7 +112,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   const String& UniqueName() const { return unique_name_; }
 
   // blink::mojom::RemoteFrame overrides:
-  void WillEnterFullscreen() override;
+  void WillEnterFullscreen(mojom::blink::FullscreenOptionsPtr) override;
   void AddReplicatedContentSecurityPolicies(
       WTF::Vector<network::mojom::blink::ContentSecurityPolicyHeaderPtr>
           headers) override;

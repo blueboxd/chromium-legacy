@@ -316,8 +316,21 @@ def bind_callback_local_vars(code_node, cg_context):
     local_vars.append(S("script_state", _format(pattern, _1=_1)))
 
     # execution_context
-    node = S("execution_context", ("ExecutionContext* ${execution_context} = "
-                                   "ExecutionContext::From(${script_state});"))
+    pattern = "ExecutionContext* ${execution_context} = {_1};"
+    _1 = ("${receiver_execution_context}"
+          if is_receiver_context else "${current_execution_context}")
+    local_vars.append(S("execution_context", _format(pattern, _1=_1)))
+    node = S("current_execution_context",
+             ("ExecutionContext* ${current_execution_context} = "
+              "ExecutionContext::From(${current_script_state});"))
+    node.accumulate(
+        CodeGenAccumulator.require_include_headers([
+            "third_party/blink/renderer/core/execution_context/execution_context.h"
+        ]))
+    local_vars.append(node)
+    node = S("receiver_execution_context",
+             ("ExecutionContext* ${receiver_execution_context} = "
+              "ExecutionContext::From(${receiver_script_state});"))
     node.accumulate(
         CodeGenAccumulator.require_include_headers([
             "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -329,7 +342,7 @@ def bind_callback_local_vars(code_node, cg_context):
     if is_receiver_context:
         _1 = "bindings::ExecutionContextFromV8Wrappable(${blink_receiver})"
     else:
-        _1 = "${execution_context}"  # of the current context
+        _1 = "${current_execution_context}"
     text = _format(pattern, _1=_1)
     local_vars.append(S("execution_context_of_document_tree", text))
 
@@ -865,8 +878,8 @@ def make_check_security_of_return_value(cg_context):
         "WebFeature::{}",
         name_style.constant("CrossOrigin", cg_context.class_like.identifier,
                             cg_context.property_.identifier))
-    use_counter = _format("UseCounter::Count(${execution_context}, {});",
-                          web_feature)
+    use_counter = _format(
+        "UseCounter::Count(${current_execution_context}, {});", web_feature)
     cond = T("!BindingSecurity::ShouldAllowAccessTo("
              "ToLocalDOMWindow(${current_context}), ${return_value}, "
              "BindingSecurity::ErrorReportOption::kDoNotReport)")
@@ -1236,7 +1249,7 @@ def make_report_deprecate_as(cg_context):
 
     pattern = ("// [DeprecateAs]\n"
                "Deprecation::CountDeprecation("
-               "${execution_context}, WebFeature::k{_1});")
+               "${current_execution_context}, WebFeature::k{_1});")
     _1 = name
     node = TextNode(_format(pattern, _1=_1))
     node.accumulate(
@@ -1292,13 +1305,15 @@ def make_report_high_entropy(cg_context):
     if ext_attrs.value_of("HighEntropy") == "Direct":
         text = _format(
             "// [HighEntropy=Direct]\n"
-            "Dactyloscoper::RecordDirectSurface"
-            "(${execution_context}, {measure_constant}, ${return_value});",
+            "Dactyloscoper::RecordDirectSurface("
+            "${current_execution_context}, {measure_constant}, "
+            "${return_value});",
             measure_constant=_make_measure_web_feature_constant(cg_context))
     else:
         text = _format(
             "// [HighEntropy]\n"
-            "Dactyloscoper::Record(${execution_context}, {measure_constant});",
+            "Dactyloscoper::Record("
+            "${current_execution_context}, {measure_constant});",
             measure_constant=_make_measure_web_feature_constant(cg_context))
     node = TextNode(text)
     node.accumulate(
@@ -1317,7 +1332,7 @@ def make_report_measure_as(cg_context):
 
     text = _format(
         "// [Measure], [MeasureAs]\n"
-        "UseCounter::Count(${execution_context}, {measure_constant});",
+        "UseCounter::Count(${current_execution_context}, {measure_constant});",
         measure_constant=_make_measure_web_feature_constant(cg_context))
     node = TextNode(text)
     node.accumulate(

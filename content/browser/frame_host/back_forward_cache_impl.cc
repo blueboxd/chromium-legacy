@@ -250,6 +250,34 @@ void RequestRecordTimeToVisible(RenderFrameHostImpl* rfh,
 
 }  // namespace
 
+// static
+BackForwardCacheImpl::MessageHandlingPolicyWhenCached
+BackForwardCacheImpl::GetChannelAssociatedMessageHandlingPolicy() {
+  // Avoid activating BackForwardCache trial for checking the parameters
+  // associated with it.
+  if (!IsBackForwardCacheEnabled())
+    return kMessagePolicyNone;
+
+  static constexpr char kFieldTrialParam[] = "message_handling_when_cached";
+  auto param = base::GetFieldTrialParamValueByFeature(
+      features::kBackForwardCache, kFieldTrialParam);
+  if (param.empty() || param == "log") {
+    return kMessagePolicyLog;
+  } else if (param == "none") {
+    return kMessagePolicyNone;
+  } else if (param == "dump") {
+    return kMessagePolicyDump;
+  } else if (param == "kill") {
+    return kMessagePolicyKill;
+  } else {
+    DLOG(WARNING) << "Failed to parse field trial param " << kFieldTrialParam
+                  << " with string value " << param
+                  << " under feature kBackForwardCache"
+                  << features::kBackForwardCache.name;
+    return kMessagePolicyLog;
+  }
+}
+
 BackForwardCacheImpl::Entry::Entry(
     std::unique_ptr<RenderFrameHostImpl> rfh,
     RenderFrameProxyHostMap proxies,

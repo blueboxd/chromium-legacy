@@ -38,6 +38,12 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
         mPasswordCheckReferrer = getReferrerFromInstanceStateOrLaunchBundle(savedInstanceState);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        mComponentDelegate.onStartFragment();
+    }
+
     private @PasswordCheckReferrer int getReferrerFromInstanceStateOrLaunchBundle(
             Bundle savedInstanceState) {
         if (savedInstanceState != null && savedInstanceState.containsKey(PASSWORD_CHECK_REFERRER)) {
@@ -56,6 +62,7 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
         // The component should only be destroyed when the activity has been closed by the user
         // (e.g. by pressing on the back button) and not when the activity is temporarily destroyed
         // by the system.
+        mComponentDelegate.onDestroyFragment();
         if (getActivity().isFinishing()
                 && mPasswordCheckReferrer == PasswordCheckReferrer.LEAK_DIALOG) {
             mComponentDelegate.destroy();

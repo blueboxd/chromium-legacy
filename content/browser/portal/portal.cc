@@ -96,6 +96,8 @@ void Portal::BindPortalHostReceiver(
   if (receiver.is_bound())
     receiver.reset();
   receiver.Bind(std::move(pending_receiver));
+  receiver.SetFilter(frame->CreateMessageFilterForAssociatedReceiver(
+      blink::mojom::PortalHost::Name_));
 }
 
 void Portal::Bind(

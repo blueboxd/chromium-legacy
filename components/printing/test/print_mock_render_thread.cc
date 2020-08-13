@@ -90,7 +90,7 @@ void PrintMockRenderThread::OnDidGetPrintedPagesCount(int cookie,
 }
 
 void PrintMockRenderThread::OnDidPrintDocument(
-    const PrintHostMsg_DidPrintDocument_Params& params,
+    const printing::mojom::DidPrintDocumentParams& params,
     IPC::Message* reply_msg) {
   printer_->PrintPage(params);
   PrintHostMsg_DidPrintDocument::WriteReplyParams(reply_msg, true);

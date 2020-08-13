@@ -15,6 +15,17 @@ constexpr base::TimeDelta kBackForwardCacheTimeoutInSeconds =
 
 namespace content {
 
+PageLifecycleStateManager::TestDelegate::TestDelegate() = default;
+
+PageLifecycleStateManager::TestDelegate::~TestDelegate() = default;
+
+void PageLifecycleStateManager::TestDelegate::OnLastAcknowledgedStateChanged(
+    const blink::mojom::PageLifecycleState& old_state,
+    const blink::mojom::PageLifecycleState& new_state) {}
+
+void PageLifecycleStateManager::TestDelegate::OnUpdateSentToRenderer(
+    const blink::mojom::PageLifecycleState& new_state) {}
+
 PageLifecycleStateManager::PageLifecycleStateManager(
     RenderViewHostImpl* render_view_host_impl,
     blink::mojom::PageVisibilityState web_contents_visibility_state)
@@ -24,7 +35,9 @@ PageLifecycleStateManager::PageLifecycleStateManager(
   last_state_sent_to_renderer_ = last_acknowledged_state_.Clone();
 }
 
-PageLifecycleStateManager::~PageLifecycleStateManager() = default;
+PageLifecycleStateManager::~PageLifecycleStateManager() {
+  DCHECK(!test_delegate_);
+}
 
 void PageLifecycleStateManager::SetIsFrozen(bool frozen) {
   if (is_set_frozen_called_ == frozen)
@@ -84,6 +97,10 @@ void PageLifecycleStateManager::SendUpdatesToRendererIfNeeded(
 
   last_state_sent_to_renderer_ = new_state.Clone();
   auto state = new_state.Clone();
+
+  if (test_delegate_)
+    test_delegate_->OnUpdateSentToRenderer(*last_state_sent_to_renderer_);
+
   render_view_host_impl_->GetAssociatedPageBroadcast()->SetPageLifecycleState(
       std::move(state), std::move(navigation_start),
       base::BindOnce(&PageLifecycleStateManager::OnPageLifecycleChangedAck,
@@ -103,10 +120,17 @@ PageLifecycleStateManager::CalculatePageLifecycleState() {
 
 void PageLifecycleStateManager::OnPageLifecycleChangedAck(
     blink::mojom::PageLifecycleStatePtr acknowledged_state) {
+  blink::mojom::PageLifecycleStatePtr old_state =
+      std::move(last_acknowledged_state_);
   last_acknowledged_state_ = std::move(acknowledged_state);
 
   if (last_acknowledged_state_->is_in_back_forward_cache) {
     back_forward_cache_timeout_monitor_.reset(nullptr);
+  }
+
+  if (test_delegate_) {
+    test_delegate_->OnLastAcknowledgedStateChanged(*old_state,
+                                                   *last_acknowledged_state_);
   }
 }
 
@@ -114,6 +138,12 @@ void PageLifecycleStateManager::OnBackForwardCacheTimeout() {
   DCHECK(!last_acknowledged_state_->is_in_back_forward_cache);
   render_view_host_impl_->OnBackForwardCacheTimeout();
   back_forward_cache_timeout_monitor_.reset(nullptr);
+}
+
+void PageLifecycleStateManager::SetDelegateForTesting(
+    PageLifecycleStateManager::TestDelegate* test_delegate) {
+  DCHECK(!test_delegate_ || !test_delegate);
+  test_delegate_ = test_delegate;
 }
 
 }  // namespace content

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/containers/queue.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
@@ -20,6 +21,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
@@ -28,6 +30,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
 #include "base/stl_util.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -95,6 +98,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
+#include "content/browser/renderer_host/page_lifecycle_state_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -371,6 +375,124 @@ class ActiveURLMessageFilter : public mojo::MessageFilter {
   RenderFrameHostImpl* render_frame_host_;
   bool debug_url_set_ = false;
 };
+
+// This class can be added as a MessageFilter to a mojo receiver to kill the
+// sending process if the associated frame is in the Back-Forward Cache.
+// Documents that are in the bfcache should not be sending mojo messages back to
+// the browser.
+class KillIfInBackForwardCacheMessageFilter : public mojo::MessageFilter {
+ public:
+  explicit KillIfInBackForwardCacheMessageFilter(
+      RenderFrameHostImpl* render_frame_host,
+      const char* interface_name,
+      BackForwardCacheImpl::MessageHandlingPolicyWhenCached policy)
+      : render_frame_host_(render_frame_host),
+        interface_name_(interface_name),
+        policy_(policy) {}
+
+  ~KillIfInBackForwardCacheMessageFilter() override = default;
+
+ private:
+  // mojo::MessageFilter overrides.
+  bool WillDispatch(mojo::Message* message) override {
+    if (!IsFrameInBackForwardCache() ||
+        policy_ == BackForwardCacheImpl::kMessagePolicyNone) {
+      return true;
+    }
+
+    DLOG(ERROR) << "Received message " << message->name() << " on interface "
+                << interface_name_ << " from frame in bfcache.";
+
+    TRACE_EVENT2(
+        "content",
+        "KillIfInBackForwardCacheMessageFilter::WillDispatch bad_message",
+        "interface_name", interface_name_, "message_name", message->name());
+
+    switch (policy_) {
+      case BackForwardCacheImpl::kMessagePolicyNone:
+      case BackForwardCacheImpl::kMessagePolicyLog:
+        return true;
+      case BackForwardCacheImpl::kMessagePolicyDump:
+        base::debug::DumpWithoutCrashing();
+        return true;
+      case BackForwardCacheImpl::kMessagePolicyKill:
+        bad_message::ReceivedBadMessage(
+            render_frame_host_->GetProcess(),
+            bad_message::RFH_RECEIVED_ASSOCIATED_MESSAGE_WHILE_BFCACHED);
+        return false;
+    }
+  }
+
+  void DidDispatchOrReject(mojo::Message* message, bool accepted) override {}
+
+  // Returns true if both the renderer and the browser think the frame is in the
+  // bfcache. That is the PageLifecycleState is in sync with regards to bfcache.
+  // In the intermediate states (no ACK received yet) messages must be allowed.
+  bool IsFrameInBackForwardCache() {
+    PageLifecycleStateManager* mgr =
+        render_frame_host_->render_view_host()->GetPageLifecycleStateManager();
+
+    return mgr->last_acknowledged_state().is_in_back_forward_cache &&
+           mgr->last_state_sent_to_renderer().is_in_back_forward_cache;
+  }
+
+  RenderFrameHostImpl* const render_frame_host_;
+  const char* const interface_name_;
+  const BackForwardCacheImpl::MessageHandlingPolicyWhenCached policy_;
+};
+
+// This class is used to chain multiple mojo::MessageFilter. Messages will be
+// processed by the filters in the same order as the filters are added with the
+// Add() method. WillDispatch() might not be called for all filters or might see
+// a modified message if a filter earlier in the chain discards or modifies it.
+// Similarly a given filter instance might not receive a DidDispatchOrReject()
+// call even if WillDispatch() was called if a filter further down the chain
+// discarded it. Long story short, the order in which filters are added is
+// important!
+class MessageFilterChain : public mojo::MessageFilter {
+ public:
+  MessageFilterChain() = default;
+  ~MessageFilterChain() final = default;
+
+  bool WillDispatch(mojo::Message* message) override {
+    for (auto& filter : filters_) {
+      if (!filter->WillDispatch(message))
+        return false;
+    }
+    return true;
+  }
+  void DidDispatchOrReject(mojo::Message* message, bool accepted) override {
+    for (auto& filter : filters_) {
+      filter->DidDispatchOrReject(message, accepted);
+    }
+  }
+
+  // Adds a filter to the end of the chain. See class description for ordering
+  // implications.
+  void Add(std::unique_ptr<mojo::MessageFilter> filter) {
+    filters_.push_back(std::move(filter));
+  }
+
+ private:
+  std::vector<std::unique_ptr<mojo::MessageFilter>> filters_;
+};
+
+std::unique_ptr<mojo::MessageFilter>
+CreateMessageFilterForAssociatedReceiverImpl(
+    RenderFrameHostImpl* render_frame_host,
+    const char* interface_name,
+    BackForwardCacheImpl::MessageHandlingPolicyWhenCached policy) {
+  auto filter_chain = std::make_unique<MessageFilterChain>();
+  filter_chain->Add(std::make_unique<KillIfInBackForwardCacheMessageFilter>(
+      render_frame_host, interface_name, policy));
+  // KillIfInBackForwardCacheMessageFilter might drop messages so add
+  // ActiveURLMessageFilter at the end of the chain as we need to make sure that
+  // the debug url is reset, that is, DidDispatchOrReject() is called if
+  // WillDispatch().
+  filter_chain->Add(
+      std::make_unique<ActiveURLMessageFilter>(render_frame_host));
+  return filter_chain;
+}
 
 void GrantFileAccess(int child_id,
                      const std::vector<base::FilePath>& file_paths) {
@@ -4269,7 +4391,8 @@ void RenderFrameHostImpl::EnterFullscreen(
     RenderFrameProxyHost* child_proxy =
         rfh->frame_tree_node()->render_manager()->GetRenderFrameProxyHost(
             parent_site_instance);
-    child_proxy->GetAssociatedRemoteFrame()->WillEnterFullscreen();
+    child_proxy->GetAssociatedRemoteFrame()->WillEnterFullscreen(
+        options.Clone());
     notified_instances.insert(parent_site_instance);
   }
 
@@ -4597,6 +4720,9 @@ void RenderFrameHostImpl::BindDomOperationControllerHostReceiver(
         receiver) {
   DCHECK(receiver.is_valid());
   dom_automation_controller_receiver_.Bind(std::move(receiver));
+  dom_automation_controller_receiver_.SetFilter(
+      CreateMessageFilterForAssociatedReceiver(
+          mojom::DomAutomationControllerHost::Name_));
 }
 
 void RenderFrameHostImpl::SetKeepAliveTimeoutForTesting(
@@ -6368,10 +6494,24 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
          mojo::PendingAssociatedReceiver<mojom::FrameHost> receiver) {
         impl->frame_host_associated_receiver_.Bind(std::move(receiver));
         impl->frame_host_associated_receiver_.SetFilter(
-            std::make_unique<ActiveURLMessageFilter>(impl));
+            impl->CreateMessageFilterForAssociatedReceiver(
+                mojom::FrameHost::Name_));
       };
   associated_registry_->AddInterface(
       base::BindRepeating(bind_frame_host_receiver, base::Unretained(this)));
+
+  associated_registry_->AddInterface(base::BindRepeating(
+      [](RenderFrameHostImpl* impl,
+         mojo::PendingAssociatedReceiver<
+             blink::mojom::BackForwardCacheControllerHost> receiver) {
+        impl->back_forward_cache_controller_host_associated_receiver_.Bind(
+            std::move(receiver));
+        impl->back_forward_cache_controller_host_associated_receiver_.SetFilter(
+            CreateMessageFilterForAssociatedReceiverImpl(
+                impl, blink::mojom::BackForwardCacheControllerHost::Name_,
+                BackForwardCacheImpl::kMessagePolicyNone));
+      },
+      base::Unretained(this)));
 
   associated_registry_->AddInterface(base::BindRepeating(
       [](RenderFrameHostImpl* self,
@@ -6386,7 +6526,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
              receiver) {
         impl->local_frame_host_receiver_.Bind(std::move(receiver));
         impl->local_frame_host_receiver_.SetFilter(
-            std::make_unique<ActiveURLMessageFilter>(impl));
+            impl->CreateMessageFilterForAssociatedReceiver(
+                blink::mojom::LocalFrameHost::Name_));
       },
       base::Unretained(this)));
 
@@ -6397,7 +6538,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
                receiver) {
           impl->local_main_frame_host_receiver_.Bind(std::move(receiver));
           impl->local_main_frame_host_receiver_.SetFilter(
-              std::make_unique<ActiveURLMessageFilter>(impl));
+              impl->CreateMessageFilterForAssociatedReceiver(
+                  blink::mojom::LocalMainFrameHost::Name_));
         },
         base::Unretained(this)));
 
@@ -6416,6 +6558,9 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
          mojo::PendingAssociatedReceiver<mojom::RenderAccessibilityHost>
              receiver) {
         impl->render_accessibility_host_receiver_.Bind(std::move(receiver));
+        impl->render_accessibility_host_receiver_.SetFilter(
+            impl->CreateMessageFilterForAssociatedReceiver(
+                mojom::RenderAccessibilityHost::Name_));
       },
       base::Unretained(this)));
 
@@ -7869,6 +8014,14 @@ void RenderFrameHostImpl::SetAudioOutputDeviceIdForGlobalMediaControls(
   audio_service_audio_output_stream_factory_
       ->SetAuthorizedDeviceIdForGlobalMediaControls(
           std::move(hashed_device_id));
+}
+
+std::unique_ptr<mojo::MessageFilter>
+RenderFrameHostImpl::CreateMessageFilterForAssociatedReceiver(
+    const char* interface_name) {
+  return CreateMessageFilterForAssociatedReceiverImpl(
+      this, interface_name,
+      BackForwardCacheImpl::GetChannelAssociatedMessageHandlingPolicy());
 }
 
 bool RenderFrameHostImpl::ValidateDidCommitParams(

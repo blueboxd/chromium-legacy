@@ -11,12 +11,12 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "components/printing/browser/print_manager.h"
+#include "components/printing/common/print.mojom-forward.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "headless/public/headless_export.h"
 #include "printing/print_settings.h"
 
-struct PrintHostMsg_DidPrintDocument_Params;
 struct PrintHostMsg_ScriptedPrint_Params;
 struct PrintMsg_PrintPages_Params;
 
@@ -100,7 +100,7 @@ class HeadlessPrintManager
   // printing::PrintManager:
   void OnDidPrintDocument(
       content::RenderFrameHost* render_frame_host,
-      const PrintHostMsg_DidPrintDocument_Params& params,
+      const printing::mojom::DidPrintDocumentParams& params,
       std::unique_ptr<DelayedFrameDispatchHelper> helper) override;
   void OnGetDefaultPrintSettings(content::RenderFrameHost* render_frame_host,
                                  IPC::Message* reply_msg) override;

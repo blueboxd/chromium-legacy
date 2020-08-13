@@ -12,9 +12,7 @@ import android.view.MenuItem;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.IntentHandler;
@@ -77,11 +75,14 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
         mFragmentView = fragmentView;
         // TODO(crbug.com/1101256): If help is part of the view, make mediator the delegate.
         mFragmentView.setComponentDelegate(this);
-        mFragmentView.getLifecycle().addObserver(this);
+
+        // TODO(crbug.com/1092444): Ideally, the following replaces the lifecycle event forwarding.
+        //  Figure out why it isn't working and use the following lifecycle observer once it does:
+        // mFragmentView.getLifecycle().addObserver(this);
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    public void connectToModelWhenViewIsReady() {
+    @Override
+    public void onStartFragment() {
         // In the rare case of a restarted activity, don't recreate the model and mediator.
         if (mModel == null) {
             mModel = PasswordCheckProperties.createDefaultModel();
@@ -91,10 +92,14 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    public void stopCheck() {
+    @Override
+    public void onDestroyFragment() {
         PasswordCheck check = PasswordCheckFactory.getPasswordCheckInstance();
         if (check != null) check.stopCheck();
+        if (mFragmentView.getActivity() == null || mFragmentView.getActivity().isFinishing()) {
+            mMediator.destroy();
+            mModel = null;
+        }
     }
 
     // TODO(crbug.com/1101256): Move to view code.
@@ -112,7 +117,6 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
 
     @Override
     public void destroy() {
-        mMediator.destroy();
         PasswordCheckFactory.destroy();
     }
 

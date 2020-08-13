@@ -28,6 +28,16 @@ interface PasswordCheckComponentUi {
     boolean handleHelp(MenuItem item);
 
     /**
+     * Forwards the signal that the fragment was started.
+     */
+    void onStartFragment();
+
+    /**
+     * Forwards the signal that the fragment is being destroyed.
+     */
+    void onDestroyFragment();
+
+    /**
      * Tears down the component when it's no longer needed.
      */
     void destroy();

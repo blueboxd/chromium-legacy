@@ -78,9 +78,9 @@ void ValidateHeartbeat(std::unique_ptr<apis::v1::HeartbeatRequest> request,
   is_linux = true;
 #endif
   if (is_googler && is_linux) {
-    ASSERT_TRUE(request->has_hostname_hash());
+    ASSERT_TRUE(request->has_hostname());
   } else {
-    ASSERT_FALSE(request->has_hostname_hash());
+    ASSERT_FALSE(request->has_hostname());
   }
 }
 

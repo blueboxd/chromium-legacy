@@ -151,11 +151,14 @@ constexpr base::TimeDelta PageSchedulerImpl::kDefaultThrottledWakeUpInterval;
 
 PageSchedulerImpl::PageSchedulerImpl(
     PageScheduler::Delegate* delegate,
-    MainThreadSchedulerImpl* main_thread_scheduler)
-    : main_thread_scheduler_(main_thread_scheduler),
+    AgentGroupSchedulerImpl* agent_group_scheduler)
+    : main_thread_scheduler_(agent_group_scheduler->GetMainThreadScheduler()),
+      agent_group_scheduler_(agent_group_scheduler),
       page_visibility_(kDefaultPageVisibility),
       page_visibility_changed_time_(
-          main_thread_scheduler->GetTickClock()->NowTicks()),
+          agent_group_scheduler->GetMainThreadScheduler()
+              ->GetTickClock()
+              ->NowTicks()),
       audio_state_(AudioState::kSilent),
       is_frozen_(false),
       reported_background_throttling_since_navigation_(false),
@@ -165,7 +168,8 @@ PageSchedulerImpl::PageSchedulerImpl(
       is_main_frame_local_(false),
       is_cpu_time_throttled_(false),
       are_wake_ups_intensively_throttled_(false),
-      keep_active_(main_thread_scheduler->SchedulerKeepActive()),
+      keep_active_(agent_group_scheduler->GetMainThreadScheduler()
+                       ->SchedulerKeepActive()),
       had_recent_title_or_favicon_update_(false),
       cpu_time_budget_pool_(nullptr),
       same_origin_wake_up_budget_pool_(nullptr),
@@ -841,6 +845,10 @@ void PageSchedulerImpl::SetMaxVirtualTimeTaskStarvationCount(
 
 MainThreadSchedulerImpl* PageSchedulerImpl::GetMainThreadScheduler() const {
   return main_thread_scheduler_;
+}
+
+AgentGroupSchedulerImpl* PageSchedulerImpl::GetAgentGroupScheduler() {
+  return agent_group_scheduler_;
 }
 
 bool PageSchedulerImpl::IsBackgrounded() const {

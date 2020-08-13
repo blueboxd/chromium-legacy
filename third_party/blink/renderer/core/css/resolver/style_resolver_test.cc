@@ -139,6 +139,7 @@ TEST_F(StyleResolverTest, BaseReusableIfFontRelativeUnitsAbsent) {
   EXPECT_EQ("50px", ComputedValue("font-size", *StyleForId("div")));
 
   div->SetNeedsAnimationStyleRecalc();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   StyleForId("div");
 
   ASSERT_TRUE(div->GetElementAnimations());
@@ -170,6 +171,7 @@ TEST_F(StyleResolverTest, AnimationNotMaskedByImportant) {
   EXPECT_EQ("10px", ComputedValue("height", *StyleForId("div")));
 
   div->SetNeedsAnimationStyleRecalc();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   StyleForId("div");
 
   ASSERT_TRUE(div->GetElementAnimations());
@@ -209,6 +211,7 @@ TEST_F(StyleResolverTest, AnimationNotMaskedWithoutBitset) {
   EXPECT_EQ("10px", ComputedValue("height", *StyleForId("div")));
 
   div->SetNeedsAnimationStyleRecalc();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   StyleForId("div");
 
   ASSERT_TRUE(div->GetElementAnimations());
@@ -239,6 +242,7 @@ TEST_F(StyleResolverTest, AnimationMaskedByImportant) {
   EXPECT_EQ("10px", ComputedValue("height", *StyleForId("div")));
 
   div->SetNeedsAnimationStyleRecalc();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   StyleForId("div");
 
   ASSERT_TRUE(div->GetElementAnimations());
@@ -387,6 +391,7 @@ TEST_P(StyleResolverFontRelativeUnitTest,
   EXPECT_EQ("50px", ComputedValue("font-size", *StyleForId("div")));
 
   div->SetNeedsAnimationStyleRecalc();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   auto computed_style = StyleForId("div");
 
   EXPECT_TRUE(computed_style->HasFontRelativeUnits());
@@ -411,6 +416,7 @@ TEST_P(StyleResolverFontRelativeUnitTest,
   EXPECT_EQ("50px", ComputedValue("height", *StyleForId("div")));
 
   div->SetNeedsAnimationStyleRecalc();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   auto computed_style = StyleForId("div");
 
   EXPECT_TRUE(computed_style->HasFontRelativeUnits());

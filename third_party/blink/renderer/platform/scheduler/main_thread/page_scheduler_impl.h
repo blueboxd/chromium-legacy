@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/agent_group_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
@@ -52,7 +53,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   static constexpr base::TimeDelta kDefaultThrottledWakeUpInterval =
       base::TimeDelta::FromSeconds(1);
 
-  PageSchedulerImpl(PageScheduler::Delegate*, MainThreadSchedulerImpl*);
+  PageSchedulerImpl(PageScheduler::Delegate*, AgentGroupSchedulerImpl*);
 
   ~PageSchedulerImpl() override;
 
@@ -109,6 +110,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool IsOrdinary() const;
 
   MainThreadSchedulerImpl* GetMainThreadScheduler() const;
+  AgentGroupSchedulerImpl* GetAgentGroupScheduler();
 
   void Unregister(FrameSchedulerImpl*);
   void OnNavigation();
@@ -279,6 +281,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   TraceableVariableController tracing_controller_;
   HashSet<FrameSchedulerImpl*> frame_schedulers_;
   MainThreadSchedulerImpl* main_thread_scheduler_;
+  AgentGroupSchedulerImpl* agent_group_scheduler_;
 
   PageVisibilityState page_visibility_;
   base::TimeTicks page_visibility_changed_time_;

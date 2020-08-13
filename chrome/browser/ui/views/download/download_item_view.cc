@@ -571,29 +571,16 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
 }
 
 void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
-  // TODO(pkasting): Refactor to simplify.
-
   OnPaintBackground(canvas);
 
   const bool use_new_warnings = UseNewWarnings();
 
-  if (mode_ != Mode::kNormal && !use_new_warnings) {
-    const gfx::ImageSkia icon = ui::ThemedVectorIcon(GetIcon().GetVectorIcon())
-                                    .GetImageSkia(GetNativeTheme());
-    const int icon_x =
-        GetMirroredXWithWidthInView(kStartPadding, icon.size().width());
-    const int icon_y = CenterY(icon.size().height());
-    canvas->DrawImageInt(icon, icon_x, icon_y);
-
-    OnPaintBorder(canvas);
-    return;
-  }
-
   const gfx::Image* const file_icon_image =
       g_browser_process->icon_manager()->LookupIconFromFilepath(
           model_->GetTargetFilePath(), IconLoader::SMALL);
-  const gfx::ImageSkia* file_icon =
-      file_icon_image ? file_icon_image->ToImageSkia() : nullptr;
+  const gfx::ImageSkia* file_icon = (file_icon_image && mode_ == Mode::kNormal)
+                                        ? file_icon_image->ToImageSkia()
+                                        : nullptr;
 
   // Paint download progress.
   // TODO(pkasting): Use a child view to display this.
@@ -630,8 +617,8 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     file_icon = &file_icon_;
   }
 
+  // Draw the file icon.
   if (file_icon) {
-    // Draw the file icon.
     const int offset = (progress_bounds.height() - file_icon->height()) / 2;
     cc::PaintFlags flags;
     // Use an alpha to make the image look disabled.
@@ -639,19 +626,18 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
       flags.setAlpha(120);
     canvas->DrawImageInt(*file_icon, progress_x + offset, progress_y + offset,
                          flags);
+  }
 
-    // Overlay the warning icon if appropriate.
-    if (mode_ != Mode::kNormal) {
-      constexpr int kDangerIconOffset = 8;
-      const gfx::ImageSkia icon =
-          ui::ThemedVectorIcon(GetIcon().GetVectorIcon())
-              .GetImageSkia(GetNativeTheme());
-      const int icon_x =
-          GetMirroredXWithWidthInView(kStartPadding, icon.size().width()) +
-          kDangerIconOffset;
-      const int icon_y = CenterY(icon.size().height()) + kDangerIconOffset;
-      canvas->DrawImageInt(icon, icon_x, icon_y);
-    }
+  // Overlay the warning icon if appropriate.
+  if (mode_ != Mode::kNormal) {
+    const int offset = use_new_warnings ? 8 : 0;
+    const gfx::ImageSkia icon = ui::ThemedVectorIcon(GetIcon().GetVectorIcon())
+                                    .GetImageSkia(GetNativeTheme());
+    const int icon_x =
+        GetMirroredXWithWidthInView(kStartPadding, icon.size().width()) +
+        offset;
+    const int icon_y = CenterY(icon.size().height()) + offset;
+    canvas->DrawImageInt(icon, icon_x, icon_y);
   }
 
   OnPaintBorder(canvas);

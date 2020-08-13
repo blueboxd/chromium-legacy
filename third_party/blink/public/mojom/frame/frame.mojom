@@ -189,10 +189,6 @@ interface LocalFrameHost {
   // behavior of 'shifting' the content via insets and a scrollIntoView).
   SetVirtualKeyboardOverlayPolicy(bool vk_overlays_content);
 
-  // Evicts the page from the back/forward cache due to e.g., JavaScript
-  // execution.
-  EvictFromBackForwardCache();
-
   // Notifies the browser that the associated frame has changed its visibility
   // status. Visibility status changes occur when the frame moves in/out
   // of the viewport, or the need for a layout object changes, e.g. if the
@@ -734,7 +730,7 @@ interface RemoteFrame {
   // in another process.  Actually entering fullscreen will be done separately
   // as part of ViewMsg_Resize, once the browser process has resized the tab for
   // fullscreen.
-  WillEnterFullscreen();
+  WillEnterFullscreen(FullscreenOptions options);
 
   // Updates replicated ContentSecurityPolicy on the remote frame's
   // SecurityContent.

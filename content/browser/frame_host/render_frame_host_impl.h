@@ -67,6 +67,7 @@
 #include "media/mojo/services/media_metrics_provider.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -100,6 +101,7 @@
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/font_access/font_access.mojom.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
@@ -242,6 +244,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public RenderProcessHostObserver,
       public SiteInstanceImpl::Observer,
       public service_manager::mojom::InterfaceProvider,
+      public blink::mojom::BackForwardCacheControllerHost,
       public blink::mojom::LocalFrameHost,
       public network::CSPContext,
       public blink::mojom::LocalMainFrameHost,
@@ -1745,6 +1748,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SetAudioOutputDeviceIdForGlobalMediaControls(
       std::string hashed_device_id);
 
+  // Returns a filter that should be associated with all AssociatedReceivers for
+  // this frame. |interface_name| is used for logging purposes and must be valid
+  // for the entire program duration.
+  std::unique_ptr<mojo::MessageFilter> CreateMessageFilterForAssociatedReceiver(
+      const char* interface_name);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2755,6 +2764,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   mojo::AssociatedReceiver<mojom::FrameHost> frame_host_associated_receiver_{
       this};
+  mojo::AssociatedReceiver<blink::mojom::BackForwardCacheControllerHost>
+      back_forward_cache_controller_host_associated_receiver_{this};
   mojo::Remote<mojom::Frame> frame_;
   mojo::AssociatedRemote<mojom::FrameBindingsControl> frame_bindings_control_;
   mojo::AssociatedRemote<mojom::FrameNavigationControl> navigation_control_;

@@ -52,6 +52,13 @@ Browser* FindSystemWebAppBrowser(
 // Returns true if the |browser| is a system web app.
 bool IsSystemWebApp(Browser* browser);
 
+// Returns the SystemAppType that should capture the |url|.
+base::Optional<SystemAppType> GetCapturingSystemAppForURL(Profile* profile,
+                                                          const GURL& url);
+
+// Returns whether the |browser| hosts the system app |type|.
+bool IsBrowserForSystemWebApp(Browser* browser, SystemAppType type);
+
 // Returns the minimum window size for a system web app, or an empty size if
 // the app does not specify a minimum size.
 gfx::Size GetSystemWebAppMinimumWindowSize(Browser* browser);

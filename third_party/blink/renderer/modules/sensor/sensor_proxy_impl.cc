@@ -65,7 +65,8 @@ void SensorProxyImpl::RemoveConfiguration(
     device::mojom::blink::SensorConfigurationPtr configuration) {
   DCHECK(IsInitialized());
   RemoveActiveFrequency(configuration->frequency);
-  sensor_remote_->RemoveConfiguration(std::move(configuration));
+  if (sensor_remote_.is_bound())
+    sensor_remote_->RemoveConfiguration(std::move(configuration));
 }
 
 double SensorProxyImpl::GetDefaultFrequency() const {

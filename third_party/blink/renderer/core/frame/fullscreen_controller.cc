@@ -112,7 +112,7 @@ void FullscreenController::DidExitFullscreen() {
 
 void FullscreenController::EnterFullscreen(LocalFrame& frame,
                                            const FullscreenOptions* options,
-                                           bool for_cross_process_descendant) {
+                                           FullscreenRequestType request_type) {
   // TODO(dtapuska): If we are already in fullscreen. If the options are
   // different than the currently requested one we may wish to request
   // fullscreen mode again.
@@ -155,9 +155,28 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
       fullscreen_options->display_id = options->screen()->DisplayId();
   }
 
+  // TODO(alexmos): currently, this assumes prefixed requests, but in the
+  // future, this should plumb in information about which request type
+  // (prefixed or unprefixed) to use for firing fullscreen events.
+  //
+  // This is basically implemented, but disabled for now since it's potentially
+  // an application-visible change in behavior. To enable, use the following:
+  //
+  //   fullscreen_options->is_prefixed =
+  //       request_type & FullscreenRequestType::kPrefixed;
+  fullscreen_options->is_prefixed = true;
+
+#if DCHECK_IS_ON()
+  DVLOG(2) << __func__ << ": request_type="
+           << FullscreenRequestTypeToDebugString(request_type)
+           << " fullscreen_options={display_id="
+           << fullscreen_options->display_id
+           << ", is_prefixed=" << fullscreen_options->is_prefixed << "}";
+#endif
+
   // Don't send redundant EnterFullscreen message to the browser for the
   // ancestor frames if the subframe has already entered fullscreen.
-  if (!for_cross_process_descendant) {
+  if (!(request_type & FullscreenRequestType::kForCrossProcessDescendant)) {
     frame.GetLocalFrameHostRemote().EnterFullscreen(
         std::move(fullscreen_options),
         WTF::Bind(&FullscreenController::EnterFullscreenCallback,

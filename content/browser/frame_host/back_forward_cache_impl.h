@@ -46,6 +46,16 @@ constexpr base::Feature kRecordBackForwardCacheMetricsWithoutEnabling{
 // the current_frame_host.
 class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
  public:
+  enum MessageHandlingPolicyWhenCached {
+    kMessagePolicyNone,
+    kMessagePolicyLog,
+    kMessagePolicyDump,
+    kMessagePolicyKill,
+  };
+
+  static MessageHandlingPolicyWhenCached
+  GetChannelAssociatedMessageHandlingPolicy();
+
   struct Entry {
     using RenderFrameProxyHostMap =
         std::unordered_map<int32_t /* SiteInstance ID */,

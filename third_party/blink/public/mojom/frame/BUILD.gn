@@ -16,6 +16,7 @@ mojom_component("frame") {
   # TODO(crbug.com/1078875): Reorganize how we assign frame/*mojom files to
   # mojom GN targets to match better the core/platform separation in C++.
   sources = [
+    "back_forward_cache_controller.mojom",
     "blocked_navigation_types.mojom",
     "find_in_page.mojom",
     "frame_owner_element_type.mojom",

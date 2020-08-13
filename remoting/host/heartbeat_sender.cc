@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/hash/sha1.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
@@ -397,7 +396,7 @@ HeartbeatSender::CreateHeartbeatRequest() {
   // a Linux OS.
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (is_googler_) {
-    heartbeat->set_hostname_hash(base::SHA1HashString(net::GetHostName()));
+    heartbeat->set_hostname(net::GetHostName());
   }
 #endif
   return heartbeat;

@@ -78,6 +78,15 @@ TerminationStatus GetTerminationStatusImpl(ProcessHandle handle,
 
 }  // namespace
 
+#if !defined(OS_NACL_NONSFI)
+bool KillProcessGroup(ProcessHandle process_group_id) {
+  bool result = kill(-1 * process_group_id, SIGKILL) == 0;
+  if (!result)
+    DPLOG(ERROR) << "Unable to terminate process group " << process_group_id;
+  return result;
+}
+#endif  // !defined(OS_NACL_NONSFI)
+
 TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   return GetTerminationStatusImpl(handle, false /* can_block */, exit_code);
 }

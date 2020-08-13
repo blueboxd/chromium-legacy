@@ -302,11 +302,11 @@ void AnticipationTestTask(MainThreadSchedulerImpl* scheduler,
 
 class MockPageSchedulerImpl : public PageSchedulerImpl {
  public:
-  explicit MockPageSchedulerImpl(MainThreadSchedulerImpl* scheduler)
-      : PageSchedulerImpl(nullptr, scheduler) {
+  explicit MockPageSchedulerImpl(AgentGroupSchedulerImpl* agent_group_scheduler)
+      : PageSchedulerImpl(nullptr, agent_group_scheduler) {
     // This would normally be called by
     // MainThreadSchedulerImpl::CreatePageScheduler.
-    scheduler->AddPageScheduler(this);
+    agent_group_scheduler->GetMainThreadScheduler()->AddPageScheduler(this);
 
     ON_CALL(*this, IsWaitingForMainFrameContentfulPaint)
         .WillByDefault(Return(true));
@@ -443,8 +443,8 @@ class MainThreadSchedulerImplTest : public testing::Test {
     idle_task_runner_ = scheduler_->IdleTaskRunner();
     v8_task_runner_ = scheduler_->V8TaskQueue()->task_runner();
 
-    page_scheduler_ =
-        std::make_unique<NiceMock<MockPageSchedulerImpl>>(scheduler_.get());
+    page_scheduler_ = std::make_unique<NiceMock<MockPageSchedulerImpl>>(
+        scheduler_->CreateAgentGroupScheduler());
     main_frame_scheduler_ =
         CreateFrameScheduler(page_scheduler_.get(), nullptr, nullptr,
                              FrameScheduler::FrameType::kMainFrame);

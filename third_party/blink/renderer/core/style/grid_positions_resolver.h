@@ -66,11 +66,11 @@ class GridPositionsResolver {
   static GridPositionSide InitialPositionSide(GridTrackSizingDirection);
   static GridPositionSide FinalPositionSide(GridTrackSizingDirection);
 
-  static size_t SpanSizeForAutoPlacedItem(const LayoutBox&,
+  static size_t SpanSizeForAutoPlacedItem(const ComputedStyle&,
                                           GridTrackSizingDirection);
   static GridSpan ResolveGridPositionsFromStyle(
       const ComputedStyle&,
-      const LayoutBox&,
+      const ComputedStyle&,
       GridTrackSizingDirection,
       size_t auto_repeat_tracks_count);
 };

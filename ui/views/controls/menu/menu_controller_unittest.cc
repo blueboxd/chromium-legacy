@@ -877,12 +877,10 @@ class MenuControllerTest : public ViewsTestBase,
 
 INSTANTIATE_TEST_SUITE_P(All, MenuControllerTest, testing::Bool());
 
-#if defined(USE_X11)
+#if defined(USE_AURA)
 // Tests that an event targeter which blocks events will be honored by the menu
 // event dispatcher.
 TEST_F(MenuControllerTest, EventTargeter) {
-  if (features::IsUsingOzonePlatform())
-    return;
   {
     // With the aura::NullWindowTargeter instantiated and assigned we expect
     // the menu to not handle the key event.
@@ -896,8 +894,7 @@ TEST_F(MenuControllerTest, EventTargeter) {
   TestAsyncEscapeKey();
   EXPECT_EQ(MenuController::ExitType::kAll, menu_exit_type());
 }
-
-#endif  // defined(USE_X11)
+#endif  // defined(USE_AURA)
 
 #if defined(USE_X11)
 // Tests that touch event ids are released correctly. See crbug.com/439051 for

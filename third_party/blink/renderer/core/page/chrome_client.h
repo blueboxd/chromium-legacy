@@ -100,6 +100,8 @@ class PopupOpeningObserver;
 class WebDragData;
 class WebViewImpl;
 
+enum class FullscreenRequestType;
+
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct ViewportDescription;
@@ -368,7 +370,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void EnterFullscreen(LocalFrame&,
                                const FullscreenOptions*,
-                               bool for_cross_process_descendant) {}
+                               FullscreenRequestType) {}
   virtual void ExitFullscreen(LocalFrame&) {}
   virtual void FullscreenElementChanged(Element* old_element,
                                         Element* new_element) {}

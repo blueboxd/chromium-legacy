@@ -22,7 +22,6 @@ namespace IPC {
 class Message;
 }
 
-struct PrintHostMsg_DidPrintDocument_Params;
 struct PrintHostMsg_ScriptedPrint_Params;
 
 namespace printing {
@@ -89,7 +88,7 @@ class PrintManager : public content::WebContentsObserver {
   virtual void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   virtual void OnDidPrintDocument(
       content::RenderFrameHost* render_frame_host,
-      const PrintHostMsg_DidPrintDocument_Params& params,
+      const mojom::DidPrintDocumentParams& params,
       std::unique_ptr<DelayedFrameDispatchHelper> helper) = 0;
   virtual void OnGetDefaultPrintSettings(
       content::RenderFrameHost* render_frame_host,

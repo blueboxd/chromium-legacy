@@ -105,12 +105,12 @@ void AwPrintManager::OnScriptedPrint(
 
 void AwPrintManager::OnDidPrintDocument(
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_DidPrintDocument_Params& params,
+    const printing::mojom::DidPrintDocumentParams& params,
     std::unique_ptr<DelayedFrameDispatchHelper> helper) {
   if (params.document_cookie != cookie_)
     return;
 
-  const printing::mojom::DidPrintContentParams& content = params.content;
+  const printing::mojom::DidPrintContentParams& content = *params.content;
   if (!content.metafile_data_region.IsValid()) {
     NOTREACHED() << "invalid memory handle";
     web_contents()->Stop();

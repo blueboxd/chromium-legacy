@@ -4557,6 +4557,8 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
 void RenderProcessHostImpl::ProcessDied(
     bool already_dead,
     ChildProcessTerminationInfo* known_info) {
+  TRACE_EVENT1("content", "RenderProcessHostImpl::ProcessDied", "already_dead",
+               already_dead);
   // Our child process has died.  If we didn't expect it, it's a crash.
   // In any case, we need to let everyone know it's gone.
   // The OnChannelError notification can fire multiple times due to nested

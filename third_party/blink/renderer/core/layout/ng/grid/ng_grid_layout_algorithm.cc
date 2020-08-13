@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_child_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 
 namespace blink {
 
@@ -29,6 +30,7 @@ scoped_refptr<const NGLayoutResult> NGGridLayoutAlgorithm::Layout() {
     switch (state_) {
       case GridLayoutAlgorithmState::kMeasuringItems: {
         SetSpecifiedTracks();
+        DetermineExplicitTrackStarts();
         ConstructAndAppendGridItems();
         block_column_track_collection_.FinalizeRanges();
         block_row_track_collection_.FinalizeRanges();
@@ -92,7 +94,8 @@ void NGGridLayoutAlgorithm::ConstructAndAppendGridItems() {
   for (NGBlockNode child = iterator.NextChild(); child;
        child = iterator.NextChild()) {
     ConstructAndAppendGridItem(child);
-    EnsureTrackCoverageForGridItem(child);
+    EnsureTrackCoverageForGridItem(child, kForRows);
+    EnsureTrackCoverageForGridItem(child, kForColumns);
   }
 }
 
@@ -165,36 +168,62 @@ void NGGridLayoutAlgorithm::SetSpecifiedTracks() {
   block_column_track_collection_.SetSpecifiedTracks(
       &grid_style.GridTemplateColumns().NGTrackList(),
       &grid_style.GridAutoColumns().NGTrackList(),
-      automatic_column_repetitions_for_testing);
+      automatic_column_repetitions_);
 
   block_row_track_collection_.SetSpecifiedTracks(
       &grid_style.GridTemplateRows().NGTrackList(),
-      &grid_style.GridAutoRows().NGTrackList(),
-      automatic_row_repetitions_for_testing);
+      &grid_style.GridAutoRows().NGTrackList(), automatic_row_repetitions_);
 }
 
 void NGGridLayoutAlgorithm::EnsureTrackCoverageForGridItem(
-    const NGBlockNode& grid_item) {
+    const NGBlockNode& grid_item,
+    GridTrackSizingDirection grid_direction) {
   const ComputedStyle& item_style = grid_item.Style();
-  EnsureTrackCoverageForGridPositions(item_style.GridColumnStart(),
-                                      item_style.GridColumnEnd(),
-                                      block_column_track_collection_);
-  EnsureTrackCoverageForGridPositions(item_style.GridRowStart(),
-                                      item_style.GridRowEnd(),
-                                      block_row_track_collection_);
+  GridSpan span = GridPositionsResolver::ResolveGridPositionsFromStyle(
+      Style(), item_style, grid_direction,
+      AutoRepeatCountForDirection(grid_direction));
+  // TODO(janewman): indefinite positions should be resolved with the auto
+  // placement algorithm.
+  if (span.IsIndefinite())
+    return;
+
+  wtf_size_t explicit_start = (grid_direction == kForColumns)
+                                  ? explicit_column_start_
+                                  : explicit_row_start_;
+  wtf_size_t start = span.UntranslatedStartLine() + explicit_start;
+  wtf_size_t end = span.UntranslatedEndLine() + explicit_start;
+
+  switch (grid_direction) {
+    case kForColumns:
+      block_column_track_collection_.EnsureTrackCoverage(start, end - start);
+      break;
+    case kForRows:
+      block_row_track_collection_.EnsureTrackCoverage(start, end - start);
+      break;
+  }
 }
 
-void NGGridLayoutAlgorithm::EnsureTrackCoverageForGridPositions(
-    const GridPosition& start_position,
-    const GridPosition& end_position,
-    NGGridBlockTrackCollection& track_collection) {
-  // For now, we only support adding tracks if they were specified.
-  // TODO(janewman): Implement support for position types other than Explicit.
-  if (start_position.GetType() == GridPositionType::kExplicitPosition &&
-      end_position.GetType() == GridPositionType::kExplicitPosition) {
-    track_collection.EnsureTrackCoverage(
-        start_position.IntegerPosition(),
-        end_position.IntegerPosition() - start_position.IntegerPosition() + 1);
+void NGGridLayoutAlgorithm::DetermineExplicitTrackStarts() {
+  DCHECK_EQ(0u, explicit_column_start_);
+  DCHECK_EQ(0u, explicit_row_start_);
+
+  NGGridChildIterator iterator(Node());
+  for (NGBlockNode child = iterator.NextChild(); child;
+       child = iterator.NextChild()) {
+    GridSpan column_span = GridPositionsResolver::ResolveGridPositionsFromStyle(
+        Style(), child.Style(), kForColumns,
+        AutoRepeatCountForDirection(kForColumns));
+    GridSpan row_span = GridPositionsResolver::ResolveGridPositionsFromStyle(
+        Style(), child.Style(), kForRows,
+        AutoRepeatCountForDirection(kForRows));
+    if (!column_span.IsIndefinite()) {
+      explicit_column_start_ = std::max<int>(
+          explicit_column_start_, -column_span.UntranslatedStartLine());
+    }
+    if (!row_span.IsIndefinite()) {
+      explicit_row_start_ =
+          std::max<int>(explicit_row_start_, -row_span.UntranslatedStartLine());
+    }
   }
 }
 
@@ -252,8 +281,13 @@ void NGGridLayoutAlgorithm::ComputeUsedTrackSizes(
 void NGGridLayoutAlgorithm::SetAutomaticTrackRepetitionsForTesting(
     wtf_size_t auto_column,
     wtf_size_t auto_row) {
-  automatic_column_repetitions_for_testing = auto_column;
-  automatic_row_repetitions_for_testing = auto_row;
+  automatic_column_repetitions_ = auto_column;
+  automatic_row_repetitions_ = auto_row;
+}
+wtf_size_t NGGridLayoutAlgorithm::AutoRepeatCountForDirection(
+    GridTrackSizingDirection direction) const {
+  return (direction == kForColumns) ? automatic_column_repetitions_
+                                    : automatic_row_repetitions_;
 }
 
 }  // namespace blink

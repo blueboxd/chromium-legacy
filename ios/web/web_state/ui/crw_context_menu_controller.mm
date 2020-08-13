@@ -415,6 +415,7 @@ void OverrideGestureRecognizers(UIGestureRecognizer* contextMenuRecognizer,
       _contextMenuInfoForLastTouch.dom_element);
   params.view = _webView;
   params.location = _contextMenuInfoForLastTouch.location;
+  params.is_main_frame = _contextMenuInfoForLastTouch.is_main_frame;
   [_delegate webView:_webView handleContextMenu:params];
 }
 

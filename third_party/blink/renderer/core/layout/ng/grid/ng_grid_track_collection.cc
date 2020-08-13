@@ -153,13 +153,12 @@ void NGGridBlockTrackCollection::SetSpecifiedTracks(
   wtf_size_t total_track_count = 0;
 
   for (wtf_size_t i = 0; i < repeater_count; ++i) {
-    wtf_size_t repeater_track_start = total_track_count + 1;
     wtf_size_t repeater_track_count =
         explicit_tracks_->RepeatCount(i, auto_repeat_count_) *
         explicit_tracks_->RepeatSize(i);
     if (repeater_track_count != 0) {
-      starting_tracks_.push_back(repeater_track_start);
-      ending_tracks_.push_back(repeater_track_start + repeater_track_count - 1);
+      starting_tracks_.push_back(total_track_count);
+      ending_tracks_.push_back(total_track_count + repeater_track_count);
     }
     total_track_count += repeater_track_count;
   }
@@ -171,7 +170,7 @@ void NGGridBlockTrackCollection::EnsureTrackCoverage(wtf_size_t track_number,
   DCHECK_NE(kInvalidRangeIndex, span_length);
   track_indices_need_sort_ = true;
   starting_tracks_.push_back(track_number);
-  ending_tracks_.push_back(track_number + span_length - 1);
+  ending_tracks_.push_back(track_number + span_length);
 }
 
 void NGGridBlockTrackCollection::FinalizeRanges() {
@@ -183,21 +182,19 @@ void NGGridBlockTrackCollection::FinalizeRanges() {
     std::stable_sort(ending_tracks_.begin(), ending_tracks_.end());
   }
 
-  wtf_size_t current_range_track_start = 1u;
-  if (starting_tracks_.size() > 0 && starting_tracks_[0] == 0)
-    current_range_track_start = 0;
+  wtf_size_t current_range_track_start = 0u;
 
   // Indices into the starting and ending track vectors.
-  wtf_size_t starting_tracks_index = 0;
-  wtf_size_t ending_tracks_index = 0;
+  wtf_size_t starting_tracks_index = 0u;
+  wtf_size_t ending_tracks_index = 0u;
 
   wtf_size_t repeater_index = kInvalidRangeIndex;
   wtf_size_t repeater_track_start = kInvalidRangeIndex;
-  wtf_size_t next_repeater_track_start = 1u;
-  wtf_size_t current_repeater_track_count = 0;
+  wtf_size_t next_repeater_track_start = 0u;
+  wtf_size_t current_repeater_track_count = 0u;
 
   wtf_size_t total_repeater_count = explicit_tracks_->RepeaterCount();
-  wtf_size_t open_items_or_repeaters = 0;
+  wtf_size_t open_items_or_repeaters = 0u;
   bool is_in_auto_fit_range = false;
 
   while (true) {
@@ -211,7 +208,7 @@ void NGGridBlockTrackCollection::FinalizeRanges() {
 
     // Identify ending tracks index.
     while (ending_tracks_index < ending_tracks_.size() &&
-           current_range_track_start > ending_tracks_[ending_tracks_index]) {
+           current_range_track_start >= ending_tracks_[ending_tracks_index]) {
       ++ending_tracks_index;
       --open_items_or_repeaters;
       DCHECK_GE(open_items_or_repeaters, 0u);
@@ -251,13 +248,10 @@ void NGGridBlockTrackCollection::FinalizeRanges() {
     // Determine track number and count of the range.
     Range range;
     range.starting_track_number = current_range_track_start;
-    if (next_starting_track != kInvalidRangeIndex) {
-      range.track_count =
-          std::min(next_ending_track + 1u, next_starting_track) -
-          current_range_track_start;
-    } else {
-      range.track_count = next_ending_track + 1u - current_range_track_start;
-    }
+    DCHECK(next_starting_track != kInvalidRangeIndex ||
+           next_ending_track < next_starting_track);
+    range.track_count = std::min(next_ending_track, next_starting_track) -
+                        current_range_track_start;
 
     // Compute repeater index and offset.
     if (repeater_index == kInvalidRangeIndex) {

@@ -6,29 +6,37 @@
 #include <unordered_map>
 
 #include "base/bind_helpers.h"
+#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/hash/hash.h"
 #include "base/location.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/presentation/presentation_test_utils.h"
+#include "content/browser/renderer_host/page_lifecycle_state_manager.h"
 #include "content/browser/web_contents/file_chooser_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
+#include "content/common/render_accessibility.mojom.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/frame_service_base.h"
 #include "content/public/browser/global_routing_id.h"
@@ -55,6 +63,9 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/echo.mojom.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -120,6 +131,8 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
     // TODO(sreejakshetty): Initialize ScopedFeatureLists from test constructor.
     EnableFeatureAndSetParams(features::kBackForwardCache,
                               "TimeToLiveInBackForwardCacheInSeconds", "3600");
+    EnableFeatureAndSetParams(features::kBackForwardCache,
+                              "message_handling_when_cached", "kill");
     EnableFeatureAndSetParams(
         features::kBackForwardCache, "enable_same_site",
         same_site_back_forward_cache_enabled_ ? "true" : "false");
@@ -359,7 +372,10 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
   void EvictByJavaScript(RenderFrameHostImpl* rfh) {
     // Run JavaScript on a page in the back-forward cache. The page should be
     // evicted. As the frame is deleted, ExecJs returns false without executing.
-    EXPECT_FALSE(ExecJs(rfh, "console.log('hi');"));
+    // Run without user gesture to prevent UpdateUserActivationState message
+    // being sent back to browser.
+    EXPECT_FALSE(
+        ExecJs(rfh, "console.log('hi');", EXECUTE_SCRIPT_NO_USER_GESTURE));
   }
 
   void StartRecordingEvents(RenderFrameHostImpl* rfh) {
@@ -553,6 +569,64 @@ void WaitForDOMContentLoaded(RenderFrameHostImpl* rfh) {
   DOMContentLoadedObserver observer(rfh);
   observer.Wait();
 }
+
+class PageLifecycleStateManagerTestDelegate
+    : public PageLifecycleStateManager::TestDelegate {
+ public:
+  explicit PageLifecycleStateManagerTestDelegate(
+      PageLifecycleStateManager* manager)
+      : manager_(manager) {
+    manager->SetDelegateForTesting(this);
+  }
+
+  ~PageLifecycleStateManagerTestDelegate() override {
+    manager_->SetDelegateForTesting(nullptr);
+  }
+
+  void WaitForInBackForwardCacheAck() {
+    if (manager_->last_acknowledged_state().is_in_back_forward_cache) {
+      return;
+    }
+    base::RunLoop loop;
+    store_in_back_forward_cache_ack_received_ = loop.QuitClosure();
+    loop.Run();
+  }
+
+  void OnStoreInBackForwardCacheSent(base::OnceClosure cb) {
+    store_in_back_forward_cache_sent_ = std::move(cb);
+  }
+
+  void OnRestoreFromBackForwardCacheSent(base::OnceClosure cb) {
+    restore_from_back_forward_cache_sent_ = std::move(cb);
+  }
+
+ private:
+  void OnLastAcknowledgedStateChanged(
+      const blink::mojom::PageLifecycleState& old_state,
+      const blink::mojom::PageLifecycleState& new_state) override {
+    if (store_in_back_forward_cache_ack_received_ &&
+        new_state.is_in_back_forward_cache)
+      std::move(store_in_back_forward_cache_ack_received_).Run();
+  }
+
+  void OnUpdateSentToRenderer(
+      const blink::mojom::PageLifecycleState& new_state) override {
+    if (store_in_back_forward_cache_sent_ &&
+        new_state.is_in_back_forward_cache) {
+      std::move(store_in_back_forward_cache_sent_).Run();
+    }
+
+    if (restore_from_back_forward_cache_sent_ &&
+        !new_state.is_in_back_forward_cache) {
+      std::move(restore_from_back_forward_cache_sent_).Run();
+    }
+  }
+
+  PageLifecycleStateManager* const manager_;
+  base::OnceClosure store_in_back_forward_cache_sent_;
+  base::OnceClosure store_in_back_forward_cache_ack_received_;
+  base::OnceClosure restore_from_back_forward_cache_sent_;
+};
 
 }  // namespace
 
@@ -2558,16 +2632,17 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // Execute JavaScript after committing but before swapping happens on the
   // renderer.
   ReadyToCommitNavigationCallback host_changed_callback(
-      web_contents(), base::BindOnce(
-                          [](RenderFrameHostImpl* rfh_a,
-                             RenderFrameDeletedObserver* delete_observer_rfh_a,
-                             NavigationHandle* navigation_handle) {
-                            EXPECT_FALSE(delete_observer_rfh_a->deleted());
-                            EXPECT_EQ(rfh_a,
-                                      navigation_handle->GetRenderFrameHost());
-                            ExecuteScriptAsync(rfh_a, "console.log('hi');");
-                          },
-                          rfh_a, &delete_observer_rfh_a));
+      web_contents(),
+      base::BindOnce(
+          [](RenderFrameHostImpl* rfh_a,
+             RenderFrameDeletedObserver* delete_observer_rfh_a,
+             NavigationHandle* navigation_handle) {
+            ASSERT_FALSE(delete_observer_rfh_a->deleted());
+            EXPECT_EQ(rfh_a, navigation_handle->GetRenderFrameHost());
+            rfh_a->ExecuteJavaScriptForTests(
+                base::UTF8ToUTF16("console.log('hi');"), base::NullCallback());
+          },
+          rfh_a, &delete_observer_rfh_a));
 
   // Wait for two navigations to finish. The first one is the BackForwardCache
   // navigation, the other is the reload caused by the eviction.
@@ -6497,6 +6572,105 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CoopReporter) {
   EXPECT_EQ(rfh_a, current_frame_host());
 
   EXPECT_TRUE(rfh_a->coop_reporter());
+}
+
+namespace {
+
+class EchoFakeWithFilter final : public mojom::Echo {
+ public:
+  explicit EchoFakeWithFilter(mojo::PendingReceiver<mojom::Echo> receiver,
+                              std::unique_ptr<mojo::MessageFilter> filter)
+      : receiver_(this, std::move(receiver)) {
+    receiver_.SetFilter(std::move(filter));
+  }
+  ~EchoFakeWithFilter() override = default;
+
+  // mojom::Echo implementation
+  void EchoString(const std::string& input,
+                  EchoStringCallback callback) override {
+    std::move(callback).Run(input);
+  }
+
+ private:
+  mojo::Receiver<mojom::Echo> receiver_;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTest,
+    ProcessKilledIfMessageReceivedOnAssociatedInterfaceWhileCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  url::Origin origin_a = url::Origin::Create(url_a);
+  url::Origin origin_b = url::Origin::Create(url_b);
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  PageLifecycleStateManagerTestDelegate delegate(
+      rfh_a->render_view_host()->GetPageLifecycleStateManager());
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  delegate.WaitForInBackForwardCacheAck();
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  mojo::Remote<mojom::Echo> remote;
+  EchoFakeWithFilter echo(
+      remote.BindNewPipeAndPassReceiver(),
+      rfh_a->CreateMessageFilterForAssociatedReceiver(mojom::Echo::Name_));
+
+  ScopedAllowRendererCrashes allow_crash(rfh_a->GetProcess());
+  RenderProcessHostBadIpcMessageWaiter bad_message_waiter(rfh_a->GetProcess());
+
+  remote->EchoString("", base::NullCallback());
+
+  EXPECT_THAT(bad_message_waiter.Wait(),
+              testing::Optional(
+                  bad_message::RFH_RECEIVED_ASSOCIATED_MESSAGE_WHILE_BFCACHED));
+  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTest,
+    ProcessNotKilledIfMessageReceivedOnAssociatedInterfaceWhileFreezing) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  url::Origin origin_a = url::Origin::Create(url_a);
+  url::Origin origin_b = url::Origin::Create(url_b);
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  PageLifecycleStateManagerTestDelegate delegate(
+      rfh_a->render_view_host()->GetPageLifecycleStateManager());
+
+  mojo::Remote<mojom::Echo> remote;
+  EchoFakeWithFilter echo(
+      remote.BindNewPipeAndPassReceiver(),
+      rfh_a->CreateMessageFilterForAssociatedReceiver(mojom::Echo::Name_));
+
+  delegate.OnStoreInBackForwardCacheSent(base::BindLambdaForTesting(
+      [&]() { remote->EchoString("", base::NullCallback()); }));
+
+  delegate.OnRestoreFromBackForwardCacheSent(base::BindLambdaForTesting(
+      [&]() { remote->EchoString("", base::NullCallback()); }));
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
+                FROM_HERE);
 }
 
 }  // namespace content

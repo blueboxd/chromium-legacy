@@ -181,6 +181,10 @@ class FrameScheduler : public FrameOrWorkerScheduler {
 
   // TODO(altimin): Move FrameScheduler object to oilpan.
   virtual base::WeakPtr<FrameScheduler> GetWeakPtr() = 0;
+
+  // Notifies the delegate the list of active features for this frame if they
+  // have changed since the last notification.
+  virtual void ReportActiveSchedulerTrackedFeatures() = 0;
 };
 
 }  // namespace blink

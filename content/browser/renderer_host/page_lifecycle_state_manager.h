@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PAGE_LIFECYCLE_STATE_MANAGER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PAGE_LIFECYCLE_STATE_MANAGER_H_
 
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "content/browser/renderer_host/input/one_shot_timeout_monitor.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_visibility_state.h"
@@ -19,6 +21,17 @@ class RenderViewHostImpl;
 // and communicating in to the RenderView. 1:1 with RenderViewHostImpl.
 class CONTENT_EXPORT PageLifecycleStateManager {
  public:
+  class CONTENT_EXPORT TestDelegate {
+   public:
+    TestDelegate();
+    virtual ~TestDelegate();
+    virtual void OnLastAcknowledgedStateChanged(
+        const blink::mojom::PageLifecycleState& old_state,
+        const blink::mojom::PageLifecycleState& new_state);
+    virtual void OnUpdateSentToRenderer(
+        const blink::mojom::PageLifecycleState& new_state);
+  };
+
   explicit PageLifecycleStateManager(
       RenderViewHostImpl* render_view_host_impl,
       blink::mojom::PageVisibilityState web_contents_visibility_state);
@@ -34,6 +47,16 @@ class CONTENT_EXPORT PageLifecycleStateManager {
   // Calculates the per-page lifecycle state based on the per-tab / web contents
   // lifecycle state saved in this instance.
   blink::mojom::PageLifecycleStatePtr CalculatePageLifecycleState();
+
+  const blink::mojom::PageLifecycleState& last_acknowledged_state() const {
+    return *last_acknowledged_state_;
+  }
+
+  const blink::mojom::PageLifecycleState& last_state_sent_to_renderer() const {
+    return *last_state_sent_to_renderer_;
+  }
+
+  void SetDelegateForTesting(TestDelegate* test_delegate_);
 
  private:
   // Send mojo message to renderer if the effective (page) lifecycle state has
@@ -70,6 +93,8 @@ class CONTENT_EXPORT PageLifecycleStateManager {
   blink::mojom::PageLifecycleStatePtr last_state_sent_to_renderer_;
 
   std::unique_ptr<OneShotTimeoutMonitor> back_forward_cache_timeout_monitor_;
+
+  TestDelegate* test_delegate_{nullptr};
   // NOTE: This must be the last member.
   base::WeakPtrFactory<PageLifecycleStateManager> weak_ptr_factory_{this};
 };

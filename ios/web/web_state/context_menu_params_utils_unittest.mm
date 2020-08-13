@@ -41,6 +41,7 @@ typedef PlatformTest ContextMenuParamsUtilsTest;
 // Tests the empty contructor.
 TEST_F(ContextMenuParamsUtilsTest, EmptyParams) {
   web::ContextMenuParams params;
+  EXPECT_TRUE(params.is_main_frame);
   EXPECT_EQ(params.menu_title, nil);
   EXPECT_FALSE(params.link_url.is_valid());
   EXPECT_FALSE(params.src_url.is_valid());
@@ -60,6 +61,7 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTest) {
     kContextMenuElementInnerText : @(kLinkText),
   });
 
+  EXPECT_TRUE(params.is_main_frame);
   EXPECT_NSEQ(params.menu_title, @(kTitle));
   EXPECT_EQ(params.link_url, GURL(kLinkUrl));
   EXPECT_EQ(params.src_url, GURL(kSrcUrl));

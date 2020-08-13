@@ -788,6 +788,10 @@ bool IsAltPressed() {
   return XModifierStateWatcher::GetInstance()->state() & Mod1Mask;
 }
 
+int GetModifierKeyState() {
+  return XModifierStateWatcher::GetInstance()->state();
+}
+
 void ResetTimestampRolloverCountersForTesting() {
   g_last_seen_timestamp_ms = 0;
   g_rollover_ms = 0;

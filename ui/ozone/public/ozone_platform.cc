@@ -95,6 +95,11 @@ PlatformGLEGLUtility* OzonePlatform::GetPlatformGLEGLUtility() {
   return nullptr;
 }
 
+int OzonePlatform::GetKeyModifiers() const {
+  // Platform may override this to provide the current state of modifier keys.
+  return 0;
+}
+
 bool OzonePlatform::IsNativePixmapConfigSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) const {

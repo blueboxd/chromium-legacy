@@ -140,6 +140,11 @@ class AppBrowserController : public TabStripModelObserver,
   // Returns true if this controller is for a System Web App.
   bool is_for_system_web_app() const { return system_app_type_.has_value(); }
 
+  // Returns the SystemAppType for this controller.
+  const base::Optional<SystemAppType>& system_app_type() const {
+    return system_app_type_;
+  }
+
   // Returns true if AppId is non-null
   bool HasAppId() const { return app_id_.has_value(); }
 

@@ -343,6 +343,9 @@ void LocalFrame::Init(Frame* opener) {
   GetRemoteNavigationAssociatedInterfaces()->GetInterface(
       local_frame_host_remote_.BindNewEndpointAndPassReceiver(
           GetTaskRunner(blink::TaskType::kInternalDefault)));
+  GetRemoteNavigationAssociatedInterfaces()->GetInterface(
+      back_forward_cache_controller_host_remote_.BindNewEndpointAndPassReceiver(
+          GetTaskRunner(blink::TaskType::kInternalDefault)));
   GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
       &LocalFrame::BindToReceiver, WrapWeakPersistent(this)));
   GetInterfaceRegistry()->AddInterface(
@@ -443,6 +446,7 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(text_input_host_);
 #endif
   visitor->Trace(local_frame_host_remote_);
+  visitor->Trace(back_forward_cache_controller_host_remote_);
   visitor->Trace(receiver_);
   visitor->Trace(main_frame_receiver_);
   visitor->Trace(high_priority_frame_receiver_);
@@ -2328,7 +2332,7 @@ void LocalFrame::WasAttachedAsLocalMainFrame() {
 }
 
 void LocalFrame::EvictFromBackForwardCache() {
-  GetLocalFrameHostRemote().EvictFromBackForwardCache();
+  GetBackForwardCacheControllerHostRemote().EvictFromBackForwardCache();
 }
 
 void LocalFrame::AnimateDoubleTapZoom(const gfx::Point& point,
@@ -2557,6 +2561,11 @@ void LocalFrame::SetPrescientNetworkingForTesting(
 
 mojom::blink::LocalFrameHost& LocalFrame::GetLocalFrameHostRemote() {
   return *local_frame_host_remote_.get();
+}
+
+mojom::blink::BackForwardCacheControllerHost&
+LocalFrame::GetBackForwardCacheControllerHostRemote() {
+  return *back_forward_cache_controller_host_remote_.get();
 }
 
 void LocalFrame::GetTextSurroundingSelection(

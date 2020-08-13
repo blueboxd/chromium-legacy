@@ -47,6 +47,8 @@ class FullscreenOptions;
 class LocalFrame;
 class WebViewImpl;
 
+enum class FullscreenRequestType;
+
 // FullscreenController is a per-WebView class that manages the transition into
 // and out of fullscreen, including restoring scroll offset and scale after
 // exiting fullscreen. It is (indirectly) used by the Fullscreen class.
@@ -60,7 +62,7 @@ class CORE_EXPORT FullscreenController {
   // fullscreen.
   void EnterFullscreen(LocalFrame&,
                        const FullscreenOptions*,
-                       bool for_cross_process_descendant);
+                       FullscreenRequestType request_type);
   void ExitFullscreen(LocalFrame&);
 
   // Called by content::RenderWidget (via WebWidget) to notify that we've

@@ -27,7 +27,7 @@ struct PrintManager::FrameDispatchHelper {
     manager->OnScriptedPrint(render_frame_host, scripted_params, reply_msg);
   }
 
-  void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params,
+  void OnDidPrintDocument(const mojom::DidPrintDocumentParams& params,
                           IPC::Message* reply_msg) {
     // If DidPrintDocument message was received then need to transition from
     // a variable allocated on stack (which has efficient memory management

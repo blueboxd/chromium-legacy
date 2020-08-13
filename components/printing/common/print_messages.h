@@ -258,22 +258,22 @@ IPC_STRUCT_TRAITS_END()
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 // Parameters to describe a rendered page.
-IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintDocument_Params)
+IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidPrintDocumentParams)
   // Document's content including metafile data and subframe info.
-  IPC_STRUCT_MEMBER(printing::mojom::DidPrintContentParams, content)
+  IPC_STRUCT_TRAITS_MEMBER(content)
 
   // Cookie for the document to ensure correctness.
-  IPC_STRUCT_MEMBER(int, document_cookie)
+  IPC_STRUCT_TRAITS_MEMBER(document_cookie)
 
   // The size of the page the page author specified.
-  IPC_STRUCT_MEMBER(gfx::Size, page_size)
+  IPC_STRUCT_TRAITS_MEMBER(page_size)
 
   // The printable area the page author specified.
-  IPC_STRUCT_MEMBER(gfx::Rect, content_area)
+  IPC_STRUCT_TRAITS_MEMBER(content_area)
 
   // The physical offsets of the printer in DPI. Used for PS printing.
-  IPC_STRUCT_MEMBER(gfx::Point, physical_offsets)
-IPC_STRUCT_END()
+  IPC_STRUCT_TRAITS_MEMBER(physical_offsets)
+IPC_STRUCT_TRAITS_END()
 
 // TODO(dgn) Rename *ScriptedPrint messages because they are not called only
 //           from scripts.
@@ -308,7 +308,7 @@ IPC_MESSAGE_ROUTED0(PrintHostMsg_DidShowPrintDialog)
 // this message is already valid in the browser process. Waits until the
 // document is complete ready before replying.
 IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_DidPrintDocument,
-                           PrintHostMsg_DidPrintDocument_Params
+                           printing::mojom::DidPrintDocumentParams
                            /* page content */,
                            bool /* completed */)
 

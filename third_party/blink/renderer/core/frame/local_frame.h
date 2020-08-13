@@ -39,6 +39,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
@@ -481,6 +482,11 @@ class CORE_EXPORT LocalFrame final
   // associated interface with the legacy Chrome IPC channel.
   mojom::blink::LocalFrameHost& GetLocalFrameHostRemote();
 
+  // Returns the bfcache controller host ptr. The interface returned is backed
+  // by an associated interface with the legacy Chrome IPC channel.
+  mojom::blink::BackForwardCacheControllerHost&
+  GetBackForwardCacheControllerHostRemote();
+
   // Overlays a color on top of this LocalFrameView if it is associated with
   // the main frame. Should not have multiple consumers.
   void SetMainFrameColorOverlay(SkColor color);
@@ -840,6 +846,10 @@ class CORE_EXPORT LocalFrame final
   HeapMojoAssociatedRemote<mojom::blink::LocalFrameHost,
                            HeapMojoWrapperMode::kWithoutContextObserver>
       local_frame_host_remote_{nullptr};
+  // LocalFrame can be reused by multiple ExecutionContext.
+  HeapMojoAssociatedRemote<mojom::blink::BackForwardCacheControllerHost,
+                           HeapMojoWrapperMode::kWithoutContextObserver>
+      back_forward_cache_controller_host_remote_{nullptr};
   // LocalFrame can be reused by multiple ExecutionContext.
   HeapMojoAssociatedReceiver<mojom::blink::LocalFrame,
                              LocalFrame,

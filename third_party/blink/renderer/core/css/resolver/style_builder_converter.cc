@@ -963,11 +963,7 @@ GridTrackList StyleBuilderConverter::ConvertGridTrackSizeList(
     track_sizes.push_back(ConvertGridTrackSize(state, *curr_value));
   }
 
-  GridTrackList track_list(track_sizes);
-  if (RuntimeEnabledFeatures::LayoutNGGridEnabled()) {
-    track_list.NGTrackList().AddRepeater(track_sizes, 1);
-  }
-  return track_list;
+  return GridTrackList(track_sizes);
 }
 
 void StyleBuilderConverter::ConvertGridTrackList(

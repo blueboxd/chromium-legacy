@@ -59,6 +59,8 @@ class WaylandEventSource : public PlatformEventSource,
     return last_pointer_button_pressed_;
   }
 
+  int keyboard_modifiers() const { return keyboard_modifiers_; }
+
   // Starts polling for events from the wayland connection file descriptor.
   // This method assumes connection is already estabilished and input objects
   // are already bound and properly initialized.

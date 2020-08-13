@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/process_state.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/agent_group_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/agent_scheduling_strategy.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/widget_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "v8/include/v8.h"
@@ -2346,9 +2348,34 @@ MainThreadSchedulerImpl::NonWakingTaskRunner() {
   return non_waking_task_runner_;
 }
 
+AgentGroupSchedulerImpl* MainThreadSchedulerImpl::CreateAgentGroupScheduler() {
+  std::unique_ptr<AgentGroupSchedulerImpl> agent_group_scheduler =
+      std::make_unique<AgentGroupSchedulerImpl>(this);
+  AddAgentGroupScheduler(agent_group_scheduler.get());
+  AgentGroupSchedulerImpl* agent_group_scheduler_ptr =
+      agent_group_scheduler.get();
+  // Currently, MainThreadSchedulerImpl has the ownership of
+  // AgentGroupSchedulerImpl
+  agent_group_scheduler_set_.insert(std::move(agent_group_scheduler));
+  return agent_group_scheduler_ptr;
+}
+
+void MainThreadSchedulerImpl::RemoveAgentGroupScheduler(
+    AgentGroupSchedulerImpl* agent_group_scheduler) {
+  DCHECK(agent_group_schedulers_.Contains(agent_group_scheduler));
+  agent_group_schedulers_.erase(agent_group_scheduler);
+
+  DCHECK(agent_group_scheduler_set_.Contains(agent_group_scheduler));
+  agent_group_scheduler_set_.erase(agent_group_scheduler);
+}
+
 std::unique_ptr<PageScheduler> MainThreadSchedulerImpl::CreatePageScheduler(
     PageScheduler::Delegate* delegate) {
-  auto page_scheduler = std::make_unique<PageSchedulerImpl>(delegate, this);
+  // TODO(crbug/1113102): tentatively, we create AgentGroupSchedulerImpl per
+  // page.
+  AgentGroupSchedulerImpl* agent_group_scheduler = CreateAgentGroupScheduler();
+  auto page_scheduler =
+      std::make_unique<PageSchedulerImpl>(delegate, agent_group_scheduler);
   AddPageScheduler(page_scheduler.get());
   return page_scheduler;
 }
@@ -2383,6 +2410,13 @@ const base::TickClock* MainThreadSchedulerImpl::tick_clock() const {
   return helper_.GetClock();
 }
 
+void MainThreadSchedulerImpl::AddAgentGroupScheduler(
+    AgentGroupSchedulerImpl* agent_group_scheduler_impl) {
+  bool is_new_entry =
+      agent_group_schedulers_.insert(agent_group_scheduler_impl).is_new_entry;
+  DCHECK(is_new_entry);
+}
+
 void MainThreadSchedulerImpl::AddPageScheduler(
     PageSchedulerImpl* page_scheduler) {
   main_thread_only().page_schedulers.insert(page_scheduler);
@@ -2414,6 +2448,9 @@ void MainThreadSchedulerImpl::RemovePageScheduler(
       IsAnyMainFrameWaitingForFirstContentfulPaint();
   any_thread().waiting_for_any_main_frame_meaningful_paint =
       IsAnyMainFrameWaitingForFirstMeaningfulPaint();
+  // TODO(crbug/1113102): tentatively, we delete AgentGroupScheduler from
+  // here.
+  RemoveAgentGroupScheduler(page_scheduler->GetAgentGroupScheduler());
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
@@ -2453,6 +2490,13 @@ void MainThreadSchedulerImpl::OnTaskStarted(
     MainThreadTaskQueue* queue,
     const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
+  if (queue && queue->GetFrameScheduler()) {
+    AgentGroupSchedulerImpl::SetCurrent(
+        queue->GetFrameScheduler()->GetAgentGroupScheduler());
+  } else {
+    AgentGroupSchedulerImpl::SetCurrent(nullptr);
+  }
+
   main_thread_only().running_queues.push(queue);
   if (main_thread_only().nested_runloop)
     return;
@@ -2513,6 +2557,10 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
 
   find_in_page_budget_pool_controller_->OnTaskCompleted(queue.get(),
                                                         task_timing);
+
+  // AgentGroupSchedulerImpl::GetCurrent() should return nullptr when
+  // it's running thread global task runners.
+  AgentGroupSchedulerImpl::SetCurrent(nullptr);
 }
 
 void MainThreadSchedulerImpl::RecordTaskUkm(

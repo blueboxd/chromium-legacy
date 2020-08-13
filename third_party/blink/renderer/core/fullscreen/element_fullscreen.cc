@@ -17,7 +17,7 @@ ScriptPromise ElementFullscreen::requestFullscreen(
     const FullscreenOptions* options,
     ExceptionState& exception_state) {
   return Fullscreen::RequestFullscreen(element, options,
-                                       Fullscreen::RequestType::kUnprefixed,
+                                       FullscreenRequestType::kUnprefixed,
                                        script_state, &exception_state);
 }
 
@@ -35,7 +35,7 @@ void ElementFullscreen::webkitRequestFullscreen(
                       WebFeature::kPrefixedElementRequestFullscreenInShadow);
   }
   Fullscreen::RequestFullscreen(element, options,
-                                Fullscreen::RequestType::kPrefixed);
+                                FullscreenRequestType::kPrefixed);
 }
 
 }  // namespace blink

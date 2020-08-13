@@ -1968,7 +1968,8 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
     snapshotter->Snapshot(ui::AXMode::kPDF, 0, &metafile.accessibility_tree());
   }
 
-  PrintHostMsg_DidPrintDocument_Params page_params;
+  mojom::DidPrintDocumentParams page_params;
+  page_params.content = mojom::DidPrintContentParams::New();
   gfx::Size* page_size_in_dpi;
   gfx::Rect* content_area_in_dpi;
 #if defined(OS_APPLE) || defined(OS_WIN)
@@ -1992,7 +1993,8 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
 
   metafile.FinishDocument();
 
-  if (!CopyMetafileDataToReadOnlySharedMem(metafile, &page_params.content)) {
+  if (!CopyMetafileDataToReadOnlySharedMem(metafile,
+                                           page_params.content.get())) {
     return false;
   }
 

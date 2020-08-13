@@ -257,6 +257,7 @@ enum BadMessageReason {
   RFH_INACTIVE_CHECK_FROM_SPECULATIVE_RFH = 229,
   RFH_SUBFRAME_CAPTURE_ON_MAIN_FRAME = 230,
   RFH_CSP_ATTRIBUTE = 231,
+  RFH_RECEIVED_ASSOCIATED_MESSAGE_WHILE_BFCACHED = 232,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

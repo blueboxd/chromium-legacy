@@ -163,16 +163,15 @@ GridPositionSide GridPositionsResolver::FinalPositionSide(
 }
 
 static void InitialAndFinalPositionsFromStyle(
-    const LayoutBox& grid_item,
+    const ComputedStyle& grid_item_style,
     GridTrackSizingDirection direction,
     GridPosition& initial_position,
     GridPosition& final_position) {
   initial_position = (direction == kForColumns)
-                         ? grid_item.Style()->GridColumnStart()
-                         : grid_item.Style()->GridRowStart();
-  final_position = (direction == kForColumns)
-                       ? grid_item.Style()->GridColumnEnd()
-                       : grid_item.Style()->GridRowEnd();
+                         ? grid_item_style.GridColumnStart()
+                         : grid_item_style.GridRowStart();
+  final_position = (direction == kForColumns) ? grid_item_style.GridColumnEnd()
+                                              : grid_item_style.GridRowEnd();
 
   // We must handle the placement error handling code here instead of in the
   // StyleAdjuster because we don't want to overwrite the specified values.
@@ -353,11 +352,11 @@ static GridSpan ResolveGridPositionAgainstOppositePosition(
 }
 
 size_t GridPositionsResolver::SpanSizeForAutoPlacedItem(
-    const LayoutBox& grid_item,
+    const ComputedStyle& grid_item_style,
     GridTrackSizingDirection direction) {
   GridPosition initial_position, final_position;
-  InitialAndFinalPositionsFromStyle(grid_item, direction, initial_position,
-                                    final_position);
+  InitialAndFinalPositionsFromStyle(grid_item_style, direction,
+                                    initial_position, final_position);
 
   // This method will only be used when both positions need to be resolved
   // against the opposite one.
@@ -460,12 +459,12 @@ static int ResolveGridPositionFromStyle(
 
 GridSpan GridPositionsResolver::ResolveGridPositionsFromStyle(
     const ComputedStyle& grid_container_style,
-    const LayoutBox& grid_item,
+    const ComputedStyle& grid_item_style,
     GridTrackSizingDirection direction,
     size_t auto_repeat_tracks_count) {
   GridPosition initial_position, final_position;
-  InitialAndFinalPositionsFromStyle(grid_item, direction, initial_position,
-                                    final_position);
+  InitialAndFinalPositionsFromStyle(grid_item_style, direction,
+                                    initial_position, final_position);
 
   GridPositionSide initial_side = InitialPositionSide(direction);
   GridPositionSide final_side = FinalPositionSide(direction);

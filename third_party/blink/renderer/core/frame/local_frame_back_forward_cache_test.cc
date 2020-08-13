@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
 #include "base/run_loop.h"
@@ -19,9 +20,25 @@
 
 namespace blink {
 
-class TestLocalFrameBackForwardCacheClient : public FakeLocalFrameHost {
+class TestLocalFrameBackForwardCacheClient
+    : public mojom::blink::BackForwardCacheControllerHost {
  public:
-  TestLocalFrameBackForwardCacheClient() {}
+  explicit TestLocalFrameBackForwardCacheClient(
+      blink::AssociatedInterfaceProvider* provider) {
+    provider->OverrideBinderForTesting(
+        mojom::blink::BackForwardCacheControllerHost::Name_,
+        base::BindRepeating(
+            [](TestLocalFrameBackForwardCacheClient* parent,
+               mojo::ScopedInterfaceEndpointHandle handle) {
+              parent->receiver_.Bind(
+                  mojo::PendingAssociatedReceiver<
+                      mojom::blink::BackForwardCacheControllerHost>(
+                      std::move(handle)));
+            },
+            base::Unretained(this)));
+    fake_local_frame_host_.Init(provider);
+  }
+
   ~TestLocalFrameBackForwardCacheClient() override = default;
 
   void EvictFromBackForwardCache() override { quit_closure_.Run(); }
@@ -33,6 +50,14 @@ class TestLocalFrameBackForwardCacheClient : public FakeLocalFrameHost {
   }
 
  private:
+  void BindReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
+    receiver_.Bind(
+        mojo::PendingAssociatedReceiver<
+            mojom::blink::BackForwardCacheControllerHost>(std::move(handle)));
+  }
+  FakeLocalFrameHost fake_local_frame_host_;
+  mojo::AssociatedReceiver<mojom::blink::BackForwardCacheControllerHost>
+      receiver_{this};
   base::RepeatingClosure quit_closure_;
 };
 
@@ -47,10 +72,10 @@ class LocalFrameBackForwardCacheTest : public testing::Test,
 // frame state is immutable when the frame is in the bfcache.
 // (https://www.chromestatus.com/feature/5815270035685376).
 TEST_F(LocalFrameBackForwardCacheTest, EvictionOnV8ExecutionAtMicrotask) {
-  TestLocalFrameBackForwardCacheClient frame_host;
   frame_test_helpers::TestWebFrameClient web_frame_client;
+  TestLocalFrameBackForwardCacheClient frame_host(
+      web_frame_client.GetRemoteNavigationAssociatedInterfaces());
   frame_test_helpers::WebViewHelper web_view_helper;
-  frame_host.Init(web_frame_client.GetRemoteNavigationAssociatedInterfaces());
   web_view_helper.Initialize(
       &web_frame_client, nullptr, nullptr,
       [](WebSettings* settings) { settings->SetJavaScriptEnabled(true); });

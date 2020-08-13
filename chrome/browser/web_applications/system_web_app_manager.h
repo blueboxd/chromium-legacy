@@ -113,6 +113,11 @@ struct SystemAppInfo {
   // If set to false, this app will be hidden from the Chrome OS search.
   bool show_in_search = true;
 
+  // If set to true, navigations (e.g. Omnibox URL, anchor link) to this app
+  // will open in the app's window instead of the navigation's context (e.g.
+  // browser tab).
+  bool capture_navigations = false;
+
   WebApplicationInfoFactory app_info_factory;
 };
 
@@ -198,6 +203,10 @@ class SystemWebAppManager {
 
   // Returns whether the app should be shown in search.
   bool ShouldShowInSearch(SystemAppType type) const;
+
+  // Returns the SystemAppType that should capture the navigation to |url|.
+  base::Optional<SystemAppType> GetCapturingSystemAppForURL(
+      const GURL& url) const;
 
   // Returns the minimum window size for |app_id| or an empty size if the app
   // doesn't specify a minimum.

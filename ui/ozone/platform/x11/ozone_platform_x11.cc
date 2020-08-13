@@ -22,6 +22,7 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/x/events_x_utils.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
@@ -132,6 +133,8 @@ class OzonePlatformX11 : public OzonePlatform,
   PlatformGLEGLUtility* GetPlatformGLEGLUtility() override {
     return gl_egl_utility_.get();
   }
+
+  int GetKeyModifiers() const override { return GetModifierKeyState(); }
 
   std::unique_ptr<InputMethod> CreateInputMethod(
       internal::InputMethodDelegate* delegate,

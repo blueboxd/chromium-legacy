@@ -34,7 +34,6 @@
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_network.h"
-#include "components/feed/core/v2/image_fetcher.h"
 #include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
@@ -51,9 +50,6 @@
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_url_loader_factory.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
@@ -256,20 +252,6 @@ class TestSurface : public FeedStream::SurfaceInterface {
   FeedStream* stream_ = nullptr;
   std::vector<std::string> described_updates_;
   std::map<std::string, std::string> data_store_entries_;
-};
-
-class TestImageFetcher : public ImageFetcher {
- public:
-  explicit TestImageFetcher(
-      scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory)
-      : ImageFetcher(url_loader_factory) {}
-  void Fetch(const GURL& url,
-             base::OnceCallback<void(std::unique_ptr<std::string>)> callback)
-      override {
-    // Emulate a response.
-    auto response = std::make_unique<std::string>("dummyresponse");
-    std::move(callback).Run(std::move(response));
-  }
 };
 
 class TestFeedNetwork : public FeedNetwork {
@@ -544,12 +526,6 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
     metrics_reporter_ = std::make_unique<TestMetricsReporter>(
         task_environment_.GetMockTickClock(), &profile_prefs_);
 
-    shared_url_loader_factory_ =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &test_factory_);
-    image_fetcher_ =
-        std::make_unique<TestImageFetcher>(shared_url_loader_factory_);
-
     CHECK_EQ(kTestTimeEpoch, task_environment_.GetMockClock()->Now());
     CreateStream();
   }
@@ -585,9 +561,9 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
     chrome_info.version = base::Version({99, 1, 9911, 2});
     stream_ = std::make_unique<FeedStream>(
         &refresh_scheduler_, metrics_reporter_.get(), this, &profile_prefs_,
-        &network_, image_fetcher_.get(), store_.get(), &prefetch_service_,
-        &offline_page_model_, task_environment_.GetMockClock(),
-        task_environment_.GetMockTickClock(), chrome_info);
+        &network_, store_.get(), &prefetch_service_, &offline_page_model_,
+        task_environment_.GetMockClock(), task_environment_.GetMockTickClock(),
+        chrome_info);
 
     WaitForIdleTaskQueue();  // Wait for any initialization.
     stream_->SetWireResponseTranslatorForTesting(&response_translator_);
@@ -648,9 +624,6 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   std::unique_ptr<TestMetricsReporter> metrics_reporter_;
   TestFeedNetwork network_;
   TestWireResponseTranslator response_translator_;
-  std::unique_ptr<TestImageFetcher> image_fetcher_;
-  network::TestURLLoaderFactory test_factory_;
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   std::unique_ptr<FeedStore> store_ = std::make_unique<FeedStore>(
       leveldb_proto::ProtoDatabaseProvider::GetUniqueDB<feedstore::Record>(
@@ -875,13 +848,6 @@ TEST_F(FeedStreamTest, DetachSurface) {
       MakeOperation(MakeRemove(MakeClusterId(1))),
   });
   EXPECT_FALSE(surface.update);
-}
-
-TEST_F(FeedStreamTest, FetchImage) {
-  CallbackReceiver<std::unique_ptr<std::string>> receiver;
-  stream_->FetchImage(GURL("https://example.com"), receiver.Bind());
-
-  EXPECT_EQ("dummyresponse", **receiver.GetResult());
 }
 
 TEST_F(FeedStreamTest, LoadFromNetwork) {

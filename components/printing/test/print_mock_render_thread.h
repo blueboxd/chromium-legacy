@@ -25,7 +25,6 @@ class DictionaryValue;
 }
 
 class MockPrinter;
-struct PrintHostMsg_DidPrintDocument_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_ScriptedPrint_Params;
 struct PrintMsg_PrintPages_Params;
@@ -76,7 +75,7 @@ class PrintMockRenderThread : public content::MockRenderThread {
                        PrintMsg_PrintPages_Params* settings);
 
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
-  void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params,
+  void OnDidPrintDocument(const printing::mojom::DidPrintDocumentParams& params,
                           IPC::Message* reply_msg);
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnDidStartPreview(const printing::mojom::DidStartPreviewParams& params,

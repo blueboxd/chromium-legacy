@@ -57,8 +57,16 @@ let currentDirectoryHandle = null;
  */
 const tokenMap = new Map();
 
-/** A pipe through which we can send messages to the guest frame. */
-const guestMessagePipe = new MessagePipe('chrome-untrusted://media-app');
+/**
+ * A pipe through which we can send messages to the guest frame.
+ * Use an undefined `target` to find the <iframe> automatically.
+ * Do not rethrow errors, since handlers installed here are expected to
+ * throw exceptions that are handled on the other side of the pipe. And
+ * nothing `awaits` async callHandlerForMessageType_(), so they will always
+ * be reported as `unhandledrejection` and trigger a crash report.
+ */
+const guestMessagePipe =
+    new MessagePipe('chrome-untrusted://media-app', undefined, false);
 
 /**
  * Promise that resolves once the iframe is ready to receive messages. This is

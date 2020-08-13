@@ -83,11 +83,10 @@ TestSystemWebAppInstallation::TestSystemWebAppInstallation(SystemAppType type,
                                                            SystemAppInfo info)
     : type_(type) {
   if (GetWebUIType(info.install_url) == WebUIType::kChrome) {
-    web_ui_controller_factory_ =
-        std::make_unique<TestSystemWebAppWebUIControllerFactory>(
-            GetDataSourceNameFromSystemAppInstallUrl(info.install_url));
-    content::WebUIControllerFactory::RegisterFactory(
-        web_ui_controller_factory_.get());
+    auto factory = std::make_unique<TestSystemWebAppWebUIControllerFactory>(
+        GetDataSourceNameFromSystemAppInstallUrl(info.install_url));
+    content::WebUIControllerFactory::RegisterFactory(factory.get());
+    web_ui_controller_factories_.push_back(std::move(factory));
   }
 
   test_web_app_provider_creator_ = std::make_unique<TestWebAppProviderCreator>(
@@ -113,10 +112,8 @@ TestSystemWebAppInstallation::TestSystemWebAppInstallation() {
 }
 
 TestSystemWebAppInstallation::~TestSystemWebAppInstallation() {
-  if (web_ui_controller_factory_.get()) {
-    content::WebUIControllerFactory::UnregisterFactoryForTesting(
-        web_ui_controller_factory_.get());
-  }
+  for (auto& factory : web_ui_controller_factories_)
+    content::WebUIControllerFactory::UnregisterFactoryForTesting(factory.get());
 }
 
 // static
@@ -226,6 +223,28 @@ TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms() {
 
 // static
 std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation() {
+  SystemAppInfo app_info("Test", GURL("chrome://test-system-web-app/pwa.html"));
+  app_info.capture_navigations = true;
+
+  auto* installation = new TestSystemWebAppInstallation(SystemAppType::HELP,
+                                                        std::move(app_info));
+
+  // Add a helper system app to test capturing links from it.
+  const GURL kInitiatingAppUrl = GURL("chrome://initiating-app/pwa.html");
+  installation->extra_apps_.insert_or_assign(
+      SystemAppType::SETTINGS,
+      SystemAppInfo("Initiating App", kInitiatingAppUrl));
+  auto factory = std::make_unique<TestSystemWebAppWebUIControllerFactory>(
+      kInitiatingAppUrl.host());
+  content::WebUIControllerFactory::RegisterFactory(factory.get());
+  installation->web_ui_controller_factories_.push_back(std::move(factory));
+
+  return base::WrapUnique(installation);
+}
+
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
 TestSystemWebAppInstallation::SetUpChromeUntrustedApp() {
   return base::WrapUnique(new TestSystemWebAppInstallation(
       SystemAppType::SETTINGS,
@@ -236,6 +255,11 @@ TestSystemWebAppInstallation::SetUpChromeUntrustedApp() {
 std::unique_ptr<KeyedService>
 TestSystemWebAppInstallation::CreateWebAppProvider(SystemAppInfo info,
                                                    Profile* profile) {
+  DCHECK(!extra_apps_.contains(type_.value()));
+
+  base::flat_map<SystemAppType, SystemAppInfo> apps(extra_apps_);
+  apps.insert_or_assign(type_.value(), info);
+
   profile_ = profile;
   if (GetWebUIType(info.install_url) == WebUIType::kChromeUntrusted) {
     web_app::AddTestURLDataSource(
@@ -245,7 +269,7 @@ TestSystemWebAppInstallation::CreateWebAppProvider(SystemAppInfo info,
 
   auto provider = std::make_unique<TestWebAppProvider>(profile);
   auto system_web_app_manager = std::make_unique<SystemWebAppManager>(profile);
-  system_web_app_manager->SetSystemAppsForTesting({{type_.value(), info}});
+  system_web_app_manager->SetSystemAppsForTesting(apps);
   system_web_app_manager->SetUpdatePolicyForTesting(update_policy_);
   provider->SetSystemWebAppManager(std::move(system_web_app_manager));
   provider->Start();
@@ -301,7 +325,7 @@ SystemAppType TestSystemWebAppInstallation::GetType() {
 }
 
 void TestSystemWebAppInstallation::SetManifest(std::string manifest) {
-  web_ui_controller_factory_->set_manifest(std::move(manifest));
+  web_ui_controller_factories_[0]->set_manifest(std::move(manifest));
 }
 
 void TestSystemWebAppInstallation::RegisterAutoGrantedPermissions(

@@ -95,6 +95,8 @@ class WebViewClient;
 class WebFrameWidgetBase;
 class WebViewFrameWidget;
 
+enum class FullscreenRequestType;
+
 namespace mojom {
 namespace blink {
 class TextAutosizerPageInfo;
@@ -377,7 +379,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void EnterFullscreen(LocalFrame&,
                        const FullscreenOptions*,
-                       bool for_cross_process_descendant);
+                       FullscreenRequestType);
   void ExitFullscreen(LocalFrame&);
   void FullscreenElementChanged(Element* old_element, Element* new_element);
 
@@ -569,6 +571,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       float& scale,
       IntPoint& scroll,
       bool& need_animation);
+
+  // Sends any outstanding TrackedFeaturesUpdate messages to the browser.
+  void ReportActiveSchedulerTrackedFeatures();
 
   // These member variables should not be accessed within calls to WebWidget
   // APIs. They can be called from within WebView APIs, and internal methods,

@@ -463,7 +463,7 @@ void HTMLVideoElement::webkitEnterFullscreen() {
     FullscreenOptions* options = FullscreenOptions::Create();
     options->setNavigationUI("hide");
     Fullscreen::RequestFullscreen(*this, options,
-                                  Fullscreen::RequestType::kPrefixed);
+                                  FullscreenRequestType::kPrefixed);
   }
 }
 

@@ -139,6 +139,20 @@ struct PrintParams{
   uint32 pages_per_sheet = 1;
 };
 
+// Parameters to describe a rendered page.
+struct DidPrintDocumentParams {
+  // Document's content including metafile data and subframe info.
+  DidPrintContentParams content;
+  // Cookie for the document to ensure correctness.
+  int32 document_cookie;
+  // The size of the page the page author specified.
+  gfx.mojom.Size page_size;
+  // The printable area the page author specified.
+  gfx.mojom.Rect content_area;
+  // The physical offsets of the printer in DPI. Used for PS printing.
+  gfx.mojom.Point physical_offsets;
+};
+
 // Interface implemented by a class that desires to render print documents for
 // Chrome print preview.
 interface PrintRenderer {

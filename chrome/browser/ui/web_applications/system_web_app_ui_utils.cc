@@ -200,6 +200,8 @@ Browser* LaunchSystemWebApp(Profile* profile,
     }
   }
 
+  // TODO(crbug.com/1114939): Need to make sure the browser is shown on the
+  // correct desktop, when used in multi-profile mode.
   browser->window()->Show();
   return browser;
 }
@@ -234,6 +236,22 @@ bool IsSystemWebApp(Browser* browser) {
   DCHECK(browser);
   return browser->app_controller() &&
          browser->app_controller()->is_for_system_web_app();
+}
+
+bool IsBrowserForSystemWebApp(Browser* browser, SystemAppType type) {
+  DCHECK(browser);
+  return browser->app_controller() &&
+         browser->app_controller()->system_app_type() == type;
+}
+
+base::Optional<SystemAppType> GetCapturingSystemAppForURL(Profile* profile,
+                                                          const GURL& url) {
+  auto* provider = WebAppProvider::Get(profile);
+
+  if (!provider)
+    return base::nullopt;
+
+  return provider->system_web_app_manager().GetCapturingSystemAppForURL(url);
 }
 
 gfx::Size GetSystemWebAppMinimumWindowSize(Browser* browser) {

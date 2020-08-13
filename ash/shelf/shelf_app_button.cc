@@ -48,7 +48,10 @@ constexpr int kStatusIndicatorMaxSize = 10;
 constexpr int kStatusIndicatorActiveSize = 8;
 constexpr int kStatusIndicatorRunningSize = 4;
 constexpr int kStatusIndicatorThickness = 2;
-constexpr int kNotificationIndicatorRadiusDip = 7;
+
+constexpr int kNotificationIndicatorRadiusDip = 6;
+constexpr int kNotificationIndicatorPadding = 1;
+
 constexpr SkColor kDefaultIndicatorColor = SK_ColorWHITE;
 
 // Slightly different colors and alpha in the new UI.
@@ -743,10 +746,12 @@ void ShelfAppButton::Layout() {
   // The indicators should be aligned with the icon, not the icon + shadow.
   gfx::Point indicator_midpoint = icon_view_bounds.CenterPoint();
   if (is_notification_indicator_enabled_) {
-    notification_indicator_->SetBoundsRect(
-        gfx::Rect(icon_view_bounds.right() - kNotificationIndicatorRadiusDip,
-                  icon_view_bounds.y(), kNotificationIndicatorRadiusDip * 2,
-                  kNotificationIndicatorRadiusDip * 2));
+    notification_indicator_->SetBoundsRect(gfx::Rect(
+        icon_view_bounds.right() - 2 * kNotificationIndicatorRadiusDip -
+            kNotificationIndicatorPadding,
+        icon_view_bounds.y() + kNotificationIndicatorPadding,
+        kNotificationIndicatorRadiusDip * 2,
+        kNotificationIndicatorRadiusDip * 2));
   }
 
   switch (shelf->alignment()) {

@@ -650,7 +650,7 @@ void XRSystem::OverlayFullscreenEventManager::RequestFullscreen() {
   ScopedAllowFullscreen scope(ScopedAllowFullscreen::kXrOverlay);
 
   Fullscreen::RequestFullscreen(*element, options,
-                                Fullscreen::RequestType::kUnprefixed);
+                                FullscreenRequestType::kUnprefixed);
 }
 
 void XRSystem::OverlayFullscreenEventManager::Trace(Visitor* visitor) const {

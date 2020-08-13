@@ -109,6 +109,7 @@ TEST_F(WebStateDelegateBridgeTest, OpenURLFromWebState) {
 TEST_F(WebStateDelegateBridgeTest, HandleContextMenu) {
   EXPECT_EQ(nil, [delegate_ contextMenuParams]);
   web::ContextMenuParams context_menu_params;
+  context_menu_params.is_main_frame = false;
   context_menu_params.menu_title = [@"Menu title" copy];
   context_menu_params.link_url = GURL("http://www.url.com");
   context_menu_params.src_url = GURL("http://www.url.com/image.jpeg");
@@ -119,6 +120,7 @@ TEST_F(WebStateDelegateBridgeTest, HandleContextMenu) {
   web::ContextMenuParams* result_params = [delegate_ contextMenuParams];
   EXPECT_NE(nullptr, result_params);
   EXPECT_EQ(context_menu_params.menu_title, result_params->menu_title);
+  EXPECT_EQ(context_menu_params.is_main_frame, result_params->is_main_frame);
   EXPECT_EQ(context_menu_params.link_url, result_params->link_url);
   EXPECT_EQ(context_menu_params.src_url, result_params->src_url);
   EXPECT_EQ(context_menu_params.referrer_policy,

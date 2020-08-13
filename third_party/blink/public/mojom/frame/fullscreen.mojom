@@ -12,5 +12,9 @@ struct FullscreenOptions {
   // If the Window Placement experiment is enabled, fullscreen may be requested
   // on a particular display. In that case, this is the requested display's id.
   int64 display_id = -1;
+
+  // True if this should be treated as a "webkit"-prefixed fullscreen request.
+  // These don't return promises, and fire "webkit"-prefixed events.
+  bool is_prefixed = false;
 };
 

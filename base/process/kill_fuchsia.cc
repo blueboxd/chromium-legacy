@@ -13,6 +13,14 @@
 
 namespace base {
 
+bool KillProcessGroup(ProcessHandle process_group_id) {
+  // |process_group_id| is really a job on Fuchsia.
+  zx_status_t status = zx_task_kill(process_group_id);
+  DLOG_IF(ERROR, status != ZX_OK)
+      << "unable to terminate job " << process_group_id;
+  return status == ZX_OK;
+}
+
 TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   DCHECK(exit_code);
 

@@ -13,7 +13,6 @@
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/feed/core/v2/public/types.h"
-#include "url/gurl.h"
 
 namespace feedui {
 class StreamUpdate;
@@ -71,12 +70,6 @@ class FeedStreamApi {
   // further.
   virtual void LoadMore(SurfaceId surface,
                         base::OnceCallback<void(bool)> callback) = 0;
-
-  // Request to fetch and image for use in the feed. Calls |callback|
-  // with the network response when complete.
-  virtual void FetchImage(
-      const GURL& url,
-      base::OnceCallback<void(std::unique_ptr<std::string>)> callback) = 0;
 
   // Apply |operations| to the stream model. Does nothing if the model is not
   // yet loaded.

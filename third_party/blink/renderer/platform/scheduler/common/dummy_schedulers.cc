@@ -81,6 +81,7 @@ class DummyFrameScheduler : public FrameScheduler {
   base::WeakPtr<FrameScheduler> GetWeakPtr() override {
     return weak_ptr_factory_.GetWeakPtr();
   }
+  void ReportActiveSchedulerTrackedFeatures() override {}
 
  private:
   PageScheduler* page_scheduler_;

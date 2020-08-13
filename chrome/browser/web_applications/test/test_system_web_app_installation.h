@@ -54,6 +54,11 @@ class TestSystemWebAppInstallation {
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppWithAdditionalSearchTerms();
 
+  // This method additionally sets up a helper SystemAppType::SETTING system app
+  // for testing capturing links from a different SWA.
+  static std::unique_ptr<TestSystemWebAppInstallation>
+  SetUpAppThatCapturesNavigation();
+
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpChromeUntrustedApp();
 
@@ -90,9 +95,10 @@ class TestSystemWebAppInstallation {
   std::unique_ptr<TestWebAppProviderCreator> test_web_app_provider_creator_;
   // nullopt if SetUpWithoutApps() was used.
   const base::Optional<SystemAppType> type_;
-  std::unique_ptr<TestSystemWebAppWebUIControllerFactory>
-      web_ui_controller_factory_;
+  std::vector<std::unique_ptr<TestSystemWebAppWebUIControllerFactory>>
+      web_ui_controller_factories_;
   std::set<ContentSettingsType> auto_granted_permissions_;
+  base::flat_map<SystemAppType, SystemAppInfo> extra_apps_;
 };
 
 }  // namespace web_app

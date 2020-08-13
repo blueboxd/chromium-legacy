@@ -196,10 +196,10 @@ FrameSchedulerImpl::FrameSchedulerImpl(
 }
 
 FrameSchedulerImpl::FrameSchedulerImpl()
-    : FrameSchedulerImpl(nullptr,
-                         nullptr,
-                         nullptr,
-                         nullptr,
+    : FrameSchedulerImpl(/*main_thread_scheduler=*/nullptr,
+                         /*parent_page_scheduler=*/nullptr,
+                         /*delegate=*/nullptr,
+                         /*blame_context=*/nullptr,
                          FrameType::kSubframe) {}
 
 namespace {
@@ -572,6 +572,12 @@ FrameSchedulerImpl::ControlTaskRunner() {
   return main_thread_scheduler_->ControlTaskRunner();
 }
 
+AgentGroupSchedulerImpl* FrameSchedulerImpl::GetAgentGroupScheduler() {
+  return parent_page_scheduler_
+             ? parent_page_scheduler_->GetAgentGroupScheduler()
+             : nullptr;
+}
+
 blink::PageScheduler* FrameSchedulerImpl::GetPageScheduler() const {
   return parent_page_scheduler_;
 }
@@ -702,6 +708,11 @@ base::WeakPtr<FrameScheduler> FrameSchedulerImpl::GetWeakPtr() {
 
 base::WeakPtr<const FrameSchedulerImpl> FrameSchedulerImpl::GetWeakPtr() const {
   return weak_factory_.GetWeakPtr();
+}
+
+void FrameSchedulerImpl::ReportActiveSchedulerTrackedFeatures() {
+  if (delegate_)
+    ReportFeaturesToDelegate();
 }
 
 void FrameSchedulerImpl::OnAddedAllThrottlingOptOut() {

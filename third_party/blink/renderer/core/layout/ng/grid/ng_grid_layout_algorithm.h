@@ -55,12 +55,10 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   // Sets the specified tracks for row and column track lists.
   void SetSpecifiedTracks();
   // Ensures a range boundary will exist on the start and end of the grid item.
-  void EnsureTrackCoverageForGridItem(const NGBlockNode& grid_item);
-  // Helper for EnsureTrackCoverageForGridItem.
-  static void EnsureTrackCoverageForGridPositions(
-      const GridPosition& start_position,
-      const GridPosition& end_position,
-      NGGridBlockTrackCollection& track_list);
+  void EnsureTrackCoverageForGridItem(const NGBlockNode& grid_item,
+                                      GridTrackSizingDirection grid_direction);
+  // Determines the explicit column and row track starts.
+  void DetermineExplicitTrackStarts();
 
   // Calculates from the min and max track sizing functions the used track size.
   void ComputeUsedTrackSizes(GridTrackSizingDirection track_direction);
@@ -68,6 +66,8 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   // Allows a test to set the value for automatic track repetition.
   void SetAutomaticTrackRepetitionsForTesting(wtf_size_t auto_column,
                                               wtf_size_t auto_row);
+  wtf_size_t AutoRepeatCountForDirection(
+      GridTrackSizingDirection direction) const;
 
   Vector<GridItemData> items_;
   GridLayoutAlgorithmState state_;
@@ -79,9 +79,12 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   NGGridLayoutAlgorithmTrackCollection algorithm_column_track_collection_;
   NGGridLayoutAlgorithmTrackCollection algorithm_row_track_collection_;
 
-  wtf_size_t automatic_column_repetitions_for_testing =
+  wtf_size_t explicit_column_start_ = 0;
+  wtf_size_t explicit_row_start_ = 0;
+
+  wtf_size_t automatic_column_repetitions_ =
       NGGridBlockTrackCollection::kInvalidRangeIndex;
-  wtf_size_t automatic_row_repetitions_for_testing =
+  wtf_size_t automatic_row_repetitions_ =
       NGGridBlockTrackCollection::kInvalidRangeIndex;
 };
 

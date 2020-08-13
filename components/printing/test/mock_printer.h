@@ -21,7 +21,6 @@
 #include "ui/gfx/geometry/size.h"
 
 struct PrintMsg_PrintPages_Params;
-struct PrintHostMsg_DidPrintDocument_Params;
 
 // A class which represents an output page used in the MockPrinter class.
 // The MockPrinter class stores output pages in a vector, so, this class
@@ -89,7 +88,7 @@ class MockPrinter {
                       const gfx::Size& page_size,
                       int scale_factor);
   void SetPrintedPagesCount(int cookie, int number_pages);
-  void PrintPage(const PrintHostMsg_DidPrintDocument_Params& params);
+  void PrintPage(const printing::mojom::DidPrintDocumentParams& params);
 
   // Functions that retrieve the output pages.
   Status GetPrinterStatus() const { return printer_status_; }

@@ -404,7 +404,8 @@ void RemoteFrame::SetInsecureNavigationsSet(const WebVector<unsigned>& set) {
   security_context_.SetInsecureNavigationsSet(set);
 }
 
-void RemoteFrame::WillEnterFullscreen() {
+void RemoteFrame::WillEnterFullscreen(
+    mojom::blink::FullscreenOptionsPtr request_options) {
   // This should only ever be called when the FrameOwner is local.
   HTMLFrameOwnerElement* owner_element = To<HTMLFrameOwnerElement>(Owner());
 
@@ -412,17 +413,17 @@ void RemoteFrame::WillEnterFullscreen() {
   // fullscreen element in anticipation of the coming |didEnterFullscreen()|
   // call.
   //
-  // PrefixedForCrossProcessDescendant is necessary because:
+  // ForCrossProcessDescendant is necessary because:
   //  - The fullscreen element ready check and other checks should be bypassed.
   //  - |ownerElement| will need :-webkit-full-screen-ancestor style in addition
   //    to :fullscreen.
-  //
-  // TODO(alexmos): currently, this assumes prefixed requests, but in the
-  // future, this should plumb in information about which request type
-  // (prefixed or unprefixed) to use for firing fullscreen events.
-  Fullscreen::RequestFullscreen(
-      *owner_element, FullscreenOptions::Create(),
-      Fullscreen::RequestType::kPrefixedForCrossProcessDescendant);
+  FullscreenRequestType request_type =
+      (request_options->is_prefixed ? FullscreenRequestType::kPrefixed
+                                    : FullscreenRequestType::kUnprefixed) |
+      FullscreenRequestType::kForCrossProcessDescendant;
+
+  Fullscreen::RequestFullscreen(*owner_element, FullscreenOptions::Create(),
+                                request_type);
 }
 
 void RemoteFrame::AddReplicatedContentSecurityPolicies(

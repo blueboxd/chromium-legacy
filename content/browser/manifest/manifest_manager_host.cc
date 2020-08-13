@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/render_frame_host.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -16,7 +16,8 @@
 namespace content {
 
 ManifestManagerHost::ManifestManagerHost(RenderFrameHost* render_frame_host)
-    : manifest_manager_frame_(render_frame_host) {
+    : manifest_manager_frame_(
+          static_cast<RenderFrameHostImpl*>(render_frame_host)) {
   // Check that |manifest_manager_frame_| is a main frame.
   DCHECK(!manifest_manager_frame_->GetParent());
 }
@@ -29,6 +30,9 @@ void ManifestManagerHost::BindObserver(
     mojo::PendingAssociatedReceiver<blink::mojom::ManifestUrlChangeObserver>
         receiver) {
   manifest_url_change_observer_receiver_.Bind(std::move(receiver));
+  manifest_url_change_observer_receiver_.SetFilter(
+      manifest_manager_frame_->CreateMessageFilterForAssociatedReceiver(
+          blink::mojom::ManifestUrlChangeObserver::Name_));
 }
 
 void ManifestManagerHost::GetManifest(GetManifestCallback callback) {

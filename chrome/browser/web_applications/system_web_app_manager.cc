@@ -184,11 +184,17 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   infos.at(SystemAppType::SAMPLE).enabled_origin_trials = OriginTrialsMap(
       {{GetOrigin("chrome://sample-system-web-app"), {"Frobulate"}},
        {GetOrigin("chrome-untrusted://sample-system-web-app"), {"Frobulate"}}});
+  infos.at(SystemAppType::SAMPLE).capture_navigations = true;
 #endif  // !defined(OFFICIAL_BUILD)
 
 #endif  // OS_CHROMEOS
 
   return infos;
+}
+
+bool HasSystemWebAppScheme(const GURL& url) {
+  return url.SchemeIs(content::kChromeUIScheme) ||
+         url.SchemeIs(content::kChromeUIUntrustedScheme);
 }
 
 ExternalInstallOptions CreateInstallOptionsForSystemApp(
@@ -548,6 +554,29 @@ bool SystemWebAppManager::ShouldShowInSearch(SystemAppType type) const {
   if (it == system_app_infos_.end())
     return false;
   return it->second.show_in_search;
+}
+
+base::Optional<SystemAppType> SystemWebAppManager::GetCapturingSystemAppForURL(
+    const GURL& url) const {
+  if (!HasSystemWebAppScheme(url))
+    return base::nullopt;
+
+  base::Optional<AppId> app_id = registrar_->FindAppWithUrlInScope(url);
+  if (!app_id.has_value())
+    return base::nullopt;
+
+  base::Optional<SystemAppType> type = GetSystemAppTypeForAppId(app_id.value());
+  if (!type.has_value())
+    return base::nullopt;
+
+  const auto it = system_app_infos_.find(type);
+  if (it == system_app_infos_.end())
+    return base::nullopt;
+
+  if (!it->second.capture_navigations)
+    return base::nullopt;
+
+  return type;
 }
 
 gfx::Size SystemWebAppManager::GetMinimumWindowSize(const AppId& app_id) const {

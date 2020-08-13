@@ -1572,7 +1572,7 @@ public class StartSurfaceLayoutTest {
                 .check(waitForView(allOf(withText(expectedTerm), isDisplayed())));
 
         // Click the chip and check the tab navigates back to the search result page.
-        assertEquals(mUrl, currentTab.getUrlString());
+        assertEquals(mUrl, ChromeTabUtils.getUrlStringOnUiThread(currentTab));
         OverviewModeBehaviorWatcher hideWatcher = TabUiTestHelper.createOverviewHideWatcher(cta);
         onView(withId(R.id.search_button))
                 .check(waitForView(allOf(withText(expectedTerm), isDisplayed())));

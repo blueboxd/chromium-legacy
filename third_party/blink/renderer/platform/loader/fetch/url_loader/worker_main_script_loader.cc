@@ -7,6 +7,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/network_utils.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -306,7 +307,8 @@ void WorkerMainScriptLoader::HandleRedirections(
             redirect_info.new_site_for_cookies,
             AtomicString::FromUTF8(redirect_info.new_referrer.data(),
                                    redirect_info.new_referrer.length()),
-            NetToMojoReferrerPolicy(redirect_info.new_referrer_policy),
+            ReferrerUtils::NetToMojoReferrerPolicy(
+                redirect_info.new_referrer_policy),
             /*skip_service_worker=*/false);
     WebURLResponse response;
     Platform::Current()->PopulateURLResponse(

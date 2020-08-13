@@ -48,7 +48,7 @@ VaapiPictureNativePixmapEgl::~VaapiPictureNativePixmapEgl() {
   }
 }
 
-bool VaapiPictureNativePixmapEgl::Initialize(
+Status VaapiPictureNativePixmapEgl::Initialize(
     scoped_refptr<gfx::NativePixmap> pixmap) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(pixmap);
@@ -58,24 +58,24 @@ bool VaapiPictureNativePixmapEgl::Initialize(
   va_surface_ = vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(pixmap));
   if (!va_surface_) {
     LOG(ERROR) << "Failed creating VASurface for NativePixmap";
-    return false;
+    return StatusCode::kVaapiNoSurface;
   }
 
   if (bind_image_cb_ &&
       !bind_image_cb_.Run(client_texture_id_, texture_target_, gl_image_,
                           true /* can_bind_to_sampler */)) {
     LOG(ERROR) << "Failed to bind client_texture_id";
-    return false;
+    return StatusCode::kVaapiFailedToBindImage;
   }
-  return true;
+  return OkStatus();
 }
 
-bool VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
+Status VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Export the gl texture as dmabuf.
   if (make_context_current_cb_ && !make_context_current_cb_.Run())
-    return false;
+    return StatusCode::kVaapiBadContext;
 
   auto image =
       base::MakeRefCounted<gl::GLImageNativePixmap>(visible_size_, format);
@@ -83,14 +83,14 @@ bool VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
   if (!image->InitializeFromTexture(texture_id_)) {
     DLOG(ERROR) << "Failed to initialize eglimage from texture id: "
                 << texture_id_;
-    return false;
+    return StatusCode::kVaapiFailedToInitializeImage;
   }
 
   // Export the EGLImage as dmabuf.
   gfx::NativePixmapHandle native_pixmap_handle = image->ExportHandle();
   if (!native_pixmap_handle.planes.size()) {
     DLOG(ERROR) << "Failed to export EGLImage as dmabuf fds";
-    return false;
+    return StatusCode::kVaapiFailedToExportImage;
   }
 
   if (size_.width() > static_cast<int>(native_pixmap_handle.planes[0].stride) ||
@@ -98,7 +98,7 @@ bool VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
     DLOG(ERROR) << "EGLImage (stride=" << native_pixmap_handle.planes[0].stride
                 << ", size=" << native_pixmap_handle.planes[0].size
                 << "is smaller than size_=" << size_.ToString();
-    return false;
+    return StatusCode::kVaapiBadImageSize;
   }
 
   // Convert NativePixmapHandle to NativePixmapDmaBuf.
@@ -107,12 +107,12 @@ bool VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
                                   std::move(native_pixmap_handle)));
   if (!native_pixmap_dmabuf->AreDmaBufFdsValid()) {
     DLOG(ERROR) << "Invalid dmabuf fds";
-    return false;
+    return StatusCode::kVaapiNoBufferHandle;
   }
 
   if (!image->BindTexImage(texture_target_)) {
     DLOG(ERROR) << "Failed to bind texture to GLImage";
-    return false;
+    return StatusCode::kVaapiFailedToBindImage;
   }
 
   // The |va_surface_| created from |native_pixmap_dmabuf| shares the ownership

@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/html/html_table_col_element.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
 
 namespace blink {
 
@@ -17,24 +18,20 @@ LayoutNGTableColumn::LayoutNGTableColumn(Element* element)
 void LayoutNGTableColumn::StyleDidChange(StyleDifference diff,
                                          const ComputedStyle* old_style) {
   if (diff.NeedsPaintInvalidation() && old_style) {
-    // Could also call SetShouldDoFullPaintInvalidationWithoutGeometryChange?
-    // TODO(atotic+paint_team) Need paint team review.
-    // Is this how to invalidate background only?
     if (LayoutNGTable* table = Table()) {
-      table->SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-          PaintInvalidationReason::kBackground);
+      if (NGTableBorders::HasBorder(old_style) ||
+          NGTableBorders::HasBorder(Style()))
+        table->GridBordersChanged();
     }
   }
   LayoutBoxModelObject::StyleDidChange(diff, old_style);
 }
 
 void LayoutNGTableColumn::ImageChanged(WrappedImagePtr, CanDeferInvalidation) {
-  // TODO(atotic+paint_team) Need paint team review.
-  // LayoutBox::ImageChanged is a lot more sophisticated.
-  // Should I call SetShouldDoFullPaintInvalidationWithoutGeometryChange
-  // instead?
-  if (LayoutNGTable* table = Table())
-    table->SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kImage);
+  if (LayoutNGTable* table = Table()) {
+    table->SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+        PaintInvalidationReason::kImage);
+  }
 }
 
 bool LayoutNGTableColumn::IsChildAllowed(LayoutObject* child,

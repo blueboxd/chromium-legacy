@@ -32,6 +32,7 @@
 #include "chrome/browser/predictors/preconnect_manager.h"
 #include "chrome/browser/predictors/predictors_enums.h"
 #include "chrome/browser/predictors/predictors_features.h"
+#include "chrome/browser/predictors/predictors_switches.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -281,8 +282,8 @@ class ConnectionListener
 class TestPreconnectManagerObserver : public PreconnectManager::Observer {
  public:
   explicit TestPreconnectManagerObserver(
-      PreconnectManager* preconnect_manager_) {
-    preconnect_manager_->SetObserverForTesting(this);
+      PreconnectManager* preconnect_manager) {
+    preconnect_manager->SetObserverForTesting(this);
   }
 
   void OnPreconnectUrl(const GURL& url,
@@ -452,6 +453,56 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
   std::set<GURL> preconnect_url_attempts_;
 };
 
+struct PrefetchResult {
+  PrefetchResult(const GURL& prefetch_url,
+                 const network::URLLoaderCompletionStatus& status)
+      : prefetch_url(prefetch_url), status(status) {}
+
+  GURL prefetch_url;
+  network::URLLoaderCompletionStatus status;
+};
+
+class TestPrefetchManagerObserver : public PrefetchManager::Observer {
+ public:
+  explicit TestPrefetchManagerObserver(PrefetchManager& manager) {
+    manager.set_observer_for_testing(this);
+  }
+
+  void OnPrefetchFinished(
+      const GURL& url,
+      const GURL& prefetch_url,
+      const network::URLLoaderCompletionStatus& status) override {
+    prefetches_.emplace_back(prefetch_url, status);
+  }
+
+  void OnAllPrefetchesFinished(const GURL& url) override {
+    done_urls_.insert(url);
+    if (waiting_url_ == url) {
+      waiting_url_ = GURL();
+      std::move(done_callback_).Run();
+    }
+  }
+
+  void WaitForPrefetchesForNavigation(const GURL& url) {
+    DCHECK(waiting_url_.is_empty());
+    DCHECK(!url.is_empty());
+    if (done_urls_.find(url) != done_urls_.end())
+      return;
+    waiting_url_ = url;
+    base::RunLoop loop;
+    done_callback_ = loop.QuitClosure();
+    loop.Run();
+  }
+
+  const std::vector<PrefetchResult>& results() const { return prefetches_; }
+
+ private:
+  std::vector<PrefetchResult> prefetches_;
+  std::set<GURL> done_urls_;
+  GURL waiting_url_;
+  base::OnceClosure done_callback_;
+};
+
 class LoadingPredictorBrowserTest : public InProcessBrowserTest {
  public:
   LoadingPredictorBrowserTest() {
@@ -504,6 +555,11 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
     preconnect_manager_observer_ =
         std::make_unique<TestPreconnectManagerObserver>(
             loading_predictor_->preconnect_manager());
+    if (loading_predictor_->prefetch_manager()) {
+      prefetch_manager_observer_ =
+          std::make_unique<TestPrefetchManagerObserver>(
+              *loading_predictor_->prefetch_manager());
+    }
     PredictorInitializer initializer(
         loading_predictor_->resource_prefetch_predictor());
     initializer.EnsurePredictorInitialized();
@@ -563,6 +619,10 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
     return preconnect_manager_observer_.get();
   }
 
+  TestPrefetchManagerObserver* prefetch_manager_observer() {
+    return prefetch_manager_observer_.get();
+  }
+
   ConnectionTracker* connection_tracker() { return connection_tracker_.get(); }
 
   ConnectionTracker* preconnecting_server_connection_tracker() const {
@@ -620,6 +680,7 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<ConnectionListener> preconnecting_server_connection_listener_;
   std::unique_ptr<ConnectionTracker> preconnecting_server_connection_tracker_;
   std::unique_ptr<TestPreconnectManagerObserver> preconnect_manager_observer_;
+  std::unique_ptr<TestPrefetchManagerObserver> prefetch_manager_observer_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadingPredictorBrowserTest);
@@ -1948,6 +2009,11 @@ class LoadingPredictorPrefetchBrowserTest
     LoadingPredictorBrowserTestWithOptimizationGuide::SetUp();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kLoadingPredictorAllowLocalRequestForTesting);
+  }
+
  protected:
   // Sets the requests to expect in WaitForRequests().
   void SetExpectedRequests(base::flat_set<GURL> requests) {
@@ -2117,6 +2183,47 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
+// A fixture for testing prefetching with the local resource check not bypassed.
+// The normal fixture bypasses the check so that the embedded test server can be
+// used.
+class LoadingPredictorPrefetchBrowserTestWithBlockedLocalRequest
+    : public LoadingPredictorPrefetchBrowserTest {
+ public:
+  LoadingPredictorPrefetchBrowserTestWithBlockedLocalRequest() = default;
+
+  // Override to prevent adding kLoadingPredictorAllowLocalRequestForTesting
+  // here.
+  void SetUpCommandLine(base::CommandLine* command_line) override {}
+};
+
+// Test that prefetches to local resources are blocked.
+IN_PROC_BROWSER_TEST_P(
+    LoadingPredictorPrefetchBrowserTestWithBlockedLocalRequest,
+    PrepareForPageLoadWithPredictionForPrefetch) {
+  GURL url = embedded_test_server()->GetURL(
+      "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                             embedded_test_server()->port()));
+
+  GURL hint_url = embedded_test_server()->GetURL("subresource.com", "/css");
+
+  // Set up one optimization hint.
+  std::vector<Subresource> hints = {
+      {hint_url.spec(), optimization_guide::proto::RESOURCE_TYPE_CSS},
+  };
+  SetUpOptimizationHint(url, hints);
+
+  // Start a navigation which triggers prefetch.
+  auto observer = NavigateToURLAsync(url);
+  EXPECT_TRUE(observer->WaitForRequestStart());
+
+  // The prefetch should have failed.
+  prefetch_manager_observer()->WaitForPrefetchesForNavigation(url);
+  auto results = prefetch_manager_observer()->results();
+  ASSERT_EQ(results.size(), 1u);
+  EXPECT_EQ(results[0].status.error_code,
+            net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST);
+}
+
 INSTANTIATE_TEST_SUITE_P(
     ,
     LoadingPredictorPrefetchBrowserTest,
@@ -2125,5 +2232,17 @@ INSTANTIATE_TEST_SUITE_P(
         /*ShouldUseOptimizationGuidePredictions()=*/
         testing::Values(true),
         /*GetSubresourceType()=*/testing::Values("all", "css", "js_css")));
+
+// For the "BlockedLocalRequest" test, the params largely don't matter. We just
+// need to enable prefetching and test one configuration, since the test passes
+// if the prefetch is blocked.
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    LoadingPredictorPrefetchBrowserTestWithBlockedLocalRequest,
+    testing::Combine(
+        /*IsLocalPredictionEnabled()=*/testing::Values(false),
+        /*ShouldUseOptimizationGuidePredictions()=*/
+        testing::Values(true),
+        /*GetSubresourceType()=*/testing::Values("all")));
 
 }  // namespace predictors

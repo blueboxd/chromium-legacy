@@ -690,5 +690,10 @@ const base::Feature kCrOSAutoSelect{"CrOSAutoSelect",
 const base::Feature kCompositingOptimizations{
     "CompositingOptimizations", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Reduce the amount of information in the default 'referer' header for
+// cross-origin requests.
+const base::Feature kReducedReferrerGranularity{
+    "ReducedReferrerGranularity", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

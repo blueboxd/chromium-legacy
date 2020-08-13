@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace network {
@@ -27,7 +28,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) EmptyURLLoaderClient
   ~EmptyURLLoaderClient() override;
 
   // Calls |callback| when the request is done.
-  void Drain(base::OnceClosure callback);
+  void Drain(base::OnceCallback<void(const URLLoaderCompletionStatus&)>);
 
  private:
   void MaybeDone();
@@ -51,8 +52,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) EmptyURLLoaderClient
 
   std::unique_ptr<mojo::DataPipeDrainer> response_body_drainer_;
 
-  bool done_ = false;
-  base::OnceClosure callback_;
+  base::Optional<URLLoaderCompletionStatus> done_status_;
+  base::OnceCallback<void(const URLLoaderCompletionStatus&)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(EmptyURLLoaderClient);
 };
@@ -75,6 +76,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) EmptyURLLoaderClientWrapper {
       mojo::PendingReceiver<mojom::URLLoaderClient> receiver,
       mojo::PendingRemote<mojom::URLLoader> url_loader);
 
+  void DidDrain(const network::URLLoaderCompletionStatus& status);
   void DeleteSelf();
 
   EmptyURLLoaderClient client_;

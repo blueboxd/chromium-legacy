@@ -94,6 +94,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   NGBlockNode GetRenderedLegend() const;
   NGBlockNode GetFieldsetContent() const;
 
+  bool IsNGTable() const { return IsTable() && box_->IsLayoutNGMixin(); }
+  bool IsFixedTableLayout() const;
+  const NGBoxStrut& GetTableBorders() const;
+
   // Return true if this block node establishes an inline formatting context.
   // This will only be the case if there is actual inline content. Empty nodes
   // or nodes consisting purely of block-level, floats, and/or out-of-flow

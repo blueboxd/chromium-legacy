@@ -198,7 +198,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget)
       override;
-  void ShowCreatedWindow(int process_id,
+  void ShowCreatedWindow(RenderFrameHost* opener,
                          int route_id,
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,

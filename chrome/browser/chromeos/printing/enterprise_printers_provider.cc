@@ -173,7 +173,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
     user_printers_is_complete_ =
         user_printers_->IsComplete() &&
         (user_printers_->IsDataPolicySet() ||
-         !PolicyWithDataIsSet(policy::key::kNativePrintersBulkConfiguration));
+         !PolicyWithDataIsSet(policy::key::kPrintersBulkConfiguration));
   }
 
   void RecalculateCompleteFlagForDevicePrinters() {

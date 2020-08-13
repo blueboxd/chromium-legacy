@@ -395,7 +395,7 @@ void PerformAttributeSetCEReactionsReflectTypeString(
     const QualifiedName& content_attribute,
     const char* interface_name,
     const char* attribute_name) {
-  PerformAttributeSetCEReactionsReflect<IDLStringV2, const AtomicString&,
+  PerformAttributeSetCEReactionsReflect<IDLStringV2, AtomicString,
                                         &Element::setAttribute>(
       info, content_attribute, interface_name, attribute_name);
 }
@@ -406,8 +406,7 @@ void PerformAttributeSetCEReactionsReflectTypeStringLegacyNullToEmptyString(
     const char* interface_name,
     const char* attribute_name) {
   PerformAttributeSetCEReactionsReflect<IDLStringTreatNullAsEmptyStringV2,
-                                        const AtomicString&,
-                                        &Element::setAttribute>(
+                                        AtomicString, &Element::setAttribute>(
       info, content_attribute, interface_name, attribute_name);
 }
 
@@ -416,8 +415,8 @@ void PerformAttributeSetCEReactionsReflectTypeStringOrNull(
     const QualifiedName& content_attribute,
     const char* interface_name,
     const char* attribute_name) {
-  PerformAttributeSetCEReactionsReflect<
-      IDLNullable<IDLStringV2>, const AtomicString&, &Element::setAttribute>(
+  PerformAttributeSetCEReactionsReflect<IDLNullable<IDLStringV2>, AtomicString,
+                                        &Element::setAttribute>(
       info, content_attribute, interface_name, attribute_name);
 }
 

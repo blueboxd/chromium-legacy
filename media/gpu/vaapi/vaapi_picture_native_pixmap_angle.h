@@ -35,7 +35,7 @@ class VaapiPictureNativePixmapAngle : public VaapiPictureNativePixmap {
   ~VaapiPictureNativePixmapAngle() override;
 
   // VaapiPicture implementation.
-  bool Allocate(gfx::BufferFormat format) override;
+  Status Allocate(gfx::BufferFormat format) override;
   bool ImportGpuMemoryBufferHandle(
       gfx::BufferFormat format,
       gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override;

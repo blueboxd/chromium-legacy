@@ -74,6 +74,18 @@ class PrefetchManager {
     virtual void PrefetchFinished(std::unique_ptr<PrefetchStats> stats) = 0;
   };
 
+  // For testing.
+  class Observer {
+   public:
+    virtual ~Observer() = default;
+
+    virtual void OnPrefetchFinished(
+        const GURL& url,
+        const GURL& prefetch_url,
+        const network::URLLoaderCompletionStatus& status) {}
+    virtual void OnAllPrefetchesFinished(const GURL& url) {}
+  };
+
   PrefetchManager(base::WeakPtr<Delegate> delegate, Profile* profile);
   ~PrefetchManager();
 
@@ -94,6 +106,10 @@ class PrefetchManager {
   // Called by PrefetchInfo.
   void AllPrefetchJobsForUrlFinished(PrefetchInfo& info);
 
+  void set_observer_for_testing(Observer* observer) {
+    observer_for_testing_ = observer;
+  }
+
  private:
   friend class PrefetchManagerTest;
 
@@ -102,7 +118,8 @@ class PrefetchManager {
   void OnPrefetchFinished(
       std::unique_ptr<PrefetchJob> job,
       std::unique_ptr<blink::ThrottlingURLLoader> loader,
-      std::unique_ptr<network::mojom::URLLoaderClient> client);
+      std::unique_ptr<network::mojom::URLLoaderClient> client,
+      const network::URLLoaderCompletionStatus& status);
   void TryToLaunchPrefetchJobs();
 
   base::WeakPtr<Delegate> delegate_;
@@ -117,6 +134,8 @@ class PrefetchManager {
   // The total number of prefetches that have started and not yet finished,
   // across all main frame URLs.
   size_t inflight_jobs_count_ = 0;
+
+  Observer* observer_for_testing_ = nullptr;
 
   base::WeakPtrFactory<PrefetchManager> weak_factory_{this};
 };

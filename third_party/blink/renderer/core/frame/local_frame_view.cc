@@ -2169,6 +2169,12 @@ bool LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling(
       DocumentLifecycle::kCompositingAssignmentsClean, reason);
 }
 
+bool LocalFrameView::UpdateLifecycleToPrePaintClean(
+    DocumentUpdateReason reason) {
+  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
+      DocumentLifecycle::kPrePaintClean, reason);
+}
+
 // TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateLifecycleToCompositingInputsClean(
     DocumentUpdateReason reason) {
@@ -2187,7 +2193,6 @@ bool LocalFrameView::UpdateAllLifecyclePhasesExceptPaint(
 
 void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
   auto* local_frame_view_root = GetFrame().LocalFrameRoot().View();
-  // TODO(chrishr): this can be changed to kPrePaintClean
   local_frame_view_root->UpdateLifecyclePhases(
       DocumentLifecycle::kCompositingAssignmentsClean,
       DocumentUpdateReason::kPrinting);

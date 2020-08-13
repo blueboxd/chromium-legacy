@@ -22,6 +22,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "media/base/status.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/chromeos/video_decoder_pipeline.h"
@@ -120,7 +121,7 @@ class VaapiVideoDecoder : public DecoderInterface,
   void ResetDone(base::OnceClosure reset_cb);
 
   // Create codec-specific AcceleratedVideoDecoder and reset related variables.
-  bool CreateAcceleratedVideoDecoder();
+  Status CreateAcceleratedVideoDecoder();
 
   // Change the current |state_| to the specified |state|.
   void SetState(State state);

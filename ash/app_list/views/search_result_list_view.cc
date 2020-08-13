@@ -284,7 +284,9 @@ int SearchResultListView::DoUpdate() {
   previous_found_drive_quick_access_ = found_drive_quick_access;
 
   set_container_score(
-      display_results.empty() ? -1 : display_results.front()->display_score());
+      display_results.empty()
+          ? -1.0
+          : AppListConfig::instance().results_list_container_score());
 
   return display_results.size();
 }

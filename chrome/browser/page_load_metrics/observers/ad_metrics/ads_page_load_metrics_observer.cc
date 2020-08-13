@@ -453,9 +453,12 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
       client->GetThrottleManager()->LoadPolicyForLastCommittedNavigation(
           frame_host);
 
-  // If there is not load policy use |is_adframe| solely.
+  // Only un-tag frames as ads if the navigation has committed. This prevents
+  // frames from being untagged that have an aborted navigation to allowlist
+  // urls.
   if (restricted_navigation_ad_tagging_enabled_ && load_policy &&
-      navigation_handle->GetNetErrorCode() == net::OK) {
+      navigation_handle->GetNetErrorCode() == net::OK &&
+      navigation_handle->HasCommitted()) {
     // If a filter list explicitly allows the rule, we should ignore a detected
     // ad.
     bool navigation_is_explicitly_allowed =

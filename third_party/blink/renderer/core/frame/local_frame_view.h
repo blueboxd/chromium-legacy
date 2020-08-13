@@ -353,6 +353,8 @@ class CORE_EXPORT LocalFrameView final
   // detached frame and need special handling of the frame.
   void UpdateLifecyclePhasesForPrinting();
 
+  bool UpdateLifecycleToPrePaintClean(DocumentUpdateReason reason);
+
   // After calling this method, all frames will be in a lifecycle
   // state >= CompositingClean, and scrolling has been updated (unless
   // throttling is allowed), unless the frame was throttled or inactive.

@@ -43,33 +43,21 @@ TEST_F(PolicyValueTest, TestCanCompareBoolValues) {
   PolicyValue false_value(false);
   PolicyValue true_value(true);
 
-  EXPECT_FALSE(false_value < false_value);
-  EXPECT_TRUE(false_value <= false_value);
   EXPECT_TRUE(false_value == false_value);
   EXPECT_FALSE(false_value != false_value);
-  EXPECT_TRUE(false_value >= false_value);
-  EXPECT_FALSE(false_value > false_value);
+  EXPECT_TRUE(false_value.IsCompatibleWith(false_value));
 
-  EXPECT_TRUE(false_value < true_value);
-  EXPECT_TRUE(false_value <= true_value);
   EXPECT_FALSE(false_value == true_value);
   EXPECT_TRUE(false_value != true_value);
-  EXPECT_FALSE(false_value >= true_value);
-  EXPECT_FALSE(false_value > true_value);
+  EXPECT_TRUE(false_value.IsCompatibleWith(true_value));
 
-  EXPECT_FALSE(true_value < false_value);
-  EXPECT_FALSE(true_value <= false_value);
   EXPECT_FALSE(true_value == false_value);
   EXPECT_TRUE(true_value != false_value);
-  EXPECT_TRUE(true_value >= false_value);
-  EXPECT_TRUE(true_value > false_value);
+  EXPECT_FALSE(true_value.IsCompatibleWith(false_value));
 
-  EXPECT_FALSE(true_value < true_value);
-  EXPECT_TRUE(true_value <= true_value);
   EXPECT_TRUE(true_value == true_value);
   EXPECT_FALSE(true_value != true_value);
-  EXPECT_TRUE(true_value >= true_value);
-  EXPECT_FALSE(true_value > true_value);
+  EXPECT_TRUE(true_value.IsCompatibleWith(true_value));
 }
 
 TEST_F(PolicyValueTest, TestCanCreateDoubleValues) {
@@ -100,33 +88,21 @@ TEST_F(PolicyValueTest, TestCanCompareDoubleValues) {
   PolicyValue low_value(1.0);
   PolicyValue high_value(2.0);
 
-  EXPECT_FALSE(low_value < low_value);
-  EXPECT_TRUE(low_value <= low_value);
   EXPECT_TRUE(low_value == low_value);
   EXPECT_FALSE(low_value != low_value);
-  EXPECT_TRUE(low_value >= low_value);
-  EXPECT_FALSE(low_value > low_value);
+  EXPECT_TRUE(low_value.IsCompatibleWith(low_value));
 
-  EXPECT_TRUE(low_value < high_value);
-  EXPECT_TRUE(low_value <= high_value);
   EXPECT_FALSE(low_value == high_value);
   EXPECT_TRUE(low_value != high_value);
-  EXPECT_FALSE(low_value >= high_value);
-  EXPECT_FALSE(low_value > high_value);
+  EXPECT_TRUE(low_value.IsCompatibleWith(high_value));
 
-  EXPECT_FALSE(high_value < low_value);
-  EXPECT_FALSE(high_value <= low_value);
   EXPECT_FALSE(high_value == low_value);
   EXPECT_TRUE(high_value != low_value);
-  EXPECT_TRUE(high_value >= low_value);
-  EXPECT_TRUE(high_value > low_value);
+  EXPECT_FALSE(high_value.IsCompatibleWith(low_value));
 
-  EXPECT_FALSE(high_value < high_value);
-  EXPECT_TRUE(high_value <= high_value);
   EXPECT_TRUE(high_value == high_value);
   EXPECT_FALSE(high_value != high_value);
-  EXPECT_TRUE(high_value >= high_value);
-  EXPECT_FALSE(high_value > high_value);
+  EXPECT_TRUE(high_value.IsCompatibleWith(high_value));
 }
 
 }  // namespace blink

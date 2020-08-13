@@ -409,21 +409,18 @@ void TestWebContents::CreateNewFullscreenWidget(
     mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {}
 
-void TestWebContents::ShowCreatedWindow(int process_id,
+void TestWebContents::ShowCreatedWindow(RenderFrameHost* opener,
                                         int route_id,
                                         WindowOpenDisposition disposition,
                                         const gfx::Rect& initial_rect,
-                                        bool user_gesture) {
-}
+                                        bool user_gesture) {}
 
 void TestWebContents::ShowCreatedWidget(int process_id,
                                         int route_id,
-                                        const gfx::Rect& initial_rect) {
-}
+                                        const gfx::Rect& initial_rect) {}
 
 void TestWebContents::ShowCreatedFullscreenWidget(int process_id,
-                                                  int route_id) {
-}
+                                                  int route_id) {}
 
 void TestWebContents::SaveFrameWithHeaders(
     const GURL& url,

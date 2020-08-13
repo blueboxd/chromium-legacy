@@ -41,7 +41,7 @@ class MEDIA_GPU_EXPORT VaapiPicture {
 
   // Allocates a buffer of |format| to use as backing storage for this picture.
   // Return true on success.
-  virtual bool Allocate(gfx::BufferFormat format) = 0;
+  virtual Status Allocate(gfx::BufferFormat format) = 0;
 
   int32_t picture_buffer_id() const { return picture_buffer_id_; }
 

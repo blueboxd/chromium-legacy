@@ -1,6 +1,8 @@
 # TODO(https://crbug.com/1084469): fix these tests.
 
 # Failed:
+-All/PopupBrowserTest.MoveClampedToCurrentDisplay/0
+-All/PopupBrowserTest.MoveClampedToCurrentDisplay/1
 -AutomationManagerAuraBrowserTest.TransientFocusChangesAreSuppressed
 -BrowserActionApiTest.BrowserActionOpenPopupOnPopup
 -BrowserViewTest.F6CyclesThroughCaptionBubbleToo

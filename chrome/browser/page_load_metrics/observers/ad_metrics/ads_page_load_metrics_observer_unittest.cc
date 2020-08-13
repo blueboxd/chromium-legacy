@@ -110,6 +110,7 @@ const base::TimeDelta kOtherFrameFCPTime =
 const char kAdUrl[] = "https://ads.com/ad/disallowed.html";
 const char kNonAdUrl[] = "https://foo.com/";
 const char kNonAdUrlSameOrigin[] = "https://ads.com/foo";
+const char kAllowedUrl[] = "https://foo.com/ad/not_disallowed.html";
 
 const int kMaxHeavyAdNetworkBytes =
     heavy_ad_thresholds::kMaxNetworkBytes +
@@ -1376,6 +1377,45 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   // Verify histograms are logged correctly for the whole page.
   TestHistograms(histogram_tester(), test_ukm_recorder(), {{0, 20}},
                  0 /* non_ad_cached_kb */, 10 /* non_ad_uncached_kb */);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest,
+       FrameAbortsCommitMatchingAllowedRule_FrameTracked) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kAdUrl);
+
+  // Create a frame that is tagged as ad.
+  RenderFrameHost* subframe =
+      RenderFrameHostTester::For(main_frame)->AppendChild("frame_name");
+  auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
+      GURL("https://foo.com"), subframe);
+  OnAdSubframeDetected(subframe);
+  navigation_simulator->Commit();
+
+  subframe = navigation_simulator->GetFinalRenderFrameHost();
+
+  RenderFrameHost* nested_subframe =
+      CreateAndNavigateSubFrame(kNonAdUrl, subframe);
+
+  // Navigate the frame same-origin to a url matching an allowlist rule, but
+  // abort the navigation so it does not commit.
+  auto navigation_simulator2 =
+      NavigationSimulator::CreateRendererInitiated(GURL(kAllowedUrl), subframe);
+  navigation_simulator2->ReadyToCommit();
+  navigation_simulator2->AbortCommit();
+
+  // Verify per-frame metrics were not flushed.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("FrameCounts.IgnoredByRestrictedAdTagging"), 0);
+
+  // Update the nested subframe. If the frame was untracked the underlying
+  // object would be deleted.
+  ResourceDataUpdate(nested_subframe, ResourceCached::kNotCached, 10);
+
+  NavigateMainFrame(kNonAdUrl);
+
+  // Verify histograms for the frame.
+  TestHistograms(histogram_tester(), test_ukm_recorder(), {{0, 10}},
+                 0 /* non_ad_cached_kb */, 0 /* non_ad_uncached_kb */);
 }
 
 // Tests that a non ad frame that is deleted does not cause any unspecified

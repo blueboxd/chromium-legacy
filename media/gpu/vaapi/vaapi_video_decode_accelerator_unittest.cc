@@ -105,7 +105,7 @@ class MockVaapiPicture : public VaapiPicture {
   ~MockVaapiPicture() override = default;
 
   // VaapiPicture implementation.
-  bool Allocate(gfx::BufferFormat format) override { return true; }
+  Status Allocate(gfx::BufferFormat format) override { return OkStatus(); }
   bool ImportGpuMemoryBufferHandle(
       gfx::BufferFormat format,
       gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override {

@@ -6,10 +6,10 @@
 
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/public/common/content_features.h"
 #include "net/url_request/referrer_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 
 namespace content {
 
@@ -105,21 +105,9 @@ TEST(ReferrerTest, BlinkNetRoundTripConversion) {
 
   for (auto policy : policies) {
     EXPECT_EQ(Referrer::ReferrerPolicyForUrlRequest(
-                  blink::NetToMojoReferrerPolicy(policy)),
+                  blink::ReferrerUtils::NetToMojoReferrerPolicy(policy)),
               policy);
   }
-}
-
-TEST(DefaultReferrerPolicyTest, Unconfigured) {
-  EXPECT_EQ(Referrer::GetDefaultReferrerPolicy(),
-            net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
-}
-
-TEST(DefaultReferrerPolicyTest, FeatureOnly) {
-  base::test::ScopedFeatureList f;
-  f.InitAndEnableFeature(features::kReducedReferrerGranularity);
-  EXPECT_EQ(Referrer::GetDefaultReferrerPolicy(),
-            net::ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN);
 }
 
 TEST(DefaultReferrerPolicyTest, SetAndGetForceLegacy) {
@@ -130,15 +118,15 @@ TEST(DefaultReferrerPolicyTest, SetAndGetForceLegacy) {
 
 TEST(DefaultReferrerPolicyTest, ForceLegacyOnly) {
   content::Referrer::SetForceLegacyDefaultReferrerPolicy(true);
-  EXPECT_EQ(Referrer::GetDefaultReferrerPolicy(),
+  EXPECT_EQ(blink::ReferrerUtils::GetDefaultNetReferrerPolicy(),
             net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
 }
 
 TEST(DefaultReferrerPolicyTest, FeatureAndForceLegacy) {
   base::test::ScopedFeatureList f;
-  f.InitAndEnableFeature(features::kReducedReferrerGranularity);
+  f.InitAndEnableFeature(blink::features::kReducedReferrerGranularity);
   content::Referrer::SetForceLegacyDefaultReferrerPolicy(true);
-  EXPECT_EQ(Referrer::GetDefaultReferrerPolicy(),
+  EXPECT_EQ(blink::ReferrerUtils::GetDefaultNetReferrerPolicy(),
             net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
 }
 

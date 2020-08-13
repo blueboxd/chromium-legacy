@@ -35,10 +35,10 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
     NGTableTypes::CellBlockConstraints* cell_block_constraints,
     NGTableTypes::RowspanCells* rowspan_cells,
     NGColspanCellTabulator* colspan_cell_tabulator) {
-  const WritingMode table_writing_mode =
-      table_borders.TableWritingDirection().GetWritingMode();
+  const WritingDirectionMode table_writing_direction =
+      row.Style().GetWritingDirection();
 
-  auto CreateCellConstraintSpace = [&column_locations, &table_writing_mode,
+  auto CreateCellConstraintSpace = [&column_locations, &table_writing_direction,
                                     &is_restricted_block_size_table,
                                     &cell_percentage_inline_size](
                                        const NGBlockNode& cell,
@@ -52,10 +52,9 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
                                   column_locations[start_column].offset;
     // TODO(crbug.com/736072): Support orthogonal table cells.
     // See http://wpt.live/css/css-writing-modes/table-cell-001.html
-    NGConstraintSpaceBuilder builder(table_writing_mode,
+    NGConstraintSpaceBuilder builder(table_writing_direction.GetWritingMode(),
                                      cell.Style().GetWritingMode(),
                                      /* is_new_fc */ true);
-    DCHECK_EQ(table_writing_mode, cell.Style().GetWritingMode());
     builder.SetTextDirection(cell.Style().Direction());
     builder.SetTableCellBorders(cell_borders);
     builder.SetAvailableSize(LogicalSize(cell_inline_size, kIndefiniteSize));
@@ -89,14 +88,15 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
     colspan_cell_tabulator->FindNextFreeColumn();
     const ComputedStyle& cell_style = cell.Style();
     const NGBoxStrut cell_borders = table_borders.CellBorder(
-        cell, row_index, colspan_cell_tabulator->CurrentColumn(),
-        section_index);
+        cell, row_index, colspan_cell_tabulator->CurrentColumn(), section_index,
+        table_writing_direction);
     const NGConstraintSpace cell_constraint_space = CreateCellConstraintSpace(
         cell, colspan_cell_tabulator->CurrentColumn(), cell_borders);
     scoped_refptr<const NGLayoutResult> layout_result =
         cell.Layout(cell_constraint_space);
     const NGBoxFragment fragment(
-        table_writing_mode, table_borders.TableWritingDirection().Direction(),
+        table_writing_direction.GetWritingMode(),
+        table_writing_direction.Direction(),
         To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
 
     LayoutUnit baseline;
@@ -265,6 +265,8 @@ void NGTableAlgorithmUtils::ComputeSectionInlineConstraints(
     wtf_size_t* row_index,
     NGTableTypes::CellInlineConstraints* cell_inline_constraints,
     NGTableTypes::ColspanCells* colspan_cell_inline_constraints) {
+  WritingDirectionMode table_writing_direction =
+      section.Style().GetWritingDirection();
   NGColspanCellTabulator colspan_cell_tabulator;
   bool is_first_row = true;
   for (NGBlockNode row = To<NGBlockNode>(section.FirstChild()); row;
@@ -288,9 +290,9 @@ void NGTableAlgorithmUtils::ComputeSectionInlineConstraints(
       if (!ignore_because_of_fixed_layout) {
         NGBoxStrut cell_border = table_borders.CellBorder(
             cell, *row_index, colspan_cell_tabulator.CurrentColumn(),
-            section_index);
-        NGBoxStrut cell_padding =
-            table_borders.CellPaddingForMeasure(cell.Style());
+            section_index, table_writing_direction);
+        NGBoxStrut cell_padding = table_borders.CellPaddingForMeasure(
+            cell.Style(), table_writing_direction);
         NGTableTypes::CellInlineConstraint cell_constraint =
             NGTableTypes::CreateCellInlineConstraint(
                 cell, table_writing_mode, is_fixed_layout, cell_border,

@@ -25,23 +25,21 @@ namespace {
 
 const char kChromeSelection[] = "CHROME_SELECTION";
 const char kClipboard[] = "CLIPBOARD";
-const char kString[] = "STRING";
 const char kTargets[] = "TARGETS";
 const char kTimestamp[] = "TIMESTAMP";
-const char kUtf8String[] = "UTF8_STRING";
 
 // Helps to allow conversions for text/plain[;charset=utf-8] <=> [UTF8_]STRING.
 void ExpandTypes(std::vector<std::string>* list) {
   bool has_mime_type_text = Contains(*list, ui::kMimeTypeText);
-  bool has_string = Contains(*list, kString);
+  bool has_string = Contains(*list, kMimeTypeLinuxString);
   bool has_mime_type_utf8 = Contains(*list, kMimeTypeTextUtf8);
-  bool has_utf8_string = Contains(*list, kUtf8String);
+  bool has_utf8_string = Contains(*list, kMimeTypeLinuxUtf8String);
   if (has_mime_type_text && !has_string)
-    list->push_back(kString);
+    list->push_back(kMimeTypeLinuxString);
   if (has_string && !has_mime_type_text)
     list->push_back(ui::kMimeTypeText);
   if (has_mime_type_utf8 && !has_utf8_string)
-    list->push_back(kUtf8String);
+    list->push_back(kMimeTypeLinuxUtf8String);
   if (has_utf8_string && !has_mime_type_utf8)
     list->push_back(kMimeTypeTextUtf8);
 }
@@ -163,9 +161,11 @@ bool X11ClipboardOzone::OnSelectionRequest(
 
     std::string key = target_name;
     // Allow conversions for text/plain[;charset=utf-8] <=> [UTF8_]STRING.
-    if (key == kUtf8String && !Contains(offer_data_map, kUtf8String)) {
+    if (key == kMimeTypeLinuxUtf8String &&
+        !Contains(offer_data_map, kMimeTypeLinuxUtf8String)) {
       key = kMimeTypeTextUtf8;
-    } else if (key == kString && !Contains(offer_data_map, kString)) {
+    } else if (key == kMimeTypeLinuxString &&
+               !Contains(offer_data_map, kMimeTypeLinuxString)) {
       key = kMimeTypeText;
     }
     auto it = offer_data_map.find(key);
@@ -314,9 +314,9 @@ void X11ClipboardOzone::ReadRemoteClipboard(x11::Atom selection) {
   std::string target = selection_state.data_mime_type;
   if (!Contains(selection_state.mime_types, target)) {
     if (target == kMimeTypeText) {
-      target = kString;
+      target = kMimeTypeLinuxString;
     } else if (target == kMimeTypeTextUtf8) {
-      target = kUtf8String;
+      target = kMimeTypeLinuxUtf8String;
     }
   }
 

@@ -52,6 +52,12 @@ class BLINK_COMMON_EXPORT PolicyValue {
   void SetToMax();
   void SetToMin();
 
+  // Test whether this policy value is compatible with required policy value.
+  // Note: a.IsCompatibleWith(b) == true does not necessary indicate
+  // b.IsCompatibleWith(a) == false, because not all policy value types support
+  // strictness comparison, e.g. enum.
+  bool IsCompatibleWith(const PolicyValue& required) const;
+
  private:
   mojom::PolicyValueType type_;
   bool bool_value_ = false;
@@ -61,14 +67,6 @@ class BLINK_COMMON_EXPORT PolicyValue {
 bool BLINK_COMMON_EXPORT operator==(const PolicyValue& lhs,
                                     const PolicyValue& rhs);
 bool BLINK_COMMON_EXPORT operator!=(const PolicyValue& lhs,
-                                    const PolicyValue& rhs);
-bool BLINK_COMMON_EXPORT operator>(const PolicyValue& lhs,
-                                   const PolicyValue& rhs);
-bool BLINK_COMMON_EXPORT operator>=(const PolicyValue& lhs,
-                                    const PolicyValue& rhs);
-bool BLINK_COMMON_EXPORT operator<(const PolicyValue& lhs,
-                                   const PolicyValue& rhs);
-bool BLINK_COMMON_EXPORT operator<=(const PolicyValue& lhs,
                                     const PolicyValue& rhs);
 }  // namespace blink
 

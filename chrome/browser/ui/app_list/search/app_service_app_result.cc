@@ -12,6 +12,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -19,6 +20,8 @@
 #include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/services/app_service/public/cpp/app_update.h"
@@ -74,7 +77,7 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
       break;
   }
 
-  if (IsSuggestionChip(id()))
+  if (IsSuggestionChip(id(), profile))
     HandleSuggestionChip(profile);
 }
 
@@ -153,6 +156,13 @@ void AppServiceAppResult::Launch(int event_flags,
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
+
+  if (id() == chromeos::default_web_apps::kHelpAppId &&
+      query_url().has_value()) {
+    proxy->LaunchAppWithUrl(app_id(), event_flags, query_url().value(),
+                            launch_source, controller()->GetAppListDisplayId());
+    return;
+  }
 
   // For Chrome apps or Web apps, if it is non-platform app, it could be
   // selecting an existing delegate for the app, so call
@@ -236,7 +246,9 @@ void AppServiceAppResult::HandleSuggestionChip(Profile* profile) {
   SetDisplayIndex(ash::SearchResultDisplayIndex::kFirstIndex);
   SetDisplayType(ash::SearchResultDisplayType::kChip);
 
-  if (id() == ash::kReleaseNotesAppId) {
+  // Either of these apps could be shown as the release notes suggestion chip.
+  if (id() == ash::kReleaseNotesAppId ||
+      id() == chromeos::default_web_apps::kHelpAppId) {
     SetNotifyVisibilityChange(true);
     // Make sure that if both Continue Reading and Release Notes are available,
     // Release Notes shows up first in the suggestion chip container.

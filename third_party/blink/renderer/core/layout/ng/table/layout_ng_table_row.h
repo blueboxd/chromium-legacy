@@ -12,6 +12,8 @@
 namespace blink {
 
 class LayoutNGTableCell;
+class LayoutNGTable;
+
 // NOTE:
 // Legacy table row inherits from LayoutBox, not LayoutBlock.
 // Every child of LayoutNGTableRow must be LayoutNGTableCell.
@@ -22,6 +24,8 @@ class CORE_EXPORT LayoutNGTableRow : public LayoutNGMixin<LayoutBlock>,
 
   bool IsEmpty() const;
 
+  LayoutNGTable* Table() const;
+
   // LayoutBlock methods start.
 
   void UpdateBlockLayout(bool relayout_children) override { NOTREACHED(); }
@@ -30,6 +34,11 @@ class CORE_EXPORT LayoutNGTableRow : public LayoutNGMixin<LayoutBlock>,
 
   void AddChild(LayoutObject* child,
                 LayoutObject* before_child = nullptr) override;
+
+  void RemoveChild(LayoutObject*) override;
+
+  void StyleDidChange(StyleDifference diff,
+                      const ComputedStyle* old_style) override;
 
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
       const LayoutObject* parent) const override;

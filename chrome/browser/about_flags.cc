@@ -2884,7 +2884,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"reduced-referrer-granularity",
      flag_descriptions::kReducedReferrerGranularityName,
      flag_descriptions::kReducedReferrerGranularityDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kReducedReferrerGranularity)},
+     FEATURE_VALUE_TYPE(blink::features::kReducedReferrerGranularity)},
 #if defined(OS_CHROMEOS)
     {"crostini-port-forwarding", flag_descriptions::kCrostiniPortForwardingName,
      flag_descriptions::kCrostiniPortForwardingDescription, kOsCrOS,

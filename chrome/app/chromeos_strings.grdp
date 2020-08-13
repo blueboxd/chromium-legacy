@@ -5432,6 +5432,66 @@
     Hide password
   </message>
 
+  <!-- Borealis strings -->
+  <!-- TODO(danielng): Add string descriptions and remove translateable tags
+       when strings are finalized. -->
+  <message name="IDS_BOREALIS_APP_NAME" desc="" translateable="false">
+    Borealis
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_CONFIRMATION_TITLE" desc="" translateable="false">
+    Set up <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_CONFIRMATION_MESSAGE" desc="" translateable="false">
+    Set up Borealis on your device.
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_INSTALL_BUTTON" desc="" translateable="false">
+    Install
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_ENVIRONMENT_SETTING_TITLE" desc="" translateable="false">
+    Setting up <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>...
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_ERROR_TITLE" desc="" translateable="false">
+    Setup couldn't complete
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_FINISHED_TITLE" desc="" translateable="false">
+    Setup complete
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_IMPORTING_MESSAGE" desc="" translateable="false">
+    Configuring the virtual machine. This may take a few minutes.
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_IMPORTED_MESSAGE" desc="" translateable="false">
+    <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph> is ready to use.
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_ERROR_MESSAGE" desc="" translateable="false">
+    Something went wrong.
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_RETRY_BUTTON" desc="" translateable="false">
+    Retry
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_LAUNCH_BUTTON" desc="" translateable="false">
+    Launch
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_NOT_ALLOWED_TITLE" desc="" translateable="false">
+    <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph> needs permission to run
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_NOT_ALLOWED_MESSAGE" desc="" translateable="false">
+    <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph> isn't allowed on this device. Contact your administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
+  </message>
+  <message name="IDS_BOREALIS_DLC_INTERNAL_FAILED_MESSAGE" desc="" translateable="false">
+    Your device needs to be updated before you can use <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>.
+  </message>
+  <message name="IDS_BOREALIS_DLC_BUSY_FAILED_MESSAGE" desc="" translateable="false">
+    Something went wrong. Please wait a few minutes and run <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph> again.
+  </message>
+  <message name="IDS_BOREALIS_DLC_NEED_REBOOT_FAILED_MESSAGE" desc="" translateable="false">
+    Please restart your device to use <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>.
+  </message>
+  <message name="IDS_BOREALIS_INSUFFICIENT_DISK_SPACE_MESSAGE" desc="" translateable="false">
+      Your device is low on storage. To increase free space, delete files from device.
+  </message>
+  <message name="IDS_BOREALIS_GENERIC_ERROR_MESSAGE" desc="" translateable="false">
+      Couldn't install <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>. Please try again later.
+  </message>
   <!--
     ==================================================================================
     If you change any IDS_EDU_LOGIN_INFO_* string, update kConsentScreenTextVersion in

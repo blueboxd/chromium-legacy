@@ -27,6 +27,7 @@ BLINK_COMMON_EXPORT extern const char
 BLINK_COMMON_EXPORT extern const char kEnableLowResTiling[];
 BLINK_COMMON_EXPORT extern const char kEnableRGBA4444Textures[];
 BLINK_COMMON_EXPORT extern const char kEnableZeroCopy[];
+BLINK_COMMON_EXPORT extern const char kForceLegacyDefaultReferrerPolicy[];
 BLINK_COMMON_EXPORT extern const char kGpuRasterizationMSAASampleCount[];
 BLINK_COMMON_EXPORT extern const char kIntensiveWakeUpThrottlingPolicy[];
 BLINK_COMMON_EXPORT extern const char

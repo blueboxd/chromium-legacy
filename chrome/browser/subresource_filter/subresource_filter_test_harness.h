@@ -25,8 +25,12 @@ class RenderFrameHost;
 // subresource filtering code.
 class SubresourceFilterTestHarness : public ChromeRenderViewHostTestHarness {
  public:
-  static constexpr char const kDefaultDisallowedUrl[] =
+  // Allowlist rules must prefix a disallowed rule in order to work correctly.
+  static constexpr const char kDefaultAllowedSuffix[] = "not_disallowed.html";
+  static constexpr const char kDefaultDisallowedSuffix[] = "disallowed.html";
+  static constexpr const char kDefaultDisallowedUrl[] =
       "https://example.test/disallowed.html";
+
   SubresourceFilterTestHarness();
   ~SubresourceFilterTestHarness() override;
 

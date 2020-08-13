@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.contextmenu.RevampedContextMenuUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -151,7 +152,9 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
         final String expectedUrl =
                 mTestServer.getURL("/chrome/test/data/android/contextmenu/test_image.png");
         CriteriaHelper.pollUiThread(
-                () -> Criteria.checkThat(newTab.get().getUrlString(), Matchers.is(expectedUrl)));
+                ()
+                        -> Criteria.checkThat(ChromeTabUtils.getUrlStringOnUiThread(newTab.get()),
+                                Matchers.is(expectedUrl)));
     }
 
     @Test
@@ -279,17 +282,20 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
                 "Number of open tabs does not match", numOpenedTabs, tabModel.getCount());
 
         // Verify the Url is still the same of Parent page.
-        Assert.assertEquals(
-                mTestUrl, mDownloadTestRule.getActivity().getActivityTab().getUrlString());
+        Assert.assertEquals(mTestUrl,
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mDownloadTestRule.getActivity().getActivityTab()));
 
         // Verify that the background tabs were opened in the expected order.
         String newTabUrl =
                 mTestServer.getURL("/chrome/test/data/android/contextmenu/test_link.html");
-        Assert.assertEquals(newTabUrl, tabModel.getTabAt(indexOfLinkPage).getUrlString());
+        Assert.assertEquals(newTabUrl,
+                ChromeTabUtils.getUrlStringOnUiThread(tabModel.getTabAt(indexOfLinkPage)));
 
         String imageUrl =
                 mTestServer.getURL("/chrome/test/data/android/contextmenu/test_link2.html");
-        Assert.assertEquals(imageUrl, tabModel.getTabAt(indexOfLinkPage2).getUrlString());
+        Assert.assertEquals(imageUrl,
+                ChromeTabUtils.getUrlStringOnUiThread(tabModel.getTabAt(indexOfLinkPage2)));
     }
 
     private void saveMediaFromContextMenu(String mediaDOMElement, int saveMenuID,

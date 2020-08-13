@@ -1209,10 +1209,14 @@ void BrowserView::SetContentsSize(const gfx::Size& size) {
   gfx::Rect bounds = GetBounds();
   bounds.set_width(bounds.width() + width_diff);
   bounds.set_height(bounds.height() + height_diff);
-  SetBounds(bounds);
 
-  DCHECK_EQ(GetContentsSize().width(), size.width());
-  DCHECK_EQ(GetContentsSize().height(), size.height());
+  // Constrain the final bounds to the current screen's available area. Bounds
+  // enforcement applied earlier does not know the specific frame dimensions.
+  // Changes to the window size should not generally trigger screen changes.
+  auto display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(GetNativeWindow());
+  bounds.AdjustToFit(display.work_area());
+  SetBounds(bounds);
 }
 
 bool BrowserView::IsMaximized() const {
@@ -2404,8 +2408,9 @@ bool BrowserView::GetSavedWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   chrome::GetSavedWindowBoundsAndShowState(browser_.get(), bounds, show_state);
-
-  if (chrome::SavedBoundsAreContentBounds(browser_.get())) {
+  // TODO(crbug.com/897300): Generalize this code for app and non-app popups?
+  if (chrome::SavedBoundsAreContentBounds(browser_.get()) &&
+      browser_->is_type_popup()) {
     // This is normal non-app popup window. The value passed in |bounds|
     // represents two pieces of information:
     // - the position of the window, in screen coordinates (outer position).
@@ -2421,25 +2426,28 @@ bool BrowserView::GetSavedWindowPlacement(
           bounds->height() + toolbar_->GetPreferredSize().height());
     }
 
-    gfx::Rect window_rect = frame_->non_client_view()->
-        GetWindowBoundsForClientBounds(*bounds);
-    window_rect.set_origin(bounds->origin());
+    gfx::Rect rect =
+        frame_->non_client_view()->GetWindowBoundsForClientBounds(*bounds);
+    rect.set_origin(bounds->origin());
 
     // When we are given x/y coordinates of 0 on a created popup window,
     // assume none were given by the window.open() command.
-    if (window_rect.x() == 0 && window_rect.y() == 0) {
-      gfx::Size size = window_rect.size();
-      window_rect.set_origin(WindowSizer::GetDefaultPopupOrigin(size));
-    }
+    if (rect.origin().IsOrigin())
+      rect.set_origin(WindowSizer::GetDefaultPopupOrigin(rect.size()));
 
-    *bounds = window_rect;
+    // Constrain the final bounds to the target screen's available area. Bounds
+    // enforcement applied earlier does not know the specific frame dimensions,
+    // but generally yields bounds on the appropriate screen.
+    auto display = display::Screen::GetScreen()->GetDisplayMatching(rect);
+    rect.AdjustToFit(display.work_area());
+
+    *bounds = rect;
     *show_state = ui::SHOW_STATE_NORMAL;
   }
 
   // We return true because we can _always_ locate reasonable bounds using the
   // WindowSizer, and we don't want to trigger the Window's built-in "size to
-  // default" handling because the browser window has no default preferred
-  // size.
+  // default" handling because the browser window has no default preferred size.
   return true;
 }
 

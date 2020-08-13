@@ -53,6 +53,8 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_page_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_simplified_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
@@ -963,6 +965,24 @@ NGBlockNode NGBlockNode::GetFieldsetContent() const {
   if (!child)
     return nullptr;
   return NGBlockNode(ToLayoutBox(child));
+}
+
+bool NGBlockNode::IsFixedTableLayout() const {
+  DCHECK(IsNGTable());
+  return To<LayoutNGTable>(box_)->IsFixedTableLayout();
+}
+
+const NGBoxStrut& NGBlockNode::GetTableBorders() const {
+  DCHECK(IsTable());
+  DCHECK(box_->IsLayoutNGMixin());
+  LayoutNGTable* layout_table = To<LayoutNGTable>(box_);
+  scoped_refptr<const NGTableBorders> table_borders =
+      layout_table->GetCachedTableBorders();
+  if (!table_borders) {
+    table_borders = NGTableBorders::ComputeTableBorders(*this);
+    layout_table->SetCachedTableBorders(table_borders.get());
+  }
+  return table_borders->TableBorder();
 }
 
 bool NGBlockNode::CanUseNewLayout(const LayoutBox& box) {

@@ -12,6 +12,8 @@
 
 namespace blink {
 
+class LayoutNGTable;
+
 // NOTE:
 // Every child of LayoutNGTableSection must be LayoutNGTableRow.
 class CORE_EXPORT LayoutNGTableSection : public LayoutNGMixin<LayoutBlock>,
@@ -21,6 +23,8 @@ class CORE_EXPORT LayoutNGTableSection : public LayoutNGMixin<LayoutBlock>,
 
   bool IsEmpty() const;
 
+  LayoutNGTable* Table() const;
+
   // LayoutBlock methods start.
 
   void UpdateBlockLayout(bool relayout_children) override { NOTREACHED(); }
@@ -29,6 +33,11 @@ class CORE_EXPORT LayoutNGTableSection : public LayoutNGMixin<LayoutBlock>,
 
   void AddChild(LayoutObject* child,
                 LayoutObject* before_child = nullptr) override;
+
+  void RemoveChild(LayoutObject*) override;
+
+  void StyleDidChange(StyleDifference diff,
+                      const ComputedStyle* old_style) override;
 
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
       const LayoutObject* parent) const override;
@@ -47,13 +56,16 @@ class CORE_EXPORT LayoutNGTableSection : public LayoutNGMixin<LayoutBlock>,
     DCHECK(false);
     return nullptr;
   }
+
   const LayoutNGTableSectionInterface* ToLayoutNGTableSectionInterface()
       const final {
     return this;
   }
+
   LayoutNGTableSectionInterface* ToLayoutNGTableSectionInterface() {
     return this;
   }
+
   const LayoutObject* ToLayoutObject() const final { return this; }
 
   LayoutObject* ToMutableLayoutObject() final { return this; }

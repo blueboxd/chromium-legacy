@@ -13,13 +13,24 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
+#include "third_party/blink/renderer/core/style/border_edge.h"
 
 namespace blink {
 
 LayoutNGTableCell::LayoutNGTableCell(Element* element)
     : LayoutNGBlockFlowMixin<LayoutBlockFlow>(element) {
   UpdateColAndRowSpanFlags();
+}
+
+LayoutNGTable* LayoutNGTableCell::Table() const {
+  if (LayoutObject* parent = Parent()) {
+    if (LayoutObject* grandparent = parent->Parent()) {
+      return To<LayoutNGTable>(grandparent->Parent());
+    }
+  }
+  return nullptr;
 }
 
 void LayoutNGTableCell::UpdateBlockLayout(bool relayout_children) {
@@ -32,9 +43,21 @@ void LayoutNGTableCell::UpdateBlockLayout(bool relayout_children) {
   UpdateInFlowBlockLayout();
 }
 
+void LayoutNGTableCell::StyleDidChange(StyleDifference diff,
+                                       const ComputedStyle* old_style) {
+  if (LayoutNGTable* table = Table()) {
+    if (NGTableBorders::HasBorder(old_style) ||
+        NGTableBorders::HasBorder(Style()))
+      table->GridBordersChanged();
+  }
+  LayoutNGBlockFlowMixin<LayoutBlockFlow>::StyleDidChange(diff, old_style);
+}
+
 void LayoutNGTableCell::ColSpanOrRowSpanChanged() {
   // TODO(atotic) Invalidate layout?
   UpdateColAndRowSpanFlags();
+  if (LayoutNGTable* table = Table())
+    table->TableGridStructureChanged();
 }
 
 LayoutBox* LayoutNGTableCell::CreateAnonymousBoxWithSameTypeAs(
@@ -59,15 +82,9 @@ unsigned LayoutNGTableCell::ResolvedRowSpan() const {
   return ParsedRowSpan();
 }
 
-// TODO(crbug.com/1079133): Used by AXLayoutObject,
-// verify behaviour is correct.
 unsigned LayoutNGTableCell::AbsoluteColumnIndex() const {
-  unsigned index = 0;
-  for (LayoutObject* child = Parent()->SlowFirstChild(); child;
-       child = child->NextSibling()) {
-    if (child == this)
-      return index;
-    ++index;
+  if (PhysicalFragmentCount() > 0) {
+    return GetPhysicalFragment(0)->TableCellColumnIndex();
   }
   NOTREACHED() << "AbsoluteColumnIndex did not find cell";
   return 0;

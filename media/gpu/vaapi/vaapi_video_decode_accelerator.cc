@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/cpu.h"
 #include "base/files/scoped_file.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -27,6 +28,7 @@
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/format_utils.h"
+#include "media/base/media_log.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_util.h"
 #include "media/gpu/accelerated_video_decoder.h"
@@ -90,6 +92,14 @@ bool IsGeminiLakeOrLater() {
     }                                                              \
   } while (0)
 
+#define RETURN_AND_NOTIFY_ON_STATUS(status, ret) \
+  do {                                           \
+    if (!status.is_ok()) {                       \
+      NotifyStatus(status);                      \
+      return ret;                                \
+    }                                            \
+  } while (0)
+
 class VaapiVideoDecodeAccelerator::InputBuffer {
  public:
   InputBuffer() : buffer_(nullptr) {}
@@ -117,6 +127,17 @@ class VaapiVideoDecodeAccelerator::InputBuffer {
 
   DISALLOW_COPY_AND_ASSIGN(InputBuffer);
 };
+
+void VaapiVideoDecodeAccelerator::NotifyStatus(Status status) {
+  DCHECK(!status.is_ok());
+  // Send a platform notification error
+  NotifyError(PLATFORM_FAILURE);
+
+  // TODO(crbug.com/1103510) there is no MediaLog here, we should change that.
+  std::string output_str;
+  base::JSONWriter::Write(MediaSerialize(status), &output_str);
+  DLOG(ERROR) << output_str;
+}
 
 void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
   if (!task_runner_->BelongsToCurrentThread()) {
@@ -716,9 +737,8 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
                                  PLATFORM_FAILURE, );
 
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
-      RETURN_AND_NOTIFY_ON_FAILURE(
-          picture->Allocate(vaapi_picture_factory_->GetBufferFormat()),
-          "Failed to allocate memory for a VaapiPicture", PLATFORM_FAILURE, );
+      RETURN_AND_NOTIFY_ON_STATUS(
+          picture->Allocate(vaapi_picture_factory_->GetBufferFormat()), );
       available_picture_buffers_.push_back(buffers[i].id());
       VASurfaceID va_surface_id = picture->va_surface_id();
       if (va_surface_id != VA_INVALID_ID)

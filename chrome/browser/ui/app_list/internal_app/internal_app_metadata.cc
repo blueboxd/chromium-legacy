@@ -20,6 +20,8 @@
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -69,13 +71,6 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
             /*recommendable=*/true,
             /*searchable=*/false,
             /*show_in_launcher=*/false, apps::BuiltInAppName::kContinueReading,
-            /*searchable_string_resource_id=*/0},
-
-           {ash::kReleaseNotesAppId, IDS_RELEASE_NOTES_NOTIFICATION_TITLE,
-            IDR_RELEASE_NOTES_APP_192,
-            /*recommendable=*/true,
-            /*searchable=*/false,
-            /*show_in_launcher=*/false, apps::BuiltInAppName::kReleaseNotes,
             /*searchable_string_resource_id=*/0}});
 
   static base::NoDestructor<std::vector<InternalApp>> internal_app_list;
@@ -83,6 +78,17 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
   internal_app_list->insert(internal_app_list->begin(),
                             internal_app_list_static->begin(),
                             internal_app_list_static->end());
+
+  if (!base::FeatureList::IsEnabled(chromeos::features::kHelpAppReleaseNotes)) {
+    internal_app_list->push_back(
+        {ash::kReleaseNotesAppId, IDS_RELEASE_NOTES_NOTIFICATION_TITLE,
+         IDR_RELEASE_NOTES_APP_192,
+         /*recommendable=*/true,
+         /*searchable=*/false,
+         /*show_in_launcher=*/false, apps::BuiltInAppName::kReleaseNotes,
+         /*searchable_string_resource_id=*/0});
+  }
+
   const bool add_discover_app =
       get_all || !chromeos::ProfileHelper::IsEphemeralUserProfile(profile);
   if (base::FeatureList::IsEnabled(chromeos::features::kDiscoverApp) &&
@@ -118,14 +124,21 @@ const std::vector<InternalApp>& GetInternalAppList(const Profile* profile) {
   return GetInternalAppListImpl(false, profile);
 }
 
-bool IsSuggestionChip(const std::string& app_id) {
-  // App IDs for internal apps which should only be shown as suggestion chips.
-  static const char* kSuggestionChipIds[] = {ash::kInternalAppIdContinueReading,
-                                             ash::kReleaseNotesAppId};
+bool IsSuggestionChip(const std::string& app_id, Profile* profile) {
+  if (base::LowerCaseEqualsASCII(app_id, ash::kInternalAppIdContinueReading))
+    return true;
 
-  for (size_t i = 0; i < base::size(kSuggestionChipIds); ++i) {
-    if (base::LowerCaseEqualsASCII(app_id, kSuggestionChipIds[i]))
+  if (!base::FeatureList::IsEnabled(chromeos::features::kHelpAppReleaseNotes)) {
+    if (base::LowerCaseEqualsASCII(app_id, ash::kReleaseNotesAppId))
       return true;
+  } else {
+    // We show the Help App as a release notes suggestion chip a certain
+    // number of times.
+    if (chromeos::ReleaseNotesStorage(profile).ShouldShowSuggestionChip() &&
+        base::LowerCaseEqualsASCII(app_id,
+                                   chromeos::default_web_apps::kHelpAppId)) {
+      return true;
+    }
   }
   return false;
 }

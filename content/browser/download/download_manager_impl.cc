@@ -79,8 +79,8 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 
 #if defined(USE_X11)
@@ -536,9 +536,9 @@ bool DownloadManagerImpl::InterceptDownload(
       url_chain.pop_back();
       NavigationController::LoadURLParams params(url);
       params.has_user_gesture = info.has_user_gesture;
-      params.referrer =
-          Referrer(info.referrer_url,
-                   blink::NetToMojoReferrerPolicy(info.referrer_policy));
+      params.referrer = Referrer(
+          info.referrer_url,
+          blink::ReferrerUtils::NetToMojoReferrerPolicy(info.referrer_policy));
       params.redirect_chain = url_chain;
       params.frame_tree_node_id =
           RenderFrameHost::GetFrameTreeNodeIdForRoutingId(

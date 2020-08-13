@@ -176,6 +176,16 @@ class ASH_PUBLIC_EXPORT AppListConfig {
     return max_search_result_list_items_;
   }
 
+  double app_tiles_container_score() const {
+    return app_tiles_container_score_;
+  }
+  double results_list_container_score() const {
+    return results_list_container_score_;
+  }
+  double answer_card_container_score() const {
+    return answer_card_container_score_;
+  }
+
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
   }
@@ -461,6 +471,12 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // Max number of search result list items in the launcher suggestion window.
   const size_t max_search_result_list_items_ = 5;
+
+  // Scores for the three containers within the search box view. These are
+  // displayed in high-to-low order.
+  const double app_tiles_container_score_ = 3.0;
+  const double answer_card_container_score_ = 2.0;
+  const double results_list_container_score_ = 1.0;
 
   // Cardified app list background properties
   const SkColor cardified_background_color_;

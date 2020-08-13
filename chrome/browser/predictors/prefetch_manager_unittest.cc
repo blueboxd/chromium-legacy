@@ -17,6 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/browser/predictors/predictors_features.h"
+#include "chrome/browser/predictors/predictors_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_ui_data.h"
@@ -128,6 +129,8 @@ PrefetchManagerTest::PrefetchManagerTest()
           std::make_unique<PrefetchManager>(fake_delegate_->AsWeakPtr(),
                                             profile_.get())) {
   features_.InitAndEnableFeature(features::kLoadingPredictorPrefetch);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kLoadingPredictorAllowLocalRequestForTesting);
 }
 
 // Tests prefetching a single URL.

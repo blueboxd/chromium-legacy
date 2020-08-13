@@ -38,6 +38,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "url/gurl.h"
 
@@ -120,7 +121,8 @@ class ResourceDispatcherTest : public testing::Test,
     request->url = GURL(kTestPageUrl);
     request->site_for_cookies =
         net::SiteForCookies::FromUrl(GURL(kTestPageUrl));
-    request->referrer_policy = Referrer::GetDefaultReferrerPolicy();
+    request->referrer_policy =
+        blink::ReferrerUtils::GetDefaultNetReferrerPolicy();
     request->resource_type =
         static_cast<int>(blink::mojom::ResourceType::kSubResource);
     request->priority = net::LOW;

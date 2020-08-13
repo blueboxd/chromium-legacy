@@ -167,14 +167,18 @@ public class AutofillAssistantBackButtonIntegrationTest {
         Espresso.pressBack();
         waitUntilViewMatchesCondition(withText(R.string.undo), isCompletelyDisplayed());
         onView(withId(R.id.autofill_assistant)).check(doesNotExist());
-        assertThat(mTestRule.getActivity().getActivityTab().getUrl().getSpec(),
+
+        assertThat(
+                ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab()).getSpec(),
                 is(getURL(TEST_PAGE_B)));
 
         // Third press on back button navigates back.
         Espresso.pressBack();
-        waitUntil(()
-                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
-                                  getURL(TEST_PAGE_A)));
+        waitUntil(
+                ()
+                        -> ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab())
+                                   .getSpec()
+                                   .equals(getURL(TEST_PAGE_A)));
     }
 
     @Test
@@ -242,7 +246,8 @@ public class AutofillAssistantBackButtonIntegrationTest {
         Espresso.pressBack();
         waitUntilViewMatchesCondition(withText("Back button pressed"), isCompletelyDisplayed());
         waitUntilViewMatchesCondition(withText("Undo"), isDisplayed());
-        assertThat(mTestRule.getActivity().getActivityTab().getUrl().getSpec(),
+        assertThat(
+                ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab()).getSpec(),
                 is(getURL(TEST_PAGE_B)));
 
         // Undo should get back to the prompt state.
@@ -253,15 +258,18 @@ public class AutofillAssistantBackButtonIntegrationTest {
         Espresso.pressBack();
         waitUntilViewMatchesCondition(withText("Back button pressed"), isCompletelyDisplayed());
         waitUntilViewMatchesCondition(withText("Undo"), isDisplayed());
-        assertThat(mTestRule.getActivity().getActivityTab().getUrl().getSpec(),
+        assertThat(
+                ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab()).getSpec(),
                 is(getURL(TEST_PAGE_B)));
 
         // Third press on back button destroys Autofill UI and navigates back.
         Espresso.pressBack();
         waitUntilViewAssertionTrue(withId(R.id.autofill_assistant), doesNotExist(), 3000L);
-        waitUntil(()
-                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
-                                  getURL(TEST_PAGE_A)));
+        waitUntil(
+                ()
+                        -> ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab())
+                                   .getSpec()
+                                   .equals(getURL(TEST_PAGE_A)));
     }
 
     @Test
@@ -295,9 +303,11 @@ public class AutofillAssistantBackButtonIntegrationTest {
                 withId(R.id.autofill_assistant), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
         onView(withText("Shutdown")).check(doesNotExist());
         onView(withText(R.string.undo)).check(doesNotExist());
-        waitUntil(()
-                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
-                                  getURL(TEST_PAGE_A)));
+        waitUntil(
+                ()
+                        -> ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab())
+                                   .getSpec()
+                                   .equals(getURL(TEST_PAGE_A)));
     }
 
     @Test
@@ -355,7 +365,8 @@ public class AutofillAssistantBackButtonIntegrationTest {
         Espresso.pressBack();
         waitUntilViewMatchesCondition(withText("Back button pressed"), isCompletelyDisplayed());
         waitUntilViewMatchesCondition(withText("Undo"), isDisplayed());
-        assertThat(mTestRule.getActivity().getActivityTab().getUrl().getSpec(),
+        assertThat(
+                ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab()).getSpec(),
                 is(getURL(TEST_PAGE_B)));
 
         // Navigation destroys the Autofill Assistant UI.
@@ -402,9 +413,11 @@ public class AutofillAssistantBackButtonIntegrationTest {
 
         // Second press on back button navigates back, without removing the Autofill Assistannt UI.
         Espresso.pressBack();
-        waitUntil(()
-                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
-                                  getURL(TEST_PAGE_A)));
+        waitUntil(
+                ()
+                        -> ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab())
+                                   .getSpec()
+                                   .equals(getURL(TEST_PAGE_A)));
         onView(withId(R.id.autofill_assistant)).check(matches(isDisplayed()));
         onView(withId(R.id.status_message)).check(matches(withText("Prompt")));
     }

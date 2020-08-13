@@ -19,19 +19,13 @@
 
 namespace ui {
 
-const char kString[] = "STRING";
-const char kText[] = "TEXT";
-const char kTextPlain[] = "text/plain";
-const char kTextPlainUtf8[] = "text/plain;charset=utf-8";
-const char kUtf8String[] = "UTF8_STRING";
-
 std::vector<x11::Atom> GetTextAtomsFrom() {
   std::vector<x11::Atom> atoms;
-  atoms.push_back(gfx::GetAtom(kUtf8String));
-  atoms.push_back(gfx::GetAtom(kString));
-  atoms.push_back(gfx::GetAtom(kText));
-  atoms.push_back(gfx::GetAtom(kTextPlain));
-  atoms.push_back(gfx::GetAtom(kTextPlainUtf8));
+  atoms.push_back(gfx::GetAtom(kMimeTypeLinuxUtf8String));
+  atoms.push_back(gfx::GetAtom(kMimeTypeLinuxString));
+  atoms.push_back(gfx::GetAtom(kMimeTypeLinuxText));
+  atoms.push_back(gfx::GetAtom(kMimeTypeText));
+  atoms.push_back(gfx::GetAtom(kMimeTypeTextUtf8));
   return atoms;
 }
 
@@ -176,11 +170,12 @@ size_t SelectionData::GetSize() const {
 }
 
 std::string SelectionData::GetText() const {
-  if (type_ == gfx::GetAtom(kUtf8String) || type_ == gfx::GetAtom(kText) ||
-      type_ == gfx::GetAtom(kTextPlainUtf8)) {
+  if (type_ == gfx::GetAtom(kMimeTypeLinuxUtf8String) ||
+      type_ == gfx::GetAtom(kMimeTypeLinuxText) ||
+      type_ == gfx::GetAtom(kMimeTypeTextUtf8)) {
     return RefCountedMemoryToString(memory_);
-  } else if (type_ == gfx::GetAtom(kString) ||
-             type_ == gfx::GetAtom(kTextPlain)) {
+  } else if (type_ == gfx::GetAtom(kMimeTypeLinuxString) ||
+             type_ == gfx::GetAtom(kMimeTypeText)) {
     std::string result;
     base::ConvertToUtf8AndNormalize(RefCountedMemoryToString(memory_),
                                     base::kCodepageLatin1, &result);

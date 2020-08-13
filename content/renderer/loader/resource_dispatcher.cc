@@ -45,6 +45,7 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -63,7 +64,8 @@ void RemoteToLocalTimeTicks(
 }
 
 void CheckSchemeForReferrerPolicy(const network::ResourceRequest& request) {
-  if ((request.referrer_policy == Referrer::GetDefaultReferrerPolicy() ||
+  if ((request.referrer_policy ==
+           blink::ReferrerUtils::GetDefaultNetReferrerPolicy() ||
        request.referrer_policy ==
            net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE) &&
       request.referrer.SchemeIsCryptographic() &&

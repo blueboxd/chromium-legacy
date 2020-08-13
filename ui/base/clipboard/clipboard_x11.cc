@@ -758,9 +758,9 @@ void ClipboardX11::WriteText(const char* text_data, size_t text_len) {
       base::RefCountedString::TakeString(&str));
 
   x11_details_->InsertMapping(kMimeTypeText, mem);
-  x11_details_->InsertMapping(kText, mem);
-  x11_details_->InsertMapping(kString, mem);
-  x11_details_->InsertMapping(kUtf8String, mem);
+  x11_details_->InsertMapping(kMimeTypeLinuxText, mem);
+  x11_details_->InsertMapping(kMimeTypeLinuxString, mem);
+  x11_details_->InsertMapping(kMimeTypeLinuxUtf8String, mem);
 }
 
 void ClipboardX11::WriteHTML(const char* markup_data,

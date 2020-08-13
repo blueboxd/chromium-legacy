@@ -158,8 +158,9 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   profile_ = profile;
   color_space_ = config.color_space_info();
-  if (!CreateAcceleratedVideoDecoder()) {
-    std::move(init_cb).Run(StatusCode::kVaapiFailedAcceleratorCreation);
+  auto accel_status = CreateAcceleratedVideoDecoder();
+  if (!accel_status.is_ok()) {
+    std::move(init_cb).Run(std::move(accel_status));
     return;
   }
 
@@ -537,7 +538,7 @@ void VaapiVideoDecoder::Reset(base::OnceClosure reset_cb) {
   if (state_ == State::kChangingResolution) {
     // If we reset during resolution change, re-create AVD. Then the new AVD
     // will trigger resolution change again after reset.
-    if (!CreateAcceleratedVideoDecoder()) {
+    if (!CreateAcceleratedVideoDecoder().is_ok()) {
       SetState(State::kError);
       std::move(reset_cb).Run();
       return;
@@ -558,7 +559,7 @@ void VaapiVideoDecoder::Reset(base::OnceClosure reset_cb) {
                                 std::move(reset_cb)));
 }
 
-bool VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
+Status VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
   DVLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -583,10 +584,10 @@ bool VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
     decoder_.reset(
         new VP9Decoder(std::move(accelerator), profile_, color_space_));
   } else {
-    VLOGF(1) << "Unsupported profile " << GetProfileName(profile_);
-    return false;
+    return Status(StatusCode::kDecoderUnsupportedProfile)
+        .WithData("profile", profile_);
   }
-  return true;
+  return OkStatus();
 }
 
 void VaapiVideoDecoder::ResetDone(base::OnceClosure reset_cb) {

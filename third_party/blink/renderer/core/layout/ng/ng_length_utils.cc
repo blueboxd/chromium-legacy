@@ -925,6 +925,9 @@ NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
   if (constraint_space.IsTableCell())
     return constraint_space.TableCellBorders();
 
+  if (node.IsNGTable())
+    return node.GetTableBorders();
+
   return ComputeBordersInternal(node.Style());
 }
 
@@ -962,6 +965,13 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
   // have any padding.
   if (!style.MayHavePadding() || constraint_space.IsAnonymous())
     return NGBoxStrut();
+
+  // Tables with collapsed borders don't have any padding.
+  if ((style.Display() == EDisplay::kTable ||
+       style.Display() == EDisplay::kInlineTable) &&
+      style.BorderCollapse() == EBorderCollapse::kCollapse) {
+    return NGBoxStrut();
+  }
 
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();

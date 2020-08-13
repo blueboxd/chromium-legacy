@@ -52,36 +52,36 @@ VaapiTFPPicture::~VaapiTFPPicture() {
     XFreePixmap(x_display_, x_pixmap_);
 }
 
-bool VaapiTFPPicture::Initialize() {
+Status VaapiTFPPicture::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(x_pixmap_);
 
   if (make_context_current_cb_ && !make_context_current_cb_.Run())
-    return false;
+    return StatusCode::kVaapiBadContext;
 
   glx_image_ = new gl::GLImageGLX(size_, gfx::BufferFormat::BGRX_8888);
   if (!glx_image_->Initialize(x_pixmap_)) {
     // x_pixmap_ will be freed in the destructor.
     DLOG(ERROR) << "Failed creating a GLX Pixmap for TFP";
-    return false;
+    return StatusCode::kVaapiNoPixmap;
   }
 
   gl::ScopedTextureBinder texture_binder(texture_target_, texture_id_);
   if (!glx_image_->BindTexImage(texture_target_)) {
     DLOG(ERROR) << "Failed to bind texture to glx image";
-    return false;
+    return StatusCode::kVaapiFailedToBindTexture;
   }
 
-  return true;
+  return OkStatus();
 }
 
-bool VaapiTFPPicture::Allocate(gfx::BufferFormat format) {
+Status VaapiTFPPicture::Allocate(gfx::BufferFormat format) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (format != gfx::BufferFormat::BGRX_8888 &&
       format != gfx::BufferFormat::BGRA_8888 &&
       format != gfx::BufferFormat::RGBX_8888) {
     DLOG(ERROR) << "Unsupported format";
-    return false;
+    return StatusCode::kVaapiUnsupportedFormat;
   }
 
   XWindowAttributes win_attr;
@@ -93,7 +93,7 @@ bool VaapiTFPPicture::Allocate(gfx::BufferFormat format) {
                             size_.width(), size_.height(), win_attr.depth);
   if (!x_pixmap_) {
     DLOG(ERROR) << "Failed creating an X Pixmap for TFP";
-    return false;
+    return StatusCode::kVaapiNoPixmap;
   }
 
   return Initialize();

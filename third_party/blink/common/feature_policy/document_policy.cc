@@ -75,26 +75,36 @@ base::Optional<std::string> DocumentPolicy::SerializeInternal(
 
 // static
 DocumentPolicyFeatureState DocumentPolicy::MergeFeatureState(
-    const DocumentPolicyFeatureState& policy1,
-    const DocumentPolicyFeatureState& policy2) {
+    const DocumentPolicyFeatureState& base_policy,
+    const DocumentPolicyFeatureState& override_policy) {
   DocumentPolicyFeatureState result;
-  auto i1 = policy1.begin();
-  auto i2 = policy2.begin();
+  auto i1 = base_policy.begin();
+  auto i2 = override_policy.begin();
 
   // Because std::map is by default ordered in ascending order based on key
   // value, we can run 2 iterators simultaneously through both maps to merge
   // them.
-  while (i1 != policy1.end() || i2 != policy2.end()) {
-    if (i1 == policy1.end()) {
+  while (i1 != base_policy.end() || i2 != override_policy.end()) {
+    if (i1 == base_policy.end()) {
       result.insert(*i2);
       i2++;
-    } else if (i2 == policy2.end()) {
+    } else if (i2 == override_policy.end()) {
       result.insert(*i1);
       i1++;
     } else {
       if (i1->first == i2->first) {
-        // Take the stricter policy when there is a key conflict.
-        result.emplace(i1->first, std::min(i1->second, i2->second));
+        const PolicyValue& base_value = i1->second;
+        const PolicyValue& override_value = i2->second;
+        // When policy value has strictness ordering e.g. boolean, take the
+        // stricter one. In this case a.IsCompatibleWith(b) means a is eq or
+        // stricter than b.
+        // When policy value does not have strictness ordering, e.g. enum,
+        // take override_value. In this case a.IsCompatibleWith(b) means
+        // a != b.
+        const PolicyValue& new_value =
+            base_value.IsCompatibleWith(override_value) ? base_value
+                                                        : override_value;
+        result.emplace(i1->first, new_value);
         i1++;
         i2++;
       } else if (i1->first < i2->first) {
@@ -121,7 +131,7 @@ bool DocumentPolicy::IsFeatureEnabled(
 bool DocumentPolicy::IsFeatureEnabled(
     mojom::DocumentPolicyFeature feature,
     const PolicyValue& threshold_value) const {
-  return GetFeatureValue(feature) >= threshold_value;
+  return threshold_value.IsCompatibleWith(GetFeatureValue(feature));
 }
 
 PolicyValue DocumentPolicy::GetFeatureValue(
@@ -172,10 +182,6 @@ bool DocumentPolicy::IsPolicyCompatible(
     const DocumentPolicyFeatureState& required_policy,
     const DocumentPolicyFeatureState& incoming_policy) {
   for (const auto& required_entry : required_policy) {
-    // feature value > threshold => enabled, where feature value is the value in
-    // document policy and threshold is the value to test against.
-    // The smaller the feature value, the stricter the policy.
-    // Incoming policy should be at least as strict as the required one.
     const auto& feature = required_entry.first;
     const auto& required_value = required_entry.second;
     // Use default value when incoming policy does not specify a value.
@@ -185,7 +191,7 @@ bool DocumentPolicy::IsPolicyCompatible(
             ? incoming_entry->second
             : GetDocumentPolicyFeatureInfoMap().at(feature).default_value;
 
-    if (required_value < incoming_value)
+    if (!incoming_value.IsCompatibleWith(required_value))
       return false;
   }
   return true;

@@ -4,13 +4,10 @@
 
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
 
-#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_interface.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
 
 namespace blink {
 
@@ -26,8 +23,15 @@ bool LayoutNGTableSection::IsEmpty() const {
   return true;
 }
 
+LayoutNGTable* LayoutNGTableSection::Table() const {
+  return To<LayoutNGTable>(Parent());
+}
+
 void LayoutNGTableSection::AddChild(LayoutObject* child,
                                     LayoutObject* before_child) {
+  if (LayoutNGTable* table = Table())
+    table->TableGridStructureChanged();
+
   if (!child->IsTableRow()) {
     LayoutObject* last = before_child;
     if (!last)
@@ -71,6 +75,23 @@ void LayoutNGTableSection::AddChild(LayoutObject* child,
     before_child = SplitAnonymousBoxesAroundChild(before_child);
 
   LayoutNGMixin<LayoutBlock>::AddChild(child, before_child);
+}
+
+void LayoutNGTableSection::RemoveChild(LayoutObject* child) {
+  if (LayoutNGTable* table = Table())
+    table->TableGridStructureChanged();
+  LayoutNGMixin<LayoutBlock>::RemoveChild(child);
+}
+
+void LayoutNGTableSection::StyleDidChange(StyleDifference diff,
+                                          const ComputedStyle* old_style) {
+  if (LayoutNGTable* table = Table()) {
+    if (NGTableBorders::HasBorder(old_style) ||
+        NGTableBorders::HasBorder(Style())) {
+      table->GridBordersChanged();
+    }
+  }
+  LayoutNGMixin<LayoutBlock>::StyleDidChange(diff, old_style);
 }
 
 LayoutBox* LayoutNGTableSection::CreateAnonymousBoxWithSameTypeAs(

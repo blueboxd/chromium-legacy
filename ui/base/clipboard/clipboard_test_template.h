@@ -27,6 +27,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -167,6 +168,11 @@ TYPED_TEST(ClipboardTest, TextTest) {
 
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
+#if defined(USE_OZONE) && !defined(OS_CHROMEOS) && !defined(OS_FUCHSIA) && \
+    !BUILDFLAG(IS_CHROMECAST)
+  EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
+              Contains(ASCIIToUTF16(kMimeTypeTextUtf8)));
+#endif
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste,
       /* data_dst = */ nullptr));
@@ -242,10 +248,13 @@ TYPED_TEST(ClipboardTest, RTFTest) {
 }
 #endif  // !defined(OS_ANDROID)
 
-// TODO(msisov, tonikitoo): Enable test once ClipboardOzone implements
-// selection support. https://crbug.com/911992
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_OZONE)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 TYPED_TEST(ClipboardTest, MultipleBufferTest) {
+#if defined(USE_OZONE)
+  if (!this->clipboard().IsSelectionBufferAvailable())
+    return;
+#endif
+
   base::string16 text(ASCIIToUTF16("Standard")), text_result;
   base::string16 markup(ASCIIToUTF16("<string>Selection</string>"));
   std::string url("http://www.example.com/"), url_result;

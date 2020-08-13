@@ -392,9 +392,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // The window is identified by the |main_frame_widget_route_id| passed to
   // CreateNewWindow.
   //
+  // The passed |opener| is the RenderFrameHost initiating the window creation.
+  // It will never be null, even if the opener is suppressed via |params|.
+  //
   // Note: this is not called "ShowWindow" because that will clash with
   // the Windows function which is actually a #define.
-  virtual void ShowCreatedWindow(int process_id,
+  virtual void ShowCreatedWindow(RenderFrameHost* opener,
                                  int main_frame_widget_route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_rect,

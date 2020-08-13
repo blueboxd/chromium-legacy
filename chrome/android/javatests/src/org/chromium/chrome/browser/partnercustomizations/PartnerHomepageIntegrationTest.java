@@ -76,7 +76,8 @@ public class PartnerHomepageIntegrationTest {
     @Feature({"Homepage"})
     public void testHomepageInitialLoading() {
         Assert.assertEquals(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
-                Uri.parse(mActivityTestRule.getActivity().getActivityTab().getUrlString()));
+                Uri.parse(ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab())));
     }
 
     /**
@@ -93,7 +94,8 @@ public class PartnerHomepageIntegrationTest {
             mActivityTestRule.loadUrl(testServer.getURL(TEST_PAGE));
             UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
             Assert.assertNotSame(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
-                    Uri.parse(mActivityTestRule.getActivity().getActivityTab().getUrlString()));
+                    Uri.parse(ChromeTabUtils.getUrlStringOnUiThread(
+                            mActivityTestRule.getActivity().getActivityTab())));
 
             // Click homepage button.
             ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(),
@@ -108,7 +110,8 @@ public class PartnerHomepageIntegrationTest {
                         }
                     });
             Assert.assertEquals(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
-                    Uri.parse(mActivityTestRule.getActivity().getActivityTab().getUrlString()));
+                    Uri.parse(ChromeTabUtils.getUrlStringOnUiThread(
+                            mActivityTestRule.getActivity().getActivityTab())));
         } finally {
             testServer.stopAndDestroyServer();
         }

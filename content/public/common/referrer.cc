@@ -18,31 +18,10 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/common/loader/network_utils.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 
 namespace content {
-
-namespace {
-
-// Using an atomic is necessary because this code is called from both the
-// browser and the renderer (so that access is not on a single sequence when in
-// single-process mode), and because it is called from multiple threads within
-// the renderer.
-bool ReadModifyWriteForceLegacyPolicyFlag(
-    base::Optional<bool> maybe_new_value) {
-  // Default to false in the browser process (it is not expected
-  // that the browser will be provided this switch).
-  // The value is propagated to other processes through the command line.
-  DCHECK(base::CommandLine::InitializedForCurrentProcess());
-  static std::atomic<bool> value(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceLegacyDefaultReferrerPolicy));
-  if (!maybe_new_value.has_value())
-    return value;
-  return value.exchange(*maybe_new_value);
-}
-
-}  // namespace
 
 Referrer::Referrer(const blink::mojom::Referrer& referrer)
     : url(referrer.url), policy(referrer.policy) {}
@@ -61,8 +40,8 @@ blink::mojom::ReferrerPtr Referrer::SanitizeForRequest(
     const blink::mojom::Referrer& referrer) {
   network::mojom::ReferrerPolicy effective_policy = referrer.policy;
   if (effective_policy == network::mojom::ReferrerPolicy::kDefault) {
-    effective_policy =
-        blink::NetToMojoReferrerPolicy(GetDefaultReferrerPolicy());
+    effective_policy = blink::ReferrerUtils::NetToMojoReferrerPolicy(
+        blink::ReferrerUtils::GetDefaultNetReferrerPolicy());
   }
   DCHECK_NE(effective_policy, network::mojom::ReferrerPolicy::kDefault);
 
@@ -87,37 +66,20 @@ url::Origin Referrer::SanitizeOriginForRequest(
 net::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
     network::mojom::ReferrerPolicy referrer_policy) {
   if (referrer_policy == network::mojom::ReferrerPolicy::kDefault) {
-    return GetDefaultReferrerPolicy();
+    return blink::ReferrerUtils::GetDefaultNetReferrerPolicy();
   }
   return network::ReferrerPolicyForUrlRequest(referrer_policy);
 }
 
 // static
-net::ReferrerPolicy Referrer::GetDefaultReferrerPolicy() {
-  // The ReducedReferrerGranularity feature sets the default referrer
-  // policy to strict-origin-when-cross-origin unless forbidden
-  // by the "force legacy policy" global.
-  // TODO(M82, crbug.com/1016541) Once the pertinent enterprise policy has
-  // been removed, update this to remove the global.
-
-  // Short-circuit to avoid acquiring the lock unless necessary.
-  if (!base::FeatureList::IsEnabled(features::kReducedReferrerGranularity))
-    return net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-
-  return ShouldForceLegacyDefaultReferrerPolicy()
-             ? net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE
-             : net::ReferrerPolicy::
-                   REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
-}
-
-// static
 void Referrer::SetForceLegacyDefaultReferrerPolicy(bool force) {
-  ReadModifyWriteForceLegacyPolicyFlag(force);
+  blink::ReferrerUtils::ReadModifyWriteForceLegacyPolicyFlag(force);
 }
 
 // static
 bool Referrer::ShouldForceLegacyDefaultReferrerPolicy() {
-  return ReadModifyWriteForceLegacyPolicyFlag(base::nullopt);
+  return blink::ReferrerUtils::ReadModifyWriteForceLegacyPolicyFlag(
+      base::nullopt);
 }
 
 // static

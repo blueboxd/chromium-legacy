@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -56,7 +57,7 @@ public class NewTabPageNavigationTest {
     public void testNTPIsDefault() {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         Assert.assertNotNull(tab);
-        String url = tab.getUrlString();
+        String url = ChromeTabUtils.getUrlStringOnUiThread(tab);
         Assert.assertTrue("Unexpected url: " + url,
                 url.startsWith("chrome-native://newtab/")
                         || url.startsWith("chrome-native://bookmarks/")
@@ -72,7 +73,9 @@ public class NewTabPageNavigationTest {
     public void testNavigatingFromNTP() {
         String url = mTestServer.getURL("/chrome/test/data/android/google.html");
         mActivityTestRule.loadUrl(url);
-        Assert.assertEquals(url, mActivityTestRule.getActivity().getActivityTab().getUrlString());
+        Assert.assertEquals(url,
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
     }
 
     /**
@@ -84,12 +87,14 @@ public class NewTabPageNavigationTest {
     public void testNavigateBackToNTPViaUrl() {
         String url = mTestServer.getURL("/chrome/test/data/android/google.html");
         mActivityTestRule.loadUrl(url);
-        Assert.assertEquals(url, mActivityTestRule.getActivity().getActivityTab().getUrlString());
+        Assert.assertEquals(url,
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
 
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         Assert.assertNotNull(tab);
-        url = tab.getUrlString();
+        url = ChromeTabUtils.getUrlStringOnUiThread(tab);
         Assert.assertEquals(UrlConstants.NTP_URL, url);
 
         // Check that the NTP is actually displayed.

@@ -29,6 +29,7 @@
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
+#include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -37,6 +38,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+constexpr char const SubresourceFilterTestHarness::kDefaultAllowedSuffix[];
+constexpr char const SubresourceFilterTestHarness::kDefaultDisallowedSuffix[];
 constexpr char const SubresourceFilterTestHarness::kDefaultDisallowedUrl[];
 
 SubresourceFilterTestHarness::SubresourceFilterTestHarness() = default;
@@ -91,8 +94,11 @@ void SubresourceFilterTestHarness::SetUp() {
   // Publish the test ruleset.
   subresource_filter::testing::TestRulesetCreator ruleset_creator;
   subresource_filter::testing::TestRulesetPair test_ruleset_pair;
-  ruleset_creator.CreateRulesetToDisallowURLsWithPathSuffix("disallowed.html",
-                                                            &test_ruleset_pair);
+  ruleset_creator.CreateRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule(kDefaultDisallowedSuffix),
+       subresource_filter::testing::CreateAllowlistSuffixRule(
+           kDefaultAllowedSuffix)},
+      &test_ruleset_pair);
   subresource_filter::testing::TestRulesetPublisher test_ruleset_publisher;
   ASSERT_NO_FATAL_FAILURE(
       test_ruleset_publisher.SetRuleset(test_ruleset_pair.unindexed));

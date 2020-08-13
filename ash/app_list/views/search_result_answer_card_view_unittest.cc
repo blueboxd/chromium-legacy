@@ -22,7 +22,7 @@ namespace test {
 
 namespace {
 constexpr char kResultTitle[] = "The weather is fine";
-constexpr double kDisplayScore = 13.0;
+constexpr double kDisplayScore = 2.0;
 }  // namespace
 
 class SearchResultAnswerCardViewTest : public views::ViewsTestBase {

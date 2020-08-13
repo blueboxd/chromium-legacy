@@ -109,10 +109,13 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
       const DocumentPolicyFeatureState& policy,
       const DocumentPolicyFeatureInfoMap&);
 
-  // Merge two FeatureState map. Take stricter value when there is conflict.
+  // Merge two FeatureState map.
+  // When there is conflict:
+  // - take the stricter value if PolicyValue is comparable
+  // - take override_policy's value if PolicyValue is not comparable
   static DocumentPolicyFeatureState MergeFeatureState(
-      const DocumentPolicyFeatureState& policy1,
-      const DocumentPolicyFeatureState& policy2);
+      const DocumentPolicyFeatureState& base_policy,
+      const DocumentPolicyFeatureState& override_policy);
 
  private:
   friend class DocumentPolicyTest;

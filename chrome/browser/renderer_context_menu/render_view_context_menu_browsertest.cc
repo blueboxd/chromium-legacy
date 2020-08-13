@@ -86,6 +86,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -796,7 +797,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
   // Set up referrer URL with fragment.
   const GURL kReferrerWithFragment("http://foo.com/test#fragment");
   const std::string kCorrectReferrer(
-      base::FeatureList::IsEnabled(features::kReducedReferrerGranularity)
+      base::FeatureList::IsEnabled(blink::features::kReducedReferrerGranularity)
           ? "http://foo.com/"
           : "http://foo.com/test");
 

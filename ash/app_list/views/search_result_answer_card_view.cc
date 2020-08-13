@@ -5,6 +5,7 @@
 #include "ash/app_list/views/search_result_answer_card_view.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -351,7 +353,9 @@ int SearchResultAnswerCardView::DoUpdate() {
   parent()->SetVisible(has_valid_answer_card);
 
   set_container_score(
-      has_valid_answer_card && top_result ? top_result->display_score() : -1);
+      has_valid_answer_card && top_result
+          ? AppListConfig::instance().answer_card_container_score()
+          : -1.0);
   if (top_result)
     top_result->set_is_visible(has_valid_answer_card);
 

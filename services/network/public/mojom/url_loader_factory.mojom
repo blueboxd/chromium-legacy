@@ -8,26 +8,47 @@ import "services/network/public/mojom/mutable_network_traffic_annotation_tag.moj
 import "services/network/public/mojom/url_loader.mojom";
 
 const uint32 kURLLoadOptionNone = 0;
+
 // Sends the net::SSLInfo struct in OnReceiveResponse.
 const uint32 kURLLoadOptionSendSSLInfoWithResponse = 1;
+
 // Enables mime sniffing.
 const uint32 kURLLoadOptionSniffMimeType = 2;
+
 // Indicates that execution is blocking on the completion of the request.
 const uint32 kURLLoadOptionSynchronous = 4;
+
 // Sends the net::SSLInfo struct in OnComplete when the connection had a major
 // certificate error.
 const uint32 kURLLoadOptionSendSSLInfoForCertificateError = 8;
+
 // Uses the header client set in URLLoaderFactoryParams for this request.
 const uint32 kURLLoadOptionUseHeaderClient = 16;
+
 // Disallow the request from sending cookies. Disallow the response from writing
 // cookies.
 const uint32 kURLLoadOptionBlockAllCookies = 32;
+
 // Similar to |kURLLoadOptionBlockAllCookies|, but only for third party cookies.
 const uint32 kURLLoadOptionBlockThirdPartyCookies = 64;
+
 // This request is for CORS preflight. This is used in the network service.
 // This is set and used only in the network service, no callsites outside the
 // service must set this.
 const uint32 kURLLoadOptionAsCorsPreflight = 128;
+
+// Specifies that the request must not be made to a non-public IP address. This
+// option is needed even with CORS-RFC1918 because CORS-RFC1918 is not enabled
+// by default, and sometimes the client security state is not known as the time
+// of the request, which skips CORS-RFC1918.
+//
+// This option is supported by the network service, but might not be supported
+// by other URLLoaderFactory implementations.
+//
+// TODO(crbug.com/1115776): This option can be removed if CORS-RFC1918 ships
+// without a feature flag, and additionally it changes to block requests by
+// default if the security state is unknown.
+const uint32 kURLLoadOptionBlockLocalRequest = 256;
 
 // URLLoaderFactory is an interface for requesting URLs. It creates URLLoader
 // instances. One URLLoader instance can load one URL.

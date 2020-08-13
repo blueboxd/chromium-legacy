@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class LayoutNGTable;
+
 class CORE_EXPORT LayoutNGTableCell
     : public LayoutNGBlockFlowMixin<LayoutBlockFlow>,
       public LayoutNGTableCellInterface {
@@ -28,9 +30,14 @@ class CORE_EXPORT LayoutNGTableCell
     return rowspan;
   }
 
+  LayoutNGTable* Table() const;
+
   // LayoutBlockFlow methods start.
 
   void UpdateBlockLayout(bool relayout_children) override;
+
+  void StyleDidChange(StyleDifference diff,
+                      const ComputedStyle* old_style) final;
 
   // TODO(atotic) Remove "New" from name.
   // Currently,  LayoutNGTableCellLegacy is named LayoutNGTableCell for test

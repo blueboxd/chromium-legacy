@@ -38,6 +38,7 @@
 #include "net/base/features.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/base/page_transition_types.h"
@@ -788,7 +789,7 @@ struct ReferrerOverrideParams {
             ReferrerPolicyTest::EXPECT_ORIGIN_AS_REFERRER,
     },
     {
-        .feature_to_enable = features::kReducedReferrerGranularity,
+        .feature_to_enable = blink::features::kReducedReferrerGranularity,
         .force_no_referrer_when_downgrade_default = false,
         .baseline_policy = network::mojom::ReferrerPolicy::kDefault,
         // kDefault gets resolved into a concrete policy when making requests
@@ -806,7 +807,7 @@ struct ReferrerOverrideParams {
             ReferrerPolicyTest::EXPECT_ORIGIN_AS_REFERRER,
     },
     {
-        .feature_to_enable = features::kReducedReferrerGranularity,
+        .feature_to_enable = blink::features::kReducedReferrerGranularity,
         .force_no_referrer_when_downgrade_default = true,
         .baseline_policy = network::mojom::ReferrerPolicy::kDefault,
         // kDefault gets resolved into a concrete policy when making requests

@@ -569,6 +569,59 @@ TEST_F(SearchBoxViewTest,
   EXPECT_EQ(base::ASCIIToUTF16("test"), selection->result()->title());
 }
 
+// Tests that the default selection is reset after resetting and reactivating
+// the search box.
+TEST_F(SearchBoxViewTest, ResetSelectionAfterResettingSearchBox) {
+  SetSearchBoxActive(true, ui::ET_UNKNOWN);
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 0.7,
+                     base::ASCIIToUTF16("test1"), base::string16());
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 0.5,
+                     base::ASCIIToUTF16("test2"), base::string16());
+  base::RunLoop().RunUntilIdle();
+
+  SearchResultPageView* const result_page_view =
+      view()->contents_view()->search_results_page_view();
+
+  // Selection should rest on the first result, which is default.
+  const SearchResultBaseView* selection =
+      result_page_view->result_selection_controller()->selected_result();
+  EXPECT_EQ(result_page_view->first_result_view(), selection);
+  ASSERT_TRUE(selection->result());
+  EXPECT_EQ(base::ASCIIToUTF16("test1"), selection->result()->title());
+  EXPECT_TRUE(selection->is_default_result());
+
+  // Navigate down then up. The first result should no longer be default.
+  KeyPress(ui::VKEY_DOWN);
+  KeyPress(ui::VKEY_UP);
+
+  selection =
+      result_page_view->result_selection_controller()->selected_result();
+  ASSERT_TRUE(selection->result());
+  EXPECT_EQ(base::ASCIIToUTF16("test1"), selection->result()->title());
+  EXPECT_FALSE(selection->is_default_result());
+
+  // Navigate down to the second result.
+  KeyPress(ui::VKEY_DOWN);
+
+  selection =
+      result_page_view->result_selection_controller()->selected_result();
+  ASSERT_TRUE(selection->result());
+  EXPECT_EQ(base::ASCIIToUTF16("test2"), selection->result()->title());
+
+  // Reset the search box.
+  view()->ClearSearchAndDeactivateSearchBox();
+  SetSearchBoxActive(true, ui::ET_UNKNOWN);
+  result_page_view->OnSearchResultContainerResultsChanged();
+
+  // Selection should again rest on the first result, which is default.
+  selection =
+      result_page_view->result_selection_controller()->selected_result();
+  EXPECT_EQ(result_page_view->first_result_view(), selection);
+  ASSERT_TRUE(selection->result());
+  EXPECT_EQ(base::ASCIIToUTF16("test1"), selection->result()->title());
+  EXPECT_TRUE(selection->is_default_result());
+}
+
 TEST_F(SearchBoxViewTest, NewSearchQueryActionRecordedWhenUserType) {
   base::UserActionTester user_action_tester;
   // User starts to type a character in search box.
@@ -772,7 +825,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 // titles.
 TEST_F(SearchBoxViewAutocompleteTest,
        SearchBoxAutocompletesTopListResultTitle) {
-  // Add two SearchResults, one with higher ranking. Initialize their title
+  // Add two SearchResults, one tile and one list result. Initialize their title
   // field to a non-empty string.
   CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
                      base::ASCIIToUTF16("hello list"), base::string16());
@@ -785,16 +838,16 @@ TEST_F(SearchBoxViewAutocompleteTest,
   KeyPress(ui::VKEY_E);
   view()->ProcessAutocomplete();
 
-  EXPECT_EQ(view()->search_box()->GetText(), base::ASCIIToUTF16("hello list"));
+  EXPECT_EQ(view()->search_box()->GetText(), base::ASCIIToUTF16("hello tile"));
   EXPECT_EQ(view()->search_box()->GetSelectedText(),
-            base::ASCIIToUTF16("llo list"));
+            base::ASCIIToUTF16("llo tile"));
 }
 
 // Tests that autocomplete suggestions are consistent with top SearchResult tile
 // titles.
 TEST_F(SearchBoxViewAutocompleteTest,
        SearchBoxAutocompletesTopTileResultTitle) {
-  // Add two SearchResults, one with higher ranking. Initialize their title
+  // Add two SearchResults, one tile and one list result. Initialize their title
   // field to a non-empty string.
   CreateSearchResult(ash::SearchResultDisplayType::kTile, 1.0,
                      base::ASCIIToUTF16("hello tile"), base::string16());
@@ -815,8 +868,9 @@ TEST_F(SearchBoxViewAutocompleteTest,
 // details.
 TEST_F(SearchBoxViewAutocompleteTest,
        SearchBoxAutocompletesTopListResultDetails) {
-  // Add two SearchResults, one with higher ranking. Initialize their details
-  // field to a non-empty string.
+  // Add two SearchResults, one tile and one list result. The tile should
+  // display first, despite having a lower score. Initialize their details field
+  // to a non-empty string.
   CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0, base::string16(),
                      base::ASCIIToUTF16("hello list"));
   CreateSearchResult(ash::SearchResultDisplayType::kTile, 0.5, base::string16(),
@@ -827,17 +881,17 @@ TEST_F(SearchBoxViewAutocompleteTest,
   KeyPress(ui::VKEY_H);
   KeyPress(ui::VKEY_E);
   view()->ProcessAutocomplete();
-  EXPECT_EQ(view()->search_box()->GetText(), base::ASCIIToUTF16("hello list"));
+  EXPECT_EQ(view()->search_box()->GetText(), base::ASCIIToUTF16("hello tile"));
   EXPECT_EQ(view()->search_box()->GetSelectedText(),
-            base::ASCIIToUTF16("llo list"));
+            base::ASCIIToUTF16("llo tile"));
 }
 
 // Tests that autocomplete suggestions are consistent with top SearchResult tile
 // details.
 TEST_F(SearchBoxViewAutocompleteTest,
        SearchBoxAutocompletesTopTileResultDetails) {
-  // Add two SearchResults, one with higher ranking. Initialize their details
-  // field to a non-empty string.
+  // Add two SearchResults, one tile and one list result. Initialize their
+  // details field to a non-empty string.
   CreateSearchResult(ash::SearchResultDisplayType::kTile, 1.0, base::string16(),
                      base::ASCIIToUTF16("hello tile"));
   CreateSearchResult(ash::SearchResultDisplayType::kList, 0.5, base::string16(),

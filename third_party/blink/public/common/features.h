@@ -278,6 +278,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kCrOSAutoSelect;
 
 BLINK_COMMON_EXPORT extern const base::Feature kCompositingOptimizations;
 
+BLINK_COMMON_EXPORT extern const base::Feature kReducedReferrerGranularity;
+
 }  // namespace features
 }  // namespace blink
 

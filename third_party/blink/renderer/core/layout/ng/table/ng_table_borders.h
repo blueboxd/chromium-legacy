@@ -57,23 +57,17 @@ struct NGBoxStrut;
 
 class NGTableBorders : public RefCounted<NGTableBorders> {
  public:
+  static scoped_refptr<NGTableBorders> ComputeTableBorders(const NGBlockNode&);
+
   // |table_border_padding| as computed from css values.
   NGTableBorders(const ComputedStyle& table_style,
-                 const NGBoxStrut& table_border,
-                 const NGBoxStrut& table_padding);
+                 const NGBoxStrut& table_border);
 
 #if DCHECK_IS_ON()
   String DumpEdges();
   void ShowEdges();
 #endif
 
-  // Side of the style the collapsed border belongs to.
-  enum class LogicalEdgeSide {
-    kInlineStart,
-    kInlineEnd,
-    kBlockStart,
-    kBlockEnd
-  };
 
   enum class EdgeSource { kNone, kCell, kRow, kSection, kColumn, kTable };
 
@@ -140,6 +134,15 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
     }
   }
 
+  static bool HasBorder(const ComputedStyle* style) {
+    if (!style)
+      return false;
+    return style->BorderLeftStyle() != EBorderStyle::kNone ||
+           style->BorderRightStyle() != EBorderStyle::kNone ||
+           style->BorderTopStyle() != EBorderStyle::kNone ||
+           style->BorderBottomStyle() != EBorderStyle::kNone;
+  }
+
   LayoutUnit BorderWidth(wtf_size_t edge_index) const {
     return BorderWidth(edges_[edge_index].style.get(),
                        edges_[edge_index].edge_side);
@@ -168,18 +171,9 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
 
   wtf_size_t EdgesPerRow() const { return edges_per_row_; }
 
-  NGBoxStrut TableBorderPadding() const {
-    DCHECK(cached_table_border_);
-    return *cached_table_border_ + cached_table_padding_;
-  }
-
-  NGBoxStrut TableBorder() const {
+  const NGBoxStrut& TableBorder() const {
     DCHECK(cached_table_border_);
     return *cached_table_border_;
-  }
-
-  WritingDirectionMode TableWritingDirection() const {
-    return writing_direction_;
   }
 
   // This method is necessary because collapsed table's border rect and
@@ -195,9 +189,12 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
   NGBoxStrut CellBorder(const NGBlockNode& cell,
                         wtf_size_t row,
                         wtf_size_t column,
-                        wtf_size_t section) const;
+                        wtf_size_t section,
+                        WritingDirectionMode table_writing_direction) const;
 
-  NGBoxStrut CellPaddingForMeasure(const ComputedStyle& cell_style) const;
+  NGBoxStrut CellPaddingForMeasure(
+      const ComputedStyle& cell_style,
+      WritingDirectionMode table_writing_direction) const;
 
   void ComputeCollapsedTableBorderPadding(wtf_size_t table_row_count,
                                           wtf_size_t table_column_count);
@@ -210,6 +207,7 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
                     wtf_size_t colspan,
                     const ComputedStyle* source_style,
                     EdgeSource source,
+                    WritingDirectionMode table_writing_direction,
                     wtf_size_t section_index = kNotFound);
 
   void AddSection(wtf_size_t start_row, wtf_size_t row_count) {
@@ -274,82 +272,18 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
                           wtf_size_t start_column,
                           wtf_size_t colspan,
                           const ComputedStyle* source_style,
-                          LogicalEdgeSide side);
+                          EdgeSide side);
 
   void MergeColumnAxisBorder(wtf_size_t start_row,
                              wtf_size_t start_column,
                              wtf_size_t rowspan,
                              const ComputedStyle* source_style,
-                             LogicalEdgeSide side);
+                             EdgeSide side);
 
   void MarkInnerBordersAsDoNotFill(wtf_size_t start_row,
                                    wtf_size_t start_column,
                                    wtf_size_t rowspan,
                                    wtf_size_t colspan);
-
-  EdgeSide LogicalToPhysical(LogicalEdgeSide logical_side) const {
-    // https://www.w3.org/TR/css-writing-modes-4/#logical-to-physical
-    switch (logical_side) {
-      case LogicalEdgeSide::kInlineStart:
-        switch (writing_direction_.GetWritingMode()) {
-          case WritingMode::kHorizontalTb:
-            return writing_direction_.Direction() == TextDirection::kLtr
-                       ? EdgeSide::kLeft
-                       : EdgeSide::kRight;
-          case WritingMode::kVerticalLr:
-          case WritingMode::kVerticalRl:
-          case WritingMode::kSidewaysRl:
-            return writing_direction_.Direction() == TextDirection::kLtr
-                       ? EdgeSide::kTop
-                       : EdgeSide::kBottom;
-          case WritingMode::kSidewaysLr:
-            return writing_direction_.Direction() == TextDirection::kLtr
-                       ? EdgeSide::kBottom
-                       : EdgeSide::kTop;
-        }
-      case LogicalEdgeSide::kInlineEnd:
-        switch (writing_direction_.GetWritingMode()) {
-          case WritingMode::kHorizontalTb:
-            return writing_direction_.Direction() == TextDirection::kLtr
-                       ? EdgeSide::kRight
-                       : EdgeSide::kLeft;
-          case WritingMode::kVerticalLr:
-          case WritingMode::kVerticalRl:
-          case WritingMode::kSidewaysRl:
-            return writing_direction_.Direction() == TextDirection::kLtr
-                       ? EdgeSide::kBottom
-                       : EdgeSide::kTop;
-          case WritingMode::kSidewaysLr:
-            return writing_direction_.Direction() == TextDirection::kLtr
-                       ? EdgeSide::kTop
-                       : EdgeSide::kBottom;
-        }
-      case LogicalEdgeSide::kBlockStart:
-        switch (writing_direction_.GetWritingMode()) {
-          case WritingMode::kHorizontalTb:
-            return EdgeSide::kTop;
-          case WritingMode::kVerticalLr:
-            return EdgeSide::kLeft;
-          case WritingMode::kVerticalRl:
-          case WritingMode::kSidewaysRl:
-            return EdgeSide::kRight;
-          case WritingMode::kSidewaysLr:
-            return EdgeSide::kLeft;
-        }
-      case LogicalEdgeSide::kBlockEnd:
-        switch (writing_direction_.GetWritingMode()) {
-          case WritingMode::kHorizontalTb:
-            return EdgeSide::kBottom;
-          case WritingMode::kVerticalLr:
-            return EdgeSide::kRight;
-          case WritingMode::kVerticalRl:
-          case WritingMode::kSidewaysRl:
-            return EdgeSide::kLeft;
-          case WritingMode::kSidewaysLr:
-            return EdgeSide::kRight;
-        }
-    }
-  }
 
   Edges edges_;
   Vector<Section> sections_;
@@ -357,14 +291,12 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
   // Table border/padding are expensive to compute for collapsed tables.
   // We compute them once, and cache them.
   base::Optional<NGBoxStrut> cached_table_border_;
-  NGBoxStrut cached_table_padding_;
   // Collapsed tables use first border to compute inline start/end.
   // Visual overflow use enclosing rectangle of all borders
   // to compute inline start/end.
   // |collapsed_visual_inline_start/end| are the visual rectangle values.
   LayoutUnit collapsed_visual_inline_start_;
   LayoutUnit collapsed_visual_inline_end_;
-  WritingDirectionMode writing_direction_;
   // Cells cannot extrude beyond table grid size.
   // Rowspan and colspan sizes must be clamped to enforce this.
   wtf_size_t last_column_index_ = UINT_MAX;

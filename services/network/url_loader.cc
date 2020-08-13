@@ -993,6 +993,15 @@ int URLLoader::OnConnected(net::URLRequest* url_request,
   // to make requests to the remote endpoint.
   // See the CORS-RFC1918 spec: https://wicg.github.io/cors-rfc1918.
 
+  const mojom::IPAddressSpace remote_address_space =
+      IPAddressToIPAddressSpace(info.endpoint.address());
+  if (options_ & mojom::kURLLoadOptionBlockLocalRequest &&
+      IsLessPublicAddressSpace(remote_address_space,
+                               network::mojom::IPAddressSpace::kPublic)) {
+    DVLOG(1) << "Explicitly disallowing local request.";
+    return net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST;
+  }
+
   const mojom::ClientSecurityStatePtr& security_state =
       factory_params_->client_security_state;
   if (!security_state) {
@@ -1012,8 +1021,6 @@ int URLLoader::OnConnected(net::URLRequest* url_request,
   // are initiated from insecure contexts. This prevents malicious public
   // websites from making requests to someone's printer, for example.
 
-  const mojom::IPAddressSpace remote_address_space =
-      IPAddressToIPAddressSpace(info.endpoint.address());
   const bool is_endpoint_less_public = IsLessPublicAddressSpace(
       remote_address_space, security_state->ip_address_space);
 

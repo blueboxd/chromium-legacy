@@ -889,7 +889,7 @@ DocumentPolicy::ParsedDocumentPolicy DocumentLoader::CreateDocumentPolicy() {
             .value_or(DocumentPolicy::ParsedDocumentPolicy{})
             .feature_state;
     frame_->SetRequiredDocumentPolicy(DocumentPolicy::MergeFeatureState(
-        frame_policy_.required_document_policy, header_required_policy));
+        header_required_policy, frame_policy_.required_document_policy));
   }
 
   document_policy_parsing_messages_.AppendVector(header_logger.GetMessages());

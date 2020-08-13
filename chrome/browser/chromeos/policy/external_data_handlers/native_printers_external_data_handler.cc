@@ -33,7 +33,7 @@ NativePrintersExternalDataHandler::NativePrintersExternalDataHandler(
     DeviceLocalAccountPolicyService* policy_service)
     : native_printers_observer_(cros_settings,
                                 policy_service,
-                                key::kNativePrintersBulkConfiguration,
+                                key::kPrintersBulkConfiguration,
                                 this) {
   native_printers_observer_.Init();
 }

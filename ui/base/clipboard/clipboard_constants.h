@@ -24,6 +24,9 @@ namespace ui {
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeText[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeTextUtf8[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeURIList[];
+// Unstandardized format for downloading files  after drop events. Now only
+// works in Windows, but used to also work in Linux and MacOS.
+// See https://crbug.com/860557 and https://crbug.com/425170.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern const char kMimeTypeDownloadURL[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
@@ -31,7 +34,19 @@ extern const char kMimeTypeMozillaURL[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeHTML[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeRTF[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypePNG[];
+
+// Linux-specific MIME type constants (also used in Fuchsia).
+#if defined(OS_LINUX) || defined(OS_FUCHSIA)
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
+constexpr char kMimeTypeLinuxUtf8String[] = "UTF8_STRING";
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
+constexpr char kMimeTypeLinuxString[] = "STRING";
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
+constexpr char kMimeTypeLinuxText[] = "TEXT";
+#endif  // defined(OS_LINUX) || defined(OS_FUCHSIA)
+
 #if !defined(OS_APPLE)
+// TODO(dcheng): This name is temporary. See crbug.com/106449.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern const char kMimeTypeWebCustomData[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)

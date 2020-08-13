@@ -619,11 +619,26 @@
   },
 
   "NativePrintersBulkConfiguration": {
+    "note": "This policy is deprecated, see http://crbug.com/1113366.",
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
           "NativePrintersBulkConfiguration": {
+            "url": "https://example.com/policyfile",
+            "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+          }
+        }
+      }
+    ]
+  },
+
+  "PrintersBulkConfiguration": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "PrintersBulkConfiguration": {
             "url": "https://example.com/policyfile",
             "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
           }

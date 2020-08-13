@@ -40,13 +40,13 @@ class VaapiPictureNativePixmapEgl : public VaapiPictureNativePixmap {
   ~VaapiPictureNativePixmapEgl() override;
 
   // VaapiPicture implementation.
-  bool Allocate(gfx::BufferFormat format) override;
+  Status Allocate(gfx::BufferFormat format) override;
   bool ImportGpuMemoryBufferHandle(
       gfx::BufferFormat format,
       gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override;
 
  private:
-  bool Initialize(scoped_refptr<gfx::NativePixmap> pixmap);
+  Status Initialize(scoped_refptr<gfx::NativePixmap> pixmap);
 
   DISALLOW_COPY_AND_ASSIGN(VaapiPictureNativePixmapEgl);
 };

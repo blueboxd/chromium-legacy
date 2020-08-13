@@ -7,10 +7,17 @@
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_caption.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_column.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_layout_algorithm_helpers.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_layout_algorithm_utils.h"
+#include "third_party/blink/renderer/core/style/border_edge.h"
 
 namespace blink {
 
@@ -31,9 +38,29 @@ LayoutNGTable::LayoutNGTable(Element* element)
     : LayoutNGMixin<LayoutBlock>(element) {}
 
 wtf_size_t LayoutNGTable::ColumnCount() const {
-  // TODO(atotic) land implementation.
-  NOTIMPLEMENTED();
-  return 0;
+  const NGLayoutResult* cached_layout_result = GetCachedLayoutResult();
+  if (!cached_layout_result)
+    return 0;
+  return cached_layout_result->TableColumnCount();
+}
+
+void LayoutNGTable::SetCachedTableBorders(const NGTableBorders* table_borders) {
+  cached_table_borders_ = table_borders;
+}
+
+void LayoutNGTable::InvalidateCachedTableBorders() {
+  // When cached borders are invalidated, we could do a special kind of relayout
+  // where fragments can replace only TableBorders, keep the geometry, and
+  // repaint.
+  cached_table_borders_.reset();
+}
+
+void LayoutNGTable::GridBordersChanged() {
+  InvalidateCachedTableBorders();
+}
+
+void LayoutNGTable::TableGridStructureChanged() {
+  InvalidateCachedTableBorders();
 }
 
 void LayoutNGTable::UpdateBlockLayout(bool relayout_children) {
@@ -47,6 +74,7 @@ void LayoutNGTable::UpdateBlockLayout(bool relayout_children) {
 }
 
 void LayoutNGTable::AddChild(LayoutObject* child, LayoutObject* before_child) {
+  TableGridStructureChanged();
   bool wrap_in_anonymous_section = !child->IsTableCaption() &&
                                    !child->IsLayoutTableCol() &&
                                    !child->IsTableSection();
@@ -96,9 +124,19 @@ void LayoutNGTable::AddChild(LayoutObject* child, LayoutObject* before_child) {
   section->AddChild(child);
 }
 
-LayoutBox* LayoutNGTable::CreateAnonymousBoxWithSameTypeAs(
-    const LayoutObject* parent) const {
-  return LayoutObjectFactory::CreateAnonymousTableWithParent(*parent);
+void LayoutNGTable::RemoveChild(LayoutObject* child) {
+  TableGridStructureChanged();
+  LayoutNGMixin<LayoutBlock>::RemoveChild(child);
+}
+
+void LayoutNGTable::StyleDidChange(StyleDifference diff,
+                                   const ComputedStyle* old_style) {
+  // TODO(1115800) Make border invalidation more precise.
+  if (NGTableBorders::HasBorder(old_style) ||
+      NGTableBorders::HasBorder(Style())) {
+    GridBordersChanged();
+  }
+  LayoutNGMixin<LayoutBlock>::StyleDidChange(diff, old_style);
 }
 
 bool LayoutNGTable::IsFirstCell(const LayoutNGTableCellInterface& cell) const {
@@ -108,10 +146,12 @@ bool LayoutNGTable::IsFirstCell(const LayoutNGTableCellInterface& cell) const {
   const LayoutNGTableSectionInterface* section = row->SectionInterface();
   if (section->FirstRowInterface() != row)
     return false;
-  // TODO(atotic) Should be TopNonEmptyInterface?
-  if (TopSectionInterface() != section)
-    return false;
-  return true;
+  NGTableGroupedChildren grouped_children(
+      NGBlockNode(const_cast<LayoutNGTable*>(this)));
+  auto first_section = grouped_children.begin();
+  return first_section != grouped_children.end() &&
+         ToInterface<LayoutNGTableSectionInterface>(
+             (*first_section).GetLayoutBox()) == section;
 }
 
 // Only called from AXLayoutObject::IsDataTable()
@@ -126,7 +166,13 @@ LayoutNGTableSectionInterface* LayoutNGTable::FirstBodyInterface() const {
 
 // Called from many AXLayoutObject methods.
 LayoutNGTableSectionInterface* LayoutNGTable::TopSectionInterface() const {
-  // TODO(atotic) implement.
+  NGTableGroupedChildren grouped_children(
+      NGBlockNode(const_cast<LayoutNGTable*>(this)));
+  auto first_section = grouped_children.begin();
+  if (first_section != grouped_children.end()) {
+    return ToInterface<LayoutNGTableSectionInterface>(
+        (*first_section).GetLayoutBox());
+  }
   return nullptr;
 }
 
@@ -134,7 +180,17 @@ LayoutNGTableSectionInterface* LayoutNGTable::TopSectionInterface() const {
 LayoutNGTableSectionInterface* LayoutNGTable::SectionBelowInterface(
     const LayoutNGTableSectionInterface* target,
     SkipEmptySectionsValue skip) const {
-  // TODO(atotic) implement.
+  NGTableGroupedChildren grouped_children(
+      NGBlockNode(const_cast<LayoutNGTable*>(this)));
+  bool found = false;
+  for (NGBlockNode section : grouped_children) {
+    if (found &&
+        ((skip == kDoNotSkipEmptySections) || (!section.IsEmptyTableSection())))
+      return To<LayoutNGTableSection>(section.GetLayoutBox());
+    if (target == To<LayoutNGTableSection>(section.GetLayoutBox())
+                      ->ToLayoutNGTableSectionInterface())
+      found = true;
+  }
   return nullptr;
 }
 

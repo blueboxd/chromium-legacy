@@ -23,6 +23,7 @@
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -31,14 +32,19 @@
 namespace {
 
 // Sizes are in px.
+// kButtonWidth = 76px width + 2*8px for padding on left and right
 constexpr int kButtonWidth = 92;
+// kButtonHeight = 88px height + 2*8px for padding on top and bottom.
 constexpr int kButtonHeight = 104;
 constexpr int kButtonLineHeight = 20;
 constexpr int kButtonPadding = 8;
 
 constexpr int kCornerRadius = 12;
 constexpr int kMaxTargetsPerRow = 4;
+// TargetViewHeight is 2*kButtonHeight + kButtonPadding
+constexpr int kTargetViewHeight = 216;
 constexpr int kBubbleWidth = 416;
+constexpr int kShortSpacing = 20;
 constexpr int kSpacing = 24;
 constexpr int kTitleLineHeight = 24;
 constexpr char kTitle[] = "Share";
@@ -133,14 +139,6 @@ void SharesheetBubbleView::ShowBubble(std::vector<TargetInfo> targets,
                 views::GridLayout::ColumnSize::kUsePreferred,
                 /* fixed_width */ 0, /*min_width*/ 0);
 
-  views::ColumnSet* cs_buttons =
-      main_layout->AddColumnSet(COLUMN_SET_ID_TARGETS);
-  for (int i = 0; i < kMaxTargetsPerRow; i++) {
-    cs_buttons->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
-                          0, views::GridLayout::ColumnSize::kFixed,
-                          kButtonWidth, 0);
-  }
-
   // Add Title label
   main_layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_TITLE,
                         kTitleLineHeight);
@@ -150,21 +148,43 @@ void SharesheetBubbleView::ShowBubble(std::vector<TargetInfo> targets,
   title->SetLineHeight(kTitleLineHeight);
   title->SetEnabledColor(kShareTitleColor);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  main_layout->AddPaddingRow(views::GridLayout::kFixedSize, kSpacing);
 
   // Add Targets
+  auto scrollable_view = std::make_unique<views::View>();
+  auto* scroll_layout =
+      scrollable_view->SetLayoutManager(std::make_unique<views::GridLayout>());
+  views::ColumnSet* cs_buttons =
+      scroll_layout->AddColumnSet(COLUMN_SET_ID_TARGETS);
+  for (int i = 0; i < kMaxTargetsPerRow; i++) {
+    cs_buttons->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                          0, views::GridLayout::ColumnSize::kFixed,
+                          kButtonWidth, 0);
+  }
+
   size_t i = 0;
   for (const auto& target : targets_) {
     if (i % kMaxTargetsPerRow == 0) {
-      main_layout->AddPaddingRow(views::GridLayout::kFixedSize, kSpacing);
-      main_layout->StartRow(views::GridLayout::kFixedSize,
-                            COLUMN_SET_ID_TARGETS);
+      if (i != 0) {
+        scroll_layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                                     kButtonPadding);
+      }
+      scroll_layout->StartRow(views::GridLayout::kFixedSize,
+                              COLUMN_SET_ID_TARGETS);
     }
     auto target_view = std::make_unique<ShareSheetTargetButton>(
         this, target.display_name, &target.icon);
     target_view->set_tag(i++);
-    main_layout->AddView(std::move(target_view));
+    scroll_layout->AddView(std::move(target_view));
   }
-  main_layout->AddPaddingRow(views::GridLayout::kFixedSize, kSpacing);
+
+  auto scroll_view = std::make_unique<views::ScrollView>();
+  scroll_view->SetContents(std::move(scrollable_view));
+  scroll_view->ClipHeightTo(kTargetViewHeight, kTargetViewHeight);
+
+  main_layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_TITLE);
+  main_layout->AddView(std::move(scroll_view));
+  main_layout->AddPaddingRow(views::GridLayout::kFixedSize, kShortSpacing);
 
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
   GetWidget()->GetRootView()->Layout();

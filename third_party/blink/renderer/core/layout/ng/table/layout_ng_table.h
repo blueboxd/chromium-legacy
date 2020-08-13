@@ -12,6 +12,8 @@
 
 namespace blink {
 
+class NGTableBorders;
+
 class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
                                   public LayoutNGTableInterface {
  public:
@@ -27,6 +29,19 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
 
   wtf_size_t ColumnCount() const;
 
+  const NGTableBorders* GetCachedTableBorders() const {
+    return cached_table_borders_.get();
+  }
+
+  void SetCachedTableBorders(const NGTableBorders* table_borders);
+
+  // Any borders in table grid have changed.
+  void GridBordersChanged();
+
+  // Table descendants have been added/removed, and number of rows/columns
+  // might have changed.
+  void TableGridStructureChanged();
+
   // LayoutBlock methods start.
 
   const char* GetName() const override { return "LayoutNGTable"; }
@@ -36,8 +51,10 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
   void AddChild(LayoutObject* child,
                 LayoutObject* before_child = nullptr) override;
 
-  LayoutBox* CreateAnonymousBoxWithSameTypeAs(
-      const LayoutObject* parent) const override;
+  void RemoveChild(LayoutObject*) override;
+
+  void StyleDidChange(StyleDifference diff,
+                      const ComputedStyle* old_style) override;
 
   // LayoutBlock methods end.
 
@@ -46,17 +63,22 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
   const LayoutNGTableInterface* ToLayoutNGTableInterface() const final {
     return this;
   }
+
   const LayoutObject* ToLayoutObject() const final { return this; }
+
   // Non-const version required by TextAutosizer, AXLayoutObject.
   LayoutObject* ToMutableLayoutObject() final { return this; }
+
   bool ShouldCollapseBorders() const final {
     return StyleRef().BorderCollapse() == EBorderCollapse::kCollapse;
   }
+
   // Used in table painting for invalidation. Should not be needed by NG.
   bool HasCollapsedBorders() const final {
     NOTREACHED();
     return false;
   }
+
   bool HasColElements() const final {
     NOTREACHED();
     return false;
@@ -83,6 +105,7 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
 
   // Legacy caches sections. Might not be needed by NG.
   void RecalcSectionsIfNeeded() const final {}
+
   // Legacy caches sections. Might not be needed by NG.
   void ForceSectionsRecalc() final {}
 
@@ -130,6 +153,12 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
     return type == kLayoutObjectTable ||
            LayoutNGMixin<LayoutBlock>::IsOfType(type);
   }
+
+ private:
+  void InvalidateCachedTableBorders();
+
+  // Table borders are cached because computing collapsed borders is expensive.
+  scoped_refptr<const NGTableBorders> cached_table_borders_;
 };
 
 // wtf/casting.h helper.

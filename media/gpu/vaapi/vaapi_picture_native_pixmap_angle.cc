@@ -51,10 +51,10 @@ VaapiPictureNativePixmapAngle::~VaapiPictureNativePixmapAngle() {
   }
 }
 
-bool VaapiPictureNativePixmapAngle::Allocate(gfx::BufferFormat format) {
+Status VaapiPictureNativePixmapAngle::Allocate(gfx::BufferFormat format) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
-  return false;
+  return StatusCode::kGenericErrorPleaseRemove;
 }
 
 bool VaapiPictureNativePixmapAngle::ImportGpuMemoryBufferHandle(

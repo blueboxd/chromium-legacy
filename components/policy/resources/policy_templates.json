@@ -1036,6 +1036,7 @@
         'NativePrintersBulkBlacklist',
         'NativePrintersBulkWhitelist',
         'Printers',
+        'PrintersBulkConfiguration',
         'DeviceNativePrinters',
         'DeviceNativePrintersAccessMode',
         'DeviceNativePrintersBlacklist',
@@ -15077,6 +15078,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': {
         "url": "https://example.com/printerpolicy",
         "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeafdeadbeefdeadbeef"
@@ -15097,7 +15099,46 @@
       If you set this policy, users cannot change or override it.
 
       This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
-      ''',
+
+      This policy is deprecated, please use <ph name="PRINTERS_BULK_CONFIGURATION">PrintersBulkConfiguration</ph> instead.''',
+    },
+    {
+      'name': 'PrintersBulkConfiguration',
+      'owners': ['file://chromeos/printing/OWNERS'],
+      'id': 770,
+      'type': 'external',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': { 'type': 'string' },
+          'hash': { 'type': 'string' }
+        },
+      },
+      'supported_on': ['chrome_os:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': {
+        "url": "https://example.com/printerpolicy",
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeafdeadbeefdeadbeef"
+      },
+      'max_size': 5242880,
+      'caption': '''Enterprise printer configuration file''',
+      'tags': [],
+      'desc': '''Provides configurations for enterprise printers.
+
+      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices. The format is the same as the <ph name="PRINTERS_POLICY_NAME">Printers</ph> dictionary, with an additional required "id" or "guid" field per printer for allowing or blocking.
+
+      The size of the file must not exceed 5MB and must be encoded in JSON. It is estimated that a file containing approximately 21,000 printers will encode as a 5MB file. The cryptographic hash is used to verify the integrity of the download.
+
+      The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the file for printer configurations and make printers available in accordance with <ph name="PRINTERS_BULK_ACCESS_MODE">PrintersBulkAccessMode</ph>, <ph name="PRINTERS_BULK_ALLOWLIST">PrintersBulkAllowlist</ph>, and <ph name="PRINTERS_BULK_BLOCKLIST">PrintersBulkBlocklist</ph>.
+
+      If you set this policy, users cannot change or override it.
+
+      This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.''',
     },
     {
       'name': 'NativePrintersBulkAccessMode',
@@ -23898,6 +23939,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 769,
+  'highest_id_currently_used': 770,
   'highest_atomic_group_id_currently_used': 40
 }

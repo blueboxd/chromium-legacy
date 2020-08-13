@@ -10,7 +10,7 @@
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 
@@ -68,7 +68,8 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     redirect.new_referrer =
         blink::WebString::FromUTF8(redirect_info.new_referrer);
     redirect.new_referrer_policy =
-        blink::NetToMojoReferrerPolicy(redirect_info.new_referrer_policy);
+        blink::ReferrerUtils::NetToMojoReferrerPolicy(
+            redirect_info.new_referrer_policy);
     redirect.new_http_method =
         blink::WebString::FromLatin1(redirect_info.new_method);
     url = redirect_info.new_url;

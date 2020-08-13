@@ -5,7 +5,7 @@
 #include "content/common/fetch/fetch_request_type_converters.h"
 
 #include "content/common/service_worker/service_worker_utils.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "ui/base/page_transition_types.h"
 
 namespace mojo {
@@ -28,7 +28,8 @@ blink::mojom::FetchAPIRequestPtr TypeConverter<
   if (input.request_body)
     output->body = input.request_body;
   output->referrer = blink::mojom::Referrer::New(
-      input.referrer, blink::NetToMojoReferrerPolicy(input.referrer_policy));
+      input.referrer,
+      blink::ReferrerUtils::NetToMojoReferrerPolicy(input.referrer_policy));
   output->mode = input.mode;
   output->is_main_resource_load =
       content::ServiceWorkerUtils::IsMainRequestDestination(input.destination);

@@ -75,6 +75,7 @@
 #include "content/browser/media/capture/web_contents_audio_muter.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
+#include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/plugin_content_origin_allowlist.h"
 #include "content/browser/portal/portal.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
@@ -455,6 +456,36 @@ base::flat_set<WebContentsImpl*>* FullscreenContentsSet(
   }
 
   return set_holder->set();
+}
+
+// Adjust the requested |bounds| for opening or placing a window. The bounds
+// may not extend outside a single screen's work area, and the |host| requires
+// permission to specify bounds on a screen other than its current screen.
+// TODO(crbug.com/897300): These adjustments are inaccurate for window.open(),
+// which specifies the inner content size, and for window.moveTo, resizeTo, etc.
+// calls on newly created windows, which may pass empty sizes or positions to
+// indicate uninitialized placement information in the renderer. Constraints
+// enforced later should resolve most inaccuracies, but this early enforcement
+// is needed to ensure bounds indicate the appropriate display.
+gfx::Rect AdjustRequestedWindowBounds(gfx::Rect bounds, RenderFrameHost* host) {
+  auto* screen = display::Screen::GetScreen();
+  auto display = screen->GetDisplayMatching(bounds);
+
+  // Check, but do not prompt, for permission to place windows on other screens.
+  // Sites generally need permission to get such bounds in the first place.
+  // Also clamp offscreen bounds to the window's current screen.
+  auto* controller =
+      PermissionControllerImpl::FromBrowserContext(host->GetBrowserContext());
+  if (!bounds.Intersects(display.bounds()) || !controller ||
+      controller->GetPermissionStatusForFrame(PermissionType::WINDOW_PLACEMENT,
+                                              host,
+                                              host->GetLastCommittedURL()) !=
+          blink::mojom::PermissionStatus::GRANTED) {
+    display = screen->GetDisplayNearestView(host->GetNativeView());
+  }
+
+  bounds.AdjustToFit(display.work_area());
+  return bounds;
 }
 
 }  // namespace
@@ -3509,7 +3540,7 @@ void WebContentsImpl::CreateNewWidget(
       widget_view;
 }
 
-void WebContentsImpl::ShowCreatedWindow(int process_id,
+void WebContentsImpl::ShowCreatedWindow(RenderFrameHost* opener,
                                         int main_frame_widget_route_id,
                                         WindowOpenDisposition disposition,
                                         const gfx::Rect& initial_rect,
@@ -3522,8 +3553,8 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
   // TODO(danakj): Why do we defer this show step until the renderer asks for it
   // when it will always do so. What needs to happen in the renderer before we
   // reach here?
-  base::Optional<CreatedWindow> owned_created =
-      GetCreatedWindow(process_id, main_frame_widget_route_id);
+  base::Optional<CreatedWindow> owned_created = GetCreatedWindow(
+      opener->GetProcess()->GetID(), main_frame_widget_route_id);
 
   // The browser may have rejected the request to make a new window, or the
   // renderer could be sending an invalid route id. Ignore the request then.
@@ -3544,11 +3575,20 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
     if (delegate->ShouldResumeRequestsForCreatedWindow())
       created->ResumeLoadingCreatedWebContents();
 
+    // Individual members of |initial_rect| may be 0 to indicate that the
+    // window.open() feature string did not specify a value. This code does not
+    // have the ability to distinguish between an unspecified value and 0.
+    // Assume that if any single value is non-zero, all values should be used.
+    // TODO(crbug.com/897300): Plumb values as specified; set defaults here?
+    gfx::Rect adjusted_rect = initial_rect;
+    if (adjusted_rect != gfx::Rect())
+      adjusted_rect = AdjustRequestedWindowBounds(adjusted_rect, opener);
+
     base::WeakPtr<WebContentsImpl> weak_created =
         created->weak_factory_.GetWeakPtr();
     delegate->AddNewContents(this, std::move(owned_created->contents),
                              std::move(owned_created->target_url), disposition,
-                             initial_rect, user_gesture, nullptr);
+                             adjusted_rect, user_gesture, nullptr);
     // The delegate may delete |created| during AddNewContents().
     if (!weak_created)
       return;
@@ -6459,8 +6499,19 @@ void WebContentsImpl::Close(RenderViewHost* rvh) {
 }
 
 void WebContentsImpl::RequestSetBounds(const gfx::Rect& new_bounds) {
-  if (delegate_)
-    delegate_->SetContentsBounds(this, new_bounds);
+  if (!delegate_)
+    return;
+
+  // Members of |new_bounds| may be 0 to indicate uninitialized values for newly
+  // opened windows, even if the |GetContainerBounds()| inner rect is correct.
+  // TODO(crbug.com/897300): Plumb values as specified; fallback on outer rect.
+  auto bounds = new_bounds;
+  if (bounds.IsEmpty())
+    bounds.set_size(GetContainerBounds().size());
+
+  // Only requests from the main frame, not subframes, should reach this code.
+  bounds = AdjustRequestedWindowBounds(bounds, GetMainFrame());
+  delegate_->SetContentsBounds(this, bounds);
 }
 
 void WebContentsImpl::DidStartLoading(FrameTreeNode* frame_tree_node,

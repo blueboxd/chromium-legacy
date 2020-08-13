@@ -54,6 +54,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "third_party/blink/public/common/privacy_budget/scoped_identifiability_test_sample_collector.h"
@@ -150,7 +151,7 @@ network::ResourceRequest CreateResourceRequest(const std::string& method,
       net::SiteForCookies::FromUrl(url);  // bypass third-party cookie blocking.
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator set.
-  request.referrer_policy = content::Referrer::GetDefaultReferrerPolicy();
+  request.referrer_policy = blink::ReferrerUtils::GetDefaultNetReferrerPolicy();
   request.resource_type = static_cast<int>(resource_type);
   request.is_main_frame =
       resource_type == blink::mojom::ResourceType::kMainFrame;

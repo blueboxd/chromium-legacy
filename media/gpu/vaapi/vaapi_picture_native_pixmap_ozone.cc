@@ -49,7 +49,7 @@ VaapiPictureNativePixmapOzone::~VaapiPictureNativePixmapOzone() {
   }
 }
 
-bool VaapiPictureNativePixmapOzone::Initialize(
+Status VaapiPictureNativePixmapOzone::Initialize(
     scoped_refptr<gfx::NativePixmap> pixmap) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(pixmap);
@@ -58,16 +58,16 @@ bool VaapiPictureNativePixmapOzone::Initialize(
   va_surface_ = vaapi_wrapper_->CreateVASurfaceForPixmap(pixmap);
   if (!va_surface_) {
     LOG(ERROR) << "Failed creating VASurface for NativePixmap";
-    return false;
+    return StatusCode::kVaapiNoSurface;
   }
 
   // ARC++ has no texture ids.
   if (texture_id_ == 0 && client_texture_id_ == 0)
-    return true;
+    return OkStatus();
 
   // Import dmabuf fds into the output gl texture through EGLImage.
   if (make_context_current_cb_ && !make_context_current_cb_.Run())
-    return false;
+    return StatusCode::kVaapiBadContext;
 
   gl::ScopedTextureBinder texture_binder(texture_target_, texture_id_);
 
@@ -77,26 +77,26 @@ bool VaapiPictureNativePixmapOzone::Initialize(
       base::MakeRefCounted<gl::GLImageNativePixmap>(visible_size_, format);
   if (!image->Initialize(std::move(pixmap))) {
     LOG(ERROR) << "Failed to create GLImage";
-    return false;
+    return StatusCode::kVaapiFailedToInitializeImage;
   }
 
   gl_image_ = image;
   if (!gl_image_->BindTexImage(texture_target_)) {
     LOG(ERROR) << "Failed to bind texture to GLImage";
-    return false;
+    return StatusCode::kVaapiFailedToBindTexture;
   }
 
   if (bind_image_cb_ &&
       !bind_image_cb_.Run(client_texture_id_, texture_target_, gl_image_,
                           true /* can_bind_to_sampler */)) {
     LOG(ERROR) << "Failed to bind client_texture_id";
-    return false;
+    return StatusCode::kVaapiFailedToBindImage;
   }
 
-  return true;
+  return OkStatus();
 }
 
-bool VaapiPictureNativePixmapOzone::Allocate(gfx::BufferFormat format) {
+Status VaapiPictureNativePixmapOzone::Allocate(gfx::BufferFormat format) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
@@ -105,8 +105,7 @@ bool VaapiPictureNativePixmapOzone::Allocate(gfx::BufferFormat format) {
       gfx::kNullAcceleratedWidget, VK_NULL_HANDLE, size_, format,
       gfx::BufferUsage::SCANOUT_VDA_WRITE, /*framebuffer_size=*/visible_size_);
   if (!pixmap) {
-    LOG(ERROR) << "Failed allocating a pixmap";
-    return false;
+    return StatusCode::kVaapiNoPixmap;
   }
 
   return Initialize(std::move(pixmap));
@@ -138,7 +137,7 @@ bool VaapiPictureNativePixmapOzone::ImportGpuMemoryBufferHandle(
     return false;
   }
 
-  return Initialize(std::move(pixmap));
+  return Initialize(std::move(pixmap)).is_ok();
 }
 
 }  // namespace media

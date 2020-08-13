@@ -460,7 +460,7 @@ public class TabUiTestHelper {
 
     private static void verifyAllTabsHaveUrl(TabModel tabModel, String url) {
         for (int i = 0; i < tabModel.getCount(); i++) {
-            assertEquals(url, tabModel.getTabAt(i).getUrlString());
+            assertEquals(url, ChromeTabUtils.getUrlStringOnUiThread(tabModel.getTabAt(i)));
         }
     }
 

@@ -50,8 +50,6 @@ struct CONTENT_EXPORT Referrer {
   static net::ReferrerPolicy ReferrerPolicyForUrlRequest(
       network::mojom::ReferrerPolicy referrer_policy);
 
-  static net::ReferrerPolicy GetDefaultReferrerPolicy();
-
   // Configures retaining the pre-M80 default referrer
   // policy of no-referrer-when-downgrade.
   // TODO(crbug.com/1016541): After M82, remove when the corresponding

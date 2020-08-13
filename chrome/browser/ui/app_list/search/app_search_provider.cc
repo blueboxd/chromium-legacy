@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
@@ -42,11 +43,13 @@
 #include "chrome/browser/ui/app_list/search/app_service_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/components/string_matching/fuzzy_tokenized_string_match.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
 #include "chromeos/components/string_matching/tokenized_string_match.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync_sessions/session_sync_service.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace {
 
@@ -508,6 +511,18 @@ void AppSearchProvider::UpdateRecommendedResults(
     std::unique_ptr<AppResult> result =
         app->data_source()->CreateResult(app->id(), list_controller_, true);
     result->SetTitle(title);
+
+    if (app->id() == chromeos::default_web_apps::kHelpAppId) {
+      auto release_notes_storage =
+          std::make_unique<chromeos::ReleaseNotesStorage>(profile_);
+      // If we should show the release notes suggestion chip, change the title
+      // and url of the Help App. Otherwise leave as normal.
+      if (release_notes_storage->ShouldShowSuggestionChip()) {
+        result->SetTitle(ui::SubstituteChromeOSDeviceType(
+            IDS_RELEASE_NOTES_DEVICE_SPECIFIC_NOTIFICATION_TITLE));
+        result->SetQueryUrl(GURL("chrome://help-app/updates"));
+      }
+    }
 
     const auto find_in_app_list = id_to_app_list_index.find(app->id());
     const base::Time time = app->GetLastActivityTime();

@@ -615,7 +615,8 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   // TODO(crbug.com/1016541): After M82, remove when the corresponding
   // enterprise policy has been deleted.
   WebRuntimeFeatures::EnableReducedReferrerGranularity(
-      base::FeatureList::IsEnabled(features::kReducedReferrerGranularity) &&
+      base::FeatureList::IsEnabled(
+          blink::features::kReducedReferrerGranularity) &&
       !content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
 
   if (base::FeatureList::IsEnabled(

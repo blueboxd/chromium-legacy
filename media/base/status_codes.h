@@ -101,6 +101,20 @@ enum class StatusCode : StatusCodeType {
   kEncoderInitializationError = 0x00000607,
   kEncoderFailedFlush = 0x00000608,
 
+  // VaapiVideoDecoder: 0x07
+  kVaapiBadContext = 0x00000701,
+  kVaapiNoBuffer = 0x00000702,
+  kVaapiNoBufferHandle = 0x00000703,
+  kVaapiNoPixmap = 0x00000704,
+  kVaapiNoImage = 0x00000705,
+  kVaapiNoSurface = 0x00000706,
+  kVaapiFailedToInitializeImage = 0x00000707,
+  kVaapiFailedToBindTexture = 0x00000708,
+  kVaapiFailedToBindImage = 0x00000709,
+  kVaapiUnsupportedFormat = 0x0000070A,
+  kVaapiFailedToExportImage = 0x0000070B,
+  kVaapiBadImageSize = 0x0000070C,
+
   // Special codes
   kGenericErrorPleaseRemove = 0x79999999,
   kCodeOnlyForTesting = std::numeric_limits<StatusCodeType>::max(),

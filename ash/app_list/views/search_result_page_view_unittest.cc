@@ -153,17 +153,15 @@ TEST_P(SearchResultPageViewTest, ResultsSorted) {
   EXPECT_EQ(tile_list_view(), view()->result_container_views()[0]);
   EXPECT_EQ(list_view(), view()->result_container_views()[1]);
 
-  // Change the relevance of the tile result and expect the list results to be
-  // displayed first.
-  // TODO(warx): fullscreen launcher should always have tile list view to be
-  // displayed first over list view.
+  // Change the relevance of the tile result to be lower than list results. The
+  // tile container should still be displayed first.
   tile_result->set_display_score(0.4);
 
   results->NotifyItemsChanged(0, 1);
   RunPendingMessages();
 
-  EXPECT_EQ(list_view(), view()->result_container_views()[0]);
-  EXPECT_EQ(tile_list_view(), view()->result_container_views()[1]);
+  EXPECT_EQ(tile_list_view(), view()->result_container_views()[0]);
+  EXPECT_EQ(list_view(), view()->result_container_views()[1]);
 }
 
 TEST_P(SearchResultPageViewTest, TileResultsSortedBeforeEmptyListResults) {

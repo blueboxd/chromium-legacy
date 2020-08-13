@@ -645,7 +645,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       bool is_new_browsing_instance,
       bool has_user_gesture,
       SessionStorageNamespace* session_storage_namespace) override;
-  void ShowCreatedWindow(int process_id,
+  void ShowCreatedWindow(RenderFrameHost* opener,
                          int main_frame_widget_route_id,
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,

@@ -564,6 +564,9 @@ void SearchBoxView::ClearSearchAndDeactivateSearchBox() {
 
   view_delegate_->LogSearchAbandonHistogram();
 
+  contents_view_->search_results_page_view()
+      ->result_selection_controller()
+      ->ClearSelection();
   ClearSearch();
   SetSearchBoxActive(false, ui::ET_UNKNOWN);
 }

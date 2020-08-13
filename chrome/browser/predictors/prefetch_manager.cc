@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "chrome/browser/predictors/predictors_features.h"
+#include "chrome/browser/predictors/predictors_switches.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -249,13 +251,20 @@ void PrefetchManager::PrefetchUrl(
 
   ++inflight_jobs_count_;
 
+  // Since the CORS-RFC1918 check is skipped when the client security state is
+  // unknown, just block any local request to be safe for now.
+  int options = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                    switches::kLoadingPredictorAllowLocalRequestForTesting)
+                    ? network::mojom::kURLLoadOptionNone
+                    : network::mojom::kURLLoadOptionBlockLocalRequest;
+
   std::unique_ptr<blink::ThrottlingURLLoader> loader =
       blink::ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(factory), std::move(throttles),
           /*routing_id is not needed*/ -1,
-          content::GlobalRequestID::MakeBrowserInitiated().request_id,
-          network::mojom::kURLLoadOptionNone, &request, client.get(),
-          kPrefetchTrafficAnnotation, base::ThreadTaskRunnerHandle::Get(),
+          content::GlobalRequestID::MakeBrowserInitiated().request_id, options,
+          &request, client.get(), kPrefetchTrafficAnnotation,
+          base::ThreadTaskRunnerHandle::Get(),
           /*cors_exempt_header_list=*/base::nullopt);
 
   delegate_->PrefetchInitiated(info.url, job->url);
@@ -269,13 +278,18 @@ void PrefetchManager::PrefetchUrl(
                                    std::move(loader), std::move(client)));
 }
 
-// The params are just bound to this function to keep them alive
-// until the load finishes.
+// Some params are unused but bound to this function to keep them alive until
+// the load finishes.
 void PrefetchManager::OnPrefetchFinished(
     std::unique_ptr<PrefetchJob> job,
     std::unique_ptr<blink::ThrottlingURLLoader> loader,
-    std::unique_ptr<network::mojom::URLLoaderClient> client) {
+    std::unique_ptr<network::mojom::URLLoaderClient> client,
+    const network::URLLoaderCompletionStatus& status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  PrefetchInfo& info = *job->info;
+  if (observer_for_testing_)
+    observer_for_testing_->OnPrefetchFinished(info.url, job->url, status);
 
   loader.reset();
   client.reset();
@@ -322,6 +336,8 @@ void PrefetchManager::AllPrefetchJobsForUrlFinished(PrefetchInfo& info) {
 
   if (delegate_)
     delegate_->PrefetchFinished(std::move(info.stats));
+  if (observer_for_testing_)
+    observer_for_testing_->OnAllPrefetchesFinished(info.url);
   prefetch_info_.erase(it);
 }
 

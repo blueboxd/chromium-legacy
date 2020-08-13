@@ -19,8 +19,10 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -34,6 +36,8 @@
 #include "components/crash/core/common/crash_key.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
+#include "media/filters/vp9_parser.h"
+#include "media/gpu/mac/vt_beta_stubs.h"
 #include "media/gpu/mac/vt_config_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
@@ -61,6 +65,9 @@ base::AtomicSequenceNumber g_cv_pixel_buffer_ids;
 constexpr VideoCodecProfile kSupportedProfiles[] = {
     H264PROFILE_BASELINE, H264PROFILE_EXTENDED, H264PROFILE_MAIN,
     H264PROFILE_HIGH,
+
+    // These are only supported on macOS 11+.
+    VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE2,
 
     // TODO(sandersd): Hi10p fails during
     // CMVideoFormatDescriptionCreateFromH264ParameterSets with
@@ -108,15 +115,15 @@ constexpr int kMaxReorderQueueSize = 17;
 
 // Build an |image_config| dictionary for VideoToolbox initialization.
 base::ScopedCFTypeRef<CFMutableDictionaryRef> BuildImageConfig(
-    CMVideoDimensions coded_dimensions) {
+    CMVideoDimensions coded_dimensions,
+    bool is_hbd) {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config;
 
   // Note that 4:2:0 textures cannot be used directly as RGBA in OpenGL, but are
   // lower power than 4:2:2 when composited directly by CoreAnimation.
-  //
-  // TODO(crbug.com/1103432): Based on other > 8-bit codecs, we'll likely need
-  // to add kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange here.
-  int32_t pixel_format = kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange;
+  int32_t pixel_format = is_hbd
+                             ? kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange
+                             : kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange;
 #define CFINT(i) CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &i)
   base::ScopedCFTypeRef<CFNumberRef> cf_pixel_format(CFINT(pixel_format));
   base::ScopedCFTypeRef<CFNumberRef> cf_width(CFINT(coded_dimensions.width));
@@ -145,9 +152,6 @@ base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateVideoFormatH264(
     const std::vector<uint8_t>& sps,
     const std::vector<uint8_t>& spsext,
     const std::vector<uint8_t>& pps) {
-  if (@available(macOS 10.10, *)) {
-  	return false;
-  }
   DCHECK(!sps.empty());
   DCHECK(!pps.empty());
 
@@ -179,14 +183,39 @@ base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateVideoFormatH264(
   return format;
 }
 
+base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateVideoFormatVP9(
+    media::VideoColorSpace color_space,
+    media::VideoCodecProfile profile,
+    base::Optional<media::HDRMetadata> hdr_metadata,
+    const gfx::Size& coded_size) {
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> format_config(
+      CreateFormatExtensions(kCMVideoCodecType_VP9, profile, color_space,
+                             hdr_metadata));
+
+  base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
+  if (!format_config) {
+    DLOG(ERROR) << "Failed to configure vp9 decoder.";
+    return format;
+  }
+
+  OSStatus status = CMVideoFormatDescriptionCreate(
+      kCFAllocatorDefault, kCMVideoCodecType_VP9, coded_size.width(),
+      coded_size.height(), format_config, format.InitializeInto());
+  OSSTATUS_DLOG_IF(WARNING, status != noErr, status)
+      << "CMVideoFormatDescriptionCreate()";
+  return format;
+}
+
 // Create a VTDecompressionSession using the provided |format|. If
 // |require_hardware| is true, the session will only use the hardware decoder.
 bool CreateVideoToolboxSession(
     const CMFormatDescriptionRef format,
     bool require_hardware,
+    bool is_hbd,
     const VTDecompressionOutputCallbackRecord* callback,
     base::ScopedCFTypeRef<VTDecompressionSessionRef>* session,
     gfx::Size* configured_size) {
+  
   // Prepare VideoToolbox configuration dictionaries.
   base::ScopedCFTypeRef<CFMutableDictionaryRef> decoder_config(
       CFDictionaryCreateMutable(kCFAllocatorDefault,
@@ -214,7 +243,7 @@ bool CreateVideoToolboxSession(
   CMVideoDimensions visible_dimensions = {visible_rect.size.width,
                                           visible_rect.size.height};
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
-      BuildImageConfig(visible_dimensions));
+      BuildImageConfig(visible_dimensions, is_hbd));
   if (!image_config) {
     DLOG(ERROR) << "Failed to create decoder image configuration";
     return false;
@@ -245,6 +274,9 @@ bool CreateVideoToolboxSession(
 // session fails, hardware decoding will be disabled (Initialize() will always
 // return false).
 bool InitializeVideoToolboxInternal() {
+  if(!__builtin_available(macOS 10.10,*)) {
+    return false;
+  }
   VTDecompressionOutputCallbackRecord callback = {0};
   base::ScopedCFTypeRef<VTDecompressionSessionRef> session;
   gfx::Size configured_size;
@@ -257,7 +289,8 @@ bool InitializeVideoToolboxInternal() {
   const std::vector<uint8_t> pps_normal = {0x68, 0xe9, 0x7b, 0xcb};
   if (!CreateVideoToolboxSession(
           CreateVideoFormatH264(sps_normal, std::vector<uint8_t>(), pps_normal),
-          /*require_hardware=*/true, &callback, &session, &configured_size)) {
+          /*require_hardware=*/true, /*is_hbd=*/false, &callback, &session,
+          &configured_size)) {
     DVLOG(1) << "Hardware H264 decoding with VideoToolbox is not supported";
     return false;
   }
@@ -272,9 +305,39 @@ bool InitializeVideoToolboxInternal() {
   const std::vector<uint8_t> pps_small = {0x68, 0xe9, 0x79, 0x72, 0xc0};
   if (!CreateVideoToolboxSession(
           CreateVideoFormatH264(sps_small, std::vector<uint8_t>(), pps_small),
-          /*require_hardware=*/false, &callback, &session, &configured_size)) {
+          /*require_hardware=*/false, /*is_hbd=*/false, &callback, &session,
+          &configured_size)) {
     DVLOG(1) << "Software H264 decoding with VideoToolbox is not supported";
     return false;
+  }
+
+  session.reset();
+
+  if (base::mac::IsAtLeastOS11()) {
+    // Until our target sdk version is 11.0 we need to dynamically link the
+    // VTRegisterSupplementalVideoDecoderIfAvailable() symbol in.
+    media_gpu_mac::StubPathMap paths;
+    paths[media_gpu_mac::kModuleVt_beta].push_back(FILE_PATH_LITERAL(
+        "/System/Library/Frameworks/VideoToolbox.framework/VideoToolbox"));
+    if (!media_gpu_mac::InitializeStubs(paths))
+      return true;  // VP9 support is optional.
+
+// __builtin_available doesn't work for 11.0 yet; https://crbug.com/1115294
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+    VTRegisterSupplementalVideoDecoderIfAvailable(kCMVideoCodecType_VP9);
+#pragma clang diagnostic pop
+
+    // Create a VP9 decoding session.
+    if (!CreateVideoToolboxSession(
+            CreateVideoFormatVP9(VideoColorSpace::REC709(), VP9PROFILE_PROFILE0,
+                                 base::nullopt, gfx::Size(720, 480)),
+            /*require_hardware=*/true, /*is_hbd=*/false, &callback, &session,
+            &configured_size)) {
+      DVLOG(1) << "Hardware VP9 decoding with VideoToolbox is not supported";
+
+      // We don't return false here since VP9 support is optional.
+    }
   }
 
   return true;
@@ -318,14 +381,80 @@ void OutputThunk(void* decompression_output_refcon,
   vda->Output(source_frame_refcon, status, image_buffer);
 }
 
+void ReleaseDecoderBuffer(void* refcon,
+                          void* doomed_memory_block,
+                          size_t size_in_bytes) {
+  if (refcon)
+    static_cast<DecoderBuffer*>(refcon)->Release();
+}
+
 }  // namespace
+
+// Detects coded size and color space changes. Also indicates when a frame won't
+// generate any output.
+class VP9ConfigChangeDetector {
+ public:
+  VP9ConfigChangeDetector() : parser_(false) {}
+  ~VP9ConfigChangeDetector() = default;
+
+  void DetectConfig(const uint8_t* stream, unsigned int size) {
+    parser_.SetStream(stream, size, nullptr);
+    config_changed_ = false;
+
+    Vp9FrameHeader fhdr;
+    gfx::Size allocate_size;
+    std::unique_ptr<DecryptConfig> null_config;
+    while (parser_.ParseNextFrame(&fhdr, &allocate_size, &null_config) ==
+           Vp9Parser::kOk) {
+      color_space_ = fhdr.GetColorSpace();
+      show_frame_ = fhdr.show_frame;
+
+      gfx::Size new_size(fhdr.frame_width, fhdr.frame_height);
+      if (!size_.IsEmpty() && !pending_config_changed_ && !config_changed_ &&
+          size_ != new_size) {
+        pending_config_changed_ = true;
+        DVLOG(1) << "Configuration changed from " << size_.ToString() << " to "
+                 << new_size.ToString();
+      }
+      size_ = new_size;
+
+      // Resolution changes can happen on any frame technically, so wait for a
+      // keyframe before signaling the config change.
+      if (fhdr.IsKeyframe() && pending_config_changed_) {
+        config_changed_ = true;
+        pending_config_changed_ = false;
+      }
+    }
+    if (pending_config_changed_)
+      DVLOG(1) << "Deferring config change until next keyframe...";
+  }
+
+  gfx::Size GetCodedSize(const gfx::Size& container_coded_size) const {
+    return size_.IsEmpty() ? container_coded_size : size_;
+  }
+
+  VideoColorSpace GetColorSpace(const VideoColorSpace& container_cs) const {
+    return container_cs.IsSpecified() ? container_cs : color_space_;
+  }
+
+  bool show_frame() const { return show_frame_; }
+  bool config_changed() const { return config_changed_; }
+
+ private:
+  gfx::Size size_;
+  bool config_changed_ = false;
+  bool pending_config_changed_ = false;
+  bool show_frame_ = false;
+  VideoColorSpace color_space_;
+  Vp9Parser parser_;
+};
 
 bool InitializeVideoToolbox() {
   // InitializeVideoToolbox() is called only from the GPU process main thread:
   // once for sandbox warmup, and then once each time a VTVideoDecodeAccelerator
   // is initialized. This ensures that everything is loaded whether or not the
   // sandbox is enabled.
-  static bool succeeded = InitializeVideoToolboxInternal();
+  static const bool succeeded = InitializeVideoToolboxInternal();
   return succeeded;
 }
 
@@ -473,8 +602,12 @@ bool VTVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (std::find(std::begin(kSupportedProfiles), std::end(kSupportedProfiles),
-                config.profile) == std::end(kSupportedProfiles)) {
+  static const base::NoDestructor<VideoDecodeAccelerator::SupportedProfiles>
+      kActualSupportedProfiles(GetSupportedProfiles());
+  if (std::find_if(kActualSupportedProfiles->begin(),
+                   kActualSupportedProfiles->end(), [config](const auto& p) {
+                     return p.profile == config.profile;
+                   }) == kActualSupportedProfiles->end()) {
     DVLOG(2) << "Unsupported profile";
     return false;
   }
@@ -485,6 +618,22 @@ bool VTVideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   client_ = client;
+  config_ = config;
+
+  switch (config.profile) {
+    case H264PROFILE_BASELINE:
+    case H264PROFILE_EXTENDED:
+    case H264PROFILE_MAIN:
+    case H264PROFILE_HIGH:
+      codec_ = kCodecH264;
+      break;
+    case VP9PROFILE_PROFILE0:
+    case VP9PROFILE_PROFILE2:
+      codec_ = kCodecVP9;
+      break;
+    default:
+      NOTREACHED() << "Unsupported profile.";
+  };
 
   // Spawn a thread to handle parsing and calling VideoToolbox.
   // TODO(sandersd): This should probably use a base::ThreadPool thread instead.
@@ -517,7 +666,21 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   DVLOG(2) << __func__;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  auto format = CreateVideoFormatH264(active_sps_, active_spsext_, active_pps_);
+  base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
+  switch (codec_) {
+    case kCodecH264:
+      format = CreateVideoFormatH264(active_sps_, active_spsext_, active_pps_);
+      break;
+    case kCodecVP9:
+      format = CreateVideoFormatVP9(
+          cc_detector_->GetColorSpace(config_.container_color_space),
+          config_.profile, config_.hdr_metadata,
+          cc_detector_->GetCodedSize(config_.initial_expected_coded_size));
+      break;
+    default:
+      NOTREACHED() << "Unsupported codec.";
+  }
+
   if (!format) {
     NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
     return false;
@@ -536,8 +699,10 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   session_.reset();
 
   // Note: We can always require hardware once Flash and PPAPI are gone.
-  const bool require_hardware = false;
-  if (!CreateVideoToolboxSession(format_, require_hardware, &callback_,
+  const bool require_hardware = config_.profile == VP9PROFILE_PROFILE0 ||
+                                config_.profile == VP9PROFILE_PROFILE2;
+  const bool is_hbd = config_.profile == VP9PROFILE_PROFILE2;
+  if (!CreateVideoToolboxSession(format_, require_hardware, is_hbd, &callback_,
                                  &session_, &configured_size_)) {
     NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
     return false;
@@ -560,6 +725,97 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   configured_spsext_ = active_spsext_;
   configured_pps_ = active_pps_;
   return true;
+}
+
+void VTVideoDecodeAccelerator::DecodeTaskVp9(
+    scoped_refptr<DecoderBuffer> buffer,
+    Frame* frame) {
+  DVLOG(2) << __func__ << ": bit_stream=" << frame->bitstream_id
+           << ", buffer=" << buffer->AsHumanReadableString();
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+
+  if (!cc_detector_)
+    cc_detector_ = std::make_unique<VP9ConfigChangeDetector>();
+  cc_detector_->DetectConfig(buffer->data(), buffer->data_size());
+
+  if (!session_ || cc_detector_->config_changed()) {
+    // ConfigureDecoder() calls NotifyError() on failure.
+    if (!ConfigureDecoder())
+      return;
+  }
+
+  // Now that the configuration is up to date, copy it into the frame.
+  frame->image_size = configured_size_;
+
+  // The created CMBlockBuffer owns a ref on DecoderBuffer to avoid a copy.
+  CMBlockBufferCustomBlockSource source = {0};
+  source.refCon = buffer.get();
+  source.FreeBlock = &ReleaseDecoderBuffer;
+
+  // Create a memory-backed CMBlockBuffer for the translated data.
+  base::ScopedCFTypeRef<CMBlockBufferRef> data;
+  OSStatus status = CMBlockBufferCreateWithMemoryBlock(
+      kCFAllocatorDefault,
+      static_cast<void*>(buffer->writable_data()),  // &memory_block
+      buffer->data_size(),                          // block_length
+      kCFAllocatorDefault,                          // block_allocator
+      &source,                                      // &custom_block_source
+      0,                                            // offset_to_data
+      buffer->data_size(),                          // data_length
+      0,                                            // flags
+      data.InitializeInto());
+  if (status) {
+    NOTIFY_STATUS("CMBlockBufferCreateWithMemoryBlock()", status,
+                  SFT_PLATFORM_ERROR);
+    return;
+  }
+
+  // Buffer creation was successful so add ref to |buffer| for CMBlockBuffer.
+  buffer->AddRef();
+
+  const size_t buffer_size = buffer->data_size();
+
+  // Package the data in a CMSampleBuffer.
+  base::ScopedCFTypeRef<CMSampleBufferRef> sample;
+  status = CMSampleBufferCreateReady(kCFAllocatorDefault,
+                                     data,          // data_buffer
+                                     format_,       // format_description
+                                     1,             // num_samples
+                                     0,             // num_sample_timing_entries
+                                     nullptr,       // &sample_timing_array
+                                     1,             // num_sample_size_entries
+                                     &buffer_size,  // &sample_size_array
+                                     sample.InitializeInto());
+  if (status) {
+    NOTIFY_STATUS("CMSampleBufferCreate()", status, SFT_PLATFORM_ERROR);
+    return;
+  }
+
+  // Send the frame for decoding.
+  // Asynchronous Decompression allows for parallel submission of frames
+  // (without it, DecodeFrame() does not return until the frame has been
+  // decoded). We don't enable Temporal Processing because we are not passing
+  // timestamps anyway.
+  VTDecodeFrameFlags decode_flags =
+      kVTDecodeFrame_EnableAsynchronousDecompression;
+  status = VTDecompressionSessionDecodeFrame(
+      session_,
+      sample,                          // sample_buffer
+      decode_flags,                    // decode_flags
+      reinterpret_cast<void*>(frame),  // source_frame_refcon
+      nullptr);                        // &info_flags_out
+  if (status) {
+    NOTIFY_STATUS("VTDecompressionSessionDecodeFrame()", status,
+                  SFT_DECODE_ERROR);
+    return;
+  }
+
+  // No image will be produced for this frame, so mark it as done.
+  if (!cc_detector_->show_frame()) {
+    gpu_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&VTVideoDecodeAccelerator::DecodeDone,
+                                  weak_this_, frame));
+  }
 }
 
 void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
@@ -974,10 +1230,18 @@ void VTVideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   Frame* frame = new Frame(bitstream_id);
   pending_frames_[bitstream_id] = base::WrapUnique(frame);
-  decoder_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VTVideoDecodeAccelerator::DecodeTask,
-                     base::Unretained(this), std::move(buffer), frame));
+
+  if (codec_ == kCodecVP9) {
+    decoder_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VTVideoDecodeAccelerator::DecodeTaskVp9,
+                       base::Unretained(this), std::move(buffer), frame));
+  } else {
+    decoder_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VTVideoDecodeAccelerator::DecodeTask,
+                       base::Unretained(this), std::move(buffer), frame));
+  }
 }
 
 void VTVideoDecodeAccelerator::AssignPictureBuffers(
@@ -1035,6 +1299,14 @@ void VTVideoDecodeAccelerator::ProcessWorkQueues() {
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   switch (state_) {
     case STATE_DECODING:
+      if (codec_ != kCodecH264) {
+        while (state_ == STATE_DECODING) {
+          if (!ProcessOutputQueue() && !ProcessTaskQueue())
+            break;
+        }
+        return;
+      }
+
       // TODO(sandersd): Batch where possible.
       while (state_ == STATE_DECODING) {
         if (!ProcessReorderQueue() && !ProcessTaskQueue())
@@ -1070,6 +1342,19 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
   Task& task = task_queue_.front();
   switch (task.type) {
     case TASK_FRAME: {
+      if (codec_ == kCodecVP9) {
+        // Once we've reached our maximum output queue size, defer end of
+        // bitstream buffer signals to avoid piling up too many frames.
+        if (output_queue_.size() >= limits::kMaxVideoFrames)
+          return false;
+
+        assigned_bitstream_ids_.erase(task.frame->bitstream_id);
+        client_->NotifyEndOfBitstreamBuffer(task.frame->bitstream_id);
+        output_queue_.push_back(std::move(task.frame));
+        task_queue_.pop();
+        return true;
+      }
+
       bool reorder_queue_has_space =
           reorder_queue_.size() < kMaxReorderQueueSize;
       bool reorder_queue_flush_needed =
@@ -1089,7 +1374,8 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
 
     case TASK_FLUSH:
       DCHECK_EQ(task.type, pending_flush_tasks_.front());
-      if (reorder_queue_.size() == 0) {
+      if ((codec_ == kCodecH264 && reorder_queue_.size() == 0) ||
+          (codec_ == kCodecVP9 && output_queue_.empty())) {
         DVLOG(1) << "Flush complete";
         pending_flush_tasks_.pop();
         client_->NotifyFlushDone();
@@ -1100,7 +1386,8 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
 
     case TASK_RESET:
       DCHECK_EQ(task.type, pending_flush_tasks_.front());
-      if (reorder_queue_.size() == 0) {
+      if ((codec_ == kCodecH264 && reorder_queue_.size() == 0) ||
+          (codec_ == kCodecVP9 && output_queue_.empty())) {
         DVLOG(1) << "Reset complete";
         waiting_for_idr_ = true;
         pending_flush_tasks_.pop();
@@ -1140,6 +1427,21 @@ bool VTVideoDecodeAccelerator::ProcessReorderQueue() {
       reorder_queue_.pop();
       return true;
     }
+  }
+
+  return false;
+}
+
+bool VTVideoDecodeAccelerator::ProcessOutputQueue() {
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(state_, STATE_DECODING);
+
+  if (output_queue_.empty())
+    return false;
+
+  if (ProcessFrame(*output_queue_.front())) {
+    output_queue_.pop_front();
+    return true;
   }
 
   return false;
@@ -1207,7 +1509,9 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   if (!gl_image->InitializeWithCVPixelBuffer(
           frame.image.get(),
           gfx::GenericSharedMemoryId(g_cv_pixel_buffer_ids.GetNext()),
-          gfx::BufferFormat::YUV_420_BIPLANAR)) {
+          config_.profile == VP9PROFILE_PROFILE2
+              ? gfx::BufferFormat::P010
+              : gfx::BufferFormat::YUV_420_BIPLANAR)) {
     NOTIFY_STATUS("Failed to initialize GLImageIOSurface", PLATFORM_FAILURE,
                   SFT_PLATFORM_ERROR);
   }
@@ -1337,6 +1641,25 @@ VTVideoDecodeAccelerator::GetSupportedProfiles() {
     return profiles;
 
   for (const auto& supported_profile : kSupportedProfiles) {
+    if (supported_profile == VP9PROFILE_PROFILE0 ||
+        supported_profile == VP9PROFILE_PROFILE2) {
+      if (!base::mac::IsAtLeastOS11())
+        continue;
+      if (!base::FeatureList::IsEnabled(kVideoToolboxVp9Decoding))
+        continue;
+      if (__builtin_available(macOS 10.13, *)) {
+        if ((supported_profile == VP9PROFILE_PROFILE0 ||
+             supported_profile == VP9PROFILE_PROFILE2) &&
+            !VTIsHardwareDecodeSupported(kCMVideoCodecType_VP9)) {
+          continue;
+        }
+
+        // Success! We have VP9 hardware decoding support.
+      } else {
+        continue;
+      }
+    }
+
     SupportedProfile profile;
     profile.profile = supported_profile;
     profile.min_resolution.SetSize(16, 16);

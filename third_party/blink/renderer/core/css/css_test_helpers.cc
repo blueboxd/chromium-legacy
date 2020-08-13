@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
@@ -135,6 +136,14 @@ const CSSPropertyValueSet* ParseDeclarationBlock(const String& block_text,
   set->ParseDeclarationList(block_text, SecureContextMode::kSecureContext,
                             nullptr);
   return set;
+}
+
+StyleRuleBase* ParseRule(Document& document, String text) {
+  TextPosition position;
+  auto* sheet = CSSStyleSheet::CreateInline(document, NullURL(), position,
+                                            UTF8Encoding());
+  const auto* context = MakeGarbageCollected<CSSParserContext>(document);
+  return CSSParser::ParseRule(context, sheet->Contents(), text);
 }
 
 }  // namespace css_test_helpers

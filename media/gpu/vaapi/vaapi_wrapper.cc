@@ -1692,9 +1692,13 @@ bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
   TRACE_EVENT0("media,gpu", "VaapiWrapper::SubmitBufferLocked");
 
   VABufferID buffer_id;
-  VAStatus va_res = vaCreateBuffer(va_display_, va_context_id_, va_buffer_type,
-                                   size, 1, nullptr, &buffer_id);
-  VA_SUCCESS_OR_RETURN(va_res, "vaCreateBuffer", false);
+  {
+    TRACE_EVENT0("media,gpu", "VaapiWrapper::SubmitBuffer_vaCreateBuffer");
+    const VAStatus va_res =
+        vaCreateBuffer(va_display_, va_context_id_, va_buffer_type, size, 1,
+                       nullptr, &buffer_id);
+    VA_SUCCESS_OR_RETURN(va_res, "vaCreateBuffer", false);
+  }
 
   ScopedVABufferMapping mapping(
       va_lock_, va_display_, buffer_id,
@@ -1706,18 +1710,7 @@ bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
   // such as libyuv::CopyX and family.
   memcpy(mapping.data(), buffer, size);
 
-  switch (va_buffer_type) {
-    case VASliceParameterBufferType:
-    case VASliceDataBufferType:
-    case VAEncSliceParameterBufferType:
-      pending_slice_bufs_.push_back(buffer_id);
-      break;
-
-    default:
-      pending_va_bufs_.push_back(buffer_id);
-      break;
-  }
-
+  pending_va_buffers_.push_back(buffer_id);
   return true;
 }
 
@@ -1743,7 +1736,7 @@ bool VaapiWrapper::SubmitVAEncMiscParamBuffer(
   params->type = misc_param_type;
   memcpy(params->data, buffer, size);
 
-  pending_va_bufs_.push_back(buffer_id);
+  pending_va_buffers_.push_back(buffer_id);
   return true;
 }
 
@@ -1756,18 +1749,11 @@ void VaapiWrapper::DestroyPendingBuffers() {
 void VaapiWrapper::DestroyPendingBuffers_Locked() {
   TRACE_EVENT0("media,gpu", "VaapiWrapper::DestroyPendingBuffers_Locked");
   va_lock_->AssertAcquired();
-  for (const auto& pending_va_buf : pending_va_bufs_) {
+  for (const auto& pending_va_buf : pending_va_buffers_) {
     VAStatus va_res = vaDestroyBuffer(va_display_, pending_va_buf);
     VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer");
   }
-
-  for (const auto& pending_slice_buf : pending_slice_bufs_) {
-    VAStatus va_res = vaDestroyBuffer(va_display_, pending_slice_buf);
-    VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer");
-  }
-
-  pending_va_bufs_.clear();
-  pending_slice_bufs_.clear();
+  pending_va_buffers_.clear();
 }
 
 bool VaapiWrapper::ExecuteAndDestroyPendingBuffers(VASurfaceID va_surface_id) {
@@ -2376,8 +2362,7 @@ bool VaapiWrapper::Execute_Locked(VASurfaceID va_surface_id) {
   TRACE_EVENT0("media,gpu", "VaapiWrapper::Execute_Locked");
   va_lock_->AssertAcquired();
 
-  DVLOG(4) << "Pending VA bufs to commit: " << pending_va_bufs_.size();
-  DVLOG(4) << "Pending slice bufs to commit: " << pending_slice_bufs_.size();
+  DVLOG(4) << "Pending VA bufs to commit: " << pending_va_buffers_.size();
   DVLOG(4) << "Target VA surface " << va_surface_id;
   const auto decode_start_time = base::TimeTicks::Now();
 
@@ -2385,20 +2370,12 @@ bool VaapiWrapper::Execute_Locked(VASurfaceID va_surface_id) {
   VAStatus va_res = vaBeginPicture(va_display_, va_context_id_, va_surface_id);
   VA_SUCCESS_OR_RETURN(va_res, "vaBeginPicture", false);
 
-  if (pending_va_bufs_.size() > 0) {
+  if (pending_va_buffers_.size() > 0) {
     // Commit parameter and slice buffers.
-    va_res = vaRenderPicture(va_display_, va_context_id_, &pending_va_bufs_[0],
-                             pending_va_bufs_.size());
-    VA_SUCCESS_OR_RETURN(va_res, "vaRenderPicture for |pending_va_bufs_|",
-                         false);
-  }
-
-  if (pending_slice_bufs_.size() > 0) {
     va_res =
-        vaRenderPicture(va_display_, va_context_id_, &pending_slice_bufs_[0],
-                        pending_slice_bufs_.size());
-    VA_SUCCESS_OR_RETURN(va_res, "vaRenderPicture for |pending_slice_bufs_|",
-                         false);
+        vaRenderPicture(va_display_, va_context_id_, &pending_va_buffers_[0],
+                        pending_va_buffers_.size());
+    VA_SUCCESS_OR_RETURN(va_res, "vaRenderPicture", false);
   }
 
   // Instruct HW codec to start processing the submitted commands. In theory,

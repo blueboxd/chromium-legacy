@@ -62,6 +62,8 @@ class PrintMockRenderThread : public content::MockRenderThread {
   const std::vector<std::pair<int, uint32_t>>& print_preview_pages() const;
 #endif
 
+  MockPrinter* GetPrinter() { return printer_.get(); }
+
  private:
   // Overrides base class implementation to add custom handling for print
   bool OnMessageReceived(const IPC::Message& msg) override;

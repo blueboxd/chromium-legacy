@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -36,6 +37,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
@@ -503,6 +505,19 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
   }
   save_fallback_timer_.Stop();
   passwords_data_.form_manager()->Save();
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordsAccountStorage)) {
+    // If we just saved a password to the account store, notify the IPH tracker
+    // about it (so it can decide not to show the IPH again).
+    if (GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
+        autofill::PasswordForm::Store::kAccountStore) {
+      feature_engagement::TrackerFactory::GetForBrowserContext(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext()))
+          ->NotifyEvent("passwords_account_storage_used");
+    }
+  }
+
   if (base::FeatureList::IsEnabled(
           password_manager::features::kCompromisedPasswordsReengagement)) {
     post_save_compromised_helper_ =

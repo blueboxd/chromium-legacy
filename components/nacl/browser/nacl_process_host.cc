@@ -1137,8 +1137,9 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
   }
   NaClStartDebugExceptionHandlerThread(
       std::move(process), info, base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(
+          &NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker,
+          weak_factory_.GetWeakPtr()));
   return true;
 }
 #endif

@@ -344,6 +344,10 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('\n')
                 sb.append('  # Reduce binary size. https:crbug.com/954584\n')
                 sb.append('  ignore_proguard_configs = true\n')
+                sb.append('\n')
+                sb.append('  # Material Design is pulled in via Doubledown, thus this target should not\n')
+                sb.append('  # be directly depended on. Please use :material_design_java instead.\n')
+                sb.append('  visibility = [ ":*" ]\n')
                 break
             case 'com_android_support_support_annotations':
                 sb.append('  # https://crbug.com/989505\n')

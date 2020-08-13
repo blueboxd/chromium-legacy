@@ -30,6 +30,7 @@ using ::base::sequence_manager::TaskQueue;
 using ::base::test::ScopedFeatureList;
 using ::testing::_;
 using ::testing::NiceMock;
+using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::Test;
 
@@ -43,9 +44,9 @@ class MockDelegate : public AgentSchedulingStrategy::Delegate {
                base::TimeDelta delay));
 };
 
-class MockFrameDelegate : public FrameScheduler::Delegate {
+class MockFrameSchedulerDelegate : public FrameScheduler::Delegate {
  public:
-  MockFrameDelegate() {
+  MockFrameSchedulerDelegate() {
     ON_CALL(*this, GetAgentClusterId)
         .WillByDefault(ReturnRef(agent_cluster_id_));
   }
@@ -70,10 +71,14 @@ class MockFrameScheduler : public FrameSchedulerImpl {
                            /*parent_page_scheduler=*/nullptr,
                            /*delegate=*/&delegate_,
                            /*blame_context=*/nullptr,
-                           /*frame_type=*/frame_type) {}
+                           /*frame_type=*/frame_type) {
+    ON_CALL(*this, IsOrdinary).WillByDefault(Return(true));
+  }
+
+  MOCK_METHOD(bool, IsOrdinary, (), (const));
 
  private:
-  NiceMock<MockFrameDelegate> delegate_;
+  NiceMock<MockFrameSchedulerDelegate> delegate_;
 };
 
 }  // namespace
@@ -492,6 +497,30 @@ TEST_F(PerAgentDefaultIsNoOpStrategyTest, DoesntRequestPolicyUpdate) {
 TEST_F(PerAgentDefaultIsNoOpStrategyTest, DoesntModifyPolicyDecisions) {
   EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
   EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+}
+
+class PerAgentNonOrdinaryPageTest : public PerAgentSchedulingBaseTest {
+ public:
+  PerAgentNonOrdinaryPageTest()
+      : PerAgentSchedulingBaseTest({{"queues", "timer-queues"},
+                                    {"method", "disable"},
+                                    {"signal", "onload"}}) {
+    ON_CALL(non_ordinary_frame_scheduler_, IsOrdinary)
+        .WillByDefault(Return(false));
+  }
+
+ protected:
+  NiceMock<MockFrameScheduler> non_ordinary_frame_scheduler_{
+      FrameScheduler::FrameType::kMainFrame};
+};
+
+TEST_F(PerAgentNonOrdinaryPageTest, DoesntWaitForNonOrdinaryFrames) {
+  EXPECT_EQ(strategy_->OnFrameAdded(non_ordinary_frame_scheduler_),
+            ShouldUpdatePolicy::kYes);
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
 }
 
 }  // namespace scheduler

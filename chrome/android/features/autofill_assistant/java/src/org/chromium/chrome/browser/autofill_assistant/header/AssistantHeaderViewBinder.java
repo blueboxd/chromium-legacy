@@ -11,11 +11,12 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipViewHolder;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipAdapter;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
@@ -48,12 +49,12 @@ class AssistantHeaderViewBinder
         final AssistantStepProgressBar mStepProgressBar;
         final View mProfileIconView;
         final PopupMenu mProfileIconMenu;
-        @Nullable
-        AssistantChipViewHolder mChip;
+        final RecyclerView mChipsContainer;
         @Nullable
         TextBubble mTextBubble;
 
-        ViewHolder(Context context, ViewGroup headerView, AnimatedPoodle poodle) {
+        ViewHolder(Context context, ViewGroup headerView, AnimatedPoodle poodle,
+                RecyclerView chipsContainer) {
             mContext = context;
             mPoodle = poodle;
             mHeader = headerView;
@@ -65,6 +66,7 @@ class AssistantHeaderViewBinder
             mProfileIconMenu = new PopupMenu(context, mProfileIconView);
             mProfileIconMenu.inflate(R.menu.profile_icon_menu);
             mProfileIconView.setOnClickListener(unusedView -> mProfileIconMenu.show());
+            mChipsContainer = chipsContainer;
         }
 
         void disableAnimations(boolean disable) {
@@ -73,6 +75,8 @@ class AssistantHeaderViewBinder
             // Hiding the animated poodle seems to be the easiest way to disable its animation since
             // {@link LogoView#setAnimationEnabled(boolean)} is private.
             mPoodle.getView().setVisibility(View.INVISIBLE);
+            ((DefaultItemAnimator) mChipsContainer.getItemAnimator())
+                    .setSupportsChangeAnimations(!disable);
         }
 
         void updateProgressBarVisibility(boolean visible, boolean useStepProgressBar) {
@@ -113,11 +117,13 @@ class AssistantHeaderViewBinder
             view.mPoodle.setSpinEnabled(model.get(AssistantHeaderModel.SPIN_POODLE));
         } else if (AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK == propertyKey) {
             setProfileMenuListener(view, model.get(AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK));
-        } else if (AssistantHeaderModel.CHIP == propertyKey) {
-            bindChip(view, model.get(AssistantHeaderModel.CHIP));
-            maybeShowChip(model, view);
-        } else if (AssistantHeaderModel.CHIP_VISIBLE == propertyKey) {
-            maybeShowChip(model, view);
+        } else if (AssistantHeaderModel.CHIPS == propertyKey) {
+            view.mChipsContainer.invalidateItemDecorations();
+            ((AssistantChipAdapter) view.mChipsContainer.getAdapter())
+                    .setChips(model.get(AssistantHeaderModel.CHIPS));
+            maybeShowChips(model, view);
+        } else if (AssistantHeaderModel.CHIPS_VISIBLE == propertyKey) {
+            maybeShowChips(model, view);
         } else if (AssistantHeaderModel.BUBBLE_MESSAGE == propertyKey) {
             showOrDismissBubble(model, view);
         } else if (AssistantHeaderModel.DISABLE_ANIMATIONS_FOR_TESTING == propertyKey) {
@@ -127,43 +133,16 @@ class AssistantHeaderViewBinder
         }
     }
 
-    private void maybeShowChip(AssistantHeaderModel model, ViewHolder view) {
-        if (model.get(AssistantHeaderModel.CHIP_VISIBLE)
-                && model.get(AssistantHeaderModel.CHIP) != null) {
-            view.mChip.getView().setVisibility(View.VISIBLE);
+    private void maybeShowChips(AssistantHeaderModel model, ViewHolder view) {
+        if (model.get(AssistantHeaderModel.CHIPS_VISIBLE)
+                && !model.get(AssistantHeaderModel.CHIPS).isEmpty()) {
+            view.mChipsContainer.setVisibility(View.VISIBLE);
             view.mProfileIconView.setVisibility(View.GONE);
         } else {
-            if (view.mChip != null) {
-                view.mChip.getView().setVisibility(View.GONE);
-            }
+            view.mChipsContainer.setVisibility(View.GONE);
 
             view.mProfileIconView.setVisibility(View.VISIBLE);
         }
-    }
-
-    private void bindChip(ViewHolder view, @Nullable AssistantChip chip) {
-        if (chip == null) {
-            return;
-        }
-
-        int viewType = AssistantChipViewHolder.getViewType(chip);
-
-        // If there is already a chip in the header but with incompatible type, remove it.
-        ViewGroup parent = (ViewGroup) view.mStatusMessage.getParent();
-        if (view.mChip != null && view.mChip.getType() != viewType) {
-            parent.removeView(view.mChip.getView());
-            view.mChip = null;
-        }
-
-        // If there is no chip already in the header, create one and add it at the end of the
-        // header.
-        if (view.mChip == null) {
-            view.mChip = AssistantChipViewHolder.create(view.mHeader, viewType);
-            parent.addView(view.mChip.getView());
-        }
-
-        // Bind the chip to the view.
-        view.mChip.bind(chip);
     }
 
     private void setProfileMenuListener(ViewHolder view, @Nullable Runnable feedbackCallback) {

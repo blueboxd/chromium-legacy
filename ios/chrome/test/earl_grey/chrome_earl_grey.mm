@@ -72,6 +72,23 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 @implementation ChromeEarlGreyImpl
 
+#pragma mark - Test Utilities
+
+- (void)waitForMatcher:(id<GREYMatcher>)matcher {
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:matcher] assertWithMatcher:grey_notNil()
+                                                             error:&error];
+    return error == nil;
+  };
+  NSString* errorString =
+      [NSString stringWithFormat:@"Waiting for matcher %@ failed.", matcher];
+  EG_TEST_HELPER_ASSERT_TRUE(
+      base::test::ios::WaitUntilConditionOrTimeout(
+          base::test::ios::kWaitForUIElementTimeout, condition),
+      errorString);
+}
+
 #pragma mark - Device Utilities
 
 - (void)rotateDeviceToOrientation:(UIDeviceOrientation)deviceOrientation

@@ -268,8 +268,6 @@ gfx::OverlayTransform SkiaOutputSurfaceImpl::GetDisplayTransform() {
       return gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE;
     case OutputSurface::OrientationMode::kHardware:
       return display_transform_;
-    default:
-      NOTREACHED();
   }
 }
 

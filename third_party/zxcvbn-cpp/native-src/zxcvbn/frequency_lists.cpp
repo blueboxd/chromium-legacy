@@ -1,10 +1,9 @@
 #include <zxcvbn/frequency_lists.hpp>
 
 #include <unordered_map>
+#include <utility>
 
 #include "base/no_destructor.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_piece.h"
 
 namespace zxcvbn {
 
@@ -16,16 +15,10 @@ std::unordered_map<DictionaryTag, RankedDict>& ranked_dicts() {
   return *ranked_dicts;
 }
 
-}
+}  // namespace
 
-bool ParseRankedDictionary(DictionaryTag tag, base::StringPiece str) {
-  RankedDict& dict = ranked_dicts()[tag];
-  if (!dict.empty())
-    return false;
-
-  dict = build_ranked_dict(base::SplitStringPiece(
-      str, "\r\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY));
-  return true;
+void SetRankedDicts(std::unordered_map<DictionaryTag, RankedDict> dicts) {
+  ranked_dicts() = std::move(dicts);
 }
 
 RankedDicts convert_to_ranked_dicts(std::unordered_map<DictionaryTag, RankedDict> & ranked_dicts) {

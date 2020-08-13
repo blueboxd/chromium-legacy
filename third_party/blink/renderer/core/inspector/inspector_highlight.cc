@@ -718,6 +718,13 @@ Vector<String> GetAuthoredGridTrackSizes(const CSSValue* value,
   return result;
 }
 
+LayoutUnit GetColumnPosition(const LayoutGrid* layout_grid, size_t index) {
+  LayoutUnit position = layout_grid->ColumnPositions().at(index);
+  return layout_grid->StyleRef().IsLeftToRightDirection()
+             ? position
+             : layout_grid->TranslateRTLCoordinate(position);
+}
+
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
     Node* node,
     const InspectorGridHighlightConfig& grid_highlight_config,
@@ -796,21 +803,27 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   PathBuilder column_gap_builder;
   LayoutUnit column_top = rows.front();
   LayoutUnit column_height = rows.back() - rows.front();
+  bool is_ltr = layout_grid->StyleRef().IsLeftToRightDirection();
   for (size_t i = 1; i < columns.size(); ++i) {
-    PhysicalOffset position(columns.at(i - 1), column_top);
     PhysicalSize size(columns.at(i) - columns.at(i - 1), column_height);
     if (i != columns.size() - 1)
       size.width -= column_gap;
+    LayoutUnit line_left =
+        is_ltr ? GetColumnPosition(layout_grid, i - 1)
+               : GetColumnPosition(layout_grid, i - 1) - size.width;
+    PhysicalOffset position(line_left, column_top);
     PhysicalRect column(position, size);
     FloatQuad column_quad = layout_grid->LocalRectToAbsoluteQuad(column);
     FrameQuadToViewport(containing_view, column_quad);
+    bool draw_end_line = is_ltr ? i == columns.size() - 1 : i == 1;
     column_builder.AppendPath(
-        ColumnQuadToPath(column_quad,
-                         i == columns.size() - 1 || column_gap > 0),
-        scale);
+        ColumnQuadToPath(column_quad, draw_end_line || column_gap > 0), scale);
     // Column Gaps
     if (i != columns.size() - 1) {
-      PhysicalOffset gap_position(columns.at(i) - column_gap, column_top);
+      LayoutUnit gap_left = is_ltr
+                                ? GetColumnPosition(layout_grid, i) - column_gap
+                                : GetColumnPosition(layout_grid, i);
+      PhysicalOffset gap_position(gap_left, column_top);
       PhysicalSize gap_size(column_gap, column_height);
       PhysicalRect gap(gap_position, gap_size);
       FloatQuad gap_quad = layout_grid->LocalRectToAbsoluteQuad(gap);

@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 
 namespace chromeos {

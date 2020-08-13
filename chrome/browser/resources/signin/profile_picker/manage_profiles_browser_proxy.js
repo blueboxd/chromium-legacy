@@ -39,6 +39,13 @@ export class ManageProfilesBrowserProxy {
    */
   launchSelectedProfile(profilePath) {}
 
+  /**
+   * Opens profile on manage profile settings sub page and closes the
+   * profile picker.
+   * @param {string} profilePath
+   */
+  openManageProfileSettingsSubPage(profilePath) {}
+
   /** Launches Guest profile. */
   launchGuestProfile() {}
 
@@ -82,6 +89,11 @@ export class ManageProfilesBrowserProxyImpl {
   /** @override */
   launchSelectedProfile(profilePath) {
     chrome.send('launchSelectedProfile', [profilePath]);
+  }
+
+  /** @override */
+  openManageProfileSettingsSubPage(profilePath) {
+    chrome.send('openManageProfileSettingsSubPage', [profilePath]);
   }
 
   /** @override */

@@ -18,6 +18,10 @@ namespace blink {
 // scoped_refptr.
 class CORE_EXPORT MediaSourceRegistry : public URLRegistry {
  public:
+  // Finds the attachment, if any, registered with |url| in the
+  // MediaSourceRegistry implementation. |url| must be non-empty. If such an
+  // active registration for |url| is not found, returns an unset
+  // scoped_refptr<MediaSourceAttachment>.
   virtual scoped_refptr<MediaSourceAttachment> LookupMediaSource(
       const String& url) = 0;
 };

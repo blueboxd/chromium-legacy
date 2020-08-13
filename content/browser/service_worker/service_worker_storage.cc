@@ -770,10 +770,9 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrations(
   switch (state_) {
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
-              base::BindOnce(
-                  std::move(callback),
-                  ServiceWorkerDatabase::Status::kErrorDisabled,
-                  std::vector<storage::mojom::ServiceWorkerUserDataPtr>()));
+              base::BindOnce(std::move(callback),
+                             std::vector<std::pair<int64_t, std::string>>(),
+                             ServiceWorkerDatabase::Status::kErrorDisabled));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -802,10 +801,9 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefix(
   switch (state_) {
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
-              base::BindOnce(
-                  std::move(callback),
-                  ServiceWorkerDatabase::Status::kErrorDisabled,
-                  std::vector<storage::mojom::ServiceWorkerUserDataPtr>()));
+              base::BindOnce(std::move(callback),
+                             std::vector<std::pair<int64_t, std::string>>(),
+                             ServiceWorkerDatabase::Status::kErrorDisabled));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -1593,12 +1591,11 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrationsInDB(
     scoped_refptr<base::SequencedTaskRunner> original_task_runner,
     const std::string& key,
     GetUserDataForAllRegistrationsInDBCallback callback) {
-  std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data;
+  std::vector<std::pair<int64_t, std::string>> user_data;
   ServiceWorkerDatabase::Status status =
       database->ReadUserDataForAllRegistrations(key, &user_data);
   original_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), status, std::move(user_data)));
+      FROM_HERE, base::BindOnce(std::move(callback), user_data, status));
 }
 
 void ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefixInDB(
@@ -1606,13 +1603,12 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefixInDB(
     scoped_refptr<base::SequencedTaskRunner> original_task_runner,
     const std::string& key_prefix,
     GetUserDataForAllRegistrationsInDBCallback callback) {
-  std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data;
+  std::vector<std::pair<int64_t, std::string>> user_data;
   ServiceWorkerDatabase::Status status =
       database->ReadUserDataForAllRegistrationsByKeyPrefix(key_prefix,
                                                            &user_data);
   original_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), status, std::move(user_data)));
+      FROM_HERE, base::BindOnce(std::move(callback), user_data, status));
 }
 
 void ServiceWorkerStorage::DeleteAllDataForOriginsFromDB(

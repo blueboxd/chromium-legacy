@@ -54,13 +54,15 @@ class PasswordCheckBridge {
 
     // TODO(crbug.com/1102025): Add call from native.
     void onCompromisedCredentialFound(String signonRealm, GURL origin, String username,
-            String displayOrigin, String displayUsername, String password, boolean hasScript) {
+            String displayOrigin, String displayUsername, String password, String passwordChangeUrl,
+            String associatedApp, boolean hasScript) {
         assert signonRealm != null;
         assert displayOrigin != null;
         assert username != null;
         assert password != null;
         mPasswordCheckObserver.onCompromisedCredentialFound(new CompromisedCredential(signonRealm,
-                origin, username, displayOrigin, displayUsername, password, false, hasScript));
+                origin, username, displayOrigin, displayUsername, password, passwordChangeUrl,
+                associatedApp, false, hasScript));
     }
 
     @CalledByNative
@@ -81,9 +83,10 @@ class PasswordCheckBridge {
     @CalledByNative
     private static void insertCredential(CompromisedCredential[] credentials, int index,
             String signonRealm, GURL origin, String username, String displayOrigin,
-            String displayUsername, String password, boolean phished, boolean hasScript) {
+            String displayUsername, String password, String passwordChangeUrl, String associatedApp,
+            boolean phished, boolean hasScript) {
         credentials[index] = new CompromisedCredential(signonRealm, origin, username, displayOrigin,
-                displayUsername, password, phished, hasScript);
+                displayUsername, password, passwordChangeUrl, associatedApp, phished, hasScript);
     }
 
     /**

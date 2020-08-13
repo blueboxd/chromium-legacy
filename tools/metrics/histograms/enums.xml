@@ -28712,6 +28712,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3374" label="V8RTCRtpTransceiver_Stopped_AttributeGetter"/>
   <int value="3375" label="V8RTCRtpTransceiver_Stop_Method"/>
   <int value="3376" label="SecurePaymentConfirmation"/>
+  <int value="3377" label="CSSInvalidVariableUnset"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -37308,6 +37309,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Share"/>
   <int value="8" label="Open all in New Tabs"/>
   <int value="9" label="Hide"/>
+  <int value="10" label="Move"/>
 </enum>
 
 <enum name="IOSMenuScenario">
@@ -37317,6 +37319,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="RecentTabs Entry"/>
   <int value="4" label="ContentSuggestions Entry"/>
   <int value="5" label="RecentTabs Header"/>
+  <int value="6" label="Bookmark Folder"/>
 </enum>
 
 <enum name="IOSNTPImpression">
@@ -47317,6 +47320,16 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="ntdll.dll"/>
 </enum>
 
+<enum name="MojoInterfaceName">
+  <int value="-1403116593" label="content.mojom.FrameHost"/>
+  <int value="-1370606112" label="blink.mojom.LocalFrameHost"/>
+  <int value="-1324568928" label="blink.mojom.LocalMainFrameHost"/>
+  <int value="-1001040796" label="blink.mojom.ManifestUrlChangeObserver"/>
+  <int value="163955581" label="blink.mojom.PortalHost"/>
+  <int value="374886440" label="content.mojom.Echo"/>
+  <int value="1755985492" label="content.mojom.RenderAccessibilityHost"/>
+</enum>
+
 <enum name="MojoMachPortRelayBrokerError">
   <int value="0" label="SUCCESS">
     The Mach port was successfully sent or received.
@@ -54975,10 +54988,11 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="PasswordScriptsFetcherParsingResult">
   <int value="0" label="No response from server"/>
-  <int value="1" label="Invalid JSON string"/>
-  <int value="2" label="Not a JSON dictionary"/>
+  <int value="1" label="Invalid JSON string - deprecated"/>
+  <int value="2" label="Not a JSON dictionary - deprecated"/>
   <int value="3" label="Invalid URLs found"/>
   <int value="4" label="OK"/>
+  <int value="5" label="Invalid JSON (either syntactically or structurally)"/>
 </enum>
 
 <enum name="PasswordStoreChange">
@@ -65100,11 +65114,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
 <enum name="SigninSSOIdentityListRequestCacheState">
   <int value="0"
-      label="SSO identity cache is stale, the identity list is synchronously
-             fetched."/>
+      label="SSO identity cache is stale, M85: the identity list is
+             synchronously fetched and then returned, M86: the stale identity
+             list is returned."/>
   <int value="1"
-      label="SSO identity cache is valid, the identity list from the cache is
+      label="SSO identity cache is valid, the valid identity list is
              returned."/>
+  <int value="2"
+      label="SSO identity cache is not populated, the identity list is
+             synchronously fetched and then returned."/>
 </enum>
 
 <enum name="SigninSSOWKWebViewGetAllCookiesRequest">

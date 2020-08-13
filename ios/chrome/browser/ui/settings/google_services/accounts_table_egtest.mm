@@ -89,7 +89,7 @@ id<GREYMatcher> NoBookmarksLabel() {
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGrey checkSignedOut];
+  [SigninEarlGrey verifySignedOut];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -113,7 +113,7 @@ id<GREYMatcher> NoBookmarksLabel() {
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGrey checkSignedOut];
+  [SigninEarlGrey verifySignedOut];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -148,7 +148,7 @@ id<GREYMatcher> NoBookmarksLabel() {
                                               fakeIdentity2.userEmail),
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
-  [SigninEarlGrey checkSignedInWithFakeIdentity:fakeIdentity1];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity1];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -177,7 +177,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   // Check that the user is signed out and the Main Settings screen is shown.
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGrey checkSignedOut];
+  [SigninEarlGrey verifySignedOut];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -290,7 +290,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           SettingsAccountsCollectionView()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGrey checkSignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];

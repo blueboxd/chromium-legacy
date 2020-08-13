@@ -456,8 +456,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   VAEntrypoint va_entrypoint_;
 
   // Data queued up for HW codec, to be committed on next execution.
-  std::vector<VABufferID> pending_slice_bufs_;
-  std::vector<VABufferID> pending_va_bufs_;
+  std::vector<VABufferID> pending_va_buffers_;
 
   // Buffers for kEncode or kVideoProcess.
   std::set<VABufferID> va_buffers_;

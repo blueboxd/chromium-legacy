@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 2
+// Next MinVersion: 3
 
 module arc.mojom;
 
@@ -77,11 +77,41 @@ struct PaymentParameters {
   // schemelessIframeOrigin" parameter to createIsReadyToPayIntent() and
   // createPayIntent() methods.
   string payment_request_origin;
+
+  // The free-form identifier for this pending transaction as set either by the
+  // merchant website in PaymentRequest() constructor in JavaScript, or (more
+  // commonly) a browser-generated GUID string. This is the "String id"
+  // parameter to createPayIntent() method. The createIsReadyToPayIntent() does
+  // not currently need this parameter.
+  [MinVersion=2]
+  string? payment_request_id;
 };
 
-// After the browser calls IsReadyToPay(), ARC sends this back in response.
+// After the browser calls IsReadyToPay(), ARC sends back this result.
 union IsReadyToPayResult {
   bool response;
+  string error;
+};
+
+// After the browser calls InvokePaymentApp(), ARC sends back this result, if
+// there are no errors.
+struct InvokePaymentAppValidResult {
+  // Whether the intent return status is Activity.RESULT_OK.
+  bool is_activity_result_ok;
+
+  // The JSON serialization of a JavaScript object that's the response to
+  // PaymentRequest API. For example:
+  //
+  //  {"receiptIdentifier": "test_receipt_identifier"}
+  //
+  // This string is serialized in TWA and is parsed in Blink. The browser does
+  // not parse this string.
+  string stringified_details;
+};
+
+// After the browser calls InvokePaymentApp(), ARC sends back this result.
+union InvokePaymentAppResult {
+  InvokePaymentAppValidResult valid;
   string error;
 };
 
@@ -99,7 +129,7 @@ union IsReadyToPayResult {
 // |                  |      |                                                |
 // --------------------      --------------------------------------------------
 //
-// Next method ID: 2
+// Next method ID: 3
 interface PaymentAppInstance {
   // Called by the browser to check whether the TWA with |package_name| (e.g.,
   // "com.example.app") in ARC has intent filters for
@@ -122,5 +152,17 @@ interface PaymentAppInstance {
   // or guest mode.
   [MinVersion=1]
   IsReadyToPay@1(PaymentParameters parameters)
-      => (IsReadyToPayResult result);
+      => (IsReadyToPayResult response);
+
+  // Forwards the request to WebPaymentIntentHelper.createPayIntent() and fires
+  // the resulting intent. This invokes the payment flow.
+  //
+  // The "String merchantName" parameter to createPayIntent() should be empty
+  // (but not null).
+  //
+  // The total amount for createPayIntent() should always be "0" with currency
+  // "ZZZ".
+  [MinVersion=2]
+  InvokePaymentApp@2(PaymentParameters parameters)
+      => (InvokePaymentAppResult response);
 };

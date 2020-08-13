@@ -212,10 +212,10 @@ class StyleRuleProperty : public StyleRuleBase {
   Member<CSSPropertyValueSet> properties_;
 };
 
-class StyleRuleScrollTimeline : public StyleRuleBase {
+class CORE_EXPORT StyleRuleScrollTimeline : public StyleRuleBase {
  public:
   StyleRuleScrollTimeline(const String& name, const CSSPropertyValueSet*);
-  StyleRuleScrollTimeline(const StyleRuleScrollTimeline&);
+  StyleRuleScrollTimeline(const StyleRuleScrollTimeline&) = default;
   ~StyleRuleScrollTimeline();
 
   StyleRuleScrollTimeline* Copy() const {
@@ -225,15 +225,19 @@ class StyleRuleScrollTimeline : public StyleRuleBase {
   void TraceAfterDispatch(blink::Visitor*) const;
 
   const String& GetName() const { return name_; }
-  const CSSValue* GetSource() const;
-  const CSSValue* GetOrientation() const;
-  const CSSValue* GetStart() const;
-  const CSSValue* GetEnd() const;
-  const CSSValue* GetTimeRange() const;
+  const CSSValue* GetSource() const { return source_; }
+  const CSSValue* GetOrientation() const { return orientation_; }
+  const CSSValue* GetStart() const { return start_; }
+  const CSSValue* GetEnd() const { return end_; }
+  const CSSValue* GetTimeRange() const { return time_range_; }
 
  private:
   String name_;
-  Member<const CSSPropertyValueSet> properties_;
+  Member<const CSSValue> source_;
+  Member<const CSSValue> orientation_;
+  Member<const CSSValue> start_;
+  Member<const CSSValue> end_;
+  Member<const CSSValue> time_range_;
 };
 
 class CORE_EXPORT StyleRuleGroup : public StyleRuleBase {

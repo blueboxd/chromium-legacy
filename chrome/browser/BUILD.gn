@@ -1494,6 +1494,8 @@ static_library("browser") {
     "sessions/chrome_serialized_navigation_driver.h",
     "sessions/chrome_tab_restore_service_client.cc",
     "sessions/chrome_tab_restore_service_client.h",
+    "sessions/closed_tab_cache.cc",
+    "sessions/closed_tab_cache.h",
     "sessions/restore_on_startup_policy_handler.cc",
     "sessions/restore_on_startup_policy_handler.h",
     "sessions/session_common_utils.cc",
@@ -4802,6 +4804,7 @@ static_library("browser") {
     ]
     deps += [
       "//components/printing/browser",
+      "//components/printing/common:mojo_interfaces",
       "//components/services/print_compositor/public/cpp",
       "//components/services/print_compositor/public/mojom",
       "//printing",
@@ -4849,8 +4852,6 @@ static_library("browser") {
         "printing/pwg_raster_converter.cc",
         "printing/pwg_raster_converter.h",
       ]
-
-      deps += [ "//components/printing/common:mojo_interfaces" ]
 
       if (is_win) {
         sources += [

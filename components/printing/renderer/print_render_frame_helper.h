@@ -138,6 +138,8 @@ class PrintRenderFrameHelper
   // |is_pdf| is false, and 1.0f otherwise.
   static double GetScaleFactor(double input_scale_factor, bool is_pdf);
 
+  const mojo::AssociatedRemote<mojom::PrintManagerHost>& GetPrintManagerHost();
+
  private:
   friend class PrintRenderFrameHelperTestBase;
   FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperPreviewTest,
@@ -637,6 +639,8 @@ class PrintRenderFrameHelper
   // called. This is a store for the RequestPrintPreview() call and its
   // parameters so that it can be invoked after DidStopLoading.
   base::OnceClosure on_stop_loading_closure_;
+
+  mojo::AssociatedRemote<mojom::PrintManagerHost> print_manager_host_;
 
   base::WeakPtrFactory<PrintRenderFrameHelper> weak_ptr_factory_{this};
 

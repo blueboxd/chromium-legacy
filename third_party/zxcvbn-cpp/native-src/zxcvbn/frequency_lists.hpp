@@ -38,7 +38,7 @@ namespace zxcvbn {
 
 using RankedDicts = std::unordered_map<DictionaryTag, const RankedDict &>;
 
-bool ParseRankedDictionary(DictionaryTag tag, base::StringPiece str);
+void SetRankedDicts(std::unordered_map<DictionaryTag, RankedDict> dicts);
 
 RankedDicts convert_to_ranked_dicts(std::unordered_map<DictionaryTag, RankedDict> & ranked_dicts);
 RankedDicts default_ranked_dicts();

@@ -3968,6 +3968,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kLineBreak:
     case ax::mojom::blink::Role::kLink:
     case ax::mojom::blink::Role::kListBoxOption:
+    case ax::mojom::blink::Role::kMenuButton:
     case ax::mojom::blink::Role::kMenuItem:
     case ax::mojom::blink::Role::kMenuItemCheckBox:
     case ax::mojom::blink::Role::kMenuItemRadio:
@@ -4072,8 +4073,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kMenuListPopup:
     case ax::mojom::blink::Role::kMenu:
     case ax::mojom::blink::Role::kMenuBar:
-    case ax::mojom::blink::Role::kMenuButton:  // Only value from content, not
-                                               // name.
     case ax::mojom::blink::Role::kMeter:
     case ax::mojom::blink::Role::kNavigation:
     case ax::mojom::blink::Role::kNote:

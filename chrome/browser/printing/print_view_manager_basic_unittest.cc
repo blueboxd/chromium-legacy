@@ -62,9 +62,8 @@ TEST_F(PrintViewManagerBasicTest, CancelJobDuringDestruction) {
   auto cookie = query->cookie();
   queue->QueuePrinterQuery(std::move(query));
 
-  // Fake GetPrintedPagesCount message to cause print_job to be created
-  content::RenderFrameHostTester::TestOnMessageReceived(
-      main_rfh(), PrintHostMsg_DidGetPrintedPagesCount(0, cookie, 1));
+  // Fake DidGetPrintedPagesCount() call to cause print_job to be created
+  print_view_manager->DidGetPrintedPagesCount(cookie, 1);
 
   DeleteContents();
 }

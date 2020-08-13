@@ -21,6 +21,7 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.CREDENTIAL_HANDLER;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.HAS_MANUAL_CHANGE_BUTTON;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.DELETION_CONFIRMATION_HANDLER;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.DELETION_ORIGIN;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_PROGRESS;
@@ -91,18 +92,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordCheckViewTest {
-    private static final CompromisedCredential ANA = new CompromisedCredential(
-            "https://some-url.com/signin", new GURL("https://some-url.com/"), "Ana", "some-url.com",
-            "Ana", "password", false, false);
+    private static final CompromisedCredential ANA =
+            new CompromisedCredential("https://some-url.com/signin",
+                    new GURL("https://some-url.com/"), "Ana", "some-url.com", "Ana", "password",
+                    "https://some-url.com/.well-known/change-password", "", false, false);
     private static final CompromisedCredential PHISHED =
             new CompromisedCredential("http://example.com/signin", new GURL("http://example.com/"),
-                    "", "http://example.com", "(No username)", "DoSomething", true, false);
-    private static final CompromisedCredential LEAKED = new CompromisedCredential(
-            "https://some-other-url.com/signin", new GURL("https://some-other-url.com/"),
-            "AZiegler", "some-other-url.com", "AZiegler", "N0M3rcy", false, false);
-    private static final CompromisedCredential SCRIPTED =
-            new CompromisedCredential("https://script.com/signin", new GURL("https://script.com/"),
-                    "Charlie", "script.com", "Charlie", "secret", false, true);
+                    "", "http://example.com", "(No username)", "DoSomething",
+                    "http://example.com/.well-known/change-password", "", true, false);
+    private static final CompromisedCredential LEAKED =
+            new CompromisedCredential("https://some-other-url.com/signin",
+                    new GURL("https://some-other-url.com/"), "AZiegler", "some-other-url.com",
+                    "AZiegler", "N0M3rcy", "", "com.other.package", false, false);
+    private static final CompromisedCredential SCRIPTED = new CompromisedCredential(
+            "https://script.com/signin", new GURL("https://script.com/"), "Charlie", "script.com",
+            "Charlie", "secret", "https://script.com/.well-known/change-password", "", false, true);
 
     private static final int LEAKS_COUNT = 2;
 
@@ -390,7 +394,7 @@ public class PasswordCheckViewTest {
 
     @Test
     @MediumTest
-    public void testCrendentialDisplaysNameOriginAndReason() {
+    public void testCredentialDisplaysNameOriginAndReason() {
         runOnUiThreadBlocking(() -> {
             mModel.get(ITEMS).add(buildCredentialItem(PHISHED));
             mModel.get(ITEMS).add(buildCredentialItem(LEAKED));
@@ -402,17 +406,44 @@ public class PasswordCheckViewTest {
         assertThat(getCredentialUserAt(0).getText(), is(PHISHED.getDisplayUsername()));
         assertThat(getCredentialReasonAt(0).getText(),
                 is(getString(R.string.password_check_credential_row_reason_phished)));
+        assertThat(getCredentialChangeButtonAt(0).getVisibility(), is(View.VISIBLE));
+        assertThat(getCredentialChangeHintAt(0).getVisibility(), is(View.GONE));
 
         // The leaked credential is rendered second:
         assertThat(getCredentialOriginAt(1).getText(), is(LEAKED.getDisplayOrigin()));
         assertThat(getCredentialUserAt(1).getText(), is(LEAKED.getDisplayUsername()));
         assertThat(getCredentialReasonAt(1).getText(),
                 is(getString(R.string.password_check_credential_row_reason_leaked)));
+        assertThat(getCredentialChangeButtonAt(1).getVisibility(), is(View.VISIBLE));
+        assertThat(getCredentialChangeHintAt(1).getVisibility(), is(View.GONE));
     }
 
     @Test
     @MediumTest
-    public void testCrendentialDisplaysChangeButtonWithScript() {
+    public void testHidesCredentialChangeButtonWithoutValidEntryPoint() {
+        runOnUiThreadBlocking(
+                ()
+                        -> mModel.get(ITEMS).add(new MVCListAdapter.ListItem(
+                                PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL,
+                                new PropertyModel
+                                        .Builder(PasswordCheckProperties
+                                                         .CompromisedCredentialProperties.ALL_KEYS)
+                                        .with(COMPROMISED_CREDENTIAL, ANA)
+                                        .with(HAS_MANUAL_CHANGE_BUTTON, false)
+                                        .with(CREDENTIAL_HANDLER, mMockHandler)
+                                        .build())));
+        waitForListViewToHaveLength(1);
+
+        // The credential has no change button:
+        assertThat(getCredentialOriginAt(0).getText(), is(ANA.getDisplayOrigin()));
+        assertThat(getCredentialUserAt(0).getText(), is(ANA.getDisplayUsername()));
+        assertThat(getCredentialChangeButtonAt(0).getVisibility(), is(View.GONE));
+        assertThat(getCredentialChangeHintAt(0).getVisibility(), is(View.VISIBLE));
+    }
+
+    @Test
+    @MediumTest
+    public void testCredentialDisplaysChangeButtonWithScript() {
         runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildCredentialItem(SCRIPTED)); });
         pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
 
@@ -439,6 +470,7 @@ public class PasswordCheckViewTest {
         assertThat(getCredentialChangeButtonAt(0).getText(),
                 is(getString(
                         R.string.password_check_credential_row_change_manually_button_caption)));
+        assertThat(getCredentialChangeHintAt(0).getVisibility(), is(View.GONE));
     }
 
     @Test
@@ -567,6 +599,7 @@ public class PasswordCheckViewTest {
                 new PropertyModel
                         .Builder(PasswordCheckProperties.CompromisedCredentialProperties.ALL_KEYS)
                         .with(COMPROMISED_CREDENTIAL, credential)
+                        .with(HAS_MANUAL_CHANGE_BUTTON, true)
                         .with(CREDENTIAL_HANDLER, mMockHandler)
                         .build());
     }
@@ -654,6 +687,11 @@ public class PasswordCheckViewTest {
     private ButtonCompat getCredentialChangeButtonAt(int index) {
         return getPasswordCheckViewList().getChildAt(index).findViewById(
                 R.id.credential_change_button);
+    }
+
+    private TextView getCredentialChangeHintAt(int index) {
+        return getPasswordCheckViewList().getChildAt(index).findViewById(
+                R.id.credential_change_hint);
     }
 
     private ButtonCompat getCredentialChangeButtonWithScriptAt(int index) {

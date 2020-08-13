@@ -358,27 +358,6 @@ bool CSPDirectiveList::CheckSource(
              redirect_status);
 }
 
-bool CSPDirectiveList::CheckAncestors(SourceListDirective* directive,
-                                      LocalFrame* frame) const {
-  if (!frame || !directive)
-    return true;
-
-  for (Frame* current = frame->Tree().Parent(); current;
-       current = current->Tree().Parent()) {
-    // The |current| frame might be a remote frame which has no URL, so use
-    // its origin instead.  This should suffice for this check since it
-    // doesn't do path comparisons.  See https://crbug.com/582544.
-    //
-    // TODO(mkwst): Move this check up into the browser process.  See
-    // https://crbug.com/555418.
-    KURL url(NullURL(),
-             current->GetSecurityContext()->GetSecurityOrigin()->ToString());
-    if (!directive->Allows(url, ResourceRequest::RedirectStatus::kNoRedirect))
-      return false;
-  }
-  return true;
-}
-
 bool CSPDirectiveList::CheckMediaType(MediaListDirective* directive,
                                       const String& type,
                                       const String& type_attribute) const {
@@ -582,25 +561,6 @@ bool CSPDirectiveList::CheckSourceAndReportViolation(
                       "Policy directive: \"" +
                       directive->GetText() + "\"." + suffix + "\n",
                   url_before_redirects, redirect_status);
-  return DenyIfEnforcingPolicy();
-}
-
-bool CSPDirectiveList::CheckAncestorsAndReportViolation(
-    SourceListDirective* directive,
-    LocalFrame* frame,
-    const KURL& url) const {
-  if (CheckAncestors(directive, frame))
-    return true;
-
-  ReportViolationWithFrame(
-      directive->GetText(),
-      ContentSecurityPolicy::DirectiveType::kFrameAncestors,
-      "Refused to display '" + url.ElidedString() +
-          "' in a frame because an ancestor violates the "
-          "following Content Security Policy directive: "
-          "\"" +
-          directive->GetText() + "\".",
-      url, frame);
   return DenyIfEnforcingPolicy();
 }
 
@@ -817,21 +777,6 @@ bool CSPDirectiveList::AllowTrustedTypePolicy(const String& policy_name,
       ContentSecurityPolicy::kTrustedTypesPolicyViolation, policy_name);
 
   return DenyIfEnforcingPolicy();
-}
-
-bool CSPDirectiveList::AllowAncestors(
-    LocalFrame* frame,
-    const KURL& url,
-    ReportingDisposition reporting_disposition) const {
-  return reporting_disposition == ReportingDisposition::kReport
-             ? CheckAncestorsAndReportViolation(
-                   OperativeDirective(
-                       ContentSecurityPolicy::DirectiveType::kFrameAncestors),
-                   frame, url)
-             : CheckAncestors(
-                   OperativeDirective(
-                       ContentSecurityPolicy::DirectiveType::kFrameAncestors),
-                   frame);
 }
 
 bool CSPDirectiveList::AllowHash(

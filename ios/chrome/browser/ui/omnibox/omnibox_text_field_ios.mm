@@ -614,8 +614,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   }
 
   // If there is pasteboard content, show paste.
-  if (UIPasteboard.generalPasteboard.string.length > 0 && action == @selector
-                                                              (paste:)) {
+  if (UIPasteboard.generalPasteboard.hasStrings && action == @selector
+                                                       (paste:)) {
     return YES;
   }
 

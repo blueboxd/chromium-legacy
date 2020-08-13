@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
@@ -292,6 +294,14 @@ bool SkiaOutputDeviceVulkan::Initialize() {
   capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
   capabilities_.supports_post_sub_buffer = true;
   capabilities_.orientation_mode = OutputSurface::OrientationMode::kHardware;
+#if defined(OS_ANDROID)
+  // With vulkan, if the chrome is launched in landscape mode, the chrome is
+  // always blank until chrome window is rotated once. Workaround this problem
+  // by using logic rotation mode.
+  // TODO(https://crbug.com/1115065): use hardware orientation mode for vulkan,
+  if (base::FeatureList::GetFieldTrial(features::kVulkan))
+    capabilities_.orientation_mode = OutputSurface::OrientationMode::kLogic;
+#endif
   // We don't know the number of buffers until the VulkanSwapChain is
   // initialized, so set it to 0. Since |damage_area_from_skia_output_device| is
   // assigned to true, so |number_of_buffers| will not be used for tracking

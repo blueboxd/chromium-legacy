@@ -3984,7 +3984,6 @@ crbug.com/1050754 external/wpt/service-workers/service-worker/fetch-canvas-taint
 crbug.com/1050754 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-with-range-request.https.html [ Timeout ]
 crbug.com/1050754 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Failure ]
 crbug.com/1050754 external/wpt/service-workers/service-worker/fetch-error.https.html [ Failure ]
-crbug.com/1050754 external/wpt/service-workers/service-worker/fetch-event-handled.https.html [ Failure ]
 crbug.com/1050754 external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Failure ]
 crbug.com/1050754 external/wpt/service-workers/service-worker/fetch-event-referrer-policy.https.html [ Failure ]
 crbug.com/1050754 external/wpt/service-workers/service-worker/fetch-event-respond-with-custom-response.https.html [ Failure ]

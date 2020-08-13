@@ -132,7 +132,7 @@ class PasswordSaveUpdateWithAccountStoreView
   // its NativeWidget.
   FeaturePromoBubbleView* account_storage_promo_ = nullptr;
 
-  IPHType currenly_shown_iph_type = IPHType::kNone;
+  IPHType currenly_shown_iph_type_ = IPHType::kNone;
 
   // Observes the |account_storage_promo_|'s Widget.  Used to tell whether the
   // promo is open and get called back when it closes.

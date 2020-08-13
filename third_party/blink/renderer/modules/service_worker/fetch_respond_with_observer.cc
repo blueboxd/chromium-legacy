@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/service_worker/cross_origin_resource_policy_checker.h"
+#include "third_party/blink/renderer/modules/service_worker/fetch_event.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -213,8 +214,7 @@ void FetchRespondWithObserver::OnResponseRejected(
   service_worker_global_scope->RespondToFetchEvent(
       event_id_, request_url_, std::move(response), event_dispatch_time_,
       base::TimeTicks::Now());
-  service_worker_global_scope->RejectFetchEventHandledPromise(event_id_,
-                                                              error_message);
+  event_->RejectHandledPromise(error_message);
 }
 
 void FetchRespondWithObserver::OnResponseFulfilled(
@@ -337,7 +337,7 @@ void FetchRespondWithObserver::OnResponseFulfilled(
       service_worker_global_scope->RespondToFetchEvent(
           event_id_, request_url_, std::move(fetch_api_response),
           event_dispatch_time_, base::TimeTicks::Now());
-      service_worker_global_scope->ResolveFetchEventHandledPromise(event_id_);
+      event_->ResolveHandledPromise();
       return;
     }
 
@@ -364,13 +364,13 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     service_worker_global_scope->RespondToFetchEventWithResponseStream(
         event_id_, request_url_, std::move(fetch_api_response),
         std::move(stream_handle), event_dispatch_time_, base::TimeTicks::Now());
-    service_worker_global_scope->ResolveFetchEventHandledPromise(event_id_);
+    event_->ResolveHandledPromise();
     return;
   }
   service_worker_global_scope->RespondToFetchEvent(
       event_id_, request_url_, std::move(fetch_api_response),
       event_dispatch_time_, base::TimeTicks::Now());
-  service_worker_global_scope->ResolveFetchEventHandledPromise(event_id_);
+  event_->ResolveHandledPromise();
 }
 
 void FetchRespondWithObserver::OnNoResponse() {
@@ -379,7 +379,7 @@ void FetchRespondWithObserver::OnNoResponse() {
       To<ServiceWorkerGlobalScope>(GetExecutionContext());
   service_worker_global_scope->RespondToFetchEventWithNoResponse(
       event_id_, request_url_, event_dispatch_time_, base::TimeTicks::Now());
-  service_worker_global_scope->ResolveFetchEventHandledPromise(event_id_);
+  event_->ResolveHandledPromise();
 }
 
 FetchRespondWithObserver::FetchRespondWithObserver(
@@ -398,6 +398,7 @@ FetchRespondWithObserver::FetchRespondWithObserver(
       task_runner_(context->GetTaskRunner(TaskType::kNetworking)) {}
 
 void FetchRespondWithObserver::Trace(Visitor* visitor) const {
+  visitor->Trace(event_);
   RespondWithObserver::Trace(visitor);
 }
 

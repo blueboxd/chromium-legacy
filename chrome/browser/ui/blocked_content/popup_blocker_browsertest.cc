@@ -269,8 +269,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, BlockWebContentsCreation) {
                kDontCheckTitle);
 }
 
-#if defined(OS_MAC) && defined(ADDRESS_SANITIZER)
-// Flaky on ASAN on Mac. See https://crbug.com/674497.
+// TODO(crbug.com/1115886): Flaky on Mac ASAN and Chrome OS.
+#if (defined(OS_MAC) && defined(ADDRESS_SANITIZER)) || defined(OS_CHROMEOS)
 #define MAYBE_BlockWebContentsCreationIncognito \
   DISABLED_BlockWebContentsCreationIncognito
 #else

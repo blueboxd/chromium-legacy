@@ -67,7 +67,12 @@ public class AccountManagerTestRule implements TestRule {
      * Tears down the AccountManagerFacade mock and signs out if user is signed in.
      */
     public void tearDownRule() {
-        if (mIsSignedIn) {
+        if (mIsSignedIn && getCurrentSignedInAccount() != null) {
+            // For android_browsertests that sign out during the test body, like
+            // UkmBrowserTest.SingleSyncSignoutCheck, we should sign out during tear-down test stage
+            // only if an account is signed in. Otherwise, tearDownRule() ultimately results a crash
+            // in SignoutManager::signOut(). This is because sign out is attempted when a sign-out
+            // operation is already in progress. See crbug/1102746 for more details.
             signOut();
         }
         AccountManagerFacadeProvider.resetInstanceForTests();

@@ -14,10 +14,60 @@
 #include "url/origin.h"
 
 namespace {
+
 constexpr int kCacheTimeoutInMinutes = 5;
 constexpr int kFetchTimeoutInSeconds = 3;
 
 constexpr int kMaxDownloadSizeInBytes = 10 * 1024;
+
+using ParsingResult =
+    password_manager::PasswordScriptsFetcherImpl::ParsingResult;
+
+// Extracts the domains for which password changes are supported and adds them
+// to |supported_domains|.
+// |script_config| is the dictionary passed for a domain, representig the
+// configuration data of one password change script.
+// For example, the fetched JSON might look like this:
+// {
+//   'example.com': {
+//     'domains': [ 'https://www.example.com', 'https://m.example.com' ]
+//   }
+// }
+// In this case |script_config| would represent the dictionary value
+// of 'example.com'.
+// Returns a set of warnings.
+// The function tries to be lax about errors and prefers to skip them
+// with warnings rather than bail the parsing. This is for forward
+// compatibility.
+base::flat_set<ParsingResult> ExtractPasswordDomains(
+    const base::Value& script_config,
+    base::flat_set<url::Origin>& supported_domains) {
+  if (!script_config.is_dict())
+    return {ParsingResult::kInvalidJson};
+
+  const base::Value* supported_domains_list =
+      script_config.FindListKey("domains");
+  if (!supported_domains_list || !supported_domains_list->is_list())
+    return {ParsingResult::kInvalidJson};
+
+  base::flat_set<ParsingResult> warnings;
+  for (const base::Value& domain : supported_domains_list->GetList()) {
+    if (!domain.is_string()) {
+      warnings.insert(ParsingResult::kInvalidJson);
+      continue;
+    }
+
+    GURL url(domain.GetString());
+    if (!url.is_valid()) {
+      warnings.insert(ParsingResult::kInvalidUrl);
+      continue;
+    }
+    supported_domains.insert(url::Origin::Create(url));
+  }
+
+  return warnings;
+}
+
 }  // namespace
 
 namespace password_manager {
@@ -139,9 +189,14 @@ void PasswordScriptsFetcherImpl::OnFetchComplete(
   url_loader_.reset();
   last_fetch_timestamp_ = base::TimeTicks::Now();
 
-  ParsingResult parsing_result = ParseResponse(std::move(response_body));
-  base::UmaHistogramEnumeration(
-      "PasswordManager.PasswordScriptsFetcher.ParsingResult", parsing_result);
+  base::flat_set<ParsingResult> parsing_warnings =
+      ParseResponse(std::move(response_body));
+  if (parsing_warnings.empty())
+    parsing_warnings.insert(ParsingResult::kOk);
+  for (ParsingResult warning : parsing_warnings) {
+    base::UmaHistogramEnumeration(
+        "PasswordManager.PasswordScriptsFetcher.ParsingResult", warning);
+  }
 
   for (auto& callback : std::exchange(fetch_finished_callbacks_, {}))
     std::move(callback).Run();
@@ -149,33 +204,32 @@ void PasswordScriptsFetcherImpl::OnFetchComplete(
     RunResponseCallback(std::move(callback.first), std::move(callback.second));
 }
 
-PasswordScriptsFetcherImpl::ParsingResult
-PasswordScriptsFetcherImpl::ParseResponse(
+base::flat_set<ParsingResult> PasswordScriptsFetcherImpl::ParseResponse(
     std::unique_ptr<std::string> response_body) {
   password_change_domains_.clear();
 
   if (!response_body)
-    return ParsingResult::kNoResponse;
+    return {ParsingResult::kNoResponse};
 
-  base::Optional<base::Value> data = base::JSONReader::Read(*response_body);
-  if (data == base::nullopt)
-    return ParsingResult::kNotJsonString;
-  if (!data->is_dict())
-    return ParsingResult::kNotDictionary;
+  base::JSONReader::ValueWithError data =
+      base::JSONReader::ReadAndReturnValueWithError(*response_body);
 
-  bool invalid_urls_found = false;
-  for (const auto& it : data->DictItems()) {
-    // |it.second| is not used at the moment and reserved for
-    // domain-specific parameters.
-    GURL url(it.first);
-    if (url.is_valid()) {
-      url::Origin origin = url::Origin::Create(url);
-      password_change_domains_.insert(origin);
-    } else {
-      invalid_urls_found = true;
-    }
+  if (data.value == base::nullopt) {
+    DVLOG(1) << "Parse error: " << data.error_message;
+    return {ParsingResult::kInvalidJson};
   }
-  return invalid_urls_found ? ParsingResult::kInvalidUrl : ParsingResult::kOk;
+  if (!data.value->is_dict())
+    return {ParsingResult::kInvalidJson};
+
+  base::flat_set<ParsingResult> warnings;
+  for (const auto& script_it : data.value->DictItems()) {
+    // |script_it.first| is an identifier that we don't care about.
+    // |script_it.second| provides domain-sepcific parameters.
+    base::flat_set<ParsingResult> warnings_for_script =
+        ExtractPasswordDomains(script_it.second, password_change_domains_);
+    warnings.insert(warnings_for_script.begin(), warnings_for_script.end());
+  }
+  return warnings;
 }
 
 bool PasswordScriptsFetcherImpl::IsCacheStale() const {

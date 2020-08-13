@@ -26,7 +26,8 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
 
  private:
   void HandleMainViewInitialize(const base::ListValue* args);
-  void HandleLaunchSelectedProfile(const base::ListValue* args);
+  void HandleLaunchSelectedProfile(bool open_settings,
+                                   const base::ListValue* args);
   void HandleLaunchGuestProfile(const base::ListValue* args);
   void HandleAskOnStartupChanged(const base::ListValue* args);
   void HandleGetNewProfileSuggestedThemeInfo(const base::ListValue* args);
@@ -37,7 +38,8 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
   void GatherProfileStatistics(Profile* profile);
   void OnProfileStatisticsReceived(base::FilePath profile_path,
                                    profiles::ProfileCategoryStats result);
-  void OnSwitchToProfileComplete(Profile* profile,
+  void OnSwitchToProfileComplete(bool open_settings,
+                                 Profile* profile,
                                  Profile::CreateStatus profile_create_status);
   void PushProfilesList();
   base::Value GetProfilesList();

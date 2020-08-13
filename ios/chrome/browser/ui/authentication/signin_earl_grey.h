@@ -36,15 +36,19 @@
 // simulate identity removal from the device.
 - (void)forgetFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
+// Signs the user out of the primary account. Induces a GREYAssert if the
+// app fails to sign out.
+- (void)signOut;
+
 // Induces a GREYAssert if |fakeIdentity| is not signed in to the active
 // profile.
-- (void)checkSignedInWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
+- (void)verifySignedInWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
 // Induces a GREYAssert if an identity is signed in.
-- (void)checkSignedOut;
+- (void)verifySignedOut;
 
-// Wait until |matcher| is accessible (not nil).
-- (void)waitForMatcher:(id<GREYMatcher>)matcher;
+// Induces a GREYAssert if there are no signed-in identities.
+- (void)verifyAuthenticated;
 
 @end
 

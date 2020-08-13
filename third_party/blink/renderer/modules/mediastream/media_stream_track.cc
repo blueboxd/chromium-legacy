@@ -256,7 +256,8 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
     image_capture_ = MakeGarbageCollected<ImageCapture>(
         context, this, pan_tilt_zoom_allowed, std::move(callback));
   } else {
-    std::move(callback).Run();
+    execution_context_->GetTaskRunner(TaskType::kInternalMedia)
+        ->PostTask(FROM_HERE, std::move(callback));
   }
 }
 

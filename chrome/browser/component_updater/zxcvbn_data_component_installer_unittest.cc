@@ -17,8 +17,8 @@ namespace component_updater {
 
 namespace {
 
-using ::testing::ElementsAre;
 using ::testing::Pair;
+using ::testing::UnorderedElementsAre;
 
 }  // namespace
 
@@ -103,15 +103,15 @@ TEST_F(ZxcvbnDataComponentInstallerPolicyTest, ComponentReady) {
   base::WriteFile(
       GetPath().Append(
           ZxcvbnDataComponentInstallerPolicy::kEnglishWikipediaTxtFileName),
-      "english_wikipedia");
+      "english\nwikipedia");
   base::WriteFile(
       GetPath().Append(
           ZxcvbnDataComponentInstallerPolicy::kFemaleNamesTxtFileName),
-      "female_names");
+      "female\nnames");
   base::WriteFile(
       GetPath().Append(
           ZxcvbnDataComponentInstallerPolicy::kMaleNamesTxtFileName),
-      "male_names");
+      "male\nnames");
   base::WriteFile(
       GetPath().Append(
           ZxcvbnDataComponentInstallerPolicy::kPasswordsTxtFileName),
@@ -122,26 +122,28 @@ TEST_F(ZxcvbnDataComponentInstallerPolicyTest, ComponentReady) {
   base::WriteFile(
       GetPath().Append(
           ZxcvbnDataComponentInstallerPolicy::kUsTvAndFilmTxtFileName),
-      "us_tv_and_film");
+      "us\ntv\nand\nfilm");
 
   policy().ComponentReady(version(), GetPath(), nullptr);
   task_env().RunUntilIdle();
 
   zxcvbn::RankedDicts ranked_dicts = zxcvbn::default_ranked_dicts();
-  EXPECT_THAT(zxcvbn::default_ranked_dicts(),
-              ::testing::UnorderedElementsAre(
-                  Pair(zxcvbn::DictionaryTag::ENGLISH_WIKIPEDIA,
-                       ElementsAre(Pair("english_wikipedia", 1))),
-                  Pair(zxcvbn::DictionaryTag::FEMALE_NAMES,
-                       ElementsAre(Pair("female_names", 1))),
-                  Pair(zxcvbn::DictionaryTag::MALE_NAMES,
-                       ElementsAre(Pair("male_names", 1))),
-                  Pair(zxcvbn::DictionaryTag::PASSWORDS,
-                       ElementsAre(Pair("passwords", 1))),
-                  Pair(zxcvbn::DictionaryTag::SURNAMES,
-                       ElementsAre(Pair("surnames", 1))),
-                  Pair(zxcvbn::DictionaryTag::US_TV_AND_FILM,
-                       ElementsAre(Pair("us_tv_and_film", 1)))));
+  EXPECT_THAT(
+      zxcvbn::default_ranked_dicts(),
+      UnorderedElementsAre(
+          Pair(zxcvbn::DictionaryTag::ENGLISH_WIKIPEDIA,
+               UnorderedElementsAre(Pair("english", 1), Pair("wikipedia", 2))),
+          Pair(zxcvbn::DictionaryTag::FEMALE_NAMES,
+               UnorderedElementsAre(Pair("female", 1), Pair("names", 2))),
+          Pair(zxcvbn::DictionaryTag::MALE_NAMES,
+               UnorderedElementsAre(Pair("male", 1), Pair("names", 2))),
+          Pair(zxcvbn::DictionaryTag::PASSWORDS,
+               UnorderedElementsAre(Pair("passwords", 1))),
+          Pair(zxcvbn::DictionaryTag::SURNAMES,
+               UnorderedElementsAre(Pair("surnames", 1))),
+          Pair(zxcvbn::DictionaryTag::US_TV_AND_FILM,
+               UnorderedElementsAre(Pair("us", 1), Pair("tv", 2),
+                                    Pair("and", 3), Pair("film", 4)))));
 }
 
 }  // namespace component_updater

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_invalidator.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_platform_keys_helpers.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/prefs/pref_change_registrar.h"

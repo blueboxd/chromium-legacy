@@ -63,8 +63,7 @@ public class MainActivityWithURLTest {
     public void testLaunchActivity() {
         // Launch chrome
         mActivityTestRule.startMainActivityFromLauncher();
-        String currentUrl = ChromeTabUtils.getUrlStringOnUiThread(
-                mActivityTestRule.getActivity().getActivityTab());
+        String currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrlString();
         Assert.assertNotNull(currentUrl);
         Assert.assertEquals(false, currentUrl.isEmpty());
     }
@@ -79,17 +78,14 @@ public class MainActivityWithURLTest {
     public void testNewTabPageLaunch() {
         // Launch chrome with NTP.
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
-        String currentUrl = ChromeTabUtils.getUrlStringOnUiThread(
-                mActivityTestRule.getActivity().getActivityTab());
+        String currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrlString();
         Assert.assertNotNull(currentUrl);
         Assert.assertEquals(false, currentUrl.isEmpty());
 
         // Open NTP.
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-
-        currentUrl = ChromeTabUtils.getUrlStringOnUiThread(
-                mActivityTestRule.getActivity().getActivityTab());
+        currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrlString();
         Assert.assertNotNull(currentUrl);
         Assert.assertEquals(false, currentUrl.isEmpty());
     }

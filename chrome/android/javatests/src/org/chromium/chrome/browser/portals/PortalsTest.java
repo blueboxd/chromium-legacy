@@ -34,6 +34,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -548,6 +549,7 @@ public class PortalsTest {
     @LargeTest
     @Feature({"Portals"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @FlakyTest(message = "https://crbug.com/1115888")
     public void testMediaCaptureNotificationVisibleAfterAdoption() throws Exception {
         String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/media-capture.html");
         mActivityTestRule.startMainActivityWithURL(mainUrl);

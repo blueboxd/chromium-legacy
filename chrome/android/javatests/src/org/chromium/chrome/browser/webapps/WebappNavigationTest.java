@@ -356,7 +356,7 @@ public class WebappNavigationTest {
         String otherInScopeUrl =
                 WebappTestPage.getNonServiceWorkerUrl(mActivityTestRule.getTestServer());
         mActivityTestRule.loadUrlInTab(otherInScopeUrl, PageTransition.LINK, tab);
-        assertEquals(otherInScopeUrl, ChromeTabUtils.getUrlStringOnUiThread(tab));
+        assertEquals(otherInScopeUrl, tab.getUrlString());
 
         mActivityTestRule.loadUrlInTab(
                 offOriginUrl(), PageTransition.LINK, tab, 10 /* secondsToWait */);

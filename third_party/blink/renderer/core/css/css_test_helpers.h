@@ -66,6 +66,7 @@ const CSSValue* ParseLonghand(Document& document,
 const CSSPropertyValueSet* ParseDeclarationBlock(
     const String& block_text,
     CSSParserMode mode = kHTMLStandardMode);
+StyleRuleBase* ParseRule(Document& document, String text);
 
 }  // namespace css_test_helpers
 }  // namespace blink

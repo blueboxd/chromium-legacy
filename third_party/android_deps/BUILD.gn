@@ -1385,6 +1385,10 @@ android_aar_prebuilt("com_google_android_material_material_java") {
 
   # Reduce binary size. https:crbug.com/954584
   ignore_proguard_configs = true
+
+  # Material Design is pulled in via Doubledown, thus this target should not
+  # be directly depended on. Please use :material_design_java instead.
+  visibility = [ ":*" ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

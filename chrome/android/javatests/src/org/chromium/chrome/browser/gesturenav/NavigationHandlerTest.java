@@ -97,11 +97,8 @@ public class NavigationHandlerTest {
     private void assertNavigateOnSwipeFrom(boolean edge, String toUrl) {
         ChromeTabUtils.waitForTabPageLoaded(currentTab(), toUrl, () -> swipeFromEdge(edge), 10);
         CriteriaHelper.pollUiThread(
-                ()
-                        -> Criteria.checkThat(ChromeTabUtils.getUrlStringOnUiThread(currentTab()),
-                                Matchers.is(toUrl)));
-        Assert.assertEquals(
-                "Didn't navigate back", toUrl, ChromeTabUtils.getUrlStringOnUiThread(currentTab()));
+                () -> Criteria.checkThat(currentTab().getUrlString(), Matchers.is(toUrl)));
+        Assert.assertEquals("Didn't navigate back", toUrl, currentTab().getUrlString());
     }
 
     private void swipeFromEdge(boolean leftEdge) {
@@ -148,7 +145,7 @@ public class NavigationHandlerTest {
         CriteriaHelper.pollUiThread(mNavigationLayout::isLayoutDetached,
                 "Navigation Layout should be detached after use");
         Assert.assertEquals("Current page should not change", UrlConstants.NTP_URL,
-                ChromeTabUtils.getUrlStringOnUiThread(currentTab()));
+                currentTab().getUrlString());
     }
 
     @Test
@@ -227,7 +224,7 @@ public class NavigationHandlerTest {
                 mActivityTestRule.getActivity().isInOverviewMode());
         setTabSwitcherModeAndWait(false);
         Assert.assertEquals("Current page should not change", UrlConstants.RECENT_TABS_URL,
-                ChromeTabUtils.getUrlStringOnUiThread(currentTab()));
+                currentTab().getUrlString());
     }
 
     /**

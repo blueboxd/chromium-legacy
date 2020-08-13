@@ -18,11 +18,24 @@ using ::testing::UnorderedElementsAre;
 namespace {
 
 constexpr char kOriginWithScript1[] = "https://example.com";
-constexpr char kOriginWithScript2[] = "https://test.com";
+constexpr char kOriginWithScript2[] = "https://mobile.example.com";
+constexpr char kOriginWithScript3[] = "https://test.com";
 constexpr char kOriginWithoutScript[] = "https://no-script.com";
 
 constexpr char kTestResponseContent[] =
-    "{\"https://example.com\" : {}, \"https://test.com\" : {}}";
+    R"json(
+      {
+        "example.com": {
+          "domains": [
+            "https://example.com",
+            "https://mobile.example.com"
+          ]
+        },
+        "test.com": {
+          "domains": ["https://test.com"]
+        }
+      }
+    )json";
 
 url::Origin GetOriginWithScript1() {
   return url::Origin::Create(GURL(kOriginWithScript1));
@@ -30,6 +43,10 @@ url::Origin GetOriginWithScript1() {
 
 url::Origin GetOriginWithScript2() {
   return url::Origin::Create(GURL(kOriginWithScript2));
+}
+
+url::Origin GetOriginWithScript3() {
+  return url::Origin::Create(GURL(kOriginWithScript3));
 }
 
 url::Origin GetOriginWithoutScript() {
@@ -76,6 +93,7 @@ class PasswordScriptsFetcherImplTest : public ::testing::Test {
                        base::Unretained(this)));
     RequestSingleScriptAvailability(GetOriginWithScript1());
     RequestSingleScriptAvailability(GetOriginWithScript2());
+    RequestSingleScriptAvailability(GetOriginWithScript3());
     RequestSingleScriptAvailability(GetOriginWithoutScript());
   }
 
@@ -136,6 +154,7 @@ TEST_F(PasswordScriptsFetcherImplTest, PrewarmCache) {
   EXPECT_THAT(recorded_responses(),
               UnorderedElementsAre(Pair(GetOriginWithScript1(), true),
                                    Pair(GetOriginWithScript2(), true),
+                                   Pair(GetOriginWithScript3(), true),
                                    Pair(GetOriginWithoutScript(), false)));
   EXPECT_EQ(0, GetNumberOfPendingRequests());
   histogram_tester->ExpectUniqueSample(
@@ -150,12 +169,14 @@ TEST_F(PasswordScriptsFetcherImplTest, PrewarmCache) {
   StartBulkCheck();
   EXPECT_EQ(1, GetNumberOfPendingRequests());
   // OriginWithScript2 (test.com) is not available anymore.
-  SimulateResponseWithContent("{\"https://example.com\" : {}}");
+  SimulateResponseWithContent(
+      R"({"example.com": {"domains": ["https://example.com"]}})");
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(recorded_responses(),
               UnorderedElementsAre(Pair(GetOriginWithScript1(), true),
                                    Pair(GetOriginWithScript2(), false),
+                                   Pair(GetOriginWithScript3(), false),
                                    Pair(GetOriginWithoutScript(), false)));
   EXPECT_EQ(0, GetNumberOfPendingRequests());
   histogram_tester->ExpectUniqueSample(
@@ -186,6 +207,7 @@ TEST_F(PasswordScriptsFetcherImplTest, NoPrewarmCache) {
   EXPECT_THAT(recorded_responses(),
               UnorderedElementsAre(Pair(GetOriginWithScript1(), true),
                                    Pair(GetOriginWithScript2(), true),
+                                   Pair(GetOriginWithScript3(), true),
                                    Pair(GetOriginWithoutScript(), false)));
   EXPECT_EQ(0, GetNumberOfPendingRequests());
 
@@ -202,16 +224,18 @@ TEST_F(PasswordScriptsFetcherImplTest, NoPrewarmCache) {
       net::HttpStatusCode::HTTP_OK, 1u);
 }
 
-TEST_F(PasswordScriptsFetcherImplTest, InvalidJson) {
+TEST_F(PasswordScriptsFetcherImplTest, InvalidResponseBody) {
   const struct TestCase {
     const char* const response;
     PasswordScriptsFetcherImpl::ParsingResult histogram_value;
   } kTestCases[]{
-      {"", PasswordScriptsFetcherImpl::ParsingResult::kNotJsonString},
-      {"{{{", PasswordScriptsFetcherImpl::ParsingResult::kNotJsonString},
-      {"[\"1\", \"2\"]",
-       PasswordScriptsFetcherImpl::ParsingResult::kNotDictionary},
-      {"{ \"not-url.com\" : {}}",
+      {"", PasswordScriptsFetcherImpl::ParsingResult::kInvalidJson},
+      {"{{{", PasswordScriptsFetcherImpl::ParsingResult::kInvalidJson},
+      {R"(["1", "2"])",
+       PasswordScriptsFetcherImpl::ParsingResult::kInvalidJson},
+      {R"({"no-domains-attribute.com" : {}})",
+       PasswordScriptsFetcherImpl::ParsingResult::kInvalidJson},
+      {R"({"not-url.com" : {"domains": ["scheme-forgotten.com"]}})",
        PasswordScriptsFetcherImpl::ParsingResult::kInvalidUrl}};
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(testing::Message() << "test_case=" << test_case.response);
@@ -227,6 +251,7 @@ TEST_F(PasswordScriptsFetcherImplTest, InvalidJson) {
     EXPECT_THAT(recorded_responses(),
                 UnorderedElementsAre(Pair(GetOriginWithScript1(), false),
                                      Pair(GetOriginWithScript2(), false),
+                                     Pair(GetOriginWithScript3(), false),
                                      Pair(GetOriginWithoutScript(), false)));
     histogram_tester.ExpectUniqueSample(
         "PasswordManager.PasswordScriptsFetcher.ParsingResult",
@@ -243,6 +268,7 @@ TEST_F(PasswordScriptsFetcherImplTest, ServerError) {
   EXPECT_THAT(recorded_responses(),
               UnorderedElementsAre(Pair(GetOriginWithScript1(), false),
                                    Pair(GetOriginWithScript2(), false),
+                                   Pair(GetOriginWithScript3(), false),
                                    Pair(GetOriginWithoutScript(), false)));
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.PasswordScriptsFetcher.ParsingResult",
@@ -259,6 +285,7 @@ TEST_F(PasswordScriptsFetcherImplTest, IsScriptAvailable) {
   // default value (false).
   EXPECT_FALSE(fetcher()->IsScriptAvailable(GetOriginWithScript1()));
   EXPECT_FALSE(fetcher()->IsScriptAvailable(GetOriginWithScript2()));
+  EXPECT_FALSE(fetcher()->IsScriptAvailable(GetOriginWithScript3()));
   EXPECT_FALSE(fetcher()->IsScriptAvailable(GetOriginWithoutScript()));
   EXPECT_EQ(0, GetNumberOfPendingRequests());
 
@@ -273,12 +300,14 @@ TEST_F(PasswordScriptsFetcherImplTest, IsScriptAvailable) {
   // Cache is ready.
   EXPECT_TRUE(fetcher()->IsScriptAvailable(GetOriginWithScript1()));
   EXPECT_TRUE(fetcher()->IsScriptAvailable(GetOriginWithScript2()));
+  EXPECT_TRUE(fetcher()->IsScriptAvailable(GetOriginWithScript3()));
   EXPECT_FALSE(fetcher()->IsScriptAvailable(GetOriginWithoutScript()));
 
   // |IsScriptAvailable| does not trigger refetching and returns stale values.
   fetcher()->make_cache_stale_for_testing();
   EXPECT_TRUE(fetcher()->IsScriptAvailable(GetOriginWithScript1()));
   EXPECT_TRUE(fetcher()->IsScriptAvailable(GetOriginWithScript2()));
+  EXPECT_TRUE(fetcher()->IsScriptAvailable(GetOriginWithScript3()));
   EXPECT_FALSE(fetcher()->IsScriptAvailable(GetOriginWithoutScript()));
   EXPECT_EQ(0, GetNumberOfPendingRequests());
 }

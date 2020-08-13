@@ -90,6 +90,10 @@ API_AVAILABLE(ios(13.0))
 // the given hiding |block| when executed.
 - (UIAction*)actionToHideWithBlock:(ProceduralBlock)block;
 
+// Creates a UIAction instance configured for moving a folder which will invoke
+// the given |block| when executed.
+- (UIAction*)actionToMoveFolderWithBlock:(ProceduralBlock)block;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MENU_ACTION_FACTORY_H_

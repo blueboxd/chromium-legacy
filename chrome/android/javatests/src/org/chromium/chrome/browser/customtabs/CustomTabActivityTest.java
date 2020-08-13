@@ -1098,9 +1098,7 @@ public class CustomTabActivityTest {
                             CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage2));
                 }));
         CriteriaHelper.pollInstrumentationThread(() -> {
-            Criteria.checkThat(
-                    ChromeTabUtils.getUrlStringOnUiThread(getActivity().getActivityTab()),
-                    is(mTestPage));
+            Criteria.checkThat(getActivity().getActivityTab().getUrlString(), is(mTestPage));
         });
         Assert.assertTrue("CustomTabContentHandler can't handle intent with same session",
                 TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
@@ -1117,9 +1115,7 @@ public class CustomTabActivityTest {
         });
         pageLoadFinishedHelper.waitForCallback(0);
         CriteriaHelper.pollInstrumentationThread(() -> {
-            Criteria.checkThat(
-                    ChromeTabUtils.getUrlStringOnUiThread(getActivity().getActivityTab()),
-                    is(mTestPage2));
+            Criteria.checkThat(getActivity().getActivityTab().getUrlString(), is(mTestPage2));
         });
     }
 
@@ -1367,7 +1363,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         CriteriaHelper.pollUiThread(() -> {
             final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-            Criteria.checkThat(ChromeTabUtils.getUrlStringOnUiThread(currentTab), is(url));
+            Criteria.checkThat(currentTab.getUrlString(), is(url));
         });
         CriteriaHelper.pollUiThread(() -> {
             CustomTabToolbar toolbar =
@@ -1396,7 +1392,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         CriteriaHelper.pollInstrumentationThread(() -> {
             final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-            Criteria.checkThat(ChromeTabUtils.getUrlStringOnUiThread(currentTab), is(mTestPage));
+            Criteria.checkThat(currentTab.getUrlString(), is(mTestPage));
         });
         Assert.assertTrue(
                 connection.postMessage(token, "Message", null) == CustomTabsService.RESULT_SUCCESS);
@@ -1428,7 +1424,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         CriteriaHelper.pollInstrumentationThread(() -> {
             final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-            Criteria.checkThat(ChromeTabUtils.getUrlStringOnUiThread(currentTab), is(mTestPage));
+            Criteria.checkThat(currentTab.getUrlString(), is(mTestPage));
         });
         Assert.assertTrue(
                 connection.postMessage(token, "Message", null) == CustomTabsService.RESULT_SUCCESS);
@@ -1466,7 +1462,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         CriteriaHelper.pollInstrumentationThread(() -> {
             final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-            Criteria.checkThat(ChromeTabUtils.getUrlStringOnUiThread(currentTab), is(mTestPage));
+            Criteria.checkThat(currentTab.getUrlString(), is(mTestPage));
         });
         Assert.assertTrue(connection.postMessage(token, "Message", null)
                 == CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR);
@@ -1490,7 +1486,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         CriteriaHelper.pollInstrumentationThread(() -> {
             final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-            Criteria.checkThat(ChromeTabUtils.getUrlStringOnUiThread(currentTab), is(url));
+            Criteria.checkThat(currentTab.getUrlString(), is(url));
         });
         Assert.assertTrue(connection.postMessage(token, "New title", null)
                 == CustomTabsService.RESULT_SUCCESS);
@@ -1568,7 +1564,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         CriteriaHelper.pollInstrumentationThread(() -> {
             final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-            Criteria.checkThat(ChromeTabUtils.getUrlStringOnUiThread(currentTab), is(url));
+            Criteria.checkThat(currentTab.getUrlString(), is(url));
         });
 
         session.requestPostMessageChannel(Uri.parse("https://www.example.com/"));
@@ -1669,7 +1665,7 @@ public class CustomTabActivityTest {
 
         CriteriaHelper.pollInstrumentationThread(() -> {
             final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-            Criteria.checkThat(ChromeTabUtils.getUrlStringOnUiThread(currentTab), is(url));
+            Criteria.checkThat(currentTab.getUrlString(), is(url));
         });
 
         if (requestTime == AFTER_INTENT) {
@@ -1717,7 +1713,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         CriteriaHelper.pollInstrumentationThread(() -> {
             final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-            Criteria.checkThat(ChromeTabUtils.getUrlStringOnUiThread(currentTab), is(mTestPage));
+            Criteria.checkThat(currentTab.getUrlString(), is(mTestPage));
         });
 
         Assert.assertFalse(mCustomTabActivityTestRule.getActivity().getActivityTab().canGoBack());
@@ -2176,8 +2172,8 @@ public class CustomTabActivityTest {
             Tab tab = tabbedActivity.get().getActivityTab();
             Criteria.checkThat("Tab is null", tab, Matchers.notNullValue());
             Criteria.checkThat("Incognito tab not selected", tab.isIncognito(), is(true));
-            Criteria.checkThat("Wrong URL loaded in incognito tab",
-                    ChromeTabUtils.getUrlStringOnUiThread(tab), is("about:blank"));
+            Criteria.checkThat(
+                    "Wrong URL loaded in incognito tab", tab.getUrlString(), is("about:blank"));
         });
 
         ApplicationStatus.unregisterActivityStateListener(listener);
@@ -2389,7 +2385,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage));
         Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-        assertEquals(mTestPage, ChromeTabUtils.getUrlStringOnUiThread(tab));
+        assertEquals(mTestPage, tab.getUrlString());
     }
 
     private ChromeActivity reparentAndVerifyTab() {

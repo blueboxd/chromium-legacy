@@ -71,6 +71,9 @@ class PrintViewManagerBase : public content::NotificationObserver,
     return printing_rfh_;
   }
 
+  // mojom::PrintManagerHost:
+  void DidGetPrintedPagesCount(int32_t cookie, int32_t number_pages) override;
+
  protected:
   explicit PrintViewManagerBase(content::WebContents* web_contents);
 
@@ -114,7 +117,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
   void NavigationStopped() override;
 
   // printing::PrintManager:
-  void OnDidGetPrintedPagesCount(int cookie, int number_pages) override;
   void OnDidPrintDocument(
       content::RenderFrameHost* render_frame_host,
       const mojom::DidPrintDocumentParams& params,

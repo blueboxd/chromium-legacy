@@ -910,26 +910,14 @@ public class IntentHandler {
             // Ignore all intents that specify a Chrome internal scheme if they did not come from
             // a trustworthy source.
             String scheme = getSanitizedUrlScheme(url);
-            if (!isInternal && scheme != null
-                    && (intent.hasCategory(Intent.CATEGORY_BROWSABLE)
-                               || intent.hasCategory(Intent.CATEGORY_DEFAULT)
-                               || intent.getCategories() == null)) {
-                String lowerCaseScheme = scheme.toLowerCase(Locale.US);
-                if (UrlConstants.CHROME_SCHEME.equals(lowerCaseScheme)
-                        || UrlConstants.CHROME_NATIVE_SCHEME.equals(lowerCaseScheme)
-                        || ContentUrlConstants.ABOUT_SCHEME.equals(lowerCaseScheme)) {
-                    // Allow certain "safe" internal URLs to be launched by external
-                    // applications.
-                    String lowerCaseUrl = url.toLowerCase(Locale.US);
-                    if (ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(lowerCaseUrl)
-                            || ContentUrlConstants.ABOUT_BLANK_URL.equals(lowerCaseUrl)
-                            || UrlConstants.CHROME_DINO_URL.equals(lowerCaseUrl)) {
-                        return false;
-                    }
-
+            recordFirstPartyToInternalScheme(scheme, url, intent, isInternal, isFromChrome);
+            if (!isInternal) {
+                if (intentHasUnsafeInternalScheme(scheme, url, intent)) {
                     Log.w(TAG, "Ignoring internal Chrome URL from untrustworthy source.");
                     return true;
                 }
+
+                return false;
             }
 
             // We must check for screen state at this point.
@@ -943,6 +931,30 @@ public class IntentHandler {
         } catch (Throwable t) {
             return true;
         }
+    }
+
+    private static boolean intentHasUnsafeInternalScheme(String scheme, String url, Intent intent) {
+        if (scheme != null
+                && (intent.hasCategory(Intent.CATEGORY_BROWSABLE)
+                        || intent.hasCategory(Intent.CATEGORY_DEFAULT)
+                        || intent.getCategories() == null)) {
+            String lowerCaseScheme = scheme.toLowerCase(Locale.US);
+            if (UrlConstants.CHROME_SCHEME.equals(lowerCaseScheme)
+                    || UrlConstants.CHROME_NATIVE_SCHEME.equals(lowerCaseScheme)
+                    || ContentUrlConstants.ABOUT_SCHEME.equals(lowerCaseScheme)) {
+                // Allow certain "safe" internal URLs to be launched by external
+                // applications.
+                String lowerCaseUrl = url.toLowerCase(Locale.US);
+                if (ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(lowerCaseUrl)
+                        || ContentUrlConstants.ABOUT_BLANK_URL.equals(lowerCaseUrl)
+                        || UrlConstants.CHROME_DINO_URL.equals(lowerCaseUrl)) {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+        return false;
     }
 
     @VisibleForTesting
@@ -1379,6 +1391,18 @@ public class IntentHandler {
         IntentHandler.addTrustedIntentExtras(newIntent);
 
         return newIntent;
+    }
+
+    /**
+     * Records whether the intent comes from a non-Chrome first party and contains a Chrome internal
+     * scheme. This is so we can determine whether we can cut the feature.
+     */
+    private static void recordFirstPartyToInternalScheme(
+            String scheme, String url, Intent intent, boolean isInternal, boolean isChrome) {
+        if (!isInternal || isChrome) return;
+
+        RecordHistogram.recordBooleanHistogram("MobileIntent.FirstPartyToInternalScheme",
+                intentHasUnsafeInternalScheme(scheme, url, intent));
     }
 
     @NativeMethods

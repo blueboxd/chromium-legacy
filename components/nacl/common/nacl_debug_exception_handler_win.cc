@@ -44,7 +44,8 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
     } else {
       LOG(ERROR) << "Invalid process handle";
     }
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(on_connected_, attached));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(on_connected_), attached));
 
     if (attached) {
       NaClDebugExceptionHandlerRun(
@@ -59,7 +60,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
   base::Process nacl_process_;
   std::string startup_info_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::Callback<void(bool)> on_connected_;
+  base::RepeatingCallback<void(bool)> on_connected_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugExceptionHandler);
 };
@@ -70,7 +71,7 @@ void NaClStartDebugExceptionHandlerThread(
     base::Process nacl_process,
     const std::string& startup_info,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::RepeatingCallback<void(bool)>& on_connected) {
+    base::RepeatingCallback<void(bool)> on_connected) {
   // The new PlatformThread will take ownership of the
   // DebugExceptionHandler object, which will delete itself on exit.
   DebugExceptionHandler* handler = new DebugExceptionHandler(

@@ -67,3 +67,11 @@ imageset("share") {
     "share.imageset/share@3x.png",
   ]
 }
+
+imageset("move_folder") {
+  sources = [
+    "move_folder.imageset/Contents.json",
+    "move_folder.imageset/move_folder@2x.png",
+    "move_folder.imageset/move_folder@3x.png",
+  ]
+}

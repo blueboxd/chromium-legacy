@@ -18,6 +18,9 @@
   <dimen name="check_status_message_idle_margin_vertical">27dp</dimen>
   <dimen name="check_status_message_running_margin_vertical">36dp</dimen>
 
+  <dimen name="compromised_credential_row_button_icon_padding">8dp</dimen>
+  <dimen name="compromised_credential_row_button_icon_start_padding">12dp</dimen>
+  <dimen name="compromised_credential_row_button_icon_end_padding">16dp</dimen>
   <dimen name="compromised_credential_row_button_margin_top">16dp</dimen>
   <dimen name="compromised_credential_row_more_padding_end">8dp</dimen>
   <dimen name="compromised_credential_row_more_padding_start">16dp</dimen>

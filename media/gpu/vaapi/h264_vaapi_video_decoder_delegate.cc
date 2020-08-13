@@ -7,6 +7,7 @@
 #include <va/va.h>
 
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/macros.h"
@@ -67,6 +68,8 @@ DecodeStatus H264VaapiVideoDecoderDelegate::SubmitFrameMetadata(
     const H264Picture::Vector& ref_pic_listb1,
     scoped_refptr<H264Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT0("media,gpu",
+               "H264VaapiVideoDecoderDelegate::SubmitFrameMetadata");
   VAPictureParameterBufferH264 pic_param;
   memset(&pic_param, 0, sizeof(pic_param));
 
@@ -183,6 +186,7 @@ DecodeStatus H264VaapiVideoDecoderDelegate::SubmitSlice(
     size_t size,
     const std::vector<SubsampleEntry>& subsamples) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT0("media,gpu", "H264VaapiVideoDecoderDelegate::SubmitSlice");
   VASliceParameterBufferH264 slice_param;
   memset(&slice_param, 0, sizeof(slice_param));
 
@@ -282,6 +286,7 @@ DecodeStatus H264VaapiVideoDecoderDelegate::SubmitSlice(
 DecodeStatus H264VaapiVideoDecoderDelegate::SubmitDecode(
     scoped_refptr<H264Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT0("media,gpu", "H264VaapiVideoDecoderDelegate::SubmitDecode");
 
   const bool success = vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
       pic->AsVaapiH264Picture()->va_surface()->id());

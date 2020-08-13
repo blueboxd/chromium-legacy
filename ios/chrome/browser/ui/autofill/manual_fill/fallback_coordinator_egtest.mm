@@ -355,8 +355,7 @@ BOOL WaitForKeyboardToAppear() {
   // When keyboard is split, icons are not visible, so we rely on timeout before
   // docking again, because EarlGrey synchronization isn't working properly with
   // the keyboard.
-  [self waitForMatcherToBeVisible:ManualFallbackProfilesIconMatcher()
-                          timeout:base::test::ios::kWaitForUIElementTimeout];
+  [ChromeEarlGrey waitForMatcher:ManualFallbackProfilesIconMatcher()];
 
   DockKeyboard();
 
@@ -432,8 +431,7 @@ BOOL WaitForKeyboardToAppear() {
   // When keyboard is split, icons are not visible, so we rely on timeout before
   // docking again, because EarlGrey synchronization isn't working properly with
   // the keyboard.
-  [self waitForMatcherToBeVisible:ManualFallbackProfilesIconMatcher()
-                          timeout:base::test::ios::kWaitForUIElementTimeout];
+  [ChromeEarlGrey waitForMatcher:ManualFallbackProfilesIconMatcher()];
 
   DockKeyboard();
 
@@ -603,24 +601,6 @@ BOOL WaitForKeyboardToAppear() {
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-#pragma mark - Utilities
-
-// Waits for the passed matcher to be visible with a given timeout.
-- (void)waitForMatcherToBeVisible:(id<GREYMatcher>)matcher
-                          timeout:(CFTimeInterval)timeout {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-result"
-  [[GREYCondition conditionWithName:@"Wait for visible matcher condition"
-                              block:^BOOL {
-                                NSError* error;
-                                [[EarlGrey selectElementWithMatcher:matcher]
-                                    assertWithMatcher:grey_sufficientlyVisible()
-                                                error:&error];
-                                return error == nil;
-                              }] waitWithTimeout:timeout];
-#pragma clang diagnostic pop
 }
 
 @end

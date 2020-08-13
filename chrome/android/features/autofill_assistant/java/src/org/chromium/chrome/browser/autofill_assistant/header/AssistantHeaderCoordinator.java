@@ -5,13 +5,19 @@
 package org.chromium.chrome.browser.autofill_assistant.header;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiController;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipAdapter;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderViewBinder.ViewHolder;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
@@ -32,6 +38,7 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
     private final ImageView mProfileView;
     private final String mSignedInAccountName;
     private final ViewHolder mViewHolder;
+    private final RecyclerView mChipsContainer;
 
     public AssistantHeaderCoordinator(Context context, AssistantHeaderModel model) {
         // Create the poodle and insert it before the status message. We have to create a view
@@ -56,8 +63,52 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
                 identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC));
         setupProfileImage();
 
+        mChipsContainer = new RecyclerView(context);
+        final int innerChipSpacing = context.getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_actions_spacing);
+        mChipsContainer.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
+                    @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                outRect.top = 0;
+                outRect.bottom = 0;
+
+                if (state.getItemCount() <= 1) {
+                    return;
+                }
+
+                // If old position != NO_POSITION, it means the carousel is being animated and we
+                // should use that position in our logic.
+                int position = parent.getChildAdapterPosition(view);
+                RecyclerView.ViewHolder viewHolder = parent.getChildViewHolder(view);
+                if (viewHolder != null && viewHolder.getOldPosition() != RecyclerView.NO_POSITION) {
+                    position = viewHolder.getOldPosition();
+                }
+
+                if (position == RecyclerView.NO_POSITION) {
+                    return;
+                }
+
+                outRect.left = position == 0 ? 0 : innerChipSpacing;
+                outRect.right = 0;
+            }
+        });
+
+        AssistantChipAdapter chipAdapter = new AssistantChipAdapter();
+        mChipsContainer.setAdapter(chipAdapter);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mChipsContainer.setLayoutManager(layoutManager);
+        mView.setPadding(mChipsContainer.getPaddingLeft(), mChipsContainer.getPaddingTop(),
+                context.getResources().getDimensionPixelSize(
+                        R.dimen.autofill_assistant_profile_icon_padding),
+                mChipsContainer.getPaddingBottom());
+        ViewGroup topContainer = mView.findViewById(R.id.header_top_container);
+        topContainer.addView(mChipsContainer);
+
         // Bind view and mediator through the model.
-        mViewHolder = new AssistantHeaderViewBinder.ViewHolder(context, mView, poodle);
+        mViewHolder =
+                new AssistantHeaderViewBinder.ViewHolder(context, mView, poodle, mChipsContainer);
         AssistantHeaderViewBinder viewBinder = new AssistantHeaderViewBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, viewBinder);
 
@@ -75,6 +126,11 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
     /** Return the view associated to this coordinator. */
     public View getView() {
         return mView;
+    }
+
+    /** Returns the view containing the chips. */
+    public View getCarouselView() {
+        return mChipsContainer;
     }
 
     /**

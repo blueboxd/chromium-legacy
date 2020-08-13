@@ -89,13 +89,6 @@ class CORE_EXPORT CSPDirectiveList final
   bool AllowTrustedTypePolicy(const String& policy_name,
                               bool is_duplicate) const;
 
-  // |allowAncestors| does not need to know whether the resource was a
-  // result of a redirect. After a redirect, source paths are usually
-  // ignored to stop a page from learning the path to which the
-  // request was redirected, but this is not a concern for ancestors,
-  // because a child frame can't manipulate the URL of a cross-origin
-  // parent.
-  bool AllowAncestors(LocalFrame*, const KURL&, ReportingDisposition) const;
   bool AllowDynamic(ContentSecurityPolicy::DirectiveType) const;
   bool AllowDynamicWorker() const;
 
@@ -127,9 +120,6 @@ class CORE_EXPORT CSPDirectiveList final
   }
   const Vector<String>& ReportEndpoints() const { return report_endpoints_; }
   bool UseReportingApi() const { return use_reporting_api_; }
-  bool IsFrameAncestorsEnforced() const {
-    return frame_ancestors_.Get() && !IsReportOnly();
-  }
 
   // Used to copy plugin-types into a plugin document in a nested
   // browsing context.
@@ -257,7 +247,6 @@ class CORE_EXPORT CSPDirectiveList final
   bool CheckMediaType(MediaListDirective*,
                       const String& type,
                       const String& type_attribute) const;
-  bool CheckAncestors(SourceListDirective*, LocalFrame*) const;
 
   void SetEvalDisabledErrorMessage(const String& error_message) {
     eval_disabled_error_message_ = error_message;
@@ -291,9 +280,6 @@ class CORE_EXPORT CSPDirectiveList final
                                         const String& type,
                                         const String& type_attribute,
                                         const String& console_message) const;
-  bool CheckAncestorsAndReportViolation(SourceListDirective*,
-                                        LocalFrame*,
-                                        const KURL&) const;
 
   bool DenyIfEnforcingPolicy() const { return IsReportOnly(); }
 

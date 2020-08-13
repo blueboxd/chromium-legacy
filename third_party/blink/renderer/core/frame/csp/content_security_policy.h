@@ -311,18 +311,6 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   static bool IsScriptInlineType(InlineType);
 
-  // |allowAncestors| does not need to know whether the resource was a
-  // result of a redirect. After a redirect, source paths are usually
-  // ignored to stop a page from learning the path to which the
-  // request was redirected, but this is not a concern for ancestors,
-  // because a child frame can't manipulate the URL of a cross-origin
-  // parent.
-  bool AllowAncestors(
-      LocalFrame*,
-      const KURL&,
-      ReportingDisposition = ReportingDisposition::kReport) const;
-  bool IsFrameAncestorsEnforced() const;
-
   // TODO(crbug.com/889751): Remove "mojom::RequestContextType" once
   // all the code migrates.
   bool AllowRequestWithoutIntegrity(

@@ -237,4 +237,36 @@ TEST_F(CustomPropertyTest, GetCSSPropertyName) {
   EXPECT_EQ(CSSPropertyName("--x"), property.GetCSSPropertyName());
 }
 
+TEST_F(CustomPropertyTest, SupportsGuaranteedInvalid) {
+  RegisterProperty(GetDocument(), "--universal", "*", "foo", true);
+  RegisterProperty(GetDocument(), "--no-initial", "*", base::nullopt, true);
+  RegisterProperty(GetDocument(), "--length", "<length>", "0px", true);
+
+  CustomProperty unregistered("--unregistered", GetDocument());
+  CustomProperty universal("--universal", GetDocument());
+  CustomProperty no_initial_value("--no-initial", GetDocument());
+  CustomProperty length("--length", GetDocument());
+
+  EXPECT_TRUE(unregistered.SupportsGuaranteedInvalid());
+  EXPECT_TRUE(universal.SupportsGuaranteedInvalid());
+  EXPECT_TRUE(no_initial_value.SupportsGuaranteedInvalid());
+  EXPECT_FALSE(length.SupportsGuaranteedInvalid());
+}
+
+TEST_F(CustomPropertyTest, HasInitialValue) {
+  RegisterProperty(GetDocument(), "--universal", "*", "foo", true);
+  RegisterProperty(GetDocument(), "--no-initial", "*", base::nullopt, true);
+  RegisterProperty(GetDocument(), "--length", "<length>", "0px", true);
+
+  CustomProperty unregistered("--unregistered", GetDocument());
+  CustomProperty universal("--universal", GetDocument());
+  CustomProperty no_initial_value("--no-initial", GetDocument());
+  CustomProperty length("--length", GetDocument());
+
+  EXPECT_FALSE(unregistered.HasInitialValue());
+  EXPECT_TRUE(universal.HasInitialValue());
+  EXPECT_FALSE(no_initial_value.HasInitialValue());
+  EXPECT_TRUE(length.HasInitialValue());
+}
+
 }  // namespace blink

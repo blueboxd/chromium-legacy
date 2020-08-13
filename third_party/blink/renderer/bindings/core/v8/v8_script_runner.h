@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_SCRIPT_RUNNER_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -39,7 +40,9 @@ class TextPosition;
 namespace blink {
 
 class ExecutionContext;
+class KURL;
 class ReferrerScriptInfo;
+class ScriptFetchOptions;
 class ScriptSourceCode;
 class ScriptState;
 class SingleCachedMetadataHandler;
@@ -66,9 +69,15 @@ class CORE_EXPORT V8ScriptRunner final {
       v8::ScriptCompiler::CompileOptions,
       v8::ScriptCompiler::NoCacheReason,
       const ReferrerScriptInfo&);
-  static v8::MaybeLocal<v8::Value> RunCompiledScript(v8::Isolate*,
-                                                     v8::Local<v8::Script>,
-                                                     ExecutionContext*);
+  static v8::MaybeLocal<v8::Value> CompileAndRunScript(
+      v8::Isolate*,
+      ScriptState*,
+      ExecutionContext*,
+      const ScriptSourceCode&,
+      const KURL&,
+      SanitizeScriptErrors,
+      const ScriptFetchOptions&,
+      V8CacheOptions);
   static v8::MaybeLocal<v8::Value> CompileAndRunInternalScript(
       v8::Isolate*,
       ScriptState*,
@@ -102,6 +111,11 @@ class CORE_EXPORT V8ScriptRunner final {
   // TODO(adamk): This should live on V8ThrowException, but it depends on
   // V8Initializer and so can't trivially move to platform/bindings.
   static void ReportException(v8::Isolate*, v8::Local<v8::Value> exception);
+
+ private:
+  static v8::MaybeLocal<v8::Value> RunCompiledScript(v8::Isolate*,
+                                                     v8::Local<v8::Script>,
+                                                     ExecutionContext*);
 };
 
 }  // namespace blink

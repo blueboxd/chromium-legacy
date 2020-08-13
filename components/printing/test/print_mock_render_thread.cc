@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/printing/common/print.mojom.h"
@@ -28,8 +29,7 @@ PrintMockRenderThread::PrintMockRenderThread()
 {
 }
 
-PrintMockRenderThread::~PrintMockRenderThread() {
-}
+PrintMockRenderThread::~PrintMockRenderThread() = default;
 
 scoped_refptr<base::SingleThreadTaskRunner>
 PrintMockRenderThread::GetIOTaskRunner() {
@@ -45,6 +45,10 @@ bool PrintMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   if (content::MockRenderThread::OnMessageReceived(msg))
     return true;
 
+  // Gives a chance to handle Mojo interfaces as some messages has been
+  // converted to Mojo.
+  base::RunLoop().RunUntilIdle();
+
   // Some messages we do special handling.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintMockRenderThread, msg)
@@ -53,8 +57,6 @@ bool PrintMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
                         OnGetDefaultPrintSettings)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
     IPC_MESSAGE_HANDLER(PrintHostMsg_UpdatePrintSettings, OnUpdatePrintSettings)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
-                        OnDidGetPrintedPagesCount)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_DidPrintDocument,
                                     OnDidPrintDocument)
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

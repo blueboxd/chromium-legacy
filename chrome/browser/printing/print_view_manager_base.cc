@@ -217,7 +217,7 @@ void PrintViewManagerBase::OnPrintSettingsDone(
   }
 
   // Post task so that the query has time to reset the callback before calling
-  // OnDidGetPrintedPagesCount().
+  // DidGetPrintedPagesCount().
   int cookie = printer_query->cookie();
   queue_->QueuePrinterQuery(std::move(printer_query));
   content::GetUIThreadTaskRunner({})->PostTask(
@@ -233,7 +233,7 @@ void PrintViewManagerBase::StartLocalPrintJob(
     PrinterHandler::PrintCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  OnDidGetPrintedPagesCount(cookie, page_count);
+  DidGetPrintedPagesCount(cookie, page_count);
 
   if (!PrintJobHasDocument(cookie)) {
     std::move(callback).Run(base::Value("Failed to print"));
@@ -275,9 +275,9 @@ base::string16 PrintViewManagerBase::RenderSourceName() {
   return name;
 }
 
-void PrintViewManagerBase::OnDidGetPrintedPagesCount(int cookie,
-                                                     int number_pages) {
-  PrintManager::OnDidGetPrintedPagesCount(cookie, number_pages);
+void PrintViewManagerBase::DidGetPrintedPagesCount(int32_t cookie,
+                                                   int32_t number_pages) {
+  PrintManager::DidGetPrintedPagesCount(cookie, number_pages);
   OpportunisticallyCreatePrintJob(cookie);
 }
 

@@ -317,9 +317,7 @@ const char kFirstNameRe[] =
     "|(\\b|_|\\*)(isim|ad|ad(i|ı|iniz|ınız)?)(\\b|_|\\*)"  // tr
     "|नाम";                                                // hi
 const char kMiddleInitialRe[] = "middle.*initial|m\\.i\\.|mi$|\\bmi\\b";
-const char kMiddleNameRe[] =
-    "middle.*name|mname|middle$"
-    "|apellido.?materno|lastlastname";  // es
+const char kMiddleNameRe[] = "middle.*name|mname|middle$";
 const char kLastNameRe[] =
     "last.*name|lname|surname(?!\\d)|last$|secondname|family.*name"
     "|nachname"                                               // de-DE

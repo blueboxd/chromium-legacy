@@ -130,6 +130,10 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
 
   void RegisterNotifySwapTime(ReportTimeCallback);
   void ReportSwapTime(PaintEvent, WebSwapResult, base::TimeTicks timestamp);
+  void ReportFirstPaintAfterBackForwardCacheRestoreSwapTime(
+      size_t index,
+      WebSwapResult,
+      base::TimeTicks timestamp);
 
   void ReportSwapResultHistogram(WebSwapResult);
 
@@ -165,9 +169,15 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   void SetFirstContentfulPaintSwap(base::TimeTicks stamp);
   void SetFirstImagePaintSwap(base::TimeTicks stamp);
 
-  void SetFirstPaintAfterBackForwardCacheRestoreSwap(base::TimeTicks stamp);
+  // When quickly navigating back and forward between the pages in the cache
+  // paint events might race with navigations. Pass explicit bfcache restore
+  // index to avoid confusing the data from different navigations.
+  void SetFirstPaintAfterBackForwardCacheRestoreSwap(base::TimeTicks stamp,
+                                                     size_t index);
 
   void RegisterNotifySwapTime(PaintEvent);
+  void RegisterNotifyFirstPaintAfterBackForwardCacheRestoreSwapTime(
+      size_t index);
 
   base::TimeTicks FirstPaintRendered() const { return first_paint_; }
 

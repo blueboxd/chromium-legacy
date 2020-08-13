@@ -140,7 +140,7 @@ id<GREYMatcher> SkipSigninButton() {
   [[EarlGrey selectElementWithMatcher:SyncSettingsConfirmButton()]
       performAction:grey_tap()];
 
-  [SigninEarlGrey checkSignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 
   GREYAssertTrue([FirstRunAppInterface isSyncFirstSetupComplete],
                  @"Sync should have finished its original setup");

@@ -2267,6 +2267,29 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
       return [UIMenu menuWithTitle:@"" children:menuElements];
     };
+  } else if (node->is_folder()) {
+    actionProvider = ^(NSArray<UIMenuElement*>* suggestedActions) {
+      RecordMenuShown(MenuScenario::kBookmarkFolder);
+
+      ActionFactory* actionFactory =
+          [[ActionFactory alloc] initWithBrowser:self.browser
+                                        scenario:MenuScenario::kBookmarkFolder];
+
+      NSMutableArray<UIMenuElement*>* menuElements =
+          [[NSMutableArray alloc] init];
+
+      [menuElements addObject:[actionFactory actionToEditWithBlock:^{
+                      [self editNode:node];
+                    }]];
+
+      [menuElements addObject:[actionFactory actionToMoveFolderWithBlock:^{
+                      std::set<const BookmarkNode*> nodes;
+                      nodes.insert(node);
+                      [self moveNodes:nodes];
+                    }]];
+
+      return [UIMenu menuWithTitle:@"" children:menuElements];
+    };
   }
 
   return

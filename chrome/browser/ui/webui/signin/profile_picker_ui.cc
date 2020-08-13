@@ -33,6 +33,8 @@ void AddStrings(content::WebUIDataSource* html_source) {
       {"menu", IDS_MENU},
       {"profileMenuName", IDS_PROFILE_PICKER_PROFILE_MENU_BUTTON_NAME},
       {"profileMenuRemoveText", IDS_PROFILE_PICKER_PROFILE_MENU_REMOVE_TEXT},
+      {"profileMenuCustomizeText",
+       IDS_PROFILE_PICKER_PROFILE_MENU_CUSTOMIZE_TEXT},
       {"removeWarningLocalProfile",
        IDS_PROFILE_PICKER_REMOVE_WARNING_LOCAL_PROFILE},
       {"removeWarningSignedInProfile",

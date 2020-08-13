@@ -7,6 +7,7 @@
 #include <type_traits>
 
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
@@ -37,6 +38,7 @@ bool VP9VaapiVideoDecoderDelegate::SubmitDecode(
     const Vp9LoopFilterParams& lf,
     const Vp9ReferenceFrameVector& ref_frames,
     base::OnceClosure done_cb) {
+  TRACE_EVENT0("media,gpu", "VP9VaapiVideoDecoderDelegate::SubmitDecode");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // |done_cb| should be null as we return false from IsFrameContextRequired().
   DCHECK(!done_cb);

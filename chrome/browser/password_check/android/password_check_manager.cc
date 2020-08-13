@@ -4,6 +4,7 @@
 
 #include "chrome/browser/password_check/android/password_check_manager.h"
 
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_check/android/password_check_bridge.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -13,6 +14,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/url_formatter/url_formatter.h"
@@ -20,10 +22,20 @@
 
 namespace {
 
+constexpr char kWellKnownUrlPath[] = ".well-known/change-password";
+
 base::string16 GetDisplayUsername(const base::string16& username) {
   return username.empty()
              ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
              : username;
+}
+
+std::string CreateChangeUrl(const GURL& url) {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kWellKnownChangePassword)) {
+    return url.GetOrigin().spec() + kWellKnownUrlPath;
+  }
+  return url.GetOrigin().spec();
 }
 
 }  // namespace
@@ -183,7 +195,7 @@ CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(
             url_formatter::kFormatUrlOmitTrivialSubdomains |
             url_formatter::kFormatUrlTrimAfterHost,
         net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
-    ui_credential.change_password_url = ui_credential.url.GetOrigin().spec();
+    ui_credential.change_password_url = CreateChangeUrl(ui_credential.url);
   }
 
   return ui_credential;

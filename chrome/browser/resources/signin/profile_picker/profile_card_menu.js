@@ -222,4 +222,11 @@ Polymer({
     this.$.actionMenu.close();
     this.$.removeActionMenu.close();
   },
+
+  /** @private */
+  onCustomizeButtonClicked_() {
+    this.manageProfilesBrowserProxy_.openManageProfileSettingsSubPage(
+        this.profileState.profilePath);
+    this.$.actionMenu.close();
+  },
 });

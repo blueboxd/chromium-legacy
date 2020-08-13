@@ -73,7 +73,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
     private final ObserverList<Callback<WebContents>> mInitObservers = new ObserverList<>();
     private final Handler mHandler = new Handler();
     private WebContentsObserver mObserver;
-    private String mLastUrl;
 
     public static TabWebContentsObserver from(Tab tab) {
         TabWebContentsObserver observer = get(tab);
@@ -295,7 +294,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 recordErrorInPolicyAuditor(
                         navigation.getUrl(), navigation.errorDescription(), navigation.errorCode());
             }
-            mLastUrl = navigation.getUrl();
 
             if (!navigation.hasCommitted()) return;
 
@@ -355,7 +353,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         @Override
         public void destroy() {
             MediaCaptureNotificationService.updateMediaNotificationForTab(
-                    ContextUtils.getApplicationContext(), mTab.getId(), null, mLastUrl);
+                    ContextUtils.getApplicationContext(), mTab.getId(), null, mTab.getUrlString());
             super.destroy();
         }
     }

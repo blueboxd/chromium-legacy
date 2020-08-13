@@ -17,6 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/printing/common/print.mojom-test-utils.h"
 #include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "components/printing/test/mock_printer.h"
@@ -31,6 +32,7 @@
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -209,6 +211,46 @@ class FakePrintPreviewUI : public mojom::PrintPreviewUI {
 };
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
+class TestPrintManagerHost
+    : public mojom::PrintManagerHostInterceptorForTesting {
+ public:
+  TestPrintManagerHost(content::RenderView* view, MockPrinter* printer)
+      : printer_(printer) {
+    Init(view);
+  }
+  ~TestPrintManagerHost() override = default;
+
+  // mojom::PrintManagerInterceptorForTesting
+  mojom::PrintManagerHost* GetForwardingInterface() override { return nullptr; }
+  void DidGetPrintedPagesCount(int32_t cookie, int32_t number_pages) override {
+    if (number_pages_ > 0)
+      EXPECT_EQ(number_pages, number_pages_);
+    printer_->SetPrintedPagesCount(cookie, number_pages);
+  }
+
+  void SetExpectedPagesCount(int32_t number_pages) {
+    number_pages_ = number_pages;
+  }
+
+ private:
+  void Init(content::RenderView* view) {
+    content::RenderFrame* main_frame = view->GetMainRenderFrame();
+    main_frame->GetRemoteAssociatedInterfaces()->OverrideBinderForTesting(
+        mojom::PrintManagerHost::Name_,
+        base::BindRepeating(&TestPrintManagerHost::BindPrintManagerReceiver,
+                            base::Unretained(this)));
+  }
+
+  void BindPrintManagerReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
+    receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::PrintManagerHost>(
+        std::move(handle)));
+  }
+
+  int32_t number_pages_ = -1;
+  MockPrinter* printer_;
+  mojo::AssociatedReceiver<mojom::PrintManagerHost> receiver_{this};
+};
+
 }  // namespace
 
 class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
@@ -228,6 +270,8 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
         static_cast<PrintMockRenderThread*>(render_thread_.get());
 
     content::RenderViewTest::SetUp();
+    print_manager_ = std::make_unique<TestPrintManagerHost>(
+        view_, print_render_thread_->GetPrinter());
   }
 
   void TearDown() override {
@@ -243,26 +287,6 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   void PrintWithJavaScript() {
     ExecuteJavaScriptForTests("window.print();");
     base::RunLoop().RunUntilIdle();
-  }
-
-  // The renderer should be done calculating the number of rendered pages
-  // according to the specified settings defined in the mock render thread.
-  // Verify the page count is correct.
-  void VerifyPageCount(int expected_count) {
-#if defined(OS_CHROMEOS)
-    // The DidGetPrintedPagesCount message isn't sent on ChromeOS. Right now we
-    // always print all pages, and there are checks to that effect built into
-    // the print code.
-#else
-    const IPC::Message* page_cnt_msg =
-        render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_DidGetPrintedPagesCount::ID);
-    ASSERT_TRUE(page_cnt_msg);
-    PrintHostMsg_DidGetPrintedPagesCount::Param post_page_count_param;
-    PrintHostMsg_DidGetPrintedPagesCount::Read(page_cnt_msg,
-                                               &post_page_count_param);
-    EXPECT_EQ(expected_count, std::get<1>(post_page_count_param));
-#endif  // defined(OS_CHROMEOS)
   }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -401,6 +425,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   }
 
   PrintMockRenderThread* print_render_thread() { return print_render_thread_; }
+  TestPrintManagerHost* print_manager() { return print_manager_.get(); }
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   FakePrintPreviewUI* preview_ui() { return &preview_ui_; }
 #endif
@@ -412,6 +437,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   // Naked pointer as ownership is with
   // |content::RenderViewTest::render_thread_|.
   PrintMockRenderThread* print_render_thread_ = nullptr;
+  std::unique_ptr<TestPrintManagerHost> print_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PrintRenderFrameHelperTestBase);
 };
@@ -454,8 +480,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, BlockScriptInitiatedPrinting) {
   // Unblock script initiated printing and verify printing works.
   GetPrintRenderFrameHelper()->scripting_throttler_.Reset();
   print_render_thread()->printer()->ResetPrinter();
+  print_manager()->SetExpectedPagesCount(1);
   PrintWithJavaScript();
-  VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
 
@@ -481,19 +507,19 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, AllowUserOriginatedPrinting) {
   gfx::Size new_size(200, 100);
   Resize(new_size, false);
 
+  print_manager()->SetExpectedPagesCount(1);
   gfx::Rect bounds = GetElementBounds("print");
   ClickMouseButton(bounds);
   base::RunLoop().RunUntilIdle();
 
-  VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
 
 // Duplicate of OnPrintPagesTest only using javascript to print.
 TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintWithJavascript) {
+  print_manager()->SetExpectedPagesCount(1);
   PrintWithJavaScript();
 
-  VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
 
@@ -501,10 +527,10 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintWithJavascript) {
 TEST_F(MAYBE_PrintRenderFrameHelperTest, WindowPrintBeforePrintAfterPrint) {
   LoadHTML(kBeforeAfterPrintHtml);
   ExpectNoBeforeNoAfterPrintEvent();
+  print_manager()->SetExpectedPagesCount(1);
 
   PrintWithJavaScript();
 
-  VerifyPageCount(1);
   VerifyPagesPrinted(true);
   ExpectOneBeforeOneAfterPrintEvent();
 }
@@ -514,9 +540,10 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, WindowPrintBeforePrintAfterPrint) {
 // that channel all works.
 TEST_F(MAYBE_PrintRenderFrameHelperTest, OnPrintPages) {
   LoadHTML(kHelloWorldHTML);
+
+  print_manager()->SetExpectedPagesCount(1);
   OnPrintPages();
 
-  VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
 
@@ -524,9 +551,9 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, BasicBeforePrintAfterPrint) {
   LoadHTML(kBeforeAfterPrintHtml);
   ExpectNoBeforeNoAfterPrintEvent();
 
+  print_manager()->SetExpectedPagesCount(1);
   OnPrintPages();
 
-  VerifyPageCount(1);
   VerifyPagesPrinted(true);
   ExpectOneBeforeOneAfterPrintEvent();
 }

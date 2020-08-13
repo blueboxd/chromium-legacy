@@ -35,7 +35,12 @@
   [SigninEarlGreyAppInterface forgetFakeIdentity:fakeIdentity];
 }
 
-- (void)checkSignedInWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
+- (void)signOut {
+  [SigninEarlGreyAppInterface signOut];
+  [self verifySignedOut];
+}
+
+- (void)verifySignedInWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
   BOOL fakeIdentityIsNonNil = fakeIdentity != nil;
   EG_TEST_HELPER_ASSERT_TRUE(fakeIdentityIsNonNil, @"Need to give an identity");
 
@@ -63,7 +68,7 @@
       [fakeIdentity.gaiaID isEqualToString:primaryAccountGaiaID], errorStr);
 }
 
-- (void)checkSignedOut {
+- (void)verifySignedOut {
   // Required to avoid any problem since the following test is not dependant to
   // UI, and the previous action has to be totally finished before going through
   // the assert.
@@ -73,16 +78,9 @@
                              @"Unexpected signed in user");
 }
 
-- (void)waitForMatcher:(id<GREYMatcher>)matcher {
-  ConditionBlock condition = ^{
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:matcher] assertWithMatcher:grey_notNil()
-                                                             error:&error];
-    return error == nil;
-  };
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForUIElementTimeout, condition),
-             @"Waiting for matcher %@ failed.", matcher);
+- (void)verifyAuthenticated {
+  EG_TEST_HELPER_ASSERT_TRUE([SigninEarlGreyAppInterface isAuthenticated],
+                             @"User is not signed in");
 }
 
 @end

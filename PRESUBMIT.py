@@ -5099,6 +5099,11 @@ def CheckStrings(input_api, output_api):
         new_id_to_msg_map = grd_helper.GetGrdMessages(
           StringIO(unicode('\n'.join(f.NewContents()))), file_dir)
 
+    grd_name, ext = input_api.os_path.splitext(
+        input_api.os_path.basename(file_path))
+    screenshots_dir = input_api.os_path.join(
+        input_api.os_path.dirname(file_path), grd_name + ext.replace('.', '_'))
+
     # Compute added, removed and modified message IDs.
     old_ids = set(old_id_to_msg_map)
     new_ids = set(new_id_to_msg_map)
@@ -5108,12 +5113,16 @@ def CheckStrings(input_api, output_api):
     for key in old_ids.intersection(new_ids):
       if (old_id_to_msg_map[key].FormatXml()
           != new_id_to_msg_map[key].FormatXml()):
-        modified_ids.add(key)
-
-    grd_name, ext = input_api.os_path.splitext(
-        input_api.os_path.basename(file_path))
-    screenshots_dir = input_api.os_path.join(
-        input_api.os_path.dirname(file_path), grd_name + ext.replace('.', '_'))
+        sha1_path = input_api.os_path.join(
+          screenshots_dir, key + '.png.sha1')
+        if sha1_path not in new_or_added_paths and \
+           not input_api.os_path.exists(sha1_path):
+          # This message does not yet have a screenshot. Require one.
+          modified_ids.add(key)
+        elif (old_id_to_msg_map[key].ContentsAsXml('', True)
+          != new_id_to_msg_map[key].ContentsAsXml('', True)):
+          # The message content itself changed. Require an updated screenshot.
+          modified_ids.add(key)
 
     if run_screenshot_check:
       # Check the screenshot directory for .png files. Warn if there is any.

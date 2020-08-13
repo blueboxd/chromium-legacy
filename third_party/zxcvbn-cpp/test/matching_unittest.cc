@@ -304,7 +304,7 @@ TEST(ZxcvbnTest, DictionaryMatching) {
 
   {
     // default dictionaries
-    ParseRankedDictionary(DictionaryTag::US_TV_AND_FILM, "wow");
+    SetRankedDicts({{DictionaryTag::US_TV_AND_FILM, {{"wow", 1}}}});
     std::vector<Match> matches =
         dictionary_match("wow", default_ranked_dicts());
     EXPECT_THAT(matches, ElementsAre(ExpectedDictionaryMatch{
@@ -319,7 +319,7 @@ TEST(ZxcvbnTest, DictionaryMatching) {
 
   {
     // matches with provided user input dictionary
-    ParseRankedDictionary(DictionaryTag::USER_INPUTS, "foo\nbar");
+    SetRankedDicts({{DictionaryTag::USER_INPUTS, {{"foo", 1}, {"bar", 2}}}});
     std::vector<Match> matches =
         dictionary_match("foobar", default_ranked_dicts());
     EXPECT_THAT(matches, ElementsAre(
@@ -1004,7 +1004,8 @@ TEST(ZxcvbnTest, DateMatching) {
 TEST(ZxcvbnTest, Omnimatch) {
   EXPECT_THAT(omnimatch(""), IsEmpty());
 
-  ParseRankedDictionary(DictionaryTag::ENGLISH_WIKIPEDIA, "rosebud\nmaelstrom");
+  SetRankedDicts(
+      {{DictionaryTag::ENGLISH_WIKIPEDIA, {{"rosebud", 1}, {"maelstrom", 2}}}});
   std::string password = "r0sebudmaelstrom11/20/91aaaa";
   std::vector<Match> matches = omnimatch(password);
 

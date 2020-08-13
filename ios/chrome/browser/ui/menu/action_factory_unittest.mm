@@ -296,4 +296,24 @@ TEST_F(ActionFactoryTest, hideAction) {
   }
 }
 
+// Tests that the Move Folder action has the right title and image.
+TEST_F(ActionFactoryTest, MoveFolderAction) {
+  if (@available(iOS 13.0, *)) {
+    ActionFactory* factory =
+        [[ActionFactory alloc] initWithBrowser:test_browser_.get()
+                                      scenario:kTestMenuScenario];
+
+    UIImage* expectedImage = [UIImage imageNamed:@"move_folder"];
+
+    NSString* expectedTitle =
+        l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE);
+
+    UIAction* action = [factory actionToMoveFolderWithBlock:^{
+    }];
+
+    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+    EXPECT_EQ(expectedImage, action.image);
+  }
+}
+
 #endif  // defined(__IPHONE_13_0)

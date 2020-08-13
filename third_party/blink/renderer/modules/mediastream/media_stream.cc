@@ -148,7 +148,10 @@ MediaStream::MediaStream(ExecutionContext* context,
   }
 
   if (number_of_video_tracks == 0) {
-    std::move(media_stream_initialized_callback_).Run(this);
+    context->GetTaskRunner(TaskType::kInternalMedia)
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(std::move(media_stream_initialized_callback_),
+                             WrapPersistent(this)));
   }
 }
 

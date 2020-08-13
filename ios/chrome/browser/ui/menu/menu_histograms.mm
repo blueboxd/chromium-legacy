@@ -19,14 +19,16 @@ const char kHistoryEntryActionsHistogram[] =
     "Mobile.ContextMenu.HistoryEntry.Actions";
 const char kBookmarkEntryActionsHistogram[] =
     "Mobile.ContextMenu.BookmarkEntry.Actions";
-const char ReadingListEntryActionsHistogram[] =
+const char kReadingListEntryActionsHistogram[] =
     "Mobile.ContextMenu.ReadingListEntry.Actions";
-const char RecentTabsEntryActionsHistogram[] =
+const char kRecentTabsEntryActionsHistogram[] =
     "Mobile.ContextMenu.RecentTabsEntry.Actions";
-const char RecentTabsHeaderActionsHistogram[] =
+const char kRecentTabsHeaderActionsHistogram[] =
     "Mobile.ContextMenu.RecentTabsHeader.Actions";
-const char ContentSuggestionsEntryActionsHistogram[] =
+const char kContentSuggestionsEntryActionsHistogram[] =
     "Mobile.ContextMenu.ContentSuggestionsEntry.Actions";
+const char kBookmarkFolderActionsHistogram[] =
+    "Mobile.ContextMenu.BookmarkFolder.Actions";
 }  // namespace
 
 void RecordMenuShown(MenuScenario scenario) {
@@ -40,12 +42,14 @@ const char* GetActionsHistogramName(MenuScenario scenario) {
     case MenuScenario::kBookmarkEntry:
       return kBookmarkEntryActionsHistogram;
     case MenuScenario::kReadingListEntry:
-      return ReadingListEntryActionsHistogram;
+      return kReadingListEntryActionsHistogram;
     case MenuScenario::kRecentTabsEntry:
-      return RecentTabsEntryActionsHistogram;
+      return kRecentTabsEntryActionsHistogram;
     case MenuScenario::kRecentTabsHeader:
-      return RecentTabsHeaderActionsHistogram;
+      return kRecentTabsHeaderActionsHistogram;
     case MenuScenario::kContentSuggestionsEntry:
-      return ContentSuggestionsEntryActionsHistogram;
+      return kContentSuggestionsEntryActionsHistogram;
+    case MenuScenario::kBookmarkFolder:
+      return kBookmarkFolderActionsHistogram;
   }
 }

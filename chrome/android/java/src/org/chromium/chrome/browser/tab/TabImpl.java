@@ -137,6 +137,11 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     private LoadUrlParams mPendingLoadParams;
 
     /**
+     * URL of the page currently loading. Used as a fall-back in case tab restore fails.
+     */
+    private GURL mUrl;
+
+    /**
      * True while a page load is in progress.
      */
     private boolean mIsLoading;
@@ -327,7 +332,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         return mId;
     }
 
-    // TODO(crbug.com/1113249) move getUrl() and getUrlString() to CriticalPersistedTabData
     @Override
     public String getUrlString() {
         return getUrl().getSpec();
@@ -341,12 +345,10 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         // If we have a ContentView, or a NativePage, or the url is not empty, we have a WebContents
         // so cache the WebContent's url. If not use the cached version.
         if (getWebContents() != null || isNativePage() || !url.getSpec().isEmpty()) {
-            CriticalPersistedTabData.from(this).setUrl(url);
+            mUrl = url;
         }
 
-        return CriticalPersistedTabData.from(this).getUrl() != null
-                ? CriticalPersistedTabData.from(this).getUrl()
-                : GURL.emptyGURL();
+        return mUrl != null ? mUrl : GURL.emptyGURL();
     }
 
     @Override
@@ -758,9 +760,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             CriticalPersistedTabData.from(this).setLaunchTypeAtCreation(mLaunchType);
             mCreationState = creationState;
             mPendingLoadParams = loadUrlParams;
-            if (loadUrlParams != null) {
-                CriticalPersistedTabData.from(this).setUrl(new GURL(loadUrlParams.getUrl()));
-            }
+            if (loadUrlParams != null) mUrl = new GURL(loadUrlParams.getUrl());
 
             TabHelpers.initTabHelpers(this, parent);
 
@@ -822,8 +822,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         assert state != null;
         CriticalPersistedTabData.from(this).setWebContentsState(state.contentsState);
         CriticalPersistedTabData.from(this).setTimestampMillis(state.timestampMillis);
-        CriticalPersistedTabData.from(this).setUrl(
-                new GURL(state.contentsState.getVirtualUrlFromState()));
+        mUrl = new GURL(state.contentsState.getVirtualUrlFromState());
         CriticalPersistedTabData.from(this).setTitle(
                 state.contentsState.getDisplayTitleFromState());
         CriticalPersistedTabData.from(this).setLaunchTypeAtCreation(state.tabLaunchTypeAtCreation);
@@ -1394,9 +1393,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             initWebContents(webContents);
 
             if (!restored) {
-                String url = CriticalPersistedTabData.from(this).getUrl().getSpec().isEmpty()
-                        ? UrlConstants.NTP_URL
-                        : CriticalPersistedTabData.from(this).getUrl().getSpec();
+                String url = mUrl.getSpec().isEmpty() ? UrlConstants.NTP_URL : mUrl.getSpec();
                 loadUrl(new LoadUrlParams(url, PageTransition.GENERATED));
             }
         } finally {

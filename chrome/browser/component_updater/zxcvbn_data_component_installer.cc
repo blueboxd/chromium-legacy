@@ -19,6 +19,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/util/ranges/algorithm.h"
@@ -30,6 +31,7 @@
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 #include "third_party/zxcvbn-cpp/native-src/zxcvbn/frequency_lists.hpp"
+#include "third_party/zxcvbn-cpp/native-src/zxcvbn/frequency_lists_common.hpp"
 
 namespace component_updater {
 
@@ -69,31 +71,25 @@ constexpr std::array<TagAndFileName, 6> kTagAndFileNamePairs = {{
      ZxcvbnDataComponentInstallerPolicy::kUsTvAndFilmTxtFileName},
 }};
 
-using DictionaryMap = base::flat_map<zxcvbn::DictionaryTag, std::string>;
-DictionaryMap ReadDictionaries(const base::FilePath& install_dir) {
-  DictionaryMap result;
-  result.reserve(kTagAndFileNamePairs.size());
+using RankedDictionaries =
+    std::unordered_map<zxcvbn::DictionaryTag, zxcvbn::RankedDict>;
+RankedDictionaries ParseRankedDictionaries(const base::FilePath& install_dir) {
+  RankedDictionaries result;
   for (const auto& pair : kTagAndFileNamePairs) {
     base::FilePath dictionary_path = install_dir.Append(pair.file_name);
     DVLOG(1) << "Reading Dictionary from file: " << dictionary_path;
 
     std::string dictionary;
-    if (base::ReadFileToString(dictionary_path, &dictionary))
-      result.try_emplace(result.end(), pair.tag, std::move(dictionary));
-    else
+    if (base::ReadFileToString(dictionary_path, &dictionary)) {
+      result.emplace(pair.tag, zxcvbn::build_ranked_dict(base::SplitStringPiece(
+                                   dictionary, "\r\n", base::TRIM_WHITESPACE,
+                                   base::SPLIT_WANT_NONEMPTY)));
+    } else {
       VLOG(1) << "Failed reading from " << dictionary_path;
+    }
   }
 
   return result;
-}
-
-void ParseDictionaries(const DictionaryMap& dictionaries) {
-  for (const auto& pair : dictionaries) {
-    if (!zxcvbn::ParseRankedDictionary(pair.first, pair.second)) {
-      VLOG(1) << "Failed to parse dictionary for tag "
-              << static_cast<int>(pair.first) << ". Contents: " << pair.second;
-    }
-  }
 }
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the extension.
@@ -141,8 +137,8 @@ void ZxcvbnDataComponentInstallerPolicy::ComponentReady(
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&ReadDictionaries, install_dir),
-      base::BindOnce(&ParseDictionaries));
+      base::BindOnce(&ParseRankedDictionaries, install_dir),
+      base::BindOnce(&zxcvbn::SetRankedDicts));
 }
 
 base::FilePath ZxcvbnDataComponentInstallerPolicy::GetRelativeInstallDir()

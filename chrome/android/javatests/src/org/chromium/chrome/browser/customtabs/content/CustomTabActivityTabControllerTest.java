@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.chrome.test.util.ChromeTabUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -97,8 +96,7 @@ public class CustomTabActivityTabControllerTest {
         ((CustomTabActivityTestRule) mActivityTestRule).startCustomTabActivityWithIntent(intent);
 
         CustomTabActivityTabProvider tabProvider = getActivityTabProvider();
-        assertEquals(
-                mediaViewerUrl, ChromeTabUtils.getUrlOnUiThread(tabProvider.getTab()).getSpec());
+        assertEquals(mediaViewerUrl, tabProvider.getTab().getUrl().getSpec());
         assertNotEquals(TabCreationMode.FROM_STARTUP_TAB_PRELOADER,
                 tabProvider.getInitialTabCreationMode());
     }

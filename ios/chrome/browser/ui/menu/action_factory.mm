@@ -183,4 +183,12 @@
   return action;
 }
 
+- (UIAction*)actionToMoveFolderWithBlock:(ProceduralBlock)block {
+  return [self
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
+                image:[UIImage imageNamed:@"move_folder"]
+                 type:MenuActionType::Move
+                block:block];
+}
+
 @end

@@ -4,6 +4,7 @@
 
 #include "media/gpu/vaapi/vp8_vaapi_video_decoder_delegate.h"
 
+#include "base/trace_event/trace_event.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_common.h"
@@ -31,6 +32,7 @@ scoped_refptr<VP8Picture> VP8VaapiVideoDecoderDelegate::CreateVP8Picture() {
 bool VP8VaapiVideoDecoderDelegate::SubmitDecode(
     scoped_refptr<VP8Picture> pic,
     const Vp8ReferenceFrameVector& reference_frames) {
+  TRACE_EVENT0("media,gpu", "VP8VaapiVideoDecoderDelegate::SubmitDecode");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto va_surface_id = pic->AsVaapiVP8Picture()->va_surface()->id();

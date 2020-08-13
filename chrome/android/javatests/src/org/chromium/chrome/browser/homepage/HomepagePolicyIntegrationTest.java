@@ -140,8 +140,7 @@ public class HomepagePolicyIntegrationTest {
         destroyAndRestartActivity();
 
         Assert.assertEquals("Start up homepage should be the same as the policy setting", TEST_URL,
-                ChromeTabUtils.getUrlStringOnUiThread(
-                        mActivityTestRule.getActivity().getActivityTab()));
+                mActivityTestRule.getActivity().getActivityTab().getUrlString());
     }
 
     @Test
@@ -153,8 +152,7 @@ public class HomepagePolicyIntegrationTest {
                 .fullyLoadUrl(anotherUrl);
 
         Assert.assertNotEquals("Did not switch to a different URL", TEST_URL,
-                ChromeTabUtils.getUrlStringOnUiThread(
-                        mActivityTestRule.getActivity().getActivityTab()));
+                mActivityTestRule.getActivity().getActivityTab().getUrlString());
 
         ChromeTabUtils.waitForTabPageLoaded(
                 mActivityTestRule.getActivity().getActivityTab(), TEST_URL, () -> {
@@ -175,8 +173,7 @@ public class HomepagePolicyIntegrationTest {
                 });
 
         Assert.assertEquals("After clicking HomeButton, URL should be back to Homepage", TEST_URL,
-                ChromeTabUtils.getUrlStringOnUiThread(
-                        mActivityTestRule.getActivity().getActivityTab()));
+                mActivityTestRule.getActivity().getActivityTab().getUrlString());
     }
 
     @Test
@@ -229,7 +226,6 @@ public class HomepagePolicyIntegrationTest {
         // Start a new ChromeActivity.
         mActivityTestRule.startActivityCompletely(intent);
         Assert.assertEquals("Start up page is not homepage", HomepageManager.getHomepageUri(),
-                ChromeTabUtils.getUrlStringOnUiThread(
-                        mActivityTestRule.getActivity().getActivityTab()));
+                mActivityTestRule.getActivity().getActivityTab().getUrlString());
     }
 }

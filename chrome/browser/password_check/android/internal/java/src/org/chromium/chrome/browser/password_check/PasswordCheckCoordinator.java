@@ -22,12 +22,14 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
+import java.util.Objects;
+
 /**
  * Creates the PasswordCheckComponentUi. This class is responsible for managing the UI for the check
  * of the leaked password.
  */
-class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObserver {
-    private static final String WELL_KNOWN_URL_PATH = "/.well-known/change-password";
+class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObserver,
+                                          PasswordCheckComponentUi.ChangePasswordDelegate {
     private static final String AUTOFILL_ASSISTANT_PACKAGE =
             "org.chromium.chrome.browser.autofill_assistant.";
     private static final String AUTOFILL_ASSISTANT_ENABLED_KEY =
@@ -37,8 +39,7 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
     private static final String INTENT = "PASSWORD_CHANGE";
 
     private final PasswordCheckFragmentView mFragmentView;
-    private final PasswordCheckMediator mMediator = new PasswordCheckMediator(
-            this::launchCctWithChangePasswordUrl, this::launchCctWithScript);
+    private final PasswordCheckMediator mMediator = new PasswordCheckMediator(this);
     private PropertyModel mModel;
 
     /**
@@ -133,23 +134,39 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
 
     /**
      * Launches a CCT that points to the change password form or home page of |origin|.
-     * @param origin Origin of the site to be opened in a CCT.
+     * @param credential A {@link CompromisedCredential} to be changed in an App or in a CCT.
      */
-    private void launchCctWithChangePasswordUrl(String origin) {
-        // TODO(crbug.com/1092444): Handle the case when an app should be opened. Consider to set
-        // |browser_fallback_url|, it is used in case of error while opening a CCT.
-        Intent intent = buildIntent(origin + WELL_KNOWN_URL_PATH);
-        IntentUtils.safeStartActivity(mFragmentView.getActivity(), intent);
+    @Override
+    public void launchAppOrCctWithChangePasswordUrl(CompromisedCredential credential) {
+        // TODO(crbug.com/1092444): Always launch the URL if possible and let Android handle the
+        //  match to open it.
+        IntentUtils.safeStartActivity(mFragmentView.getActivity(),
+                credential.getAssociatedApp().isEmpty()
+                        ? buildIntent(credential.getPasswordChangeUrl())
+                        : getPackageLaunchIntent(credential.getAssociatedApp()));
+    }
+
+    @Override
+    public boolean canManuallyChangeCredential(CompromisedCredential credential) {
+        return !credential.getPasswordChangeUrl().isEmpty()
+                || getPackageLaunchIntent(credential.getAssociatedApp()) != null;
     }
 
     /**
      * Launches a CCT that starts a password change script for a {@link CompromisedCredential}.
      * @param credential A {@link CompromisedCredential} to be changed with a script.
      */
-    private void launchCctWithScript(CompromisedCredential credential) {
+    @Override
+    public void launchCctWithScript(CompromisedCredential credential) {
         Intent intent = buildIntent(credential.getOrigin().getSpec());
         populateAutofillAssistantExtras(intent, credential.getUsername());
         IntentUtils.safeStartActivity(mFragmentView.getActivity(), intent);
+    }
+
+    private Intent getPackageLaunchIntent(String packageName) {
+        return Objects.requireNonNull(mFragmentView.getActivity())
+                .getPackageManager()
+                .getLaunchIntentForPackage(packageName);
     }
 
     /**

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_worker.h"
 #include "chrome/browser/chromeos/cert_provisioning/mock_cert_provisioning_worker.h"
 #include "chrome/browser/chromeos/platform_keys/mock_platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_state_test_helper.h"

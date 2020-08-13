@@ -856,24 +856,6 @@ bool ContentSecurityPolicy::AllowTrustedTypePolicy(const String& policy_name,
   return is_allowed;
 }
 
-bool ContentSecurityPolicy::AllowAncestors(
-    LocalFrame* frame,
-    const KURL& url,
-    ReportingDisposition reporting_disposition) const {
-  bool is_allowed = true;
-  for (const auto& policy : policies_)
-    is_allowed &= policy->AllowAncestors(frame, url, reporting_disposition);
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::IsFrameAncestorsEnforced() const {
-  for (const auto& policy : policies_) {
-    if (policy->IsFrameAncestorsEnforced())
-      return true;
-  }
-  return false;
-}
-
 bool ContentSecurityPolicy::AllowTrustedTypeAssignmentFailure(
     const String& message,
     const String& sample,

@@ -106,12 +106,11 @@ network::CrossOriginEmbedderPolicy CrossOriginEmbedderPolicyRequireCorp() {
 }
 
 std::vector<storage::mojom::ServiceWorkerUserDataPtr> CreateUserData(
-    int64_t registration_id,
     const std::vector<std::pair<std::string, std::string>>& key_value_pairs) {
   std::vector<storage::mojom::ServiceWorkerUserDataPtr> out;
   for (auto& kv : key_value_pairs) {
-    out.push_back(storage::mojom::ServiceWorkerUserData::New(
-        registration_id, kv.first, kv.second));
+    out.push_back(
+        storage::mojom::ServiceWorkerUserData::New(kv.first, kv.second));
   }
   return out;
 }
@@ -1084,9 +1083,8 @@ TEST(ServiceWorkerDatabaseTest, UserData_Basic) {
   // Write user data associated with the stored registration.
   std::vector<std::string> user_data_out;
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data.registration_id, kOrigin,
-                CreateUserData(data.registration_id, {{"key1", "data"}})));
+            database->WriteUserData(data.registration_id, kOrigin,
+                                    CreateUserData({{"key1", "data"}})));
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data.registration_id, {"key1"}, &user_data_out));
@@ -1096,15 +1094,13 @@ TEST(ServiceWorkerDatabaseTest, UserData_Basic) {
   // Writing user data not associated with the stored registration should be
   // failed.
   EXPECT_EQ(ServiceWorkerDatabase::Status::kErrorNotFound,
-            database->WriteUserData(
-                300, kOrigin,
-                CreateUserData(data.registration_id, {{"key1", "data"}})));
+            database->WriteUserData(300, kOrigin,
+                                    CreateUserData({{"key1", "data"}})));
 
   // Write empty user data for a different key.
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUserData(data.registration_id, kOrigin,
-                                    CreateUserData(data.registration_id,
-                                                   {{"key2", std::string()}})));
+                                    CreateUserData({{"key2", std::string()}})));
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data.registration_id, {"key2"}, &user_data_out));
@@ -1118,9 +1114,8 @@ TEST(ServiceWorkerDatabaseTest, UserData_Basic) {
 
   // Overwrite the existing user data.
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data.registration_id, kOrigin,
-                CreateUserData(data.registration_id, {{"key1", "overwrite"}})));
+            database->WriteUserData(data.registration_id, kOrigin,
+                                    CreateUserData({{"key1", "overwrite"}})));
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data.registration_id, {"key1"}, &user_data_out));
@@ -1142,11 +1137,10 @@ TEST(ServiceWorkerDatabaseTest, UserData_Basic) {
 
   // Write/overwrite multiple user data keys.
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data.registration_id, kOrigin,
-                CreateUserData(data.registration_id, {{"key2", "overwrite2"},
-                                                      {"key3", "data3"},
-                                                      {"key4", "data4"}})));
+            database->WriteUserData(data.registration_id, kOrigin,
+                                    CreateUserData({{"key2", "overwrite2"},
+                                                    {"key3", "data3"},
+                                                    {"key4", "data4"}})));
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kErrorNotFound,
       database->ReadUserData(data.registration_id, {"key1"}, &user_data_out));
@@ -1218,63 +1212,51 @@ TEST(ServiceWorkerDatabaseTest,
   ASSERT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->WriteUserData(data1.registration_id, kOrigin,
-                              CreateUserData(data1.registration_id,
-                                             {{"key_prefix:key1", "value1"}})));
+                              CreateUserData({{"key_prefix:key1", "value1"}})));
   ASSERT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->WriteUserData(data1.registration_id, kOrigin,
-                              CreateUserData(data1.registration_id,
-                                             {{"key_prefix:key2", "value2"}})));
+                              CreateUserData({{"key_prefix:key2", "value2"}})));
   ASSERT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->WriteUserData(data1.registration_id, kOrigin,
-                              CreateUserData(data1.registration_id,
-                                             {{"key_prefix:key3", "value3"}})));
+                              CreateUserData({{"key_prefix:key3", "value3"}})));
 
   // Write user data associated with the registration2.
   ASSERT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->WriteUserData(data2.registration_id, kOrigin,
-                              CreateUserData(data2.registration_id,
-                                             {{"key_prefix:key1", "value1"}})));
+                              CreateUserData({{"key_prefix:key1", "value1"}})));
   ASSERT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->WriteUserData(data2.registration_id, kOrigin,
-                              CreateUserData(data2.registration_id,
-                                             {{"key_prefix:key2", "value2"}})));
+                              CreateUserData({{"key_prefix:key2", "value2"}})));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUserData(
                 data2.registration_id, kOrigin,
-                CreateUserData(data2.registration_id,
-                               {{"another_key_prefix:key1", "value1"}})));
+                CreateUserData({{"another_key_prefix:key1", "value1"}})));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUserData(
                 data2.registration_id, kOrigin,
-                CreateUserData(data2.registration_id,
-                               {{"another_key_prefix:key2", "value2"}})));
+                CreateUserData({{"another_key_prefix:key2", "value2"}})));
 
   // Get all registrations with user data by key prefix.
-  std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data_list;
+  std::vector<std::pair<int64_t, std::string>> user_data_list;
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->ReadUserDataForAllRegistrationsByKeyPrefix(
                 "key_prefix:", &user_data_list));
   ASSERT_EQ(5u, user_data_list.size());
 
-  EXPECT_EQ(data1.registration_id, user_data_list[0]->registration_id);
-  EXPECT_EQ("key_prefix:key1", user_data_list[0]->key);
-  EXPECT_EQ("value1", user_data_list[0]->value);
-  EXPECT_EQ(data2.registration_id, user_data_list[1]->registration_id);
-  EXPECT_EQ("key_prefix:key1", user_data_list[1]->key);
-  EXPECT_EQ("value1", user_data_list[1]->value);
-  EXPECT_EQ(data1.registration_id, user_data_list[2]->registration_id);
-  EXPECT_EQ("key_prefix:key2", user_data_list[2]->key);
-  EXPECT_EQ("value2", user_data_list[2]->value);
-  EXPECT_EQ(data2.registration_id, user_data_list[3]->registration_id);
-  EXPECT_EQ("key_prefix:key2", user_data_list[3]->key);
-  EXPECT_EQ("value2", user_data_list[3]->value);
-  EXPECT_EQ(data1.registration_id, user_data_list[4]->registration_id);
-  EXPECT_EQ("key_prefix:key3", user_data_list[4]->key);
-  EXPECT_EQ("value3", user_data_list[4]->value);
+  EXPECT_EQ(data1.registration_id, user_data_list[0].first);
+  EXPECT_EQ("value1", user_data_list[0].second);
+  EXPECT_EQ(data2.registration_id, user_data_list[1].first);
+  EXPECT_EQ("value1", user_data_list[1].second);
+  EXPECT_EQ(data1.registration_id, user_data_list[2].first);
+  EXPECT_EQ("value2", user_data_list[2].second);
+  EXPECT_EQ(data2.registration_id, user_data_list[3].first);
+  EXPECT_EQ("value2", user_data_list[3].second);
+  EXPECT_EQ(data1.registration_id, user_data_list[4].first);
+  EXPECT_EQ("value3", user_data_list[4].second);
 }
 
 TEST(ServiceWorkerDatabaseTest, ReadUserDataByKeyPrefix) {
@@ -1298,8 +1280,7 @@ TEST(ServiceWorkerDatabaseTest, ReadUserDataByKeyPrefix) {
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUserData(
                 data.registration_id, kOrigin,
-                CreateUserData(data.registration_id,
-                               {{"key_prefix:key1", "value_c1"},
+                CreateUserData({{"key_prefix:key1", "value_c1"},
                                 {"key_prefix:key2", "value_c2"},
                                 {"other_key_prefix:k1", "value_d1"},
                                 {"other_key_prefix:k2", "value_d2"}})));
@@ -1344,8 +1325,7 @@ TEST(ServiceWorkerDatabaseTest, ReadUserKeysAndDataByKeyPrefix) {
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUserData(
                 data.registration_id, kOrigin,
-                CreateUserData(data.registration_id,
-                               {{"key_prefix:key1", "value_c1"},
+                CreateUserData({{"key_prefix:key1", "value_c1"},
                                 {"key_prefix:key2", "value_c2"},
                                 {"other_key_prefix:k1", "value_d1"},
                                 {"other_key_prefix:k2", "value_d2"}})));
@@ -1407,8 +1387,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteUserDataByKeyPrefixes) {
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUserData(
                 data1.registration_id, kOrigin,
-                CreateUserData(data1.registration_id,
-                               {{"key_prefix:key1", "value_a1"},
+                CreateUserData({{"key_prefix:key1", "value_a1"},
                                 {"key_prefix:key2", "value_a2"},
                                 {"key_prefix:key3", "value_a3"},
                                 {"kept_key_prefix:key1", "value_b1"}})));
@@ -1417,8 +1396,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteUserDataByKeyPrefixes) {
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUserData(
                 data2.registration_id, kOrigin,
-                CreateUserData(data2.registration_id,
-                               {{"key_prefix:key1", "value_c1"},
+                CreateUserData({{"key_prefix:key1", "value_c1"},
                                 {"key_prefix:key2", "value_c2"},
                                 {"other_key_prefix:key1", "value_d1"},
                                 {"other_key_prefix:key2", "value_d2"},
@@ -1440,20 +1418,17 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteUserDataByKeyPrefixes) {
                 {"key_prefix:", "other_key_prefix:", "not_found_key_prefix:"}));
 
   // User data with deleted "key_prefix:" should only remain for registration 1.
-  std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data_list;
+  std::vector<std::pair<int64_t, std::string>> user_data_list;
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->ReadUserDataForAllRegistrationsByKeyPrefix(
                 "key_prefix:", &user_data_list));
   ASSERT_EQ(3u, user_data_list.size());
-  EXPECT_EQ(data1.registration_id, user_data_list[0]->registration_id);
-  EXPECT_EQ("key_prefix:key1", user_data_list[0]->key);
-  EXPECT_EQ("value_a1", user_data_list[0]->value);
-  EXPECT_EQ(data1.registration_id, user_data_list[1]->registration_id);
-  EXPECT_EQ("key_prefix:key2", user_data_list[1]->key);
-  EXPECT_EQ("value_a2", user_data_list[1]->value);
-  EXPECT_EQ(data1.registration_id, user_data_list[2]->registration_id);
-  EXPECT_EQ("key_prefix:key3", user_data_list[2]->key);
-  EXPECT_EQ("value_a3", user_data_list[2]->value);
+  EXPECT_EQ(data1.registration_id, user_data_list[0].first);
+  EXPECT_EQ("value_a1", user_data_list[0].second);
+  EXPECT_EQ(data1.registration_id, user_data_list[1].first);
+  EXPECT_EQ("value_a2", user_data_list[1].second);
+  EXPECT_EQ(data1.registration_id, user_data_list[2].first);
+  EXPECT_EQ("value_a3", user_data_list[2].second);
 
   // User data for second deleted key prefix should also have been deleted.
   user_data_list.clear();
@@ -1469,15 +1444,12 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteUserDataByKeyPrefixes) {
             database->ReadUserDataForAllRegistrationsByKeyPrefix(
                 "kept_key_prefix:", &user_data_list));
   ASSERT_EQ(3u, user_data_list.size());
-  EXPECT_EQ(data1.registration_id, user_data_list[0]->registration_id);
-  EXPECT_EQ("kept_key_prefix:key1", user_data_list[0]->key);
-  EXPECT_EQ("value_b1", user_data_list[0]->value);
-  EXPECT_EQ(data2.registration_id, user_data_list[1]->registration_id);
-  EXPECT_EQ("kept_key_prefix:key1", user_data_list[1]->key);
-  EXPECT_EQ("value_e1", user_data_list[1]->value);
-  EXPECT_EQ(data2.registration_id, user_data_list[2]->registration_id);
-  EXPECT_EQ("kept_key_prefix:key2", user_data_list[2]->key);
-  EXPECT_EQ("value_e2", user_data_list[2]->value);
+  EXPECT_EQ(data1.registration_id, user_data_list[0].first);
+  EXPECT_EQ("value_b1", user_data_list[0].second);
+  EXPECT_EQ(data2.registration_id, user_data_list[1].first);
+  EXPECT_EQ("value_e1", user_data_list[1].second);
+  EXPECT_EQ(data2.registration_id, user_data_list[2].first);
+  EXPECT_EQ("value_e2", user_data_list[2].second);
 }
 
 TEST(ServiceWorkerDatabaseTest,
@@ -1515,8 +1487,7 @@ TEST(ServiceWorkerDatabaseTest,
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUserData(
                 data1.registration_id, kOrigin,
-                CreateUserData(data1.registration_id,
-                               {{"key_prefix:key1", "value_a1"},
+                CreateUserData({{"key_prefix:key1", "value_a1"},
                                 {"key_prefix:key2", "value_a2"},
                                 {"key_prefix:key3", "value_a3"},
                                 {"kept_key_prefix:key1", "value_b1"}})));
@@ -1525,8 +1496,7 @@ TEST(ServiceWorkerDatabaseTest,
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUserData(
                 data2.registration_id, kOrigin,
-                CreateUserData(data2.registration_id,
-                               {{"key_prefix:key1", "value_c1"},
+                CreateUserData({{"key_prefix:key1", "value_c1"},
                                 {"key_prefix:key2", "value_c2"},
                                 {"kept_key_prefix:key1", "value_d1"},
                                 {"kept_key_prefix:key2", "value_d2"}})));
@@ -1544,7 +1514,7 @@ TEST(ServiceWorkerDatabaseTest,
       database->DeleteUserDataForAllRegistrationsByKeyPrefix("key_prefix:"));
 
   // User data with deleted "key_prefix:" should be deleted.
-  std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data_list;
+  std::vector<std::pair<int64_t, std::string>> user_data_list;
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->ReadUserDataForAllRegistrationsByKeyPrefix(
                 "key_prefix:", &user_data_list));
@@ -1557,15 +1527,12 @@ TEST(ServiceWorkerDatabaseTest,
                 "kept_key_prefix:", &user_data_list));
   ASSERT_EQ(3u, user_data_list.size());
 
-  EXPECT_EQ(data1.registration_id, user_data_list[0]->registration_id);
-  EXPECT_EQ("kept_key_prefix:key1", user_data_list[0]->key);
-  EXPECT_EQ("value_b1", user_data_list[0]->value);
-  EXPECT_EQ(data2.registration_id, user_data_list[1]->registration_id);
-  EXPECT_EQ("kept_key_prefix:key1", user_data_list[1]->key);
-  EXPECT_EQ("value_d1", user_data_list[1]->value);
-  EXPECT_EQ(data2.registration_id, user_data_list[2]->registration_id);
-  EXPECT_EQ("kept_key_prefix:key2", user_data_list[2]->key);
-  EXPECT_EQ("value_d2", user_data_list[2]->value);
+  EXPECT_EQ(data1.registration_id, user_data_list[0].first);
+  EXPECT_EQ("value_b1", user_data_list[0].second);
+  EXPECT_EQ(data2.registration_id, user_data_list[1].first);
+  EXPECT_EQ("value_d1", user_data_list[1].second);
+  EXPECT_EQ(data2.registration_id, user_data_list[2].first);
+  EXPECT_EQ("value_d2", user_data_list[2].second);
 }
 
 TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
@@ -1602,14 +1569,13 @@ TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
   // Write user data associated with the registration1.
   std::vector<std::string> user_data_out;
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data1.registration_id, kOrigin,
-                CreateUserData(data1.registration_id, {{"key", "value1"}})));
+            database->WriteUserData(data1.registration_id, kOrigin,
+                                    CreateUserData({{"key", "data1"}})));
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data1.registration_id, {"key"}, &user_data_out));
   ASSERT_EQ(1u, user_data_out.size());
-  EXPECT_EQ("value1", user_data_out[0]);
+  EXPECT_EQ("data1", user_data_out[0]);
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kErrorNotFound,
       database->ReadUserData(data2.registration_id, {"key"}, &user_data_out));
@@ -1617,31 +1583,28 @@ TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
   // Write user data associated with the registration2. This shouldn't overwrite
   // the data associated with registration1.
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data2.registration_id, kOrigin,
-                CreateUserData(data2.registration_id, {{"key", "value2"}})));
+            database->WriteUserData(data2.registration_id, kOrigin,
+                                    CreateUserData({{"key", "data2"}})));
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data1.registration_id, {"key"}, &user_data_out));
   ASSERT_EQ(1u, user_data_out.size());
-  EXPECT_EQ("value1", user_data_out[0]);
+  EXPECT_EQ("data1", user_data_out[0]);
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data2.registration_id, {"key"}, &user_data_out));
   ASSERT_EQ(1u, user_data_out.size());
-  EXPECT_EQ("value2", user_data_out[0]);
+  EXPECT_EQ("data2", user_data_out[0]);
 
   // Get all registrations with user data.
-  std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data_list;
+  std::vector<std::pair<int64_t, std::string>> user_data_list;
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->ReadUserDataForAllRegistrations("key", &user_data_list));
   EXPECT_EQ(2u, user_data_list.size());
-  EXPECT_EQ(data1.registration_id, user_data_list[0]->registration_id);
-  EXPECT_EQ("key", user_data_list[0]->key);
-  EXPECT_EQ("value1", user_data_list[0]->value);
-  EXPECT_EQ(data2.registration_id, user_data_list[1]->registration_id);
-  EXPECT_EQ("key", user_data_list[1]->key);
-  EXPECT_EQ("value2", user_data_list[1]->value);
+  EXPECT_EQ(data1.registration_id, user_data_list[0].first);
+  EXPECT_EQ("data1", user_data_list[0].second);
+  EXPECT_EQ(data2.registration_id, user_data_list[1].first);
+  EXPECT_EQ("data2", user_data_list[1].second);
 
   // Delete the data associated with the registration2. This shouldn't delete
   // the data associated with registration1.
@@ -1651,7 +1614,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data1.registration_id, {"key"}, &user_data_out));
   ASSERT_EQ(1u, user_data_out.size());
-  EXPECT_EQ("value1", user_data_out[0]);
+  EXPECT_EQ("data1", user_data_out[0]);
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kErrorNotFound,
       database->ReadUserData(data2.registration_id, {"key"}, &user_data_out));
@@ -1661,9 +1624,8 @@ TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->ReadUserDataForAllRegistrations("key", &user_data_list));
   EXPECT_EQ(1u, user_data_list.size());
-  EXPECT_EQ(data1.registration_id, user_data_list[0]->registration_id);
-  EXPECT_EQ("key", user_data_list[0]->key);
-  EXPECT_EQ("value1", user_data_list[0]->value);
+  EXPECT_EQ(data1.registration_id, user_data_list[0].first);
+  EXPECT_EQ("data1", user_data_list[0].second);
 }
 
 TEST(ServiceWorkerDatabaseTest, UserData_DeleteRegistration) {
@@ -1699,34 +1661,31 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteRegistration) {
   // Write user data associated with the registration1.
   std::vector<std::string> user_data_out;
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data1.registration_id, kOrigin,
-                CreateUserData(data1.registration_id, {{"key1", "value1"}})));
+            database->WriteUserData(data1.registration_id, kOrigin,
+                                    CreateUserData({{"key1", "data1"}})));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data1.registration_id, kOrigin,
-                CreateUserData(data1.registration_id, {{"key2", "value2"}})));
+            database->WriteUserData(data1.registration_id, kOrigin,
+                                    CreateUserData({{"key2", "data2"}})));
   ASSERT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data1.registration_id, {"key1"}, &user_data_out));
   ASSERT_EQ(1u, user_data_out.size());
-  ASSERT_EQ("value1", user_data_out[0]);
+  ASSERT_EQ("data1", user_data_out[0]);
   ASSERT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data1.registration_id, {"key2"}, &user_data_out));
   ASSERT_EQ(1u, user_data_out.size());
-  ASSERT_EQ("value2", user_data_out[0]);
+  ASSERT_EQ("data2", user_data_out[0]);
 
   // Write user data associated with the registration2.
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data2.registration_id, kOrigin,
-                CreateUserData(data2.registration_id, {{"key3", "value3"}})));
+            database->WriteUserData(data2.registration_id, kOrigin,
+                                    CreateUserData({{"key3", "data3"}})));
   ASSERT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data2.registration_id, {"key3"}, &user_data_out));
   ASSERT_EQ(1u, user_data_out.size());
-  ASSERT_EQ("value3", user_data_out[0]);
+  ASSERT_EQ("data3", user_data_out[0]);
 
   // Delete all data associated with the registration1. This shouldn't delete
   // the data associated with registration2.
@@ -1743,7 +1702,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteRegistration) {
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data2.registration_id, {"key3"}, &user_data_out));
   ASSERT_EQ(1u, user_data_out.size());
-  EXPECT_EQ("value3", user_data_out[0]);
+  EXPECT_EQ("data3", user_data_out[0]);
 }
 
 TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
@@ -1756,9 +1715,9 @@ TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
             database->ReadUserData(100, {"key"}, &user_data_out));
 
   // Should be failed because the associated registration does not exist.
-  EXPECT_EQ(ServiceWorkerDatabase::Status::kErrorNotFound,
-            database->WriteUserData(100, kOrigin,
-                                    CreateUserData(100, {{"key", "value"}})));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::Status::kErrorNotFound,
+      database->WriteUserData(100, kOrigin, CreateUserData({{"key", "data"}})));
 
   // Deleting non-existent entry should succeed.
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -1772,9 +1731,9 @@ TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
             database->state_);
   EXPECT_EQ(ServiceWorkerDatabase::Status::kErrorNotFound,
             database->ReadUserData(100, {"key"}, &user_data_out));
-  EXPECT_EQ(ServiceWorkerDatabase::Status::kErrorNotFound,
-            database->WriteUserData(100, kOrigin,
-                                    CreateUserData(100, {{"key", "value"}})));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::Status::kErrorNotFound,
+      database->WriteUserData(100, kOrigin, CreateUserData({{"key", "data"}})));
 
   // Deleting non-existent entry should succeed.
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -1967,13 +1926,11 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteRegistration(data1, resources1, &deleted_version));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data1.registration_id, origin1,
-                CreateUserData(data1.registration_id, {{"key1", "value1"}})));
+            database->WriteUserData(data1.registration_id, origin1,
+                                    CreateUserData({{"key1", "data1"}})));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data1.registration_id, origin1,
-                CreateUserData(data1.registration_id, {{"key2", "value2"}})));
+            database->WriteUserData(data1.registration_id, origin1,
+                                    CreateUserData({{"key2", "data2"}})));
 
   RegistrationData data2;
   data2.registration_id = 11;
@@ -1988,13 +1945,11 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteRegistration(data2, resources2, &deleted_version));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data2.registration_id, origin1,
-                CreateUserData(data2.registration_id, {{"key3", "value3"}})));
+            database->WriteUserData(data2.registration_id, origin1,
+                                    CreateUserData({{"key3", "data3"}})));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data2.registration_id, origin1,
-                CreateUserData(data2.registration_id, {{"key4", "value4"}})));
+            database->WriteUserData(data2.registration_id, origin1,
+                                    CreateUserData({{"key4", "data4"}})));
 
   // |origin2| has one registration (registration3).
   RegistrationData data3;
@@ -2010,13 +1965,11 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteRegistration(data3, resources3, &deleted_version));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data3.registration_id, origin2,
-                CreateUserData(data3.registration_id, {{"key5", "value5"}})));
+            database->WriteUserData(data3.registration_id, origin2,
+                                    CreateUserData({{"key5", "data5"}})));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUserData(
-                data3.registration_id, origin2,
-                CreateUserData(data3.registration_id, {{"key6", "value6"}})));
+            database->WriteUserData(data3.registration_id, origin2,
+                                    CreateUserData({{"key6", "data6"}})));
 
   std::set<GURL> origins_to_delete;
   std::vector<int64_t> newly_purgeable_resources;
@@ -2086,12 +2039,12 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data3.registration_id, {"key5"}, &user_data_out));
   ASSERT_EQ(1u, user_data_out.size());
-  EXPECT_EQ("value5", user_data_out[0]);
+  EXPECT_EQ("data5", user_data_out[0]);
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->ReadUserData(data3.registration_id, {"key6"}, &user_data_out));
   ASSERT_EQ(1u, user_data_out.size());
-  EXPECT_EQ("value6", user_data_out[0]);
+  EXPECT_EQ("data6", user_data_out[0]);
 }
 
 TEST(ServiceWorkerDatabaseTest, DestroyDatabase) {

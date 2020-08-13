@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.PositionAssertions.isRightOf;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -51,6 +52,9 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.MaterialProgressBar;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests for the Autofill Assistant header.
@@ -206,15 +210,17 @@ public class AutofillAssistantHeaderUiTest {
                 chipText, /* disabled= */ false, /* sticky= */ false, "", () -> {});
 
         // Set the header chip without displaying it.
-        TestThreadUtils.runOnUiThreadBlocking(() -> model.set(AssistantHeaderModel.CHIP, chip));
+        List<AssistantChip> chips = new ArrayList<>();
+        chips.add(chip);
+        TestThreadUtils.runOnUiThreadBlocking(() -> model.setChips(chips));
 
         Matcher<View> chipMatcher =
                 allOf(isDescendantOfA(is(coordinator.getView())), withText(chipText));
-        onView(chipMatcher).check(matches(not(isDisplayed())));
+        onView(chipMatcher).check(doesNotExist());
 
         // Show the chip
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> model.set(AssistantHeaderModel.CHIP_VISIBLE, true));
+                () -> model.set(AssistantHeaderModel.CHIPS_VISIBLE, true));
         onView(chipMatcher)
                 .check(matches(isDisplayed()))
                 .check(isRightOf(withId(R.id.status_message)));

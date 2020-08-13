@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -54,6 +55,12 @@ class ReadLaterBubbleViewBrowserTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ReadLaterBubbleViewBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ReadLaterBubbleViewBrowserTest, InvokeUi_default) {
+// TODO(1115950): Flaky on Windows.
+#if defined(OS_WIN)
+#define MAYBE_InvokeUi_default DISABLED_InvokeUi_default
+#else
+#define MAYBE_InvokeUi_default InvokeUi_default
+#endif
+IN_PROC_BROWSER_TEST_F(ReadLaterBubbleViewBrowserTest, MAYBE_InvokeUi_default) {
   ShowAndVerifyUi();
 }

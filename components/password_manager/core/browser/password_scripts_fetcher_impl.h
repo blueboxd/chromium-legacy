@@ -47,15 +47,15 @@ class PasswordScriptsFetcherImpl
   enum class ParsingResult {
     // No response from the server.
     kNoResponse = 0,
-    // Response is not a properly formed JSON string.
-    kNotJsonString = 1,
-    // Parsing result is not a dictionary.
-    kNotDictionary = 2,
     // There was at least one invalid URL.
     kInvalidUrl = 3,
     // No errors occurred.
     kOk = 4,
-    kMaxValue = kOk,
+    // Invalid JSON (either syntactically, e.g. ill-formed lists, dictionaries,
+    // strings, etc., or structurally, e.g. a dictionary that does not contain
+    // the expected keys).
+    kInvalidJson = 5,
+    kMaxValue = kInvalidJson,
   };
 
   explicit PasswordScriptsFetcherImpl(
@@ -84,8 +84,11 @@ class PasswordScriptsFetcherImpl
                        std::unique_ptr<std::string> response_body);
   // Parses |response_body| and stores the result in |password_change_domains_|
   // (always overwrites the old list). Sets an empty list if |response_body| is
-  // invalid. Returns a parsing result for a histogram.
-  ParsingResult ParseResponse(std::unique_ptr<std::string> response_body);
+  // invalid. Returns a parsing result for a histogram. The function tries to be
+  // forgiving and rather return warnings and skip an entry than cancel the
+  // parsing.
+  base::flat_set<ParsingResult> ParseResponse(
+      std::unique_ptr<std::string> response_body);
   // Returns whether a re-fetch is needed.
   bool IsCacheStale() const;
   // Runs |callback| immediately with the script availability for |origin|.

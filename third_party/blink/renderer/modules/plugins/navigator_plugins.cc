@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/plugins/navigator_plugins.h"
 
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_token_builder.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
@@ -56,7 +57,7 @@ DOMPluginArray* NavigatorPlugins::plugins(LocalFrame* frame) const {
     plugins_ = MakeGarbageCollected<DOMPluginArray>(frame);
 
   DOMPluginArray* result = plugins_.Get();
-  if (!frame)
+  if (!IdentifiabilityStudySettings::Get()->IsActive() || !frame)
     return result;
   Document* document = frame->GetDocument();
   if (!document)

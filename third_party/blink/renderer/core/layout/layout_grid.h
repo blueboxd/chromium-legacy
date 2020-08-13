@@ -92,6 +92,8 @@ class LayoutGrid final : public LayoutBlock {
     return grid_->ExplicitGridStart(direction);
   }
 
+  LayoutUnit TranslateRTLCoordinate(LayoutUnit) const;
+
   LayoutUnit TranslateOutOfFlowRTLCoordinate(const LayoutBox&,
                                              LayoutUnit) const;
 
@@ -296,8 +298,6 @@ class LayoutGrid final : public LayoutBlock {
 
   size_t NonCollapsedTracks(GridTrackSizingDirection) const;
   size_t NumTracks(GridTrackSizingDirection, const Grid&) const;
-
-  LayoutUnit TranslateRTLCoordinate(LayoutUnit) const;
 
   static LayoutUnit OverrideContainingBlockContentSizeForChild(
       const LayoutBox& child,

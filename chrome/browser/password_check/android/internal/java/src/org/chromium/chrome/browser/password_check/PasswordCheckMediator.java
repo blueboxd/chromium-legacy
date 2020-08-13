@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.password_check;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.CREDENTIAL_HANDLER;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.HAS_MANUAL_CHANGE_BUTTON;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.DELETION_CONFIRMATION_HANDLER;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.DELETION_ORIGIN;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_PROGRESS;
@@ -21,7 +22,6 @@ import android.util.Pair;
 
 import androidx.appcompat.app.AlertDialog;
 
-import org.chromium.base.Consumer;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -32,15 +32,12 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 class PasswordCheckMediator
         implements PasswordCheckCoordinator.CredentialEventHandler, PasswordCheck.Observer {
+    private final PasswordCheckComponentUi.ChangePasswordDelegate mChangePasswordDelegate;
     private PropertyModel mModel;
     private PasswordCheckComponentUi.Delegate mDelegate;
-    private final Consumer<String> mLaunchCctWithChangePasswordUrl;
-    private final Consumer<CompromisedCredential> mLaunchCctWithScript;
 
-    PasswordCheckMediator(Consumer<String> launchCctWithChangePasswordUrl,
-            Consumer<CompromisedCredential> launchCctWithScript) {
-        this.mLaunchCctWithChangePasswordUrl = launchCctWithChangePasswordUrl;
-        this.mLaunchCctWithScript = launchCctWithScript;
+    PasswordCheckMediator(PasswordCheckCoordinator.ChangePasswordDelegate changePasswordDelegate) {
+        mChangePasswordDelegate = changePasswordDelegate;
     }
 
     void initialize(PropertyModel model, PasswordCheckComponentUi.Delegate delegate,
@@ -76,15 +73,7 @@ class PasswordCheckMediator
         if (items.size() > 1) items.removeRange(1, items.size() - 1);
 
         for (CompromisedCredential credential : credentials) {
-            items.add(new ListItem(credential.hasScript()
-                            ? PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT
-                            : PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL,
-                    new PropertyModel
-                            .Builder(PasswordCheckProperties.CompromisedCredentialProperties
-                                             .ALL_KEYS)
-                            .with(COMPROMISED_CREDENTIAL, credential)
-                            .with(CREDENTIAL_HANDLER, this)
-                            .build()));
+            items.add(createEntryForCredential(credential));
         }
     }
 
@@ -141,14 +130,7 @@ class PasswordCheckMediator
         assert leakedCredential != null;
         ListModel<ListItem> items = mModel.get(ITEMS);
         assert items.size() >= 1 : "Needs to initialize list with header before adding items!";
-        items.add(new ListItem(leakedCredential.hasScript()
-                        ? PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT
-                        : PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL,
-                new PropertyModel
-                        .Builder(PasswordCheckProperties.CompromisedCredentialProperties.ALL_KEYS)
-                        .with(COMPROMISED_CREDENTIAL, leakedCredential)
-                        .with(CREDENTIAL_HANDLER, this)
-                        .build()));
+        items.add(createEntryForCredential(leakedCredential));
     }
 
     @Override
@@ -178,13 +160,13 @@ class PasswordCheckMediator
 
     @Override
     public void onChangePasswordButtonClick(CompromisedCredential credential) {
-        mLaunchCctWithChangePasswordUrl.accept(credential.getSignonRealm());
+        mChangePasswordDelegate.launchAppOrCctWithChangePasswordUrl(credential);
     }
 
     @Override
     public void onChangePasswordWithScriptButtonClick(CompromisedCredential credential) {
         assert credential.hasScript();
-        mLaunchCctWithScript.accept(credential);
+        mChangePasswordDelegate.launchCctWithScript(credential);
     }
 
     private void runCheck() {
@@ -195,5 +177,18 @@ class PasswordCheckMediator
         PasswordCheck passwordCheck = PasswordCheckFactory.getOrCreate();
         assert passwordCheck != null : "Password Check UI component needs native counterpart!";
         return passwordCheck;
+    }
+
+    private ListItem createEntryForCredential(CompromisedCredential credential) {
+        return new ListItem(credential.hasScript()
+                        ? PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT
+                        : PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL,
+                new PropertyModel
+                        .Builder(PasswordCheckProperties.CompromisedCredentialProperties.ALL_KEYS)
+                        .with(COMPROMISED_CREDENTIAL, credential)
+                        .with(HAS_MANUAL_CHANGE_BUTTON,
+                                mChangePasswordDelegate.canManuallyChangeCredential(credential))
+                        .with(CREDENTIAL_HANDLER, this)
+                        .build());
     }
 }

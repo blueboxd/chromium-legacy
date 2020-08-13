@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "components/printing/common/print.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
 #if defined(OS_ANDROID)
@@ -26,7 +27,8 @@ struct PrintHostMsg_ScriptedPrint_Params;
 
 namespace printing {
 
-class PrintManager : public content::WebContentsObserver {
+class PrintManager : public content::WebContentsObserver,
+                     public mojom::PrintManagerHost {
  public:
   ~PrintManager() override;
 
@@ -37,6 +39,9 @@ class PrintManager : public content::WebContentsObserver {
 
   virtual void PdfWritingDone(int page_count) = 0;
 #endif
+
+  // printing::mojom::PrintManager:
+  void DidGetPrintedPagesCount(int32_t cookie, int32_t number_pages) override;
 
  protected:
   explicit PrintManager(content::WebContents* contents);
@@ -85,7 +90,6 @@ class PrintManager : public content::WebContentsObserver {
   };
 
   // IPC handlers
-  virtual void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   virtual void OnDidPrintDocument(
       content::RenderFrameHost* render_frame_host,
       const mojom::DidPrintDocumentParams& params,
@@ -115,6 +119,9 @@ class PrintManager : public content::WebContentsObserver {
   std::map<content::RenderFrameHost*,
            mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>>
       print_render_frames_;
+
+  content::WebContentsFrameReceiverSet<printing::mojom::PrintManagerHost>
+      print_manager_host_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintManager);
 };

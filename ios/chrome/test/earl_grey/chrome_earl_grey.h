@@ -39,6 +39,11 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // will properly synchronize the UI for Earl Grey tests.
 @interface ChromeEarlGreyImpl : BaseEGTestHelperImpl
 
+#pragma mark - Test Utilities
+
+// Wait until |matcher| is accessible (not nil) on the device.
+- (void)waitForMatcher:(id<GREYMatcher>)matcher;
+
 #pragma mark - Device Utilities
 
 // Simulate the user action to rotate the device to a certain orientation.

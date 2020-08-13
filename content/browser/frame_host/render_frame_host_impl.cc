@@ -408,6 +408,10 @@ class KillIfInBackForwardCacheMessageFilter : public mojo::MessageFilter {
         "KillIfInBackForwardCacheMessageFilter::WillDispatch bad_message",
         "interface_name", interface_name_, "message_name", message->name());
 
+    base::UmaHistogramSparse(
+        "BackForwardCache.UnexpectedRendererToBrowserMessage.InterfaceName",
+        static_cast<int32_t>(base::HashMetricName(interface_name_)));
+
     switch (policy_) {
       case BackForwardCacheImpl::kMessagePolicyNone:
       case BackForwardCacheImpl::kMessagePolicyLog:

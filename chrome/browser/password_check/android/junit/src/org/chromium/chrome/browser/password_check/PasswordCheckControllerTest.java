@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.CREDENTIAL_HANDLER;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.HAS_MANUAL_CHANGE_BUTTON;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.DELETION_CONFIRMATION_HANDLER;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
@@ -43,7 +44,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.chromium.base.Consumer;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.ItemType;
@@ -63,10 +63,10 @@ import org.chromium.url.GURL;
 public class PasswordCheckControllerTest {
     private static final CompromisedCredential ANA =
             new CompromisedCredential("https://m.a.xyz/signin", mock(GURL.class), "Ana", "m.a.xyz",
-                    "Ana", "password", false, false);
-    private static final CompromisedCredential BOB =
-            new CompromisedCredential("http://www.b.ch/signin", mock(GURL.class), "",
-                    "http://www.b.ch", "(No username)", "DoneSth", false, true);
+                    "Ana", "password", "", "xyz.a.some.package", false, false);
+    private static final CompromisedCredential BOB = new CompromisedCredential(
+            "http://www.b.ch/signin", mock(GURL.class), "", "http://www.b.ch", "(No username)",
+            "DoneSth", "http://www.b.ch/.well-known/change-password", "", false, true);
 
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
@@ -76,9 +76,7 @@ public class PasswordCheckControllerTest {
     @Mock
     private PasswordCheckComponentUi.Delegate mDelegate;
     @Mock
-    private Consumer<String> mLaunchCctWithChangePasswordUrlConsumer;
-    @Mock
-    private Consumer<CompromisedCredential> mLaunchCctWithScriptConsumer;
+    private PasswordCheckComponentUi.ChangePasswordDelegate mChangePasswordDelegate;
     @Mock
     private PasswordCheck mPasswordCheck;
 
@@ -90,8 +88,7 @@ public class PasswordCheckControllerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mModel = PasswordCheckProperties.createDefaultModel();
-        mMediator = new PasswordCheckMediator(
-                mLaunchCctWithChangePasswordUrlConsumer, mLaunchCctWithScriptConsumer);
+        mMediator = new PasswordCheckMediator(mChangePasswordDelegate);
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
         mMediator.initialize(mModel, mDelegate, PasswordCheckReferrer.PASSWORD_SETTINGS);
     }
@@ -165,6 +162,7 @@ public class PasswordCheckControllerTest {
     public void testCreatesEntryForExistingCredentials() {
         when(mPasswordCheck.getCompromisedCredentials())
                 .thenReturn(new CompromisedCredential[] {ANA});
+        when(mChangePasswordDelegate.canManuallyChangeCredential(eq(ANA))).thenReturn(true);
 
         mMediator.onPasswordCheckStatusChanged(IDLE);
         mMediator.onCompromisedCredentialsFetchCompleted();
@@ -172,12 +170,29 @@ public class PasswordCheckControllerTest {
         assertThat(mModel.get(ITEMS).get(1).type, is(ItemType.COMPROMISED_CREDENTIAL));
         assertThat(mModel.get(ITEMS).get(1).model.get(COMPROMISED_CREDENTIAL), equalTo(ANA));
         assertThat(mModel.get(ITEMS).get(1).model.get(CREDENTIAL_HANDLER), is(mMediator));
+        assertThat(mModel.get(ITEMS).get(1).model.get(HAS_MANUAL_CHANGE_BUTTON), is(true));
+    }
+
+    @Test
+    public void testHidesChangeButtonIfManualChangeIsNotPossible() {
+        when(mPasswordCheck.getCompromisedCredentials())
+                .thenReturn(new CompromisedCredential[] {BOB});
+        when(mChangePasswordDelegate.canManuallyChangeCredential(eq(BOB))).thenReturn(false);
+
+        mMediator.onPasswordCheckStatusChanged(IDLE);
+        mMediator.onCompromisedCredentialsFetchCompleted();
+
+        assertThat(mModel.get(ITEMS).get(1).type, is(ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT));
+        assertThat(mModel.get(ITEMS).get(1).model.get(COMPROMISED_CREDENTIAL), equalTo(BOB));
+        assertThat(mModel.get(ITEMS).get(1).model.get(CREDENTIAL_HANDLER), is(mMediator));
+        assertThat(mModel.get(ITEMS).get(1).model.get(HAS_MANUAL_CHANGE_BUTTON), is(false));
     }
 
     @Test
     public void testAppendsEntryForNewlyFoundCredentials() {
         when(mPasswordCheck.getCompromisedCredentials())
                 .thenReturn(new CompromisedCredential[] {ANA});
+        when(mChangePasswordDelegate.canManuallyChangeCredential(eq(BOB))).thenReturn(true);
         mMediator.onPasswordCheckStatusChanged(IDLE);
         mMediator.onCompromisedCredentialsFetchCompleted();
         assertThat(mModel.get(ITEMS).size(), is(2)); // Header + existing credentials.
@@ -187,6 +202,7 @@ public class PasswordCheckControllerTest {
         assertThat(mModel.get(ITEMS).get(2).type, is(ItemType.COMPROMISED_CREDENTIAL_WITH_SCRIPT));
         assertThat(mModel.get(ITEMS).get(2).model.get(COMPROMISED_CREDENTIAL), equalTo(BOB));
         assertThat(mModel.get(ITEMS).get(2).model.get(CREDENTIAL_HANDLER), is(mMediator));
+        assertThat(mModel.get(ITEMS).get(2).model.get(HAS_MANUAL_CHANGE_BUTTON), is(true));
     }
 
     @Test
@@ -225,13 +241,13 @@ public class PasswordCheckControllerTest {
     @Test
     public void testOnChangePasswordButtonClick() {
         mMediator.onChangePasswordButtonClick(ANA);
-        verify(mLaunchCctWithChangePasswordUrlConsumer).accept(eq(ANA.getSignonRealm()));
+        verify(mChangePasswordDelegate).launchAppOrCctWithChangePasswordUrl(eq(ANA));
     }
 
     @Test
     public void testOnChangePasswordWithScriptButtonClick() {
         mMediator.onChangePasswordWithScriptButtonClick(BOB);
-        verify(mLaunchCctWithScriptConsumer).accept(eq(BOB));
+        verify(mChangePasswordDelegate).launchCctWithScript(eq(BOB));
     }
 
     private void assertIdleHeader(MVCListAdapter.ListItem header) {

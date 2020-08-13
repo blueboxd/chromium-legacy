@@ -19,7 +19,8 @@ enum class MenuActionType {
   Share = 7,
   OpenAllInNewTabs = 8,
   Hide = 9,
-  kMaxValue = Hide
+  Move = 10,
+  kMaxValue = Move
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_MENU_MENU_ACTION_TYPE_H_

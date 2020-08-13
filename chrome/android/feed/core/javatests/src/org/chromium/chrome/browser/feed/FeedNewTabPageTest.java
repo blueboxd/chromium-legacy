@@ -291,7 +291,7 @@ public class FeedNewTabPageTest {
 
         mIsCachePopulatedInAccountManagerFacade = true;
         TestThreadUtils.runOnUiThreadBlocking(mTab::reload);
-        ChromeTabUtils.waitForTabPageLoaded(mTab, ChromeTabUtils.getUrlStringOnUiThread(mTab));
+        ChromeTabUtils.waitForTabPageLoaded(mTab, mTab.getUrlString());
 
         // Check that the sign-in promo is displayed this time.
         onView(instanceOf(RecyclerView.class))

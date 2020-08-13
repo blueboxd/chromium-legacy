@@ -17,6 +17,7 @@ namespace blink {
 
 class CrossOriginResourcePolicyChecker;
 class ExecutionContext;
+class FetchEvent;
 class ScriptValue;
 class WaitUntilObserver;
 
@@ -46,6 +47,11 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
                            const char* property_name) override;
   void OnNoResponse() override;
 
+  void SetEvent(FetchEvent* event) {
+    DCHECK(!event_);
+    event_ = event;
+  }
+
   void Trace(Visitor*) const override;
 
  private:
@@ -54,6 +60,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
   const network::mojom::RedirectMode redirect_mode_;
   const mojom::RequestContextFrameType frame_type_;
   const network::mojom::RequestDestination request_destination_;
+  Member<FetchEvent> event_;
   base::WeakPtr<CrossOriginResourcePolicyChecker> corp_checker_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };

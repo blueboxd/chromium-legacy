@@ -239,3 +239,11 @@ interface PrintRenderFrame {
   // particular node, depending on which mode the RenderFrame is in.
   PrintNodeUnderContextMenu();
 };
+
+// Browser process interface exposed to the renderer to handle the general
+// print management.
+interface PrintManagerHost {
+  // Tells the browser that the renderer is done calculating the number of
+  // rendered pages according to the specified settings.
+  DidGetPrintedPagesCount(int32 cookie, int32 number_pages);
+};

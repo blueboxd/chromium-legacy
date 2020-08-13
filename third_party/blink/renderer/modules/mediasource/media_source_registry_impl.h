@@ -39,7 +39,7 @@ class MediaSourceRegistryImpl final : public MediaSourceRegistry {
 
   // MediaSourceRegistry override that finds |url| in |media_sources_| and
   // returns the corresponding scoped_refptr if found. Otherwise, returns an
-  // unset scoped_refptr.
+  // unset scoped_refptr. |url| must be non-empty.
   scoped_refptr<MediaSourceAttachment> LookupMediaSource(
       const String& url) override;
 

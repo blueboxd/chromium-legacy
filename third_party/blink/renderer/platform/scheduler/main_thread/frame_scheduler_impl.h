@@ -125,6 +125,11 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   bool IsWaitingForContentfulPaint() const;
   bool IsWaitingForMeaningfulPaint() const;
 
+  // An "ordinary" FrameScheduler is responsible for a frame whose parent page
+  // is a fully-featured page owned by a web view (as opposed to, e.g.: a Page
+  // created by an SVGImage). Virtual for testing.
+  virtual bool IsOrdinary() const;
+
   void AsValueInto(base::trace_event::TracedValue* state) const;
   bool IsExemptFromBudgetBasedThrottling() const override;
   std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>

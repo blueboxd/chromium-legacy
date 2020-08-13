@@ -22,7 +22,6 @@
 #include "net/base/mime_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/icu/source/common/unicode/ucnv.h"
-#include "ui/base/clipboard/clipboard_constants.h"
 
 namespace exo {
 
@@ -249,7 +248,7 @@ void DataSource::GetDataForPreferredMimeTypes(
 
   for (auto mime_type : mime_types_) {
     if (net::MatchesMimeType(std::string(kTextPlain), mime_type) ||
-        mime_type == ui::kMimeTypeLinuxUtf8String) {
+        mime_type == kEncodingUTF8Legacy) {
       if (text_reader.is_null())
         continue;
 

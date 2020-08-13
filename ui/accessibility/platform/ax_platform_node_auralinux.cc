@@ -3333,8 +3333,12 @@ void AXPlatformNodeAuraLinux::OnActiveDescendantChanged() {
 
   // Active-descendant-changed notifications are typically only relevant when
   // the change is within the focused widget.
-  if (atk_object != g_current_focused)
+  if (!g_current_focused)
     return;
+  if (auto* focused_node = FromAtkObject(g_current_focused)) {
+    if (!focused_node->IsDescendantOf(this))
+      return;
+  }
 
   AtkObject* descendant = GetActiveDescendantOfCurrentFocused();
   if (descendant == g_current_active_descendant)

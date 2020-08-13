@@ -290,12 +290,6 @@ IPC_STRUCT_END()
 
 // Messages sent from the renderer to the browser.
 
-// Tells the browser that the renderer is done calculating the number of
-// rendered pages according to the specified settings.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_DidGetPrintedPagesCount,
-                    int /* rendered document cookie */,
-                    int /* number of rendered pages */)
-
 // Sends the document cookie of the current printer query to the browser.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetDocumentCookie,
                     int /* rendered document cookie */)

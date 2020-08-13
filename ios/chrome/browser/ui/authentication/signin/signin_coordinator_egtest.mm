@@ -101,7 +101,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
       performAction:grey_tap()];
 
   // Check the signed-in user did change.
-  [SigninEarlGrey checkSignedInWithFakeIdentity:fakeIdentity2];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity2];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -133,7 +133,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   // Check |fakeIdentity| is signed-in.
-  [SigninEarlGrey checkSignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 }
 
 // Tests signing in with one account, switching sync account to a second and
@@ -174,7 +174,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
       signOutWithSignOutConfirmation:SignOutConfirmationManagedUser];
 
   // Check that there is no signed in user.
-  [SigninEarlGrey checkSignedOut];
+  [SigninEarlGrey verifySignedOut];
 }
 
 // Tests that signing in, tapping the Settings link on the confirmation screen
@@ -196,7 +196,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   [[EarlGrey selectElementWithMatcher:settings_matcher]
       assertWithMatcher:grey_sufficientlyVisible()];
   // Test the user is signed in.
-  [SigninEarlGrey checkSignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 }
 
 // Opens the sign in screen and then cancel it by opening a new tab. Ensures
@@ -290,7 +290,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  [SigninEarlGrey checkSignedOut];
+  [SigninEarlGrey verifySignedOut];
 }
 
 // Opens the sign in screen from the bookmarks and then cancel it by tapping on
@@ -420,7 +420,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
           ButtonWithAccessibilityLabel(GetNSString(
               IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_SYNC_ALERT_CANCEL_SYNC_BUTTON))]
       performAction:grey_tap()];
-  [SigninEarlGrey checkSignedOut];
+  [SigninEarlGrey verifySignedOut];
 }
 
 #pragma mark - Utils
@@ -482,10 +482,10 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
   if (tapSettingsLink) {
     // Should be signed in.
-    [SigninEarlGrey checkSignedInWithFakeIdentity:fakeIdentity];
+    [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
   } else {
     // Should be not signed in.
-    [SigninEarlGrey checkSignedOut];
+    [SigninEarlGrey verifySignedOut];
   }
 }
 
@@ -493,7 +493,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // onscreen.
 - (void)assertFakeSSOScreenIsVisible {
   // Check for the fake SSO screen.
-  [SigninEarlGrey
+  [ChromeEarlGrey
       waitForMatcher:grey_accessibilityID(kFakeAddAccountViewIdentifier)];
   // Close the SSO view controller.
   id<GREYMatcher> matcher =
@@ -540,7 +540,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // Open the identity chooser.
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
-  [SigninEarlGrey waitForMatcher:identityChooserButtonMatcherWithEmail(
+  [ChromeEarlGrey waitForMatcher:identityChooserButtonMatcherWithEmail(
                                      fakeIdentity.userEmail)];
 
   // Remove the fake identity.

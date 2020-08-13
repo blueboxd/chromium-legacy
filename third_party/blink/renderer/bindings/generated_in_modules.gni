@@ -639,6 +639,8 @@ generated_dictionary_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_save_file_picker_options.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_scheduler_post_task_options.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_scheduler_post_task_options.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_secure_payment_confirmation_request.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_secure_payment_confirmation_request.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_sensor_error_event_init.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_sensor_error_event_init.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_sensor_options.cc",
@@ -1022,6 +1024,8 @@ generated_enumeration_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_screen_idle_state.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_sdp_semantics.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_sdp_semantics.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_secure_payment_confirmation_action.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_secure_payment_confirmation_action.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_service_worker_state.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_service_worker_state.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_service_worker_update_via_cache.cc",
@@ -2140,6 +2144,8 @@ if (!is_android) {
     "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_serial_port_request_options.h",
   ]
   generated_enumeration_sources_in_modules += [
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_flow_control_type.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_flow_control_type.h",
     "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_parity_type.cc",
     "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_parity_type.h",
   ]

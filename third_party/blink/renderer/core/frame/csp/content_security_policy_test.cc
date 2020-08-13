@@ -189,23 +189,6 @@ TEST_F(ContentSecurityPolicyTest, CopyPluginTypesFrom) {
                                      ReportingDisposition::kSuppressReporting));
 }
 
-TEST_F(ContentSecurityPolicyTest, IsFrameAncestorsEnforced) {
-  csp->DidReceiveHeader("script-src 'none';",
-                        ContentSecurityPolicyType::kEnforce,
-                        ContentSecurityPolicySource::kHTTP);
-  EXPECT_FALSE(csp->IsFrameAncestorsEnforced());
-
-  csp->DidReceiveHeader("frame-ancestors 'self'",
-                        ContentSecurityPolicyType::kReport,
-                        ContentSecurityPolicySource::kHTTP);
-  EXPECT_FALSE(csp->IsFrameAncestorsEnforced());
-
-  csp->DidReceiveHeader("frame-ancestors 'self'",
-                        ContentSecurityPolicyType::kEnforce,
-                        ContentSecurityPolicySource::kHTTP);
-  EXPECT_TRUE(csp->IsFrameAncestorsEnforced());
-}
-
 TEST_F(ContentSecurityPolicyTest, IsActiveForConnectionsWithConnectSrc) {
   EXPECT_FALSE(csp->IsActiveForConnections());
   csp->DidReceiveHeader("connect-src 'none';",
@@ -220,20 +203,6 @@ TEST_F(ContentSecurityPolicyTest, IsActiveForConnectionsWithDefaultSrc) {
                         ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);
   EXPECT_TRUE(csp->IsActiveForConnections());
-}
-
-// Tests that frame-ancestors directives are discarded from policies
-// delivered in <meta> elements.
-TEST_F(ContentSecurityPolicyTest, FrameAncestorsInMeta) {
-  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
-  csp->DidReceiveHeader("frame-ancestors 'none';",
-                        ContentSecurityPolicyType::kEnforce,
-                        ContentSecurityPolicySource::kMeta);
-  EXPECT_FALSE(csp->IsFrameAncestorsEnforced());
-  csp->DidReceiveHeader("frame-ancestors 'none';",
-                        ContentSecurityPolicyType::kEnforce,
-                        ContentSecurityPolicySource::kHTTP);
-  EXPECT_TRUE(csp->IsFrameAncestorsEnforced());
 }
 
 // Tests that sandbox directives are discarded from policies
@@ -1364,8 +1333,6 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_TRUE(csp->AllowInline(ContentSecurityPolicy::InlineType::kStyle,
                                element, source, nonce, context_url,
                                ordinal_number));
-  EXPECT_TRUE(csp->AllowAncestors(document->GetFrame(), example_url));
-  EXPECT_FALSE(csp->IsFrameAncestorsEnforced());
   EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::SCRIPT,
                                 network::mojom::RequestDestination::kScript,
                                 example_url, nonce, IntegrityMetadataSet(),

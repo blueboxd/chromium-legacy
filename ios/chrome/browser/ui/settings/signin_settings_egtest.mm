@@ -65,7 +65,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
 
   // User signed in.
-  [SigninEarlGrey checkSignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
   [SigninEarlGreyUI checkSigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
       assertWithMatcher:grey_interactable()];
@@ -84,7 +84,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
 
   // User signed in.
-  [SigninEarlGrey checkSignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
   [SigninEarlGreyUI checkSigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
       assertWithMatcher:grey_interactable()];

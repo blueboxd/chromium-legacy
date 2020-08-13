@@ -380,38 +380,25 @@ void StyleRuleFontFace::TraceAfterDispatch(blink::Visitor* visitor) const {
 StyleRuleScrollTimeline::StyleRuleScrollTimeline(
     const String& name,
     const CSSPropertyValueSet* properties)
-    : StyleRuleBase(kScrollTimeline), name_(name), properties_(properties) {}
-
-StyleRuleScrollTimeline::StyleRuleScrollTimeline(
-    const StyleRuleScrollTimeline& scroll_timeline_rule)
-    : StyleRuleBase(scroll_timeline_rule),
-      properties_(scroll_timeline_rule.properties_->MutableCopy()) {}
+    : StyleRuleBase(kScrollTimeline),
+      name_(name),
+      source_(properties->GetPropertyCSSValue(CSSPropertyID::kSource)),
+      orientation_(
+          properties->GetPropertyCSSValue(CSSPropertyID::kOrientation)),
+      start_(properties->GetPropertyCSSValue(CSSPropertyID::kStart)),
+      end_(properties->GetPropertyCSSValue(CSSPropertyID::kEnd)),
+      time_range_(properties->GetPropertyCSSValue(CSSPropertyID::kTimeRange)) {}
 
 StyleRuleScrollTimeline::~StyleRuleScrollTimeline() = default;
 
-const CSSValue* StyleRuleScrollTimeline::GetSource() const {
-  return properties_->GetPropertyCSSValue(CSSPropertyID::kSource);
-}
-
-const CSSValue* StyleRuleScrollTimeline::GetOrientation() const {
-  return properties_->GetPropertyCSSValue(CSSPropertyID::kOrientation);
-}
-
-const CSSValue* StyleRuleScrollTimeline::GetStart() const {
-  return properties_->GetPropertyCSSValue(CSSPropertyID::kStart);
-}
-
-const CSSValue* StyleRuleScrollTimeline::GetEnd() const {
-  return properties_->GetPropertyCSSValue(CSSPropertyID::kEnd);
-}
-
-const CSSValue* StyleRuleScrollTimeline::GetTimeRange() const {
-  return properties_->GetPropertyCSSValue(CSSPropertyID::kTimeRange);
-}
-
 void StyleRuleScrollTimeline::TraceAfterDispatch(
     blink::Visitor* visitor) const {
-  visitor->Trace(properties_);
+  visitor->Trace(source_);
+  visitor->Trace(orientation_);
+  visitor->Trace(start_);
+  visitor->Trace(end_);
+  visitor->Trace(time_range_);
+
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 

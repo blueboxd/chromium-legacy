@@ -18,10 +18,12 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/search/generated_colors_info.h"
+#include "chrome/common/webui_url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/color_utils.h"
@@ -45,7 +47,11 @@ void ProfilePickerHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "launchSelectedProfile",
       base::BindRepeating(&ProfilePickerHandler::HandleLaunchSelectedProfile,
-                          base::Unretained(this)));
+                          base::Unretained(this), /*open_settings=*/false));
+  web_ui()->RegisterMessageCallback(
+      "openManageProfileSettingsSubPage",
+      base::BindRepeating(&ProfilePickerHandler::HandleLaunchSelectedProfile,
+                          base::Unretained(this), /*open_settings=*/true));
   web_ui()->RegisterMessageCallback(
       "launchGuestProfile",
       base::BindRepeating(&ProfilePickerHandler::HandleLaunchGuestProfile,
@@ -92,6 +98,7 @@ void ProfilePickerHandler::HandleMainViewInitialize(
 }
 
 void ProfilePickerHandler::HandleLaunchSelectedProfile(
+    bool open_settings,
     const base::ListValue* args) {
   const base::Value* profile_path_value = nullptr;
   if (!args->Get(0, &profile_path_value))
@@ -119,8 +126,8 @@ void ProfilePickerHandler::HandleLaunchSelectedProfile(
 
   profiles::SwitchToProfile(
       *profile_path, /*always_create=*/false,
-      base::Bind(&ProfilePickerHandler::OnSwitchToProfileComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&ProfilePickerHandler::OnSwitchToProfileComplete,
+                          weak_factory_.GetWeakPtr(), open_settings));
 }
 
 void ProfilePickerHandler::HandleLaunchGuestProfile(
@@ -129,7 +136,7 @@ void ProfilePickerHandler::HandleLaunchGuestProfile(
   // checking has been added to the UI.
   profiles::SwitchToGuestProfile(
       base::Bind(&ProfilePickerHandler::OnSwitchToProfileComplete,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), false));
 }
 
 void ProfilePickerHandler::HandleAskOnStartupChanged(
@@ -232,11 +239,15 @@ void ProfilePickerHandler::HandleLoadSignInProfileCreationFlow(
 }
 
 void ProfilePickerHandler::OnSwitchToProfileComplete(
+    bool open_settings,
     Profile* profile,
     Profile::CreateStatus profile_create_status) {
   Browser* browser = chrome::FindAnyBrowser(profile, false);
   DCHECK(browser);
   DCHECK(browser->window());
+  if (open_settings) {
+    chrome::ShowSettingsSubPage(browser, chrome::kManageProfileSubPage);
+  }
   ProfilePicker::Hide();
 }
 

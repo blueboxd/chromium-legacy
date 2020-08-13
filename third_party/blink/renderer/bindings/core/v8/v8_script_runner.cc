@@ -362,6 +362,65 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
   return result;
 }
 
+v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunScript(
+    v8::Isolate* isolate,
+    ScriptState* script_state,
+    ExecutionContext* execution_context,
+    const ScriptSourceCode& source,
+    const KURL& base_url,
+    SanitizeScriptErrors sanitize_script_errors,
+    const ScriptFetchOptions& fetch_options,
+    V8CacheOptions v8_cache_options) {
+  DCHECK_EQ(isolate, script_state->GetIsolate());
+
+  // Omit storing base URL if it is same as source URL.
+  // Note: This improves chance of getting into a fast path in
+  //       ReferrerScriptInfo::ToV8HostDefinedOptions.
+  KURL stored_base_url = (base_url == source.Url()) ? KURL() : base_url;
+
+  // TODO(hiroshige): Remove this code and related use counters once the
+  // measurement is done.
+  ReferrerScriptInfo::BaseUrlSource base_url_source =
+      ReferrerScriptInfo::BaseUrlSource::kOther;
+  if (source.SourceLocationType() == ScriptSourceLocationType::kExternalFile &&
+      !base_url.IsNull()) {
+    switch (sanitize_script_errors) {
+      case SanitizeScriptErrors::kDoNotSanitize:
+        base_url_source =
+            ReferrerScriptInfo::BaseUrlSource::kClassicScriptCORSSameOrigin;
+        break;
+      case SanitizeScriptErrors::kSanitize:
+        base_url_source =
+            ReferrerScriptInfo::BaseUrlSource::kClassicScriptCORSCrossOrigin;
+        break;
+    }
+  }
+  const ReferrerScriptInfo referrer_info(stored_base_url, fetch_options,
+                                         base_url_source);
+
+  v8::Local<v8::Script> script;
+
+  v8::ScriptCompiler::CompileOptions compile_options;
+  V8CodeCache::ProduceCacheOptions produce_cache_options;
+  v8::ScriptCompiler::NoCacheReason no_cache_reason;
+  std::tie(compile_options, produce_cache_options, no_cache_reason) =
+      V8CodeCache::GetCompileOptions(v8_cache_options, source);
+
+  if (!V8ScriptRunner::CompileScript(script_state, source,
+                                     sanitize_script_errors, compile_options,
+                                     no_cache_reason, referrer_info)
+           .ToLocal(&script))
+    return v8::MaybeLocal<v8::Value>();
+
+  v8::MaybeLocal<v8::Value> maybe_result =
+      V8ScriptRunner::RunCompiledScript(isolate, script, execution_context);
+  probe::ProduceCompilationCache(probe::ToCoreProbeSink(execution_context),
+                                 source, script);
+  V8CodeCache::ProduceCache(isolate, script, source, produce_cache_options);
+
+  return maybe_result;
+}
+
 v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
     v8::Isolate* isolate,
     ScriptState* script_state,

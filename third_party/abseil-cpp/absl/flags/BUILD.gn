@@ -4,13 +4,7 @@
 
 import("//third_party/abseil-cpp/absl.gni")
 
-# Build targets in this module are marked as "testonly" because it is not clear
-# how ABSL_FLAG will interact with //base/command_line.h.
-# If this is a problem, feel free to remove "testonly" and use "assert_no_deps"
-# on the main Chrome binary.
-
 absl_source_set("path_util") {
-  testonly = true
   public = [ "internal/path_util.h" ]
   deps = [
     "//third_party/abseil-cpp/absl/base:config",
@@ -20,7 +14,6 @@ absl_source_set("path_util") {
 }
 
 absl_source_set("program_name") {
-  testonly = true
   sources = [ "internal/program_name.cc" ]
   public = [ "internal/program_name.h" ]
   deps = [
@@ -34,7 +27,6 @@ absl_source_set("program_name") {
 }
 
 absl_source_set("config") {
-  testonly = true
   sources = [ "usage_config.cc" ]
   public = [
     "config.h",
@@ -51,7 +43,6 @@ absl_source_set("config") {
 }
 
 absl_source_set("marshalling") {
-  testonly = true
   sources = [ "marshalling.cc" ]
   public = [ "marshalling.h" ]
   deps = [
@@ -64,7 +55,6 @@ absl_source_set("marshalling") {
 }
 
 absl_source_set("commandlineflag_internal") {
-  testonly = true
   public = [ "internal/commandlineflag.h" ]
   sources = [ "internal/commandlineflag.cc" ]
   deps = [
@@ -75,7 +65,6 @@ absl_source_set("commandlineflag_internal") {
 }
 
 absl_source_set("commandlineflag") {
-  testonly = true
   sources = [ "commandlineflag.cc" ]
   public = [ "commandlineflag.h" ]
   deps = [
@@ -88,7 +77,6 @@ absl_source_set("commandlineflag") {
 }
 
 absl_source_set("private_handle_accessor") {
-  testonly = true
   sources = [ "internal/private_handle_accessor.cc" ]
   public = [ "internal/private_handle_accessor.h" ]
   deps = [
@@ -101,7 +89,6 @@ absl_source_set("private_handle_accessor") {
 }
 
 absl_source_set("reflection") {
-  testonly = true
   sources = [ "reflection.cc" ]
   public = [
     "internal/registry.h",
@@ -120,7 +107,6 @@ absl_source_set("reflection") {
 }
 
 absl_source_set("flag_internal") {
-  testonly = true
   sources = [ "internal/flag.cc" ]
   public = [ "internal/flag.h" ]
   deps = [
@@ -145,7 +131,6 @@ absl_source_set("flag_internal") {
 }
 
 absl_source_set("flag") {
-  testonly = true
   sources = [ "flag.cc" ]
   public = [
     "declare.h",
@@ -163,7 +148,6 @@ absl_source_set("flag") {
 }
 
 absl_source_set("usage_internal") {
-  testonly = true
   sources = [ "internal/usage.cc" ]
   public = [ "internal/usage.h" ]
   deps = [
@@ -183,7 +167,6 @@ absl_source_set("usage_internal") {
 }
 
 absl_source_set("usage") {
-  testonly = true
   sources = [ "usage.cc" ]
   public = [ "usage.h" ]
   deps = [
@@ -196,7 +179,6 @@ absl_source_set("usage") {
 }
 
 absl_source_set("parse") {
-  testonly = true
   sources = [ "parse.cc" ]
   public = [
     "internal/parse.h",

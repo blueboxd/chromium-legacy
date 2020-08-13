@@ -44,6 +44,7 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -288,6 +289,7 @@ public class HomepagePromoTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1115870")
     public void testToggleFeed_WithHomepage() {
         // Test to toggle NTP when feed is hidden.
         TestThreadUtils.runOnUiThreadBlocking(() -> {

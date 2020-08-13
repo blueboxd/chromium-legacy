@@ -3264,7 +3264,8 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 // Tests that in the reveal-on-hover field trial variation (without
 // hide-on-interaction), the path is faded back in after focus, then blur, then
 // hover.
-TEST_P(OmniboxViewViewsRevealOnHoverTest, AfterBlur) {
+// TODO(crbug.com/1115551): Test is flaky.
+TEST_P(OmniboxViewViewsRevealOnHoverTest, DISABLED_AfterBlur) {
   SetUpSimplifiedDomainTest();
 
   // Focus and blur the omnibox, then hover over it. The URL should unelide.

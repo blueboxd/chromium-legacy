@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "extensions/browser/extension_function.h"
 
 namespace net {

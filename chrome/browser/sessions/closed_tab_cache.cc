@@ -1,0 +1,133 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/sessions/closed_tab_cache.h"
+
+#include <memory>
+
+#include "base/bind.h"
+#include "base/metrics/field_trial_params.h"
+#include "chrome/browser/browser_features.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
+
+namespace {
+
+// The number of entries the ClosedTabCache can hold.
+static constexpr size_t kClosedTabCacheLimit = 1;
+
+// The default time to live in seconds for entries in the ClosedTabCache.
+static constexpr base::TimeDelta kDefaultTimeToLiveInClosedTabCacheInSeconds =
+    base::TimeDelta::FromSeconds(15);
+}  // namespace
+
+ClosedTabCache::Entry::Entry(SessionID id,
+                             std::unique_ptr<content::WebContents> wc,
+                             base::TimeTicks timestamp)
+    : id(id), web_contents(std::move(wc)), tab_closure_timestamp(timestamp) {}
+ClosedTabCache::Entry::~Entry() = default;
+
+ClosedTabCache::ClosedTabCache()
+    : cache_size_limit_(kClosedTabCacheLimit),
+      task_runner_(
+          content::GetUIThreadTaskRunner(content::BrowserTaskTraits())) {}
+ClosedTabCache::~ClosedTabCache() = default;
+
+base::TimeDelta ClosedTabCache::GetTimeToLiveInClosedTabCache() {
+  // We use the following order of priority if multiple values exist:
+  // - The programmatical value set in params. Used in specific tests.
+  // - Default value otherwise, kDefaultTimeToLiveInClosedTabCacheInSeconds.
+
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      features::kClosedTabCache, "time_to_live_in_closed_tab_cache_in_seconds",
+      kDefaultTimeToLiveInClosedTabCacheInSeconds.InSeconds()));
+}
+
+void ClosedTabCache::StoreEntry(SessionID id,
+                                std::unique_ptr<content::WebContents> wc,
+                                base::TimeTicks timestamp) {
+  TRACE_EVENT2("browser", "ClosedTabCache::StoreEntry", "SessionID", id.id(),
+               "URL", wc->GetURL().spec());
+
+  auto entry = std::make_unique<Entry>(id, std::move(wc), timestamp);
+
+  // TODO: Dispatch pagehide() before freezing.
+  entry->web_contents->SetPageFrozen(/*frozen=*/true);
+  StartEvictionTimer(entry.get());
+
+  entries_.push_front(std::move(entry));
+
+  // Evict least recently used tab if the ClosedTabCache is full.
+  if (entries_.size() > cache_size_limit_) {
+    entries_.pop_back();
+  }
+}
+
+std::unique_ptr<content::WebContents> ClosedTabCache::RestoreEntry(
+    SessionID id) {
+  TRACE_EVENT1("browser", "ClosedTabCache::RestoreEntry", "SessionID", id.id());
+  auto matching_entry = std::find_if(
+      entries_.begin(), entries_.end(),
+      [id](const std::unique_ptr<Entry>& entry) { return entry->id == id; });
+
+  if (matching_entry == entries_.end())
+    return nullptr;
+
+  std::unique_ptr<Entry> entry = std::move(*matching_entry);
+  entries_.erase(matching_entry);
+  entry->web_contents->SetPageFrozen(/*frozen=*/false);
+  // TODO: Dispatch pageshow() after unfreezing.
+
+  return std::move(entry->web_contents);
+}
+
+const content::WebContents* ClosedTabCache::GetWebContents(SessionID id) const {
+  auto matching_entry = std::find_if(
+      entries_.begin(), entries_.end(),
+      [id](const std::unique_ptr<Entry>& entry) { return entry->id == id; });
+
+  if (matching_entry == entries_.end())
+    return nullptr;
+
+  return (*matching_entry).get()->web_contents.get();
+}
+
+void ClosedTabCache::StartEvictionTimer(Entry* entry) {
+  base::TimeDelta evict_after = GetTimeToLiveInClosedTabCache();
+  entry->eviction_timer.SetTaskRunner(task_runner_);
+  entry->eviction_timer.Start(
+      FROM_HERE, evict_after,
+      base::BindOnce(&ClosedTabCache::EvictEntryById, base::Unretained(this),
+                     entry->id));
+}
+
+void ClosedTabCache::EvictEntryById(SessionID id) {
+  auto matching_entry = std::find_if(
+      entries_.begin(), entries_.end(),
+      [id](const std::unique_ptr<Entry>& entry) { return entry->id == id; });
+
+  if (matching_entry == entries_.end())
+    return;
+
+  std::unique_ptr<Entry> entry = std::move(*matching_entry);
+  entries_.erase(matching_entry);
+}
+
+void ClosedTabCache::SetCacheSizeLimitForTesting(size_t limit) {
+  cache_size_limit_ = limit;
+}
+
+void ClosedTabCache::SetTaskRunnerForTesting(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  task_runner_ = task_runner;
+}
+
+bool ClosedTabCache::IsEmpty() {
+  return entries_.empty();
+}
+
+size_t ClosedTabCache::EntriesCount() {
+  return entries_.size();
+}

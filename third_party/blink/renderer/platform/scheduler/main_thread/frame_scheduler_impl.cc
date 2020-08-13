@@ -941,6 +941,12 @@ bool FrameSchedulerImpl::IsWaitingForMeaningfulPaint() const {
   return waiting_for_meaningful_paint_;
 }
 
+bool FrameSchedulerImpl::IsOrdinary() const {
+  if (!parent_page_scheduler_)
+    return true;
+  return parent_page_scheduler_->IsOrdinary();
+}
+
 bool FrameSchedulerImpl::ShouldThrottleTaskQueues() const {
   // TODO(crbug.com/1078387): Convert the CHECK to a DCHECK once enough time has
   // passed to confirm that it is correct. (November 2020).

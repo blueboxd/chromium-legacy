@@ -41,6 +41,7 @@
 #include "printing/metafile_skia.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/units.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/css/page_orientation.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
@@ -1094,6 +1095,15 @@ void PrintRenderFrameHelper::DisablePreview() {
   g_is_preview_enabled = false;
 }
 
+const mojo::AssociatedRemote<mojom::PrintManagerHost>&
+PrintRenderFrameHelper::GetPrintManagerHost() {
+  if (!print_manager_host_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &print_manager_host_);
+  }
+  return print_manager_host_;
+}
+
 bool PrintRenderFrameHelper::IsScriptInitiatedPrintAllowed(
     blink::WebLocalFrame* frame,
     bool user_initiated) {
@@ -1921,8 +1931,8 @@ void PrintRenderFrameHelper::PrintPages() {
 
   // TODO(vitalybuka): should be page_count or valid pages from params.pages.
   // See http://crbug.com/161576
-  Send(new PrintHostMsg_DidGetPrintedPagesCount(
-      routing_id(), print_params.document_cookie, page_count));
+  GetPrintManagerHost()->DidGetPrintedPagesCount(print_params.document_cookie,
+                                                 page_count);
 
   if (print_params.preview_ui_id < 0) {
     // Printing for system dialog.

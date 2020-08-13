@@ -639,8 +639,10 @@ const CSSValue* StyleCascade::ResolveCustomProperty(
   if (resolver.InCycle())
     return CSSInvalidVariableValue::Create();
 
-  if (!data)
+  if (!data) {
+    MaybeUseCountInvalidVariableUnset(To<CustomProperty>(property));
     return cssvalue::CSSUnsetValue::Create();
+  }
 
   if (data == decl.Value())
     return &decl;
@@ -996,6 +998,20 @@ void StyleCascade::MaybeUseCountSummaryDisplayBlock() {
   if (auto* identifier = DynamicTo<CSSIdentifierValue>(value)) {
     if (identifier->GetValueID() == CSSValueID::kBlock)
       CountUse(WebFeature::kSummaryElementWithDisplayBlockAuthorRule);
+  }
+}
+
+void StyleCascade::MaybeUseCountInvalidVariableUnset(
+    const CustomProperty& property) {
+  if (!property.SupportsGuaranteedInvalid())
+    return;
+  if (!property.IsInherited() && !property.HasInitialValue())
+    return;
+  const AtomicString& name = property.GetPropertyNameAtomicString();
+  const ComputedStyle* parent_style = state_.ParentStyle();
+  if (parent_style &&
+      parent_style->GetVariableData(name, property.IsInherited())) {
+    CountUse(WebFeature::kCSSInvalidVariableUnset);
   }
 }
 

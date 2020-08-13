@@ -210,4 +210,14 @@ const CSSValue* CustomProperty::ParseTyped(
                                        local_context.IsAnimationTainted());
 }
 
+bool CustomProperty::HasInitialValue() const {
+  if (!registration_)
+    return false;
+  return registration_->InitialVariableData();
+}
+
+bool CustomProperty::SupportsGuaranteedInvalid() const {
+  return !registration_ || registration_->Syntax().IsUniversal();
+}
+
 }  // namespace blink

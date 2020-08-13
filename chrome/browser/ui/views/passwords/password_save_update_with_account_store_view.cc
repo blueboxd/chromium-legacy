@@ -505,12 +505,21 @@ void PasswordSaveUpdateWithAccountStoreView::ButtonPressed(
 
 void PasswordSaveUpdateWithAccountStoreView::OnPerformAction(
     views::Combobox* combobox) {
-  controller_.OnToggleAccountStore(
-      /*is_account_store_selected=*/combobox->GetSelectedIndex() == 0);
+  bool is_account_store_selected = combobox->GetSelectedIndex() == 0;
+  controller_.OnToggleAccountStore(is_account_store_selected);
+  // If the user explicitly switched to "save on this device only", record this
+  // with the IPH tracker (so it can decide not to show the IPH again).
+  if (!is_account_store_selected) {
+    if (!iph_tracker_) {
+      iph_tracker_ = feature_engagement::TrackerFactory::GetForBrowserContext(
+          controller_.GetProfile());
+    }
+    iph_tracker_->NotifyEvent("passwords_account_storage_unselected");
+  }
   // The IPH shown upon failure in reauth is used to informs the user that the
   // password will be stored on device. This is why it's important to close it
   // if the user changes the destination to account.
-  if (currenly_shown_iph_type == IPHType::kFailedReauth)
+  if (currenly_shown_iph_type_ == IPHType::kFailedReauth)
     CloseIPHBubbleIfOpen();
 }
 
@@ -521,12 +530,12 @@ void PasswordSaveUpdateWithAccountStoreView::OnWidgetDestroying(
     observed_account_storage_promo_.Remove(widget);
     // If the reauth failed, we have shown the IPH unconditionally. No need to
     // inform the tracker. Only regular IPH's are tracked
-    if (currenly_shown_iph_type == IPHType::kRegular) {
+    if (currenly_shown_iph_type_ == IPHType::kRegular) {
       DCHECK(iph_tracker_);
       iph_tracker_->Dismissed(
           feature_engagement::kIPHPasswordsAccountStorageFeature);
     }
-    currenly_shown_iph_type = IPHType::kNone;
+    currenly_shown_iph_type_ = IPHType::kNone;
     account_storage_promo_ = nullptr;
   }
 }
@@ -730,7 +739,7 @@ void PasswordSaveUpdateWithAccountStoreView::ShowIPH(IPHType type) {
   set_close_on_deactivate(close_save_bubble_on_deactivate_original_value);
   observed_account_storage_promo_.Add(account_storage_promo_->GetWidget());
 
-  currenly_shown_iph_type = type;
+  currenly_shown_iph_type_ = type;
 }
 
 void PasswordSaveUpdateWithAccountStoreView::CloseIPHBubbleIfOpen() {

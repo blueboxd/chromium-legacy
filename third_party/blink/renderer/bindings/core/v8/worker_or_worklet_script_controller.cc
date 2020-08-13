@@ -358,26 +358,26 @@ v8::Local<v8::Value> WorkerOrWorkletScriptController::EvaluateInternal(
 
   v8::TryCatch block(isolate_);
 
-  v8::Local<v8::Script> compiled_script;
-  v8::MaybeLocal<v8::Value> maybe_result;
+  // TODO(crbug/1114994): Plumb this from ClassicScript.
+  const KURL base_url = source_code.Url();
+
   // Use default ReferrerScriptInfo here, as
   // - A work{er,let} script doesn't have a nonce, and
   // - a work{er,let} script is always "not parser inserted".
-  ReferrerScriptInfo referrer_info;
-  v8::ScriptCompiler::CompileOptions compile_options;
-  V8CodeCache::ProduceCacheOptions produce_cache_options;
-  v8::ScriptCompiler::NoCacheReason no_cache_reason;
-  std::tie(compile_options, produce_cache_options, no_cache_reason) =
-      V8CodeCache::GetCompileOptions(v8_cache_options, source_code);
-  if (V8ScriptRunner::CompileScript(script_state_, source_code,
-                                    sanitize_script_errors, compile_options,
-                                    no_cache_reason, referrer_info)
-          .ToLocal(&compiled_script)) {
-    maybe_result = V8ScriptRunner::RunCompiledScript(isolate_, compiled_script,
-                                                     global_scope_);
-    V8CodeCache::ProduceCache(isolate_, compiled_script, source_code,
-                              produce_cache_options);
-  }
+  // TODO(crbug/1114988): After crbug/1114988 is fixed, this can be the
+  // default ScriptFetchOptions(). Currently the default ScriptFetchOptions()
+  // is not used because it has CredentialsMode::kOmit.
+  // TODO(crbug/1114989): Plumb this from ClassicScript.
+  ScriptFetchOptions script_fetch_options(
+      String(), IntegrityMetadataSet(), String(),
+      ParserDisposition::kNotParserInserted,
+      network::mojom::CredentialsMode::kSameOrigin,
+      network::mojom::ReferrerPolicy::kDefault,
+      mojom::blink::FetchImportanceMode::kImportanceAuto);
+
+  v8::MaybeLocal<v8::Value> maybe_result = V8ScriptRunner::CompileAndRunScript(
+      isolate_, script_state_, global_scope_, source_code, base_url,
+      sanitize_script_errors, script_fetch_options, v8_cache_options);
 
   if (!block.CanContinue()) {
     ForbidExecution();

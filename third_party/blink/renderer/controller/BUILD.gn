@@ -15,6 +15,7 @@ component("controller") {
   output_name = "blink_controller"
 
   deps = [
+    "//components/performance_manager/public/mojom:mojom_blink",
     "//skia",
     "//third_party/blink/renderer/core",
     "//third_party/blink/renderer/modules",
@@ -42,6 +43,8 @@ component("controller") {
     "dev_tools_frontend_impl.h",
     "memory_usage_monitor.cc",
     "memory_usage_monitor.h",
+    "performance_manager/renderer_resource_coordinator_impl.cc",
+    "performance_manager/renderer_resource_coordinator_impl.h",
   ]
 
   if (is_linux || is_chromeos) {

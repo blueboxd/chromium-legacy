@@ -116,7 +116,7 @@ std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
   command_line->AppendArg(switches::kPrefetchArgumentOther);
 #endif  // defined(OS_WIN)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   if (crash_reporter::IsCrashpadEnabled()) {
     command_line->AppendSwitch(crash_reporter::kEnableCrashpad);
 
@@ -127,7 +127,7 @@ std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
           base::NumberToString(pid));
     }
   }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   static const char* const kSwitchesToCopy[] = {
     network::switches::kIgnoreUrlFetcherCertRequests,

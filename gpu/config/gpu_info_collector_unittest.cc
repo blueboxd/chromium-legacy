@@ -224,7 +224,7 @@ TEST_P(GPUInfoCollectorTest, CollectGraphicsInfoGL) {
     EXPECT_EQ(test_values_.gpu.driver_vendor, gpu_info.gpu.driver_vendor);
     EXPECT_EQ(test_values_.gpu.driver_version, gpu_info.gpu.driver_version);
   }
-#else  // defined (OS_LINUX)
+#else  // defined(OS_LINUX) || defined(OS_CHROMEOS)
   if (GetParam() == kMockedLinux) {
     EXPECT_EQ(test_values_.gpu.driver_vendor, gpu_info.gpu.driver_vendor);
     EXPECT_EQ(test_values_.gpu.driver_version, gpu_info.gpu.driver_version);

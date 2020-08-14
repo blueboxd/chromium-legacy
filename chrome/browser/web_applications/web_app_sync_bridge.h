@@ -77,6 +77,8 @@ class WebAppSyncBridge : public AppRegistryController,
   void SetAppLastLaunchTime(const AppId& app_id,
                             const base::Time& time) override;
   void SetAppInstallTime(const AppId& app_id, const base::Time& time) override;
+  void SetAppRunOnOsLoginMode(const AppId& app_id,
+                              RunOnOsLoginMode mode) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;
 
   // These methods are used by extensions::AppSorting, which manages the sorting

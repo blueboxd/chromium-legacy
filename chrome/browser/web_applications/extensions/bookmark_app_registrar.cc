@@ -279,6 +279,12 @@ BookmarkAppRegistrar::GetAppDownloadedShortcutsMenuIconsSizes(
                    : std::vector<std::vector<SquareSizePx>>();
 }
 
+web_app::RunOnOsLoginMode BookmarkAppRegistrar::GetAppRunOnOsLoginMode(
+    const web_app::AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return web_app::RunOnOsLoginMode::kUndefined;
+}
+
 std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {
   std::vector<web_app::AppId> app_ids;
   for (scoped_refptr<const Extension> app :

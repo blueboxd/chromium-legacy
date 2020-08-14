@@ -106,6 +106,13 @@ static_library("error_strings") {
     "native_error_strings.cc",
     "native_error_strings.h",
   ]
+
+  if (is_chromeos) {
+    sources += [
+      "chrome_os_error_strings.cc",
+      "chrome_os_error_strings.h",
+    ]
+  }
 }
 
 static_library("method_strings") {

@@ -160,7 +160,7 @@ bool BufferedDataSourceHostImpl::CanPlayThrough(
   }
   if (current_position > media_duration)
     return true;
-  double fraction = current_position.InSecondsF() / media_duration.InSecondsF();
+  double fraction = current_position / media_duration;
   int64_t byte_pos = total_bytes_ * fraction;
   if (byte_pos < 0)
     byte_pos = 0;

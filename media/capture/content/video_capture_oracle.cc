@@ -61,8 +61,7 @@ double FractionFromExpectedFrameRate(base::TimeDelta delta, int frame_rate) {
   DCHECK_GT(frame_rate, 0);
   const base::TimeDelta expected_delta =
       base::TimeDelta::FromSeconds(1) / frame_rate;
-  return (delta - expected_delta).InMillisecondsF() /
-         expected_delta.InMillisecondsF();
+  return (delta - expected_delta) / expected_delta;
 }
 
 // Returns the next-higher TimeTicks value.

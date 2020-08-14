@@ -258,6 +258,12 @@ gpu::MailboxHolder ArImageTransport::TransferCameraImageFrame(
     // command buffer stream.
     DCHECK(camera_image_shared_buffer->mailbox_holder.sync_token.HasData());
     WaitSyncToken(camera_image_shared_buffer->mailbox_holder.sync_token);
+    DVLOG(3) << __func__
+             << ": "
+                "camera_image_shared_buffer->mailbox_holder.sync_"
+                "token="
+             << camera_image_shared_buffer->mailbox_holder.sync_token
+                    .ToDebugString();
   }
   // Sanity checks for the camera image buffer.
   DCHECK(!camera_image_shared_buffer->mailbox_holder.mailbox.IsZero());
@@ -293,6 +299,9 @@ gpu::MailboxHolder ArImageTransport::TransferCameraImageFrame(
 
   mailbox_bridge_->GenSyncToken(
       &camera_image_shared_buffer->mailbox_holder.sync_token);
+  DVLOG(3)
+      << __func__ << ": camera_image_shared_buffer->mailbox_holder.sync_token="
+      << camera_image_shared_buffer->mailbox_holder.sync_token.ToDebugString();
   return camera_image_shared_buffer->mailbox_holder;
 }
 

@@ -155,4 +155,27 @@ base::Optional<WebApp::SyncFallbackData> ParseSyncFallbackDataStruct(
   }
 }
 
+RunOnOsLoginMode ToRunOnOsLoginMode(WebAppProto::RunOnOsLoginMode mode) {
+  switch (mode) {
+    case WebAppProto::MINIMIZED:
+      return RunOnOsLoginMode::kMinimized;
+    case WebAppProto::WINDOWED:
+      return RunOnOsLoginMode::kWindowed;
+  }
+  return RunOnOsLoginMode::kUndefined;
+}
+
+WebAppProto::RunOnOsLoginMode ToWebAppProtoRunOnOsLoginMode(
+    RunOnOsLoginMode mode) {
+  switch (mode) {
+    case RunOnOsLoginMode::kMinimized:
+      return WebAppProto::MINIMIZED;
+    case RunOnOsLoginMode::kUndefined:
+      NOTREACHED();
+      FALLTHROUGH;
+    case RunOnOsLoginMode::kWindowed:
+      return WebAppProto::WINDOWED;
+  }
+}
+
 }  // namespace web_app

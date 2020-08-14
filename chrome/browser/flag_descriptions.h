@@ -581,6 +581,9 @@ extern const char kEnableUseZoomForDsfChoiceDisabled[];
 extern const char kEnableWebAuthenticationCableV2SupportName[];
 extern const char kEnableWebAuthenticationCableV2SupportDescription[];
 
+extern const char kEnableWebAuthenticationChromeOSAuthenticatorName[];
+extern const char kEnableWebAuthenticationChromeOSAuthenticatorDescription[];
+
 extern const char kExperimentalWebAssemblyFeaturesName[];
 extern const char kExperimentalWebAssemblyFeaturesDescription[];
 
@@ -1881,11 +1884,14 @@ extern const char kOmniboxDriveSuggestionsDescriptions[];
 extern const char kOmniboxExperimentalKeywordModeName[];
 extern const char kOmniboxExperimentalKeywordModeDescription[];
 
+extern const char kOmniboxSuggestionButtonRowName[];
+extern const char kOmniboxSuggestionButtonRowDescription[];
+
 extern const char kOmniboxPedalSuggestionsName[];
 extern const char kOmniboxPedalSuggestionsDescription[];
 
-extern const char kOmniboxSuggestionButtonRowName[];
-extern const char kOmniboxSuggestionButtonRowDescription[];
+extern const char kOmniboxKeywordSearchButtonName[];
+extern const char kOmniboxKeywordSearchButtonDescription[];
 
 extern const char kOmniboxReverseAnswersName[];
 extern const char kOmniboxReverseAnswersDescription[];

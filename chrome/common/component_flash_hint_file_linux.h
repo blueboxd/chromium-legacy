@@ -7,9 +7,9 @@
 
 #include "build/build_config.h"
 
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #error "This file only applies to the Linux component update of Flash."
-#endif  // !defined(OS_LINUX)
+#endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #include <string>
 

@@ -493,11 +493,8 @@ public class HomepagePromoTest {
     private void scrollToHomepagePromo() {
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.scrollToPosition(NTP_HEADER_POSITION + 1));
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            waitForView(
-                    (ViewGroup) mActivityTestRule.getActivity().findViewById(R.id.homepage_promo),
-                    allOf(withId(R.id.promo_primary_button), isDisplayed()));
-        });
+        waitForView((ViewGroup) mActivityTestRule.getActivity().findViewById(R.id.homepage_promo),
+                allOf(withId(R.id.promo_primary_button), isDisplayed()));
 
         // Verify impress tracking metrics is working.
         Assert.assertEquals("Promo created should be seen.", 1,

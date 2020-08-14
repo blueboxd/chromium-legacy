@@ -185,6 +185,14 @@ void WebAppSyncBridge::SetAppUserDisplayMode(const AppId& app_id,
     web_app->SetUserDisplayMode(user_display_mode);
 }
 
+void WebAppSyncBridge::SetAppRunOnOsLoginMode(const AppId& app_id,
+                                              RunOnOsLoginMode mode) {
+  ScopedRegistryUpdate update(this);
+  WebApp* web_app = update->UpdateApp(app_id);
+  if (web_app)
+    web_app->SetRunOnOsLoginMode(mode);
+}
+
 void WebAppSyncBridge::SetAppIsDisabled(const AppId& app_id, bool is_disabled) {
   if (!IsChromeOs())
     return;

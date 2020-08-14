@@ -308,7 +308,7 @@ base::string16 PersonalInfoSuggester::GetSuggestion(
 
 void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
                                            const size_t confirmed_length) {
-  if (ChromeKeyboardControllerClient::Get()->is_keyboard_enabled()) {
+  if (ChromeKeyboardControllerClient::Get()->is_keyboard_visible()) {
     const std::vector<std::string> args{base::UTF16ToUTF8(text)};
     suggestion_handler_->OnSuggestionsChanged(args);
     return;

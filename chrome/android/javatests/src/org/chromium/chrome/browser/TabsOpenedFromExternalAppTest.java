@@ -402,7 +402,8 @@ public class TabsOpenedFromExternalAppTest {
         int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
         Assert.assertEquals("Selected tab is not on the right URL.", url1,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
 
         // Launch a new URL from the same app, it should open in the same tab.
         originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
@@ -410,7 +411,8 @@ public class TabsOpenedFromExternalAppTest {
         newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount, newTabCount);
         Assert.assertEquals("Selected tab is not on the right URL.", url2,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
 
         // And pressing back should close Clank.
         Assert.assertTrue("Window does not have focus before pressing back.",
@@ -438,7 +440,8 @@ public class TabsOpenedFromExternalAppTest {
         launchUrlFromExternalApp(url1, EXTERNAL_APP_1_ID, false);
 
         Assert.assertEquals("Selected tab is not on the right URL.", url1,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
 
         // Launch the same URL without app ID. It should open a new tab.
         int originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
@@ -446,7 +449,8 @@ public class TabsOpenedFromExternalAppTest {
         int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
         Assert.assertEquals("Selected tab is not on the right URL.", url1,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
 
         // Launch another URL without app ID. It should open a new tab.
         originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
@@ -454,7 +458,8 @@ public class TabsOpenedFromExternalAppTest {
         newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
         Assert.assertEquals("Selected tab is not on the right URL.", url2,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
 
         // And pressing back should close Clank.
         Assert.assertTrue("Window does not have focus before pressing back.",
@@ -485,7 +490,8 @@ public class TabsOpenedFromExternalAppTest {
         int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
         Assert.assertEquals("Selected tab is not on the right URL.", url1,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
 
         // Launch a new URL from the same app with the right extra to open in a new tab.
         originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
@@ -493,7 +499,8 @@ public class TabsOpenedFromExternalAppTest {
         newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
         Assert.assertEquals("Selected tab is not on the right URL.", url2,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
 
         // And pressing back should close Clank.
         Assert.assertTrue("Window does not have focus before pressing back.",
@@ -517,7 +524,8 @@ public class TabsOpenedFromExternalAppTest {
         // Launch Clank from the external app.
         mActivityTestRule.startMainActivityFromExternalApp(url1, EXTERNAL_APP_1_ID);
         Assert.assertEquals("Selected tab is not on the right URL.", url1,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
 
         // Launch a new URL from the same app, it should open in the same tab.
         int originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
@@ -525,7 +533,8 @@ public class TabsOpenedFromExternalAppTest {
         int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount, newTabCount);
         Assert.assertEquals("Selected tab is not on the right URL.", url2,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
 
         // And pressing back should close Clank.
         Assert.assertTrue("Window does not have focus before pressing back.",
@@ -560,7 +569,8 @@ public class TabsOpenedFromExternalAppTest {
         int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
         Assert.assertEquals("Selected tab is not on the right URL.", url2,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
 
         // Also try with no app id, it should also open in a new tab.
         originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
@@ -568,7 +578,8 @@ public class TabsOpenedFromExternalAppTest {
         newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
         Assert.assertEquals("Selected tab is not on the right URL.", url3,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
     }
 
     /**
@@ -597,7 +608,8 @@ public class TabsOpenedFromExternalAppTest {
         int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
         Assert.assertEquals("Selected tab is not on the right URL.", url2,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
     }
 
     /**
@@ -645,7 +657,8 @@ public class TabsOpenedFromExternalAppTest {
         int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
         Assert.assertEquals("Selected tab is not on the right URL.", url2,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
+                ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab()));
     }
 
     private static class TestTabObserver extends EmptyTabObserver {

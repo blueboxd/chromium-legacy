@@ -1575,6 +1575,8 @@ TEST(TimeDelta, Magnitude) {
   static_assert(TimeDelta::FromMicroseconds(max_int64_minus_one) ==
                     TimeDelta::FromMicroseconds(min_int64_plus_two).magnitude(),
                 "");
+
+  static_assert(TimeDelta::Max() == TimeDelta::Min().magnitude(), "");
 }
 
 TEST(TimeDelta, ZeroMinMax) {
@@ -1965,6 +1967,166 @@ TEST(TimeDelta, Overflows) {
   TimeTicks ticks_now = TimeTicks::Now();
   EXPECT_EQ(-kOneSecond, (ticks_now - kOneSecond) - ticks_now);
   EXPECT_EQ(kOneSecond, (ticks_now + kOneSecond) - ticks_now);
+}
+
+TEST(TimeDelta, CeilToMultiple) {
+  for (const auto interval :
+       {TimeDelta::FromSeconds(10), TimeDelta::FromSeconds(-10)}) {
+    SCOPED_TRACE(interval);
+    EXPECT_EQ(TimeDelta().CeilToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(1).CeilToMultiple(interval),
+              TimeDelta::FromSeconds(10));
+    EXPECT_EQ(TimeDelta::FromSeconds(9).CeilToMultiple(interval),
+              TimeDelta::FromSeconds(10));
+    EXPECT_EQ(TimeDelta::FromSeconds(10).CeilToMultiple(interval),
+              TimeDelta::FromSeconds(10));
+    EXPECT_EQ(TimeDelta::FromSeconds(15).CeilToMultiple(interval),
+              TimeDelta::FromSeconds(20));
+    EXPECT_EQ(TimeDelta::FromSeconds(20).CeilToMultiple(interval),
+              TimeDelta::FromSeconds(20));
+    EXPECT_EQ(TimeDelta::Max().CeilToMultiple(interval), TimeDelta::Max());
+    EXPECT_EQ(TimeDelta::FromSeconds(-1).CeilToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(-9).CeilToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(-10).CeilToMultiple(interval),
+              TimeDelta::FromSeconds(-10));
+    EXPECT_EQ(TimeDelta::FromSeconds(-15).CeilToMultiple(interval),
+              TimeDelta::FromSeconds(-10));
+    EXPECT_EQ(TimeDelta::FromSeconds(-20).CeilToMultiple(interval),
+              TimeDelta::FromSeconds(-20));
+    EXPECT_EQ(TimeDelta::Min().CeilToMultiple(interval), TimeDelta::Min());
+  }
+
+  for (const auto interval : {TimeDelta::Max(), TimeDelta::Min()}) {
+    SCOPED_TRACE(interval);
+    EXPECT_EQ(TimeDelta().CeilToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(1).CeilToMultiple(interval),
+              TimeDelta::Max());
+    EXPECT_EQ(TimeDelta::FromSeconds(9).CeilToMultiple(interval),
+              TimeDelta::Max());
+    EXPECT_EQ(TimeDelta::FromSeconds(10).CeilToMultiple(interval),
+              TimeDelta::Max());
+    EXPECT_EQ(TimeDelta::FromSeconds(15).CeilToMultiple(interval),
+              TimeDelta::Max());
+    EXPECT_EQ(TimeDelta::FromSeconds(20).CeilToMultiple(interval),
+              TimeDelta::Max());
+    EXPECT_EQ(TimeDelta::Max().CeilToMultiple(interval), TimeDelta::Max());
+    EXPECT_EQ(TimeDelta::FromSeconds(-1).CeilToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(-9).CeilToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(-10).CeilToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(-15).CeilToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(-20).CeilToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::Min().CeilToMultiple(interval), TimeDelta::Min());
+  }
+}
+
+TEST(TimeDelta, FloorToMultiple) {
+  for (const auto interval :
+       {TimeDelta::FromSeconds(10), TimeDelta::FromSeconds(-10)}) {
+    SCOPED_TRACE(interval);
+    EXPECT_EQ(TimeDelta().FloorToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(1).FloorToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(9).FloorToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(10).FloorToMultiple(interval),
+              TimeDelta::FromSeconds(10));
+    EXPECT_EQ(TimeDelta::FromSeconds(15).FloorToMultiple(interval),
+              TimeDelta::FromSeconds(10));
+    EXPECT_EQ(TimeDelta::FromSeconds(20).FloorToMultiple(interval),
+              TimeDelta::FromSeconds(20));
+    EXPECT_EQ(TimeDelta::Max().FloorToMultiple(interval), TimeDelta::Max());
+    EXPECT_EQ(TimeDelta::FromSeconds(-1).FloorToMultiple(interval),
+              TimeDelta::FromSeconds(-10));
+    EXPECT_EQ(TimeDelta::FromSeconds(-9).FloorToMultiple(interval),
+              TimeDelta::FromSeconds(-10));
+    EXPECT_EQ(TimeDelta::FromSeconds(-10).FloorToMultiple(interval),
+              TimeDelta::FromSeconds(-10));
+    EXPECT_EQ(TimeDelta::FromSeconds(-15).FloorToMultiple(interval),
+              TimeDelta::FromSeconds(-20));
+    EXPECT_EQ(TimeDelta::FromSeconds(-20).FloorToMultiple(interval),
+              TimeDelta::FromSeconds(-20));
+    EXPECT_EQ(TimeDelta::Min().FloorToMultiple(interval), TimeDelta::Min());
+  }
+
+  for (const auto interval : {TimeDelta::Max(), TimeDelta::Min()}) {
+    SCOPED_TRACE(interval);
+    EXPECT_EQ(TimeDelta().FloorToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(1).FloorToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(9).FloorToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(10).FloorToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(15).FloorToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(20).FloorToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::Max().FloorToMultiple(interval), TimeDelta::Max());
+    EXPECT_EQ(TimeDelta::FromSeconds(-1).FloorToMultiple(interval),
+              TimeDelta::Min());
+    EXPECT_EQ(TimeDelta::FromSeconds(-9).FloorToMultiple(interval),
+              TimeDelta::Min());
+    EXPECT_EQ(TimeDelta::FromSeconds(-10).FloorToMultiple(interval),
+              TimeDelta::Min());
+    EXPECT_EQ(TimeDelta::FromSeconds(-15).FloorToMultiple(interval),
+              TimeDelta::Min());
+    EXPECT_EQ(TimeDelta::FromSeconds(-20).FloorToMultiple(interval),
+              TimeDelta::Min());
+    EXPECT_EQ(TimeDelta::Min().FloorToMultiple(interval), TimeDelta::Min());
+  }
+}
+
+TEST(TimeDelta, RoundToMultiple) {
+  for (const auto interval :
+       {TimeDelta::FromSeconds(10), TimeDelta::FromSeconds(-10)}) {
+    SCOPED_TRACE(interval);
+    EXPECT_EQ(TimeDelta().RoundToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(1).RoundToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(9).RoundToMultiple(interval),
+              TimeDelta::FromSeconds(10));
+    EXPECT_EQ(TimeDelta::FromSeconds(10).RoundToMultiple(interval),
+              TimeDelta::FromSeconds(10));
+    EXPECT_EQ(TimeDelta::FromSeconds(15).RoundToMultiple(interval),
+              TimeDelta::FromSeconds(20));
+    EXPECT_EQ(TimeDelta::FromSeconds(20).RoundToMultiple(interval),
+              TimeDelta::FromSeconds(20));
+    EXPECT_EQ(TimeDelta::Max().RoundToMultiple(interval), TimeDelta::Max());
+    EXPECT_EQ(TimeDelta::FromSeconds(-1).RoundToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(-9).RoundToMultiple(interval),
+              TimeDelta::FromSeconds(-10));
+    EXPECT_EQ(TimeDelta::FromSeconds(-10).RoundToMultiple(interval),
+              TimeDelta::FromSeconds(-10));
+    EXPECT_EQ(TimeDelta::FromSeconds(-15).RoundToMultiple(interval),
+              TimeDelta::FromSeconds(-20));
+    EXPECT_EQ(TimeDelta::FromSeconds(-20).RoundToMultiple(interval),
+              TimeDelta::FromSeconds(-20));
+    EXPECT_EQ(TimeDelta::Min().RoundToMultiple(interval), TimeDelta::Min());
+  }
+
+  for (const auto interval : {TimeDelta::Max(), TimeDelta::Min()}) {
+    SCOPED_TRACE(interval);
+    EXPECT_EQ(TimeDelta().RoundToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(1).RoundToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(9).RoundToMultiple(interval), TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(10).RoundToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(15).RoundToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(20).RoundToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::Max().RoundToMultiple(interval), TimeDelta::Max());
+    EXPECT_EQ(TimeDelta::FromSeconds(-1).RoundToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(-9).RoundToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(-10).RoundToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(-15).RoundToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::FromSeconds(-20).RoundToMultiple(interval),
+              TimeDelta());
+    EXPECT_EQ(TimeDelta::Min().RoundToMultiple(interval), TimeDelta::Min());
+  }
 }
 
 TEST(TimeBase, AddSubDeltaSaturates) {

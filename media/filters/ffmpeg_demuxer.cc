@@ -1217,10 +1217,9 @@ static int CalculateBitrate(AVFormatContext* format_context,
 
   // See if we can approximate the bitrate as long as we have a filesize and
   // valid duration.
-  if (duration.InMicroseconds() <= 0 || duration == kInfiniteDuration ||
-      filesize_in_bytes == 0) {
+  if (duration <= base::TimeDelta() || duration == kInfiniteDuration ||
+      !filesize_in_bytes)
     return 0;
-  }
 
   // Don't multiply by 8 first; it will overflow if (filesize_in_bytes >= 2^60).
   return base::ClampRound(filesize_in_bytes * duration.ToHz() * 8);

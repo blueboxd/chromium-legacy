@@ -192,9 +192,8 @@ class GFX_EXPORT SkiaVectorAnimation {
     // difference between |end_offset_| - |start_offset_|.
     const base::TimeDelta cycle_duration_;
 
-    // Normalized animation progress delta per millisecond, that is, the
-    // normalized progress in per millisecond of time duration.
-    const double progress_per_millisecond_;
+    // Total duration of all cycles.
+    const base::TimeDelta total_duration_;
 
     // The timetick at which |progress_| was updated last.
     base::TimeTicks previous_tick_;

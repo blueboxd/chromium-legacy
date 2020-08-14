@@ -89,8 +89,8 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     private void checkMenuOptions(ContextMenuParams params, int[]... tabs) {
-        List<Pair<Integer, List<ContextMenuItem>>> contextMenuState =
-                mPopulator.buildContextMenu(null, ContextUtils.getApplicationContext(), params);
+        List<Pair<Integer, List<ContextMenuItem>>> contextMenuState = mPopulator.buildContextMenu(
+                null, ContextUtils.getApplicationContext(), params, false);
 
         assertEquals("Number of tabs doesn't match", tabs[0] == null ? 0 : tabs.length,
                 contextMenuState.size());

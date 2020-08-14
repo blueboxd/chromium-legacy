@@ -8842,11 +8842,6 @@ interface VideoTrackReader
     method constructor
     method start
     method stop
-interface VideoTrackWriter
-    attribute @@toStringTag
-    getter track
-    getter writable
-    method constructor
 interface VirtualKeyboard : EventTarget
     attribute @@toStringTag
     getter boundingRect

@@ -51,8 +51,8 @@ class ASH_EXPORT ClipboardHistoryController {
 
   bool CanShowMenu() const;
   void ShowMenu();
-  void ExecuteSelectedMenuItem();
-  void MenuOptionSelected(int index);
+  void ExecuteSelectedMenuItem(int event_flags);
+  void MenuOptionSelected(int index, int event_flags);
 
   gfx::Rect CalculateAnchorRect() const;
 

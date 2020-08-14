@@ -19,6 +19,8 @@ class ASH_PUBLIC_EXPORT InSessionAuthDialogController {
   // succeeded/failed.
   using OnAuthenticateCallback =
       base::OnceCallback<void(base::Optional<bool> success)>;
+  // Callback for overall authentication flow result.
+  using FinishCallback = base::OnceCallback<void(bool success)>;
 
   // Return the singleton instance.
   static InSessionAuthDialogController* Get();
@@ -27,7 +29,7 @@ class ASH_PUBLIC_EXPORT InSessionAuthDialogController {
   virtual void SetClient(InSessionAuthDialogClient* client) = 0;
 
   // Displays the authentication dialog.
-  virtual void ShowAuthenticationDialog() = 0;
+  virtual void ShowAuthenticationDialog(FinishCallback finish_callback) = 0;
 
   // Destroys the authentication dialog.
   virtual void DestroyAuthenticationDialog() = 0;
@@ -38,6 +40,9 @@ class ASH_PUBLIC_EXPORT InSessionAuthDialogController {
   virtual void AuthenticateUserWithPasswordOrPin(
       const std::string& password,
       OnAuthenticateCallback callback) = 0;
+
+  // Cancels all operations and destroys the dialog.
+  virtual void Cancel() = 0;
 
  protected:
   InSessionAuthDialogController();

@@ -16,6 +16,7 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
+#include "base/memory/weak_ptr.h"
 #include "pdf/paint_manager.h"
 #include "pdf/pdf_view_plugin_base.h"
 #include "pdf/preview_mode_client.h"
@@ -25,7 +26,6 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/find_private.h"
 #include "ppapi/cpp/url_loader.h"
-#include "ppapi/utility/completion_callback_factory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace gfx {
@@ -423,8 +423,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // Used for submitting forms.
   pp::URLLoader form_loader_;
 
-  pp::CompletionCallbackFactory<OutOfProcessInstance> callback_factory_;
-
   // The callback for receiving the password from the page.
   base::OnceCallback<void(const std::string&)> password_callback_;
 
@@ -504,6 +502,8 @@ class OutOfProcessInstance : public PdfViewPluginBase,
     ACCESSIBILITY_STATE_PENDING,  // Enabled but waiting for doc to load.
     ACCESSIBILITY_STATE_LOADED
   } accessibility_state_ = ACCESSIBILITY_STATE_OFF;
+
+  base::WeakPtrFactory<OutOfProcessInstance> weak_factory_{this};
 };
 
 }  // namespace chrome_pdf

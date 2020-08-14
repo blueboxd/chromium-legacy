@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -44,6 +45,9 @@
 namespace {
 const NSTimeInterval kSaveDelay = 2.5;     // Value taken from Desktop Chrome.
 NSString* const kRootObjectKey = @"root";  // Key for the root object.
+NSString* const kSessionDirectory =
+    @"Sessions";  // The directory name inside BrowserState directory which
+                  // contain all sessions directories.
 }
 
 @implementation NSKeyedUnarchiver (CrLegacySessionCompatibility)
@@ -168,22 +172,21 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
 - (void)deleteLastSessionFileInDirectory:(NSString*)directory
                               completion:(base::OnceClosure)callback {
   NSString* sessionPath = [[self class] sessionPathForDirectory:directory];
-  _taskRunner->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(^{
-        base::ScopedBlockingCall scoped_blocking_call(
-            FROM_HERE, base::BlockingType::MAY_BLOCK);
-        NSFileManager* fileManager = [NSFileManager defaultManager];
-        if (![fileManager fileExistsAtPath:sessionPath])
-          return;
+  [self deletePaths:[NSArray arrayWithObject:sessionPath]
+         completion:std::move(callback)];
+}
 
-        NSError* error = nil;
-        if (![fileManager removeItemAtPath:sessionPath error:&error] || error) {
-          CHECK(false) << "Unable to delete session file: "
-                       << base::SysNSStringToUTF8(sessionPath) << ": "
-                       << base::SysNSStringToUTF8([error description]);
-        }
-      }),
-      std::move(callback));
+- (void)deleteSessions:(NSArray<NSString*>*)sessionIDs
+    fromBrowserStateDirectory:(NSString*)directory {
+  NSString* sessionsDirectoryPath =
+      [directory stringByAppendingPathComponent:kSessionDirectory];
+  NSMutableArray<NSString*>* paths =
+      [NSMutableArray arrayWithCapacity:sessionIDs.count];
+  for (NSString* sessionID : sessionIDs) {
+    [paths addObject:[sessionsDirectoryPath
+                         stringByAppendingPathComponent:sessionID]];
+  }
+  [self deletePaths:paths completion:base::DoNothing()];
 }
 
 + (NSString*)sessionPathForDirectory:(NSString*)directory {
@@ -191,6 +194,29 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
 }
 
 #pragma mark - Private methods
+
+// Delete files/folders of the given |paths|.
+- (void)deletePaths:(NSArray<NSString*>*)paths
+         completion:(base::OnceClosure)callback {
+  _taskRunner->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(^{
+        base::ScopedBlockingCall scoped_blocking_call(
+            FROM_HERE, base::BlockingType::MAY_BLOCK);
+        NSFileManager* fileManager = [NSFileManager defaultManager];
+        for (NSString* path : paths) {
+          if (![fileManager fileExistsAtPath:path])
+            continue;
+
+          NSError* error = nil;
+          if (![fileManager removeItemAtPath:path error:&error] || error) {
+            CHECK(false) << "Unable to delete path: "
+                         << base::SysNSStringToUTF8(path) << ": "
+                         << base::SysNSStringToUTF8([error description]);
+          }
+        }
+      }),
+      std::move(callback));
+}
 
 // Do the work of saving on a background thread.
 - (void)performSaveToPathInBackground:(NSString*)sessionPath {

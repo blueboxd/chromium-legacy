@@ -15,7 +15,7 @@ namespace nearby {
 namespace chrome {
 
 // Concrete BluetoothAdapter implementation.
-// api::BluetoothAdapter is a synchronous interface, so this implementation
+// api::BluetoothAdapter is a synchronous interface, so this implementation of
 // consumes the synchronous signatures of bluetooth::mojom::Adapter methods.
 class BluetoothAdapter : public api::BluetoothAdapter {
  public:

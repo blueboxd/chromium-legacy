@@ -190,6 +190,20 @@ DisplayMode ResolveEffectiveDisplayMode(
 apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
     DisplayMode display_mode);
 
+// The operation mode for Run on OS Login.
+enum class RunOnOsLoginMode {
+  // kUndefined: The web app is not registered with the OS.
+  kUndefined = 0,
+  // kWindowed: The web app is registered with the OS and will be launched as
+  // normal window. This is also the default launch mode for web apps.
+  kWindowed = 1,
+  // kMinimized: The web app is registered with the OS and will be launched as a
+  // minimized window.
+  kMinimized = 2
+};
+
+std::string RunOnOsLoginModeToString(RunOnOsLoginMode mode);
+
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_CONSTANTS_H_

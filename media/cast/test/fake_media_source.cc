@@ -419,7 +419,7 @@ base::TimeDelta FakeMediaSource::VideoFrameTime(int frame_number) {
 }
 
 base::TimeDelta FakeMediaSource::ScaleTimestamp(base::TimeDelta timestamp) {
-  return base::TimeDelta::FromSecondsD(timestamp.InSecondsF() / playback_rate_);
+  return timestamp / playback_rate_;
 }
 
 base::TimeDelta FakeMediaSource::AudioFrameTime(int frame_number) {

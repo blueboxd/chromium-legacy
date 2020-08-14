@@ -156,8 +156,7 @@ class AudioEncoder::ImplBase
         // Compute encoder utilization as the real-world time elapsed divided
         // by the signal duration.
         audio_frame->encoder_utilization =
-            (base::TimeTicks::Now() - start_time).InSecondsF() /
-            frame_duration_.InSecondsF();
+            (base::TimeTicks::Now() - start_time) / frame_duration_;
 
         TRACE_EVENT_ASYNC_END1("cast.stream", "Audio Encode", audio_frame.get(),
                                "encoder_utilization",

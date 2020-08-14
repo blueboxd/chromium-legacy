@@ -9,6 +9,10 @@ namespace chromeos {
 ScannerDeviceName::ScannerDeviceName(const std::string& device_name)
     : device_name(device_name) {}
 
+ScannerDeviceName::ScannerDeviceName(const std::string& device_name,
+                                     bool usable)
+    : device_name(device_name), usable(usable) {}
+
 ScannerDeviceName::~ScannerDeviceName() = default;
 
 ScannerDeviceName::ScannerDeviceName(const ScannerDeviceName& other) = default;

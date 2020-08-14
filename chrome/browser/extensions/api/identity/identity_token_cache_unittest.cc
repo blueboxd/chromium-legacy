@@ -23,9 +23,8 @@ class IdentityTokenCacheTest : public testing::Test {
                       const std::string& token_string,
                       const std::set<std::string>& scopes) {
     ExtensionTokenKey key(ext_id, CoreAccountId(), scopes);
-
     IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
-        token_string, base::TimeDelta::FromSeconds(3600));
+        token_string, scopes, base::TimeDelta::FromSeconds(3600));
     cache_.SetToken(key, token);
   }
 
@@ -59,6 +58,7 @@ TEST_F(IdentityTokenCacheTest, AccessTokenCacheHit) {
       GetToken(kDefaultExtensionId, scopes);
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN, cached_token.status());
   EXPECT_EQ(token_string, cached_token.token());
+  EXPECT_EQ(scopes, cached_token.granted_scopes());
 }
 
 TEST_F(IdentityTokenCacheTest, IntermediateValueCacheHit) {
@@ -84,6 +84,7 @@ TEST_F(IdentityTokenCacheTest, CacheHitPriority) {
       GetToken(kDefaultExtensionId, scopes);
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN, cached_token.status());
   EXPECT_EQ(token_string, cached_token.token());
+  EXPECT_EQ(scopes, cached_token.granted_scopes());
 }
 
 TEST_F(IdentityTokenCacheTest, AccessTokenCacheMiss) {
@@ -112,18 +113,18 @@ TEST_F(IdentityTokenCacheTest, IntermediateValueCacheMiss) {
             GetToken(ext_2, scopes_1).status());
 }
 
-TEST_F(IdentityTokenCacheTest, EraseToken) {
+TEST_F(IdentityTokenCacheTest, EraseAccessToken) {
   std::string token_string = "token";
   std::set<std::string> scopes = {"foo", "bar"};
   SetAccessToken(kDefaultExtensionId, token_string, scopes);
 
-  cache().EraseToken(kDefaultExtensionId, token_string);
+  cache().EraseAccessToken(kDefaultExtensionId, token_string);
 
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
             GetToken(kDefaultExtensionId, scopes).status());
 }
 
-TEST_F(IdentityTokenCacheTest, EraseTokenOthersUnaffected) {
+TEST_F(IdentityTokenCacheTest, EraseAccessTokenOthersUnaffected) {
   std::string token_string = "token";
   std::set<std::string> scopes = {"foo", "bar"};
   SetAccessToken(kDefaultExtensionId, token_string, scopes);
@@ -132,7 +133,7 @@ TEST_F(IdentityTokenCacheTest, EraseTokenOthersUnaffected) {
   std::set<std::string> unrelated_scopes = {"foo", "foobar"};
   SetAccessToken(kDefaultExtensionId, unrelated_token_string, unrelated_scopes);
 
-  cache().EraseToken(kDefaultExtensionId, token_string);
+  cache().EraseAccessToken(kDefaultExtensionId, token_string);
 
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
             GetToken(kDefaultExtensionId, scopes).status());
@@ -141,6 +142,7 @@ TEST_F(IdentityTokenCacheTest, EraseTokenOthersUnaffected) {
       GetToken(kDefaultExtensionId, unrelated_scopes);
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN, cached_token.status());
   EXPECT_EQ(unrelated_token_string, cached_token.token());
+  EXPECT_EQ(unrelated_scopes, cached_token.granted_scopes());
 }
 
 TEST_F(IdentityTokenCacheTest, EraseAllTokens) {
@@ -162,7 +164,7 @@ TEST_F(IdentityTokenCacheTest, EraseAllTokens) {
             GetToken(ext_2, scopes_2).status());
 }
 
-TEST_F(IdentityTokenCacheTest, GetAllTokens) {
+TEST_F(IdentityTokenCacheTest, GetAccessTokens) {
   std::string ext_1 = "ext_1";
   std::string token_string_1 = "token_1";
   std::set<std::string> scopes_1 = {"foo", "bar"};
@@ -173,20 +175,31 @@ TEST_F(IdentityTokenCacheTest, GetAllTokens) {
   std::set<std::string> scopes_2 = {"foobar"};
   SetAccessToken(ext_2, token_string_2, scopes_2);
 
-  IdentityTokenCache::CachedTokens cached_tokens = cache().GetAllTokens();
-  EXPECT_EQ(2ul, cached_tokens.size());
+  IdentityTokenCache::AccessTokensCache cached_access_tokens =
+      cache().access_tokens_cache();
+  EXPECT_EQ(2ul, cached_access_tokens.size());
 
-  ExtensionTokenKey key_1(ext_1, CoreAccountId(), scopes_1);
-  const IdentityTokenCacheValue& cached_token_1 = cached_tokens[key_1];
+  IdentityTokenCache::AccessTokensKey key_1(ext_1, CoreAccountId());
+  const IdentityTokenCache::AccessTokensValue& cached_tokens_1 =
+      cached_access_tokens[key_1];
+  EXPECT_EQ(1ul, cached_tokens_1.size());
+
+  const IdentityTokenCacheValue& cached_token_1 = *(cached_tokens_1.begin());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             cached_token_1.status());
   EXPECT_EQ(token_string_1, cached_token_1.token());
+  EXPECT_EQ(scopes_1, cached_token_1.granted_scopes());
 
-  ExtensionTokenKey key_2(ext_2, CoreAccountId(), scopes_2);
-  const IdentityTokenCacheValue& cached_token_2 = cached_tokens[key_2];
+  IdentityTokenCache::AccessTokensKey key_2(ext_2, CoreAccountId());
+  const IdentityTokenCache::AccessTokensValue& cached_tokens_2 =
+      cached_access_tokens[key_2];
+  EXPECT_EQ(1ul, cached_tokens_2.size());
+
+  const IdentityTokenCacheValue& cached_token_2 = *(cached_tokens_2.begin());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             cached_token_2.status());
   EXPECT_EQ(token_string_2, cached_token_2.token());
+  EXPECT_EQ(scopes_2, cached_token_2.granted_scopes());
 }
 
 // Newly cached access tokens should override previously cached values with the
@@ -197,7 +210,7 @@ TEST_F(IdentityTokenCacheTest, OverrideAccessToken) {
 
   std::string override_token = "token_2";
   SetAccessToken(kDefaultExtensionId, override_token, scopes);
-  cache().EraseToken(kDefaultExtensionId, override_token);
+  cache().EraseAccessToken(kDefaultExtensionId, override_token);
 
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
             GetToken(kDefaultExtensionId, scopes).status());
@@ -209,10 +222,41 @@ TEST_F(IdentityTokenCacheTest, OverrideIntermediateToken) {
 
   std::string override_token = "token";
   SetAccessToken(kDefaultExtensionId, override_token, scopes);
-  cache().EraseToken(kDefaultExtensionId, override_token);
+  cache().EraseAccessToken(kDefaultExtensionId, override_token);
 
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
             GetToken(kDefaultExtensionId, scopes).status());
+}
+
+TEST_F(IdentityTokenCacheTest, SubsetMatchCacheHit) {
+  std::set<std::string> superset_scopes = {"foo", "bar"};
+  std::string token_string = "token";
+  SetAccessToken(kDefaultExtensionId, token_string, superset_scopes);
+
+  const IdentityTokenCacheValue& cached_token =
+      GetToken(kDefaultExtensionId, std::set<std::string>({"foo"}));
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN, cached_token.status());
+  EXPECT_EQ(token_string, cached_token.token());
+  EXPECT_EQ(superset_scopes, cached_token.granted_scopes());
+}
+
+TEST_F(IdentityTokenCacheTest, SubsetMatchCacheHitPriority) {
+  std::set<std::string> scopes_smallest = {"foo"};
+  SetRemoteConsentApprovedToken(kDefaultExtensionId, "result", scopes_smallest);
+
+  std::set<std::string> scopes_large = {"foo", "bar", "foobar"};
+  std::string token_string_large = "token_large";
+  SetAccessToken(kDefaultExtensionId, token_string_large, scopes_large);
+
+  std::set<std::string> scopes_small = {"foo", "bar"};
+  std::string token_string_small = "token_small";
+  SetAccessToken(kDefaultExtensionId, token_string_small, scopes_small);
+
+  const IdentityTokenCacheValue& cached_token =
+      GetToken(kDefaultExtensionId, std::set<std::string>({"foo"}));
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN, cached_token.status());
+  EXPECT_EQ(token_string_small, cached_token.token());
+  EXPECT_EQ(scopes_small, cached_token.granted_scopes());
 }
 
 }  // namespace extensions

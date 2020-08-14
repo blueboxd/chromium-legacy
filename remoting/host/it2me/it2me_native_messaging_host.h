@@ -61,7 +61,8 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
       override;
   void OnStoreAccessCode(const std::string& access_code,
                                  base::TimeDelta access_code_lifetime) override;
-  void OnNatPolicyChanged(bool nat_traversal_enabled) override;
+  void OnNatPoliciesChanged(bool nat_traversal_enabled,
+                            bool relay_connections_allowed) override;
   void OnStateChanged(It2MeHostState state,
                       protocol::ErrorCode error_code) override;
 

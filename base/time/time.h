@@ -203,6 +203,10 @@ class BASE_EXPORT TimeDelta {
 
   // Returns the magnitude (absolute value) of this TimeDelta.
   constexpr TimeDelta magnitude() const {
+    // The code below will not work correctly in this corner case.
+    if (is_min())
+      return Max();
+
     // std::abs() is not currently constexpr.  The following is a simple
     // branchless implementation:
     const int64_t mask = delta_ >> (sizeof(delta_) * 8 - 1);
@@ -354,6 +358,12 @@ class BASE_EXPORT TimeDelta {
   constexpr bool operator>=(TimeDelta other) const {
     return delta_ >= other.delta_;
   }
+
+  // Returns this delta, ceiled/floored/rounded-away-from-zero to the nearest
+  // multiple of |interval|.
+  TimeDelta CeilToMultiple(TimeDelta interval) const;
+  TimeDelta FloorToMultiple(TimeDelta interval) const;
+  TimeDelta RoundToMultiple(TimeDelta interval) const;
 
  private:
   friend constexpr int64_t time_internal::SaturatedAdd(int64_t value,

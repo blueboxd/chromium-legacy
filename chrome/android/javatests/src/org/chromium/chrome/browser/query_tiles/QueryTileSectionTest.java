@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -209,12 +210,14 @@ public class QueryTileSectionTest {
     }
 
     private String getTabUrl() {
-        return mActivityTestRule.getActivity().getActivityTab().getUrl().getValidSpecOrEmpty();
+        return ChromeTabUtils.getUrlOnUiThread(mActivityTestRule.getActivity().getActivityTab())
+                .getValidSpecOrEmpty();
     }
 
     private void waitForSearchResultsPage() {
         CriteriaHelper.pollUiThread(() -> {
-            Criteria.checkThat("The SRP was never loaded.", mTab.getUrl().getValidSpecOrEmpty(),
+            Criteria.checkThat("The SRP was never loaded.",
+                    ChromeTabUtils.getUrlOnUiThread(mTab).getValidSpecOrEmpty(),
                     Matchers.containsString(SEARCH_URL_PATTERN));
         });
     }

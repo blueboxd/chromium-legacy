@@ -189,7 +189,7 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
           if (iterations > 2000) {
             break;
           }
-          if ((end_time - start_time).InMillisecondsF() > 1000) {
+          if ((end_time - start_time) > base::TimeDelta::FromSeconds(1)) {
             break;
           }
         }

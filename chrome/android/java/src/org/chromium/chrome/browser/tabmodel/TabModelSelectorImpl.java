@@ -44,6 +44,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
     private final TabModelOrderController mOrderController;
 
+    private final AsyncTabParamsManager mAsyncTabParamsManager;
+
     private NextTabPolicySupplier mNextTabPolicySupplier;
 
     private TabContentManager mTabContentManager;
@@ -61,11 +63,13 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
      * @param persistencePolicy A {@link TabPersistencePolicy} instance.
      * @param tabModelFilterFactory
      * @param nextTabPolicySupplier
+     * @param asyncTabParamsManager
      * @param supportUndo Whether a tab closure can be undone.
      */
     public TabModelSelectorImpl(Activity activity, TabCreatorManager tabCreatorManager,
             TabPersistencePolicy persistencePolicy, TabModelFilterFactory tabModelFilterFactory,
-            NextTabPolicySupplier nextTabPolicySupplier, boolean supportUndo,
+            NextTabPolicySupplier nextTabPolicySupplier,
+            AsyncTabParamsManager asyncTabParamsManager, boolean supportUndo,
             boolean isTabbedActivity, boolean startIncognito) {
         super(tabCreatorManager, tabModelFilterFactory, startIncognito);
         mUma = new TabModelSelectorUma(activity);
@@ -82,6 +86,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                 persistencePolicy, this, tabCreatorManager, persistentStoreObserver);
         mOrderController = new TabModelOrderControllerImpl(this);
         mNextTabPolicySupplier = nextTabPolicySupplier;
+        mAsyncTabParamsManager = asyncTabParamsManager;
     }
 
     @Override
@@ -125,10 +130,10 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                 (ChromeTabCreator) getTabCreatorManager().getTabCreator(true);
         TabModelImpl normalModel = new TabModelImpl(false, mIsTabbedActivityForSync,
                 regularTabCreator, incognitoTabCreator, mUma, mOrderController, mTabContentManager,
-                mTabSaver, mNextTabPolicySupplier, this, mIsUndoSupported);
+                mTabSaver, mNextTabPolicySupplier, mAsyncTabParamsManager, this, mIsUndoSupported);
         TabModel incognitoModel = new IncognitoTabModel(new IncognitoTabModelImplCreator(
                 regularTabCreator, incognitoTabCreator, mUma, mOrderController, mTabContentManager,
-                mTabSaver, mNextTabPolicySupplier, this));
+                mTabSaver, mNextTabPolicySupplier, mAsyncTabParamsManager, this));
         regularTabCreator.setTabModel(normalModel, mOrderController);
         incognitoTabCreator.setTabModel(incognitoModel, mOrderController);
         onNativeLibraryReadyInternal(tabContentProvider, normalModel, incognitoModel);

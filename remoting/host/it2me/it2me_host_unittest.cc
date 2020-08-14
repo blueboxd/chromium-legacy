@@ -152,7 +152,8 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   void OnClientAuthenticated(const std::string& client_username) override;
   void OnStoreAccessCode(const std::string& access_code,
                          base::TimeDelta access_code_lifetime) override;
-  void OnNatPolicyChanged(bool nat_traversal_enabled) override;
+  void OnNatPoliciesChanged(bool nat_traversal_enabled,
+                            bool relay_connections_allowed) override;
   void OnStateChanged(It2MeHostState state, ErrorCode error_code) override;
 
   void SetPolicies(
@@ -170,6 +171,12 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
       std::initializer_list<base::StringPiece> values);
 
   ChromotingHost* GetHost() { return it2me_host_->host_.get(); }
+
+  // Stores the last nat traversal policy value received.
+  bool last_nat_traversal_enabled_value_ = false;
+
+  // Stores the last relay enabled policy value received.
+  bool last_relay_connections_allowed_value_ = false;
 
   ValidationResult validation_result_ = ValidationResult::SUCCESS;
 
@@ -353,7 +360,11 @@ void It2MeHostTest::OnClientAuthenticated(const std::string& client_username) {}
 void It2MeHostTest::OnStoreAccessCode(const std::string& access_code,
                                       base::TimeDelta access_code_lifetime) {}
 
-void It2MeHostTest::OnNatPolicyChanged(bool nat_traversal_enabled) {}
+void It2MeHostTest::OnNatPoliciesChanged(bool nat_traversal_enabled,
+                                         bool relay_connections_allowed) {
+  last_nat_traversal_enabled_value_ = nat_traversal_enabled;
+  last_relay_connections_allowed_value_ = relay_connections_allowed;
+}
 
 void It2MeHostTest::OnStateChanged(It2MeHostState state, ErrorCode error_code) {
   last_host_state_ = state;
@@ -405,6 +416,94 @@ TEST_F(It2MeHostTest, IceConfig) {
   EXPECT_EQ(ice_config.stun_servers[0].hostname(), kTestStunServer);
 
   ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, NatTraversalPolicy_Enabled) {
+  SetPolicies(
+      {{policy::key::kRemoteAccessHostFirewallTraversal, base::Value(true)}});
+
+  StartHost();
+  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
+
+  EXPECT_TRUE(last_nat_traversal_enabled_value_);
+
+  ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, NatTraversalPolicy_Disabled) {
+  SetPolicies(
+      {{policy::key::kRemoteAccessHostFirewallTraversal, base::Value(false)}});
+
+  StartHost();
+  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
+
+  EXPECT_FALSE(last_nat_traversal_enabled_value_);
+
+  ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, NatTraversalPolicy_DisabledTransitionCausesDisconnect) {
+  StartHost();
+  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
+
+  EXPECT_TRUE(last_nat_traversal_enabled_value_);
+  EXPECT_TRUE(last_relay_connections_allowed_value_);
+
+  SetPolicies(
+      {{policy::key::kRemoteAccessHostFirewallTraversal, base::Value(false)},
+       {policy::key::kRemoteAccessHostAllowRelayedConnection,
+        base::Value(true)}});
+  RunUntilStateChanged(It2MeHostState::kDisconnected);
+
+  EXPECT_FALSE(last_nat_traversal_enabled_value_);
+  EXPECT_TRUE(last_relay_connections_allowed_value_);
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, RelayPolicy_Enabled) {
+  SetPolicies({{policy::key::kRemoteAccessHostAllowRelayedConnection,
+                base::Value(true)}});
+
+  StartHost();
+  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
+
+  EXPECT_TRUE(last_relay_connections_allowed_value_);
+
+  ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, RelayPolicy_Disabled) {
+  SetPolicies({{policy::key::kRemoteAccessHostAllowRelayedConnection,
+                base::Value(false)}});
+
+  StartHost();
+  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
+
+  EXPECT_FALSE(last_relay_connections_allowed_value_);
+
+  ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, RelayPolicy_DisabledTransitionCausesDisconnect) {
+  StartHost();
+  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
+
+  EXPECT_TRUE(last_nat_traversal_enabled_value_);
+  EXPECT_TRUE(last_relay_connections_allowed_value_);
+
+  SetPolicies(
+      {{policy::key::kRemoteAccessHostFirewallTraversal, base::Value(true)},
+       {policy::key::kRemoteAccessHostAllowRelayedConnection,
+        base::Value(false)}});
+  RunUntilStateChanged(It2MeHostState::kDisconnected);
+
+  EXPECT_TRUE(last_nat_traversal_enabled_value_);
+  EXPECT_FALSE(last_relay_connections_allowed_value_);
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
 

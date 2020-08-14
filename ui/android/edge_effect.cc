@@ -204,8 +204,8 @@ bool EdgeEffect::Update(base::TimeTicks current_time) {
   if (IsFinished())
     return false;
 
-  const double dt = (current_time - start_time_).InMilliseconds();
-  const double t = std::min(dt / duration_.InMilliseconds(), 1.);
+  const base::TimeDelta dt = current_time - start_time_;
+  const double t = std::min(dt / duration_, 1.);
   const float interp = static_cast<float>(Damp(t, 1.));
 
   glow_alpha_ = Lerp(glow_alpha_start_, glow_alpha_finish_, interp);

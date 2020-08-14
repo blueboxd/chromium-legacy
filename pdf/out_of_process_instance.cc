@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/numerics/ranges.h"
@@ -460,7 +461,6 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       pp::Find_Private(this),
       pp::Printing_Dev(this),
       paint_manager_(this) {
-  callback_factory_.Initialize(this);
   pp::Module::Get()->AddPluginInterface(kPPPPdfInterface, &ppp_private);
   AddPerInstanceObject(kPPPPdfInterface, this);
 
@@ -776,10 +776,12 @@ void OutOfProcessInstance::LoadAccessibility() {
   SendAccessibilityViewportInfo();
 
   // Schedule loading the first page.
-  pp::CompletionCallback callback = callback_factory_.NewCallback(
-      &OutOfProcessInstance::SendNextAccessibilityPage);
-  pp::Module::Get()->core()->CallOnMainThread(kAccessibilityPageDelayMs,
-                                              callback, 0);
+  pp::Module::Get()->core()->CallOnMainThread(
+      kAccessibilityPageDelayMs,
+      PPCompletionCallbackFromResultCallback(
+          base::BindOnce(&OutOfProcessInstance::SendNextAccessibilityPage,
+                         weak_factory_.GetWeakPtr())),
+      0);
 }
 
 void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
@@ -797,10 +799,12 @@ void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
                                     chars, page_objects);
 
   // Schedule loading the next page.
-  pp::CompletionCallback callback = callback_factory_.NewCallback(
-      &OutOfProcessInstance::SendNextAccessibilityPage);
-  pp::Module::Get()->core()->CallOnMainThread(kAccessibilityPageDelayMs,
-                                              callback, page_index + 1);
+  pp::Module::Get()->core()->CallOnMainThread(
+      kAccessibilityPageDelayMs,
+      PPCompletionCallbackFromResultCallback(
+          base::BindOnce(&OutOfProcessInstance::SendNextAccessibilityPage,
+                         weak_factory_.GetWeakPtr())),
+      page_index + 1);
 }
 
 void OutOfProcessInstance::SendAccessibilityViewportInfo() {
@@ -1058,9 +1062,10 @@ void OutOfProcessInstance::OnPaint(const std::vector<gfx::Rect>& paint_rects,
   engine()->PostPaint();
 
   if (!deferred_invalidates_.empty()) {
-    pp::CompletionCallback callback = callback_factory_.NewCallback(
-        &OutOfProcessInstance::InvalidateAfterPaintDone);
-    pp::Module::Get()->core()->CallOnMainThread(0, callback);
+    pp::Module::Get()->core()->CallOnMainThread(
+        0, PPCompletionCallbackFromResultCallback(
+               base::BindOnce(&OutOfProcessInstance::InvalidateAfterPaintDone,
+                              weak_factory_.GetWeakPtr())));
   }
 }
 
@@ -1274,10 +1279,12 @@ void OutOfProcessInstance::NotifyNumberOfFindResultsChanged(int total,
   NumberOfFindResultsChanged(total, final_result);
   SetTickmarks(tickmarks_);
   recently_sent_find_update_ = true;
-  pp::CompletionCallback callback = callback_factory_.NewCallback(
-      &OutOfProcessInstance::ResetRecentlySentFindUpdate);
-  pp::Module::Get()->core()->CallOnMainThread(kFindResultCooldownMs, callback,
-                                              0);
+  pp::Module::Get()->core()->CallOnMainThread(
+      kFindResultCooldownMs,
+      PPCompletionCallbackFromResultCallback(
+          base::BindOnce(&OutOfProcessInstance::ResetRecentlySentFindUpdate,
+                         weak_factory_.GetWeakPtr())),
+      0);
 }
 
 void OutOfProcessInstance::NotifySelectedFindResultChanged(
@@ -1413,9 +1420,9 @@ void OutOfProcessInstance::Print() {
     return;
   }
 
-  pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&OutOfProcessInstance::OnPrint);
-  pp::Module::Get()->core()->CallOnMainThread(0, callback);
+  pp::Module::Get()->core()->CallOnMainThread(
+      0, PPCompletionCallbackFromResultCallback(base::BindOnce(
+             &OutOfProcessInstance::OnPrint, weak_factory_.GetWeakPtr())));
 }
 
 void OutOfProcessInstance::SubmitForm(const std::string& url,
@@ -1426,9 +1433,10 @@ void OutOfProcessInstance::SubmitForm(const std::string& url,
   request.SetMethod("POST");
   request.AppendDataToBody(reinterpret_cast<const char*>(data), length);
 
-  pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&OutOfProcessInstance::FormDidOpen);
   form_loader_ = CreateURLLoaderInternal();
+  pp::CompletionCallback callback =
+      PPCompletionCallbackFromResultCallback(base::BindOnce(
+          &OutOfProcessInstance::FormDidOpen, weak_factory_.GetWeakPtr()));
   int rv = form_loader_.Open(request, callback);
   if (rv != PP_OK_COMPLETIONPENDING)
     callback.Run(rv);
@@ -2020,9 +2028,10 @@ void OutOfProcessInstance::LoadUrl(const std::string& url,
   pp::URLLoader* loader =
       is_print_preview ? &embed_preview_loader_ : &embed_loader_;
   *loader = CreateURLLoaderInternal();
-  pp::CompletionCallback callback = callback_factory_.NewCallback(
-      is_print_preview ? &OutOfProcessInstance::DidOpenPreview
-                       : &OutOfProcessInstance::DidOpen);
+  pp::CompletionCallback callback = PPCompletionCallbackFromResultCallback(
+      base::BindOnce(is_print_preview ? &OutOfProcessInstance::DidOpenPreview
+                                      : &OutOfProcessInstance::DidOpen,
+                     weak_factory_.GetWeakPtr()));
   int rv = loader->Open(request, callback);
   if (rv != PP_OK_COMPLETIONPENDING)
     callback.Run(rv);

@@ -119,7 +119,7 @@ bool PhysicsBasedFlingCurve::ComputeScrollOffset(base::TimeTicks time,
   }
 
   bool still_active = true;
-  double x = elapsed_time.InSecondsF() / curve_duration_;
+  double x = elapsed_time / curve_duration_;
   if (x < 1.0f) {
     double progress = bezier_.Solve(x);
     *offset = GetPositionAtTime(distance_, progress);
@@ -143,7 +143,8 @@ bool PhysicsBasedFlingCurve::ComputeScrollOffset(base::TimeTicks time,
 // bezier curve based on velocity and |distance_|. It calculate the slope based
 // on the input velocity (initial velocity), curve duration and |distance_|.
 // Slope is then used to configure the value of control points for curve.
-float PhysicsBasedFlingCurve::CalculateDurationAndConfigureControlPoints(
+base::TimeDelta
+PhysicsBasedFlingCurve::CalculateDurationAndConfigureControlPoints(
     const gfx::Vector2dF& velocity) {
   float fling_velocity = std::max(fabs(velocity.x()), fabs(velocity.y()));
   float duration = std::min(kMaxCurveDurationForFling,
@@ -161,6 +162,6 @@ float PhysicsBasedFlingCurve::CalculateDurationAndConfigureControlPoints(
     p1_.set_x(p1_.y() / slope);
   }
 
-  return duration;
+  return base::TimeDelta::FromSecondsD(duration);
 }
 }  // namespace ui

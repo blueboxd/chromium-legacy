@@ -254,6 +254,10 @@ void WebApp::SetInstallTime(const base::Time& time) {
   install_time_ = time;
 }
 
+void WebApp::SetRunOnOsLoginMode(RunOnOsLoginMode mode) {
+  run_on_os_login_mode_ = mode;
+}
+
 void WebApp::SetSyncFallbackData(SyncFallbackData sync_fallback_data) {
   sync_fallback_data_ = std::move(sync_fallback_data);
 }
@@ -307,7 +311,9 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       << std::endl
       << "  last_launch_time: " << app.last_launch_time_ << std::endl
       << "  install_time: " << app.install_time_ << std::endl
-      << "  is_generated_icon: " << app.is_generated_icon_ << std::endl;
+      << "  is_generated_icon: " << app.is_generated_icon_ << std::endl
+      << "  run_on_os_login_mode: "
+      << RunOnOsLoginModeToString(app.run_on_os_login_mode_) << std::endl;
   for (const WebApplicationIconInfo& icon : app.icon_infos_)
     out << "  icon_info: " << icon << std::endl;
   for (SquareSizePx size : app.downloaded_icon_sizes_any_)
@@ -355,7 +361,8 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
                   app1.is_locally_installed_, app1.is_in_sync_install_,
                   app1.file_handlers_, app1.additional_search_terms_,
                   app1.protocol_handlers_, app1.sync_fallback_data_,
-                  app1.last_launch_time_, app1.install_time_) ==
+                  app1.last_launch_time_, app1.install_time_,
+                  app1.run_on_os_login_mode_) ==
          std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
                   app2.description_, app2.scope_, app2.theme_color_,
                   app2.background_color_, app2.icon_infos_,
@@ -367,7 +374,8 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
                   app2.is_locally_installed_, app2.is_in_sync_install_,
                   app2.file_handlers_, app2.additional_search_terms_,
                   app2.protocol_handlers_, app2.sync_fallback_data_,
-                  app2.last_launch_time_, app2.install_time_);
+                  app2.last_launch_time_, app2.install_time_,
+                  app2.run_on_os_login_mode_);
 }
 
 bool operator!=(const WebApp& app1, const WebApp& app2) {

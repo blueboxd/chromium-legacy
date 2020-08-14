@@ -46,6 +46,7 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   void Remove(browsing_data::TimePeriod time_period,
               BrowsingDataRemoveMask remove_mask,
               base::OnceClosure callback) override;
+  void RemoveSessionsData(NSArray<NSString*>* session_ids) override;
 
  private:
   // Represents a single removal task. Contains all parameters to execute it.

@@ -419,6 +419,10 @@ class AutofillManager : public AutofillHandler,
     // Address suggestions are not shown because the field is annotated with
     // autocomplete=off and the directive is being observed by the browser.
     kAutocompleteOff,
+    // Suggestions are not shown because this form is on a secure site, but
+    // submits insecurely. This is only used when the user has started typing,
+    // otherwise a warning is shown.
+    kInsecureForm,
   };
 
   // The context for the list of suggestions available for a given field to be

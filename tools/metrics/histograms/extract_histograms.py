@@ -398,7 +398,7 @@ def _ProcessBaseHistogramAttribute(node, histogram_entry):
 
 # The following code represents several concepts as JSON objects
 #
-# Token: an analog of <variant> tag, represented as a JSON object like:
+# Token: an analog of <token> tag, represented as a JSON object like:
 # {
 #   'key': 'token_key',
 #   'variants': [a list of Variant objects]
@@ -411,13 +411,20 @@ def _ProcessBaseHistogramAttribute(node, histogram_entry):
 #   'obsolete': 'Obsolete text.',
 #   'owners': ['me@chromium.org', 'you@chromium.org']
 # }
+#
+# Variants: an analog of <variants> tag, represented as a JSON object like:
+# {
+#   'name: 'variants_name',
+#   'variants': [a list of Variant objects]
+# }
 
 
-def _ExtractTokens(histogram):
+def _ExtractTokens(histogram, variants_dict):
   """Extracts tokens and variants from the given histogram element.
 
   Args:
     histogram: A DOM Element corresponding to a histogram.
+    variants_dict: A dictionary of variants extracted from the tree.
 
   Returns:
     A tuple where the first element is a list of extracted Tokens, and the
@@ -445,13 +452,32 @@ def _ExtractTokens(histogram):
       have_error = True
       continue
 
-    token = dict(key=token_key, variants=_ExtractVariants(token_node))
+    token = dict(key=token_key)
+
+    # If 'variants' attribute is set for the <token>, get the list of Variant
+    # objects from from the |variants_dict|. Else, extract the <variant>
+    # children nodes of the |token_node| as a list of Variant objects.
+    if token_node.hasAttribute('variants'):
+      variants_name = token_node.getAttribute('variants')
+      variant_list = variants_dict.get(variants_name)
+      if variant_list:
+        token['variants'] = variant_list
+      else:
+        logging.error(
+            "The variants attribute %s of token key %s of histogram %s does "
+            "not have a corresponding <variants> tag." %
+            (variants_name, token_key, histogram_name))
+        token['variants'] = []
+        have_error = True
+    else:
+      token['variants'] = _ExtractVariantNodes(token_node)
+
     tokens.append(token)
 
   return tokens, have_error
 
 
-def _ExtractVariants(node):
+def _ExtractVariantNodes(node):
   """Extracts the variants of a given node into a list of variant dictionaries.
 
   Args:
@@ -484,6 +510,9 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
   # Process the histograms. The descriptions can include HTML tags.
   histograms = {}
   have_errors = False
+  variants_dict, variants_errors = _ExtractVariantsFromXmlTree(tree)
+  have_errors = have_errors or variants_errors
+
   last_name = None
   for histogram in IterElementsWithTag(tree, 'histogram'):
     name = histogram.getAttribute('name')
@@ -577,7 +606,7 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
         histogram_entry['enum'] = enums[enum_name]
 
     # Find <token> tag.
-    tokens, have_token_errors = _ExtractTokens(histogram)
+    tokens, have_token_errors = _ExtractTokens(histogram, variants_dict)
     have_errors = have_errors or have_token_errors
     if tokens:
       histogram_entry['tokens'] = tokens
@@ -585,6 +614,32 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
     _ProcessBaseHistogramAttribute(histogram, histogram_entry)
 
   return histograms, have_errors
+
+
+def _ExtractVariantsFromXmlTree(tree):
+  """Extracts all <variants> nodes in the tree into a dictionary.
+
+  Args:
+    tree: A DOM Element containing histograms and variants nodes.
+
+  Returns:
+    A tuple where the first element is a dictionary of extracted Variants, where
+        the key is the variants name and the value is a list of Variant objects.
+        The second element indicates if any errors were detected while
+        extracting them.
+  """
+  variants_dict = {}
+  have_errors = False
+  for variants_node in IterElementsWithTag(tree, 'variants'):
+    variants_name = variants_node.getAttribute('name')
+    if variants_name in variants_dict:
+      logging.error('Duplicate variants definition %s', variants_name)
+      have_errors = True
+      continue
+
+    variants_dict[variants_name] = _ExtractVariantNodes(variants_node)
+
+  return variants_dict, have_errors
 
 
 def _GetObsoleteReason(node):
@@ -856,7 +911,7 @@ def _UpdateHistogramsWithTokens(histograms_dict):
   """Processes histograms and combines with variants of tokens.
 
   Args:
-    histograms_dict: A dictionary of all histograms extracted from the tree.
+    histograms_dict: A dictionary of all the histograms extracted from the tree.
 
   Returns:
     A tuple where the first element is the replacement histograms dictionary,

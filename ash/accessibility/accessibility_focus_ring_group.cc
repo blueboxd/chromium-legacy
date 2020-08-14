@@ -115,7 +115,7 @@ void AccessibilityFocusRingGroup::AnimateFocusRings(base::TimeTicks timestamp) {
       return;
     }
 
-    double fraction = delta.InSecondsF() / transition_time.InSecondsF();
+    double fraction = delta / transition_time;
 
     // Ease-in effect.
     fraction = pow(fraction, 0.3);

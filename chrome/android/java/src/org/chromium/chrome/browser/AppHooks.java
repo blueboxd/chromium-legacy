@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.chrome.browser.lens.LensController;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.omaha.RequestGenerator;
@@ -184,6 +185,10 @@ public abstract class AppHooks {
 
     public InstantAppsHandler createInstantAppsHandler() {
         return new InstantAppsHandler();
+    }
+
+    public LensController createLensController() {
+        return new LensController();
     }
 
     /**

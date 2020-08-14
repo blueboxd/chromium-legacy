@@ -8,17 +8,18 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.DisplayListener;
+import android.os.Build;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.WindowManager;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.compat.ApiHelperForR;
 
 /**
  * DisplayAndroidManager is a class that informs its observers Display changes.
@@ -97,9 +98,14 @@ public class DisplayAndroidManager {
     }
 
     public static Display getDefaultDisplayForContext(Context context) {
-        // TODO(boliu): There are other valid display context though they require R APIs to query.
-        // This is good enough for now since nothing in chromium calls Context.createDisplayContext.
-        if (BuildInfo.targetsAtLeastR() && ContextUtils.activityFromContext(context) == null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Display display = null;
+            try {
+                display = ApiHelperForR.getDisplay(context);
+            } catch (UnsupportedOperationException e) {
+                // Context is not associated with a display.
+            }
+            if (display != null) return display;
             return getGlobalDefaultDisplay();
         }
         return getDisplayForContextNoChecks(context);

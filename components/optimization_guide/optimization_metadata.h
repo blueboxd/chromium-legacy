@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_METADATA_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_METADATA_H_
 
+#include "base/logging.h"
 #include "base/optional.h"
+#include "base/strings/string_split.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 
 namespace optimization_guide {
@@ -21,6 +23,44 @@ class OptimizationMetadata {
   OptimizationMetadata();
   OptimizationMetadata(const OptimizationMetadata&);
   ~OptimizationMetadata();
+
+  // Validates that the metadata stored in |any_metadata_| is of the same type
+  // and is parseable as |T|. Will return metadata if all checks pass.
+  template <
+      class T,
+      class = typename std::enable_if<
+          std::is_convertible<T*, google::protobuf::MessageLite*>{}>::type>
+  base::Optional<T> ParsedMetadata() const {
+    if (!any_metadata_)
+      return base::nullopt;
+
+    // Verify type is the same - the Any type URL should be wrapped as:
+    // "type.googleapis.com/com.foo.Name".
+    std::vector<std::string> any_type_parts =
+        base::SplitString(any_metadata_->type_url(), ".", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+    if (any_type_parts.empty())
+      return base::nullopt;
+    T metadata;
+    std::vector<std::string> type_parts =
+        base::SplitString(metadata.GetTypeName(), ".", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+    if (type_parts.empty())
+      return base::nullopt;
+    std::string any_type_name = any_type_parts.back();
+    std::string type_name = type_parts.back();
+    if (type_name != any_type_name)
+      return base::nullopt;
+
+    // Return metadata if parseable.
+    if (metadata.ParseFromString(any_metadata_->value()))
+      return metadata;
+    return base::nullopt;
+  }
+  base::Optional<proto::Any> any_metadata() const { return any_metadata_; }
+  void set_any_metadata(const proto::Any& any_metadata) {
+    any_metadata_ = any_metadata;
+  }
 
   base::Optional<proto::PreviewsMetadata> previews_metadata() const {
     return previews_metadata_;
@@ -67,6 +107,12 @@ class OptimizationMetadata {
   }
 
  private:
+  // Metadata applicable to the optimization type.
+  //
+  // Optimization types that are not specifically specified below will have
+  // metadata populated with this field.
+  base::Optional<proto::Any> any_metadata_;
+
   // Only applicable for NOSCRIPT and RESOURCE_LOADING optimization types.
   base::Optional<proto::PreviewsMetadata> previews_metadata_;
 

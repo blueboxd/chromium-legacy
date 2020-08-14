@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
@@ -463,6 +464,13 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
 
   SetWebAppFileHandlers(web_app_info.file_handlers, web_app.get());
   SetWebAppProtocolHandlers(web_app_info.protocol_handlers, web_app.get());
+
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin) &&
+      web_app_info.run_on_os_login) {
+    // TODO(crbug.com/1091964): Obtain actual mode, currently set to the default
+    // (windowed).
+    web_app->SetRunOnOsLoginMode(RunOnOsLoginMode::kWindowed);
+  }
 
   AppId app_id = web_app->app_id();
   IconBitmaps icon_bitmaps;

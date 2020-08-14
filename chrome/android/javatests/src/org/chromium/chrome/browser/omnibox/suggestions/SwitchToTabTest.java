@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -302,6 +303,7 @@ public class SwitchToTabTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky - https://crbug.com/1114938")
     @EnableFeatures("OmniboxTabSwitchSuggestions")
     public void testSwitchToTabInSearchActivity() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(

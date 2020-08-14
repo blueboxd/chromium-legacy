@@ -488,6 +488,11 @@ class OmniboxViewViews : public OmniboxView,
   // model()->ShouldPreventElision() if applicable.
   bool IsURLEligibleForSimplifiedDomainEliding();
 
+  // Returns true if device is enrolled in enterprise management. This is
+  // used to exclude those devices from simplified domain experiments, to
+  // avoid enterprise environment disruption.
+  virtual bool IsEnterpriseManaged();
+
   // When certain field trials are enabled, the URL is shown on page load
   // and elided to a simplified domain when the user interacts with the page.
   // This method resets back to the on-page-load state. That is, it unhides the

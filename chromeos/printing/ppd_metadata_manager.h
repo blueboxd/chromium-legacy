@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/span.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -36,6 +37,15 @@ class CHROMEOS_EXPORT PpdMetadataManager {
   // *  upon success, ParsedPrinters as requested.
   using GetPrintersCallback =
       base::OnceCallback<void(bool, const ParsedPrinters&)>;
+
+  // Used by FindAllEmmsAvailableInIndex().
+  // Contains a map
+  // *  whose keys are effective-make-and-model strings (provided by the
+  //    caller) that are available in forward index metadata and
+  // *  whose values contain the corresponding information read from the
+  //    forward index metadata.
+  using FindAllEmmsAvailableInIndexCallback = base::OnceCallback<void(
+      const base::flat_map<std::string, ParsedIndexValues>&)>;
 
   // Assumes ownership of |config_cache|.
   static std::unique_ptr<PpdMetadataManager> Create(
@@ -77,6 +87,17 @@ class CHROMEOS_EXPORT PpdMetadataManager {
   virtual void GetPrinters(base::StringPiece manufacturer,
                            base::TimeDelta age,
                            GetPrintersCallback cb) = 0;
+
+  // Calls |cb| with the subset of strings from |emms| that are
+  // available in forward index metadata mapped to the corresponding
+  // values read from forward index metadata.
+  // *  Does not rely on prior call to GetLocale().
+  // *  During operation, operates with metadata no older than |age|.
+  // *  On failure, calls |cb| with an empty map.
+  virtual void FindAllEmmsAvailableInIndex(
+      const std::vector<std::string>& emms,
+      base::TimeDelta age,
+      FindAllEmmsAvailableInIndexCallback cb) = 0;
 
   // Calls |cb| with the make and model of
   // |effective_make_and_model|.

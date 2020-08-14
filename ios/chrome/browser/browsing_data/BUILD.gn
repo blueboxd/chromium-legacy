@@ -20,8 +20,8 @@ source_set("browsing_data") {
   sources = [
     "browsing_data_counter_wrapper.cc",
     "browsing_data_counter_wrapper.h",
-    "browsing_data_remover.cc",
     "browsing_data_remover.h",
+    "browsing_data_remover.mm",
     "browsing_data_remover_factory.h",
     "browsing_data_remover_factory.mm",
     "browsing_data_remover_impl.h",

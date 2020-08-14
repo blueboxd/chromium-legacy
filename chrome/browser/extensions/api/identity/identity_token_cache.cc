@@ -57,10 +57,14 @@ IdentityTokenCacheValue IdentityTokenCacheValue::CreateRemoteConsentApproved(
 // static
 IdentityTokenCacheValue IdentityTokenCacheValue::CreateToken(
     const std::string& token,
+    const std::set<std::string>& granted_scopes,
     base::TimeDelta time_to_live) {
+  DCHECK(!granted_scopes.empty());
+
   IdentityTokenCacheValue cache_value;
   cache_value.status_ = CACHE_STATUS_TOKEN;
   cache_value.token_ = token;
+  cache_value.granted_scopes_ = granted_scopes;
 
   // Remove 20 minutes from the ttl so cached tokens will have some time
   // to live any time they are returned.
@@ -108,42 +112,121 @@ const std::string& IdentityTokenCacheValue::token() const {
   return token_;
 }
 
+const std::set<std::string>& IdentityTokenCacheValue::granted_scopes() const {
+  return granted_scopes_;
+}
+
+IdentityTokenCache::AccessTokensKey::AccessTokensKey(
+    const ExtensionTokenKey& key)
+    : extension_id(key.extension_id), account_id(key.account_id) {}
+
+IdentityTokenCache::AccessTokensKey::AccessTokensKey(
+    const std::string& extension_id,
+    const CoreAccountId& account_id)
+    : extension_id(extension_id), account_id(account_id) {}
+
+bool IdentityTokenCache::AccessTokensKey::operator<(
+    const AccessTokensKey& rhs) const {
+  return std::tie(extension_id, account_id) <
+         std::tie(rhs.extension_id, rhs.account_id);
+}
+
+// Ensure that the access tokens are ordered by scope sizes.
+bool IdentityTokenCache::ScopesSizeCompare::operator()(
+    const IdentityTokenCacheValue& lhs,
+    const IdentityTokenCacheValue& rhs) const {
+  std::size_t lhs_size = lhs.granted_scopes().size();
+  std::size_t rhs_size = rhs.granted_scopes().size();
+  return std::tie(lhs_size, lhs.granted_scopes()) <
+         std::tie(rhs_size, rhs.granted_scopes());
+}
+
 IdentityTokenCache::IdentityTokenCache() = default;
 IdentityTokenCache::~IdentityTokenCache() = default;
 
 void IdentityTokenCache::SetToken(const ExtensionTokenKey& key,
                                   const IdentityTokenCacheValue& token_data) {
-  auto it = token_cache_.find(key);
-  if (it != token_cache_.end() && it->second.status() <= token_data.status())
-    token_cache_.erase(it);
+  DCHECK_NE(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
+            token_data.status());
 
-  token_cache_.insert(std::make_pair(key, token_data));
+  if (token_data.status() != IdentityTokenCacheValue::CACHE_STATUS_TOKEN) {
+    const IdentityTokenCacheValue& cached_value = GetToken(key);
+    if (cached_value.status() <= token_data.status()) {
+      intermediate_value_cache_.erase(key);
+      intermediate_value_cache_.insert(std::make_pair(key, token_data));
+    }
+  } else {
+    // Access tokens are stored in their own cache for subset matching.
+    DCHECK(!token_data.granted_scopes().empty());
+    intermediate_value_cache_.erase(key);
+
+    AccessTokensKey access_tokens_key(key);
+    auto emplace_result =
+        base::TryEmplace(access_tokens_cache_, access_tokens_key);
+
+    AccessTokensValue& cached_tokens = emplace_result.first->second;
+    // If a cached tokens set already exists, remove any existing token with the
+    // same set of scopes.
+    cached_tokens.erase(token_data);
+    cached_tokens.insert(token_data);
+  }
 }
 
-void IdentityTokenCache::EraseToken(const std::string& extension_id,
-                                    const std::string& token) {
-  CachedTokens::iterator it;
-  for (it = token_cache_.begin(); it != token_cache_.end(); ++it) {
-    if (it->first.extension_id == extension_id &&
-        it->second.status() == IdentityTokenCacheValue::CACHE_STATUS_TOKEN &&
-        it->second.token() == token) {
-      token_cache_.erase(it);
-      break;
+void IdentityTokenCache::EraseAccessToken(const std::string& extension_id,
+                                          const std::string& token) {
+  for (auto entry_it = access_tokens_cache_.begin();
+       entry_it != access_tokens_cache_.end(); entry_it++) {
+    if (entry_it->first.extension_id == extension_id) {
+      AccessTokensValue& cached_tokens = entry_it->second;
+      size_t num_erased = base::EraseIf(
+          cached_tokens, [&token](const IdentityTokenCacheValue& cached_token) {
+            return cached_token.token() == token;
+          });
+      if (num_erased > 0) {
+        if (cached_tokens.size() == 0)
+          access_tokens_cache_.erase(entry_it);
+        // A token is in the cache at most once, so stop searching if erased.
+        return;
+      }
     }
   }
 }
 
 void IdentityTokenCache::EraseAllTokens() {
-  token_cache_.clear();
+  intermediate_value_cache_.clear();
+  access_tokens_cache_.clear();
 }
 
 const IdentityTokenCacheValue& IdentityTokenCache::GetToken(
     const ExtensionTokenKey& key) {
-  return token_cache_[key];
+  AccessTokensKey access_tokens_key(key);
+  auto find_tokens_it = access_tokens_cache_.find(access_tokens_key);
+  if (find_tokens_it != access_tokens_cache_.end()) {
+    const AccessTokensValue& cached_tokens = find_tokens_it->second;
+    auto matched_token_it = std::find_if(
+        cached_tokens.begin(), cached_tokens.end(),
+        [&key](const auto& cached_token) {
+          return key.scopes.size() <= cached_token.granted_scopes().size() &&
+                 base::STLIncludes(cached_token.granted_scopes(), key.scopes);
+        });
+
+    if (matched_token_it != cached_tokens.end()) {
+      DCHECK_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
+                matched_token_it->status());
+      return *matched_token_it;
+    }
+  }
+
+  const IdentityTokenCacheValue& intermediate_value =
+      intermediate_value_cache_[key];
+  DCHECK_NE(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
+            intermediate_value.status());
+  return intermediate_value;
 }
 
-const IdentityTokenCache::CachedTokens& IdentityTokenCache::GetAllTokens() {
-  return token_cache_;
+const IdentityTokenCache::AccessTokensCache&
+IdentityTokenCache::access_tokens_cache() {
+  return access_tokens_cache_;
 }
 
 }  // namespace extensions

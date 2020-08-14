@@ -17,8 +17,7 @@
 
 namespace ash {
 
-PrivacyScreenController::PrivacyScreenController()
-    : display_id_(display::kInvalidDisplayId) {
+PrivacyScreenController::PrivacyScreenController() {
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->display_configurator()->AddObserver(this);
 }
@@ -35,7 +34,7 @@ void PrivacyScreenController::RegisterProfilePrefs(
 }
 
 bool PrivacyScreenController::IsSupported() const {
-  return display_id_ != display::kInvalidDisplayId;
+  return GetSupportedDisplayId() != display::kInvalidDisplayId;
 }
 
 bool PrivacyScreenController::IsManaged() const {
@@ -125,8 +124,6 @@ void PrivacyScreenController::OnSigninScreenPrefServiceInitialized(
 
 void PrivacyScreenController::OnDisplayModeChanged(
     const std::vector<display::DisplaySnapshot*>& displays) {
-  UpdateSupport();
-
   // OnDisplayModeChanged() may fire many times during Chrome's lifetime. We
   // limit automatic user pref initialization to login screen only.
   if (applying_login_screen_prefs_) {
@@ -136,17 +133,19 @@ void PrivacyScreenController::OnDisplayModeChanged(
 }
 
 void PrivacyScreenController::OnStateChanged(bool notify_observers) {
-  if (IsSupported()) {
-    const bool is_enabled = GetEnabled();
-    Shell::Get()->display_configurator()->SetPrivacyScreen(display_id_,
-                                                           is_enabled);
+  const int64_t display_id = GetSupportedDisplayId();
+  if (display_id == display::kInvalidDisplayId)
+    return;
 
-    if (!notify_observers)
-      return;
+  const bool is_enabled = GetEnabled();
+  Shell::Get()->display_configurator()->SetPrivacyScreen(display_id,
+                                                         is_enabled);
 
-    for (Observer& observer : observers_)
-      observer.OnPrivacyScreenSettingChanged(is_enabled);
-  }
+  if (!notify_observers)
+    return;
+
+  for (Observer& observer : observers_)
+    observer.OnPrivacyScreenSettingChanged(is_enabled);
 }
 
 void PrivacyScreenController::InitFromUserPrefs() {
@@ -165,7 +164,7 @@ void PrivacyScreenController::InitFromUserPrefs() {
   OnStateChanged(/*notify_observers=*/false);
 }
 
-void PrivacyScreenController::UpdateSupport() {
+int64_t PrivacyScreenController::GetSupportedDisplayId() const {
   const auto& cached_displays =
       Shell::Get()->display_configurator()->cached_displays();
 
@@ -173,12 +172,11 @@ void PrivacyScreenController::UpdateSupport() {
     if (display->type() == display::DISPLAY_CONNECTION_TYPE_INTERNAL &&
         display->privacy_screen_state() != display::kNotSupported &&
         display->current_mode()) {
-      display_id_ = display->display_id();
-      return;
+      return display->display_id();
     }
   }
 
-  display_id_ = display::kInvalidDisplayId;
+  return display::kInvalidDisplayId;
 }
 
 }  // namespace ash

@@ -1476,6 +1476,23 @@ void Internals::setAutofilled(Element* element,
       enabled ? WebAutofillState::kAutofilled : WebAutofillState::kNotFilled);
 }
 
+void Internals::setSelectionRangeForNumberType(
+    Element* input_element,
+    uint32_t start,
+    uint32_t end,
+    ExceptionState& exception_state) {
+  DCHECK(input_element);
+  auto* html_input_element = DynamicTo<HTMLInputElement>(input_element);
+  if (!html_input_element) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidNodeTypeError,
+        "The element provided is not an input element.");
+    return;
+  }
+
+  html_input_element->SetSelectionRangeForTesting(start, end, exception_state);
+}
+
 Range* Internals::rangeFromLocationAndLength(Element* scope,
                                              int range_location,
                                              int range_length) {

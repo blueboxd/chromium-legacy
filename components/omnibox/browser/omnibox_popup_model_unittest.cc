@@ -111,13 +111,24 @@ class OmniboxPopupModelSuggestionButtonRowTest : public OmniboxPopupModelTest {
  protected:
   // testing::Test:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitAndEnableFeature(
         omnibox::kOmniboxSuggestionButtonRow);
     OmniboxPopupModelTest::SetUp();
   }
 
+  void TearDown() override { scoped_feature_list_.reset(); }
+
+  void InitKeywordButtonFeature() {
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitWithFeatures(
+        {omnibox::kOmniboxSuggestionButtonRow,
+         omnibox::kOmniboxKeywordSearchButton},
+        {});
+  }
+
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
 // This verifies that the new treatment of the user's selected match in
@@ -366,6 +377,99 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelectionWithHiddenGroupIds) {
 
 TEST_F(OmniboxPopupModelSuggestionButtonRowTest,
        PopupStepSelectionWithButtonRow) {
+  ACMatches matches;
+  for (size_t i = 0; i < 4; ++i) {
+    AutocompleteMatch match(nullptr, 1000, false,
+                            AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+    match.keyword = base::ASCIIToUTF16("match");
+    match.allowed_to_be_default_match = true;
+    matches.push_back(match);
+  }
+  // Make match index 1 have a tab match and be deletable to verify we can step
+  // to each.
+  matches[1].has_tab_match = true;
+  matches[1].deletable = true;
+  // Make match index 2 have an associated keyword for irregular state stepping.
+  // Make it deleteable and with a tab match to verify that we correctly skip
+  // those on matches with an associated keyword.
+  matches[2].associated_keyword =
+      std::make_unique<AutocompleteMatch>(matches.back());
+  matches[2].deletable = true;
+  matches[2].has_tab_match = true;
+  // Make match index 3 have a suggestion_group_id to test header behavior.
+  matches[3].suggestion_group_id = 7;
+
+  auto* result = &model()->autocomplete_controller()->result_;
+  AutocompleteInput input(base::UTF8ToUTF16("match"),
+                          metrics::OmniboxEventProto::NTP,
+                          TestSchemeClassifier());
+  result->AppendMatches(input, matches);
+  result->SortAndCull(input, nullptr);
+  popup_model()->OnResultChanged();
+  EXPECT_EQ(0u, model()->popup_model()->selected_line());
+
+  // Step by lines forward.
+  for (size_t n : {1, 2, 3, 0}) {
+    popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                                 OmniboxPopupModel::kWholeLine);
+    EXPECT_EQ(n, model()->popup_model()->selected_line());
+  }
+  // Step by lines backward.
+  for (size_t n : {3, 2, 1, 0}) {
+    popup_model()->StepSelection(OmniboxPopupModel::kBackward,
+                                 OmniboxPopupModel::kWholeLine);
+    EXPECT_EQ(n, model()->popup_model()->selected_line());
+  }
+  // Step by states forward.
+  for (auto selection : {
+           Selection(1, OmniboxPopupModel::NORMAL),
+           Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH),
+           Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
+           Selection(2, OmniboxPopupModel::NORMAL),
+           Selection(2, OmniboxPopupModel::KEYWORD_MODE),
+           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
+           Selection(3, OmniboxPopupModel::NORMAL),
+           Selection(0, OmniboxPopupModel::NORMAL),
+       }) {
+    popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                                 OmniboxPopupModel::kStateOrLine);
+    EXPECT_EQ(selection, model()->popup_model()->selection());
+  }
+  // Step by states backward.
+  // Note the lack of KEYWORD. This is by design. Stepping forward
+  // should land on KEYWORD, but stepping backward should not.
+  for (auto selection : {
+           Selection(3, OmniboxPopupModel::NORMAL),
+           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
+           Selection(2, OmniboxPopupModel::NORMAL),
+           Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
+           Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH),
+           Selection(1, OmniboxPopupModel::NORMAL),
+           Selection(0, OmniboxPopupModel::NORMAL),
+           Selection(3, OmniboxPopupModel::NORMAL),
+           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
+           Selection(2, OmniboxPopupModel::NORMAL),
+       }) {
+    popup_model()->StepSelection(OmniboxPopupModel::kBackward,
+                                 OmniboxPopupModel::kStateOrLine);
+    EXPECT_EQ(selection, model()->popup_model()->selection());
+  }
+
+  // Try the kAllLines step behavior.
+  popup_model()->StepSelection(OmniboxPopupModel::kBackward,
+                               OmniboxPopupModel::kAllLines);
+  EXPECT_EQ(Selection(0, OmniboxPopupModel::NORMAL),
+            model()->popup_model()->selection());
+  popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                               OmniboxPopupModel::kAllLines);
+  EXPECT_EQ(Selection(3, OmniboxPopupModel::NORMAL),
+            model()->popup_model()->selection());
+}
+
+TEST_F(OmniboxPopupModelSuggestionButtonRowTest,
+       PopupStepSelectionWithButtonRowAndKeywordButton) {
+  InitKeywordButtonFeature();
+
   ACMatches matches;
   for (size_t i = 0; i < 5; ++i) {
     AutocompleteMatch match(nullptr, 1000, false,

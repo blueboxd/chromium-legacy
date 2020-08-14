@@ -97,10 +97,25 @@ _VARIANT_TYPE = models.ObjectNodeType(
         models.ChildType(_OWNER_TYPE.tag, _OWNER_TYPE, multiple=True),
     ])
 
+_VARIANTS_TYPE = models.ObjectNodeType(
+    'variants',
+    attributes=[
+        ('name', str, None),
+    ],
+    required_attributes=['name'],
+    alphabetization=[
+        (_VARIANT_TYPE.tag, _NaturalSortByName)
+    ],
+    extra_newlines=(1, 1, 1),
+    children=[
+        models.ChildType(_VARIANT_TYPE.tag, _VARIANT_TYPE, multiple=True),
+    ])
+
 _TOKEN_TYPE = models.ObjectNodeType(
     'token',
     attributes=[
         ('key', str, None),
+        ('variants', str, None)
     ],
     required_attributes=['key'],
     alphabetization=[
@@ -142,11 +157,13 @@ _HISTOGRAM_TYPE = models.ObjectNodeType(
 _HISTOGRAMS_TYPE = models.ObjectNodeType(
     'histograms',
     alphabetization=[
+        (_VARIANTS_TYPE.tag, _LOWERCASE_FN('name')),
         (_HISTOGRAM_TYPE.tag, _LOWERCASE_FN('name')),
     ],
     extra_newlines=(2, 1, 1),
     indent=False,
     children=[
+        models.ChildType(_VARIANTS_TYPE.tag, _VARIANTS_TYPE, multiple=True),
         models.ChildType(_HISTOGRAM_TYPE.tag, _HISTOGRAM_TYPE, multiple=True),
     ])
 

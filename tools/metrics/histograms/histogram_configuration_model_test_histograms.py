@@ -376,16 +376,27 @@ PRETTY_XML_WITH_TOKEN = """
 
 <histograms>
 
-<histogram name="Omnibox.Version.{content}.Time" units="ms"
+<variants name="OmniboxProviderVersion">
+  <variant name="" label="all versions"/>
+  <variant name=".Provider" label="the old version">
+    <obsolete>
+      Deprecated. Replaced by Provider2.
+    </obsolete>
+  </variant>
+  <variant name=".Provider2" label="the second version"/>
+</variants>
+
+<histogram name="Omnibox{version}{content}.Time" units="ms"
     expires_after="2020-12-25">
   <obsolete>
     Obsolete text
   </obsolete>
   <owner>me@google.com</owner>
   <summary>
-    The length of time taken by version of {content} provider's synchronous
+    The length of time taken by {version} of {content} provider's synchronous
     pass.
   </summary>
+  <token key="version" variants="OmniboxProviderVersion"/>
   <token key="content">
     <variant name=".ExtensionApp" label="ExtensionApp">
       <obsolete>
@@ -403,29 +414,40 @@ PRETTY_XML_WITH_TOKEN = """
 </histogram-configuration>
 """.strip()
 
-XML_WRONG_TOKEN_CHILDREN_ORDER = """
+XML_WRONG_VARIANT_CHILDREN_ORDER = """
 <histogram-configuration>
 
 <!-- Histogram definitions -->
 
 <histograms>
 
-<histogram name="Omnibox.Version.{content}.Time" units="ms"
+<variants name="OmniboxProviderVersion">
+  <variant name="" label="all versions"/>
+  <variant name=".Provider" label="the old version">
+    <obsolete>
+      Deprecated. Replaced by Provider2.
+    </obsolete>
+  </variant>
+  <variant name=".Provider2" label="the second version"/>
+</variants>
+
+<histogram name="Omnibox{version}{content}.Time" units="ms"
     expires_after="2020-12-25">
   <obsolete>
     Obsolete text
   </obsolete>
   <owner>me@google.com</owner>
   <summary>
-    The length of time taken by version of {content} provider's synchronous
+    The length of time taken by {version} of {content} provider's synchronous
     pass.
   </summary>
+  <token key="version" variants="OmniboxProviderVersion"/>
   <token key="content">
     <variant name=".ExtensionApp" label="ExtensionApp">
+      <owner>you@google.com</owner>
       <obsolete>
         Obsolete variant
       </obsolete>
-      <owner>you@google.com</owner>
     </variant>
     <variant name=".HistoryContents" label="HistoryContents"/>
     <variant name=".HistoryQuick" label="HistoryQuick"/>
@@ -444,16 +466,27 @@ XML_WRONG_VARIANT_ORDER = """
 
 <histograms>
 
-<histogram name="Omnibox.Version.{content}.Time" units="ms"
+<variants name="OmniboxProviderVersion">
+  <variant name="" label="all versions"/>
+  <variant name=".Provider2" label="the second version"/>
+  <variant name=".Provider" label="the old version">
+    <obsolete>
+      Deprecated. Replaced by Provider2.
+    </obsolete>
+  </variant>
+</variants>
+
+<histogram name="Omnibox{version}{content}.Time" units="ms"
     expires_after="2020-12-25">
   <obsolete>
     Obsolete text
   </obsolete>
   <owner>me@google.com</owner>
   <summary>
-    The length of time taken by version of {content} provider's synchronous
+    The length of time taken by {version} of {content} provider's synchronous
     pass.
   </summary>
+  <token key="version" variants="OmniboxProviderVersion"/>
   <token key="content">
     <variant name=".ExtensionApp" label="ExtensionApp">
       <obsolete>
@@ -465,6 +498,51 @@ XML_WRONG_VARIANT_ORDER = """
     <variant name=".HistoryContents" label="HistoryContents"/>
   </token>
 </histogram>
+
+</histograms>
+
+</histogram-configuration>
+""".strip()
+
+XML_WRONG_HISTOGRAM_VARIANTS_ORDER = """
+<histogram-configuration>
+
+<!-- Histogram definitions -->
+
+<histograms>
+
+<histogram name="Omnibox{version}{content}.Time" units="ms"
+    expires_after="2020-12-25">
+  <obsolete>
+    Obsolete text
+  </obsolete>
+  <owner>me@google.com</owner>
+  <summary>
+    The length of time taken by {version} of {content} provider's synchronous
+    pass.
+  </summary>
+  <token key="version" variants="OmniboxProviderVersion"/>
+  <token key="content">
+    <variant name=".ExtensionApp" label="ExtensionApp">
+      <obsolete>
+        Obsolete variant
+      </obsolete>
+      <owner>you@google.com</owner>
+    </variant>
+    <variant name=".HistoryContents" label="HistoryContents"/>
+    <variant name=".HistoryQuick" label="HistoryQuick"/>
+  </token>
+</histogram>
+
+<variants name="OmniboxProviderVersion">
+  <variant name="" label="all versions"/>
+  <variant name=".Provider" label="the old version">
+    <obsolete>
+      Deprecated. Replaced by Provider2.
+    </obsolete>
+  </variant>
+  <variant name=".Provider2" label="the second version"/>
+</variants>
 
 </histograms>
 
@@ -538,8 +616,11 @@ class HistogramXmlTest(unittest.TestCase):
       # Test prettify already pretty XML to verify the pretty-printed version
       # is the same.
       ('AlreadyPrettyXml', PRETTY_XML_WITH_TOKEN, PRETTY_XML_WITH_TOKEN),
-      ('ChildrenOrder', XML_WRONG_TOKEN_CHILDREN_ORDER, PRETTY_XML_WITH_TOKEN),
+      ('ChildrenOrder', XML_WRONG_VARIANT_CHILDREN_ORDER,
+       PRETTY_XML_WITH_TOKEN),
       ('VariantOrder', XML_WRONG_VARIANT_ORDER, PRETTY_XML_WITH_TOKEN),
+      ('HistogramVariantsOrder', XML_WRONG_HISTOGRAM_VARIANTS_ORDER,
+       PRETTY_XML_WITH_TOKEN),
   ])
   def testTokenPrettify(self, _, input_xml, expected_xml):
     self.maxDiff = None

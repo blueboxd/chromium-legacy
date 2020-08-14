@@ -48,8 +48,7 @@ class ClockSmoother {
       }
       // 0.01 means 1% faster than regular clock.
       // -0.02 means 2% slower than regular clock.
-      double fraction_off = inaccuracy_sum_.InSecondsF() /
-          inaccuracy_delta_.InSecondsF();
+      double fraction_off = inaccuracy_sum_ / inaccuracy_delta_;
 
       double delta_seconds = delta.InSecondsF();
       delta_seconds += delta_seconds * fraction_off;
@@ -66,10 +65,7 @@ class ClockSmoother {
 
   // 1.01 means 1% faster than regular clock.
   // -0.98 means 2% slower than regular clock.
-  double Rate() const {
-    return 1.0 + inaccuracy_sum_.InSecondsF() /
-          inaccuracy_delta_.InSecondsF();
-  }
+  double Rate() const { return 1.0 + inaccuracy_sum_ / inaccuracy_delta_; }
 
  private:
   base::TimeDelta clock_accuracy_;
@@ -214,13 +210,13 @@ void AudioShifter::Pull(AudioBus* output,
   running_ = true;
   double steady_ratio = output_clock_smoother_->Rate() /
       input_clock_smoother_->Rate();
-  double time_difference = (playout_time - stream_time).InSecondsF();
-  double adjustment_time = adjustment_time_.InSecondsF();
+  const base::TimeDelta time_difference = playout_time - stream_time;
   // This is the ratio we would need to get perfect sync after
-  // |adjustment_time| has passed.
-  double slow_ratio = steady_ratio + time_difference / adjustment_time;
+  // |adjustment_time_| has passed.
+  double slow_ratio = steady_ratio + time_difference / adjustment_time_;
   slow_ratio = base::ClampToRange(slow_ratio, 0.9, 1.1);
-  adjustment_time = output->frames() / static_cast<double>(rate_);
+  const base::TimeDelta adjustment_time = base::TimeDelta::FromSecondsD(
+      output->frames() / static_cast<double>(rate_));
   // This is ratio we we'd need get perfect sync at the end of the
   // current output audiobus.
   double fast_ratio = steady_ratio + time_difference / adjustment_time;

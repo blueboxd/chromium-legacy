@@ -103,11 +103,9 @@ int PredictionMetricsHandler::GetInterpolatedEventForPredictedEvent(
   if (idx == 0 || idx == events_queue_.size())
     return -1;
 
-  float alpha =
-      (interpolation_timestamp - events_queue_[idx - 1].time_stamp)
-          .InMillisecondsF() /
-      (events_queue_[idx].time_stamp - events_queue_[idx - 1].time_stamp)
-          .InMillisecondsF();
+  const float alpha =
+      (interpolation_timestamp - events_queue_[idx - 1].time_stamp) /
+      (events_queue_[idx].time_stamp - events_queue_[idx - 1].time_stamp);
   *interpolated =
       events_queue_[idx - 1].pos +
       ScaleVector2d(events_queue_[idx].pos - events_queue_[idx - 1].pos, alpha);

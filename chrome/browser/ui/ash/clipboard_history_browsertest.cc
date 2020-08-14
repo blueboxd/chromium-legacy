@@ -8,13 +8,20 @@
 #include "ash/clipboard/clipboard_history.h"
 #include "ash/clipboard/clipboard_history_controller.h"
 #include "ash/shell.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -34,14 +41,34 @@ std::unique_ptr<views::Widget> CreateTestWidget() {
   return widget;
 }
 
+void FlushMessageLoop() {
+  base::RunLoop run_loop;
+  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                   run_loop.QuitClosure());
+  run_loop.Run();
+}
+
 void SetClipboardText(const std::string& text) {
   ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
-      .WriteText(base::ASCIIToUTF16(text));
+      .WriteText(base::UTF8ToUTF16(text));
 
   // ClipboardHistory will post a task to process clipboard data in order to
   // debounce multiple clipboard writes occurring in sequence. Here we give
   // ClipboardHistory the chance to run its posted tasks before proceeding.
-  base::RunLoop().RunUntilIdle();
+  FlushMessageLoop();
+}
+
+void SetClipboardTextAndHtml(const std::string& text, const std::string& html) {
+  {
+    ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+    scw.WriteText(base::UTF8ToUTF16(text));
+    scw.WriteHTML(base::UTF8ToUTF16(html), /*source_url=*/"");
+  }
+
+  // ClipboardHistory will post a task to process clipboard data in order to
+  // debounce multiple clipboard writes occurring in sequence. Here we give
+  // ClipboardHistory the chance to run its posted tasks before proceeding.
+  FlushMessageLoop();
 }
 
 ash::ClipboardHistoryController* GetClipboardHistoryController() {
@@ -323,4 +350,108 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
   EXPECT_EQ("A", base::UTF16ToUTF8(textfield->GetText()));
   Release(ui::KeyboardCode::VKEY_COMMAND);
+}
+
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
+                       ShouldPasteHistoryAsPlainText) {
+  LoginUser(account_id1_);
+
+  // Create a browser and cache its active web contents.
+  auto* browser = CreateBrowser(
+      chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id1_));
+  auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+
+  // Load the web contents synchronously.
+  // The contained script:
+  //  - Listens for paste events and caches the last pasted data.
+  //  - Notifies observers of paste events by changing document title.
+  //  - Provides an API to expose the last pasted data.
+  ASSERT_TRUE(content::NavigateToURL(web_contents, GURL(R"(data:text/html,
+    <!DOCTYPE html>
+    <html>
+      <body>
+        <script>
+
+          let lastPaste = undefined;
+          let lastPasteId = 1;
+
+          window.addEventListener('paste', e => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            const clipboardData = e.clipboardData || window.clipboardData;
+            lastPaste = clipboardData.types.reduce((data, type) => {
+              data.push(`${type}: ${clipboardData.getData(type)}`);
+              return data;
+            }, []);
+
+            document.title = `Paste ${lastPasteId++}`;
+          });
+
+          window.getLastPaste = () => {
+            return lastPaste || [];
+          };
+
+        </script>
+      </body>
+    </html>
+  )")));
+
+  // Cache a function to return the last paste.
+  auto GetLastPaste = [&]() {
+    auto result = content::EvalJs(
+        web_contents, "(function() { return window.getLastPaste(); })();");
+    EXPECT_EQ(result.error, "");
+    return result.ExtractList();
+  };
+
+  // Confirm initial state.
+  ASSERT_TRUE(GetLastPaste().GetList().empty());
+
+  // Write some things to the clipboard.
+  SetClipboardTextAndHtml("A", "<span>A</span>");
+  SetClipboardTextAndHtml("B", "<span>B</span>");
+  SetClipboardTextAndHtml("C", "<span>C</span>");
+
+  // Open clipboard history and paste the last history item.
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_RETURN);
+  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+
+  // Wait for the paste event to propagate to the web contents.
+  // The web contents will notify us a paste occurred by updating page title.
+  ignore_result(
+      content::TitleWatcher(web_contents, base ::UTF8ToUTF16("Paste 1"))
+          .WaitAndGetTitle());
+
+  // Confirm the expected paste data.
+  base::ListValue last_paste = GetLastPaste();
+  ASSERT_EQ(last_paste.GetList().size(), 2u);
+  EXPECT_EQ(last_paste.GetList()[0].GetString(), "text/plain: A");
+  EXPECT_EQ(last_paste.GetList()[1].GetString(), "text/html: <span>A</span>");
+
+  // Open clipboard history and paste the middle history item as plain text.
+  PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+  PressAndRelease(ui::KeyboardCode::VKEY_RETURN, ui::EF_SHIFT_DOWN);
+  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+
+  // Wait for the paste event to propagate to the web contents.
+  // The web contents will notify us a paste occurred by updating page title.
+  ignore_result(
+      content::TitleWatcher(web_contents, base ::UTF8ToUTF16("Paste 2"))
+          .WaitAndGetTitle());
+
+  // Confirm the expected paste data.
+  last_paste = GetLastPaste();
+  ASSERT_EQ(last_paste.GetList().size(), 1u);
+  EXPECT_EQ(last_paste.GetList()[0].GetString(), "text/plain: A");
 }

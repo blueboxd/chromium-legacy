@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <set>
@@ -18,6 +19,9 @@
 #include "base/files/file_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/one_shot_event.h"
+#include "base/optional.h"
+#include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/version.h"
 #include "content/public/browser/browser_context.h"
@@ -42,6 +46,10 @@ namespace extensions {
 namespace {
 
 using SubstitutionMap = std::map<std::string, std::string>;
+
+// Each map entry associates a UserScript::File object with the ID of the
+// resource holding the content of the script.
+using ScriptResourceIds = std::map<UserScript::File*, base::Optional<int>>;
 
 struct VerifyContentInfo {
   VerifyContentInfo(const scoped_refptr<ContentVerifier>& verifier,
@@ -83,6 +91,7 @@ void ForwardVerifyContentToIO(const VerifyContentInfo& info) {
 // Loads user scripts from the extension who owns these scripts.
 bool LoadScriptContent(const HostID& host_id,
                        UserScript::File* script_file,
+                       const base::Optional<int>& script_resource_id,
                        const SubstitutionMap* localization_messages,
                        const scoped_refptr<ContentVerifier>& verifier) {
   DCHECK(script_file);
@@ -91,14 +100,9 @@ bool LoadScriptContent(const HostID& host_id,
       script_file->extension_root(), script_file->relative_path(),
       ExtensionResource::SYMLINKS_MUST_RESOLVE_WITHIN_ROOT);
   if (path.empty()) {
-    int resource_id = 0;
-    if (ExtensionsBrowserClient::Get()
-            ->GetComponentExtensionResourceManager()
-            ->IsComponentExtensionResource(script_file->extension_root(),
-                                           script_file->relative_path(),
-                                           &resource_id)) {
+    if (script_resource_id) {
       const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      content = rb.LoadDataResourceString(resource_id);
+      content = rb.LoadDataResourceString(*script_resource_id);
     } else {
       LOG(WARNING) << "Failed to get file path to "
                    << script_file->relative_path().value() << " from "
@@ -156,7 +160,24 @@ SubstitutionMap* GetLocalizationMessages(
       info.file_path, host_id.id(), info.default_locale, info.gzip_permission);
 }
 
+void FillScriptFileResourceIds(const UserScript::FileList& script_files,
+                               ScriptResourceIds& script_resource_ids) {
+  for (const std::unique_ptr<UserScript::File>& script_file : script_files) {
+    if (!script_file->GetContent().empty())
+      continue;
+    int resource_id = 0;
+    if (ExtensionsBrowserClient::Get()
+            ->GetComponentExtensionResourceManager()
+            ->IsComponentExtensionResource(script_file->extension_root(),
+                                           script_file->relative_path(),
+                                           &resource_id)) {
+      script_resource_ids[script_file.get()] = resource_id;
+    }
+  }
+}
+
 void LoadUserScripts(UserScriptList* user_scripts,
+                     ScriptResourceIds script_resource_ids,
                      const ExtensionUserScriptLoader::HostsInfo& hosts_info,
                      const std::set<int>& added_script_ids,
                      const scoped_refptr<ContentVerifier>& verifier) {
@@ -166,7 +187,8 @@ void LoadUserScripts(UserScriptList* user_scripts,
     for (const std::unique_ptr<UserScript::File>& script_file :
          script->js_scripts()) {
       if (script_file->GetContent().empty())
-        LoadScriptContent(script->host_id(), script_file.get(), nullptr,
+        LoadScriptContent(script->host_id(), script_file.get(),
+                          script_resource_ids[script_file.get()], nullptr,
                           verifier);
     }
     if (script->css_scripts().size() > 0) {
@@ -176,6 +198,7 @@ void LoadUserScripts(UserScriptList* user_scripts,
            script->css_scripts()) {
         if (script_file->GetContent().empty()) {
           LoadScriptContent(script->host_id(), script_file.get(),
+                            script_resource_ids[script_file.get()],
                             localization_messages.get(), verifier);
         }
       }
@@ -185,13 +208,15 @@ void LoadUserScripts(UserScriptList* user_scripts,
 
 void LoadScriptsOnFileTaskRunner(
     std::unique_ptr<UserScriptList> user_scripts,
+    ScriptResourceIds script_resource_ids,
     const ExtensionUserScriptLoader::HostsInfo& hosts_info,
     const std::set<int>& added_script_ids,
     const scoped_refptr<ContentVerifier>& verifier,
     UserScriptLoader::LoadScriptsCallback callback) {
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(user_scripts.get());
-  LoadUserScripts(user_scripts.get(), hosts_info, added_script_ids, verifier);
+  LoadUserScripts(user_scripts.get(), std::move(script_resource_ids),
+                  hosts_info, added_script_ids, verifier);
   base::ReadOnlySharedMemoryRegion memory =
       UserScriptLoader::Serialize(*user_scripts);
   // Explicit priority to prevent unwanted task priority inheritance.
@@ -207,9 +232,19 @@ ExtensionUserScriptLoader::ExtensionUserScriptLoader(
     BrowserContext* browser_context,
     const HostID& host_id,
     bool listen_for_extension_system_loaded)
+    : ExtensionUserScriptLoader(
+          browser_context,
+          host_id,
+          listen_for_extension_system_loaded,
+          ExtensionSystem::Get(browser_context)->content_verifier()) {}
+
+ExtensionUserScriptLoader::ExtensionUserScriptLoader(
+    BrowserContext* browser_context,
+    const HostID& host_id,
+    bool listen_for_extension_system_loaded,
+    scoped_refptr<ContentVerifier> content_verifier)
     : UserScriptLoader(browser_context, host_id),
-      content_verifier_(
-          ExtensionSystem::Get(browser_context)->content_verifier()) {
+      content_verifier_(std::move(content_verifier)) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
   if (listen_for_extension_system_loaded) {
     ExtensionSystem::Get(browser_context)
@@ -225,15 +260,31 @@ ExtensionUserScriptLoader::ExtensionUserScriptLoader(
 ExtensionUserScriptLoader::~ExtensionUserScriptLoader() {
 }
 
-void ExtensionUserScriptLoader::LoadScriptsForTest(
-    UserScriptList* user_scripts) {
-  HostsInfo info;
+std::unique_ptr<UserScriptList> ExtensionUserScriptLoader::LoadScriptsForTest(
+    std::unique_ptr<UserScriptList> user_scripts) {
   std::set<int> added_script_ids;
   for (const std::unique_ptr<UserScript>& script : *user_scripts)
     added_script_ids.insert(script->id());
 
-  LoadUserScripts(user_scripts, info, added_script_ids,
-                  nullptr /* no verifier for testing */);
+  std::set<HostID> changed_hosts;
+  std::unique_ptr<UserScriptList> result;
+
+  // Block until the scripts have been loaded on the file task runner so that
+  // we can return the result synchronously.
+  base::RunLoop run_loop;
+  LoadScripts(std::move(user_scripts), changed_hosts, added_script_ids,
+              base::BindOnce(
+                  [](base::OnceClosure done_callback,
+                     std::unique_ptr<UserScriptList>& loaded_user_scripts,
+                     std::unique_ptr<UserScriptList> user_scripts,
+                     base::ReadOnlySharedMemoryRegion /* shared_memory */) {
+                    loaded_user_scripts = std::move(user_scripts);
+                    std::move(done_callback).Run();
+                  },
+                  run_loop.QuitClosure(), std::ref(result)));
+  run_loop.Run();
+
+  return result;
 }
 
 void ExtensionUserScriptLoader::LoadScripts(
@@ -241,13 +292,23 @@ void ExtensionUserScriptLoader::LoadScripts(
     const std::set<HostID>& changed_hosts,
     const std::set<int>& added_script_ids,
     LoadScriptsCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   UpdateHostsInfo(changed_hosts);
+
+  ScriptResourceIds script_resource_ids;
+  for (const std::unique_ptr<UserScript>& script : *user_scripts) {
+    if (!base::Contains(added_script_ids, script->id()))
+      continue;
+    FillScriptFileResourceIds(script->js_scripts(), script_resource_ids);
+    FillScriptFileResourceIds(script->css_scripts(), script_resource_ids);
+  }
 
   GetExtensionFileTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&LoadScriptsOnFileTaskRunner, std::move(user_scripts),
-                     hosts_info_, added_script_ids, content_verifier_,
-                     std::move(callback)));
+                     std::move(script_resource_ids), hosts_info_,
+                     added_script_ids, content_verifier_, std::move(callback)));
 }
 
 void ExtensionUserScriptLoader::UpdateHostsInfo(

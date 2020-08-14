@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 import "components/feed/core/proto/v2/wire/capability.proto";
 import "components/feed/core/proto/v2/wire/client_info.proto";
 import "components/feed/core/proto/v2/wire/consistency_token.proto";
-import "components/feed/core/proto/v2/wire/feed_id.proto";
+// UNUSED_IN_CHROME import "components/feed/core/proto/v2/wire/feed_id.proto";
 import "components/feed/core/proto/v2/wire/feed_query.proto";
 
 // Request to fetch new data for the feed
@@ -31,7 +31,7 @@ message FeedRequest {
   // Created on the server and used by the client to identify the feed when
   // clients will store multiple infinite feeds.
   // See [INTERNAL LINK]
-  repeated FeedId feed_ids_to_preserve = 12;
+  // UNUSED_IN_CHROME repeated FeedId feed_ids_to_preserve = 12;
 
   reserved 3, 13;
 }

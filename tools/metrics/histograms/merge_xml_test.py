@@ -43,7 +43,13 @@ class MergeXmlTest(unittest.TestCase):
 
 <histograms>
 
-<histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
+<variants name="TestToken">
+  <variant name="Variant1" label="Label1"/>
+  <variant name="Variant2" label="Label2"/>
+</variants>
+
+<histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz"
+    expires_after="M85">
   <owner>person@chromium.org</owner>
   <summary>Foo</summary>
 </histogram>
@@ -56,12 +62,22 @@ class MergeXmlTest(unittest.TestCase):
   <summary>A enum histogram.</summary>
 </histogram>
 
-<histogram name="Test.Histogram" units="microseconds">
+<histogram name="Test.Histogram" units="microseconds" expires_after="M85">
   <obsolete>
     Removed 6/2020.
   </obsolete>
   <owner>person@chromium.org</owner>
   <summary>Summary 2</summary>
+</histogram>
+
+<histogram name="Test.TokenHistogram{TestToken}" units="microseconds"
+    expires_after="M85">
+  <obsolete>
+    Removed 6/2020.
+  </obsolete>
+  <owner>person@chromium.org</owner>
+  <summary>Summary 2</summary>
+  <token key="TestToken" variants="TestToken"/>
 </histogram>
 
 </histograms>
@@ -120,7 +136,13 @@ class MergeXmlTest(unittest.TestCase):
 
 <histograms>
 
-<histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
+<variants name="TestToken">
+  <variant name="Variant1" label="Label1"/>
+  <variant name="Variant2" label="Label2"/>
+</variants>
+
+<histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz"
+    expires_after="M85">
   <owner>person@chromium.org</owner>
   <summary>Foo</summary>
 </histogram>
@@ -133,12 +155,22 @@ class MergeXmlTest(unittest.TestCase):
   <summary>A enum histogram.</summary>
 </histogram>
 
-<histogram name="Test.Histogram" units="microseconds">
+<histogram name="Test.Histogram" units="microseconds" expires_after="M85">
   <obsolete>
     Removed 6/2020.
   </obsolete>
   <owner>person@chromium.org</owner>
   <summary>Summary 2</summary>
+</histogram>
+
+<histogram name="Test.TokenHistogram{TestToken}" units="microseconds"
+    expires_after="M85">
+  <obsolete>
+    Removed 6/2020.
+  </obsolete>
+  <owner>person@chromium.org</owner>
+  <summary>Summary 2</summary>
+  <token key="TestToken" variants="TestToken"/>
 </histogram>
 
 </histograms>

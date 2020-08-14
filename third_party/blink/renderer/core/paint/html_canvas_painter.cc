@@ -39,14 +39,16 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
   paint_rect.Move(paint_offset);
 
   auto* canvas = To<HTMLCanvasElement>(layout_html_canvas_.GetNode());
+  if (!canvas->IsCanvasClear()) {
+    PaintTiming::From(layout_html_canvas_.GetDocument())
+        .MarkFirstContentfulPaint();
+  }
 
   bool flatten_composited_layers =
       paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers;
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !flatten_composited_layers) {
     if (auto* layer = canvas->ContentsCcLayer()) {
-      PaintTiming::From(layout_html_canvas_.GetDocument())
-          .MarkFirstContentfulPaint();
       IntRect pixel_snapped_rect = PixelSnappedIntRect(paint_rect);
       layer->SetBounds(gfx::Size(pixel_snapped_rect.Size()));
       layer->SetIsDrawable(true);

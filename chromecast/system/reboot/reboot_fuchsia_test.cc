@@ -191,13 +191,16 @@ class RebootFuchsiaTest : public ::testing::TestWithParam<RebootReasonParam> {
   const base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<sys::OutgoingDirectory> outgoing_directory_;
   std::unique_ptr<sys::ServiceDirectory> incoming_directory_;
-  base::Thread thread_;
   base::SequenceBound<FakeAdmin> admin_;
   base::SequenceBound<FakeLastRebootInfoProvider> last_reboot_info_provider_;
+
+ protected:
+  base::Thread thread_;
 };
 
 TEST_P(RebootFuchsiaTest, RebootNowSendsFidlRebootReason) {
   EXPECT_TRUE(RebootShlib::RebootNow(GetParam().source));
+  thread_.FlushForTesting();
   EXPECT_THAT(GetLastRebootReason(), Eq(GetParam().state_control_reason));
 }
 

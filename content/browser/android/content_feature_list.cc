@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/content_feature_list.h"
-
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
@@ -26,7 +24,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kBackgroundMediaRendererHasModerateBinding,
     &features::kWebBluetoothNewPermissionsBackend,
     &features::kWebNfc,
-    &kServiceGroupImportance,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
@@ -40,10 +37,6 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 }
 
 }  // namespace
-
-// Alphabetical:
-const base::Feature kServiceGroupImportance{"ServiceGroupImportance",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 static jboolean JNI_ContentFeatureListImpl_IsEnabled(
     JNIEnv* env,

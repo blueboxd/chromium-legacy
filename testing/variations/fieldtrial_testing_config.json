@@ -4863,21 +4863,17 @@
                     "name": "DesktopExperiments",
                     "params": {
                         "OmniboxMaxURLMatches": "7",
-                        "UIMaxAutocompleteMatches": "8",
-                        "ZeroSuggestVariant:15:*": "RemoteNoUrl,Local",
-                        "ZeroSuggestVariant:1:*": "RemoteNoUrl,Local",
-                        "ZeroSuggestVariant:7:*": "RemoteNoUrl,Local"
+                        "UIMaxAutocompleteMatches": "8"
                     },
                     "enable_features": [
                         "NtpRealbox",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
                         "OmniboxMaxURLMatches",
-                        "OmniboxOnFocusSuggestions",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichEntitySuggestions",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
-                        "OmniboxZeroSuggestionsOnNTP",
+                        "QueryInOmnibox",
                         "SearchSuggestChips"
                     ]
                 }
@@ -6640,22 +6636,6 @@
                     },
                     "enable_features": [
                         "EnableQueryBasedMixedTypesRanker"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ServiceGroupImportance": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ServiceGroupImportance"
                     ]
                 }
             ]

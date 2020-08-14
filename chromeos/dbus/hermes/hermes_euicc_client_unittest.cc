@@ -19,18 +19,6 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 
-namespace hermes {
-// TODO(crbug.com/1093185): Remove when hermes/dbus-constants.h is updated.
-const char kHermesEuiccInterface[] = "org.chromium.Hermes.Euicc";
-namespace euicc {
-const char kInstallProfileFromActivationCode[] =
-    "InstallProfileFromActivationCode";
-const char kInstallPendingProfile[] = "InstallPendingProfile";
-const char kUninstallProfile[] = "UninstallProfile";
-const char kRequestPendingEvents[] = "RequestPendingEvents";
-}  // namespace euicc
-}  // namespace hermes
-
 namespace chromeos {
 
 namespace {

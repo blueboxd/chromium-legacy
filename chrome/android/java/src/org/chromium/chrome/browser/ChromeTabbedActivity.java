@@ -389,7 +389,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // path to reparenting to ensure the launching logic isn't disrupted.
         // TODO(crbug.com/1065491): Unlock this codepath for all incoming intents once it's
         // confirmed working and stable.
-        if (savedInstanceState != null && AsyncTabParamsManager.hasParamsWithTabToReparent()) {
+        if (savedInstanceState != null
+                && AsyncTabParamsManager.getInstance().hasParamsWithTabToReparent()) {
             return LaunchIntentDispatcher.Action.CONTINUE;
         }
 
@@ -1124,7 +1125,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             // are coming from night mode tab reparenting. In this case, reparenting happens
             // synchronously along with tab restoration so there are no tabs waiting for
             // reparenting like there are for other tab reparenting operations.
-            boolean hasTabWaitingForReparenting = AsyncTabParamsManager.hasParamsWithTabToReparent()
+            boolean hasTabWaitingForReparenting =
+                    AsyncTabParamsManager.getInstance().hasParamsWithTabToReparent()
                     && getSavedInstanceState() == null;
             mCreatedTabOnStartup = getCurrentTabModel().getCount() > 0
                     || mTabModelSelectorImpl.getRestoredTabCount() > 0 || mIntentWithEffect
@@ -1638,9 +1640,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             };
         }
         return Pair.create(new ChromeTabCreator(this, getWindowAndroid(), getStartupTabPreloader(),
-                                   tabDelegateFactorySupplier, false, overviewNTPCreator),
+                                   tabDelegateFactorySupplier, false, overviewNTPCreator,
+                                   AsyncTabParamsManager.getInstance()),
                 new ChromeTabCreator(this, getWindowAndroid(), getStartupTabPreloader(),
-                        tabDelegateFactorySupplier, true, overviewNTPCreator));
+                        tabDelegateFactorySupplier, true, overviewNTPCreator,
+                        AsyncTabParamsManager.getInstance()));
     }
 
     @Override

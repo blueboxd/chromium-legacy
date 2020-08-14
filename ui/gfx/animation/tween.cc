@@ -96,11 +96,6 @@ uint8_t BlendColorComponents(uint8_t start,
   return FloatToColorByte(blended_premultiplied / blended_alpha);
 }
 
-double TimeDeltaDivide(base::TimeDelta dividend, base::TimeDelta divisor) {
-  return static_cast<double>(dividend.InMicroseconds()) /
-         static_cast<double>(divisor.InMicroseconds());
-}
-
 }  // namespace
 
 // static
@@ -147,8 +142,7 @@ float Tween::ClampedFloatValueBetween(const base::TimeTicks& time,
   if (time >= target_time)
     return target;
 
-  double progress =
-      TimeDeltaDivide(time - start_time, target_time - start_time);
+  const double progress = (time - start_time) / (target_time - start_time);
   return FloatValueBetween(progress, start, target);
 }
 

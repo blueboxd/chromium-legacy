@@ -837,4 +837,23 @@ TEST_F(WebAppRegistrarTest_DisplayOverride,
             registrar().GetEffectiveDisplayModeFromManifest(app_id));
 }
 
+TEST_F(WebAppRegistrarTest, RunOnOsLoginModes) {
+  controller().Init();
+
+  auto web_app = CreateWebApp("https://example.com/path");
+  const AppId app_id = web_app->app_id();
+  RegisterApp(std::move(web_app));
+
+  EXPECT_EQ(RunOnOsLoginMode::kUndefined,
+            registrar().GetAppRunOnOsLoginMode(app_id));
+
+  sync_bridge().SetAppRunOnOsLoginMode(app_id, RunOnOsLoginMode::kWindowed);
+  EXPECT_EQ(RunOnOsLoginMode::kWindowed,
+            registrar().GetAppRunOnOsLoginMode(app_id));
+
+  sync_bridge().SetAppRunOnOsLoginMode(app_id, RunOnOsLoginMode::kMinimized);
+  EXPECT_EQ(RunOnOsLoginMode::kMinimized,
+            registrar().GetAppRunOnOsLoginMode(app_id));
+}
+
 }  // namespace web_app

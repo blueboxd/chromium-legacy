@@ -16,13 +16,6 @@
 #include "dbus/property.h"
 #include "third_party/cros_system_api/dbus/hermes/dbus-constants.h"
 
-namespace hermes {
-namespace manager {
-// TODO(crbug.com/1093185): Remove when hermes/dbus-constants.h is updated.
-const char kAvailableEuiccsProperty[] = "AvailableEuiccs";
-}  // namespace manager
-}  // namespace hermes
-
 namespace chromeos {
 
 namespace {

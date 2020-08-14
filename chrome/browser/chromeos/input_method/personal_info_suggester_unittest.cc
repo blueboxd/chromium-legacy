@@ -159,7 +159,7 @@ class PersonalInfoSuggesterTest : public testing::Test {
 
     chrome_keyboard_controller_client_ =
         ChromeKeyboardControllerClient::CreateForTest();
-    chrome_keyboard_controller_client_->set_keyboard_enabled_for_test(false);
+    chrome_keyboard_controller_client_->set_keyboard_visible_for_test(false);
   }
 
   void SendKeyboardEvent(std::string key) {
@@ -216,7 +216,7 @@ TEST_F(PersonalInfoSuggesterTest, DoNotSuggestEmail) {
 }
 
 TEST_F(PersonalInfoSuggesterTest, DoNotSuggestWhenVirtualKeyboardEnabled) {
-  chrome_keyboard_controller_client_->set_keyboard_enabled_for_test(true);
+  chrome_keyboard_controller_client_->set_keyboard_visible_for_test(true);
   profile_->set_profile_name(base::UTF16ToUTF8(email_));
 
   suggester_->Suggest(base::UTF8ToUTF16("my email is "));
@@ -225,7 +225,7 @@ TEST_F(PersonalInfoSuggesterTest, DoNotSuggestWhenVirtualKeyboardEnabled) {
 
 TEST_F(PersonalInfoSuggesterTest,
        SendsEmailSuggestionToExtensionWhenVirtualKeyboardEnabled) {
-  chrome_keyboard_controller_client_->set_keyboard_enabled_for_test(true);
+  chrome_keyboard_controller_client_->set_keyboard_visible_for_test(true);
   profile_->set_profile_name(base::UTF16ToUTF8(email_));
 
   suggester_->Suggest(base::UTF8ToUTF16("my email is "));

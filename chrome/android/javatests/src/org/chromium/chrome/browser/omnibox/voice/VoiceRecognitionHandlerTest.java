@@ -28,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.SysUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -613,6 +614,9 @@ public class VoiceRecognitionHandlerTest {
         Assert.assertEquals(null, mHandler.getVoiceSearchResult());
         Assert.assertEquals(
                 VoiceInteractionSource.NTP, mHandler.getVoiceSearchFailureEventSource());
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "VoiceInteraction.QueryDuration.Android"));
     }
 
     @Test
@@ -624,6 +628,9 @@ public class VoiceRecognitionHandlerTest {
         Assert.assertEquals(null, mHandler.getVoiceSearchResult());
         Assert.assertEquals(
                 VoiceInteractionSource.NTP, mHandler.getVoiceSearchDismissedEventSource());
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "VoiceInteraction.QueryDuration.Android"));
     }
 
     @Test
@@ -634,6 +641,9 @@ public class VoiceRecognitionHandlerTest {
         Assert.assertEquals(
                 VoiceInteractionSource.SEARCH_WIDGET, mHandler.getVoiceSearchStartEventSource());
         Assert.assertEquals(false, mHandler.getVoiceSearchResult());
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "VoiceInteraction.QueryDuration.Android"));
     }
 
     @Test
@@ -645,6 +655,9 @@ public class VoiceRecognitionHandlerTest {
             Assert.assertEquals(
                     VoiceInteractionSource.OMNIBOX, mHandler.getVoiceSearchStartEventSource());
             Assert.assertEquals(false, mHandler.getVoiceSearchResult());
+            Assert.assertEquals(1,
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            "VoiceInteraction.QueryDuration.Android"));
         });
     }
 
@@ -664,6 +677,9 @@ public class VoiceRecognitionHandlerTest {
             Assert.assertTrue(confidence == mHandler.getVoiceConfidenceValue());
             assertVoiceResultsAreEqual(
                     mAutocompleteVoiceResults, new String[] {"testing"}, new float[] {confidence});
+            Assert.assertEquals(1,
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            "VoiceInteraction.QueryDuration.Android"));
         });
     }
 
@@ -685,6 +701,9 @@ public class VoiceRecognitionHandlerTest {
             assertVoiceResultsAreEqual(mAutocompleteVoiceResults, new String[] {"testing"},
                     new float[] {
                             VoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD});
+            Assert.assertEquals(1,
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            "VoiceInteraction.QueryDuration.Android"));
         });
     }
 

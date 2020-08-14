@@ -5,7 +5,6 @@
 #include "ui/compositor/float_animation_curve_adapter.h"
 
 #include "base/memory/ptr_util.h"
-#include "cc/base/time_util.h"
 
 namespace ui {
 
@@ -34,10 +33,9 @@ float FloatAnimationCurveAdapter::GetValue(base::TimeDelta t) const {
     return target_value_;
   if (t <= base::TimeDelta())
     return initial_value_;
-  double progress = cc::TimeUtil::Divide(t, duration_);
+
   return gfx::Tween::FloatValueBetween(
-      gfx::Tween::CalculateValue(tween_type_, progress),
-      initial_value_,
+      gfx::Tween::CalculateValue(tween_type_, t / duration_), initial_value_,
       target_value_);
 }
 

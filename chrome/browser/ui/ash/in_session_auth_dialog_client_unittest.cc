@@ -35,19 +35,17 @@ const AccountId kAccountId = AccountId::FromUserEmail("testemail@example.com");
 class FakeInSessionAuthDialogController
     : public ash::InSessionAuthDialogController {
  public:
-  using OnAuthenticateCallback =
-      base::OnceCallback<void(base::Optional<bool> success)>;
-
   FakeInSessionAuthDialogController() = default;
   ~FakeInSessionAuthDialogController() override = default;
 
   // ash::InSessionAuthDialogController:
   void SetClient(ash::InSessionAuthDialogClient* client) override {}
-  void ShowAuthenticationDialog() override {}
+  void ShowAuthenticationDialog(FinishCallback callback) override {}
   void DestroyAuthenticationDialog() override {}
   void AuthenticateUserWithPasswordOrPin(
       const std::string& password,
       OnAuthenticateCallback callback) override {}
+  void Cancel() override {}
 };
 
 class InSessionAuthDialogClientTest : public testing::Test {

@@ -294,16 +294,17 @@ public class TabWindowManagerTest {
         Assert.assertTrue(manager.tabExistsInAnySelector(tab2.getId()));
         Assert.assertFalse(manager.tabExistsInAnySelector(tab2.getId() + 1));
 
-        AsyncTabParamsManager.getAsyncTabParams().clear();
+        AsyncTabParamsManager asyncTabParamsManager = AsyncTabParamsManager.getInstance();
+        asyncTabParamsManager.getAsyncTabParams().clear();
         final int asyncTabId = 123;
         final TabReparentingParams dummyParams =
                 new TabReparentingParams(new MockTab(0, false), null);
         Assert.assertFalse(manager.tabExistsInAnySelector(asyncTabId));
-        AsyncTabParamsManager.add(asyncTabId, dummyParams);
+        asyncTabParamsManager.add(asyncTabId, dummyParams);
         try {
             Assert.assertTrue(manager.tabExistsInAnySelector(asyncTabId));
         } finally {
-            AsyncTabParamsManager.getAsyncTabParams().clear();
+            asyncTabParamsManager.getAsyncTabParams().clear();
         }
     }
 
@@ -329,16 +330,17 @@ public class TabWindowManagerTest {
         Assert.assertNotNull(manager.getTabById(tab2.getId()));
         Assert.assertNull(manager.getTabById(tab2.getId() + 1));
 
-        AsyncTabParamsManager.getAsyncTabParams().clear();
+        AsyncTabParamsManager asyncTabParamsManager = AsyncTabParamsManager.getInstance();
+        asyncTabParamsManager.getAsyncTabParams().clear();
         final int asyncTabId = 123;
         final TabReparentingParams dummyParams =
                 new TabReparentingParams(new MockTab(0, false), null);
         Assert.assertNull(manager.getTabById(asyncTabId));
-        AsyncTabParamsManager.add(asyncTabId, dummyParams);
+        asyncTabParamsManager.add(asyncTabId, dummyParams);
         try {
             Assert.assertNotNull(manager.getTabById(asyncTabId));
         } finally {
-            AsyncTabParamsManager.getAsyncTabParams().clear();
+            asyncTabParamsManager.getAsyncTabParams().clear();
         }
     }
 }

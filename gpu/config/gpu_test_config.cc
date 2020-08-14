@@ -222,6 +222,7 @@ bool GPUTestBotConfig::IsValid() const {
     case kOsMacHighSierra:
     case kOsMacMojave:
     case kOsMacCatalina:
+    case kOsMacBigSur:
     case kOsLinux:
     case kOsChromeOS:
     case kOsAndroid:

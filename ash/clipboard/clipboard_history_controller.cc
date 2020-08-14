@@ -63,11 +63,10 @@ ui::ImageModel GetImageModelForClipboardData(const ui::ClipboardData& item) {
   return ui::ImageModel();
 }
 
-void WriteClipboardDataToClipboard(const ui::ClipboardData& data) {
+ui::ClipboardNonBacked* GetClipboard() {
   auto* clipboard = ui::ClipboardNonBacked::GetForCurrentThread();
-  CHECK(clipboard);
-
-  clipboard->WriteClipboardData(std::make_unique<ui::ClipboardData>(data));
+  DCHECK(clipboard);
+  return clipboard;
 }
 
 }  // namespace
@@ -96,7 +95,7 @@ class ClipboardHistoryController::AcceleratorTarget
   // ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     if (controller_->IsMenuShowing())
-      controller_->ExecuteSelectedMenuItem();
+      controller_->ExecuteSelectedMenuItem(accelerator.modifiers());
     else
       controller_->ShowMenu();
     return true;
@@ -122,7 +121,7 @@ class ClipboardHistoryController::MenuDelegate
 
   // ui::SimpleMenuModel::Delegate:
   void ExecuteCommand(int command_id, int event_flags) override {
-    controller_->MenuOptionSelected(/*index=*/command_id);
+    controller_->MenuOptionSelected(/*index=*/command_id, event_flags);
   }
 
  private:
@@ -155,19 +154,16 @@ bool ClipboardHistoryController::CanShowMenu() const {
   return !clipboard_history_->IsEmpty();
 }
 
-void ClipboardHistoryController::ExecuteSelectedMenuItem() {
+void ClipboardHistoryController::ExecuteSelectedMenuItem(int event_flags) {
   DCHECK(IsMenuShowing());
   auto command = context_menu_->GetSelectedMenuItemCommand();
 
-  // TODO(crbug.com/1106849): Update once sequential paste is supported.
   // Force close the context menu. Failure to do so before dispatching our
   // synthetic key event will result in the context menu consuming the event.
-  // Currently we don't support sequential copy-paste. Once we do, we'll have to
-  // update this logic.
   context_menu_->Cancel();
 
   // If no menu item is currently selected, we'll fallback to the first item.
-  menu_delegate_->ExecuteCommand(command.value_or(0), ui::EF_NONE);
+  menu_delegate_->ExecuteCommand(command.value_or(0), event_flags);
 }
 
 void ClipboardHistoryController::ShowMenu() {
@@ -200,7 +196,8 @@ void ClipboardHistoryController::ShowMenu() {
   context_menu_->Run(CalculateAnchorRect());
 }
 
-void ClipboardHistoryController::MenuOptionSelected(int index) {
+void ClipboardHistoryController::MenuOptionSelected(int index,
+                                                    int event_flags) {
   auto it = clipboard_items_.begin();
   std::advance(it, index);
 
@@ -210,14 +207,25 @@ void ClipboardHistoryController::MenuOptionSelected(int index) {
     return;
   }
 
-  // Pause clipboard history when manipulating the clipboard for the purpose of
-  // a paste.
-  ClipboardHistory::ScopedPause scoped_pause(clipboard_history_.get());
+  auto* clipboard = GetClipboard();
+  std::unique_ptr<ui::ClipboardData> original_data;
 
-  // Place the selected item on top of the clipboard.
-  const bool selected_item_not_on_top = it != clipboard_items_.begin();
-  if (selected_item_not_on_top)
-    WriteClipboardDataToClipboard(*it);
+  // If necessary, replace the clipboard's |original_data| temporarily so that
+  // we can paste the selected history item.
+  const bool shift_key_pressed = event_flags & ui::EF_SHIFT_DOWN;
+  if (shift_key_pressed || *it != *clipboard->GetClipboardData()) {
+    std::unique_ptr<ui::ClipboardData> temp_data;
+    if (shift_key_pressed) {
+      // When the shift key is pressed, we only paste plain text.
+      temp_data = std::make_unique<ui::ClipboardData>();
+      temp_data->set_text(it->text());
+    } else {
+      temp_data = std::make_unique<ui::ClipboardData>(*it);
+    }
+    // Pause clipboard history when manipulating the clipboard for a paste.
+    ClipboardHistory::ScopedPause scoped_pause(clipboard_history_.get());
+    original_data = clipboard->WriteClipboardData(std::move(temp_data));
+  }
 
   ui::KeyEvent synthetic_key_event(ui::ET_KEY_PRESSED, ui::VKEY_V,
                                    static_cast<ui::DomCode>(0),
@@ -227,7 +235,7 @@ void ClipboardHistoryController::MenuOptionSelected(int index) {
   DCHECK(host);
   host->DeliverEventToSink(&synthetic_key_event);
 
-  if (!selected_item_not_on_top)
+  if (!original_data)
     return;
 
   // Replace the original item back on top of the clipboard. Some apps take a
@@ -238,7 +246,7 @@ void ClipboardHistoryController::MenuOptionSelected(int index) {
       FROM_HERE,
       base::BindOnce(
           [](const base::WeakPtr<ClipboardHistoryController>& weak_ptr,
-             ui::ClipboardData clipboard_data) {
+             std::unique_ptr<ui::ClipboardData> original_data) {
             // When restoring the original item back on top of the clipboard we
             // need to pause clipboard history. Failure to do so will result in
             // the original item being re-recorded when this restoration step
@@ -248,9 +256,9 @@ void ClipboardHistoryController::MenuOptionSelected(int index) {
               scoped_pause = std::make_unique<ClipboardHistory::ScopedPause>(
                   weak_ptr->clipboard_history_.get());
             }
-            WriteClipboardDataToClipboard(clipboard_data);
+            GetClipboard()->WriteClipboardData(std::move(original_data));
           },
-          weak_ptr_factory_.GetWeakPtr(), *clipboard_items_.begin()),
+          weak_ptr_factory_.GetWeakPtr(), std::move(original_data)),
       base::TimeDelta::FromMilliseconds(100));
 }
 

@@ -85,6 +85,17 @@ class PpdMetadataManagerTest : public ::testing::Test {
   }
 
   // Callback method appropriate for passing to
+  // PpdMetadataManager::FindAllEmmsAvailableInIndex().
+  void CatchFindAllEmmsAvailableInIndex(
+      base::RepeatingClosure quit_closure,
+      const base::flat_map<std::string, ParsedIndexValues>& values) {
+    results_.available_effective_make_and_model_strings = values;
+    if (quit_closure) {
+      quit_closure.Run();
+    }
+  }
+
+  // Callback method appropriate for passing to
   // PpdMetadataManager::SplitMakeAndModel().
   void CatchSplitMakeAndModel(base::RepeatingClosure quit_closure,
                               PpdProvider::CallbackResultCode code,
@@ -115,6 +126,11 @@ class PpdMetadataManagerTest : public ::testing::Test {
     // Landing area for PpdMetadataManager::GetPrinters().
     bool get_printers_succeeded;
     ParsedPrinters printers;
+
+    // Landing area for
+    // PpdMetadataManager::FindAllEmmsAvailableInIndex().
+    base::flat_map<std::string, ParsedIndexValues>
+        available_effective_make_and_model_strings;
 
     // Landing area for PpdMetadataManager::SplitMakeAndModel().
     PpdProvider::CallbackResultCode split_make_and_model_code;
@@ -725,6 +741,301 @@ TEST_F(PpdMetadataManagerTest, CanGetPrintersTimeSensitive) {
       results_.printers,
       UnorderedElementsAre(ParsedPrinterLike("Some Printer C", "some emm c"),
                            ParsedPrinterLike("Some Printer D", "some emm d")));
+}
+
+// Verifies that the manager can find all effective-make-and-model
+// strings in forward index metadata.
+TEST_F(PpdMetadataManagerTest, CanFindAllAvailableEmmsInIndex) {
+  // Known interaction: the manager will fetch forward index metadata
+  // numbered 14, 15, and 16.
+  GetFakeCache()->SetFetchResponseForTesting("metadata_v3/index-14.json", R"(
+  {
+    "ppdIndex": {
+      "some printer a": {
+        "ppdMetadata": [ {
+          "name": "some-ppd-basename-a.ppd.gz"
+        } ]
+      }
+    }
+  })");
+  GetFakeCache()->SetFetchResponseForTesting("metadata_v3/index-15.json", R"(
+  {
+    "ppdIndex": {
+      "some printer b": {
+        "ppdMetadata": [ {
+          "name": "some-ppd-basename-b.ppd.gz"
+        } ]
+      }
+    }
+  })");
+  GetFakeCache()->SetFetchResponseForTesting("metadata_v3/index-16.json", R"(
+  {
+    "ppdIndex": {
+      "some printer c": {
+        "ppdMetadata": [ {
+          "name": "some-ppd-basename-c.ppd.gz"
+        } ]
+      }
+    }
+  })");
+
+  base::RunLoop loop;
+  auto callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchFindAllEmmsAvailableInIndex,
+                     base::Unretained(this), loop.QuitClosure());
+  manager_->FindAllEmmsAvailableInIndex(
+      {"some printer a", "some printer b", "some printer c"},
+      kArbitraryTimeDelta, std::move(callback));
+  loop.Run();
+
+  EXPECT_THAT(results_.available_effective_make_and_model_strings,
+              UnorderedElementsAre(
+                  ParsedIndexEntryLike(
+                      "some printer a",
+                      UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                          "some-ppd-basename-a.ppd.gz"))),
+                  ParsedIndexEntryLike(
+                      "some printer b",
+                      UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                          "some-ppd-basename-b.ppd.gz"))),
+                  ParsedIndexEntryLike(
+                      "some printer c",
+                      UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                          "some-ppd-basename-c.ppd.gz")))));
+}
+
+// Verifies that the manager invokes the
+// FindAllAvailableEmmsInIndexCallback with a partially filled argument
+// if it fails to fetch some of the necessary metadata.
+TEST_F(PpdMetadataManagerTest,
+       CanPartiallyFindAllAvailableEmmsInIndexWithFetchFailure) {
+  // Known interaction: the manager will fetch forward index metadata
+  // numbered 14, 15, and 16.
+  //
+  // We deliberately omit forward index metadata no. 14 to simulate a
+  // fetch failure.
+  GetFakeCache()->SetFetchResponseForTesting("metadata_v3/index-15.json", R"(
+  {
+    "ppdIndex": {
+      "some printer b": {
+        "ppdMetadata": [ {
+          "name": "some-ppd-basename-b.ppd.gz"
+        } ]
+      }
+    }
+  })");
+  GetFakeCache()->SetFetchResponseForTesting("metadata_v3/index-16.json", R"(
+  {
+    "ppdIndex": {
+      "some printer c": {
+        "ppdMetadata": [ {
+          "name": "some-ppd-basename-c.ppd.gz"
+        } ]
+      }
+    }
+  })");
+
+  base::RunLoop loop;
+  auto callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchFindAllEmmsAvailableInIndex,
+                     base::Unretained(this), loop.QuitClosure());
+  manager_->FindAllEmmsAvailableInIndex(
+      {"some printer a", "some printer b", "some printer c"},
+      kArbitraryTimeDelta, std::move(callback));
+  loop.Run();
+
+  // The manager was unable to get the forward index metadata that would
+  // contain information for effective-make-and-model string
+  // "some printer a," but the other results should avail themselves.
+  EXPECT_THAT(results_.available_effective_make_and_model_strings,
+              UnorderedElementsAre(
+                  ParsedIndexEntryLike(
+                      "some printer b",
+                      UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                          "some-ppd-basename-b.ppd.gz"))),
+                  ParsedIndexEntryLike(
+                      "some printer c",
+                      UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                          "some-ppd-basename-c.ppd.gz")))));
+}
+
+// Verifies that the manager invokes the
+// FindAllAvailableEmmsInIndexCallback with a partially filled argument
+// if it fails to parse some of the necessary metadata.
+TEST_F(PpdMetadataManagerTest,
+       CanPartiallyFindAllAvailableEmmsInIndexWithParseFailure) {
+  // Known interaction: the manager will fetch forward index metadata
+  // numbered 14, 15, and 16.
+  //
+  // We deliberately serve malformed JSON that will fail to parse for
+  // indices nos. 14 and 15 to exercise the manager's handling of parse
+  // failures.
+  GetFakeCache()->SetFetchResponseForTesting("metadata_v3/index-14.json",
+                                             kInvalidJson);
+  GetFakeCache()->SetFetchResponseForTesting("metadata_v3/index-15.json",
+                                             kInvalidJson);
+  GetFakeCache()->SetFetchResponseForTesting("metadata_v3/index-16.json", R"(
+  {
+    "ppdIndex": {
+      "some printer c": {
+        "ppdMetadata": [ {
+          "name": "some-ppd-basename-c.ppd.gz"
+        } ]
+      }
+    }
+  })");
+
+  base::RunLoop loop;
+  auto callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchFindAllEmmsAvailableInIndex,
+                     base::Unretained(this), loop.QuitClosure());
+  manager_->FindAllEmmsAvailableInIndex(
+      {"some printer a", "some printer b", "some printer c"},
+      kArbitraryTimeDelta, std::move(callback));
+  loop.Run();
+
+  // The manager was unable to parse the forward index metadata that would
+  // contain information for effective-make-and-model strings
+  // "some printer a" and for "some printer b," but the last string
+  // "some printer c" should avail itself.
+  EXPECT_THAT(
+      results_.available_effective_make_and_model_strings,
+      UnorderedElementsAre(ParsedIndexEntryLike(
+          "some printer c", UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                                "some-ppd-basename-c.ppd.gz")))));
+}
+
+// Verifies that the manager fetches forward index metadata anew when
+// the caller asks it for metadata fresher than what it has cached.
+TEST_F(PpdMetadataManagerTest, CanFindAllAvailableEmmsInIndexTimeSensitive) {
+  // Known interaction: the manager will fetch forward index metadata
+  // numbered 14, 15, and 16.
+  GetFakeCache()->SetFetchResponseForTesting("metadata_v3/index-14.json", R"(
+  {
+    "ppdIndex": {
+      "some printer a": {
+        "ppdMetadata": [ {
+          "name": "some-ppd-basename-a.ppd.gz"
+        } ]
+      }
+    }
+  })");
+  GetFakeCache()->SetFetchResponseForTesting("metadata_v3/index-15.json", R"(
+  {
+    "ppdIndex": {
+      "some printer b": {
+        "ppdMetadata": [ {
+          "name": "some-ppd-basename-b.ppd.gz"
+        } ]
+      }
+    }
+  })");
+  GetFakeCache()->SetFetchResponseForTesting("metadata_v3/index-16.json", R"(
+  {
+    "ppdIndex": {
+      "some printer c": {
+        "ppdMetadata": [ {
+          "name": "some-ppd-basename-c.ppd.gz"
+        } ]
+      }
+    }
+  })");
+
+  base::RunLoop loop;
+  auto callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchFindAllEmmsAvailableInIndex,
+                     base::Unretained(this), loop.QuitClosure());
+
+  // t = 0s: caller requests the |manager_| to search forward index
+  // metadata for three effective-make-and-model strings. |manager_|
+  // fetches the appropriate forward index metadata (nos. 14, 15, and
+  // 16) and caches the result.
+  manager_->FindAllEmmsAvailableInIndex(
+      {"some printer a", "some printer b", "some printer c"},
+      base::TimeDelta::FromSeconds(30), std::move(callback));
+  loop.Run();
+
+  EXPECT_THAT(results_.available_effective_make_and_model_strings,
+              UnorderedElementsAre(
+                  ParsedIndexEntryLike(
+                      "some printer a",
+                      UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                          "some-ppd-basename-a.ppd.gz"))),
+                  ParsedIndexEntryLike(
+                      "some printer b",
+                      UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                          "some-ppd-basename-b.ppd.gz"))),
+                  ParsedIndexEntryLike(
+                      "some printer c",
+                      UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                          "some-ppd-basename-c.ppd.gz")))));
+
+  // We drop forward index metadata nos. 14 and 15 now. If the
+  // |manager_| attempts to fetch these again, it will fail to do so.
+  GetFakeCache()->Drop("metadata_v3/index-14.json");
+  GetFakeCache()->Drop("metadata_v3/index-15.json");
+
+  // Resets the results to require that the |manager_| answer us
+  // positively.
+  results_.available_effective_make_and_model_strings = {};
+
+  base::RunLoop second_loop;
+  auto second_callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchFindAllEmmsAvailableInIndex,
+                     base::Unretained(this), second_loop.QuitClosure());
+
+  // t = 0s: caller requests the |manager_| to search forward index
+  // metadata for the same three effective-make-and-model strings.
+  // Caller requests this using metadata fetched within the last thirty
+  // seconds, so |manager_| does not perform a live fetch of the data.
+  manager_->FindAllEmmsAvailableInIndex(
+      {"some printer a", "some printer b", "some printer c"},
+      base::TimeDelta::FromSeconds(30), std::move(second_callback));
+  second_loop.Run();
+
+  // We expect the results to be unchanged.
+  EXPECT_THAT(results_.available_effective_make_and_model_strings,
+              UnorderedElementsAre(
+                  ParsedIndexEntryLike(
+                      "some printer a",
+                      UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                          "some-ppd-basename-a.ppd.gz"))),
+                  ParsedIndexEntryLike(
+                      "some printer b",
+                      UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                          "some-ppd-basename-b.ppd.gz"))),
+                  ParsedIndexEntryLike(
+                      "some printer c",
+                      UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                          "some-ppd-basename-c.ppd.gz")))));
+
+  // t = 31s
+  clock_.Advance(base::TimeDelta::FromSeconds(31));
+
+  base::RunLoop third_loop;
+  auto third_callback =
+      base::BindOnce(&PpdMetadataManagerTest::CatchFindAllEmmsAvailableInIndex,
+                     base::Unretained(this), third_loop.QuitClosure());
+
+  // t = 31s: caller requests the |manager_| to search forward index
+  // metadata for the same three effective-make-and-model strings.
+  // Caller requests this using metadata fetched within the last thirty
+  // thirds; |manager_| sees that its cached metadata is too old, and
+  // so performs a live fetch.
+  //
+  // Since we previously blocked forward index metadata nos. 14 and 15
+  // from being served, the |manager_| will fail to fetch these.
+  manager_->FindAllEmmsAvailableInIndex(
+      {"some printer a", "some printer b", "some printer c"},
+      base::TimeDelta::FromSeconds(30), std::move(third_callback));
+  third_loop.Run();
+
+  // We expect the results to have changed.
+  EXPECT_THAT(
+      results_.available_effective_make_and_model_strings,
+      UnorderedElementsAre(ParsedIndexEntryLike(
+          "some printer c", UnorderedElementsAre(ParsedIndexLeafWithPpdBasename(
+                                "some-ppd-basename-c.ppd.gz")))));
 }
 
 // Verifies that the manager can split an effective-make-and-model

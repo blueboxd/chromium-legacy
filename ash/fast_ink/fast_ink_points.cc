@@ -97,8 +97,7 @@ float FastInkPoints::GetFadeoutFactor(int index) const {
   DCHECK(!life_duration_.is_zero());
   DCHECK(0 <= index && index < GetNumberOfPoints());
   base::TimeDelta age = collection_latest_time_ - points_[index].time;
-  return std::min(age.InMillisecondsF() / life_duration_.InMillisecondsF(),
-                  1.0);
+  return std::min(age / life_duration_, 1.0);
 }
 
 void FastInkPoints::Predict(const FastInkPoints& real_points,

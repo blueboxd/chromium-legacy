@@ -105,6 +105,11 @@ void BookmarkAppRegistryController::SetAppInstallTime(
     const web_app::AppId& app_id,
     const base::Time& time) {}
 
+// Bookmark apps are deprecated. They don't support Run on OS Login.
+void BookmarkAppRegistryController::SetAppRunOnOsLoginMode(
+    const web_app::AppId& app_id,
+    web_app::RunOnOsLoginMode mode) {}
+
 web_app::WebAppSyncBridge* BookmarkAppRegistryController::AsWebAppSyncBridge() {
   return nullptr;
 }

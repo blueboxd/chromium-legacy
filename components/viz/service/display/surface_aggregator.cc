@@ -1255,6 +1255,7 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
     bool will_draw,
     const gfx::Rect& damage_from_parent,
     const gfx::Transform& target_to_root_transform,
+    bool in_moved_pixel_rp,
     PrewalkResult* result) {
   if (render_pass_entry->is_visited) {
     // This render pass is an ancestor of itself and is not supported.
@@ -1271,15 +1272,12 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
   RenderPassId remapped_pass_id =
       pass_id_remapper_.Remap(render_pass.id, surface->surface_id());
   // |moved_pixel_passes_| stores all the render passes affected by filters
-  // that move pixels, so |has_pixel_moving_filter| should be set to true either
+  // that move pixels, so |in_moved_pixel_rp| should be set to true either
   // if the current render pass has pixel_moving_filter(s) or if it is inside an
   // ancestor render pass that has pixel_moving_filter(s).
-  bool has_pixel_moving_filter = render_pass.filters.HasFilterThatMovesPixels();
-  if (has_pixel_moving_filter)
+  in_moved_pixel_rp |= render_pass.filters.HasFilterThatMovesPixels();
+  if (in_moved_pixel_rp)
     moved_pixel_passes_.insert(remapped_pass_id);
-  bool in_moved_pixel_pass =
-      has_pixel_moving_filter ||
-      base::Contains(moved_pixel_passes_, remapped_pass_id);
 
   gfx::Transform root_to_target_transform(gfx::Transform::kSkipInitialization);
   const bool transform_inverted =
@@ -1364,7 +1362,7 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
                     inverse, accumulated_damage_in_child_space);
           }
         }
-        child_rect = PrewalkSurface(child_surface, in_moved_pixel_pass,
+        child_rect = PrewalkSurface(child_surface, in_moved_pixel_rp,
                                     remapped_pass_id, will_draw,
                                     accumulated_damage_in_child_space, result);
         child_rect = gfx::ScaleToEnclosingRect(child_rect, x_scale, y_scale);
@@ -1373,12 +1371,6 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
 
       if (quad_damage_rect.IsEmpty())
         continue;
-
-      if (in_moved_pixel_pass) {
-        damage_rect = cc::MathUtil::ProjectEnclosingClippedRect(
-            root_to_target_transform, full_damage);
-        continue;
-      }
     } else if (quad->material == DrawQuad::Material::kRenderPass) {
       auto* render_pass_quad = RenderPassDrawQuad::MaterialCast(quad);
 
@@ -1428,8 +1420,6 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
 
       RenderPassId remapped_child_pass_id =
           pass_id_remapper_.Remap(child_pass_id, surface->surface_id());
-      if (in_moved_pixel_pass)
-        moved_pixel_passes_.insert(remapped_child_pass_id);
 
       render_pass_dependencies_[remapped_pass_id].insert(
           remapped_child_pass_id);
@@ -1439,7 +1429,7 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
           quad->shared_quad_state->quad_to_target_transform);
       quad_damage_rect = PrewalkRenderPass(
           &child_render_pass_entry, surface, render_pass_map, will_draw,
-          gfx::Rect(), child_to_root_transform, result);
+          gfx::Rect(), child_to_root_transform, in_moved_pixel_rp, result);
 
     } else {
       continue;
@@ -1457,11 +1447,16 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
     }
     damage_rect.Union(rect_in_target_space);
   }
+
+  // Expand the damage to cover entire |output_rect| if the |render_pass| has
+  // pixel-moving foreground filter.
+  if (!damage_rect.IsEmpty() && render_pass.filters.HasFilterThatMovesPixels())
+    damage_rect.Union(render_pass.output_rect);
   return damage_rect;
 }
 
 gfx::Rect SurfaceAggregator::PrewalkSurface(Surface* surface,
-                                            bool in_moved_pixel_surface,
+                                            bool in_moved_pixel_rp,
                                             RenderPassId parent_pass_id,
                                             bool will_draw,
                                             const gfx::Rect& damage_from_parent,
@@ -1491,8 +1486,6 @@ gfx::Rect SurfaceAggregator::PrewalkSurface(Surface* surface,
 
   RenderPassId remapped_pass_id = pass_id_remapper_.Remap(
       frame.render_pass_list.back()->id, surface->surface_id());
-  if (in_moved_pixel_surface)
-    moved_pixel_passes_.insert(remapped_pass_id);
   if (parent_pass_id)
     render_pass_dependencies_[parent_pass_id].insert(remapped_pass_id);
 
@@ -1542,9 +1535,9 @@ gfx::Rect SurfaceAggregator::PrewalkSurface(Surface* surface,
   DCHECK(it != render_pass_map.end());
   RenderPassMapEntry& entry = it->second;
 
-  damage_rect.Union(PrewalkRenderPass(&entry, surface, &render_pass_map,
-                                      will_draw, damage_from_parent,
-                                      gfx::Transform(), result));
+  damage_rect.Union(PrewalkRenderPass(
+      &entry, surface, &render_pass_map, will_draw, damage_from_parent,
+      gfx::Transform(), in_moved_pixel_rp, result));
   damage_rect = cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
       root_pass_transform, damage_rect);
 
@@ -1742,7 +1735,7 @@ AggregatedFrame SurfaceAggregator::Aggregate(
   DCHECK(referenced_surfaces_.empty());
   PrewalkResult prewalk_result;
   gfx::Rect surfaces_damage_rect = PrewalkSurface(
-      surface, /*in_moved_pixel_surface=*/false, /*parent_pass=*/RenderPassId(),
+      surface, /*in_moved_pixel_rp=*/false, /*parent_pass=*/RenderPassId(),
       /*will_draw=*/true, /*damage_from_parent=*/gfx::Rect(), &prewalk_result);
   root_damage_rect_ = surfaces_damage_rect;
   // |root_damage_rect_| is used to restrict aggregating quads only if they

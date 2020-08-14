@@ -400,6 +400,8 @@ class CupsPrintersManagerImpl
                          PrinterStatusCallback cb,
                          PrinterQueryResult result,
                          const ::printing::PrinterStatus& printer_status) {
+    base::UmaHistogramEnumeration("Printing.CUPS.PrinterStatusQueryResult",
+                                  result);
     switch (result) {
       case PrinterQueryResult::UNREACHABLE: {
         PRINTER_LOG(ERROR)
@@ -443,10 +445,6 @@ class CupsPrintersManagerImpl
 
         // Send status back to the handler through PrinterStatusCallback.
         std::move(cb).Run(std::move(cups_printers_status));
-        break;
-      }
-      default: {
-        NOTREACHED();
         break;
       }
     }

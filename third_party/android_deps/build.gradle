@@ -27,6 +27,7 @@ repositories {
 dependencyCheck {
     // Any known vulnerability of any severity will cause the build to fail.
     failBuildOnCVSS = 0
+    suppressionFile = file("vulnerability_supressions.xml")
 }
 
 dependencies {

@@ -6,7 +6,9 @@
 #define CC_RASTER_GPU_RASTER_BUFFER_PROVIDER_H_
 
 #include <stdint.h>
+#include <memory>
 #include <random>
+#include <vector>
 
 #include "base/time/time.h"
 #include "cc/raster/raster_buffer_provider.h"

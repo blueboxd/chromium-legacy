@@ -25,7 +25,7 @@ namespace ash {
 namespace {
 
 // Delay between timer callbacks. Each one plays a tick sound.
-constexpr int kTimerDelayInMS = 500;
+constexpr auto kTimerDelay = base::TimeDelta::FromMilliseconds(500);
 
 // The number of ticks of the timer before the first sound is generated.
 constexpr int kTimerTicksOfFirstSoundFeedback = 6;
@@ -147,8 +147,8 @@ void TouchAccessibilityEnabler::StartTimer() {
   if (timer_.IsRunning())
     return;
 
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimerDelayInMS),
-               this, &TouchAccessibilityEnabler::OnTimer);
+  timer_.Start(FROM_HERE, kTimerDelay, this,
+               &TouchAccessibilityEnabler::OnTimer);
 }
 
 void TouchAccessibilityEnabler::CancelTimer() {
@@ -160,8 +160,7 @@ void TouchAccessibilityEnabler::CancelTimer() {
 
 void TouchAccessibilityEnabler::OnTimer() {
   base::TimeTicks now = Now();
-  double tick_count_f =
-      (now - two_finger_start_time_).InMillisecondsF() / kTimerDelayInMS;
+  double tick_count_f = (now - two_finger_start_time_) / kTimerDelay;
   int tick_count = base::ClampRound(tick_count_f);
 
   if (tick_count == kTimerTicksOfFirstSoundFeedback) {

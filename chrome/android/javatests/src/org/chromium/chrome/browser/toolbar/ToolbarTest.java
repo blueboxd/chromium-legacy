@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -126,7 +127,7 @@ public class ToolbarTest {
 
         // Load new tab page.
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
-        Assert.assertEquals(UrlConstants.NTP_URL, tab.getUrlString());
+        Assert.assertEquals(UrlConstants.NTP_URL, ChromeTabUtils.getUrlStringOnUiThread(tab));
         assertFalse(isErrorPage(tab));
 
         // Stop the server and also disconnect the network.
@@ -135,7 +136,7 @@ public class ToolbarTest {
                 () -> NetworkChangeNotifier.forceConnectivityState(false));
 
         mActivityTestRule.loadUrl(testUrl);
-        Assert.assertEquals(testUrl, tab.getUrlString());
+        Assert.assertEquals(testUrl, ChromeTabUtils.getUrlStringOnUiThread(tab));
         assertTrue(isErrorPage(tab));
     }
 

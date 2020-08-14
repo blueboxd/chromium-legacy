@@ -293,9 +293,9 @@ void Locale::SetLocaleData(const Vector<String, kDecimalSymbolsSize>& symbols,
   // zero length positive prefix.
   uses_single_char_number_filtering_ = false;
   if (decimal_symbols_[kDecimalSeparatorIndex].length() == 1 &&
-      (positive_prefix_.length() == 0 || positive_prefix_.length() == 1) &&
-      negative_prefix_.length() == 1 && positive_suffix_.length() == 0 &&
-      negative_suffix_.length() == 0) {
+      positive_prefix_.length() <= 1 && negative_prefix_.length() == 1 &&
+      positive_suffix_.length() == 0 && negative_suffix_.length() == 0 &&
+      !IsRTL()) {
     uses_single_char_number_filtering_ = true;
     for (wtf_size_t i = 0; i <= 9; ++i) {
       if (decimal_symbols_[i].length() != 1) {

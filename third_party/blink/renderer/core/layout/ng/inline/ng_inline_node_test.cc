@@ -1318,4 +1318,72 @@ TEST_F(NGInlineNodeTest, ReusingRTLAsLTR) {
   TEST_ITEM_OFFSET_DIR(Items()[2], 10u, 10u, TextDirection::kLtr);
 }
 
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterFalse) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em; text-align: center">
+      text
+    </p>
+  )HTML");
+  auto* p = ToLayoutNGBlockFlow(GetLayoutObjectByElementId("p"));
+  EXPECT_FALSE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      p->FirstChild(), /* first_line */ false, p));
+}
+
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterCenterTextIndent) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em; text-align: center; text-indent: 1em">
+      text
+    </p>
+  )HTML");
+  auto* p = ToLayoutNGBlockFlow(GetLayoutObjectByElementId("p"));
+  EXPECT_TRUE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      p->FirstChild(), /* first_line */ false, p));
+}
+
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterCenterPadding) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em; text-align: center; padding-left: 1em">
+      text
+    </p>
+  )HTML");
+  auto* p = ToLayoutNGBlockFlow(GetLayoutObjectByElementId("p"));
+  EXPECT_TRUE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      p->FirstChild(), /* first_line */ false, p));
+}
+
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterRight) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em; text-align: right; margin-right: -1em">
+      text
+    </p>
+  )HTML");
+  auto* p = ToLayoutNGBlockFlow(GetLayoutObjectByElementId("p"));
+  EXPECT_TRUE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      p->FirstChild(), /* first_line */ false, p));
+}
+
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterBorder) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em">
+      <span id="span" style="border:1px solid; padding-left:1em">span</span>
+    </p>
+  )HTML");
+  auto* p = ToLayoutNGBlockFlow(GetLayoutObjectByElementId("p"));
+  const LayoutObject* span = GetLayoutObjectByElementId("span");
+  EXPECT_TRUE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      span->SlowFirstChild(), /* first_line */ false, p));
+}
+
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterUnderline) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em">
+      <span id="span" style="text-decoration: underline">span</span>
+    </p>
+  )HTML");
+  auto* p = ToLayoutNGBlockFlow(GetLayoutObjectByElementId("p"));
+  const LayoutObject* span = GetLayoutObjectByElementId("span");
+  EXPECT_TRUE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      span->SlowFirstChild(), /* first_line */ false, p));
+}
+
 }  // namespace blink

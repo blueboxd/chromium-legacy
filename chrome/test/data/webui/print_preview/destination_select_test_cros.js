@@ -326,6 +326,7 @@ destination_select_test_cros.suiteName = 'DestinationSelectTestCros';
 destination_select_test_cros.TestNames = {
   UpdateStatus: 'update status',
   ChangeIcon: 'change icon',
+  ChangeIconDeprecationWarnings: 'change icon deprecation warnings',
   EulaIsDisplayed: 'eula is displayed',
   SelectDriveDestination: 'select drive destination',
 };
@@ -387,9 +388,11 @@ suite(destination_select_test_cros.suiteName, function() {
   /**
    * Test that changing different destinations results in the correct icon being
    * shown.
+   * @param {boolean} cloudPrintDeprecationWarningsSuppressed Whether cloud
+   *     print deprecation warnings should be suppressed.
    * @return {!Promise} Promise that resolves when the test finishes.
    */
-  function testChangeIcon() {
+  function testChangeIcon(cloudPrintDeprecationWarningsSuppressed) {
     const cookieOrigin = DestinationOrigin.COOKIES;
     let selectEl;
 
@@ -422,19 +425,27 @@ suite(destination_select_test_cros.suiteName, function() {
               destinationSelect, `ID2/${cookieOrigin}/${account}`);
         })
         .then(() => {
+          const dest2Icon = cloudPrintDeprecationWarningsSuppressed ?
+              'printer-shared' :
+              'printer-not-supported';
+
           // Should already be updated.
-          compareIcon(selectEl, 'printer-shared');
+          compareIcon(selectEl, dest2Icon);
 
           // Update destination.
           destinationSelect.destination = recentDestinationList[1];
-          compareIcon(selectEl, 'printer-shared');
+          compareIcon(selectEl, dest2Icon);
 
           // Select a destination with a standard printer icon.
           return selectOption(
               destinationSelect, `ID3/${cookieOrigin}/${account}`);
         })
         .then(() => {
-          compareIcon(selectEl, 'print');
+          const dest3Icon = cloudPrintDeprecationWarningsSuppressed ?
+              'print' :
+              'printer-not-supported';
+
+          compareIcon(selectEl, dest3Icon);
         });
   }
 
@@ -458,8 +469,24 @@ suite(destination_select_test_cros.suiteName, function() {
   });
 
   test(assert(destination_select_test_cros.TestNames.ChangeIcon), function() {
-    return testChangeIcon();
+    loadTimeData.overrideValues(
+        {cloudPrintDeprecationWarningsSuppressed: true});
+
+    // Repopulate |recentDestinationList| to have
+    // |cloudPrintDeprecationWarningsSuppressed| take effect during creation of
+    // new Destinations.
+    populateRecentDestinationList();
+    destinationSelect.recentDestinationList = recentDestinationList;
+
+    return testChangeIcon(true);
   });
+
+  test(
+      assert(
+          destination_select_test_cros.TestNames.ChangeIconDeprecationWarnings),
+      function() {
+        return testChangeIcon(false);
+      });
 
   /**
    * Tests that destinations with a EULA will display the EULA URL.

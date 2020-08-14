@@ -148,6 +148,7 @@ public class InfoBarTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "Flaky - https://crbug.com/1116247")
     /**
      * Tests that the infobar container view is removed as part of tab destruction.
      *

@@ -335,11 +335,10 @@ void ExpandArrowView::AnimationProgressed(const gfx::Animation* animation) {
   }
 
   // Update pulse radius.
-  pulse_radius_ = base::ClampRound(
-      (kPulseMaxRadius - kPulseMinRadius) *
-      gfx::Tween::CalculateValue(
-          gfx::Tween::EASE_IN_OUT,
-          time.InMillisecondsF() / kCycleDuration.InMillisecondsF()));
+  pulse_radius_ =
+      base::ClampRound((kPulseMaxRadius - kPulseMinRadius) *
+                       gfx::Tween::CalculateValue(gfx::Tween::EASE_IN_OUT,
+                                                  time / kCycleDuration));
 
   // Update y position offset of the arrow.
   constexpr auto kArrowMoveOutBeginTime =
@@ -348,16 +347,14 @@ void ExpandArrowView::AnimationProgressed(const gfx::Animation* animation) {
   constexpr auto kArrowMoveInBeginTime = base::TimeDelta::FromMilliseconds(500);
   constexpr auto kArrowMoveInEndTime = base::TimeDelta::FromMilliseconds(900);
   if (time > kArrowMoveOutBeginTime && time <= kArrowMoveOutEndTime) {
-    const double progress =
-        (time - kArrowMoveOutBeginTime).InMillisecondsF() /
-        (kArrowMoveOutEndTime - kArrowMoveOutBeginTime).InMillisecondsF();
+    const double progress = (time - kArrowMoveOutBeginTime) /
+                            (kArrowMoveOutEndTime - kArrowMoveOutBeginTime);
     arrow_y_offset_ = base::ClampRound(
         -kTotalArrowYOffset *
         gfx::Tween::CalculateValue(gfx::Tween::EASE_IN, progress));
   } else if (time > kArrowMoveInBeginTime && time <= kArrowMoveInEndTime) {
-    const double progress =
-        (time - kArrowMoveInBeginTime).InMillisecondsF() /
-        (kArrowMoveInEndTime - kArrowMoveInBeginTime).InMillisecondsF();
+    const double progress = (time - kArrowMoveInBeginTime) /
+                            (kArrowMoveInEndTime - kArrowMoveInBeginTime);
     arrow_y_offset_ = base::ClampRound(
         kTotalArrowYOffset *
         (1 - gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT, progress)));

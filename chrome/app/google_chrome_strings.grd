@@ -222,12 +222,12 @@ chromium_strings.grd. -->
           New window
         </message>
       </if>
-      <if expr="is_macosx">
+      <if expr="is_macosx or chromeos">
         <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
           Task Manager
         </message>
       </if>
-      <if expr="not is_macosx">
+      <if expr="not is_macosx and not chromeos">
         <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
           Task Manager - Google Chrome
         </message>

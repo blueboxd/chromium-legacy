@@ -628,7 +628,7 @@ bool LayerAnimationElement::Progress(base::TimeTicks now,
 
   base::TimeDelta elapsed = now - effective_start_time_;
   if ((duration_ > base::TimeDelta()) && (elapsed < duration_))
-    t = elapsed.InMillisecondsF() / duration_.InMillisecondsF();
+    t = elapsed / duration_;
   base::WeakPtr<LayerAnimationElement> alive(weak_ptr_factory_.GetWeakPtr());
   need_draw = OnProgress(gfx::Tween::CalculateValue(tween_type_, t), delegate);
   if (!alive)

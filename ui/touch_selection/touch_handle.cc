@@ -17,7 +17,7 @@ namespace ui {
 namespace {
 
 // Maximum duration of a fade sequence.
-const double kFadeDurationMs = 200;
+constexpr auto kFadeDuration = base::TimeDelta::FromMilliseconds(200);
 
 // Maximum amount of travel for a fade sequence. This avoids handle "ghosting"
 // when the handle is moving rapidly while the fade is active.
@@ -236,8 +236,7 @@ bool TouchHandle::Animate(base::TimeTicks frame_time) {
 
   DCHECK(enabled_);
 
-  float time_u =
-      1.f - (fade_end_time_ - frame_time).InMillisecondsF() / kFadeDurationMs;
+  float time_u = 1.f - (fade_end_time_ - frame_time) / kFadeDuration;
   float position_u = (focus_bottom_ - fade_start_position_).LengthSquared() /
                      kFadeDistanceSquared;
   float u = std::max(time_u, position_u);
@@ -419,9 +418,8 @@ void TouchHandle::BeginFade() {
     return;
   }
 
-  fade_end_time_ = base::TimeTicks::Now() +
-                   base::TimeDelta::FromMillisecondsD(
-                       kFadeDurationMs * std::abs(target_alpha - alpha_));
+  fade_end_time_ =
+      base::TimeTicks::Now() + kFadeDuration * std::abs(target_alpha - alpha_);
   fade_start_position_ = focus_bottom_;
   client_->SetNeedsAnimate();
 }

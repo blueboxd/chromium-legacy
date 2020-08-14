@@ -67,7 +67,8 @@ base::Optional<Scanner> CreateSaneAirscanScanner(
     const std::string& service_type,
     const std::string& rs,
     const net::IPAddress& ip_address,
-    int port) {
+    int port,
+    bool usable) {
   std::string scheme;
   ScanProtocol protocol = ScanProtocol::kUnknown;
   SetSchemeAndProtocol(service_type, scheme, protocol);
@@ -78,7 +79,8 @@ base::Optional<Scanner> CreateSaneAirscanScanner(
 
   Scanner scanner;
   scanner.display_name = name;
-  scanner.device_names[protocol].insert(ScannerDeviceName(device_name));
+  scanner.device_names[protocol].emplace(
+      ScannerDeviceName(device_name, usable));
   scanner.ip_addresses.insert(ip_address);
   return scanner;
 }

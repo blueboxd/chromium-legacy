@@ -55,6 +55,9 @@ class AppRegistryController {
   virtual void SetAppInstallTime(const AppId& app_id,
                                  const base::Time& time) = 0;
 
+  virtual void SetAppRunOnOsLoginMode(const AppId& app_id,
+                                      RunOnOsLoginMode mode) = 0;
+
   // Safe downcast:
   virtual WebAppSyncBridge* AsWebAppSyncBridge() = 0;
 

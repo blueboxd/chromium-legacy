@@ -4,7 +4,7 @@
 
 #include "ash/in_session_auth/in_session_auth_dialog_controller_impl.h"
 
-#include "ash/in_session_auth/auth_dialog_debug_view.h"
+#include "ash/in_session_auth/auth_dialog_contents_view.h"
 #include "ash/public/cpp/in_session_auth_dialog_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -25,16 +25,21 @@ void InSessionAuthDialogControllerImpl::SetClient(
   client_ = client;
 }
 
-void InSessionAuthDialogControllerImpl::ShowAuthenticationDialog() {
+void InSessionAuthDialogControllerImpl::ShowAuthenticationDialog(
+    FinishCallback finish_callback) {
   DCHECK(client_);
+  // Concurrent requests are not supported.
+  DCHECK(!dialog_);
+
+  finish_callback_ = std::move(finish_callback);
 
   AccountId account_id =
       Shell::Get()->session_controller()->GetActiveAccountId();
   // Password should always be available.
-  uint32_t auth_methods = AuthDialogDebugView::kAuthPassword;
+  uint32_t auth_methods = AuthDialogContentsView::kAuthPassword;
 
   if (client_->IsFingerprintAuthAvailable(account_id))
-    auth_methods |= AuthDialogDebugView::kAuthFingerprint;
+    auth_methods |= AuthDialogContentsView::kAuthFingerprint;
 
   client_->CheckPinAuthAvailability(
       account_id,
@@ -46,7 +51,7 @@ void InSessionAuthDialogControllerImpl::OnPinCanAuthenticate(
     uint32_t auth_methods,
     bool pin_auth_available) {
   if (pin_auth_available)
-    auth_methods |= AuthDialogDebugView::kAuthPin;
+    auth_methods |= AuthDialogContentsView::kAuthPin;
 
   dialog_ = std::make_unique<InSessionAuthDialog>(auth_methods);
 }
@@ -73,9 +78,16 @@ void InSessionAuthDialogControllerImpl::OnAuthenticateComplete(
     OnAuthenticateCallback callback,
     bool success) {
   std::move(callback).Run(success);
-  // TODO(b/156258540): send status to UserAuthenticationServiceProvider for
-  // dbus response.
+  // TODO(b/156258540): Manage retry instead of closing directly.
   DestroyAuthenticationDialog();
+  if (finish_callback_)
+    std::move(finish_callback_).Run(success);
+}
+
+void InSessionAuthDialogControllerImpl::Cancel() {
+  DestroyAuthenticationDialog();
+  if (finish_callback_)
+    std::move(finish_callback_).Run(false);
 }
 
 }  // namespace ash

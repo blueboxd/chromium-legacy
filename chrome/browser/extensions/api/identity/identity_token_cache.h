@@ -28,8 +28,10 @@ class IdentityTokenCacheValue {
       const RemoteConsentResolutionData& resolution_data);
   static IdentityTokenCacheValue CreateRemoteConsentApproved(
       const std::string& consent_result);
-  static IdentityTokenCacheValue CreateToken(const std::string& token,
-                                             base::TimeDelta time_to_live);
+  static IdentityTokenCacheValue CreateToken(
+      const std::string& token,
+      const std::set<std::string>& granted_scopes,
+      base::TimeDelta time_to_live);
 
   // Order of these entries is used to determine whether or not new
   // entries supersede older ones in SetCachedToken.
@@ -48,6 +50,7 @@ class IdentityTokenCacheValue {
   const RemoteConsentResolutionData& resolution_data() const;
   const std::string& consent_result() const;
   const std::string& token() const;
+  const std::set<std::string>& granted_scopes() const;
 
  private:
   bool is_expired() const;
@@ -61,6 +64,7 @@ class IdentityTokenCacheValue {
   RemoteConsentResolutionData resolution_data_;
   std::string consent_result_;
   std::string token_;
+  std::set<std::string> granted_scopes_;
 };
 
 // In-memory cache of OAuth2 access tokens that are requested by extensions
@@ -77,17 +81,40 @@ class IdentityTokenCache {
   IdentityTokenCache(const IdentityTokenCache& other) = delete;
   IdentityTokenCache& operator=(const IdentityTokenCache& other) = delete;
 
-  using CachedTokens = std::map<ExtensionTokenKey, IdentityTokenCacheValue>;
+  // Used to order the cached scopes based on their sizes. This allows subset
+  // matching to prioritize returning tokens with the smallest superset scope.
+  // So, if there is an exact match for the requested scopes, the corresponding
+  // cached token will be found first and returned.
+  struct ScopesSizeCompare {
+    bool operator()(const IdentityTokenCacheValue& lhs,
+                    const IdentityTokenCacheValue& rhs) const;
+  };
+
+  struct AccessTokensKey {
+    explicit AccessTokensKey(const ExtensionTokenKey& key);
+    AccessTokensKey(const std::string& extension_id,
+                    const CoreAccountId& account_id);
+    bool operator<(const AccessTokensKey& rhs) const;
+    std::string extension_id;
+    CoreAccountId account_id;
+  };
+  using AccessTokensValue =
+      std::set<IdentityTokenCacheValue, ScopesSizeCompare>;
+  using AccessTokensCache = std::map<AccessTokensKey, AccessTokensValue>;
 
   void SetToken(const ExtensionTokenKey& key,
                 const IdentityTokenCacheValue& token_data);
-  void EraseToken(const std::string& extension_id, const std::string& token);
+  void EraseAccessToken(const std::string& extension_id,
+                        const std::string& token);
   void EraseAllTokens();
   const IdentityTokenCacheValue& GetToken(const ExtensionTokenKey& key);
-  const CachedTokens& GetAllTokens();
+
+  const AccessTokensCache& access_tokens_cache();
 
  private:
-  CachedTokens token_cache_;
+  AccessTokensCache access_tokens_cache_;
+  std::map<ExtensionTokenKey, IdentityTokenCacheValue>
+      intermediate_value_cache_;
 };
 
 }  // namespace extensions

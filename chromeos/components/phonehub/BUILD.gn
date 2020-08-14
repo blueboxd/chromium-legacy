@@ -18,6 +18,8 @@ static_library("phonehub") {
     "notification_access_manager.h",
     "notification_access_manager_impl.cc",
     "notification_access_manager_impl.h",
+    "notification_access_setup_operation.cc",
+    "notification_access_setup_operation.h",
     "phone_hub_manager.cc",
     "phone_hub_manager.h",
     "pref_names.cc",

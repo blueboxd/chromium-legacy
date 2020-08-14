@@ -1023,7 +1023,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_DiscardTabsWithOccludedWindow) {
 }
 
 // On Linux, memory pressure listener is not implemented yet.
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 class TabManagerMemoryPressureTest : public TabManagerTest {
  public:
@@ -1169,7 +1169,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerMemoryPressureTest,
   EXPECT_TRUE(IsTabDiscarded(GetWebContentsAt(2)));
 }
 
-#endif  // !OS_LINUX
+#endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 }  // namespace resource_coordinator
 

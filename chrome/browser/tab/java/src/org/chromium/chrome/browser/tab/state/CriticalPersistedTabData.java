@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.WebContentsState;
 import org.chromium.chrome.browser.tab.proto.CriticalPersistedTabData.CriticalPersistedTabDataProto;
+import org.chromium.url.GURL;
 
 import java.nio.ByteBuffer;
 import java.util.Locale;
@@ -38,6 +39,11 @@ public class CriticalPersistedTabData extends PersistedTabData {
      * Title of the ContentViews webpage.
      */
     private String mTitle;
+
+    /**
+     * URL of the page currently loading. Used as a fall-back in case tab restore fails.
+     */
+    private GURL mUrl;
     private int mParentId;
     private int mRootId;
     private long mTimestampMillis;
@@ -315,6 +321,21 @@ public class CriticalPersistedTabData extends PersistedTabData {
      */
     public void setTitle(String title) {
         mTitle = title;
+    }
+
+    /**
+     * @return {@link GURL} for the {@link Tab}
+     */
+    public GURL getUrl() {
+        return mUrl;
+    }
+
+    /**
+     * Set {@link GURL} for the {@link Tab}
+     * @param url to set
+     */
+    public void setUrl(GURL url) {
+        mUrl = url;
     }
 
     /**

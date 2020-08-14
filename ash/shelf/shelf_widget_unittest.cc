@@ -7,6 +7,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -28,6 +29,7 @@
 #include "ash/wm/window_util.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -138,21 +140,33 @@ TEST_F(ShelfWidgetTest, TestAlignmentForMultipleDisplays) {
   }
 }
 
-class ShelfWidgetLayoutBasicsTest : public ShelfWidgetTest,
-                                    public testing::WithParamInterface<bool> {
+class ShelfWidgetLayoutBasicsTest
+    : public ShelfWidgetTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
-  ShelfWidgetLayoutBasicsTest() = default;
+  ShelfWidgetLayoutBasicsTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kHideShelfControlsInTabletMode, std::get<1>(GetParam()));
+  }
   ~ShelfWidgetLayoutBasicsTest() override = default;
 
   void SetUp() override {
     ShelfWidgetTest::SetUp();
 
-    if (GetParam())
-      Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(
+        std::get<0>(GetParam()));
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, ShelfWidgetLayoutBasicsTest, testing::Bool());
+// First parameter - whether test should run in tablet mode.
+// Second parameter - whether shelf navigation buttons are enabled in tablet
+// mode.
+INSTANTIATE_TEST_SUITE_P(All,
+                         ShelfWidgetLayoutBasicsTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 // Makes sure the shelf is initially sized correctly in clamshell/tablet.
 TEST_P(ShelfWidgetLayoutBasicsTest, LauncherInitiallySized) {
@@ -169,8 +183,15 @@ TEST_P(ShelfWidgetLayoutBasicsTest, LauncherInitiallySized) {
       screen_util::GetDisplayBoundsWithShelf(shelf_widget->GetNativeWindow())
           .width();
 
+  const gfx::Rect nav_widget_clip_rect =
+      shelf_widget->navigation_widget()->GetLayer()->clip_rect();
+  if (!nav_widget_clip_rect.IsEmpty())
+    EXPECT_EQ(gfx::Point(), nav_widget_clip_rect.origin());
+
   int nav_width =
-      shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
+      nav_widget_clip_rect.IsEmpty()
+          ? shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width()
+          : nav_widget_clip_rect.width();
   ASSERT_GE(nav_width, 0);
   if (nav_width) {
     nav_width -= ShelfConfig::Get()->control_button_edge_spacing(
@@ -180,6 +201,7 @@ TEST_P(ShelfWidgetLayoutBasicsTest, LauncherInitiallySized) {
   const int hotseat_width =
       shelf_widget->hotseat_widget()->GetWindowBoundsInScreen().width();
   const int margins = 2 * ShelfConfig::Get()->GetAppIconGroupMargin();
+
   EXPECT_EQ(status_width, total_width - nav_width - hotseat_width - margins);
 }
 

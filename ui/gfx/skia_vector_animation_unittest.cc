@@ -53,7 +53,7 @@ constexpr char kData[] =
     "}";
 constexpr float kAnimationWidth = 400.f;
 constexpr float kAnimationHeight = 200.f;
-constexpr float kAnimationDuration = 5.f;
+constexpr auto kAnimationDuration = base::TimeDelta::FromSeconds(5);
 
 class TestAnimationObserver : public SkiaVectorAnimationObserver {
  public:
@@ -145,9 +145,7 @@ class SkiaVectorAnimationTest : public testing::Test {
 
   const base::TickClock* test_clock() const { return &test_clock_; }
 
-  void AdvanceClock(int64_t ms) {
-    test_clock_.Advance(base::TimeDelta::FromMilliseconds(ms));
-  }
+  void AdvanceClock(base::TimeDelta advance) { test_clock_.Advance(advance); }
 
   base::TimeDelta TimeDeltaSince(const base::TimeTicks& ticks) const {
     return test_clock_.NowTicks() - ticks;
@@ -167,8 +165,8 @@ class SkiaVectorAnimationTest : public testing::Test {
     return animation_->timer_control_->previous_tick_;
   }
 
-  double GetTimerProgressPerMs() const {
-    return animation_->timer_control_->progress_per_millisecond_;
+  base::TimeDelta GetTimerTotalDuration() const {
+    return animation_->timer_control_->total_duration_;
   }
 
   int GetTimerCycles() const {
@@ -205,8 +203,7 @@ TEST_F(SkiaVectorAnimationTest, InitializationAndLoadingData) {
   animation_ = std::make_unique<SkiaVectorAnimation>(skottie_);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().width(), kAnimationWidth);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().height(), kAnimationHeight);
-  EXPECT_FLOAT_EQ(animation_->GetAnimationDuration().InSecondsF(),
-                  kAnimationDuration);
+  EXPECT_EQ(animation_->GetAnimationDuration(), kAnimationDuration);
   EXPECT_TRUE(IsStopped());
 
   skottie_ = cc::SkottieWrapper::CreateNonSerializable(
@@ -214,8 +211,7 @@ TEST_F(SkiaVectorAnimationTest, InitializationAndLoadingData) {
   animation_ = std::make_unique<SkiaVectorAnimation>(skottie_);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().width(), kAnimationWidth);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().height(), kAnimationHeight);
-  EXPECT_FLOAT_EQ(animation_->GetAnimationDuration().InSecondsF(),
-                  kAnimationDuration);
+  EXPECT_EQ(animation_->GetAnimationDuration(), kAnimationDuration);
   EXPECT_TRUE(IsStopped());
 }
 
@@ -223,8 +219,7 @@ TEST_F(SkiaVectorAnimationTest, PlayLinearAnimation) {
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
 
-  // Advance clock by 300 milliseconds.
-  AdvanceClock(300);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(300));
 
   EXPECT_TRUE(IsStopped());
   animation_->Start(SkiaVectorAnimation::Style::kLinear);
@@ -240,18 +235,22 @@ TEST_F(SkiaVectorAnimationTest, PlayLinearAnimation) {
   EXPECT_FLOAT_EQ(GetTimerStartOffset(), 0);
   EXPECT_FLOAT_EQ(GetTimerEndOffset(), 1.f);
 
-  EXPECT_FLOAT_EQ(GetTimerProgressPerMs(), 1.f / 5000.f);
+  EXPECT_EQ(GetTimerTotalDuration(), kAnimationDuration);
 
-  AdvanceClock(50);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 50);
+  constexpr auto kAdvance = base::TimeDelta::FromMilliseconds(50);
+  AdvanceClock(kAdvance);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), kAdvance);
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 50.f / 5000.f);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 0);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  kAdvance / kAnimationDuration);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), base::TimeDelta());
 
   // Advance the clock to the end of the animation.
-  AdvanceClock(4951);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 4951);
+  constexpr auto kAdvanceToEnd =
+      kAnimationDuration - kAdvance + base::TimeDelta::FromMilliseconds(1);
+  AdvanceClock(kAdvanceToEnd);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), kAdvanceToEnd);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 1.f);
   EXPECT_TRUE(HasAnimationEnded());
@@ -262,8 +261,7 @@ TEST_F(SkiaVectorAnimationTest, StopLinearAnimation) {
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
 
-  // Advance clock by 300 milliseconds.
-  AdvanceClock(300);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(300));
 
   animation_->Start(SkiaVectorAnimation::Style::kLinear);
 
@@ -271,9 +269,11 @@ TEST_F(SkiaVectorAnimationTest, StopLinearAnimation) {
   EXPECT_TRUE(IsPlaying());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0);
 
-  AdvanceClock(50);
+  constexpr auto kAdvance = base::TimeDelta::FromMilliseconds(50);
+  AdvanceClock(kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 50.f / 5000.f);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  kAdvance / kAnimationDuration);
 
   animation_->Stop();
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0.f);
@@ -281,20 +281,17 @@ TEST_F(SkiaVectorAnimationTest, StopLinearAnimation) {
 }
 
 TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfLinearAnimation) {
-  const int start_time_ms = 400;
-  const int duration_ms = 1000;
-  const float total_duration_ms = kAnimationDuration * 1000.f;
+  constexpr auto kStartTime = base::TimeDelta::FromMilliseconds(400);
+  constexpr auto kDuration = base::TimeDelta::FromMilliseconds(1000);
 
   TestAnimationObserver observer;
 
   animation_->SetAnimationObserver(&observer);
 
-  // Advance clock by 300 milliseconds.
-  AdvanceClock(300);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(300));
 
   EXPECT_FALSE(observer.animation_cycle_ended());
-  animation_->StartSubsection(base::TimeDelta::FromMilliseconds(start_time_ms),
-                              base::TimeDelta::FromMilliseconds(duration_ms),
+  animation_->StartSubsection(kStartTime, kDuration,
                               SkiaVectorAnimation::Style::kLinear);
 
   EXPECT_TRUE(IsScheduledToPlay());
@@ -308,32 +305,36 @@ TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfLinearAnimation) {
 
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), GetTimerStartOffset());
   EXPECT_FLOAT_EQ(GetTimerEndOffset(),
-                  (start_time_ms + duration_ms) / total_duration_ms);
+                  (kStartTime + kDuration) / kAnimationDuration);
 
-  EXPECT_FLOAT_EQ(GetTimerProgressPerMs(), 1.f / total_duration_ms);
+  EXPECT_EQ(GetTimerTotalDuration(), kAnimationDuration);
 
-  AdvanceClock(100);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 100);
+  constexpr auto kAdvance = base::TimeDelta::FromMilliseconds(100);
+  AdvanceClock(kAdvance);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), kAdvance);
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 0);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), base::TimeDelta());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (100.f + start_time_ms) / total_duration_ms);
+                  (kStartTime + kAdvance) / kAnimationDuration);
   EXPECT_FALSE(observer.animation_cycle_ended());
 
   // Advance clock another 300 ms.
-  AdvanceClock(300);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 300);
+  constexpr auto kAdvance2 = base::TimeDelta::FromMilliseconds(300);
+  AdvanceClock(kAdvance2);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), kAdvance2);
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 0);
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (100.f + 300.f + start_time_ms) / total_duration_ms);
+                  (kStartTime + kAdvance + kAdvance2) / kAnimationDuration);
   EXPECT_FALSE(observer.animation_cycle_ended());
 
   // Reach the end of animation.
-  AdvanceClock(601);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 601);
+  constexpr auto kAdvanceToEnd =
+      kDuration - kAdvance - kAdvance2 + base::TimeDelta::FromMilliseconds(1);
+  AdvanceClock(kAdvanceToEnd);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), kAdvanceToEnd);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), GetTimerEndOffset());
   EXPECT_TRUE(observer.animation_cycle_ended());
@@ -341,33 +342,35 @@ TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfLinearAnimation) {
 }
 
 TEST_F(SkiaVectorAnimationTest, PausingLinearAnimation) {
-  const int start_time_ms = 400;
-  const int duration_ms = 1000;
-  const float total_duration_ms = kAnimationDuration * 1000.f;
+  constexpr auto kStartTime = base::TimeDelta::FromMilliseconds(400);
+  constexpr auto kDuration = base::TimeDelta::FromMilliseconds(1000);
+
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
 
-  AdvanceClock(200);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(200));
 
-  animation_->StartSubsection(base::TimeDelta::FromMilliseconds(start_time_ms),
-                              base::TimeDelta::FromMilliseconds(duration_ms),
+  animation_->StartSubsection(kStartTime, kDuration,
                               SkiaVectorAnimation::Style::kLinear);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
 
-  AdvanceClock(100);
+  constexpr auto kAdvance = base::TimeDelta::FromMilliseconds(100);
+  AdvanceClock(kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
 
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 500.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  (kStartTime + kAdvance) / kAnimationDuration);
 
-  AdvanceClock(100);
+  AdvanceClock(kAdvance);
   animation_->Pause();
   EXPECT_TRUE(IsPaused());
 
   // Advancing clock and stepping animation should have no effect when animation
   // is paused.
-  AdvanceClock(5000);
+  AdvanceClock(kAnimationDuration);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 500.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  (kStartTime + kAdvance) / kAnimationDuration);
 
   // Resume playing the animation.
   animation_->ResumePlaying();
@@ -376,13 +379,15 @@ TEST_F(SkiaVectorAnimationTest, PausingLinearAnimation) {
   // There should be no progress, since we haven't advanced the clock yet.
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_TRUE(IsPlaying());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 500.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  (kStartTime + kAdvance) / kAnimationDuration);
 
-  AdvanceClock(100);
+  AdvanceClock(kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 600.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  (kStartTime + kAdvance * 2) / kAnimationDuration);
 
-  AdvanceClock(801);
+  AdvanceClock(kDuration - kAdvance * 2 + base::TimeDelta::FromMilliseconds(1));
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
 }
 
@@ -390,8 +395,7 @@ TEST_F(SkiaVectorAnimationTest, PlayLoopAnimation) {
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
 
-  // Advance clock by 300 milliseconds.
-  AdvanceClock(300);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(300));
 
   EXPECT_TRUE(IsStopped());
   animation_->Start(SkiaVectorAnimation::Style::kLoop);
@@ -408,18 +412,21 @@ TEST_F(SkiaVectorAnimationTest, PlayLoopAnimation) {
   EXPECT_FLOAT_EQ(GetTimerStartOffset(), 0);
   EXPECT_FLOAT_EQ(GetTimerEndOffset(), 1.f);
 
-  EXPECT_FLOAT_EQ(GetTimerProgressPerMs(), 1.f / 5000.f);
+  EXPECT_EQ(GetTimerTotalDuration(), kAnimationDuration);
 
-  AdvanceClock(50);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 50);
+  constexpr auto kAdvance = base::TimeDelta::FromMilliseconds(50);
+  AdvanceClock(kAdvance);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), kAdvance);
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 50.f / 5000.f);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 0);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  kAdvance / kAnimationDuration);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), base::TimeDelta());
 
   // Advance the clock to the end of the animation.
-  AdvanceClock(4950);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 4950);
+  AdvanceClock(kAnimationDuration - kAdvance);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()),
+            kAnimationDuration - kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_EQ(GetTimerCycles(), 1);
   EXPECT_TRUE(std::abs(animation_->GetCurrentProgress() - 0.f) < 0.0001f);
@@ -428,19 +435,16 @@ TEST_F(SkiaVectorAnimationTest, PlayLoopAnimation) {
 }
 
 TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfLoopAnimation) {
-  const int start_time_ms = 400;
-  const int duration_ms = 1000;
-  const float total_duration_ms = kAnimationDuration * 1000.f;
-
+  constexpr auto kStartTime = base::TimeDelta::FromMilliseconds(400);
+  constexpr auto kDuration = base::TimeDelta::FromMilliseconds(1000);
 
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
 
-  // Advance clock by 300 milliseconds.
-  AdvanceClock(300);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(300));
+
   EXPECT_TRUE(IsStopped());
-  animation_->StartSubsection(base::TimeDelta::FromMilliseconds(start_time_ms),
-                              base::TimeDelta::FromMilliseconds(duration_ms),
+  animation_->StartSubsection(kStartTime, kDuration,
                               SkiaVectorAnimation::Style::kLoop);
   EXPECT_TRUE(IsScheduledToPlay());
   EXPECT_FALSE(observer.animation_will_start_playing());
@@ -452,35 +456,37 @@ TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfLoopAnimation) {
   EXPECT_TRUE(observer.animation_will_start_playing());
 
   EXPECT_FALSE(observer.animation_cycle_ended());
-  EXPECT_FLOAT_EQ(GetTimerStartOffset(), 400.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(GetTimerStartOffset(), kStartTime / kAnimationDuration);
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), GetTimerStartOffset());
   EXPECT_FLOAT_EQ(GetTimerEndOffset(),
-                  (start_time_ms + duration_ms) / total_duration_ms);
+                  (kStartTime + kDuration) / kAnimationDuration);
 
-  EXPECT_FLOAT_EQ(GetTimerProgressPerMs(), 1.f / total_duration_ms);
+  EXPECT_EQ(GetTimerTotalDuration(), kAnimationDuration);
 
-  AdvanceClock(100);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 100);
+  constexpr auto kAdvance = base::TimeDelta::FromMilliseconds(100);
+  AdvanceClock(kAdvance);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), kAdvance);
   EXPECT_FALSE(observer.animation_cycle_ended());
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 0);
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (100.f + start_time_ms) / total_duration_ms);
+                  (kStartTime + kAdvance) / kAnimationDuration);
 
-  // Advance clock another 300 ms.
-  AdvanceClock(300);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 300);
+  constexpr auto kAdvance2 = base::TimeDelta::FromMilliseconds(300);
+  AdvanceClock(kAdvance2);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), kAdvance2);
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 0);
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (100.f + 300.f + start_time_ms) / total_duration_ms);
+                  (kStartTime + kAdvance + kAdvance2) / kAnimationDuration);
   EXPECT_FALSE(observer.animation_cycle_ended());
 
   // Reach the end of animation.
-  AdvanceClock(600);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 600);
+  AdvanceClock(kDuration - kAdvance - kAdvance2);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()),
+            kDuration - kAdvance - kAdvance2);
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_TRUE(observer.animation_cycle_ended());
@@ -489,36 +495,38 @@ TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfLoopAnimation) {
 }
 
 TEST_F(SkiaVectorAnimationTest, PausingLoopAnimation) {
-  const int start_time_ms = 400;
-  const int duration_ms = 1000;
-  const float total_duration_ms = kAnimationDuration * 1000.f;
+  constexpr auto kStartTime = base::TimeDelta::FromMilliseconds(400);
+  constexpr auto kDuration = base::TimeDelta::FromMilliseconds(1000);
 
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
 
-  AdvanceClock(200);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(200));
 
-  animation_->StartSubsection(base::TimeDelta::FromMilliseconds(start_time_ms),
-                              base::TimeDelta::FromMilliseconds(duration_ms),
+  animation_->StartSubsection(kStartTime, kDuration,
                               SkiaVectorAnimation::Style::kLoop);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
 
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 400.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  kStartTime / kAnimationDuration);
 
-  AdvanceClock(100);
+  constexpr auto kAdvance = base::TimeDelta::FromMilliseconds(100);
+  AdvanceClock(kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
 
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 500.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  (kStartTime + kAdvance) / kAnimationDuration);
 
-  AdvanceClock(100);
+  AdvanceClock(kAdvance);
   animation_->Pause();
   EXPECT_TRUE(IsPaused());
 
   // Advancing clock and stepping animation should have no effect when animation
   // is paused.
-  AdvanceClock(5000);
+  AdvanceClock(kAnimationDuration);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 500.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  (kStartTime + kAdvance) / kAnimationDuration);
 
   // Resume playing the animation.
   animation_->ResumePlaying();
@@ -527,14 +535,16 @@ TEST_F(SkiaVectorAnimationTest, PausingLoopAnimation) {
   // There should be no progress, since we haven't advanced the clock yet.
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_TRUE(IsPlaying());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 500.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  (kStartTime + kAdvance) / kAnimationDuration);
 
-  AdvanceClock(100);
+  AdvanceClock(kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 600.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  (kStartTime + kAdvance * 2) / kAnimationDuration);
   EXPECT_FALSE(observer.animation_cycle_ended());
 
-  AdvanceClock(800);
+  AdvanceClock(kDuration - kAdvance * 2);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), GetTimerStartOffset());
   EXPECT_TRUE(IsPlaying());
@@ -545,8 +555,8 @@ TEST_F(SkiaVectorAnimationTest, PlayThrobbingAnimation) {
 
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
-  // Advance clock by 300 milliseconds.
-  AdvanceClock(300);
+
+  AdvanceClock(base::TimeDelta::FromMilliseconds(300));
 
   animation_->Start(SkiaVectorAnimation::Style::kThrobbing);
   EXPECT_TRUE(IsScheduledToPlay());
@@ -562,30 +572,33 @@ TEST_F(SkiaVectorAnimationTest, PlayThrobbingAnimation) {
   EXPECT_FLOAT_EQ(GetTimerStartOffset(), 0);
   EXPECT_FLOAT_EQ(GetTimerEndOffset(), 1.f);
 
-  EXPECT_FLOAT_EQ(GetTimerProgressPerMs(), 1.f / 5000.f);
+  EXPECT_EQ(GetTimerTotalDuration(), kAnimationDuration);
 
-  AdvanceClock(50);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 50);
+  constexpr auto kAdvance = base::TimeDelta::FromMilliseconds(50);
+  AdvanceClock(kAdvance);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), kAdvance);
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 50.f / 5000.f);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 0);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  kAdvance / kAnimationDuration);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), base::TimeDelta());
 
   // Advance the clock to the end of the animation.
-  AdvanceClock(4950);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 4950);
+  AdvanceClock(kAnimationDuration - kAdvance);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()),
+            kAnimationDuration - kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 1.f);
   EXPECT_TRUE(IsPlaying());
   EXPECT_FALSE(observer.animation_cycle_ended());
 
-  AdvanceClock(2500);
+  AdvanceClock(kAnimationDuration / 2);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0.5f);
   EXPECT_TRUE(IsPlaying());
   EXPECT_FALSE(observer.animation_cycle_ended());
 
-  AdvanceClock(2500);
+  AdvanceClock(kAnimationDuration / 2);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0);
   EXPECT_TRUE(IsPlaying());
@@ -593,19 +606,15 @@ TEST_F(SkiaVectorAnimationTest, PlayThrobbingAnimation) {
 }
 
 TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfThrobbingAnimation) {
-  const int start_time_ms = 400;
-  const int duration_ms = 1000;
-  const float total_duration_ms = kAnimationDuration * 1000.f;
-
+  constexpr auto kStartTime = base::TimeDelta::FromMilliseconds(400);
+  constexpr auto kDuration = base::TimeDelta::FromMilliseconds(1000);
 
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
 
-  // Advance clock by 300 milliseconds.
-  AdvanceClock(300);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(300));
 
-  animation_->StartSubsection(base::TimeDelta::FromMilliseconds(start_time_ms),
-                              base::TimeDelta::FromMilliseconds(duration_ms),
+  animation_->StartSubsection(kStartTime, kDuration,
                               SkiaVectorAnimation::Style::kThrobbing);
   EXPECT_TRUE(IsScheduledToPlay());
   EXPECT_FALSE(observer.animation_will_start_playing());
@@ -616,48 +625,52 @@ TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfThrobbingAnimation) {
   EXPECT_TRUE(IsPlaying());
   EXPECT_TRUE(observer.animation_will_start_playing());
 
-  EXPECT_FLOAT_EQ(GetTimerStartOffset(), 400.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(GetTimerStartOffset(), kStartTime / kAnimationDuration);
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), GetTimerStartOffset());
   EXPECT_FLOAT_EQ(GetTimerEndOffset(),
-                  (start_time_ms + duration_ms) / total_duration_ms);
+                  (kStartTime + kDuration) / kAnimationDuration);
 
-  EXPECT_FLOAT_EQ(GetTimerProgressPerMs(), 1.f / total_duration_ms);
+  EXPECT_EQ(GetTimerTotalDuration(), kAnimationDuration);
 
-  AdvanceClock(100);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 100);
-
-  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FALSE(observer.animation_cycle_ended());
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 0);
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (100.f + start_time_ms) / total_duration_ms);
-
-  // Advance clock another 300 ms.
-  AdvanceClock(300);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 300);
+  constexpr auto kAdvance = base::TimeDelta::FromMilliseconds(100);
+  AdvanceClock(kAdvance);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), kAdvance);
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FALSE(observer.animation_cycle_ended());
   EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 0);
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (100.f + 300.f + start_time_ms) / total_duration_ms);
+                  (kStartTime + kAdvance) / kAnimationDuration);
+
+  constexpr auto kAdvance2 = base::TimeDelta::FromMilliseconds(300);
+  AdvanceClock(kAdvance2);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), kAdvance2);
+
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+  EXPECT_FALSE(observer.animation_cycle_ended());
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), base::TimeDelta());
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  (kStartTime + kAdvance + kAdvance2) / kAnimationDuration);
 
   // Reach the end of animation.
-  AdvanceClock(600);
-  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()).InMilliseconds(), 600);
+  AdvanceClock(kDuration - kAdvance - kAdvance2);
+  EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()),
+            kDuration - kAdvance - kAdvance2);
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_TRUE(IsPlaying());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), GetTimerEndOffset());
   EXPECT_FALSE(observer.animation_cycle_ended());
 
-  AdvanceClock(500);
+  constexpr auto kAdvance3 = base::TimeDelta::FromMilliseconds(500);
+  AdvanceClock(kAdvance3);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 900.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  (kStartTime + kDuration - kAdvance3) / kAnimationDuration);
   EXPECT_TRUE(IsPlaying());
   EXPECT_FALSE(observer.animation_cycle_ended());
 
-  AdvanceClock(500);
+  AdvanceClock(kDuration - kAdvance3);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), GetTimerStartOffset());
   EXPECT_TRUE(IsPlaying());
@@ -665,46 +678,45 @@ TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfThrobbingAnimation) {
 
   observer.Reset();
 
-  AdvanceClock(100);
+  AdvanceClock(kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (start_time_ms + 100.f) / total_duration_ms);
+                  (kStartTime + kAdvance) / kAnimationDuration);
   EXPECT_TRUE(IsPlaying());
 }
 
 TEST_F(SkiaVectorAnimationTest, PausingThrobbingAnimation) {
-  const int start_time_ms = 400;
-  const int duration_ms = 1000;
-  const float total_duration_ms = kAnimationDuration * 1000.f;
+  constexpr auto kStartTime = base::TimeDelta::FromMilliseconds(400);
+  constexpr auto kDuration = base::TimeDelta::FromMilliseconds(1000);
 
-  AdvanceClock(200);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(200));
 
-  animation_->StartSubsection(base::TimeDelta::FromMilliseconds(start_time_ms),
-                              base::TimeDelta::FromMilliseconds(duration_ms),
+  animation_->StartSubsection(kStartTime, kDuration,
                               SkiaVectorAnimation::Style::kThrobbing);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
 
   EXPECT_TRUE(IsPlaying());
 
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  start_time_ms / total_duration_ms);
+                  kStartTime / kAnimationDuration);
 
-  AdvanceClock(100);
+  constexpr auto kAdvance = base::TimeDelta::FromMilliseconds(100);
+  AdvanceClock(kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
 
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (start_time_ms + 100.f) / total_duration_ms);
+                  (kStartTime + kAdvance) / kAnimationDuration);
 
-  AdvanceClock(100);
+  AdvanceClock(kAdvance);
   animation_->Pause();
   EXPECT_TRUE(IsPaused());
 
   // Advancing clock and stepping animation should have no effect when animation
   // is paused.
-  AdvanceClock(5000);
+  AdvanceClock(kAnimationDuration);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (start_time_ms + 100.f) / total_duration_ms);
+                  (kStartTime + kAdvance) / kAnimationDuration);
 
   // Resume playing the animation.
   animation_->ResumePlaying();
@@ -714,31 +726,31 @@ TEST_F(SkiaVectorAnimationTest, PausingThrobbingAnimation) {
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_TRUE(IsPlaying());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (start_time_ms + 100.f) / total_duration_ms);
+                  (kStartTime + kAdvance) / kAnimationDuration);
 
-  AdvanceClock(100);
+  AdvanceClock(kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (start_time_ms + 200.f) / total_duration_ms);
+                  (kStartTime + kAdvance * 2) / kAnimationDuration);
 
-  AdvanceClock(800);
+  AdvanceClock(kDuration - kAdvance * 2);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), GetTimerEndOffset());
   EXPECT_TRUE(IsPlaying());
 
-  AdvanceClock(100);
+  AdvanceClock(kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (start_time_ms + 900.f) / total_duration_ms);
+                  (kStartTime + kDuration - kAdvance) / kAnimationDuration);
   EXPECT_TRUE(IsPlaying());
 
   animation_->Pause();
   EXPECT_TRUE(IsPaused());
 
-  AdvanceClock(10000);
+  AdvanceClock(kAnimationDuration * 2);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (start_time_ms + 900.f) / total_duration_ms);
+                  (kStartTime + kDuration - kAdvance) / kAnimationDuration);
 
   // Resume playing the animation.
   animation_->ResumePlaying();
@@ -747,32 +759,32 @@ TEST_F(SkiaVectorAnimationTest, PausingThrobbingAnimation) {
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_TRUE(IsPlaying());
 
-  AdvanceClock(500);
+  constexpr auto kAdvance2 = base::TimeDelta::FromMilliseconds(500);
+  AdvanceClock(kAdvance2);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (start_time_ms + 400.f) / total_duration_ms);
+  EXPECT_FLOAT_EQ(
+      animation_->GetCurrentProgress(),
+      (kStartTime + kDuration - kAdvance - kAdvance2) / kAnimationDuration);
 
-  AdvanceClock(400);
+  AdvanceClock(kDuration - kAdvance - kAdvance2);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), GetTimerStartOffset());
 
-  AdvanceClock(100);
+  AdvanceClock(kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
-                  (start_time_ms + 100.f) / total_duration_ms);
+                  (kStartTime + kAdvance) / kAnimationDuration);
   EXPECT_TRUE(IsPlaying());
 }
 
 TEST_F(SkiaVectorAnimationTest, PauseBeforePlay) {
-  const float total_duration_ms = kAnimationDuration * 1000.f;
-
   // Test to see if the race condition is handled correctly. It may happen that
   // we pause the video before it even starts playing.
 
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
 
-  AdvanceClock(300);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(300));
 
   animation_->Start();
   EXPECT_TRUE(IsScheduledToPlay());
@@ -780,52 +792,53 @@ TEST_F(SkiaVectorAnimationTest, PauseBeforePlay) {
   animation_->Pause();
   EXPECT_TRUE(IsPaused());
 
-  AdvanceClock(100);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(100));
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
 
   animation_->ResumePlaying();
   EXPECT_TRUE(IsScheduledToResume());
 
-  AdvanceClock(100);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(100));
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   EXPECT_TRUE(IsPlaying());
 
-  AdvanceClock(100);
+  constexpr auto kAdvance = base::TimeDelta::FromMilliseconds(100);
+  AdvanceClock(kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 100.f / total_duration_ms);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  kAdvance / kAnimationDuration);
 }
 
 TEST_F(SkiaVectorAnimationTest, PaintTest) {
   std::unique_ptr<gfx::Canvas> canvas(new gfx::Canvas(
       gfx::Size(kAnimationWidth, kAnimationHeight), 1.f, false));
 
-  // Advance clock by 300 milliseconds.
-  AdvanceClock(300);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(300));
 
   animation_->Start(SkiaVectorAnimation::Style::kLinear);
   animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
 
-  AdvanceClock(50);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(50));
   animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
   SkBitmap bitmap = canvas->GetBitmap();
   IsAllSameColor(SK_ColorGREEN, bitmap);
 
-  AdvanceClock(2450);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(2450));
   animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
   bitmap = canvas->GetBitmap();
   IsAllSameColor(SK_ColorGREEN, bitmap);
 
-  AdvanceClock(50);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(50));
   animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
   bitmap = canvas->GetBitmap();
   IsAllSameColor(SK_ColorBLUE, bitmap);
 
-  AdvanceClock(1000);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(1000));
   animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
   bitmap = canvas->GetBitmap();
   IsAllSameColor(SK_ColorBLUE, bitmap);
 
-  AdvanceClock(1400);
+  AdvanceClock(base::TimeDelta::FromMilliseconds(1400));
   animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
   bitmap = canvas->GetBitmap();
   IsAllSameColor(SK_ColorBLUE, bitmap);

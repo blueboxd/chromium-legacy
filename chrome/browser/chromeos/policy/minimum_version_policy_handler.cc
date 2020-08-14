@@ -82,8 +82,7 @@ BuildState* GetBuildState() {
 }
 
 int GetDaysRounded(base::TimeDelta time) {
-  return base::ClampRound(time.InSecondsF() /
-                          base::TimeDelta::FromDays(1).InSecondsF());
+  return base::ClampRound(time / base::TimeDelta::FromDays(1));
 }
 
 chromeos::UpdateEngineClient* GetUpdateEngineClient() {

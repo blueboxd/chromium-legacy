@@ -122,6 +122,8 @@ struct SystemAppInfo {
 };
 
 // Installs, uninstalls, and updates System Web Apps.
+// System Web Apps are built-in, highly-privileged Web Apps for Chrome OS. They
+// have access to more APIs and are part of the Chrome OS image.
 class SystemWebAppManager {
  public:
   // Policy for when the SystemWebAppManager will update apps/install new apps.

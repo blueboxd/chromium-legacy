@@ -310,6 +310,8 @@ class CORE_EXPORT HTMLCanvasElement final
   // returned.
   RespectImageOrientationEnum RespectImageOrientation() const;
 
+  bool IsCanvasClear() { return canvas_is_clear_; }
+
  protected:
   void DidMoveToNewDocument(Document& old_document) override;
 

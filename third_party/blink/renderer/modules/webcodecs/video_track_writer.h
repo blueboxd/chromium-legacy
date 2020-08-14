@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -15,11 +15,9 @@ class ScriptState;
 class WritableStream;
 class VideoTrackWriterParameters;
 
-class MODULES_EXPORT VideoTrackWriter final : public ScriptWrappable {
-  DEFINE_WRAPPERTYPEINFO();
-
+class MODULES_EXPORT VideoTrackWriter final
+    : public GarbageCollected<VideoTrackWriter> {
  public:
-  // video_track_writer.idl implementation
   static VideoTrackWriter* Create(ScriptState* script_state,
                                   const VideoTrackWriterParameters* params,
                                   ExceptionState& exception_state);
@@ -28,7 +26,7 @@ class MODULES_EXPORT VideoTrackWriter final : public ScriptWrappable {
   WritableStream* writable();
 
   // GarbageCollected override
-  void Trace(Visitor* visitor) const override;
+  virtual void Trace(Visitor* visitor) const;
 
  private:
   Member<MediaStreamTrack> track_;

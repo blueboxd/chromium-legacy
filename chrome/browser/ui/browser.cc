@@ -1491,20 +1491,6 @@ std::unique_ptr<content::WebContents> Browser::ActivatePortalWebContents(
   return SwapWebContents(predecessor_contents, std::move(portal_contents));
 }
 
-void Browser::UpdateInspectedWebContentsIfNecessary(
-    content::WebContents* old_contents,
-    content::WebContents* new_contents,
-    base::OnceCallback<void()> callback) {
-  DevToolsWindow* dev_tools_window =
-      DevToolsWindow::GetInstanceForInspectedWebContents(old_contents);
-  if (dev_tools_window) {
-    dev_tools_window->UpdateInspectedWebContents(new_contents,
-                                                 std::move(callback));
-  } else {
-    std::move(callback).Run();
-  }
-}
-
 std::unique_ptr<content::WebContents> Browser::SwapWebContents(
     content::WebContents* old_contents,
     std::unique_ptr<content::WebContents> new_contents) {
@@ -1519,6 +1505,11 @@ std::unique_ptr<content::WebContents> Browser::SwapWebContents(
     if (old_view && new_view)
       new_view->TakeFallbackContentFrom(old_view);
   }
+
+  DevToolsWindow* dev_tools_window =
+      DevToolsWindow::GetInstanceForInspectedWebContents(old_contents);
+  if (dev_tools_window)
+    dev_tools_window->UpdateInspectedWebContents(new_contents.get());
 
   // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
   // directly about tab contents swaps.

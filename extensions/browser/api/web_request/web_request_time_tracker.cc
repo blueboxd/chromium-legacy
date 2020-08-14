@@ -6,12 +6,6 @@
 
 #include "base/metrics/histogram_macros.h"
 
-namespace {
-// If a request completes faster than this amount (in ms), then we ignore it.
-// Any delays on such a request was negligible.
-const int kMinRequestTimeToCareMs = 10;
-}  // namespace
-
 ExtensionWebRequestTimeTracker::RequestTimeLog::RequestTimeLog() = default;
 ExtensionWebRequestTimeTracker::RequestTimeLog::~RequestTimeLog() = default;
 
@@ -69,7 +63,8 @@ void ExtensionWebRequestTimeTracker::AnalyzeLogRequest(
 
   // Ignore really short requests. Time spent on these is negligible, and any
   // extra delay the extension adds is likely to be noise.
-  if (request_duration.InMilliseconds() >= kMinRequestTimeToCareMs) {
+  constexpr auto kMinRequestTimeToCare = base::TimeDelta::FromMilliseconds(10);
+  if (request_duration >= kMinRequestTimeToCare) {
     double percentage = log.block_duration.InMillisecondsF() /
                         request_duration.InMillisecondsF();
     UMA_HISTOGRAM_PERCENTAGE("Extensions.NetworkDelayPercentage",

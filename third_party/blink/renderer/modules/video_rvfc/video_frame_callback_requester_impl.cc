@@ -212,8 +212,8 @@ void VideoFrameCallbackRequesterImpl::OnRenderingSteps(double high_res_now_ms) {
 // static
 double VideoFrameCallbackRequesterImpl::GetClampedTimeInMillis(
     base::TimeDelta time) {
-  constexpr double kSecondsToMillis = 1000.0;
-  return Performance::ClampTimeResolution(time.InSecondsF()) * kSecondsToMillis;
+  return Performance::ClampTimeResolution(time.InSecondsF()) *
+         base::Time::kMillisecondsPerSecond;
 }
 
 // static

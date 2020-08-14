@@ -177,6 +177,7 @@ source_set("application_delegate_internal") {
     "//ios/chrome/app/startup",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/device_sharing",
     "//ios/chrome/browser/feature_engagement",

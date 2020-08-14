@@ -109,7 +109,8 @@ IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_ClickAndDoubleClick) {
   WaitForTitle("ondblclick");
 }
 
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_WIN)
 // OS_MAC: Missing automation provider support: http://crbug.com/45892.
 // OS_LINUX, OS_WIN: http://crbug.com/133361.
 #define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
@@ -165,7 +166,8 @@ IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_ContextMenu) {
   EXPECT_EQ(success_title, done_title_watcher.WaitAndGetTitle());
 }
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 // Test that a mouseleave is not triggered when showing a modal dialog.
 // Sample regression: crbug.com/394672
 // TODO: Make test pass on OS_WIN and OS_MAC

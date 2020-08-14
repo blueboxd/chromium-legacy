@@ -1807,18 +1807,18 @@ void AccessibilityControllerImpl::
 void AccessibilityControllerImpl::SwitchAccessDisableDialogClosed(
     bool disable_dialog_accepted) {
   switch_access_disable_dialog_showing_ = false;
+  // Always deactivate switch access. Turning switch access off ensures it is
+  // re-activated correctly.
+  // The pref was already disabled, but we left switch access on so the user
+  // could interact with the dialog.
+  DeactivateSwitchAccess();
   if (disable_dialog_accepted) {
-    // The pref was already disabled, but we left switch access on until they
-    // accepted the dialog.
-    if (client_)
-      client_->OnSwitchAccessDisabled();
-    switch_access_bubble_controller_.reset();
-    switch_access_event_handler_.reset();
     NotifyAccessibilityStatusChanged();
   } else {
-    // Reset the preference (which was already set to false) to match the
-    // behavior of keeping Switch Access enabled.
-    switch_access().SetEnabled(true);
+    // Reset the preference (which was already set to false). Doing so turns
+    // switch access back on.
+    skip_switch_access_notification_ = true;
+    SetSwitchAccessEnabled(true);
   }
 }
 
@@ -1844,6 +1844,27 @@ void AccessibilityControllerImpl::MaybeCreateSwitchAccessEventHandler() {
   UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand::kSelect);
   UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand::kNext);
   UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand::kPrevious);
+}
+
+void AccessibilityControllerImpl::ActivateSwitchAccess() {
+  switch_access_bubble_controller_ =
+      std::make_unique<SwitchAccessMenuBubbleController>();
+  MaybeCreateSwitchAccessEventHandler();
+  if (::switches::IsSwitchAccessPointScanningEnabled())
+    StartPointScanning();
+  if (skip_switch_access_notification_) {
+    skip_switch_access_notification_ = false;
+    return;
+  }
+
+  ShowAccessibilityNotification(A11yNotificationType::kSwitchAccessEnabled);
+}
+
+void AccessibilityControllerImpl::DeactivateSwitchAccess() {
+  if (client_)
+    client_->OnSwitchAccessDisabled();
+  switch_access_bubble_controller_.reset();
+  switch_access_event_handler_.reset();
 }
 
 void AccessibilityControllerImpl::UpdateShortcutsEnabledFromPref() {
@@ -1988,16 +2009,7 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
         // user accepts the dialog.
         return;
       } else {
-        switch_access_bubble_controller_ =
-            std::make_unique<SwitchAccessMenuBubbleController>();
-        MaybeCreateSwitchAccessEventHandler();
-
-        if (::switches::IsSwitchAccessPointScanningEnabled()) {
-          StartPointScanning();
-        }
-
-        ShowAccessibilityNotification(
-            A11yNotificationType::kSwitchAccessEnabled);
+        ActivateSwitchAccess();
       }
       break;
     case FeatureType::kVirtualKeyboard:

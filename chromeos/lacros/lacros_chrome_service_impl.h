@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chromeos/crosapi/mojom/attestation.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -64,6 +65,12 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
   void BindReceiver(
       mojo::PendingReceiver<crosapi::mojom::LacrosChromeService> receiver);
 
+  // This must be called on the affine sequence.
+  mojo::Remote<crosapi::mojom::MessageCenter>& message_center_remote() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
+    return message_center_remote_;
+  }
+
   // This must be called on the affine sequence. It exposes a remote that can
   // be used to show a select-file dialog.
   mojo::Remote<crosapi::mojom::SelectFile>& select_file_remote() {
@@ -97,6 +104,7 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
   // This member allows lacros-chrome to use the SelectFile interface. This
   // member is affine to the affine sequence. It is initialized in the
   // constructor and it is immediately available for use.
+  mojo::Remote<crosapi::mojom::MessageCenter> message_center_remote_;
   mojo::Remote<crosapi::mojom::SelectFile> select_file_remote_;
 
   // This member allows lacros-chrome to use the Attestation interface. This

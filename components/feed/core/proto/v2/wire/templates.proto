@@ -8,17 +8,11 @@ package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 
-// Templates provide a way to separate formatting from content.
-// Deprecated: use RenderData instead.
-message Templates {
-  option deprecated = true;
-
-  // Enum denoting which extension contains template data.
-  enum TemplateType {
-    UNKNOWN_TEMPLATE_TYPE = 0;
-    XSURFACE = 1;
-  }
-  optional TemplateType template_type = 1;
-
-  extensions 264680549;  // XSurfaceTemplates
-}
+// UNUSED_IN_CHROME message Templates {
+// UNUSED_IN_CHROME   enum TemplateType {
+// UNUSED_IN_CHROME     UNKNOWN_TEMPLATE_TYPE = 0;
+// UNUSED_IN_CHROME     XSURFACE = 1;
+// UNUSED_IN_CHROME   }
+// UNUSED_IN_CHROME   optional TemplateType template_type = 1;
+// UNUSED_IN_CHROME   extensions 264680549;  // XSurfaceTemplates
+// UNUSED_IN_CHROME }

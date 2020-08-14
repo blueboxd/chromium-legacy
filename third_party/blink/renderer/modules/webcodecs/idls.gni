@@ -13,7 +13,6 @@ modules_idl_files = [
   "video_encoder.idl",
   "video_frame.idl",
   "video_track_reader.idl",
-  "video_track_writer.idl",
 ]
 
 modules_callback_function_idl_files = [

@@ -14,12 +14,16 @@ namespace switches {
 
 extern const char kTFLiteModelPath[];
 extern const char kTFLiteExperimentLogPath[];
+extern const char kTFLitePredictorNumThreads[];
 
 // Returns TFLite model path.
 base::Optional<std::string> GetTFLiteModelPath();
 
 // Returns TFLite experiment log file path.
 base::Optional<std::string> GetTFLiteExperimentLogPath();
+
+// Returns TFLite predictor number of threads.
+int32_t GetTFLitePredictorNumThreads();
 
 }  // namespace switches
 }  // namespace tflite_experiment

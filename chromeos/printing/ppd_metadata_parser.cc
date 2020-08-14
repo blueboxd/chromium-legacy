@@ -255,6 +255,34 @@ base::Optional<ParsedIndex> ParseForwardIndex(
   return parsed_index;
 }
 
+base::Optional<ParsedUsbIndex> ParseUsbIndex(base::StringPiece usb_index_json) {
+  base::Optional<base::Value> usb_index = ParseJsonAndUnnestKey(
+      usb_index_json, "usbIndex", base::Value::Type::DICTIONARY);
+  if (!usb_index || usb_index->DictSize() == 0) {
+    return base::nullopt;
+  }
+
+  ParsedUsbIndex parsed_usb_index;
+  for (const auto& kv : usb_index->DictItems()) {
+    int product_id;
+    if (!base::StringToInt(kv.first, &product_id)) {
+      continue;
+    }
+
+    const std::string* effective_make_and_model =
+        kv.second.FindStringKey("effectiveMakeAndModel");
+    if (!effective_make_and_model || effective_make_and_model->empty()) {
+      continue;
+    }
+
+    parsed_usb_index.insert_or_assign(product_id, *effective_make_and_model);
+  }
+  if (parsed_usb_index.empty()) {
+    return base::nullopt;
+  }
+  return parsed_usb_index;
+}
+
 base::Optional<ParsedPrinters> ParsePrinters(base::StringPiece printers_json) {
   const auto as_value =
       ParseJsonAndUnnestKey(printers_json, "printers", base::Value::Type::LIST);

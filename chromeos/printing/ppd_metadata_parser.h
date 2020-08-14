@@ -80,6 +80,9 @@ using ParsedPrinters = std::vector<ParsedPrinter>;
 // *  Googlers, see also: go/cros-printing:ppd-metadata#index
 using ParsedIndex = base::flat_map<std::string, ParsedIndexValues>;
 
+// Maps USB product IDs to effective-make-and-model strings.
+using ParsedUsbIndex = base::flat_map<int, std::string>;
+
 // Keyed on effective-make-and-model strings.
 using ParsedReverseIndex = base::flat_map<std::string, ReverseIndexLeaf>;
 
@@ -98,6 +101,11 @@ CHROMEOS_EXPORT base::Optional<ParsedPrinters> ParsePrinters(
 // Parses |forward_index_json| and returns the parsed map type.
 CHROMEOS_EXPORT base::Optional<ParsedIndex> ParseForwardIndex(
     base::StringPiece forward_index_json);
+
+// Parses |usb_index_json| and returns a map of USB product IDs to
+// effective-make-and-model strings.
+CHROMEOS_EXPORT base::Optional<ParsedUsbIndex> ParseUsbIndex(
+    base::StringPiece usb_index_json);
 
 // Parses |reverse_index_json| and returns the parsed map type.
 CHROMEOS_EXPORT base::Optional<ParsedReverseIndex> ParseReverseIndex(

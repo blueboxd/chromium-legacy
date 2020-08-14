@@ -125,4 +125,23 @@ TEST(WebAppProtoUtilsTest, M85SpecificsProtoToWebApp_FullyPopulated) {
   EXPECT_EQ(Purpose::MASKABLE, fallback_data->icon_infos[1].purpose);
 }
 
+TEST(WebAppProtoUtilsTest, RunOnOsLoginModes) {
+  RunOnOsLoginMode mode = ToRunOnOsLoginMode(WebAppProto::MINIMIZED);
+  EXPECT_EQ(RunOnOsLoginMode::kMinimized, mode);
+
+  mode = ToRunOnOsLoginMode(WebAppProto::WINDOWED);
+  EXPECT_EQ(RunOnOsLoginMode::kWindowed, mode);
+
+  // Any value other than Windowed and Minimized should return kUndefined,
+  mode = ToRunOnOsLoginMode(static_cast<WebAppProto::RunOnOsLoginMode>(0xCAFE));
+  EXPECT_EQ(RunOnOsLoginMode::kUndefined, mode);
+
+  WebAppProto::RunOnOsLoginMode proto_mode =
+      ToWebAppProtoRunOnOsLoginMode(RunOnOsLoginMode::kWindowed);
+  EXPECT_EQ(WebAppProto::WINDOWED, proto_mode);
+
+  proto_mode = ToWebAppProtoRunOnOsLoginMode(RunOnOsLoginMode::kMinimized);
+  EXPECT_EQ(WebAppProto::MINIMIZED, proto_mode);
+}
+
 }  // namespace web_app

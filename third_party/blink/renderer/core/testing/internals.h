@@ -237,6 +237,10 @@ class Internals final : public ScriptWrappable {
   void setAutofilledValue(Element*, const String&, ExceptionState&);
   void setEditingValue(Element* input_element, const String&, ExceptionState&);
   void setAutofilled(Element*, bool enabled, ExceptionState&);
+  void setSelectionRangeForNumberType(Element* input_element,
+                                      uint32_t start,
+                                      uint32_t end,
+                                      ExceptionState&);
 
   Range* rangeFromLocationAndLength(Element* scope,
                                     int range_location,

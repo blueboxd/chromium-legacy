@@ -49,15 +49,16 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
  private:
-  // Gets the name of an extension referred to by |token_cache_key| as a string.
+  // Gets the name of an extension referred to by |access_tokens_key| as a
+  // string.
   const std::string GetExtensionName(
-      const extensions::ExtensionTokenKey& token_cache_key);
+      const extensions::IdentityTokenCache::AccessTokensKey& access_tokens_key);
 
-  // Gets a list of scopes specified in |token_cache_key| and returns a pointer
-  // to a ListValue containing the scopes. The caller gets ownership of the
-  // returned object.
+  // Gets a list of scopes specified in |token_cache_value| and returns a
+  // pointer to a ListValue containing the scopes. The caller gets ownership of
+  // the returned object.
   std::unique_ptr<base::ListValue> GetScopes(
-      const extensions::ExtensionTokenKey& token_cache_key);
+      const extensions::IdentityTokenCacheValue& token_cache_value);
 
   // Gets a status of the access token in |token_cache_value|.
   std::string GetStatus(
@@ -68,10 +69,10 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
   base::string16 GetExpirationTime(
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
-  // Converts a pair of |token_cache_key| and |token_cache_value| to a
+  // Converts a pair of |access_tokens_key| and |token_cache_value| to a
   // DictionaryValue object with corresponding information.
   std::unique_ptr<base::DictionaryValue> GetInfoForToken(
-      const extensions::ExtensionTokenKey& token_cache_key,
+      const extensions::IdentityTokenCache::AccessTokensKey& access_tokens_key,
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
   // Gets all of the tokens stored in IdentityAPI token cache and returns them
@@ -140,8 +141,8 @@ void IdentityInternalsUIMessageHandler::OnTokenRevokerDone(
   CHECK(api);
 
   // Remove token from the cache.
-  api->token_cache()->EraseToken(token_revoker->extension_id(),
-                                 token_revoker->access_token());
+  api->token_cache()->EraseAccessToken(token_revoker->extension_id(),
+                                       token_revoker->access_token());
 
   // Update view about the token being removed.
   base::ListValue result;
@@ -161,22 +162,21 @@ void IdentityInternalsUIMessageHandler::OnTokenRevokerDone(
 }
 
 const std::string IdentityInternalsUIMessageHandler::GetExtensionName(
-    const extensions::ExtensionTokenKey& token_cache_key) {
+    const extensions::IdentityTokenCache::AccessTokensKey& access_tokens_key) {
   const extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()));
   const extensions::Extension* extension =
-      registry->enabled_extensions().GetByID(token_cache_key.extension_id);
+      registry->enabled_extensions().GetByID(access_tokens_key.extension_id);
   if (!extension)
     return std::string();
   return extension->name();
 }
 
 std::unique_ptr<base::ListValue> IdentityInternalsUIMessageHandler::GetScopes(
-    const extensions::ExtensionTokenKey& token_cache_key) {
+    const extensions::IdentityTokenCacheValue& token_cache_value) {
   auto scopes_value = std::make_unique<base::ListValue>();
-  for (auto iter = token_cache_key.scopes.begin();
-       iter != token_cache_key.scopes.end(); ++iter) {
-    scopes_value->AppendString(*iter);
+  for (const auto& scope : token_cache_value.granted_scopes()) {
+    scopes_value->AppendString(scope);
   }
   return scopes_value;
 }
@@ -207,13 +207,13 @@ base::string16 IdentityInternalsUIMessageHandler::GetExpirationTime(
 
 std::unique_ptr<base::DictionaryValue>
 IdentityInternalsUIMessageHandler::GetInfoForToken(
-    const extensions::ExtensionTokenKey& token_cache_key,
+    const extensions::IdentityTokenCache::AccessTokensKey& access_tokens_key,
     const extensions::IdentityTokenCacheValue& token_cache_value) {
   auto token_data = std::make_unique<base::DictionaryValue>();
-  token_data->SetString("extensionId", token_cache_key.extension_id);
-  token_data->SetString("accountId", token_cache_key.account_id.ToString());
-  token_data->SetString("extensionName", GetExtensionName(token_cache_key));
-  token_data->Set("scopes", GetScopes(token_cache_key));
+  token_data->SetString("extensionId", access_tokens_key.extension_id);
+  token_data->SetString("accountId", access_tokens_key.account_id.ToString());
+  token_data->SetString("extensionName", GetExtensionName(access_tokens_key));
+  token_data->Set("scopes", GetScopes(token_cache_value));
   token_data->SetString("status", GetStatus(token_cache_value));
   token_data->SetString("accessToken", token_cache_value.token());
   token_data->SetString("expirationTime", GetExpirationTime(token_cache_value));
@@ -223,15 +223,17 @@ IdentityInternalsUIMessageHandler::GetInfoForToken(
 void IdentityInternalsUIMessageHandler::GetInfoForAllTokens(
     const base::ListValue* args) {
   base::ListValue results;
-  extensions::IdentityTokenCache::CachedTokens tokens;
+  extensions::IdentityTokenCache::AccessTokensCache tokens;
   // The API can be null in incognito.
   extensions::IdentityAPI* api =
       extensions::IdentityAPI::GetFactoryInstance()->Get(
           Profile::FromWebUI(web_ui()));
   if (api)
-    tokens = api->token_cache()->GetAllTokens();
-  for (const auto& token : tokens) {
-    results.Append(GetInfoForToken(token.first, token.second));
+    tokens = api->token_cache()->access_tokens_cache();
+  for (const auto& key_tokens : tokens) {
+    for (const auto& token : key_tokens.second) {
+      results.Append(GetInfoForToken(key_tokens.first, token));
+    }
   }
 
   web_ui()->CallJavascriptFunctionUnsafe("identity_internals.returnTokens",

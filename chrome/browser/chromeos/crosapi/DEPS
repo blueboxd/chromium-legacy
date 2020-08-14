@@ -1,4 +1,11 @@
 specific_include_rules = {
+  "message_center_ash\.cc": [
+    # Provides a mojo interface around the message center, but lives in this
+    # directory for consistency with other crosapi classes.
+    "-chrome",
+    "+chrome/browser/chromeos/crosapi",
+    "+ui/message_center/message_center.h",
+  ],
   "screen_manager_crosapi\.cc": [
     # For window parenting.
     "+ash/shell.h",

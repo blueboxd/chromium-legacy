@@ -518,8 +518,7 @@ void VideoRendererImpl::UpdateLatencyHintBufferingCaps_Locked(
     return;
 
   int latency_hint_frames =
-      base::ClampRound(latency_hint_->InMicrosecondsF() /
-                       average_frame_duration.InMicrosecondsF());
+      base::ClampRound(*latency_hint_ / average_frame_duration);
 
   std::string clamp_string;
   if (latency_hint_frames > kAbsoluteMaxFrames) {

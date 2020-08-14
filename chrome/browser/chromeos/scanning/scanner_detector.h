@@ -32,7 +32,7 @@ class CHROMEOS_EXPORT ScannerDetector {
   // Registers the callback used to provide notifications when scanners are
   // detected.
   using OnScannersDetectedCallback =
-      base::RepeatingCallback<void(const std::vector<Scanner>& scanners)>;
+      base::RepeatingCallback<void(std::vector<Scanner> scanners)>;
   virtual void RegisterScannersDetectedCallback(
       OnScannersDetectedCallback callback) = 0;
 

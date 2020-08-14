@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 #include "third_party/blink/renderer/controller/blink_leak_detector.h"
 #include "third_party/blink/renderer/controller/dev_tools_frontend_impl.h"
+#include "third_party/blink/renderer/controller/performance_manager/renderer_resource_coordinator_impl.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
@@ -163,6 +164,9 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
   // navigation.
   HighestPmfReporter::Instance();
 #endif
+
+  // Initialize performance manager.
+  RendererResourceCoordinatorImpl::MaybeInitialize();
 }
 
 }  // namespace

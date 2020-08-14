@@ -118,7 +118,7 @@ public class ReparentingTask implements UserData {
             // Add the tab to AsyncTabParamsManager before removing it from the current model to
             // ensure the global count of tabs is correct. See https://crbug.com/611806.
             intent.putExtra(IntentHandler.EXTRA_TAB_ID, mTab.getId());
-            AsyncTabParamsManager.add(
+            AsyncTabParamsManager.getInstance().add(
                     mTab.getId(), new TabReparentingParams(mTab, finalizeCallback));
 
             detach();

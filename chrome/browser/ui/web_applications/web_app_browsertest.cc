@@ -349,8 +349,8 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_DisplayOverride, HasMinimalUiButtons) {
     AppId app_id = InstallWebApp(std::move(web_app_info));
     Browser* app_browser = LaunchWebAppBrowser(app_id);
     DCHECK(app_browser->app_controller());
-    tester.ExpectUniqueSample(kLaunchWebAppDisplayModeHistogram, display_mode,
-                              1);
+    tester.ExpectUniqueSample(kLaunchWebAppDisplayModeHistogram,
+                              display_override_mode, 1);
 
     bool matches;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(

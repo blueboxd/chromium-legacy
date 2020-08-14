@@ -35,11 +35,11 @@ void AppResult::UpdateFromLastLaunchedOrInstalledTime(
   }
 
   base::TimeDelta delta = current_time - old_time;
-  const int kSecondsInWeek = 60 * 60 * 24 * 7;
+  const auto kOneWeek = base::TimeDelta::FromDays(7);
 
   // Set the relevance to a value between 0 and 1. This function decays as the
   // time delta increases and reaches a value of 0.5 at 1 week.
-  set_relevance(1 / (1 + delta.InSecondsF() / kSecondsInWeek));
+  set_relevance(1 / (1 + delta / kOneWeek));
 }
 
 ash::SearchResultType AppResult::GetSearchResultType() const {

@@ -131,4 +131,8 @@ void* TFLitePredictor::GetOutputTensorData(int32_t tensor_index) const {
   return TfLiteTensorData(tensor);
 }
 
+int32_t TFLitePredictor::GetTFLiteNumThreads() const {
+  return num_threads_;
+}
+
 }  // namespace machine_learning

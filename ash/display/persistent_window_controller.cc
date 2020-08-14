@@ -46,11 +46,9 @@ constexpr char PersistentWindowController::kNumOfWindowsRestoredHistogramName[];
 
 PersistentWindowController::PersistentWindowController() {
   display::Screen::GetScreen()->AddObserver(this);
-  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 PersistentWindowController::~PersistentWindowController() {
-  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
@@ -64,7 +62,10 @@ void PersistentWindowController::OnWillProcessDisplayChanges() {
     // to restore, or until they're cleared by user-invoked bounds change.
     if (window_state->persistent_window_info())
       continue;
-    window_state->SetPersistentWindowInfo(PersistentWindowInfo(window));
+    // Place the window that needs persistent window info into the temporary
+    // set. The persistent window info will be created and set if a display is
+    // removed.
+    need_persistent_info_windows_.Add(window);
   }
 }
 
@@ -75,16 +76,25 @@ void PersistentWindowController::OnDisplayAdded(
       base::Unretained(this));
 }
 
-void PersistentWindowController::OnDisplayConfigurationChanged() {
+void PersistentWindowController::OnDisplayRemoved(
+    const display::Display& old_display) {
+  for (aura::Window* window : need_persistent_info_windows_.windows()) {
+    WindowState* window_state = WindowState::Get(window);
+    window_state->SetPersistentWindowInfo(PersistentWindowInfo(window));
+  }
+  need_persistent_info_windows_.RemoveAll();
+}
+
+void PersistentWindowController::OnDidProcessDisplayChanges() {
   if (restore_callback_)
     std::move(restore_callback_).Run();
+  need_persistent_info_windows_.RemoveAll();
 }
 
 void PersistentWindowController::MaybeRestorePersistentWindowBounds() {
   if (!ShouldProcessWindowList())
     return;
 
-  display::Screen* screen = display::Screen::GetScreen();
   int window_restored_count = 0;
   // Maybe add the windows to a new display via SetBoundsInScreen() depending on
   // their persistent window info. Go backwards so that if they do get added to
@@ -98,8 +108,6 @@ void PersistentWindowController::MaybeRestorePersistentWindowBounds() {
     PersistentWindowInfo persistent_window_info =
         *window_state->persistent_window_info();
     const int64_t persistent_display_id = persistent_window_info.display_id;
-    if (persistent_display_id == screen->GetDisplayNearestWindow(window).id())
-      continue;
     auto* display_manager = GetDisplayManager();
     if (!display_manager->IsDisplayIdValid(persistent_display_id))
       continue;
@@ -115,7 +123,8 @@ void PersistentWindowController::MaybeRestorePersistentWindowBounds() {
         persistent_window_info.display_bounds_in_screen;
     // It is possible to have display size change, such as changing cable, bad
     // cable signal etc., but it should be rare.
-    DCHECK(display.bounds().size() == persistent_display_bounds.size());
+    if (display.bounds().size() != persistent_display_bounds.size())
+      continue;
     const gfx::Vector2d offset = display.bounds().OffsetFromOrigin() -
                                  persistent_display_bounds.OffsetFromOrigin();
     persistent_window_bounds.Offset(offset);

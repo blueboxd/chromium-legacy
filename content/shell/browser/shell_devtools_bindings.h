@@ -51,15 +51,12 @@ class ShellDevToolsBindings : public WebContentsObserver,
 
   void InspectElementAt(int x, int y);
   virtual void Attach();
-  void UpdateInspectedWebContents(WebContents* new_contents,
-                                  base::OnceCallback<void()> callback);
+  void UpdateInspectedWebContents(WebContents* new_contents);
 
-  void CallClientFunction(
-      const std::string& function_name,
-      const base::Value* arg1,
-      const base::Value* arg2,
-      const base::Value* arg3,
-      base::OnceCallback<void(base::Value)> cb = base::NullCallback());
+  void CallClientFunction(const std::string& function_name,
+                          const base::Value* arg1,
+                          const base::Value* arg2,
+                          const base::Value* arg3);
   ~ShellDevToolsBindings() override;
 
   WebContents* inspected_contents() { return inspected_contents_; }

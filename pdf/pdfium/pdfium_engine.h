@@ -27,13 +27,11 @@
 #include "pdf/pdfium/pdfium_print.h"
 #include "pdf/pdfium/pdfium_range.h"
 #include "ppapi/c/private/ppp_pdf.h"
-#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var_array.h"
-#include "ppapi/utility/completion_callback_factory.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_progressive.h"
@@ -652,7 +650,6 @@ class PDFiumEngine : public PDFEngine,
   bool doc_loader_set_for_testing_ = false;
   std::string url_;
   std::string headers_;
-  pp::CompletionCallbackFactory<PDFiumEngine> find_factory_;
 
   // Set to true if the user is being prompted for their password. Will be set
   // to false after the user finishes getting their password.
@@ -835,6 +832,11 @@ class PDFiumEngine : public PDFEngine,
   PDFiumPrint print_;
 
   base::WeakPtrFactory<PDFiumEngine> weak_factory_{this};
+
+  // Weak pointers from this factory are used to bind the ContinueFind()
+  // function. This allows those weak pointers to be invalidated during
+  // StopFind(), and keeps the invalidation separated from |weak_factory_|.
+  base::WeakPtrFactory<PDFiumEngine> find_weak_factory_{this};
 };
 
 }  // namespace chrome_pdf

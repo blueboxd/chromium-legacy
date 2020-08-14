@@ -20,7 +20,6 @@ android_assets("weblayer_shell_assets") {
 
 android_resources("weblayer_shell_resources") {
   sources = [
-    "shell_apk/res/layout/alt_shell_browser_controls.xml",
     "shell_apk/res/layout/bottom_controls.xml",
     "shell_apk/res/layout/main.xml",
     "shell_apk/res/layout/shell_browser_controls.xml",

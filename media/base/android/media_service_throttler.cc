@@ -32,10 +32,6 @@ constexpr base::TimeDelta kTimeUntilCrashReset =
 constexpr base::TimeDelta kTimeUntilScheduleReset =
     base::TimeDelta::FromMinutes(1);
 
-// Decay rate of server crashes, corresponding to a tolerable 'normal' crash
-// rate. This means that we will decrement our crash rate by ~1 crash/minute.
-const uint32_t kCrashDecayPeriodInMs = 60000;
-
 // Rate at which client creations will be exponentially throttled based on the
 // number of media server crashes.
 // NOTE: Since our exponential delay formula is 2^(server crashes), 0 server
@@ -181,8 +177,8 @@ void MediaServiceThrottler::UpdateServerCrashes() {
     current_crashes_ = 0.0;
   } else {
     // Decay at the rate of 1 crash/minute otherwise.
-    double decay = (now - last_current_crash_update_time_).InMillisecondsF() /
-                   kCrashDecayPeriodInMs;
+    const double decay = (now - last_current_crash_update_time_) /
+                         base::TimeDelta::FromMinutes(1);
     current_crashes_ = std::max(0.0, current_crashes_ - decay);
   }
 

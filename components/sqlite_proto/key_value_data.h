@@ -131,9 +131,10 @@ template <typename T, typename Compare>
 void KeyValueData<T, Compare>::InitializeOnDBSequence() {
   DCHECK(manager_->GetTaskRunner()->RunsTasksInCurrentSequence());
   auto data_map = std::make_unique<std::map<std::string, T>>();
+
   manager_->ExecuteDBTaskOnDBSequence(
-      base::BindOnce(&KeyValueTable<T>::GetAllData,
-                     base::Unretained(backend_table_), data_map.get()));
+      base::BindOnce(&KeyValueTable<T>::GetAllData, backend_table_->AsWeakPtr(),
+                     data_map.get()));
 
   // To ensure invariant that data_cache_.size() <= max_num_entries_.
   std::vector<std::string> keys_to_delete;
@@ -145,7 +146,7 @@ void KeyValueData<T, Compare>::InitializeOnDBSequence() {
   }
   if (!keys_to_delete.empty()) {
     manager_->ExecuteDBTaskOnDBSequence(base::BindOnce(
-        &KeyValueTable<T>::DeleteData, base::Unretained(backend_table_),
+        &KeyValueTable<T>::DeleteData, backend_table_->AsWeakPtr(),
         std::vector<std::string>(keys_to_delete)));
   }
 
@@ -219,7 +220,7 @@ void KeyValueData<T, Compare>::DeleteAllData() {
   // by user.
   manager_->ScheduleDBTask(FROM_HERE,
                            base::BindOnce(&KeyValueTable<T>::DeleteAllData,
-                                          base::Unretained(backend_table_)));
+                                          backend_table_->AsWeakPtr()));
 }
 
 template <typename T, typename Compare>
@@ -236,9 +237,9 @@ void KeyValueData<T, Compare>::FlushDataToDisk() {
         auto it = data_cache_->find(key);
         if (it != data_cache_->end()) {
           manager_->ScheduleDBTask(
-              FROM_HERE, base::BindOnce(&KeyValueTable<T>::UpdateData,
-                                        base::Unretained(backend_table_), key,
-                                        it->second));
+              FROM_HERE,
+              base::BindOnce(&KeyValueTable<T>::UpdateData,
+                             backend_table_->AsWeakPtr(), key, it->second));
         }
         break;
       }
@@ -249,9 +250,8 @@ void KeyValueData<T, Compare>::FlushDataToDisk() {
 
   if (!keys_to_delete.empty()) {
     manager_->ScheduleDBTask(
-        FROM_HERE,
-        base::BindOnce(&KeyValueTable<T>::DeleteData,
-                       base::Unretained(backend_table_), keys_to_delete));
+        FROM_HERE, base::BindOnce(&KeyValueTable<T>::DeleteData,
+                                  backend_table_->AsWeakPtr(), keys_to_delete));
   }
 
   deferred_updates_.clear();

@@ -59,6 +59,8 @@ public class TabWindowManager implements ActivityStateListener {
     /** The singleton reference. */
     private static TabWindowManager sInstance;
 
+    private final AsyncTabParamsManager mAsyncTabParamsManager;
+
     private TabModelSelectorFactory mSelectorFactory = new DefaultTabModelSelectorFactory();
 
     private List<TabModelSelector> mSelectors = new ArrayList<>();
@@ -70,7 +72,9 @@ public class TabWindowManager implements ActivityStateListener {
      */
     public static TabWindowManager getInstance() {
         ThreadUtils.assertOnUiThread();
-        if (sInstance == null) sInstance = new TabWindowManager();
+        if (sInstance == null) {
+            sInstance = new TabWindowManager(AsyncTabParamsManager.getInstance());
+        }
         return sInstance;
     }
 
@@ -150,7 +154,7 @@ public class TabWindowManager implements ActivityStateListener {
 
         // Count tabs that are moving between activities (e.g. a tab that was recently reparented
         // and hasn't been attached to its new activity yet).
-        SparseArray<AsyncTabParams> asyncTabParams = AsyncTabParamsManager.getAsyncTabParams();
+        SparseArray<AsyncTabParams> asyncTabParams = mAsyncTabParamsManager.getAsyncTabParams();
         for (int i = 0; i < asyncTabParams.size(); i++) {
             Tab tab = asyncTabParams.valueAt(i).getTabToReparent();
             if (tab != null && tab.isIncognito()) count++;
@@ -179,8 +183,8 @@ public class TabWindowManager implements ActivityStateListener {
             }
         }
 
-        if (AsyncTabParamsManager.hasParamsForTabId(tabId)) {
-            return AsyncTabParamsManager.getAsyncTabParams().get(tabId).getTabToReparent();
+        if (mAsyncTabParamsManager.hasParamsForTabId(tabId)) {
+            return mAsyncTabParamsManager.getAsyncTabParams().get(tabId).getTabToReparent();
         }
 
         return null;
@@ -205,7 +209,8 @@ public class TabWindowManager implements ActivityStateListener {
         mSelectorFactory = factory;
     }
 
-    private TabWindowManager() {
+    private TabWindowManager(AsyncTabParamsManager asyncTabParamsManager) {
+        mAsyncTabParamsManager = asyncTabParamsManager;
         ApplicationStatus.registerStateListenerForAllActivities(this);
 
         for (int i = 0; i < MAX_SIMULTANEOUS_SELECTORS; i++) mSelectors.add(null);
@@ -239,7 +244,8 @@ public class TabWindowManager implements ActivityStateListener {
                     selectorIndex, mergeTabs);
             TabModelFilterFactory tabModelFilterFactory = new ChromeTabModelFilterFactory();
             return new TabModelSelectorImpl(activity, tabCreatorManager, persistencePolicy,
-                    tabModelFilterFactory, nextTabPolicySupplier, true, true, false);
+                    tabModelFilterFactory, nextTabPolicySupplier,
+                    AsyncTabParamsManager.getInstance(), true, true, false);
         }
     }
 }

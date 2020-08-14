@@ -111,6 +111,10 @@ class WebApp {
     return protocol_handlers_;
   }
 
+  RunOnOsLoginMode run_on_os_login_mode() const {
+    return run_on_os_login_mode_;
+  }
+
   // While local |name| and |theme_color| may vary from device to device, the
   // synced copies of these fields are replicated to all devices. The synced
   // copies are read by a device to generate a placeholder icon (if needed). Any
@@ -193,6 +197,7 @@ class WebApp {
       std::vector<apps::ProtocolHandlerInfo> protocol_handlers);
   void SetLastLaunchTime(const base::Time& time);
   void SetInstallTime(const base::Time& time);
+  void SetRunOnOsLoginMode(RunOnOsLoginMode mode);
   void SetSyncFallbackData(SyncFallbackData sync_fallback_data);
 
  private:
@@ -237,6 +242,7 @@ class WebApp {
   std::vector<apps::ProtocolHandlerInfo> protocol_handlers_;
   base::Time last_launch_time_;
   base::Time install_time_;
+  RunOnOsLoginMode run_on_os_login_mode_ = RunOnOsLoginMode::kUndefined;
   SyncFallbackData sync_fallback_data_;
 };
 

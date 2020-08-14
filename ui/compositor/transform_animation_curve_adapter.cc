@@ -5,7 +5,6 @@
 #include "ui/compositor/transform_animation_curve_adapter.h"
 
 #include "base/memory/ptr_util.h"
-#include "cc/base/time_util.h"
 
 namespace ui {
 
@@ -56,12 +55,10 @@ cc::TransformOperations TransformAnimationCurveAdapter::GetValue(
     return target_wrapped_value_;
   if (t <= base::TimeDelta())
     return initial_wrapped_value_;
-  double progress = cc::TimeUtil::Divide(t, duration_);
 
   gfx::DecomposedTransform to_return = gfx::BlendDecomposedTransforms(
       decomposed_target_value_, decomposed_initial_value_,
-      gfx::Tween::CalculateValue(tween_type_, progress));
-
+      gfx::Tween::CalculateValue(tween_type_, t / duration_));
   return WrapTransform(gfx::ComposeTransform(to_return));
 }
 

@@ -28,6 +28,8 @@ class NotificationAccessManagerImpl : public NotificationAccessManager {
  private:
   // NotificationAccessManager:
   bool HasAccessBeenGranted() const override;
+  void OnSetupAttemptStarted() override;
+  void OnSetupAttemptEnded() override;
 
   PrefService* pref_service_;
 };

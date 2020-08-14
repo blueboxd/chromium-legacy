@@ -7,13 +7,12 @@
 
 namespace ui {
 
-DialogModelField::DialogModelField(
-    const DialogModelField::Reservation& reservation,
-    DialogModelField::Type type,
-    int unique_id,
-    base::flat_set<Accelerator> accelerators)
-    : model_(reservation.model),
-      model_field_id_(reservation.model_field_id),
+DialogModelField::DialogModelField(util::PassKey<DialogModel>,
+                                   DialogModel* model,
+                                   Type type,
+                                   int unique_id,
+                                   base::flat_set<Accelerator> accelerators)
+    : model_(model),
       type_(type),
       unique_id_(unique_id),
       accelerators_(std::move(accelerators)) {
@@ -22,9 +21,6 @@ DialogModelField::DialogModelField(
 
 DialogModelField::~DialogModelField() = default;
 
-DialogModelField::Reservation::Reservation(DialogModel* model,
-                                           int model_field_id)
-    : model(model), model_field_id(model_field_id) {}
 
 DialogModelButton::Params::Params() = default;
 DialogModelButton::Params::~Params() = default;
@@ -41,11 +37,12 @@ DialogModelButton::Params& DialogModelButton::Params::SetCallback(
   return *this;
 }
 
-DialogModelButton::DialogModelButton(
-    const DialogModelField::Reservation& reservation,
-    base::string16 label,
-    const DialogModelButton::Params& params)
-    : DialogModelField(reservation,
+DialogModelButton::DialogModelButton(util::PassKey<DialogModel> pass_key,
+                                     DialogModel* model,
+                                     base::string16 label,
+                                     const DialogModelButton::Params& params)
+    : DialogModelField(pass_key,
+                       model,
                        kButton,
                        params.unique_id_,
                        params.accelerators_),
@@ -83,11 +80,13 @@ DialogModelCombobox::Params& DialogModelCombobox::Params::SetAccessibleName(
 }
 
 DialogModelCombobox::DialogModelCombobox(
-    const DialogModelField::Reservation& reservation,
+    util::PassKey<DialogModel> pass_key,
+    DialogModel* model,
     base::string16 label,
     std::unique_ptr<ui::ComboboxModel> combobox_model,
     const DialogModelCombobox::Params& params)
-    : DialogModelField(reservation,
+    : DialogModelField(pass_key,
+                       model,
                        kCombobox,
                        params.unique_id_,
                        params.accelerators_),
@@ -122,11 +121,13 @@ DialogModelTextfield::Params& DialogModelTextfield::Params::SetAccessibleName(
 }
 
 DialogModelTextfield::DialogModelTextfield(
-    const DialogModelField::Reservation& reservation,
+    util::PassKey<DialogModel> pass_key,
+    DialogModel* model,
     base::string16 label,
     base::string16 text,
     const ui::DialogModelTextfield::Params& params)
-    : DialogModelField(reservation,
+    : DialogModelField(pass_key,
+                       model,
                        kTextfield,
                        params.unique_id_,
                        params.accelerators_),

@@ -2239,6 +2239,11 @@
     "expiry_milestone": 87
   },
   {
+    "name": "enable-web-authentication-chromeos-authenticator",
+    "owners": [ "yichengli", "martinkr" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "enable-web-bluetooth-new-permissions-backend",
     "owners": [ "web-bluetooth@google.com" ],
     "expiry_milestone": 90
@@ -3304,6 +3309,11 @@
     "name": "omnibox-history-quick-provider-allow-midword-continuations",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "omnibox-keyword-search-button",
+    "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 89
   },
   {
     "name": "omnibox-local-entity-suggestions",

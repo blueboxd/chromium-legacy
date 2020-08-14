@@ -19,7 +19,7 @@
 @interface PopoverLabelViewController : UIViewController
 
 // Init with only a main message shown as the primary label.
-- (instancetype)initWithMessage:(NSString*)message NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithMessage:(NSString*)message;
 
 // Init with primary string and an attributed string set to secondary text.
 - (instancetype)initWithPrimaryAttributedString:

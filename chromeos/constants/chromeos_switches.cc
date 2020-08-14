@@ -526,11 +526,6 @@ const char kHideAndroidFilesInFilesApp[] = "hide-android-files-in-files-app";
 // "/usr/share/chromeos-assets/regulatory_labels/".
 const char kRegulatoryLabelDir[] = "regulatory-label-dir";
 
-// If true, the debug view overlay will be shown for the in-session
-// authentication dialog. This enables development of the dialog.
-// TODO(yichenli): Remove this after the feature is released.
-const char kShowAuthDialogDevOverlay[] = "show-auth-dialog-dev-overlay";
-
 // If true, the developer tool overlay will be shown for the login/lock screen.
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";

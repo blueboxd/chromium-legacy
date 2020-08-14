@@ -27,12 +27,10 @@ void ComputeOpacity(LayerAnimationInfo* animation_info,
   }
 
   float opacity;
-  if (start_delta < fade_in_time) {
-    opacity = start_delta.InSecondsF() / fade_in_time.InSecondsF();
-  } else {
-    opacity = 1.0 - (change_delta.InSecondsF() /
-                     (fade_in_time + fade_out_time).InSecondsF());
-  }
+  if (start_delta < fade_in_time)
+    opacity = start_delta / fade_in_time;
+  else
+    opacity = 1.0 - (change_delta / (fade_in_time + fade_out_time));
 
   // Layer::SetOpacity will throw an error if we're not within 0...1.
   opacity = base::ClampToRange(opacity, 0.0f, 1.0f);

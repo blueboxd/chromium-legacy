@@ -18,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -197,6 +198,7 @@ public class DownloadCallbackTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "Flaky - https://crbug.com/1116248")
     public void testBasic() {
         String url = mActivityTestRule.getTestDataURL("content-disposition.html");
         TestThreadUtils.runOnUiThreadBlocking(

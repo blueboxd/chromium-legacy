@@ -472,7 +472,5 @@ feed_response {
   feed_response_metadata {
     response_time_ms: 1587056924
   }
-  server_capabilities: CARD_MENU
-  response_status_code: STATUS_OK
 }
 

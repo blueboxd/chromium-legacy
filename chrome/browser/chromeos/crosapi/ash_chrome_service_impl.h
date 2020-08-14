@@ -16,6 +16,7 @@ class ScreenManagerCrosapi;
 namespace crosapi {
 
 class AttestationAsh;
+class MessageCenterAsh;
 class SelectFileAsh;
 
 // Implementation of AshChromeService. It provides a set of APIs that
@@ -28,7 +29,9 @@ class AshChromeServiceImpl : public mojom::AshChromeService {
 
   // crosapi::mojom::AshChromeService:
   void BindAttestation(
-      mojo::PendingReceiver<crosapi::mojom::Attestation> receiver) override;
+      mojo::PendingReceiver<mojom::Attestation> receiver) override;
+  void BindMessageCenter(
+      mojo::PendingReceiver<mojom::MessageCenter> receiver) override;
   void BindScreenManager(
       mojo::PendingReceiver<mojom::ScreenManager> receiver) override;
   void BindSelectFile(
@@ -37,7 +40,8 @@ class AshChromeServiceImpl : public mojom::AshChromeService {
  private:
   mojo::Receiver<mojom::AshChromeService> receiver_;
 
-  std::unique_ptr<crosapi::AttestationAsh> attestation_ash_;
+  std::unique_ptr<AttestationAsh> attestation_ash_;
+  std::unique_ptr<MessageCenterAsh> message_center_ash_;
   std::unique_ptr<ScreenManagerCrosapi> screen_manager_crosapi_;
   std::unique_ptr<SelectFileAsh> select_file_crosapi_;
 };

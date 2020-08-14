@@ -1109,7 +1109,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     public void onStart() {
         // Sometimes mCompositorViewHolder is null, see crbug.com/1057613.
-        if (AsyncTabParamsManager.hasParamsWithTabToReparent() && mCompositorViewHolder != null) {
+        if (AsyncTabParamsManager.getInstance().hasParamsWithTabToReparent()
+                && mCompositorViewHolder != null) {
             mCompositorViewHolder.prepareForTabReparenting();
         }
         super.onStart();
@@ -1371,7 +1372,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE_TAB_REPARENTING)) {
             mNightModeReparentingController = new NightModeReparentingController(
                     ReparentingDelegateFactory.createNightModeReparentingControllerDelegate(
-                            getActivityTabProvider(), getTabModelSelector()));
+                            getActivityTabProvider(), getTabModelSelector()),
+                    AsyncTabParamsManager.getInstance());
         }
     }
 

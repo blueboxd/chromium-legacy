@@ -19,18 +19,8 @@
 #include "third_party/cros_system_api/dbus/hermes/dbus-constants.h"
 
 namespace hermes {
-// TODO(crbug.com/1093185): Remove when hermes/dbus-constants.h is updated.
-const char kHermesEuiccInterface[] = "org.chromium.Hermes.Euicc";
 namespace euicc {
 const char kEidProperty[] = "Eid";
-const char kIsActiveProperty[] = "IsActive";
-const char kInstalledProfilesProperty[] = "InstalledProfiles";
-const char kPendingProfilesProperty[] = "PendingProfiles";
-const char kInstallProfileFromActivationCode[] =
-    "InstallProfileFromActivationCode";
-const char kInstallPendingProfile[] = "InstallPendingProfile";
-const char kUninstallProfile[] = "UninstallProfile";
-const char kRequestPendingEvents[] = "RequestPendingEvents";
 }  // namespace euicc
 }  // namespace hermes
 

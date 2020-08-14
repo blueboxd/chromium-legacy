@@ -2711,6 +2711,10 @@ enum WebFeature {
   kEmailFieldDetected_PredictedTypeMatch = 3380,
   kPhoneFieldDetected_PredictedTypeMatch = 3381,
   kEmailFieldDetected_PatternMatch = 3382,
+  kLastLetterSpacingAffectsRendering = 3383,
+  kV8FontMetadata_GetTables_Method = 3384,
+  kV8FontMetadata_Blob_Method = 3385,
+  kV8FontManager_Query_Method = 3386,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

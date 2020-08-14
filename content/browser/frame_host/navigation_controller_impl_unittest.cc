@@ -1237,17 +1237,23 @@ TEST_F(NavigationControllerTest, Reload_GeneratesNewPage) {
 // without ending up in the "we have a wrong process for the URL" branch in
 // NavigationControllerImpl::ReloadInternal.
 TEST_F(NavigationControllerTest, ReloadWithGuest) {
-  NavigationControllerImpl& controller = controller_impl();
+  const GURL kGuestSiteUrl("my-guest-scheme://someapp/somepath");
+  scoped_refptr<SiteInstance> guest_instance =
+      SiteInstance::CreateForGuest(browser_context(), kGuestSiteUrl);
+  std::unique_ptr<TestWebContents> guest_web_contents(
+      TestWebContents::Create(browser_context(), guest_instance));
+  NavigationControllerImpl& controller = guest_web_contents->GetController();
 
   const GURL url1("http://foo1");
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url1);
+  NavigationSimulator::NavigateAndCommitFromBrowser(guest_web_contents.get(),
+                                                    url1);
   ASSERT_TRUE(controller.GetVisibleEntry());
 
   // Make the entry believe its RenderProcessHost is a guest.
   NavigationEntryImpl* entry1 = controller.GetVisibleEntry();
-  reinterpret_cast<MockRenderProcessHost*>(
-      entry1->site_instance()->GetProcess())
-      ->set_is_for_guests_only(true);
+  ASSERT_EQ(entry1->site_instance(), guest_instance);
+  ASSERT_TRUE(entry1->site_instance()->IsGuest());
+  ASSERT_TRUE(entry1->site_instance()->GetProcess()->IsForGuestsOnly());
 
   // And reload.
   controller.Reload(ReloadType::NORMAL, true);

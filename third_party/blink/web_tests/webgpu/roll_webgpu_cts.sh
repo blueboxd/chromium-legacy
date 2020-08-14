@@ -3,18 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This tool rolls:
-#   - The latest webgpu-cts master branch into external/wpt/
-#     (which is auto-upstreamed to WPT)
-#   - The latest webgpu-cts glsl-dependent branch into wpt_internal/
-# It does the following for each branch:
-#   - Updates Chromium's DEPS to the latest origin/{master,glsl-dependent}.
+# This tool rolls the latest webgpu-cts glsl-dependent branch into
+# wpt_internal/webgpu/. It does the following:
+#   - Updates Chromium's DEPS to the latest origin/glsl-dependent.
 #   - Runs gclient sync.
-#   - Builds the CTS (requires a local installation of node/npm).
-#   - Copies the built out-wpt/ directory into
-#     {external/wpt,wpt_internal}/webgpu/.
-#   - Adds {external/wpt,wpt_internal}/webgpu/ to the git index
-#     (so that it doesn't drown out other changes).
+#   - Builds the CTS (requires a local installation of node+npm).
+#   - Syncs the built out-wpt/ directory into wpt_internal/webgpu/.
+#   - Adds wpt_internal/webgpu/ to the git index
+#     (so that it doesn't drown out other local changes).
 #
 # It does NOT regenerate the wpt_internal/webgpu/cts.html file, which is used
 # by Chromium's automated testing. Note the alert at the end of this script.
@@ -55,12 +51,6 @@ roll_cts_to() {
 
   popd > /dev/null
 }
-
-roll_cts_to origin/master
-rsync -au --del \
-  third_party/webgpu-cts/src/out-wpt/{common,webgpu,cts.html} \
-  third_party/blink/web_tests/external/wpt/webgpu/
-git add third_party/blink/web_tests/external/wpt/webgpu/
 
 roll_cts_to origin/glsl-dependent
 rsync -au --del \

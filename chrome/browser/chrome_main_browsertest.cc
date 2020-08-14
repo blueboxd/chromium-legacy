@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
 
 // ChromeMainTest.SecondLaunchWithIncognitoUrl is flaky on Win and Linux.
 // http://crbug.com/130395
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_SecondLaunchWithIncognitoUrl DISABLED_SecondLaunchWithIncognitoUrl
 #else
 #define MAYBE_SecondLaunchWithIncognitoUrl SecondLaunchWithIncognitoUrl

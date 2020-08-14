@@ -64,6 +64,9 @@ class TFLitePredictor {
   // Returns data pointer to output tensor with index |tensor_index|.
   void* GetOutputTensorData(int32_t tensor_index) const;
 
+  // Returns TFLite interpreter number of threads.
+  int32_t GetTFLiteNumThreads() const;
+
  private:
   // Loads TFLite model.
   bool LoadModel();
@@ -77,7 +80,7 @@ class TFLitePredictor {
   std::string model_file_name_;
 
   // Number of threads used by |interpreter_| for evaluating |model_|.
-  int32_t num_threads_ = 1;
+  int32_t num_threads_;
   std::unique_ptr<TfLiteModel, std::function<void(TfLiteModel*)>> model_;
   std::unique_ptr<TfLiteInterpreterOptions,
                   std::function<void(TfLiteInterpreterOptions*)>>

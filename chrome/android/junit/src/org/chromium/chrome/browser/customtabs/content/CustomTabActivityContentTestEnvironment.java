@@ -97,6 +97,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Mock public StartupTabPreloader startupTabPreloader;
     @Mock public CustomTabIncognitoManager customTabIncognitoManager;
     // clang-format on
+    public AsyncTabParamsManager realAsyncTabParamsManager = AsyncTabParamsManager.getInstance();
 
     public final CustomTabActivityTabProvider tabProvider = new CustomTabActivityTabProvider();
 
@@ -139,7 +140,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     @Override
     protected void finished(Description description) {
-        AsyncTabParamsManager.getAsyncTabParams().clear();
+        realAsyncTabParamsManager.getAsyncTabParams().clear();
         ShadowExternalNavigationDelegateImpl.setWillChromeHandleIntent(false);
     }
 
@@ -150,7 +151,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
                 () -> compositorViewHolder, lifecycleDispatcher, warmupManager,
                 tabPersistencePolicy, tabFactory, () -> customTabObserver, webContentsFactory,
                 navigationEventObserver, tabProvider, startupTabPreloader, reparentingTaskProvider,
-                () -> customTabIncognitoManager, profileProvider);
+                () -> customTabIncognitoManager, profileProvider, () -> realAsyncTabParamsManager);
     }
     // clang-format on
 
@@ -203,8 +204,8 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     public WebContents prepareTransferredWebcontents() {
         int tabId = 1;
         WebContents webContents = mock(WebContents.class);
-        AsyncTabParamsManager.add(tabId, new AsyncTabCreationParams(mock(LoadUrlParams.class),
-                webContents));
+        realAsyncTabParamsManager.add(
+                tabId, new AsyncTabCreationParams(mock(LoadUrlParams.class), webContents));
         intent.putExtra(IntentHandler.EXTRA_TAB_ID, tabId);
         return webContents;
     }

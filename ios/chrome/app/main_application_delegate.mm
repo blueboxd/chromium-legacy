@@ -226,6 +226,7 @@
   ios::GetChromeBrowserProvider()
       ->GetChromeIdentityService()
       ->ApplicationDidDiscardSceneSessions(sceneSessions);
+  [_appState application:application didDiscardSceneSessions:sceneSessions];
 }
 #endif  // BUILDFLAG(IOS_MULTIWINDOW_ENABLED)
 

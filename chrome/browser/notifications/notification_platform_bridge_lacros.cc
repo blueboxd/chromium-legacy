@@ -1,0 +1,173 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/notifications/notification_platform_bridge_lacros.h"
+
+#include <utility>
+
+#include "base/check.h"
+#include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
+#include "chrome/browser/notifications/notification_platform_bridge_delegate.h"
+#include "chromeos/crosapi/mojom/message_center.mojom.h"
+#include "chromeos/crosapi/mojom/notification.mojom.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_types.h"
+
+namespace {
+
+crosapi::mojom::NotificationType ToMojo(message_center::NotificationType type) {
+  switch (type) {
+    case message_center::NOTIFICATION_TYPE_SIMPLE:
+    case message_center::NOTIFICATION_TYPE_BASE_FORMAT:
+      // TYPE_BASE_FORMAT is displayed the same as TYPE_SIMPLE.
+      return crosapi::mojom::NotificationType::kSimple;
+    case message_center::NOTIFICATION_TYPE_IMAGE:
+      return crosapi::mojom::NotificationType::kImage;
+    case message_center::NOTIFICATION_TYPE_MULTIPLE:
+      return crosapi::mojom::NotificationType::kList;
+    case message_center::NOTIFICATION_TYPE_PROGRESS:
+      return crosapi::mojom::NotificationType::kProgress;
+    case message_center::NOTIFICATION_TYPE_CUSTOM:
+      // TYPE_CUSTOM exists only within ash.
+      NOTREACHED();
+      return crosapi::mojom::NotificationType::kSimple;
+  }
+}
+
+}  // namespace
+
+// Keeps track of notifications being displayed in the remote message center.
+class NotificationPlatformBridgeLacros::RemoteNotificationDelegate
+    : public crosapi::mojom::NotificationDelegate {
+ public:
+  RemoteNotificationDelegate(
+      const std::string& notification_id,
+      NotificationPlatformBridgeDelegate* bridge_delegate,
+      base::WeakPtr<NotificationPlatformBridgeLacros> owner)
+      : notification_id_(notification_id),
+        bridge_delegate_(bridge_delegate),
+        owner_(owner) {
+    DCHECK(!notification_id_.empty());
+    DCHECK(bridge_delegate_);
+    DCHECK(owner_);
+  }
+  RemoteNotificationDelegate(const RemoteNotificationDelegate&) = delete;
+  RemoteNotificationDelegate& operator=(const RemoteNotificationDelegate&) =
+      delete;
+  ~RemoteNotificationDelegate() override = default;
+
+  mojo::PendingRemote<crosapi::mojom::NotificationDelegate>
+  BindNotificationDelegate() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+  // crosapi::mojom::NotificationDelegate:
+  void OnNotificationClosed(bool by_user) override {
+    bridge_delegate_->HandleNotificationClosed(notification_id_, by_user);
+    if (owner_)
+      owner_->OnRemoteNotificationClosed(notification_id_);
+    // NOTE: |this| is deleted.
+  }
+
+  void OnNotificationClicked() override {
+    bridge_delegate_->HandleNotificationClicked(notification_id_);
+  }
+
+  void OnNotificationButtonClicked(uint32_t button_index) override {
+    // Chrome OS does not support inline reply.
+    bridge_delegate_->HandleNotificationButtonClicked(
+        notification_id_, base::checked_cast<int>(button_index),
+        /*reply=*/base::nullopt);
+  }
+
+  void OnNotificationSettingsButtonClicked() override {
+    bridge_delegate_->HandleNotificationSettingsButtonClicked(notification_id_);
+  }
+
+  void OnNotificationDisabled() override {
+    bridge_delegate_->DisableNotification(notification_id_);
+  }
+
+ private:
+  const std::string notification_id_;
+  NotificationPlatformBridgeDelegate* const bridge_delegate_;
+  base::WeakPtr<NotificationPlatformBridgeLacros> owner_;
+  mojo::Receiver<crosapi::mojom::NotificationDelegate> receiver_{this};
+};
+
+NotificationPlatformBridgeLacros::NotificationPlatformBridgeLacros(
+    NotificationPlatformBridgeDelegate* delegate)
+    : bridge_delegate_(delegate) {
+  DCHECK(bridge_delegate_);
+}
+
+NotificationPlatformBridgeLacros::~NotificationPlatformBridgeLacros() = default;
+
+void NotificationPlatformBridgeLacros::Display(
+    NotificationHandler::Type notification_type,
+    Profile* profile,
+    const message_center::Notification& notification,
+    std::unique_ptr<NotificationCommon::Metadata> metadata) {
+  // |profile| is ignored because Profile management is handled in
+  // NotificationPlatformBridgeChromeOs, which includes a profile ID as part of
+  // the notification ID. Lacros does not support Chrome OS multi-signin, so we
+  // don't need to handle inactive user notification blockers in ash.
+  auto note = crosapi::mojom::Notification::New();
+  note->type = ToMojo(notification.type());
+  note->id = notification.id();
+  note->title = notification.title();
+  note->message = notification.message();
+  note->display_source = notification.display_source();
+  note->origin_url = notification.origin_url();
+  // TODO(https://crbug.com/1113889): Icon.
+  // TODO(https://crbug.com/1113889): RichNotificationData fields.
+
+  // Clean up any old notification with the same ID before creating the new one.
+  remote_notifications_.erase(notification.id());
+
+  auto pending_notification = std::make_unique<RemoteNotificationDelegate>(
+      notification.id(), bridge_delegate_, weak_factory_.GetWeakPtr());
+  chromeos::LacrosChromeServiceImpl::Get()
+      ->message_center_remote()
+      ->DisplayNotification(std::move(note),
+                            pending_notification->BindNotificationDelegate());
+  remote_notifications_[notification.id()] = std::move(pending_notification);
+}
+
+void NotificationPlatformBridgeLacros::Close(
+    Profile* profile,
+    const std::string& notification_id) {
+  chromeos::LacrosChromeServiceImpl::Get()
+      ->message_center_remote()
+      ->CloseNotification(notification_id);
+  // |remote_notifications_| is cleaned up after the remote notification closes
+  // and notifies us via the delegate.
+}
+
+void NotificationPlatformBridgeLacros::GetDisplayed(
+    Profile* profile,
+    GetDisplayedNotificationsCallback callback) const {
+  NOTIMPLEMENTED();
+  std::move(callback).Run(/*notification_ids=*/{}, /*supports_sync=*/false);
+}
+
+void NotificationPlatformBridgeLacros::SetReadyCallback(
+    NotificationBridgeReadyCallback callback) {
+  // We don't handle the absence of Ash or a failure to open a Mojo connection,
+  // so just assume the client is ready.
+  std::move(callback).Run(true);
+}
+
+void NotificationPlatformBridgeLacros::DisplayServiceShutDown(
+    Profile* profile) {
+  remote_notifications_.clear();
+}
+
+void NotificationPlatformBridgeLacros::OnRemoteNotificationClosed(
+    const std::string& id) {
+  remote_notifications_.erase(id);
+}

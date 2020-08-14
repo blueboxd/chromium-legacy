@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
-#include "chrome/browser/web_applications/components/web_app_run_on_os_login.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -184,24 +183,6 @@ void AppShortcutManager::OnShortcutsMenuIconsReadRegisterShortcutsMenu(
   }
 
   std::move(callback).Run(/*shortcuts_menu_registered=*/true);
-}
-
-void AppShortcutManager::RegisterRunOnOsLogin(
-    const AppId& app_id,
-    RegisterRunOnOsLoginCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  GetShortcutInfoForApp(
-      app_id,
-      base::BindOnce(
-          &AppShortcutManager::OnShortcutInfoRetrievedRegisterRunOnOsLogin,
-          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void AppShortcutManager::OnShortcutInfoRetrievedRegisterRunOnOsLogin(
-    RegisterRunOnOsLoginCallback callback,
-    std::unique_ptr<ShortcutInfo> info) {
-  ScheduleRegisterRunOnOsLogin(std::move(info), std::move(callback));
 }
 
 void AppShortcutManager::OnShortcutInfoRetrievedUpdateShortcuts(

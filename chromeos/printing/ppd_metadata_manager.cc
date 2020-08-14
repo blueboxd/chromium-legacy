@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -42,6 +43,120 @@ template <typename T>
 struct ParsedMetadataWithTimestamp {
   base::Time time_of_parse;
   T value;
+};
+
+// Tracks the progress of a single call to
+// PpdMetadataManager::FindAllEmmsAvailableInIndex().
+class ForwardIndexSearchContext {
+ public:
+  ForwardIndexSearchContext(
+      const std::vector<std::string>& emms,
+      base::Time max_age,
+      PpdMetadataManager::FindAllEmmsAvailableInIndexCallback cb)
+      : emms_(emms), current_index_(), max_age_(max_age), cb_(std::move(cb)) {}
+  ~ForwardIndexSearchContext() = default;
+
+  ForwardIndexSearchContext(const ForwardIndexSearchContext&) = delete;
+  ForwardIndexSearchContext& operator=(const ForwardIndexSearchContext&) =
+      delete;
+
+  ForwardIndexSearchContext(ForwardIndexSearchContext&&) = default;
+
+  // The effective-make-and-model string currently being sought in the
+  // forward index search tracked by this struct.
+  base::StringPiece CurrentEmm() const {
+    DCHECK_LT(current_index_, emms_.size());
+    return emms_[current_index_];
+  }
+
+  // Returns whether the CurrentEmm() is the last one in |this|
+  // that needs searching.
+  bool CurrentEmmIsLast() const {
+    DCHECK_LT(current_index_, emms_.size());
+    return current_index_ + 1 == emms_.size();
+  }
+
+  void AdvanceToNextEmm() {
+    DCHECK_LT(current_index_, emms_.size());
+    current_index_++;
+  }
+
+  // Called when the PpdMetadataManager has searched all appropriate
+  // forward index metadata for all |emms_|.
+  void PostCallback() {
+    DCHECK(CurrentEmmIsLast());
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb_), cb_arg_));
+  }
+
+  // Called when the PpdMetadataManager successfully maps the
+  // CurrentEmm() to a ParsedIndexValues struct.
+  void AddDataFromForwardIndexForCurrentEmm(const ParsedIndexValues& value) {
+    cb_arg_.insert_or_assign(CurrentEmm(), value);
+  }
+
+  base::Time MaxAge() const { return max_age_; }
+
+ private:
+  // List of all effective-make-and-model strings that caller gave to
+  // PpdMetadataManager::FindAllEmmsAvailableInIndex().
+  std::vector<std::string> emms_;
+
+  // Index into |emms| that marks the effective-make-and-model string
+  // currently being searched.
+  size_t current_index_;
+
+  // Freshness requirement for forward indices that this search reads.
+  base::Time max_age_;
+
+  // Callback that caller gave to
+  // PpdMetadataManager::FindAllEmmsAvailableInIndex().
+  PpdMetadataManager::FindAllEmmsAvailableInIndexCallback cb_;
+
+  // Accrues data to pass to |cb|.
+  base::flat_map<std::string, ParsedIndexValues> cb_arg_;
+};
+
+// Enqueues calls to PpdMetadataManager::FindAllEmmsAvailableInIndex().
+class ForwardIndexSearchQueue {
+ public:
+  ForwardIndexSearchQueue() = default;
+  ~ForwardIndexSearchQueue() = default;
+
+  ForwardIndexSearchQueue(const ForwardIndexSearchQueue&) = delete;
+  ForwardIndexSearchQueue& operator=(const ForwardIndexSearchQueue&) = delete;
+
+  void Enqueue(ForwardIndexSearchContext context) {
+    contexts_.push(std::move(context));
+  }
+
+  bool IsIdle() const { return contexts_.empty(); }
+
+  ForwardIndexSearchContext& CurrentContext() {
+    DCHECK(!IsIdle());
+    return contexts_.front();
+  }
+
+  // Progresses the frontmost search context, advancing it to its
+  // next effective-make-and-model string to find in forward index
+  // metadata.
+  //
+  // If the frontmost search context has no more
+  // effective-make-and-model strings to search, then
+  // 1. its callback is posted from here and
+  // 2. it is popped off the |contexts| queue.
+  void AdvanceToNextEmm() {
+    DCHECK(!IsIdle());
+    if (CurrentContext().CurrentEmmIsLast()) {
+      CurrentContext().PostCallback();
+      contexts_.pop();
+    } else {
+      CurrentContext().AdvanceToNextEmm();
+    }
+  }
+
+ private:
+  base::queue<ForwardIndexSearchContext> contexts_;
 };
 
 // Maps parsed metadata by name to parsed contents.
@@ -387,6 +502,26 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
     config_cache_->Fetch(metadata_name.value(), age, std::move(fetch_cb));
   }
 
+  void FindAllEmmsAvailableInIndex(
+      const std::vector<std::string>& emms,
+      base::TimeDelta age,
+      FindAllEmmsAvailableInIndexCallback cb) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    ForwardIndexSearchContext context(emms, clock_->Now() - age, std::move(cb));
+    bool queue_was_idle = forward_index_search_queue_.IsIdle();
+    forward_index_search_queue_.Enqueue(std::move(context));
+
+    // If we are the prime movers, then we need to set the forward
+    // index search in motion.
+    if (queue_was_idle) {
+      ContinueSearchingForwardIndices();
+    }
+
+    // If we're not the prime movers, then a search is already ongoing
+    // and we need not provide extra impetus.
+  }
+
   void SplitMakeAndModel(base::StringPiece effective_make_and_model,
                          base::TimeDelta age,
                          PpdProvider::ReverseLookupCallback cb) override {
@@ -448,6 +583,19 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
   }
 
  private:
+  // Denotes the status of an ongoing forward index search - see
+  // FindAllEmmsAvailableInIndex().
+  enum class ForwardIndexSearchStatus {
+    // We called |config_cache_|::Fetch(). We provided a bound
+    // callback that will resume the forward index search for us when
+    // the fetch completes.
+    kWillResumeOnFetchCompletion,
+
+    // We did not call |config_cache_|::Fetch(), so |this| still has
+    // control of the progression of the forward index search.
+    kCanContinue,
+  };
+
   // Called by OnLocalesFetched().
   // Continues a prior call to GetLocale().
   //
@@ -615,6 +763,111 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
     OnPrintersAvailable(result.key, std::move(cb));
   }
 
+  // Called when one unit of sufficiently fresh forward index metadata
+  // is available. Seeks out the current effective-make-and-model string
+  // in said metadata.
+  void FindEmmInForwardIndex(base::StringPiece metadata_name) {
+    // Caller must have verified that this index is already present (and
+    // sufficiently fresh) before entering this method.
+    DCHECK(cached_forward_indices_.contains(metadata_name));
+
+    ForwardIndexSearchContext& context =
+        forward_index_search_queue_.CurrentContext();
+
+    const ParsedIndex& index = cached_forward_indices_.at(metadata_name).value;
+    const auto& iter = index.find(context.CurrentEmm());
+    if (iter != index.end()) {
+      context.AddDataFromForwardIndexForCurrentEmm(iter->second);
+    }
+
+    forward_index_search_queue_.AdvanceToNextEmm();
+  }
+
+  // Called by |config_cache_|.Fetch().
+  // Continues a prior call to FindAllEmmsAvailableInForwardIndex().
+  //
+  // Parses and updates our cached map of forward indices if |result|
+  // indicates a successful fetch. Continues the action that
+  // necessitated fetching the present forward index.
+  void OnForwardIndexFetched(const PrinterConfigCache::FetchResult& result) {
+    if (!result.succeeded) {
+      // We failed to fetch the forward index containing the current
+      // effective-make-and-model string. There's nothing we can do but
+      // carry on, e.g. by moving to deal with the next emm.
+      forward_index_search_queue_.AdvanceToNextEmm();
+      ContinueSearchingForwardIndices();
+      return;
+    }
+
+    const auto parsed = ParseForwardIndex(result.contents);
+    if (!parsed.has_value()) {
+      // Same drill as fetch failure above.
+      forward_index_search_queue_.AdvanceToNextEmm();
+      ContinueSearchingForwardIndices();
+      return;
+    }
+    ParsedMetadataWithTimestamp<ParsedIndex> value = {clock_->Now(),
+                                                      parsed.value()};
+    cached_forward_indices_.insert_or_assign(result.key, value);
+    ContinueSearchingForwardIndices();
+  }
+
+  // Works on searching the forward index for the current
+  // effective-make-and-model string in the frontmost entry in the
+  // forward index search queue.
+  //
+  // One invocation of this method ultimately processes exactly one
+  // effective-make-and-model string: either we find it in some forward
+  // index metadata or we don't.
+  ForwardIndexSearchStatus SearchForwardIndicesForOneEmm() {
+    const ForwardIndexSearchContext& context =
+        forward_index_search_queue_.CurrentContext();
+    const PpdMetadataPathSpecifier options = {PpdMetadataType::INDEX, nullptr,
+                                              IndexShard(context.CurrentEmm())};
+    const std::string forward_index_name =
+        PpdMetadataPathInServingRoot(options);
+
+    if (MapHasValueFresherThan(cached_forward_indices_, forward_index_name,
+                               context.MaxAge())) {
+      // We have the appropriate forward index metadata and it's fresh
+      // enough to make a determination: is the current
+      // effective-make-and-model string  present in this metadata?
+      FindEmmInForwardIndex(forward_index_name);
+      return ForwardIndexSearchStatus::kCanContinue;
+    }
+
+    // We don't have the appropriate forward index metadata. We need to
+    // get it before we can determine if the current
+    // effective-make-and-model string is present in it.
+    //
+    // PrinterConfigCache::Fetch() accepts a TimeDelta expressing the
+    // maximum permissible age of the cached response; to simulate the
+    // original TimeDelta that caller gave to
+    // FindAllEmmsAvailableInIndex(), we find the delta between Now()
+    // and the absolute time ceiling recorded in the
+    // ForwardIndexSearchContext.
+    auto callback =
+        base::BindOnce(&PpdMetadataManagerImpl::OnForwardIndexFetched,
+                       weak_factory_.GetWeakPtr());
+    config_cache_->Fetch(forward_index_name, clock_->Now() - context.MaxAge(),
+                         std::move(callback));
+    return ForwardIndexSearchStatus::kWillResumeOnFetchCompletion;
+  }
+
+  // Continues working on the forward index search queue.
+  void ContinueSearchingForwardIndices() {
+    while (!forward_index_search_queue_.IsIdle()) {
+      ForwardIndexSearchStatus status = SearchForwardIndicesForOneEmm();
+
+      // If we invoked |config_cache_|::Fetch(), then control has passed
+      // out of this class for now. It will resume from
+      // OnForwardIndexFetched().
+      if (status == ForwardIndexSearchStatus::kWillResumeOnFetchCompletion) {
+        break;
+      }
+    }
+  }
+
   // Called by one of
   // *  SplitMakeAndModel() or
   // *  OnReverseIndexFetched().
@@ -696,7 +949,11 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
 
   CachedParsedMetadataMap<ParsedManufacturers> cached_manufacturers_;
   CachedParsedMetadataMap<ParsedPrinters> cached_printers_;
+  CachedParsedMetadataMap<ParsedIndex> cached_forward_indices_;
   CachedParsedMetadataMap<ParsedReverseIndex> cached_reverse_indices_;
+
+  // Processing queue for FindAllEmmsAvailableInIndex().
+  ForwardIndexSearchQueue forward_index_search_queue_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

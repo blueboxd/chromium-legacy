@@ -32,8 +32,7 @@ float GetCurvedRatio(const base::TimeTicks& current,
   const float kMaxArctan = std::atan(kArctanRange / 2);
   const float kMinArctan = std::atan(-kArctanRange / 2);
 
-  float linear_ratio =
-      (current - start).InSecondsF() / (end - start).InSecondsF();
+  float linear_ratio = (current - start) / (end - start);
   return (std::atan(kArctanRange * linear_ratio - kArctanRange / 2) -
           kMinArctan) /
          (kMaxArctan - kMinArctan);

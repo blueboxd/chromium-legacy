@@ -55,7 +55,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   using InterfaceBinder =
       base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)>;
 
-  explicit MockRenderProcessHost(BrowserContext* browser_context);
+  explicit MockRenderProcessHost(BrowserContext* browser_context,
+                                 bool is_for_guests_only = false);
   ~MockRenderProcessHost() override;
 
   // Provides access to all IPC messages that would have been sent to the
@@ -228,10 +229,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   // and prevent MockRenderProcessHostFacotry from deleting it.
   void SetFactory(const MockRenderProcessHostFactory* factory) {
     factory_ = factory;
-  }
-
-  void set_is_for_guests_only(bool is_for_guests_only) {
-    is_for_guests_only_ = is_for_guests_only;
   }
 
   void set_is_process_backgrounded(bool is_process_backgrounded) {

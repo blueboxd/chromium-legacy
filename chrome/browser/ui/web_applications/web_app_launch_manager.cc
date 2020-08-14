@@ -293,7 +293,8 @@ void RecordAppWindowLaunch(Profile* profile, const std::string& app_id) {
   if (!provider)
     return;
 
-  DisplayMode display = provider->registrar().GetAppDisplayMode(app_id);
+  DisplayMode display =
+      provider->registrar().GetEffectiveDisplayModeFromManifest(app_id);
   if (display == DisplayMode::kUndefined)
     return;
 

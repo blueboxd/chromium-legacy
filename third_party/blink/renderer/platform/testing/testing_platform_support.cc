@@ -43,7 +43,6 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -137,9 +136,6 @@ void TestingPlatformSupport::SetThreadedAnimationEnabled(bool enabled) {
   is_threaded_animation_enabled_ = enabled;
 }
 
-class ScopedUnittestsEnvironmentSetup::DummyRendererResourceCoordinator final
-    : public blink::RendererResourceCoordinator {};
-
 ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
                                                                  char** argv) {
   base::CommandLine::Init(argc, argv);
@@ -169,11 +165,6 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
 
   testing_platform_support_ = std::make_unique<TestingPlatformSupport>();
   Platform::SetCurrentPlatformForTesting(testing_platform_support_.get());
-
-  dummy_renderer_resource_coordinator_ =
-      std::make_unique<DummyRendererResourceCoordinator>();
-  RendererResourceCoordinator::SetCurrentRendererResourceCoordinatorForTesting(
-      dummy_renderer_resource_coordinator_.get());
 
   ProcessHeap::Init();
   ThreadState::AttachMainThread();

@@ -61,7 +61,7 @@ TEST(ChromePaths, UserCacheDir) {
 #endif
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 TEST(ChromePaths, DefaultUserDataDir) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string orig_chrome_config_home;

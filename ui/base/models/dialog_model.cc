@@ -108,18 +108,18 @@ void DialogModel::AddTextfield(base::string16 label,
                                base::string16 text,
                                const DialogModelTextfield::Params& params) {
   fields_.push_back(std::make_unique<DialogModelTextfield>(
-      ReserveField(), std::move(label), std::move(text), params));
+      GetPassKey(), this, std::move(label), std::move(text), params));
   if (host_)
-    host_->OnModelChanged(this);
+    host_->OnFieldAdded(fields_.back().get());
 }
 
 void DialogModel::AddCombobox(base::string16 label,
                               std::unique_ptr<ui::ComboboxModel> combobox_model,
                               const DialogModelCombobox::Params& params) {
   fields_.push_back(std::make_unique<DialogModelCombobox>(
-      ReserveField(), std::move(label), std::move(combobox_model), params));
+      GetPassKey(), this, std::move(label), std::move(combobox_model), params));
   if (host_)
-    host_->OnModelChanged(this);
+    host_->OnFieldAdded(fields_.back().get());
 }
 
 DialogModelField* DialogModel::GetFieldByUniqueId(int unique_id) {
@@ -150,20 +150,10 @@ DialogModelTextfield* DialogModel::GetTextfieldByUniqueId(int unique_id) {
   return static_cast<DialogModelTextfield*>(field);
 }
 
-DialogModelButton* DialogModel::GetDialogButton(DialogButton button) {
-  return GetButtonFromModelFieldId(button);
-}
-
-DialogModelButton* DialogModel::GetExtraButton() {
-  return GetButtonFromModelFieldId(kExtraButtonId);
-}
-
 void DialogModel::OnButtonPressed(util::PassKey<DialogModelHost>,
-                                  int id,
+                                  DialogModelButton* button,
                                   const Event& event) {
-  DCHECK_GT(id, DIALOG_BUTTON_LAST);
-
-  auto* button = GetButtonFromModelFieldId(id);
+  DCHECK_EQ(button->model_, this);
   if (button->callback_)
     button->callback_.Run(event);
 }
@@ -184,22 +174,24 @@ void DialogModel::OnDialogClosed(util::PassKey<DialogModelHost>) {
 }
 
 void DialogModel::OnComboboxSelectedIndexChanged(util::PassKey<DialogModelHost>,
-                                                 int id,
+                                                 DialogModelCombobox* combobox,
                                                  int index) {
-  GetComboboxFromModelFieldId(id)->selected_index_ = index;
+  DCHECK_EQ(combobox->model_, this);
+  combobox->selected_index_ = index;
 }
 
 void DialogModel::OnComboboxPerformAction(util::PassKey<DialogModelHost>,
-                                          int id) {
-  auto* model = GetComboboxFromModelFieldId(id);
-  if (model->callback_)
-    model->callback_.Run();
+                                          DialogModelCombobox* combobox) {
+  DCHECK_EQ(combobox->model_, this);
+  if (combobox->callback_)
+    combobox->callback_.Run();
 }
 
 void DialogModel::OnTextfieldTextChanged(util::PassKey<DialogModelHost>,
-                                         int id,
+                                         DialogModelTextfield* textfield,
                                          base::string16 text) {
-  GetTextfieldFromModelFieldId(id)->text_ = text;
+  DCHECK_EQ(textfield->model_, this);
+  textfield->text_ = std::move(text);
 }
 
 void DialogModel::OnWindowClosing(util::PassKey<DialogModelHost>) {
@@ -207,52 +199,26 @@ void DialogModel::OnWindowClosing(util::PassKey<DialogModelHost>) {
     std::move(window_closing_callback_).Run();
 }
 
-void DialogModel::AddDialogButton(int button,
+void DialogModel::AddDialogButton(int button_id,
                                   base::string16 label,
                                   const DialogModelButton::Params& params) {
-  DCHECK_LE(button, kExtraButtonId);
-  if (button != kExtraButtonId)  // Dialog buttons should use dialog callbacks.
-    DCHECK(!params.has_callback());
   DCHECK(!host_);  // Dialog buttons should be added before adding to host.
-  DCHECK(!GetFieldFromModelFieldId(button));
-  fields_.push_back(std::make_unique<DialogModelButton>(
-      DialogModelField::Reservation(this, button), std::move(label), params));
-}
-
-DialogModelField* DialogModel::GetFieldFromModelFieldId(int id) {
-  for (const auto& field : fields_) {
-    if (id == field->model_field_id_)
-      return field.get();
+  base::Optional<DialogModelButton>* button = nullptr;
+  switch (button_id) {
+    case ui::DIALOG_BUTTON_OK:
+      button = &ok_button_;
+      break;
+    case ui::DIALOG_BUTTON_CANCEL:
+      button = &cancel_button_;
+      break;
+    case kExtraButtonId:
+      button = &extra_button_;
+      break;
+    default:
+      NOTREACHED();
   }
-  return nullptr;
-}
-
-DialogModelButton* DialogModel::GetButtonFromModelFieldId(int id) {
-  auto* field = GetFieldFromModelFieldId(id);
-  DCHECK(field);
-  DCHECK_EQ(field->type_, DialogModelField::kButton);
-  return static_cast<DialogModelButton*>(field);
-}
-
-DialogModelCombobox* DialogModel::GetComboboxFromModelFieldId(int id) {
-  auto* field = GetFieldFromModelFieldId(id);
-  DCHECK(field);
-  DCHECK_EQ(field->type_, DialogModelField::kCombobox);
-  return static_cast<DialogModelCombobox*>(field);
-}
-
-DialogModelTextfield* DialogModel::GetTextfieldFromModelFieldId(int id) {
-  auto* field = GetFieldFromModelFieldId(id);
-  DCHECK(field);
-  DCHECK_EQ(field->type_, DialogModelField::kTextfield);
-  return static_cast<DialogModelTextfield*>(field);
-}
-
-DialogModelField::Reservation DialogModel::ReserveField() {
-  const int id = next_field_id_++;
-  DCHECK(!GetFieldFromModelFieldId(id));
-
-  return DialogModelField::Reservation(this, id);
+  DCHECK(!button->has_value());
+  button->emplace(GetPassKey(), this, std::move(label), params);
 }
 
 }  // namespace ui

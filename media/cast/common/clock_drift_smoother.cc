@@ -43,11 +43,9 @@ void ClockDriftSmoother::Update(base::TimeTicks now,
     // |now| is not monotonically non-decreasing.
     NOTREACHED();
   } else {
-    const double elapsed_us =
-        static_cast<double>((now - last_update_time_).InMicroseconds());
+    const base::TimeDelta elapsed = now - last_update_time_;
     last_update_time_ = now;
-    const double weight =
-        elapsed_us / (elapsed_us + time_constant_.InMicroseconds());
+    const double weight = elapsed / (elapsed + time_constant_);
     estimate_us_ = weight * measured_offset.InMicroseconds() +
         (1.0 - weight) * estimate_us_;
   }

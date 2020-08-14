@@ -51,7 +51,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/instrumentation/partition_alloc_memory_dump_provider.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/memory_cache_dump_provider.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/scheduler/common/simple_thread_scheduler.h"
@@ -240,7 +239,6 @@ void Platform::InitializeMainThreadCommon(Platform* platform,
       CanvasMemoryDumpProvider::Instance(), "Canvas",
       base::ThreadTaskRunnerHandle::Get());
 
-  RendererResourceCoordinator::MaybeInitialize();
   // Use a delayed idle task as this is low priority work that should stop when
   // the main thread is not doing any work.
   WTF::Partitions::StartPeriodicReclaim(

@@ -98,6 +98,7 @@ void ManifestUpdateTask::DidFinishLoad(
   InstallableParams params;
   params.valid_primary_icon = true;
   params.valid_manifest = true;
+  params.check_webapp_manifest_display = false;
   InstallableManager::FromWebContents(web_contents())
       ->GetData(params,
                 base::BindOnce(&ManifestUpdateTask::OnDidGetInstallableData,

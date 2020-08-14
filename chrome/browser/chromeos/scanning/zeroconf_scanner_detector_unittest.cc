@@ -169,8 +169,8 @@ class ZeroconfScannerDetectorTest : public testing::Test {
   }
 
   // ScannerDetector callback.
-  void OnScannersDetected(const std::vector<Scanner>& scanners) {
-    scanners_ = scanners;
+  void OnScannersDetected(std::vector<Scanner> scanners) {
+    scanners_ = std::move(scanners);
   }
 
  protected:

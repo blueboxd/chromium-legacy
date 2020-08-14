@@ -104,8 +104,14 @@ void QRCodeGeneratorServiceImpl::DrawDino(SkCanvas* canvas,
           kModuleSizePixels * kModuleSizePixels,
       (dest_rect.bottom() + dino_border_px + kModuleSizePixels - 1) /
           kModuleSizePixels * kModuleSizePixels);
-
   canvas->drawRect(background, paint_background);
+
+  // Center the dino within the cleared space, and draw it.
+  SkScalar delta_x =
+      SkScalarRoundToScalar(background.centerX() - dest_rect.centerX());
+  SkScalar delta_y =
+      SkScalarRoundToScalar(background.centerY() - dest_rect.centerY());
+  dest_rect.offset(delta_x, delta_y);
   SkRect dino_bounds;
   dino_bitmap_.getBounds(&dino_bounds);
   canvas->drawBitmapRect(dino_bitmap_, dino_bounds, dest_rect, nullptr);

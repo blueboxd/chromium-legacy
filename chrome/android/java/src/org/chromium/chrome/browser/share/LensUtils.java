@@ -319,7 +319,7 @@ public class LensUtils {
 
     public static boolean isGoogleLensShoppingFeatureEnabled() {
         return useLensWithShopSimilarProducts() || useLensWithShopImageWithGoogleLens()
-                || useLensWithSearchSimilarProducts();
+                || useLensWithSearchSimilarProducts() || enableShoppyImageMenuItem();
     }
 
     /**
@@ -361,6 +361,16 @@ public class LensUtils {
                 ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS,
                 LENS_SHOPPING_FEATURE_FLAG_VARIANT_NAME);
         return variation.equals("ShopImageWithGoogleLens");
+    }
+
+    /**
+     * Whether to display the lens menu item shop image with google lens.
+     */
+    public static boolean enableShoppyImageMenuItem() {
+        String variation = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS,
+                LENS_SHOPPING_FEATURE_FLAG_VARIANT_NAME);
+        return variation.equals("ShopImageWithGoogleLensShoppyImage");
     }
 
     /**

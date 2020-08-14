@@ -828,8 +828,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-vert-002.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-vert-rtl-005.xhtml [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure Pass ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001a.html [ Failure Pass ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-001a.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-001b.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-002a.html [ Failure ]
@@ -839,7 +837,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-vert-006.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-wmvert-001.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-safe-overflow-position-001.html [ Failure ]
-crbug.com/898186 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
 
 # [css-lists]
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
@@ -2694,6 +2691,8 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 virtual/web-components-v0-disabled/external/wpt/dom/events/Event-dispatch-click.html [ Timeout ]
+crbug.com/626703 external/wpt/dom/events/Event-dispatch-click.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/streams/readable-streams/tee.any.serviceworker.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/streams/readable-streams/tee.any.serviceworker.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/streams/readable-streams/tee.any.serviceworker.html [ Timeout ]

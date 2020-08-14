@@ -217,6 +217,11 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetDisplayModeOverride(std::vector<DisplayMode>(
         display_mode_override.begin(), display_mode_override.end()));
 
+    const RunOnOsLoginMode run_on_os_login_modes[3] = {
+        RunOnOsLoginMode::kUndefined, RunOnOsLoginMode::kWindowed,
+        RunOnOsLoginMode::kMinimized};
+    app->SetRunOnOsLoginMode(run_on_os_login_modes[random.next_uint(3)]);
+
     const SquareSizePx size = 256;
     const int num_icons = random.next_uint(10);
     std::vector<WebApplicationIconInfo> icon_infos(num_icons);
@@ -541,6 +546,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->install_time().is_null());
   EXPECT_TRUE(app->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app->downloaded_shortcuts_menu_icons_sizes().empty());
+  EXPECT_EQ(app->run_on_os_login_mode(), RunOnOsLoginMode::kUndefined);
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -594,6 +600,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->protocol_handlers().empty());
   EXPECT_TRUE(app_copy->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app_copy->downloaded_shortcuts_menu_icons_sizes().empty());
+  EXPECT_EQ(app_copy->run_on_os_login_mode(), RunOnOsLoginMode::kUndefined);
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {

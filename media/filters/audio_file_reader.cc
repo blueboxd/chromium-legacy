@@ -249,8 +249,8 @@ bool AudioFileReader::OnNewFrame(
         frames_read / static_cast<double>(sample_rate_));
 
     if (pkt_duration < frame_duration && pkt_duration > base::TimeDelta()) {
-      const int new_frames_read = frames_read * (pkt_duration.InSecondsF() /
-                                                 frame_duration.InSecondsF());
+      const int new_frames_read =
+          base::ClampFloor(frames_read * (pkt_duration / frame_duration));
       DVLOG(2) << "Shrinking AAC frame from " << frames_read << " to "
                << new_frames_read << " based on packet duration.";
       frames_read = new_frames_read;

@@ -75,6 +75,7 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
         TabPersistentStore tabPersistentStore =
                 new TabPersistentStore(persistencePolicy, mSelector, null, null);
         NextTabPolicySupplier nextTabPolicySupplier = () -> NextTabPolicy.HIERARCHICAL;
+        AsyncTabParamsManager asyncTabParamsManager = AsyncTabParamsManager.getInstance();
 
         TabModelDelegate delegate = new TabModelDelegate() {
             @Override
@@ -115,11 +116,13 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
                 return false;
             }
         };
-        mNormalTabModel = new TabModelSelectorTestTabModel(false, orderController,
-                tabContentManager, tabPersistentStore, nextTabPolicySupplier, delegate);
+        mNormalTabModel =
+                new TabModelSelectorTestTabModel(false, orderController, tabContentManager,
+                        tabPersistentStore, nextTabPolicySupplier, asyncTabParamsManager, delegate);
 
-        mIncognitoTabModel = new TabModelSelectorTestTabModel(true, orderController,
-                tabContentManager, tabPersistentStore, nextTabPolicySupplier, delegate);
+        mIncognitoTabModel =
+                new TabModelSelectorTestTabModel(true, orderController, tabContentManager,
+                        tabPersistentStore, nextTabPolicySupplier, asyncTabParamsManager, delegate);
 
         mSelector.initialize(mNormalTabModel, mIncognitoTabModel);
     }
@@ -133,9 +136,10 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
         public TabModelSelectorTestTabModel(boolean incognito,
                 TabModelOrderController orderController, TabContentManager tabContentManager,
                 TabPersistentStore tabPersistentStore, NextTabPolicySupplier nextTabPolicySupplier,
-                TabModelDelegate modelDelegate) {
+                AsyncTabParamsManager asyncTabParamsManager, TabModelDelegate modelDelegate) {
             super(incognito, false, null, null, null, orderController, tabContentManager,
-                    tabPersistentStore, nextTabPolicySupplier, modelDelegate, false);
+                    tabPersistentStore, nextTabPolicySupplier, asyncTabParamsManager, modelDelegate,
+                    false);
         }
 
         @Override

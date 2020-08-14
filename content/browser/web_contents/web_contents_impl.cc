@@ -7849,6 +7849,10 @@ void WebContentsImpl::IsClipboardPasteAllowedWrapperCallback(
     ClipboardPasteAllowed allowed) {
   std::move(callback).Run(allowed);
   --suppress_unresponsive_renderer_count_;
+
+  // Focus |this| in case the paste was async and lost focus before this
+  // callback got called.
+  Focus();
 }
 
 bool WebContentsImpl::HasSeenRecentScreenOrientationChange() {

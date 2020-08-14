@@ -222,7 +222,7 @@ void ConnectivityMonitor::OnNetworkMadeDefault(
       change_type = NetworkChangeType::kEarlyActivationOfDifferentNetwork;
     }
   }
-  UMA_HISTOGRAM_ENUMERATION("NQE.ConnectivityMonitor.NetworkChangeType",
+  UMA_HISTOGRAM_ENUMERATION("NQE.ConnectivityMonitor.NetworkChangeEvent",
                             change_type);
 
   // If we had requested activation of a mobile network from the system, we

@@ -117,19 +117,27 @@ suite(destination_select_test.suiteName, function() {
               destinationSelect, `ID2/${cookieOrigin}/${account}`);
         })
         .then(() => {
+          const dest2Icon = cloudPrintDeprecationWarningsSuppressed ?
+              'printer-shared' :
+              'printer-not-supported';
+
           // Should already be updated.
-          compareIcon(selectEl, 'printer-shared');
+          compareIcon(selectEl, dest2Icon);
 
           // Update destination.
           destinationSelect.destination = recentDestinationList[1];
-          compareIcon(selectEl, 'printer-shared');
+          compareIcon(selectEl, dest2Icon);
 
           // Select a destination with a standard printer icon.
           return selectOption(
               destinationSelect, `ID3/${cookieOrigin}/${account}`);
         })
         .then(() => {
-          compareIcon(selectEl, 'print');
+          const dest3Icon = cloudPrintDeprecationWarningsSuppressed ?
+              'print' :
+              'printer-not-supported';
+
+          compareIcon(selectEl, dest3Icon);
         });
   }
 

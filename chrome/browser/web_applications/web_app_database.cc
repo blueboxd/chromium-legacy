@@ -151,6 +151,11 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     mutable_chromeos_data->set_is_disabled(chromeos_data.is_disabled);
   }
 
+  if (web_app.run_on_os_login_mode() != RunOnOsLoginMode::kUndefined) {
+    local_data->set_user_run_on_os_login_mode(
+        ToWebAppProtoRunOnOsLoginMode(web_app.run_on_os_login_mode()));
+  }
+
   local_data->set_is_in_sync_install(web_app.is_in_sync_install());
 
   for (const WebApplicationIconInfo& icon_info : web_app.icon_infos())
@@ -475,6 +480,11 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     protocol_handlers.push_back(std::move(protocol_handler));
   }
   web_app->SetProtocolHandlers(std::move(protocol_handlers));
+
+  if (local_data.has_user_run_on_os_login_mode()) {
+    web_app->SetRunOnOsLoginMode(
+        ToRunOnOsLoginMode(local_data.user_run_on_os_login_mode()));
+  }
 
   return web_app;
 }

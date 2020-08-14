@@ -13,6 +13,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_app_run_on_os_login.h"
 #include "chrome/common/web_application_info.h"
 
 class Profile;
@@ -91,6 +92,13 @@ class OsIntegrationManager {
                           base::RepeatingCallback<void(OsHookType::Type os_hook,
                                                        bool created)> callback,
                           bool shortcuts_created);
+
+  void RegisterRunOnOsLogin(const AppId& app_id,
+                            RegisterRunOnOsLoginCallback callback);
+
+  void OnShortcutInfoRetrievedRegisterRunOnOsLogin(
+      RegisterRunOnOsLoginCallback callback,
+      std::unique_ptr<ShortcutInfo> info);
 
   void DeleteSharedAppShims(const AppId& app_id);
 

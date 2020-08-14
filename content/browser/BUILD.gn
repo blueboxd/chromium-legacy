@@ -375,7 +375,6 @@ source_set("browser") {
     "android/browser_startup_controller.cc",
     "android/browser_startup_controller.h",
     "android/content_feature_list.cc",
-    "android/content_feature_list.h",
     "android/content_startup_flags.cc",
     "android/content_startup_flags.h",
     "android/content_url_loader_factory.cc",

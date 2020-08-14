@@ -4,6 +4,8 @@
 
 static_library("content") {
   sources = [
+    "android_app_communication.cc",
+    "android_app_communication.h",
     "autofill_payment_app.cc",
     "autofill_payment_app.h",
     "autofill_payment_app_factory.cc",
@@ -54,6 +56,19 @@ static_library("content") {
     "//third_party/blink/public:blink_headers",
     "//url",
   ]
+
+  if (is_chromeos) {
+    sources += [ "android_app_communication_chrome_os.cc" ]
+
+    deps += [
+      "//components/arc",
+      "//components/arc/mojom",
+    ]
+  }
+
+  if (!is_chromeos) {
+    sources += [ "android_app_communication_stub.cc" ]
+  }
 
   if (!is_android) {
     sources += [

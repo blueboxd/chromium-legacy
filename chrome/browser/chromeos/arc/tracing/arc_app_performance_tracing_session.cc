@@ -191,8 +191,7 @@ void ArcAppPerformanceTracingSession::Analyze(base::TimeDelta tracing_period) {
   const size_t lower_position = frame_deltas_.size() / 10;
   const size_t upper_position = frame_deltas_.size() - 1 - lower_position;
   const double render_quality =
-      frame_deltas_[lower_position].InMicrosecondsF() /
-      frame_deltas_[upper_position].InMicrosecondsF();
+      frame_deltas_[lower_position] / frame_deltas_[upper_position];
 
   const double fps = frame_deltas_.size() / tracing_period.InSecondsF();
 

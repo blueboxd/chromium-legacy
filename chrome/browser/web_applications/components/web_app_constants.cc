@@ -84,4 +84,15 @@ apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
   }
 }
 
+std::string RunOnOsLoginModeToString(RunOnOsLoginMode mode) {
+  switch (mode) {
+    case RunOnOsLoginMode::kWindowed:
+      return "windowed";
+    case RunOnOsLoginMode::kMinimized:
+      return "minimized";
+    case RunOnOsLoginMode::kUndefined:
+      return "undefined";
+  }
+}
+
 }  // namespace web_app

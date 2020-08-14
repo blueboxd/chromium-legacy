@@ -208,6 +208,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   //    If there's no merging of |surface|, |accummulated_damage| is empty.
   //  - |target_to_root_transform| is the transform from current render pass to
   //    the root.
+  //  - |in_moved_pixel_rp| marks if the current render pass is embedded by an
+  //    ancestor render pass with a pixel-moving foreground filter.
   //  - |result| is the result of a prewalk of the surface that contains the
   //    render pass.
   gfx::Rect PrewalkRenderPass(
@@ -217,13 +219,14 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       bool will_draw,
       const gfx::Rect& damage_from_parent,
       const gfx::Transform& target_to_root_transform,
+      bool in_moved_pixel_rp,
       PrewalkResult* result);
 
   // Walk the Surface tree from |surface|. Validate the resources of the
   // current surface and its descendants, check if there are any copy requests,
   // and return the combined damage rect.
   gfx::Rect PrewalkSurface(Surface* surface,
-                           bool in_moved_pixel_surface,
+                           bool in_moved_pixel_rp,
                            RenderPassId parent_pass,
                            bool will_draw,
                            const gfx::Rect& damage_from_parent,

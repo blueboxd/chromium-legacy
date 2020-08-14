@@ -15,7 +15,11 @@ class FakeNotificationAccessManager : public NotificationAccessManager {
   explicit FakeNotificationAccessManager(bool has_access_been_granted = false);
   ~FakeNotificationAccessManager() override;
 
+  using NotificationAccessManager::IsSetupOperationInProgress;
+
   void SetHasAccessBeenGranted(bool has_access_been_granted);
+  void SetNotificationSetupOperationStatus(
+      NotificationAccessSetupOperation::Status new_status);
 
   // NotificationAccessManager:
   bool HasAccessBeenGranted() const override;

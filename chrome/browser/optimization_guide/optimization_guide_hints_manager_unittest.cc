@@ -1441,6 +1441,50 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
 }
 
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationAndPopulatesAnyMetadata) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LOADING_PREDICTOR});
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint = config.add_hints();
+  hint->set_key("somedomain.org");
+  hint->set_key_representation(optimization_guide::proto::HOST);
+  hint->set_version("someversion");
+  optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("/news/");
+  optimization_guide::proto::Optimization* opt =
+      page_hint->add_whitelisted_optimizations();
+  opt->set_optimization_type(optimization_guide::proto::LOADING_PREDICTOR);
+  optimization_guide::proto::LoadingPredictorMetadata lp_metadata;
+  lp_metadata.add_subresources()->set_url("https://resource.com/");
+  lp_metadata.SerializeToString(opt->mutable_any_metadata()->mutable_value());
+  opt->mutable_any_metadata()->set_type_url(
+      "type.googleapis.com/com.foo.LoadingPredictorMetadata");
+
+  ProcessHints(config, "1.0.0.0");
+
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_hints());
+  base::RunLoop run_loop;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle->GetURL(),
+          optimization_guide::proto::LOADING_PREDICTOR, &optimization_metadata);
+  // Make sure loading predictor metadata is populated.
+  EXPECT_TRUE(
+      optimization_metadata
+          .ParsedMetadata<optimization_guide::proto::LoadingPredictorMetadata>()
+          .has_value());
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
+            optimization_type_decision);
+}
+
 TEST_F(OptimizationGuideHintsManagerTest, IsGoogleURL) {
   const struct {
     const char* url;

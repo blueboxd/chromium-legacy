@@ -141,4 +141,17 @@ message WebAppProto {
   // that are designed for masking (ie. IconPurpose::MASKABLE). See also:
   // |downloaded_icon_sizes_purpose_any|.
   repeated int32 downloaded_icon_sizes_purpose_maskable = 23;
+
+  // Run on OS Login modes for web app.
+  // See chrome/browser/web_applications/components/web_app_constants.h
+  // for web_app::RunOnOsLoginMode definition, which this enum should be in sync
+  // with.
+  enum RunOnOsLoginMode {
+    // UNDEFINED if optional |user_run_on_os_login_mode| is absent.
+    WINDOWED = 1;
+    MINIMIZED = 2;
+  }
+  // User preference: Run on OS Login mode for web app.
+  // If present, the web app is configured to run on OS login.
+  optional RunOnOsLoginMode user_run_on_os_login_mode = 24;
 }

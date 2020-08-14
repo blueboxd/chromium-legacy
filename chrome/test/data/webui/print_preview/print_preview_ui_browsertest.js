@@ -1119,6 +1119,13 @@ TEST_F('PrintPreviewDestinationSelectTestCrOS', 'ChangeIcon', function() {
   this.runMochaTest(destination_select_test_cros.TestNames.ChangeIcon);
 });
 
+TEST_F(
+    'PrintPreviewDestinationSelectTestCrOS', 'ChangeIconDeprecationWarnings',
+    function() {
+      this.runMochaTest(
+          destination_select_test_cros.TestNames.ChangeIconDeprecationWarnings);
+    });
+
 TEST_F('PrintPreviewDestinationSelectTestCrOS', 'EulaIsDisplayed', function() {
   this.runMochaTest(destination_select_test_cros.TestNames.EulaIsDisplayed);
 });

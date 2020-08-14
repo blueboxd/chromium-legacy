@@ -53,7 +53,8 @@ GetNetworkFactoryCallback() {
 
 }  // namespace
 
-MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
+MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context,
+                                             bool is_for_guests_only)
     : bad_msg_count_(0),
       factory_(nullptr),
       id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
@@ -63,7 +64,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       shutdown_requested_(false),
       fast_shutdown_started_(false),
       deletion_callback_called_(false),
-      is_for_guests_only_(false),
+      is_for_guests_only_(is_for_guests_only),
       is_process_backgrounded_(false),
       is_unused_(true),
       keep_alive_ref_count_(0),
@@ -533,8 +534,10 @@ MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
 RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
     BrowserContext* browser_context,
     SiteInstance* site_instance) {
+  const bool is_for_guests_only = site_instance && site_instance->IsGuest();
   std::unique_ptr<MockRenderProcessHost> host =
-      std::make_unique<MockRenderProcessHost>(browser_context);
+      std::make_unique<MockRenderProcessHost>(browser_context,
+                                              is_for_guests_only);
   processes_.push_back(std::move(host));
   processes_.back()->SetFactory(this);
   return processes_.back().get();

@@ -386,7 +386,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     @Override
     public List<Pair<Integer, List<ContextMenuItem>>> buildContextMenu(
-            ContextMenu menu, Context context, ContextMenuParams params) {
+            ContextMenu menu, Context context, ContextMenuParams params, boolean isShoppyImage) {
         boolean hasSaveImage = false;
         mShowEphemeralTabNewLabel = null;
 
@@ -494,7 +494,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     // A map to indicate which image search menu item would be shown.
                     Map<String, Boolean> imageSearchMenuItemsToShow =
                             getSearchByImageMenuItemsToShowAndRecordMetrics(
-                                    context, params.getPageUrl());
+                                    context, params.getPageUrl(), isShoppyImage);
                     if (imageSearchMenuItemsToShow.get(LENS_SEARCH_MENU_ITEM_KEY)) {
                         if (LensUtils.useLensWithSearchByImageText()) {
                             mEnableLensWithSearchByImageText = true;
@@ -529,7 +529,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     ContextMenuItem item = new ChromeContextMenuItem(Item.SHOP_SIMILAR_PRODUCTS);
                     item.setShowInProductHelp();
                     imageTab.add(item);
-                } else if (LensUtils.useLensWithShopImageWithGoogleLens()) {
+                    // If the image is classified as shoppy always use the Shop Image with Google
+                    // Lens item text.
+                } else if (LensUtils.useLensWithShopImageWithGoogleLens()
+                        || (LensUtils.enableShoppyImageMenuItem() && isShoppyImage)) {
                     ContextMenuItem item =
                             new ChromeContextMenuItem(Item.SHOP_IMAGE_WITH_GOOGLE_LENS);
                     item.setShowInProductHelp();
@@ -794,7 +797,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         retrieveImage(renderFrameHost, ContextMenuImageFormat.PNG, (Uri imageUri) -> {
             ShareHelper.shareImageWithGoogleLens(getWindow(), imageUri, isIncognito,
                     params.getSrcUrl(), params.getTitleText(),
-                    /* isShoppingIntent*/ false, /* requiresConfirmation*/ false);
+                    /* isShoppyImage*/ false, /* requiresConfirmation*/ false);
         });
     }
 
@@ -809,7 +812,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             boolean isIncognito, boolean requiresConfirmation) {
         retrieveImage(renderFrameHost, ContextMenuImageFormat.PNG, (Uri imageUri) -> {
             ShareHelper.shareImageWithGoogleLens(getWindow(), imageUri, isIncognito,
-                    params.getSrcUrl(), params.getTitleText(), /* isShoppingIntent*/ true,
+                    params.getSrcUrl(), params.getTitleText(), /* isShoppyImage*/ true,
                     requiresConfirmation);
         });
     }
@@ -953,10 +956,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * @param context The current application context
      * @param pageUrl The Url associated with the main frame of the page that triggered the context
      *         menu.
+     * @param isShoppyImage Whether the image has been identified to have clear shopping intent.
      * @return An immutable map. Can be used to check whether a specific Lens menu item is enabled.
      */
     private Map<String, Boolean> getSearchByImageMenuItemsToShowAndRecordMetrics(
-            Context context, String pageUrl) {
+            Context context, String pageUrl, boolean isShoppyImage) {
         // If Google Lens feature is not supported, show search by image menu item.
         if (!LensUtils.isGoogleLensFeatureEnabled()) {
             // TODO(yusuyoutube): Cleanup. Remove repetition.
@@ -1034,7 +1038,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         if (LensUtils.isGoogleLensShoppingFeatureEnabled()
                 && !GSAState.getInstance(context).isAgsaVersionBelowMinimum(
                         versionName, LensUtils.getMinimumAgsaVersionForLensShoppingSupport())) {
-            if (LensUtils.isInShoppingAllowlist(pageUrl)) {
+            if (LensUtils.isInShoppingAllowlist(pageUrl) || isShoppyImage) {
                 // Hide Search With Google Lens menu item when experiment only with Lens Shopping
                 // menu items.
                 if (!LensUtils.showBothSearchAndShopImageWithLens()) {

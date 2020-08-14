@@ -38,8 +38,6 @@ class Adapter : public mojom::Adapter,
   void SetClient(mojo::PendingRemote<mojom::AdapterClient> client,
                  SetClientCallback callback) override;
   void StartDiscoverySession(StartDiscoverySessionCallback callback) override;
-  // TODO(b/162975217): Add a mechanism to allowlist which address and UUID
-  // pairs clients are allowed to create a connection to.
   void ConnectToServiceInsecurely(
       const std::string& address,
       const device::BluetoothUUID& service_uuid,

@@ -8,6 +8,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
+#include "third_party/libyuv/include/libyuv/convert.h"
 
 namespace media {
 
@@ -59,6 +60,8 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
     return;
   }
 
+  profile_ = profile;
+
   vpx_codec_iface_t* iface = nullptr;
   if (profile == media::VP8PROFILE_ANY) {
     iface = vpx_codec_vp8_cx();
@@ -80,20 +83,34 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
     std::move(done_cb).Run(status);
     return;
   }
+
+  vpx_img_fmt img_fmt = VPX_IMG_FMT_NONE;
+  unsigned int bits_for_storage = 8;
   switch (profile) {
     case media::VP9PROFILE_PROFILE1:
       codec_config_.g_profile = 1;
       break;
     case media::VP9PROFILE_PROFILE2:
       codec_config_.g_profile = 2;
+      img_fmt = VPX_IMG_FMT_I42016;
+      bits_for_storage = 16;
+      codec_config_.g_bit_depth = VPX_BITS_10;
+      codec_config_.g_input_bit_depth = 10;
       break;
     case media::VP9PROFILE_PROFILE3:
       codec_config_.g_profile = 3;
       break;
     default:
       codec_config_.g_profile = 0;
+      img_fmt = VPX_IMG_FMT_I420;
+      bits_for_storage = 8;
+      codec_config_.g_bit_depth = VPX_BITS_8;
+      codec_config_.g_input_bit_depth = 8;
       break;
   }
+  vpx_image_ =
+      vpx_img_wrap(nullptr, img_fmt, options.width, options.height, 1, nullptr);
+  vpx_image_->bit_depth = bits_for_storage;
 
   auto status = SetUpVpxConfig(options, &codec_config_);
   if (!status.is_ok()) {
@@ -102,7 +119,9 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
   }
 
   codec_ = new vpx_codec_ctx_t;
-  vpx_error = vpx_codec_enc_init(codec_, iface, &codec_config_, 0 /* flags */);
+  vpx_error = vpx_codec_enc_init(
+      codec_, iface, &codec_config_,
+      codec_config_.g_bit_depth == VPX_BITS_8 ? 0 : VPX_CODEC_USE_HIGHBITDEPTH);
   if (vpx_error != VPX_CODEC_OK) {
     std::string msg = base::StringPrintf("VPX encoder initialization error: %s",
                                          vpx_codec_err_to_string(vpx_error));
@@ -154,31 +173,50 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
     return;
   }
 
-  auto size = frame->visible_rect().size();
-  auto* img_data =
-      const_cast<unsigned char*>(frame->data(media::VideoFrame::kYPlane));
-  vpx_image_t vpx_image;
-  if (&vpx_image != vpx_img_wrap(&vpx_image, VPX_IMG_FMT_I420, size.width(),
-                                 size.height(), 1 /* align */, img_data)) {
-    std::move(done_cb).Run(StatusCode::kEncoderFailedEncode);
-    return;
+  switch (profile_) {
+    case media::VP9PROFILE_PROFILE1:
+      NOTREACHED();
+      break;
+    case media::VP9PROFILE_PROFILE2:
+      libyuv::I420ToI010(
+          frame->visible_data(media::VideoFrame::kYPlane),
+          frame->stride(media::VideoFrame::kYPlane),
+          frame->visible_data(media::VideoFrame::kUPlane),
+          frame->stride(media::VideoFrame::kUPlane),
+          frame->visible_data(media::VideoFrame::kVPlane),
+          frame->stride(media::VideoFrame::kVPlane),
+          reinterpret_cast<uint16_t*>(vpx_image_->planes[VPX_PLANE_Y]),
+          vpx_image_->stride[VPX_PLANE_Y] / 2,
+          reinterpret_cast<uint16_t*>(vpx_image_->planes[VPX_PLANE_U]),
+          vpx_image_->stride[VPX_PLANE_U] / 2,
+          reinterpret_cast<uint16_t*>(vpx_image_->planes[VPX_PLANE_V]),
+          vpx_image_->stride[VPX_PLANE_V] / 2, frame->coded_size().width(),
+          frame->coded_size().height());
+      break;
+    case media::VP9PROFILE_PROFILE3:
+      NOTREACHED();
+      break;
+    default:
+      vpx_image_->planes[VPX_PLANE_Y] =
+          const_cast<uint8_t*>(frame->visible_data(media::VideoFrame::kYPlane));
+      vpx_image_->planes[VPX_PLANE_U] =
+          const_cast<uint8_t*>(frame->visible_data(media::VideoFrame::kUPlane));
+      vpx_image_->planes[VPX_PLANE_V] =
+          const_cast<uint8_t*>(frame->visible_data(media::VideoFrame::kVPlane));
+      vpx_image_->stride[VPX_PLANE_Y] =
+          frame->stride(media::VideoFrame::kYPlane);
+      vpx_image_->stride[VPX_PLANE_U] =
+          frame->stride(media::VideoFrame::kUPlane);
+      vpx_image_->stride[VPX_PLANE_V] =
+          frame->stride(media::VideoFrame::kVPlane);
+      break;
   }
-
-  vpx_image.planes[VPX_PLANE_Y] = const_cast<unsigned char*>(
-      frame->visible_data(media::VideoFrame::kYPlane));
-  vpx_image.planes[VPX_PLANE_U] = const_cast<unsigned char*>(
-      frame->visible_data(media::VideoFrame::kUPlane));
-  vpx_image.planes[VPX_PLANE_V] = const_cast<unsigned char*>(
-      frame->visible_data(media::VideoFrame::kVPlane));
-  vpx_image.stride[VPX_PLANE_Y] = frame->stride(media::VideoFrame::kYPlane);
-  vpx_image.stride[VPX_PLANE_U] = frame->stride(media::VideoFrame::kUPlane);
-  vpx_image.stride[VPX_PLANE_V] = frame->stride(media::VideoFrame::kVPlane);
 
   auto timestamp = frame->timestamp().InMicroseconds();
   auto duration = GetFrameDuration(*frame);
   auto deadline = VPX_DL_REALTIME;
   vpx_codec_flags_t flags = key_frame ? VPX_EFLAG_FORCE_KF : 0;
-  auto vpx_error = vpx_codec_encode(codec_, &vpx_image, timestamp, duration,
+  auto vpx_error = vpx_codec_encode(codec_, vpx_image_, timestamp, duration,
                                     flags, deadline);
 
   if (vpx_error != VPX_CODEC_OK) {
@@ -235,6 +273,11 @@ VpxVideoEncoder::~VpxVideoEncoder() {
   auto error = vpx_codec_destroy(codec_);
   DCHECK_EQ(error, VPX_CODEC_OK);
   delete codec_;
+
+  if (vpx_image_ != nullptr) {
+    vpx_img_free(vpx_image_);
+    vpx_image_ = nullptr;
+  }
 }
 
 void VpxVideoEncoder::Flush(StatusCB done_cb) {

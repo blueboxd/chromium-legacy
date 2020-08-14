@@ -26,7 +26,8 @@ base::Optional<Scanner> CreateSaneAirscanScanner(
     const std::string& service_type,
     const std::string& rs,
     const net::IPAddress& ip_address,
-    int port);
+    int port,
+    bool usable = true);
 
 }  // namespace chromeos
 

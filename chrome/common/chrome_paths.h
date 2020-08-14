@@ -59,7 +59,7 @@ enum {
                                  // create it.
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   DIR_STANDALONE_EXTERNAL_EXTENSIONS,  // Directory for 'per-extension'
                                        // definition manifest files that
                                        // describe extensions which are to be
@@ -91,7 +91,7 @@ enum {
   DIR_PNACL_BASE,                   // Full path to the base dir for PNaCl.
   DIR_PNACL_COMPONENT,              // Full path to the latest PNaCl version
                                     // (subdir of DIR_PNACL_BASE).
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   DIR_BUNDLED_WIDEVINE_CDM,  // Full path to the directory containing the
                              // bundled Widevine CDM.
 #if !defined(OS_CHROMEOS)
@@ -99,9 +99,9 @@ enum {
                                        // downloaded by the component
                                        // updater.
   FILE_COMPONENT_WIDEVINE_CDM_HINT,    // A file in a known location that points
-                                       // to the component updated Widevine CDM.
+                                     // to the component updated Widevine CDM.
 #endif                                 // !defined(OS_CHROMEOS)
-#endif                                 // defined(OS_LINUX)
+#endif                  // defined(OS_LINUX) || defined(OS_CHROMEOS)
   FILE_RESOURCES_PACK,  // Full path to the .pak file containing binary data.
                         // This includes data for internal pages (e.g., html
                         // files and images), unless these resources are
@@ -120,7 +120,7 @@ enum {
   DIR_SUPERVISED_USER_INSTALLED_WHITELISTS,  // Directory where sanitized
                                              // supervised user whitelists are
                                              // installed.
-#if defined(OS_LINUX) || defined(OS_MAC)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
   DIR_NATIVE_MESSAGING,       // System directory where native messaging host
                               // manifest files are stored.
   DIR_USER_NATIVE_MESSAGING,  // Directory with Native Messaging Hosts
@@ -135,10 +135,10 @@ enum {
   DIR_GEN_TEST_DATA,  // Directory where generated test data resides.
   DIR_TEST_DATA,      // Directory where unit test data resides.
   DIR_TEST_TOOLS,     // Directory where unit test tools reside.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   FILE_COMPONENT_FLASH_HINT,  // A file in a known location that points to
                               // the component updated flash plugin.
-#endif  // defined(OS_LINUX)
+#endif                        // defined(OS_LINUX) || defined(OS_CHROMEOS)
 #if defined(OS_CHROMEOS)
   FILE_CHROME_OS_COMPONENT_FLASH,  // The location of component updated Flash on
                                    // Chrome OS.

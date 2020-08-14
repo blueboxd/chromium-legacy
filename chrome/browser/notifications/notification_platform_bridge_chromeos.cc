@@ -18,7 +18,7 @@
 #include "ui/gfx/image/image.h"
 
 #if BUILDFLAG(IS_LACROS)
-#include "chrome/browser/notifications/message_center_client_lacros.h"
+#include "chrome/browser/notifications/notification_platform_bridge_lacros.h"
 #else
 #include "chrome/browser/notifications/chrome_ash_message_center_client.h"
 #endif
@@ -37,7 +37,7 @@ bool NotificationPlatformBridge::CanHandleType(
 
 NotificationPlatformBridgeChromeOs::NotificationPlatformBridgeChromeOs() {
 #if BUILDFLAG(IS_LACROS)
-  impl_ = std::make_unique<MessageCenterClientLacros>(this);
+  impl_ = std::make_unique<NotificationPlatformBridgeLacros>(this);
 #else
   impl_ = std::make_unique<ChromeAshMessageCenterClient>(this);
 #endif

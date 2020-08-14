@@ -46,6 +46,16 @@ class SharedQueue : public base::RefCountedThreadSafe<SharedQueue<QueueType>> {
         base::BindOnce(&SharedQueue::OnPop, this, std::move(get_pop_cb)));
   }
 
+  // Swap will schedule a swap of the |queue_| contents with the provided
+  // |new_queue|, and send the old contents to the |swap_queue_cb|.
+  void Swap(base::queue<QueueType> new_queue,
+            base::OnceCallback<void(base::queue<QueueType>)> swap_queue_cb) {
+    sequenced_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SharedQueue::OnSwap, this, std::move(new_queue),
+                       std::move(swap_queue_cb)));
+  }
+
  protected:
   virtual ~SharedQueue() = default;
 
@@ -70,6 +80,12 @@ class SharedQueue : public base::RefCountedThreadSafe<SharedQueue<QueueType>> {
     QueueType item = std::move(queue_.front());
     queue_.pop();
     std::move(cb).Run(std::move(item));
+  }
+
+  void OnSwap(base::queue<QueueType> new_queue,
+              base::OnceCallback<void(base::queue<QueueType>)> swap_queue_cb) {
+    queue_.swap(new_queue);
+    std::move(swap_queue_cb).Run(std::move(new_queue));
   }
 
   // Used to monitor if the callback is in use or not.

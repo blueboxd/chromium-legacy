@@ -117,8 +117,7 @@ std::unique_ptr<MotionEventGeneric> ResampleMotionEvent(
   DCHECK(time0 < time1);
   DCHECK(time0 <= resample_time);
 
-  const float alpha = (resample_time - time0).InMillisecondsF() /
-                      (time1 - time0).InMillisecondsF();
+  const float alpha = (resample_time - time0) / (time1 - time0);
 
   std::unique_ptr<MotionEventGeneric> event;
   const size_t pointer_count = event0.GetPointerCount();

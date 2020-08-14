@@ -13,6 +13,7 @@
 #include "components/feed/core/v2/feed_network_impl.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/image_fetcher.h"
 #include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/feed_feature_list.h"
@@ -172,13 +173,15 @@ FeedService::FeedService(
   feed_network_ = std::make_unique<FeedNetworkImpl>(
       network_delegate_.get(), identity_manager, api_key, url_loader_factory,
       base::DefaultTickClock::GetInstance(), profile_prefs);
+  image_fetcher_ = std::make_unique<ImageFetcher>(url_loader_factory);
   store_ = std::make_unique<FeedStore>(std::move(database));
 
   stream_ = std::make_unique<FeedStream>(
       refresh_task_scheduler_.get(), metrics_reporter_.get(),
-      stream_delegate_.get(), profile_prefs, feed_network_.get(), store_.get(),
-      prefetch_service, offline_page_model, base::DefaultClock::GetInstance(),
-      base::DefaultTickClock::GetInstance(), chrome_info);
+      stream_delegate_.get(), profile_prefs, feed_network_.get(),
+      image_fetcher_.get(), store_.get(), prefetch_service, offline_page_model,
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      chrome_info);
 
   history_observer_ = std::make_unique<HistoryObserverImpl>(
       history_service, static_cast<FeedStream*>(stream_.get()));

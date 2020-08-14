@@ -107,6 +107,9 @@ class BaseSearchProvider : public AutocompleteProvider {
   // Returns whether the provided classification indicates some sort of NTP.
   static bool IsNTPPage(
       metrics::OmniboxEventProto::PageClassification classification);
+  // Returns whether the provided classification indicates Search Results Page.
+  static bool IsSearchResultsPage(
+      metrics::OmniboxEventProto::PageClassification classification);
 
   // AutocompleteProvider:
   void DeleteMatch(const AutocompleteMatch& match) override;

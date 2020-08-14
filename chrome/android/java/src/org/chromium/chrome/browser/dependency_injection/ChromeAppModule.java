@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 
 import javax.inject.Named;
@@ -85,5 +86,10 @@ public class ChromeAppModule {
     @Provides
     public SystemNightModeMonitor provideSystemNightModeMonitor() {
         return SystemNightModeMonitor.getInstance();
+    }
+
+    @Provides
+    public AsyncTabParamsManager provideAsyncTabParamsManager() {
+        return AsyncTabParamsManager.getInstance();
     }
 }

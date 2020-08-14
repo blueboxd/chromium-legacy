@@ -401,8 +401,12 @@ bool IsSuggestionButtonRowEnabled();
 // Returns true if either the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 
-// Returns true if the #omnibox-pedal-suggestions feature is enabled.
+// Returns true if the Pedals feature is enabled.
 bool IsPedalSuggestionsEnabled();
+
+// Returns true if the keyword button and suggestion button row features are
+// enabled.
+bool IsKeywordSearchButtonEnabled();
 
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.

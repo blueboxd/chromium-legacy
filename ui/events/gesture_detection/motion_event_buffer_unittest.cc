@@ -720,8 +720,8 @@ TEST_F(MotionEventBufferTest, Interpolation) {
 
   // There should only be one flushed event, with the event interpolated between
   // the two events. The second event should remain buffered.
-  float alpha = (interpolated_time - move0.GetEventTime()).InMillisecondsF() /
-                (move1.GetEventTime() - move0.GetEventTime()).InMillisecondsF();
+  const float alpha = (interpolated_time - move0.GetEventTime()) /
+                      (move1.GetEventTime() - move0.GetEventTime());
   MockMotionEvent interpolated_event(
       MotionEvent::Action::MOVE, interpolated_time,
       move0.GetX(0) + (move1.GetX(0) - move0.GetX(0)) * alpha,
@@ -771,9 +771,8 @@ TEST_F(MotionEventBufferTest, Extrapolation) {
   // determining the extrapolated event.
   base::TimeTicks expected_time =
       move1.GetEventTime() + (move1.GetEventTime() - move0.GetEventTime()) / 2;
-  float expected_alpha =
-      (expected_time - move0.GetEventTime()).InMillisecondsF() /
-      (move1.GetEventTime() - move0.GetEventTime()).InMillisecondsF();
+  const float expected_alpha = (expected_time - move0.GetEventTime()) /
+                               (move1.GetEventTime() - move0.GetEventTime());
   MockMotionEvent extrapolated_event(
       MotionEvent::Action::MOVE, expected_time,
       move0.GetX(0) + (move1.GetX(0) - move0.GetX(0)) * expected_alpha,
@@ -816,9 +815,8 @@ TEST_F(MotionEventBufferTest, ExtrapolationHorizonLimited) {
   // Note that the maximum extrapolation is limited by 8 ms.
   base::TimeTicks expected_time =
       move1.GetEventTime() + base::TimeDelta::FromMilliseconds(8);
-  float expected_alpha =
-      (expected_time - move0.GetEventTime()).InMillisecondsF() /
-      (move1.GetEventTime() - move0.GetEventTime()).InMillisecondsF();
+  const float expected_alpha = (expected_time - move0.GetEventTime()) /
+                               (move1.GetEventTime() - move0.GetEventTime());
   MockMotionEvent extrapolated_event(
       MotionEvent::Action::MOVE, expected_time,
       move0.GetX(0) + (move1.GetX(0) - move0.GetX(0)) * expected_alpha,

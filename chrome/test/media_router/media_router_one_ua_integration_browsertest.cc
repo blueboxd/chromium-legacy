@@ -66,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
   RunFailToSendMessageTest();
 }
 
-#if defined(OS_LINUX) &&                                        \
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) &&              \
     (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
      BUILDFLAG(CFI_ENFORCEMENT_TRAP) || BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC))
 // https://crbug.com/966827. Flaky on Linux CFI.

@@ -117,6 +117,10 @@ class AppRegistrar {
   virtual std::vector<WebApplicationShortcutsMenuItemInfo>
   GetAppShortcutsMenuItemInfos(const AppId& app_id) const = 0;
 
+  // Returns the Run on OS Login mode.
+  virtual RunOnOsLoginMode GetAppRunOnOsLoginMode(
+      const AppId& app_id) const = 0;
+
   // Represents which icon sizes we successfully downloaded from the
   // ShortcutsMenuItemInfos.
   virtual std::vector<std::vector<SquareSizePx>>

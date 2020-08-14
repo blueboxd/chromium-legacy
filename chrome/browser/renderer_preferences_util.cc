@@ -174,7 +174,8 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   }
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_WIN)
   content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
 #endif
 

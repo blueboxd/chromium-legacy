@@ -25,6 +25,7 @@ enum class CHROMEOS_EXPORT ScanProtocol {
 
 struct CHROMEOS_EXPORT ScannerDeviceName {
   explicit ScannerDeviceName(const std::string& device_name);
+  ScannerDeviceName(const std::string& device_name, bool usable);
   ~ScannerDeviceName();
 
   ScannerDeviceName(const ScannerDeviceName& scanner_device_name);
@@ -56,7 +57,7 @@ struct CHROMEOS_EXPORT Scanner {
   // Map of ScanProtocol to a set of corresponding ScannerDeviceNames that can
   // be used with the lorgnette D-Bus service. Clients are responsible for
   // selecting which device name to use.
-  base::flat_map<ScanProtocol, std::set<ScannerDeviceName>> device_names;
+  base::flat_map<ScanProtocol, base::flat_set<ScannerDeviceName>> device_names;
 
   // Known IP addresses for this scanner. Used to deduplicate network scanners
   // from multiple sources.

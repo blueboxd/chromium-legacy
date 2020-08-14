@@ -623,7 +623,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
 }
 
 // Disabled due to flakiness: https://crbug.com/1092018
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_NewNavigationBeforeCommit DISABLED_NewNavigationBeforeCommit
 #else
 #define MAYBE_NewNavigationBeforeCommit NewNavigationBeforeCommit

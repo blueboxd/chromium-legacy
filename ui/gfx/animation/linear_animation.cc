@@ -81,8 +81,7 @@ void LinearAnimation::SetDuration(base::TimeDelta duration) {
 
 void LinearAnimation::Step(base::TimeTicks time_now) {
   base::TimeDelta elapsed_time = time_now - start_time();
-  state_ = static_cast<double>(elapsed_time.InMicroseconds()) /
-           static_cast<double>(duration_.InMicroseconds());
+  state_ = elapsed_time / duration_;
   if (state_ >= 1.0)
     state_ = 1.0;
 

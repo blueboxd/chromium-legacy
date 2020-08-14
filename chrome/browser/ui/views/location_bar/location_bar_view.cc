@@ -576,9 +576,9 @@ void LocationBarView::Layout() {
   }
   // Because IMEs may eat the tab key, we don't show "press tab to search" while
   // IME composition is in progress.
-  // The keyword hint is also not shown when the Button Row is enabled since
-  // it's now redundant with the keyword button and is no longer accurate.
-  if (!OmniboxFieldTrial::IsSuggestionButtonRowEnabled() && HasFocus() &&
+  // The keyword hint is also not shown when the keyword button is enabled since
+  // it's redundant with that and is no longer accurate.
+  if (!OmniboxFieldTrial::IsKeywordSearchButtonEnabled() && HasFocus() &&
       !keyword.empty() && omnibox_view_->model()->is_keyword_hint() &&
       !omnibox_view_->IsImeComposing()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height, true,

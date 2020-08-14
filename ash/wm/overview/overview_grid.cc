@@ -1842,6 +1842,7 @@ bool OverviewGrid::FitWindowRectsInBounds(
     int width = CalculateWidthAndMaybeSetUnclippedBounds(window_list_[i].get(),
                                                          height) +
                 2 * kWindowMargin;
+    int height_with_margin = height + 2 * kWindowMargin;
 
     if (left + width > bounds.right()) {
       // Move to the next row if possible.
@@ -1849,11 +1850,11 @@ bool OverviewGrid::FitWindowRectsInBounds(
         *out_min_right = left;
       if (*out_max_right < left)
         *out_max_right = left;
-      top += height;
+      top += height_with_margin;
 
       // Check if the new row reaches the bottom or if the first item in the new
       // row does not fit within the available width.
-      if (top + height > bounds.bottom() ||
+      if (top + height_with_margin > bounds.bottom() ||
           bounds.x() + width > bounds.right()) {
         return false;
       }
@@ -1861,12 +1862,12 @@ bool OverviewGrid::FitWindowRectsInBounds(
     }
 
     // Position the current rect.
-    (*out_rects)[i] = gfx::RectF(left, top, width, height + 2 * kWindowMargin);
+    (*out_rects)[i] = gfx::RectF(left, top, width, height_with_margin);
 
     // Increment horizontal position using sanitized positive |width|.
     left += width;
 
-    *out_max_bottom = top + height;
+    *out_max_bottom = top + height_with_margin;
   }
 
   // Update the narrowest and widest row width for the last row.

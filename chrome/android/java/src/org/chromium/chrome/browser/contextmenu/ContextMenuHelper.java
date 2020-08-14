@@ -22,6 +22,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lens.LensController;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
 import org.chromium.chrome.browser.share.LensUtils;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -120,6 +121,13 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         mOnMenuClosed = (notAbandoned) -> {
             recordTimeToTakeActionHistogram(mSelectedItemBeforeDismiss || notAbandoned);
             mPopulator.onMenuClosed();
+            if (LensUtils.enableShoppyImageMenuItem()
+                    && LensController.getInstance().isSdkAvailable()) {
+                // If the image was being classified terminate the classification
+                // Has no effect if the classification already succeeded.
+                LensController.getInstance().terminateClassification();
+            }
+
             if (mNativeContextMenuHelper == 0) return;
             ContextMenuHelperJni.get().onContextMenuClosed(
                     mNativeContextMenuHelper, ContextMenuHelper.this);
@@ -127,25 +135,22 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.REVAMPED_CONTEXT_MENU)
                 && params.getSourceType() != MenuSourceType.MENU_SOURCE_MOUSE) {
-            List<Pair<Integer, List<ContextMenuItem>>> items =
-                    mPopulator.buildContextMenu(null, mActivity, mCurrentContextMenuParams);
-            if (items.isEmpty()) {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, mOnMenuClosed.bind(false));
-                return;
-            }
-
-            final RevampedContextMenuCoordinator menuCoordinator =
-                    new RevampedContextMenuCoordinator(topContentOffsetPx,
-                            () -> shareImageWithLastShareComponent(renderFrameHost));
-            menuCoordinator.displayMenu(mWindow, mWebContents, mCurrentContextMenuParams, items,
-                    mCallback, mOnMenuShown, mOnMenuClosed);
-            if (sRevampedContextMenuShownCallback != null) {
-                sRevampedContextMenuShownCallback.onResult(menuCoordinator);
-            }
-            // TODO(sinansahin): This could be pushed in to the header mediator.
-            if (mCurrentContextMenuParams.isImage()) {
-                mPopulator.getThumbnail(
-                        renderFrameHost, menuCoordinator.getOnImageThumbnailRetrievedReference());
+            // NOTE: This is a temporary implementation to enable experimentation and should not
+            // not be enabled under any circumstances on Stable Chrome builds due to potential
+            // latency impact.
+            if (LensUtils.enableShoppyImageMenuItem()
+                    && LensController.getInstance().isSdkAvailable()) {
+                mPopulator.retrieveImage(
+                        renderFrameHost, ContextMenuImageFormat.ORIGINAL, (Uri uri) -> {
+                            LensController.getInstance().classifyImage(
+                                    uri, (Boolean isShoppyImage) -> {
+                                        displayRevampedContextMenu(
+                                                renderFrameHost, topContentOffsetPx, isShoppyImage);
+                                    });
+                        });
+            } else {
+                displayRevampedContextMenu(
+                        renderFrameHost, topContentOffsetPx, /* isShoppyImage*/ false);
             }
             return;
         }
@@ -176,6 +181,29 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         }
     }
 
+    private void displayRevampedContextMenu(
+            RenderFrameHost renderFrameHost, float topContentOffsetPx, boolean isShoppyImage) {
+        List<Pair<Integer, List<ContextMenuItem>>> items = mPopulator.buildContextMenu(
+                null, mActivity, mCurrentContextMenuParams, isShoppyImage);
+        if (items.isEmpty()) {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, mOnMenuClosed.bind(false));
+            return;
+        }
+
+        final RevampedContextMenuCoordinator menuCoordinator = new RevampedContextMenuCoordinator(
+                topContentOffsetPx, () -> shareImageWithLastShareComponent(renderFrameHost));
+        menuCoordinator.displayMenu(mWindow, mWebContents, mCurrentContextMenuParams, items,
+                mCallback, mOnMenuShown, mOnMenuClosed);
+        if (sRevampedContextMenuShownCallback != null) {
+            sRevampedContextMenuShownCallback.onResult(menuCoordinator);
+        }
+        // TODO(sinansahin): This could be pushed in to the header mediator.
+        if (mCurrentContextMenuParams.isImage()) {
+            mPopulator.getThumbnail(
+                    renderFrameHost, menuCoordinator.getOnImageThumbnailRetrievedReference());
+        }
+    }
+
     /**
      * Share the image that triggered the current context menu with the last app used to share.
      * @param renderFrameHost {@link RenderFrameHost} to get the encoded images from.
@@ -189,7 +217,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         List<Pair<Integer, List<ContextMenuItem>>> items =
-                mPopulator.buildContextMenu(menu, v.getContext(), mCurrentContextMenuParams);
+                mPopulator.buildContextMenu(menu, v.getContext(), mCurrentContextMenuParams, false);
 
         if (items.isEmpty()) {
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, mOnMenuClosed.bind(false));

@@ -222,9 +222,13 @@ extern const char kGenericPaymentMethodNotSupportedMessage[];
 // be used with base::ReplaceStringPlaceholders(fmt, {A}, nullptr).
 extern const char kNoContentAndNoLinkHeader[];
 
-// User when the downloaded payment manifest A is empty. This format should be
+// Used when the downloaded payment manifest A is empty. This format should be
 // used with base::ReplaceStringPlaceholders(fmt, {A}, nullptr).
 extern const char kNoContentInPaymentManifest[];
+
+// Used when it's impossible to invoke Android payment apps, e.g., when ARC is
+// disabled on Chrome OS.
+extern const char kUnableToInvokeAndroidPaymentApps[];
 
 }  // namespace errors
 }  // namespace payments

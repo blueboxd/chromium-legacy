@@ -72,29 +72,25 @@ constexpr auto kShowAnimationDuration = kPositionAnimationDuration;
 // Value of |tablet_mode_animation_| showing to begin animating alpha of
 // |size_button_|.
 float SizeButtonShowStartValue() {
-  return kShowAnimationAlphaDelay.InMillisecondsF() /
-         kShowAnimationDuration.InMillisecondsF();
+  return kShowAnimationAlphaDelay / kShowAnimationDuration;
 }
 
 // Amount of |tablet_mode_animation_| showing to animate the alpha of
 // |size_button_|.
 float SizeButtonShowDuration() {
-  return kAlphaAnimationDuration.InMillisecondsF() /
-         kShowAnimationDuration.InMillisecondsF();
+  return kAlphaAnimationDuration / kShowAnimationDuration;
 }
 
 // Amount of |tablet_mode_animation_| hiding to animate the alpha of
 // |size_button_|.
 float SizeButtonHideDuration() {
-  return kAlphaAnimationDuration.InMillisecondsF() /
-         kHideAnimationDuration.InMillisecondsF();
+  return kAlphaAnimationDuration / kHideAnimationDuration;
 }
 
 // Value of |tablet_mode_animation_| hiding to begin animating the position of
 // buttons to the left of |size_button_|.
 float HidePositionStartValue() {
-  return 1.0f - kHidePositionDelay.InMillisecondsF() /
-                    kHideAnimationDuration.InMillisecondsF();
+  return 1.0f - kHidePositionDelay / kHideAnimationDuration;
 }
 
 // Bounds animation values to the range 0.0 - 1.0. Allows for mapping of offset

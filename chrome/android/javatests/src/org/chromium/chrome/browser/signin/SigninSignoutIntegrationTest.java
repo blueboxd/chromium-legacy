@@ -216,9 +216,7 @@ public class SigninSignoutIntegrationTest {
             mBookmarkModel = new BookmarkModel(Profile.fromWebContents(
                     mActivityTestRule.getActivity().getActivityTab().getWebContents()));
             mBookmarkModel.loadFakePartnerBookmarkShimForTesting();
-        });
-        BookmarkTestUtil.waitForBookmarkModelLoaded();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BookmarkTestUtil.waitForBookmarkModelLoaded();
             Assert.assertEquals(0, mBookmarkModel.getChildCount(mBookmarkModel.getDefaultFolder()));
             mBookmarkModel.addBookmark(
                     mBookmarkModel.getDefaultFolder(), 0, "Test Bookmark", "http://google.com");

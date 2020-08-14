@@ -5,6 +5,7 @@
 module crosapi.mojom;
 
 import "chromeos/crosapi/mojom/attestation.mojom";
+import "chromeos/crosapi/mojom/message_center.mojom";
 import "chromeos/crosapi/mojom/screen_manager.mojom";
 import "chromeos/crosapi/mojom/select_file.mojom";
 
@@ -13,6 +14,9 @@ import "chromeos/crosapi/mojom/select_file.mojom";
 interface AshChromeService {
   // Binds the Attestation interface for challenging keys.
   BindAttestation@2(pending_receiver<Attestation> receiver);
+
+  // Binds the MessageCenter interface for showing notification messages.
+  BindMessageCenter@3(pending_receiver<MessageCenter> receiver);
 
   // Binds the ScreenManager interface for interacting with windows, screens and
   // displays.

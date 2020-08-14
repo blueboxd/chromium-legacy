@@ -63,8 +63,7 @@ void FractionOfTimeWithoutUserInputRecorder::RecordActiveInterval(
     if (end_time < window_end_time)
       break;
 
-    RecordToUma(current_window_active_time_.InMillisecondsF() /
-                window_size_.InMillisecondsF());
+    RecordToUma(current_window_active_time_ / window_size_);
 
     current_window_active_time_ = base::TimeDelta();
     window_start_time_ = window_end_time;

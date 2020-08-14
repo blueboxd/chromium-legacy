@@ -456,6 +456,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void SwitchAccessDisableDialogClosed(bool disable_dialog_accepted);
   void MaybeCreateSelectToSpeakEventHandler();
   void MaybeCreateSwitchAccessEventHandler();
+  void ActivateSwitchAccess();
+  void DeactivateSwitchAccess();
 
   // Client interface in chrome browser.
   AccessibilityControllerClient* client_ = nullptr;
@@ -484,6 +486,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
       nullptr;
   bool no_switch_access_disable_confirmation_dialog_for_testing_ = false;
   bool switch_access_disable_dialog_showing_ = false;
+  bool skip_switch_access_notification_ = false;
 
   // Used to control the highlights of caret, cursor and focus.
   std::unique_ptr<AccessibilityHighlightController>

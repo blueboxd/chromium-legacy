@@ -132,18 +132,14 @@ public class WebLayerShellActivity extends FragmentActivity {
     private EditText mEditUrlView;
     private ProgressBar mLoadProgressBar;
     private View mTopContentsContainer;
-    private View mAltTopContentsContainer;
     private TabListCallback mTabListCallback;
     private List<Tab> mPreviousTabList = new ArrayList<>();
     private Runnable mExitFullscreenRunnable;
-    private boolean mIsTopViewVisible = true;
     private View mBottomView;
     private int mTopViewMinHeight;
     private boolean mTopViewPinnedToContentTop;
-    private boolean mAnimateControlsChanges;
     private boolean mInIncognitoMode;
     private boolean mEnableWebViewCompat;
-    private boolean mEnableAltTopView;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -159,8 +155,6 @@ public class WebLayerShellActivity extends FragmentActivity {
         ImageButton controlsMenuButton = (ImageButton) findViewById(R.id.controls_menu_button);
         controlsMenuButton.setOnClickListener(this::onControlsMenuButtonClicked);
 
-        mAltTopContentsContainer =
-                LayoutInflater.from(this).inflate(R.layout.alt_shell_browser_controls, null);
         mTopContentsContainer =
                 LayoutInflater.from(this).inflate(R.layout.shell_browser_controls, null);
         mUrlViewContainer = mTopContentsContainer.findViewById(R.id.url_view_container);
@@ -259,7 +253,6 @@ public class WebLayerShellActivity extends FragmentActivity {
     private void onControlsMenuButtonClicked(View controlsMenuButtonView) {
         PopupMenu popup = new PopupMenu(WebLayerShellActivity.this, controlsMenuButtonView);
         popup.getMenuInflater().inflate(R.menu.controls_menu, popup.getMenu());
-        popup.getMenu().findItem(R.id.toggle_top_view_id).setChecked(mIsTopViewVisible);
         popup.getMenu().findItem(R.id.toggle_bottom_view_id).setChecked(mBottomView != null);
         popup.getMenu()
                 .findItem(R.id.toggle_top_view_min_height_id)
@@ -267,17 +260,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         popup.getMenu()
                 .findItem(R.id.toggle_top_view_pinned_to_top_id)
                 .setChecked(mTopViewPinnedToContentTop);
-        popup.getMenu().findItem(R.id.toggle_alt_top_view_id).setChecked(mEnableAltTopView);
-        popup.getMenu()
-                .findItem(R.id.toggle_controls_animations_id)
-                .setChecked(mAnimateControlsChanges);
         popup.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.toggle_top_view_id) {
-                mIsTopViewVisible = !mIsTopViewVisible;
-                updateTopView();
-                return true;
-            }
-
             if (item.getItemId() == R.id.toggle_bottom_view_id) {
                 if (mBottomView == null) {
                     mBottomView = LayoutInflater.from(this).inflate(R.layout.bottom_controls, null);
@@ -300,30 +283,13 @@ public class WebLayerShellActivity extends FragmentActivity {
                 return true;
             }
 
-            if (item.getItemId() == R.id.toggle_alt_top_view_id) {
-                mEnableAltTopView = !mEnableAltTopView;
-                updateTopView();
-                return true;
-            }
-
-            if (item.getItemId() == R.id.toggle_controls_animations_id) {
-                mAnimateControlsChanges = !mAnimateControlsChanges;
-                updateTopView();
-                return true;
-            }
-
             return false;
         });
         popup.show();
     }
 
     private void updateTopView() {
-        View topView = null;
-        if (mIsTopViewVisible) {
-            topView = mEnableAltTopView ? mAltTopContentsContainer : mTopContentsContainer;
-        }
-        mBrowser.setTopView(
-                topView, mTopViewMinHeight, mTopViewPinnedToContentTop, mAnimateControlsChanges);
+        mBrowser.setTopView(mTopContentsContainer, mTopViewMinHeight, mTopViewPinnedToContentTop);
     }
 
     @Override

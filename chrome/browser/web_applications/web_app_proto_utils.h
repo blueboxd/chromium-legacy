@@ -8,10 +8,13 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
 
 namespace web_app {
+
+enum class RunOnOsLoginMode;
 
 using RepeatedIconInfosProto =
     const ::google::protobuf::RepeatedPtrField<::sync_pb::WebAppIconInfo>;
@@ -32,6 +35,11 @@ base::Optional<WebApp::SyncFallbackData> ParseSyncFallbackDataStruct(
 
 ::sync_pb::WebAppSpecifics::UserDisplayMode ToWebAppSpecificsUserDisplayMode(
     DisplayMode user_display_mode);
+
+RunOnOsLoginMode ToRunOnOsLoginMode(WebAppProto::RunOnOsLoginMode mode);
+
+WebAppProto::RunOnOsLoginMode ToWebAppProtoRunOnOsLoginMode(
+    RunOnOsLoginMode mode);
 
 }  // namespace web_app
 

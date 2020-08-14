@@ -6,17 +6,15 @@
 #define ASH_DISPLAY_PERSISTENT_WINDOW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "base/callback.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/display/display_observer.h"
 
 namespace ash {
 
 // Observes display changes and saves/restores window bounds persistently in
 // multi-displays scenario.
-class ASH_EXPORT PersistentWindowController
-    : public display::DisplayObserver,
-      public WindowTreeHostManager::Observer {
+class ASH_EXPORT PersistentWindowController : public display::DisplayObserver {
  public:
   // Public so it can be used by unit tests.
   constexpr static char kNumOfWindowsRestoredHistogramName[] =
@@ -32,15 +30,18 @@ class ASH_EXPORT PersistentWindowController
   // display::DisplayObserver:
   void OnWillProcessDisplayChanges() override;
   void OnDisplayAdded(const display::Display& new_display) override;
-
-  // WindowTreeHostManager::Observer:
-  void OnDisplayConfigurationChanged() override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDidProcessDisplayChanges() override;
 
   // Called when restoring persistent window placement is wanted.
   void MaybeRestorePersistentWindowBounds();
 
-  // Callback binded on display added and run on display configuration changed.
-  base::OnceCallback<void()> restore_callback_;
+  // Callback binded on display added and run on display changes are processed.
+  base::OnceClosure restore_callback_;
+
+  // Temporary storage that stores windows that may need persistent info
+  // stored on display removal. Cleared when display changes are processed.
+  aura::WindowTracker need_persistent_info_windows_;
 };
 
 }  // namespace ash

@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/common/chrome_features.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_MAC)
 #include "chrome/browser/web_applications/components/app_shim_registry_mac.h"
@@ -238,9 +239,9 @@ void OsIntegrationManager::OnShortcutsCreated(
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin) &&
       options.run_on_os_login) {
-    // TODO(crbug.com/897302): Add run on OS login dev activation from
-    // manifest, for now it is on by default if feature flag is enabled.
-    shortcut_manager_->RegisterRunOnOsLogin(
+    // TODO(crbug.com/897302): Implement Run on OS Login mode selection.
+    // Currently it is set to be the default: RunOnOsLoginMode::kWindowed
+    RegisterRunOnOsLogin(
         app_id, base::BindOnce(barrier_callback, OsHookType::kRunOnOsLogin));
   } else {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -262,4 +263,23 @@ void OsIntegrationManager::DeleteSharedAppShims(const AppId& app_id) {
   }
 #endif
 }
+
+void OsIntegrationManager::RegisterRunOnOsLogin(
+    const AppId& app_id,
+    RegisterRunOnOsLoginCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  shortcut_manager_->GetShortcutInfoForApp(
+      app_id,
+      base::BindOnce(
+          &OsIntegrationManager::OnShortcutInfoRetrievedRegisterRunOnOsLogin,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void OsIntegrationManager::OnShortcutInfoRetrievedRegisterRunOnOsLogin(
+    RegisterRunOnOsLoginCallback callback,
+    std::unique_ptr<ShortcutInfo> info) {
+  ScheduleRegisterRunOnOsLogin(std::move(info), std::move(callback));
+}
+
 }  // namespace web_app

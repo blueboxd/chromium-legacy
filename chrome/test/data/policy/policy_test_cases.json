@@ -648,10 +648,21 @@
   },
 
   "NativePrintersBulkAccessMode": {
+    "note": "This policy is deprecated, see http://crbug.com/1113370.",
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": { "NativePrintersBulkAccessMode": 1 },
+        "prefs": { "native_printing.recommended_printers_access_mode": {} }
+      }
+    ]
+  },
+
+  "PrintersBulkAccessMode": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "PrintersBulkAccessMode": 1 },
         "prefs": { "native_printing.recommended_printers_access_mode": {} }
       }
     ]

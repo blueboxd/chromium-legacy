@@ -436,9 +436,7 @@ class PdfAccessibilityTreeBuilder {
                            &text_run_index);
         continue;
       } else if (IsObjectInTextRun(highlights_, current_highlight_index_,
-                                   text_run_index) &&
-                 base::FeatureList::IsEnabled(
-                     chrome_pdf::features::kAccessiblePDFHighlight)) {
+                                   text_run_index)) {
         FinishStaticNode(&static_text_node, &static_text);
         AddHighlightToParaNode(highlights_[current_highlight_index_++],
                                para_node, &previous_on_line_node,

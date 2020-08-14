@@ -139,10 +139,9 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
         match_.description, match_.description_class, deemphasize);
   }
 
-  // With button row, its keyword button is used instead of |keyword_view_|.
-  if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
-    button_row_->UpdateFromModel();
-  } else {
+  // |keyword_view_| only needs to be updated if the keyword search button is
+  // not enabled.
+  if (!OmniboxFieldTrial::IsKeywordSearchButtonEnabled()) {
     AutocompleteMatch* keyword_match = match_.associated_keyword.get();
     keyword_view_->SetVisible(keyword_match != nullptr);
     if (keyword_match) {
@@ -151,6 +150,9 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
       keyword_view_->description()->SetText(keyword_match->description,
                                             keyword_match->description_class);
     }
+  }
+  if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
+    button_row_->UpdateFromModel();
   }
 
   ApplyThemeAndRefreshIcons();

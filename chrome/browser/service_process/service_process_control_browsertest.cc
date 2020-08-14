@@ -99,7 +99,7 @@ class ServiceProcessControlBrowserTest
   void SetUp() override {
     InProcessBrowserTest::SetUp();
 
-#if defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
     // This should not be needed because TearDown() ends with a closed
     // service_process_, but HistogramsTimeout and Histograms fail without this
     // on Mac, and on Linux asan builds (https://crbug.com/1059446).
@@ -213,7 +213,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
 }
 
 // Flaky on macOS, linux and windows: https://crbug.com/978948
-#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 #define MAYBE_LaunchAndReconnect DISABLED_LaunchAndReconnect
 #else
 #define MAYBE_LaunchAndReconnect LaunchAndReconnect

@@ -31,8 +31,8 @@ constexpr base::TimeDelta kResampleLatency =
 inline gfx::PointF lerp(const InputPredictor::InputData& a,
                         const InputPredictor::InputData& b,
                         base::TimeTicks sample_time) {
-  float alpha = (sample_time - a.time_stamp).InMillisecondsF() /
-                (a.time_stamp - b.time_stamp).InMillisecondsF();
+  const float alpha =
+      (sample_time - a.time_stamp) / (a.time_stamp - b.time_stamp);
   return a.pos + gfx::ScaleVector2d(a.pos - b.pos, alpha);
 }
 

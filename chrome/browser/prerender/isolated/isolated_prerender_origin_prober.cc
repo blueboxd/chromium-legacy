@@ -165,8 +165,10 @@ IsolatedPrerenderOriginProber::IsolatedPrerenderOriginProber(Profile* profile)
   // the chance, but there's no point in it being ready for the first navigation
   // since the check won't be done by then anyways.
   content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&StartCanaryCheck, canary_check_->AsWeakPtr()));
+      ->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&StartCanaryCheck, canary_check_->AsWeakPtr()),
+          base::TimeDelta::FromSeconds(1));
 }
 
 IsolatedPrerenderOriginProber::~IsolatedPrerenderOriginProber() = default;

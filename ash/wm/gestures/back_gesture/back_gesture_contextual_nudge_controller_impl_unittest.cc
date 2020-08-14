@@ -37,7 +37,11 @@ static constexpr int kSwipingDistanceForGoingBack = 80;
 class BackGestureContextualNudgeControllerTest : public NoSessionAshTestBase {
  public:
   explicit BackGestureContextualNudgeControllerTest(bool can_go_back = true)
-      : can_go_back_(can_go_back) {}
+      : can_go_back_(can_go_back) {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kContextualNudges, features::kHideShelfControlsInTabletMode},
+        {});
+  }
   ~BackGestureContextualNudgeControllerTest() override = default;
 
   // NoSessionAshTestBase:
@@ -48,10 +52,6 @@ class BackGestureContextualNudgeControllerTest : public NoSessionAshTestBase {
       delegate->SetCanGoBack(false);
     }
     NoSessionAshTestBase::SetUp(std::move(delegate));
-
-    scoped_feature_list_.InitWithFeatures(
-        {features::kContextualNudges, features::kHideShelfControlsInTabletMode},
-        {});
 
     GetSessionControllerClient()->AddUserSession(kUser1Email);
     GetSessionControllerClient()->AddUserSession(kUser2Email);

@@ -146,7 +146,7 @@ TEST_F(CalculatorsPoliciesBinderTest, PrefsAllAccess) {
   auto calculator = UserCalculator();
 
   // Set prefs to complete computation
-  prefs_.SetManagedPref(prefs::kRecommendedNativePrintersAccessMode,
+  prefs_.SetManagedPref(prefs::kRecommendedPrintersAccessMode,
                         std::make_unique<base::Value>(
                             BulkPrintersCalculator::AccessMode::ALL_ACCESS));
 
@@ -160,7 +160,7 @@ TEST_F(CalculatorsPoliciesBinderTest, PrefsWhitelist) {
 
   // Set prefs to complete computation
   prefs_.SetManagedPref(
-      prefs::kRecommendedNativePrintersAccessMode,
+      prefs::kRecommendedPrintersAccessMode,
       std::make_unique<base::Value>(
           BulkPrintersCalculator::AccessMode::ALLOWLIST_ONLY));
   prefs_.SetManagedPref(prefs::kRecommendedNativePrintersWhitelist,
@@ -176,7 +176,7 @@ TEST_F(CalculatorsPoliciesBinderTest, PrefsBlocklist) {
 
   // Set prefs to complete computation
   prefs_.SetManagedPref(
-      prefs::kRecommendedNativePrintersAccessMode,
+      prefs::kRecommendedPrintersAccessMode,
       std::make_unique<base::Value>(
           BulkPrintersCalculator::AccessMode::BLOCKLIST_ONLY));
   prefs_.SetManagedPref(prefs::kRecommendedNativePrintersBlacklist,
@@ -191,7 +191,7 @@ TEST_F(CalculatorsPoliciesBinderTest, PrefsBeforeBind) {
   // Verify that if preferences are set before we bind to policies, the
   // calculator is still properly populated.
   prefs_.SetManagedPref(
-      prefs::kRecommendedNativePrintersAccessMode,
+      prefs::kRecommendedPrintersAccessMode,
       std::make_unique<base::Value>(
           BulkPrintersCalculator::AccessMode::ALLOWLIST_ONLY));
   prefs_.SetManagedPref(prefs::kRecommendedNativePrintersWhitelist,

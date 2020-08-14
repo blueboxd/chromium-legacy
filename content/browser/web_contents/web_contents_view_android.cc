@@ -12,7 +12,6 @@
 #include "base/optional.h"
 #include "cc/layers/layer.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
-#include "content/browser/android/content_feature_list.h"
 #include "content/browser/android/content_ui_event_handler.h"
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/select_popup.h"

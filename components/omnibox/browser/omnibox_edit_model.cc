@@ -1439,10 +1439,10 @@ bool OmniboxEditModel::OnAfterPossibleChange(
   // |allow_exact_keyword_match_| will be used by StartAutocomplete() method,
   // which will be called by |view_->UpdatePopup()|; so after that returns we
   // can safely reset this flag.
-  // Entering keyword mode by space is disabled if suggestion button row is
-  // enabled, so do not set |allow_exact_keyword_match_| if button row enabled.
+  // Entering keyword mode by space is disabled if the keyword button is
+  // enabled, so do not set |allow_exact_keyword_match_| in that case.
   allow_exact_keyword_match_ =
-      !OmniboxFieldTrial::IsSuggestionButtonRowEnabled() &&
+      !OmniboxFieldTrial::IsKeywordSearchButtonEnabled() &&
       state_changes.text_differs && allow_keyword_ui_change &&
       !state_changes.just_deleted_text && no_selection &&
       CreatedKeywordSearchByInsertingSpaceInMiddle(
@@ -1626,13 +1626,12 @@ bool OmniboxEditModel::ShouldPreventElision() const {
 
 bool OmniboxEditModel::MaybeAcceptKeywordBySpace(
     const base::string16& new_text) {
-  size_t keyword_length = new_text.length() - 1;
-
-  // Entering keyword mode by space is disabled when Suggestion Button Row is
+  // Entering keyword mode by space is disabled when the keyword button is
   // enabled, so do not accept keyword.
-  if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
+  if (OmniboxFieldTrial::IsKeywordSearchButtonEnabled())
     return false;
 
+  size_t keyword_length = new_text.length() - 1;
   return is_keyword_hint_ && (keyword_.length() == keyword_length) &&
          IsSpaceCharForAcceptingKeyword(new_text[keyword_length]) &&
          !new_text.compare(0, keyword_length, keyword_, 0, keyword_length) &&

@@ -4,6 +4,7 @@
 
 #include "chromeos/components/phonehub/notification_access_manager_impl.h"
 
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/phonehub/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -25,6 +26,16 @@ NotificationAccessManagerImpl::~NotificationAccessManagerImpl() = default;
 
 bool NotificationAccessManagerImpl::HasAccessBeenGranted() const {
   return pref_service_->GetBoolean(prefs::kNotificationAccessGranted);
+}
+
+void NotificationAccessManagerImpl::OnSetupAttemptStarted() {
+  PA_LOG(INFO) << "Notification access setup flow started.";
+  // TODO(khorimoto): Attempt notification setup flow.
+}
+
+void NotificationAccessManagerImpl::OnSetupAttemptEnded() {
+  PA_LOG(INFO) << "Notification access setup flow ended.";
+  // TODO(khorimoto): Stop ongoing notification setup flow.
 }
 
 }  // namespace phonehub

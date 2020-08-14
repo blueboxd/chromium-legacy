@@ -31,6 +31,9 @@ void TestAppRegistryController::SetAppLastLaunchTime(const AppId& app_id,
 void TestAppRegistryController::SetAppInstallTime(const AppId& app_id,
                                                   const base::Time& time) {}
 
+void TestAppRegistryController::SetAppRunOnOsLoginMode(const AppId& app_id,
+                                                       RunOnOsLoginMode mode) {}
+
 WebAppSyncBridge* TestAppRegistryController::AsWebAppSyncBridge() {
   return nullptr;
 }

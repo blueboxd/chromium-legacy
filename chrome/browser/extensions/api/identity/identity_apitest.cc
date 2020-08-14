@@ -932,6 +932,12 @@ class GetAuthTokenFunctionTest
     return identity_test_env()->identity_manager()->GetPrimaryAccountId();
   }
 
+  IdentityTokenCacheValue CreateToken(const std::string& token,
+                                      base::TimeDelta time_to_live) {
+    return IdentityTokenCacheValue::CreateToken(token, oauth_scopes_,
+                                                time_to_live);
+  }
+
   // Sets a cached token for the primary account.
   void SetCachedToken(const IdentityTokenCacheValue& token_data) {
     SetCachedTokenForAccount(GetPrimaryAccountId(), token_data);
@@ -948,11 +954,17 @@ class GetAuthTokenFunctionTest
   }
 
   const IdentityTokenCacheValue& GetCachedToken(
-      const CoreAccountId& account_id) {
+      const CoreAccountId& account_id,
+      const std::set<std::string>& scopes) {
     ExtensionTokenKey key(
         extension_id_, account_id.empty() ? GetPrimaryAccountId() : account_id,
-        oauth_scopes_);
+        scopes);
     return id_api()->token_cache()->GetToken(key);
+  }
+
+  const IdentityTokenCacheValue& GetCachedToken(
+      const CoreAccountId& account_id) {
+    return GetCachedToken(account_id, oauth_scopes_);
   }
 
   base::Optional<std::string> GetCachedGaiaId() {
@@ -1842,8 +1854,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveCacheHit) {
   func->set_extension(extension.get());
 
   // pre-populate the cache with a token
-  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
-      kAccessToken, base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token =
+      CreateToken(kAccessToken, base::TimeDelta::FromSeconds(3600));
   SetCachedToken(token);
 
   // Get a token. Should not require a GAIA request.
@@ -1882,8 +1894,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_extension(extension.get());
 
   // pre-populate the cache with a token
-  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
-      kAccessToken, base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token =
+      CreateToken(kAccessToken, base::TimeDelta::FromSeconds(3600));
   SetCachedTokenForAccount(account_info.account_id, token);
 
   if (id_api()->AreExtensionsRestrictedToPrimaryAccount()) {
@@ -1953,15 +1965,15 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveCacheHit) {
   // the blocker.
   func->push_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
   RunFunctionAsync(func.get(), "[{\"interactive\": true}]");
+  base::RunLoop().RunUntilIdle();
 
   // Populate the cache with a token while the request is blocked.
-  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
-      kAccessToken, base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token =
+      CreateToken(kAccessToken, base::TimeDelta::FromSeconds(3600));
   SetCachedToken(token);
 
   // When we wake up the request, it returns the cached token without
   // displaying a UI, or hitting GAIA.
-
   QueueRequestComplete(type, &queued_request);
 
   std::string access_token;
@@ -1986,8 +1998,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, LoginInvalidatesTokenCache) {
   func->set_extension(extension.get());
 
   // pre-populate the cache with a token
-  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
-      kAccessToken, base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token =
+      CreateToken(kAccessToken, base::TimeDelta::FromSeconds(3600));
   SetCachedToken(token);
 
   // Because the user is not signed in, the token will be removed,
@@ -2767,8 +2779,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmail) {
 
   const ExtensionTokenKey* token_key = func->GetExtensionTokenKeyForTest();
   EXPECT_EQ(token_key->scopes, granted_scopes);
-  EXPECT_EQ(1ul, token_key->scopes.size());
-  EXPECT_TRUE(base::Contains(token_key->scopes, "email"));
+  EXPECT_EQ(scopes, token_key->scopes);
   histogram_tester()->ExpectUniqueSample(
       kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
       1);
@@ -2792,10 +2803,61 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmailFooBar) {
 
   const ExtensionTokenKey* token_key = func->GetExtensionTokenKeyForTest();
   EXPECT_EQ(token_key->scopes, granted_scopes);
-  EXPECT_EQ(3ul, token_key->scopes.size());
-  EXPECT_TRUE(base::Contains(token_key->scopes, "email"));
-  EXPECT_TRUE(base::Contains(token_key->scopes, "foo"));
-  EXPECT_TRUE(base::Contains(token_key->scopes, "bar"));
+  EXPECT_EQ(scopes, token_key->scopes);
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
+}
+
+// Ensure that the returned scopes from the function is the cached scopes and
+// not the requested scopes.
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, SubsetMatchCacheHit) {
+  SignIn("primary@example.com");
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+
+  std::set<std::string> scopes = {"email", "foo", "bar"};
+  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
+      kAccessToken, scopes, base::TimeDelta::FromSeconds(3600));
+  SetCachedToken(token);
+
+  std::string access_token;
+  std::set<std::string> granted_scopes;
+  RunGetAuthTokenFunction(func.get(), "[{\"scopes\": [\"email\", \"foo\"]}]",
+                          browser(), &access_token, &granted_scopes);
+  EXPECT_EQ(std::string(kAccessToken), access_token);
+  EXPECT_EQ(scopes, granted_scopes);
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
+}
+
+// Ensure that the newly cached token uses the granted scopes and not the
+// requested scopes.
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, SubsetMatchCachePopulate) {
+  SignIn("primary@example.com");
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+
+  std::set<std::string> scopes = {"foo", "bar"};
+  func->push_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS,
+                               scopes);
+  std::string access_token;
+  std::set<std::string> granted_scopes;
+  RunGetAuthTokenFunction(func.get(), "[{\"scopes\": [\"email\", \"foo\"]}]",
+                          browser(), &access_token, &granted_scopes);
+
+  const IdentityTokenCacheValue& token =
+      GetCachedToken(CoreAccountId(), scopes);
+  EXPECT_EQ(std::string(kAccessToken), token.token());
+  EXPECT_EQ(scopes, token.granted_scopes());
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN, token.status());
+
   histogram_tester()->ExpectUniqueSample(
       kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
       1);
@@ -2962,16 +3024,22 @@ class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
     return IdentityAPI::GetFactoryInstance()->Get(browser()->profile());
   }
 
+  IdentityTokenCacheValue CreateToken(const std::string& token,
+                                      base::TimeDelta time_to_live) {
+    return IdentityTokenCacheValue::CreateToken(
+        token, std::set<std::string>({"foo"}), time_to_live);
+  }
+
   void SetCachedToken(const IdentityTokenCacheValue& token_data) {
     ExtensionTokenKey key(kExtensionId, CoreAccountId("test@example.com"),
-                          std::set<std::string>());
+                          std::set<std::string>({"foo"}));
     id_api()->token_cache()->SetToken(key, token_data);
   }
 
   const IdentityTokenCacheValue& GetCachedToken() {
-    return id_api()->token_cache()->GetToken(
-        ExtensionTokenKey(kExtensionId, CoreAccountId("test@example.com"),
-                          std::set<std::string>()));
+    ExtensionTokenKey key(kExtensionId, CoreAccountId("test@example.com"),
+                          std::set<std::string>({"foo"}));
+    return id_api()->token_cache()->GetToken(key);
   }
 };
 
@@ -2992,8 +3060,8 @@ IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, Advice) {
 }
 
 IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, NonMatchingToken) {
-  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
-      "non_matching_token", base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token =
+      CreateToken("non_matching_token", base::TimeDelta::FromSeconds(3600));
   SetCachedToken(token);
   EXPECT_TRUE(InvalidateDefaultToken());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
@@ -3002,8 +3070,8 @@ IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, NonMatchingToken) {
 }
 
 IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, MatchingToken) {
-  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
-      kAccessToken, base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token =
+      CreateToken(kAccessToken, base::TimeDelta::FromSeconds(3600));
   SetCachedToken(token);
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             GetCachedToken().status());

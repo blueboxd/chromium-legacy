@@ -445,11 +445,6 @@ TEST_F(PdfAccessibilityTreeTest, TestOverlappingAnnots) {
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
-  // Enable feature flag
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      chrome_pdf::features::kAccessiblePDFHighlight);
-
   constexpr uint32_t kHighlightWhiteColor = MakeARGB(255, 255, 255, 255);
   const char kPopupNoteText[] = "Text Note";
 

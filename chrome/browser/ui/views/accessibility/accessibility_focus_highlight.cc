@@ -49,13 +49,13 @@ constexpr int kTotalLayerPadding =
     kPadding + kStrokeWidth + kGradientWidth + kLayerPadding;
 
 // The amount of time it should take for the highlight to fade in.
-constexpr int kFadeInTimeMilliseconds = 100;
+constexpr auto kFadeInTime = base::TimeDelta::FromMilliseconds(100);
 
 // The amount of time the highlight should persist before beginning to fade.
-constexpr int kHighlightPersistTimeMilliseconds = 1000;
+constexpr auto kHighlightPersistTime = base::TimeDelta::FromSeconds(1);
 
 // The amount of time it should take for the highlight to fade out.
-constexpr int kFadeOutTimeMilliseconds = 600;
+constexpr auto kFadeOutTime = base::TimeDelta::FromMilliseconds(600);
 
 }  // namespace
 
@@ -95,11 +95,9 @@ AccessibilityFocusHighlight::AccessibilityFocusHighlight(
 
   // One-time initialization of statics the first time an instance is created.
   if (fade_in_time_.is_zero()) {
-    fade_in_time_ = base::TimeDelta::FromMilliseconds(kFadeInTimeMilliseconds);
-    persist_time_ =
-        base::TimeDelta::FromMilliseconds(kHighlightPersistTimeMilliseconds);
-    fade_out_time_ =
-        base::TimeDelta::FromMilliseconds(kFadeOutTimeMilliseconds);
+    fade_in_time_ = kFadeInTime;
+    persist_time_ = kHighlightPersistTime;
+    fade_out_time_ = kFadeOutTime;
     default_color_ = SkColorSetRGB(16, 16, 16);  // #101010
   }
 }
@@ -345,15 +343,12 @@ void AccessibilityFocusHighlight::OnAnimationStep(base::TimeTicks timestamp) {
   float opacity = 1.0f;
   if (time_since_layer_create < fade_in_time_) {
     // We're fading in.
-    opacity = time_since_layer_create.InSecondsF() / fade_in_time_.InSecondsF();
+    opacity = time_since_layer_create / fade_in_time_;
   } else if (time_since_focus_move > persist_time_) {
     // Fading out.
-    float time_since_began_fading =
-        time_since_focus_move.InSecondsF() -
-        (fade_in_time_.InSecondsF() + persist_time_.InSecondsF());
-    float fade_out_time_float = fade_out_time_.InSecondsF();
-
-    opacity = 1.0f - (time_since_began_fading / fade_out_time_float);
+    base::TimeDelta time_since_began_fading =
+        time_since_focus_move - (fade_in_time_ + persist_time_);
+    opacity = 1.0f - (time_since_began_fading / fade_out_time_);
   }
 
   // Layer::SetOpacity will throw an error if we're not within 0...1.

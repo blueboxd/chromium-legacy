@@ -2743,7 +2743,6 @@ class PDFExtensionAccessibilityTextExtractionTest : public PDFExtensionTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PDFExtensionTest::SetUpCommandLine(command_line);
     std::vector<base::Feature> enabled_features = {
-        chrome_pdf::features::kAccessiblePDFHighlight,
         chrome_pdf::features::kAccessiblePDFForm};
     feature_list_.InitWithFeatures(enabled_features, /*disabled_features=*/{});
   }
@@ -2948,7 +2947,6 @@ class PDFExtensionAccessibilityTreeDumpTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PDFExtensionTest::SetUpCommandLine(command_line);
     std::vector<base::Feature> enabled_features = {
-        chrome_pdf::features::kAccessiblePDFHighlight,
         chrome_pdf::features::kAccessiblePDFForm};
     feature_list_.InitWithFeatures(enabled_features, /*disabled_features=*/{});
 

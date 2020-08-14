@@ -61,6 +61,7 @@ public class TabModelImpl extends TabModelJniBridge {
     private final TabModelDelegate mModelDelegate;
     private final ObserverList<TabModelObserver> mObservers;
     private final NextTabPolicySupplier mNextTabPolicySupplier;
+    private final AsyncTabParamsManager mAsyncTabParamsManager;
     private RecentlyClosedBridge mRecentlyClosedBridge;
 
     // Undo State Tracking -------------------------------------------------------------------------
@@ -87,7 +88,8 @@ public class TabModelImpl extends TabModelJniBridge {
             TabCreator incognitoTabCreator, TabModelSelectorUma uma,
             TabModelOrderController orderController, TabContentManager tabContentManager,
             TabPersistentStore tabSaver, NextTabPolicySupplier nextTabPolicySupplier,
-            TabModelDelegate modelDelegate, boolean supportUndo) {
+            AsyncTabParamsManager asyncTabParamsManager, TabModelDelegate modelDelegate,
+            boolean supportUndo) {
         super(incognito, isTabbedActivity);
         mRegularTabCreator = regularTabCreator;
         mIncognitoTabCreator = incognitoTabCreator;
@@ -96,6 +98,7 @@ public class TabModelImpl extends TabModelJniBridge {
         mTabContentManager = tabContentManager;
         mTabSaver = tabSaver;
         mNextTabPolicySupplier = nextTabPolicySupplier;
+        mAsyncTabParamsManager = asyncTabParamsManager;
         mModelDelegate = modelDelegate;
         mIsUndoSupported = supportUndo;
         mObservers = new ObserverList<TabModelObserver>();
@@ -119,7 +122,7 @@ public class TabModelImpl extends TabModelJniBridge {
             // When reparenting tabs, we skip destoying tabs that we're intentionally keeping in
             // memory.
             if (mModelDelegate.isReparentingInProgress()
-                    && AsyncTabParamsManager.hasParamsForTabId(tab.getId())) {
+                    && mAsyncTabParamsManager.hasParamsForTabId(tab.getId())) {
                 continue;
             }
 

@@ -123,9 +123,11 @@ public class AutofillAssistantNavigationIntegrationTest {
         onView(withId(org.chromium.chrome.R.id.url_bar))
                 .perform(click(), typeText(getURL(TEST_PAGE_B)), pressImeActionButton());
         waitUntilViewMatchesCondition(withText(containsString("Sorry")), isCompletelyDisplayed());
-        waitUntil(()
-                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
-                                  getURL(TEST_PAGE_B)));
+        waitUntil(
+                ()
+                        -> ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab())
+                                   .getSpec()
+                                   .equals(getURL(TEST_PAGE_B)));
     }
 
     @Test
@@ -157,9 +159,11 @@ public class AutofillAssistantNavigationIntegrationTest {
         startAutofillAssistantOnTab(TEST_PAGE_A);
 
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
-        waitUntil(()
-                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
-                                  getURL(TEST_PAGE_B)));
+        waitUntil(
+                ()
+                        -> ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab())
+                                   .getSpec()
+                                   .equals(getURL(TEST_PAGE_B)));
     }
 
     @Test
@@ -192,9 +196,11 @@ public class AutofillAssistantNavigationIntegrationTest {
         startAutofillAssistantOnTab(TEST_PAGE_A);
 
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
-        waitUntil(()
-                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
-                                  getURL(TEST_PAGE_B)));
+        waitUntil(
+                ()
+                        -> ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab())
+                                   .getSpec()
+                                   .equals(getURL(TEST_PAGE_B)));
     }
 
     @Test
@@ -257,21 +263,28 @@ public class AutofillAssistantNavigationIntegrationTest {
         onView(withText("Navigate")).perform(click());
 
         waitUntilViewMatchesCondition(withText("Page A"), isCompletelyDisplayed());
-        waitUntil(()
-                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
-                                  getURL(TEST_PAGE_A)));
+
+        waitUntil(
+                ()
+                        -> ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab())
+                                   .getSpec()
+                                   .equals(getURL(TEST_PAGE_A)));
         onView(withText("Go back")).perform(click());
 
         waitUntilViewMatchesCondition(withText("Page B"), isCompletelyDisplayed());
-        waitUntil(()
-                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
-                                  getURL(TEST_PAGE_B)));
+        waitUntil(
+                ()
+                        -> ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab())
+                                   .getSpec()
+                                   .equals(getURL(TEST_PAGE_B)));
         onView(withText("Go forward")).perform(click());
 
         waitUntilViewMatchesCondition(withText("Page A"), isCompletelyDisplayed());
-        waitUntil(()
-                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
-                                  getURL(TEST_PAGE_A)));
+        waitUntil(
+                ()
+                        -> ChromeTabUtils.getUrlOnUiThread(mTestRule.getActivity().getActivityTab())
+                                   .getSpec()
+                                   .equals(getURL(TEST_PAGE_A)));
     }
 
     @Test

@@ -187,7 +187,6 @@ MediaStreamTrack* VideoTrackWriter::track() {
 void VideoTrackWriter::Trace(Visitor* visitor) const {
   visitor->Trace(track_);
   visitor->Trace(writable_);
-  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

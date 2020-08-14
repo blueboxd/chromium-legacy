@@ -6,6 +6,7 @@
 #include <fuchsia/hardware/power/statecontrol/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/sys/cpp/service_directory.h>
+#include <zircon/status.h>
 #include <zircon/types.h>
 
 #include "base/fuchsia/fuchsia_logging.h"
@@ -18,14 +19,14 @@ using fuchsia::feedback::LastReboot;
 using fuchsia::feedback::LastRebootInfoProviderSyncPtr;
 using fuchsia::feedback::RebootReason;
 using fuchsia::hardware::power::statecontrol::Admin_Reboot_Result;
-using fuchsia::hardware::power::statecontrol::AdminSyncPtr;
+using fuchsia::hardware::power::statecontrol::AdminPtr;
 using StateControlRebootReason =
     fuchsia::hardware::power::statecontrol::RebootReason;
 
 namespace chromecast {
 
-AdminSyncPtr& GetAdminSyncPtr() {
-  static base::NoDestructor<AdminSyncPtr> g_admin;
+AdminPtr& GetAdminPtr() {
+  static base::NoDestructor<AdminPtr> g_admin;
   return *g_admin;
 }
 
@@ -36,8 +37,11 @@ LastRebootInfoProviderSyncPtr& GetLastRebootInfoProviderSyncPtr() {
 
 void InitializeRebootShlib(const std::vector<std::string>& argv,
                            sys::ServiceDirectory* incoming_directory) {
-  incoming_directory->Connect(GetAdminSyncPtr().NewRequest());
+  incoming_directory->Connect(GetAdminPtr().NewRequest());
   incoming_directory->Connect(GetLastRebootInfoProviderSyncPtr().NewRequest());
+  GetAdminPtr().set_error_handler([](zx_status_t status) {
+    ZX_LOG(ERROR, status) << "AdminPtr disconnected";
+  });
 }
 
 // RebootShlib implementation:
@@ -78,10 +82,17 @@ bool RebootShlib::RebootNow(RebootSource reboot_source) {
       reason = StateControlRebootReason::USER_REQUEST;
       break;
   }
-  Admin_Reboot_Result out_result;
-  zx_status_t status = GetAdminSyncPtr()->Reboot(reason, &out_result);
-  ZX_CHECK(status == ZX_OK, status) << "Failed to suspend device";
-  return !out_result.is_err();
+
+  // Intentionally using async Ptr to avoid deadlock
+  // Otherwise caller is blocked, and if caller needs to be notified
+  // as well, it will go into a deadlock state.
+  GetAdminPtr()->Reboot(reason, [](Admin_Reboot_Result out_result) {
+    if (out_result.is_err()) {
+      LOG(ERROR) << "Failed to reboot after requested: "
+                 << zx_status_get_string(out_result.err());
+    }
+  });
+  return true;
 }
 
 // static

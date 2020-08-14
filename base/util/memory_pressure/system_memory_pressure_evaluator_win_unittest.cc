@@ -241,9 +241,8 @@ TEST_F(WinSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
 
   // Check that the event gets reposted after a while.
   const int kModeratePressureCooldownCycles =
-      evaluator.kModeratePressureCooldownMs /
-      base::MemoryPressureMonitor::kUMAMemoryPressureLevelPeriod
-          .InMilliseconds();
+      evaluator.kModeratePressureCooldown /
+      base::MemoryPressureMonitor::kUMAMemoryPressureLevelPeriod;
 
   for (int i = 0; i < kModeratePressureCooldownCycles; ++i) {
     if (i + 1 == kModeratePressureCooldownCycles) {

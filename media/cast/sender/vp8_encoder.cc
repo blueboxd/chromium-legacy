@@ -288,7 +288,7 @@ void Vp8Encoder::Encode(scoped_refptr<media::VideoFrame> video_frame,
   // frame duration.
   const base::TimeDelta processing_time = base::TimeTicks::Now() - start_time;
   encoded_frame->encoder_utilization =
-      processing_time.InSecondsF() / predicted_frame_duration.InSecondsF();
+      processing_time / predicted_frame_duration;
 
   // Compute lossy utilization.  The VP8 encoder took an estimated guess at what
   // quantizer value would produce an encoded frame size as close to the target

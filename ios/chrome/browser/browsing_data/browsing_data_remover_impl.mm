@@ -557,6 +557,16 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
       MAX_CHOICE_VALUE);
 }
 
+// Removes directories for sessions with |SessionIDs|
+void BrowsingDataRemoverImpl::RemoveSessionsData(
+    NSArray<NSString*>* session_ids) {
+  [[SessionServiceIOS sharedService]
+                 deleteSessions:session_ids
+      fromBrowserStateDirectory:base::SysUTF8ToNSString(
+                                    browser_state_->GetStatePath()
+                                        .AsUTF8Unsafe())];
+}
+
 // TODO(crbug.com/619783): removing data from WkWebsiteDataStore should be
 // implemented by //ios/web. Once this is available remove this and use the
 // new API.

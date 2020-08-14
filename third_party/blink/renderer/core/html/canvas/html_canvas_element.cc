@@ -81,7 +81,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
@@ -813,9 +812,6 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
   // compositing feature.
   if (!context_ && !OffscreenCanvasFrame())
     return;
-
-  if (!canvas_is_clear_)
-    PaintTiming::From(GetDocument()).MarkFirstContentfulPaint();
 
   // If the canvas is gpu composited, it has another way of getting to screen
   if (!PaintsIntoCanvasBuffer()) {

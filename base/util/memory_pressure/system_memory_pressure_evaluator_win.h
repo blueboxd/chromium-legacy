@@ -33,7 +33,7 @@ class SystemMemoryPressureEvaluator
   // Constants governing the polling and hysteresis behaviour of the observer.
   // The time which should pass between 2 successive moderate memory pressure
   // signals, in milliseconds.
-  static const int kModeratePressureCooldownMs;
+  static const base::TimeDelta kModeratePressureCooldown;
 
   // Constants governing the memory pressure level detection.
 

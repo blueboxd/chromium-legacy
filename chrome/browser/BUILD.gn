@@ -4064,6 +4064,7 @@ static_library("browser") {
 
   # TODO(crbug.com/1052397): Rename chromeos_is_browser_only to is_lacros.
   if (chromeos_is_browser_only) {
+    assert(enable_native_notifications)
     sources += [
       "chrome_browser_main_extra_parts_lacros.cc",
       "chrome_browser_main_extra_parts_lacros.h",
@@ -4071,11 +4072,11 @@ static_library("browser") {
       "lacros/lacros_chrome_service_delegate_impl.h",
       "metrics/lacros_metrics_provider.cc",
       "metrics/lacros_metrics_provider.h",
-      "notifications/message_center_client_lacros.cc",
-      "notifications/message_center_client_lacros.h",
       "notifications/notification_platform_bridge_chromeos.cc",
       "notifications/notification_platform_bridge_chromeos.h",
       "notifications/notification_platform_bridge_delegate.h",
+      "notifications/notification_platform_bridge_lacros.cc",
+      "notifications/notification_platform_bridge_lacros.h",
     ]
     deps += [
       "//chromeos/crosapi/mojom",

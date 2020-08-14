@@ -709,6 +709,22 @@ void HTMLInputElement::setSelectionRangeForBinding(
   TextControlElement::setSelectionRangeForBinding(start, end, direction);
 }
 
+// This function can be used to allow tests to set the selection
+// range for Number inputs, which do not support the ordinary
+// selection API.
+void HTMLInputElement::SetSelectionRangeForTesting(
+    unsigned start,
+    unsigned end,
+    ExceptionState& exception_state) {
+  if (FormControlType() != input_type_names::kNumber) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The input element's type ('" +
+                                          input_type_->FormControlType() +
+                                          "') is not a number input.");
+  }
+  TextControlElement::setSelectionRangeForBinding(start, end);
+}
+
 void HTMLInputElement::AccessKeyAction(bool send_mouse_events) {
   input_type_view_->AccessKeyAction(send_mouse_events);
 }

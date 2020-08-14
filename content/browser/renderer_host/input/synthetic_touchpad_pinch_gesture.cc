@@ -122,8 +122,7 @@ float SyntheticTouchpadPinchGesture::CalculateTargetScale(
   if (HasReachedTarget(timestamp))
     return params_.scale_factor;
 
-  float progress = (timestamp - start_time_).InSecondsF() /
-                   (stop_time_ - start_time_).InSecondsF();
+  const float progress = (timestamp - start_time_) / (stop_time_ - start_time_);
   return Lerp(1.0f, params_.scale_factor, progress);
 }
 
@@ -147,12 +146,10 @@ void SyntheticTouchpadPinchGesture::CalculateEndTime(
   float scale_factor_delta =
       (scale_factor - 1.0f) * kPixelsNeededToDoubleOrHalve;
 
-  int64_t total_duration_in_us =
-      static_cast<int64_t>(1e6 * (static_cast<double>(scale_factor_delta) /
-                                  params_.relative_pointer_speed_in_pixels_s));
-  DCHECK_GT(total_duration_in_us, 0);
-  stop_time_ =
-      start_time_ + base::TimeDelta::FromMicroseconds(total_duration_in_us);
+  const base::TimeDelta total_duration = base::TimeDelta::FromSecondsD(
+      scale_factor_delta / params_.relative_pointer_speed_in_pixels_s);
+  DCHECK_GT(total_duration, base::TimeDelta());
+  stop_time_ = start_time_ + total_duration;
 }
 
 base::TimeTicks SyntheticTouchpadPinchGesture::ClampTimestamp(

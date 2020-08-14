@@ -26,5 +26,15 @@ bool FakeNotificationAccessManager::HasAccessBeenGranted() const {
   return has_access_been_granted_;
 }
 
+void FakeNotificationAccessManager::SetNotificationSetupOperationStatus(
+    NotificationAccessSetupOperation::Status new_status) {
+  if (new_status ==
+      NotificationAccessSetupOperation::Status::kCompletedSuccessfully) {
+    SetHasAccessBeenGranted(true);
+  }
+
+  NotificationAccessManager::SetNotificationSetupOperationStatus(new_status);
+}
+
 }  // namespace phonehub
 }  // namespace chromeos

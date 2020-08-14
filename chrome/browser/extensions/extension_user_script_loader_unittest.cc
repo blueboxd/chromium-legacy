@@ -15,14 +15,17 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/content_verifier.h"
 #include "extensions/common/host_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,10 +82,9 @@ class ExtensionUserScriptLoaderTest : public testing::Test,
 // Test that we get notified even when there are no scripts.
 TEST_F(ExtensionUserScriptLoaderTest, NoScripts) {
   TestingProfile profile;
-  ExtensionUserScriptLoader loader(
-      &profile,
-      HostID(),
-      true /* listen_for_extension_system_loaded */);
+  ExtensionUserScriptLoader loader(&profile, HostID(),
+                                   /*listen_for_extension_system_loaded=*/true,
+                                   /*content_verifier=*/nullptr);
   loader.StartLoad();
   content::RunAllTasksUntilIdle();
 
@@ -223,18 +225,17 @@ TEST_F(ExtensionUserScriptLoaderTest, SkipBOMAtTheBeginning) {
   user_script->js_scripts().push_back(std::make_unique<UserScript::File>(
       temp_dir_.GetPath(), path.BaseName(), GURL()));
 
-  UserScriptList user_scripts;
-  user_scripts.push_back(std::move(user_script));
+  auto user_scripts = std::make_unique<UserScriptList>();
+  user_scripts->push_back(std::move(user_script));
 
   TestingProfile profile;
-  ExtensionUserScriptLoader loader(
-      &profile,
-      HostID(),
-      true /* listen_for_extension_system_loaded */);
-  loader.LoadScriptsForTest(&user_scripts);
+  ExtensionUserScriptLoader loader(&profile, HostID(),
+                                   /*listen_for_extension_system_loaded=*/true,
+                                   /*content_verifier=*/nullptr);
+  user_scripts = loader.LoadScriptsForTest(std::move(user_scripts));
 
   EXPECT_EQ(content.substr(3),
-            user_scripts[0]->js_scripts()[0]->GetContent().as_string());
+            (*user_scripts)[0]->js_scripts()[0]->GetContent().as_string());
 }
 
 TEST_F(ExtensionUserScriptLoaderTest, LeaveBOMNotAtTheBeginning) {
@@ -247,18 +248,41 @@ TEST_F(ExtensionUserScriptLoaderTest, LeaveBOMNotAtTheBeginning) {
   user_script->js_scripts().push_back(std::make_unique<UserScript::File>(
       temp_dir_.GetPath(), path.BaseName(), GURL()));
 
-  UserScriptList user_scripts;
-  user_scripts.push_back(std::move(user_script));
+  auto user_scripts = std::make_unique<UserScriptList>();
+  user_scripts->push_back(std::move(user_script));
 
   TestingProfile profile;
-  ExtensionUserScriptLoader loader(
-      &profile,
-      HostID(),
-      true /* listen_for_extension_system_loaded */);
-  loader.LoadScriptsForTest(&user_scripts);
+  ExtensionUserScriptLoader loader(&profile, HostID(),
+                                   /*listen_for_extension_system_loaded=*/true,
+                                   /*content_verifier=*/nullptr);
+  user_scripts = loader.LoadScriptsForTest(std::move(user_scripts));
 
   EXPECT_EQ(content,
-            user_scripts[0]->js_scripts()[0]->GetContent().as_string());
+            (*user_scripts)[0]->js_scripts()[0]->GetContent().as_string());
+}
+
+TEST_F(ExtensionUserScriptLoaderTest, ComponentExtensionContentScriptIsLoaded) {
+  base::FilePath resources_dir;
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_RESOURCES, &resources_dir));
+
+  const base::FilePath extension_path = resources_dir.AppendASCII("pdf");
+  const base::FilePath resource_path(
+      FILE_PATH_LITERAL("elements/shared-vars.js"));
+
+  auto user_script = std::make_unique<UserScript>();
+  user_script->js_scripts().push_back(std::make_unique<UserScript::File>(
+      extension_path, resource_path, GURL()));
+
+  auto user_scripts = std::make_unique<UserScriptList>();
+  user_scripts->push_back(std::move(user_script));
+
+  TestingProfile profile;
+  ExtensionUserScriptLoader loader(&profile, HostID(),
+                                   /*listen_for_extension_system_loaded=*/true,
+                                   /*content_verifier=*/nullptr);
+  user_scripts = loader.LoadScriptsForTest(std::move(user_scripts));
+
+  EXPECT_FALSE((*user_scripts)[0]->js_scripts()[0]->GetContent().empty());
 }
 
 }  // namespace extensions

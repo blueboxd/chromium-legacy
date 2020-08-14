@@ -139,7 +139,7 @@ public class TabDelegate extends AsyncTabCreator {
     private Intent createNewTabIntent(
             AsyncTabCreationParams asyncParams, int parentId, boolean isChromeUI) {
         int assignedTabId = TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID);
-        AsyncTabParamsManager.add(assignedTabId, asyncParams);
+        AsyncTabParamsManager.getInstance().add(assignedTabId, asyncParams);
 
         Intent intent = new Intent(
                 Intent.ACTION_VIEW, Uri.parse(asyncParams.getLoadUrlParams().getUrl()));

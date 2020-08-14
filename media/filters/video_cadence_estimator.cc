@@ -229,8 +229,7 @@ bool VideoCadenceEstimator::UpdateBresenhamCadenceEstimate(
   }
 
   double current_cadence = bm_.perfect_cadence_.value_or(0.0);
-  double new_cadence =
-      frame_duration.InMicrosecondsF() / render_interval.InMicrosecondsF();
+  double new_cadence = frame_duration / render_interval;
   DCHECK(new_cadence >= 0.0);
 
   double cadence_relative_diff = std::abs(current_cadence - new_cadence) /
@@ -275,8 +274,7 @@ VideoCadenceEstimator::Cadence VideoCadenceEstimator::CalculateCadence(
     base::TimeDelta max_acceptable_drift,
     base::TimeDelta* time_until_max_drift) const {
   // The perfect cadence is the number of render intervals per frame.
-  const double perfect_cadence =
-      frame_duration.InSecondsF() / render_interval.InSecondsF();
+  const double perfect_cadence = frame_duration / render_interval;
 
   // This case is very simple, just return a single frame cadence, because it
   // is impossible for us to accumulate drift as large as max_acceptable_drift
@@ -295,8 +293,8 @@ VideoCadenceEstimator::Cadence VideoCadenceEstimator::CalculateCadence(
 
   // We want to construct a cadence pattern to approximate the perfect cadence
   // while ensuring error doesn't accumulate too quickly.
-  const double drift_ratio = max_acceptable_drift.InSecondsF() /
-                             minimum_time_until_max_drift_.InSecondsF();
+  const double drift_ratio =
+      max_acceptable_drift / minimum_time_until_max_drift_;
   const double minimum_acceptable_cadence =
       perfect_cadence / (1.0 + drift_ratio);
   const double maximum_acceptable_cadence =

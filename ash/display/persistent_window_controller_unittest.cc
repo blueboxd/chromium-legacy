@@ -606,4 +606,43 @@ TEST_F(PersistentWindowControllerTest, MRUOrderMatchesStackingInterleaved) {
   EXPECT_EQ(window4.get(), parent->children()[1]);
 }
 
+// Tests that if a window is on a primary display which gets disconnected, on
+// reconnect the windows bounds will be persisted.
+TEST_F(PersistentWindowControllerTest, DisconnectingPrimaryDisplay) {
+  // Create two displays with the one higher resolution.
+  UpdateDisplay("0+0-500x500,0+501-1500x500");
+  const int64_t small_id = WindowTreeHostManager::GetPrimaryDisplayId();
+  const int64_t large_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id();
+
+  // Set the larger display to be the primary display.
+  Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(large_id);
+  ASSERT_EQ(large_id, WindowTreeHostManager::GetPrimaryDisplayId());
+
+  // Add a window on the larger display.
+  const gfx::Rect bounds(0, 200, 1500, 200);
+  std::unique_ptr<aura::Window> window = CreateTestWindow(bounds);
+
+  // Disconnect the large display. The windows should move to the new primary
+  // display (small display) and shrink to fit.
+  display::ManagedDisplayInfo small_info =
+      display_manager()->GetDisplayInfo(small_id);
+  display::ManagedDisplayInfo large_info =
+      display_manager()->GetDisplayInfo(large_id);
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(small_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(small_id, WindowTreeHostManager::GetPrimaryDisplayId());
+  EXPECT_EQ(gfx::Size(500, 200), window->bounds().size());
+
+  // Reconnect the large display. The window should move back and have the old
+  // size.
+  display_info_list.push_back(large_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(large_id, WindowTreeHostManager::GetPrimaryDisplayId());
+  EXPECT_EQ(gfx::Size(1500, 200), window->bounds().size());
+}
+
 }  // namespace ash

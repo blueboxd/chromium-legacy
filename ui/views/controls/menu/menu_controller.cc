@@ -1187,18 +1187,18 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     // Special handling for Option-Up and Option-Down, which should behave like
     // Home and End respectively in menus.
     if ((event->flags() & ui::EF_ALT_DOWN)) {
+      ui::KeyEvent rewritten_event(*event);
       if (event->key_code() == ui::VKEY_UP) {
-        key_handled = OnKeyPressed(ui::VKEY_HOME);
+        rewritten_event.set_key_code(ui::VKEY_HOME);
       } else if (event->key_code() == ui::VKEY_DOWN) {
-        key_handled = OnKeyPressed(ui::VKEY_END);
-      } else {
-        key_handled = OnKeyPressed(event->key_code());
+        rewritten_event.set_key_code(ui::VKEY_END);
       }
+      key_handled = OnKeyPressed(rewritten_event);
     } else {
-      key_handled = OnKeyPressed(event->key_code());
+      key_handled = OnKeyPressed(*event);
     }
 #else
-    key_handled = OnKeyPressed(event->key_code());
+    key_handled = OnKeyPressed(*event);
 #endif
 
     if (key_handled)
@@ -1486,13 +1486,16 @@ void MenuController::StartDrag(SubmenuView* source,
     did_initiate_drag_ = false;
 }
 
-bool MenuController::OnKeyPressed(ui::KeyboardCode key_code) {
-  // Do not process while performing drag-and-drop
+bool MenuController::OnKeyPressed(const ui::KeyEvent& event) {
+  DCHECK_EQ(event.type(), ui::ET_KEY_PRESSED);
+
+  // Do not process while performing drag-and-drop.
   if (for_drop_)
     return false;
 
   bool handled_key_code = false;
 
+  const ui::KeyboardCode key_code = event.key_code();
   switch (key_code) {
     case ui::VKEY_HOME:
       if (IsEditableCombobox())
@@ -1573,7 +1576,7 @@ bool MenuController::OnKeyPressed(ui::KeyboardCode key_code) {
           handled_key_code = true;
           if (!SendAcceleratorToHotTrackedView() &&
               pending_state_.item->GetEnabled()) {
-            Accept(pending_state_.item, 0);
+            Accept(pending_state_.item, event.flags());
           }
         }
       }

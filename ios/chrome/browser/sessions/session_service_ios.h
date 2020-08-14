@@ -47,6 +47,11 @@
 - (void)deleteLastSessionFileInDirectory:(NSString*)directory
                               completion:(base::OnceClosure)callback;
 
+// Schedule deletion of session directories with |sessionIDs| which resides in
+// a specific browser state |directory|.
+- (void)deleteSessions:(NSArray<NSString*>*)sessionIDs
+    fromBrowserStateDirectory:(NSString*)directory;
+
 // Returns the path of the session file for |directory|.
 + (NSString*)sessionPathForDirectory:(NSString*)directory;
 

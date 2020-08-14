@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/component_extension_resources.h"
 #include "chrome/grit/component_extension_resources_map.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
@@ -26,7 +27,10 @@
 
 namespace extensions {
 
-typedef testing::Test ChromeComponentExtensionResourceManagerTest;
+class ChromeComponentExtensionResourceManagerTest : public testing::Test {
+ private:
+  content::BrowserTaskEnvironment task_environment_;
+};
 
 // Tests IsComponentExtensionResource function.
 TEST_F(ChromeComponentExtensionResourceManagerTest,

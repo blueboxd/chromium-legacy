@@ -289,6 +289,8 @@ uint32_t XRWebGLLayer::GetBufferTextureId(
     const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
   gl->WaitSyncTokenCHROMIUM(buffer_mailbox_holder->sync_token.GetConstData());
+  DVLOG(3) << __func__ << ": buffer_mailbox_holder->sync_token="
+           << buffer_mailbox_holder->sync_token.ToDebugString();
   GLuint texture_id = gl->CreateAndTexStorage2DSharedImageCHROMIUM(
       buffer_mailbox_holder->mailbox.name);
   return texture_id;

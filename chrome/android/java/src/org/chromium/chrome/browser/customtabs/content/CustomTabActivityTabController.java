@@ -107,6 +107,7 @@ public class CustomTabActivityTabController implements InflationObserver {
     private final ReparentingTaskProvider mReparentingTaskProvider;
     private final Lazy<CustomTabIncognitoManager> mCustomTabIncognitoManager;
     private final ProfileProvider mProfileProvider;
+    private final Lazy<AsyncTabParamsManager> mAsyncTabParamsManager;
 
     @Nullable
     private final CustomTabsSessionToken mSession;
@@ -133,7 +134,7 @@ public class CustomTabActivityTabController implements InflationObserver {
             CustomTabActivityTabProvider tabProvider, StartupTabPreloader startupTabPreloader,
             ReparentingTaskProvider reparentingTaskProvider,
             Lazy<CustomTabIncognitoManager> customTabIncognitoManager,
-            ProfileProvider profileProvider) {
+            ProfileProvider profileProvider, Lazy<AsyncTabParamsManager> asyncTabParamsManager) {
         mCustomTabDelegateFactory = customTabDelegateFactory;
         mActivity = activity;
         mConnection = connection;
@@ -152,6 +153,7 @@ public class CustomTabActivityTabController implements InflationObserver {
         mReparentingTaskProvider = reparentingTaskProvider;
         mCustomTabIncognitoManager = customTabIncognitoManager;
         mProfileProvider = profileProvider;
+        mAsyncTabParamsManager = asyncTabParamsManager;
 
         mSession = mIntentDataProvider.getSession();
         mIntent = mIntentDataProvider.getIntent();
@@ -343,7 +345,7 @@ public class CustomTabActivityTabController implements InflationObserver {
         // when we have compositor related controllers.
         if (mode == TabCreationMode.HIDDEN) {
             TabReparentingParams params =
-                    (TabReparentingParams) AsyncTabParamsManager.remove(tab.getId());
+                    (TabReparentingParams) mAsyncTabParamsManager.get().remove(tab.getId());
             mReparentingTaskProvider.get(tab).finish(
                     ReparentingDelegateFactory.createReparentingTaskDelegate(
                             mActivity.getCompositorViewHolder(), mActivity.getWindowAndroid(),
@@ -457,7 +459,7 @@ public class CustomTabActivityTabController implements InflationObserver {
     private WebContents takeAsyncWebContents() {
         int assignedTabId = IntentUtils.safeGetIntExtra(
                 mIntent, IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
-        AsyncTabParams asyncParams = AsyncTabParamsManager.remove(assignedTabId);
+        AsyncTabParams asyncParams = mAsyncTabParamsManager.get().remove(assignedTabId);
         if (asyncParams == null) return null;
         return asyncParams.getWebContents();
     }

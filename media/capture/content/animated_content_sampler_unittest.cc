@@ -407,8 +407,7 @@ class AnimatedContentSamplerParameterizedTest
       return;
     }
     const double expected_sampling_ratio =
-        GetParam().content_period.InSecondsF() /
-        ComputeExpectedSamplingPeriod().InSecondsF();
+        GetParam().content_period / ComputeExpectedSamplingPeriod();
     const int total_frames = count_dropped_frames_ + count_sampled_frames_;
     EXPECT_NEAR(total_frames * expected_sampling_ratio, count_sampled_frames_,
                 1.5);

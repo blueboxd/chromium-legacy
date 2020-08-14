@@ -4,6 +4,7 @@
 
 #include "ash/dbus/user_authentication_service_provider.h"
 
+#include "ash/public/cpp/in_session_auth_dialog_controller.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "dbus/bus.h"
@@ -41,8 +42,23 @@ void UserAuthenticationServiceProvider::OnExported(
 void UserAuthenticationServiceProvider::ShowAuthDialog(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  // TODO(yichengli): Call AuthDialogController to start authentication flow.
-  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
+  auto* auth_dialog_controller = InSessionAuthDialogController::Get();
+  auth_dialog_controller->ShowAuthenticationDialog(base::BindOnce(
+      &UserAuthenticationServiceProvider::OnAuthFlowComplete,
+      weak_ptr_factory_.GetWeakPtr(), method_call, std::move(response_sender)));
+}
+
+void UserAuthenticationServiceProvider::OnAuthFlowComplete(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender,
+    bool success) {
+  DCHECK(method_call && !response_sender.is_null());
+
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
+  dbus::MessageWriter writer(response.get());
+  writer.AppendBool(success);
+  std::move(response_sender).Run(std::move(response));
 }
 
 }  // namespace ash

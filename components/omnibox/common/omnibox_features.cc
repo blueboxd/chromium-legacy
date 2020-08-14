@@ -66,10 +66,6 @@ const base::Feature kOmniboxTabSwitchSuggestions{
 const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to enable Pedal suggestions.
-const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature to enable clipboard provider to suggest searching for copied images.
 const base::Feature kEnableClipboardProviderImageSuggestions{
   "OmniboxEnableClipboardProviderImageSuggestions",
@@ -358,6 +354,14 @@ const base::Feature kOmniboxSearchReadyIncognito{
 // elements like keywords, tab-switch buttons, and Pedals.
 const base::Feature kOmniboxSuggestionButtonRow{
     "OmniboxSuggestionButtonRow", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to enable Pedal suggestions.
+const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to enable the keyword search button.
+const base::Feature kOmniboxKeywordSearchButton{
+    "OmniboxKeywordSearchButton", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables using an Android RecyclerView to render the suggestions dropdown
 // instead of a ListView.

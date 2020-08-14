@@ -189,6 +189,13 @@ void ReleaseFrameBufferImpl(void* callback_private_data,
   static_cast<VideoFrame*>(buffer_private_data)->Release();
 }
 
+void ReleaseInputBufferImpl(void* callback_private_data,
+                            void* buffer_private_data) {
+  DCHECK(callback_private_data);
+  DCHECK(buffer_private_data);
+  static_cast<DecoderBuffer*>(buffer_private_data)->Release();
+}
+
 scoped_refptr<VideoFrame> FormatVideoFrame(
     const libgav1::DecoderBuffer& buffer,
     const VideoColorSpace& container_color_space) {
@@ -217,19 +224,6 @@ scoped_refptr<VideoFrame> FormatVideoFrame(
 }
 
 }  // namespace
-
-Gav1VideoDecoder::DecodeRequest::DecodeRequest(
-    scoped_refptr<DecoderBuffer> buffer,
-    DecodeCB decode_cb)
-    : buffer(std::move(buffer)), decode_cb(std::move(decode_cb)) {}
-
-Gav1VideoDecoder::DecodeRequest::~DecodeRequest() {
-  if (decode_cb)
-    std::move(decode_cb).Run(DecodeStatus::ABORTED);
-}
-
-Gav1VideoDecoder::DecodeRequest::DecodeRequest(DecodeRequest&& other)
-    : buffer(std::move(other.buffer)), decode_cb(std::move(other.decode_cb)) {}
 
 Gav1VideoDecoder::Gav1VideoDecoder(MediaLog* media_log,
                                    OffloadState offload_state)
@@ -271,6 +265,7 @@ void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,
       GetDecoderThreadCounts(config.coded_size().height()));
   settings.get_frame_buffer = GetFrameBufferImpl;
   settings.release_frame_buffer = ReleaseFrameBufferImpl;
+  settings.release_input_buffer = ReleaseInputBufferImpl;
   settings.callback_private_data = this;
 
   libgav1_decoder_ = std::make_unique<libgav1::Decoder>();
@@ -296,30 +291,93 @@ void Gav1VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DCHECK(decode_cb);
   DCHECK(libgav1_decoder_);
   DCHECK_NE(state_, DecoderState::kUninitialized)
-      << "Called Decode() before successful Initilize()";
+      << "Called Decode() before successful Initialize()";
 
   DecodeCB bound_decode_cb = bind_callbacks_
                                  ? BindToCurrentLoop(std::move(decode_cb))
                                  : std::move(decode_cb);
 
   if (state_ == DecoderState::kError) {
-    DCHECK(decode_queue_.empty());
     std::move(bound_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
-  if (!EnqueueRequest(
-          DecodeRequest(std::move(buffer), std::move(bound_decode_cb)))) {
-    SetError();
-    DLOG(ERROR) << "Enqueue failed";
+  if (!DecodeBuffer(std::move(buffer))) {
+    state_ = DecoderState::kError;
+    std::move(bound_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
-  if (!MaybeDequeueFrames()) {
-    SetError();
-    DLOG(ERROR) << "Dequeue failed";
-    return;
+  // VideoDecoderShim expects |decode_cb| call after |output_cb_|.
+  std::move(bound_decode_cb).Run(DecodeStatus::OK);
+}
+
+bool Gav1VideoDecoder::DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const bool is_end_of_stream = buffer->end_of_stream();
+
+  // Used to ensure that EnqueueFrame() actually takes the packet. If we exit
+  // this function without enqueuing |buffer|, that packet will be lost. We do
+  // not have anything to enqueue at the end of stream.
+  bool enqueued = is_end_of_stream;
+
+  while (is_end_of_stream || !enqueued) {
+    // Try to enqueue the packet if it has not been enqueued already.
+    if (!enqueued) {
+      libgav1::StatusCode status = libgav1_decoder_->EnqueueFrame(
+          buffer->data(), buffer->data_size(),
+          /* user_private_data = */ buffer->timestamp().InMicroseconds(),
+          /* buffer_private_data = */ buffer.get());
+      if (status == kLibgav1StatusOk) {
+        buffer->AddRef();
+        enqueued = true;
+      } else if (status != kLibgav1StatusTryAgain) {
+        MEDIA_LOG(ERROR, media_log_)
+            << "libgav1::Decoder::EnqueueFrame failed, status=" << status
+            << " on " << buffer->AsHumanReadableString();
+        return false;
+      }
+    }
+
+    // Try to dequeue a decoded frame.
+    const libgav1::DecoderBuffer* decoded_buffer;
+    libgav1::StatusCode status =
+        libgav1_decoder_->DequeueFrame(&decoded_buffer);
+    if (status != kLibgav1StatusOk) {
+      if (status != kLibgav1StatusTryAgain &&
+          status != kLibgav1StatusNothingToDequeue) {
+        MEDIA_LOG(ERROR, media_log_)
+            << "libgav1::Decoder::DequeueFrame failed, status=" << status;
+        return false;
+      }
+
+      // We've reached end of stream and no frames are remaining to be dequeued.
+      if (is_end_of_stream && status == kLibgav1StatusNothingToDequeue) {
+        return true;
+      }
+
+      continue;
+    }
+
+    if (!decoded_buffer) {
+      // The packet did not have any displayable frames. Not an error.
+      continue;
+    }
+
+    scoped_refptr<VideoFrame> frame =
+        FormatVideoFrame(*decoded_buffer, color_space_);
+    if (!frame) {
+      MEDIA_LOG(ERROR, media_log_) << "Failed formatting VideoFrame from "
+                                   << "libgav1::DecoderBuffer";
+      return false;
+    }
+
+    output_cb_.Run(std::move(frame));
   }
+
+  DCHECK(enqueued);
+  return true;
 }
 
 void Gav1VideoDecoder::Reset(base::OnceClosure reset_cb) {
@@ -327,8 +385,6 @@ void Gav1VideoDecoder::Reset(base::OnceClosure reset_cb) {
   state_ = DecoderState::kDecoding;
 
   libgav1::StatusCode status = libgav1_decoder_->SignalEOS();
-  // This will invoke decode_cb with DecodeStatus::ABORTED.
-  decode_queue_ = {};
   if (status != kLibgav1StatusOk) {
     MEDIA_LOG(WARNING, media_log_) << "libgav1::Decoder::SignalEOS() failed, "
                                    << "status=" << status;
@@ -367,85 +423,6 @@ void Gav1VideoDecoder::CloseDecoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   libgav1_decoder_.reset();
   state_ = DecoderState::kUninitialized;
-  decode_queue_ = {};
-}
-
-void Gav1VideoDecoder::SetError() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  state_ = DecoderState::kError;
-  while (!decode_queue_.empty()) {
-    DecodeRequest request = std::move(decode_queue_.front());
-    std::move(request.decode_cb).Run(DecodeStatus::DECODE_ERROR);
-    decode_queue_.pop();
-  }
-}
-
-bool Gav1VideoDecoder::EnqueueRequest(DecodeRequest request) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const DecoderBuffer* buffer = request.buffer.get();
-  decode_queue_.push(std::move(request));
-
-  if (buffer->end_of_stream())
-    return true;
-
-  libgav1::StatusCode status = libgav1_decoder_->EnqueueFrame(
-      buffer->data(), buffer->data_size(),
-      buffer->timestamp().InMicroseconds() /* user_private_data */,
-      /* buffer_private_data = */ nullptr);
-  if (status != kLibgav1StatusOk) {
-    MEDIA_LOG(ERROR, media_log_)
-        << "libgav1::Decoder::EnqueueFrame() failed, "
-        << "status=" << status << " on " << buffer->AsHumanReadableString();
-    return false;
-  }
-  return true;
-}
-
-bool Gav1VideoDecoder::MaybeDequeueFrames() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  while (true) {
-    const libgav1::DecoderBuffer* buffer;
-    libgav1::StatusCode status = libgav1_decoder_->DequeueFrame(&buffer);
-    if (status != kLibgav1StatusOk &&
-        status != kLibgav1StatusNothingToDequeue) {
-      MEDIA_LOG(ERROR, media_log_) << "libgav1::Decoder::DequeueFrame failed, "
-                                   << "status=" << status;
-      return false;
-    }
-
-    if (!buffer) {
-      // This is not an error case; no displayable frame exists or is ready.
-      break;
-    }
-
-    // Check if decoding is done in FIFO manner.
-    DecodeRequest request = std::move(decode_queue_.front());
-    decode_queue_.pop();
-    if (request.buffer->timestamp() !=
-        base::TimeDelta::FromMicroseconds(buffer->user_private_data)) {
-      MEDIA_LOG(ERROR, media_log_) << "Doesn't decode in FIFO manner on "
-                                   << request.buffer->AsHumanReadableString();
-      return false;
-    }
-
-    scoped_refptr<VideoFrame> frame = FormatVideoFrame(*buffer, color_space_);
-    if (!frame) {
-      MEDIA_LOG(ERROR, media_log_) << "Failed formatting VideoFrame from "
-                                   << "libgav1::DecoderBuffer";
-      return false;
-    }
-
-    output_cb_.Run(std::move(frame));
-    std::move(request.decode_cb).Run(DecodeStatus::OK);
-  }
-
-  // Execute |decode_cb| if the top of |decode_queue_| is EOS frame.
-  if (!decode_queue_.empty() && decode_queue_.front().buffer->end_of_stream()) {
-    std::move(decode_queue_.front().decode_cb).Run(DecodeStatus::OK);
-    decode_queue_.pop();
-  }
-
-  return true;
 }
 
 }  // namespace media

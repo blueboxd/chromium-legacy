@@ -291,6 +291,12 @@ XrResult xrDestroyInstance(XrInstance instance) {
   return XR_SUCCESS;
 }
 
+XrResult xrDestroySession(XrSession session) {
+  DVLOG(2) << __FUNCTION__;
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
+  return XR_SUCCESS;
+}
+
 XrResult xrDestroySpace(XrSpace space) {
   DVLOG(2) << __FUNCTION__;
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSpace(space));

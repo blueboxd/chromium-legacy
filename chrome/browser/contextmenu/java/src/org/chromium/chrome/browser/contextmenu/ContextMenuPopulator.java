@@ -32,6 +32,7 @@ public interface ContextMenuPopulator {
      * @param menu    The menu to populate.
      * @param context A {@link Context} instance.
      * @param params  The parameters that represent what should be shown in the context menu.
+     * @param isShoppyImage Whether the selected item was a shoppy image.
      * @return A list separate by groups. Each "group" will contain items related to said group as
      *         well as an integer that is a string resource for the group. Image items will have
      *         items that belong to that are related to that group and the string resource for the
@@ -39,7 +40,7 @@ public interface ContextMenuPopulator {
      *         an image link) the list will have both an image list and a link list.
      */
     List<Pair<Integer, List<ContextMenuItem>>> buildContextMenu(
-            ContextMenu menu, Context context, ContextMenuParams params);
+            ContextMenu menu, Context context, ContextMenuParams params, boolean isShoppyImage);
 
     /**
      * Called when a context menu item has been selected.

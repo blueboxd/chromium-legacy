@@ -8679,6 +8679,32 @@ TEST_F(AutofillManagerTestWithMixedForms,
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
+// Test that we dismiss the mixed form warning if user starts typing.
+TEST_F(AutofillManagerTestWithMixedForms, GetSuggestions_MixedFormUserTyped) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  form.fields.push_back(field);
+
+  GetAutofillSuggestions(form, form.fields[0]);
+
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_MIXED_FORM), "",
+                 "", POPUP_ITEM_ID_MIXED_FORM_MESSAGE));
+
+  // Pretend user started typing and make sure we no longer set suggestions.
+  form.fields[0].value = base::ASCIIToUTF16("Michael");
+  form.fields[0].properties_mask |= kUserTyped;
+  GetAutofillSuggestions(form, form.fields[0]);
+  external_delegate_->CheckNoSuggestions(kDefaultPageID);
+}
+
 // Desktop only tests.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 class AutofillManagerTestForVirtualCardOption : public AutofillManagerTest {

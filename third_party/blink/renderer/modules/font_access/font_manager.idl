@@ -9,5 +9,5 @@
     SecureContext,
     RuntimeEnabled=FontAccess
 ] interface FontManager {
-    [CallWith=ScriptState] object query();
+  [CallWith=ScriptState, Measure] object query();
 };

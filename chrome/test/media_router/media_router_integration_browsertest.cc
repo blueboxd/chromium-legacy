@@ -441,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 }
 
 // Crashes on Linux. http://crbug.com/1095068
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_OpenLocalMediaFileInNewTab DISABLED_OpenLocalMediaFileInNewTab
 #else
 #define MAYBE_OpenLocalMediaFileInNewTab OpenLocalMediaFileInNewTab

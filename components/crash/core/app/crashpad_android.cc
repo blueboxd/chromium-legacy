@@ -156,7 +156,11 @@ class SandboxedHandler {
         strcmp(build_info->build_type(), "eng") == 0 ||
         strcmp(build_info->build_type(), "userdebug") == 0;
 
-    return Signals::InstallCrashHandlers(HandleCrash, 0, &old_actions_);
+    bool signal_stack_initialized =
+        CrashpadClient::InitializeSignalStackForThread();
+    DCHECK(signal_stack_initialized);
+    return Signals::InstallCrashHandlers(HandleCrash, SA_ONSTACK,
+                                         &old_actions_);
   }
 
   void HandleCrashNonFatal(int signo, siginfo_t* siginfo, void* context) {

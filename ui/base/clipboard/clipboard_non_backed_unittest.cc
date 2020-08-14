@@ -36,4 +36,22 @@ TEST_F(ClipboardNonBackedTest, WriteAndGetClipboardData) {
   EXPECT_EQ(expected_clipboard_data_ptr, actual_clipboard_data_ptr);
 }
 
+// Verifies that WriteClipboardData() writes a ClipboardData instance to the
+// clipboard and returns the previous instance.
+TEST_F(ClipboardNonBackedTest, WriteClipboardData) {
+  auto first_data = std::make_unique<ClipboardData>();
+  auto second_data = std::make_unique<ClipboardData>();
+
+  auto* first_data_ptr = first_data.get();
+  auto* second_data_ptr = second_data.get();
+
+  auto previous_data = clipboard()->WriteClipboardData(std::move(first_data));
+  EXPECT_EQ(previous_data.get(), nullptr);
+
+  previous_data = clipboard()->WriteClipboardData(std::move(second_data));
+
+  EXPECT_EQ(first_data_ptr, previous_data.get());
+  EXPECT_EQ(second_data_ptr, clipboard()->GetClipboardData());
+}
+
 }  // namespace ui

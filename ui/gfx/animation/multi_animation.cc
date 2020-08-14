@@ -53,8 +53,7 @@ void MultiAnimation::Step(base::TimeTicks time_now) {
   } else {
     delta %= cycle_time_;
     const Part& part = GetPart(&delta, &current_part_index_);
-    double percent = (delta + part.part_start).InMillisecondsF() /
-                     part.total_length.InMillisecondsF();
+    const double percent = (delta + part.part_start) / part.total_length;
     DCHECK_LE(percent, 1);
     current_value_ = Tween::CalculateValue(part.type, percent);
   }

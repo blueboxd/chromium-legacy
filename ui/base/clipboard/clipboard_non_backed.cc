@@ -217,12 +217,15 @@ class ClipboardInternal {
     *result = data->custom_data_data();
   }
 
-  // Writes |data| to the ClipboardData.
-  void WriteData(std::unique_ptr<ClipboardData> data) {
+  // Writes |data| to the ClipboardData and returns the previous data.
+  std::unique_ptr<ClipboardData> WriteData(
+      std::unique_ptr<ClipboardData> data) {
     DCHECK(data);
-    ++sequence_number_;
+    std::unique_ptr<ClipboardData> previous_data = std::move(data_);
     data_ = std::move(data);
+    ++sequence_number_;
     ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
+    return previous_data;
   }
 
   void SetDlpController(
@@ -365,10 +368,10 @@ const ClipboardData* ClipboardNonBacked::GetClipboardData() const {
   return clipboard_internal_->GetData();
 }
 
-void ClipboardNonBacked::WriteClipboardData(
+std::unique_ptr<ClipboardData> ClipboardNonBacked::WriteClipboardData(
     std::unique_ptr<ClipboardData> data) {
   DCHECK(CalledOnValidThread());
-  clipboard_internal_->WriteData(std::move(data));
+  return clipboard_internal_->WriteData(std::move(data));
 }
 
 void ClipboardNonBacked::OnPreShutdown() {}

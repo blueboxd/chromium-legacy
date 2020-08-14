@@ -51,6 +51,15 @@ Polymer({
      * @type {!multidevice_setup.MultiDeviceSetupDelegate}
      */
     delegate: Object,
+
+    /** @private */
+    phoneHubEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('phoneHubEnabled') &&
+            loadTimeData.getBoolean('phoneHubEnabled');
+      },
+    },
   },
 
   behaviors: [

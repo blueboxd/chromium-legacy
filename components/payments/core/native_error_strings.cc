@@ -201,5 +201,8 @@ const char kNoContentAndNoLinkHeader[] =
 const char kNoContentInPaymentManifest[] =
     "No content found in payment manifest \"$1\".";
 
+const char kUnableToInvokeAndroidPaymentApps[] =
+    "Unable to invoke Android apps.";
+
 }  // namespace errors
 }  // namespace payments

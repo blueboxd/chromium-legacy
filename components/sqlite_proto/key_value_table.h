@@ -45,9 +45,14 @@ std::string GetDeleteAllSql(const std::string& table_name);
 // manager_->ScheduleDBTask(
 //     FROM_HERE,
 //     base::BindOnce(&KeyValueTable<PrefetchData>::UpdateData,
-//                    base::Unretained(table_), key, data));
+//                    table_->AsWeakPtr(), key, data));
+//
+// TODO(crbug.com/1115398): Supporting weak pointers is a temporary measure
+// mitigating a crash caused by complex lifetime requirements for KeyValueTable
+// relative to the related classes. Making KeyValueTable<T> stateless instead
+// could be a better way to resolve these lifetime issues in the long run.
 template <typename T>
-class KeyValueTable {
+class KeyValueTable : public base::SupportsWeakPtr<KeyValueTable<T>> {
  public:
   explicit KeyValueTable(const std::string& table_name);
   // Virtual for testing.

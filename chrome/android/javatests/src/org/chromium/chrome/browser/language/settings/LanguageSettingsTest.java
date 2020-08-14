@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -84,6 +85,7 @@ public class LanguageSettingsTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "Flaky - https://crbug.com/1114938")
     public void testRemoveLanguage() {
         RecyclerView acceptLanguageList = mActivity.findViewById(R.id.language_list);
         int originalAcceptLanguageCount = acceptLanguageList.getChildCount();

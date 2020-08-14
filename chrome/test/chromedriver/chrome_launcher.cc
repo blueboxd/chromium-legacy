@@ -106,6 +106,8 @@ const char kEnableCrashReport[] = "enable-crash-reporter-for-testing";
 const base::FilePath::CharType kDevToolsActivePort[] =
     FILE_PATH_LITERAL("DevToolsActivePort");
 
+enum ChromeType { Remote, Desktop, Android, Replay };
+
 Status PrepareDesktopCommandLine(const Capabilities& capabilities,
                                  base::CommandLine* prepared_command,
                                  base::ScopedTempDir* user_data_dir_temp_dir,
@@ -195,7 +197,9 @@ Status WaitForDevToolsAndCheckVersion(
     const Capabilities* capabilities,
     int wait_time,
     std::unique_ptr<DevToolsHttpClient>* user_client,
-    bool* retry) {
+    bool* retry,
+    ChromeType ct,
+    std::string fp = "") {
   std::unique_ptr<DeviceMetrics> device_metrics;
   if (capabilities && capabilities->device_metrics)
     device_metrics.reset(new DeviceMetrics(*capabilities->device_metrics));
@@ -261,11 +265,17 @@ Status WaitForDevToolsAndCheckVersion(
                    << " version " << browser_info->major_version << ".";
     } else {
       *retry = false;
-      return Status(
-          kSessionNotCreated,
-          base::StringPrintf("This version of %s only supports %s version %d",
-                             kChromeDriverProductFullName, kBrowserShortName,
-                             CHROME_VERSION_MAJOR));
+      std::string version_info = base::StringPrintf(
+          "This version of %s only supports %s version %d\nCurrent browser "
+          "version is %s",
+          kChromeDriverProductFullName, kBrowserShortName, CHROME_VERSION_MAJOR,
+          browser_info->browser_version.c_str());
+      if (ct == ChromeType::Desktop && !fp.empty())
+        version_info.append(" with binary path " + fp);
+      else if (ct == ChromeType::Android)
+        version_info.append(" with package name " +
+                            capabilities->android_package);
+      return Status(kSessionNotCreated, version_info);
     }
   }
 
@@ -335,7 +345,7 @@ Status LaunchRemoteChromeSession(
   bool retry = true;
   status = WaitForDevToolsAndCheckVersion(
       DevToolsEndpoint(capabilities.debugger_address), factory, socket_factory,
-      &capabilities, 60, &devtools_http_client, &retry);
+      &capabilities, 60, &devtools_http_client, &retry, ChromeType::Remote);
   if (status.IsError()) {
     return Status(
         kUnknownError,
@@ -486,9 +496,14 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
       status = Status(kOk);
     }
     if (status.IsOk()) {
+      // std::ostringstream is used in case to convert Windows wide string to
+      // string
+      std::ostringstream oss;
+      oss << command.GetProgram();
       status = WaitForDevToolsAndCheckVersion(
           DevToolsEndpoint(devtools_port), factory, socket_factory,
-          &capabilities, 1, &devtools_http_client, &retry);
+          &capabilities, 1, &devtools_http_client, &retry, ChromeType::Desktop,
+          oss.str());
       if (!retry) {
         break;
       }
@@ -632,7 +647,7 @@ Status LaunchAndroidChrome(network::mojom::URLLoaderFactory* factory,
   bool retry = true;
   status = WaitForDevToolsAndCheckVersion(
       DevToolsEndpoint(devtools_port), factory, socket_factory, &capabilities,
-      60, &devtools_http_client, &retry);
+      60, &devtools_http_client, &retry, ChromeType::Android);
   if (status.IsError()) {
     device->TearDown();
     return status;
@@ -685,9 +700,9 @@ Status LaunchReplayChrome(network::mojom::URLLoaderFactory* factory,
 
   std::unique_ptr<DevToolsHttpClient> devtools_http_client;
   bool retry = true;
-  status = WaitForDevToolsAndCheckVersion(DevToolsEndpoint(0), factory,
-                                          socket_factory, &capabilities, 1,
-                                          &devtools_http_client, &retry);
+  status = WaitForDevToolsAndCheckVersion(
+      DevToolsEndpoint(0), factory, socket_factory, &capabilities, 1,
+      &devtools_http_client, &retry, ChromeType::Replay);
   if (status.IsError())
     return status;
   std::unique_ptr<DevToolsClient> devtools_websocket_client;

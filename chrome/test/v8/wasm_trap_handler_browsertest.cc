@@ -22,7 +22,7 @@ namespace {
 // support non-Android, Linux x64, and Windows x64. In the future more platforms
 // will be supported. Though this file is a browser test that is not built on
 // Android.
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
 constexpr bool kIsTrapHandlerSupported = true;
 #elif defined(OS_WIN) && defined(ARCH_CPU_X86_64)
 constexpr bool kIsTrapHandlerSupported = true;

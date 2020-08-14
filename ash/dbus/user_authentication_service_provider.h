@@ -41,6 +41,11 @@ class UserAuthenticationServiceProvider
   void ShowAuthDialog(dbus::MethodCall* method_call,
                       dbus::ExportedObject::ResponseSender response_sender);
 
+  // Called when the user authentication flow completes.
+  void OnAuthFlowComplete(dbus::MethodCall* method_call,
+                          dbus::ExportedObject::ResponseSender response_sender,
+                          bool success);
+
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.
   base::WeakPtrFactory<UserAuthenticationServiceProvider> weak_ptr_factory_{

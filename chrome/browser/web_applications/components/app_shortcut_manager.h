@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_run_on_os_login.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 #include "chrome/browser/web_applications/components/web_app_shortcuts_menu.h"
 #include "chrome/common/web_application_info.h"
@@ -52,9 +51,6 @@ class AppShortcutManager {
                        CreateShortcutsCallback callback);
   void UpdateShortcuts(const web_app::AppId& app_id,
                        base::StringPiece old_name);
-
-  virtual void RegisterRunOnOsLogin(const AppId& app_id,
-                                    RegisterRunOnOsLoginCallback callback);
 
   // TODO(crbug.com/1098471): Move this into web_app_shortcuts_menu_win.cc when
   // a callback is integrated into the Shortcuts Menu registration flow.
@@ -111,10 +107,6 @@ class AppShortcutManager {
   void OnShortcutInfoRetrievedCreateShortcuts(
       bool add_to_desktop,
       CreateShortcutsCallback callback,
-      std::unique_ptr<ShortcutInfo> info);
-
-  void OnShortcutInfoRetrievedRegisterRunOnOsLogin(
-      RegisterRunOnOsLoginCallback callback,
       std::unique_ptr<ShortcutInfo> info);
 
   void OnShortcutInfoRetrievedUpdateShortcuts(

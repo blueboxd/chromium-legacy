@@ -54,22 +54,18 @@ MemoryPressureWatcherDelegate::MemoryPressureWatcherDelegate(
   CHECK(watcher_.StartWatchingOnce(handle_.Get(), this));
 }
 
-MemoryPressureWatcherDelegate::~MemoryPressureWatcherDelegate() {
-  if (watcher_.IsWatching())
-    watcher_.StopWatching();
-  handle_.Close();
-}
+MemoryPressureWatcherDelegate::~MemoryPressureWatcherDelegate() = default;
 
 void MemoryPressureWatcherDelegate::ReplaceWatchedHandleForTesting(
     base::win::ScopedHandle handle) {
   if (watcher_.IsWatching())
     watcher_.StopWatching();
-  handle_.Close();
   handle_ = std::move(handle);
   CHECK(watcher_.StartWatchingOnce(handle_.Get(), this));
 }
 
-void MemoryPressureWatcherDelegate::OnObjectSignaled(HANDLE object) {
+void MemoryPressureWatcherDelegate::OnObjectSignaled(HANDLE handle) {
+  DCHECK_EQ(handle, handle_.Get());
   std::move(callback_).Run();
 }
 
@@ -79,7 +75,8 @@ void MemoryPressureWatcherDelegate::OnObjectSignaled(HANDLE object) {
 // memory pressure monitor. The values were determined experimentally to ensure
 // sufficient responsiveness of the memory pressure subsystem, and minimal
 // overhead.
-const int SystemMemoryPressureEvaluator::kModeratePressureCooldownMs = 10000;
+const base::TimeDelta SystemMemoryPressureEvaluator::kModeratePressureCooldown =
+    base::TimeDelta::FromSeconds(10);
 
 // TODO(chrisha): Explore the following constants further with an experiment.
 
@@ -269,9 +266,8 @@ void SystemMemoryPressureEvaluator::CheckMemoryPressure() {
         // Already in moderate pressure, only notify if sustained over the
         // cooldown period.
         const int kModeratePressureCooldownCycles =
-            kModeratePressureCooldownMs /
-            base::MemoryPressureMonitor::kUMAMemoryPressureLevelPeriod
-                .InMilliseconds();
+            kModeratePressureCooldown /
+            base::MemoryPressureMonitor::kUMAMemoryPressureLevelPeriod;
         if (++moderate_pressure_repeat_count_ ==
             kModeratePressureCooldownCycles) {
           moderate_pressure_repeat_count_ = 0;

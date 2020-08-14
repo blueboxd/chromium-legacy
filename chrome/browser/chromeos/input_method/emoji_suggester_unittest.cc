@@ -118,7 +118,7 @@ class EmojiSuggesterTest : public testing::Test {
     emoji_suggester_->LoadEmojiMapForTesting(kEmojiData);
     chrome_keyboard_controller_client_ =
         ChromeKeyboardControllerClient::CreateForTest();
-    chrome_keyboard_controller_client_->set_keyboard_enabled_for_test(false);
+    chrome_keyboard_controller_client_->set_keyboard_visible_for_test(false);
   }
 
   SuggestionStatus Press(std::string event_key) {
@@ -156,7 +156,7 @@ TEST_F(EmojiSuggesterTest, DoNotSuggestWhenWordNotInMap) {
 }
 
 TEST_F(EmojiSuggesterTest, DoNotShowSuggestionWhenVirtualKeyboardEnabled) {
-  chrome_keyboard_controller_client_->set_keyboard_enabled_for_test(true);
+  chrome_keyboard_controller_client_->set_keyboard_visible_for_test(true);
   EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
   EXPECT_FALSE(emoji_suggester_->GetSuggestionShownForTesting());
 }

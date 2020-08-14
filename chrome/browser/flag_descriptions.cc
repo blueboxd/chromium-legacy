@@ -1003,6 +1003,12 @@ const char kEnableWebAuthenticationCableV2SupportDescription[] =
     "Authentication API. (This will also enable the cloud-based protocol "
     "on platforms where it is not already enabled.)";
 
+const char kEnableWebAuthenticationChromeOSAuthenticatorName[] =
+    "ChromeOS platform Web Authentication support";
+const char kEnableWebAuthenticationChromeOSAuthenticatorDescription[] =
+    "Enable the ChromeOS platform authenticator for the Web Authentication "
+    "API.";
+
 const char kExperimentalWebAssemblyFeaturesName[] = "Experimental WebAssembly";
 const char kExperimentalWebAssemblyFeaturesDescription[] =
     "Enable web pages to use experimental WebAssembly features.";
@@ -3280,15 +3286,23 @@ const char kOmniboxExperimentalKeywordModeDescription[] =
     "Enables various experimental features related to keyword mode, its "
     "suggestions and layout.";
 
-const char kOmniboxPedalSuggestionsName[] = "Omnibox Pedal suggestions";
-const char kOmniboxPedalSuggestionsDescription[] =
-    "Enable omnibox Pedal suggestions to accelerate actions within Chrome by "
-    "detecting user intent and offering direct access to the end goal.";
-
 const char kOmniboxSuggestionButtonRowName[] = "Omnibox suggestion button row";
 const char kOmniboxSuggestionButtonRowDescription[] =
     "Enable a button row on omnibox suggestions to present actionable items "
     "such as keyword search, tab-switch buttons, and Pedals.";
+
+const char kOmniboxPedalSuggestionsName[] = "Omnibox Pedal suggestions";
+const char kOmniboxPedalSuggestionsDescription[] =
+    "Enable omnibox Pedal suggestions to accelerate actions within Chrome by "
+    "detecting user intent and offering direct access to the end goal. This "
+    "flag has no effect unless \"Omnibox suggestion button row\" is also "
+    "enabled.";
+
+const char kOmniboxKeywordSearchButtonName[] = "Omnibox keyword search button";
+const char kOmniboxKeywordSearchButtonDescription[] =
+    "Enable the omnibox keyword search button which offers a way to search "
+    "on specific sites from the omnibox. This flag has no effect unless "
+    "\"Omnibox suggestion button row\" is also enabled.";
 
 const char kOmniboxReverseAnswersName[] = "Omnibox reverse answers";
 const char kOmniboxReverseAnswersDescription[] =

@@ -23,15 +23,17 @@ public class AsyncTabCreationParamsManagerTest {
     @SmallTest
     @UiThreadTest
     public void testBasicAddingAndRemoval() {
+        AsyncTabParamsManager subject = AsyncTabParamsManager.getInstance();
+
         AsyncTabCreationParams asyncParams =
                 new AsyncTabCreationParams(new LoadUrlParams("http://google.com"));
-        AsyncTabParamsManager.add(11684, asyncParams);
+        subject.add(11684, asyncParams);
 
-        AsyncTabParams retrievedParams = AsyncTabParamsManager.remove(11684);
+        AsyncTabParams retrievedParams = subject.remove(11684);
         Assert.assertEquals(
                 "Removed incorrect parameters from the map", asyncParams, retrievedParams);
 
-        AsyncTabParams failedParams = AsyncTabParamsManager.remove(11684);
+        AsyncTabParams failedParams = subject.remove(11684);
         Assert.assertNull("Removed same parameters twice", failedParams);
     }
 }

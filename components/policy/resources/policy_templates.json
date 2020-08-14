@@ -1037,6 +1037,7 @@
         'NativePrintersBulkWhitelist',
         'Printers',
         'PrintersBulkConfiguration',
+        'PrintersBulkAccessMode',
         'DeviceNativePrinters',
         'DeviceNativePrintersAccessMode',
         'DeviceNativePrintersBlacklist',
@@ -15188,12 +15189,57 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': 1,
       'caption': '''Printer configuration access policy.''',
       'tags': [],
       'desc': '''Controls which printers from the <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph> are available to users.
 
       Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST">BlacklistRestriction</ph> is selected, <ph name="BULK_PRINTERS_BLACKLIST">NativePrintersBulkBlacklist</ph> is used to restrict access to the specified printers.  If <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is selected, <ph name="BULK_PRINTERS_WHITELIST">NativePrintersBulkWhitelist</ph> designates only those printers which are selectable.
+
+      If this policy is not set, <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is assumed.
+
+      This policy is deprecated, please use <ph name="PRINTERS_BULK_ACCESS_MODE">PrintersBulkAccessMode</ph> instead.
+      ''',
+    },
+    {
+      'name': 'PrintersBulkAccessMode',
+      'owners': ['file://chromeos/printing/OWNERS'],
+      'id': 772,
+      'supported_on': ['chrome_os:86-'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'BlocklistRestriction',
+          'value': 0,
+          'caption': '''All printers are shown except those in the blocklist.''',
+        },
+        {
+          'name': 'AllowlistPrintersOnly',
+          'value': 1,
+          'caption': '''Only printers in the allowlist are shown to users''',
+        },
+        {
+          'name': 'AllowAll',
+          'value': 2,
+          'caption': '''Allow all printers from the configuration file.''',
+        },
+      ],
+      'features' : {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 1,
+      'caption': '''Printer configuration access policy.''',
+      'tags': [],
+      'desc': '''Controls which printers from the <ph name="PRINTERS_BULK_CONFIGURATION">PrintersBulkConfiguration</ph> are available to users.
+
+      Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is selected, all printers are shown. If <ph name="PRINTERS_BLOCKLIST">BlocklistRestriction</ph> is selected, <ph name="PRINTERS_BULK_BLOCKLIST">PrintersBulkBlocklist</ph> is used to restrict access to the specified printers.  If <ph name="PRINTERS_ALLOWLIST">AllowlistPrintersOnly</ph> is selected, <ph name="PRINTERS_BULK_ALLOWLIST">PrintersBulkAllowlist</ph> designates only those printers which are selectable.
 
       If this policy is not set, <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is assumed.
       ''',
@@ -23956,6 +24002,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 771,
+  'highest_id_currently_used': 772,
   'highest_atomic_group_id_currently_used': 40
 }

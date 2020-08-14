@@ -66,7 +66,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "v8/include/v8.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "pdf/pdfium/pdfium_font_linux.h"
 #endif
 
@@ -395,7 +395,7 @@ void InitializeSDK(bool enable_v8) {
   config.m_v8EmbedderSlot = gin::kEmbedderPDFium;
   FPDF_InitLibraryWithConfig(&config);
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   InitializeLinuxFontMapper();
 #endif
 
@@ -445,13 +445,11 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client, bool enable_javascript)
   if (enable_javascript)
     DCHECK(IsV8Initialized());
 
-  find_factory_.Initialize(this);
-
   IFSDK_PAUSE::version = 1;
   IFSDK_PAUSE::user = nullptr;
   IFSDK_PAUSE::NeedToPauseNow = Pause_NeedToPauseNow;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // PreviewModeClient does not know its pp::Instance.
   SetLastInstance(client_->GetPluginInstance());
 #endif
@@ -923,7 +921,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPdf(
 
   KillFormFocus();
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   SetLastInstance(client_->GetPluginInstance());
 #endif
 
@@ -1709,10 +1707,11 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
   if (doc_loader_set_for_testing_) {
     ContinueFind(case_sensitive ? 1 : 0);
   } else {
-    pp::CompletionCallback callback =
-        find_factory_.NewCallback(&PDFiumEngine::ContinueFind);
-    pp::Module::Get()->core()->CallOnMainThread(0, callback,
-                                                case_sensitive ? 1 : 0);
+    pp::Module::Get()->core()->CallOnMainThread(
+        0,
+        PPCompletionCallbackFromResultCallback(base::BindOnce(
+            &PDFiumEngine::ContinueFind, find_weak_factory_.GetWeakPtr())),
+        case_sensitive ? 1 : 0);
   }
 }
 
@@ -1977,7 +1976,7 @@ void PDFiumEngine::StopFind() {
   current_find_text_.clear();
 
   UpdateTickMarks();
-  find_factory_.CancelAll();
+  find_weak_factory_.InvalidateWeakPtrs();
 }
 
 std::vector<pp::Rect> PDFiumEngine::GetAllScreenRectsUnion(
@@ -2969,7 +2968,7 @@ bool PDFiumEngine::ContinuePaint(int progressive_index, SkBitmap& image_data) {
   DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
 
   last_progressive_start_time_ = base::Time::Now();
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   SetLastInstance(client_->GetPluginInstance());
 #endif
 
@@ -3461,7 +3460,7 @@ void PDFiumEngine::SetCurrentPage(int index) {
     FORM_DoPageAAction(old_page, form(), FPDFPAGE_AACTION_CLOSE);
   }
   most_visible_page_ = index;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   SetLastInstance(client_->GetPluginInstance());
 #endif
   if (most_visible_page_ != -1 && called_do_document_action_) {

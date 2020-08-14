@@ -4,9 +4,8 @@
 
 #include "ash/in_session_auth/in_session_auth_dialog.h"
 
-#include "ash/in_session_auth/auth_dialog_debug_view.h"
+#include "ash/in_session_auth/auth_dialog_contents_view.h"
 #include "base/command_line.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -57,18 +56,15 @@ std::unique_ptr<views::Widget> CreateAuthDialogWidget(aura::Window* parent) {
 }  // namespace
 
 InSessionAuthDialog::InSessionAuthDialog(uint32_t auth_methods) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kShowAuthDialogDevOverlay)) {
-    widget_ = CreateAuthDialogWidget(nullptr);
-    auto* contents_view = widget_->SetContentsView(
-        std::make_unique<AuthDialogDebugView>(auth_methods));
-    gfx::Rect bound = widget_->GetWindowBoundsInScreen();
-    // Calculate initial height based on which child views are shown.
-    bound.set_height(contents_view->GetPreferredSize().height());
-    widget_->SetBounds(bound);
+  widget_ = CreateAuthDialogWidget(nullptr);
+  auto* contents_view = widget_->SetContentsView(
+      std::make_unique<AuthDialogContentsView>(auth_methods));
+  gfx::Rect bound = widget_->GetWindowBoundsInScreen();
+  // Calculate initial height based on which child views are shown.
+  bound.set_height(contents_view->GetPreferredSize().height());
+  widget_->SetBounds(bound);
 
-    widget_->Show();
-  }
+  widget_->Show();
 }
 
 InSessionAuthDialog::~InSessionAuthDialog() = default;

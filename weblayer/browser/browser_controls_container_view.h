@@ -44,10 +44,6 @@ class BrowserControlsContainerView : public content::WebContentsObserver {
   // contents are scrolled to the top.
   bool ShouldPinControlsToContentTop();
 
-  // Returns true if height or offset changes to the browser controls should
-  // be animated.
-  bool ShouldAnimateBrowserControlsHeightChanges();
-
   // Returns the amount of vertical space to take away from the contents.
   int GetContentHeightDelta();
 

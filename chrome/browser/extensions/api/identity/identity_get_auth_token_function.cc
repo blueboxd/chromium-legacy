@@ -519,7 +519,8 @@ void IdentityGetAuthTokenFunction::StartMintToken(
 
       case IdentityTokenCacheValue::CACHE_STATUS_TOKEN:
         CompleteMintTokenFlow();
-        CompleteFunctionWithResult(cache_entry.token(), token_key_.scopes);
+        CompleteFunctionWithResult(cache_entry.token(),
+                                   cache_entry.granted_scopes());
         break;
 
       case IdentityTokenCacheValue::CACHE_STATUS_ADVICE:
@@ -549,7 +550,8 @@ void IdentityGetAuthTokenFunction::StartMintToken(
     switch (cache_status) {
       case IdentityTokenCacheValue::CACHE_STATUS_TOKEN:
         CompleteMintTokenFlow();
-        CompleteFunctionWithResult(cache_entry.token(), token_key_.scopes);
+        CompleteFunctionWithResult(cache_entry.token(),
+                                   cache_entry.granted_scopes());
         break;
       case IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND:
       case IdentityTokenCacheValue::CACHE_STATUS_ADVICE:
@@ -575,7 +577,7 @@ void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnMintTokenSuccess", this);
 
   IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
-      access_token, base::TimeDelta::FromSeconds(time_to_live));
+      access_token, granted_scopes, base::TimeDelta::FromSeconds(time_to_live));
   IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
       ->token_cache()
@@ -759,7 +761,8 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowCompleted(
   int time_to_live;
   if (!expiration.empty() && base::StringToInt(expiration, &time_to_live)) {
     IdentityTokenCacheValue token_value = IdentityTokenCacheValue::CreateToken(
-        access_token, base::TimeDelta::FromSeconds(time_to_live));
+        access_token, token_key_.scopes,
+        base::TimeDelta::FromSeconds(time_to_live));
     IdentityAPI::GetFactoryInstance()
         ->Get(GetProfile())
         ->token_cache()

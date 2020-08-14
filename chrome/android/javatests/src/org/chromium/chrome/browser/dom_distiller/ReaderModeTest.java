@@ -209,7 +209,7 @@ public class ReaderModeTest implements CustomMainActivityStart {
         // Load the page that has an offline copy. The offline page should be shown.
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         Assert.assertFalse(isOfflinePage(tab));
-        mDownloadTestRule.loadUrl(tab.getUrl().getSpec());
+        mDownloadTestRule.loadUrl(ChromeTabUtils.getUrlOnUiThread(tab).getSpec());
         Assert.assertTrue(isOfflinePage(tab));
     }
 
@@ -430,7 +430,9 @@ public class ReaderModeTest implements CustomMainActivityStart {
     private void waitForDistillation(@SuppressWarnings("SameParameterValue") String expectedTitle,
             Tab tab) throws TimeoutException {
         CriteriaHelper.pollUiThread(
-                () -> Criteria.checkThat(tab.getUrl().getScheme(), is("chrome-distiller")));
+                ()
+                        -> Criteria.checkThat(ChromeTabUtils.getUrlOnUiThread(tab).getScheme(),
+                                is("chrome-distiller")));
         ChromeTabUtils.waitForTabPageLoaded(tab, null);
         // Distiller Viewer load the content dynamically, so waitForTabPageLoaded() is not enough.
         CriteriaHelper.pollUiThread(() -> Criteria.checkThat(tab.getTitle(), is(expectedTitle)));

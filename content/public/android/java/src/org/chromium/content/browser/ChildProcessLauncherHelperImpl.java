@@ -73,8 +73,8 @@ public final class ChildProcessLauncherHelperImpl {
     // To be conservative, only delay removing binding in the initial second of the process.
     private static final int TIMEOUT_FOR_DELAY_BINDING_REMOVE_MS = 1000;
 
-    // Flag to check features after native is initialized.
-    private static boolean sCheckedFeatures;
+    // Flag to check if ServiceGroupImportance should be enabled after native is initialized.
+    private static boolean sCheckedServiceGroupImportance;
 
     // A warmed-up connection to a sandboxed service.
     private static SpareChildConnection sSpareSandboxedConnection;
@@ -268,10 +268,10 @@ public final class ChildProcessLauncherHelperImpl {
                 commandLine, filesToBeMapped, sandboxed, canUseWarmUpConnection, binderCallback);
         helper.start();
 
-        if (!sCheckedFeatures) {
-            sCheckedFeatures = true;
+        if (sandboxed && !sCheckedServiceGroupImportance) {
+            sCheckedServiceGroupImportance = true;
             if (sSandboxedChildConnectionRanking != null
-                    && ContentFeatureList.isEnabled(ContentFeatureList.SERVICE_GROUP_IMPORTANCE)) {
+                    && ChildProcessLauncherHelperImplJni.get().serviceGroupImportanceEnabled()) {
                 sSandboxedChildConnectionRanking.enableServiceGroupImportance();
             }
         }
@@ -766,5 +766,7 @@ public final class ChildProcessLauncherHelperImpl {
         void setTerminationInfo(long termiantionInfoPtr, @ChildBindingState int bindingState,
                 boolean killedByUs, boolean cleanExit, boolean exceptionDuringInit,
                 int remainingStrong, int remainingModerate, int remainingWaived, int reverseRank);
+
+        boolean serviceGroupImportanceEnabled();
     }
 }

@@ -172,6 +172,12 @@ TestAppRegistrar::GetAppDownloadedShortcutsMenuIconsSizes(
   return {{}};
 }
 
+RunOnOsLoginMode TestAppRegistrar::GetAppRunOnOsLoginMode(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return RunOnOsLoginMode::kUndefined;
+}
+
 std::vector<AppId> TestAppRegistrar::GetAppIds() const {
   std::vector<AppId> result;
   for (const std::pair<const AppId, AppInfo>& it : installed_apps_) {

@@ -69,7 +69,15 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 // Tests that the addresses view controller appears on screen.
-- (void)testAddressesViewControllerIsPresented {
+// TODO(crbug.com/1116274): Flaky on ios simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testAddressesViewControllerIsPresented \
+  DISABLED_testAddressesViewControllerIsPresented
+#else
+#define MAYBE_testAddressesViewControllerIsPresented \
+  testAddressesViewControllerIsPresented
+#endif
+- (void)MAYBE_testAddressesViewControllerIsPresented {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];

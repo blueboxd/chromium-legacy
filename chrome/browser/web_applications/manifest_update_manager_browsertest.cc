@@ -775,7 +775,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
-                       CheckIgnoresDisplayBrowserChange) {
+                       CheckFindsDisplayBrowserChange) {
   constexpr char kManifestTemplate[] = R"(
     {
       "name": "Test app name",
@@ -787,14 +787,23 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
   )";
   OverrideManifest(kManifestTemplate, {"standalone", kInstallableIconList});
   AppId app_id = InstallWebApp();
+  GetProvider().registry_controller().SetAppUserDisplayMode(
+      app_id, DisplayMode::kStandalone);
 
   OverrideManifest(kManifestTemplate, {"browser", kInstallableIconList});
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
-            ManifestUpdateResult::kAppNotEligible);
+            ManifestUpdateResult::kAppUpdated);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
-                                      ManifestUpdateResult::kAppNotEligible, 1);
+                                      ManifestUpdateResult::kAppUpdated, 1);
   EXPECT_EQ(GetProvider().registrar().GetAppDisplayMode(app_id),
+            DisplayMode::kBrowser);
+
+  // We don't touch the user's launch preference even if the app display mode
+  // changes. Instead the effective display mode changes.
+  EXPECT_EQ(GetProvider().registrar().GetAppUserDisplayMode(app_id),
             DisplayMode::kStandalone);
+  EXPECT_EQ(GetProvider().registrar().GetAppEffectiveDisplayMode(app_id),
+            DisplayMode::kMinimalUi);
 }
 
 // A dedicated test fixture for DisplayOverride, which is supported

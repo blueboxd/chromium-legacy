@@ -46,13 +46,13 @@ static void Timing(const size_t len) {
   unsigned char digest[base::kSHA1Length];
   memset(digest, 0, base::kSHA1Length);
 
-  double total_test_time = 0.0;
+  base::TimeDelta total_test_time;
   for (int i = 0; i < runs; ++i) {
     auto start = base::TimeTicks::Now();
     base::SHA1HashBytes(buf.data(), len, digest);
     auto end = base::TimeTicks::Now();
     utime[i] = end - start;
-    total_test_time += utime[i].InMicroseconds();
+    total_test_time += utime[i];
   }
 
   std::sort(utime.begin(), utime.end());
@@ -75,7 +75,7 @@ static void Timing(const size_t len) {
   rates.pop_back();
 
   auto reporter = SetUpReporter(base::NumberToString(len) + "_bytes");
-  reporter.AddResult(kMetricRuntime, total_test_time);
+  reporter.AddResult(kMetricRuntime, total_test_time.InMicrosecondsF());
   reporter.AddResult(kMetricMedianThroughput, median_rate);
   reporter.AddResultList(kMetricThroughput, rates);
 }

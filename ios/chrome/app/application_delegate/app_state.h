@@ -98,6 +98,12 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // mainChrome instance.
 - (void)applicationWillTerminate:(UIApplication*)application;
 
+// Called when the application discards set of scene sessions, these sessions
+// can no longer be accessed and all their associated data should be destroyed.
+- (void)application:(UIApplication*)application
+    didDiscardSceneSessions:(NSSet<UISceneSession*>*)sceneSessions
+    API_AVAILABLE(ios(13));
+
 // Resumes the session: reinitializing metrics and opening new tab if necessary.
 // User sessions are defined in terms of BecomeActive/ResignActive so that
 // session boundaries include things like turning the screen off or getting a

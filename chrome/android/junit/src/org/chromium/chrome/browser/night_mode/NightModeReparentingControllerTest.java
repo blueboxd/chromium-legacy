@@ -45,7 +45,6 @@ public class NightModeReparentingControllerTest {
     class FakeNightModeReparentingDelegate implements NightModeReparentingController.Delegate {
         ActivityTabProvider mActivityTabProvider;
         TabModelSelector mTabModelSelector;
-        boolean mIsNTPUrl;
 
         @Override
         public ActivityTabProvider getActivityTabProvider() {
@@ -85,7 +84,8 @@ public class NightModeReparentingControllerTest {
     Tab mForegroundTab;
 
     NightModeReparentingController mController;
-    FakeNightModeReparentingDelegate mDelegate;
+    FakeNightModeReparentingDelegate mFakeDelegate;
+    AsyncTabParamsManager mRealAsyncTabParamsManager;
 
     @Before
     public void setUp() {
@@ -94,14 +94,15 @@ public class NightModeReparentingControllerTest {
         mTabModel = new MockTabModel(false, null);
         mIncognitoTabModel = new MockTabModel(true, null);
 
-        mDelegate = new FakeNightModeReparentingDelegate();
-        mController = new NightModeReparentingController(mDelegate);
+        mFakeDelegate = new FakeNightModeReparentingDelegate();
+        mRealAsyncTabParamsManager = AsyncTabParamsManager.getInstance();
+        mController = new NightModeReparentingController(mFakeDelegate, mRealAsyncTabParamsManager);
     }
 
     @After
     public void tearDown() {
         mForegroundTab = null;
-        AsyncTabParamsManager.getAsyncTabParams().clear();
+        mRealAsyncTabParamsManager.getAsyncTabParams().clear();
         mTabIndexMapping.clear();
     }
 
@@ -110,7 +111,7 @@ public class NightModeReparentingControllerTest {
         mForegroundTab = createAndAddMockTab(1, false);
         mController.onNightModeStateChanged();
 
-        AsyncTabParams params = AsyncTabParamsManager.getAsyncTabParams().get(1);
+        AsyncTabParams params = mRealAsyncTabParamsManager.getAsyncTabParams().get(1);
         Assert.assertNotNull(params);
         Assert.assertTrue(params instanceof TabReparentingParams);
 
@@ -126,7 +127,7 @@ public class NightModeReparentingControllerTest {
         mForegroundTab = createAndAddMockTab(1, false, UrlConstants.NTP_URL);
         mController.onNightModeStateChanged();
 
-        Assert.assertFalse(AsyncTabParamsManager.hasParamsWithTabToReparent());
+        Assert.assertFalse(mRealAsyncTabParamsManager.hasParamsWithTabToReparent());
     }
 
     @Test
@@ -136,7 +137,7 @@ public class NightModeReparentingControllerTest {
         // Simulate the theme being changed twice before the application is recreated.
         mController.onNightModeStateChanged();
 
-        AsyncTabParams params = AsyncTabParamsManager.getAsyncTabParams().get(1);
+        AsyncTabParams params = mRealAsyncTabParamsManager.getAsyncTabParams().get(1);
         Assert.assertNotNull(params);
         Assert.assertTrue(params instanceof TabReparentingParams);
 
@@ -153,10 +154,10 @@ public class NightModeReparentingControllerTest {
         mController.onNightModeStateChanged();
 
         TabReparentingParams trp =
-                (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(1);
+                (TabReparentingParams) mRealAsyncTabParamsManager.getAsyncTabParams().get(1);
         Tab tab = trp.getTabToReparent();
         Assert.assertNotNull(tab);
-        trp = (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(2);
+        trp = (TabReparentingParams) mRealAsyncTabParamsManager.getAsyncTabParams().get(2);
 
         tab = trp.getTabToReparent();
         Assert.assertNotNull(tab);
@@ -170,7 +171,7 @@ public class NightModeReparentingControllerTest {
         mForegroundTab = createAndAddMockTab(2, false);
         mController.onNightModeStateChanged();
 
-        AsyncTabParams params = AsyncTabParamsManager.getAsyncTabParams().get(2);
+        AsyncTabParams params = mRealAsyncTabParamsManager.getAsyncTabParams().get(2);
         Assert.assertNotNull(params);
         Assert.assertTrue(params instanceof TabReparentingParams);
 
@@ -187,7 +188,7 @@ public class NightModeReparentingControllerTest {
         mForegroundTab = createAndAddMockTab(2, true);
         mController.onNightModeStateChanged();
 
-        AsyncTabParams params = AsyncTabParamsManager.getAsyncTabParams().get(2);
+        AsyncTabParams params = mRealAsyncTabParamsManager.getAsyncTabParams().get(2);
         Assert.assertNotNull(params);
         Assert.assertTrue(params instanceof TabReparentingParams);
 
@@ -208,14 +209,14 @@ public class NightModeReparentingControllerTest {
 
         // Check the foreground tab.
         TabReparentingParams trp =
-                (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(2);
+                (TabReparentingParams) mRealAsyncTabParamsManager.getAsyncTabParams().get(2);
 
         Tab tab = trp.getTabToReparent();
         Assert.assertNotNull(tab);
 
         // Check the background tabs.
-        trp = (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(1);
-        trp = (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(3);
+        trp = (TabReparentingParams) mRealAsyncTabParamsManager.getAsyncTabParams().get(1);
+        trp = (TabReparentingParams) mRealAsyncTabParamsManager.getAsyncTabParams().get(3);
 
         verify(mTask, times(3)).detach();
     }

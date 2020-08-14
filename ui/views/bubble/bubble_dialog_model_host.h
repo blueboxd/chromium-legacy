@@ -20,7 +20,7 @@ class GridLayout;
 class Textfield;
 
 // BubbleDialogModelHost is a views implementation of ui::DialogModelHost which
-// hosts a ui::DialogModels as a BubbleDialogDelegateView. This exposes
+// hosts a ui::DialogModel as a BubbleDialogDelegateView. This exposes
 // views-specific methods such as SetAnchorView(), SetArrow() and
 // SetHighlightedButton(). For methods that are reflected in ui::DialogModelHost
 // (such as ::Close()), preferusing the ui::DialogModelHost to avoid
@@ -49,8 +49,7 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegateView,
   // ui::DialogModelHost:
   void Close() override;
   void SelectAllText(int unique_id) override;
-
-  void OnModelChanged(ui::DialogModel* model) override;
+  void OnFieldAdded(ui::DialogModelField* field) override;
 
   // ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -62,7 +61,8 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegateView,
   GridLayout* GetGridLayout();
   void ConfigureGridLayout();
 
-  Textfield* AddOrUpdateTextfield(const ui::DialogModelTextfield& field);
+  void AddInitialFields();
+  Textfield* AddOrUpdateTextfield(ui::DialogModelTextfield* field);
   Combobox* AddOrUpdateCombobox(ui::DialogModelCombobox* field);
   void AddLabelAndField(const base::string16& label_text,
                         std::unique_ptr<views::View> field,
@@ -70,10 +70,17 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegateView,
 
   void UpdateAccelerators();
 
-  void NotifyTextfieldTextChanged(int id, views::Textfield* textfield);
-  void NotifyComboboxSelectedIndexChanged(int id, views::Combobox* combobox);
+  void NotifyTextfieldTextChanged(views::Textfield* textfield);
+  void NotifyComboboxSelectedIndexChanged(views::Combobox* combobox);
+
+  View* FieldToView(ui::DialogModelField* field);
+
+  ui::DialogModelButton* FieldAsButton(ui::DialogModelField* field);
+  ui::DialogModelCombobox* FieldAsCombobox(ui::DialogModelField* field);
+  ui::DialogModelTextfield* FieldAsTextfield(ui::DialogModelField* field);
 
   std::unique_ptr<ui::DialogModel> model_;
+  base::flat_map<View*, ui::DialogModelField*> view_to_field_;
   std::vector<PropertyChangedSubscription> property_changed_subscriptions_;
 };
 

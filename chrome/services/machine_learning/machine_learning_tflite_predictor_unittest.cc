@@ -125,4 +125,11 @@ TEST_F(TFLitePredictorTest, TFLiteEvaluationTest) {
     EXPECT_NEAR(expectedOutput[i], outputData[i], 1e-5);
 }
 
+TEST_F(TFLitePredictorTest, TFLiteInterpreterThreadsSet) {
+  // Initialize the model
+  std::string model_path = GetTFLiteTestPath();
+  TFLitePredictor predictor(model_path, kTFLiteNumThreads);
+  EXPECT_EQ(kTFLiteNumThreads, predictor.GetTFLiteNumThreads());
+}
+
 }  // namespace machine_learning

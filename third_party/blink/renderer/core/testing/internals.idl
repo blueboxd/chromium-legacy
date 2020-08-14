@@ -130,6 +130,7 @@
     [RaisesException] void setAutofilledValue(Element inputElement, DOMString value);
     [RaisesException] void setEditingValue(Element inputElement, DOMString value);
     [RaisesException] void setAutofilled(Element inputElement, boolean enabled);
+    [RaisesException] void setSelectionRangeForNumberType(Element inputElement, unsigned long start, unsigned long end);
 
     Range rangeFromLocationAndLength(Element scope, long rangeLocation, long rangeLength);
     unsigned long locationFromRange(Element scope, Range range);

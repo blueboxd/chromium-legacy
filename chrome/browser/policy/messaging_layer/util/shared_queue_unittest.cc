@@ -37,6 +37,11 @@ class QueueTester {
         base::BindOnce(&QueueTester::PopInternal, base::Unretained(this)));
   }
 
+  void Swap() {
+    queue_->Swap(base::queue<int>(),
+                 base::BindOnce(&QueueTester::OnSwap, base::Unretained(this)));
+  }
+
   void PushPop(int value) {
     queue_->Push(value, base::BindOnce(&QueueTester::OnPushPopComplete,
                                        base::Unretained(this)));
@@ -48,6 +53,7 @@ class QueueTester {
   }
 
   StatusOr<int> pop_result() { return pop_result_; }
+  base::queue<int>* swap_result() { return &swap_result_; }
 
  private:
   void OnPushPopComplete() { Pop(); }
@@ -59,13 +65,22 @@ class QueueTester {
 
   void OnPopComplete(StatusOr<int> pop_result) {
     pop_result_ = pop_result;
-    completed_.Signal();
+    Signal();
   }
+
+  void OnSwap(base::queue<int> swap_result) {
+    swap_result_ = swap_result;
+    Signal();
+  }
+
+  void Signal() { completed_.Signal(); }
 
   scoped_refptr<SharedQueue<int>> queue_;
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   base::WaitableEvent completed_;
+
   StatusOr<int> pop_result_;
+  base::queue<int> swap_result_;
 };
 
 TEST(SharedQueueTest, SuccessfulPushPop) {
@@ -105,6 +120,39 @@ TEST(SharedQueueTest, PushOrderMaintained) {
     ASSERT_OK(pop_result);
     EXPECT_EQ(pop_result.ValueOrDie(), value);
   }
+}
+
+TEST(SharedQueueTest, SwapSuccessful) {
+  base::test::TaskEnvironment task_envrionment{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
+  std::vector<int> kExpectedValues = {1, 1, 2, 3, 5, 8, 13, 21};
+
+  auto queue = SharedQueue<int>::Create();
+  QueueTester queue_tester(queue);
+
+  for (auto value : kExpectedValues) {
+    queue_tester.Push(value);
+  }
+
+  queue_tester.Swap();
+  queue_tester.Wait();
+
+  auto* swapped_queue = queue_tester.swap_result();
+
+  for (auto value : kExpectedValues) {
+    EXPECT_EQ(swapped_queue->front(), value);
+    swapped_queue->pop();
+  }
+
+  // Test to ensure the SharedQueue is empty.
+  queue_tester.Pop();
+  queue_tester.Wait();
+
+  auto pop_result = queue_tester.pop_result();
+
+  EXPECT_FALSE(pop_result.ok());
+  EXPECT_EQ(pop_result.status().error_code(), error::OUT_OF_RANGE);
 }
 
 }  // namespace

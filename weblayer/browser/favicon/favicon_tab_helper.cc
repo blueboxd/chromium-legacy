@@ -13,6 +13,28 @@
 #include "weblayer/public/favicon_fetcher_delegate.h"
 
 namespace weblayer {
+namespace {
+
+bool IsSquareImage(const gfx::Image& image) {
+  return !image.IsEmpty() && image.Width() == image.Height();
+}
+
+// Returns true if |image_a| is better than |image_b|. A value of false means
+// |image_a| is not better than |image_b|. Either image may be empty, if both
+// are empty false is returned.
+bool IsImageBetterThan(const gfx::Image& image_a, const gfx::Image& image_b) {
+  // Any image is better than an empty image.
+  if (!image_a.IsEmpty() && image_b.IsEmpty())
+    return true;
+
+  // Prefer square favicons as they will scale much better.
+  if (IsSquareImage(image_a) && !IsSquareImage(image_b))
+    return true;
+
+  return image_a.Width() > image_b.Width();
+}
+
+}  // namespace
 
 FaviconTabHelper::ObserverSubscription::ObserverSubscription(
     FaviconTabHelper* helper,
@@ -78,6 +100,9 @@ void FaviconTabHelper::OnFaviconUpdated(
     const GURL& icon_url,
     bool icon_url_changed,
     const gfx::Image& image) {
+  if (!IsImageBetterThan(image, favicon_))
+    return;
+
   favicon_ = image;
   for (FaviconFetcherDelegate& delegate : delegates_)
     delegate.OnFaviconChanged(favicon_);

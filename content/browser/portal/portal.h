@@ -191,11 +191,6 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   void SetPortalContents(std::unique_ptr<WebContents> web_contents);
 
-  std::pair<bool, blink::mojom::PortalActivateResult> CanActivate();
-  void ActivateImpl(blink::TransferableMessage data,
-                    base::TimeTicks activation_time,
-                    ActivateCallback callback);
-
   RenderFrameHostImpl* owner_render_frame_host_;
 
   // Uniquely identifies the portal, this token is used by the browser process
@@ -219,14 +214,9 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // Set when |Close| is called. Destruction will occur shortly thereafter.
   bool is_closing_ = false;
 
-  // Set when portal is activating.
-  bool is_activating_ = false;
-
   // Another implementation of blink::mojom::Portal to bind instead.
   // For use in testing only.
   std::unique_ptr<blink::mojom::Portal> interceptor_;
-
-  base::WeakPtrFactory<Portal> weak_factory_{this};
 };
 
 }  // namespace content

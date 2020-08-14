@@ -7,8 +7,6 @@
 #include "base/optional.h"
 #include "chrome/browser/tflite_experiment/tflite_experiment_switches.h"
 
-constexpr int32_t kTFLiteNumThreads = 4;
-
 TFLiteExperimentKeyedService::TFLiteExperimentKeyedService(
     content::BrowserContext* browser_context) {
   base::Optional<std::string> model_path =
@@ -17,7 +15,8 @@ TFLiteExperimentKeyedService::TFLiteExperimentKeyedService(
     return;
 
   predictor_ = std::make_unique<machine_learning::TFLitePredictor>(
-      model_path.value(), kTFLiteNumThreads);
+      model_path.value(),
+      tflite_experiment::switches::GetTFLitePredictorNumThreads());
   predictor_->Initialize();
 }
 

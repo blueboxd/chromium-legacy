@@ -9,7 +9,7 @@
 
 #include "ash/in_session_auth/in_session_auth_dialog.h"
 #include "ash/public/cpp/in_session_auth_dialog_controller.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 
@@ -22,12 +22,6 @@ class InSessionAuthDialogClient;
 // InSessionAuthDialogControllerImpl persists as long as UI is running.
 class InSessionAuthDialogControllerImpl : public InSessionAuthDialogController {
  public:
-  // Callback for authentication checks. |success| is nullopt if an
-  // authentication check did not run, otherwise it is true/false if auth
-  // succeeded/failed.
-  using OnAuthenticateCallback =
-      base::OnceCallback<void(base::Optional<bool> success)>;
-
   InSessionAuthDialogControllerImpl();
   InSessionAuthDialogControllerImpl(const InSessionAuthDialogControllerImpl&) =
       delete;
@@ -37,11 +31,12 @@ class InSessionAuthDialogControllerImpl : public InSessionAuthDialogController {
 
   // InSessionAuthDialogController overrides
   void SetClient(InSessionAuthDialogClient* client) override;
-  void ShowAuthenticationDialog() override;
+  void ShowAuthenticationDialog(FinishCallback finish_callback) override;
   void DestroyAuthenticationDialog() override;
   void AuthenticateUserWithPasswordOrPin(
       const std::string& password,
       OnAuthenticateCallback callback) override;
+  void Cancel() override;
 
  private:
   bool IsFingerprintAvailable(const AccountId& account_id);
@@ -51,6 +46,10 @@ class InSessionAuthDialogControllerImpl : public InSessionAuthDialogController {
   void OnAuthenticateComplete(OnAuthenticateCallback callback, bool success);
 
   InSessionAuthDialogClient* client_ = nullptr;
+
+  // Callback to provide result of the entire authentication flow to
+  // UserAuthenticationServiceProvider.
+  FinishCallback finish_callback_;
 
   std::unique_ptr<InSessionAuthDialog> dialog_;
 

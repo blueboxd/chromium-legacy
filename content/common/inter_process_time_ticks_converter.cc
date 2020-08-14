@@ -42,8 +42,7 @@ InterProcessTimeTicksConverter::InterProcessTimeTicksConverter(
   // local range, if possible.
   DCHECK_GT(remote_range.ToTimeDelta().InMicroseconds(), 0);
   range_conversion_rate_ =
-      static_cast<double>(local_range_.ToTimeDelta().InMicroseconds()) /
-      remote_range.ToTimeDelta().InMicroseconds();
+      local_range_.ToTimeDelta() / remote_range.ToTimeDelta();
   local_base_time_ = local_lower_bound;
 }
 

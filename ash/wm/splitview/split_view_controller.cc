@@ -769,8 +769,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
     // Apply the transform that |window| will undergo when the divider spawns.
     static const double value = gfx::Tween::CalculateValue(
         gfx::Tween::FAST_OUT_SLOW_IN,
-        kSplitviewDividerSpawnDelay.InMillisecondsF() /
-            kSplitviewWindowTransformDuration.InMillisecondsF());
+        kSplitviewDividerSpawnDelay / kSplitviewWindowTransformDuration);
     gfx::TransformAboutPivot(bounds.origin(),
                              gfx::Tween::TransformValueBetween(
                                  value, window->transform(), gfx::Transform()))

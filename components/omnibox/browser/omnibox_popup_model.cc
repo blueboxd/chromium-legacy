@@ -348,13 +348,10 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
 
     all_states.push_back(NORMAL);
 
-    if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
-      // The button row experiment makes things simple. We no longer access
-      // keyword mode tab button in this case.
+    if (OmniboxFieldTrial::IsKeywordSearchButtonEnabled()) {
+      // The keyword button experiment makes things simple. We no longer access
+      // keyword mode via pressing tab in this case.
       all_states.push_back(FOCUSED_BUTTON_KEYWORD);
-      all_states.push_back(FOCUSED_BUTTON_TAB_SWITCH);
-      all_states.push_back(FOCUSED_BUTTON_PEDAL);
-      all_states.push_back(FOCUSED_BUTTON_REMOVE_SUGGESTION);
     } else {
       // Keyword mode is only accessible by Tabbing forward.
       if (direction == kForward) {
@@ -362,9 +359,11 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
           all_states.push_back(KEYWORD_MODE);
         }
       }
-      all_states.push_back(FOCUSED_BUTTON_TAB_SWITCH);
-      all_states.push_back(FOCUSED_BUTTON_REMOVE_SUGGESTION);
     }
+    all_states.push_back(FOCUSED_BUTTON_TAB_SWITCH);
+    if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
+      all_states.push_back(FOCUSED_BUTTON_PEDAL);
+    all_states.push_back(FOCUSED_BUTTON_REMOVE_SUGGESTION);
   }
   DCHECK(std::is_sorted(all_states.begin(), all_states.end()))
       << "This algorithm depends on a sorted list of line states.";
@@ -499,13 +498,15 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
     case NORMAL:
       return true;
     case KEYWORD_MODE:
-      return match.associated_keyword != nullptr;
+      return !OmniboxFieldTrial::IsKeywordSearchButtonEnabled() &&
+             match.associated_keyword != nullptr;
     case FOCUSED_BUTTON_KEYWORD:
-      return match.associated_keyword != nullptr;
+      return OmniboxFieldTrial::IsKeywordSearchButtonEnabled() &&
+             match.associated_keyword != nullptr;
     case FOCUSED_BUTTON_TAB_SWITCH:
       // Buttons are suppressed for matches with an associated keyword, unless
       // dedicated button row is enabled.
-      if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
+      if (OmniboxFieldTrial::IsKeywordSearchButtonEnabled())
         return match.has_tab_match;
       else
         return match.has_tab_match && !match.associated_keyword;
@@ -513,9 +514,12 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
       return match.pedal != nullptr;
     case FOCUSED_BUTTON_REMOVE_SUGGESTION:
       // Remove suggestion buttons are suppressed for matches with an associated
-      // keyword or tab match, unless dedicated button row is enabled.
-      if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
+      // keyword or tab match, unless the features that move those to the
+      // button row are enabled.
+      if (OmniboxFieldTrial::IsKeywordSearchButtonEnabled())
         return match.SupportsDeletion();
+      else if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
+        return !match.associated_keyword && match.SupportsDeletion();
       else
         return !match.associated_keyword && !match.has_tab_match &&
                match.SupportsDeletion();

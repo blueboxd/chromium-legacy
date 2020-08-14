@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
@@ -115,8 +116,10 @@ public class LauncherShortcutTest {
                 () -> mActivityTestRule.getActivity().getActivityTab());
         Assert.assertEquals("Incorrect tab launch type.", TabLaunchType.FROM_LAUNCHER_SHORTCUT,
                 activityTab.getLaunchType());
-        Assert.assertTrue("Tab should be an NTP. Tab url: " + activityTab.getUrl(),
-                NewTabPage.isNTPUrl(activityTab.getUrl()));
+
+        Assert.assertTrue(
+                "Tab should be an NTP. Tab url: " + ChromeTabUtils.getUrlOnUiThread(activityTab),
+                NewTabPage.isNTPUrl(ChromeTabUtils.getUrlOnUiThread(activityTab)));
 
         // Verify tab model.
         Assert.assertEquals("Incorrect tab model selected.", incognito,

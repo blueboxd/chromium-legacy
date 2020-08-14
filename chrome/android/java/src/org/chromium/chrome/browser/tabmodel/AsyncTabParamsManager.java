@@ -11,37 +11,42 @@ import org.chromium.chrome.browser.tab.Tab;
 /**
  * Data that will be used later when a tab is opened via an intent. Often only the necessary
  * subset of the data will be set. All data is removed once the tab finishes initializing.
- *
- * TODO(pshmakov): convert to a singleton.
  */
 public class AsyncTabParamsManager {
+    /** Singleton instance. */
+    private static final AsyncTabParamsManager INSTANCE = new AsyncTabParamsManager();
 
     /** A map of tab IDs to AsyncTabParams consumed by Activities started asynchronously. */
-    private static final SparseArray<AsyncTabParams> sAsyncTabParams = new SparseArray<>();
+    private final SparseArray<AsyncTabParams> mAsyncTabParams = new SparseArray<>();
 
-    private static boolean sAddedToIncognitoTabHostRegistry;
+    private boolean mAddedToIncognitoTabHostRegistry;
+
+    /** Get the singleton instance of {@link AsyncTabParamsManager}. */
+    public static AsyncTabParamsManager getInstance() {
+        return INSTANCE;
+    }
 
     /**
      * Stores AsyncTabParams used when the tab with the given ID is launched via intent.
      * @param tabId The ID of the tab that will be launched via intent.
      * @param params The AsyncTabParams to use when creating the Tab.
      */
-    public static void add(int tabId, AsyncTabParams params) {
-        sAsyncTabParams.put(tabId, params);
+    public void add(int tabId, AsyncTabParams params) {
+        mAsyncTabParams.put(tabId, params);
 
-        if (!sAddedToIncognitoTabHostRegistry) {
+        if (!mAddedToIncognitoTabHostRegistry) {
             // Make sure async incognito tabs are taken into account when, for example,
             // checking if any incognito tabs exist.
-            IncognitoTabHostRegistry.getInstance().register(new AsyncTabsIncognitoTabHost());
-            sAddedToIncognitoTabHostRegistry = true;
+            IncognitoTabHostRegistry.getInstance().register(new AsyncTabsIncognitoTabHost(this));
+            mAddedToIncognitoTabHostRegistry = true;
         }
     }
 
     /**
      * @return Whether there is already an {@link AsyncTabParams} added for the given ID.
      */
-    public static boolean hasParamsForTabId(int tabId) {
-        return sAsyncTabParams.get(tabId) != null;
+    public boolean hasParamsForTabId(int tabId) {
+        return mAsyncTabParams.get(tabId) != null;
     }
 
     /**
@@ -49,9 +54,9 @@ public class AsyncTabParamsManager {
      *         implementations of this are keyed off of a user gesture so the likelihood of having
      *         more than one is zero.
      */
-    public static boolean hasParamsWithTabToReparent() {
-        for (int i = 0; i < sAsyncTabParams.size(); i++) {
-            if (sAsyncTabParams.get(sAsyncTabParams.keyAt(i)).getTabToReparent() == null) continue;
+    public boolean hasParamsWithTabToReparent() {
+        for (int i = 0; i < mAsyncTabParams.size(); i++) {
+            if (mAsyncTabParams.get(mAsyncTabParams.keyAt(i)).getTabToReparent() == null) continue;
             return true;
         }
         return false;
@@ -61,26 +66,31 @@ public class AsyncTabParamsManager {
      * @return A map of tab IDs to AsyncTabParams containing data that will be used later when a tab
      *         is opened via an intent.
      */
-    public static SparseArray<AsyncTabParams> getAsyncTabParams() {
-        return sAsyncTabParams;
+    public SparseArray<AsyncTabParams> getAsyncTabParams() {
+        return mAsyncTabParams;
     }
 
     /**
      * @return Retrieves and removes AsyncTabCreationParams for a particular tab id.
      */
-    public static AsyncTabParams remove(int tabId) {
-        AsyncTabParams data = sAsyncTabParams.get(tabId);
-        sAsyncTabParams.remove(tabId);
+    public AsyncTabParams remove(int tabId) {
+        AsyncTabParams data = mAsyncTabParams.get(tabId);
+        mAsyncTabParams.remove(tabId);
         return data;
     }
 
-    private AsyncTabParamsManager() {
-    }
+    private AsyncTabParamsManager() {}
 
     private static class AsyncTabsIncognitoTabHost implements IncognitoTabHost {
+        private final AsyncTabParamsManager mAsyncTabParamsManager;
+
+        private AsyncTabsIncognitoTabHost(AsyncTabParamsManager asyncTabParamsManager) {
+            mAsyncTabParamsManager = asyncTabParamsManager;
+        }
+
         @Override
         public boolean hasIncognitoTabs() {
-            SparseArray<AsyncTabParams> asyncTabParams = AsyncTabParamsManager.getAsyncTabParams();
+            SparseArray<AsyncTabParams> asyncTabParams = mAsyncTabParamsManager.getAsyncTabParams();
             for (int i = 0; i < asyncTabParams.size(); i++) {
                 Tab tab = asyncTabParams.valueAt(i).getTabToReparent();
                 if (tab != null && tab.isIncognito()) {
@@ -92,11 +102,11 @@ public class AsyncTabParamsManager {
 
         @Override
         public void closeAllIncognitoTabs() {
-            SparseArray<AsyncTabParams> asyncTabParams = AsyncTabParamsManager.getAsyncTabParams();
+            SparseArray<AsyncTabParams> asyncTabParams = mAsyncTabParamsManager.getAsyncTabParams();
             for (int i = 0; i < asyncTabParams.size(); i++) {
                 Tab tab = asyncTabParams.valueAt(i).getTabToReparent();
                 if (tab != null && tab.isIncognito()) {
-                    AsyncTabParamsManager.remove(tab.getId());
+                    mAsyncTabParamsManager.remove(tab.getId());
                 }
             }
         }

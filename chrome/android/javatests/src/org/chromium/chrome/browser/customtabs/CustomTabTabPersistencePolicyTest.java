@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
+import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
@@ -455,7 +456,9 @@ public class CustomTabTabPersistencePolicyTest {
         ApplicationStatus.onStateChangeForTesting(activity, ActivityState.CREATED);
         TabModelSelectorImpl selector = new TabModelSelectorImpl(activity, activity,
                 buildTestPersistencePolicy(), new ChromeTabModelFilterFactory(),
-                () -> NextTabPolicy.LOCATIONAL, false, false, false);
+                ()
+                        -> NextTabPolicy.LOCATIONAL,
+                AsyncTabParamsManager.getInstance(), false, false, false);
         selector.initializeForTesting(normalTabModel, incognitoTabModel);
         ApplicationStatus.onStateChangeForTesting(activity, ActivityState.DESTROYED);
         return selector;

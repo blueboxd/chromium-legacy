@@ -25,8 +25,6 @@ const char kDeviceAddress1[] = "DeviceAddress1";
 const char kDeviceAddress2[] = "DeviceAddress2";
 const char kDeviceName1[] = "DeviceName1";
 const char kDeviceName2[] = "DeviceName2";
-const device::BluetoothUUID kNearbySharingServiceUuid =
-    device::BluetoothUUID("a82efa21-ae5c-3dde-9bbc-f16da7b16c5a");
 }  // namespace
 
 class BluetoothClassicMediumTest : public testing::Test {
@@ -193,35 +191,6 @@ TEST_F(BluetoothClassicMediumTest, TestDiscovery_DeviceLost) {
   NotifyDeviceRemoved(kDeviceAddress1, kDeviceName1);
 
   StopDiscovery();
-}
-
-TEST_F(BluetoothClassicMediumTest, TestConnectToService_Success) {
-  StartDiscovery();
-  NotifyDeviceAdded(kDeviceAddress1, kDeviceName1);
-  StopDiscovery();
-
-  fake_adapter_->AllowConnectionForAddressAndUuidPair(
-      kDeviceAddress1, kNearbySharingServiceUuid);
-
-  auto bluetooth_socket = bluetooth_classic_medium_->ConnectToService(
-      *last_device_discovered_, kNearbySharingServiceUuid.value());
-  EXPECT_EQ(last_device_discovered_, bluetooth_socket->GetRemoteDevice());
-
-  EXPECT_TRUE(bluetooth_socket->Close().Ok());
-}
-
-TEST_F(BluetoothClassicMediumTest, TestConnectToService_ConnectionFailure) {
-  StartDiscovery();
-  NotifyDeviceAdded(kDeviceAddress1, kDeviceName1);
-  NotifyDeviceAdded(kDeviceAddress2, kDeviceName2);
-  StopDiscovery();
-
-  // Do not allow "Device 2".
-  fake_adapter_->AllowConnectionForAddressAndUuidPair(
-      kDeviceAddress1, kNearbySharingServiceUuid);
-
-  EXPECT_FALSE(bluetooth_classic_medium_->ConnectToService(
-      *last_device_discovered_, kNearbySharingServiceUuid.value()));
 }
 
 }  // namespace chrome

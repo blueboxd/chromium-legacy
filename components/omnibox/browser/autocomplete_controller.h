@@ -199,6 +199,8 @@ class AutocompleteController : public AutocompleteProviderListener,
                            PopupInlineAutocompleteAndTemporaryText);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelSuggestionButtonRowTest,
                            PopupStepSelectionWithButtonRow);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelSuggestionButtonRowTest,
+                           PopupStepSelectionWithButtonRowAndKeywordButton);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,
                            EmitSelectedChildrenChangedAccessibilityEvent);
 

@@ -248,7 +248,7 @@ public class BrowserControlsTest {
         InstrumentationActivity activity = mActivityTestRule.getActivity();
         View topContents = activity.getTopContentsContainer();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> activity.getBrowser().setTopView(topContents, minHeight, false, false));
+                () -> activity.getBrowser().setTopView(topContents, minHeight, false));
         int expectedCollapseAmount = topContents.getHeight() - minHeight;
 
         // Make sure the top controls start out taller than the min height.
@@ -286,9 +286,7 @@ public class BrowserControlsTest {
         InstrumentationActivity activity = mActivityTestRule.getActivity();
         View topContents = activity.getTopContentsContainer();
         TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> activity.getBrowser().setTopView(
-                                topContents, 0, /*pinToContentTop=*/true, false));
+                () -> activity.getBrowser().setTopView(topContents, 0, /*pinToContentTop=*/true));
 
         // Scroll down past the top-controls, which should collapse the top-controls and change the
         // page height.

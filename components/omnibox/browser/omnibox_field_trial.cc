@@ -727,6 +727,11 @@ bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions);
 }
 
+bool OmniboxFieldTrial::IsKeywordSearchButtonEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxSuggestionButtonRow) &&
+         base::FeatureList::IsEnabled(omnibox::kOmniboxKeywordSearchButton);
+}
+
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
 }

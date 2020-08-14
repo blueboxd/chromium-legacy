@@ -17,6 +17,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/component_extension_resources_map.h"
 #include "chrome/grit/theme_resources.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "pdf/buildflags.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -168,6 +169,8 @@ bool ChromeComponentExtensionResourceManager::IsComponentExtensionResource(
     const base::FilePath& extension_path,
     const base::FilePath& resource_path,
     int* resource_id) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   base::FilePath directory_path = extension_path;
   base::FilePath resources_dir;
   base::FilePath relative_path;
@@ -190,12 +193,16 @@ bool ChromeComponentExtensionResourceManager::IsComponentExtensionResource(
 const ui::TemplateReplacements*
 ChromeComponentExtensionResourceManager::GetTemplateReplacementsForExtension(
     const std::string& extension_id) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   LazyInitData();
   auto it = data_->template_replacements().find(extension_id);
   return it != data_->template_replacements().end() ? &it->second : nullptr;
 }
 
 void ChromeComponentExtensionResourceManager::LazyInitData() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   if (!data_)
     data_ = std::make_unique<Data>();
 }

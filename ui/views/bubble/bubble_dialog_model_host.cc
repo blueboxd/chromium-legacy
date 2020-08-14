@@ -56,35 +56,34 @@ BubbleDialogModelHost::BubbleDialogModelHost(
                      base::Unretained(model_.get()), GetPassKey()));
 
   int button_mask = ui::DIALOG_BUTTON_NONE;
-
-  // TODO(pbos): Separate dialog buttons from fields. This is not nice.
-  for (const auto& field : model_->fields(GetPassKey())) {
-    if (field->type(GetPassKey()) != ui::DialogModelField::kButton)
-      continue;
-
-    const auto* button = static_cast<const ui::DialogModelButton*>(field.get());
-    if (field->model_field_id(GetPassKey()) > ui::DIALOG_BUTTON_LAST) {
-      DCHECK_EQ(button, model_->GetExtraButton());
-      auto extra_button =
-          std::make_unique<views::MdTextButton>(this, button->label());
-      extra_button->SetID(field->model_field_id(GetPassKey()));
-      SetExtraView(std::move(extra_button));
-
-      continue;
-    }
-
-    button_mask |= field->model_field_id(GetPassKey());
-    SetButtons(button_mask);
-    if (!button->label().empty()) {
-      SetButtonLabel(
-          static_cast<ui::DialogButton>(field->model_field_id(GetPassKey())),
-          button->label());
-    }
+  auto* ok_button = model_->ok_button(GetPassKey());
+  if (ok_button) {
+    button_mask |= ui::DIALOG_BUTTON_OK;
+    if (!ok_button->label().empty())
+      SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_button->label());
   }
 
-  // Populate dialog using the observer functions to make sure they use the same
-  // code path as updates.
-  OnModelChanged(model_.get());
+  auto* cancel_button = model_->cancel_button(GetPassKey());
+  if (cancel_button) {
+    button_mask |= ui::DIALOG_BUTTON_CANCEL;
+    if (!cancel_button->label().empty())
+      SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_button->label());
+  }
+
+  auto* extra_button = model_->extra_button(GetPassKey());
+  if (extra_button) {
+    auto extra_view =
+        std::make_unique<views::MdTextButton>(this, extra_button->label());
+    view_to_field_[extra_view.get()] = extra_button;
+    SetExtraView(std::move(extra_view));
+  }
+
+  SetButtons(button_mask);
+
+  WidgetDelegate::SetTitle(model_->title(GetPassKey()));
+  WidgetDelegate::SetShowCloseButton(model_->show_close_button(GetPassKey()));
+
+  AddInitialFields();
 }
 
 BubbleDialogModelHost::~BubbleDialogModelHost() {
@@ -93,21 +92,25 @@ BubbleDialogModelHost::~BubbleDialogModelHost() {
 }
 
 View* BubbleDialogModelHost::GetInitiallyFocusedView() {
-  if (model_->initially_focused_field(GetPassKey())) {
-    // TODO(pbos): Update this so that it works for dialog buttons.
-    View* focused_view = GetViewByID(
-        model_
-            ->GetFieldByUniqueId(*model_->initially_focused_field(GetPassKey()))
-            ->model_field_id(GetPassKey()));
-    // The dialog should be populated now so this should correspond to a view
-    // with this ID.
-    DCHECK(focused_view);
-    return focused_view;
-  }
-  return BubbleDialogDelegateView::GetInitiallyFocusedView();
+  ui::DialogModelField* focused_field = model_->GetTextfieldByUniqueId(
+      *model_->initially_focused_field(GetPassKey()));
+
+  if (!focused_field)
+    return BubbleDialogDelegateView::GetInitiallyFocusedView();
+
+  return FieldToView(focused_field);
 }
 
 void BubbleDialogModelHost::OnDialogInitialized() {
+  // Dialog buttons are added on dialog initialization.
+  auto* ok_button = model_->ok_button(GetPassKey());
+  if (ok_button)
+    view_to_field_[GetOkButton()] = ok_button;
+
+  auto* cancel_button = model_->cancel_button(GetPassKey());
+  if (cancel_button)
+    view_to_field_[GetCancelButton()] = cancel_button;
+
   UpdateAccelerators();
 }
 
@@ -119,24 +122,22 @@ void BubbleDialogModelHost::Close() {
 
 void BubbleDialogModelHost::SelectAllText(int unique_id) {
   static_cast<Textfield*>(
-      GetViewByID(model_->GetTextfieldByUniqueId(unique_id)->model_field_id(
-          GetPassKey())))
+      FieldToView(model_->GetTextfieldByUniqueId(unique_id)))
       ->SelectAll(false);
 }
 
-void BubbleDialogModelHost::OnModelChanged(ui::DialogModel* model) {
-  DCHECK(model == model_.get());
-  WidgetDelegate::SetTitle(model->title(GetPassKey()));
-  WidgetDelegate::SetShowCloseButton(model->show_close_button(GetPassKey()));
+void BubbleDialogModelHost::OnFieldAdded(ui::DialogModelField* field) {
+  // TODO(pbos): Add support for adding fields while the model is hosted.
+  NOTREACHED();
+}
 
-  // TODO(pbos): When fixing the DCHECK below, keep views and update them. This
-  // is required to maintain view focus, for instance. Do not remove all
-  // children and recreate. Needs to dynamically insert/remove GridLayout rows.
-  DCHECK(children().empty()) << "TODO(pbos): Support changing the model after "
-                                "host creation...";
+void BubbleDialogModelHost::AddInitialFields() {
+  // TODO(pbos): Turn this method into consecutive OnFieldAdded(field) calls.
+
+  DCHECK(children().empty()) << "This should only be called once.";
 
   bool first_row = true;
-  const auto& fields = model->fields(GetPassKey());
+  const auto& fields = model_->fields(GetPassKey());
   const DialogContentType first_field_content_type =
       fields.empty()
           ? DialogContentType::CONTROL
@@ -151,32 +152,29 @@ void BubbleDialogModelHost::OnModelChanged(ui::DialogModel* model) {
       GetGridLayout()->AddPaddingRow(GridLayout::kFixedSize, 12);
     }
 
-    View* last_field = nullptr;
+    View* last_view = nullptr;
     switch (field->type(GetPassKey())) {
       case ui::DialogModelField::kButton:
         // TODO(pbos): Add support for buttons that are part of content area.
         continue;
       case ui::DialogModelField::kTextfield:
-        last_field = AddOrUpdateTextfield(
-            static_cast<const ui::DialogModelTextfield&>(*field));
+        last_view = AddOrUpdateTextfield(FieldAsTextfield(field.get()));
         break;
 
       case ui::DialogModelField::kCombobox:
-        last_field = AddOrUpdateCombobox(
-            static_cast<ui::DialogModelCombobox*>(field.get()));
+        last_view = AddOrUpdateCombobox(FieldAsCombobox(field.get()));
         break;
     }
-    DCHECK(last_field);
-    last_field->SetID(field->model_field_id(GetPassKey()));
+    DCHECK(last_view);
+    view_to_field_[last_view] = field.get();
     last_field_content_type = FieldTypeToContentType(field->type(GetPassKey()));
+
     // TODO(pbos): Update logic here when mixing types.
     first_row = false;
   }
 
   set_margins(LayoutProvider::Get()->GetDialogInsetsForContentType(
       first_field_content_type, last_field_content_type));
-
-  UpdateAccelerators();
 }
 
 GridLayout* BubbleDialogModelHost::GetGridLayout() {
@@ -200,24 +198,21 @@ void BubbleDialogModelHost::ConfigureGridLayout() {
 }
 
 Textfield* BubbleDialogModelHost::AddOrUpdateTextfield(
-    const ui::DialogModelTextfield& model) {
-  // TODO(pbos): Handle updating existing field.
-  DCHECK(!GetViewByID(model.model_field_id(GetPassKey())))
-      << "BubbleDialogModelHost doesn't yet support updates to the model";
+    ui::DialogModelTextfield* model) {
+  // TODO(pbos): Support updates to the existing model.
 
   auto textfield = std::make_unique<Textfield>();
-  textfield->SetAccessibleName(
-      model.accessible_name().empty() ? model.text() : model.accessible_name());
-  textfield->SetText(model.text());
+  textfield->SetAccessibleName(model->accessible_name().empty()
+                                   ? model->text()
+                                   : model->accessible_name());
+  textfield->SetText(model->text());
 
-  property_changed_subscriptions_.push_back(
-      textfield->AddTextChangedCallback(base::BindRepeating(
-          &BubbleDialogModelHost::NotifyTextfieldTextChanged,
-          base::Unretained(this), model.model_field_id(GetPassKey()),
-          textfield.get())));
+  property_changed_subscriptions_.push_back(textfield->AddTextChangedCallback(
+      base::BindRepeating(&BubbleDialogModelHost::NotifyTextfieldTextChanged,
+                          base::Unretained(this), textfield.get())));
 
   auto* textfield_ptr = textfield.get();
-  AddLabelAndField(model.label(), std::move(textfield),
+  AddLabelAndField(model->label(), std::move(textfield),
                    textfield_ptr->GetFontList());
 
   return textfield_ptr;
@@ -226,8 +221,6 @@ Textfield* BubbleDialogModelHost::AddOrUpdateTextfield(
 Combobox* BubbleDialogModelHost::AddOrUpdateCombobox(
     ui::DialogModelCombobox* model) {
   // TODO(pbos): Handle updating existing field.
-  DCHECK(!GetViewByID(model->model_field_id(GetPassKey())))
-      << "BubbleDialogModelHost doesn't yet support updates to the model";
 
   auto combobox = std::make_unique<Combobox>(model->combobox_model());
   combobox->SetAccessibleName(model->accessible_name().empty()
@@ -257,29 +250,32 @@ void BubbleDialogModelHost::AddLabelAndField(const base::string16& label_text,
   layout->AddView(std::move(field));
 }
 
-void BubbleDialogModelHost::NotifyTextfieldTextChanged(int id,
-                                                       Textfield* textfield) {
-  model_->OnTextfieldTextChanged(GetPassKey(), id, textfield->GetText());
+void BubbleDialogModelHost::NotifyTextfieldTextChanged(Textfield* textfield) {
+  model_->OnTextfieldTextChanged(GetPassKey(),
+                                 FieldAsTextfield(view_to_field_[textfield]),
+                                 textfield->GetText());
 }
 
 void BubbleDialogModelHost::NotifyComboboxSelectedIndexChanged(
-    int id,
     Combobox* combobox) {
-  model_->OnComboboxSelectedIndexChanged(GetPassKey(), id,
-                                         combobox->GetSelectedIndex());
+  model_->OnComboboxSelectedIndexChanged(
+      GetPassKey(), FieldAsCombobox(view_to_field_[combobox]),
+      combobox->GetSelectedIndex());
 }
 
 void BubbleDialogModelHost::ButtonPressed(Button* sender,
                                           const ui::Event& event) {
-  model_->OnButtonPressed(GetPassKey(), sender->GetID(), event);
+  model_->OnButtonPressed(GetPassKey(), FieldAsButton(view_to_field_[sender]),
+                          event);
 }
 
 void BubbleDialogModelHost::OnPerformAction(Combobox* combobox) {
   // TODO(pbos): This should be a subscription through the Combobox directly,
   // but Combobox right now doesn't support listening to selected-index changes.
-  NotifyComboboxSelectedIndexChanged(combobox->GetID(), combobox);
+  NotifyComboboxSelectedIndexChanged(combobox);
 
-  model_->OnComboboxPerformAction(GetPassKey(), combobox->GetID());
+  model_->OnComboboxPerformAction(GetPassKey(),
+                                  FieldAsCombobox(view_to_field_[combobox]));
 }
 
 void BubbleDialogModelHost::UpdateAccelerators() {
@@ -287,25 +283,45 @@ void BubbleDialogModelHost::UpdateAccelerators() {
   // ::OnDialogInitialized().
   if (!GetWidget())
     return;
-  for (const auto& field : model_->fields(GetPassKey())) {
-    if (field->accelerators(GetPassKey()).empty())
-      continue;
-    View* view = nullptr;
-    if (field->model_field_id(GetPassKey()) == ui::DIALOG_BUTTON_OK) {
-      view = GetOkButton();
-    } else if (field->model_field_id(GetPassKey()) ==
-               ui::DIALOG_BUTTON_CANCEL) {
-      view = GetCancelButton();
-    } else if (field.get() == model_->GetExtraButton()) {
-      view = GetExtraView();
-    } else {
-      view = GetViewByID(field->model_field_id(GetPassKey()));
-    }
-    DCHECK(view);
+
+  for (auto& kv : view_to_field_) {
+    View* const view = kv.first;
     view->ResetAccelerators();
-    for (const auto& accelerator : field->accelerators(GetPassKey()))
+    for (const auto& accelerator : kv.second->accelerators(GetPassKey()))
       view->AddAccelerator(accelerator);
   }
+}
+
+View* BubbleDialogModelHost::FieldToView(ui::DialogModelField* field) {
+  DCHECK(field);
+  for (auto& kv : view_to_field_) {
+    if (kv.second == field)
+      return kv.first;
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+
+ui::DialogModelButton* BubbleDialogModelHost::FieldAsButton(
+    ui::DialogModelField* field) {
+  DCHECK(field);
+  DCHECK_EQ(field->type(GetPassKey()), ui::DialogModelField::kButton);
+  return static_cast<ui::DialogModelButton*>(field);
+}
+
+ui::DialogModelCombobox* BubbleDialogModelHost::FieldAsCombobox(
+    ui::DialogModelField* field) {
+  DCHECK(field);
+  DCHECK_EQ(field->type(GetPassKey()), ui::DialogModelField::kCombobox);
+  return static_cast<ui::DialogModelCombobox*>(field);
+}
+
+ui::DialogModelTextfield* BubbleDialogModelHost::FieldAsTextfield(
+    ui::DialogModelField* field) {
+  DCHECK(field);
+  DCHECK_EQ(field->type(GetPassKey()), ui::DialogModelField::kTextfield);
+  return static_cast<ui::DialogModelTextfield*>(field);
 }
 
 }  // namespace views

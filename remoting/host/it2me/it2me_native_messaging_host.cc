@@ -484,13 +484,16 @@ void It2MeNativeMessagingHost::SetPolicyErrorClosureForTesting(
   policy_error_closure_for_testing_ = std::move(closure);
 }
 
-void It2MeNativeMessagingHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
+void It2MeNativeMessagingHost::OnNatPoliciesChanged(
+    bool nat_traversal_enabled,
+    bool relay_connections_allowed) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());
 
   message->SetString("type", "natPolicyChanged");
   message->SetBoolean("natTraversalEnabled", nat_traversal_enabled);
+  message->SetBoolean("relayConnectionsAllowed", relay_connections_allowed);
   SendMessageToClient(std::move(message));
 }
 

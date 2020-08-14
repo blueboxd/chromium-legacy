@@ -4,6 +4,7 @@
 
 #include "chromeos/printing/ppd_metadata_parser.h"
 
+#include "base/json/json_reader.h"
 #include "base/strings/string_piece.h"
 #include "chromeos/printing/ppd_metadata_matchers.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -15,8 +16,10 @@ namespace {
 
 using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::ExplainMatchResult;
 using ::testing::Field;
+using ::testing::Ne;
 using ::testing::Optional;
 using ::testing::Pair;
 using ::testing::StrEq;
@@ -552,6 +555,94 @@ TEST(PpdMetadataParserTest, ParseForwardIndexDoesNotReturnEmptyContainer) {
 // irrecoverable parse error.
 TEST(PpdMetadataParserTest, ParseForwardIndexFailsGracefully) {
   EXPECT_FALSE(ParseForwardIndex(kInvalidJson).has_value());
+}
+
+// Verifies that ParseUsbIndex() can parse USB index metadata.
+TEST(PpdMetadataParserTest, CanParseUsbIndex) {
+  constexpr base::StringPiece kJsonUsbIndex = R"({
+  "usbIndex": {
+    "1": {
+      "effectiveMakeAndModel": "d 541"
+    },
+    "10": {
+      "effectiveMakeAndModel": "d 504"
+    }
+  }
+})";
+
+  EXPECT_THAT(ParseUsbIndex(kJsonUsbIndex),
+              Optional(UnorderedElementsAre(Pair(1, StrEq("d 541")),
+                                            Pair(10, StrEq("d 504")))));
+}
+
+// Verifies that ParseUsbIndex() can parse USB index metadata and return
+// a partial ParsedUsbIndex even when it encounters garbage values.
+TEST(PpdMetadataParserTest, CanPartiallyParseUsbIndex) {
+  constexpr base::StringPiece kJsonUsbIndex = R"({
+  "usbIndex": {
+    "garbage key": {
+      "effectiveMakeAndModel": "garbage value"
+    },
+    "1": {
+      "effectiveMakeAndModel": "d 541"
+    },
+    "10": {
+      "effectiveMakeAndModel": "d 504"
+    }
+  }
+})";
+
+  EXPECT_THAT(ParseUsbIndex(kJsonUsbIndex),
+              Optional(UnorderedElementsAre(Pair(1, StrEq("d 541")),
+                                            Pair(10, StrEq("d 504")))));
+}
+
+// Verifies that ParseUsbIndex() returns base::nullopt rather than an
+// empty container.
+TEST(PpdMetadataParserTest, ParseUsbIndexDoesNotReturnEmptyContainer) {
+  constexpr base::StringPiece kEmptyJsonUsbIndex = R"({
+  "usbIndex": { }
+})";
+  ASSERT_THAT(base::JSONReader::Read(kEmptyJsonUsbIndex), Ne(base::nullopt));
+  EXPECT_THAT(ParseUsbIndex(kEmptyJsonUsbIndex), Eq(base::nullopt));
+
+  constexpr base::StringPiece kJsonUsbIndexWithBadStringKeys = R"({
+  "usbIndex": {
+    "non-integral key": { }
+  }
+})";
+  ASSERT_THAT(base::JSONReader::Read(kJsonUsbIndexWithBadStringKeys),
+              Ne(base::nullopt));
+  EXPECT_THAT(ParseUsbIndex(kJsonUsbIndexWithBadStringKeys), Eq(base::nullopt));
+
+  constexpr base::StringPiece kJsonUsbIndexWithoutEmmAtLeaf = R"({
+  "usbIndex": {
+    "1": {
+      "some key that is not ``effectiveMakeAndModel''": "d 504"
+    }
+  }
+})";
+  ASSERT_THAT(base::JSONReader::Read(kJsonUsbIndexWithoutEmmAtLeaf),
+              Ne(base::nullopt));
+  EXPECT_THAT(ParseUsbIndex(kJsonUsbIndexWithoutEmmAtLeaf), Eq(base::nullopt));
+
+  constexpr base::StringPiece kJsonUsbIndexWithEmptyEmmAtLeaf = R"({
+  "usbIndex": {
+    "1": {
+      "effectiveMakeAndModel": ""
+    }
+  }
+})";
+  ASSERT_THAT(base::JSONReader::Read(kJsonUsbIndexWithEmptyEmmAtLeaf),
+              Ne(base::nullopt));
+  EXPECT_THAT(ParseUsbIndex(kJsonUsbIndexWithEmptyEmmAtLeaf),
+              Eq(base::nullopt));
+}
+
+// Verifies that ParseUsbIndex() returns base::nullopt on irrecoverable
+// parse error.
+TEST(PpdMetadataParserTest, ParseUsbIndexFailsGracefully) {
+  EXPECT_THAT(ParseUsbIndex(kInvalidJson), Eq(base::nullopt));
 }
 
 // Verifies that ParseReverseIndex() can parse reverse index metadata.

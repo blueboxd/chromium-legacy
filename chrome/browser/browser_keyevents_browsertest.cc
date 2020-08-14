@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
   EXPECT_NO_FATAL_FAILURE(CheckTextBoxValue(tab_index, L"B", L"aA"));
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   static const KeyEventTestData kTestCtrlF = {

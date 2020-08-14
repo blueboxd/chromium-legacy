@@ -22,133 +22,6 @@
 
 namespace base {
 
-namespace internal {
-
-TimeNowFunction g_time_now_function = &subtle::TimeNowIgnoringOverride;
-
-TimeNowFunction g_time_now_from_system_time_function =
-    &subtle::TimeNowFromSystemTimeIgnoringOverride;
-
-TimeTicksNowFunction g_time_ticks_now_function =
-    &subtle::TimeTicksNowIgnoringOverride;
-
-ThreadTicksNowFunction g_thread_ticks_now_function =
-    &subtle::ThreadTicksNowIgnoringOverride;
-
-}  // namespace internal
-
-// TimeDelta ------------------------------------------------------------------
-
-int TimeDelta::InDays() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<int>::max();
-  }
-  if (is_min()) {
-    // Preserve min to prevent underflow.
-    return std::numeric_limits<int>::min();
-  }
-  return static_cast<int>(delta_ / Time::kMicrosecondsPerDay);
-}
-
-int TimeDelta::InDaysFloored() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<int>::max();
-  }
-  if (is_min()) {
-    // Preserve min to prevent underflow.
-    return std::numeric_limits<int>::min();
-  }
-  int result = delta_ / Time::kMicrosecondsPerDay;
-  int64_t remainder = delta_ - (result * Time::kMicrosecondsPerDay);
-  if (remainder < 0) {
-    --result;  // Use floor(), not trunc() rounding behavior.
-  }
-  return result;
-}
-
-double TimeDelta::InSecondsF() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<double>::infinity();
-  }
-  if (is_min()) {
-    // Preserve min to prevent underflow.
-    return -std::numeric_limits<double>::infinity();
-  }
-  return static_cast<double>(delta_) / Time::kMicrosecondsPerSecond;
-}
-
-int64_t TimeDelta::InSeconds() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<int64_t>::max();
-  }
-  if (is_min()) {
-    // Preserve min to prevent underflow.
-    return std::numeric_limits<int64_t>::min();
-  }
-  return delta_ / Time::kMicrosecondsPerSecond;
-}
-
-double TimeDelta::InMillisecondsF() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<double>::infinity();
-  }
-  if (is_min()) {
-    // Preserve min to prevent underflow.
-    return -std::numeric_limits<double>::infinity();
-  }
-  return static_cast<double>(delta_) / Time::kMicrosecondsPerMillisecond;
-}
-
-int64_t TimeDelta::InMilliseconds() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<int64_t>::max();
-  }
-  if (is_min()) {
-    // Preserve min to prevent underflow.
-    return std::numeric_limits<int64_t>::min();
-  }
-  return delta_ / Time::kMicrosecondsPerMillisecond;
-}
-
-int64_t TimeDelta::InMillisecondsRoundedUp() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<int64_t>::max();
-  }
-  if (is_min()) {
-    // Preserve min to prevent underflow.
-    return std::numeric_limits<int64_t>::min();
-  }
-  int64_t result = delta_ / Time::kMicrosecondsPerMillisecond;
-  int64_t remainder = delta_ - (result * Time::kMicrosecondsPerMillisecond);
-  if (remainder > 0) {
-    ++result;  // Use ceil(), not trunc() rounding behavior.
-  }
-  return result;
-}
-
-double TimeDelta::InMicrosecondsF() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<double>::infinity();
-  }
-  if (is_min()) {
-    // Preserve min to prevent underflow.
-    return -std::numeric_limits<double>::infinity();
-  }
-  return static_cast<double>(delta_);
-}
-
-std::ostream& operator<<(std::ostream& os, TimeDelta time_delta) {
-  return os << time_delta.InSecondsF() << " s";
-}
-
 namespace {
 
 // Strips the |expected| prefix from the start of the given string, returning
@@ -256,6 +129,23 @@ Optional<TimeDelta> ConsumeDurationUnit(StringPiece& unit_string) {
 
 }  // namespace
 
+namespace internal {
+
+TimeNowFunction g_time_now_function = &subtle::TimeNowIgnoringOverride;
+
+TimeNowFunction g_time_now_from_system_time_function =
+    &subtle::TimeNowFromSystemTimeIgnoringOverride;
+
+TimeTicksNowFunction g_time_ticks_now_function =
+    &subtle::TimeTicksNowIgnoringOverride;
+
+ThreadTicksNowFunction g_thread_ticks_now_function =
+    &subtle::ThreadTicksNowIgnoringOverride;
+
+}  // namespace internal
+
+// TimeDelta ------------------------------------------------------------------
+
 // static
 Optional<TimeDelta> TimeDelta::FromString(StringPiece duration_string) {
   int sign = 1;
@@ -289,6 +179,147 @@ Optional<TimeDelta> TimeDelta::FromString(StringPiece duration_string) {
       delta += (double{sign} * number.frac_part / number.frac_scale) * unit;
   }
   return delta;
+}
+
+int TimeDelta::InDays() const {
+  if (is_max()) {
+    // Preserve max to prevent overflow.
+    return std::numeric_limits<int>::max();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int>::min();
+  }
+  return static_cast<int>(delta_ / Time::kMicrosecondsPerDay);
+}
+
+int TimeDelta::InDaysFloored() const {
+  if (is_max()) {
+    // Preserve max to prevent overflow.
+    return std::numeric_limits<int>::max();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int>::min();
+  }
+  int result = delta_ / Time::kMicrosecondsPerDay;
+  int64_t remainder = delta_ - (result * Time::kMicrosecondsPerDay);
+  if (remainder < 0) {
+    --result;  // Use floor(), not trunc() rounding behavior.
+  }
+  return result;
+}
+
+double TimeDelta::InSecondsF() const {
+  if (is_max()) {
+    // Preserve max to prevent overflow.
+    return std::numeric_limits<double>::infinity();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return -std::numeric_limits<double>::infinity();
+  }
+  return static_cast<double>(delta_) / Time::kMicrosecondsPerSecond;
+}
+
+int64_t TimeDelta::InSeconds() const {
+  if (is_max()) {
+    // Preserve max to prevent overflow.
+    return std::numeric_limits<int64_t>::max();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int64_t>::min();
+  }
+  return delta_ / Time::kMicrosecondsPerSecond;
+}
+
+double TimeDelta::InMillisecondsF() const {
+  if (is_max()) {
+    // Preserve max to prevent overflow.
+    return std::numeric_limits<double>::infinity();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return -std::numeric_limits<double>::infinity();
+  }
+  return static_cast<double>(delta_) / Time::kMicrosecondsPerMillisecond;
+}
+
+int64_t TimeDelta::InMilliseconds() const {
+  if (is_max()) {
+    // Preserve max to prevent overflow.
+    return std::numeric_limits<int64_t>::max();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int64_t>::min();
+  }
+  return delta_ / Time::kMicrosecondsPerMillisecond;
+}
+
+int64_t TimeDelta::InMillisecondsRoundedUp() const {
+  if (is_max()) {
+    // Preserve max to prevent overflow.
+    return std::numeric_limits<int64_t>::max();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int64_t>::min();
+  }
+  int64_t result = delta_ / Time::kMicrosecondsPerMillisecond;
+  int64_t remainder = delta_ - (result * Time::kMicrosecondsPerMillisecond);
+  if (remainder > 0) {
+    ++result;  // Use ceil(), not trunc() rounding behavior.
+  }
+  return result;
+}
+
+double TimeDelta::InMicrosecondsF() const {
+  if (is_max()) {
+    // Preserve max to prevent overflow.
+    return std::numeric_limits<double>::infinity();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return -std::numeric_limits<double>::infinity();
+  }
+  return static_cast<double>(delta_);
+}
+
+TimeDelta TimeDelta::CeilToMultiple(TimeDelta interval) const {
+  if (is_inf() || interval.is_zero())
+    return *this;
+  const TimeDelta remainder = *this % interval;
+  if (delta_ < 0)
+    return *this - remainder;
+  return remainder.is_zero() ? *this
+                             : (*this - remainder + interval.magnitude());
+}
+
+TimeDelta TimeDelta::FloorToMultiple(TimeDelta interval) const {
+  if (is_inf() || interval.is_zero())
+    return *this;
+  const TimeDelta remainder = *this % interval;
+  if (delta_ < 0) {
+    return remainder.is_zero() ? *this
+                               : (*this - remainder - interval.magnitude());
+  }
+  return *this - remainder;
+}
+
+TimeDelta TimeDelta::RoundToMultiple(TimeDelta interval) const {
+  if (is_inf() || interval.is_zero())
+    return *this;
+  if (interval.is_inf())
+    return TimeDelta();
+  const TimeDelta half = interval.magnitude() / 2;
+  return (delta_ < 0) ? (*this - half).CeilToMultiple(interval)
+                      : (*this + half).FloorToMultiple(interval);
+}
+
+std::ostream& operator<<(std::ostream& os, TimeDelta time_delta) {
+  return os << time_delta.InSecondsF() << " s";
 }
 
 // Time -----------------------------------------------------------------------

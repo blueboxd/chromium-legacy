@@ -9,10 +9,11 @@ package feedwire;
 option optimize_for = LITE_RUNTIME;
 
 import "components/feed/core/proto/v2/wire/feature.proto";
-import "components/feed/core/proto/v2/wire/in_place_update_handle.proto";
+// UNUSED_IN_CHROME import
+// "components/feed/core/proto/v2/wire/in_place_update_handle.proto";
 import "components/feed/core/proto/v2/wire/payload_metadata.proto";
 import "components/feed/core/proto/v2/wire/render_data.proto";
-import "components/feed/core/proto/v2/wire/templates.proto";
+// UNUSED_IN_CHROME import "components/feed/core/proto/v2/wire/templates.proto";
 import "components/feed/core/proto/v2/wire/token.proto";
 import "components/feed/core/proto/v2/wire/request_schedule.proto";
 
@@ -47,11 +48,8 @@ message DataOperation {
     // Information to help render the content in the response.
     RenderData render_data = 6;
 
-    // A handle for updating one or more pieces of content in place.
-    InPlaceUpdateHandle in_place_update_handle = 8;
-
-    // A collection of templates.
-    Templates templates = 4 [deprecated = true];
+    // UNUSED_IN_CHROME InPlaceUpdateHandle in_place_update_handle = 8;
+    // UNUSED_IN_CHROME Templates templates = 4 [deprecated = true];
 
     RequestSchedule request_schedule = 9;
   }

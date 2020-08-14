@@ -205,8 +205,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHoverPreviews[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHotseat[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kShowAndroidFilesInFilesApp[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kShowAuthDialogDevOverlay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShowLoginDevOverlay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShowOobeDevOverlay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

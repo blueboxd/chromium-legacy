@@ -77,6 +77,12 @@ class LacrosChromeServiceNeverBlockingState
   // These methods pass the receiver end of a mojo message pipe to ash-chrome.
   // This effectively allows ash-chrome to receive messages sent on these
   // message pipes.
+  void BindMessageCenterReceiver(
+      mojo::PendingReceiver<crosapi::mojom::MessageCenter> pending_receiver) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    ash_chrome_service_->BindMessageCenter(std::move(pending_receiver));
+  }
+
   void BindSelectFileReceiver(
       mojo::PendingReceiver<crosapi::mojom::SelectFile> pending_receiver) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -152,6 +158,15 @@ LacrosChromeServiceImpl::LacrosChromeServiceImpl(
       base::BindOnce(
           &LacrosChromeServiceNeverBlockingState::BindAshChromeServiceRemote,
           weak_sequenced_state_));
+
+  // Bind the remote for SelectFile on the current thread, and then pass the
+  // receiver to the never_blocking_sequence_.
+  never_blocking_sequence_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &LacrosChromeServiceNeverBlockingState::BindMessageCenterReceiver,
+          weak_sequenced_state_,
+          message_center_remote_.BindNewPipeAndPassReceiver()));
 
   // Bind the remote for SelectFile on the current thread, and then pass the
   // receiver to the never_blocking_sequence_.

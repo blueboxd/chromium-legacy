@@ -940,6 +940,7 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
                                                   autoselect_first_suggestion);
         return;
 
+      case SuppressReason::kInsecureForm:
       case SuppressReason::kAutocompleteOff:
         return;
     }
@@ -964,8 +965,9 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
   // If there are no Autofill suggestions, consider showing Autocomplete
   // suggestions. We will not show Autocomplete suggestions for a field that
   // specifies autocomplete=off (or an unrecognized type), a field for which we
-  // will show the credit card signin promo, or a field that we think is a
-  // credit card expiration, cvc or number.
+  // will show the credit card signin promo, a field that we think is a
+  // credit card expiration, cvc or number, or on forms displayed on secure
+  // (i.e. HTTPS) sites that submit insecurely (over HTTP).
   if (suggestions.empty() && !ShouldShowCreditCardSigninPromo(form, field) &&
       field.should_autocomplete &&
       !(context.focused_field &&
@@ -975,7 +977,8 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
          context.focused_field->Type().GetStorableType() ==
              CREDIT_CARD_NUMBER ||
          context.focused_field->Type().GetStorableType() ==
-             CREDIT_CARD_VERIFICATION_CODE))) {
+             CREDIT_CARD_VERIFICATION_CODE)) &&
+      context.suppress_reason != SuppressReason::kInsecureForm) {
     // Suggestions come back asynchronously, so the Autocomplete manager will
     // handle sending the results back to the renderer.
     autocomplete_history_manager_->OnGetAutocompleteSuggestions(
@@ -2610,10 +2613,16 @@ void AutofillManager::GetAvailableSuggestions(
           features::kAutofillPreventMixedFormsFilling) &&
       client_->GetPrefs()->GetBoolean(::prefs::kMixedFormsWarningsEnabled)) {
     suggestions->clear();
-    Suggestion warning_suggestion(
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_MIXED_FORM));
-    warning_suggestion.frontend_id = POPUP_ITEM_ID_MIXED_FORM_MESSAGE;
-    suggestions->emplace_back(warning_suggestion);
+    // If the user begins typing, we interpret that as dismissing the warning.
+    // No suggestions are allowed, but the warning is no longer shown.
+    if (field.DidUserType()) {
+      context->suppress_reason = SuppressReason::kInsecureForm;
+    } else {
+      Suggestion warning_suggestion(
+          l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_MIXED_FORM));
+      warning_suggestion.frontend_id = POPUP_ITEM_ID_MIXED_FORM_MESSAGE;
+      suggestions->emplace_back(warning_suggestion);
+    }
     return;
   }
 

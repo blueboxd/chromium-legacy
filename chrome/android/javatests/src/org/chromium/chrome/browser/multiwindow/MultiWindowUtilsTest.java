@@ -36,6 +36,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.TimeoutException;
 
@@ -95,7 +96,8 @@ public class MultiWindowUtilsTest {
                 ApplicationStatus.getStateForActivity(activity2) == ActivityState.RESUMED);
 
         // Open settings and wait for ChromeTabbedActivity2 to pause.
-        activity2.onMenuOrKeyboardAction(R.id.preferences_id, true);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { activity2.onMenuOrKeyboardAction(R.id.preferences_id, true); });
         int expected = ActivityState.PAUSED;
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(

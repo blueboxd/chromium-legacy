@@ -21421,6 +21421,7 @@ Called by update_document_policy_enum.py.-->
   <int value="769" label="Printers"/>
   <int value="770" label="PrintersBulkConfiguration"/>
   <int value="771" label="DeviceReleaseLtsTag"/>
+  <int value="772" label="PrintersBulkAccessMode"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28720,6 +28721,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3380" label="EmailFieldDetected_PredictedTypeMatch"/>
   <int value="3381" label="PhoneFieldDetected_PredictedTypeMatch"/>
   <int value="3382" label="EmailFieldDetected_PatternMatch"/>
+  <int value="3383" label="LastLetterSpacingAffectsRendering"/>
+  <int value="3384" label="V8FontMetadata_GetTables_Method"/>
+  <int value="3385" label="V8FontMetadata_Blob_Method"/>
+  <int value="3386" label="V8FontManager_Query_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41709,6 +41714,8 @@ from previous Chrome versions.
   <int value="-345838366" label="enable-hosted-apps-in-windows"/>
   <int value="-345324571" label="enable-quirks-client"/>
   <int value="-345181892" label="new-tab-button-position"/>
+  <int value="-344357771"
+      label="WebAuthenticationCrosPlatformAuthenticator:enabled"/>
   <int value="-344343842" label="disable-experimental-app-list"/>
   <int value="-343769596" label="ServiceWorkerScriptStreaming:disabled"/>
   <int value="-342421456" label="EnableOverviewRoundedCorners:disabled"/>
@@ -42478,6 +42485,8 @@ from previous Chrome versions.
   <int value="494939785" label="InsecureFormSubmissionInterstitial:disabled"/>
   <int value="497137719" label="OmniboxVoiceSearchAlwaysVisible:disabled"/>
   <int value="500177932" label="ArcSmartTextSelection:disabled"/>
+  <int value="500947367"
+      label="WebAuthenticationCrosPlatformAuthenticator:disabled"/>
   <int value="501477022" label="DrawOcclusion:enabled"/>
   <int value="502551931" label="IncognitoStrings:enabled"/>
   <int value="503189154" label="ViewsBrowserWindows:disabled"/>
@@ -42605,6 +42614,7 @@ from previous Chrome versions.
   <int value="635533110" label="ReleaseNotes:disabled"/>
   <int value="635971109" label="PrintPdfAsImage:disabled"/>
   <int value="636341169" label="ExploreSites:disabled"/>
+  <int value="636413416" label="OmniboxKeywordSearchButton:disabled"/>
   <int value="636425179" label="mhtml-generator-option"/>
   <int value="637396292" label="AllBookmarks:enabled"/>
   <int value="637452937" label="ChromeHomeSurvey:enabled"/>
@@ -43660,6 +43670,7 @@ from previous Chrome versions.
   <int value="1771548551" label="DisableKeepaliveFetch:enabled"/>
   <int value="1772454319" label="enable-storage-manager"/>
   <int value="1775475563" label="malware-interstitial-v3"/>
+  <int value="1775730290" label="OmniboxKeywordSearchButton:enabled"/>
   <int value="1776475705" label="show-composited-layer-borders"/>
   <int value="1777059507" label="trust-autofill-server-name-types"/>
   <int value="1777695562" label="SendTabToSelfShowSendingUI:disabled"/>
@@ -57328,6 +57339,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Printer was setup by automatic USB configurer"/>
   <int value="3" label="Printer was setup by arc print service (Deprecated)"/>
   <int value="4" label="Printer was setup via Extensions API"/>
+</enum>
+
+<enum name="PrinterStatusQueryResult">
+  <int value="0" label="UNKNOWN_FAILURE">All other query failures.</int>
+  <int value="1" label="SUCCESS">Printer returned a valid printer status.</int>
+  <int value="2" label="UNREACHABLE">
+    Device could not connect to the printer.
+  </int>
 </enum>
 
 <enum name="PrinterStatusReasons">

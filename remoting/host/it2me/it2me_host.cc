@@ -169,12 +169,19 @@ void It2MeHost::ConnectOnNetworkThread(
       signal_strategy_.get(), host_key_pair_,
       base::BindOnce(&It2MeHost::OnReceivedSupportID, base::Unretained(this)));
 
-  HOST_LOG << "NAT state: " << nat_traversal_enabled_;
+  HOST_LOG << "NAT traversal enabled: " << nat_traversal_enabled_;
+  HOST_LOG << "Relay connections allowed: " << relay_connections_allowed_;
 
-  protocol::NetworkSettings network_settings(
-     nat_traversal_enabled_ ?
-     protocol::NetworkSettings::NAT_TRAVERSAL_FULL :
-     protocol::NetworkSettings::NAT_TRAVERSAL_DISABLED);
+  uint32_t network_flags = protocol::NetworkSettings::NAT_TRAVERSAL_DISABLED;
+  if (nat_traversal_enabled_) {
+    network_flags = protocol::NetworkSettings::NAT_TRAVERSAL_STUN |
+                    protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING;
+    if (relay_connections_allowed_) {
+      network_flags |= protocol::NetworkSettings::NAT_TRAVERSAL_RELAY;
+    }
+  }
+
+  protocol::NetworkSettings network_settings(network_flags);
 
   if (!udp_port_range_.is_null()) {
     network_settings.port_range = udp_port_range_;
@@ -289,11 +296,21 @@ void It2MeHost::OnPolicyUpdate(
     return;
   }
 
-  bool nat_policy;
-  if (policies->GetBoolean(policy::key::kRemoteAccessHostFirewallTraversal,
-                           &nat_policy)) {
-    UpdateNatPolicy(nat_policy);
+  bool nat_policy_value = false;
+  if (!policies->GetBoolean(policy::key::kRemoteAccessHostFirewallTraversal,
+                            &nat_policy_value)) {
+    HOST_LOG << "Failed to read kRemoteAccessHostFirewallTraversal policy";
+    nat_policy_value = nat_traversal_enabled_;
   }
+  bool relay_policy_value = false;
+  if (!policies->GetBoolean(
+          policy::key::kRemoteAccessHostAllowRelayedConnection,
+          &relay_policy_value)) {
+    HOST_LOG << "Failed to read kRemoteAccessHostAllowRelayedConnection policy";
+    relay_policy_value = relay_connections_allowed_;
+  }
+  UpdateNatPolicies(nat_policy_value, relay_policy_value);
+
   const base::ListValue* host_domain_list;
   if (policies->GetList(policy::key::kRemoteAccessHostDomainList,
                         &host_domain_list)) {
@@ -303,6 +320,7 @@ void It2MeHost::OnPolicyUpdate(
     }
     UpdateHostDomainListPolicy(std::move(host_domain_list_vector));
   }
+
   const base::ListValue* client_domain_list;
   if (policies->GetList(policy::key::kRemoteAccessHostClientDomainList,
                         &client_domain_list)) {
@@ -320,23 +338,30 @@ void It2MeHost::OnPolicyUpdate(
   }
 }
 
-void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {
+void It2MeHost::UpdateNatPolicies(bool nat_policy_value,
+                                  bool relay_policy_value) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  VLOG(2) << "UpdateNatPolicy: " << nat_traversal_enabled;
+  VLOG(2) << "UpdateNatPolicies: nat_policy_value: " << nat_policy_value;
+  bool nat_traversal_value_changed = nat_traversal_enabled_ != nat_policy_value;
+  nat_traversal_enabled_ = nat_policy_value;
 
-  // When transitioning from enabled to disabled, force disconnect any
-  // existing session.
-  if (nat_traversal_enabled_ && !nat_traversal_enabled && IsRunning()) {
+  VLOG(2) << "UpdateNatPolicies: relay_policy_value: " << relay_policy_value;
+  bool relay_value_changed = relay_connections_allowed_ != relay_policy_value;
+  relay_connections_allowed_ = relay_policy_value;
+
+  // Force disconnect when transitioning either policy setting to disabled.
+  if (((nat_traversal_value_changed && !nat_traversal_enabled_) ||
+       (relay_value_changed && !relay_connections_allowed_)) &&
+      IsRunning()) {
     DisconnectOnNetworkThread();
   }
 
-  nat_traversal_enabled_ = nat_traversal_enabled;
-
-  // Notify the web-app of the policy setting.
+  // Notify listeners of the policy setting change.
   host_context_->ui_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&It2MeHost::Observer::OnNatPolicyChanged,
-                                observer_, nat_traversal_enabled_));
+      FROM_HERE,
+      base::BindOnce(&It2MeHost::Observer::OnNatPoliciesChanged, observer_,
+                     nat_traversal_enabled_, relay_connections_allowed_));
 }
 
 void It2MeHost::UpdateHostDomainListPolicy(

@@ -6,6 +6,8 @@
 #define CC_RASTER_RASTER_BUFFER_PROVIDER_H_
 
 #include <stddef.h>
+#include <memory>
+#include <vector>
 
 #include "cc/raster/raster_buffer.h"
 #include "cc/raster/raster_source.h"

@@ -5,7 +5,6 @@
 #ifndef CHROME_SERVICES_SHARING_NEARBY_TEST_SUPPORT_FAKE_ADAPTER_H_
 #define CHROME_SERVICES_SHARING_NEARBY_TEST_SUPPORT_FAKE_ADAPTER_H_
 
-#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -38,9 +37,6 @@ class FakeAdapter : public mojom::Adapter {
   void NotifyDeviceAdded(mojom::DeviceInfoPtr device_info);
   void NotifyDeviceChanged(mojom::DeviceInfoPtr device_info);
   void NotifyDeviceRemoved(mojom::DeviceInfoPtr device_info);
-  void AllowConnectionForAddressAndUuidPair(
-      const std::string& address,
-      const device::BluetoothUUID& service_uuid);
 
   mojo::Receiver<mojom::Adapter> adapter_{this};
   std::string name_ = "AdapterName";
@@ -55,8 +51,6 @@ class FakeAdapter : public mojom::Adapter {
   mojom::DiscoverySession* discovery_session_ = nullptr;
   bool should_discovery_succeed_ = true;
   base::OnceClosure on_discovery_session_destroyed_callback_;
-  std::set<std::pair<std::string, device::BluetoothUUID>>
-      allowed_connections_for_address_and_uuid_pair_;
 
   mojo::Remote<mojom::AdapterClient> client_;
 };

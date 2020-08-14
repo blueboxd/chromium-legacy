@@ -191,7 +191,7 @@ bool UseNewWarnings() {
 }
 
 int GetFilenameStyle(const views::StyledLabel& label) {
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (UseNewWarnings())
     return STYLE_EMPHASIZED;
 #endif

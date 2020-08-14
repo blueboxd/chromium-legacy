@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
@@ -62,7 +63,12 @@ bool AllowLocalHistoryZeroSuggestSuggestions(const AutocompleteInput& input) {
 #else
   if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
     return false;
+#endif
 
+#if !defined(OS_IOS)  // Enabled by default on Desktop if not disabled by
+                      // kNewSearchFeatures.
+  return true;
+#else
   const auto current_page_classification = input.current_page_classification();
   // Reactive Zero-Prefix Suggestions (rZPS) and basically all remote ZPS on the
   // NTP are expected to be displayed alongside local history zero-prefix

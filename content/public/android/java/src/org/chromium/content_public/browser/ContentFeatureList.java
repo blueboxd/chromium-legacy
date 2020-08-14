@@ -26,8 +26,6 @@ public class ContentFeatureList {
     public static final String BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING =
             "BackgroundMediaRendererHasModerateBinding";
 
-    public static final String SERVICE_GROUP_IMPORTANCE = "ServiceGroupImportance";
-
     public static final String WEB_BLUETOOTH_NEW_PERMISSIONS_BACKEND =
             "WebBluetoothNewPermissionsBackend";
 

@@ -132,6 +132,7 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="webrtc_peer_connection"/>
       <traffic_annotation unique_id="floc_id_provider_impl"/>
       <traffic_annotation unique_id="gstatic_change_password_override_urls"/>
+      <traffic_annotation unique_id="interest_feedv2_image_send"/>
     </sender>
   </group>
   <group name="Admin Features">

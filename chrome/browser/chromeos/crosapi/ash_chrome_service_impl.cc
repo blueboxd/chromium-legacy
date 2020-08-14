@@ -10,9 +10,11 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/crosapi/attestation_ash.h"
+#include "chrome/browser/chromeos/crosapi/message_center_ash.h"
 #include "chrome/browser/chromeos/crosapi/screen_manager_crosapi.h"
 #include "chrome/browser/chromeos/crosapi/select_file_ash.h"
 #include "chromeos/crosapi/mojom/attestation.mojom.h"
+#include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
 
@@ -33,6 +35,11 @@ void AshChromeServiceImpl::BindAttestation(
     mojo::PendingReceiver<crosapi::mojom::Attestation> receiver) {
   attestation_ash_ =
       std::make_unique<crosapi::AttestationAsh>(std::move(receiver));
+}
+
+void AshChromeServiceImpl::BindMessageCenter(
+    mojo::PendingReceiver<mojom::MessageCenter> receiver) {
+  message_center_ash_ = std::make_unique<MessageCenterAsh>(std::move(receiver));
 }
 
 void AshChromeServiceImpl::BindSelectFile(

@@ -43,6 +43,7 @@ const char* kAllowedDomainsForEmojiSuggester[] = {
 const char* kTestUrls[] = {
     "e14s-test",
     "simple_textarea.html",
+    "test.html",
 };
 
 // For some internal websites, we do not want to reveal their urls in plain

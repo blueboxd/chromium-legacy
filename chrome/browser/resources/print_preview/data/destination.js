@@ -657,6 +657,16 @@ export class Destination {
   }
 
   /**
+   * @return {boolean} Whether the destination's description and icon should
+   *     warn that it is a deprecated printer.
+   */
+  get shouldShowDeprecatedPrinterWarning() {
+    return !this.cloudPrintDeprecationWarningsSuppressed_ &&
+        this.id_ !== Destination.GooglePromotedId.DOCS &&
+        (this.isPrivet || CloudOrigins.includes(this.origin_));
+  }
+
+  /**
    * @return {boolean} Whether the destination should display an invalid
    *     certificate UI warning in the selection dialog and cause a UI
    *     warning to appear in the preview area when selected.
@@ -733,6 +743,9 @@ export class Destination {
   get icon() {
     if (this.shouldShowSaveToDriveWarning) {
       return 'print-preview:save-to-drive-not-supported';
+    }
+    if (this.shouldShowDeprecatedPrinterWarning) {
+      return 'print-preview:printer-not-supported';
     }
     if (this.id_ === Destination.GooglePromotedId.DOCS) {
       return 'print-preview:save-to-drive';

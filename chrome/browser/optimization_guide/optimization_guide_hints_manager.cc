@@ -159,6 +159,9 @@ bool IsOptimizationTypeAllowed(
           optimization_metadata->set_delay_async_script_execution_metadata(
               optimization.delay_async_script_execution_metadata());
           break;
+        case optimization_guide::proto::Optimization::kAnyMetadata:
+          optimization_metadata->set_any_metadata(optimization.any_metadata());
+          break;
         case optimization_guide::proto::Optimization::METADATA_NOT_SET:
           // Some optimization types do not have metadata, make sure we do not
           // DCHECK.
@@ -1383,6 +1386,11 @@ void OptimizationGuideHintsManager::AddHintForTesting(
   } else if (metadata->public_image_metadata()) {
     *optimization->mutable_public_image_metadata() =
         *metadata->public_image_metadata();
+  } else if (metadata->delay_async_script_execution_metadata()) {
+    *optimization->mutable_delay_async_script_execution_metadata() =
+        *metadata->delay_async_script_execution_metadata();
+  } else if (metadata->any_metadata()) {
+    *optimization->mutable_any_metadata() = *metadata->any_metadata();
   } else {
     NOTREACHED();
   }

@@ -114,14 +114,17 @@ public class TabPersistentStoreTest {
                             getTabCreatorManager().getTabCreator(false),
                             getTabCreatorManager().getTabCreator(true), null,
                             mTabModelOrderController, null, mTabPersistentStore,
-                            () -> NextTabPolicy.HIERARCHICAL, TestTabModelSelector.this, true);
+                            ()
+                                    -> NextTabPolicy.HIERARCHICAL,
+                            AsyncTabParamsManager.getInstance(), TestTabModelSelector.this, true);
                 }
             };
             TabModelImpl regularTabModel = TestThreadUtils.runOnUiThreadBlocking(callable);
             TabModel incognitoTabModel = new IncognitoTabModel(new IncognitoTabModelImplCreator(
                     getTabCreatorManager().getTabCreator(false),
                     getTabCreatorManager().getTabCreator(true), null, mTabModelOrderController,
-                    null, mTabPersistentStore, () -> NextTabPolicy.HIERARCHICAL, this));
+                    null, mTabPersistentStore,
+                    () -> NextTabPolicy.HIERARCHICAL, AsyncTabParamsManager.getInstance(), this));
             initialize(regularTabModel, incognitoTabModel);
         }
 

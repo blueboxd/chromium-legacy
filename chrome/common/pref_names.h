@@ -446,7 +446,7 @@ extern const char kUserDataSnapshotRetentionLimit[];
 extern const char kExternalPrintServersAllowlist[];
 extern const char kDeviceExternalPrintServersAllowlist[];
 extern const char kRecommendedPrinters[];
-extern const char kRecommendedNativePrintersAccessMode[];
+extern const char kRecommendedPrintersAccessMode[];
 extern const char kRecommendedNativePrintersBlacklist[];
 extern const char kRecommendedNativePrintersWhitelist[];
 extern const char kUserPrintersAllowed[];

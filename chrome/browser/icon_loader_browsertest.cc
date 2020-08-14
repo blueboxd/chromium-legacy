@@ -56,7 +56,7 @@ class TestIconLoader {
   DISALLOW_COPY_AND_ASSIGN(TestIconLoader);
 };
 
-#if !(defined(OS_LINUX) && defined(MEMORY_SANITIZER))
+#if !((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(MEMORY_SANITIZER))
 const base::FilePath::CharType kGroupOnlyFilename[] =
     FILE_PATH_LITERAL("unlikely-to-exist-file.txt");
 
@@ -74,7 +74,8 @@ IN_PROC_BROWSER_TEST_F(IconLoaderBrowserTest, LoadGroup) {
   runner.Run();
   EXPECT_TRUE(test_loader.load_succeeded());
 }
-#endif  // !(defined(OS_LINUX) && defined(MEMORY_SANITIZER))
+#endif  // !((defined(OS_LINUX) || defined(OS_CHROMEOS)) &&
+        // defined(MEMORY_SANITIZER))
 
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(IconLoaderBrowserTest, LoadExeIcon) {

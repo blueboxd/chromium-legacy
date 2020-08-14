@@ -196,6 +196,12 @@ class CORE_EXPORT HTMLInputElement
                                    unsigned end,
                                    const String& direction,
                                    ExceptionState&);
+  // This function can be used to allow tests to set the selection
+  // range for Number inputs, which do not support the ordinary
+  // selection API.
+  void SetSelectionRangeForTesting(unsigned start,
+                                   unsigned end,
+                                   ExceptionState&);
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const final;
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;

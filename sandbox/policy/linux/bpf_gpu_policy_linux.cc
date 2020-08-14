@@ -40,9 +40,7 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
     case __NR_kcmp:
       return Error(ENOSYS);
-#if defined(OS_CHROMEOS)
-    case __NR_memfd_create:
-#else   // !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
     case __NR_fallocate:
 #endif  // defined(OS_CHROMEOS)
     case __NR_ftruncate:
@@ -55,6 +53,7 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
 #endif
     case __NR_getdents64:
     case __NR_ioctl:
+    case __NR_memfd_create:
       return Allow();
 #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
     // The Nvidia driver uses flags not in the baseline policy

@@ -1734,6 +1734,9 @@ const FeatureEntry::FeatureParam kContextMenuShopImageWithGoogleLens[] = {
     {"lensShopVariation", "ShopImageWithGoogleLens"}};
 const FeatureEntry::FeatureParam kContextMenuSearchSimilarProducts[] = {
     {"lensShopVariation", "SearchSimilarProducts"}};
+const FeatureEntry::FeatureParam
+    kContextMenuShopImageWithGoogleLensShoppyImage[] = {
+        {"lensShopVariation", "ShopImageWithGoogleLensShoppyImage"}};
 
 const FeatureEntry::FeatureVariation
     kContextMenuShopWithGoogleLensShopVariations[] = {
@@ -1742,7 +1745,10 @@ const FeatureEntry::FeatureVariation
         {"ShopImageWithGoogleLens", kContextMenuShopImageWithGoogleLens,
          base::size(kContextMenuShopImageWithGoogleLens), nullptr},
         {"SearchSimilarProducts", kContextMenuSearchSimilarProducts,
-         base::size(kContextMenuSearchSimilarProducts), nullptr}};
+         base::size(kContextMenuSearchSimilarProducts), nullptr},
+        {"ShopImageWithGoogleLensShoppyImage",
+         kContextMenuShopImageWithGoogleLensShoppyImage,
+         base::size(kContextMenuShopImageWithGoogleLensShoppyImage), nullptr}};
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kLazyFrameLoadingAutomatic[] = {
@@ -3769,14 +3775,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTabSwitchSuggestionsName,
      flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
-    {"omnibox-pedal-suggestions",
-     flag_descriptions::kOmniboxPedalSuggestionsName,
-     flag_descriptions::kOmniboxPedalSuggestionsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalSuggestions)},
     {"omnibox-suggestion-button-row",
      flag_descriptions::kOmniboxSuggestionButtonRowName,
      flag_descriptions::kOmniboxSuggestionButtonRowDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxSuggestionButtonRow)},
+    {"omnibox-pedal-suggestions",
+     flag_descriptions::kOmniboxPedalSuggestionsName,
+     flag_descriptions::kOmniboxPedalSuggestionsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalSuggestions)},
+    {"omnibox-keyword-search-button",
+     flag_descriptions::kOmniboxKeywordSearchButtonName,
+     flag_descriptions::kOmniboxKeywordSearchButtonDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxKeywordSearchButton)},
     {"omnibox-drive-suggestions",
      flag_descriptions::kOmniboxDriveSuggestionsName,
      flag_descriptions::kOmniboxDriveSuggestionsDescriptions, kOsDesktop,
@@ -4249,6 +4259,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWebAuthenticationCableV2SupportName,
      flag_descriptions::kEnableWebAuthenticationCableV2SupportDescription,
      kOsDesktop | kOsAndroid, FEATURE_VALUE_TYPE(device::kWebAuthPhoneSupport)},
+
+#if defined(OS_CHROMEOS)
+    {"enable-web-authentication-chromeos-authenticator",
+     flag_descriptions::kEnableWebAuthenticationChromeOSAuthenticatorName,
+     flag_descriptions::
+         kEnableWebAuthenticationChromeOSAuthenticatorDescription,
+     kOsCrOS, FEATURE_VALUE_TYPE(device::kWebAuthCrosPlatformAuthenticator)},
+#endif
 
     {"use-preferred-interval-for-video",
      flag_descriptions::kUsePreferredIntervalForVideoName,

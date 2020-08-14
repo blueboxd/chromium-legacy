@@ -22,9 +22,11 @@ class PrefRegistrySyncable;
 
 namespace web_app {
 
-// Tracks the policy that affects Web Apps and also tracks which Web Apps are
-// currently installed based on this policy. Based on these, it decides which
-// apps to install, uninstall, and update, via a PendingAppManager.
+// Policy installation allows enterprise admins to control and manage
+// Web Apps on behalf of their managed users. This class tracks the policy that
+// affects Web Apps and also tracks which Web Apps are currently installed based
+// on this policy. Based on these, it decides which apps to install, uninstall,
+// and update, via a PendingAppManager.
 class WebAppPolicyManager {
  public:
   static constexpr char kInstallResultHistogramName[] =

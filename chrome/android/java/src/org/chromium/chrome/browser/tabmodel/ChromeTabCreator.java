@@ -65,18 +65,20 @@ public class ChromeTabCreator extends TabCreator {
     private TabModelOrderController mOrderController;
     private Supplier<TabDelegateFactory> mTabDelegateFactorySupplier;
     @Nullable
-    private OverviewNTPCreator mOverviewNTPCreator;
+    private final OverviewNTPCreator mOverviewNTPCreator;
+    private final AsyncTabParamsManager mAsyncTabParamsManager;
 
     public ChromeTabCreator(ChromeActivity activity, WindowAndroid nativeWindow,
             StartupTabPreloader startupTabPreloader,
             Supplier<TabDelegateFactory> tabDelegateFactory, boolean incognito,
-            OverviewNTPCreator overviewNTPCreator) {
+            OverviewNTPCreator overviewNTPCreator, AsyncTabParamsManager asyncTabParamsManager) {
         mActivity = activity;
         mStartupTabPreloader = startupTabPreloader;
         mNativeWindow = nativeWindow;
         mTabDelegateFactorySupplier = tabDelegateFactory;
         mIncognito = incognito;
         mOverviewNTPCreator = overviewNTPCreator;
+        mAsyncTabParamsManager = asyncTabParamsManager;
     }
 
     @Override
@@ -143,8 +145,7 @@ public class ChromeTabCreator extends TabCreator {
             // Check if the tab is being created asynchronously.
             int assignedTabId = intent == null ? Tab.INVALID_TAB_ID : IntentUtils.safeGetIntExtra(
                     intent, IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
-            AsyncTabParams asyncParams =
-                    AsyncTabParamsManager.remove(assignedTabId);
+            AsyncTabParams asyncParams = mAsyncTabParamsManager.remove(assignedTabId);
 
             boolean openInForeground = mOrderController.willOpenInForeground(type, mIncognito);
             TabDelegateFactory delegateFactory =
@@ -375,7 +376,7 @@ public class ChromeTabCreator extends TabCreator {
         Tab parent = selector != null ? selector.getTabById(state.parentId) : null;
         boolean selectTab = mOrderController.willOpenInForeground(
                 TabLaunchType.FROM_RESTORE, state.isIncognito());
-        AsyncTabParams asyncParams = AsyncTabParamsManager.remove(id);
+        AsyncTabParams asyncParams = mAsyncTabParamsManager.remove(id);
         Tab tab = null;
         @TabLaunchType
         int launchType = TabLaunchType.FROM_RESTORE;

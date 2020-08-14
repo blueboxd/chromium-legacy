@@ -41,8 +41,7 @@ constexpr double kInactiveTransparency = 0.5;
 double TimeProportionSince(const base::Time& t1,
                            const base::Time& t2,
                            const base::TimeDelta& d) {
-  return std::max(
-      0.0, std::min(1.0, (t2 - t1).InMillisecondsF() / d.InMillisecondsF()));
+  return std::max(0.0, std::min(1.0, (t2 - t1) / d));
 }
 
 }  // namespace

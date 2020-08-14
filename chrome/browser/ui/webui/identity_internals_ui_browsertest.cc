@@ -51,12 +51,12 @@ void IdentityInternalsUIBrowserTest::AddTokenToCache(
     const std::string& account_id,
     const std::vector<std::string>& scopes,
     int time_to_live) {
+  std::set<std::string> scopes_set(scopes.begin(), scopes.end());
   extensions::IdentityTokenCacheValue token_cache_value =
       extensions::IdentityTokenCacheValue::CreateToken(
-          token_id, base::TimeDelta::FromSeconds(time_to_live));
-  extensions::ExtensionTokenKey key(
-      extension_id, CoreAccountId(account_id),
-      std::set<std::string>(scopes.begin(), scopes.end()));
+          token_id, scopes_set, base::TimeDelta::FromSeconds(time_to_live));
+  extensions::ExtensionTokenKey key(extension_id, CoreAccountId(account_id),
+                                    scopes_set);
   extensions::IdentityAPI::GetFactoryInstance()
       ->Get(browser()->profile())
       ->token_cache()

@@ -223,7 +223,7 @@ bool EmojiSuggester::Suggest(const base::string16& text) {
 }
 
 void EmojiSuggester::ShowSuggestion(const std::string& text) {
-  if (ChromeKeyboardControllerClient::Get()->is_keyboard_enabled())
+  if (ChromeKeyboardControllerClient::Get()->is_keyboard_visible())
     return;
 
   highlighted_index_ = kNoneHighlighted;

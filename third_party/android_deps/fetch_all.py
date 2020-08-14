@@ -55,6 +55,10 @@ _ANDROID_DEPS_LIBS_SUBDIR = os.path.join(_ANDROID_DEPS_SUBDIR, 'libs')
 # Location of the buildSrc directory used implement our gradle task.
 _GRADLE_BUILDSRC_PATH = os.path.join(_ANDROID_DEPS_SUBDIR, 'buildSrc')
 
+# Location of the suppressions file for the dependency checker plugin
+_GRADLE_SUPRESSIONS_PATH = os.path.join(_ANDROID_DEPS_SUBDIR,
+                                        'vulnerability_supressions.xml')
+
 _JAVA_HOME = os.path.join(_CHROMIUM_SRC, 'third_party', 'jdk', 'current')
 _JETIFY_PATH = os.path.join(_CHROMIUM_SRC, 'third_party',
                             'jetifier_standalone', 'bin',
@@ -414,6 +418,9 @@ def main():
         build_gradle_path,
         _GRADLE_BUILDSRC_PATH:
         os.path.join(args.git_dir, _ANDROID_DEPS_SUBDIR, "buildSrc"),
+        _GRADLE_SUPRESSIONS_PATH:
+        os.path.join(args.git_dir, _ANDROID_DEPS_SUBDIR,
+                     "vulnerability_supressions.xml"),
     }
 
     if not args.ignore_licenses:
@@ -471,15 +478,19 @@ def main():
         try:
             subprocess.run(gradle_cmd, check=True)
         except subprocess.CalledProcessError:
+            report_path = os.path.join(report_dst,
+                                       'dependency-check-report.html')
             logging.error(
                 textwrap.dedent("""
+                   =============================================================================
                    A package has a known vulnerability. It may not be in a package or packages
                    which you just added, but you need to resolve the problem before proceeding.
-                   Please see the vulnerability information in %s. If you can't easily fix it by
-                   rolling the package to a fixed version now, please file a crbug of type=
-                   Bug-Security providing all relevant information, and then rerun this command
-                   with --ignore-vulnerabilities.
-                   """ % report_dst))
+                   If you can't easily fix it by rolling the package to a fixed version now,
+                   please file a crbug of type= Bug-Security providing all relevant information,
+                   and then rerun this command with --ignore-vulnerabilities.
+                   The html version of the report is avialable at: {}
+                   =============================================================================
+                   """.format(report_path)))
             if not args.ignore_vulnerabilities:
                 raise
         finally:

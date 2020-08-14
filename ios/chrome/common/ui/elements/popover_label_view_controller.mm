@@ -31,9 +31,6 @@ constexpr CGFloat kVerticalDistance = 24;
 // UIScrollView which is used for size calculation.
 @property(nonatomic, strong) UIScrollView* scrollView;
 
-// The main message being presented.
-@property(nonatomic, strong, readonly) NSString* message;
-
 // The attributed string being presented as primary text.
 @property(nonatomic, strong, readonly)
     NSAttributedString* primaryAttributedString;
@@ -47,13 +44,16 @@ constexpr CGFloat kVerticalDistance = 24;
 @implementation PopoverLabelViewController
 
 - (instancetype)initWithMessage:(NSString*)message {
-  self = [super initWithNibName:nil bundle:nil];
-  if (self) {
-    _message = message;
-    self.modalPresentationStyle = UIModalPresentationPopover;
-    self.popoverPresentationController.delegate = self;
-  }
-  return self;
+  NSDictionary* generalAttributes = @{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kTextPrimaryColor],
+    NSFontAttributeName : [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+  };
+
+  NSAttributedString* attributedString =
+      [[NSAttributedString alloc] initWithString:message
+                                      attributes:generalAttributes];
+  return [self initWithPrimaryAttributedString:attributedString
+                     secondaryAttributedString:nil];
 }
 
 - (instancetype)initWithPrimaryAttributedString:
@@ -107,9 +107,7 @@ constexpr CGFloat kVerticalDistance = 24;
   textView.linkTextAttributes =
       @{NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor]};
 
-  if (self.message) {
-    textView.text = self.message;
-  } else if (self.primaryAttributedString) {
+  if (self.primaryAttributedString) {
     textView.attributedText = self.primaryAttributedString;
   }
 

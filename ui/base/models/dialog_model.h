@@ -167,24 +167,21 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
   DialogModelCombobox* GetComboboxByUniqueId(int unique_id);
   DialogModelTextfield* GetTextfieldByUniqueId(int unique_id);
 
-  // Get dialog buttons.
-  DialogModelButton* GetDialogButton(DialogButton button);
-  DialogModelButton* GetExtraButton();
-
   // Methods with util::PassKey<DialogModelHost> are for host implementations
   // only.
   void OnButtonPressed(util::PassKey<DialogModelHost>,
-                       int id,
+                       DialogModelButton* field,
                        const Event& event);
   void OnDialogAccepted(util::PassKey<DialogModelHost>);
   void OnDialogCancelled(util::PassKey<DialogModelHost>);
   void OnDialogClosed(util::PassKey<DialogModelHost>);
-  void OnComboboxPerformAction(util::PassKey<DialogModelHost>, int id);
+  void OnComboboxPerformAction(util::PassKey<DialogModelHost>,
+                               DialogModelCombobox* combobox);
   void OnComboboxSelectedIndexChanged(util::PassKey<DialogModelHost>,
-                                      int id,
+                                      DialogModelCombobox* combobox,
                                       int index);
   void OnTextfieldTextChanged(util::PassKey<DialogModelHost>,
-                              int id,
+                              DialogModelTextfield* textfield,
                               base::string16 text);
   void OnWindowClosing(util::PassKey<DialogModelHost>);
 
@@ -206,6 +203,18 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
     return initially_focused_field_;
   }
 
+  DialogModelButton* ok_button(util::PassKey<DialogModelHost>) {
+    return ok_button_.has_value() ? &ok_button_.value() : nullptr;
+  }
+
+  DialogModelButton* cancel_button(util::PassKey<DialogModelHost>) {
+    return cancel_button_.has_value() ? &cancel_button_.value() : nullptr;
+  }
+
+  DialogModelButton* extra_button(util::PassKey<DialogModelHost>) {
+    return extra_button_.has_value() ? &extra_button_.value() : nullptr;
+  }
+
   // Accessor for ordered fields in the model. This includes DialogButtons even
   // though they should be handled separately (OK button has fixed position in
   // dialog).
@@ -215,18 +224,13 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
   }
 
  private:
+  util::PassKey<DialogModel> GetPassKey() {
+    return util::PassKey<DialogModel>();
+  }
+
   void AddDialogButton(int button,
                        base::string16 label,
                        const DialogModelButton::Params& params);
-
-  // TODO(pbos): See if the hosts can just return back the field pointer instead
-  // so we don't need to do lookup.
-  DialogModelField* GetFieldFromModelFieldId(int field_id);
-  DialogModelButton* GetButtonFromModelFieldId(int field_id);
-  DialogModelCombobox* GetComboboxFromModelFieldId(int field_id);
-  DialogModelTextfield* GetTextfieldFromModelFieldId(int field_id);
-
-  DialogModelField::Reservation ReserveField();
 
   std::unique_ptr<DialogModelDelegate> delegate_;
   DialogModelHost* host_ = nullptr;
@@ -235,11 +239,12 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
   base::string16 title_;
 
   static constexpr int kExtraButtonId = DIALOG_BUTTON_LAST + 1;
-  // kExtraButtonId is the last reserved id (ui::DialogButton are also reserved
-  // IDs).
-  int next_field_id_ = kExtraButtonId + 1;
   std::vector<std::unique_ptr<DialogModelField>> fields_;
   base::Optional<int> initially_focused_field_;
+
+  base::Optional<DialogModelButton> ok_button_;
+  base::Optional<DialogModelButton> cancel_button_;
+  base::Optional<DialogModelButton> extra_button_;
 
   base::OnceClosure accept_callback_;
   base::OnceClosure cancel_callback_;

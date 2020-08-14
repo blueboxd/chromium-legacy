@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.speech.RecognizerIntent;
 import android.text.TextUtils;
 
@@ -43,6 +44,7 @@ public class VoiceRecognitionHandler {
     public static final float VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD = 0.9f;
 
     private final Delegate mDelegate;
+    private Long mQueryStartTimeMs;
     private WebContentsObserver mVoiceSearchWebContentsObserver;
     private AssistantVoiceSearchService mAssistantVoiceSearchService;
 
@@ -198,6 +200,8 @@ public class VoiceRecognitionHandler {
         // WindowAndroid.IntentCallback implementation:
         @Override
         public void onIntentCompleted(WindowAndroid window, int resultCode, Intent data) {
+            stopTrackingAndRecordQueryDuration();
+
             if (resultCode != Activity.RESULT_OK || data.getExtras() == null) {
                 if (resultCode == Activity.RESULT_CANCELED) {
                     recordVoiceSearchDismissedEventSource(mSource);
@@ -297,6 +301,7 @@ public class VoiceRecognitionHandler {
      */
     public void startVoiceRecognition(@VoiceInteractionSource int source) {
         ThreadUtils.assertOnUiThread();
+        startTrackingQueryDuration();
 
         WindowAndroid windowAndroid = mDelegate.getWindowAndroid();
         if (windowAndroid == null) return;
@@ -416,6 +421,21 @@ public class VoiceRecognitionHandler {
         return activity != null && isRecognitionIntentPresent(true);
     }
 
+    /** Start tracking query duration by capturing when it started */
+    private void startTrackingQueryDuration() {
+        assert mQueryStartTimeMs == null;
+        mQueryStartTimeMs = SystemClock.elapsedRealtime();
+    }
+
+    /** Calculate the query duration and report it and cleanup afterwards. */
+    private void stopTrackingAndRecordQueryDuration() {
+        assert mQueryStartTimeMs != null;
+
+        long elapsedTimeMs = SystemClock.elapsedRealtime() - mQueryStartTimeMs;
+        recordVoiceSearchOpenDuration(elapsedTimeMs);
+        mQueryStartTimeMs = null;
+    }
+
     /**
      * Records the source of a voice search initiation.
      * @param source The source of the voice search, such as NTP or omnibox. Values taken from the
@@ -479,6 +499,12 @@ public class VoiceRecognitionHandler {
         int percentage = Math.round(value * 100f);
         RecordHistogram.recordPercentageHistogram(
                 "VoiceInteraction.VoiceResultConfidenceValue", percentage);
+    }
+
+    /** Records the end-to-end voice search duration. */
+    private void recordVoiceSearchOpenDuration(long openDurationMs) {
+        RecordHistogram.recordMediumTimesHistogram(
+                "VoiceInteraction.QueryDuration.Android", openDurationMs);
     }
 
     /**

@@ -34,8 +34,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
   // Returns the current ClipboardData.
   const ClipboardData* GetClipboardData() const;
 
-  // Writes the current ClipboardData.
-  void WriteClipboardData(std::unique_ptr<ClipboardData> data);
+  // Writes the current ClipboardData and returns the previous data.
+  std::unique_ptr<ClipboardData> WriteClipboardData(
+      std::unique_ptr<ClipboardData> data);
 
  private:
   friend class Clipboard;

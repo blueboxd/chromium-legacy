@@ -59,22 +59,10 @@ class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
     kError,
   };
 
-  struct DecodeRequest {
-    DecodeRequest(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb);
-    ~DecodeRequest();
-    DecodeRequest() = delete;
-    DecodeRequest(const DecodeRequest&) = delete;
-    DecodeRequest& operator=(const DecodeRequest&) = delete;
-    DecodeRequest(DecodeRequest&& other);
-
-    const scoped_refptr<DecoderBuffer> buffer;
-    DecodeCB decode_cb;
-  };
-
   void CloseDecoder();
-  void SetError();
-  bool EnqueueRequest(DecodeRequest request);
-  bool MaybeDequeueFrames();
+
+  // Invokes the decoder and calls |output_cb_| for any returned frames.
+  bool DecodeBuffer(scoped_refptr<DecoderBuffer> buffer);
 
   // Used to report error messages to the client.
   MediaLog* const media_log_;
@@ -90,8 +78,6 @@ class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
   // |frame_pool_|. The buffer can be reused only if libgav1's decoder doesn't
   // use the buffer and rendering the frame is complete.
   VideoFramePool frame_pool_;
-
-  base::queue<DecodeRequest> decode_queue_;
 
   OutputCB output_cb_;
   std::unique_ptr<libgav1::Decoder> libgav1_decoder_;

@@ -48,6 +48,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2123055963409958220">Help make Chrome better by reporting the <ph name="BEGIN_LINK" />current settings<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Please restart Chrome now</translation>
 <translation id="2246246234298806438">Google Chrome cannot show the print preview when the built-in PDF viewer is missing.</translation>
+<translation id="226038281051944330">You signed in with a new account in <ph name="EXISTING_USER" />’s space. Would you like to create a new Chrome space for <ph name="NEW_USER" /> to keep your data separate?</translation>
 <translation id="2290014774651636340">Google API keys are missing. Some functionality of Google Chrome will be disabled.</translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
 <translation id="2309047409763057870">This is a secondary installation of Google Chrome, and cannot be made your default browser.</translation>
@@ -146,12 +147,14 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4895437082222824641">Open link in new Chrome &amp;tab</translation>
 <translation id="4953650215774548573">Set Google Chrome as your default browser</translation>
 <translation id="495931528404527476">In Chrome</translation>
+<translation id="4960472897514318257">You signed in with a work account. Would you like to create a new Chrome space for <ph name="NEW_USER" /> to keep your personal data separate?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Restart Chrome OS</translation>
 <translation id="5132929315877954718">Discover great apps, games, extensions and themes for Google Chrome.</translation>
 <translation id="5170938038195470297">Your profile cannot be used because it is from a newer version of Google Chrome.
 
 Some features may be unavailable. Please specify a different profile directory or use a newer version of Chrome.</translation>
+<translation id="5171117065011130146">Create new Chrome work space?</translation>
 <translation id="5193136243808726294">Google Chrome OS can't open this page.</translation>
 <translation id="5251420635869119124">Guests can use Chrome without leaving anything behind.</translation>
 <translation id="532046782124376502">Warning: Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.</translation>
@@ -266,7 +269,9 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8823341990149967727">Chrome is Out of Date</translation>
 <translation id="8834965163890861871">Google Chrome is trying to edit passwords. Type your Windows password to allow this.</translation>
 <translation id="884296878221830158">It also controls what page is shown when you start Chrome or click the Home button.</translation>
+<translation id="8859948767482842016">You signed in with a work account in <ph name="EXISTING_USER" />’s space. Would you like to create a new Chrome space for <ph name="WORK_DOMAIN" /> to keep your data separate?</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
+<translation id="8877586659207810298">Create new Chrome space for <ph name="NEW_USER" />?</translation>
 <translation id="8914504000324227558">Relaunch Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{A Chrome update is available}=1{A Chrome update is available}other{A Chrome update has been available for # days}}</translation>
 <translation id="9026991721384951619">Chrome OS could not sync your data because your account sign-in details are out of date.</translation>

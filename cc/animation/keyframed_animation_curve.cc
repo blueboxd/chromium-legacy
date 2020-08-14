@@ -7,9 +7,10 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "cc/base/time_util.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/box_f.h"
 
@@ -45,7 +46,7 @@ base::TimeDelta TransformedAnimationTime(
     base::TimeDelta duration =
         (keyframes.back()->Time() - keyframes.front()->Time()) *
         scaled_duration;
-    double progress = TimeUtil::Divide(time - start_time, duration);
+    const double progress = (time - start_time) / duration;
 
     time = (duration * timing_function->GetValue(progress)) + start_time;
   }
@@ -77,7 +78,7 @@ double TransformedKeyframeProgress(
   base::TimeDelta time1 = keyframes[i]->Time() * scaled_duration;
   base::TimeDelta time2 = keyframes[i + 1]->Time() * scaled_duration;
 
-  double progress = TimeUtil::Divide(time - time1, time2 - time1);
+  double progress = (time - time1) / (time2 - time1);
 
   if (keyframes[i]->timing_function()) {
     progress = keyframes[i]->timing_function()->GetValue(progress);

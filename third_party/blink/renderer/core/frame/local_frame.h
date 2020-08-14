@@ -46,6 +46,7 @@
 #include "third_party/blink/public/mojom/frame/reporting_observer.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/optimization_guide/optimization_guide.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -663,6 +664,14 @@ class CORE_EXPORT LocalFrame final
   // access).
   bool CanAccessEvent(const WebInputEventAttribution&) const;
 
+  void SetOptimizationGuideHints(
+      mojom::blink::BlinkOptimizationGuideHintsPtr hints) {
+    optimization_guide_hints_ = std::move(hints);
+  }
+  mojom::blink::BlinkOptimizationGuideHints* GetOptimizationGuideHints() {
+    return optimization_guide_hints_.get();
+  }
+
  private:
   friend class FrameNavigationDisabler;
   FRIEND_TEST_ALL_PREFIXES(LocalFrameTest, CharacterIndexAtPointWithPinchZoom);
@@ -874,6 +883,8 @@ class CORE_EXPORT LocalFrame final
   Member<SystemClipboard> system_clipboard_;
   // Access to the global raw/unsanitized system clipboard
   Member<RawSystemClipboard> raw_system_clipboard_;
+
+  mojom::blink::BlinkOptimizationGuideHintsPtr optimization_guide_hints_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

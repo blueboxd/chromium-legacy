@@ -73,7 +73,7 @@
 
       Se il criterio viene impostato su false o non viene impostato, le informazioni non vengono segnalate.
       Se viene impostato su true, le informazioni sulla retroilluminazione del dispositivo vengono segnalate.</translation>
-<translation id="1076751984131277498">Lista consentita di dispositivi USB scollegabili</translation>
+<translation id="1076751984131277498">Elenco di dispositivi USB che è consentito scollegare</translation>
 <translation id="1079801999187584280">Non consentire l'utilizzo degli Strumenti per sviluppatori</translation>
 <translation id="1087437665304381368">Questa norma consente di controllare esclusivamente la modalità sviluppatore di <ph name="PRODUCT_OS_NAME" />. Se vuoi impedire l'accesso alle Opzioni sviluppatore Android, devi impostare la norma <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">L'elenco dei criteri di Chrome Enterprise è in fase di trasferimento. Aggiorna i tuoi preferiti con l'URL <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -375,6 +375,12 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 
       Se il criterio viene impostato su false o se non viene configurato, i file PDF vengono aperti, a meno che gli utenti disattivino il plug-in di PDF.</translation>
 <translation id="1608755754295374538">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione audio senza richieste</translation>
+<translation id="1611394564825535541">Consente di controllare se gli utenti possono accedere alle stampanti non aziendali
+
+      Se il criterio viene impostato su Vero o se non viene configurato, gli utenti possono aggiungere, configurare e stampare utilizzando le proprie stampanti.
+
+      Se il criterio viene impostato su Falso, gli utenti non possono aggiungere né configurare le proprie stampanti. Inoltre, non possono stampare utilizzando nessuna delle stampanti precedentemente configurate.
+      </translation>
 <translation id="1615221548356595305">Consenti la coalescenza di connessioni HTTP/2 per questi host anche quando sono in uso i certificati client</translation>
 <translation id="1615855314789673708">Consente di specificare la configurazione del controller DTC (Diagnostics and Telemetry Controller) wilco.
 
@@ -512,7 +518,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="1865417998205858223">Autorizzazioni chiave</translation>
 <translation id="1866563857170942397">Consente di definire l'elenco di utenti autorizzati ad accedere al dispositivo. Le voci sono nel formato <ph name="USER_ALLOWLIST_ENTRY_FORMAT" />, ad esempio <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Per autorizzare utenti arbitrari su un dominio, le voci devono essere nel formato <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
 
-      Se questo criterio non viene configurato, non esistono limitazioni relative agli utenti autorizzati ad accedere. Tieni presente che la creazione di nuovi utenti richiede comunque la corretta configurazione del criterio <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
+      Se questo criterio non viene configurato, non vi sono limitazioni in termini di utenti autorizzati ad accedere. Tieni presente che la creazione di nuovi utenti richiede comunque la corretta configurazione del criterio <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
 <translation id="186719019195685253">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della corrente CA</translation>
 <translation id="187819629719252111">Consente di accedere ai file locali presenti sul computer, permettendo a <ph name="PRODUCT_NAME" /> di visualizzare le finestre di dialogo di selezione dei file. Se attivi questa impostazione, gli utenti potranno aprire le finestre di dialogo di selezione dei file come di consueto. Se disattivi questa impostazione, ogni volta che l'utente eseguirà un'azione che apre una finestra di dialogo di selezione file (ad esempio importazione di Preferiti, caricamento di file, salvataggio di link e così via), verrà visualizzato un messaggio e il sistema presupporrà che l'utente abbia fatto clic sul pulsante Annulla della finestra di dialogo stessa. Se questa impostazione non viene impostata, gli utenti potranno aprire le finestre di dialogo di selezione file come di consueto.</translation>
 <translation id="1885782360784839335">Attiva la visualizzazione di contenuti promozionali a scheda intera</translation>
@@ -639,9 +645,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           </translation>
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="203096360153626918">Questa norma non ha effetto sulle app Android, che saranno in grado di entrare in modalità a schermo intero anche se la norma viene impostata su <ph name="FALSE" />.</translation>
-<translation id="2035306081270465868">Se il criterio viene impostato su Attivato, la home page del precedente browser predefinito verrà importata alla prima esecuzione. Se il criterio viene impostato su Disattivato o se non viene configurato, la home page non verrà importata alla prima esecuzione.
-
-      Gli utenti possono attivare una finestra di dialogo per l'importazione e la casella di controllo della home page verrà selezionata o deselezionata in modo che corrisponda al valore del criterio.</translation>
 <translation id="2040479044912658454">Modalità rasterizzazione stampa</translation>
 <translation id="2043749682619281558">Attiva l'evidenziazione del cursore sulla schermata di accesso</translation>
 <translation id="2043770014371753404">Stampanti aziendali disattivate</translation>
@@ -1007,19 +1010,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
 
           Se questo criterio non viene impostato, inizialmente l'evidenziazione del cursore di testo è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="2509919237512982967">Usa i controlli modulo legacy fino alla versione M84.</translation>
-<translation id="2512630007068794030">Se viene attivata la funzionalità di <ph name="PRODUCT_NAME" />, le pagine web rimangono nel loro stato corrente (documento con struttura ad albero, script e così via) nella Back-Forward Cache al momento dell'uscita dalla pagina.
-          Tornando alla pagina, questa viene ripristinata dalla Back-Forward Cache, mostrandola nello stato in cui era quando è stata memorizzata nella cache.
-
-          Questa funzionalità potrebbe causare interruzioni su alcuni siti web che vengono memorizzati nella
-          cache inaspettatamente, in particolare quelli che dipendono da gestori di unload che vengono
-          attivati durante l'uscita dalla pagina. Ciò accade perché l'evento di unload
-          non viene supervisionato durante l'uscita dalla pagina e viene salvato nella
-         Back-Forward Cache.
-
-          Se questo criterio viene impostato su Attivato o se non viene configurato, la funzionalità di <ph name="PRODUCT_NAME" /> viene attivata.
-
-          Se questo criterio viene impostato su Disattivato, la funzionalità viene disattivata forzatamente.
-          </translation>
 <translation id="2516600974234263142">Consente di attivare la stampa in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
 
       Se l'impostazione è attivata o non è configurata, gli utenti possono stampare.
@@ -1089,20 +1079,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2615240493030733717">Segnala informazioni sul fuso orario</translation>
 <translation id="2623014935069176671">Attesa dell'attività iniziale dell'utente</translation>
 <translation id="262740370354162807">Attiva l'invio di documenti a <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2627554163382448569">Consente di specificare le configurazioni delle stampanti aziendali.
-
-      Questa norma ti consente di specificare le configurazioni delle stampanti per i dispositivi <ph name="PRODUCT_OS_NAME" />. Il formato corrisponde a quello del dizionario NativePrinters, con un campo "id" o "guid" aggiuntivo obbligatorio per ciascuna stampante ai fini dell'autorizzazione o della negazione della stessa.
-
-      Le dimensioni del file non devono superare 5 MB e il file deve essere codificato in JSON. È stato stimato che un file contenente circa 21.000 stampanti viene codificato come file di 5 MB. L'hash crittografico viene usato per verificare l'integrità del download.
-
-      Il file viene scaricato e memorizzato nella cache. Verrà scaricato di nuovo ogni volta che cambierà l'URL o l'hash.
-
-      Se questa norma viene impostata, <ph name="PRODUCT_OS_NAME" /> scaricherà il file per le configurazioni delle stampanti e renderà disponibili le stampanti in base alle norme <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> e <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Se imposti questa norma, gli utenti non possono modificarla o ignorarla.
-
-      Questa norma non influisce sulla capacità degli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.
-      </translation>
 <translation id="2632538643061793322">Se il criterio viene configurato, puoi elencare i pattern URL che specificano i siti che possono chiedere agli utenti l'autorizzazione di accesso a un dispositivo USB.
 
       Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, vengono applicate le impostazioni personali degli utenti.
@@ -2271,6 +2247,7 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
 <translation id="4313767483634435271">Indirizzo MAC designato del dock del dispositivo</translation>
 <translation id="4322842393287974810">Consenti all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
+<translation id="4330372709562934569">Consenti ai siti elencati di effettuare richieste agli endpoint di rete privata da parte di contesti non sicuri.</translation>
 <translation id="4332177773549877617">Registra eventi per le installazioni di app Android</translation>
 <translation id="4341199399451274159">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'assegnazione di un valore al criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" /> consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato.
 
@@ -2569,6 +2546,7 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       <ph name="PAGE_SIZE_NAME" /> non dovrebbe contenere uno dei formati elencati o "personalizzato" se la dimensione della carta richiesta non è nell'elenco. Se viene fornito il valore "personalizzato", deve essere specificata la proprietà <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Descrive l'altezza e la larghezza desiderate in micrometri. Diversamente la proprietà <ph name="PAGE_SIZE_CUSTOM_SIZE" /> non deve essere specificata. Il criterio che viola queste regole viene ignorato.
 
       Se le dimensioni della pagina non sono disponibili nella stampante scelta dall'utente, questo criterio viene ignorato.</translation>
+<translation id="479290425281021210">Consente di specificare se consentire ai siti web non sicuri di effettuare richieste agli endpoint di rete privata.</translation>
 <translation id="4802744647065138872">Limita il numero di istantanee di dati utente conservate per essere utilizzate in caso di rollback di emergenza</translation>
 <translation id="4802905909524200151">Configura il comportamento di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Riavvia sempre all'uscita dell'utente.</translation>
@@ -3012,6 +2990,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5405289061476885481">Consente di configurare i layout da tastiera consentiti nella schermata di accesso di <ph name="PRODUCT_OS_NAME" />.
 
       Se per questa norma viene impostato un elenco di identificatori di metodi di immissione, i metodi specificati saranno disponibili nella schermata di accesso. Verrà preselezionato il primo metodo di immissione specificato. Anche se il pod dell'utente è basato sulla schermata di accesso, oltre ai metodi di immissione specificati in questa norma sarà disponibile anche l'ultimo metodo usato dall'utente. Se questa norma non viene impostata, i metodi di immissione per la schermata di accesso saranno recuperati in base alla lingua in cui è visualizzata la schermata di accesso. I valori che non corrispondono a identificatori di metodi di immissione validi verranno ignorati.</translation>
+<translation id="5407008856008996384">Consenti l'accesso alle stampanti CUPS</translation>
 <translation id="5416064504563346617">Se il criterio viene configurato, puoi elencare i pattern URL che specificano i siti che non possono chiedere agli utenti l'autorizzazione di accesso a un dispositivo USB.
 
       Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
@@ -3151,7 +3130,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5561811616825571914">Seleziona automaticamente i certificati client per questi siti nella schermata di accesso</translation>
 <translation id="5564345250641049313">Consente di definire l'elenco di utenti autorizzati ad accedere al dispositivo. Le voci sono nel formato <ph name="USER_ALLOWLIST_ENTRY_FORMAT" />, ad esempio <ph name="USER_ALLOWLIST_ENTRY_EXAMPLE" />. Per autorizzare utenti arbitrari su un dominio, le voci devono essere nel formato <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" />.
 
-      Se questo criterio non viene configurato, non esistono limitazioni relative agli utenti autorizzati ad accedere. Tieni presente che la creazione di nuovi utenti richiede comunque la corretta configurazione del criterio <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.
+      Se questo criterio non viene configurato, non vi sono limitazioni in termini di utenti autorizzati ad accedere. Tieni presente che la creazione di nuovi utenti richiede comunque la corretta configurazione del criterio <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.
 
       Questo criterio è deprecato. Usa il criterio <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME" />.</translation>
 <translation id="5564865786900450806">Consente di eliminare l'avviso che viene mostrato quando <ph name="PRODUCT_NAME" /> è in esecuzione su un computer o un sistema operativo non più supportato.
@@ -3176,6 +3155,14 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
         Se il criterio non viene impostato o viene impostato su true, gli utenti possono inviare feedback a Google dal percorso Menu -&gt; Guida -&gt; Segnala un problema o tramite una combinazione di tasti.</translation>
 <translation id="5579179012798142131">Se ArcEnabled è impostato su True, ARC viene attivato per l'utente, a meno che la modalità temporanea o l'accesso simultaneo siano attivi durante la sessione utente. Se il criterio è impostato su False o non è configurato, gli utenti aziendali non possono utilizzare ARC.</translation>
+<translation id="5582429816116769246">Consente di controllare se gli utenti possono accedere alle stampanti non aziendali
+
+      Se il criterio viene impostato su Vero o se non viene configurato, gli utenti possono aggiungere, configurare e stampare utilizzando le proprie stampanti native.
+
+      Se il criterio viene impostato su Falso, gli utenti non possono aggiungere né configurare le proprie stampanti native. Inoltre, non possono stampare utilizzando nessuna delle stampanti native precedentemente configurate.
+
+      Questo criterio è deprecato. Usa il criterio <ph name="USER_PRINTERS_ALLOWED" />.
+      </translation>
 <translation id="5583806683960333345">Se questa impostazione viene attivata, gli utenti potranno utilizzare il tethering istantaneo, che consente al loro telefono Google di condividere i dati mobili con il dispositivo.
 
       Se questa impostazione viene disattivata, gli utenti non potranno utilizzare il tethering istantaneo.
@@ -3997,6 +3984,13 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se il criterio viene impostato su Disattivato, viene visualizzato invece un messaggio di errore.</translation>
 <translation id="6821268164692776674">Destinazioni <ph name="CLOUD_PRINT_NAME" /> e "Salva su Google Drive"</translation>
+<translation id="6823297401452148231">Consente di controllare se i siti web non sicuri possono effettuare richieste agli endpoint delle reti private. Ad esempio, consente di controllare se http://evil.com può effettuare richieste sia a "localhost" sia agli endpoint sulla rete privata, nessuno dei quali è accessibile dalla rete pubblica. Per maggiori dettagli, consulta il sito https://wicg.github.io/cors-rfc1918/#goals.
+
+          Se il criterio non viene configurato, il comportamento predefinito per le richieste da contesti non sicuri agli endpoint di rete privata dipende dalla configurazione personale dell'utente per la funzionalità <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, che può essere configurata in base a una prova pubblica o alla riga di comando.
+
+          Se il criterio viene impostato su False, i siti web non sicuri non possono effettuare richieste agli endpoint di rete privata. Vale a dire che i siti web non sicuri pubblicati da indirizzi IP pubblici non possono effettuare richieste a localhost e indirizzi IP privati. I siti web non sicuri pubblicati da indirizzi IP privati non possono effettuare richieste a localhost.
+
+          Se il criterio viene impostato su Vero, i siti web non sicuri possono effettuare richieste a qualsiasi endpoint di rete, soggetti ad altri controlli multiorigine.</translation>
 <translation id="6833064854262015312">Se il criterio è impostato su True, la modalità ad alto contrasto viene attivata nella schermata di accesso. Se il criterio è impostato su False, la modalità ad alto contrasto viene disattivata nella schermata di accesso.
 
       Se imposti il criterio, gli utenti possono modificare temporaneamente la modalità ad alto contrasto attivandola o disattivandola. Quando la schermata di accesso viene ricaricata o rimane inattiva per un minuto, viene ripristinato lo stato originale della modalità.
@@ -4177,14 +4171,14 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 <translation id="7044883996351280650">Controlla il servizio backup e ripristino di Android</translation>
 <translation id="7063842402585660314">L'elenco di app consentite nella schermata di blocco di <ph name="PRODUCT_OS_NAME" />.
 
-      Se nella schermata di blocco viene attivata l'app per scrivere note preferita, nella schermata sarà presente l'elemento dell'interfaccia utente per avviare tale app.
-      Quando viene avviata, l'app può creare una finestra sopra la schermata di blocco e creare dati (note) nel contesto della schermata di blocco. L'app può importare note create nella sessione utente principale, quando la sessione è sbloccata. Attualmente, nella schermata di blocco sono supportate soltanto le app per scrivere note di Chrome.
+      Se nella schermata di blocco viene attivata l'app preferita per creare note, nella schermata sarà presente l'elemento UI per avviare tale app.
+      Una volta avviata, l'app potrà aprire una finestra sopra la schermata di blocco e creare degli elementi di dati (note) nel contesto della schermata di blocco. L'app potrà importare le note create nella sessione dell'utente principale, quando la sessione è sbloccata. Attualmente, nella schermata di blocco sono supportate soltanto le app per creare note di Chrome.
 
-      Se il criterio viene configurato, l'utente può attivare un'app nella schermata di blocco soltanto se l'ID estensione dell'app è presente come valore nell'elenco del criterio.
-      Di conseguenza, se l'elenco di questo criterio viene lasciato vuoto, non è consentito scrivere note nella schermata di blocco.
-      Tieni presente che l'esistenza dell'ID di un'app nel criterio non implica necessariamente che l'utente può attivare l'app in questione come app per scrivere note nella schermata di blocco. Ad esempio, su Chrome 61, il gruppo di app disponibili è limitato ulteriormente dalla piattaforma.
+      Se il criterio viene configurato, l'utente potrà attivare un'app nella schermata di blocco soltanto se l'ID estensione dell'app è presente come valore nell'elenco del criterio.
+      Di conseguenza, se l'elenco di questo criterio viene lasciato vuoto, non sarà consentito creare note nella schermata di blocco.
+      Tieni presente che l'esistenza dell'ID di un'app nel criterio non implica necessariamente che l'utente potrà attivare l'app in questione come app per creare note nella schermata di blocco. Ad esempio, su Chrome 61, la serie di app disponibili è limitata ulteriormente dalla piattaforma.
 
-      Se il criterio non viene configurato, non ci sono limitazioni imposte da tale criterio relative al gruppo di app che l'utente può attivare nella schermata di blocco.</translation>
+      Se il criterio non viene configurato, non ci saranno limitazioni imposte da tale criterio relative alla serie di app che l'utente può attivare nella schermata di blocco.</translation>
 <translation id="7063895219334505671">Consenti popup su questi siti</translation>
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="7068108874199666656">Consente di forzare l'applicazione della configurazione di rete per tutti gli utenti di un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON come definita nel formato Open Network Configuration.</translation>
@@ -5086,7 +5080,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8357681633047935212">Limita la durata di una sessione utente</translation>
-<translation id="8357989008292691856">Lista consentita di utenti con accesso</translation>
+<translation id="8357989008292691856">Elenco di utenti autorizzati ad accedere</translation>
 <translation id="8359734107661430198">Attiva l'API ExampleDeprecatedFeature valida fino al 02/09/2008</translation>
 <translation id="8367209241899435947">Attiva Chrome Software Cleaner su Windows</translation>
 <translation id="8367473200119029349">Reporting su cloud</translation>
@@ -5634,6 +5628,15 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="9106865192244721694">Consenti WebUSB su questi siti</translation>
 <translation id="9109086856618439290">Attiva i TdS alla prima esecuzione di CCT/PWA</translation>
 <translation id="9112727953998243860">File di configurazione delle stampanti aziendali</translation>
+<translation id="9116740039944096995">Elenco di pattern URL. Le richieste di rete privata inoltrate da siti web non sicuri pubblicati dalle origini corrispondenti sono consentite.
+
+          Se non configurato, questo criterio si comporta come se fosse impostato sull'elenco vuoto.
+
+          Per le origini non coperte dai pattern specificati qui, il valore predefinito globale viene utilizzato dal criterio <ph name="INSECURE_PRIVATE_NETWORK_REQUESTS_ALLOWED_POLICY_NAME" />, se configurato, o altrimenti dalla configurazione personale dell'utente.
+
+          Tieni presente che questo criterio viene applicato solo alle origini non sicure, pertanto le origini sicure (ad es. https://example.com) incluse in questo elenco vengono ignorate.
+
+          Per informazioni dettagliate sui pattern URL validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="9117826695152538214">Se il criterio è impostato su True, i tasti permanenti rimangono attivati. Se il criterio è impostato su False, i tasti permanenti rimangono disattivati.
 
       Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, i tasti permanenti risultano disattivati all'inizio, ma gli utenti possono attivarli in qualsiasi momento.</translation>

@@ -96,7 +96,7 @@ VideoEncoderTestEnvironment* VideoEncoderTestEnvironment::Create(
   }
   auto video =
       std::make_unique<media::test::Video>(video_path, video_metadata_path);
-  if (!video->Load()) {
+  if (!video->Load(kMaxReadFrames)) {
     LOG(ERROR) << "Failed to load " << video_path;
     return nullptr;
   }

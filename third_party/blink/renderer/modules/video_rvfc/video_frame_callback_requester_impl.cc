@@ -219,14 +219,14 @@ double VideoFrameCallbackRequesterImpl::GetClampedTimeInMillis(
 // static
 double VideoFrameCallbackRequesterImpl::GetCoarseClampedTimeInSeconds(
     base::TimeDelta time) {
-  constexpr double kCoarseResolutionInSeconds = 100e-6;
+  constexpr auto kCoarseResolution = base::TimeDelta::FromMicroseconds(100);
   // Add this assert, in case TimeClamper's resolution were to change to be
   // stricter.
-  static_assert(kCoarseResolutionInSeconds >= TimeClamper::kResolutionSeconds,
+  static_assert(kCoarseResolution >= base::TimeDelta::FromSecondsD(
+                                         TimeClamper::kResolutionSeconds),
                 "kCoarseResolutionInSeconds should be at least "
                 "as coarse as other clock resolutions");
-  double interval = floor(time.InSecondsF() / kCoarseResolutionInSeconds);
-  double clamped_time = interval * kCoarseResolutionInSeconds;
+  double clamped_time = time.FloorToMultiple(kCoarseResolution).InSecondsF();
 
   return clamped_time;
 }

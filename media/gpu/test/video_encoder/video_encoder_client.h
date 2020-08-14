@@ -169,6 +169,9 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   void EncodeDoneTask(base::TimeDelta timestamp);
   // Called by the encoder when flushing has completed.
   void FlushDoneTask(bool success);
+  // Calls FlushDoneTask() if needed. This is necessary if Flush() flow is
+  // simulated because VEA doesn't support Flush().
+  void FlushDoneTaskIfNeeded();
 
   // Fire the specified event.
   void FireEvent(VideoEncoder::EncoderEvent event);

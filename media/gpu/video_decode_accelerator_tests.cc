@@ -105,8 +105,15 @@ class VideoDecoderTest : public ::testing::Test {
             g_env->GetFrameOutputLimit());
       }
 
+      // VP9 profile 2 supports 10 and 12 bit color depths, but we currently
+      // assume a profile 2 stream contains 10 bit color depth only.
+      // TODO(hiroh): Add bit depth info to Video class and follow it here.
+      const VideoPixelFormat validation_format =
+          g_env->Video()->Profile() == VP9PROFILE_PROFILE2
+              ? PIXEL_FORMAT_YUV420P10
+              : PIXEL_FORMAT_I420;
       frame_processors.push_back(media::test::MD5VideoFrameValidator::Create(
-          video->FrameChecksums(), PIXEL_FORMAT_I420, std::move(frame_writer)));
+          video->FrameChecksums(), validation_format, std::move(frame_writer)));
     }
 
     config.implementation = g_env->GetDecoderImplementation();

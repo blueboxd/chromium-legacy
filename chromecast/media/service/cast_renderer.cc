@@ -42,15 +42,15 @@ namespace {
 // for frames read from the DemuxerStream.
 const base::TimeDelta kMaxDeltaFetcher(base::TimeDelta::FromMilliseconds(2000));
 
-void VideoModeSwitchCompletionCb(const ::media::PipelineStatusCB& init_cb,
+void VideoModeSwitchCompletionCb(::media::PipelineStatusCallback init_cb,
                                  bool success) {
   if (!success) {
     LOG(ERROR) << "Video mode switch failed.";
-    init_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
+    std::move(init_cb).Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
   LOG(INFO) << "Video mode switched successfully.";
-  init_cb.Run(::media::PIPELINE_OK);
+  std::move(init_cb).Run(::media::PIPELINE_OK);
 }
 }  // namespace
 
@@ -213,11 +213,11 @@ void CastRenderer::OnGetMultiroomInfo(
   // Create pipeline.
   MediaPipelineClient pipeline_client;
   pipeline_client.error_cb =
-      base::Bind(&CastRenderer::OnError, weak_factory_.GetWeakPtr());
+      base::BindRepeating(&CastRenderer::OnError, weak_factory_.GetWeakPtr());
   pipeline_client.buffering_state_cb = base::BindRepeating(
       &CastRenderer::OnBufferingStateChange, weak_factory_.GetWeakPtr());
   pipeline_.reset(new MediaPipelineImpl());
-  pipeline_->SetClient(pipeline_client);
+  pipeline_->SetClient(std::move(pipeline_client));
   pipeline_->Initialize(load_type, std::move(backend));
 
   // TODO(servolk): Implement support for multiple streams. For now use the
@@ -230,20 +230,20 @@ void CastRenderer::OnGetMultiroomInfo(
   // Initialize audio.
   if (audio_stream) {
     AvPipelineClient audio_client;
-    audio_client.waiting_cb =
-        base::Bind(&CastRenderer::OnWaiting, weak_factory_.GetWeakPtr());
-    audio_client.eos_cb = base::Bind(&CastRenderer::OnEnded,
-                                     weak_factory_.GetWeakPtr(), STREAM_AUDIO);
+    audio_client.waiting_cb = base::BindRepeating(&CastRenderer::OnWaiting,
+                                                  weak_factory_.GetWeakPtr());
+    audio_client.eos_cb = base::BindOnce(
+        &CastRenderer::OnEnded, weak_factory_.GetWeakPtr(), STREAM_AUDIO);
     audio_client.playback_error_cb =
-        base::Bind(&CastRenderer::OnError, weak_factory_.GetWeakPtr());
-    audio_client.statistics_cb = base::Bind(&CastRenderer::OnStatisticsUpdate,
-                                            weak_factory_.GetWeakPtr());
+        base::BindRepeating(&CastRenderer::OnError, weak_factory_.GetWeakPtr());
+    audio_client.statistics_cb = base::BindRepeating(
+        &CastRenderer::OnStatisticsUpdate, weak_factory_.GetWeakPtr());
     std::unique_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
         task_runner_, media_task_runner_factory_, audio_stream));
 
-    ::media::PipelineStatus status =
-        pipeline_->InitializeAudio(audio_stream->audio_decoder_config(),
-                                   audio_client, std::move(frame_provider));
+    ::media::PipelineStatus status = pipeline_->InitializeAudio(
+        audio_stream->audio_decoder_config(), std::move(audio_client),
+        std::move(frame_provider));
     if (status != ::media::PIPELINE_OK) {
       RunInitCallback(status);
       return;
@@ -254,15 +254,15 @@ void CastRenderer::OnGetMultiroomInfo(
   // Initialize video.
   if (video_stream) {
     VideoPipelineClient video_client;
-    video_client.av_pipeline_client.waiting_cb =
-        base::Bind(&CastRenderer::OnWaiting, weak_factory_.GetWeakPtr());
-    video_client.av_pipeline_client.eos_cb = base::Bind(
+    video_client.av_pipeline_client.waiting_cb = base::BindRepeating(
+        &CastRenderer::OnWaiting, weak_factory_.GetWeakPtr());
+    video_client.av_pipeline_client.eos_cb = base::BindOnce(
         &CastRenderer::OnEnded, weak_factory_.GetWeakPtr(), STREAM_VIDEO);
     video_client.av_pipeline_client.playback_error_cb =
-        base::Bind(&CastRenderer::OnError, weak_factory_.GetWeakPtr());
-    video_client.av_pipeline_client.statistics_cb = base::Bind(
+        base::BindRepeating(&CastRenderer::OnError, weak_factory_.GetWeakPtr());
+    video_client.av_pipeline_client.statistics_cb = base::BindRepeating(
         &CastRenderer::OnStatisticsUpdate, weak_factory_.GetWeakPtr());
-    video_client.natural_size_changed_cb = base::Bind(
+    video_client.natural_size_changed_cb = base::BindRepeating(
         &CastRenderer::OnVideoNaturalSizeChange, weak_factory_.GetWeakPtr());
     // TODO(alokp): Change MediaPipelineImpl API to accept a single config
     // after CmaRenderer is deprecated.
@@ -272,7 +272,7 @@ void CastRenderer::OnGetMultiroomInfo(
         task_runner_, media_task_runner_factory_, video_stream));
 
     ::media::PipelineStatus status = pipeline_->InitializeVideo(
-        video_configs, video_client, std::move(frame_provider));
+        video_configs, std::move(video_client), std::move(frame_provider));
     if (status != ::media::PIPELINE_OK) {
       RunInitCallback(status);
       return;
@@ -296,11 +296,11 @@ void CastRenderer::OnGetMultiroomInfo(
     std::vector<::media::VideoDecoderConfig> video_configs;
     video_configs.push_back(video_stream->video_decoder_config());
     auto mode_switch_completion_cb =
-        base::Bind(&CastRenderer::OnVideoInitializationFinished,
-                   weak_factory_.GetWeakPtr());
+        base::BindOnce(&CastRenderer::OnVideoInitializationFinished,
+                       weak_factory_.GetWeakPtr());
     video_mode_switcher_->SwitchMode(
         video_configs, base::BindOnce(&VideoModeSwitchCompletionCb,
-                                      mode_switch_completion_cb));
+                                      std::move(mode_switch_completion_cb)));
   } else if (video_stream) {
     // No mode switch needed.
     OnVideoInitializationFinished(::media::PIPELINE_OK);

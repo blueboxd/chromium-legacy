@@ -65,8 +65,7 @@ void ExtensionWebRequestTimeTracker::AnalyzeLogRequest(
   // extra delay the extension adds is likely to be noise.
   constexpr auto kMinRequestTimeToCare = base::TimeDelta::FromMilliseconds(10);
   if (request_duration >= kMinRequestTimeToCare) {
-    double percentage = log.block_duration.InMillisecondsF() /
-                        request_duration.InMillisecondsF();
+    double percentage = log.block_duration / request_duration;
     UMA_HISTOGRAM_PERCENTAGE("Extensions.NetworkDelayPercentage",
                              static_cast<int>(100 * percentage));
   }

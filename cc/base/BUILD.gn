@@ -47,7 +47,6 @@ cc_component("base") {
     "synced_property.h",
     "tiling_data.cc",
     "tiling_data.h",
-    "time_util.h",
     "unique_notifier.cc",
     "unique_notifier.h",
   ]

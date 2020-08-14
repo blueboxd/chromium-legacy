@@ -327,7 +327,7 @@ class ServiceWorkerStorageTest : public testing::Test {
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
   ServiceWorkerRegistry* registry() { return context()->registry(); }
-  ServiceWorkerStorage* storage() { return context()->storage(); }
+  ServiceWorkerStorage* storage() { return registry()->storage(); }
   mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage_control() {
     return registry()->GetRemoteStorageControl();
   }

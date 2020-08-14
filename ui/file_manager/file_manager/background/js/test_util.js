@@ -788,5 +788,46 @@ test.util.sync.removeAllBackgroundFakes = () => {
   return removedCount;
 };
 
+/**
+ * Records if sharesheet was invoked.
+ *
+ * @private {boolean}
+ */
+test.util.sharesheetInvoked_ = false;
+
+/**
+ * Override the sharesheet-related methods in private api for test.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ */
+test.util.sync.overrideSharesheetApi = contentWindow => {
+  test.util.sharesheetInvoked_ = false;
+  const sharesheetHasTargets = (entries, hasTargets) => {
+    setTimeout(() => {
+      hasTargets(true);
+    }, 0);
+  };
+
+  const invokeSharesheet = (entries, callback) => {
+    test.util.sharesheetInvoked_ = true;
+    setTimeout(() => {
+      callback();
+    }, 0);
+  };
+
+  contentWindow.chrome.fileManagerPrivate.sharesheetHasTargets =
+      sharesheetHasTargets;
+  contentWindow.chrome.fileManagerPrivate.invokeSharesheet = invokeSharesheet;
+};
+
+/**
+ * Obtains if the sharesheet invoked.
+ * @param {Window} contentWindow Window to be tested.
+ * @return {boolean} Whether sharesheet invoked.
+ */
+test.util.sync.sharesheetInvoked = contentWindow => {
+  return test.util.sharesheetInvoked_;
+};
+
 // Register the test utils.
 test.util.registerRemoteTestUtils();

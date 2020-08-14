@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class NotificationPlatformBridgeDelegate;
 
@@ -21,8 +22,9 @@ class NotificationPlatformBridgeDelegate;
 // transient notifications and multiple profiles.
 class NotificationPlatformBridgeLacros : public NotificationPlatformBridge {
  public:
-  explicit NotificationPlatformBridgeLacros(
-      NotificationPlatformBridgeDelegate* delegate);
+  NotificationPlatformBridgeLacros(
+      NotificationPlatformBridgeDelegate* delegate,
+      mojo::Remote<crosapi::mojom::MessageCenter>* message_center_remote);
   NotificationPlatformBridgeLacros(const NotificationPlatformBridgeLacros&) =
       delete;
   NotificationPlatformBridgeLacros& operator=(
@@ -47,6 +49,7 @@ class NotificationPlatformBridgeLacros : public NotificationPlatformBridge {
   void OnRemoteNotificationClosed(const std::string& id);
 
   NotificationPlatformBridgeDelegate* const bridge_delegate_;
+  mojo::Remote<crosapi::mojom::MessageCenter>* const message_center_remote_;
 
   // Map key is notification ID.
   std::map<std::string, std::unique_ptr<RemoteNotificationDelegate>>

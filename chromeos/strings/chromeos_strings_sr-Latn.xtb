@@ -9,6 +9,7 @@
 <translation id="150962533380566081">Nevažeći PUK.</translation>
 <translation id="1510238584712386396">Pokretač</translation>
 <translation id="1644574205037202324">Istorija</translation>
+<translation id="1662989795263954667">Zaustavljeno – nema više mastila</translation>
 <translation id="1734367976349034509">Ovim uređajem upravlja preduzeće</translation>
 <translation id="1905710495812624430">Premašen je maksimalni broj pokušaja.</translation>
 <translation id="1930797645656624981">Usluga metoda unosa za Chrome OS</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Lozinka ističe za <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nijedan zadatak štampanja nije u toku</translation>
 <translation id="428217921675623177">Zadaci štampanja stariji od 90 dana se uklanjaju</translation>
+<translation id="4297501883039923494">Zaustavljeno – nepoznata greška</translation>
 <translation id="4429881212383817840">Kerberos tiket uskoro ističe</translation>
 <translation id="445059817448385655">Stara lozinka</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> od <ph name="TOTAL_PAGE_NUMBER" />. Pritisnite taster Enter da biste otkazali zadatak štampanja.</translation>
 <translation id="467510802200863975">Lozinke se ne podudaraju</translation>
+<translation id="4691278870498629773">Zaustavljeno – nedostaje fioka</translation>
 <translation id="4731797938093519117">Roditeljski pristup</translation>
 <translation id="4773299976671772492">Zaustavljeno je</translation>
 <translation id="4808449224298348341">Otkazan je zadatak štampanja <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Odmah odaberite novu</translation>
+<translation id="4917889632206600977">Zaustavljeno – nema više papira</translation>
 <translation id="4932733599132424254">Datum</translation>
 <translation id="5212543919916444558">Ne mogu da pronađem na ekranu ništa oko čega mogu da pomognem.
 Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="5222676887888702881">Odjavi me</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Sačuvaj</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Odaberite novu</translation>
@@ -63,9 +68,11 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="6106186594183574873">Da biste završili, unesite staru lozinku</translation>
 <translation id="6146993107019042706">Da biste završili, unesite novu lozinku</translation>
 <translation id="636850387210749493">Prijavljivanje za izdanje za preduzeća</translation>
+<translation id="649050271426829538">Zaustavljeno – papir je zaglavljen</translation>
 <translation id="6517239166834772319">Istražite</translation>
 <translation id="6564646048574748301">Nije uspelo – štampač nije dostupan</translation>
 <translation id="6643016212128521049">Obriši</translation>
+<translation id="6747215703636344499">Zaustavljeno – posuda za odštampani materijal je puna</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Ovim podešavanjem upravlja administrator</translation>
@@ -77,6 +84,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="8347227221149377169">Zadaci štampanja</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim korisnikom. Može daljinski da upravlja podešavanjima i nadgleda aktivnosti korisnika.</translation>
 <translation id="871560550817059752">Nije uspelo – nema više mastila</translation>
+<translation id="8726019395068607495">Zaustavljeno – vrata su otvorena</translation>
 <translation id="8747900814994928677">Potvrdite promenu</translation>
 <translation id="8919837981463578619">Nije uspelo – nedostaje fioka</translation>
 <translation id="8928727111548978589">Nije uspelo – nema više papira</translation>

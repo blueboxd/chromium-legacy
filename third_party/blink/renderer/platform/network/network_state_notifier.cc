@@ -432,23 +432,23 @@ uint32_t NetworkStateNotifier::RoundRtt(
     const base::Optional<base::TimeDelta>& rtt) const {
   // Limit the size of the buckets and the maximum reported value to reduce
   // fingerprinting.
-  static const size_t kBucketSize = 50;
-  static const double kMaxRttMsec = 3.0 * 1000;
+  static const auto kGranularity = base::TimeDelta::FromMilliseconds(50);
+  static const auto kMaxRtt = base::TimeDelta::FromSeconds(3);
 
   if (!rtt.has_value()) {
     // RTT is unavailable. So, return the fastest value.
     return 0;
   }
 
-  double rtt_msec = static_cast<double>(rtt.value().InMilliseconds());
-  rtt_msec *= GetRandomMultiplier(host);
-  rtt_msec = std::min(rtt_msec, kMaxRttMsec);
+  base::TimeDelta modified_rtt = rtt.value();
+  modified_rtt *= GetRandomMultiplier(host);
+  modified_rtt = std::min(modified_rtt, kMaxRtt);
 
-  DCHECK_LE(0, rtt_msec);
-  DCHECK_GE(kMaxRttMsec, rtt_msec);
+  DCHECK_LE(base::TimeDelta(), modified_rtt);
+  DCHECK_GE(kMaxRtt, modified_rtt);
 
-  // Round down to the nearest kBucketSize msec value.
-  return std::round(rtt_msec / kBucketSize) * kBucketSize;
+  return static_cast<uint32_t>(
+      modified_rtt.RoundToMultiple(kGranularity).InMilliseconds());
 }
 
 double NetworkStateNotifier::RoundMbps(

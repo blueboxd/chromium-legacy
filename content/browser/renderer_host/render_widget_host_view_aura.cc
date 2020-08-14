@@ -1534,6 +1534,16 @@ bool RenderWidgetHostViewAura::SetAutocorrectRange(
                                                {ui_ime_text_span});
   return true;
 }
+
+void RenderWidgetHostViewAura::ClearAutocorrectRange() {
+  // TODO(crbug/1108170): Once we have a FrameWidgetInputHandlerMock, add a test
+  // to verify that the ClearImeTextSpansByType function has been called.
+  auto* input_handler = GetFrameWidgetInputHandlerForFocusedWidget();
+  if (!input_handler)
+    return;
+  input_handler->ClearImeTextSpansByType(0, UINT32_MAX,
+                                         ui::ImeTextSpan::Type::kAutocorrect);
+}
 #endif
 
 #if defined(OS_WIN)

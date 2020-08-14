@@ -30,7 +30,7 @@
 #include "chromecast/base/serializers.h"
 #include "chromecast/media/audio/mixer_service/control_connection.h"
 #include "chromecast/media/cma/backend/audio_buildflags.h"
-#include "chromecast/media/cma/backend/cast_audio_json.h"
+#include "chromecast/media/cma/backend/saved_volumes.h"
 #include "chromecast/media/cma/backend/system_volume_control.h"
 #include "chromecast/media/cma/backend/volume_map.h"
 
@@ -43,10 +43,6 @@ namespace media {
 
 namespace {
 
-constexpr float kDefaultMediaDbFS = -25.0f;
-constexpr float kDefaultAlarmDbFS = -20.0f;
-constexpr float kDefaultCommunicationDbFS = -25.0f;
-
 #if !BUILDFLAG(SYSTEM_OWNS_VOLUME)
 constexpr float kMinDbFS = -120.0f;
 #endif
@@ -54,7 +50,6 @@ constexpr float kMinDbFS = -120.0f;
 constexpr char kKeyMediaDbFS[] = "dbfs.media";
 constexpr char kKeyAlarmDbFS[] = "dbfs.alarm";
 constexpr char kKeyCommunicationDbFS[] = "dbfs.communication";
-constexpr char kKeyDefaultVolume[] = "default_volume";
 
 #if !BUILDFLAG(SYSTEM_OWNS_VOLUME)
 float DbFsToScale(float db) {
@@ -86,43 +81,12 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     // Load volume map to check that the config file is correct.
     VolumeControl::VolumeToDbFS(0.0f);
 
-    stored_values_.SetDouble(kKeyMediaDbFS, kDefaultMediaDbFS);
-    stored_values_.SetDouble(kKeyAlarmDbFS, kDefaultAlarmDbFS);
-    stored_values_.SetDouble(kKeyCommunicationDbFS, kDefaultCommunicationDbFS);
-
-    auto types = {AudioContentType::kMedia, AudioContentType::kAlarm,
-                  AudioContentType::kCommunication};
-    double volume;
-
     storage_path_ = base::GetHomeDir().Append("saved_volumes");
-    auto old_stored_data = DeserializeJsonFromFile(storage_path_);
-    base::DictionaryValue* old_stored_dict;
-    if (old_stored_data && old_stored_data->GetAsDictionary(&old_stored_dict)) {
-      for (auto type : types) {
-        if (old_stored_dict->GetDouble(ContentTypeToDbFSKey(type), &volume)) {
-          stored_values_.SetDouble(ContentTypeToDbFSKey(type), volume);
-        }
-      }
-    } else {
-      // If saved_volumes does not exist, use per device default if it exists.
-      auto cast_audio_config =
-          DeserializeJsonFromFile(CastAudioJson::GetFilePath());
-      const base::DictionaryValue* cast_audio_dict;
-      if (cast_audio_config &&
-          cast_audio_config->GetAsDictionary(&cast_audio_dict)) {
-        const base::DictionaryValue* default_volume_dict;
-        if (cast_audio_dict && cast_audio_dict->GetDictionary(
-                                   kKeyDefaultVolume, &default_volume_dict)) {
-          for (auto type : types) {
-            if (default_volume_dict->GetDouble(ContentTypeToDbFSKey(type),
-                                               &volume)) {
-              stored_values_.SetDouble(ContentTypeToDbFSKey(type), volume);
-              LOG(INFO) << "Setting default volume for "
-                        << ContentTypeToDbFSKey(type) << " to " << volume;
-            }
-          }
-        }
-      }
+    base::flat_map<AudioContentType, double> saved_volumes =
+        LoadSavedVolumes(storage_path_);
+    for (auto type : {AudioContentType::kMedia, AudioContentType::kAlarm,
+                      AudioContentType::kCommunication}) {
+      stored_values_.SetDouble(ContentTypeToDbFSKey(type), saved_volumes[type]);
     }
 
     base::Thread::Options options;

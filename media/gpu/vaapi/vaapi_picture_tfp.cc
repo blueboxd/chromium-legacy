@@ -63,7 +63,7 @@ Status VaapiTFPPicture::Initialize() {
   if (!glx_image_->Initialize(x_pixmap_)) {
     // x_pixmap_ will be freed in the destructor.
     DLOG(ERROR) << "Failed creating a GLX Pixmap for TFP";
-    return StatusCode::kVaapiNoPixmap;
+    return StatusCode::kVaapiFailedToInitializeImage;
   }
 
   gl::ScopedTextureBinder texture_binder(texture_target_, texture_id_);

@@ -38,12 +38,6 @@ namespace ui {
 
 namespace {
 
-// TODO(crbug.com/1105892): those three constants can be found in a few other
-// places.  Perhaps it would be worth finding some common place for them?
-constexpr char kMimeTypeX11String[] = "STRING";
-constexpr char kMimeTypeX11Text[] = "TEXT";
-constexpr char kMimeTypeX11Utf8String[] = "UTF8_STRING";
-
 // The amount of time to wait for a request to complete before aborting it.
 constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(10);
 
@@ -564,8 +558,8 @@ void ClipboardOzone::WritePlatformRepresentations(
 void ClipboardOzone::WriteText(const char* text_data, size_t text_len) {
   std::vector<uint8_t> data(text_data, text_data + text_len);
   async_clipboard_ozone_->InsertData(
-      std::move(data), {kMimeTypeText, kMimeTypeX11Text, kMimeTypeX11String,
-                        kMimeTypeTextUtf8, kMimeTypeX11Utf8String});
+      std::move(data), {kMimeTypeText, kMimeTypeLinuxText, kMimeTypeLinuxString,
+                        kMimeTypeTextUtf8, kMimeTypeLinuxUtf8String});
 }
 
 void ClipboardOzone::WriteHTML(const char* markup_data,

@@ -33,7 +33,6 @@
 
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -74,14 +73,6 @@ bool BaseButtonInputType::ShouldSaveAndRestoreFormControlState() const {
 }
 
 void BaseButtonInputType::AppendToFormData(FormData&) const {}
-
-bool BaseButtonInputType::TypeShouldForceLegacyLayout() const {
-  if (RuntimeEnabledFeatures::LayoutNGForControlsEnabled())
-    return false;
-  UseCounter::Count(GetElement().GetDocument(),
-                    WebFeature::kLegacyLayoutByButton);
-  return true;
-}
 
 LayoutObject* BaseButtonInputType::CreateLayoutObject(
     const ComputedStyle& style,

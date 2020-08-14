@@ -41,6 +41,7 @@
 #include "chrome/browser/native_file_system/native_file_system_tab_helper.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_preconnect_client.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
+#include "chrome/browser/optimization_guide/blink/blink_optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -101,6 +102,7 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/performance_manager/public/performance_manager.h"
@@ -276,7 +278,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   NativeFileSystemTabHelper::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
   NavigationPredictorPreconnectClient::CreateForWebContents(web_contents);
-  OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents);
+  if (optimization_guide::features::IsOptimizationHintsEnabled()) {
+    optimization_guide::BlinkOptimizationGuideWebContentsObserver::
+        CreateForWebContents(web_contents);
+    OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents);
+  }
   OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
   PDFPluginPlaceholderObserver::CreateForWebContents(web_contents);

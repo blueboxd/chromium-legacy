@@ -1,0 +1,36 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
+source_set("internal") {
+  sources = [
+    "tutorial_service_impl.cc",
+    "tutorial_service_impl.h",
+  ]
+
+  public_deps = [ "//components/image_fetcher/core" ]
+
+  deps = [
+    "//base",
+    "//chrome/browser/video_tutorials:public",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = []
+
+  deps = [
+    ":internal",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

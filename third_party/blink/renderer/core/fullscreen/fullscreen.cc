@@ -601,6 +601,9 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
       UseCounter::Count(window, WebFeature::kFullscreenSecureOrigin);
     else
       UseCounter::Count(window, WebFeature::kFullscreenInsecureOrigin);
+    // Coarsely measure whether this request may be specifying another screen.
+    if (options->hasScreen())
+      UseCounter::Count(window, WebFeature::kFullscreenCrossScreen);
   }
 
   // 5. Let |error| be false.

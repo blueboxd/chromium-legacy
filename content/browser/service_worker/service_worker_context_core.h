@@ -172,9 +172,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   ServiceWorkerContextWrapper* wrapper() const { return wrapper_; }
   ServiceWorkerRegistry* registry() const { return registry_.get(); }
-  // TODO(crbug.com/1016064): Remove this accessor once some parts of
-  // ServiceWorkerStorage are moved to the Storage Service.
-  ServiceWorkerStorage* storage() const;
   mojo::Remote<storage::mojom::ServiceWorkerStorageControl>&
   GetStorageControl();
   ServiceWorkerProcessManager* process_manager();

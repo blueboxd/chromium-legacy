@@ -31,8 +31,6 @@
 namespace exo {
 namespace {
 
-constexpr char kTextMimeTypeUtf8[] = "text/plain;charset=utf-8";
-constexpr char kUtf8String[] = "UTF8_STRING";
 constexpr char kTextMimeTypeUtf16[] = "text/plain;charset=utf-16";
 constexpr char kTextHtmlMimeTypeUtf8[] = "text/html;charset=utf-8";
 constexpr char kTextHtmlMimeTypeUtf16[] = "text/html;charset=utf-16";
@@ -279,7 +277,7 @@ void DataOffer::SetDropData(FileHelper* file_helper,
 
   base::string16 string_content;
   if (data.HasString() && data.GetString(&string_content)) {
-    const std::string utf8_mime_type = std::string(kTextMimeTypeUtf8);
+    const std::string utf8_mime_type = std::string(ui::kMimeTypeTextUtf8);
     data_.emplace(utf8_mime_type,
                   EncodeAsRefCountedString(string_content, kUTF8));
     delegate_->OnOffer(utf8_mime_type);
@@ -321,10 +319,11 @@ void DataOffer::SetClipboardData(FileHelper* file_helper,
                              /* data_dst = */ nullptr)) {
     auto utf8_callback =
         base::BindRepeating(&ReadTextFromClipboard, std::string(kUTF8));
-    delegate_->OnOffer(std::string(kTextMimeTypeUtf8));
-    data_callbacks_.emplace(std::string(kTextMimeTypeUtf8), utf8_callback);
-    delegate_->OnOffer(std::string(kUtf8String));
-    data_callbacks_.emplace(std::string(kUtf8String), utf8_callback);
+    delegate_->OnOffer(std::string(ui::kMimeTypeTextUtf8));
+    data_callbacks_.emplace(std::string(ui::kMimeTypeTextUtf8), utf8_callback);
+    delegate_->OnOffer(std::string(ui::kMimeTypeLinuxUtf8String));
+    data_callbacks_.emplace(std::string(ui::kMimeTypeLinuxUtf8String),
+                            utf8_callback);
     delegate_->OnOffer(std::string(kTextMimeTypeUtf16));
     data_callbacks_.emplace(
         std::string(kTextMimeTypeUtf16),

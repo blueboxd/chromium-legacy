@@ -3729,6 +3729,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "query-tiles-enable-trending",
+    "owners": [ "qinmin" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "query-tiles-instant-fetch",
     "owners": [ "xingliu" ],
     "expiry_milestone": 88
@@ -4461,6 +4466,11 @@
     "name": "username-first-flow",
     "owners": [ "jdoerrie" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "video-tutorials",
+    "owners": [ "shaktisahu", "hesen" ],
+    "expiry_milestone": 90
   },
   {
     "name": "wallet-service-use-sandbox",

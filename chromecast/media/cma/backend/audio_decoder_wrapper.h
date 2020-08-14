@@ -47,6 +47,7 @@ class ActiveAudioDecoderWrapper : public DestructableAudioDecoder {
   RenderingDelay GetRenderingDelay() override;
   void GetStatistics(Statistics* statistics) override;
   bool RequiresDecryption() override;
+  void SetObserver(CmaBackend::AudioDecoder::Observer* observer) override {}
 
   AudioDecoderSoftwareWrapper decoder_;
   const AudioContentType content_type_;
@@ -85,6 +86,7 @@ class AudioDecoderWrapper : public CmaBackend::AudioDecoder {
   RenderingDelay GetRenderingDelay() override;
   void GetStatistics(Statistics* statistics) override;
   bool RequiresDecryption() override;
+  void SetObserver(CmaBackend::AudioDecoder::Observer* observer) override {}
 
   bool decoder_revoked_;
 

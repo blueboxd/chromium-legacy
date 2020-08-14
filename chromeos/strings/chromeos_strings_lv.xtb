@@ -9,6 +9,7 @@
 <translation id="150962533380566081">PUK nav derīgs.</translation>
 <translation id="1510238584712386396">Lietojumprogrammu palaidējs</translation>
 <translation id="1644574205037202324">Vēsture</translation>
+<translation id="1662989795263954667">Apturēts — beigusies tinte</translation>
 <translation id="1734367976349034509">Šo ierīci pārvalda uzņēmums</translation>
 <translation id="1905710495812624430">Ir pārsniegts maksimālais atļautais mēģinājumu skaits.</translation>
 <translation id="1930797645656624981">Chrome OS ievades metodes pakalpojums</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Paroles derīguma termiņš: <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nenotiek neviens drukas darbs</translation>
 <translation id="428217921675623177">Drukas uzdevumi, kas ir vecāki par 90 dienām, tiks noņemti</translation>
+<translation id="4297501883039923494">Apturēts — nezināma kļūda</translation>
 <translation id="4429881212383817840">Kerberos biļetes termiņš drīz beigsies</translation>
 <translation id="445059817448385655">Iepriekšējā parole</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />: <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> no <ph name="TOTAL_PAGE_NUMBER" /> lapas(-ām). Lai atceltu drukas uzdevumu, nospiediet taustiņu Enter.</translation>
 <translation id="467510802200863975">Paroles nav vienādas</translation>
+<translation id="4691278870498629773">Apturēts — trūkst paliktņa</translation>
 <translation id="4731797938093519117">Vecāku piekļuve</translation>
 <translation id="4773299976671772492">Pārtraukts</translation>
 <translation id="4808449224298348341">Drukas uzdevums “<ph name="DOCUMENT_TITLE" />” tika atcelts</translation>
 <translation id="4890353053343094602">Nekavējoties izvēlieties jaunu</translation>
+<translation id="4917889632206600977">Apturēts — beidzies papīrs</translation>
 <translation id="4932733599132424254">Datums</translation>
 <translation id="5212543919916444558">Ekrānā neredzu neko, ar ko varētu palīdzēt.
 Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />: <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />: <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Izvēlieties jaunu jau tūlīt</translation>
@@ -63,9 +68,11 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="6106186594183574873">Lai pabeigtu, ievadiet savu iepriekšējo paroli</translation>
 <translation id="6146993107019042706">Lai pabeigtu, ievadiet savu jauno paroli</translation>
 <translation id="636850387210749493">Uzņēmuma palaide</translation>
+<translation id="649050271426829538">Apturēts — iestrēdzis papīrs</translation>
 <translation id="6517239166834772319">Izpēte</translation>
 <translation id="6564646048574748301">Neizdevās — printeris nav sasniedzams</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
+<translation id="6747215703636344499">Apturēts — izvades paliktnis ir pilns</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Šo darbību pārvalda administrators</translation>
@@ -77,6 +84,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="8347227221149377169">Drukas uzdevumi</translation>
 <translation id="8701136875688985581">Šis lietotājs tiek pārvaldīts domēnā<ph name="ENROLLMENT_DOMAIN" />. Šajā domēnā var tikt attālināti pārvaldīti iestatījumi un uzraudzītas lietotāja darbības.</translation>
 <translation id="871560550817059752">Neizdevās — beigusies tinte</translation>
+<translation id="8726019395068607495">Apturēts — durtiņas ir atvērtas</translation>
 <translation id="8747900814994928677">Apstiprināt izmaiņas</translation>
 <translation id="8919837981463578619">Neizdevās — trūkst paliktņa</translation>
 <translation id="8928727111548978589">Neizdevās — beidzies papīrs</translation>

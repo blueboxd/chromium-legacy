@@ -135,16 +135,14 @@ float AverageLagTracker::LagBetween(base::TimeTicks front_time,
 
   float front_delta =
       (last_event_accumulated_delta_ +
-       (scroll_delta *
-        ((front_time - last_event_timestamp_).InMillisecondsF() /
-         (event_timestamp - last_event_timestamp_).InMillisecondsF()))) -
+       (scroll_delta * ((front_time - last_event_timestamp_) /
+                        (event_timestamp - last_event_timestamp_)))) -
       rendered_accumulated_delta;
 
   float back_delta =
       (last_event_accumulated_delta_ +
-       scroll_delta *
-           ((back_time - last_event_timestamp_).InMillisecondsF() /
-            (event_timestamp - last_event_timestamp_).InMillisecondsF())) -
+       scroll_delta * ((back_time - last_event_timestamp_) /
+                       (event_timestamp - last_event_timestamp_))) -
       rendered_accumulated_delta;
 
   // Calculate the trapezoid area.
@@ -186,7 +184,8 @@ void AverageLagTracker::CalculateAndReportAverageLagUma(bool send_anyway) {
   // |ScrollBegin|. Otherwise record UMA when it's ScrollBegin, or when
   // reaching the 1 second gap.
   if (send_anyway || is_begin_ ||
-      (frame_lag.frame_time - last_reported_time_).InSecondsF() >= 1.0f) {
+      (frame_lag.frame_time - last_reported_time_) >=
+          base::TimeDelta::FromSeconds(1)) {
     const EventType event_type =
         is_begin_ ? EventType::ScrollBegin : EventType::ScrollUpdate;
 

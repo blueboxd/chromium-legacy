@@ -17,6 +17,7 @@
 #include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/render_view_host.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 
@@ -164,7 +165,7 @@ HeadlessPrintManager::GetPrintParamsFromSettings(
     print_settings.set_url(base::UTF8ToUTF16(url));
   }
 
-  print_settings.set_margin_type(printing::CUSTOM_MARGINS);
+  print_settings.set_margin_type(printing::mojom::MarginType::kCustomMargins);
   print_settings.SetCustomMargins(settings.margins_in_points);
 
   gfx::Rect printable_area_device_units(settings.paper_size_in_points);

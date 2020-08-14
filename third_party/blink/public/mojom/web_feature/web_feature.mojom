@@ -2535,7 +2535,6 @@ enum WebFeature {
 
   kV8Document_HasTrustToken_Method = 3202,
   kForceLoadAtTop = 3203,
-  kLegacyLayoutByButton = 3204,
   kLegacyLayoutByDeprecatedFlexBox = 3205,
   kLegacyLayoutByDetailsMarker = 3206,
   kLegacyLayoutByEditing = 3207,
@@ -2715,6 +2714,15 @@ enum WebFeature {
   kV8FontMetadata_GetTables_Method = 3384,
   kV8FontMetadata_Blob_Method = 3385,
   kV8FontManager_Query_Method = 3386,
+  kAudioContextBaseLatency = 3387,
+  kV8Window_GetScreens_Method = 3388,
+  kV8Window_IsMultiScreen_Method = 3389,
+  kV8Window_Onscreenschange_AttributeGetter = 3390,
+  kV8Window_Onscreenschange_AttributeSetter = 3391,
+  kDOMWindowOpenPositioningFeaturesCrossScreen = 3392,
+  kDOMWindowSetWindowRectCrossScreen = 3393,
+  kFullscreenCrossScreen = 3394,
+  kBatterySavingsMeta = 3395,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

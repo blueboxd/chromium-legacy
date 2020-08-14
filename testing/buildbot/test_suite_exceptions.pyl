@@ -2688,6 +2688,7 @@
           'DesktopWidgetTest.GetWindowPlacement:'
           'DesktopWidgetTest.MinimumSizeConstraints:'
           'EditableComboboxTest*:'
+          'MenuRunnerTest*:'
           'TextfieldTest*:'
           'TooltipControllerTest*',
         ],

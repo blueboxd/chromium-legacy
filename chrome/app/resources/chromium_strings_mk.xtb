@@ -30,6 +30,7 @@
 <translation id="2294245788148774212">Незадолжително: помогнете да се подобрат функциите и изведбата на Chromium OS со автоматско испраќање дијагностички податоци и податоци за користењето до Google.</translation>
 <translation id="2347108572062610441">Екстензијата ја смени страницата што се прикажува кога го стартувате Chromium.</translation>
 <translation id="2396765026452590966">Екстензијата „<ph name="EXTENSION_NAME" />“ ја смени страницата што се прикажува кога го стартувате Chromium.</translation>
+<translation id="2442081746662839303">Да се создаде нов простор на Chromium за <ph name="NEW_USER" />?</translation>
 <translation id="2483889755041906834">Во Chromium</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2527042973354814951">Рестартирајте го Chromium за да го овозможите <ph name="PLUGIN_NAME" /></translation>
@@ -107,6 +108,7 @@
 <translation id="4943838377383847465">Chromium е во заднински режим.</translation>
 <translation id="4987820182225656817">Гостите може да го користат Chromium без оставање никакви траги зад нив.</translation>
 <translation id="4994636714258228724">Додај се себеси на Chromium</translation>
+<translation id="5053724573690775822">Да се создаде нов работен простор на Chromium?</translation>
 <translation id="5224391634244552924">Немате зачувани лозинки. Chromium може да ги проверува вашите лозинки ако ги зачувате.</translation>
 <translation id="5277894862589591112">За да се применат измените, рестартирајте го Chromium</translation>
 <translation id="5358375970380395591">Се пријавувате со управувана сметка и му давате контрола на администраторот над вашиот профил на Chromium. Вашите податоци на Chromium, како на пример ваши апликации, обележувачи, историја, лозинки и други поставки ќе бидат трајно поврзани со <ph name="USER_NAME" />. Може да ги бришете овие податоци преку информациската табла со сметки на Google, но нема да може да ги поврзувате овие податоци со друга сметка. <ph name="LEARN_MORE" /></translation>
@@ -116,6 +118,7 @@
 <translation id="5416696090975899932">Chromium не може да прикаже преглед на печатење кога недостасува вградениот прегледувач на PDF.</translation>
 <translation id="5427571867875391349">Поставете го Chromium за стандарден прелистувач</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
+<translation id="544968170749360982">Се најавивте со нова сметка во просторот на <ph name="EXISTING_USER" />. Дали би сакале да создадете нов простор на Chromium за <ph name="NEW_USER" /> за да ги чувате податоците одделно?</translation>
 <translation id="5479196819031988440">ОС на Chromium не може да ја отвори страницава.</translation>
 <translation id="5480860683791598150">На Chromium му треба пристап до вашата локација за да ја сподели со сајтов</translation>
 <translation id="549669000822060376">Почекајте додека Chromium ги инсталира последните системски ажурирања.</translation>
@@ -138,6 +141,7 @@
 <translation id="608189560609172163">Chromium не може да ги синхронизира вашите податоци поради грешка во пријавувањето.</translation>
 <translation id="6096348254544841612">Приспособете го и контролирајте го Chromium. Достапно е ажурирање.</translation>
 <translation id="6120345080069858279">Chromium ќе ја зачува лозинкава во вашата сметка на Google. Не мора да ја запомните.</translation>
+<translation id="6128834065531097268">Се најавивте со работна сметка во просторот на <ph name="EXISTING_USER" />. Дали би сакале да создадете нов простор на Chromium за <ph name="WORK_DOMAIN" /> за да ги чувате податоците одделно?</translation>
 <translation id="6129621093834146363">Датотеката <ph name="FILE_NAME" /> е опасна, па затоа Chromium ја блокираше.</translation>
 <translation id="6134968993075716475">„Безбедното прелистување“ е исклучено. Chromium препорачува да го вклучите.</translation>
 <translation id="6212496753309875659">Овој компјутер веќе има најнова верзија на Chromium. Доколку софтверот не работи, деинсталирајте го Chromium и обидете се повторно.</translation>
@@ -199,6 +203,7 @@ Chromium не може да ги обнови вашите поставки.</tr
 <translation id="7561906087460245826">Избриши ги и податоците од Chromium (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Ако некоја поставка не се прикажува на страницава, погледнете во <ph name="LINK_BEGIN" />
     поставките за Chromium OS<ph name="LINK_END" /></translation>
+<translation id="7607142834923530546">Се најавивте со работна сметка. Дали би сакале да создадете нов простор на Chromium за <ph name="NEW_USER" /> за да ги чувате личните податоци одделно?</translation>
 <translation id="761356813943268536">Chromium ги користи фотоапаратот и микрофонот.</translation>
 <translation id="7617377681829253106">Chromium е подобрен</translation>
 <translation id="7628001322379820951">Chromium најде штетен софтвер на вашиот компјутер</translation>

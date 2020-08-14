@@ -17,6 +17,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
@@ -150,6 +151,7 @@ public class ErrorPageCallbackTest {
     @Test
     @SmallTest
     @MinWebLayerVersion(86)
+    @DisabledTest(message = "Flaky - https://crbug.com/1116277")
     public void testOverrideErrorPage() throws Throwable {
         mCallback.mErrorPage = new ErrorPage("<html><head><title>test error</title>");
         TestThreadUtils.runOnUiThreadBlocking(

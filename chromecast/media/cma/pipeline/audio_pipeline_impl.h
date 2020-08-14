@@ -26,8 +26,7 @@ class CodedFrameProvider;
 
 class AudioPipelineImpl : public AvPipelineImpl {
  public:
-  AudioPipelineImpl(CmaBackend::AudioDecoder* decoder,
-                    const AvPipelineClient& client);
+  AudioPipelineImpl(CmaBackend::AudioDecoder* decoder, AvPipelineClient client);
   ~AudioPipelineImpl() override;
 
   ::media::PipelineStatus Initialize(

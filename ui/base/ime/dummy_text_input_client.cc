@@ -174,6 +174,9 @@ bool DummyTextInputClient::SetAutocorrectRange(
   }
   return true;
 }
+
+void DummyTextInputClient::ClearAutocorrectRange() {}
+
 #endif
 
 #if defined(OS_WIN)

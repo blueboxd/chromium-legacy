@@ -41,7 +41,7 @@ class DecoderBufferBase;
 
 class AvPipelineImpl : CmaBackend::Decoder::Delegate {
  public:
-  AvPipelineImpl(CmaBackend::Decoder* decoder, const AvPipelineClient& client);
+  AvPipelineImpl(CmaBackend::Decoder* decoder, AvPipelineClient client);
   ~AvPipelineImpl() override;
 
   void SetCdm(CastCdmContext* cast_cdm_context);
@@ -50,7 +50,7 @@ class AvPipelineImpl : CmaBackend::Decoder::Delegate {
   // time, then start rendering samples.
   bool StartPlayingFrom(base::TimeDelta time,
                         const scoped_refptr<BufferingState>& buffering_state);
-  void Flush(const base::Closure& flush_cb);
+  void Flush(base::OnceClosure flush_cb);
 
   virtual void UpdateStatistics() = 0;
 
@@ -137,10 +137,10 @@ class AvPipelineImpl : CmaBackend::Decoder::Delegate {
   base::ThreadChecker thread_checker_;
 
   CmaBackend::Decoder* const decoder_;
-  const AvPipelineClient client_;
+  AvPipelineClient client_;
 
   // Callback provided to Flush().
-  base::Closure flush_cb_;
+  base::OnceClosure flush_cb_;
 
   // AV pipeline state.
   State state_;

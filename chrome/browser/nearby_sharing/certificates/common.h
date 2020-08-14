@@ -44,6 +44,9 @@ std::vector<uint8_t> ComputeAuthenticationTokenHash(
 std::vector<uint8_t> DeriveNearbyShareKey(base::span<const uint8_t> key,
                                           size_t new_num_bytes);
 
+// Generates a random byte array with size |num_bytes|.
+std::vector<uint8_t> GenerateRandomBytes(size_t num_bytes);
+
 // Creates a CTR encryptor used for metadata key encryption/decryption.
 std::unique_ptr<crypto::Encryptor> CreateNearbyShareCtrEncryptor(
     const crypto::SymmetricKey* secret_key,

@@ -92,6 +92,7 @@
 <translation id="1962969542251276847">鎖定螢幕</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558"><ph name="USERNAME" />，你好：</translation>
+<translation id="1975500003782052650">近期下載內容</translation>
 <translation id="1978498689038657292">文字輸入</translation>
 <translation id="1993072747612765854">進一步瞭解最新的 <ph name="SYSTEM_APP_NAME" />更新內容</translation>
 <translation id="1995660704900986789">關閉</translation>
@@ -128,6 +129,7 @@
 <translation id="2369165858548251131">「你好」的英文</translation>
 <translation id="2390318262976603432">語言代碼設定</translation>
 <translation id="2391579633712104609">180 度</translation>
+<translation id="2408955596600435184">請輸入你的 PIN 碼</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
 <translation id="2413728805700750528">「<ph name="DISPLAY_NAME" />」是由 <ph name="DOMAIN" /> 管理的工作階段</translation>
 <translation id="2427507373259914951">按左鍵</translation>
@@ -254,6 +256,7 @@
 <translation id="3798670284305777884">喇叭 (內部)</translation>
 <translation id="3799080171973636491">你按下了全螢幕放大鏡的鍵盤快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="380165613292957338">你好，需要什麼協助嗎？</translation>
+<translation id="3826099427150913765">切換為密碼</translation>
 <translation id="383629559565718788">顯示鍵盤設定</translation>
 <translation id="3846575436967432996">沒有可用的網路資訊</translation>
 <translation id="385051799172605136">返回</translation>
@@ -284,6 +287,7 @@
 <translation id="4181841719683918333">語言</translation>
 <translation id="4195877955194704651">自動點擊按鈕</translation>
 <translation id="4197790712631116042">關閉</translation>
+<translation id="4212472694152630271">切換為 PIN 碼</translation>
 <translation id="4215497585250573029">VPN 設定</translation>
 <translation id="4217571870635786043">語音輸入</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -296,6 +300,7 @@
 <translation id="4321776623976362024">你按下了高對比的鍵盤快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="4331809312908958774">Chrome 作業系統</translation>
 <translation id="4338109981321384717">放大鏡</translation>
+<translation id="4350065043422286972">已固定</translation>
 <translation id="4351433414020964307">正在載入小幫手…</translation>
 <translation id="4356930093361201197">高對比模式</translation>
 <translation id="4368583494516669646">晚安，<ph name="GIVEN_NAME" /></translation>
@@ -357,6 +362,7 @@
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> 已連結到新手機</translation>
 <translation id="5035389544768382859">確認螢幕設定</translation>
 <translation id="5083553833479578423">啟用更多 Google 助理功能。</translation>
+<translation id="5114495209940374989">螢幕截圖</translation>
 <translation id="5136175204352732067">已連接其他鍵盤</translation>
 <translation id="5168181903108465623">可用的投放裝置</translation>
 <translation id="5207949376430453814">醒目顯示文字插入點</translation>
@@ -552,7 +558,7 @@
 <translation id="7568294522609223312">關閉自動點擊功能</translation>
 <translation id="7568637526529101738">按一下或長按滑鼠右鍵，Google 助理即可針對你選取的內容顯示定義或單位轉換等資訊。</translation>
 <translation id="7569509451529460200">點字模式和 ChromeVox 已啟用</translation>
-<translation id="7579778809502851308">螢幕擷取</translation>
+<translation id="7579778809502851308">擷取螢幕畫面</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7600875258240007829">查看所有通知</translation>
 <translation id="7624117708979618027">華氏 <ph name="TEMPERATURE_F" />°</translation>
@@ -599,6 +605,7 @@
 <translation id="8061464966246066292">高對比模式</translation>
 <translation id="8098591350844501178">停止將畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
 <translation id="8113423164597455979">開啟，所有應用程式</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8132793192354020517">已連線至 <ph name="NAME" /></translation>
 <translation id="813913629614996137">正在初始化...</translation>

@@ -102,10 +102,13 @@ struct ServiceWorkerUserData {
 //
 // Currently this is consumed and implemented in the browser process, but the
 // implementation will eventually live in the Storage Service.
-//
-// TODO(crbug.com/1055677): Add more methods to cover all ServiceWorkerStorage
-// public methods.
 interface ServiceWorkerStorageControl {
+  // Disables the storage.
+  Disable();
+
+  // Deletes the whole storage.
+  Delete() => (ServiceWorkerDatabaseStatus status);
+
   // Returns all origins which have service worker registrations.
   GetRegisteredOrigins() => (array<url.mojom.Origin> origins);
 

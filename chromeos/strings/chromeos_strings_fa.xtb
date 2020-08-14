@@ -9,6 +9,7 @@
 <translation id="150962533380566081">‏PUK نامعتبر.</translation>
 <translation id="1510238584712386396">راه‌انداز</translation>
 <translation id="1644574205037202324">سابقه</translation>
+<translation id="1662989795263954667">متوقف شد - جوهر تمام شده است</translation>
 <translation id="1734367976349034509">این دستگاه توسط سازمانی مدیریت می‌شود</translation>
 <translation id="1905710495812624430">به حداکثر تعداد مجاز تلاش رسیده‌اید.</translation>
 <translation id="1930797645656624981">‏سرویس روش ورودی سیستم‌عامل Chrome</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">گذرواژه <ph name="TIME" /> دیگر منقضی می‌شود</translation>
 <translation id="4238516577297848345">هیچ کار چاپی درحال انجام نیست</translation>
 <translation id="428217921675623177">کارهای چاپ قدیمی‌تر از ۹۰ روز حذف خواهند شد</translation>
+<translation id="4297501883039923494">متوقف شد - خطای نامشخص</translation>
 <translation id="4429881212383817840">‏بلیت Kerberos به‌زودی منقضی می‌شود</translation>
 <translation id="445059817448385655">گذرواژه قدیمی</translation>
 <translation id="4627232916386272576">‏<ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="PRINTED_PAGE_NUMBER" /> از مجموع <ph name="TOTAL_PAGE_NUMBER" />. برای لغو کار چاپ، Enter را فشار دهید.</translation>
 <translation id="467510802200863975">گذرواژه‌ها با هم مطابقت ندارند</translation>
+<translation id="4691278870498629773">متوقف شد - سینی موجود نیست</translation>
 <translation id="4731797938093519117">دسترسی والدین</translation>
 <translation id="4773299976671772492">متوقف شد</translation>
 <translation id="4808449224298348341">کار چاپ <ph name="DOCUMENT_TITLE" /> لغو شد</translation>
 <translation id="4890353053343094602">انتخاب فوری موردی جدید</translation>
+<translation id="4917889632206600977">متوقف شد - کاغذ تمام شده است</translation>
 <translation id="4932733599132424254">تاریخ</translation>
 <translation id="5212543919916444558">در صفحه‌‌تان چیزی پیدا نمی‌کنم تا درمورد آن کمکتان کنم.
 برای درخواست از من، روی میکروفون ضربه بزنید.</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">انتخاب گذرواژه جدید، هم‌اکنون</translation>
@@ -63,9 +68,11 @@
 <translation id="6106186594183574873">برای تکمیل کار، گذرواژه قدیمی‌تان را وارد کنید</translation>
 <translation id="6146993107019042706">برای تکمیل کار،‌ گذرواژه جدیدتان را وارد کنید</translation>
 <translation id="636850387210749493">ثبت‌نام شرکت</translation>
+<translation id="649050271426829538">متوقف شد - کاغذ گیر کرده است</translation>
 <translation id="6517239166834772319">کاوش</translation>
 <translation id="6564646048574748301">انجام نشد - دسترسی به چاپگر ممکن نیست</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
+<translation id="6747215703636344499">متوقف شد - خروجی پُر است</translation>
 <translation id="7162487448488904999">گالری</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">سرپرست شما این اقدام را مدیریت می‌کند</translation>
@@ -77,6 +84,7 @@
 <translation id="8347227221149377169">کارهای چاپی</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> این کاربر را مدیریت می‌کند. می‌تواند تنظیمات را ازراه‌دور مدیریت کند و بر فعالیت کاربر نظارت کند.</translation>
 <translation id="871560550817059752">انجام نشد - جوهر تمام شده است</translation>
+<translation id="8726019395068607495">متوقف شد - در باز است</translation>
 <translation id="8747900814994928677">تأیید تغییر</translation>
 <translation id="8919837981463578619">انجام نشد - سینی موجود نیست</translation>
 <translation id="8928727111548978589">انجام نشد - کاغذ تمام شده است</translation>

@@ -1,0 +1,5 @@
+include_rules = [
+  "+components/browser_ui/widget",
+  "+components/keyed_service",
+  "+components/leveldb_proto",
+]

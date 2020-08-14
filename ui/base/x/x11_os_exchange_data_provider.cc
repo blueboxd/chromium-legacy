@@ -97,9 +97,9 @@ void XOSExchangeDataProvider::SetString(const base::string16& text_data) {
       base::RefCountedString::TakeString(&utf8));
 
   format_map_.Insert(gfx::GetAtom(kMimeTypeText), mem);
-  format_map_.Insert(gfx::GetAtom(kText), mem);
-  format_map_.Insert(gfx::GetAtom(kString), mem);
-  format_map_.Insert(gfx::GetAtom(kUtf8String), mem);
+  format_map_.Insert(gfx::GetAtom(kMimeTypeLinuxText), mem);
+  format_map_.Insert(gfx::GetAtom(kMimeTypeLinuxString), mem);
+  format_map_.Insert(gfx::GetAtom(kMimeTypeLinuxUtf8String), mem);
 }
 
 void XOSExchangeDataProvider::SetURL(const GURL& url,

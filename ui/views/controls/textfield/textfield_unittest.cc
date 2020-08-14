@@ -3164,27 +3164,40 @@ TEST_F(TextfieldTest,
   EXPECT_EQ(composition.text, text);
 }
 
+TEST_F(TextfieldTest, ClearAutocorrectRange) {
+  InitTextfield();
+  textfield_->InsertText(UTF8ToUTF16("Initial txt"));
+  textfield_->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
+                                  gfx::Range(8, 11));
+
+  EXPECT_EQ(textfield_->GetText(), UTF8ToUTF16("Initial text replacement"));
+  EXPECT_EQ(textfield_->GetAutocorrectRange(), gfx::Range(8, 24));
+
+  textfield_->ClearAutocorrectRange();
+
+  EXPECT_EQ(textfield_->GetAutocorrectRange(), gfx::Range());
+}
+
 TEST_F(TextfieldTest, GetAutocorrectCharacterBoundsTest) {
   InitTextfield();
-  ui::TextInputClient* client = textfield_;
 
-  client->InsertText(UTF8ToUTF16("hello placeholder text"));
-  client->SetAutocorrectRange(ASCIIToUTF16("longlonglongtext"),
-                              gfx::Range(3, 10));
+  textfield_->InsertText(UTF8ToUTF16("hello placeholder text"));
+  textfield_->SetAutocorrectRange(ASCIIToUTF16("longlonglongtext"),
+                                  gfx::Range(3, 10));
 
-  EXPECT_EQ(client->GetAutocorrectRange(), gfx::Range(3, 19));
+  EXPECT_EQ(textfield_->GetAutocorrectRange(), gfx::Range(3, 19));
 
-  gfx::Rect rect_for_long_text = client->GetAutocorrectCharacterBounds();
+  gfx::Rect rect_for_long_text = textfield_->GetAutocorrectCharacterBounds();
 
   // Clear the text
-  client->DeleteRange(gfx::Range(0, 99));
+  textfield_->DeleteRange(gfx::Range(0, 99));
 
-  client->InsertText(UTF8ToUTF16("hello placeholder text"));
-  client->SetAutocorrectRange(ASCIIToUTF16("short"), gfx::Range(3, 10));
+  textfield_->InsertText(UTF8ToUTF16("hello placeholder text"));
+  textfield_->SetAutocorrectRange(ASCIIToUTF16("short"), gfx::Range(3, 10));
 
-  EXPECT_EQ(client->GetAutocorrectRange(), gfx::Range(3, 8));
+  EXPECT_EQ(textfield_->GetAutocorrectRange(), gfx::Range(3, 8));
 
-  gfx::Rect rect_for_short_text = client->GetAutocorrectCharacterBounds();
+  gfx::Rect rect_for_short_text = textfield_->GetAutocorrectCharacterBounds();
 
   EXPECT_LT(rect_for_short_text.x(), rect_for_long_text.x());
   EXPECT_EQ(rect_for_short_text.y(), rect_for_long_text.y());

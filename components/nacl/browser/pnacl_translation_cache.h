@@ -29,7 +29,7 @@ class DrainableIOBuffer;
 
 namespace pnacl {
 typedef base::OnceCallback<void(int)> CompletionOnceCallback;
-typedef base::Callback<void(int, scoped_refptr<net::DrainableIOBuffer>)>
+typedef base::OnceCallback<void(int, scoped_refptr<net::DrainableIOBuffer>)>
     GetNexeCallback;
 class PnaclTranslationCacheEntry;
 extern const int kMaxMemCacheSize;
@@ -62,7 +62,7 @@ class PnaclTranslationCache
   // Retrieve the nexe from the translation cache. Write the data into |nexe|
   // and call |callback|, passing a result code (0 on success and <0 otherwise),
   // and a DrainableIOBuffer with the data.
-  void GetNexe(const std::string& key, const GetNexeCallback& callback);
+  void GetNexe(const std::string& key, GetNexeCallback callback);
 
   // Return the number of entries in the cache backend.
   int Size();

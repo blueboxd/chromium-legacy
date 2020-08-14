@@ -13,7 +13,6 @@
 #include "chrome/browser/notifications/notification_platform_bridge_delegate.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/notification.mojom.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 
@@ -100,9 +99,12 @@ class NotificationPlatformBridgeLacros::RemoteNotificationDelegate
 };
 
 NotificationPlatformBridgeLacros::NotificationPlatformBridgeLacros(
-    NotificationPlatformBridgeDelegate* delegate)
-    : bridge_delegate_(delegate) {
+    NotificationPlatformBridgeDelegate* delegate,
+    mojo::Remote<crosapi::mojom::MessageCenter>* message_center_remote)
+    : bridge_delegate_(delegate),
+      message_center_remote_(message_center_remote) {
   DCHECK(bridge_delegate_);
+  DCHECK(message_center_remote_);
 }
 
 NotificationPlatformBridgeLacros::~NotificationPlatformBridgeLacros() = default;
@@ -131,8 +133,7 @@ void NotificationPlatformBridgeLacros::Display(
 
   auto pending_notification = std::make_unique<RemoteNotificationDelegate>(
       notification.id(), bridge_delegate_, weak_factory_.GetWeakPtr());
-  chromeos::LacrosChromeServiceImpl::Get()
-      ->message_center_remote()
+  (*message_center_remote_)
       ->DisplayNotification(std::move(note),
                             pending_notification->BindNotificationDelegate());
   remote_notifications_[notification.id()] = std::move(pending_notification);
@@ -141,9 +142,7 @@ void NotificationPlatformBridgeLacros::Display(
 void NotificationPlatformBridgeLacros::Close(
     Profile* profile,
     const std::string& notification_id) {
-  chromeos::LacrosChromeServiceImpl::Get()
-      ->message_center_remote()
-      ->CloseNotification(notification_id);
+  (*message_center_remote_)->CloseNotification(notification_id);
   // |remote_notifications_| is cleaned up after the remote notification closes
   // and notifies us via the delegate.
 }

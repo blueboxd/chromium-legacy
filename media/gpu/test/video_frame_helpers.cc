@@ -41,6 +41,47 @@ namespace {
     }                                                  \
   } while (0)
 
+// Split 16-bit UV plane to 16bit U plane and 16 bit V plane.
+void SplitUVRow_16(const uint16_t* src_uv,
+                   uint16_t* dst_u,
+                   uint16_t* dst_v,
+                   int width_in_samples) {
+  for (int i = 0; i < width_in_samples; i++) {
+    dst_u[i] = src_uv[0];
+    dst_v[i] = src_uv[1];
+    src_uv += 2;
+  }
+}
+
+// Convert 16 bit NV12 to 16 bit I420. The strides in these arguments are in
+// bytes.
+void P016LEToI420P016(const uint8_t* src_y,
+                      int src_stride_y,
+                      const uint8_t* src_uv,
+                      int src_stride_uv,
+                      uint8_t* dst_y,
+                      int dst_stride_y,
+                      uint8_t* dst_u,
+                      int dst_stride_u,
+                      uint8_t* dst_v,
+                      int dst_stride_v,
+                      int width,
+                      int height) {
+  libyuv::CopyPlane_16(reinterpret_cast<const uint16_t*>(src_y),
+                       src_stride_y / 2, reinterpret_cast<uint16_t*>(dst_y),
+                       dst_stride_y / 2, width, height);
+  const int half_width = (width + 1) / 2;
+  const int half_height = (height + 1) / 2;
+  for (int i = 0; i < half_height; i++) {
+    SplitUVRow_16(reinterpret_cast<const uint16_t*>(src_uv),
+                  reinterpret_cast<uint16_t*>(dst_u),
+                  reinterpret_cast<uint16_t*>(dst_v), half_width);
+    dst_u += dst_stride_u;
+    dst_v += dst_stride_v;
+    src_uv += src_stride_uv;
+  }
+}
+
 bool ConvertVideoFrameToI420(const VideoFrame* src_frame,
                              VideoFrame* dst_frame) {
   ASSERT_TRUE_OR_RETURN(src_frame->visible_rect() == dst_frame->visible_rect(),
@@ -88,6 +129,31 @@ bool ConvertVideoFrameToI420(const VideoFrame* src_frame,
       LOG(ERROR) << "Unsupported input format: " << src_frame->format();
       return false;
   }
+}
+
+bool ConvertVideoFrameToYUV420P10(const VideoFrame* src_frame,
+                                  VideoFrame* dst_frame) {
+  if (src_frame->format() != PIXEL_FORMAT_P016LE) {
+    LOG(ERROR) << "Unsupported input format: "
+               << VideoPixelFormatToString(src_frame->format());
+    return false;
+  }
+
+  const auto& visible_rect = src_frame->visible_rect();
+  const int width = visible_rect.width();
+  const int height = visible_rect.height();
+  uint8_t* const dst_y = dst_frame->data(VideoFrame::kYPlane);
+  uint8_t* const dst_u = dst_frame->data(VideoFrame::kUPlane);
+  uint8_t* const dst_v = dst_frame->data(VideoFrame::kVPlane);
+  const int dst_stride_y = dst_frame->stride(VideoFrame::kYPlane);
+  const int dst_stride_u = dst_frame->stride(VideoFrame::kUPlane);
+  const int dst_stride_v = dst_frame->stride(VideoFrame::kVPlane);
+  P016LEToI420P016(src_frame->data(VideoFrame::kYPlane),
+                   src_frame->stride(VideoFrame::kYPlane),
+                   src_frame->data(VideoFrame::kUVPlane),
+                   src_frame->stride(VideoFrame::kUVPlane), dst_y, dst_stride_y,
+                   dst_u, dst_stride_u, dst_v, dst_stride_v, width, height);
+  return true;
 }
 
 bool ConvertVideoFrameToARGB(const VideoFrame* src_frame,
@@ -187,10 +253,12 @@ bool ConvertVideoFrame(const VideoFrame* src_frame, VideoFrame* dst_frame) {
   if (dst_frame->storage_type() != VideoFrame::STORAGE_OWNED_MEMORY)
     LOG(WARNING) << "writing into non-owned memory";
 
-  // Only I420 and ARGB are currently supported as output formats.
+  // Only I420, YUV420P10 and ARGB are currently supported as output formats.
   switch (dst_frame->format()) {
     case PIXEL_FORMAT_I420:
       return ConvertVideoFrameToI420(src_frame, dst_frame);
+    case PIXEL_FORMAT_YUV420P10:
+      return ConvertVideoFrameToYUV420P10(src_frame, dst_frame);
     case PIXEL_FORMAT_ARGB:
       return ConvertVideoFrameToARGB(src_frame, dst_frame);
     default:

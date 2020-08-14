@@ -94,13 +94,13 @@ bool SingleScrollbarAnimationControllerThinning::Animate(base::TimeTicks now) {
 
 float SingleScrollbarAnimationControllerThinning::AnimationProgressAtTime(
     base::TimeTicks now) {
-  base::TimeDelta delta = now - last_awaken_time_;
-  float progress = delta.InSecondsF() / Duration().InSecondsF();
-  return base::ClampToRange(progress, 0.0f, 1.0f);
-}
+  // In tests, there may be no duration; snap to the end in such a case.
+  if (thinning_duration_.is_zero())
+    return 1.0f;
 
-const base::TimeDelta& SingleScrollbarAnimationControllerThinning::Duration() {
-  return thinning_duration_;
+  base::TimeDelta delta = now - last_awaken_time_;
+  float progress = delta / thinning_duration_;
+  return base::ClampToRange(progress, 0.0f, 1.0f);
 }
 
 void SingleScrollbarAnimationControllerThinning::RunAnimationFrame(

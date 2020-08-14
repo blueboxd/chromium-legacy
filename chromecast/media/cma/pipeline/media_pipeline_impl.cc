@@ -132,15 +132,16 @@ void MediaPipelineImpl::Initialize(
         new BufferingConfig(low_threshold, high_threshold));
     buffering_controller_.reset(new BufferingController(
         buffering_config,
-        base::Bind(&MediaPipelineImpl::OnBufferingNotification, weak_this_)));
+        base::BindRepeating(&MediaPipelineImpl::OnBufferingNotification,
+                            weak_this_)));
   }
 }
 
-void MediaPipelineImpl::SetClient(const MediaPipelineClient& client) {
+void MediaPipelineImpl::SetClient(MediaPipelineClient client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!client.error_cb.is_null());
   DCHECK(!client.buffering_state_cb.is_null());
-  client_ = client;
+  client_ = std::move(client);
 }
 
 void MediaPipelineImpl::SetCdm(const base::UnguessableToken* cdm_id) {
@@ -164,7 +165,7 @@ void MediaPipelineImpl::SetCdm(CastCdmContext* cdm_context) {
 
 ::media::PipelineStatus MediaPipelineImpl::InitializeAudio(
     const ::media::AudioDecoderConfig& config,
-    const AvPipelineClient& client,
+    AvPipelineClient client,
     std::unique_ptr<CodedFrameProvider> frame_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!audio_decoder_);
@@ -173,7 +174,8 @@ void MediaPipelineImpl::SetCdm(CastCdmContext* cdm_context) {
   if (!audio_decoder_) {
     return ::media::PIPELINE_ERROR_ABORT;
   }
-  audio_pipeline_ = std::make_unique<AudioPipelineImpl>(audio_decoder_, client);
+  audio_pipeline_ =
+      std::make_unique<AudioPipelineImpl>(audio_decoder_, std::move(client));
   if (cdm_context_)
     audio_pipeline_->SetCdm(cdm_context_);
   ::media::PipelineStatus status =
@@ -189,7 +191,7 @@ void MediaPipelineImpl::SetCdm(CastCdmContext* cdm_context) {
 
 ::media::PipelineStatus MediaPipelineImpl::InitializeVideo(
     const std::vector<::media::VideoDecoderConfig>& configs,
-    const VideoPipelineClient& client,
+    VideoPipelineClient client,
     std::unique_ptr<CodedFrameProvider> frame_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!video_decoder_);
@@ -198,7 +200,8 @@ void MediaPipelineImpl::SetCdm(CastCdmContext* cdm_context) {
   if (!video_decoder_) {
     return ::media::PIPELINE_ERROR_ABORT;
   }
-  video_pipeline_.reset(new VideoPipelineImpl(video_decoder_, client));
+  video_pipeline_.reset(
+      new VideoPipelineImpl(video_decoder_, std::move(client)));
   if (cdm_context_)
     video_pipeline_->SetCdm(cdm_context_);
   return video_pipeline_->Initialize(configs, std::move(frame_provider));
@@ -287,11 +290,11 @@ void MediaPipelineImpl::Flush(base::OnceClosure flush_cb) {
   pending_flush_task_->done_cb = std::move(flush_cb);
   if (audio_pipeline_) {
     audio_pipeline_->Flush(
-        base::Bind(&MediaPipelineImpl::OnFlushDone, weak_this_, true));
+        base::BindOnce(&MediaPipelineImpl::OnFlushDone, weak_this_, true));
   }
   if (video_pipeline_) {
     video_pipeline_->Flush(
-        base::Bind(&MediaPipelineImpl::OnFlushDone, weak_this_, false));
+        base::BindOnce(&MediaPipelineImpl::OnFlushDone, weak_this_, false));
   }
 }
 
@@ -578,7 +581,7 @@ void MediaPipelineImpl::OnError(::media::PipelineStatus error) {
       "Cast.Platform.Error", error);
 
   if (!client_.error_cb.is_null())
-    client_.error_cb.Run(error);
+    std::move(client_.error_cb).Run(error);
 }
 
 void MediaPipelineImpl::ResetBitrateState() {

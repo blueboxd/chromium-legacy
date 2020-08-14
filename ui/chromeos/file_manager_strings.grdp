@@ -975,6 +975,13 @@
     Could not format <ph name="DRIVE_NAME">$1<ex>My USB</ex></ph>
   </message>
 
+  <message name="IDS_FILE_BROWSER_PASSWORD_DIALOG_TITLE" desc="Title of the password prompt dialog.">
+    Password
+  </message>
+  <message name="IDS_FILE_BROWSER_PASSWORD_DIALOG_CONFIRM_LABEL" desc="Label for the confirm button">
+    Unlock
+  </message>
+
   <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_TITLE" desc="Title of the suggest app dialog, which shows the list of the apps which supports the selected file.">
     Select an app to open this file
   </message>

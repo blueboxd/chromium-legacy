@@ -305,10 +305,12 @@ void DecryptingDemuxerStream::OnBufferDecrypted(
 
   DCHECK_EQ(status, Decryptor::kSuccess);
 
-  // Copy the key frame flag from the encrypted to decrypted buffer, assuming
-  // that the decryptor initialized the flag to false.
-  if (pending_buffer_to_decrypt_->is_key_frame())
-    decrypted_buffer->set_is_key_frame(true);
+  // Copy the key frame flag and duration from the encrypted to decrypted
+  // buffer.
+  // TODO(crbug.com/1116263): Ensure all fields are copied by Decryptor.
+  decrypted_buffer->set_is_key_frame(
+      pending_buffer_to_decrypt_->is_key_frame());
+  decrypted_buffer->set_duration(pending_buffer_to_decrypt_->duration());
 
   pending_buffer_to_decrypt_ = nullptr;
   state_ = kIdle;

@@ -100,6 +100,12 @@ void ChromeClient::SetWindowRectWithAdjustment(const IntRect& pending_rect,
                  screen.MaxY() - size_for_constraining_move.Height())));
   }
 
+  // Coarsely measure whether coordinates may be requesting another screen.
+  if (!screen.Contains(window)) {
+    UseCounter::Count(frame.DomWindow(),
+                      WebFeature::kDOMWindowSetWindowRectCrossScreen);
+  }
+
   SetWindowRect(window, frame);
 }
 

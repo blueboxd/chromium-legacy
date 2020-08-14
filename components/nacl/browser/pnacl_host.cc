@@ -150,7 +150,7 @@ void PnaclHost::Init() {
   cache_state_ = CacheInitializing;
   int rv = disk_cache_->InitOnDisk(
       cache_path,
-      base::Bind(&PnaclHost::OnCacheInitialized, base::Unretained(this)));
+      base::BindOnce(&PnaclHost::OnCacheInitialized, base::Unretained(this)));
   if (rv != net::ERR_IO_PENDING)
     OnCacheInitialized(rv);
 }
@@ -168,11 +168,11 @@ void PnaclHost::InitForTest(base::FilePath temp_dir, bool in_memory) {
   int rv;
   if (in_memory) {
     rv = disk_cache_->InitInMemory(
-        base::Bind(&PnaclHost::OnCacheInitialized, base::Unretained(this)));
+        base::BindOnce(&PnaclHost::OnCacheInitialized, base::Unretained(this)));
   } else {
     rv = disk_cache_->InitOnDisk(
         temp_dir,
-        base::Bind(&PnaclHost::OnCacheInitialized, base::Unretained(this)));
+        base::BindOnce(&PnaclHost::OnCacheInitialized, base::Unretained(this)));
   }
   if (rv != net::ERR_IO_PENDING)
     OnCacheInitialized(rv);
@@ -271,11 +271,11 @@ void PnaclHost::SendCacheQueryAndTempFileRequest(const std::string& cache_key,
                                                  const TranslationID& id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   pending_backend_operations_++;
-  disk_cache_->GetNexe(cache_key, base::Bind(&PnaclHost::OnCacheQueryReturn,
-                                             base::Unretained(this), id));
+  disk_cache_->GetNexe(cache_key, base::BindOnce(&PnaclHost::OnCacheQueryReturn,
+                                                 base::Unretained(this), id));
 
-  CreateTemporaryFile(
-      base::Bind(&PnaclHost::OnTempFileReturn, base::Unretained(this), id));
+  CreateTemporaryFile(base::BindRepeating(&PnaclHost::OnTempFileReturn,
+                                          base::Unretained(this), id));
 }
 
 // Callback from the translation cache query. |id| is bound from
@@ -488,8 +488,8 @@ void PnaclHost::StoreTranslatedNexe(
   }
   pending_backend_operations_++;
   disk_cache_->StoreNexe(it->second.cache_key, buffer.get(),
-                         base::Bind(&PnaclHost::OnTranslatedNexeStored,
-                                    base::Unretained(this), it->first));
+                         base::BindOnce(&PnaclHost::OnTranslatedNexeStored,
+                                        base::Unretained(this), it->first));
 }
 
 // After we know the nexe has been stored, we can clean up, and unblock any
@@ -523,8 +523,9 @@ void PnaclHost::RequeryMatchingTranslations(const std::string& key) {
       // something goes wrong, it will just handle it like a miss.
       it->second.got_cache_reply = false;
       pending_backend_operations_++;
-      disk_cache_->GetNexe(key, base::Bind(&PnaclHost::OnCacheQueryReturn,
-                                           base::Unretained(this), it->first));
+      disk_cache_->GetNexe(key,
+                           base::BindOnce(&PnaclHost::OnCacheQueryReturn,
+                                          base::Unretained(this), it->first));
     }
   }
 }
@@ -543,8 +544,8 @@ void PnaclHost::OnBufferCopiedToTempFile(const TranslationID& id,
   if (file_error == -1) {
     // Write error on the temp file. Request a new file and start over.
     CloseBaseFile(std::move(*file.get()));
-    CreateTemporaryFile(base::Bind(&PnaclHost::OnTempFileReturn,
-                                   base::Unretained(this), entry->first));
+    CreateTemporaryFile(base::BindRepeating(
+        &PnaclHost::OnTempFileReturn, base::Unretained(this), entry->first));
     return;
   }
   entry->second.callback.Run(*file.get(), true);

@@ -123,6 +123,14 @@ void ServiceWorkerStorageControlImpl::LazyInitializeForTest() {
   storage_->LazyInitializeForTest();
 }
 
+void ServiceWorkerStorageControlImpl::Disable() {
+  storage_->Disable();
+}
+
+void ServiceWorkerStorageControlImpl::Delete(DeleteCallback callback) {
+  storage_->DeleteAndStartOver(std::move(callback));
+}
+
 void ServiceWorkerStorageControlImpl::GetRegisteredOrigins(
     GetRegisteredOriginsCallback callback) {
   storage_->GetRegisteredOrigins(std::move(callback));

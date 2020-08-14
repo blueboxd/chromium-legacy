@@ -10,13 +10,12 @@
 
 #include "ipc/ipc_message_macros.h"
 #include "printing/mojom/print.mojom.h"
-#include "printing/print_job_constants.h"
 
 // TODO(dgn) move all those macros back to
 // components/printing/common/print_messages.h when they can be handled by a
 // single generator. (main tracking bug: crbug.com/450822)
-IPC_ENUM_TRAITS_MAX_VALUE(printing::MarginType,
-                          printing::MARGIN_TYPE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(printing::mojom::MarginType,
+                          printing::mojom::MarginType::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(printing::mojom::DuplexMode,
                               printing::mojom::DuplexMode::kUnknownDuplexMode,
                               printing::mojom::DuplexMode::kShortEdge)

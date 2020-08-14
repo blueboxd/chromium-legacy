@@ -458,6 +458,7 @@ static_library("ui") {
     "//components/omnibox/browser",
     "//components/omnibox/browser:vector_icons",
     "//components/onc",
+    "//components/optimization_guide",
     "//components/paint_preview/buildflags",
     "//components/password_manager/content/browser",
     "//components/password_manager/core/browser",

@@ -1949,6 +1949,17 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
     // not counted.
     UseCounter::Count(*incumbent_window,
                       WebFeature::kDOMWindowOpenPositioningFeatures);
+
+    // Coarsely measure whether coordinates may be requesting another screen.
+    ChromeClient& chrome_client = GetFrame()->GetChromeClient();
+    const IntRect screen(chrome_client.GetScreenInfo(*GetFrame()).rect);
+    const IntRect window(window_features.x, window_features.y,
+                         window_features.width, window_features.height);
+    if (!screen.Contains(window)) {
+      UseCounter::Count(
+          *incumbent_window,
+          WebFeature::kDOMWindowOpenPositioningFeaturesCrossScreen);
+    }
   }
 
   if (!completed_url.IsEmpty() || result.new_window)

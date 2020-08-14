@@ -429,12 +429,12 @@ bool PDFShouldDisableScaling(blink::WebLocalFrame* frame,
 }
 #endif
 
-MarginType GetMarginsForPdf(blink::WebLocalFrame* frame,
-                            const blink::WebNode& node,
-                            const mojom::PrintParams& params) {
+mojom::MarginType GetMarginsForPdf(blink::WebLocalFrame* frame,
+                                   const blink::WebNode& node,
+                                   const mojom::PrintParams& params) {
   return PDFShouldDisableScaling(frame, node, params, false)
-             ? NO_MARGINS
-             : PRINTABLE_AREA_MARGINS;
+             ? mojom::MarginType::kNoMargins
+             : mojom::MarginType::kPrintableAreaMargins;
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -1420,8 +1420,9 @@ void PrintRenderFrameHelper::GetPageSizeAndContentAreaFromPageLayout(
 void PrintRenderFrameHelper::UpdateFrameMarginsCssInfo(
     const base::DictionaryValue& settings) {
   base::Optional<int> margins_type = settings.FindIntKey(kSettingMarginsType);
-  ignore_css_margins_ =
-      margins_type.value_or(DEFAULT_MARGINS) != DEFAULT_MARGINS;
+  ignore_css_margins_ = margins_type.value_or(static_cast<int>(
+                            mojom::MarginType::kDefaultMargins)) !=
+                        static_cast<int>(mojom::MarginType::kDefaultMargins);
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -2154,7 +2155,8 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
   } else {
     modified_job_settings.MergeDictionary(&passed_job_settings);
     modified_job_settings.SetBoolKey(kSettingHeaderFooterEnabled, false);
-    modified_job_settings.SetIntKey(kSettingMarginsType, NO_MARGINS);
+    modified_job_settings.SetIntKey(
+        kSettingMarginsType, static_cast<int>(mojom::MarginType::kNoMargins));
     job_settings = &modified_job_settings;
   }
 
@@ -2216,7 +2218,7 @@ void PrintRenderFrameHelper::GetPrintSettingsFromUser(
   params.cookie = print_pages_params_->params.document_cookie;
   params.has_selection = frame->HasSelection();
   params.expected_pages_count = expected_pages_count;
-  MarginType margin_type = DEFAULT_MARGINS;
+  mojom::MarginType margin_type = mojom::MarginType::kDefaultMargins;
   if (IsPrintingNodeOrPdfFrame(frame, node))
     margin_type = GetMarginsForPdf(frame, node, print_pages_params_->params);
   params.margin_type = margin_type;

@@ -48,6 +48,7 @@
 <translation id="2123055963409958220">Informa da <ph name="BEGIN_LINK" />configuración actual<ph name="END_LINK" /> para axudar a mellorar Chrome</translation>
 <translation id="2151406531797534936">Reinicia Chrome agora</translation>
 <translation id="2246246234298806438">Google Chrome non pode mostrar a vista previa de impresión se falta o visor de PDF integrado.</translation>
+<translation id="226038281051944330">Iniciaches sesión cunha conta nova no espazo de <ph name="EXISTING_USER" />. Queres crear un espazo de Chrome novo para <ph name="NEW_USER" /> co fin de manter separados os datos?</translation>
 <translation id="2290014774651636340">Non se atopan as claves da API de Google. Desactivaranse algunhas funcións de Google Chrome.</translation>
 <translation id="2290095356545025170">Estás seguro de que queres desinstalar Google Chrome?</translation>
 <translation id="2309047409763057870">Esta é unha instalación secundaria de Google Chrome e non se pode converter no teu navegador predeterminado.</translation>
@@ -146,12 +147,14 @@
 <translation id="4895437082222824641">Abrir ligazón nunha nova &amp;pestana de Chrome</translation>
 <translation id="4953650215774548573">Establecer Google Chrome como navegador predeterminado</translation>
 <translation id="495931528404527476">En Chrome</translation>
+<translation id="4960472897514318257">Iniciaches sesión cunha conta do traballo. Queres crear un espazo de Chrome novo para <ph name="NEW_USER" /> co fin de manter separados os teus datos persoais?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Reinicia Chrome OS</translation>
 <translation id="5132929315877954718">Descubre aplicacións, xogos, extensións e temas fantásticos para Google Chrome.</translation>
 <translation id="5170938038195470297">Non se pode utilizar o teu perfil porque pertence a unha versión máis recente de Google Chrome.
 
 É posible que algunhas funcións non estean dispoñibles. Especifica un directorio de perfil diferente ou utiliza unha versión máis recente de Chrome.</translation>
+<translation id="5171117065011130146">Queres crear un espazo de traballo de Chrome novo?</translation>
 <translation id="5193136243808726294">Google Chrome OS non pode abrir esta páxina.</translation>
 <translation id="5251420635869119124">Os invitados poden utilizar Chrome sen perder información.</translation>
 <translation id="532046782124376502">Advertencia: Google Chrome non pode evitar que as extensións rexistren o teu historial de navegación. Para desactivar esta extensión no modo de incógnito, desactiva a caixa correspondente a esta opción.</translation>
@@ -266,7 +269,9 @@ Google Chrome non pode recuperar a túa configuración.</translation>
 <translation id="8823341990149967727">Chrome está desactualizado</translation>
 <translation id="8834965163890861871">Google Chrome está tentando editar os contrasinais. Escribe o teu contrasinal de Windows para permitir esta acción.</translation>
 <translation id="884296878221830158">Tamén controla que páxina se mostra ao iniciar Chrome ou ao facer clic no botón Inicio.</translation>
+<translation id="8859948767482842016">Iniciaches sesión cunha conta do traballo no espazo de <ph name="EXISTING_USER" />. Queres crear un espazo de Chrome novo para <ph name="WORK_DOMAIN" /> co fin de manter separados os datos?</translation>
 <translation id="8862326446509486874">Non tes os dereitos apropiados para efectuar a instalación a nivel do sistema. Tenta volver executar o instalador como administrador.</translation>
+<translation id="8877586659207810298">Queres crear un espazo de Chrome novo para <ph name="NEW_USER" />?</translation>
 <translation id="8914504000324227558">Reiniciar Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Hai unha actualización de Chrome dispoñible}=1{Hai unha actualización de Chrome dispoñible}other{Hai unha actualización de Chrome que leva dispoñible # días}}</translation>
 <translation id="9026991721384951619">Chrome OS non puido sincronizar os teus datos debido a que a información de inicio de sesión na túa conta está caducada.</translation>

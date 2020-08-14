@@ -41,6 +41,8 @@ class CmaAudioOutput {
   CmaAudioOutput& operator=(const CmaAudioOutput&) = delete;
   ~CmaAudioOutput();
 
+  void SetObserver(CmaBackend::AudioDecoder::Observer* observer);
+
   bool Start(int64_t start_pts);
   void Stop();
   bool Pause();

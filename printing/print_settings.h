@@ -88,8 +88,10 @@ class PRINTING_EXPORT PrintSettings {
   const PageMargins& requested_custom_margins_in_points() const {
     return requested_custom_margins_in_points_;
   }
-  void set_margin_type(MarginType margin_type) { margin_type_ = margin_type; }
-  MarginType margin_type() const { return margin_type_; }
+  void set_margin_type(mojom::MarginType margin_type) {
+    margin_type_ = margin_type;
+  }
+  mojom::MarginType margin_type() const { return margin_type_; }
 
   // Updates the orientation and flip the page if needed.
   void SetOrientation(bool landscape);
@@ -245,7 +247,7 @@ class PRINTING_EXPORT PrintSettings {
   bool selection_only_;
 
   // Indicates what kind of margins should be applied to the printable area.
-  MarginType margin_type_;
+  mojom::MarginType margin_type_;
 
   // Strings to be printed as headers and footers if requested by the user.
   base::string16 title_;

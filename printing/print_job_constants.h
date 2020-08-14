@@ -149,15 +149,6 @@ enum ColorModel {
   COLOR_MODEL_LAST = XEROX_XRXCOLOR_BW
 };
 
-// What kind of margins to use.
-enum MarginType {
-  DEFAULT_MARGINS,  // Default varies depending on headers being enabled or not
-  NO_MARGINS,
-  PRINTABLE_AREA_MARGINS,
-  CUSTOM_MARGINS,
-  MARGIN_TYPE_LAST = CUSTOM_MARGINS
-};
-
 // Must match print_preview.ScalingType in
 // chrome/browser/resources/print_preview/data/scaling.js
 enum ScalingType {

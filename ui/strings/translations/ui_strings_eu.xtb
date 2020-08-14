@@ -41,6 +41,7 @@
 <translation id="1871244248791675517">Txertatu</translation>
 <translation id="1884435127456172652">% <ph name="NUMBER" /></translation>
 <translation id="1901303067676059328">Hautatu &amp;guztiak</translation>
+<translation id="19085484004813472">Eginbide berri bat da hau</translation>
 <translation id="2006524834898217237">Ziurtatu gailua Internetera konektatuta dagoela.</translation>
 <translation id="208586643495776849">Saiatu berriro</translation>
 <translation id="2090963878406559571">Zenbaki bat <ph name="ORIGIN" /> helbidetik Android-eko telefonora bidaltzeko, joan ezarpenetara eta <ph name="TROUBLESHOOT_LINK" /> bi gailuetan.</translation>
@@ -151,6 +152,7 @@
 <translation id="5768079895599174203">{DAYS,plural, =1{1 egun eta }other{# egun eta }}</translation>
 <translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 urte barru}other{# urte barru}}</translation>
+<translation id="588258955323874662">Pantaila osoa</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 segundo gelditzen da}other{# segundo gelditzen dira}}</translation>
 <translation id="5941711191222866238">Minimizatu</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ordu}other{# ordu}}</translation>

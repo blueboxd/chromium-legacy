@@ -390,6 +390,12 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 
       Als je het beleid instelt op False of niet instelt, worden pdf-bestanden geopend, tenzij gebruikers de pdf-plug-in uitschakelen.</translation>
 <translation id="1608755754295374538">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van audio</translation>
+<translation id="1611394564825535541">Hiermee kun je bepalen of gebruikers toegang hebben tot printers die niet van het bedrijf zijn.
+
+      Als je het beleid instelt op True of helemaal niet instelt, kunnen gebruikers hun eigen printers toevoegen, configureren en ermee afdrukken.
+
+      Als je het beleid instelt op False, kunnen gebruikers geen eigen printers toevoegen, configureren en ermee afdrukken. In dat geval kunnen ze ook niet afdrukken met eerder geconfigureerde printers.
+      </translation>
 <translation id="1615221548356595305">Toestaan dat HTTP/2-verbindingen voor deze hosts kunnen worden samengevoegd, zelfs als client certificates worden gebruikt</translation>
 <translation id="1615855314789673708">Biedt een wilco DTC-configuratie (controller voor diagnostische gegevens en telemetrie).
 
@@ -656,9 +662,6 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
           </translation>
 <translation id="2030905906517501646">Zoekwoord voor standaardzoekprovider</translation>
 <translation id="203096360153626918">Dit beleid is niet van invloed op de Android-apps. Deze hebben toegang tot de modus voor volledig scherm, zelfs als dit beleid is ingesteld op <ph name="FALSE" /> (Onwaar).</translation>
-<translation id="2035306081270465868">Als je het beleid inschakelt, wordt de homepage van de vorige standaardbrowser geïmporteerd bij de eerste uitvoering. Als je het beleid uitschakelt of niet instelt, wordt de homepage niet geïmporteerd bij de eerste uitvoering.
-
-      Als gebruikers het dialoogvenster voor importeren openen, is het selectievakje voor de homepage aan- of uitgevinkt in overeenstemming met de waarde van dit beleid.</translation>
 <translation id="2040479044912658454">Modus voor afdrukrastering</translation>
 <translation id="2043749682619281558">De cursormarkering op het inlogscherm inschakelen</translation>
 <translation id="2043770014371753404">Bedrijfsprinters uitgeschakeld</translation>
@@ -1024,19 +1027,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 
           Als dit beleid niet is ingesteld, is de functie voor markering van het caret-teken in eerste instantie uitgeschakeld, maar kan de gebruiker deze op elk gewenst moment inschakelen.</translation>
 <translation id="2509919237512982967">Verouderde formulierbesturingselementen gebruiken tot M84.</translation>
-<translation id="2512630007068794030">Indien ingeschakeld, zorgt de <ph name="PRODUCT_NAME" />-functie ervoor dat webpagina's worden behouden in de huidige staat (documentstructuur, script, enzovoort) in de Back-Forward Cache bij het verlaten van de pagina.
-          Als we teruggaan naar de pagina, wordt de pagina hersteld vanuit de Back-Forward Cache, waarbij de pagina wordt weergegeven in de staat waarmee deze eerder is opgeslagen in het cachegeheugen.
-
-          Deze functie kan ervoor zorgen dat bepaalde websites niet meer werken als voor de websites niet wordt verwacht dat ze
-          worden opgeslagen in het cachegeheugen. Dit gebeurt voornamelijk bij websites die afhankelijk zijn van unload-handlers die worden
-          gestart als iemand de pagina verlaat, aangezien de unload-gebeurtenis niet wordt
-          gestuurd als de pagina wordt verlaten en deze wordt opgeslagen
-          in de Back-Forward Cache.
-
-          Als je dit beleid inschakelt of niet instelt, wordt de <ph name="PRODUCT_NAME" />-functie ingeschakeld.
-
-          Als je dit beleid uitschakelt, wordt de functie gedwongen uitgeschakeld.
-          </translation>
 <translation id="2516600974234263142">Hiermee wordt afdrukken in <ph name="PRODUCT_NAME" /> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers afdrukken.
@@ -1106,20 +1096,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="2615240493030733717">Informatie over tijdzone rapporteren</translation>
 <translation id="2623014935069176671">Wachten op initiële gebruikersactiviteit</translation>
 <translation id="262740370354162807">Verzenden van documenten naar <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
-<translation id="2627554163382448569">Hiermee worden configuraties geleverd voor zakelijke printers.
-
-      Met dit beleid kun je printerconfiguraties leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten. De indeling is gelijk aan het NativePrinters-woordenboek, aangevuld met een vereist ID- of GUID-veld per printer voor het op de witte of zwarte lijst zetten.
-
-      Het bestand mag niet groter zijn dan 5 MB en moet zijn gecodeerd in JSON-indeling. Naar schatting wordt een bestand dat ongeveer 21.000 printers bevat, gecodeerd als een bestand van 5 MB. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren.
-
-      Het bestand wordt gedownload en gecachet. Het bestand wordt opnieuw gedownload wanneer de URL of hash verandert.
-
-      Als dit beleid is ingesteld, wordt in <ph name="PRODUCT_OS_NAME" /> het bestand voor printerconfiguraties gedownload en worden printers beschikbaar gesteld in overeenstemming met <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> en <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
-
-      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten te configureren. Het is bedoeld als aanvulling op de configuratie van printers door individuele gebruikers.
-      </translation>
 <translation id="2632538643061793322">Als je het beleid instelt, kun je een lijst met URL-patronen maken om op te geven welke sites gebruikers mogen vragen om toegang tot een USB-apparaat.
 
       Als je het beleid niet instelt, is <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />, indien ingesteld, van toepassing op alle sites. Zo niet, dan gelden de persoonlijke instellingen van gebruikers.
@@ -2287,6 +2263,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="4313767483634435271">Toegewezen MAC-adres van dock van apparaat</translation>
 <translation id="4322842393287974810">Toestaan dat de kiosk-app die automatisch zonder vertraging is gestart, de <ph name="PRODUCT_OS_NAME" />-versie beheert</translation>
 <translation id="4325690621216251241">Een afmeldknop toevoegen aan de systeembalk</translation>
+<translation id="4330372709562934569">Hiermee kunnen de vermelde websites vanuit niet-beveiligde contexten verzoeken sturen naar meer-privé netwerkeindpunten.</translation>
 <translation id="4332177773549877617">Gebeurtenissen registreren voor installatie van Android-apps</translation>
 <translation id="4341199399451274159">Als <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> is ingeschakeld en je <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" /> instelt, worden de tekencoderingen gespecificeerd die worden ondersteund door de zoekprovider. Deze coderingen zijn codepaginanamen zoals UTF-8, GB2312 en ISO-8859-1. Ze worden getest in de volgorde waarin ze worden opgegeven.
 
@@ -2593,6 +2570,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       <ph name="PAGE_SIZE_NAME" /> moet een van de vermelde indelingen bevatten of 'custom' als het vereiste papierformaat niet in de lijst staat. Als de waarde 'custom' is opgegeven, moet de eigenschap <ph name="PAGE_SIZE_CUSTOM_SIZE" /> worden gespecificeerd. Dit beschrijft de gewenste hoogte en breedte in micrometers. Anders moet de eigenschap <ph name="PAGE_SIZE_CUSTOM_SIZE" /> niet worden gespecificeerd. Beleid dat deze regels schendt, wordt genegeerd.
 
       Als het paginaformaat niet beschikbaar is op de printer die de gebruiker heeft gekozen, wordt dit beleid genegeerd.</translation>
+<translation id="479290425281021210">Hiermee geef je aan of niet-beveiligde websites verzoeken mogen sturen naar meer-privé netwerkeindpunten.</translation>
 <translation id="4802744647065138872">Beperkt het aantal momentopnamen van gebruikersgegevens dat wordt bewaard voor gebruik bij een noodrollback.</translation>
 <translation id="4802905909524200151">Updategedrag voor <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware configureren</translation>
 <translation id="4804828344300125154">Altijd opnieuw opstarten na uitloggen gebruiker.</translation>
@@ -3032,6 +3010,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="5405289061476885481">Hiermee configureer je welke toetsenbordindelingen zijn toegestaan voor het inlogscherm van <ph name="PRODUCT_OS_NAME" />.
 
       Als dit beleid is ingesteld op een lijst met invoermethode-ID's, zijn de opgegeven invoermethoden beschikbaar in het inlogscherm. De eerste opgegeven invoermethode wordt vooraf geselecteerd. Hoewel een gebruikerspod is gericht op het inlogscherm, is de laatst gebruikte invoermethode van de gebruiker beschikbaar naast de invoermethoden die door dit beleid worden aangegeven. Als dit beleid niet is ingesteld, worden de invoermethoden op het inlogscherm afgeleid van de taal waarin het inlogscherm wordt weergegeven. Waarden die geen geldige invoermethode-ID's zijn, worden genegeerd.</translation>
+<translation id="5407008856008996384">Toegang tot CUPS-printers toestaan</translation>
 <translation id="5416064504563346617">Als je het beleid instelt, kun je een lijst met URL-patronen maken om op te geven welke sites gebruikers niet mogen vragen om toegang tot een USB-apparaat.
 
       Als je het beleid niet instelt, is <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />, indien ingesteld, van toepassing op alle sites. Zo niet, dan gelden de persoonlijke instellingen van de gebruiker.
@@ -3197,6 +3176,14 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
         Als het beleid niet is ingesteld of is ingesteld op 'true', kunnen gebruikers feedback naar Google sturen via Menu -&gt; Hulp -&gt; Een probleem melden, of hier een toetsencombinatie voor gebruiken.</translation>
 <translation id="5579179012798142131">Tenzij de kortstondige modus of toegang tot meerdere accounts is ingeschakeld tijdens de sessie van de gebruiker, wordt ARC ingeschakeld als ArcEnabled wordt ingesteld op True. Als het beleid wordt ingesteld op False of niet wordt ingesteld, kunnen zakelijke gebruikers ARC niet gebruiken.</translation>
+<translation id="5582429816116769246">Hiermee kun je bepalen of gebruikers toegang hebben tot printers die niet van het bedrijf zijn.
+
+      Als je het beleid instelt op True of helemaal niet instelt, kunnen gebruikers hun systeemeigen printers toevoegen, configureren en ermee afdrukken.
+
+      Als je het beleid instelt op False, kunnen gebruikers geen systeemeigen printers toevoegen, configureren en ermee afdrukken. In dat geval kunnen ze ook niet afdrukken met eerder geconfigureerde systeemeigen printers.
+
+      Dit beleid is verouderd. Gebruik in plaats daarvan <ph name="USER_PRINTERS_ALLOWED" />.
+      </translation>
 <translation id="5583806683960333345">Als deze instelling is ingeschakeld, kunnen gebruikers instant-tethering gebruiken, waarmee hun Google-telefoon mobiele data kan delen met hun apparaat.
 
       Als deze instelling is uitgeschakeld, kunnen gebruikers instant-tethering niet gebruiken.
@@ -4022,6 +4009,13 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als je het beleid uitschakelt, wordt in plaats daarvan een foutmelding weergegeven.</translation>
 <translation id="6821268164692776674">De bestemmingen <ph name="CLOUD_PRINT_NAME" /> en 'Opslaan in Google Drive'</translation>
+<translation id="6823297401452148231">Hiermee kun je bepalen of niet-beveiligde websites verzoeken mogen sturen aan meer-privé netwerkeindpunten. Deze instelling bepaalt bijvoorbeeld of http://evil.com verzoeken mag sturen naar zowel localhost als eindpunten in het privénetwerk, die geen van beide toegankelijk zijn via het openbare internet. Bekijk https://wicg.github.io/cors-rfc1918/#goals voor meer informatie.
+
+          Als je dit beleid niet instelt, hangt het standaardgedrag voor verzoeken vanuit niet-beveiligde contexten naar meer-privé netwerkeindpunten af van de persoonlijke configuratie van de gebruiker voor de functie <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, die kan worden ingesteld via een online test of via de opdrachtregel.
+
+          Als dit beleid is ingesteld op False, mogen niet-beveiligde websites geen verzoeken sturen naar meer-privé netwerkeindpunten. Dit betekent dat niet-beveiligde websites die worden geleverd via openbare IP-adressen, geen verzoeken mogen sturen naar zowel localhost als privé-IP-adressen. Niet-beveiligde websites die worden geleverd via openbare IP-adressen, mogen geen verzoeken sturen naar localhost.
+
+          Als je dit beleid instelt op True, mogen niet-beveiligde websites verzoeken sturen naar elk willekeurig netwerkeindpunt (hiervoor worden andere cross-origin-checks uitgevoerd).</translation>
 <translation id="6833064854262015312">Als je het beleid instelt op True, wordt de modus voor hoog contrast ingeschakeld op het inlogscherm. Als je het beleid instelt op False, wordt de modus voor hoog contrast uitgeschakeld op het inlogscherm.
 
       Als je dit beleid instelt, kunnen gebruikers de modus voor hoog contrast tijdelijk wijzigen (dat wil zeggen in- of uitschakelen). Als het inlogscherm opnieuw wordt geladen of een minuut lang niet wordt gebruikt, wordt de oorspronkelijke status hersteld.
@@ -5676,6 +5670,15 @@ Dit beleid wordt verwijderd in M75.</translation>
 <translation id="9106865192244721694">WebUSB toestaan op deze sites</translation>
 <translation id="9109086856618439290">Servicevoorwaarden inschakelen tijdens eerste uitvoering voor CCT/PWA</translation>
 <translation id="9112727953998243860">Configuratiebestand voor bedrijfsprinters</translation>
+<translation id="9116740039944096995">Lijst met URL-patronen. Privénetwerkverzoeken die worden gestart vanaf niet-beveiligde websites die worden geleverd via overeenkomende herkomsten, zijn toegestaan.
+
+          Als je dit beleid niet instelt, gedraagt het zich alsof het is ingesteld op de lege lijst.
+
+          Voor herkomsten die niet overeenkomen met de hier genoemde patronen, wordt de algemene standaardwaarde gebruikt op basis van het beleid <ph name="INSECURE_PRIVATE_NETWORK_REQUESTS_ALLOWED_POLICY_NAME" /> (als dit is ingesteld) of anders op basis van de persoonlijke configuratie van de gebruiker.
+
+          Houd er rekening mee dat dit beleid alleen van invloed is op niet-beveiligde herkomsten, dus beveiligde herkomsten (bijv. https://example.com) in deze lijst worden genegeerd.
+
+          Ga naar https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns voor gedetailleerde informatie over geldige URL-patronen.</translation>
 <translation id="9117826695152538214">Als het beleid is ingesteld op True, blijven plaktoetsen ingeschakeld. Als het beleid is ingesteld op False, blijven plaktoetsen uitgeschakeld.
 
       Als je dit beleid instelt, kunnen gebruikers het niet wijzigen. Als je het beleid niet instelt, zijn plaktoetsen in eerste instantie uitgeschakeld, maar kunnen gebruikers deze op elk moment inschakelen.</translation>

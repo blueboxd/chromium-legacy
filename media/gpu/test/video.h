@@ -5,6 +5,7 @@
 #ifndef MEDIA_GPU_TEST_VIDEO_H_
 #define MEDIA_GPU_TEST_VIDEO_H_
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -36,8 +37,9 @@ class Video {
   // Create a new Video instance by copying and converting |data_| to NV12.
   std::unique_ptr<Video> ConvertToNV12() const;
 
-  // Load the video file from disk.
-  bool Load();
+  // Load the video file from disk. |max_frames| is the maximum number of
+  // frames to be read from disk.
+  bool Load(const size_t max_frames = std::numeric_limits<size_t>::max());
   // Returns true if the video file was loaded.
   bool IsLoaded() const;
 
@@ -106,6 +108,7 @@ class Video {
   // the software decoder alignment.
   static void DecodeTask(const std::vector<uint8_t> data,
                          const gfx::Size& resolution,
+                         const size_t num_frames,
                          std::vector<uint8_t>* decompressed_data,
                          bool* success,
                          base::WaitableEvent* done);

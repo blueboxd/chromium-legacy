@@ -8,7 +8,6 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
-#include "printing/mojom/print.mojom.h"
 #include "printing/page_setup.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings_conversion.h"
@@ -30,8 +29,8 @@ PrintingContext::PrintingContext(Delegate* delegate)
 
 PrintingContext::~PrintingContext() = default;
 
-void PrintingContext::set_margin_type(MarginType type) {
-  DCHECK(type != CUSTOM_MARGINS);
+void PrintingContext::set_margin_type(mojom::MarginType type) {
+  DCHECK(type != mojom::MarginType::kCustomMargins);
   settings_->set_margin_type(type);
 }
 
@@ -73,7 +72,8 @@ PrintingContext::Result PrintingContext::UsePdfSettings() {
   pdf_settings.SetBoolKey(kSettingHeaderFooterEnabled, false);
   pdf_settings.SetBoolKey(kSettingShouldPrintBackgrounds, false);
   pdf_settings.SetBoolKey(kSettingShouldPrintSelectionOnly, false);
-  pdf_settings.SetIntKey(kSettingMarginsType, printing::NO_MARGINS);
+  pdf_settings.SetIntKey(kSettingMarginsType,
+                         static_cast<int>(mojom::MarginType::kNoMargins));
   pdf_settings.SetBoolKey(kSettingCollate, true);
   pdf_settings.SetIntKey(kSettingCopies, 1);
   pdf_settings.SetIntKey(kSettingColor, printing::COLOR);

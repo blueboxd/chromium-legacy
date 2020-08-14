@@ -218,3 +218,83 @@ testcase.toolbarMultiMenuFollowsButton = async () => {
     }
   });
 };
+
+/**
+ * Tests that the sharesheet button is enabled and executable.
+ */
+testcase.toolbarSharesheetButtonWithSelection = async () => {
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Override the sharesheet api for testing.
+  await remoteCall.callRemoteTestUtil('overrideSharesheetApi', appId, []);
+
+  const entry = ENTRIES.hello;
+  // Select an entry in the file list.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [entry.nameText]));
+
+  await remoteCall.waitAndClickElement(
+      appId, '#sharesheet-button:not([hidden])');
+
+  // Check invoke sharesheet is called.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('sharesheetInvoked', appId, []));
+};
+
+/**
+ * Tests that the sharesheet command in context menu is enabled and executable.
+ */
+testcase.toolbarSharesheetContextMenuWithSelection = async () => {
+  const contextMenu = '#file-context-menu:not([hidden])';
+
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Override the sharesheet api for testing.
+  await remoteCall.callRemoteTestUtil('overrideSharesheetApi', appId, []);
+
+  const entry = ENTRIES.hello;
+  // Select an entry in the file list.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [entry.nameText]));
+
+  chrome.test.assertTrue(!!await remoteCall.waitAndRightClick(
+      appId, '#file-list .table-row[selected]'));
+
+  // Wait until the context menu is shown.
+  await remoteCall.waitForElement(appId, contextMenu);
+
+  // Assert the menu sharesheet command is not hidden.
+  const sharesheetEnabled =
+      '[command="#invoke-sharesheet"]:not([hidden]):not([disabled])';
+
+  await remoteCall.waitAndClickElement(
+      appId, contextMenu + ' ' + sharesheetEnabled);
+
+  // Check invoke sharesheet is called.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('sharesheetInvoked', appId, []));
+};
+
+/**
+ * Tests that the sharesheet item is hidden if no entry is selected.
+ */
+testcase.toolbarSharesheetNoEntrySelected = async () => {
+  const contextMenu = '#file-context-menu:not([hidden])';
+
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Right click the list without selecting an entry.
+  chrome.test.assertTrue(
+      !!await remoteCall.waitAndRightClick(appId, 'list.list'));
+
+  // Wait until the context menu is shown.
+  await remoteCall.waitForElement(appId, contextMenu);
+
+  // Assert the menu sharesheet command is disabled.
+  const sharesheetDisabled =
+      '[command="#invoke-sharesheet"][hidden][disabled="disabled"]';
+  await remoteCall.waitForElement(
+      appId, contextMenu + ' ' + sharesheetDisabled);
+
+  await remoteCall.waitForElement(appId, '#sharesheet-button[hidden]');
+};

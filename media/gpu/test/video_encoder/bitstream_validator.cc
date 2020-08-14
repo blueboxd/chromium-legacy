@@ -22,6 +22,9 @@
 namespace media {
 namespace test {
 namespace {
+
+constexpr int64_t kEOSTimeStamp = -1;
+
 std::unique_ptr<VideoDecoder> CreateDecoder(VideoCodec codec) {
   std::unique_ptr<VideoDecoder> decoder;
 
@@ -131,23 +134,24 @@ void BitstreamValidator::ProcessBitstreamTask(
     size_t frame_index) {
   SEQUENCE_CHECKER(validator_thread_sequence_checker_);
   scoped_refptr<DecoderBuffer> buffer = bitstream->buffer;
-  decoding_buffers_.Put(buffer->timestamp().InMicroseconds(),
+  int64_t timestamp = buffer->timestamp().InMicroseconds();
+  decoding_buffers_.Put(timestamp,
                         std::make_pair(frame_index, std::move(bitstream)));
   // Validate the encoded bitstream buffer by decoding its contents using a
   // software decoder.
-  decoder_->Decode(
-      std::move(buffer),
-      base::BindOnce(&BitstreamValidator::DecodeDone, base::Unretained(this)));
+  decoder_->Decode(std::move(buffer),
+                   base::BindOnce(&BitstreamValidator::DecodeDone,
+                                  base::Unretained(this), timestamp));
 
   if (frame_index == last_frame_index_) {
     // Flush pending buffers.
     decoder_->Decode(DecoderBuffer::CreateEOSBuffer(),
                      base::BindOnce(&BitstreamValidator::DecodeDone,
-                                    base::Unretained(this)));
+                                    base::Unretained(this), kEOSTimeStamp));
   }
 }
 
-void BitstreamValidator::DecodeDone(DecodeStatus status) {
+void BitstreamValidator::DecodeDone(int64_t timestamp, DecodeStatus status) {
   SEQUENCE_CHECKER(validator_thread_sequence_checker_);
   if (status != DecodeStatus::OK) {
     base::AutoLock lock(validator_lock_);
@@ -157,6 +161,19 @@ void BitstreamValidator::DecodeDone(DecodeStatus status) {
                  << GetDecodeStatusString(status);
     }
   }
+  if (timestamp == kEOSTimeStamp) {
+    return;
+  }
+
+  // This validator and |decoder_| don't use bitstream any more. Release here,
+  // so that a caller can use the bitstream buffer and proceed.
+  auto it = decoding_buffers_.Peek(timestamp);
+  if (it == decoding_buffers_.end()) {
+    // This occurs when VerifyfOutputFrame() is called before DecodeDone() and
+    // the entry has been deleted.
+    return;
+  }
+  it->second.second.reset();
 }
 
 void BitstreamValidator::VerifyOutputFrame(scoped_refptr<VideoFrame> frame) {

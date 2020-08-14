@@ -96,6 +96,22 @@ public class WebPaymentIntentHelper {
     }
 
     /**
+     * Get stringified payment details from a payment intent.
+     *
+     * @param data The payment intent data.
+     * @return The stringified payment details, if any.
+     */
+    @Nullable
+    public static String getPaymentIntentDetails(Intent data) {
+        String details = data.getExtras().getString(EXTRA_RESPONSE_DETAILS);
+        if (details == null) {
+            // try to get deprecated details rather than early returning.
+            details = data.getExtras().getString(EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS);
+        }
+        return details;
+    }
+
+    /**
      * Parse the Payment Intent response.
      * @param resultCode Result code of the requested intent.
      * @param data The intent response data.
@@ -125,11 +141,7 @@ public class WebPaymentIntentHelper {
             return;
         }
 
-        String details = data.getExtras().getString(EXTRA_RESPONSE_DETAILS);
-        if (details == null) {
-            // try to get deprecated details rather than early returning.
-            details = data.getExtras().getString(EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS);
-        }
+        String details = getPaymentIntentDetails(data);
         if (TextUtils.isEmpty(details)) {
             errorCallback.onPaymentError(ErrorStrings.MISSING_DETAILS_FROM_PAYMENT_APP);
             return;

@@ -155,7 +155,7 @@ void PrintJobWorker::SetPrintJob(PrintJob* print_job) {
 void PrintJobWorker::GetSettings(bool ask_user_for_settings,
                                  int document_page_count,
                                  bool has_selection,
-                                 MarginType margin_type,
+                                 mojom::MarginType margin_type,
                                  bool is_scripted,
                                  bool is_modifiable,
                                  SettingsCallback callback) {

@@ -122,18 +122,15 @@ static nacl::PnaclCacheInfo GetTestCacheInfo() {
   return info;
 }
 
-#define GET_NEXE_FD(renderer, instance, incognito, info, expect_hit) \
-  do {                                                               \
-    SCOPED_TRACE("");                                                \
-    host_->GetNexeFd(                                                \
-        renderer,                                                    \
-        0, /* ignore render_view_id for now */                       \
-        instance,                                                    \
-        incognito,                                                   \
-        info,                                                        \
-        base::Bind(expect_hit ? &PnaclHostTest::CallbackExpectHit    \
-                              : &PnaclHostTest::CallbackExpectMiss,  \
-                   base::Unretained(this)));                         \
+#define GET_NEXE_FD(renderer, instance, incognito, info, expect_hit)         \
+  do {                                                                       \
+    SCOPED_TRACE("");                                                        \
+    host_->GetNexeFd(                                                        \
+        renderer, 0, /* ignore render_view_id for now */                     \
+        instance, incognito, info,                                           \
+        base::BindRepeating(expect_hit ? &PnaclHostTest::CallbackExpectHit   \
+                                       : &PnaclHostTest::CallbackExpectMiss, \
+                            base::Unretained(this)));                        \
   } while (0)
 
 TEST_F(PnaclHostTest, BasicMiss) {

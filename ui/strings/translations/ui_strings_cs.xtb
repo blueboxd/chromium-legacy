@@ -41,6 +41,7 @@
 <translation id="1871244248791675517">Klávesa Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;Vybrat vše</translation>
+<translation id="19085484004813472">Toto je nová funkce</translation>
 <translation id="2006524834898217237">Zkontrolujte, zda je toto zařízení připojeno k internetu.</translation>
 <translation id="208586643495776849">Zkuste to znovu</translation>
 <translation id="2090963878406559571">Chcete-li poslat číslo z webu <ph name="ORIGIN" /> na svůj telefon Android, v nastavení obou zařízení <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -151,6 +152,7 @@
 <translation id="5768079895599174203">{DAYS,plural, =1{1 den a  }few{# dny a  }many{# dne a  }other{# dnů a  }}</translation>
 <translation id="5789643057113097023">,</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{za 1 r}few{za # r}many{za # r}other{za # r}}</translation>
+<translation id="588258955323874662">Celá obrazovka</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Zbývá 1 sekunda}few{Zbývají # sekundy}many{Zbývá # sekundy}other{Zbývá # sekund}}</translation>
 <translation id="5941711191222866238">Minimalizovat</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hodina}few{# hodiny}many{# hodiny}other{# hodin}}</translation>

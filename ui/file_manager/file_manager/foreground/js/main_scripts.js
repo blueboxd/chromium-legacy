@@ -197,4 +197,6 @@ window.fileManager = fileManager;
 
 // Exports
 window.util = util;
+// TODO(crbug.com/1115792) remove this export.
+window.AsyncUtil = AsyncUtil;
 })();

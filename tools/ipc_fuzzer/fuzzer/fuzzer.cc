@@ -21,6 +21,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message.h"
+#include "printing/mojom/print.mojom-shared.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "tools/ipc_fuzzer/fuzzer/fuzzer.h"
 #include "tools/ipc_fuzzer/fuzzer/rand_util.h"
@@ -1817,10 +1818,11 @@ struct FuzzTraits<ppapi::SocketOptionData> {
 };
 
 template <>
-struct FuzzTraits<printing::MarginType> {
-  static bool Fuzz(printing::MarginType* p, Fuzzer* fuzzer) {
-    int type = RandInRange(printing::MarginType::MARGIN_TYPE_LAST + 1);
-    *p = static_cast<printing::MarginType>(type);
+struct FuzzTraits<printing::mojom::MarginType> {
+  static bool Fuzz(printing::mojom::MarginType* p, Fuzzer* fuzzer) {
+    int type = RandInRange(
+        static_cast<int>(printing::mojom::MarginType::kMaxValue) + 1);
+    *p = static_cast<printing::mojom::MarginType>(type);
     return true;
   }
 };

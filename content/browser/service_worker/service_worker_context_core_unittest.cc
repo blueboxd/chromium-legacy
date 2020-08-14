@@ -308,11 +308,11 @@ TEST_F(ServiceWorkerContextCoreTest, DeleteForOrigin_UnregisterFail) {
                   }));
   // Disable storage before it finishes. This causes the Unregister job to
   // complete with an error.
-  context()->storage()->Disable();
+  context()->GetStorageControl()->Disable();
   loop.Run();
 
   // The operation should still complete.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort, status);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorFailed, status);
 }
 
 }  // namespace content

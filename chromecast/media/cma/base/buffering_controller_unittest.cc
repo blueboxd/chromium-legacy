@@ -60,8 +60,9 @@ BufferingControllerTest::BufferingControllerTest() {
       new BufferingConfig(low_level_threshold, high_level_threshold));
   buffering_controller_.reset(new BufferingController(
       buffering_config,
-      base::Bind(&MockBufferingControllerClient::OnBufferingNotification,
-                 base::Unretained(&client_))));
+      base::BindRepeating(
+          &MockBufferingControllerClient::OnBufferingNotification,
+          base::Unretained(&client_))));
 }
 
 TEST_F(BufferingControllerTest, OneStream_Typical) {

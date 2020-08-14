@@ -160,8 +160,8 @@ class TransparentButton : public views::Button {
   SkColor GetInkDropBaseColor() const override {
     // This button will be used like a LabelButton, so use the same foreground
     // base color as a label button.
-    return color_utils::DeriveDefaultIconColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_LabelEnabledColor));
+    return color_utils::DeriveDefaultIconColor(views::style::GetColor(
+        *this, views::style::CONTEXT_BUTTON, views::style::STYLE_PRIMARY));
   }
 
   // Forward dragging and capture loss events, since this class doesn't have
@@ -562,12 +562,11 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
 
   // Draw the separator as part of the background. It will be covered by the
   // focus ring when the view has focus.
-  const int end_x = base::i18n::IsRTL() ? 0 : width() - 1;
-  const SkColor separator_color = GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR);
-  canvas->DrawLine(gfx::Point(end_x, kTopBottomPadding),
-                   gfx::Point(end_x, height() - kTopBottomPadding),
-                   separator_color);
+  gfx::Rect rect(0, 0, 1, height());
+  rect.Inset(0, kTopBottomPadding);
+  canvas->FillRect(GetMirroredRect(rect),
+                   GetThemeProvider()->GetColor(
+                       ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
 }
 
 void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
@@ -584,10 +583,9 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
 
   // Paint download progress.
   // TODO(pkasting): Use a child view to display this.
-  int progress_x = base::i18n::IsRTL()
-                       ? width() - kStartPadding - kProgressIndicatorSize
-                       : kStartPadding;
-  int progress_y = CenterY(kProgressIndicatorSize);
+  const int progress_x =
+      GetMirroredXWithWidthInView(kStartPadding, kProgressIndicatorSize);
+  const int progress_y = CenterY(kProgressIndicatorSize);
   const gfx::RectF progress_bounds(
       progress_x, progress_y, kProgressIndicatorSize, kProgressIndicatorSize);
   const download::DownloadItem::DownloadState state = model_->GetState();
@@ -703,7 +701,7 @@ void DownloadItemView::UpdateMode(Mode mode) {
   if (mode_ == Mode::kNormal) {
     UpdateAccessibleAlertAndTimersForNormalMode();
   } else if (is_download_warning(mode_)) {
-    download::DownloadDangerType danger_type = model_->GetDangerType();
+    const auto danger_type = model_->GetDangerType();
     RecordDangerousDownloadWarningShown(danger_type);
     announce_accessible_alert_soon_ = true;
     if (danger_type == download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
@@ -880,7 +878,7 @@ base::string16 DownloadItemView::GetInProgressAccessibleAlertText() const {
     if (remaining.is_zero())
       return base::string16();
 
-    base::string16 remaining_string =
+    const base::string16 remaining_string =
         ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
                                ui::TimeFormat::LENGTH_SHORT, remaining);
     return l10n_util::GetStringFUTF16(
@@ -896,11 +894,10 @@ base::string16 DownloadItemView::GetInProgressAccessibleAlertText() const {
   }
 
   // Percent remaining is also unknown, announce bytes to download.
-  base::string16 file_name =
-      model_->GetFileNameToReportUser().LossyDisplayName();
   return l10n_util::GetStringFUTF16(
       IDS_DOWNLOAD_STATUS_IN_PROGRESS_ACCESSIBLE_ALERT,
-      ui::FormatBytes(model_->GetTotalBytes()), file_name);
+      ui::FormatBytes(model_->GetTotalBytes()),
+      model_->GetFileNameToReportUser().LossyDisplayName());
 }
 
 void DownloadItemView::AnnounceAccessibleAlert() {
@@ -1104,10 +1101,7 @@ int DownloadItemView::GetLabelWidth(const views::StyledLabel& label) const {
 void DownloadItemView::SetDropdownPressed(bool pressed) {
   if (dropdown_pressed_ != pressed) {
     dropdown_pressed_ = pressed;
-    dropdown_button_->AnimateInkDrop(dropdown_pressed_
-                                         ? views::InkDropState::ACTIVATED
-                                         : views::InkDropState::DEACTIVATED,
-                                     nullptr);
+    dropdown_button_->SetHighlighted(dropdown_pressed_);
     UpdateDropdownButtonImage();
   }
 }
@@ -1171,20 +1165,16 @@ void DownloadItemView::OpenDownloadDuringAsyncScanning() {
 bool DownloadItemView::SubmitDownloadToFeedbackService(
     DownloadCommands::Command command) const {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  safe_browsing::SafeBrowsingService* sb_service =
-      g_browser_process->safe_browsing_service();
+  auto* const sb_service = g_browser_process->safe_browsing_service();
   if (!sb_service)
     return false;
-  safe_browsing::DownloadProtectionService* dp_service =
-      sb_service->download_protection_service();
+  auto* const dp_service = sb_service->download_protection_service();
   if (!dp_service)
     return false;
   // TODO(shaktisahu): Enable feedback service for offline item.
-  if (model_->download()) {
-    return dp_service->MaybeBeginFeedbackForDownload(
-        shelf_->browser()->profile(), model_->download(), command);
-  }
-  return true;
+  return !model_->download() ||
+         dp_service->MaybeBeginFeedbackForDownload(shelf_->browser()->profile(),
+                                                   model_->download(), command);
 #else
   NOTREACHED();
   return false;

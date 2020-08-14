@@ -67,6 +67,8 @@ class ResourceLoadingHintsAgent
       blink::mojom::CompressPublicImagesHintsPtr images_hints) override;
   void SetLiteVideoHint(
       blink::mojom::LiteVideoHintPtr lite_video_hint) override;
+  void SetBlinkOptimizationGuideHints(
+      blink::mojom::BlinkOptimizationGuideHintsPtr hints) override;
   void StopThrottlingMediaRequests() override;
 
   void SetReceiver(
@@ -87,6 +89,8 @@ class ResourceLoadingHintsAgent
 
   subresource_redirect::SubresourceRedirectHintsAgent
       subresource_redirect_hints_agent_;
+
+  blink::mojom::BlinkOptimizationGuideHintsPtr blink_optimization_guide_hints_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsAgent);
 };

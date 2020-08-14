@@ -311,10 +311,8 @@ void NaClHostMessageFilter::SyncReturnTemporaryFile(
 
 void NaClHostMessageFilter::OnNaClCreateTemporaryFile(
     IPC::Message* reply_msg) {
-  pnacl::PnaclHost::GetInstance()->CreateTemporaryFile(
-      base::Bind(&NaClHostMessageFilter::SyncReturnTemporaryFile,
-                 this,
-                 reply_msg));
+  pnacl::PnaclHost::GetInstance()->CreateTemporaryFile(base::BindRepeating(
+      &NaClHostMessageFilter::SyncReturnTemporaryFile, this, reply_msg));
 }
 
 void NaClHostMessageFilter::AsyncReturnTemporaryFile(
@@ -347,14 +345,10 @@ void NaClHostMessageFilter::OnGetNexeFd(
   }
 
   pnacl::PnaclHost::GetInstance()->GetNexeFd(
-      render_process_id_,
-      render_view_id,
-      pp_instance,
-      off_the_record_,
+      render_process_id_, render_view_id, pp_instance, off_the_record_,
       cache_info,
-      base::Bind(&NaClHostMessageFilter::AsyncReturnTemporaryFile,
-                 this,
-                 pp_instance));
+      base::BindRepeating(&NaClHostMessageFilter::AsyncReturnTemporaryFile,
+                          this, pp_instance));
 }
 
 void NaClHostMessageFilter::OnTranslationFinished(int instance, bool success) {

@@ -7,7 +7,6 @@
 #include "base/atomic_sequence_num.h"
 #include "base/lazy_instance.h"
 #include "base/notreached.h"
-#include "printing/print_job_constants.h"
 #include "printing/units.h"
 
 #if defined(USE_CUPS) && (defined(OS_MAC) || defined(OS_CHROMEOS))
@@ -266,7 +265,7 @@ PrintSettings::~PrintSettings() = default;
 void PrintSettings::Clear() {
   ranges_.clear();
   selection_only_ = false;
-  margin_type_ = DEFAULT_MARGINS;
+  margin_type_ = mojom::MarginType::kDefaultMargins;
   title_.clear();
   url_.clear();
   display_header_footer_ = false;
@@ -314,7 +313,7 @@ void PrintSettings::SetPrinterPrintableArea(
   PageMargins margins;
   bool small_paper_size = false;
   switch (margin_type_) {
-    case DEFAULT_MARGINS: {
+    case mojom::MarginType::kDefaultMargins: {
       // Default margins 1.0cm = ~2/5 of an inch, unless a page dimension is
       // less than 2.54 cm = ~1 inch, in which case set the margins in that
       // dimension to 0.
@@ -342,8 +341,8 @@ void PrintSettings::SetPrinterPrintableArea(
       }
       break;
     }
-    case NO_MARGINS:
-    case PRINTABLE_AREA_MARGINS: {
+    case mojom::MarginType::kNoMargins:
+    case mojom::MarginType::kPrintableAreaMargins: {
       margins.header = 0;
       margins.footer = 0;
       margins.top = 0;
@@ -352,7 +351,7 @@ void PrintSettings::SetPrinterPrintableArea(
       margins.right = 0;
       break;
     }
-    case CUSTOM_MARGINS: {
+    case mojom::MarginType::kCustomMargins: {
       margins.header = 0;
       margins.footer = 0;
       margins.top = ConvertUnitDouble(requested_custom_margins_in_points_.top,
@@ -372,8 +371,8 @@ void PrintSettings::SetPrinterPrintableArea(
     }
   }
 
-  if ((margin_type_ == DEFAULT_MARGINS ||
-       margin_type_ == PRINTABLE_AREA_MARGINS) &&
+  if ((margin_type_ == mojom::MarginType::kDefaultMargins ||
+       margin_type_ == mojom::MarginType::kPrintableAreaMargins) &&
       !small_paper_size) {
     page_setup_device_units_.SetRequestedMargins(margins);
   } else {
@@ -389,7 +388,7 @@ void PrintSettings::SetPrinterPrintableArea(
 void PrintSettings::SetCustomMargins(
     const PageMargins& requested_margins_in_points) {
   requested_custom_margins_in_points_ = requested_margins_in_points;
-  margin_type_ = CUSTOM_MARGINS;
+  margin_type_ = mojom::MarginType::kCustomMargins;
 }
 
 int PrintSettings::NewCookie() {

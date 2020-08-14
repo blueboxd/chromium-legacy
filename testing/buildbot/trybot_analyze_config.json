@@ -23,6 +23,7 @@
       "infra/scripts/.*",
       "DEPS",
       "testing/buildbot/.*json",
+      "testing/buildbot/gn_isolate_map.pyl",
       "testing/merge_scripts/.*",
       "testing/scripts/.*",
       "testing/test_env.py",

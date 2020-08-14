@@ -9,14 +9,6 @@
 
 namespace ui {
 
-namespace {
-
-const char kString[] = "STRING";
-const char kText[] = "TEXT";
-const char kUtf8String[] = "UTF8_STRING";
-
-}  // namespace
-
 WaylandDataOfferBase::WaylandDataOfferBase() = default;
 WaylandDataOfferBase::~WaylandDataOfferBase() = default;
 
@@ -26,9 +18,10 @@ void WaylandDataOfferBase::EnsureTextMimeTypeIfNeeded() {
 
   if (std::any_of(mime_types_.begin(), mime_types_.end(),
                   [](const std::string& mime_type) {
-                    return mime_type == kString || mime_type == kText ||
+                    return mime_type == kMimeTypeLinuxString ||
+                           mime_type == kMimeTypeLinuxText ||
                            mime_type == kMimeTypeTextUtf8 ||
-                           mime_type == kUtf8String;
+                           mime_type == kMimeTypeLinuxUtf8String;
                   })) {
     mime_types_.push_back(kMimeTypeText);
     text_plain_mime_type_inserted_ = true;

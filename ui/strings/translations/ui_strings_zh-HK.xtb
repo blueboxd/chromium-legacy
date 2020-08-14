@@ -41,6 +41,7 @@
 <translation id="1871244248791675517">插入鍵</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">全部選取(&amp;A)</translation>
+<translation id="19085484004813472">呢個係新功能</translation>
 <translation id="2006524834898217237">請確保此裝置已連接互聯網。</translation>
 <translation id="208586643495776849">請再試一次</translation>
 <translation id="2090963878406559571">如要將 <ph name="ORIGIN" /> 的號碼從此裝置傳送至您的 Android 手機，請在這兩部裝置的設定中<ph name="TROUBLESHOOT_LINK" />。</translation>
@@ -151,6 +152,7 @@
 <translation id="5768079895599174203">{DAYS,plural, =1{1 天和}other{# 天和}}</translation>
 <translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 年後}other{# 年後}}</translation>
+<translation id="588258955323874662">全螢幕</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{還有 1 秒}other{還有 # 秒}}</translation>
 <translation id="5941711191222866238">最小化</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 小時}other{# 小時}}</translation>

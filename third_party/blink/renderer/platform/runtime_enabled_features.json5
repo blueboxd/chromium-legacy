@@ -242,6 +242,8 @@
     {
       // https://github.com/chrishtr/battery-savings/blob/master/explainer.md
       name: "BatterySavingsMeta",
+      origin_trial_feature_name: "BatterySavingsMeta",
+      status: "experimental",
     },
     {
       // https://github.com/WICG/display-locking/blob/master/explainer-beforematch.md
@@ -967,7 +969,7 @@
     {
       name: "LayoutNGFieldset",
       depends_on: ["LayoutNG"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "LayoutNGFlexBox",

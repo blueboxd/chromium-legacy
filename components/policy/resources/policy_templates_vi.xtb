@@ -400,6 +400,12 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 
       Nếu bạn đặt chính sách này thành False hoặc không đặt, thì plugin PDF sẽ luôn mở tệp PDF trừ khi người dùng tắt plugin này.</translation>
 <translation id="1608755754295374538">Các URL sẽ được cấp quyền truy cập thiết bị ghi âm mà không cần phải hiển thị lời nhắc</translation>
+<translation id="1611394564825535541">Cho phép bạn kiểm soát xem người dùng có thể truy cập vào các máy in không dành cho doanh nghiệp hay không
+
+      Nếu bạn đặt chính sách này thành Bật hoặc không đặt bất kỳ chính sách nào, thì người dùng có thể thêm, định cấu hình và in bằng máy in của riêng họ.
+
+      Nếu bạn đặt chính sách này thành Tắt, người dùng sẽ không thể thêm và định cấu hình máy in của riêng họ. Họ cũng sẽ không thể in bằng bất kỳ máy in nào đã định cấu hình trước đó.
+      </translation>
 <translation id="1615221548356595305">Cho phép hợp nhất các đường kết nối HTTP/2 đối với những máy chủ này kể cả khi sử dụng chứng chỉ ứng dụng khách</translation>
 <translation id="1615855314789673708">Cung cấp cấu hình DTC (bộ điều khiển chẩn đoán và đo từ xa) wilco.
 
@@ -673,9 +679,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
           </translation>
 <translation id="2030905906517501646">Từ khóa nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="203096360153626918">Chính sách này không ảnh hưởng đến các ứng dụng Android. Các ứng dụng đó sẽ có thể vào chế độ toàn màn hình ngay cả khi chính sách này được đặt thành <ph name="FALSE" />.</translation>
-<translation id="2035306081270465868">Nếu bạn đặt chính sách này thành Bật, thì trang chủ trên trình duyệt mặc định trước sẽ được nhập trong lần chạy đầu tiên. Nếu bạn đặt chính sách này thành Tắt hoặc không đặt chính sách này, thì trang chủ sẽ không được nhập trong lần chạy đầu tiên.
-
-      Người dùng có thể kích hoạt hộp thoại nhập. Ngoài ra, hộp đánh dấu trang chủ sẽ được đánh dấu/bỏ đánh dấu tương ứng với giá trị của chính sách này.</translation>
 <translation id="2040479044912658454">Chế độ tạo điểm ảnh bản in</translation>
 <translation id="2043749682619281558">Bật tính năng làm nổi bật con trỏ trên màn hình đăng nhập</translation>
 <translation id="2043770014371753404">Đã tắt máy in dành cho doanh nghiệp</translation>
@@ -1040,19 +1043,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng làm nổi bật dấu chèn sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="2509919237512982967">Dùng các thành phần điều khiển biểu mẫu cũ cho đến M84.</translation>
-<translation id="2512630007068794030">Khi bạn bật chính sách này, tính năng <ph name="PRODUCT_NAME" /> sẽ giữ nguyên các trang web ở trạng thái hiện tại (cây tài liệu, tập lệnh, v.v.) trong bộ nhớ đệm cho thao tác tiến/lùi khi chuyển hướng khỏi trang.
-          Nếu quay lại trang này, trang sẽ được khôi phục từ bộ nhớ đệm cho thao tác tiến/lùi, hiển thị ở trạng thái như khi lưu vào bộ nhớ đệm trước đó.
-
-          Tính năng này có thể làm hỏng một số trang web không muốn
-          bị lưu vào bộ nhớ đệm, đặc biệt là những trang web phụ thuộc vào trình xử lý thao tác hủy tải được
-          kích hoạt khi chuyển hướng khỏi trang, vì sự kiện hủy tải sẽ
-          không được gửi đi khi chuyển hướng khỏi một trang và sẽ được lưu
-          vào bộ nhớ đệm cho thao tác tiến/lùi.
-
-          Nếu bạn đặt thành bật hoặc không đặt chính sách này, tính năng <ph name="PRODUCT_NAME" /> sẽ bật.
-
-          Nếu bạn đặt chính sách này thành tắt, tính năng này sẽ bị buộc tắt.
-          </translation>
 <translation id="2516600974234263142">Bật in trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
 
       Nếu cài đặt này được bật hoặc không được định cấu hình, người dùng có thể in.
@@ -1122,20 +1112,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 <translation id="2615240493030733717">Báo cáo thông tin về múi giờ</translation>
 <translation id="2623014935069176671">Đợi hoạt động người dùng đầu tiên</translation>
 <translation id="262740370354162807">Cho phép gửi tài liệu tới <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2627554163382448569">Cung cấp cấu hình máy in dành cho doanh nghiệp.
-
-      Chính sách này cho phép bạn cung cấp cấu hình máy in cho các thiết bị <ph name="PRODUCT_OS_NAME" />.  Định dạng này giống với định dạng của từ điển NativePrinters với trường "id" hoặc "guid" bổ sung bắt buộc trên mỗi máy in để đưa vào danh sách cho phép hoặc danh sách cấm.
-
-      Kích thước tệp không được vượt quá 5MB và phải được mã hóa ở định dạng JSON.  Theo ước tính, một tệp có chứa khoảng 21.000 máy in sẽ mã hóa dưới dạng tệp 5MB.  Hàm băm mật mã được sử dụng để xác minh tính toàn vẹn của nội dung tải xuống.
-
-      Tệp sẽ được tải xuống và lưu vào bộ nhớ đệm. Bất cứ khi nào URL hoặc hàm băm thay đổi thì tệp này sẽ được tải xuống lại.
-
-       Nếu bạn đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> sẽ tải tệp cấu hình máy in xuống và cung cấp các máy in theo đúng <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> và <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Nếu bạn đặt chính sách này, người dùng không thể thay đổi hoặc ghi đè chính sách này.
-
-     Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên từng thiết bị hay không.  Chính sách này nhằm bổ sung cho cấu hình của các máy in theo từng người dùng.
-      </translation>
 <translation id="2632538643061793322">Nếu đặt chính sách này, bạn có thể liệt kê các mẫu URL chỉ định những trang web có thể yêu cầu người dùng cấp quyền truy cập vào thiết bị USB.
 
       Nếu bạn không đặt chính sách này, thì <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> (nếu được đặt) sẽ áp dụng cho tất cả trang web. Nếu không, các tùy chọn cài đặt cá nhân của người dùng sẽ được áp dụng.
@@ -2307,6 +2283,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="4313767483634435271">Địa chỉ MAC chỉ định cho đế sạc của thiết bị</translation>
 <translation id="4322842393287974810">Cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Thêm một nút đăng xuất vào khay hệ thống</translation>
+<translation id="4330372709562934569">Cho phép các trang web có trong danh sách gửi yêu cầu từ những nguồn không an toàn đến các thiết bị đầu cuối trên mạng riêng.</translation>
 <translation id="4332177773549877617">Ghi lại các sự kiện cho lượt cài đặt ứng dụng Android</translation>
 <translation id="4341199399451274159">Nếu bạn bật <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, thì thao tác đặt <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" /> sẽ chỉ định phương thức mã hóa ký tự mà nhà cung cấp dịch vụ tìm kiếm hỗ trợ. Phương thức mã hóa là tên trang mã, chẳng hạn như UTF-8, GB2312 và ISO-8859-1. Các tên này được thử theo thứ tự cung cấp.
 
@@ -2613,6 +2590,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       <ph name="PAGE_SIZE_NAME" /> nên chứa một trong các định dạng được liệt kê hoặc giá trị "tùy chỉnh" nếu kích thước giấy bắt buộc không có trong danh sách đó. Nếu cung cấp giá trị "tùy chỉnh", thì bạn nên chỉ định thuộc tính <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Thuộc tính này mô tả chiều dài và chiều rộng mong muốn tính bằng micromet. Nếu không, bạn không nên chỉ định thuộc tính <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Chính sách vi phạm những quy tắc này sẽ bị bỏ qua.
 
       Nếu kích thước trang không có sẵn trên máy in mà người dùng chọn, thì chính sách này sẽ bị bỏ qua.</translation>
+<translation id="479290425281021210">Chỉ định xem có cho phép các trang web không an toàn gửi yêu cầu đến các thiết bị đầu cuối trên mạng riêng hay không.</translation>
 <translation id="4802744647065138872">Giới hạn số lượng ảnh chụp nhanh dữ liệu người dùng được giữ lại để sử dụng trong trường hợp khôi phục khẩn cấp.</translation>
 <translation id="4802905909524200151">Định cấu hình hành vi của bản cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Luôn khởi động lại khi đăng xuất người dùng.</translation>
@@ -3063,6 +3041,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="5405289061476885481">Định cấu hình bố cục bàn phím được cho phép trên màn hình đăng nhập <ph name="PRODUCT_OS_NAME" />.
 
       Nếu chính sách này được đặt thành danh sách số nhận dạng phương thức nhập, phương thức nhập được cung cấp sẽ có sẵn trên màn hình đăng nhập. Phương thức nhập được cung cấp đầu tiên sẽ được chọn sẵn. Mặc dù nhóm người dùng được lấy tiêu điểm trên màn hình đăng nhập, phương thức nhập được sử dụng gần đây nhất của người dùng sẽ có sẵn ngoài phương thức nhập được cung cấp bởi chính sách này. Nếu chính sách này chưa được đặt, các phương thức nhập trên màn hình đăng nhập sẽ được lấy từ ngôn ngữ mà màn hình đăng nhập hiển thị. Các giá trị không phải số nhận dạng phương thức nhập hợp lệ sẽ bị bỏ qua.</translation>
+<translation id="5407008856008996384">Cho phép truy cập vào máy in CUPS</translation>
 <translation id="5416064504563346617">Nếu đặt chính sách này, bạn có thể liệt kê các mẫu URL chỉ định những trang web không thể yêu cầu người dùng cấp quyền truy cập vào thiết bị USB.
 
       Nếu bạn không đặt chính sách này, thì <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> (nếu được đặt) sẽ áp dụng cho tất cả trang web. Nếu không, tùy chọn cài đặt cá nhân của người dùng sẽ được áp dụng.
@@ -3228,6 +3207,14 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
         Nếu bạn không đặt chính sách này hoặc đặt chính sách thành true, thì người dùng có thể gửi ý kiến phản hồi cho Google qua Menu-&gt;Trợ giúp-&gt;Báo cáo vấn đề hoặc tổ hợp phím.</translation>
 <translation id="5579179012798142131">Trừ khi Chế độ tạm thời hoặc đăng nhập nhiều tài khoản đang bật trong phiên của người dùng, thì khi đặt ArcEnabled thành True, ARC cho người dùng mới được bật. Nếu bạn đặt chính sách này thành False hoặc không đặt, thì người dùng doanh nghiệp sẽ không thể sử dụng ARC.</translation>
+<translation id="5582429816116769246">Cho phép bạn kiểm soát xem người dùng có thể truy cập vào các máy in không dành cho doanh nghiệp hay không
+
+      Nếu bạn đặt chính sách này thành Bật hoặc không đặt bất kỳ chính sách nào, thì người dùng có thể thêm, định cấu hình và in bằng máy in gốc của riêng họ.
+
+      Nếu bạn đặt chính sách này thành Tắt, người dùng sẽ không thể thêm và định cấu hình máy in gốc của riêng họ. Họ cũng sẽ không thể in bằng bất kỳ máy in gốc nào đã định cấu hình trước đó.
+
+      Chính sách này không còn dùng nữa, vui lòng sử dụng <ph name="USER_PRINTERS_ALLOWED" />.
+      </translation>
 <translation id="5583806683960333345">Nếu bạn bật tùy chọn cài đặt này, người dùng sẽ được phép sử dụng tính năng Chia sẻ Internet tức thì, điều này cho phép họ chia sẻ dữ liệu di động từ điện thoại Google với thiết bị của họ.
 
       Nếu bạn tắt tùy chọn cài đặt này, người dùng sẽ không được phép sử dụng tính năng Chia sẻ Internet tức thì.
@@ -4057,6 +4044,13 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Nếu bạn đặt chính sách này thành Tắt, một thông báo lỗi sẽ hiện ra.</translation>
 <translation id="6821268164692776674">Đích <ph name="CLOUD_PRINT_NAME" /> và 'Lưu vào Google Drive'</translation>
+<translation id="6823297401452148231">Kiểm soát việc có cho phép các trang web không an toàn gửi yêu cầu đến các thiết bị đầu cuối trên mạng riêng hay không. Ví dụ: kiểm soát việc có cho phép http://evil.com gửi yêu cầu đến cả "máy chủ cục bộ" và các thiết bị đầu cuối trên mạng riêng hay không (không thiết bị đầu cuối nào có thể truy cập được qua Internet công cộng). Hãy truy cập vào https://wicg.github.io/cors-rfc1918/#goals để biết thêm thông tin chi tiết.
+
+          Nếu bạn không đặt chính sách này, chế độ mặc định đối với yêu cầu gửi từ các nguồn không an toàn đến thiết bị đầu cuối trên mạng riêng sẽ phụ thuộc vào cấu hình cá nhân của người dùng dành cho tính năng <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />. Bạn có thể đặt tính năng này trong giai đoạn thực nghiệm hoặc thông qua dòng lệnh.
+
+          Khi bạn đặt chính sách này thành tắt, các trang web không an toàn sẽ bị cấm gửi yêu cầu đến các thiết bị đầu cuối trên mạng riêng. Nghĩa là các trang web không an toàn phân phối từ các địa chỉ IP công cộng sẽ bị cấm gửi yêu cầu đến cả máy chủ cục bộ và địa chỉ IP riêng. Các trang web không an toàn phân phối từ các địa chỉ IP riêng sẽ bị cấm gửi yêu cầu đến máy chủ cục bộ.
+
+          Khi bạn đặt chính sách này thành bật, các trang web không an toàn sẽ được phép gửi yêu cầu đến mọi thiết bị đầu cuối trên mạng nhưng phải trải qua các quá trình kiểm tra khác trên nhiều nguồn gốc.</translation>
 <translation id="6833064854262015312">Khi bạn đặt chính sách này thành True, chế độ tương phản cao sẽ bật trên màn hình đăng nhập. Khi bạn đặt chính sách này thành False, chế độ tương phản cao sẽ tắt trên màn hình.
 
       Nếu bạn đặt chính sách này, thì người dùng có thể tạm thời thay đổi chế độ tương phản cao, bật hoặc tắt chế độ này. Khi màn hình đăng nhập tải lại hoặc không hoạt động trong vài phút, chế độ tương phản cao sẽ trở về trạng thái ban đầu.
@@ -5732,6 +5726,15 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9106865192244721694">Cho phép WebUSB trên các trang web này</translation>
 <translation id="9109086856618439290">Bật Điều khoản dịch vụ (ToS) trong lần chạy đầu tiên của CCT/PWA</translation>
 <translation id="9112727953998243860">Tệp cấu hình máy in dành cho doanh nghiệp</translation>
+<translation id="9116740039944096995">Danh sách mẫu URL. Cho phép thực hiện các yêu cầu mạng riêng từ những trang web không an toàn do các nguồn gốc trùng khớp phân phối.
+
+          Nếu bạn không đặt, chính sách này sẽ hoạt động như khi đặt thành danh sách trống.
+
+          Đối với những nguồn gốc không khớp với các mẫu nêu ở đây, giá trị mặc định chung của chính sách <ph name="INSECURE_PRIVATE_NETWORK_REQUESTS_ALLOWED_POLICY_NAME" /> (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng.
+
+          Lưu ý rằng chính sách này chỉ ảnh hưởng đến những nguồn gốc không an toàn. Vì vậy, hệ thống sẽ bỏ qua những nguồn gốc an toàn (ví dụ: https://example.com) có trong danh sách này.
+
+          Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng truy cập vào https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="9117826695152538214">Khi bạn đặt chính sách này thành True, phím cố định sẽ luôn bật. Khi bạn đặt chính sách này thành False, phím cố định sẽ luôn tắt.
 
       Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi được. Nếu bạn không đặt chính sách này, thì ban đầu, phím cố định sẽ tắt, nhưng người dùng có thể bật bất cứ lúc nào.</translation>

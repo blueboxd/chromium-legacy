@@ -284,7 +284,7 @@ IPC_STRUCT_BEGIN(PrintHostMsg_ScriptedPrint_Params)
   IPC_STRUCT_MEMBER(bool, has_selection)
   IPC_STRUCT_MEMBER(bool, is_scripted)
   IPC_STRUCT_MEMBER(bool, is_modifiable)
-  IPC_STRUCT_MEMBER(printing::MarginType, margin_type)
+  IPC_STRUCT_MEMBER(printing::mojom::MarginType, margin_type)
 IPC_STRUCT_END()
 
 

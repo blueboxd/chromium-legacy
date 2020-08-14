@@ -984,9 +984,8 @@ bool NaClProcessHost::StartWithLaunchedProcess() {
   if (nacl_browser->IsReady())
     return StartNaClExecution();
   if (nacl_browser->IsOk()) {
-    nacl_browser->WaitForResources(
-        base::Bind(&NaClProcessHost::OnResourcesReady,
-                   weak_factory_.GetWeakPtr()));
+    nacl_browser->WaitForResources(base::BindOnce(
+        &NaClProcessHost::OnResourcesReady, weak_factory_.GetWeakPtr()));
     return true;
   }
   SendErrorToRenderer("previously failed to acquire shared resources");

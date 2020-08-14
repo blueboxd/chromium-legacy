@@ -15,10 +15,6 @@
 namespace ui {
 class SelectionData;
 
-COMPONENT_EXPORT(UI_BASE_X) extern const char kString[];
-COMPONENT_EXPORT(UI_BASE_X) extern const char kText[];
-COMPONENT_EXPORT(UI_BASE_X) extern const char kUtf8String[];
-
 // Returns a list of all text atoms that we handle.
 COMPONENT_EXPORT(UI_BASE_X) std::vector<x11::Atom> GetTextAtomsFrom();
 

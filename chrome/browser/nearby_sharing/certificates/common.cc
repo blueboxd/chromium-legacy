@@ -5,9 +5,11 @@
 #include "chrome/browser/nearby_sharing/certificates/common.h"
 
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "chrome/browser/nearby_sharing/certificates/constants.h"
 #include "crypto/encryptor.h"
 #include "crypto/hkdf.h"
+#include "crypto/random.h"
 #include "crypto/sha2.h"
 #include "crypto/symmetric_key.h"
 
@@ -51,6 +53,13 @@ std::vector<uint8_t> ComputeAuthenticationTokenHash(
   return crypto::HkdfSha256(authentication_token, secret_key,
                             /*info=*/base::span<const uint8_t>(),
                             kNearbyShareNumBytesAuthenticationTokenHash);
+}
+
+std::vector<uint8_t> GenerateRandomBytes(size_t num_bytes) {
+  std::vector<uint8_t> bytes(num_bytes);
+  crypto::RandBytes(bytes);
+
+  return bytes;
 }
 
 std::unique_ptr<crypto::Encryptor> CreateNearbyShareCtrEncryptor(

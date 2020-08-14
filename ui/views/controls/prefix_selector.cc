@@ -190,6 +190,10 @@ bool PrefixSelector::SetAutocorrectRange(const base::string16& autocorrect_text,
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
+
+void PrefixSelector::ClearAutocorrectRange() {
+  // TODO(crbug.com/1091088) Implement ClearAutocorrectRange.
+}
 #endif
 
 #if defined(OS_WIN)

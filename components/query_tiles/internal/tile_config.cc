@@ -72,6 +72,10 @@ namespace {
 // For testing. Json string for single tier experiment tag.
 const char kQueryTilesSingleTierExperimentTag[] = "{\"maxLevels\": \"1\"}";
 
+// Json Experiment tag for enabling trending queries.
+const char kQueryTilesEnableTrendingExperimentTag[] =
+    "{\"enableTrending\": \"true\"}";
+
 const GURL BuildGetQueryTileURL(const GURL& base_url, const char* path) {
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
@@ -102,6 +106,11 @@ std::string TileConfig::GetExperimentTag() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kQueryTilesSingleTier)) {
     return kQueryTilesSingleTierExperimentTag;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kQueryTilesEnableTrending)) {
+    return kQueryTilesEnableTrendingExperimentTag;
   }
 
   return base::GetFieldTrialParamValueByFeature(features::kQueryTiles,

@@ -86,6 +86,18 @@ void ResourceLoadingHintsAgent::DidCreateNewDocument() {
   // Once the hints are sent to the document loader, clear the local copy to
   // prevent accidental reuse.
   subresource_patterns_to_block_.clear();
+
+  // Pass the optimization hints for Blink to LocalFrame.
+  // TODO(https://crbug.com/1113980): Onion-soupify the optimization guide for
+  // Blink so that we can directly pass the hints without mojom variant
+  // conversion.
+  if (blink_optimization_guide_hints_ &&
+      blink_optimization_guide_hints_->delay_async_script_execution_hints) {
+    web_frame->SetOptimizationGuideHints(
+        blink_optimization_guide_hints_->delay_async_script_execution_hints
+            ->delay_type);
+    blink_optimization_guide_hints_.reset();
+  }
 }
 
 void ResourceLoadingHintsAgent::OnDestruct() {
@@ -141,6 +153,13 @@ void ResourceLoadingHintsAgent::SetLiteVideoHint(
       lite_video::LiteVideoHintAgent::Get(render_frame());
   if (lite_video_hint_agent)
     lite_video_hint_agent->SetLiteVideoHint(std::move(lite_video_hint));
+}
+
+void ResourceLoadingHintsAgent::SetBlinkOptimizationGuideHints(
+    blink::mojom::BlinkOptimizationGuideHintsPtr hints) {
+  if (!IsMainFrame())
+    return;
+  blink_optimization_guide_hints_ = std::move(hints);
 }
 
 void ResourceLoadingHintsAgent::StopThrottlingMediaRequests() {

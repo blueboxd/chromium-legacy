@@ -24,6 +24,7 @@ js_type_check("closure_compile_module") {
     ":files_message",
     ":files_metadata_box",
     ":files_metadata_entry",
+    ":files_password_dialog",
     ":files_quick_view",
     ":files_ripple",
     ":files_safe_media",
@@ -76,6 +77,23 @@ js_library("files_metadata_box") {
 }
 
 js_library("files_metadata_entry") {
+}
+
+js_library("files_password_dialog") {
+  deps = [
+    "//ui/file_manager/file_manager/common/js:async_util",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
+  ]
+}
+
+js_unittest("files_password_dialog_unittest") {
+  deps = [
+    ":files_password_dialog",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
 }
 
 js_library("files_quick_view") {
@@ -146,6 +164,7 @@ js_unittest("files_xf_elements_unittest") {
 js_test_gen_html("js_test_gen_html") {
   deps = [
     ":files_message_unittest",
+    ":files_password_dialog_unittest",
     ":files_toast_unittest",
     ":files_tooltip_unittest",
     ":files_xf_elements_unittest",

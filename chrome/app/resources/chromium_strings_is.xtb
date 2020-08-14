@@ -30,6 +30,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="2294245788148774212">Valfrjálst: Hjálpa til við að bæta eiginleika og afköst Chromium OS með því að senda greiningar- og notkunargögn sjálfkrafa til Google.</translation>
 <translation id="2347108572062610441">Þessi viðbót hefur breytt því hvaða síða birtist þegar þú ræsir Chromium.</translation>
 <translation id="2396765026452590966">Viðbótin „<ph name="EXTENSION_NAME" />“ hefur breytt því hvaða síða birtist þegar þú ræsir Chromium.</translation>
+<translation id="2442081746662839303">Búa til nýtt Chromium svæði fyrir <ph name="NEW_USER" />?</translation>
 <translation id="2483889755041906834">í Chromium</translation>
 <translation id="2485422356828889247">Fjarlægja</translation>
 <translation id="2527042973354814951">Endurræstu Chromium til að kveikja á <ph name="PLUGIN_NAME" /></translation>
@@ -107,6 +108,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="4943838377383847465">Chromium er í bakgrunnsstillingu.</translation>
 <translation id="4987820182225656817">Gestir geta notað Chromium án þess að skilja eftir sig nokkur spor.</translation>
 <translation id="4994636714258228724">Bættu þér við Chromium</translation>
+<translation id="5053724573690775822">Búa til nýtt vinnusvæði í Chromium?</translation>
 <translation id="5224391634244552924">Engin vistuð aðgangsorð. Chromium getur athugað aðgangsorðin þín þegar þú vistar þau.</translation>
 <translation id="5277894862589591112">Endurræstu Chromium til að breytingarnar taki gildi</translation>
 <translation id="5358375970380395591">Þú ert að skrá þig inn með stýrðum reikningi og veitir stjórnanda hans vald yfir Chromium prófílnum þínum. Chromium gögnin þín, s.s. forrit, bókamerki, ferill, aðgangsorð og aðrar stillingar, verða tengd varanlega við <ph name="USER_NAME" />. Þú getur eytt þessum gögnum á stjórnborði Google reikninga en getur ekki tengt þau öðrum reikningi. <ph name="LEARN_MORE" /></translation>
@@ -116,6 +118,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="5416696090975899932">Chromium getur ekki birt prentforskoðun ef innbyggðan PDF-skoðara vantar.</translation>
 <translation id="5427571867875391349">Stilla Chromium sem sjálfgefinn vafra</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - tilraunaútgáfa Chromium</translation>
+<translation id="544968170749360982">Þú skráðir þig inn með nýjum reikningi á svæði sem <ph name="EXISTING_USER" /> á. Viltu búa til nýtt Chromium svæði sem <ph name="NEW_USER" /> getur notað til að halda gögnunum þínum aðskildum?</translation>
 <translation id="5479196819031988440">Stýrikerfi Chromium getur ekki opnað þessa síðu.</translation>
 <translation id="5480860683791598150">Chromium þarf staðsetningaraðgang til að deila staðsetningu þinni með þessu vefsvæði</translation>
 <translation id="549669000822060376">Bíddu á meðan Chromium setur upp nýjustu kerfisuppfærslunar.</translation>
@@ -138,6 +141,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="608189560609172163">Chromium gat ekki samstillt gögnin þín vegna innskráningarvillu.</translation>
 <translation id="6096348254544841612">Sérstilltu og stjórnaðu Chromium. Uppfærsla er í boði.</translation>
 <translation id="6120345080069858279">Chromium mun vista þetta aðgangsorð á Google reikningnum þínum. Þú þarft ekki að muna það.</translation>
+<translation id="6128834065531097268">Þú skráðir þig inn með vinnureikningi á svæði sem <ph name="EXISTING_USER" /> á. Viltu búa til nýtt Chromium svæði fyrir <ph name="WORK_DOMAIN" /> til að halda gögnunum þínum aðskildum?</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> er skaðleg skrá og Chromium útilokaði hana.</translation>
 <translation id="6134968993075716475">Slökkt er á öruggri vefskoðun. Chromium mælir með því að kveikt sé á henni.</translation>
 <translation id="6212496753309875659">Á þessari tölvu er þegar nýrri útgáfa af Chromium. Ef hugbúnaðurinn virkar ekki skaltu fjarlægja Chromium og reyna aftur.</translation>
@@ -199,6 +203,7 @@ Chromium getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="7561906087460245826">Hreinsa líka gögn úr Chromium (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Ef stilling sést ekki á þessari síðu skaltu athuga <ph name="LINK_BEGIN" />
       stillingar Chromium OS<ph name="LINK_END" /></translation>
+<translation id="7607142834923530546">Þú skráðir þig inn með vinnureikningi. Viltu búa til nýtt Chromium svæði sem <ph name="NEW_USER" /> getur notað til að halda persónulegu gögnunum þínum aðskildum?</translation>
 <translation id="761356813943268536">Chromium er að nota myndavélina þína og hljóðnema.</translation>
 <translation id="7617377681829253106">Chromium er nú enn betra</translation>
 <translation id="7628001322379820951">Chromium fann skaðlegan hugbúnað í tölvunni þinni</translation>

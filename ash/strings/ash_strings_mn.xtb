@@ -92,6 +92,7 @@
 <translation id="1962969542251276847">Түгжигдсэн дэлгэц</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Сайн уу, <ph name="USERNAME" /></translation>
+<translation id="1975500003782052650">Саяхан татаж авсан файлууд</translation>
 <translation id="1978498689038657292">Текстээр оруулах</translation>
 <translation id="1993072747612765854">Хамгийн сүүлийн <ph name="SYSTEM_APP_NAME" /> шинэчлэлтийн талаар дэлгэрэнгүй үзэх</translation>
 <translation id="1995660704900986789">Унтраах</translation>
@@ -128,6 +129,7 @@
 <translation id="2369165858548251131">"Сайн байна уу?"-г хятад хэлээр</translation>
 <translation id="2390318262976603432">Хэл болон улсын кодын тохиргоо</translation>
 <translation id="2391579633712104609">180 °</translation>
+<translation id="2408955596600435184">ПИН-ээ оруулна уу</translation>
 <translation id="2412593942846481727">Шинэчлэх боломжтой</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> нь <ph name="DOMAIN" />-н удирдаж буй хяналттай харилцан үйлдэл юм</translation>
 <translation id="2427507373259914951">Зүүн талыг товших</translation>
@@ -255,6 +257,7 @@
 <translation id="3798670284305777884">Чанга яригч (дотоод)</translation>
 <translation id="3799080171973636491">Та бүтэн дэлгэц томруулагчийн товчлуурын шууд холбоосыг дарсан байна. Үүнийг асаах уу?</translation>
 <translation id="380165613292957338">Сайн байна уу, танд хэрхэн туслах вэ?</translation>
+<translation id="3826099427150913765">Нууц үг рүү сэлгэх</translation>
 <translation id="383629559565718788">Гарын тохиргоог харуулах</translation>
 <translation id="3846575436967432996">Сүлжээтэй холбоотой мэдээлэл байхгүй байна</translation>
 <translation id="385051799172605136">Буцах</translation>
@@ -285,6 +288,7 @@
 <translation id="4181841719683918333">Хэл</translation>
 <translation id="4195877955194704651">Автомат даралтын товчлуур</translation>
 <translation id="4197790712631116042">Унтраалттай</translation>
+<translation id="4212472694152630271">ПИН рүү сэлгэх</translation>
 <translation id="4215497585250573029">VPN тохиргоо</translation>
 <translation id="4217571870635786043">Заавар</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -297,6 +301,7 @@
 <translation id="4321776623976362024">Та өндөр нягтралын товчлуурын шууд холбоосыг дарсан байна. Үүнийг асаах уу?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Томруулдаг шил</translation>
+<translation id="4350065043422286972">Тэмдэглэсэн файлууд</translation>
 <translation id="4351433414020964307">Туслах ачааллаж байна...</translation>
 <translation id="4356930093361201197">өндөр ялгаралтай горим</translation>
 <translation id="4368583494516669646">Сайхан амраарай <ph name="GIVEN_NAME" /></translation>
@@ -358,6 +363,7 @@
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> шинэ утсанд холбогдсон байна</translation>
 <translation id="5035389544768382859">Дэлгэцийн тохируулгыг баталгаажуулах</translation>
 <translation id="5083553833479578423">Tуслахын бусад онцлогийн түгжээг тайлна уу.</translation>
+<translation id="5114495209940374989">Дэлгэцийн агшин</translation>
 <translation id="5136175204352732067">Өөр гар холбосон</translation>
 <translation id="5168181903108465623">Бэлэн төхөөрөмжийг каст хийх</translation>
 <translation id="5207949376430453814">Текст оруулах тэмдгийг тодруулах</translation>
@@ -600,6 +606,7 @@
 <translation id="8061464966246066292">Өндөр ялгарал</translation>
 <translation id="8098591350844501178">Дэлгэцийг <ph name="RECEIVER_NAME" />-д дамжуулахыг зогсоох</translation>
 <translation id="8113423164597455979">Бүх аппд и.тэй</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" />°C</translation>
 <translation id="8131740175452115882">Батлах</translation>
 <translation id="8132793192354020517"><ph name="NAME" />-д холбогдсон</translation>
 <translation id="813913629614996137">Эхлүүлж байна…</translation>

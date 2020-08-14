@@ -86,8 +86,9 @@ class TestNexeCallback {
   TestNexeCallback()
       : have_result_(false),
         result_(-1),
-        cb_(base::Bind(&TestNexeCallback::SetResult, base::Unretained(this))) {}
-  GetNexeCallback callback() { return cb_; }
+        cb_(base::BindOnce(&TestNexeCallback::SetResult,
+                           base::Unretained(this))) {}
+  GetNexeCallback callback() { return std::move(cb_); }
   net::DrainableIOBuffer* GetResult(int* result) {
     while (!have_result_)
       base::RunLoop().RunUntilIdle();
@@ -105,7 +106,7 @@ class TestNexeCallback {
   bool have_result_;
   int result_;
   scoped_refptr<net::DrainableIOBuffer> buf_;
-  const GetNexeCallback cb_;
+  GetNexeCallback cb_;
 };
 
 std::string PnaclTranslationCacheTest::GetNexe(const std::string& key) {

@@ -91,7 +91,6 @@ class CastCdmContextForTest : public CastCdmContext {
 
  private:
   bool license_installed_;
-  base::Closure new_key_cb_;
   ::media::CallbackRegistry<::media::CdmContext::EventCB::RunType>
       event_callbacks_;
 
@@ -138,8 +137,8 @@ class PipelineHelper {
           ::media::CHANNEL_LAYOUT_STEREO, 44100, ::media::EmptyExtraData(),
           ::media::EncryptionScheme::kUnencrypted);
       AvPipelineClient client;
-      client.eos_cb = base::Bind(&PipelineHelper::OnEos, base::Unretained(this),
-                                 STREAM_AUDIO);
+      client.eos_cb = base::BindOnce(&PipelineHelper::OnEos,
+                                     base::Unretained(this), STREAM_AUDIO);
       EXPECT_CALL(*pipeline_backend_, CreateAudioDecoder())
           .Times(1)
           .WillOnce(Return(&audio_decoder_));
@@ -147,7 +146,7 @@ class PipelineHelper {
           .Times(1)
           .WillOnce(SaveArg<0>(&audio_decoder_delegate_));
       ::media::PipelineStatus status = media_pipeline_->InitializeAudio(
-          audio_config, client, CreateFrameProvider());
+          audio_config, std::move(client), CreateFrameProvider());
       ASSERT_EQ(::media::PIPELINE_OK, status);
     }
     if (have_video_) {
@@ -159,7 +158,7 @@ class PipelineHelper {
           gfx::Size(640, 480), gfx::Rect(0, 0, 640, 480), gfx::Size(640, 480),
           ::media::EmptyExtraData(), ::media::EncryptionScheme()));
       VideoPipelineClient client;
-      client.av_pipeline_client.eos_cb = base::Bind(
+      client.av_pipeline_client.eos_cb = base::BindOnce(
           &PipelineHelper::OnEos, base::Unretained(this), STREAM_VIDEO);
       EXPECT_CALL(*pipeline_backend_, CreateVideoDecoder())
           .Times(1)
@@ -168,7 +167,7 @@ class PipelineHelper {
           .Times(1)
           .WillOnce(SaveArg<0>(&video_decoder_delegate_));
       ::media::PipelineStatus status = media_pipeline_->InitializeVideo(
-          video_configs, client, CreateFrameProvider());
+          video_configs, std::move(client), CreateFrameProvider());
       ASSERT_EQ(::media::PIPELINE_OK, status);
     }
   }
@@ -191,8 +190,8 @@ class PipelineHelper {
     EXPECT_CALL(*pipeline_backend_, Pause());
   }
 
-  void Start(const base::Closure& eos_cb) {
-    eos_cb_ = eos_cb;
+  void Start(base::OnceClosure eos_cb) {
+    eos_cb_ = std::move(eos_cb);
     eos_[STREAM_AUDIO] = !media_pipeline_->HasAudio();
     eos_[STREAM_VIDEO] = !media_pipeline_->HasVideo();
     last_push_pts_[STREAM_AUDIO] = std::numeric_limits<int64_t>::min();
@@ -211,9 +210,9 @@ class PipelineHelper {
     media_pipeline_->SetPlaybackRate(1.0f);
   }
   void SetCdm() { media_pipeline_->SetCdm(cdm_context_.get()); }
-  void Flush(const base::Closure& flush_cb) {
+  void Flush(base::OnceClosure flush_cb) {
     EXPECT_CALL(*pipeline_backend_, Stop()).Times(1);
-    media_pipeline_->Flush(flush_cb);
+    media_pipeline_->Flush(std::move(flush_cb));
   }
   void Stop() {
     media_pipeline_.reset();
@@ -254,7 +253,7 @@ class PipelineHelper {
   void OnEos(Stream stream) {
     eos_[stream] = true;
     if (eos_[STREAM_AUDIO] && eos_[STREAM_VIDEO] && !eos_cb_.is_null())
-      eos_cb_.Run();
+      std::move(eos_cb_).Run();
   }
 
   bool have_audio_;
@@ -262,7 +261,7 @@ class PipelineHelper {
   bool encrypted_;
   bool eos_[2];
   int64_t last_push_pts_[2];
-  base::Closure eos_cb_;
+  base::OnceClosure eos_cb_;
   std::unique_ptr<CastCdmContextForTest> cdm_context_;
   MockCmaBackend* pipeline_backend_;
   NiceMock<MockCmaBackend::AudioDecoder> audio_decoder_;
@@ -307,13 +306,13 @@ static void VerifyPlay(PipelineHelper* pipeline_helper) {
 }
 
 TEST_P(AudioVideoPipelineImplTest, Play) {
-  base::Closure verify_task =
-      base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
+  base::OnceClosure verify_task =
+      base::BindOnce(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
   pipeline_helper_->SetPipelineStartExpectations();
   task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PipelineHelper::Start,
-                     base::Unretained(pipeline_helper_.get()), verify_task));
+      FROM_HERE, base::BindOnce(&PipelineHelper::Start,
+                                base::Unretained(pipeline_helper_.get()),
+                                std::move(verify_task)));
   base::RunLoop().Run();
 }
 
@@ -332,33 +331,33 @@ static void VerifyNotReached() {
 }
 
 TEST_P(AudioVideoPipelineImplTest, Flush) {
-  base::Closure verify_task =
-      base::Bind(&VerifyFlush, base::Unretained(pipeline_helper_.get()));
+  base::OnceClosure verify_task =
+      base::BindOnce(&VerifyFlush, base::Unretained(pipeline_helper_.get()));
   pipeline_helper_->SetPipelineStartFlushExpectations();
   task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&PipelineHelper::Start,
                                 base::Unretained(pipeline_helper_.get()),
-                                base::Bind(&VerifyNotReached)));
+                                base::BindOnce(&VerifyNotReached)));
   task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PipelineHelper::Flush,
-                     base::Unretained(pipeline_helper_.get()), verify_task));
+      FROM_HERE, base::BindOnce(&PipelineHelper::Flush,
+                                base::Unretained(pipeline_helper_.get()),
+                                std::move(verify_task)));
 
   base::RunLoop().Run();
 }
 
 TEST_P(AudioVideoPipelineImplTest, FullCycle) {
-  base::Closure stop_task = base::Bind(
+  base::OnceClosure stop_task = base::BindOnce(
       &PipelineHelper::Stop, base::Unretained(pipeline_helper_.get()));
-  base::Closure eos_cb =
-      base::Bind(&PipelineHelper::Flush,
-                 base::Unretained(pipeline_helper_.get()), stop_task);
+  base::OnceClosure eos_cb = base::BindOnce(
+      &PipelineHelper::Flush, base::Unretained(pipeline_helper_.get()),
+      std::move(stop_task));
 
   pipeline_helper_->SetPipelineStartExpectations();
   task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PipelineHelper::Start,
-                     base::Unretained(pipeline_helper_.get()), eos_cb));
+      FROM_HERE, base::BindOnce(&PipelineHelper::Start,
+                                base::Unretained(pipeline_helper_.get()),
+                                std::move(eos_cb)));
   base::RunLoop().Run();
 }
 
@@ -390,8 +389,8 @@ class EncryptedAVPipelineImplTest : public ::testing::Test {
 
 // Sets a CDM with license already installed before starting the pipeline.
 TEST_F(EncryptedAVPipelineImplTest, SetCdmWithLicenseBeforeStart) {
-  base::Closure verify_task =
-      base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
+  base::OnceClosure verify_task =
+      base::BindOnce(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
   task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&PipelineHelper::SetCdm,
                                 base::Unretained(pipeline_helper_.get())));
@@ -400,21 +399,21 @@ TEST_F(EncryptedAVPipelineImplTest, SetCdmWithLicenseBeforeStart) {
                                 base::Unretained(pipeline_helper_.get())));
   pipeline_helper_->SetPipelineStartExpectations();
   task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PipelineHelper::Start,
-                     base::Unretained(pipeline_helper_.get()), verify_task));
+      FROM_HERE, base::BindOnce(&PipelineHelper::Start,
+                                base::Unretained(pipeline_helper_.get()),
+                                std::move(verify_task)));
   base::RunLoop().Run();
 }
 
 // Start the pipeline, then set a CDM with existing license.
 TEST_F(EncryptedAVPipelineImplTest, SetCdmWithLicenseAfterStart) {
-  base::Closure verify_task =
-      base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
+  base::OnceClosure verify_task =
+      base::BindOnce(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
   pipeline_helper_->SetPipelineStartExpectations();
   task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PipelineHelper::Start,
-                     base::Unretained(pipeline_helper_.get()), verify_task));
+      FROM_HERE, base::BindOnce(&PipelineHelper::Start,
+                                base::Unretained(pipeline_helper_.get()),
+                                std::move(verify_task)));
 
   task_environment_.RunUntilIdle();
   task_environment_.GetMainThreadTaskRunner()->PostTask(
@@ -428,13 +427,13 @@ TEST_F(EncryptedAVPipelineImplTest, SetCdmWithLicenseAfterStart) {
 
 // Start the pipeline, set a CDM, and then install the license.
 TEST_F(EncryptedAVPipelineImplTest, SetCdmAndInstallLicenseAfterStart) {
-  base::Closure verify_task =
-      base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
+  base::OnceClosure verify_task =
+      base::BindOnce(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
   pipeline_helper_->SetPipelineStartExpectations();
   task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PipelineHelper::Start,
-                     base::Unretained(pipeline_helper_.get()), verify_task));
+      FROM_HERE, base::BindOnce(&PipelineHelper::Start,
+                                base::Unretained(pipeline_helper_.get()),
+                                std::move(verify_task)));
   task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&PipelineHelper::SetCdm,
                                 base::Unretained(pipeline_helper_.get())));

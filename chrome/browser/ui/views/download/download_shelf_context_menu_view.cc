@@ -25,7 +25,7 @@ void DownloadShelfContextMenuView::Run(
     views::Widget* parent_widget,
     const gfx::Rect& rect,
     ui::MenuSourceType source_type,
-    const base::Closure& on_menu_closed_callback) {
+    base::RepeatingClosure on_menu_closed_callback) {
   using Position = views::MenuAnchorPosition;
   ui::MenuModel* menu_model = GetMenuModel();
   // Run() should not be getting called if the DownloadItem was destroyed.
@@ -35,7 +35,8 @@ void DownloadShelfContextMenuView::Run(
       menu_model,
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
       base::BindRepeating(&DownloadShelfContextMenuView::OnMenuClosed,
-                          base::Unretained(this), on_menu_closed_callback));
+                          base::Unretained(this),
+                          std::move(on_menu_closed_callback)));
 
   // The menu's alignment is determined based on the UI layout.
   Position position;
@@ -48,7 +49,7 @@ void DownloadShelfContextMenuView::Run(
 }
 
 void DownloadShelfContextMenuView::OnMenuClosed(
-    const base::Closure& on_menu_closed_callback) {
+    base::RepeatingClosure on_menu_closed_callback) {
   close_time_ = base::TimeTicks::Now();
 
   // This must be run before clearing |menu_runner_| who owns the reference.

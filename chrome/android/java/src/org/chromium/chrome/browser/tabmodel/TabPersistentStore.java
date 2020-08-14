@@ -404,7 +404,7 @@ public class TabPersistentStore extends TabPersister {
             }
         } catch (Exception e) {
             // Catch generic exception to prevent a corrupted state from crashing app on startup.
-            Log.d(TAG, "loadState exception: " + e.toString(), e);
+            Log.i(TAG, "loadState exception: " + e.toString(), e);
         }
 
         mPersistencePolicy.notifyStateLoaded(mTabsToRestore.size());
@@ -551,7 +551,7 @@ public class TabPersistentStore extends TabPersister {
         } catch (Exception e) {
             // Catch generic exception to prevent a corrupted state from crashing the app
             // at startup.
-            Log.d(TAG, "loadTabs exception: " + e.toString(), e);
+            Log.i(TAG, "loadTabs exception: " + e.toString(), e);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -879,9 +879,9 @@ public class TabPersistentStore extends TabPersister {
         stream.writeInt(incognitoCount);
         stream.writeInt(incognitoInfo.index);
         stream.writeInt(standardInfo.index + incognitoCount);
-        Log.d(TAG, "Serializing tab lists; counts: " + standardCount
-                + ", " + incognitoCount
-                + ", " + (tabsBeingRestored == null ? 0 : tabsBeingRestored.size()));
+        Log.i(TAG,
+                "Serializing tab lists; counts: " + standardCount + ", " + incognitoCount + ", "
+                        + (tabsBeingRestored == null ? 0 : tabsBeingRestored.size()));
 
         // Save incognito state first, so when we load, if the incognito files are unreadable
         // we can fall back easily onto the standard selected tab.
@@ -1255,8 +1255,9 @@ public class TabPersistentStore extends TabPersister {
             cleanUpPersistentData();
             onStateLoaded();
             mLoadTabTask = null;
-            Log.d(TAG, "Loaded tab lists; counts: " + mTabModelSelector.getModel(false).getCount()
-                    + "," + mTabModelSelector.getModel(true).getCount());
+            Log.i(TAG,
+                    "Loaded tab lists; counts: " + mTabModelSelector.getModel(false).getCount()
+                            + "," + mTabModelSelector.getModel(true).getCount());
         } else {
             TabRestoreDetails tabToRestore = mTabsToRestore.removeFirst();
             mLoadTabTask = new LoadTabTask(tabToRestore);

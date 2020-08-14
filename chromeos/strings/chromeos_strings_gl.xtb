@@ -9,6 +9,7 @@
 <translation id="150962533380566081">O PUK non é válido.</translation>
 <translation id="1510238584712386396">Menú de aplicacións</translation>
 <translation id="1644574205037202324">Historial</translation>
+<translation id="1662989795263954667">Detívose (esgotouse a tinta)</translation>
 <translation id="1734367976349034509">Este dispositivo xestiónao unha empresa</translation>
 <translation id="1905710495812624430">Superouse o número máximo de intentos.</translation>
 <translation id="1930797645656624981">Servizo do método de introdución de texto de Chrome OS</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">O contrasinal caduca en <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Non hai ningunha tarefa de impresión en curso</translation>
 <translation id="428217921675623177">Eliminaranse os traballos de impresión de máis de 90 días</translation>
+<translation id="4297501883039923494">Detívose (produciuse un erro descoñecido)</translation>
 <translation id="4429881212383817840">O tícket de Kerberos caduca pronto</translation>
 <translation id="445059817448385655">Contrasinal antigo</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" />. Para cancelar o traballo de impresión, preme Intro.</translation>
 <translation id="467510802200863975">Os contrasinais non coinciden</translation>
+<translation id="4691278870498629773">Detívose (falta a bandexa)</translation>
 <translation id="4731797938093519117">Acceso parental</translation>
 <translation id="4773299976671772492">Detido</translation>
 <translation id="4808449224298348341">Cancelouse o traballo de impresión <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Escolle un novo inmediatamente</translation>
+<translation id="4917889632206600977">Detívose (esgotouse o papel)</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="5212543919916444558">Non atopo nada na pantalla co que che poida axudar.
 Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="5222676887888702881">Pechar sesión</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Gardar</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Escolle un novo agora</translation>
@@ -63,9 +68,11 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="6106186594183574873">Para finalizar, introduce o teu antigo contrasinal</translation>
 <translation id="6146993107019042706">Para finalizar, introduce o teu novo contrasinal</translation>
 <translation id="636850387210749493">Inscrición corporativa</translation>
+<translation id="649050271426829538">Detívose (atasco de papel)</translation>
 <translation id="6517239166834772319">Explorar</translation>
 <translation id="6564646048574748301">Produciuse un erro: non se puido acceder á impresora</translation>
 <translation id="6643016212128521049">Borrar</translation>
+<translation id="6747215703636344499">Detívose (a saída está chea)</translation>
 <translation id="7162487448488904999">Galería</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">O teu administrador xestiona esta acción</translation>
@@ -77,6 +84,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="8347227221149377169">Traballos de impresión</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> xestiona este usuario. Pode xestionar a súa configuración e controlar a súa actividade de forma remota.</translation>
 <translation id="871560550817059752">Produciuse un erro: a impresora quedou sen tinta</translation>
+<translation id="8726019395068607495">Detívose (a tapa está aberta)</translation>
 <translation id="8747900814994928677">Confirmar o cambio</translation>
 <translation id="8919837981463578619">Produciuse un erro: falta a bandexa</translation>
 <translation id="8928727111548978589">Produciuse un erro: a impresora quedou sen papel</translation>

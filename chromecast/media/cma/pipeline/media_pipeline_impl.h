@@ -45,16 +45,16 @@ class MediaPipelineImpl {
   void Initialize(LoadType load_type,
                   std::unique_ptr<CmaBackend> media_pipeline_backend);
 
-  void SetClient(const MediaPipelineClient& client);
+  void SetClient(MediaPipelineClient client);
   void SetCdm(const base::UnguessableToken* cdm_id);
 
   ::media::PipelineStatus InitializeAudio(
       const ::media::AudioDecoderConfig& config,
-      const AvPipelineClient& client,
+      AvPipelineClient client,
       std::unique_ptr<CodedFrameProvider> frame_provider);
   ::media::PipelineStatus InitializeVideo(
       const std::vector<::media::VideoDecoderConfig>& configs,
-      const VideoPipelineClient& client,
+      VideoPipelineClient client,
       std::unique_ptr<CodedFrameProvider> frame_provider);
   void StartPlayingFrom(base::TimeDelta time);
   void Flush(base::OnceClosure flush_cb);

@@ -391,6 +391,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"LangClientHintHeader", features::kLangClientHintHeader,
            kUseFeatureState},
           {"LayoutNG", blink::features::kLayoutNG, kUseFeatureState},
+          {"LayoutNGFieldset", blink::features::kLayoutNGFieldset,
+           kUseFeatureState},
           {"LayoutNGFlexBox", blink::features::kFlexNG, kUseFeatureState},
           {"LayoutNGFragmentItem", blink::features::kFragmentItem,
            kUseFeatureState},

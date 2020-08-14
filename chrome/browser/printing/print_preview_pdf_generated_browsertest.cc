@@ -48,6 +48,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/filename_util.h"
 #include "pdf/pdf.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/units.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -97,7 +98,7 @@ struct PrintPreviewSettings {
                        const std::string& page_numbers,
                        bool headers_and_footers,
                        bool background_colors_and_images,
-                       MarginType margins,
+                       mojom::MarginType margins,
                        bool source_is_pdf)
       : is_portrait(is_portrait),
         page_numbers(page_numbers),
@@ -110,7 +111,7 @@ struct PrintPreviewSettings {
   std::string page_numbers;
   bool headers_and_footers;
   bool background_colors_and_images;
-  MarginType margins;
+  mojom::MarginType margins;
   bool source_is_pdf;
 };
 
@@ -195,7 +196,8 @@ class PrintPreviewObserver : public WebContentsObserver {
       state_ = kWaitingToSendMargins;
       failed_setting_ = "Background Colors and Images";
     } else if (state_ == kWaitingToSendMargins) {
-      script_argument.SetInteger("margins", settings_->margins);
+      script_argument.SetInteger("margins",
+                                 static_cast<int>(settings_->margins));
       state_ = kWaitingForFinalMessage;
       failed_setting_ = "Margins";
     } else if (state_ == kWaitingForFinalMessage) {
@@ -608,11 +610,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewPdfGeneratedBrowserTest,
 
     DuplicateTab();
     PrintPreviewSettings settings(
-        true,
-        "",
-        false,
-        false,
-        DEFAULT_MARGINS,
+        true, "", false, false, mojom::MarginType::kDefaultMargins,
         cmd.find(file_extension) != base::FilePath::StringType::npos);
 
     // Splits the command sent by the layout test framework. The first command

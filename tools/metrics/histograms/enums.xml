@@ -28536,7 +28536,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3201" label="OBSOLETE_WrongBaselineOfButtonElement"/>
   <int value="3202" label="V8Document_HasTrustToken_Method"/>
   <int value="3203" label="ForceLoadAtTop"/>
-  <int value="3204" label="LegacyLayoutByButton"/>
+  <int value="3204" label="OBSOLETE_LegacyLayoutByButton"/>
   <int value="3205" label="LegacyLayoutByDeprecatedFlexBox"/>
   <int value="3206" label="LegacyLayoutByDetailsMarker"/>
   <int value="3207" label="LegacyLayoutByEditing"/>
@@ -28725,6 +28725,15 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3384" label="V8FontMetadata_GetTables_Method"/>
   <int value="3385" label="V8FontMetadata_Blob_Method"/>
   <int value="3386" label="V8FontManager_Query_Method"/>
+  <int value="3387" label="AudioContextBaseLatency"/>
+  <int value="3388" label="V8Window_GetScreens_Method"/>
+  <int value="3389" label="V8Window_IsMultiScreen_Method"/>
+  <int value="3390" label="V8Window_Onscreenschange_AttributeGetter"/>
+  <int value="3391" label="V8Window_Onscreenschange_AttributeSetter"/>
+  <int value="3392" label="DOMWindowOpenPositioningFeaturesCrossScreen"/>
+  <int value="3393" label="DOMWindowSetWindowRectCrossScreen"/>
+  <int value="3394" label="FullscreenCrossScreen"/>
+  <int value="3395" label="BatterySavingsMeta"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41747,6 +41756,7 @@ from previous Chrome versions.
   <int value="-315333837" label="AutofillEnableCardNicknameUpstream:enabled"/>
   <int value="-314910380" label="disable-distance-field-text"/>
   <int value="-314605926" label="protect-sync-credential-on-reauth:enabled"/>
+  <int value="-313812707" label="VideoTutorials:disabled"/>
   <int value="-311148335" label="v8-pac-mojo-out-of-process"/>
   <int value="-310908854" label="new-wallpaper-picker"/>
   <int value="-310615515" label="EnableSuggestedFiles:disabled"/>
@@ -42862,6 +42872,7 @@ from previous Chrome versions.
   <int value="902209599" label="ShelfHotseat:enabled"/>
   <int value="902839593" label="WebContentsForceDark:disabled"/>
   <int value="903267263" label="disable-offline-pages"/>
+  <int value="904811479" label="query-tiles-enable-trending"/>
   <int value="908302031"
       label="OmniboxUIExperimentElideSuggestionUrlAfterHost:enabled"/>
   <int value="908370794" label="UserActivityPredictionMlService:enabled"/>
@@ -43490,6 +43501,7 @@ from previous Chrome versions.
   <int value="1579084737" label="TemporaryUnexpireFlagsM80:disabled"/>
   <int value="1579461102" label="MemoryCoordinator:disabled"/>
   <int value="1581002467" label="enable-explicit-dma-fences"/>
+  <int value="1582400283" label="VideoTutorials:enabled"/>
   <int value="1584039096" label="highlight-all-webviews"/>
   <int value="1584425198" label="NtpModules:enabled"/>
   <int value="1584536816" label="LimitAltTabToActiveDesk:enabled"/>

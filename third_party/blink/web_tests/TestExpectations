@@ -2691,7 +2691,6 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 virtual/web-components-v0-disabled/external/wpt/dom/events/Event-dispatch-click.html [ Timeout ]
 crbug.com/626703 external/wpt/dom/events/Event-dispatch-click.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/streams/readable-streams/tee.any.serviceworker.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/streams/readable-streams/tee.any.serviceworker.html [ Timeout ]

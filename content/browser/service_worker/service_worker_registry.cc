@@ -734,12 +734,12 @@ void ServiceWorkerRegistry::GetUserDataForAllRegistrationsByKeyPrefix(
 
 void ServiceWorkerRegistry::PrepareForDeleteAndStarOver() {
   should_schedule_delete_and_start_over_ = false;
-  storage()->Disable();
+  GetRemoteStorageControl()->Disable();
   is_storage_disabled_ = true;
 }
 
 void ServiceWorkerRegistry::DeleteAndStartOver(StatusCallback callback) {
-  storage()->DeleteAndStartOver(
+  GetRemoteStorageControl()->Delete(
       CreateDatabaseStatusCallback(std::move(callback)));
 }
 

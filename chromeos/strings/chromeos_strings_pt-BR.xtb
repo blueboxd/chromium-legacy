@@ -9,6 +9,7 @@
 <translation id="150962533380566081">PUK inválida.</translation>
 <translation id="1510238584712386396">Iniciador</translation>
 <translation id="1644574205037202324">Histórico</translation>
+<translation id="1662989795263954667">Parado (sem tinta)</translation>
 <translation id="1734367976349034509">Este dispositivo é gerenciado por uma empresa</translation>
 <translation id="1905710495812624430">O número máximo de tentativas permitidas foi excedido.</translation>
 <translation id="1930797645656624981">Serviço de método de entrada do Chrome OS</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">A senha expirará em <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nenhum trabalho de impressão em andamento</translation>
 <translation id="428217921675623177">Trabalhos de impressão com mais de 90 dias serão removidos</translation>
+<translation id="4297501883039923494">Parado (erro desconhecido)</translation>
 <translation id="4429881212383817840">O tíquete do Kerberos expirará em breve</translation>
 <translation id="445059817448385655">Senha antiga</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" />. Pressione "Enter" para cancelar o trabalho de impressão.</translation>
 <translation id="467510802200863975">As senhas não são iguais</translation>
+<translation id="4691278870498629773">Parado (bandeja ausente)</translation>
 <translation id="4731797938093519117">Acesso de pai/mãe</translation>
 <translation id="4773299976671772492">Interrompida</translation>
 <translation id="4808449224298348341">Trabalho de impressão cancelado: <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Escolha uma nova imediatamente</translation>
+<translation id="4917889632206600977">Parado (sem papel)</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="5212543919916444558">Não foi possível encontrar na sua tela nada com o que eu possa ajudar.
 Tente tocar no microfone para me pedir algo.</translation>
 <translation id="5222676887888702881">Sair</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Escolha uma nova imediatamente</translation>
@@ -63,9 +68,11 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="6106186594183574873">Para concluir, insira sua senha antiga</translation>
 <translation id="6146993107019042706">Para concluir, insira a nova senha</translation>
 <translation id="636850387210749493">Registro da empresa</translation>
+<translation id="649050271426829538">Parado (atolamento de papel)</translation>
 <translation id="6517239166834772319">Explorar</translation>
 <translation id="6564646048574748301">Falha - Impressora inacessível</translation>
 <translation id="6643016212128521049">Limpar</translation>
+<translation id="6747215703636344499">Parado (saída cheia)</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Essa ação é gerenciada pelo administrador</translation>
@@ -77,6 +84,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8347227221149377169">Trabalhos de impressão</translation>
 <translation id="8701136875688985581">O domínio <ph name="ENROLLMENT_DOMAIN" /> gerencia esta conta. Ele pode gerenciar configurações e monitorar a atividade do usuário remotamente.</translation>
 <translation id="871560550817059752">Falha - Sem tinta</translation>
+<translation id="8726019395068607495">Parado (porta aberta)</translation>
 <translation id="8747900814994928677">Confirmar alteração</translation>
 <translation id="8919837981463578619">Falha - Bandeja ausente</translation>
 <translation id="8928727111548978589">Falha - Sem papel</translation>

@@ -118,6 +118,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableSharesheet() {
+    options.enable_sharesheet = true;
+    return *this;
+  }
+
   std::string GetFullName() const {
     std::string full_name = name;
 
@@ -430,14 +435,19 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Toolbar, /* toolbar.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("toolbarDeleteWithMenuItemNoEntrySelected"),
-                      TestCase("toolbarDeleteButtonKeepFocus"),
-                      TestCase("toolbarDeleteEntry").InGuestMode(),
-                      TestCase("toolbarDeleteEntry"),
-                      TestCase("toolbarRefreshButtonWithSelection").EnableArc(),
-                      TestCase("toolbarAltACommand").FilesNg(),
-                      TestCase("toolbarRefreshButtonHiddenInRecents"),
-                      TestCase("toolbarMultiMenuFollowsButton")));
+    ::testing::Values(
+        TestCase("toolbarDeleteWithMenuItemNoEntrySelected"),
+        TestCase("toolbarDeleteButtonKeepFocus"),
+        TestCase("toolbarDeleteEntry").InGuestMode(),
+        TestCase("toolbarDeleteEntry"),
+        TestCase("toolbarRefreshButtonWithSelection").EnableArc(),
+        TestCase("toolbarAltACommand").FilesNg(),
+        TestCase("toolbarRefreshButtonHiddenInRecents"),
+        TestCase("toolbarMultiMenuFollowsButton"),
+        TestCase("toolbarSharesheetButtonWithSelection").EnableSharesheet(),
+        TestCase("toolbarSharesheetContextMenuWithSelection")
+            .EnableSharesheet(),
+        TestCase("toolbarSharesheetNoEntrySelected").EnableSharesheet()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     QuickView, /* quick_view.js */

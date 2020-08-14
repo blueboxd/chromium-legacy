@@ -23,7 +23,7 @@ class BufferingState;
 
 class BufferingController {
  public:
-  typedef base::Callback<void(bool)> BufferingNotificationCB;
+  typedef base::RepeatingCallback<void(bool)> BufferingNotificationCB;
 
   // Creates a buffering controller where the conditions to trigger rebuffering
   // are given by |config|. The whole point of the buffering controller is to

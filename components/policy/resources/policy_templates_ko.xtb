@@ -400,6 +400,12 @@
 
       정책을 False로 설정하거나 설정하지 않으면 사용자가 PDF 플러그인을 사용 중지하지 않은 경우 PDF 파일을 엽니다.</translation>
 <translation id="1608755754295374538">별도 메시지를 표시하지 않고 오디오 캡처 기기에 대한 액세스 권한이 부여되는 URL입니다.</translation>
+<translation id="1611394564825535541">사용자가 엔터프라이즈 프린터가 아닌 프린터에 액세스할 수 있는지 여부를 제어할 수 있습니다.
+
+      이 정책이 True로 설정되거나 설정되지 않으면 사용자가 기본 프린터를 추가, 구성, 인쇄할 수 있게 됩니다.
+
+      이 정책이 False로 설정되어 있으면 사용자가 기본 프린터를 추가하고 구성할 수 없으며 이전에 구성된 기본 프린터로 인쇄할 수도 없게 됩니다.
+      </translation>
 <translation id="1615221548356595305">클라이언트 인증서가 사용되는 경우에도 이러한 호스트에 HTTP/2 연결 병합 허용</translation>
 <translation id="1615855314789673708">Wilco DTC(진단 및 텔레메트리 컨트롤러) 설정을 제공합니다.
 
@@ -539,7 +545,7 @@
 
       정책이 설정되지 않으면 네트워크 예측이 사용 설정되지만 사용자가 변경할 수 있게 됩니다.</translation>
 <translation id="1865417998205858223">주요 권한</translation>
-<translation id="1866563857170942397">기기에 로그인할 수 있는 사용자 목록을 정의합니다. <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> 형식(예: <ph name="USER_WHITELIST_ENTRY_EXAMPLE" /> 형식)의 항목이 사용됩니다. 도메인에 임의의 사용자를 허용하려면 <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" /> 형식의 항목을 사용합니다.
+<translation id="1866563857170942397">기기에 로그인할 수 있는 사용자 목록을 정의합니다. <ph name="USER_ALLOWLIST_ENTRY_FORMAT" /> 형식(예: <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />)의 항목이 사용됩니다. 도메인에 임의의 사용자를 허용하려면 <ph name="USER_ALLOWLIST_ENTRY_WILDCARD" /> 형식의 항목을 사용합니다.
 
       이 정책이 구성되지 않으면 어떤 사용자가 로그인할 수 있는지에 관한 제한이 없습니다. 새 사용자를 만들기 위해서는 <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> 정책이 적절히 구성되어야 합니다.</translation>
 <translation id="186719019195685253">AC 전원으로 기기를 실행하는 동안 유휴 지연 시간에 도달했을 때 실행할 작업</translation>
@@ -675,9 +681,6 @@
           </translation>
 <translation id="2030905906517501646">기본 검색 공급자 키워드</translation>
 <translation id="203096360153626918">이 정책은 Android 앱에 아무런 영향도 미치지 않습니다. 이 정책이 <ph name="FALSE" />로 설정되더라도 Android 앱이 전체화면 모드로 전환될 수 있습니다.</translation>
-<translation id="2035306081270465868">정책을 '사용'으로 설정하면 최초 실행 시 이전 기본 브라우저의 홈페이지를 가져옵니다. 정책을 '사용 안함'으로 설정하거나 설정하지 않으면 최초 실행 시 홈페이지를 가져오지 않습니다.
-
-      사용자는 가져오기 대화상자를 트리거할 수 있으며 '홈페이지' 체크박스가 이 정책의 값에 맞게 선택되거나 선택 해제됩니다.</translation>
 <translation id="2040479044912658454">인쇄 래스터화 모드</translation>
 <translation id="2043749682619281558">로그인 화면에서 커서 강조표시 사용</translation>
 <translation id="2043770014371753404">사용 중지된 엔터프라이즈 프린터</translation>
@@ -1043,19 +1046,6 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 
           정책이 설정되지 않은 경우 처음에는 캐럿 강조표시가 사용 중지되어 있으나 사용자가 언제든지 사용하도록 설정할 수 있습니다.</translation>
 <translation id="2509919237512982967">M84까지 기존 양식 컨트롤을 사용합니다.</translation>
-<translation id="2512630007068794030">정책이 사용 설정될 경우 페이지에서 벗어나면 <ph name="PRODUCT_NAME" /> 기능이 현재 상태(문서 트리, 스크립트 등)의 웹페이지를 뒤로-앞으로 캐시에 보존합니다.
-          페이지로 다시 이동하면 페이지가 뒤로-앞으로 캐시에서 복원되며, 이전에 캐시되었을 때 상태로 표시됩니다.
-
-          이 기능은 페이지에서 벗어날 때 업로드 이벤트를 가져오지 않고
-          뒤로-앞으로 캐시에 저장하므로, 캐시될 것을
-          예상하지 못한 일부 웹사이트(특히 페이지에서 벗어날 때
-         실행되는 업로드 핸들러에 의존하는 웹사이트)는 제대로
-         작동하지 않을 수 있습니다.
-
-          정책을 사용으로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" /> 기능이 사용 설정됩니다.
-
-          정책을 사용 안함으로 설정하면 기능이 강제로 사용 중지됩니다.
-          </translation>
 <translation id="2516600974234263142"><ph name="PRODUCT_NAME" />에서 인쇄를 사용하고 사용자가 이 설정을 바꾸지 못하도록 합니다.
 
       이 설정을 구성하지 않거나 사용하도록 설정하면 사용자가 인쇄할 수 있습니다.
@@ -1125,20 +1115,6 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="2615240493030733717">시간대 정보 보고</translation>
 <translation id="2623014935069176671">첫 번째 사용자 활동 기다리기</translation>
 <translation id="262740370354162807"><ph name="CLOUD_PRINT_NAME" />(으)로 문서 제출 사용</translation>
-<translation id="2627554163382448569">엔터프라이즈 프린터의 설정을 제공합니다.
-
-      이 정책을 통해 <ph name="PRODUCT_OS_NAME" /> 기기에 프린터 설정을 제공할 수 있습니다. 정책 형식은 NativePrinters 사전과 같으며, 허용 목록 또는 차단 목록을 사용하려면 프린터별로 'id' 또는 'guid' 입력란을 추가해야 합니다.
-
-      파일 크기는 5MB를 초과해서는 안 되며, JSON으로 인코딩되어야 합니다. 5MB는 약 21,000대의 프린터가 포함된 파일을 인코딩했을 때 예상할 수 있는 크기입니다. 암호화 해시는 다운로드 파일의 무결성을 확인하는 데 사용됩니다.
-
-      이 파일은 다운로드되고 캐시됩니다. URL 또는 해시가 변경될 때마다 파일이 다시 다운로드됩니다.
-
-      이 정책이 설정되면 <ph name="PRODUCT_OS_NAME" />프린터 설정 파일을 다운로드한 다음 <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_BLACKLIST" />에 따라 프린터를 제공합니다.
-
-      이 정책을 설정하면 사용자가 정책을 변경하거나 덮어쓸 수 없습니다.
-
-      이 정책은 사용자가 개별 기기에서 프린터를 설정할 수 있는지에 영향을 미치지 않으며, 개별 사용자의 프린터 설정을 보완하기 위한 정책입니다.
-      </translation>
 <translation id="2632538643061793322">정책을 설정하면 사용자에게 USB 기기 액세스를 요청할 수 있는 사이트를 지정하는 URL 패턴 목록을 만들 수 있습니다.
 
       정책을 설정하지 않은 경우 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않으면 사용자의 개인 설정이 적용됩니다.
@@ -2309,6 +2285,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="4313767483634435271">기기에서 지정된 도크 MAC 주소</translation>
 <translation id="4322842393287974810">지연 없이 자동 실행된 키오스크 앱에서 <ph name="PRODUCT_OS_NAME" /> 버전을 제어하도록 허용합니다.</translation>
 <translation id="4325690621216251241">작업 표시줄에 로그아웃 버튼 추가</translation>
+<translation id="4330372709562934569">목록에 포함된 사이트가 안전하지 않은 컨텍스트에서 비공개 네트워크 엔드포인트에 요청할 수 있도록 허용합니다.</translation>
 <translation id="4332177773549877617">Android 앱 설치 이벤트 로깅</translation>
 <translation id="4341199399451274159"><ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />가 사용 설정되어 있으면 <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" />을(를) 설정할 경우 검색 공급자에서 지원되는 문자 인코딩을 지정합니다. 인코딩은 UTF-8, GB2312 및 ISO-8859-1과 같은 코드 페이지 이름입니다. 인코딩은 제공된 순서대로 사용됩니다.
 
@@ -2615,6 +2592,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       필수 페이지 크기가 목록에 없을 경우 <ph name="PAGE_SIZE_NAME" />에는 나열된 형식 중 하나 또는 '맞춤 설정'이 포함되어야 합니다. '맞춤 설정' 값이 제공될 경우 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 속성이 지정되어야 합니다. 원하는 높이와 너비를 마이크로미터 단위로 설명합니다. 그 외의 경우에는 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 속성을 지정해서는 안 됩니다. 이 규칙을 위반하는 정책은 무시됩니다.
 
       사용자가 선택한 프린터에서 페이지 크기를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
+<translation id="479290425281021210">안전하지 않은 웹사이트가 비공개 네트워크 엔드포인트에 요청할 수 있도록 허용할지 지정합니다.</translation>
 <translation id="4802744647065138872">응급 상황 롤백 시 사용하기 위해 보관하는 사용자 데이터 스냅샷 수를 제한합니다.</translation>
 <translation id="4802905909524200151"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트 동작 설정</translation>
 <translation id="4804828344300125154">사용자 로그아웃 시 항상 재부팅합니다.</translation>
@@ -3064,6 +3042,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="5405289061476885481"><ph name="PRODUCT_OS_NAME" /> 로그인 화면에서 허용되는 키보드 레이아웃을 구성합니다.
 
       이 정책이 입력 방법 식별자 목록으로 설정되는 경우 주어진 입력 방법을 로그인 화면에서 사용할 수 있습니다. 첫 번째로 주어진 입력 수단이 사전 선택됩니다. 로그인 화면에서는 사용자 포드가 활성화되는데 이때 이 정책에서 주어진 입력 수단과 더불어 사용자가 마지막으로 사용한 입력 수단을 사용할 수 있습니다. 이 정책이 설정되지 않은 경우 로그인 화면의 입력 수단은 로그인 화면이 표시되는 언어에서 가져옵니다. 유효한 입력 수단 식별자가 아닌 값은 무시됩니다.</translation>
+<translation id="5407008856008996384">CUPS 프린터 액세스 허용</translation>
 <translation id="5416064504563346617">정책을 설정하면 사용자에게 USB 기기 액세스를 요청할 수 없는 사이트를 지정하는 URL 패턴 목록을 만들 수 있습니다.
 
       정책을 설정하지 않은 경우 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
@@ -3229,6 +3208,14 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
         정책을 설정하지 않거나 True로 설정하면 사용자가 메뉴-&gt;도움말-&gt;문제 신고로 이동하거나 키 조합을 사용하여 Google에 의견을 보낼 수 있습니다.</translation>
 <translation id="5579179012798142131">사용자 세션 중에 임시 모드나 멀티 로그인이 사용 설정되어 있지 않는 이상, ArcEnabled를 True로 설정하면 사용자의 ARC가 사용 설정됩니다. 정책을 False로 설정하거나 설정하지 않으면 기업 사용자가 ARC를 사용할 수 없습니다.</translation>
+<translation id="5582429816116769246">사용자가 엔터프라이즈 프린터가 아닌 프린터에 액세스할 수 있는지 여부를 제어할 수 있습니다.
+
+      이 정책이 True로 설정되거나 설정되지 않으면 사용자가 자체 기본 프린터를 추가, 구성, 인쇄할 수 있게 됩니다.
+
+      이 정책이 False로 설정되어 있으면 사용자가 기본 프린터를 추가하고 구성할 수 없으며 이전에 구성된 기본 프린터로 인쇄할 수도 없게 됩니다.
+
+      이 정책은 지원 중단되었으므로 <ph name="USER_PRINTERS_ALLOWED" /> 정책을 대신 사용하세요.
+      </translation>
 <translation id="5583806683960333345">이 설정을 사용하면 사용자는 Google 휴대전화의 모바일 데이터를 다른 기기와 공유하도록 허용하는 인스턴트 테더링을 사용할 수 있습니다.
 
       이 설정을 사용 중지하면 사용자는 인스턴트 테더링을 사용할 수 없습니다.
@@ -4060,6 +4047,13 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       정책을 사용 안함으로 설정하면 오류 메시지가 대신 표시됩니다.</translation>
 <translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" /> 및 'Google 드라이브에 저장' 목적지</translation>
+<translation id="6823297401452148231">안전하지 않은 웹사이트가 비공개 네트워크 엔드포인트에 요청할 수 있도록 허용할지 제어합니다. 즉, http://evil.com이 비공개 네트워크에서 `localhost` 및 엔드포인트 두 항목 모두에 요청할 수 있는지 제어합니다. 이 두 항목은 공개 인터넷에서 액세스할 수 없습니다. 자세한 내용은 https://wicg.github.io/cors-rfc1918/#goals를 참고하세요.
+
+          이 정책을 설정하지 않으면 비공개 네트워크 엔드포인트에 대한 안전하지 않은 컨텍스트의 요청의 기본 동작이 <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" /> 정책에 관한 사용자의 개인 설정에 따라 달라지며, 이러한 설정은 필드 평가판이나 명령줄에서 설정할 수 있습니다.
+
+          이 정책이 False로 설정되면 안전하지 않은 웹사이트는 비공개 네트워크 엔드포인트에 요청을 할 수 없도록 금지됩니다. 즉, 공개 IP 주소에서 게재되는 안전하지 않은 웹사이트는 로컬호스트 및 비공개 IP 주소 두 항목 모두에 요청을 할 수 없도록 금지됩니다. 비공개 IP 주소에서 게재되는 안전하지 않은 웹사이트는 로컬호스트에 요청을 할 수 없도록 금지됩니다.
+
+          이 정책이 True로 설정되면 안전하지 않은 웹사이트에서 모든 네트워크 엔드포인트에 요청을 할 수 있도록 허용되며, 이 요청은 다른 교차 원본 확인의 적용을 받습니다.</translation>
 <translation id="6833064854262015312">이 정책을 True로 설정하면 로그인 화면에서 고대비 모드가 사용 설정됩니다. 정책을 False로 설정하면 로그인 화면에서 고대비 모드가 사용 중지됩니다.
 
       정책을 설정하면 사용자가 일시적으로 고대비 모드를 사용 설정하거나 사용 중지하도록 변경할 수 있습니다. 로그인 화면이 새로고침되거나 1분 정도 유휴 상태가 유지되면 원래 상태로 돌아갑니다.
@@ -5160,7 +5154,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
           올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="8357681633047935212">사용자 세션의 길이를 제한합니다.</translation>
-<translation id="8357989008292691856">로그인 사용자 허용 목록</translation>
+<translation id="8357989008292691856">로그인이 허용된 사용자 목록</translation>
 <translation id="8359734107661430198">ExampleDeprecatedFeature API를 2008년 9월 2일까지 사용하도록 설정</translation>
 <translation id="8367209241899435947">Windows에서 Chrome 정리도구 사용 설정</translation>
 <translation id="8367473200119029349">클라우드 보고</translation>
@@ -5740,6 +5734,15 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="9106865192244721694">이 사이트에서 WebUSB 허용</translation>
 <translation id="9109086856618439290">첫 실행 중 CCT/PWA에 서비스 약관 사용 설정</translation>
 <translation id="9112727953998243860">엔터프라이즈 프린터 설정 파일</translation>
+<translation id="9116740039944096995">URL 패턴 목록입니다. 안전하지 않은 웹사이트에서 시작되었으나 일치하는 원본에서 제공되는 비공개 네트워크 요청은 허용됩니다.
+
+          정책이 설정되지 않으면 빈 목록일 때와 동일한 작업이 적용됩니다.
+
+          여기 명시된 패턴에 해당하지 않는 원본에 <ph name="INSECURE_PRIVATE_NETWORK_REQUESTS_ALLOWED_POLICY_NAME" /> 정책(설정된 경우) 또는 사용자 개인 구성의 전역 기본값이 사용됩니다.
+
+          이 정책은 안전하지 않은 원본에만 적용되므로 https://example.com과 같이 이 목록에 포함된 안전한 원본은 무시됩니다.
+
+          유효한 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.</translation>
 <translation id="9117826695152538214">이 정책을 True로 설정하면 고정키가 사용 설정된 상태로 유지됩니다. 정책을 False로 설정하면 고정키가 사용 중지된 상태로 유지됩니다.
 
       정책을 설정하면 사용자가 변경할 수 없습니다. 설정하지 않으면 처음에는 고정키가 사용 중지되지만 사용자가 언제든지 사용 설정할 수 있습니다.</translation>

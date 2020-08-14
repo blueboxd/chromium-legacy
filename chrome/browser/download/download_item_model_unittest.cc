@@ -178,11 +178,10 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
                 "interrupt reason mismatch");
 
   SetupDownloadItemDefaults();
-  for (unsigned i = 0; i < base::size(kTestCases); ++i) {
-    const TestCase& test_case = kTestCases[i];
+  for (const auto& test_case : kTestCases) {
     SetupInterruptedDownloadItem(test_case.reason);
-    EXPECT_STREQ(test_case.expected_status,
-                 base::UTF16ToUTF8(model().GetStatusText()).c_str());
+    EXPECT_EQ(test_case.expected_status,
+              base::UTF16ToUTF8(model().GetStatusText()));
   }
 }
 
@@ -257,11 +256,10 @@ TEST_F(DownloadItemModelTest, InterruptTooltip) {
                 "interrupt reason mismatch");
 
   SetupDownloadItemDefaults();
-  for (unsigned i = 0; i < base::size(kTestCases); ++i) {
-    const TestCase& test_case = kTestCases[i];
+  for (const auto& test_case : kTestCases) {
     SetupInterruptedDownloadItem(test_case.reason);
-    EXPECT_STREQ(test_case.expected_tooltip,
-                 base::UTF16ToUTF8(model().GetTooltipText()).c_str());
+    EXPECT_EQ(test_case.expected_tooltip,
+              base::UTF16ToUTF8(model().GetTooltipText()));
   }
 }
 
@@ -315,8 +313,7 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
 
   SetupDownloadItemDefaults();
 
-  for (unsigned i = 0; i < base::size(kTestCases); i++) {
-    const TestCase& test_case = kTestCases[i];
+  for (const auto& test_case : kTestCases) {
     Mock::VerifyAndClearExpectations(&item());
     Mock::VerifyAndClearExpectations(&model());
     EXPECT_CALL(item(), GetReceivedBytes())
@@ -332,8 +329,8 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
     EXPECT_CALL(item(), IsPaused())
         .WillRepeatedly(Return(test_case.is_paused));
 
-    EXPECT_STREQ(test_case.expected_status,
-                 base::UTF16ToUTF8(model().GetStatusText()).c_str());
+    EXPECT_EQ(test_case.expected_status,
+              base::UTF16ToUTF8(model().GetStatusText()));
   }
 }
 
@@ -433,8 +430,7 @@ TEST_F(DownloadItemModelTest, ShouldRemoveFromShelfWhenComplete) {
 
   SetupDownloadItemDefaults();
 
-  for (unsigned i = 0; i < base::size(kTestCases); i++) {
-    const TestCase& test_case = kTestCases[i];
+  for (const auto& test_case : kTestCases) {
     EXPECT_CALL(item(), GetOpenWhenComplete())
         .WillRepeatedly(Return(test_case.is_auto_open));
     EXPECT_CALL(item(), GetState())
@@ -445,8 +441,7 @@ TEST_F(DownloadItemModelTest, ShouldRemoveFromShelfWhenComplete) {
         .WillRepeatedly(Return(test_case.auto_opened));
 
     EXPECT_EQ(test_case.expected_result,
-              model().ShouldRemoveFromShelfWhenComplete())
-        << "Test case: " << i;
+              model().ShouldRemoveFromShelfWhenComplete());
     Mock::VerifyAndClearExpectations(&item());
     Mock::VerifyAndClearExpectations(&model());
   }
@@ -490,16 +485,14 @@ TEST_F(DownloadItemModelTest, ShouldShowDropdown) {
 
   SetupDownloadItemDefaults();
 
-  for (unsigned i = 0; i < base::size(kTestCases); i++) {
-    const TestCase& test_case = kTestCases[i];
+  for (const auto& test_case : kTestCases) {
     EXPECT_CALL(item(), GetState()).WillRepeatedly(Return(test_case.state));
     EXPECT_CALL(item(), GetDangerType())
         .WillRepeatedly(Return(test_case.danger_type));
     EXPECT_CALL(item(), IsDangerous())
         .WillRepeatedly(Return(test_case.is_dangerous));
 
-    EXPECT_EQ(test_case.expected_result, model().ShouldShowDropdown())
-        << "Test case: " << i;
+    EXPECT_EQ(test_case.expected_result, model().ShouldShowDropdown());
     Mock::VerifyAndClearExpectations(&item());
     Mock::VerifyAndClearExpectations(&model());
   }

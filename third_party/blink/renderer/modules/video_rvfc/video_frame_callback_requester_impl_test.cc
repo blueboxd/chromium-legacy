@@ -180,9 +180,10 @@ class VfcRequesterParameterVerifierCallback
   }
 
   static double ClampElapsedProcessingTime(base::TimeDelta time) {
-    constexpr double kProcessingTimeResolution = 100e-6;
-    double interval = floor(time.InSecondsF() / kProcessingTimeResolution);
-    double clamped_time = interval * kProcessingTimeResolution;
+    constexpr auto kProcessingTimeResolution =
+        base::TimeDelta::FromMicroseconds(100);
+    double clamped_time =
+        time.FloorToMultiple(kProcessingTimeResolution).InSecondsF();
 
     return clamped_time;
   }

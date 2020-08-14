@@ -48,7 +48,7 @@ class PnaclTranslationCacheEntry
   static PnaclTranslationCacheEntry* GetReadEntry(
       base::WeakPtr<PnaclTranslationCache> cache,
       const std::string& key,
-      const GetNexeCallback& callback);
+      GetNexeCallback callback);
   static PnaclTranslationCacheEntry* GetWriteEntry(
       base::WeakPtr<PnaclTranslationCache> cache,
       const std::string& key,
@@ -119,10 +119,10 @@ class PnaclTranslationCacheEntry
 PnaclTranslationCacheEntry* PnaclTranslationCacheEntry::GetReadEntry(
     base::WeakPtr<PnaclTranslationCache> cache,
     const std::string& key,
-    const GetNexeCallback& callback) {
+    GetNexeCallback callback) {
   PnaclTranslationCacheEntry* entry(
       new PnaclTranslationCacheEntry(cache, key, true));
-  entry->read_callback_ = callback;
+  entry->read_callback_ = std::move(callback);
   return entry;
 }
 
@@ -154,7 +154,7 @@ PnaclTranslationCacheEntry::~PnaclTranslationCacheEntry() {
   if (step_ != FINISHED) {
     if (!read_callback_.is_null()) {
       content::GetIOThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(read_callback_, net::ERR_ABORTED,
+          FROM_HERE, base::BindOnce(std::move(read_callback_), net::ERR_ABORTED,
                                     scoped_refptr<net::DrainableIOBuffer>()));
     }
     if (!write_callback_.is_null()) {
@@ -224,7 +224,7 @@ void PnaclTranslationCacheEntry::Finish(int rv) {
   if (is_read_) {
     if (!read_callback_.is_null()) {
       content::GetIOThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(read_callback_, rv, io_buf_));
+          FROM_HERE, base::BindOnce(std::move(read_callback_), rv, io_buf_));
     }
   } else {
     if (!write_callback_.is_null()) {
@@ -374,9 +374,9 @@ void PnaclTranslationCache::StoreNexe(const std::string& key,
 }
 
 void PnaclTranslationCache::GetNexe(const std::string& key,
-                                    const GetNexeCallback& callback) {
-  PnaclTranslationCacheEntry* entry =
-      PnaclTranslationCacheEntry::GetReadEntry(AsWeakPtr(), key, callback);
+                                    GetNexeCallback callback) {
+  PnaclTranslationCacheEntry* entry = PnaclTranslationCacheEntry::GetReadEntry(
+      AsWeakPtr(), key, std::move(callback));
   open_entries_[entry] = entry;
   entry->Start();
 }

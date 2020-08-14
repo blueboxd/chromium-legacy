@@ -9,6 +9,7 @@
 <translation id="150962533380566081">Ógilt PUK-númer.</translation>
 <translation id="1510238584712386396">Ræsiforrit</translation>
 <translation id="1644574205037202324">Ferill</translation>
+<translation id="1662989795263954667">Stöðvað – blekið er búið</translation>
 <translation id="1734367976349034509">Þessu tæki er stýrt af fyrirtæki</translation>
 <translation id="1905710495812624430">Farið var yfir hámarksfjölda tilrauna.</translation>
 <translation id="1930797645656624981">Innfærsluaðferð Chrome OS þjónustu</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Aðgangsorð rennur út eftir <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Engin prentun í gangi</translation>
 <translation id="428217921675623177">Prentverk sem eru eldri en 90 dagar verða fjarlægð</translation>
+<translation id="4297501883039923494">Stöðvað – óþekkt villa</translation>
 <translation id="4429881212383817840">Kerberos-miði rennur út fljótlega</translation>
 <translation id="445059817448385655">Eldra aðgangsorð</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> af <ph name="TOTAL_PAGE_NUMBER" />. Ýttu á færslulykilinn til að hætta við prentverkið.</translation>
 <translation id="467510802200863975">Aðgangsorð stemma ekki</translation>
+<translation id="4691278870498629773">Stöðvað – bakka vantar</translation>
 <translation id="4731797938093519117">Foreldraaðgangur</translation>
 <translation id="4773299976671772492">Stöðvað</translation>
 <translation id="4808449224298348341">Hætt við prentverkið <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Veldu nýtt án tafar</translation>
+<translation id="4917889632206600977">Stöðvað – pappír vantar</translation>
 <translation id="4932733599132424254">Dagsetning</translation>
 <translation id="5212543919916444558">Ég finn ekkert á skjánum sem ég get aðstoðað þig með.
 Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</translation>
 <translation id="5222676887888702881">Skrá út</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Vista</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Veldu nýtt núna</translation>
@@ -63,9 +68,11 @@ Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</trans
 <translation id="6106186594183574873">Sláðu inn gamla aðgangsorðið þitt til að ganga frá þessu</translation>
 <translation id="6146993107019042706">Sláðu inn nýja aðgangsorðið til að ljúka þessu</translation>
 <translation id="636850387210749493">Fyrirtækjaskráning</translation>
+<translation id="649050271426829538">Stöðvað – pappírsstífla</translation>
 <translation id="6517239166834772319">Kanna</translation>
 <translation id="6564646048574748301">Mistókst – ekki næst í prentara</translation>
 <translation id="6643016212128521049">Hreinsa</translation>
+<translation id="6747215703636344499">Stöðvað – úttakið er fullt</translation>
 <translation id="7162487448488904999">Gallerí</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Kerfisstjórinn þinn stjórnar þessari stillingu</translation>
@@ -77,6 +84,7 @@ Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</trans
 <translation id="8347227221149377169">Prentverk</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> stjórnar þessum notanda. Það getur valið stillingar og skoðað notandavirkni með fjartengingu.</translation>
 <translation id="871560550817059752">Mistókst – blekið er búið</translation>
+<translation id="8726019395068607495">Stöðvað – hlíf er opin</translation>
 <translation id="8747900814994928677">Staðfesta breytingu</translation>
 <translation id="8919837981463578619">Mistókst – bakka vantar</translation>
 <translation id="8928727111548978589">Mistókst – pappír vantar</translation>

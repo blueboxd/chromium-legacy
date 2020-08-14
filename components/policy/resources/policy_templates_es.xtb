@@ -399,6 +399,12 @@ Si inhabilitas esta política, se inhabilitará el desplazamiento de una página
 
       Si se le asigna el valor "False" o no se le asigna ningún valor, se abrirán los archivos PDF, a menos que los usuarios desactiven el complemento de PDF.</translation>
 <translation id="1608755754295374538">URLs a las que se concederá acceso a dispositivos de captura de audio sin confirmación</translation>
+<translation id="1611394564825535541">Permite controlar si los usuarios pueden acceder a impresoras que no sean de empresa
+
+      Si se le asigna el valor True a esta política o no se le asigna ninguno, los usuarios podrán añadir y configurar sus propias impresoras y usarlas para imprimir.
+
+      Si se le asigna el valor False, los usuarios no podrán añadir ni configurar sus propias impresoras. Tampoco podrán imprimir con las impresoras que hayan configurado previamente.
+      </translation>
 <translation id="1615221548356595305">Permitir la fusión de conexiones HTTP/2 para estos hosts aunque se utilicen certificados de cliente</translation>
 <translation id="1615855314789673708">Proporciona una configuración de Wilco DTC (controlador de diagnóstico y telemetría).
 
@@ -677,9 +683,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
           </translation>
 <translation id="2030905906517501646">Palabra clave de proveedor de búsquedas predeterminadas</translation>
 <translation id="203096360153626918">Esta política no influye en las aplicaciones para Android. Aunque se le asigne el valor <ph name="FALSE" />, las aplicaciones podrán acceder al modo de pantalla completa.</translation>
-<translation id="2035306081270465868">Si se asigna el valor "Habilitada" a esta política, se importará la página principal del navegador predeterminado anterior al ejecutarse por primera vez. Si se le asigna el valor "Inhabilitada" o no se le asigna ninguno, no se importará la página principal al ejecutarse por primera vez.
-
-      Los usuarios pueden abrir un cuadro de diálogo de importación y la casilla de la página principal aparecerá marcada o desmarcada en función del valor de esta política.</translation>
 <translation id="2040479044912658454">Modo de rasterización de impresión</translation>
 <translation id="2043749682619281558">Habilita el resaltado del cursor en la pantalla de inicio de sesión</translation>
 <translation id="2043770014371753404">Impresoras de empresa inhabilitadas</translation>
@@ -1045,20 +1048,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 
           Si no se le asigna ningún valor, el resaltado del símbolo de intercalación de texto se inhabilitará al inicio, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="2509919237512982967">Utiliza los controles de formulario antiguos hasta la versión M84.</translation>
-<translation id="2512630007068794030">Si se habilita esta política, la función <ph name="PRODUCT_NAME" /> hará que las páginas web se almacenen en su estado actual (árbol de documentos, secuencia de comandos, etc.) en el almacenamiento en caché "Back-Forward" al salir de una página.
-          Si el usuario volviese a visitar esa página, se restauraría desde el almacenamiento en caché "Back-Forward" y se mostraría en el estado en el que estaba al almacenarse en caché la vez anterior.
-
-          Es posible que esta función provoque fallos en algunos sitios web que no
-          esperen que se les almacene en caché, especialmente los que dependen de que se
-
-          activen controladores de descarga al salir de la página, ya que el evento de descarga
-          no se enviará cuando el usuario salga de una página y se guardará
-          en el almacenamiento en caché "Back-Forward".
-
-          Si se asigna el valor "Enabled" a esta política o no se le asigna ninguno, se habilitará la función <ph name="PRODUCT_NAME" />.
-
-          Si se le asigna el valor "Disabled", esta función se inhabilitará de forma forzosa.
-          </translation>
 <translation id="2516600974234263142">Permite habilitar la impresión en <ph name="PRODUCT_NAME" /> e impedir que los usuarios cambien esta configuración.
 
       Si esta opción se habilita o no se configura, los usuarios podrán imprimir.
@@ -1128,23 +1117,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="2615240493030733717">Informar sobre la zona horaria</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2627554163382448569">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
-
-
-      Esta política permite proporcionar opciones de configuración de impresoras a los dispositivos <ph name="PRODUCT_OS_NAME" />. El formato es el mismo que el del diccionario NativePrinters, con un campo "id" o "guid" obligatorio por impresora para crear una lista blanca o negra.
-
-
-      El tamaño máximo del archivo es de 5 MB y se debe codificar con formato JSON. Se estima que un archivo que contiene aproximadamente 21.000 impresoras tiene un tamaño de 5 MB. El hash criptográfico se utiliza para verificar la integridad de la descarga.
-
-
-      El archivo se descarga y almacena en la memoria caché y se vuelve a descargar cada vez que la URL o el hash cambian.
-
-      Si se habilita esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo con las configuraciones de las impresoras y estas estarán disponibles según lo especificado en las políticas <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> y <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Si habilitas esta política, los usuarios no podrán cambiarla ni anularla.
-
-      Esta política no afecta a la capacidad de los usuarios para configurar impresoras en determinados dispositivos. La política se ha diseñado como complemento a la configuración de impresoras que realizan los usuarios.
-      </translation>
 <translation id="2632538643061793322">Si le asignas un valor a esta política, podrás establecer una lista de patrones de URL donde se especifique qué sitios web pueden pedirles a los usuarios que les permitan acceder a un dispositivo USB.
 
       Si no se le asigna ningún valor, <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> se aplicará en todos los sitios web, si se ha definido previamente. Si no se ha definido previamente, se aplicará la configuración personal de los usuarios.
@@ -2318,6 +2290,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4313767483634435271">Dirección MAC designada de la base del dispositivo</translation>
 <translation id="4322842393287974810">Permite que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Añadir un botón para cerrar sesión en la bandeja del sistema</translation>
+<translation id="4330372709562934569">Permitir que los sitios web de la lista envíen solicitudes a puntos de conexión más privados de la red desde contextos no seguros.</translation>
 <translation id="4332177773549877617">Registrar eventos de descargas de aplicaciones para Android</translation>
 <translation id="4341199399451274159">Si <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> está activada y se asigna un valor a <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" />, se especificarán las codificaciones de caracteres admitidas por el proveedor de búsquedas. Las codificaciones son nombres de páginas de códigos, como UTF‑8, GB2312 o ISO-8859‑1. Se intentarán utilizar siguiendo el orden especificado.
 
@@ -2625,6 +2598,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       <ph name="PAGE_SIZE_NAME" /> debe contener uno de los formatos incluidos en la lista, o "personalizado" si el tamaño del papel necesario no está en la lista. Si se proporciona un valor "personalizado", se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Describe el ancho y altura deseados en micrómetros. De lo contrario, no se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Se ignorará la política que infrinja estas reglas.
 
       Si el tamaño de la página no está disponible en la impresora que elija el usuario, se ignorará esta política.</translation>
+<translation id="479290425281021210">Especificar si se permite que los sitios web no seguros envíen peticiones a puntos de conexión más privados de la red.</translation>
 <translation id="4802744647065138872">Limita el número de instantáneas de datos de usuario retenidas para usarlas en caso de restauración de emergencia.</translation>
 <translation id="4802905909524200151">Configurar comportamiento de actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Reiniciar siempre cuando el usuario cierre sesión.</translation>
@@ -3072,6 +3046,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="5405289061476885481">Establece los diseños de teclado que se permiten en la pantalla de inicio de sesión de <ph name="PRODUCT_OS_NAME" />.
 
       Si se asigna una lista de identificadores de métodos de introducción a esta política, esos métodos estarán disponibles en la pantalla de inicio de sesión. El primer método de introducción estará preseleccionado. El grupo de un usuario aparece centrado en la pantalla de inicio de sesión, pero también se mostrará el último método de introducción por el usuario junto a los métodos de introducción proporcionados por esta política. Si esta política no se configura, los métodos de introducción de la pantalla de inicio de sesión procederán de la configuración regional en la que se muestre esa pantalla. Los valores que no sean identificadores de métodos de introducción válidos se ignorarán.</translation>
+<translation id="5407008856008996384">Permitir acceso a impresoras CUPS</translation>
 <translation id="5416064504563346617">Si le asignas un valor a esta política, podrás establecer una lista de patrones de URL donde se especifique qué sitios web no pueden pedirles a los usuarios que les permitan acceder a un dispositivo USB.
 
       Si no se le asigna ningún valor, <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> se aplicará en todos los sitios web, si se ha definido previamente. Si no se ha definido previamente, se aplicará la configuración personal del usuario.
@@ -3237,6 +3212,14 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
         Si no se le asigna ningún valor o se le asigna el valor "True", los usuarios podrán enviar comentarios a Google desde Menú &gt; Ayuda &gt; Informar de un problema o con una combinación de teclas.</translation>
 <translation id="5579179012798142131">Si se asigna a ArcEnabled el valor "true", se activa ARC para el usuario, a menos que esté activado el modo efímero o el inicio de sesión múltiple durante la sesión del usuario. Si se le asigna el valor "false" o no se le asigna ningún valor, los usuarios de empresa no podrán usar ARC.</translation>
+<translation id="5582429816116769246">Permite controlar si los usuarios pueden acceder a impresoras que no sean de empresa
+
+      Si se le asigna el valor True a esta política o no se le asigna ninguno, los usuarios podrán añadir y configurar sus propias impresoras nativas y usarlas para imprimir.
+
+      Si se le asigna el valor False, los usuarios no podrán añadir ni configurar sus propias impresoras nativas. Tampoco podrán imprimir con las impresoras nativas que hayan configurado previamente.
+
+      Esta política está obsoleta. Usa la política <ph name="USER_PRINTERS_ALLOWED" /> en su lugar.
+      </translation>
 <translation id="5583806683960333345">Si se habilita esta opción, los usuarios podrán usar la conexión compartida instantánea para permitir que su teléfono de Google comparta los datos móviles con su dispositivo.
 
       Si se inhabilita esta opción, los usuarios no podrán usar la conexión compartida instantánea.
@@ -4063,6 +4046,13 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
       Si se le asigna el valor "Disabled", se mostrará un mensaje de error en lugar de la solicitud de configuración de red.</translation>
 <translation id="6821268164692776674">Destinos <ph name="CLOUD_PRINT_NAME" /> y Guardar en Google Drive</translation>
+<translation id="6823297401452148231">Controla si se permite que los sitios web no seguros envíen solicitudes a puntos de conexión más privados de la red. Por ejemplo, controla si se permite que http://evil.com envíe solicitudes a localhost o a puntos de conexión de la red privada (a ninguno de los dos se puede acceder desde el Internet público. Para consultar más información, visita https://wicg.github.io/cors-rfc1918/#goals.
+
+          Si no se establece esta política, el comportamiento predeterminado de las solicitudes desde contextos no seguros a puntos de conexión más privados de la red dependerá de la configuración personal que el usuario aplique a la función <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, que puede definirse mediante una prueba pública o en la línea de comandos.
+
+          Si se asigna el valor false a esta política, los sitios web no seguros no podrán enviar solicitudes a puntos de conexión más privados de la red. Es decir, los sitios web no seguros con direcciones IP públicas no podrán enviar solicitudes ni a localhost ni a direcciones IP privadas. Los sitios web no seguros con direcciones IP privadas no podrán enviar solicitudes a localhost.
+
+          Si se asigna el valor true a esta política, los sitios web no seguros podrán enviar solicitudes a cualquier punto de conexión de la red (en función de otras comprobaciones de orígenes cruzados).</translation>
 <translation id="6833064854262015312">Si se le asigna el valor "true" a esta política, el modo de contraste alto se activa en la pantalla de inicio de sesión. Si se le asigna el valor "false", el modo de contraste alto se desactiva en la pantalla de inicio de sesión.
 
       Si se configura esta política, los usuarios pueden cambiar temporalmente el modo de contraste alto activándolo o desactivándolo. Cuando la pantalla de inicio de sesión se vuelve a cargar o permanece inactiva durante un minuto, vuelve a su estado original.
@@ -5726,6 +5716,15 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="9106865192244721694">Permitir WebUSB en estos sitios web</translation>
 <translation id="9109086856618439290">Habilitar los Términos del Servicio cuando CCT/PWA se ejecute por primera vez</translation>
 <translation id="9112727953998243860">Archivo de configuración de las impresoras de empresa</translation>
+<translation id="9116740039944096995">Lista de patrones de URL. Se permiten las solicitudes de redes privadas iniciadas desde sitios web no seguros procedentes de orígenes incluidos en los patrones.
+
+          Si no se establece, esta política se comporta como si su valor fuera una lista vacía.
+
+          En el caso de los orígenes no incluidos en los patrones indicados, se usará el valor global predeterminado de la política <ph name="INSECURE_PRIVATE_NETWORK_REQUESTS_ALLOWED_POLICY_NAME" /> si esta se ha establecido. De lo contrario, se empleará la configuración personal del usuario.
+
+          Ten en cuenta que esta política solo afecta a orígenes no seguros, por lo que se ignorarán los orígenes seguros (por ejemplo, https://example.com) incluidos en la lista.
+
+          Para consultar información detallada sobre los patrones de URL válidos, visita https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="9117826695152538214">Si se le asigna el valor "true" a esta política, las teclas persistentes permanecen activadas. Si se le asigna el valor "false", las teclas persistentes permanecen desactivadas.
 
       Si se configura esta política, los usuarios no pueden cambiarla. Si no se le asigna ningún valor, las teclas persistentes están en un principio desactivadas, pero los usuarios pueden activarlas en cualquier momento.</translation>

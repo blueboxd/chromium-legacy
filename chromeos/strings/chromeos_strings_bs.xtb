@@ -9,6 +9,7 @@
 <translation id="150962533380566081">Nevažeći PUK.</translation>
 <translation id="1510238584712386396">Pokretač</translation>
 <translation id="1644574205037202324">Historija</translation>
+<translation id="1662989795263954667">Zaustavljeno – nema tinte</translation>
 <translation id="1734367976349034509">Ovim uređajem upravlja preduzeće</translation>
 <translation id="1905710495812624430">Prekoračen je maksimalan broj dozvoljenih pokušaja.</translation>
 <translation id="1930797645656624981">Usluga načina unosa Chrome OS-a</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Lozinka će isteći za <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nema aktivnih zadataka za štampanje</translation>
 <translation id="428217921675623177">Zadaci za štampanje stariji od 90 dana će se ukloniti</translation>
+<translation id="4297501883039923494">Zaustavljeno – nepoznata greška</translation>
 <translation id="4429881212383817840">Kerberos tiket uskoro ističe</translation>
 <translation id="445059817448385655">Stara lozinka</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> od <ph name="TOTAL_PAGE_NUMBER" />. Pritisnite enter da otkažete zadatak štampanja.</translation>
 <translation id="467510802200863975">Lozinke se ne podudaraju</translation>
+<translation id="4691278870498629773">Zaustavljeno – nedostaje ladica za papir</translation>
 <translation id="4731797938093519117">Pristup roditelja</translation>
 <translation id="4773299976671772492">Zaustavljeno</translation>
 <translation id="4808449224298348341">Zadatak za štampanje dokumenta <ph name="DOCUMENT_TITLE" /> je otkazan</translation>
 <translation id="4890353053343094602">Odmah odaberite novu lozinku</translation>
+<translation id="4917889632206600977">Zaustavljeno – nestalo je papira</translation>
 <translation id="4932733599132424254">Datum</translation>
 <translation id="5212543919916444558">Ne mogu pronaći ništa na ekranu u vezi s čim mogu pomoći.
 Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="5222676887888702881">Odjava</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Sačuvaj</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Sada odaberite novu lozinku</translation>
@@ -63,9 +68,11 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="6106186594183574873">Unesite staru lozinku da završite</translation>
 <translation id="6146993107019042706">Unesite novu lozinku da završite</translation>
 <translation id="636850387210749493">Prijava preduzeća</translation>
+<translation id="649050271426829538">Zaustavljeno – papir je zaglavljen</translation>
 <translation id="6517239166834772319">Istražite</translation>
 <translation id="6564646048574748301">Nije uspjelo – štampač je nedostupan</translation>
 <translation id="6643016212128521049">Obriši</translation>
+<translation id="6747215703636344499">Zaustavljeno – izlaz je pun</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Ovom radnjom upravlja vaš administrator</translation>
@@ -77,6 +84,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="8347227221149377169">Zadaci štampanja</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim korisnikom. Može udaljeno upravljati postavkama i pratiti aktivnost korisnika.</translation>
 <translation id="871560550817059752">Nije uspjelo – nema tinte</translation>
+<translation id="8726019395068607495">Zaustavljeno – poklopac je otvoren</translation>
 <translation id="8747900814994928677">Potvrdite promjenu</translation>
 <translation id="8919837981463578619">Nije uspjelo – nedostaje ladica</translation>
 <translation id="8928727111548978589">Nije uspjelo – nema papira</translation>

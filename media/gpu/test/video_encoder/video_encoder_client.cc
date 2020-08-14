@@ -279,6 +279,24 @@ void VideoEncoderClient::BitstreamBufferReady(
     bitstream_processor_->ProcessBitstream(bitstream_ref, frame_index_);
   }
   frame_index_++;
+  FlushDoneTaskIfNeeded();
+}
+
+void VideoEncoderClient::FlushDoneTaskIfNeeded() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_client_sequence_checker_);
+  // If the encoder does not support flushing, we have to manually call
+  // FlushDoneTask(). Invoke FlushDoneTask() when
+  // 1.) Flush is not supported by VideoEncodeAccelerator,
+  // 2.) all the frames have been returned and
+  // 3.) bitstreams of all the video frames have been output.
+  // This is only valid if we always flush at the end of the stream (not in a
+  // middle of the stream), which is the case in all of our test cases.
+  if (!encoder_->IsFlushSupported() &&
+      encoder_client_state_ == VideoEncoderClientState::kFlushing &&
+      frame_index_ == encoder_client_config_.num_frames_to_encode &&
+      num_outstanding_encode_requests_ == 0) {
+    FlushDoneTask(true);
+  }
 }
 
 void VideoEncoderClient::BitstreamBufferProcessed(int32_t bitstream_buffer_id) {
@@ -355,7 +373,6 @@ void VideoEncoderClient::EncodeTask() {
 void VideoEncoderClient::EncodeNextFrameTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_client_sequence_checker_);
   DVLOGF(4);
-
   // Stop encoding frames if we're no longer in the encoding state.
   if (encoder_client_state_ != VideoEncoderClientState::kEncoding)
     return;
@@ -391,15 +408,12 @@ void VideoEncoderClient::EncodeNextFrameTask() {
 void VideoEncoderClient::FlushTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_client_sequence_checker_);
   DVLOGF(4);
-
   // Changing the state to flushing will abort any pending encodes.
   encoder_client_state_ = VideoEncoderClientState::kFlushing;
 
-  // If the encoder does not support flush, immediately consider flushing done.
   if (!encoder_->IsFlushSupported()) {
     FireEvent(VideoEncoder::EncoderEvent::kFlushing);
-    if (num_outstanding_encode_requests_ == 0)
-      FlushDoneTask(true);
+    FlushDoneTaskIfNeeded();
     return;
   }
 
@@ -430,14 +444,7 @@ void VideoEncoderClient::EncodeDoneTask(base::TimeDelta timestamp) {
   FireEvent(VideoEncoder::EncoderEvent::kFrameReleased);
 
   num_outstanding_encode_requests_--;
-
-  // If the encoder does not support flushing, we have to manually call
-  // FlushDoneTask() when the last outstanding encode has been completed.
-  if ((encoder_client_state_ == VideoEncoderClientState::kFlushing) &&
-      !encoder_->IsFlushSupported() &&
-      (num_outstanding_encode_requests_ == 0)) {
-    FlushDoneTask(true);
-  }
+  FlushDoneTaskIfNeeded();
 
   // Queue the next frame to be encoded.
   encoder_client_task_runner_->PostTask(

@@ -1442,6 +1442,50 @@ TEST_F(OptimizationGuideHintsManagerTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationAndPopulatesDelayAsyncScriptExecutionMetadata) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DELAY_ASYNC_SCRIPT_EXECUTION});
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint = config.add_hints();
+  hint->set_key("somedomain.org");
+  hint->set_key_representation(optimization_guide::proto::HOST);
+  hint->set_version("someversion");
+  optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("/news/");
+  optimization_guide::proto::Optimization* opt =
+      page_hint->add_whitelisted_optimizations();
+  opt->set_optimization_type(
+      optimization_guide::proto::DELAY_ASYNC_SCRIPT_EXECUTION);
+  opt->mutable_delay_async_script_execution_metadata()->set_delay_type(
+      optimization_guide::proto::DelayType::DELAY_TYPE_FINISHED_PARSING);
+
+  ProcessHints(config, "1.0.0.0");
+
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_hints());
+  base::RunLoop run_loop;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle->GetURL(),
+          optimization_guide::proto::DELAY_ASYNC_SCRIPT_EXECUTION,
+          &optimization_metadata);
+  // Make sure delay async script execution metadata is populated.
+  EXPECT_TRUE(optimization_metadata.delay_async_script_execution_metadata()
+                  .has_value());
+  EXPECT_EQ(optimization_guide::proto::DelayType::DELAY_TYPE_FINISHED_PARSING,
+            optimization_metadata.delay_async_script_execution_metadata()
+                ->delay_type());
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
+            optimization_type_decision);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationAndPopulatesAnyMetadata) {
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::LOADING_PREDICTOR});

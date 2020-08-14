@@ -21,6 +21,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/video_frame.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/in_memory_url_protocol.h"
@@ -94,7 +95,7 @@ std::unique_ptr<Video> Video::ConvertToNV12() const {
   return new_video;
 }
 
-bool Video::Load() {
+bool Video::Load(const size_t max_frames) {
   // TODO(dstaessens@) Investigate reusing existing infrastructure such as
   //                   DecoderBuffer.
   DCHECK(!file_path_.empty());
@@ -128,6 +129,33 @@ bool Video::Load() {
     return false;
   }
 
+  if (num_frames_ <= max_frames) {
+    return true;
+  }
+
+  DLOG(WARNING) << "Limiting video length to " << max_frames << " frames";
+  // Limits the video length to the specified number of frames.
+  if (pixel_format_ == VideoPixelFormat::PIXEL_FORMAT_UNKNOWN) {
+    // Compressed data. The unused frames are dropped in Decode().
+    num_frames_ = max_frames;
+    return true;
+  }
+
+  // Limits the video length here if the file is YUV.
+  size_t video_frame_size = 0;
+  for (size_t i = 0; i < VideoFrame::NumPlanes(pixel_format_); ++i) {
+    video_frame_size +=
+        VideoFrame::RowBytes(i, pixel_format_, resolution_.width()) *
+        VideoFrame::Rows(i, pixel_format_, resolution_.height());
+  }
+  if (video_frame_size * num_frames_ != static_cast<size_t>(file_size)) {
+    LOG(ERROR) << "Invalid file. file_size=" << file_size
+               << ", expected file size=" << video_frame_size * num_frames_
+               << ", video_frame_size=" << video_frame_size
+               << ", num_frames_=" << num_frames_;
+  }
+  num_frames_ = max_frames;
+  data_.resize(video_frame_size * max_frames);
   return true;
 }
 
@@ -151,7 +179,7 @@ bool Video::Decode() {
   decode_thread.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&Video::DecodeTask, std::move(data_), resolution_,
-                     &decompressed_data, &success, &done));
+                     num_frames_, &decompressed_data, &success, &done));
   done.Wait();
   decode_thread.Stop();
 
@@ -403,6 +431,7 @@ base::Optional<base::FilePath> Video::ResolveFilePath(
 // static
 void Video::DecodeTask(const std::vector<uint8_t> data,
                        const gfx::Size& resolution,
+                       const size_t num_frames,
                        std::vector<uint8_t>* decompressed_data,
                        bool* success,
                        base::WaitableEvent* done) {
@@ -453,7 +482,9 @@ void Video::DecodeTask(const std::vector<uint8_t> data,
 
   // Start decoding and wait until all frames are ready.
   AVPacket packet = {};
-  while (av_read_frame(glue.format_context(), &packet) >= 0) {
+  size_t num_decoded_frames = 0;
+  while (av_read_frame(glue.format_context(), &packet) >= 0 &&
+         num_decoded_frames < num_frames) {
     if (packet.stream_index == stream_index) {
       media::VideoDecoder::DecodeCB decode_cb = base::BindOnce(
           [](bool* success, media::DecodeStatus status) {
@@ -464,6 +495,7 @@ void Video::DecodeTask(const std::vector<uint8_t> data,
                      std::move(decode_cb));
       if (!*success)
         break;
+      num_decoded_frames++;
     }
     av_packet_unref(&packet);
   }

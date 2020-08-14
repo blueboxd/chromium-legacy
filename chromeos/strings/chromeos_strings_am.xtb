@@ -9,6 +9,7 @@
 <translation id="150962533380566081">ልክ ያልኾነ PUK።</translation>
 <translation id="1510238584712386396">ማስጀመሪያ</translation>
 <translation id="1644574205037202324">ታሪክ</translation>
+<translation id="1662989795263954667">ቆሟል - ቀለም አልቋል</translation>
 <translation id="1734367976349034509">ይህ መሣሪያ በድርጅት የሚቀናበር ነው</translation>
 <translation id="1905710495812624430">የሚፈቀደው ከፍተኛ የሙከራዎች ብዛት ታልፏል።</translation>
 <translation id="1930797645656624981">የ Chrome OS ግቤት ዘዴ አገልግሎት</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">የይለፍ ቃል በ <ph name="TIME" /> ውስጥ አገልግሎት ጊዜው ያበቃል</translation>
 <translation id="4238516577297848345">በሂደት ላይ ያሉ ምንም የህትመት ስራዎች የሉም</translation>
 <translation id="428217921675623177">ከ90 ቀናት በላይ ዕድሜ ያላቸው የህትመት ሥራዎች ይወገዳሉ</translation>
+<translation id="4297501883039923494">ቆሟል - ያልታወቀ ስህተት</translation>
 <translation id="4429881212383817840">የKerberos ቲኬት ጊዜው በቅርቡ ያበቃል</translation>
 <translation id="445059817448385655">የቀድሞው የይለፍ ቃል</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />፣ <ph name="PRINTER_NAME" />፣ <ph name="CREATION_TIME" />፣ <ph name="PRINTED_PAGE_NUMBER" /> ከ<ph name="TOTAL_PAGE_NUMBER" /> ዉስጥ የሕትመት ሥራን ለመሰረዝ እባክዎ ያስገቡ።</translation>
 <translation id="467510802200863975">የይለፍ ቃላትዎ አይዛመዱም</translation>
+<translation id="4691278870498629773">ቆሟል - መሳቢያ ይጎድላል</translation>
 <translation id="4731797938093519117">የወላጅ መዳረሻ</translation>
 <translation id="4773299976671772492">ቆሟል</translation>
 <translation id="4808449224298348341">የተሰረዘ የሕትመት ሥራ <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">ወዲያውኑ አዲስ ይምረጡ</translation>
+<translation id="4917889632206600977">ቆሟል - ወረቀት አልቋል</translation>
 <translation id="4932733599132424254">ቀን</translation>
 <translation id="5212543919916444558">እኔ ላግዝ የምችልበት ምንም ነገር በእርስዎ ማያ ገጽ ላይ አላገኘሁም።
 ማንኛውም ነገር እኔን ለመጠየቅ ማይክሮፎኑን መታ አድርገው ይሞክሩ።</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />፣ <ph name="PRINTER_NAME" />፣ <ph name="CREATION_TIME" />፣ <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />፣ <ph name="PRINTER_NAME" />፣ <ph name="CREATION_TIME" />፣ <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">አሁን አዲስ ይምረጡ</translation>
@@ -63,9 +68,11 @@
 <translation id="6106186594183574873">ለማጠናቀቅ፣ የእርስዎን ይለፍ ቃል ያስገቡ</translation>
 <translation id="6146993107019042706">ለማጠናቀቅ፣ የእርስዎን አዲስ የይለፍ ቃል ያስገቡ</translation>
 <translation id="636850387210749493">የድርጅት ምዝገባ</translation>
+<translation id="649050271426829538">ቆሟል - የወረቀት መታጨቅ</translation>
 <translation id="6517239166834772319">ያስሱ</translation>
 <translation id="6564646048574748301">አልተሳካም - አታሚ የማይደረስበት ነው</translation>
 <translation id="6643016212128521049">አጽዳ</translation>
+<translation id="6747215703636344499">ቆሟል - ውፅዓት ሞልቷል</translation>
 <translation id="7162487448488904999">ማዕከለ-ስዕላት</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">ይህ ቅንብር በአስተዳዳሪዎ የሚቀናበር ነው።</translation>
@@ -77,6 +84,7 @@
 <translation id="8347227221149377169">የኅትመት ሥራዎች</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> እነኚህን ተጠቃሚ ያስተዳድራል። ቅንብሮችን የተጠቃሚ እንቅስቃሴን በርቀት ሊያስተዳድር እና ሊቆጣጠር ይችላል።</translation>
 <translation id="871560550817059752">አልተሳካም - ቀለም አልቋል</translation>
+<translation id="8726019395068607495">ቆሟል - በር ክፍት ነው</translation>
 <translation id="8747900814994928677">ለውጥን አረጋግጥ</translation>
 <translation id="8919837981463578619">አልተሳካም - መሳቢያ ይጎድላል</translation>
 <translation id="8928727111548978589">አልተሳካም - ወረቀት አልቋል</translation>

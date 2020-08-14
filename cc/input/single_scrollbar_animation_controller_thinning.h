@@ -70,7 +70,6 @@ class CC_EXPORT SingleScrollbarAnimationControllerThinning {
   ScrollbarLayerImplBase* GetScrollbar() const;
   float AnimationProgressAtTime(base::TimeTicks now);
   void RunAnimationFrame(float progress);
-  const base::TimeDelta& Duration();
 
   // Describes whether the current animation should INCREASE (thicken)
   // a bar or DECREASE it (thin).

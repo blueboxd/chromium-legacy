@@ -43,6 +43,7 @@ class RevokedAudioDecoderWrapper : public DestructableAudioDecoder {
     *statistics = statistics_;
   }
   bool RequiresDecryption() override { return requires_decryption_; }
+  void SetObserver(CmaBackend::AudioDecoder::Observer* observer) override {}
 
   const RenderingDelay rendering_delay_;
   const Statistics statistics_;

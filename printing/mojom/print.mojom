@@ -50,3 +50,12 @@ enum SkiaDocumentType {
   // diagnostic-only document type.
   kMSKP,
 };
+
+// What kind of margins to use.
+enum MarginType {
+  // Default varies depending on headers being enabled or not
+  kDefaultMargins,
+  kNoMargins,
+  kPrintableAreaMargins,
+  kCustomMargins,
+};

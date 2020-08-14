@@ -13,6 +13,7 @@
 #include "components/printing/common/print_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "printing/metafile_skia.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,17 +26,19 @@ namespace {
 void UpdateMargins(int margins_type,
                    int dpi,
                    printing::mojom::PrintParams* params) {
-  if (margins_type == printing::NO_MARGINS) {
+  printing::mojom::MarginType type =
+      static_cast<printing::mojom::MarginType>(margins_type);
+  if (type == printing::mojom::MarginType::kNoMargins) {
     params->content_size.SetSize(static_cast<int>((8.5 * dpi)),
                                  static_cast<int>((11.0 * dpi)));
     params->margin_left = 0;
     params->margin_top = 0;
-  } else if (margins_type == printing::PRINTABLE_AREA_MARGINS) {
+  } else if (type == printing::mojom::MarginType::kPrintableAreaMargins) {
     params->content_size.SetSize(static_cast<int>((8.0 * dpi)),
                                  static_cast<int>((10.5 * dpi)));
     params->margin_left = static_cast<int>(0.25 * dpi);
     params->margin_top = static_cast<int>(0.25 * dpi);
-  } else if (margins_type == printing::CUSTOM_MARGINS) {
+  } else if (type == printing::mojom::MarginType::kCustomMargins) {
     params->content_size.SetSize(static_cast<int>((7.9 * dpi)),
                                  static_cast<int>((10.4 * dpi)));
     params->margin_left = static_cast<int>(0.30 * dpi);

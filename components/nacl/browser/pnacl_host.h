@@ -36,8 +36,9 @@ class PnaclTranslationCache;
 // called on the IO thread.
 class PnaclHost {
  public:
-  typedef base::Callback<void(base::File)> TempFileCallback;
-  typedef base::Callback<void(const base::File&, bool is_hit)> NexeFdCallback;
+  typedef base::RepeatingCallback<void(base::File)> TempFileCallback;
+  typedef base::RepeatingCallback<void(const base::File&, bool is_hit)>
+      NexeFdCallback;
 
   // Gets the PnaclHost singleton instance (creating it if necessary).
   // PnaclHost is a singleton because there is only one translation cache, and

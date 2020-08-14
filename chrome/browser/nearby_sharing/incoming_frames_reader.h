@@ -34,7 +34,7 @@ class IncomingFramesReader : public NearbyProcessManager::Observer {
   //
   // Note: Callers are expected wait for |callback| to be run before scheduling
   // subsequent calls to ReadFrame(..).
-  void ReadFrame(
+  virtual void ReadFrame(
       base::OnceCallback<void(base::Optional<sharing::mojom::V1FramePtr>)>
           callback);
 
@@ -44,7 +44,7 @@ class IncomingFramesReader : public NearbyProcessManager::Observer {
   //
   // Note: Callers are expected wait for |callback| to be run before scheduling
   // subsequent calls to ReadFrame(..).
-  void ReadFrame(
+  virtual void ReadFrame(
       sharing::mojom::V1Frame::Tag frame_type,
       base::OnceCallback<void(base::Optional<sharing::mojom::V1FramePtr>)>
           callback,

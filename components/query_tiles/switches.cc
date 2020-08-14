@@ -29,5 +29,7 @@ const char kQueryTilesCountryCode[] = "query-tiles-country-code";
 
 const char kQueryTilesInstantBackgroundTask[] =
     "query-tiles-instant-background-task";
+
+const char kQueryTilesEnableTrending[] = "query-tiles-enable-trending";
 }  // namespace switches
 }  // namespace query_tiles

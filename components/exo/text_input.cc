@@ -346,6 +346,11 @@ bool TextInput::SetAutocorrectRange(const base::string16& autocorrect_text,
   return false;
 }
 
+// TODO(crbug.com/1091088) Implement ClearAutocorrectRange
+void TextInput::ClearAutocorrectRange() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void TextInput::OnKeyboardVisibilityChanged(bool is_visible) {
   delegate_->OnVirtualKeyboardVisibilityChanged(is_visible);
 }

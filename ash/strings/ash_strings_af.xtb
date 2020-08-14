@@ -63,6 +63,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="1589090746204042747">Kry toegang tot al jou aktiwiteit in hierdie sessie</translation>
 <translation id="1632985212731562677">Skakelaartoegang kan in Instellings &gt; Toeganklikheid gedeaktiveer word.</translation>
 <translation id="1654477262762802994">Begin 'n stemnavraag</translation>
+<translation id="1665244008632896072">Wissel donkermodus. <ph name="STATE_TEXT" /></translation>
 <translation id="1677472565718498478"><ph name="TIME" /> oor</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" />-afteller · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6-adres: <ph name="ADDRESS" /></translation>
@@ -72,6 +73,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="1747827819627189109">Opskerm-sleutelbord geaktiveer</translation>
 <translation id="1761222317188459878">Wissel netwerkverbinding. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Rollees regs</translation>
+<translation id="1776485282219497802">Donkermodus is aan.</translation>
 <translation id="1782199038061388045">vertaling</translation>
 <translation id="181103072419391116">Seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="1812997170047690955">Wat wys op my skerm?</translation>
@@ -92,6 +94,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="1962969542251276847">Sluitskerm</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Hallo, <ph name="USERNAME" /></translation>
+<translation id="1975500003782052650">Onlangse aflaaie</translation>
 <translation id="1978498689038657292">Teksinvoer</translation>
 <translation id="1993072747612765854">Kom meer te wete oor die jongste <ph name="SYSTEM_APP_NAME" />-opdatering</translation>
 <translation id="1995660704900986789">Skakel af</translation>
@@ -128,6 +131,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="2369165858548251131">"Hallo" in Chinees</translation>
 <translation id="2390318262976603432">Locale-instellings</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="2408955596600435184">Voer jou PIN in</translation>
 <translation id="2412593942846481727">Opdatering is beskikbaar</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> is 'n bestuurde sessie wat deur <ph name="DOMAIN" /> bestuur word</translation>
 <translation id="2427507373259914951">Linksklik</translation>
@@ -138,6 +142,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="2484513351006226581">Druk <ph name="KEYBOARD_SHORTCUT" /> om sleutelborduitleg te wissel.</translation>
 <translation id="2501920221385095727">Taaisleutels</translation>
 <translation id="2509468283778169019">HOOFLETTERSLOT is aan</translation>
+<translation id="2517829236324128850">Wys donkermodusinstellings</translation>
 <translation id="2542089167727451762">Tik op jou profielprent</translation>
 <translation id="255671100581129685">Die Google Assistent is nie in 'n publieke sessie beskikbaar nie.</translation>
 <translation id="256712445991462162">die gedokte vergrootglas</translation>
@@ -255,6 +260,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="3798670284305777884">Luidspreker (intern)</translation>
 <translation id="3799080171973636491">Jy het die sleutelbordkortpad vir die volskermvergrootglas gedruk. Wil jy dit aanskakel?</translation>
 <translation id="380165613292957338">Hallo, hoe kan ek help?</translation>
+<translation id="3826099427150913765">Skakel oor na wagwoord</translation>
 <translation id="383629559565718788">Wys sleutelbordinstellings</translation>
 <translation id="3846575436967432996">Geen netwerkinligting beskikbaar nie</translation>
 <translation id="385051799172605136">Terug</translation>
@@ -285,6 +291,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4181841719683918333">Tale</translation>
 <translation id="4195877955194704651">Outomatiese Klikke-knoppie</translation>
 <translation id="4197790712631116042">Af</translation>
+<translation id="4212472694152630271">Skakel oor na PIN</translation>
 <translation id="4215497585250573029">VPN-instellings</translation>
 <translation id="4217571870635786043">Diktee</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -297,6 +304,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4321776623976362024">Jy het die sleutelbordkortpad vir hoë kontras gedruk. Wil jy dit aanskakel?</translation>
 <translation id="4331809312908958774">Chrome-bedryfstelsel</translation>
 <translation id="4338109981321384717">Vergrootglas</translation>
+<translation id="4350065043422286972">Vasgespeld</translation>
 <translation id="4351433414020964307">Assistent laai tans …</translation>
 <translation id="4356930093361201197">hoëkontrasmodus</translation>
 <translation id="4368583494516669646">Goeienag, <ph name="GIVEN_NAME" /></translation>
@@ -307,6 +315,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4421231901400348175">Deel tans beheer oor jou skerm met <ph name="HELPER_NAME" /> deur afstandbystand.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Moenie weer wys nie</translation>
+<translation id="4458688154122353284">Stop skermopname</translation>
 <translation id="4477350412780666475">Volgende snit</translation>
 <translation id="4477892968187500306">Hierdie toestel kan programme bevat wat nie deur Google geverifieer is nie.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -358,6 +367,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> het aan 'n nuwe foon gekoppel</translation>
 <translation id="5035389544768382859">Bevestig vertoonskermopstelling</translation>
 <translation id="5083553833479578423">Ontsluit meer Assistent-kenmerke.</translation>
+<translation id="5114495209940374989">Skermkiekies</translation>
 <translation id="5136175204352732067">Ander sleutelbord is gekoppel</translation>
 <translation id="5168181903108465623">Uitsaaitoestelle is beskikbaar</translation>
 <translation id="5207949376430453814">Lig tekskaret uit</translation>
@@ -410,6 +420,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="5820394555380036790">Chromium-bedryfstelsel</translation>
 <translation id="5837036133683224804">Stop <ph name="ROUTE_TITLE" /> op <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Af</translation>
+<translation id="5887866489674258948">Donkermodus</translation>
 <translation id="5895138241574237353">Herbegin</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
@@ -561,6 +572,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eienaar)</translation>
 <translation id="7647488630410863958">Ontsluit toestel om kennisgewings te bekyk</translation>
 <translation id="7649070708921625228">Hulp</translation>
+<translation id="7653418004652142983">Aan</translation>
 <translation id="7654687942625752712">Druk en hou albei volumesleutels vir vyf sekondes om die gesproke terugvoer te deaktiveer.</translation>
 <translation id="7658239707568436148">Kanselleer</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -585,6 +597,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="7933084174919150729">Die Google Assistent is net beskikbaar vir die primêre profiel.</translation>
 <translation id="79341161159229895">Rekening word bestuur deur <ph name="FIRST_PARENT_EMAIL" /> en <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Hoëkontrasmodus</translation>
+<translation id="7977639574084142279">Af</translation>
 <translation id="7977927628060636163">Soek tans selnetwerke …</translation>
 <translation id="7980780401175799550">Probeer nuwe maniere om Chrome-bedryfstelsel te gebruik</translation>
 <translation id="7982789257301363584">Netwerk</translation>
@@ -600,6 +613,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="8061464966246066292">Hoë kontras</translation>
 <translation id="8098591350844501178">Hou op om skerm na <ph name="RECEIVER_NAME" /> toe uit te saai</translation>
 <translation id="8113423164597455979">Aan; alle prog.</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" />°C</translation>
 <translation id="8131740175452115882">Bevestig</translation>
 <translation id="8132793192354020517">Gekoppel aan <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inisialiseer tans …</translation>
@@ -684,6 +698,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="8936501819958976551">gedeaktiveer</translation>
 <translation id="8938800817013097409">USB C-toestel (regterpoort aan agterkant)</translation>
 <translation id="8940956008527784070">Battery laag (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8958665219764428373">Donkermodus is af.</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Gebruik tans <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Ontsluit toestel as <ph name="LOGIN_ID" /> om die kennisgewinghandeling uit te voer</translation>

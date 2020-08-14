@@ -38,11 +38,11 @@ class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
   void Run(views::Widget* parent_widget,
            const gfx::Rect& rect,
            ui::MenuSourceType source_type,
-           const base::Closure& on_menu_closed_callback);
+           base::RepeatingClosure on_menu_closed_callback);
 
  private:
   // Callback for MenuRunner.
-  void OnMenuClosed(const base::Closure& on_menu_closed_callback);
+  void OnMenuClosed(base::RepeatingClosure on_menu_closed_callback);
 
   void ExecuteCommand(int command_id, int event_flags) override;
 

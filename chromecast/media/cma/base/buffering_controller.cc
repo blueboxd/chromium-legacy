@@ -82,11 +82,11 @@ scoped_refptr<BufferingState> BufferingController::AddStream(
 
   // Add a new stream to the list of streams being monitored.
   scoped_refptr<BufferingState> buffering_state(new BufferingState(
-      stream_id,
-      config_,
-      base::Bind(&BufferingController::OnBufferingStateChanged, weak_this_,
-                 false, false),
-      base::Bind(&BufferingController::UpdateHighLevelThreshold, weak_this_)));
+      stream_id, config_,
+      base::BindRepeating(&BufferingController::OnBufferingStateChanged,
+                          weak_this_, false, false),
+      base::BindRepeating(&BufferingController::UpdateHighLevelThreshold,
+                          weak_this_)));
   stream_list_.push_back(buffering_state);
 
   // Update the state and force a notification to the streams.

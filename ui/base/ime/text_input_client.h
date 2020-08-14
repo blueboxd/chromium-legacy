@@ -246,6 +246,10 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // cleared. Out of range results in failure and no modification will be made.
   virtual bool SetAutocorrectRange(const base::string16& autocorrect_text,
                                    const gfx::Range& range) = 0;
+
+  // Clear the autocorrect range and remove the underline under the
+  // autocorrect text.
+  virtual void ClearAutocorrectRange() = 0;
 #endif
 
 #if defined(OS_WIN)

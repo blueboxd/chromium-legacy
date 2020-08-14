@@ -4,6 +4,9 @@
 
 #include "cc/test/animation_test_common.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
@@ -15,7 +18,6 @@
 #include "cc/animation/scroll_offset_animation_curve_factory.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
-#include "cc/base/time_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 
@@ -229,7 +231,7 @@ base::TimeDelta FakeFloatTransition::Duration() const {
 }
 
 float FakeFloatTransition::GetValue(base::TimeDelta time) const {
-  double progress = TimeUtil::Divide(time, duration_);
+  double progress = time / duration_;
   if (progress >= 1.0)
     progress = 1.0;
   return (1.0 - progress) * from_ + progress * to_;

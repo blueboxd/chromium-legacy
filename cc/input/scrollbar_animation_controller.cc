@@ -5,6 +5,7 @@
 #include "cc/input/scrollbar_animation_controller.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -159,7 +160,7 @@ bool ScrollbarAnimationController::Animate(base::TimeTicks now) {
 float ScrollbarAnimationController::AnimationProgressAtTime(
     base::TimeTicks now) {
   base::TimeDelta delta = now - last_awaken_time_;
-  float progress = delta.InSecondsF() / fade_duration_.InSecondsF();
+  float progress = delta / fade_duration_;
   return base::ClampToRange(progress, 0.0f, 1.0f);
 }
 

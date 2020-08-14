@@ -190,8 +190,7 @@ float PageScaleAnimation::InterpAtTime(base::TimeTicks monotonic_time) const {
   DCHECK(monotonic_time >= start_time_);
   if (IsAnimationCompleteAtTime(monotonic_time))
     return 1.f;
-  const double normalized_time =
-      (monotonic_time - start_time_).InSecondsF() / duration_.InSecondsF();
+  const double normalized_time = (monotonic_time - start_time_) / duration_;
 
   return static_cast<float>(timing_function_.Solve(normalized_time));
 }

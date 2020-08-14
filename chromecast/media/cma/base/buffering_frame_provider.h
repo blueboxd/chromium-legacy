@@ -26,7 +26,8 @@ class DecoderBufferBase;
 // Fetch some data from another CodedFrameProvider up to a certain size limit.
 class BufferingFrameProvider : public CodedFrameProvider {
  public:
-  typedef base::Callback<void(const scoped_refptr<DecoderBufferBase>&, bool)>
+  typedef base::RepeatingCallback<void(const scoped_refptr<DecoderBufferBase>&,
+                                       bool)>
       FrameBufferedCB;
 
   // Creates a frame provider that buffers coded frames up to the

@@ -45,8 +45,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-using download::DownloadItem;
-
 namespace {
 
 // TODO(pkasting): Replace these with LayoutProvider constants
@@ -94,9 +92,10 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     shelf_animation_.SetSlideDuration(base::TimeDelta());
   }
 
-  GetViewAccessibility().OverrideName(
+  views::ViewAccessibility& accessibility = GetViewAccessibility();
+  accessibility.OverrideName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_DOWNLOADS_BAR));
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
+  accessibility.OverrideRole(ax::mojom::Role::kGroup);
 
   // Delay 5 seconds if the mouse leaves the shelf by way of entering another
   // window. This is much larger than the normal delay as opening a download is
@@ -133,76 +132,62 @@ gfx::Size DownloadShelfView::CalculatePreferredSize() const {
     adjust_size(download_views_.front());
 
   prefsize.Enlarge(0, kTopPadding);
-  if (shelf_animation_.is_animating()) {
-    prefsize.set_height(
-        static_cast<int>(static_cast<double>(prefsize.height()) *
-                         shelf_animation_.GetCurrentValue()));
-  }
-  return prefsize;
+  return gfx::Tween::SizeValueBetween(shelf_animation_.GetCurrentValue(),
+                                      gfx::Size(prefsize.width(), 0), prefsize);
 }
 
 void DownloadShelfView::Layout() {
-  // Let our base class layout our child views
-  views::View::Layout();
-
-  int max_download_x =
-      std::max<int>(0, width() - kEndPadding - close_button_->width() -
-                           kCloseAndLinkPadding - show_all_view_->width());
-  // If there is not enough room to show the first download item, show the
-  // "Show all downloads" link to the left to make it more visible that there is
-  // something to see.
-  bool show_link_only = !download_views_.empty() &&
-                        (download_views_.back()->GetPreferredSize().width() >
-                         (max_download_x - kStartPadding));
-  int next_x = show_link_only ? kStartPadding : max_download_x;
+  int x = kStartPadding;
+  const int download_items_end =
+      std::max(0, width() - kEndPadding - close_button_->width() -
+                      kCloseAndLinkPadding - show_all_view_->width());
+  const bool all_downloads_hidden =
+      !download_views_.empty() &&
+      (download_views_.back()->GetPreferredSize().width() >
+       (download_items_end - x));
 
   const auto center_y = [height = height()](int item_height) {
     return std::max((height - item_height) / 2, kTopPadding);
   };
 
-  show_all_view_->SetPosition({next_x, center_y(show_all_view_->height())});
+  show_all_view_->SetPosition(
+      {// If none of the download items can be shown, move the link to the left
+       // to make it more obvious that there is something to see.
+       all_downloads_hidden ? x : download_items_end,
+       center_y(show_all_view_->height())});
   close_button_->SetPosition(
       {show_all_view_->bounds().right() + kCloseAndLinkPadding,
        center_y(close_button_->height())});
-  if (show_link_only) {
-    // Let's hide all the items.
-    for (auto ri = download_views_.rbegin(); ri != download_views_.rend(); ++ri)
-      (*ri)->SetVisible(false);
+
+  if (all_downloads_hidden) {
+    for (auto* view : download_views_)
+      view->SetVisible(false);
     return;
   }
 
-  next_x = kStartPadding;
-  for (auto ri = download_views_.rbegin(); ri != download_views_.rend(); ++ri) {
-    gfx::Size view_size = (*ri)->GetPreferredSize();
-
-    int x = next_x;
-
-    // Figure out width of item.
-    int item_width = view_size.width();
-    if (new_item_animation_.is_animating() && ri == download_views_.rbegin()) {
-      item_width = static_cast<int>(static_cast<double>(view_size.width()) *
-                                    new_item_animation_.GetCurrentValue());
+  for (auto* view : base::Reversed(download_views_)) {
+    gfx::Size view_size = view->GetPreferredSize();
+    if (view == download_views_.back()) {
+      view_size = gfx::Tween::SizeValueBetween(
+          new_item_animation_.GetCurrentValue(),
+          gfx::Size(0, view_size.height()), view_size);
     }
 
-    next_x += item_width;
+    const gfx::Rect bounds({x, center_y(view_size.height())}, view_size);
+    view->SetBoundsRect(bounds);
+    view->SetVisible(bounds.right() < download_items_end);
 
-    // Make sure our item can be contained within the shelf.
-    if (next_x < max_download_x) {
-      (*ri)->SetVisible(true);
-      (*ri)->SetBounds(x, center_y(view_size.height()), item_width,
-                       view_size.height());
-    } else {
-      (*ri)->SetVisible(false);
-    }
+    x = bounds.right();
   }
 }
 
 void DownloadShelfView::AnimationProgressed(const gfx::Animation* animation) {
   if (animation == &new_item_animation_) {
     InvalidateLayout();
-  } else if (animation == &shelf_animation_) {
+  } else {
+    DCHECK_EQ(&shelf_animation_, animation);
     // Force a re-layout of the parent, which will call back into
-    // GetPreferredSize, where we will do our animation. In the case where the
+    // GetPreferredSize(), where we will do our animation. In the case where the
     // animation is hiding, we do a full resize - the fast resizing would
     // otherwise leave blank white areas where the shelf was and where the
     // user's eye is. Thankfully bottom-resizing is a lot faster than
@@ -223,21 +208,18 @@ void DownloadShelfView::AnimationEnded(const gfx::Animation* animation) {
   if (shown || is_hidden())
     return;
 
-  // When the close animation is complete, remove all completed downloads.
-  size_t i = 0;
-  while (i < download_views_.size()) {
-    DownloadUIModel* download = download_views_[i]->model();
-    DownloadItem::DownloadState state = download->GetState();
-    bool is_transfer_done = state == DownloadItem::COMPLETE ||
-                            state == DownloadItem::CANCELLED ||
-                            state == DownloadItem::INTERRUPTED;
-    if (is_transfer_done && !download->IsDangerous()) {
-      RemoveDownloadView(download_views_[i]);
-    } else {
+  // Remove all completed downloads.
+  for (size_t i = 0; i < download_views_.size();) {
+    DownloadItemView* const view = download_views_[i];
+    DownloadUIModel* const model = view->model();
+    if ((model->GetState() == download::DownloadItem::IN_PROGRESS) ||
+        model->IsDangerous()) {
       // Treat the item as opened when we close. This way if we get shown again
       // the user need not open this item for the shelf to auto-close.
-      download->SetOpened(true);
+      model->SetOpened(true);
       ++i;
+    } else {
+      RemoveDownloadView(view);
     }
   }
 
@@ -253,14 +235,14 @@ void DownloadShelfView::AnimationEnded(const gfx::Animation* animation) {
   SetVisible(false);
 }
 
-void DownloadShelfView::ButtonPressed(
-    views::Button* button, const ui::Event& event) {
-  if (button == close_button_)
+void DownloadShelfView::ButtonPressed(views::Button* button,
+                                      const ui::Event& event) {
+  if (button == close_button_) {
     Close();
-  else if (button == show_all_view_)
+  } else {
+    DCHECK_EQ(show_all_view_, button);
     chrome::ShowDownloads(browser());
-  else
-    NOTREACHED();
+  }
 }
 
 void DownloadShelfView::MouseMovedOutOfHost() {
@@ -275,11 +257,11 @@ void DownloadShelfView::AutoClose() {
 
 void DownloadShelfView::RemoveDownloadView(View* view) {
   DCHECK(view);
-  auto i = find(download_views_.begin(), download_views_.end(), view);
+  const auto i =
+      std::find(download_views_.begin(), download_views_.end(), view);
   DCHECK(i != download_views_.end());
   download_views_.erase(i);
-  RemoveChildView(view);
-  delete view;
+  RemoveChildViewT(view);
   if (download_views_.empty())
     Close();
   else
@@ -333,7 +315,7 @@ void DownloadShelfView::DoShowDownload(
 
   if (was_empty && !shelf_animation_.is_animating() && GetVisible()) {
     // Force a re-layout of the parent to adjust height of shelf properly.
-    parent_->ToolbarSizeChanged(shelf_animation_.IsShowing());
+    parent_->ToolbarSizeChanged(true);
   }
 }
 
@@ -379,8 +361,6 @@ void DownloadShelfView::OnThemeChanged() {
 }
 
 views::View* DownloadShelfView::GetDefaultFocusableChild() {
-  if (!download_views_.empty())
-    return download_views_.back();
-
-  return show_all_view_;
+  return download_views_.empty() ? static_cast<views::View*>(show_all_view_)
+                                 : download_views_.back();
 }

@@ -89,6 +89,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
     // Whether test should observe file tasks.
     bool observe_file_tasks = true;
+
+    // Whether test should enable sharesheet.
+    bool enable_sharesheet = false;
   };
 
  protected:

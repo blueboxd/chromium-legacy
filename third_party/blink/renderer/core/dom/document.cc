@@ -7015,12 +7015,13 @@ void Document::ColorSchemeMetaChanged() {
 }
 
 void Document::BatterySavingsMetaChanged() {
-  if (!RuntimeEnabledFeatures::BatterySavingsMetaEnabled())
+  if (!RuntimeEnabledFeatures::BatterySavingsMetaEnabled(GetExecutionContext()))
     return;
 
   if (!IsInMainFrame())
     return;
 
+  UseCounter::Count(GetExecutionContext(), WebFeature::kBatterySavingsMeta);
   auto* root_element = documentElement();
   if (!root_element)
     return;

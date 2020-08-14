@@ -29,6 +29,7 @@
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/optimization_guide/optimization_guide.mojom-shared.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-shared.h"
 #include "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
@@ -721,6 +722,16 @@ class WebLocalFrame : public WebFrame {
   virtual bool ConsumeTransientUserActivation(
       UserActivationUpdateSource update_source =
           UserActivationUpdateSource::kRenderer) = 0;
+
+  // Optimization Guide --------------------------------------------------------
+
+  // Sets the optimization hints provided by the optimization guide service. See
+  // //components/optimization_guide/README.md.
+  //
+  // For now, DelayAsyncScriptExecutionDelayType is the only hint. If more hints
+  // are added, this can be struct, etc.
+  virtual void SetOptimizationGuideHints(
+      mojom::DelayAsyncScriptExecutionDelayType delay_type) = 0;
 
   // Testing ------------------------------------------------------------------
 

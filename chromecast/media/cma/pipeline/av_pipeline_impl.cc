@@ -30,10 +30,10 @@ namespace chromecast {
 namespace media {
 
 AvPipelineImpl::AvPipelineImpl(CmaBackend::Decoder* decoder,
-                               const AvPipelineClient& client)
+                               AvPipelineClient client)
     : bytes_decoded_since_last_update_(0),
       decoder_(decoder),
-      client_(client),
+      client_(std::move(client)),
       state_(kUninitialized),
       buffered_time_(::media::kNoTimestamp),
       playable_buffered_time_(::media::kNoTimestamp),
@@ -62,7 +62,7 @@ void AvPipelineImpl::SetCodedFrameProvider(
   // Wrap the incoming frame provider to add some buffering capabilities.
   frame_provider_.reset(new BufferingFrameProvider(
       std::move(frame_provider), max_buffer_size, max_frame_size,
-      base::Bind(&AvPipelineImpl::OnDataBuffered, weak_this_)));
+      base::BindRepeating(&AvPipelineImpl::OnDataBuffered, weak_this_)));
 }
 
 bool AvPipelineImpl::StartPlayingFrom(
@@ -96,7 +96,7 @@ bool AvPipelineImpl::StartPlayingFrom(
   return true;
 }
 
-void AvPipelineImpl::Flush(const base::Closure& flush_cb) {
+void AvPipelineImpl::Flush(base::OnceClosure flush_cb) {
   LOG(INFO) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(flush_cb_.is_null());
@@ -108,7 +108,7 @@ void AvPipelineImpl::Flush(const base::Closure& flush_cb) {
   DCHECK_EQ(state_, kPlaying);
   set_state(kFlushing);
 
-  flush_cb_ = flush_cb;
+  flush_cb_ = std::move(flush_cb);
   // Stop feeding the pipeline.
   // Do not invalidate |pushed_buffer_| here since the backend may still be
   // using it. Invalidate it in StartPlayingFrom on the assumption that
@@ -135,7 +135,8 @@ void AvPipelineImpl::Flush(const base::Closure& flush_cb) {
   // Reset |decryptor_| to flush buffered frames in |decryptor_|.
   decryptor_.reset();
 
-  frame_provider_->Flush(base::Bind(&AvPipelineImpl::OnFlushDone, weak_this_));
+  frame_provider_->Flush(
+      base::BindOnce(&AvPipelineImpl::OnFlushDone, weak_this_));
 }
 
 void AvPipelineImpl::OnFlushDone() {
@@ -172,7 +173,7 @@ void AvPipelineImpl::FetchBuffer() {
 
   pending_read_ = true;
   frame_provider_->Read(
-      base::Bind(&AvPipelineImpl::OnNewFrame, weak_this_));
+      base::BindOnce(&AvPipelineImpl::OnNewFrame, weak_this_));
 }
 
 void AvPipelineImpl::OnNewFrame(
@@ -317,7 +318,7 @@ void AvPipelineImpl::OnPushBufferComplete(BufferStatus status) {
 
 void AvPipelineImpl::OnEndOfStream() {
   if (!client_.eos_cb.is_null())
-    client_.eos_cb.Run();
+    std::move(client_.eos_cb).Run();
 }
 
 void AvPipelineImpl::OnDecoderError() {

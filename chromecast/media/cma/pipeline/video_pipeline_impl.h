@@ -28,7 +28,7 @@ class CodedFrameProvider;
 class VideoPipelineImpl : public AvPipelineImpl {
  public:
   VideoPipelineImpl(CmaBackend::VideoDecoder* decoder,
-                    const VideoPipelineClient& client);
+                    VideoPipelineClient client);
   ~VideoPipelineImpl() override;
 
   ::media::PipelineStatus Initialize(

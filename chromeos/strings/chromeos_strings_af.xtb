@@ -9,6 +9,7 @@
 <translation id="150962533380566081">Ongeldige PUK.</translation>
 <translation id="1510238584712386396">Lanseerder</translation>
 <translation id="1644574205037202324">Geskiedenis</translation>
+<translation id="1662989795263954667">Gestop – ink is op</translation>
 <translation id="1734367976349034509">Hierdie toestel is onder ondernemingbestuur</translation>
 <translation id="1905710495812624430">Maksimum toegelate pogings is oorskry.</translation>
 <translation id="1930797645656624981">Chrome-bedryfstelsel se invoermetodediens</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Wagwoord verval oor <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Geen druktake aan die gang nie</translation>
 <translation id="428217921675623177">Druktake ouer as 90 dae sal verwyder word</translation>
+<translation id="4297501883039923494">Gestop – onbekende fout</translation>
 <translation id="4429881212383817840">Kerberos-kaartjie verval binnekort</translation>
 <translation id="445059817448385655">Ou wagwoord</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> van <ph name="TOTAL_PAGE_NUMBER" />. Druk om die druktaak te kanselleer.</translation>
 <translation id="467510802200863975">Wagwoorde is nie dieselfde nie</translation>
+<translation id="4691278870498629773">Gestop – laai ontbreek</translation>
 <translation id="4731797938093519117">Ouertoegang</translation>
 <translation id="4773299976671772492">Gestop</translation>
 <translation id="4808449224298348341">Gekanselleerde druktaak <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Kies onmiddellik 'n nuwe een</translation>
+<translation id="4917889632206600977">Gestop – papier is op</translation>
 <translation id="4932733599132424254">Datum</translation>
 <translation id="5212543919916444558">Ek kry niks op jou skerm waarmee ek kan help nie.
 Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="5222676887888702881">Meld af</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Berg</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Kies nou 'n nuwe een</translation>
@@ -63,9 +68,11 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="6106186594183574873">Voer jou ou wagwoord in om dit te voltooi</translation>
 <translation id="6146993107019042706">Voer jou nuwe wagwoord in om dit te voltooi</translation>
 <translation id="636850387210749493">Onderneminginskrywing</translation>
+<translation id="649050271426829538">Gestop – papierknoop</translation>
 <translation id="6517239166834772319">Verken</translation>
 <translation id="6564646048574748301">Misluk – Kon nie drukker bereik nie</translation>
 <translation id="6643016212128521049">Vee uit</translation>
+<translation id="6747215703636344499">Gestop – uitvoer is vol</translation>
 <translation id="7162487448488904999">Galery</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Jou administrateur bestuur hierdie handeling</translation>
@@ -77,6 +84,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="8347227221149377169">Druktake</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> bestuur hierdie gebruiker. Dit kan dalk oor 'n afstand instellings bestuur en gebruikeraktiwiteit monitor.</translation>
 <translation id="871560550817059752">Misluk – Ink is op</translation>
+<translation id="8726019395068607495">Gestop – deur is oop</translation>
 <translation id="8747900814994928677">Bevestig verandering</translation>
 <translation id="8919837981463578619">Misluk – Laai ontbreek</translation>
 <translation id="8928727111548978589">Misluk – Papier is op</translation>

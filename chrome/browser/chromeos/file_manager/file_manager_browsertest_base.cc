@@ -1576,6 +1576,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(chromeos::features::kFilesZipUnpack);
   }
 
+  if (options.enable_sharesheet) {
+    enabled_features.push_back(features::kSharesheet);
+  }
+
   // This is destroyed in |TearDown()|. We cannot initialize this in the
   // constructor due to this feature values' above dependence on virtual
   // method calls, but by convention subclasses of this fixture may initialize

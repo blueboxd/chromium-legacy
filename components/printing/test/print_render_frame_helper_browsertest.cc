@@ -130,7 +130,8 @@ void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetInteger(kPreviewUIID, 4);
   dict->SetInteger(kPreviewRequestID, 12345);
   dict->SetBoolean(kIsFirstRequest, true);
-  dict->SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
+  dict->SetInteger(kSettingMarginsType,
+                   static_cast<int>(mojom::MarginType::kDefaultMargins));
   dict->SetBoolean(kSettingPreviewModifiable, true);
   dict->SetBoolean(kSettingPreviewIsFromArc, false);
   dict->SetBoolean(kSettingPreviewIsPdf, false);
@@ -924,7 +925,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
-  dict.SetInteger(kSettingMarginsType, NO_MARGINS);
+  dict.SetInteger(kSettingMarginsType,
+                  static_cast<int>(mojom::MarginType::kNoMargins));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -948,7 +950,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingMarginsType, PRINTABLE_AREA_MARGINS);
+  dict.SetInteger(kSettingMarginsType,
+                  static_cast<int>(mojom::MarginType::kPrintableAreaMargins));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -1193,7 +1196,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
-  dict.SetInteger(kSettingMarginsType, NO_MARGINS);
+  dict.SetInteger(kSettingMarginsType,
+                  static_cast<int>(mojom::MarginType::kNoMargins));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -1217,7 +1221,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingMarginsType, CUSTOM_MARGINS);
+  dict.SetInteger(kSettingMarginsType,
+                  static_cast<int>(mojom::MarginType::kCustomMargins));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());

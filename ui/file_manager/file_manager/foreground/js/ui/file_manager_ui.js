@@ -118,6 +118,12 @@ class FileManagerUI {
     this.formatDialog = queryRequiredElement('#format-dialog');
 
     /**
+     * Dialog for password prompt
+     * @type {?FilesPasswordDialog}
+     */
+    this.passwordDialog_ = null;
+
+    /**
      * The container element of the dialog.
      * @type {!HTMLElement}
      */
@@ -400,6 +406,20 @@ class FileManagerUI {
         e.stopPropagation();
       });
     }
+  }
+
+  /**
+   * Gets password dialog.
+   * @return {!Element}
+   */
+  get passwordDialog() {
+    if (this.passwordDialog_) {
+      return this.passwordDialog_;
+    }
+    this.passwordDialog_ = /** @type {!FilesPasswordDialog} */ (
+        document.createElement('files-password-dialog'));
+    this.element.appendChild(this.passwordDialog_);
+    return this.passwordDialog_;
   }
 
   /**

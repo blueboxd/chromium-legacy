@@ -14,8 +14,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/page_number.h"
-#include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
 
 namespace content {
@@ -53,7 +53,7 @@ class PrintJobWorker {
   void GetSettings(bool ask_user_for_settings,
                    int document_page_count,
                    bool has_selection,
-                   MarginType margin_type,
+                   mojom::MarginType margin_type,
                    bool is_scripted,
                    bool is_modifiable,
                    SettingsCallback callback);

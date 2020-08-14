@@ -43,6 +43,8 @@ extern const char kQueryTilesCountryCode[];
 // If set, the background task will be started after a short period.
 extern const char kQueryTilesInstantBackgroundTask[];
 
+// If set, server will return trending tiles along with curated tiles.
+extern const char kQueryTilesEnableTrending[];
 }  // namespace switches
 }  // namespace query_tiles
 

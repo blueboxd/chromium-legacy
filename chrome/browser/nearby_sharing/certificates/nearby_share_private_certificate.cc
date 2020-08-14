@@ -20,7 +20,6 @@
 #include "crypto/ec_signature_creator.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
-#include "crypto/random.h"
 #include "crypto/sha2.h"
 #include "crypto/symmetric_key.h"
 
@@ -36,13 +35,6 @@ const char kMetadataEncryptionKey[] = "metadata_encryption_key";
 const char kId[] = "id";
 const char kUnencryptedMetadata[] = "unencrypted_metadata";
 const char kConsumedSalts[] = "consumed_salts";
-
-std::vector<uint8_t> GenerateRandomBytes(size_t num_bytes) {
-  std::vector<uint8_t> bytes(num_bytes);
-  crypto::RandBytes(bytes);
-
-  return bytes;
-}
 
 // Generates a random validity bound offset in the interval
 // [0, kNearbyShareMaxPrivateCertificateValidityBoundOffset).

@@ -681,6 +681,11 @@ void ArcImeService::OnDispatchingKeyEventPostIME(ui::KeyEvent* event) {
   }
 }
 
+void ArcImeService::ClearAutocorrectRange() {
+  // TODO(https:://crbug.com/1091088): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 // static
 void ArcImeService::SetOverrideDefaultDeviceScaleFactorForTesting(
     base::Optional<double> scale_factor) {

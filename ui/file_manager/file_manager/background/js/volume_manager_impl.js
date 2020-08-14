@@ -193,6 +193,12 @@ class VolumeManagerImpl extends cr.EventTarget {
               return;
             }
 
+            case VolumeManagerCommon.VolumeError.NEED_PASSWORD: {
+              console.warn(`'Cannot mount ${sourcePath}': ${status}`);
+              this.finishRequest_(requestKey, status);
+              return;
+            }
+
             default:
               console.error(`Cannot mount '${sourcePath}': ${status}`);
               this.finishRequest_(requestKey, status);

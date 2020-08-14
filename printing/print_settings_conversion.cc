@@ -146,15 +146,18 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
   }
   settings->set_requested_media(requested_media);
 
-  int margin_type =
-      job_settings.FindIntKey(kSettingMarginsType).value_or(DEFAULT_MARGINS);
-  if (margin_type != DEFAULT_MARGINS && margin_type != NO_MARGINS &&
-      margin_type != CUSTOM_MARGINS && margin_type != PRINTABLE_AREA_MARGINS) {
-    margin_type = DEFAULT_MARGINS;
+  mojom::MarginType margin_type = static_cast<mojom::MarginType>(
+      job_settings.FindIntKey(kSettingMarginsType)
+          .value_or(static_cast<int>(mojom::MarginType::kDefaultMargins)));
+  if (margin_type != mojom::MarginType::kDefaultMargins &&
+      margin_type != mojom::MarginType::kNoMargins &&
+      margin_type != mojom::MarginType::kCustomMargins &&
+      margin_type != mojom::MarginType::kPrintableAreaMargins) {
+    margin_type = mojom::MarginType::kDefaultMargins;
   }
-  settings->set_margin_type(static_cast<MarginType>(margin_type));
+  settings->set_margin_type(margin_type);
 
-  if (margin_type == CUSTOM_MARGINS)
+  if (margin_type == mojom::MarginType::kCustomMargins)
     settings->SetCustomMargins(GetCustomMarginsFromJobSettings(job_settings));
 
   settings->set_ranges(GetPageRangesFromJobSettings(job_settings));
@@ -245,7 +248,8 @@ void PrintSettingsToJobSettingsDebug(const PrintSettings& settings,
                            settings.should_print_backgrounds());
   job_settings->SetBoolean(kSettingShouldPrintSelectionOnly,
                            settings.selection_only());
-  job_settings->SetInteger(kSettingMarginsType, settings.margin_type());
+  job_settings->SetInteger(kSettingMarginsType,
+                           static_cast<int>(settings.margin_type()));
   if (!settings.ranges().empty()) {
     auto page_range_array = std::make_unique<base::ListValue>();
     for (size_t i = 0; i < settings.ranges().size(); ++i) {

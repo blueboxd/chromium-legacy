@@ -41,6 +41,7 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Бүгдийг сонго &amp;</translation>
+<translation id="19085484004813472">Энэ бол шинэ онцлог</translation>
 <translation id="2006524834898217237">Энэ төхөөрөмж интернэтэд холбогдсон эсэхийг шалгана уу.</translation>
 <translation id="208586643495776849">Дахин оролдоно уу</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" />-с Android утас руугаа дугаар илгээхийн тулд хоёр төхөөрөмжийнхөө аль алины тохиргоонд <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -151,6 +152,7 @@
 <translation id="5768079895599174203">{DAYS,plural, =1{1 өдөр ба }other{# өдөр ба }}</translation>
 <translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 жилийн дараа}other{# жилийн дараа}}</translation>
+<translation id="588258955323874662">Дэлгэц дүүрэн</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 секунд үлдсэн}other{# секунд үлдсэн}}</translation>
 <translation id="5941711191222866238">Багасгах</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 цаг}other{# цаг}}</translation>

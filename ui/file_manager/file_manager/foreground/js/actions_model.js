@@ -191,7 +191,8 @@ class DriveToggleOfflineAction {
       entries, metadataModel, driveSyncHandler, ui, value, onExecute) {
     const actionableEntries = entries.filter(entry => {
       const metadata = metadataModel.getCache([entry], ['hosted', 'pinned'])[0];
-      if (metadata.hosted) {
+      if (!util.isDriveBidirectionalNativeMessagingEnabled() &&
+          metadata.hosted) {
         return false;
       }
       if (metadata.pinned === value) {

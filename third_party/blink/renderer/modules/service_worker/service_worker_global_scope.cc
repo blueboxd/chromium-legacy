@@ -2073,8 +2073,12 @@ void ServiceWorkerGlobalScope::StartPushSubscriptionChangeEvent(
       this, WaitUntilObserver::kPushSubscriptionChange, event_id);
   Event* event = PushSubscriptionChangeEvent::Create(
       event_type_names::kPushsubscriptionchange,
-      PushSubscription::Create(std::move(new_subscription), registration_),
-      PushSubscription::Create(std::move(old_subscription), registration_),
+      (new_subscription)
+          ? PushSubscription::Create(std::move(new_subscription), registration_)
+          : nullptr /* new_subscription*/,
+      (old_subscription)
+          ? PushSubscription::Create(std::move(old_subscription), registration_)
+          : nullptr /* old_subscription*/,
       observer);
   DispatchExtendableEvent(event, observer);
 }

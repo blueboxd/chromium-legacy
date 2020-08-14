@@ -18,6 +18,7 @@ namespace component_updater {
 namespace {
 
 using ::testing::Pair;
+using ::testing::Pointee;
 using ::testing::UnorderedElementsAre;
 
 }  // namespace
@@ -132,18 +133,22 @@ TEST_F(ZxcvbnDataComponentInstallerPolicyTest, ComponentReady) {
       zxcvbn::default_ranked_dicts(),
       UnorderedElementsAre(
           Pair(zxcvbn::DictionaryTag::ENGLISH_WIKIPEDIA,
-               UnorderedElementsAre(Pair("english", 1), Pair("wikipedia", 2))),
+               Pointee(UnorderedElementsAre(Pair("english", 1),
+                                            Pair("wikipedia", 2)))),
           Pair(zxcvbn::DictionaryTag::FEMALE_NAMES,
-               UnorderedElementsAre(Pair("female", 1), Pair("names", 2))),
-          Pair(zxcvbn::DictionaryTag::MALE_NAMES,
-               UnorderedElementsAre(Pair("male", 1), Pair("names", 2))),
+               Pointee(
+                   UnorderedElementsAre(Pair("female", 1), Pair("names", 2)))),
+          Pair(
+              zxcvbn::DictionaryTag::MALE_NAMES,
+              Pointee(UnorderedElementsAre(Pair("male", 1), Pair("names", 2)))),
           Pair(zxcvbn::DictionaryTag::PASSWORDS,
-               UnorderedElementsAre(Pair("passwords", 1))),
+               Pointee(UnorderedElementsAre(Pair("passwords", 1)))),
           Pair(zxcvbn::DictionaryTag::SURNAMES,
-               UnorderedElementsAre(Pair("surnames", 1))),
-          Pair(zxcvbn::DictionaryTag::US_TV_AND_FILM,
-               UnorderedElementsAre(Pair("us", 1), Pair("tv", 2),
-                                    Pair("and", 3), Pair("film", 4)))));
+               Pointee(UnorderedElementsAre(Pair("surnames", 1)))),
+          Pair(
+              zxcvbn::DictionaryTag::US_TV_AND_FILM,
+              Pointee(UnorderedElementsAre(Pair("us", 1), Pair("tv", 2),
+                                           Pair("and", 3), Pair("film", 4))))));
 }
 
 }  // namespace component_updater

@@ -21,3 +21,7 @@ void HelpAppPageHandler::OpenFeedbackDialog(
   auto error_message = help_app_ui_->delegate()->OpenFeedbackDialog();
   std::move(callback).Run(std::move(error_message));
 }
+
+void HelpAppPageHandler::ShowParentalControls() {
+  help_app_ui_->delegate()->ShowParentalControls();
+}

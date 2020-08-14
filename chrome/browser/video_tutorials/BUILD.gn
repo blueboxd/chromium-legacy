@@ -44,6 +44,8 @@ source_set("factory") {
   deps = [
     ":public",
     "internal:internal",
+    "//chrome/browser/video_tutorials/proto",
+    "//components/leveldb_proto",
   ]
 }
 

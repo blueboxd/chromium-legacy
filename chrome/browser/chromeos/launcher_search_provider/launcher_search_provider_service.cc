@@ -131,8 +131,9 @@ void Service::SetSearchResults(
   for (const auto& result : results) {
     const int relevance =
         base::ClampToRange(result.relevance, 0, kMaxSearchResultScore);
-    const GURL icon_url =
-        result.icon_url ? GURL(*result.icon_url.get()) : GURL();
+
+    const std::string icon_type =
+        result.icon_type ? *result.icon_type.get() : std::string();
 
     // Calculate the relevance score by matching the query with the title.
     // Results with a match score of 0 are discarded. This will also be used to
@@ -146,7 +147,7 @@ void Service::SetSearchResults(
       continue;
 
     auto search_result = std::make_unique<app_list::LauncherSearchResult>(
-        result.item_id, icon_url, relevance, profile_, extension,
+        result.item_id, icon_type, relevance, profile_, extension,
         error_reporter->Duplicate());
     search_result->UpdateFromMatch(tokenized_title, match);
     search_results.push_back(std::move(search_result));

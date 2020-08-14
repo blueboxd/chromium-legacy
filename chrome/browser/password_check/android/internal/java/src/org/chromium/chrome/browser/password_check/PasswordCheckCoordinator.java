@@ -18,6 +18,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.password_check.helper.PasswordCheckReauthenticationHelper;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -39,7 +40,8 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
     private static final String INTENT = "PASSWORD_CHANGE";
 
     private final PasswordCheckFragmentView mFragmentView;
-    private final PasswordCheckMediator mMediator = new PasswordCheckMediator(this);
+    private final PasswordCheckReauthenticationHelper mReauthenticationHelper;
+    private final PasswordCheckMediator mMediator;
     private PropertyModel mModel;
 
     /**
@@ -80,6 +82,11 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
         // TODO(crbug.com/1092444): Ideally, the following replaces the lifecycle event forwarding.
         //  Figure out why it isn't working and use the following lifecycle observer once it does:
         // mFragmentView.getLifecycle().addObserver(this);
+
+        mReauthenticationHelper = new PasswordCheckReauthenticationHelper(
+                mFragmentView.getActivity(), mFragmentView.getParentFragmentManager());
+
+        mMediator = new PasswordCheckMediator(this, mReauthenticationHelper);
     }
 
     @Override
@@ -91,6 +98,11 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
             mMediator.initialize(
                     mModel, PasswordCheckFactory.getOrCreate(), mFragmentView.getReferrer());
         }
+    }
+
+    @Override
+    public void onResumeFragment() {
+        mReauthenticationHelper.onReauthenticationMaybeHappened();
     }
 
     @Override

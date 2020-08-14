@@ -546,6 +546,9 @@ bool LayoutObject::IsRenderedLegendInternal() const {
   DCHECK(IsRenderedLegendCandidate());
 
   const auto* parent = Parent();
+  // We may not be inserted into the tree yet.
+  if (!parent)
+    return false;
   if (RuntimeEnabledFeatures::LayoutNGFieldsetEnabled()) {
     // If there is a rendered legend, it will be found inside the anonymous
     // fieldset wrapper. If the anonymous fieldset wrapper is a multi-column,
@@ -764,16 +767,21 @@ PaintLayer* LayoutObject::EnclosingLayer() const {
 }
 
 PaintLayer* LayoutObject::PaintingLayer() const {
+  auto FindContainer = [](const LayoutObject& object) -> const LayoutObject* {
+    if (object.IsRenderedLegend())
+      return LayoutFieldset::FindLegendContainer(ToLayoutBox(object));
+    // Use ContainingBlock() instead of ParentCrossingFrames() for floating
+    // objects to omit any self-painting layers of inline objects that don't
+    // paint the floating object. This is only needed for inline-level floats
+    // not managed by LayoutNG. LayoutNG floats are painted by the correct
+    // painting layer.
+    if (object.IsFloating() && !object.IsInLayoutNGInlineFormattingContext())
+      return object.ContainingBlock();
+    return object.ParentCrossingFrames();
+  };
+
   for (const LayoutObject* current = this; current;
-       // Use containingBlock instead of parentCrossingFrames for floating
-       // objects to omit any self-painting layers of inline objects that don't
-       // paint the floating object.
-       // This is only needed for inline-level floats not managed by LayoutNG.
-       // LayoutNG floats are painted by the correct painting layer.
-       current = (current->IsFloating() &&
-                  !current->IsInLayoutNGInlineFormattingContext())
-                     ? current->ContainingBlock()
-                     : current->ParentCrossingFrames()) {
+       current = FindContainer(*current)) {
     if (current->HasLayer() &&
         ToLayoutBoxModelObject(current)->Layer()->IsSelfPaintingLayer()) {
       return ToLayoutBoxModelObject(current)->Layer();
@@ -3228,6 +3236,9 @@ LayoutObject* LayoutObject::Container(AncestorSkipInfo* skip_info) const {
 
   if (IsFloating() && !IsInLayoutNGInlineFormattingContext())
     return ContainingBlock(skip_info);
+
+  if (IsRenderedLegend())
+    return LayoutFieldset::FindLegendContainer(ToLayoutBox(*this));
 
   return Parent();
 }

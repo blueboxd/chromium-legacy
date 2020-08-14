@@ -21,7 +21,8 @@ class FakeNearbyShareCertificateManager : public NearbyShareCertificateManager {
   // Factory that creates FakeNearbyShareCertificateManager instances. Use in
   // NearbyShareCertificateManagerImpl::Factor::SetFactoryForTesting() in unit
   // tests.
-  class Factory : NearbyShareCertificateManagerImpl::Factory {
+  class Factory : public NearbyShareCertificateManagerImpl::Factory {
+   public:
     Factory();
     ~Factory() override;
 
@@ -74,6 +75,14 @@ class FakeNearbyShareCertificateManager : public NearbyShareCertificateManager {
   // Make protected methods from base class public in this fake class.
   using NearbyShareCertificateManager::NotifyPrivateCertificatesChanged;
   using NearbyShareCertificateManager::NotifyPublicCertificatesDownloaded;
+
+  size_t num_get_valid_private_certificate_calls() {
+    return num_get_valid_private_certificate_calls_;
+  }
+
+  size_t num_download_public_certificates_calls() {
+    return num_download_public_certificates_calls_;
+  }
 
   std::vector<GetDecryptedPublicCertificateCall>&
   get_decrypted_public_certificate_calls() {

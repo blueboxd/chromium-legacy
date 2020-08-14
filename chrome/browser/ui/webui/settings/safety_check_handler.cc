@@ -144,7 +144,14 @@ SafetyCheckHandler::ChromeCleanerStatus fetchCurrentChromeCleanerStatus() {
 
 SafetyCheckHandler::SafetyCheckHandler() = default;
 
-SafetyCheckHandler::~SafetyCheckHandler() = default;
+SafetyCheckHandler::~SafetyCheckHandler() {
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // It seems |OnJavascriptDisallowed| is not always called before the
+  // deconstructor. Remove the CCT observer (no-op if not registered)
+  // also here to ensure it does not stay registered.
+  safe_browsing::ChromeCleanerController::GetInstance()->RemoveObserver(this);
+#endif
+}
 
 void SafetyCheckHandler::SendSafetyCheckStartedWebUiUpdates() {
   AllowJavascript();

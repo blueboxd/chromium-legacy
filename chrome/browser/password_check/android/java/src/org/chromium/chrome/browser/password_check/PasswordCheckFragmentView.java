@@ -44,6 +44,12 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
         mComponentDelegate.onStartFragment();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        mComponentDelegate.onResumeFragment();
+    }
+
     private @PasswordCheckReferrer int getReferrerFromInstanceStateOrLaunchBundle(
             Bundle savedInstanceState) {
         if (savedInstanceState != null && savedInstanceState.containsKey(PASSWORD_CHECK_REFERRER)) {

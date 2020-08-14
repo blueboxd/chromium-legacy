@@ -97,10 +97,23 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   BackForwardCacheImpl();
   ~BackForwardCacheImpl();
 
-  // Returns whether a RenderFrameHost can be stored into the
-  // BackForwardCache. Depends on the |render_frame_host| and its children's
-  // state.
-  BackForwardCacheCanStoreDocumentResult CanStoreDocument(
+  // Returns whether a RenderFrameHost can be stored into the BackForwardCache
+  // right now. Depends on the |render_frame_host| and its children's state.
+  // Should only be called after we've navigated away from |render_frame_host|,
+  // which means nothing about the page can change (usage of blocklisted
+  // features, pending navigations, load state, etc.) anymore.
+  BackForwardCacheCanStoreDocumentResult CanStorePageNow(
+      RenderFrameHostImpl* render_frame_host);
+
+  // Whether a RenderFrameHost could be stored into the BackForwardCache at some
+  // point in the future. Different than CanStorePageNow() above, we won't check
+  // for properties of |render_frame_host| that might change in the future such
+  // as usage of certain APIs, loading state, existence of pending navigation
+  // requests, etc. This should be treated as a "best guess" on whether a page
+  // still has a chance to be stored in the back-forward cache later on, and
+  // should not be used as a final check before storing a page to the
+  // back-forward cache (for that, use CanStorePageNow() instead).
+  BackForwardCacheCanStoreDocumentResult CanPotentiallyStorePageLater(
       RenderFrameHostImpl* render_frame_host);
 
   // Moves the specified BackForwardCache entry into the BackForwardCache. It
@@ -187,9 +200,14 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   // Destroys all evicted frames in the BackForwardCache.
   void DestroyEvictedFrames();
 
-  // Helper for recursively checking each child.
-  void CanStoreRenderFrameHost(BackForwardCacheCanStoreDocumentResult* result,
-                               RenderFrameHostImpl* render_frame_host);
+  // Helper for recursively checking each child. See CanStorePageNow() and
+  // CanPotentiallyStorePageLater().
+  void CheckDynamicStatesOnSubtree(
+      BackForwardCacheCanStoreDocumentResult* result,
+      RenderFrameHostImpl* render_frame_host);
+  void CanStoreRenderFrameHostLater(
+      BackForwardCacheCanStoreDocumentResult* result,
+      RenderFrameHostImpl* render_frame_host);
 
   // Contains the set of stored Entries.
   // Invariant:

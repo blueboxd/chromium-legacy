@@ -67,6 +67,8 @@ component("controller") {
     sources += [
       "performance_manager/v8_per_frame_memory_reporter_impl.cc",
       "performance_manager/v8_per_frame_memory_reporter_impl.h",
+      "performance_manager/v8_worker_memory_reporter.cc",
+      "performance_manager/v8_worker_memory_reporter.h",
     ]
   }
   if (is_win) {
@@ -182,8 +184,10 @@ source_set("blink_unittests_sources") {
       "user_level_memory_pressure_signal_generator_test.cc",
     ]
   } else {
-    sources +=
-        [ "performance_manager/v8_per_frame_memory_reporter_impl_test.cc" ]
+    sources += [
+      "performance_manager/v8_per_frame_memory_reporter_impl_test.cc",
+      "performance_manager/v8_worker_memory_reporter_test.cc",
+    ]
   }
 
   if (is_linux || is_chromeos || is_android || is_mac || is_win) {

@@ -30,9 +30,7 @@ class MEDIA_GPU_EXPORT TextureSelector {
     kSDROrHDR = 1,
   };
 
-  TextureSelector(VideoPixelFormat pixfmt,
-                  DXGI_FORMAT output_dxgifmt,
-                  bool supports_swap_chain);
+  TextureSelector(VideoPixelFormat pixfmt, DXGI_FORMAT output_dxgifmt);
   virtual ~TextureSelector() = default;
 
   static std::unique_ptr<TextureSelector> Create(
@@ -59,7 +57,6 @@ class MEDIA_GPU_EXPORT TextureSelector {
 
   const VideoPixelFormat pixel_format_;
   const DXGI_FORMAT output_dxgifmt_;
-  const bool supports_swap_chain_;
 };
 
 class MEDIA_GPU_EXPORT CopyTextureSelector : public TextureSelector {
@@ -68,8 +65,7 @@ class MEDIA_GPU_EXPORT CopyTextureSelector : public TextureSelector {
   CopyTextureSelector(VideoPixelFormat pixfmt,
                       DXGI_FORMAT input_dxgifmt,
                       DXGI_FORMAT output_dxgifmt,
-                      base::Optional<gfx::ColorSpace> output_color_space,
-                      bool supports_swap_chain);
+                      base::Optional<gfx::ColorSpace> output_color_space);
   ~CopyTextureSelector() override;
 
   std::unique_ptr<Texture2DWrapper> CreateTextureWrapper(

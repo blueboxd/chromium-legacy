@@ -3457,6 +3457,22 @@
       "features": [
         "disable_accelerated_vp8_decode"
       ]
+    },
+    {
+      "id": 345,
+      "description": "Disable DecodeSwapChain for Intel Gen9 and older devices",
+      "cr_bugs": [1107403],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "intel_gpu_generation": {
+        "op": "<=",
+        "value": "9"
+      },
+      "features": [
+        "disable_decode_swap_chain"
+      ]
     }
   ]
 }

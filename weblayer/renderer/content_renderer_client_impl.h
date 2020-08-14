@@ -44,6 +44,9 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
   bool IsPrefetchOnly(content::RenderFrame* render_frame,
                       const blink::WebURLRequest& request) override;
+  bool DeferMediaLoad(content::RenderFrame* render_frame,
+                      bool has_played_media_before,
+                      base::OnceClosure closure) override;
 
  private:
 #if defined(OS_ANDROID)

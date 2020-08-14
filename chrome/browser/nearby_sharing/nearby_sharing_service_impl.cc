@@ -161,8 +161,7 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
     NotificationDisplayService* notification_display_service,
     Profile* profile,
     std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager,
-    NearbyProcessManager* process_manager,
-    std::unique_ptr<NearbyShareCertificateManager> certificate_manager)
+    NearbyProcessManager* process_manager)
     : profile_(profile),
       settings_(prefs),
       nearby_connections_manager_(std::move(nearby_connections_manager)),
@@ -176,10 +175,10 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
               prefs,
               http_client_factory_.get())),
       contact_manager_(NearbyShareContactManagerImpl::Factory::Create()),
-      certificate_manager_(std::move(certificate_manager)) {
+      certificate_manager_(
+          NearbyShareCertificateManagerImpl::Factory::Create()) {
   DCHECK(profile_);
   DCHECK(nearby_connections_manager_);
-  DCHECK(certificate_manager_);
 
   nearby_process_observer_.Add(process_manager_);
 

@@ -92,6 +92,7 @@
 #include "components/prerender/common/prerender_url_loader_throttle.h"
 #include "components/prerender/renderer/prerender_helper.h"
 #include "components/prerender/renderer/prerender_render_frame_observer.h"
+#include "components/prerender/renderer/prerender_utils.h"
 #include "components/prerender/renderer/prerenderer_client.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/renderer/threat_dom_details.h"
@@ -299,31 +300,6 @@ bool IsStandaloneContentExtensionProcess() {
       extensions::switches::kExtensionProcess);
 #endif
 }
-
-// Defers media player loading in background pages until they're visible.
-class MediaLoadDeferrer : public content::RenderViewObserver {
- public:
-  MediaLoadDeferrer(content::RenderView* render_view,
-                    base::OnceClosure continue_loading_cb)
-      : content::RenderViewObserver(render_view),
-        continue_loading_cb_(std::move(continue_loading_cb)) {}
-  ~MediaLoadDeferrer() override {}
-
-  // content::RenderFrameObserver implementation:
-  void OnDestruct() override { delete this; }
-  void OnPageVisibilityChanged(
-      content::PageVisibilityState visibility_state) override {
-    if (visibility_state != content::PageVisibilityState::kVisible)
-      return;
-    std::move(continue_loading_cb_).Run();
-    delete this;
-  }
-
- private:
-  base::OnceClosure continue_loading_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaLoadDeferrer);
-};
 
 std::unique_ptr<base::Unwinder> CreateV8Unwinder(v8::Isolate* isolate) {
   return std::make_unique<V8Unwinder>(isolate);
@@ -775,21 +751,8 @@ bool ChromeContentRendererClient::DeferMediaLoad(
     content::RenderFrame* render_frame,
     bool has_played_media_before,
     base::OnceClosure closure) {
-  // Don't allow autoplay/autoload of media resources in a page that is hidden
-  // and has never played any media before.  We want to allow future loads even
-  // when hidden to allow playlist-like functionality.
-  //
-  // NOTE: This is also used to defer media loading for prerender.
-  if ((render_frame->GetRenderView()->GetWebView()->GetVisibilityState() !=
-           content::PageVisibilityState::kVisible &&
-       !has_played_media_before) ||
-      prerender::PrerenderHelper::IsPrerendering(render_frame)) {
-    new MediaLoadDeferrer(render_frame->GetRenderView(), std::move(closure));
-    return true;
-  }
-
-  std::move(closure).Run();
-  return false;
+  return prerender::DeferMediaLoad(render_frame, has_played_media_before,
+                                   std::move(closure));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

@@ -124,6 +124,16 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                                ContentSettingsType content_type,
                                const std::string& resource_identifier) override;
 
+  // Fires the `pushsubscriptionchange` event to the associated service worker
+  // of |app_identifier|, which is the app identifier for |old_subscription|
+  // whereas |new_subscription| can be either null e.g. when a subscription is
+  // lost due to permission changes or a new subscription when it was refreshed.
+  void FirePushSubscriptionChange(
+      const PushMessagingAppIdentifier& app_identifier,
+      base::OnceClosure completed_closure,
+      blink::mojom::PushSubscriptionPtr new_subscription,
+      blink::mojom::PushSubscriptionPtr old_subscription);
+
   // KeyedService implementation.
   void Shutdown() override;
 
@@ -241,14 +251,38 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // OnContentSettingChanged methods -------------------------------------------
 
-  void UnsubscribeBecausePermissionRevoked(
+  void UnsubscribePermissionRevoked(
+      const PushMessagingAppIdentifier& app_identifier,
+      UnregisterCallback unregister_callback);
+
+  void DidGetSenderIdUnsubscribePermissionRevoked(
       const PushMessagingAppIdentifier& app_identifier,
       UnregisterCallback callback,
+      const std::string& sender_id);
+
+  void GetPushSubscriptionFromAppIdentifier(
+      const PushMessagingAppIdentifier& app_identifier,
+      base::OnceCallback<void(blink::mojom::PushSubscriptionPtr)> callback);
+
+  void DidGetSWData(
+      const PushMessagingAppIdentifier& app_identifier,
+      base::OnceCallback<void(blink::mojom::PushSubscriptionPtr)> callback,
       const std::string& sender_id,
-      bool success,
-      bool not_found);
+      const std::string& subscription_id);
+
+  void GetPushSubscriptionFromAppIdentifierEnd(
+      base::OnceCallback<void(blink::mojom::PushSubscriptionPtr)> callback,
+      const std::string& sender_id,
+      bool is_valid,
+      const GURL& endpoint,
+      const base::Optional<base::Time>& expiration_time,
+      const std::vector<uint8_t>& p256dh,
+      const std::vector<uint8_t>& auth);
 
   // Helper methods ------------------------------------------------------------
+  void FirePushSubscriptionChangeCallback(
+      const PushMessagingAppIdentifier& app_identifier,
+      blink::mojom::PushEventStatus status);
 
   // Normalizes the |sender_info|. In most cases the |sender_info| will be
   // passed through to the GCM Driver as-is, but NIST P-256 application server

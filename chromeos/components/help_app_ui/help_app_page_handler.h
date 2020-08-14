@@ -27,6 +27,7 @@ class HelpAppPageHandler : public help_app_ui::mojom::PageHandler {
 
   // help_app_ui::mojom::PageHandler:
   void OpenFeedbackDialog(OpenFeedbackDialogCallback callback) override;
+  void ShowParentalControls() override;
 
  private:
   mojo::Receiver<help_app_ui::mojom::PageHandler> receiver_;

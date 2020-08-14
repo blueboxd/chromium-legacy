@@ -1431,6 +1431,7 @@ source_set("unit_tests") {
     "typed_arrays/array_buffer/array_buffer_contents_test.cc",
     "url/url_search_params_test.cc",
     "workers/dedicated_worker_test.cc",
+    "workers/dedicated_worker_test.h",
     "workers/main_thread_worklet_test.cc",
     "workers/threaded_worklet_test.cc",
     "workers/worker_thread_test.cc",

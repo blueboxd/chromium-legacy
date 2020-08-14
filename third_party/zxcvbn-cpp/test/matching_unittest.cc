@@ -164,7 +164,7 @@ bool operator==(const Match& lhs, const ExpectedDateMatch& rhs) {
 TEST(ZxcvbnTest, DictionaryMatching) {
   auto dict_1 = static_cast<DictionaryTag>(0);
   auto dict_2 = static_cast<DictionaryTag>(1);
-  std::unordered_map<DictionaryTag, RankedDict> test_dicts = {
+  base::flat_map<DictionaryTag, RankedDict> test_dicts = {
       {dict_1,
        {
            {"motherboard", 1},
@@ -344,7 +344,7 @@ TEST(ZxcvbnTest, DictionaryMatching) {
 
 TEST(ZxcvbnTest, ReverseDictionaryMatching) {
   auto dict_1 = static_cast<DictionaryTag>(0);
-  std::unordered_map<DictionaryTag, RankedDict> test_dicts = {
+  base::flat_map<DictionaryTag, RankedDict> test_dicts = {
       {dict_1,
        {
            {"123", 1},
@@ -430,7 +430,7 @@ TEST(ZxcvbnTest, L33tMatching) {
   {
     auto words = static_cast<DictionaryTag>(0);
     auto words2 = static_cast<DictionaryTag>(1);
-    std::unordered_map<DictionaryTag, RankedDict> dicts = {
+    base::flat_map<DictionaryTag, RankedDict> dicts = {
         {words,
          {
              {"aac", 1},

@@ -13,6 +13,7 @@
 namespace content {
 
 CONTENT_EXPORT bool IsBackForwardCacheEnabled();
+CONTENT_EXPORT bool IsSameSiteBackForwardCacheEnabled();
 CONTENT_EXPORT bool IsBackForwardCacheDisabledByCommandLine();
 CONTENT_EXPORT bool DeviceHasEnoughMemoryForBackForwardCache();
 
@@ -46,6 +47,8 @@ ProactivelySwapBrowsingInstanceFeatureEnabledLevelValues();
 // Whether the ProactivelySwapBrowsingInstance flag is enabled or not. Will
 // return true if the value is set to either of {kCrossSiteSwapProcess,
 // kCrossSiteReuseProcess, kSameSite}.
+// Note that even if this returns false, we might still trigger proactive
+// BrowsingInstance swaps if IsBackForwardCacheEnabled() is true.
 CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceEnabled();
 
 // Whether ProactivelySwapBrowsingInstance with process reuse is enabled or not.
@@ -55,6 +58,9 @@ CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceWithProcessReuseEnabled();
 
 // Whether ProactivelySwapBrowsingInstance for same-site navigation is enabled
 // or not. Will return true if the value is set to kSameSite.
+// Note that even if this returns false, we might still trigger proactive
+// BrowsingInstance swaps on same-site navigations if
+// IsSameSiteBackForwardCacheEnabled() is true.
 CONTENT_EXPORT bool
 IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled();
 

@@ -48,8 +48,15 @@ class CONTENT_EXPORT PushMessagingService {
                               const base::Optional<base::Time>& expiration_time,
                               const std::vector<uint8_t>& p256dh,
                               const std::vector<uint8_t>& auth)>;
-  using StringCallback = base::OnceCallback<
-      void(const std::string& data, bool success, bool not_found)>;
+  using RegistrationUserDataCallback =
+      base::OnceCallback<void(const std::vector<std::string>& data)>;
+
+  using SWDataCallback =
+      base::OnceCallback<void(const std::string& sender_id,
+                              const std::string& subscription_id)>;
+
+  using SenderIdCallback =
+      base::OnceCallback<void(const std::string& sender_id)>;
 
   virtual ~PushMessagingService() {}
 
@@ -118,7 +125,14 @@ class CONTENT_EXPORT PushMessagingService {
   static void GetSenderId(BrowserContext* browser_context,
                           const GURL& origin,
                           int64_t service_worker_registration_id,
-                          StringCallback callback);
+                          SenderIdCallback callback);
+
+  // Get |sender_id| and |subscription_id| from Service Worker database. Can be
+  // empty if no data found in the database.
+  static void GetSWData(BrowserContext* browser_context,
+                        const GURL& origin,
+                        int64_t service_worker_registration_id,
+                        SWDataCallback callback);
 
   // Clear the push subscription id stored in the service worker with the given
   // |service_worker_registration_id| for the given |origin|.

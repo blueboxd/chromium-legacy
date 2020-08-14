@@ -355,7 +355,8 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, NotifyNetworkChangeOnInitialIPChange) {
   // Set a live interface with an IP address and create the notifier.
   std::vector<fuchsia::netstack::NetInterface> interfaces(1);
   interfaces[0] = DefaultNetInterface();
-  interfaces[0].features = {fuchsia::hardware::ethernet::INFO_FEATURE_WLAN};
+  interfaces[0].features = static_cast<decltype(interfaces[0].features)>(
+      fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
 
   netstack_.SetInterfaces(interfaces);
   CreateNotifier();
@@ -556,7 +557,8 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceAdded) {
 
   std::vector<fuchsia::netstack::NetInterface> interfaces(1);
   interfaces[0] = DefaultNetInterface();
-  interfaces[0].features = {fuchsia::hardware::ethernet::INFO_FEATURE_WLAN};
+  interfaces[0].features = static_cast<decltype(interfaces[0].features)>(
+      fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
 
   netstack_.SetInterfaces(interfaces);
 
@@ -591,7 +593,8 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, SecondaryInterfaceDeletedNoop) {
 TEST_F(NetworkChangeNotifierFuchsiaTest, FoundWiFi) {
   std::vector<fuchsia::netstack::NetInterface> interfaces(1);
   interfaces[0] = DefaultNetInterface();
-  interfaces[0].features = {fuchsia::hardware::ethernet::INFO_FEATURE_WLAN};
+  interfaces[0].features = static_cast<decltype(interfaces[0].features)>(
+      fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
 
   netstack_.SetInterfaces(interfaces);
   CreateNotifier();
@@ -602,7 +605,8 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, FoundWiFi) {
 TEST_F(NetworkChangeNotifierFuchsiaTest, FindsInterfaceWithRequiredFeature) {
   std::vector<fuchsia::netstack::NetInterface> interfaces(1);
   interfaces[0] = DefaultNetInterface();
-  interfaces[0].features = {fuchsia::hardware::ethernet::INFO_FEATURE_WLAN};
+  interfaces[0].features = static_cast<decltype(interfaces[0].features)>(
+      fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
 
   netstack_.SetInterfaces(interfaces);
   CreateNotifier(fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);

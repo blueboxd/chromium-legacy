@@ -59,20 +59,7 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
-          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'eve-arc-r',
-              'pool': 'chrome.tests',
-            },
-          ],
-        },
-        'os_type': 'chromeos'
+        # TODO(crbug.com/1092973): Add tests once the test fleet is ready.
       },
       'chromeos-eve-chrome': {
         'additional_compile_targets': [

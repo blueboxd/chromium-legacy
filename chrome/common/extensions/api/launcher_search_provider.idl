@@ -11,8 +11,8 @@ namespace launcherSearchProvider {
   dictionary SearchResult {
     DOMString itemId;
     DOMString title;
-    // If iconUrl is not provided, app/extension icon is used automatically.
-    DOMString? iconUrl;
+    // If iconType is not provided, a generic icon is used automatically.
+    DOMString? iconType;
     // Relevance ranges from 0 to 4. 0 is the lowest relevance, 4 is highest.
     long relevance;
   };

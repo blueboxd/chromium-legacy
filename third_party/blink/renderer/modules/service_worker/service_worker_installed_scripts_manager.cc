@@ -262,7 +262,10 @@ ServiceWorkerInstalledScriptsManager::ServiceWorkerInstalledScriptsManager(
   DCHECK(installed_scripts_manager_params->manager_host_remote);
   manager_host_ = mojo::SharedRemote<
       mojom::blink::ServiceWorkerInstalledScriptsManagerHost>(
-      std::move(installed_scripts_manager_params->manager_host_remote));
+      mojo::PendingRemote<
+          mojom::blink::ServiceWorkerInstalledScriptsManagerHost>(
+          std::move(installed_scripts_manager_params->manager_host_remote),
+          mojom::blink::ServiceWorkerInstalledScriptsManagerHost::Version_));
 
   // Don't touch |installed_urls_| after this point. We're on the initiator
   // thread now, but |installed_urls_| will be accessed on the

@@ -867,11 +867,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
                 oldLayout.forceAnimationToFinish();
                 oldLayout.detachViews();
             }
-            // TODO(fhorschig): This might be removed as soon as keyboard replacements get triggered
-            // by the normal keyboard hiding signals.
-            for (SceneChangeObserver observer : mSceneChangeObservers) {
-                observer.onSceneStartShowing(layout);
-            }
             layout.contextChanged(mHost.getContext());
             layout.attachViews(mContentContainer);
             mActiveLayout = layout;

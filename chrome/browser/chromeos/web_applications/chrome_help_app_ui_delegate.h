@@ -26,6 +26,7 @@ class ChromeHelpAppUIDelegate : public HelpAppUIDelegate {
   // HelpAppUIDelegate:
   base::Optional<std::string> OpenFeedbackDialog() override;
   void PopulateLoadTimeData(content::WebUIDataSource* source) override;
+  void ShowParentalControls() override;
 
  private:
   content::WebUI* web_ui_;  // Owns |this|.

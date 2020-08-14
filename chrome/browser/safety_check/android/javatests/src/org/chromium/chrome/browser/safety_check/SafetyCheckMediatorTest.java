@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.safety_check.SafetyCheckProperties.COMPROMISED_PASSWORDS;
 import static org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PASSWORDS_STATE;
 import static org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SAFE_BROWSING_STATE;
 import static org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UPDATES_STATE;
@@ -200,6 +201,7 @@ public class SafetyCheckMediatorTest {
 
     @Test
     public void testPasswordsCheckHasLeaks() {
+        int numLeaks = 123;
         doAnswer(invocation -> {
             mMediator.onPasswordCheckStatusChanged(PasswordCheckUIStatus.IDLE);
             return null;
@@ -207,12 +209,13 @@ public class SafetyCheckMediatorTest {
                 .when(mPasswordCheck)
                 .startCheck();
         when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(199);
-        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(123);
+        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(numLeaks);
 
         mMediator.performSafetyCheck();
         mMediator.onCompromisedCredentialsFetchCompleted();
         mMediator.onSavedPasswordsFetchCompleted();
         assertEquals(PasswordsState.COMPROMISED_EXIST, mModel.get(PASSWORDS_STATE));
+        assertEquals(numLeaks, mModel.get(COMPROMISED_PASSWORDS));
     }
 
     @Test

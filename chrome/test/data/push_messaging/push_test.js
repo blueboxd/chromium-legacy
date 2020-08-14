@@ -274,8 +274,12 @@ function hasSubscription() {
 
 navigator.serviceWorker.addEventListener('message', function(event) {
   var message = JSON.parse(event.data);
-  if (message.type == 'push')
+  if (message.type === 'push') {
     resultQueue.push(message.data);
-  else
+  } else if (message.type === 'pushsubscriptionchange') {
+    resultQueue.push(message.data.oldEndpoint);
+    resultQueue.push(message.data.newEndpoint);
+  } else {
     sendResultToTest(message.data);
+  }
 }, false);

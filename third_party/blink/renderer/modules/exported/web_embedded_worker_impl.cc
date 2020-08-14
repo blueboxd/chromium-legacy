@@ -76,12 +76,8 @@ namespace blink {
 WebServiceWorkerInstalledScriptsManagerParams::
     WebServiceWorkerInstalledScriptsManagerParams(
         WebVector<WebURL> installed_scripts_urls,
-        CrossVariantMojoReceiver<
-            mojom::blink::ServiceWorkerInstalledScriptsManagerInterfaceBase>
-            manager_receiver,
-        CrossVariantMojoRemote<
-            mojom::blink::ServiceWorkerInstalledScriptsManagerHostInterfaceBase>
-            manager_host_remote)
+        mojo::ScopedMessagePipeHandle manager_receiver,
+        mojo::ScopedMessagePipeHandle manager_host_remote)
     : installed_scripts_urls(std::move(installed_scripts_urls)),
       manager_receiver(std::move(manager_receiver)),
       manager_host_remote(std::move(manager_host_remote)) {
@@ -109,12 +105,9 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
     std::unique_ptr<WebEmbeddedWorkerStartData> worker_start_data,
     std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
         installed_scripts_manager_params,
-    CrossVariantMojoRemote<
-        mojom::blink::WorkerContentSettingsProxyInterfaceBase> content_settings,
-    CrossVariantMojoRemote<mojom::blink::CacheStorageInterfaceBase>
-        cache_storage,
-    CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
-        browser_interface_broker,
+    mojo::ScopedMessagePipeHandle content_settings_handle,
+    mojo::ScopedMessagePipeHandle cache_storage,
+    mojo::ScopedMessagePipeHandle browser_interface_broker,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
   DCHECK(!asked_to_terminate_);
 
@@ -145,8 +138,15 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   StartWorkerThread(
       std::move(worker_start_data), std::move(installed_scripts_manager),
       std::make_unique<ServiceWorkerContentSettingsProxy>(
-          std::move(content_settings)),
-      std::move(cache_storage), std::move(browser_interface_broker),
+          // Chrome doesn't use interface versioning.
+          // TODO(falken): Is that comment about versioning correct?
+          mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
+              std::move(content_settings_handle), 0u)),
+      mojo::PendingRemote<mojom::blink::CacheStorage>(
+          std::move(cache_storage), mojom::blink::CacheStorage::Version_),
+      mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>(
+          std::move(browser_interface_broker),
+          mojom::blink::BrowserInterfaceBroker::Version_),
       std::move(initiator_thread_task_runner));
 }
 

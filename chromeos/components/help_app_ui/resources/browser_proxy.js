@@ -31,6 +31,10 @@ function receiveMessage(event) {
       help_app.handler.openFeedbackDialog().then(response => {
         guestFrame.contentWindow.postMessage(response, GUEST_ORIGIN);
       });
+      break;
+    case 'show-parental-controls':
+      help_app.handler.showParentalControls();
+      break;
   }
 }
 window.addEventListener('message', receiveMessage, false);

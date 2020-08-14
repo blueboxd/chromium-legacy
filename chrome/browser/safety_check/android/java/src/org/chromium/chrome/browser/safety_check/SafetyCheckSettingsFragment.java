@@ -108,15 +108,24 @@ public class SafetyCheckSettingsFragment extends PreferenceFragmentCompat {
      * @param statusString Resource ID of the new status string.
      */
     public void updateElementStatus(String key, int statusString) {
+        if (statusString != 0) {
+            updateElementStatus(key, getContext().getString(statusString));
+        } else {
+            updateElementStatus(key, "");
+        }
+    }
+
+    /**
+     * Update the status string of a given Safety check element, e.g. Passwords.
+     * @param key An android:key String corresponding to Safety check element.
+     * @param statusString The new status string.
+     */
+    public void updateElementStatus(String key, String statusString) {
         Preference p = findPreference(key);
         // If this is invoked before the preferences are created, do nothing.
         if (p == null) {
             return;
         }
-        if (statusString != 0) {
-            p.setSummary(statusString);
-        } else {
-            p.setSummary("");
-        }
+        p.setSummary(statusString);
     }
 }

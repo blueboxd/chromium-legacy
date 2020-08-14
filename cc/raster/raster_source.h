@@ -47,14 +47,12 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   RasterSource(const RasterSource&) = delete;
   RasterSource& operator=(const RasterSource&) = delete;
 
-  // Helper function to apply a few common operations before passing the canvas
-  // to the shorter version. This is useful for rastering into tiles.
-  // canvas is expected to be backed by a tile, with a default state.
-  // raster_transform will be applied to the display list, rastering the list
-  // into the "content space".
-  // canvas_bitmap_rect defines the extent of the tile in the content space,
+  // This is useful for rastering into tiles. |canvas| is expected to be backed
+  // by a tile, with a default state. |raster_transform| will be applied to the
+  // display list, rastering the list into the "content space".
+  // |canvas_bitmap_rect| defines the extent of the tile in the content space,
   // i.e. contents in the rect will be cropped and translated onto the canvas.
-  // canvas_playback_rect can be used to replay only part of the recording in,
+  // |canvas_playback_rect| can be used to replay only part of the recording in,
   // the content space, so only a sub-rect of the tile gets rastered.
   //
   // Note that this should only be called after the image decode controller has
@@ -127,6 +125,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   virtual ~RasterSource();
 
   void ClearForOpaqueRaster(SkCanvas* raster_canvas,
+                            const gfx::AxisTransform2d& raster_transform,
                             const gfx::Size& content_size,
                             const gfx::Rect& canvas_bitmap_rect,
                             const gfx::Rect& canvas_playback_rect) const;

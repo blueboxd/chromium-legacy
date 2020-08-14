@@ -60,6 +60,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
 
   // Returns true if zero copy decode swap chain is supported.
   static bool IsDecodeSwapChainSupported();
+  static void DisableDecodeSwapChain();
 
   // After this is called, overlay support is disabled during the
   // current GPU process' lifetime.

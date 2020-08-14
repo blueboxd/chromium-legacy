@@ -6029,17 +6029,17 @@ TEST_F(LegacySWPictureLayerImplTest,
             pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
 
   pending_layer()->SetUseTransformedRasterization(true);
-  EXPECT_FALSE(pending_layer()->contents_opaque());
-  EXPECT_FALSE(pending_layer()->contents_opaque_for_text());
-  EXPECT_EQ(LCDTextDisallowedReason::kContentsNotOpaque,
+  EXPECT_TRUE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kNone,
             pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
 
   // Simulate another push from main-thread with the same values.
   pending_layer()->SetContentsOpaque(true);
   pending_layer()->SetUseTransformedRasterization(true);
-  EXPECT_FALSE(pending_layer()->contents_opaque());
-  EXPECT_FALSE(pending_layer()->contents_opaque_for_text());
-  EXPECT_EQ(LCDTextDisallowedReason::kContentsNotOpaque,
+  EXPECT_TRUE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kNone,
             pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
 }
 

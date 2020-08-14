@@ -46,6 +46,24 @@ mojom_component("tokens") {
           cpp = "::blink::WorkerToken"
         },
 
+        # WORKLET TOKENS
+        {
+          mojom = "blink.mojom.AnimationWorkletToken"
+          cpp = "::blink::AnimationWorkletToken"
+        },
+        {
+          mojom = "blink.mojom.AudioWorkletToken"
+          cpp = "::blink::AudioWorkletToken"
+        },
+        {
+          mojom = "blink.mojom.PaintWorkletToken"
+          cpp = "::blink::PaintWorkletToken"
+        },
+        {
+          mojom = "blink.mojom.WorkletToken"
+          cpp = "::blink::WorkletToken"
+        },
+
         # OTHER TOKENS
         #
         # Keep this section last.
@@ -54,8 +72,8 @@ mojom_component("tokens") {
         # them to their own section, in alphabetical order. If adding a new
         # token here, please keep the following list in alphabetic order.
         {
-          mojom = "blink.mojom.ExecutionContextAttributionToken"
-          cpp = "::blink::ExecutionContextAttributionToken"
+          mojom = "blink.mojom.ExecutionContextToken"
+          cpp = "::blink::ExecutionContextToken"
         },
         {
           mojom = "blink.mojom.PortalToken"

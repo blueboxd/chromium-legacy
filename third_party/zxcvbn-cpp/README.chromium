@@ -31,6 +31,8 @@ Applied the following patches:
   UTF8 API.
 - patches/fix_overflow.diff: Fixes a bug inside scoring.cpp triggered when the
   number of computed guesses exceeds DBL_MAX.
+- patches/flat_map_ranked.diff: Use base::flat_map instead of std::unordered_map
+  for ranked dictionaries to reduce memory foot print.
 - Dropped the data dictionary from the check-out, as the data will now be
   provided via component updater. The used dictionaries can be found at
   https://github.com/rianhunter/zxcvbn-cpp/tree/cf092c952cd2325ce390b2691231a8f1cb195d59/data

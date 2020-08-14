@@ -213,11 +213,12 @@ void IsolateAllSitesForTesting(base::CommandLine* command_line) {
 bool CanSameSiteMainFrameNavigationsChangeRenderFrameHosts() {
   // TODO(crbug.com/936696): Also return true when RenderDocument for main frame
   // is enabled.
-  return IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled();
+  return CanSameSiteMainFrameNavigationsChangeSiteInstances();
 }
 
 bool CanSameSiteMainFrameNavigationsChangeSiteInstances() {
-  return IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled();
+  return IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled() ||
+         IsSameSiteBackForwardCacheEnabled();
 }
 
 void DisableProactiveBrowsingInstanceSwapFor(RenderFrameHost* rfh) {

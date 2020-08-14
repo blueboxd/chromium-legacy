@@ -202,7 +202,7 @@ let FilePickerOptions;
 /**
  * https://wicg.github.io/native-file-system/#native-filesystem
  * @param {(!FilePickerOptions|undefined)} options
- * @return {!Promise<(!Array<!FileSystemHandle>)>}
+ * @return {!Promise<(!Array<!FileSystemFileHandle>)>}
  */
 window.showOpenFilePicker;
 

@@ -19,6 +19,8 @@ import java.lang.annotation.RetentionPolicy;
 class SafetyCheckProperties {
     /** State of the passwords check, one of the {@link PasswordsState} values. */
     static final WritableIntPropertyKey PASSWORDS_STATE = new WritableIntPropertyKey();
+    /** Number of compromised passwords; only used when PASSWORDS_STATE is COMPROMISED_EXIST. */
+    static final WritableIntPropertyKey COMPROMISED_PASSWORDS = new WritableIntPropertyKey();
     /** State of the Safe Browsing check, one of the {@link SafeBrowsingState} values. */
     static final WritableIntPropertyKey SAFE_BROWSING_STATE = new WritableIntPropertyKey();
     /** State of the updates check, one of the {@link UpdatesState} values. */
@@ -125,13 +127,15 @@ class SafetyCheckProperties {
         int ERROR = 5;
     }
 
-    static final PropertyKey[] ALL_KEYS = new PropertyKey[] {PASSWORDS_STATE, SAFE_BROWSING_STATE,
-            UPDATES_STATE, PASSWORDS_CLICK_LISTENER, SAFE_BROWSING_CLICK_LISTENER,
-            UPDATES_CLICK_LISTENER, SAFETY_CHECK_BUTTON_CLICK_LISTENER, LAST_RUN_TIMESTAMP};
+    static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {PASSWORDS_STATE, COMPROMISED_PASSWORDS, SAFE_BROWSING_STATE,
+                    UPDATES_STATE, PASSWORDS_CLICK_LISTENER, SAFE_BROWSING_CLICK_LISTENER,
+                    UPDATES_CLICK_LISTENER, SAFETY_CHECK_BUTTON_CLICK_LISTENER, LAST_RUN_TIMESTAMP};
 
     static PropertyModel createSafetyCheckModel() {
         return new PropertyModel.Builder(ALL_KEYS)
                 .with(PASSWORDS_STATE, PasswordsState.UNCHECKED)
+                .with(COMPROMISED_PASSWORDS, 0)
                 .with(SAFE_BROWSING_STATE, SafeBrowsingState.UNCHECKED)
                 .with(UPDATES_STATE, UpdatesState.UNCHECKED)
                 .with(LAST_RUN_TIMESTAMP, 0)

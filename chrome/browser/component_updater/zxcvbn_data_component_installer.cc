@@ -72,7 +72,7 @@ constexpr std::array<TagAndFileName, 6> kTagAndFileNamePairs = {{
 }};
 
 using RankedDictionaries =
-    std::unordered_map<zxcvbn::DictionaryTag, zxcvbn::RankedDict>;
+    base::flat_map<zxcvbn::DictionaryTag, zxcvbn::RankedDict>;
 RankedDictionaries ParseRankedDictionaries(const base::FilePath& install_dir) {
   RankedDictionaries result;
   for (const auto& pair : kTagAndFileNamePairs) {

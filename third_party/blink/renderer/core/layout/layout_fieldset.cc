@@ -164,6 +164,26 @@ LayoutBox* LayoutFieldset::FindInFlowLegend(const LayoutBlock& fieldset) {
   return nullptr;
 }
 
+LayoutObject* LayoutFieldset::FindLegendContainer(const LayoutBox& legend) {
+  DCHECK(legend.IsRenderedLegend());
+  LayoutObject* parent = legend.Parent();
+  if (!parent->IsAnonymous())
+    return parent;
+
+  // In LayoutNG all children of a fieldset are wrapped inside an anonymous
+  // block. This also includes the rendered legend, even if that one really
+  // belongs on the outside as a direct fieldset child. Skip the anonymous
+  // wrapper in such cases.
+  if (parent->IsLayoutFlowThread()) {
+    // If the fieldset also establishes a multicol container, we need to skip
+    // the flow thread as well.
+    parent = parent->Parent();
+    DCHECK(parent->IsAnonymous());
+  }
+  DCHECK(parent->Parent()->IsLayoutNGFieldset());
+  return parent->Parent();
+}
+
 void LayoutFieldset::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) const {

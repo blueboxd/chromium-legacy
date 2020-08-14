@@ -200,17 +200,21 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // adds the current WorkerThread* as the first parameter |function|.
   // This only calls |function| for threads for which Start() was already
   // called.
+  // Returns the number of workers that are scheduled to run the function.
   template <typename FunctionType, typename... Parameters>
-  static void CallOnAllWorkerThreads(FunctionType function,
-                                     TaskType task_type,
-                                     Parameters&&... parameters) {
+  static unsigned CallOnAllWorkerThreads(FunctionType function,
+                                         TaskType task_type,
+                                         Parameters&&... parameters) {
     MutexLocker lock(ThreadSetMutex());
+    unsigned called_worker_count = 0;
     for (WorkerThread* thread : WorkerThreads()) {
       PostCrossThreadTask(
           *thread->GetTaskRunner(task_type), FROM_HERE,
           CrossThreadBindOnce(function, WTF::CrossThreadUnretained(thread),
                               parameters...));
+      ++called_worker_count;
     }
+    return called_worker_count;
   }
 
   int GetWorkerThreadId() const { return worker_thread_id_; }

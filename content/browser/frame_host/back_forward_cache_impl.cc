@@ -169,13 +169,6 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
         FeatureToBit(WebSchedulerTrackedFeature::kOutstandingNetworkRequestXHR);
   }
 
-  // We do not cache documents which have cache-control: no-store header on
-  // their main resource.
-  if (!rfh->GetParent()) {
-    result |= FeatureToBit(
-        WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore);
-  }
-
   return result;
 }
 
@@ -318,8 +311,19 @@ base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {
       kDefaultTimeToLiveInBackForwardCacheInSeconds));
 }
 
-BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStoreDocument(
+BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStorePageNow(
     RenderFrameHostImpl* rfh) {
+  BackForwardCacheCanStoreDocumentResult result =
+      CanPotentiallyStorePageLater(rfh);
+  CheckDynamicStatesOnSubtree(&result, rfh);
+
+  DVLOG(1) << "CanStorePageNow: " << rfh->GetLastCommittedURL() << " : "
+           << result.ToString();
+  return result;
+}
+
+BackForwardCacheCanStoreDocumentResult
+BackForwardCacheImpl::CanPotentiallyStorePageLater(RenderFrameHostImpl* rfh) {
   BackForwardCacheCanStoreDocumentResult result;
 
   // Use the BackForwardCache only for the main frame.
@@ -342,16 +346,29 @@ BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStoreDocument(
                     kBackForwardCacheDisabledByLowMemory);
     }
   }
+
+  // If this function is called after we navigated to a new RenderFrameHost,
+  // then |rfh| must already be replaced by the new RenderFrameHost. If this
+  // function is called before we navigated, then |rfh| must be a current
+  // RenderFrameHost.
+  bool is_current_rfh = rfh->IsCurrent();
+
   // Two pages in the same BrowsingInstance can script each other. When a page
   // can be scripted from outside, it can't enter the BackForwardCache.
   //
-  // The "RelatedActiveContentsCount" below is compared against 0, not 1. This
-  // is because the |rfh| is not a "current" RenderFrameHost anymore. It is not
-  // "active" itself.
+  // If the |rfh| is not a "current" RenderFrameHost anymore, the
+  // "RelatedActiveContentsCount" below is compared against 0, not 1. This is
+  // because |rfh| is not "active" itself.
   //
   // This check makes sure the old and new document aren't sharing the same
-  // BrowsingInstance.
-  if (rfh->GetSiteInstance()->GetRelatedActiveContentsCount() != 0) {
+  // BrowsingInstance. Note that the existence of related active contents might
+  // change in the future, but we are checking this in
+  // CanPotentiallyStorePageLater instead of CanStorePageNow because it's needed
+  // to determine whether to do a proactive BrowsingInstance swap or not, which
+  // should not be done if the page has related active contents.
+  unsigned expected_related_active_contents_count = is_current_rfh ? 1 : 0;
+  if (rfh->GetSiteInstance()->GetRelatedActiveContentsCount() !=
+      expected_related_active_contents_count) {
     result.NoDueToRelatedActiveContents(
         rfh->browsing_instance_not_swapped_reason());
   }
@@ -372,25 +389,36 @@ BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStoreDocument(
         BackForwardCacheMetrics::NotRestoredReason::kSchemeNotHTTPOrHTTPS);
   }
 
+  // We should not cache pages with Cache-control: no-store. Note that
+  // even though this is categorized as a "feature", we will check this within
+  // CanPotentiallyStorePageLater as it's not possible to change the HTTP
+  // headers, so if it's not possible to cache this page now due to this, it's
+  // impossible to cache this page later.
+  // TODO(rakina): Once we move cache-control tracking to RenderFrameHostImpl,
+  // change this part to use the information stored in RenderFrameHostImpl
+  // instead.
+  uint64_t cache_control_no_store_feature = FeatureToBit(
+      WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore);
+  if (rfh->scheduler_tracked_features() & cache_control_no_store_feature) {
+    result.NoDueToFeatures(cache_control_no_store_feature);
+  }
+
   // Only store documents that have URLs allowed through experiment.
   if (!IsAllowed(rfh->GetLastCommittedURL()))
     result.No(BackForwardCacheMetrics::NotRestoredReason::kDomainNotAllowed);
 
-  CanStoreRenderFrameHost(&result, rfh);
+  CanStoreRenderFrameHostLater(&result, rfh);
 
-  DVLOG(1) << "CanStoreDocument: " << rfh->GetLastCommittedURL() << " : "
-           << result.ToString();
+  DVLOG(1) << "CanPotentiallyStorePageLater: " << rfh->GetLastCommittedURL()
+           << " : " << result.ToString();
   return result;
 }
 
 // Recursively checks whether this RenderFrameHost and all child frames
-// can be cached.
-void BackForwardCacheImpl::CanStoreRenderFrameHost(
+// can be cached later.
+void BackForwardCacheImpl::CanStoreRenderFrameHostLater(
     BackForwardCacheCanStoreDocumentResult* result,
     RenderFrameHostImpl* rfh) {
-  if (!rfh->IsDOMContentLoaded())
-    result->No(BackForwardCacheMetrics::NotRestoredReason::kLoading);
-
   // If the rfh has ever granted media access, prevent it from entering cache.
   // TODO(crbug.com/989379): Consider only blocking when there's an active
   //                         media stream.
@@ -404,7 +432,23 @@ void BackForwardCacheImpl::CanStoreRenderFrameHost(
         rfh->back_forward_cache_disabled_reasons());
   }
 
-  // Don't cache the page if it uses any disallowed features.
+  // Do not store documents if they have inner WebContents.
+  if (rfh->IsOuterDelegateFrame())
+    result->No(BackForwardCacheMetrics::NotRestoredReason::kHaveInnerContents);
+
+  for (size_t i = 0; i < rfh->child_count(); i++)
+    CanStoreRenderFrameHostLater(result,
+                                 rfh->child_at(i)->current_frame_host());
+}
+
+// Recursively checks dynamic states that might affect whether this
+// RenderFrameHost and all child frames can be cached right now.
+void BackForwardCacheImpl::CheckDynamicStatesOnSubtree(
+    BackForwardCacheCanStoreDocumentResult* result,
+    RenderFrameHostImpl* rfh) {
+  if (!rfh->IsDOMContentLoaded())
+    result->No(BackForwardCacheMetrics::NotRestoredReason::kLoading);
+
   // TODO(altimin): At the moment only the first detected failure is reported.
   // For reporting purposes it's a good idea to also collect this information
   // from children.
@@ -423,18 +467,14 @@ void BackForwardCacheImpl::CanStoreRenderFrameHost(
         BackForwardCacheMetrics::NotRestoredReason::kSubframeIsNavigating);
   }
 
-  // Do not store documents if they have inner WebContents.
-  if (rfh->IsOuterDelegateFrame())
-    result->No(BackForwardCacheMetrics::NotRestoredReason::kHaveInnerContents);
-
   for (size_t i = 0; i < rfh->child_count(); i++)
-    CanStoreRenderFrameHost(result, rfh->child_at(i)->current_frame_host());
+    CheckDynamicStatesOnSubtree(result, rfh->child_at(i)->current_frame_host());
 }
 
 void BackForwardCacheImpl::StoreEntry(
     std::unique_ptr<BackForwardCacheImpl::Entry> entry) {
   TRACE_EVENT0("navigation", "BackForwardCache::StoreEntry");
-  DCHECK(CanStoreDocument(entry->render_frame_host.get()));
+  DCHECK(CanStorePageNow(entry->render_frame_host.get()));
 
 #if defined(OS_ANDROID)
   if (!IsProcessBindingEnabled()) {

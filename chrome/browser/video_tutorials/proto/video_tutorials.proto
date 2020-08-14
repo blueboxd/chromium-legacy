@@ -1,0 +1,53 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package video_tutorials.proto;
+
+// Represents the feature where the video tutorial targeted to.
+enum FeatureType {
+  INVALID = 0;
+  DEBUG = 1;
+  DOWNLOAD = 2;
+  SEARCH = 3;
+}
+// All groups of video tutorials with different languages.
+message VideoTutorialGroups {
+  // A list of video tutorial groups.
+  repeated VideoTutorialGroup groups = 1;
+}
+// A group of video tutorials with same language.
+message VideoTutorialGroup {
+  // Language of the video, in ISO-639-1 two character format. Eg: en, pl, hi.
+  string locale = 1;
+
+  // A list of video tutorials metadata.
+  repeated VideoTutorial metadatas = 2;
+}
+// Metadata of a video tutorial.
+message VideoTutorial {
+  // Type of feature where this video tutorial targeted.
+  FeatureType feature = 1;
+
+  // The user visible description of this video tutorial.
+  string title = 2;
+
+  // The complete URL for the video.
+  string video_url = 3;
+
+  // Youtube Video URL for sharing.
+  string share_url = 4;
+
+  // The complete URL of the thumbnail image.
+  string poster_url = 5;
+
+  // The URL of this video's caption.
+  string caption_url = 6;
+
+  // Duration of the video in seconds.
+  int64 video_length = 7;
+}

@@ -3,11 +3,10 @@
 
 #include <zxcvbn/frequency_lists_common.hpp>
 
-#include <unordered_map>
-
 #include <cstdint>
 
 #include "base/strings/string_piece.h"
+#include "base/containers/flat_map.h"
 
 namespace zxcvbn {
 
@@ -23,24 +22,13 @@ enum class DictionaryTag {
 
 }
 
-namespace std {
-
-template<>
-struct hash<zxcvbn::DictionaryTag> {
-  std::size_t operator()(const zxcvbn::DictionaryTag & v) const {
-    return static_cast<std::size_t>(v);
-  }
-};
-
-}
-
 namespace zxcvbn {
 
-using RankedDicts = std::unordered_map<DictionaryTag, const RankedDict &>;
+using RankedDicts = base::flat_map<DictionaryTag, const RankedDict*>;
 
-void SetRankedDicts(std::unordered_map<DictionaryTag, RankedDict> dicts);
+void SetRankedDicts(base::flat_map<DictionaryTag, RankedDict> dicts);
 
-RankedDicts convert_to_ranked_dicts(std::unordered_map<DictionaryTag, RankedDict> & ranked_dicts);
+RankedDicts convert_to_ranked_dicts(base::flat_map<DictionaryTag, RankedDict> & ranked_dicts);
 RankedDicts default_ranked_dicts();
 
 }

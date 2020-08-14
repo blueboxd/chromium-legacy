@@ -1144,24 +1144,6 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
                                 physical_fragment, previous_break_token);
     }
   }
-
-  if (rendered_legend) {
-    // The rendered legend is a child of the the anonymous fieldset content
-    // child wrapper object on the legacy side. LayoutNG, on the other hand,
-    // generates a fragment for the rendered legend as a direct child of the
-    // fieldset container fragment (as a *sibling* preceding the anonymous
-    // fieldset content wrapper). Now that we have positioned the anonymous
-    // wrapper, we're ready to compensate for this discrepancy. See
-    // LayoutNGFieldset for more details.
-    LayoutBlock* content_wrapper = rendered_legend->ContainingBlock();
-    if (content_wrapper->IsLayoutFlowThread())
-      content_wrapper = content_wrapper->ContainingBlock();
-    DCHECK(content_wrapper->IsAnonymous());
-    DCHECK(IsA<HTMLFieldSetElement>(content_wrapper->Parent()->GetNode()));
-    LayoutPoint location = rendered_legend->Location();
-    location -= content_wrapper->Location();
-    rendered_legend->SetLocationAndUpdateOverflowControlsIfNeeded(location);
-  }
 }
 
 void NGBlockNode::PlaceChildrenInFlowThread(

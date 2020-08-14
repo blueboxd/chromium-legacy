@@ -51,11 +51,8 @@ namespace {{variant}} {
 
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #if BUILDFLAG(MOJO_TRACE_ENABLED)
-#include "base/strings/string_number_conversions.h"
-#include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/traced_value.h"
-#endif
+#endif  // BUILDFLAG(MOJO_TRACE_ENABLED)
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "mojo/public/cpp/bindings/equals_traits.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
@@ -143,6 +140,14 @@ namespace {{variant}} {
 {%-     endif %}
 {%-   endfor %}
 {%- endif %}
+
+// Forward-declare for |AsValueInto| so that we do not have to import the
+// corresponding header.
+namespace base {
+namespace trace_event {
+class TracedValue;
+}  // namespace trace_event
+}  // namespace base
 
 {{namespace_begin()}}
 

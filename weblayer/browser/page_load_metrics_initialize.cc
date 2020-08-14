@@ -7,6 +7,10 @@
 #include "base/macros.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_base.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
+#include "weblayer/browser/no_state_prefetch/prerender_utils.h"
+#include "weblayer/browser/ukm_page_load_metrics_observer.h"
 
 namespace weblayer {
 
@@ -27,7 +31,7 @@ class PageLoadMetricsEmbedder
   // page_load_metrics::PageLoadMetricsEmbedderBase:
   bool IsNewTabPageUrl(const GURL& url) override { return false; }
   bool IsPrerender(content::WebContents* web_contents) override {
-    return false;
+    return PrerenderContentsFromWebContents(web_contents);
   }
   bool IsExtensionUrl(const GURL& url) override { return false; }
 
@@ -35,10 +39,17 @@ class PageLoadMetricsEmbedder
   // page_load_metrics::PageLoadMetricsEmbedderBase:
   void RegisterEmbedderObservers(
       page_load_metrics::PageLoadTracker* tracker) override {
+    std::unique_ptr<page_load_metrics::PageLoadMetricsObserver> ukm_observer =
+        UkmPageLoadMetricsObserver::CreateIfNeeded();
+    if (ukm_observer)
+      tracker->AddObserver(std::move(ukm_observer));
+
     if (g_callback_for_testing)
       (*g_callback_for_testing).Run(tracker);
   }
-  bool IsPrerendering() const override { return false; }
+  bool IsPrerendering() const override {
+    return PrerenderContentsFromWebContents(web_contents());
+  }
 };
 
 }  // namespace

@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -66,6 +67,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -285,6 +287,21 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   void EndpointToToken(const std::string& endpoint,
                        bool standard_protocol = true,
                        std::string* out_token = nullptr);
+
+  blink::mojom::PushSubscriptionPtr GetSubscriptionForAppIdentifier(
+      const PushMessagingAppIdentifier& app_identifier) {
+    blink::mojom::PushSubscriptionPtr result;
+    base::RunLoop run_loop;
+    push_service_->GetPushSubscriptionFromAppIdentifier(
+        app_identifier,
+        base::BindLambdaForTesting(
+            [&](blink::mojom::PushSubscriptionPtr subscription) {
+              result = std::move(subscription);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return result;
+  }
 
   // Deletes an Instance ID from the GCM Store but keeps the push subscription
   // stored in the PushMessagingAppIdentifier map and Service Worker DB.
@@ -2766,4 +2783,119 @@ IN_PROC_BROWSER_TEST_F(PushSubscriptionWithoutExpirationTimeTest,
   ASSERT_TRUE(
       RunScript("documentSubscribePushGetExpirationTime()", &script_result));
   EXPECT_EQ("null", script_result);
+}
+
+class PushSubscriptionChangeEventTest : public PushMessagingBrowserTest {
+ public:
+  PushSubscriptionChangeEventTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kPushSubscriptionChangeEvent);
+  }
+
+  ~PushSubscriptionChangeEventTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PushSubscriptionChangeEventTest,
+                       PushSubscriptionChangeEventSuccess) {
+  std::string script_result;
+
+  // Create the |old_subscription| by subscribing and unsubscribing again
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
+  PushMessagingAppIdentifier app_identifier =
+      GetAppIdentifierForServiceWorkerRegistration(0LL);
+
+  blink::mojom::PushSubscriptionPtr old_subscription =
+      GetSubscriptionForAppIdentifier(app_identifier);
+
+  ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
+  EXPECT_EQ("unsubscribe result: true", script_result);
+
+  // There should be no subscription since we unsubscribed
+  EXPECT_EQ(PushMessagingAppIdentifier::GetCount(GetBrowser()->profile()), 0u);
+
+  // Create a |new_subscription| by resubscribing
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
+  app_identifier = GetAppIdentifierForServiceWorkerRegistration(0LL);
+
+  blink::mojom::PushSubscriptionPtr new_subscription =
+      GetSubscriptionForAppIdentifier(app_identifier);
+
+  // Save the endpoints to compare with the JS result
+  GURL old_endpoint = old_subscription->endpoint;
+  GURL new_endpoint = new_subscription->endpoint;
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("false - is not controlled", script_result);
+  LoadTestPage();  // Reload to become controlled.
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  base::RunLoop run_loop;
+  push_service()->FirePushSubscriptionChange(
+      app_identifier, run_loop.QuitClosure(), std::move(new_subscription),
+      std::move(old_subscription));
+  run_loop.Run();
+
+  // Compare old subscription
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+  EXPECT_EQ(old_endpoint.spec(), script_result);
+  // Compare new subscription
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+  EXPECT_EQ(new_endpoint.spec(), script_result);
+
+  // Check that we record this case in UMA.
+  histogram_tester_.ExpectUniqueSample(
+      "PushMessaging.PushSubscriptionChangeStatus",
+      blink::mojom::PushEventStatus::SUCCESS, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PushSubscriptionChangeEventTest,
+                       FiredAfterPermissionRevoked) {
+  std::string script_result;
+
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
+
+  ASSERT_TRUE(RunScript("hasSubscription()", &script_result));
+  EXPECT_EQ("true - subscribed", script_result);
+
+  ASSERT_TRUE(RunScript("pushManagerPermissionState()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("false - is not controlled", script_result);
+  LoadTestPage();  // Reload to become controlled.
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  PushMessagingAppIdentifier app_identifier =
+      GetAppIdentifierForServiceWorkerRegistration(0LL);
+  auto old_subscription = GetSubscriptionForAppIdentifier(app_identifier);
+
+  base::RunLoop run_loop;
+  push_service()->SetContentSettingChangedCallbackForTesting(
+      run_loop.QuitClosure());
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->SetContentSettingDefaultScope(app_identifier.origin(), GURL(),
+                                      ContentSettingsType::NOTIFICATIONS,
+                                      std::string(), CONTENT_SETTING_BLOCK);
+  run_loop.Run();
+
+  ASSERT_TRUE(RunScript("pushManagerPermissionState()", &script_result));
+  EXPECT_EQ("permission status - denied", script_result);
+
+  // Check if the pushsubscriptionchangeevent arrived in the document and
+  // whether the |old_subscription| has the expected endpoint and
+  // |new_subscription| is null
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+  EXPECT_EQ(old_subscription->endpoint.spec(), script_result);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+  EXPECT_EQ("null", script_result);
+
+  // Check that we record this case in UMA.
+  histogram_tester_.ExpectUniqueSample(
+      "PushMessaging.PushSubscriptionChangeStatus",
+      blink::mojom::PushEventStatus::SUCCESS, 1);
 }

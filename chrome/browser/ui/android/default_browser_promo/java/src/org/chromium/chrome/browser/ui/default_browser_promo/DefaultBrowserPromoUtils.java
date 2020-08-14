@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.ui.default_browser_promo;
 
+import static org.chromium.chrome.browser.ui.default_browser_promo.DefaultBrowserPromoManager.P_NO_DEFAULT_PROMO_STRATEGY;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
@@ -144,6 +146,15 @@ public class DefaultBrowserPromoUtils {
                 && isChromePreStableInstalled()
                 && state == DefaultBrowserState.NO_DEFAULT) {
             return false;
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+                && state == DefaultBrowserState.NO_DEFAULT) {
+            String promoOnP = ChromeFeatureList.getFieldTrialParamByFeature(
+                    ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, P_NO_DEFAULT_PROMO_STRATEGY);
+            if (TextUtils.equals(promoOnP, "disabled")) {
+                return false;
+            }
         }
 
         SharedPreferencesManager.getInstance().incrementInt(

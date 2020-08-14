@@ -87,6 +87,10 @@ struct SubresourceLoaderParams;
 // navigation. These are used to trigger a number of mechanisms such as name
 // clearing or reporting.
 struct CrossOriginOpenerPolicyStatus {
+  CrossOriginOpenerPolicyStatus(int virtual_browsing_context_group,
+                                const network::CrossOriginOpenerPolicy& coop,
+                                const url::Origin& origin);
+
   // Set to true whenever the Cross-Origin-Opener-Policy spec requires a
   // "BrowsingContext group" swap:
   // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
@@ -114,6 +118,13 @@ struct CrossOriginOpenerPolicyStatus {
   // This is used to warn developer the COOP header has been ignored, because
   // the origin was not trustworthy.
   bool header_ignored_due_to_insecure_context = false;
+
+  // The COOP and origin used when comparing to the COOP and origin of a
+  // response. At the beginning of the navigation, it is the COOP and origin of
+  // the current document. After redirects, it is the COOP and origin of the
+  // last redirect response.
+  network::CrossOriginOpenerPolicy current_coop;
+  url::Origin current_origin;
 };
 
 // A UI thread object that owns a navigation request until it commits. It
@@ -1089,9 +1100,9 @@ class CONTENT_EXPORT NavigationRequest
   // Make sure COOP is relevant or clear the COOP headers.
   void SanitizeCoopHeaders();
 
-  // Updates the internal coop_status assuming the page navigated to has
-  // cross-origin-opener-policy |coop| and cross-origin-embedder-policy |coep|.
-  void UpdateCoopStatus(const network::CrossOriginOpenerPolicy& coop);
+  // Updates the internal coop_status after receiving a response with.
+  void UpdateCoopStatus(const network::CrossOriginOpenerPolicy& response_coop,
+                        const url::Origin& response_origin);
 
   FrameTreeNode* const frame_tree_node_;
 

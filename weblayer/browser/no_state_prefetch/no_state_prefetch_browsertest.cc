@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "components/prerender/browser/prerender_histograms.h"
 #include "components/prerender/browser/prerender_manager.h"
 #include "content/public/test/browser_test_utils.h"
@@ -17,15 +18,35 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "weblayer/browser/no_state_prefetch/prerender_link_manager_factory.h"
 #include "weblayer/browser/no_state_prefetch/prerender_manager_factory.h"
+#include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
+#if defined(OS_ANDROID)
+#include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "weblayer/browser/android/metrics/metrics_test_helper.h"
+#endif
+
 namespace weblayer {
 
 class NoStatePrefetchBrowserTest : public WebLayerBrowserTest {
  public:
+#if defined(OS_ANDROID)
+  void SetUp() override {
+    InstallTestGmsBridge(/* user_consent= */ true);
+
+    WebLayerBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    RemoveTestGmsBridge();
+    WebLayerBrowserTest::TearDown();
+  }
+#endif
+
   void SetUpOnMainThread() override {
     prerendered_page_fetched_ = std::make_unique<base::RunLoop>();
     script_resource_fetched_ = std::make_unique<base::RunLoop>();
@@ -37,6 +58,10 @@ class NoStatePrefetchBrowserTest : public WebLayerBrowserTest {
     https_server_->AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("weblayer/test/data")));
     ASSERT_TRUE(https_server_->Start());
+
+#if defined(OS_ANDROID)
+    ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+#endif
   }
 
   // Helper methods.
@@ -61,6 +86,15 @@ class NoStatePrefetchBrowserTest : public WebLayerBrowserTest {
     return nullptr;
   }
 
+  void NavigateToPrerenderedPageAndWaitForTitleChange() {
+    auto expected_title = base::ASCIIToUTF16("Prefetch Page");
+    content::TitleWatcher title_watcher(
+        static_cast<TabImpl*>(shell()->tab())->web_contents(), expected_title);
+    NavigateAndWaitForCompletion(
+        GURL(https_server_->GetURL("/prerendered_page.html")), shell());
+    ASSERT_TRUE(expected_title == title_watcher.WaitAndGetTitle());
+  }
+
  protected:
   content::BrowserContext* GetBrowserContext() {
     Tab* tab = shell()->tab();
@@ -74,6 +108,9 @@ class NoStatePrefetchBrowserTest : public WebLayerBrowserTest {
   bool script_executed_ = false;
   std::string purpose_header_value_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
+#if defined(OS_ANDROID)
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
+#endif
 };
 
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, CreatePrerenderManager) {
@@ -114,16 +151,35 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, NavigateToPrerenderedPage) {
   script_resource_fetched_->Run();
 
   // Navigate to the prerendered page and wait for its title to change.
-  auto expected_title = base::ASCIIToUTF16("Prefetch Page");
-  content::TitleWatcher title_watcher(
-      static_cast<TabImpl*>(shell()->tab())->web_contents(), expected_title);
   script_fetched_ = false;
-  NavigateAndWaitForCompletion(
-      GURL(https_server_->GetURL("/prerendered_page.html")), shell());
-  ASSERT_TRUE(expected_title == title_watcher.WaitAndGetTitle());
+  NavigateToPrerenderedPageAndWaitForTitleChange();
 
   EXPECT_FALSE(script_fetched_);
   EXPECT_TRUE(script_executed_);
 }
+
+#if defined(OS_ANDROID)
+// Test that no-state-prefetch results in UKM getting recorded.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, UKMRecorded) {
+  GetProfile()->SetBooleanSetting(SettingType::UKM_ENABLED, true);
+  NavigateAndWaitForCompletion(GURL(https_server_->GetURL("/parent_page.html")),
+                               shell());
+  script_resource_fetched_->Run();
+
+  NavigateToPrerenderedPageAndWaitForTitleChange();
+
+  auto entries = ukm_recorder_->GetEntriesByName(
+      ukm::builders::NoStatePrefetch::kEntryName);
+  ASSERT_EQ(entries.size(), 1u);
+  const auto* entry = entries[0];
+  // FinalStatus must be set to FINAL_STATUS_NOSTATE_PREFETCH_FINISHED.
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::NoStatePrefetch::kPrefetchedRecently_FinalStatusName, 56);
+  // Origin must be set to ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN.
+  ukm_recorder_->ExpectEntryMetric(
+      entry, ukm::builders::NoStatePrefetch::kPrefetchedRecently_OriginName, 7);
+}
+#endif
 
 }  // namespace weblayer

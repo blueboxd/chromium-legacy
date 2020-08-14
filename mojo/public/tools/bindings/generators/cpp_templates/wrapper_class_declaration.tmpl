@@ -128,7 +128,6 @@ class {{export_attribute}} {{struct.name}} {
   {{type}} {{name}};
 {%- endfor %}
 
-#if BUILDFLAG(MOJO_TRACE_ENABLED)
   // Write this structure into |value|. The members are represented as a
   // dictionary |member name|: |member value|. This method does not deal with
   // the dictionary name. The caller is responsible for not calling
@@ -177,7 +176,6 @@ class {{export_attribute}} {{struct.name}} {
   //   b.AsValueInto(value1);
   //   c.AsValueInto(value2);
   void AsValueInto(base::trace_event::TracedValue* value) const;
-#endif  // BUILDFLAG(MOJO_TRACE_ENABLED)
 
  private:
   static bool Validate(const void* data,

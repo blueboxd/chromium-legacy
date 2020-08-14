@@ -14,7 +14,7 @@
 #endif
 
 namespace {
-const CGFloat kTableViewCustomSeparatorHeight = 0.75;
+const CGFloat kTableViewCustomSeparatorHeight = 0.5;
 }  // namespace
 
 @interface TableViewCell ()

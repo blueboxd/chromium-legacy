@@ -4423,8 +4423,11 @@ test("unit_tests") {
     }
 
     deps += [
+      "//chrome/browser/nearby_sharing/certificates:test_support",
       "//chrome/browser/nearby_sharing/certificates:unit_tests",
       "//chrome/browser/nearby_sharing/client:unit_tests",
+      "//chrome/browser/nearby_sharing/contacts:test_support",
+      "//chrome/browser/nearby_sharing/local_device_data:test_support",
       "//chrome/browser/nearby_sharing/local_device_data:unit_tests",
       "//chrome/browser/nearby_sharing/logging:unit_tests",
       "//chrome/browser/nearby_sharing/proto",

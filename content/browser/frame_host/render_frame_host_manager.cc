@@ -478,7 +478,7 @@ void RenderFrameHostManager::UnloadOldFrame(
     BackForwardCacheImpl& back_forward_cache =
         delegate_->GetControllerForRenderManager().GetBackForwardCache();
     auto can_store =
-        back_forward_cache.CanStoreDocument(old_render_frame_host.get());
+        back_forward_cache.CanStorePageNow(old_render_frame_host.get());
     TRACE_EVENT1("navigation", "BackForwardCache_MaybeStorePage", "can_store",
                  can_store.ToString());
     if (can_store) {
@@ -1375,23 +1375,34 @@ RenderFrameHostManager::ShouldProactivelySwapBrowsingInstance(
   if (is_reload)
     return ShouldSwapBrowsingInstance::kNo_Reload;
 
-  if (IsCurrentlySameSite(current_rfhi, destination_url)) {
+  bool is_same_site = IsCurrentlySameSite(current_rfhi, destination_url);
+  if (is_same_site) {
+    // If it's a same-site navigation, we should only swap if same-site
+    // ProactivelySwapBrowsingInstance is enabled, or if same-site
+    // BackForwardCache is enabled and the current RFH is eligible for
+    // back-forward cache (checked later).
     if (IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled()) {
       return ShouldSwapBrowsingInstance::kYes_SameSiteProactiveSwap;
     }
-    return ShouldSwapBrowsingInstance::kNo_SameSiteNavigation;
+    if (!IsSameSiteBackForwardCacheEnabled())
+      return ShouldSwapBrowsingInstance::kNo_SameSiteNavigation;
   }
 
   if (IsProactivelySwapBrowsingInstanceEnabled())
     return ShouldSwapBrowsingInstance::kYes_CrossSiteProactiveSwap;
 
-  // If BackForwardCache is enabled, swap BrowsingInstances only when needed
-  // for back-forward cache.
+  // If BackForwardCache is enabled, swap BrowsingInstances only when the
+  // previous page can be stored in the back-forward cache.
   DCHECK(IsBackForwardCacheEnabled());
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
       render_frame_host_->frame_tree_node()->navigator().GetController());
-  if (controller->GetBackForwardCache().IsAllowed(current_url)) {
-    return ShouldSwapBrowsingInstance::kYes_CrossSiteProactiveSwap;
+  if (controller->GetBackForwardCache().CanPotentiallyStorePageLater(
+          render_frame_host_.get())) {
+    if (is_same_site) {
+      return ShouldSwapBrowsingInstance::kYes_SameSiteProactiveSwap;
+    } else {
+      return ShouldSwapBrowsingInstance::kYes_CrossSiteProactiveSwap;
+    }
   } else {
     return ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache;
   }
@@ -1549,9 +1560,11 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   bool is_history_navigation = !!dest_instance;
   bool swapped_browsing_instance =
       !new_instance->IsRelatedSiteInstance(current_instance);
-  if (IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled() &&
-      is_history_navigation && swapped_browsing_instance &&
-      frame_tree_node_->IsMainFrame() &&
+  bool is_same_site_proactive_swap_enabled =
+      IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled() ||
+      IsSameSiteBackForwardCacheEnabled();
+  if (is_same_site_proactive_swap_enabled && is_history_navigation &&
+      swapped_browsing_instance && frame_tree_node_->IsMainFrame() &&
       IsCurrentlySameSite(
           static_cast<RenderFrameHostImpl*>(render_frame_host_.get()),
           dest_url)) {

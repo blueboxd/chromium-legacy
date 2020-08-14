@@ -249,11 +249,18 @@ interface ServiceWorker {
   // content, or null.
   DispatchPushEvent(string? payload)
       => (ServiceWorkerEventStatus status);
-  // Whenever a PushSubscription changes, a change event is generated with (optionally)
-  // the previous subscription and the new subscription.
+  // Whenever a PushSubscription changes, a change event is generated with
+  // (optionally) the previous subscription and the new subscription.
+  // |old_subscription| can be null when there was a partial database corruption
+  // so that the full subscription information about the subscription that is
+  // going to become invalid cannot be found anymore.
+  // |new_subscription| is the subscription that is going to replace the
+  // |old_subscription| and is null when permission is revoked or the
+  // subscription is lost.
+  // Ref: https://w3c.github.io/push-api/#dfn-pushsubscriptionchange
   DispatchPushSubscriptionChangeEvent(
-      PushSubscription old_subscription,
-      PushSubscription new_subscription)
+      PushSubscription? old_subscription,
+      PushSubscription? new_subscription)
       => (ServiceWorkerEventStatus status);
   // Arguments are passed to the event handler as parameters of SyncEvent.
   // Ref: https://wicg.github.io/BackgroundSync/spec/#sync-event

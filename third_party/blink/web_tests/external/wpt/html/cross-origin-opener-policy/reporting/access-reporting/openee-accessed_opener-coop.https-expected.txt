@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Opener (COOP+COEP) accesses openee. Report to opener assert_not_equals: Report not received got disallowed value "timeout"
-Harness: the test ran to completion.
-

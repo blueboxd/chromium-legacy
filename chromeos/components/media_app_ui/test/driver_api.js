@@ -24,6 +24,7 @@ let TestMessageResponseData;
  *     requestFullscreen: (boolean|undefined),
  *     requestSaveFile: (boolean|undefined),
  *     saveAs: (string|undefined),
+ *     openFile: (boolean|undefined),
  *     testQuery: string,
  * }}
  */

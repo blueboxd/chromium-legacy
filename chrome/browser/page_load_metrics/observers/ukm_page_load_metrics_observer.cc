@@ -27,6 +27,7 @@
 #include "components/page_load_metrics/browser/protocol_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prerender/browser/prerender_manager.h"
+#include "components/prerender/browser/prerender_util.h"
 #include "components/prerender/common/prerender_final_status.h"
 #include "components/prerender/common/prerender_origin.h"
 #include "components/search_engines/template_url_service.h"
@@ -215,7 +216,13 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   page_transition_ = navigation_handle->GetPageTransition();
   was_cached_ = navigation_handle->WasResponseCached();
   navigation_handle_timing_ = navigation_handle->GetNavigationHandleTiming();
-  RecordNoStatePrefetchMetrics(navigation_handle, source_id);
+  prerender::PrerenderManager* const prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          navigation_handle->GetWebContents()->GetBrowserContext());
+  if (prerender_manager) {
+    prerender::RecordNoStatePrefetchMetrics(navigation_handle, source_id,
+                                            prerender_manager);
+  }
   RecordGeneratedNavigationUKM(source_id, navigation_handle->GetURL());
   navigation_is_cross_process_ = !navigation_handle->IsSameProcess();
   navigation_entry_offset_ = navigation_handle->GetNavigationEntryOffset();

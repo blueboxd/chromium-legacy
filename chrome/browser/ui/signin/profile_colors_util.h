@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_SIGNIN_PROFILE_COLORS_UTIL_H_
 
 #include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/common/search/generated_colors_info.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class Profile;
@@ -21,5 +22,9 @@ SkColor GetProfileForegroundTextColor(SkColor profile_highlight_color);
 // Returns the color that should be used to display icons over the profile
 // highlight color.
 SkColor GetProfileForegroundIconColor(SkColor profile_highlight_color);
+
+// Returns a new color for a profile, based on the colors of the existing
+// profiles.
+chrome_colors::ColorInfo GenerateNewProfileColor();
 
 #endif  // CHROME_BROWSER_UI_SIGNIN_PROFILE_COLORS_UTIL_H_

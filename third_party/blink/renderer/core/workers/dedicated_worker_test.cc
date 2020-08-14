@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/workers/dedicated_worker_test.h"
+
 #include <bitset>
 #include <memory>
 #include "base/single_thread_task_runner.h"
@@ -165,42 +167,57 @@ class DedicatedWorkerMessagingProxyForTest
   scoped_refptr<const SecurityOrigin> security_origin_;
 };
 
-class DedicatedWorkerTest : public PageTestBase {
- public:
-  DedicatedWorkerTest() = default;
+void DedicatedWorkerTest::SetUp() {
+  PageTestBase::SetUp(IntSize());
+  worker_messaging_proxy_ =
+      MakeGarbageCollected<DedicatedWorkerMessagingProxyForTest>(
+          GetFrame().DomWindow());
+}
 
-  void SetUp() override {
-    PageTestBase::SetUp(IntSize());
-    worker_messaging_proxy_ =
-        MakeGarbageCollected<DedicatedWorkerMessagingProxyForTest>(
-            GetFrame().DomWindow());
-  }
+void DedicatedWorkerTest::TearDown() {
+  GetWorkerThread()->TerminateForTesting();
+  GetWorkerThread()->WaitForShutdownForTesting();
+}
 
-  void TearDown() override {
-    GetWorkerThread()->Terminate();
-    GetWorkerThread()->WaitForShutdownForTesting();
-  }
+void DedicatedWorkerTest::DispatchMessageEvent() {
+  BlinkTransferableMessage message;
+  WorkerMessagingProxy()->PostMessageToWorkerGlobalScope(std::move(message));
+}
 
-  void DispatchMessageEvent() {
-    BlinkTransferableMessage message;
-    WorkerMessagingProxy()->PostMessageToWorkerGlobalScope(std::move(message));
-  }
+DedicatedWorkerMessagingProxyForTest*
+DedicatedWorkerTest::WorkerMessagingProxy() {
+  return worker_messaging_proxy_.Get();
+}
 
-  DedicatedWorkerMessagingProxyForTest* WorkerMessagingProxy() {
-    return worker_messaging_proxy_.Get();
-  }
+DedicatedWorkerThreadForTest* DedicatedWorkerTest::GetWorkerThread() {
+  return worker_messaging_proxy_->GetDedicatedWorkerThread();
+}
 
-  DedicatedWorkerThreadForTest* GetWorkerThread() {
-    return worker_messaging_proxy_->GetDedicatedWorkerThread();
-  }
+void DedicatedWorkerTest::StartWorker(const String& source_code) {
+  WorkerMessagingProxy()->StartWithSourceCode(source_code);
+}
 
- private:
-  Persistent<DedicatedWorkerMessagingProxyForTest> worker_messaging_proxy_;
-};
+namespace {
+
+void PostExitRunLoopTaskOnParent(WorkerThread* worker_thread) {
+  PostCrossThreadTask(*worker_thread->GetParentTaskRunnerForTesting(),
+                      FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+}
+
+}  // anonymous namespace
+
+void DedicatedWorkerTest::WaitUntilWorkerIsRunning() {
+  PostCrossThreadTask(
+      *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+      CrossThreadBindOnce(&PostExitRunLoopTaskOnParent,
+                          CrossThreadUnretained(GetWorkerThread())));
+
+  test::EnterRunLoop();
+}
 
 TEST_F(DedicatedWorkerTest, PendingActivity_NoActivityAfterContextDestroyed) {
   const String source_code = "// Do nothing";
-  WorkerMessagingProxy()->StartWithSourceCode(source_code);
+  StartWorker(source_code);
 
   EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
 
@@ -212,7 +229,7 @@ TEST_F(DedicatedWorkerTest, PendingActivity_NoActivityAfterContextDestroyed) {
 TEST_F(DedicatedWorkerTest, UseCounter) {
   Page::InsertOrdinaryPageForTesting(&GetPage());
   const String source_code = "// Do nothing";
-  WorkerMessagingProxy()->StartWithSourceCode(source_code);
+  StartWorker(source_code);
 
   // This feature is randomly selected.
   const WebFeature kFeature1 = WebFeature::kRequestFileSystem;
@@ -259,7 +276,7 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
 
 TEST_F(DedicatedWorkerTest, TaskRunner) {
   const String source_code = "// Do nothing";
-  WorkerMessagingProxy()->StartWithSourceCode(source_code);
+  StartWorker(source_code);
 
   PostCrossThreadTask(
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,

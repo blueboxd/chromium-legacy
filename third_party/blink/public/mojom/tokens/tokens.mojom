@@ -54,6 +54,32 @@ union WorkerToken {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// WORKLET TOKENS
+
+struct AnimationWorkletToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
+struct AudioWorkletToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
+struct LayoutWorkletToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
+struct PaintWorkletToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
+union WorkletToken {
+  AnimationWorkletToken animation_worklet_token;
+  AudioWorkletToken audio_worklet_token;
+  LayoutWorkletToken layout_worklet_token;
+  PaintWorkletToken paint_worklet_token;
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // OTHER TOKENS
 //
 // Keep this section last.
@@ -62,11 +88,15 @@ union WorkerToken {
 // their own section, in alphabetical order. If adding a new token here, please
 // keep the following list in alphabetic order.
 
-union ExecutionContextAttributionToken {
+union ExecutionContextToken {
   LocalFrameToken local_frame_token;
   DedicatedWorkerToken dedicated_worker_token;
   ServiceWorkerToken service_worker_token;
   SharedWorkerToken shared_worker_token;
+  AnimationWorkletToken animation_worklet_token;
+  AudioWorkletToken audio_worklet_token;
+  LayoutWorkletToken layout_worklet_token;
+  PaintWorkletToken paint_worklet_token;
 };
 
 struct PortalToken {

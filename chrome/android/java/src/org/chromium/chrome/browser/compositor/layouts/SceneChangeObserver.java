@@ -16,12 +16,6 @@ public interface SceneChangeObserver {
     void onTabSelectionHinted(int tabId);
 
     /**
-     * Called briefly before the given {@link Layout} becomes active.
-     * @param layout A {@link Layout} that is soon to be active.
-     */
-    default void onSceneStartShowing(Layout layout) {}
-
-    /**
      * Called when the active {@link Layout} changes.
      * @param layout The new active {@link Layout}.
      */

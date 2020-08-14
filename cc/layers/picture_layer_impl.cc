@@ -1073,11 +1073,6 @@ void PictureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
 }
 
 void PictureLayerImpl::SetUseTransformedRasterization(bool use) {
-  // With transformed rasterization, the pixels along the edge of the layer may
-  // become translucent, so clear contents_opaque.
-  if (use)
-    SetContentsOpaque(false);
-
   if (use_transformed_rasterization_ == use)
     return;
 
@@ -1591,8 +1586,6 @@ gfx::Vector2dF PictureLayerImpl::CalculateRasterTranslation(
     float raster_scale) {
   if (!use_transformed_rasterization_)
     return gfx::Vector2dF();
-
-  DCHECK(!contents_opaque());
 
   gfx::Transform draw_transform = DrawTransform();
   // TODO(enne): for performance reasons, we should only have a raster

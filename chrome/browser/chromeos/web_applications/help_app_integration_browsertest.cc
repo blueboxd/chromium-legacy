@@ -150,6 +150,36 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2DirectNavigation) {
                 web_contents, "window.location.href"));
 }
 
+// Test that the Help App opens the OS Settings family link page.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2ShowParentalControls) {
+  WaitForTestSystemAppInstall();
+  content::WebContents* web_contents = LaunchApp(web_app::SystemAppType::HELP);
+
+  // There should be two browser windows, one regular and one for the newly
+  // opened help app.
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+
+  const GURL expected_url("chrome://os-settings/osPeople");
+  content::TestNavigationObserver navigation_observer(expected_url);
+  navigation_observer.StartWatchingNewWebContents();
+
+  // Script that tells the Help App to show parental controls.
+  constexpr char kScript[] = R"(
+    window.parent.postMessage('show-parental-controls', '*');
+  )";
+  // Trigger the postMessage, then wait for settings to open.
+  EXPECT_EQ(nullptr,
+            SandboxedWebUiAppTestBase::EvalJsInAppFrame(web_contents, kScript));
+  navigation_observer.Wait();
+
+  // Settings should be active in a new window.
+  EXPECT_EQ(3u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(expected_url, chrome::FindLastActive()
+                              ->tab_strip_model()
+                              ->GetActiveWebContents()
+                              ->GetVisibleURL());
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          HelpAppIntegrationTest,
                          ::testing::Values(web_app::ProviderType::kBookmarkApps,

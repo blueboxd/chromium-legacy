@@ -129,6 +129,89 @@ blink::SharedWorkerToken UnionTraits<
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// WORKLET TOKENS
+
+//////////////
+// WorkletToken
+
+// static
+bool UnionTraits<blink::mojom::WorkletTokenDataView, blink::WorkletToken>::Read(
+    blink::mojom::WorkletTokenDataView input,
+    blink::WorkletToken* output) {
+  using Tag = blink::mojom::WorkletTokenDataView::Tag;
+  switch (input.tag()) {
+    case Tag::ANIMATION_WORKLET_TOKEN: {
+      blink::AnimationWorkletToken token;
+      bool ret = input.ReadAnimationWorkletToken(&token);
+      *output = token;
+      return ret;
+    }
+    case Tag::AUDIO_WORKLET_TOKEN: {
+      blink::AudioWorkletToken token;
+      bool ret = input.ReadAudioWorkletToken(&token);
+      *output = token;
+      return ret;
+    }
+    case Tag::LAYOUT_WORKLET_TOKEN: {
+      blink::LayoutWorkletToken token;
+      bool ret = input.ReadLayoutWorkletToken(&token);
+      *output = token;
+      return ret;
+    }
+    case Tag::PAINT_WORKLET_TOKEN: {
+      blink::PaintWorkletToken token;
+      bool ret = input.ReadPaintWorkletToken(&token);
+      *output = token;
+      return ret;
+    }
+  }
+  return false;
+}
+
+// static
+blink::mojom::WorkletTokenDataView::Tag
+UnionTraits<blink::mojom::WorkletTokenDataView, blink::WorkletToken>::GetTag(
+    const blink::WorkletToken& token) {
+  using Tag = blink::mojom::WorkletTokenDataView::Tag;
+  if (token.Is<blink::AnimationWorkletToken>())
+    return Tag::ANIMATION_WORKLET_TOKEN;
+  if (token.Is<blink::AudioWorkletToken>())
+    return Tag::AUDIO_WORKLET_TOKEN;
+  if (token.Is<blink::LayoutWorkletToken>())
+    return Tag::LAYOUT_WORKLET_TOKEN;
+  DCHECK(token.Is<blink::PaintWorkletToken>());
+  return Tag::PAINT_WORKLET_TOKEN;
+}
+
+// static
+blink::AnimationWorkletToken
+UnionTraits<blink::mojom::WorkletTokenDataView, blink::WorkletToken>::
+    animation_worklet_token(const blink::WorkletToken& token) {
+  return token.GetAs<blink::AnimationWorkletToken>();
+}
+
+// static
+blink::AudioWorkletToken
+UnionTraits<blink::mojom::WorkletTokenDataView, blink::WorkletToken>::
+    audio_worklet_token(const blink::WorkletToken& token) {
+  return token.GetAs<blink::AudioWorkletToken>();
+}
+
+// static
+blink::LayoutWorkletToken
+UnionTraits<blink::mojom::WorkletTokenDataView, blink::WorkletToken>::
+    layout_worklet_token(const blink::WorkletToken& token) {
+  return token.GetAs<blink::LayoutWorkletToken>();
+}
+
+// static
+blink::PaintWorkletToken
+UnionTraits<blink::mojom::WorkletTokenDataView, blink::WorkletToken>::
+    paint_worklet_token(const blink::WorkletToken& token) {
+  return token.GetAs<blink::PaintWorkletToken>();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // OTHER TOKENS
 //
 // Keep this section last.
@@ -138,14 +221,14 @@ blink::SharedWorkerToken UnionTraits<
 // keep the following list in alphabetic order.
 
 ///////////////////////////////////
-// ExecutionContextAttributionToken
+// ExecutionContextToken
 
 // static
-bool UnionTraits<blink::mojom::ExecutionContextAttributionTokenDataView,
-                 blink::ExecutionContextAttributionToken>::
-    Read(blink::mojom::ExecutionContextAttributionTokenDataView input,
-         blink::ExecutionContextAttributionToken* output) {
-  using Tag = blink::mojom::ExecutionContextAttributionTokenDataView::Tag;
+bool UnionTraits<blink::mojom::ExecutionContextTokenDataView,
+                 blink::ExecutionContextToken>::
+    Read(blink::mojom::ExecutionContextTokenDataView input,
+         blink::ExecutionContextToken* output) {
+  using Tag = blink::mojom::ExecutionContextTokenDataView::Tag;
   switch (input.tag()) {
     case Tag::LOCAL_FRAME_TOKEN: {
       blink::LocalFrameToken token;
@@ -171,57 +254,119 @@ bool UnionTraits<blink::mojom::ExecutionContextAttributionTokenDataView,
       *output = token;
       return ret;
     }
+    case Tag::ANIMATION_WORKLET_TOKEN: {
+      blink::AnimationWorkletToken token;
+      bool ret = input.ReadAnimationWorkletToken(&token);
+      *output = token;
+      return ret;
+    }
+    case Tag::AUDIO_WORKLET_TOKEN: {
+      blink::AudioWorkletToken token;
+      bool ret = input.ReadAudioWorkletToken(&token);
+      *output = token;
+      return ret;
+    }
+    case Tag::LAYOUT_WORKLET_TOKEN: {
+      blink::LayoutWorkletToken token;
+      bool ret = input.ReadLayoutWorkletToken(&token);
+      *output = token;
+      return ret;
+    }
+    case Tag::PAINT_WORKLET_TOKEN: {
+      blink::PaintWorkletToken token;
+      bool ret = input.ReadPaintWorkletToken(&token);
+      *output = token;
+      return ret;
+    }
   }
   return false;
 }
 
 // static
-blink::mojom::ExecutionContextAttributionTokenDataView::Tag
-UnionTraits<blink::mojom::ExecutionContextAttributionTokenDataView,
-            blink::ExecutionContextAttributionToken>::
-    GetTag(const blink::ExecutionContextAttributionToken& token) {
-  using Tag = blink::mojom::ExecutionContextAttributionTokenDataView::Tag;
+blink::mojom::ExecutionContextTokenDataView::Tag UnionTraits<
+    blink::mojom::ExecutionContextTokenDataView,
+    blink::ExecutionContextToken>::GetTag(const blink::ExecutionContextToken&
+                                              token) {
+  using Tag = blink::mojom::ExecutionContextTokenDataView::Tag;
   if (token.Is<blink::LocalFrameToken>())
     return Tag::LOCAL_FRAME_TOKEN;
   if (token.Is<blink::DedicatedWorkerToken>())
     return Tag::DEDICATED_WORKER_TOKEN;
   if (token.Is<blink::ServiceWorkerToken>())
     return Tag::SERVICE_WORKER_TOKEN;
-  DCHECK(token.Is<blink::SharedWorkerToken>());
-  return Tag::SHARED_WORKER_TOKEN;
+  if (token.Is<blink::SharedWorkerToken>())
+    return Tag::SHARED_WORKER_TOKEN;
+  if (token.Is<blink::AnimationWorkletToken>())
+    return Tag::ANIMATION_WORKLET_TOKEN;
+  if (token.Is<blink::AudioWorkletToken>())
+    return Tag::AUDIO_WORKLET_TOKEN;
+  if (token.Is<blink::LayoutWorkletToken>())
+    return Tag::LAYOUT_WORKLET_TOKEN;
+  DCHECK(token.Is<blink::PaintWorkletToken>());
+  return Tag::PAINT_WORKLET_TOKEN;
 }
 
 // static
-blink::LocalFrameToken
-UnionTraits<blink::mojom::ExecutionContextAttributionTokenDataView,
-            blink::ExecutionContextAttributionToken>::
-    local_frame_token(const blink::ExecutionContextAttributionToken& token) {
+blink::LocalFrameToken UnionTraits<blink::mojom::ExecutionContextTokenDataView,
+                                   blink::ExecutionContextToken>::
+    local_frame_token(const blink::ExecutionContextToken& token) {
   return token.GetAs<blink::LocalFrameToken>();
 }
 
 // static
 blink::DedicatedWorkerToken
-UnionTraits<blink::mojom::ExecutionContextAttributionTokenDataView,
-            blink::ExecutionContextAttributionToken>::
-    dedicated_worker_token(
-        const blink::ExecutionContextAttributionToken& token) {
+UnionTraits<blink::mojom::ExecutionContextTokenDataView,
+            blink::ExecutionContextToken>::
+    dedicated_worker_token(const blink::ExecutionContextToken& token) {
   return token.GetAs<blink::DedicatedWorkerToken>();
 }
 
 // static
 blink::ServiceWorkerToken
-UnionTraits<blink::mojom::ExecutionContextAttributionTokenDataView,
-            blink::ExecutionContextAttributionToken>::
-    service_worker_token(const blink::ExecutionContextAttributionToken& token) {
+UnionTraits<blink::mojom::ExecutionContextTokenDataView,
+            blink::ExecutionContextToken>::
+    service_worker_token(const blink::ExecutionContextToken& token) {
   return token.GetAs<blink::ServiceWorkerToken>();
 }
 
 // static
 blink::SharedWorkerToken
-UnionTraits<blink::mojom::ExecutionContextAttributionTokenDataView,
-            blink::ExecutionContextAttributionToken>::
-    shared_worker_token(const blink::ExecutionContextAttributionToken& token) {
+UnionTraits<blink::mojom::ExecutionContextTokenDataView,
+            blink::ExecutionContextToken>::
+    shared_worker_token(const blink::ExecutionContextToken& token) {
   return token.GetAs<blink::SharedWorkerToken>();
+}
+
+// static
+blink::AnimationWorkletToken
+UnionTraits<blink::mojom::ExecutionContextTokenDataView,
+            blink::ExecutionContextToken>::
+    animation_worklet_token(const blink::ExecutionContextToken& token) {
+  return token.GetAs<blink::AnimationWorkletToken>();
+}
+
+// static
+blink::AudioWorkletToken
+UnionTraits<blink::mojom::ExecutionContextTokenDataView,
+            blink::ExecutionContextToken>::
+    audio_worklet_token(const blink::ExecutionContextToken& token) {
+  return token.GetAs<blink::AudioWorkletToken>();
+}
+
+// static
+blink::LayoutWorkletToken
+UnionTraits<blink::mojom::ExecutionContextTokenDataView,
+            blink::ExecutionContextToken>::
+    layout_worklet_token(const blink::ExecutionContextToken& token) {
+  return token.GetAs<blink::LayoutWorkletToken>();
+}
+
+// static
+blink::PaintWorkletToken
+UnionTraits<blink::mojom::ExecutionContextTokenDataView,
+            blink::ExecutionContextToken>::
+    paint_worklet_token(const blink::ExecutionContextToken& token) {
+  return token.GetAs<blink::PaintWorkletToken>();
 }
 
 }  // namespace mojo

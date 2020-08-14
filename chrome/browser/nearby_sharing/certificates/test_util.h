@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "chrome/browser/nearby_sharing/certificates/nearby_share_decrypted_public_certificate.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_private_certificate.h"
 #include "chrome/browser/nearby_sharing/proto/encrypted_metadata.pb.h"
@@ -45,5 +46,8 @@ NearbySharePrivateCertificate GetNearbyShareTestPrivateCertificate(
 
 const nearbyshare::proto::PublicCertificate&
 GetNearbyShareTestPublicCertificate();
+
+const NearbyShareDecryptedPublicCertificate&
+GetNearbyShareTestDecryptedPublicCertificate();
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_TEST_UTIL_H_

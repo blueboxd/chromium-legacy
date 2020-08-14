@@ -278,3 +278,12 @@ GetNearbyShareTestPublicCertificate() {
       }());
   return *cert;
 }
+
+const NearbyShareDecryptedPublicCertificate&
+GetNearbyShareTestDecryptedPublicCertificate() {
+  static const base::NoDestructor<NearbyShareDecryptedPublicCertificate> cert(
+      *NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
+          GetNearbyShareTestPublicCertificate(),
+          GetNearbyShareTestEncryptedMetadataKey()));
+  return *cert;
+}

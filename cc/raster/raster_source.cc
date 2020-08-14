@@ -12,6 +12,7 @@
 #include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
+#include "cc/paint/clear_for_opaque_raster.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/image_provider.h"
 #include "cc/paint/skia_paint_canvas.h"
@@ -39,54 +40,28 @@ RasterSource::~RasterSource() = default;
 
 void RasterSource::ClearForOpaqueRaster(
     SkCanvas* raster_canvas,
+    const gfx::AxisTransform2d& raster_transform,
     const gfx::Size& content_size,
     const gfx::Rect& canvas_bitmap_rect,
     const gfx::Rect& canvas_playback_rect) const {
-  // The last texel of this content is not guaranteed to be fully opaque, so
-  // inset by one to generate the fully opaque coverage rect.  This rect is
-  // in device space.
-  SkIRect coverage_device_rect =
-      SkIRect::MakeWH(content_size.width() - canvas_bitmap_rect.x() - 1,
-                      content_size.height() - canvas_bitmap_rect.y() - 1);
+  gfx::Rect outer_rect;
+  gfx::Rect inner_rect;
+  float scale = raster_transform.scale() / recording_scale_factor_;
+  if (!CalculateClearForOpaqueRasterRects(
+          raster_transform.translation(), gfx::SizeF(scale, scale),
+          content_size, canvas_bitmap_rect, canvas_playback_rect, outer_rect,
+          inner_rect))
+    return;
 
-  // If not fully covered, we need to clear one texel inside the coverage
-  // rect (because of blending during raster) and one texel outside the canvas
-  // bitmap rect (because of bilinear filtering during draw).  See comments
-  // in RasterSource.
-  SkIRect device_column = SkIRect::MakeXYWH(coverage_device_rect.right(), 0, 2,
-                                            coverage_device_rect.bottom());
-  // row includes the corner, column excludes it.
-  SkIRect device_row = SkIRect::MakeXYWH(0, coverage_device_rect.bottom(),
-                                         coverage_device_rect.right() + 2, 2);
-
-  bool right_edge = content_size.width() == canvas_playback_rect.right();
-  bool bottom_edge = content_size.height() == canvas_playback_rect.bottom();
-
-  // If the playback rect is touching either edge of the content rect
-  // extend it by one pixel to include the extra texel outside the canvas
-  // bitmap rect that was added to device column and row above.
-  SkIRect playback_device_rect =
-      SkIRect::MakeXYWH(canvas_playback_rect.x() - canvas_bitmap_rect.x(),
-                        canvas_playback_rect.y() - canvas_bitmap_rect.y(),
-                        canvas_playback_rect.width() + (right_edge ? 1 : 0),
-                        canvas_playback_rect.height() + (bottom_edge ? 1 : 0));
-
-  // Intersect the device column and row with the playback rect and only
-  // clear inside of that rect if needed.
-  if (device_column.intersect(playback_device_rect)) {
-    raster_canvas->save();
-    raster_canvas->clipRect(SkRect::Make(device_column), SkClipOp::kIntersect,
-                            false);
-    raster_canvas->drawColor(background_color_, SkBlendMode::kSrc);
-    raster_canvas->restore();
+  raster_canvas->save();
+  raster_canvas->clipRect(gfx::RectToSkRect(outer_rect), SkClipOp::kIntersect,
+                          false);
+  if (!inner_rect.IsEmpty()) {
+    raster_canvas->clipRect(gfx::RectToSkRect(inner_rect),
+                            SkClipOp::kDifference, false);
   }
-  if (device_row.intersect(playback_device_rect)) {
-    raster_canvas->save();
-    raster_canvas->clipRect(SkRect::Make(device_row), SkClipOp::kIntersect,
-                            false);
-    raster_canvas->drawColor(background_color_, SkBlendMode::kSrc);
-    raster_canvas->restore();
-  }
+  raster_canvas->drawColor(background_color_, SkBlendMode::kSrc);
+  raster_canvas->restore();
 }
 
 void RasterSource::PlaybackToCanvas(
@@ -106,15 +81,16 @@ void RasterSource::PlaybackToCanvas(
   // NOTE: The following code should be kept consistent with
   // PaintOpBufferSerializer::SerializePreamble().
   bool is_partial_raster = canvas_bitmap_rect != canvas_playback_rect;
-  if (!requires_clear_ && raster_transform.translation().IsZero()) {
+  if (!requires_clear_) {
     // Clear opaque raster sources.  Opaque rasters sources guarantee that all
-    // pixels inside the opaque region are painted.  However, due to scaling
-    // it's possible that the last row and column might include pixels that
-    // are not painted.  Because this raster source is required to be opaque,
-    // we may need to do extra clearing outside of the clip.  This needs to
-    // be done for both full and partial raster.
-    ClearForOpaqueRaster(raster_canvas, content_size, canvas_bitmap_rect,
-                         canvas_playback_rect);
+    // pixels inside the opaque region are painted.  However, due to raster
+    // scaling or translation it's possible that the edges of the painted
+    // content might include texels that are not painted opaquely.  Because this
+    // raster source is required to be opaque, we may need to do extra clearing
+    // outside of the clip.  This needs to be done for both full and partial
+    // raster.
+    ClearForOpaqueRaster(raster_canvas, raster_transform, content_size,
+                         canvas_bitmap_rect, canvas_playback_rect);
   } else if (!is_partial_raster) {
     // For non-opaque raster sources that are rastering the full tile,
     // just clear the entire canvas (even if stretches past the canvas

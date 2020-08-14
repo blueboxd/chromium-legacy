@@ -149,6 +149,13 @@ mediaApp.ClientApiDelegate.prototype.openFeedbackDialog = function() {};
  */
 mediaApp.ClientApiDelegate.prototype.requestSaveFile = function(
     suggestedName, mimeType) {};
+/**
+ * Request for the user to be prompted with a open file picker. Once the user
+ * selects a file, the file is inserted into the navigation order after the
+ * current file and navigated to.
+ * @return {!Promise<undefined>}
+ */
+mediaApp.ClientApiDelegate.prototype.openFile = function() {};
 
 /**
  * The client Api for interacting with the media app instance.

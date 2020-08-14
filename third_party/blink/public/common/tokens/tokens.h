@@ -59,6 +59,28 @@ using WorkerToken =
     MultiToken<DedicatedWorkerToken, ServiceWorkerToken, SharedWorkerToken>;
 
 ////////////////////////////////////////////////////////////////////////////////
+// WORKLET TOKENS
+
+// Identifies an animation worklet.
+using AnimationWorkletToken =
+    util::TokenType<class AnimationWorkletTokenTypeMarker>;
+
+// Identifies an audio worklet.
+using AudioWorkletToken = util::TokenType<class AudioWorkletTokenTypeMarker>;
+
+// Identifies a layout worklet.
+using LayoutWorkletToken = util::TokenType<class LayoutWorkletTokenTypeMarker>;
+
+// Identifies a paint worklet.
+using PaintWorkletToken = util::TokenType<class PaintWorkletTokenTypeMarker>;
+
+// Can represent any type of WorkletToken.
+using WorkletToken = MultiToken<AnimationWorkletToken,
+                                AudioWorkletToken,
+                                LayoutWorkletToken,
+                                PaintWorkletToken>;
+
+////////////////////////////////////////////////////////////////////////////////
 // OTHER TOKENS
 //
 // Keep this section last.
@@ -67,15 +89,16 @@ using WorkerToken =
 // their own section, in alphabetical order. If adding a new token here, please
 // keep the following list in alphabetic order.
 
-// Identifies an ExecutionContext hosted in a renderer for the purposes of
-// memory and CPU attribution. Worklets are not tracked independently, but
-// simply attributed to their parent context, hence only LocalFrames and workers
-// can be named. As such, it is possible for multiple ExecutionContexts to have
-// the same ExecutionContextAttributionToken.
-using ExecutionContextAttributionToken = MultiToken<LocalFrameToken,
-                                                    DedicatedWorkerToken,
-                                                    ServiceWorkerToken,
-                                                    SharedWorkerToken>;
+// Identifies an arbitrary ExecutionContext. Each concrete implementation of an
+// ExecutionContext has a distinct token type that can be represented here.
+using ExecutionContextToken = MultiToken<LocalFrameToken,
+                                         DedicatedWorkerToken,
+                                         ServiceWorkerToken,
+                                         SharedWorkerToken,
+                                         AnimationWorkletToken,
+                                         AudioWorkletToken,
+                                         LayoutWorkletToken,
+                                         PaintWorkletToken>;
 
 // Identifies a blink::PortalContents / blink::HTMLPortalElement in the
 // renderer process, and a content::Portal in the browser process.

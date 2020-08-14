@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 
+#include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -29,4 +31,13 @@ SkColor GetProfileForegroundIconColor(SkColor profile_highlight_color) {
   return color_utils::BlendForMinContrast(icon_color, profile_highlight_color,
                                           text_color)
       .color;
+}
+
+chrome_colors::ColorInfo GenerateNewProfileColor() {
+  // TODO(crbug.com/1108295):
+  // - Implement more sophisticated algorithm to pick the new profile color.
+  // - Return only a SkColor if the full ColorInfo is not needed.
+  size_t size = base::size(chrome_colors::kGeneratedColorsInfo);
+  size_t index = static_cast<size_t>(base::RandInt(0, size - 1));
+  return chrome_colors::kGeneratedColorsInfo[index];
 }

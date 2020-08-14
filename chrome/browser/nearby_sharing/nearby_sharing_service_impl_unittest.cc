@@ -16,12 +16,17 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_features.h"
-#include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager.h"
+#include "chrome/browser/nearby_sharing/certificates/fake_nearby_share_certificate_manager.h"
+#include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager_impl.h"
 #include "chrome/browser/nearby_sharing/certificates/test_util.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
+#include "chrome/browser/nearby_sharing/contacts/fake_nearby_share_contact_manager.h"
+#include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager_impl.h"
 #include "chrome/browser/nearby_sharing/fake_nearby_connection.h"
 #include "chrome/browser/nearby_sharing/fake_nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/fast_initiation_manager.h"
+#include "chrome/browser/nearby_sharing/local_device_data/fake_nearby_share_local_device_data_manager.h"
+#include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager_impl.h"
 #include "chrome/browser/nearby_sharing/mock_nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/mock_nearby_sharing_decoder.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
@@ -160,25 +165,6 @@ class MockShareTargetDiscoveredCallback : public ShareTargetDiscoveredCallback {
   MOCK_METHOD(void, OnShareTargetLost, (ShareTarget shareTarget), (override));
 };
 
-class MockNearbyShareCertificateManager : public NearbyShareCertificateManager {
- public:
-  MOCK_METHOD(NearbySharePrivateCertificate,
-              GetValidPrivateCertificate,
-              (NearbyShareVisibility visibility),
-              (override));
-  MOCK_METHOD(void,
-              GetDecryptedPublicCertificate,
-              (base::span<const uint8_t> encrypted_metadata_key,
-               base::span<const uint8_t> salt,
-               CertDecryptedCallback callback),
-              (override));
-  MOCK_METHOD(void, DownloadPublicCertificates, (), (override));
-
- protected:
-  MOCK_METHOD(void, OnStart, (), (override));
-  MOCK_METHOD(void, OnStop, (), (override));
-};
-
 namespace {
 
 const char kServiceId[] = "NearbySharing";
@@ -230,6 +216,13 @@ class NearbySharingServiceImplTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
 
+    NearbyShareLocalDeviceDataManagerImpl::Factory::SetFactoryForTesting(
+        &local_device_data_manager_factory_);
+    NearbyShareContactManagerImpl::Factory::SetFactoryForTesting(
+        &contact_manager_factory_);
+    NearbyShareCertificateManagerImpl::Factory::SetFactoryForTesting(
+        &certificate_manager_factory_);
+
     mock_bluetooth_adapter_ =
         base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
     ON_CALL(*mock_bluetooth_adapter_, IsPresent())
@@ -265,13 +258,10 @@ class NearbySharingServiceImplTest : public testing::Test {
         std::make_unique<NotificationDisplayServiceTester>(profile);
     NotificationDisplayService* notification_display_service =
         NotificationDisplayServiceFactory::GetForProfile(profile);
-    auto certificate_manager =
-        std::make_unique<NiceMock<MockNearbyShareCertificateManager>>();
-    certificate_manager_ = certificate_manager.get();
     auto service = std::make_unique<NearbySharingServiceImpl>(
         &prefs_, notification_display_service, profile,
         base::WrapUnique(fake_nearby_connections_manager_),
-        &mock_nearby_process_manager_, std::move(certificate_manager));
+        &mock_nearby_process_manager_);
     NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
     process_manager.SetActiveProfile(profile);
 
@@ -307,11 +297,6 @@ class NearbySharingServiceImplTest : public testing::Test {
     return mock_nearby_process_manager_;
   }
 
-  NiceMock<MockNearbyShareCertificateManager>& certificate_manager() {
-    DCHECK(certificate_manager_);
-    return *certificate_manager_;
-  }
-
   void SetUpReceiveSurface(NiceMock<MockTransferUpdateCallback>& callback) {
     NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
         &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
@@ -319,35 +304,27 @@ class NearbySharingServiceImplTest : public testing::Test {
     EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
   }
 
-  void SetUpCertificateManager(bool return_empty_certificate) {
-    EXPECT_CALL(certificate_manager(), GetDecryptedPublicCertificate(
-                                           testing::_, testing::_, testing::_))
-        .WillOnce(testing::Invoke([=](base::span<const uint8_t>
-                                          input_encrypted_metadata_key,
-                                      base::span<const uint8_t> input_salt,
-                                      MockNearbyShareCertificateManager::
-                                          CertDecryptedCallback callback) {
-          std::vector<uint8_t> encrypted_metadata =
-              GetNearbyShareTestEncryptedMetadata();
-          std::vector<uint8_t> salt = GetNearbyShareTestSalt();
+  void ProcessLatestPublicCertificateDecryption(size_t expected_num_calls,
+                                                bool success) {
+    std::vector<
+        FakeNearbyShareCertificateManager::GetDecryptedPublicCertificateCall>&
+        calls = certificate_manager()->get_decrypted_public_certificate_calls();
 
-          EXPECT_TRUE(std::equal(salt.begin(), salt.end(), input_salt.begin(),
-                                 input_salt.end()));
-          EXPECT_TRUE(std::equal(encrypted_metadata.begin(),
-                                 encrypted_metadata.end(),
-                                 input_encrypted_metadata_key.begin(),
-                                 input_encrypted_metadata_key.end()));
+    ASSERT_FALSE(calls.empty());
+    EXPECT_EQ(expected_num_calls, calls.size());
+    EXPECT_EQ(GetNearbyShareTestEncryptedMetadataKey().encrypted_key(),
+              calls.back().encrypted_metadata_key);
+    EXPECT_EQ(GetNearbyShareTestEncryptedMetadataKey().salt(),
+              calls.back().salt);
 
-          if (return_empty_certificate) {
-            std::move(callback).Run(base::nullopt);
-            return;
-          }
-
-          std::move(callback).Run(
-              NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
-                  GetNearbyShareTestPublicCertificate(),
-                  GetNearbyShareTestEncryptedMetadataKey()));
-        }));
+    if (success) {
+      std::move(calls.back().callback)
+          .Run(NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
+              GetNearbyShareTestPublicCertificate(),
+              GetNearbyShareTestEncryptedMetadataKey()));
+    } else {
+      std::move(calls.back().callback).Run(base::nullopt);
+    }
   }
 
   void SetUpAdvertisementDecoder(const std::vector<uint8_t>& endpoint_info,
@@ -365,8 +342,9 @@ class NearbySharingServiceImplTest : public testing::Test {
 
               sharing::mojom::AdvertisementPtr advertisement =
                   sharing::mojom::Advertisement::New(
-                      GetNearbyShareTestSalt(),
-                      GetNearbyShareTestEncryptedMetadata(), kDeviceName);
+                      GetNearbyShareTestEncryptedMetadataKey().salt(),
+                      GetNearbyShareTestEncryptedMetadataKey().encrypted_key(),
+                      kDeviceName);
               std::move(callback).Run(std::move(advertisement));
             }));
   }
@@ -404,24 +382,42 @@ class NearbySharingServiceImplTest : public testing::Test {
           share_target = incoming_share_target;
           run_loop.Quit();
         }));
-
-    SetUpCertificateManager(/*return_empty_certificate=*/false);
     SetUpReceiveSurface(callback);
-
     service_->OnIncomingConnection(kEndpointId, kValidV1EndpointInfo,
                                    &connection_);
+    ProcessLatestPublicCertificateDecryption(/*expected_num_calls=*/1,
+                                             /*success=*/true);
     run_loop.Run();
 
     return share_target;
   }
 
  protected:
+  FakeNearbyShareLocalDeviceDataManager* local_device_data_manager() {
+    EXPECT_EQ(1u, local_device_data_manager_factory_.instances().size());
+    return local_device_data_manager_factory_.instances().back();
+  }
+
+  FakeNearbyShareContactManager* contact_manager() {
+    EXPECT_EQ(1u, contact_manager_factory_.instances().size());
+    return contact_manager_factory_.instances().back();
+  }
+
+  FakeNearbyShareCertificateManager* certificate_manager() {
+    EXPECT_EQ(1u, certificate_manager_factory_.instances().size());
+    return certificate_manager_factory_.instances().back();
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   ui::ScopedSetIdleState idle_state_{ui::IDLE_STATE_IDLE};
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
   sync_preferences::TestingPrefServiceSyncable prefs_;
   FakeNearbyConnectionsManager* fake_nearby_connections_manager_ = nullptr;
+  FakeNearbyShareLocalDeviceDataManager::Factory
+      local_device_data_manager_factory_;
+  FakeNearbyShareContactManager::Factory contact_manager_factory_;
+  FakeNearbyShareCertificateManager::Factory certificate_manager_factory_;
   std::unique_ptr<NotificationDisplayServiceTester> notification_tester_;
   std::unique_ptr<NearbySharingServiceImpl> service_;
   std::unique_ptr<FakeFastInitiationManagerFactory>
@@ -433,7 +429,6 @@ class NearbySharingServiceImplTest : public testing::Test {
   NiceMock<MockNearbyProcessManager> mock_nearby_process_manager_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier> network_notifier_ =
       net::test::MockNetworkChangeNotifier::Create();
-  NiceMock<MockNearbyShareCertificateManager>* certificate_manager_ = nullptr;
   NiceMock<MockNearbySharingDecoder> mock_decoder_;
   FakeNearbyConnection connection_;
 };
@@ -718,7 +713,6 @@ TEST_F(NearbySharingServiceImplTest,
   // Ensure decoder parses a valid endpoint advertisement.
   SetUpAdvertisementDecoder(kValidV1EndpointInfo,
                             /*return_empty_advertisement=*/false);
-  SetUpCertificateManager(/*return_empty_certificate=*/false);
 
   // Start discovering, to ensure a discovery listener is registered.
   base::RunLoop run_loop;
@@ -749,6 +743,8 @@ TEST_F(NearbySharingServiceImplTest,
       kEndpointId,
       location::nearby::connections::mojom::DiscoveredEndpointInfo::New(
           kValidV1EndpointInfo, kServiceId));
+  ProcessLatestPublicCertificateDecryption(/*expected_num_calls=*/1,
+                                           /*success=*/true);
   run_loop.Run();
 
   // Register another send surface, which will automatically catch up discovered
@@ -776,7 +772,6 @@ TEST_F(NearbySharingServiceImplTest, RegisterSendSurfaceEmptyCertificate) {
   // Ensure decoder parses a valid endpoint advertisement.
   SetUpAdvertisementDecoder(kValidV1EndpointInfo,
                             /*return_empty_advertisement=*/false);
-  SetUpCertificateManager(/*return_empty_certificate=*/true);
 
   // Start discovering, to ensure a discovery listener is registered.
   base::RunLoop run_loop;
@@ -807,6 +802,8 @@ TEST_F(NearbySharingServiceImplTest, RegisterSendSurfaceEmptyCertificate) {
       kEndpointId,
       location::nearby::connections::mojom::DiscoveredEndpointInfo::New(
           kValidV1EndpointInfo, kServiceId));
+  ProcessLatestPublicCertificateDecryption(/*expected_num_calls=*/1,
+                                           /*success=*/false);
   run_loop.Run();
 
   // Register another send surface, which will automatically catch up discovered
@@ -1339,12 +1336,11 @@ TEST_F(NearbySharingServiceImplTest,
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
   NiceMock<MockTransferUpdateCallback> callback;
   EXPECT_CALL(callback, OnTransferUpdate(testing::_, testing::_)).Times(0);
-
-  SetUpCertificateManager(/*return_empty_certificate=*/true);
   SetUpReceiveSurface(callback);
-
   service_->OnIncomingConnection(kEndpointId, kValidV1EndpointInfo,
                                  &connection_);
+  ProcessLatestPublicCertificateDecryption(/*expected_num_calls=*/1,
+                                           /*success=*/true);
   connection_.Close();
 
   // Introduction is ignored without any side effect.
@@ -1382,12 +1378,11 @@ TEST_F(NearbySharingServiceImplTest,
         EXPECT_TRUE(metadata.is_final_status());
         run_loop.Quit();
       }));
-
-  SetUpCertificateManager(/*return_empty_certificate=*/false);
   SetUpReceiveSurface(callback);
-
   service_->OnIncomingConnection(kEndpointId, kValidV1EndpointInfo,
                                  &connection_);
+  ProcessLatestPublicCertificateDecryption(/*expected_num_calls=*/1,
+                                           /*success=*/true);
   run_loop.Run();
 
   // Check data written to connection_.
@@ -1435,12 +1430,11 @@ TEST_F(NearbySharingServiceImplTest,
         EXPECT_FALSE(metadata.is_final_status());
         run_loop.Quit();
       }));
-
-  SetUpCertificateManager(/*return_empty_certificate=*/true);
   SetUpReceiveSurface(callback);
-
   service_->OnIncomingConnection(kEndpointId, kValidV1EndpointInfo,
                                  &connection_);
+  ProcessLatestPublicCertificateDecryption(/*expected_num_calls=*/1,
+                                           /*success=*/false);
   run_loop.Run();
 
   // To avoid UAF in OnIncomingTransferUpdate().
@@ -1499,12 +1493,11 @@ TEST_F(NearbySharingServiceImplTest,
         EXPECT_FALSE(metadata.is_final_status());
         run_loop.Quit();
       }));
-
-  SetUpCertificateManager(/*return_empty_certificate=*/false);
   SetUpReceiveSurface(callback);
-
   service_->OnIncomingConnection(kEndpointId, kValidV1EndpointInfo,
                                  &connection_);
+  ProcessLatestPublicCertificateDecryption(/*expected_num_calls=*/1,
+                                           /*success=*/true);
   run_loop.Run();
 
   // To avoid UAF in OnIncomingTransferUpdate().

@@ -16,6 +16,8 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -123,4 +125,11 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
   source->AddInteger("userType", user_manager->GetActiveUser()->GetType());
   source->AddBoolean("isEphemeralUser",
                      user_manager->IsCurrentUserNonCryptohomeDataEphemeral());
+}
+
+void ChromeHelpAppUIDelegate::ShowParentalControls() {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  // The "People" section of OS Settings contains parental controls.
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      profile, chromeos::settings::mojom::kPeopleSectionPath);
 }

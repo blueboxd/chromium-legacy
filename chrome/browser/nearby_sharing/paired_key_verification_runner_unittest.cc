@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager.h"
+#include "chrome/browser/nearby_sharing/certificates/fake_nearby_share_certificate_manager.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_decrypted_public_certificate.h"
 #include "chrome/browser/nearby_sharing/certificates/test_util.h"
 #include "chrome/browser/nearby_sharing/fake_nearby_connection.h"
@@ -66,25 +66,6 @@ class MockIncomingFramesReader : public IncomingFramesReader {
       (override));
 };
 
-class MockNearbyShareCertificateManager : public NearbyShareCertificateManager {
- public:
-  MOCK_METHOD(NearbySharePrivateCertificate,
-              GetValidPrivateCertificate,
-              (NearbyShareVisibility visibility),
-              (override));
-  MOCK_METHOD(void,
-              GetDecryptedPublicCertificate,
-              (base::span<const uint8_t> encrypted_metadata_key,
-               base::span<const uint8_t> salt,
-               CertDecryptedCallback callback),
-              (override));
-  MOCK_METHOD(void, DownloadPublicCertificates, (), (override));
-
- protected:
-  MOCK_METHOD(void, OnStart, (), (override));
-  MOCK_METHOD(void, OnStop, (), (override));
-};
-
 PairedKeyVerificationRunner::PairedKeyVerificationResult Merge(
     PairedKeyVerificationRunner::PairedKeyVerificationResult local_result,
     sharing::mojom::PairedKeyResultFrame::Status remote_result) {
@@ -120,12 +101,36 @@ class PairedKeyVerificationRunnerTest : public testing::Test {
       : frames_reader_(&mock_nearby_process_manager_, &profile_, &connection_) {
   }
 
-  void SetUp() override {
-    share_target.is_incoming = true;
+  void SetUp() override { share_target_.is_incoming = true; }
 
-    EXPECT_CALL(certificate_manager_, GetValidPrivateCertificate(testing::_))
-        .WillRepeatedly(testing::Return(GetNearbyShareTestPrivateCertificate(
-            NearbyShareVisibility::kAllContacts)));
+  void RunVerification(bool use_valid_public_certificate,
+                       bool restricted_to_contacts,
+                       PairedKeyVerificationRunner::PairedKeyVerificationResult
+                           expected_result) {
+    base::Optional<NearbyShareDecryptedPublicCertificate> public_certificate =
+        use_valid_public_certificate
+            ? base::make_optional<NearbyShareDecryptedPublicCertificate>(
+                  GetNearbyShareTestDecryptedPublicCertificate())
+            : base::nullopt;
+
+    PairedKeyVerificationRunner runner(
+        share_target_, kEndpointId, kAuthToken, &connection_,
+        std::move(public_certificate), &certificate_manager_,
+        nearby_share::mojom::Visibility::kAllContacts, restricted_to_contacts,
+        &frames_reader_, kTimeout);
+
+    base::RunLoop run_loop;
+    runner.Run(base::BindLambdaForTesting(
+        [&](PairedKeyVerificationRunner::PairedKeyVerificationResult result) {
+          EXPECT_EQ(expected_result, result);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+
+    // The private certificate is at least always immediately retrieved in order
+    // to create the signature for the sent PairedKeyEncryptionFrame.
+    EXPECT_GE(certificate_manager_.num_get_valid_private_certificate_calls(),
+              1u);
   }
 
   void SetUpPairedKeyEncryptionFrame(ReturnFrameType frame_type) {
@@ -135,11 +140,20 @@ class PairedKeyVerificationRunnerTest : public testing::Test {
             testing::Eq(sharing::mojom::V1Frame::Tag::PAIRED_KEY_ENCRYPTION),
             testing::_, testing::Eq(kTimeout)))
         .WillOnce(testing::WithArg<1>(testing::Invoke(
-            [frame_type](
-                base::OnceCallback<void(
-                    base::Optional<sharing::mojom::V1FramePtr>)> callback) {
+            [frame_type,
+             this](base::OnceCallback<void(
+                       base::Optional<sharing::mojom::V1FramePtr>)> callback) {
+              // A private certificate retrieval will only be necessary if we
+              // receive a frame that needs verification.
+              size_t initial_num_private_cert_gets =
+                  certificate_manager_
+                      .num_get_valid_private_certificate_calls();
+
               if (frame_type == ReturnFrameType::kNull) {
                 std::move(callback).Run(base::nullopt);
+                EXPECT_EQ(initial_num_private_cert_gets,
+                          certificate_manager_
+                              .num_get_valid_private_certificate_calls());
                 return;
               }
 
@@ -157,6 +171,9 @@ class PairedKeyVerificationRunnerTest : public testing::Test {
               }
 
               std::move(callback).Run(std::move(mojo_v1frame));
+              EXPECT_EQ(initial_num_private_cert_gets + 1,
+                        certificate_manager_
+                            .num_get_valid_private_certificate_calls());
             })));
   }
 
@@ -218,59 +235,37 @@ class PairedKeyVerificationRunnerTest : public testing::Test {
   testing::NiceMock<MockNearbyProcessManager> mock_nearby_process_manager_;
   TestingProfile profile_;
   FakeNearbyConnection connection_;
-  testing::NiceMock<MockNearbyShareCertificateManager> certificate_manager_;
+  FakeNearbyShareCertificateManager certificate_manager_;
   testing::NiceMock<MockIncomingFramesReader> frames_reader_;
-  ShareTarget share_target;
+  ShareTarget share_target_;
 };
 
 TEST_F(PairedKeyVerificationRunnerTest,
        NullCertificate_InvalidPairedKeyEncryptionFrame_RestrictToContacts) {
-  PairedKeyVerificationRunner runner(
-      share_target, kEndpointId, kAuthToken, &connection_,
-      /*certificate=*/base::nullopt, &certificate_manager_,
-      nearby_share::mojom::Visibility::kAllContacts,
-      /*restrict_to_contacts=*/true, &frames_reader_, kTimeout);
-
   // Empty key encryption frame fails the certificate verification.
   SetUpPairedKeyEncryptionFrame(ReturnFrameType::kEmpty);
 
-  base::RunLoop run_loop;
-  runner.Run(base::BindLambdaForTesting(
-      [&](PairedKeyVerificationRunner::PairedKeyVerificationResult result) {
-        EXPECT_EQ(
-            PairedKeyVerificationRunner::PairedKeyVerificationResult::kFail,
-            result);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
+  RunVerification(
+      /*use_valid_public_certificate=*/false,
+      /*restricted_to_contacts=*/true,
+      /*expected_result=*/
+      PairedKeyVerificationRunner::PairedKeyVerificationResult::kFail);
 
   ExpectPairedKeyEncryptionFrameSent();
 }
 
 TEST_F(PairedKeyVerificationRunnerTest,
        ValidPairedKeyEncryptionFrame_ResultFrameTimedOut) {
-  PairedKeyVerificationRunner runner(
-      share_target, kEndpointId, kAuthToken, &connection_,
-      NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
-          GetNearbyShareTestPublicCertificate(),
-          GetNearbyShareTestEncryptedMetadataKey()),
-      &certificate_manager_, nearby_share::mojom::Visibility::kAllContacts,
-      /*restrict_to_contacts=*/false, &frames_reader_, kTimeout);
-
   SetUpPairedKeyEncryptionFrame(ReturnFrameType::kValid);
 
   // Null result frame fails the certificate verification process.
   SetUpPairedKeyResultFrame(ReturnFrameType::kNull);
 
-  base::RunLoop run_loop;
-  runner.Run(base::BindLambdaForTesting(
-      [&](PairedKeyVerificationRunner::PairedKeyVerificationResult result) {
-        EXPECT_EQ(
-            PairedKeyVerificationRunner::PairedKeyVerificationResult::kFail,
-            result);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
+  RunVerification(
+      /*use_valid_public_certificate=*/true,
+      /*restricted_to_contacts=*/false,
+      /*expected_result=*/
+      PairedKeyVerificationRunner::PairedKeyVerificationResult::kFail);
 
   ExpectPairedKeyEncryptionFrameSent();
   ExpectPairedKeyResultFrameSent(sharing::nearby::PairedKeyResultFrame::UNABLE);
@@ -308,32 +303,15 @@ TEST_P(ParameterisedPairedKeyVerificationRunnerTest,
   PairedKeyVerificationRunner::PairedKeyVerificationResult expected_result =
       Merge(params.result, status);
 
-  share_target.is_known = params.is_target_known;
-  base::Optional<NearbyShareDecryptedPublicCertificate> certificate;
-  if (params.is_valid_certificate) {
-    certificate =
-        NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
-            GetNearbyShareTestPublicCertificate(),
-            GetNearbyShareTestEncryptedMetadataKey());
-  }
-
-  PairedKeyVerificationRunner runner(
-      share_target, kEndpointId, kAuthToken, &connection_,
-      std::move(certificate), &certificate_manager_,
-      nearby_share::mojom::Visibility::kAllContacts,
-      /*restricted_to_contacts=*/false, &frames_reader_, kTimeout);
+  share_target_.is_known = params.is_target_known;
 
   SetUpPairedKeyEncryptionFrame(params.encryption_frame_type);
   SetUpPairedKeyResultFrame(
       PairedKeyVerificationRunnerTest::ReturnFrameType::kValid, status);
 
-  base::RunLoop run_loop;
-  runner.Run(base::BindLambdaForTesting(
-      [&](PairedKeyVerificationRunner::PairedKeyVerificationResult result) {
-        EXPECT_EQ(expected_result, result);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
+  RunVerification(
+      /*use_valid_public_certificate=*/params.is_valid_certificate,
+      /*restricted_to_contacts=*/false, expected_result);
 
   ExpectPairedKeyEncryptionFrameSent();
   if (params.encryption_frame_type ==

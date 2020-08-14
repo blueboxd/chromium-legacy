@@ -100,11 +100,11 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
   base::flat_set<IPAddress> addresses;
   for (auto& interface : interfaces) {
     // Filter out loopback and invalid connection types.
+    auto loopback = static_cast<decltype(interface.features)>(
+        fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK);
     if ((internal::ConvertConnectionType(interface) ==
          NetworkChangeNotifier::CONNECTION_NONE) ||
-        (interface.features &
-         static_cast<decltype(interface.features)>(
-             fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK))) {
+        ((interface.features & loopback) == loopback)) {
       continue;
     }
 

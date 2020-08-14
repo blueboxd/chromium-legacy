@@ -236,6 +236,12 @@ const DELEGATE = {
             await parentMessagePipe.sendMessage(
                 Message.REQUEST_SAVE_FILE, msg));
     return response.token;
+  },
+  /**
+   * @return {!Promise<undefined>}
+   */
+  async openFile() {
+    await parentMessagePipe.sendMessage(Message.OPEN_FILE);
   }
 };
 

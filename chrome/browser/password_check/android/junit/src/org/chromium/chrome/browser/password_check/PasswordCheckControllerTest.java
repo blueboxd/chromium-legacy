@@ -9,6 +9,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
@@ -44,9 +46,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.ItemType;
+import org.chromium.chrome.browser.password_check.helper.PasswordCheckReauthenticationHelper;
+import org.chromium.chrome.browser.password_check.helper.PasswordCheckReauthenticationHelper.ReauthReason;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.ui.modelutil.ListModel;
@@ -79,6 +84,8 @@ public class PasswordCheckControllerTest {
     private PasswordCheckComponentUi.ChangePasswordDelegate mChangePasswordDelegate;
     @Mock
     private PasswordCheck mPasswordCheck;
+    @Mock
+    private PasswordCheckReauthenticationHelper mReauthenticationHelper;
 
     // DO NOT INITIALIZE HERE! The objects would be shared here which leaks state between tests.
     private PasswordCheckMediator mMediator;
@@ -88,7 +95,7 @@ public class PasswordCheckControllerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mModel = PasswordCheckProperties.createDefaultModel();
-        mMediator = new PasswordCheckMediator(mChangePasswordDelegate);
+        mMediator = new PasswordCheckMediator(mChangePasswordDelegate, mReauthenticationHelper);
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
         mMediator.initialize(mModel, mDelegate, PasswordCheckReferrer.PASSWORD_SETTINGS);
     }
@@ -156,6 +163,27 @@ public class PasswordCheckControllerTest {
         assertRunningHeader(mModel.get(ITEMS).get(0), UNKNOWN_PROGRESS);
         mMediator.onPasswordCheckProgressChanged(PROGRESS_UPDATE);
         assertRunningHeader(mModel.get(ITEMS).get(0), PROGRESS_UPDATE);
+    }
+
+    @Test
+    public void testEditTriggersCanReauthenticate() {
+        mMediator.onEdit(ANA);
+        verify(mReauthenticationHelper).canReauthenticate();
+    }
+
+    @Test
+    public void testCannotReauthenticateDoesNothing() {
+        when(mReauthenticationHelper.canReauthenticate()).thenReturn(false);
+        mMediator.onEdit(ANA);
+        verify(mReauthenticationHelper, never()).reauthenticate(anyInt(), any(Callback.class));
+    }
+
+    @Test
+    public void testCanReauthenticateTriggersReauthenticate() {
+        when(mReauthenticationHelper.canReauthenticate()).thenReturn(true);
+        mMediator.onEdit(ANA);
+        verify(mReauthenticationHelper)
+                .reauthenticate(eq(ReauthReason.EDIT_PASSWORD), any(Callback.class));
     }
 
     @Test

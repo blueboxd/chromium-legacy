@@ -5,9 +5,17 @@
 #ifndef COMPONENTS_PRERENDER_BROWSER_PRERENDER_UTIL_H_
 #define COMPONENTS_PRERENDER_BROWSER_PRERENDER_UTIL_H_
 
+#include "services/metrics/public/cpp/ukm_source_id.h"
+
 class GURL;
 
+namespace content {
+class NavigationHandle;
+}
+
 namespace prerender {
+
+class PrerenderManager;
 
 // Indicates whether the URL provided is a GWS origin.
 bool IsGoogleOriginURL(const GURL& origin_url);
@@ -17,6 +25,13 @@ void ReportPrerenderExternalURL();
 
 // Report a URL was canceled due to unsupported prerender scheme.
 void ReportUnsupportedPrerenderScheme(const GURL& url);
+
+// Records the metrics for the nostate prefetch to an event with UKM source ID
+// |source_id|.
+void RecordNoStatePrefetchMetrics(
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id,
+    prerender::PrerenderManager* prerender_manager);
 
 }  // namespace prerender
 

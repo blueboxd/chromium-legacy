@@ -16,4 +16,7 @@ interface PageHandlerFactory {
 interface PageHandler {
   // Opens the chrome feedback dialog.
   OpenFeedbackDialog() => (string? error_message);
+
+  // Opens the parental controls part of OS settings.
+  ShowParentalControls();
 };

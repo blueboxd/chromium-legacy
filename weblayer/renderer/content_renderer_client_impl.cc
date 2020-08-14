@@ -17,6 +17,7 @@
 #include "components/prerender/common/prerender_url_loader_throttle.h"
 #include "components/prerender/renderer/prerender_helper.h"
 #include "components/prerender/renderer/prerender_render_frame_observer.h"
+#include "components/prerender/renderer/prerender_utils.h"
 #include "components/prerender/renderer/prerenderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -194,6 +195,14 @@ bool ContentRendererClientImpl::IsPrefetchOnly(
     const blink::WebURLRequest& request) {
   return prerender::PrerenderHelper::GetPrerenderMode(render_frame) ==
          prerender::mojom::PrerenderMode::kPrefetchOnly;
+}
+
+bool ContentRendererClientImpl::DeferMediaLoad(
+    content::RenderFrame* render_frame,
+    bool has_played_media_before,
+    base::OnceClosure closure) {
+  return prerender::DeferMediaLoad(render_frame, has_played_media_before,
+                                   std::move(closure));
 }
 
 }  // namespace weblayer

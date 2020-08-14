@@ -1393,6 +1393,8 @@ message ShowGenericUiProto {
   // requested values is missing. Note that all values will have
   // |is_client_side_only| set to true.
   optional RequestUserData request_user_data = 9;
+
+  reserved 10;
 }
 
 // Allow choosing one or more possibility. If FocusElement was called just

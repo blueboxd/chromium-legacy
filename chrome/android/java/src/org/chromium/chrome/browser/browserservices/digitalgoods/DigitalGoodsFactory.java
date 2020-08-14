@@ -4,16 +4,17 @@
 
 package org.chromium.chrome.browser.browserservices.digitalgoods;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.payments.mojom.DigitalGoods;
 import org.chromium.services.service_manager.InterfaceFactory;
-
-import androidx.annotation.VisibleForTesting;
 
 /**
  * A factory to create instances of the {@link DigitalGoods} mojo interface.
@@ -40,6 +41,9 @@ public class DigitalGoodsFactory implements InterfaceFactory<DigitalGoods> {
     @Override
     public DigitalGoods createImpl() {
         if (sImplForTesting != null) return sImplForTesting;
+        if (!PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_APP_STORE_BILLING)) {
+            return null;
+        }
 
         // Ensure that the DigitalGoodsImpl is only created if we're in a TWA and on its verified
         // origin.

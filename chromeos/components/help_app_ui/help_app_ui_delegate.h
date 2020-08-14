@@ -27,6 +27,9 @@ class HelpAppUIDelegate {
   // Takes a WebUIDataSource, and adds device flags (e.g. board name) and
   // feature flags (e.g. Google Assistant).
   virtual void PopulateLoadTimeData(content::WebUIDataSource* source) = 0;
+
+  // Opens OS Settings at the parental controls section.
+  virtual void ShowParentalControls() = 0;
 };
 
 #endif  // CHROMEOS_COMPONENTS_HELP_APP_UI_HELP_APP_UI_DELEGATE_H_

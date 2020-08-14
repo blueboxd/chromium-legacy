@@ -72,7 +72,7 @@ include_rules = [
   "+mojo/public",
   "+net",
   "+sandbox",
-  "+services/metrics/public/cpp/ukm_recorder.h",
+  "+services/metrics/public/cpp",
   "+services/network/network_service.h",
   "+services/network/public",
   "+services/service_manager",

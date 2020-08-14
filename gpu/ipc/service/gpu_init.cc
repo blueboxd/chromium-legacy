@@ -46,6 +46,8 @@
 #endif
 
 #if defined(OS_WIN)
+#include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_surface_egl.h"
 #endif
 
@@ -574,6 +576,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   if (!watchdog_thread_)
     watchdog_init.SetGpuWatchdogPtr(nullptr);
 
+#if defined(OS_WIN)
+  if (gpu_feature_info_.IsWorkaroundEnabled(DISABLE_DECODE_SWAP_CHAIN))
+    gl::DirectCompositionSurfaceWin::DisableDecodeSwapChain();
+#endif
+
   return true;
 }
 
@@ -709,6 +716,11 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 #endif
 
   DisableInProcessGpuVulkan(&gpu_feature_info_, &gpu_preferences_);
+
+#if defined(OS_WIN)
+  if (gpu_feature_info_.IsWorkaroundEnabled(DISABLE_DECODE_SWAP_CHAIN))
+    gl::DirectCompositionSurfaceWin::DisableDecodeSwapChain();
+#endif
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
 }

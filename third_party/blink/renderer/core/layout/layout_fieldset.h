@@ -35,6 +35,8 @@ class LayoutFieldset final : public LayoutBlockFlow {
   static LayoutBox* FindInFlowLegend(const LayoutBlock& fieldset);
   LayoutBox* FindInFlowLegend() const { return FindInFlowLegend(*this); }
 
+  static LayoutObject* FindLegendContainer(const LayoutBox& legend);
+
   const char* GetName() const override { return "LayoutFieldset"; }
 
   bool CreatesNewFormattingContext() const final { return true; }

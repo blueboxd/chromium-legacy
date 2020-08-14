@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -694,6 +695,17 @@ void PrePaintTreeWalk::WalkLegacyChildren(const LayoutObject& object) {
     }
   }
 
+  if (UNLIKELY(object.IsFieldsetIncludingNG())) {
+    // Handle the rendered legend of the fieldset right away. It may not be a
+    // direct child in the layout object tree (there may be an anonymous
+    // fieldset content wrapper in-between, and even a flow thread), but it is
+    // to be treated as such (similarly to out-of-flow positioned elements in a
+    // way).
+    if (const LayoutBox* legend =
+            LayoutFieldset::FindInFlowLegend(To<LayoutBlock>(object)))
+      Walk(*legend, /* iterator */ nullptr);
+  }
+
   for (const LayoutObject* child = object.SlowFirstChild(); child;
        child = child->NextSibling()) {
     if (child->IsLayoutMultiColumnSpannerPlaceholder()) {
@@ -713,6 +725,12 @@ void PrePaintTreeWalk::WalkLegacyChildren(const LayoutObject& object) {
     if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled() &&
                  child->IsOutOfFlowPositioned() && object.IsLayoutNGObject()))
       continue;
+
+    // The rendered legend was handled above, before processing the children of
+    // the fieldset. So skip it when found during normal child traversal.
+    if (UNLIKELY(child->IsRenderedLegend()))
+      continue;
+
     Walk(*child, /* iterator */ nullptr);
   }
 

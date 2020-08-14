@@ -85,6 +85,54 @@ struct BLINK_COMMON_EXPORT
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// WORKLET TOKENS
+
+template <>
+struct StructTraits<blink::mojom::AnimationWorkletTokenDataView,
+                    blink::AnimationWorkletToken>
+    : public blink::TokenMojomTraitsHelper<
+          blink::mojom::AnimationWorkletTokenDataView,
+          blink::AnimationWorkletToken> {};
+
+template <>
+struct StructTraits<blink::mojom::AudioWorkletTokenDataView,
+                    blink::AudioWorkletToken>
+    : public blink::TokenMojomTraitsHelper<
+          blink::mojom::AudioWorkletTokenDataView,
+          blink::AudioWorkletToken> {};
+
+template <>
+struct StructTraits<blink::mojom::LayoutWorkletTokenDataView,
+                    blink::LayoutWorkletToken>
+    : public blink::TokenMojomTraitsHelper<
+          blink::mojom::LayoutWorkletTokenDataView,
+          blink::LayoutWorkletToken> {};
+
+template <>
+struct StructTraits<blink::mojom::PaintWorkletTokenDataView,
+                    blink::PaintWorkletToken>
+    : public blink::TokenMojomTraitsHelper<
+          blink::mojom::PaintWorkletTokenDataView,
+          blink::PaintWorkletToken> {};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    UnionTraits<blink::mojom::WorkletTokenDataView, blink::WorkletToken> {
+  static bool Read(blink::mojom::WorkletTokenDataView input,
+                   blink::WorkletToken* output);
+  static blink::mojom::WorkletTokenDataView::Tag GetTag(
+      const blink::WorkletToken& token);
+  static blink::AnimationWorkletToken animation_worklet_token(
+      const blink::WorkletToken& token);
+  static blink::AudioWorkletToken audio_worklet_token(
+      const blink::WorkletToken& token);
+  static blink::LayoutWorkletToken layout_worklet_token(
+      const blink::WorkletToken& token);
+  static blink::PaintWorkletToken paint_worklet_token(
+      const blink::WorkletToken& token);
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // OTHER TOKENS
 //
 // Keep this section last.
@@ -95,20 +143,28 @@ struct BLINK_COMMON_EXPORT
 
 template <>
 struct BLINK_COMMON_EXPORT
-    UnionTraits<blink::mojom::ExecutionContextAttributionTokenDataView,
-                blink::ExecutionContextAttributionToken> {
-  static bool Read(blink::mojom::ExecutionContextAttributionTokenDataView input,
-                   blink::ExecutionContextAttributionToken* output);
-  static blink::mojom::ExecutionContextAttributionTokenDataView::Tag GetTag(
-      const blink::ExecutionContextAttributionToken& token);
+    UnionTraits<blink::mojom::ExecutionContextTokenDataView,
+                blink::ExecutionContextToken> {
+  static bool Read(blink::mojom::ExecutionContextTokenDataView input,
+                   blink::ExecutionContextToken* output);
+  static blink::mojom::ExecutionContextTokenDataView::Tag GetTag(
+      const blink::ExecutionContextToken& token);
   static blink::LocalFrameToken local_frame_token(
-      const blink::ExecutionContextAttributionToken& token);
+      const blink::ExecutionContextToken& token);
   static blink::DedicatedWorkerToken dedicated_worker_token(
-      const blink::ExecutionContextAttributionToken& token);
+      const blink::ExecutionContextToken& token);
   static blink::ServiceWorkerToken service_worker_token(
-      const blink::ExecutionContextAttributionToken& token);
+      const blink::ExecutionContextToken& token);
   static blink::SharedWorkerToken shared_worker_token(
-      const blink::ExecutionContextAttributionToken& token);
+      const blink::ExecutionContextToken& token);
+  static blink::AnimationWorkletToken animation_worklet_token(
+      const blink::ExecutionContextToken& token);
+  static blink::AudioWorkletToken audio_worklet_token(
+      const blink::ExecutionContextToken& token);
+  static blink::LayoutWorkletToken layout_worklet_token(
+      const blink::ExecutionContextToken& token);
+  static blink::PaintWorkletToken paint_worklet_token(
+      const blink::ExecutionContextToken& token);
 };
 
 template <>

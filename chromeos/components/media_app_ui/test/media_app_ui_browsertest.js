@@ -917,6 +917,23 @@ TEST_F('MediaAppUIBrowserTest', 'SaveAsErrorHandling', async () => {
   testDone();
 });
 
+// Tests the IPC behind the openFile delegate function.
+TEST_F('MediaAppUIBrowserTest', 'OpenFileIPC', async () => {
+  const pickedFileHandle = new FakeFileSystemFileHandle('picked_file.jpg');
+  window.showOpenFilePicker = () => Promise.resolve([pickedFileHandle]);
+
+  await sendTestMessage({openFile: true});
+
+  const lastToken = [...tokenMap.keys()].slice(-1)[0];
+  assertEquals(entryIndex, 0);
+  assertEquals(currentFiles.length, 1);
+  assertEquals(currentFiles[0].handle, pickedFileHandle);
+  assertEquals(currentFiles[0].handle.name, 'picked_file.jpg');
+  assertEquals(currentFiles[0].token, lastToken);
+  assertEquals(tokenMap.get(currentFiles[0].token), currentFiles[0].handle);
+  testDone();
+});
+
 TEST_F('MediaAppUIBrowserTest', 'RelatedFiles', async () => {
   const testFiles = [
     {name: 'matroska.mkv'},

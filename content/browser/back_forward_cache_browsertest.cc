@@ -5259,6 +5259,9 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
   ASSERT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  scoped_refptr<SiteInstanceImpl> site_instance_a =
+      static_cast<SiteInstanceImpl*>(
+          web_contents()->GetMainFrame()->GetSiteInstance());
 
   EXPECT_TRUE(ExecJs(rfh_a, R"(
     new Promise(resolve => {
@@ -5268,11 +5271,24 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
     })
   )"));
 
-  // 2) Navigate to B.
-  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+  // 2) Navigate to B. The navigation is renderer-initiated and should not
+  // create a new RenderFrameHost or BrowsingInstance unless we decided to do
+  // a proactive BrowsingInstance swap.
+  ASSERT_TRUE(NavigateToURLFromRenderer(shell(), url_b));
+  scoped_refptr<SiteInstanceImpl> site_instance_b =
+      static_cast<SiteInstanceImpl*>(
+          web_contents()->GetMainFrame()->GetSiteInstance());
 
-  // - Page A should not be in the cache.
+  // Page A should not be in the cache, because it uses accelerometer, which is
+  // a blocklisted feature for bfcache.
   delete_observer_rfh_a.WaitUntilDeleted();
+
+  // We should've done a proactive BrowsingInstance swap for the navigation
+  // from A and B even when we know that there's a blocklisted feature being
+  // used, because we don't account for disallowed features for bfcache
+  // eligibility when determining whether or not we should do a proactive
+  // BrowsingInstance swap.
+  EXPECT_FALSE(site_instance_a->IsRelatedSiteInstance(site_instance_b.get()));
 
   // 3) Go back.
   web_contents()->GetController().GoBack();
@@ -6679,6 +6695,54 @@ IN_PROC_BROWSER_TEST_F(
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
                 FROM_HERE);
+}
+
+// Tests that if a page is already ineligible to be saved in the back-forward
+// cache at navigation time, we shouldn't try to proactively swap
+// BrowsingInstances.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       ShouldNotSwapBrowsingInstanceWhenPageWillNotBeCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+  GURL url_3(embedded_test_server()->GetURL("/title3.html"));
+
+  // 1) Navigate to |url_1| .
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  RenderFrameHostImpl* rfh_1 = current_frame_host();
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(rfh_1->GetSiteInstance());
+
+  // 2) Navigate to |url_2|.
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+  RenderFrameHostImpl* rfh_2 = current_frame_host();
+  RenderFrameDeletedObserver rfh_2_deleted_observer(rfh_2);
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(rfh_2->GetSiteInstance());
+
+  // |rfh_1| should get into the back-forward cache.
+  EXPECT_TRUE(rfh_1->IsInBackForwardCache());
+  // Check that title1.html and title2.html are in different BrowsingInstances.
+  EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2.get()));
+
+  // Disable the BackForwardCache for |rfh_2|.
+  BackForwardCache::DisableForRenderFrameHost(rfh_2->GetGlobalFrameRoutingId(),
+                                              kDisabledReasonForTest);
+
+  // 3) Navigate to |url_3|.
+  EXPECT_TRUE(NavigateToURL(shell(), url_3));
+  RenderFrameHostImpl* rfh_3 = current_frame_host();
+  scoped_refptr<SiteInstanceImpl> site_instance_3 =
+      static_cast<SiteInstanceImpl*>(rfh_3->GetSiteInstance());
+
+  // Check that |url_2| and |url_3| are reusing the same SiteInstance (and
+  // BrowsingInstance).
+  EXPECT_EQ(site_instance_2, site_instance_3);
+  if (rfh_2 != rfh_3) {
+    // If we aren't reusing the RenderFrameHost then |rfh_2| will eventually
+    // get deleted because it's not saved in the back-forward cache.
+    rfh_2_deleted_observer.WaitUntilDeleted();
+  }
 }
 
 }  // namespace content

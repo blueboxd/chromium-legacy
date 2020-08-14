@@ -117,9 +117,9 @@ void D3D11DecoderConfigurator::SetUpTextureDescriptor(bool supports_swap_chain,
   // TODO(sunnyps): Find a workaround for when the decoder moves to its own
   // thread and D3D device.  See https://crbug.com/911847
   // TODO(liberato): This depends on the configuration of the TextureSelector,
-  // to some degree.  If it's copying, then it can be set up to use our device
-  // to make the copy, and this can always be unset.  If it's binding, then it
-  // depends on whether we're on the angle device or not.
+  // to some degree. We should unset the flag only if it's binding and the
+  // decode swap chain is supported, as Intel driver is buggy on Gen9 and older
+  // devices without the flag. See https://crbug.com/1107403
   output_texture_desc_.MiscFlags =
       supports_swap_chain ? 0 : D3D11_RESOURCE_MISC_SHARED;
 

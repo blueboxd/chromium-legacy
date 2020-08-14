@@ -1642,25 +1642,27 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
     RETURN_ON_HR_FAILURE(hr, "Failed to set interlace mode", false);
   }
 
+  Microsoft::WRL::ComPtr<IMFAttributes> out_attributes;
+  hr = decoder_->GetOutputStreamAttributes(0, &out_attributes);
+  RETURN_ON_HR_FAILURE(hr, "Failed to get stream attributes", false);
+
+  // On Intel Gen9 and older devices, textures need to be created with a share
+  // handle or they'll crash in CreateShaderResourceView. crbug.com/1107403
+  // Technically MF_SA_D3D11_SHARED_WITHOUT_MUTEX is only honored by the sample
+  // allocator, not by the media foundation transform, but Microsoft's h.264
+  // transform happens to pass it through.
+  out_attributes->SetUINT32(MF_SA_D3D11_SHARED_WITHOUT_MUTEX, TRUE);
+
   // These bind flags _must_ be set before SetInputType or SetOutputType to
   // ensure that we get the proper surfaces created under the hood.
   if (GetPictureBufferMechanism() == PictureBufferMechanism::BIND) {
-    Microsoft::WRL::ComPtr<IMFAttributes> out_attributes;
-    HRESULT hr = decoder_->GetOutputStreamAttributes(0, &out_attributes);
-    RETURN_ON_HR_FAILURE(hr, "Failed to get stream attributes", false);
     out_attributes->SetUINT32(MF_SA_D3D11_BINDFLAGS,
                               D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DECODER);
     // TODO(sunnyps): Find if we can always set resource sharing to disabled
     if (gl::DirectCompositionSurfaceWin::IsDecodeSwapChainSupported()) {
       // Decode swap chains do not support shared resources.
       out_attributes->SetUINT32(MF_SA_D3D11_SHARED, FALSE);
-    } else {
-      // For some reason newer Intel drivers need D3D11_BIND_DECODER textures to
-      // be created with a share handle or they'll crash in
-      // CreateShaderResourceView.  Technically MF_SA_D3D11_SHARED_WITHOUT_MUTEX
-      // is only honored by the sample allocator, not by the media foundation
-      // transform, but Microsoft's h.264 transform happens to pass it through.
-      out_attributes->SetUINT32(MF_SA_D3D11_SHARED_WITHOUT_MUTEX, TRUE);
+      out_attributes->SetUINT32(MF_SA_D3D11_SHARED_WITHOUT_MUTEX, FALSE);
     }
   }
 

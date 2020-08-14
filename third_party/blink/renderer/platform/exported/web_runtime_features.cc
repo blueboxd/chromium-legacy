@@ -443,6 +443,10 @@ void WebRuntimeFeatures::EnablePushMessaging(bool enable) {
   RuntimeEnabledFeatures::SetPushMessagingEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePushSubscriptionChangeEvent(bool enable) {
+  RuntimeEnabledFeatures::SetPushMessagingSubscriptionChangeEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWebShare(bool enable) {
   RuntimeEnabledFeatures::SetWebShareEnabled(enable);
 }

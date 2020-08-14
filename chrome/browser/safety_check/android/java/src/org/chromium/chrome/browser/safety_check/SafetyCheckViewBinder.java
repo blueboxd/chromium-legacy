@@ -24,31 +24,34 @@ class SafetyCheckViewBinder {
     private static final long H_TO_MS = 60 * MIN_TO_MS;
     private static final long DAY_TO_MS = 24 * H_TO_MS;
 
-    private static int getStringForPasswords(@PasswordsState int state) {
+    private static String getStringForPasswords(
+            Context context, PropertyModel model, @PasswordsState int state) {
         switch (state) {
             case PasswordsState.UNCHECKED:
             case PasswordsState.CHECKING:
-                return 0;
+                return "";
             case PasswordsState.NO_PASSWORDS:
-                return R.string.safety_check_passwords_no_passwords;
+                return context.getString(R.string.safety_check_passwords_no_passwords);
             case PasswordsState.SIGNED_OUT:
-                return R.string.safety_check_passwords_error_signed_out;
+                return context.getString(R.string.safety_check_passwords_error_signed_out);
             case PasswordsState.QUOTA_LIMIT:
-                return R.string.safety_check_passwords_error_quota_limit;
+                return context.getString(R.string.safety_check_passwords_error_quota_limit);
             case PasswordsState.OFFLINE:
-                return R.string.safety_check_passwords_error_offline;
+                return context.getString(R.string.safety_check_passwords_error_offline);
             case PasswordsState.ERROR:
-                return R.string.safety_check_passwords_error;
+                return context.getString(R.string.safety_check_passwords_error);
             case PasswordsState.SAFE:
-                return R.string.safety_check_passwords_safe;
+                return context.getString(R.string.safety_check_passwords_safe);
             case PasswordsState.COMPROMISED_EXIST:
-                // TODO(crbug.com/1070620): update the strings for all states once available.
-                return 0;
+                int compromised = model.get(SafetyCheckProperties.COMPROMISED_PASSWORDS);
+                return context.getResources().getQuantityString(
+                        R.plurals.safety_check_passwords_compromised_exist, compromised,
+                        compromised);
             default:
                 assert false : "Unknown PasswordsState value.";
         }
         // Not reached.
-        return 0;
+        return "";
     }
 
     private static int getStatusIconForPasswords(@PasswordsState int state) {
@@ -203,7 +206,8 @@ class SafetyCheckViewBinder {
         if (SafetyCheckProperties.PASSWORDS_STATE == propertyKey) {
             @PasswordsState
             int state = model.get(SafetyCheckProperties.PASSWORDS_STATE);
-            fragment.updateElementStatus(PASSWORDS_KEY, getStringForPasswords(state));
+            fragment.updateElementStatus(
+                    PASSWORDS_KEY, getStringForPasswords(fragment.getContext(), model, state));
             SafetyCheckElementPreference preference = fragment.findPreference(PASSWORDS_KEY);
             preference.setEnabled(true);
             if (state == PasswordsState.UNCHECKED) {
@@ -271,6 +275,9 @@ class SafetyCheckViewBinder {
                     SafetyCheckProperties.SAFETY_CHECK_BUTTON_CLICK_LISTENER));
         } else if (SafetyCheckProperties.LAST_RUN_TIMESTAMP == propertyKey) {
             displayTimestampText(model, fragment);
+        } else if (SafetyCheckProperties.COMPROMISED_PASSWORDS == propertyKey) {
+            // Do nothing - this is handled by the PASSWORDS_STATE update.
+            return;
         } else {
             assert false : "Unhandled property detected in SafetyCheckViewBinder!";
         }

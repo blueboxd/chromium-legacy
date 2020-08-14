@@ -177,22 +177,6 @@ gfx::ImageSkia SkBitmapToImageSkia(SkBitmap bitmap, float icon_scale) {
   return gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, icon_scale));
 }
 
-// Returns a callback that converts an SkBitmap to an ImageSkia.
-base::OnceCallback<void(const SkBitmap&)> SkBitmapToImageSkiaCallback(
-    base::OnceCallback<void(gfx::ImageSkia)> callback,
-    float icon_scale) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(gfx::ImageSkia)> callback, float icon_scale,
-         const SkBitmap& bitmap) {
-        if (bitmap.isNull()) {
-          std::move(callback).Run(gfx::ImageSkia());
-          return;
-        }
-        std::move(callback).Run(SkBitmapToImageSkia(bitmap, icon_scale));
-      },
-      std::move(callback), icon_scale);
-}
-
 // Returns a callback that converts a gfx::Image to an ImageSkia.
 base::OnceCallback<void(const gfx::Image&)> ImageToImageSkia(
     base::OnceCallback<void(gfx::ImageSkia)> callback) {
@@ -387,6 +371,8 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   void CompleteWithImageSkia(gfx::ImageSkia image);
 
+  void OnReadWebAppIcon(IconPurpose purpose, const SkBitmap& bitmap);
+
   void MaybeLoadFallbackOrCompleteEmpty();
 
   apps::mojom::IconType icon_type_;
@@ -459,49 +445,60 @@ void IconLoadingPipeline::LoadWebAppIcon(
   // constructor.
   icon_scale_for_compressed_response_ = icon_scale_;
 
-  if (icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::ANY},
+  base::Optional<IconPurpose> icon_purpose_to_read;
+  if (icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::MASKABLE},
                                    icon_size_in_px_)) {
-    switch (icon_type_) {
-      case apps::mojom::IconType::kCompressed:
-        if (icon_effects_ == apps::IconEffects::kNone) {
-          icon_manager.ReadSmallestCompressedIconAny(
-              web_app_id, icon_size_in_px_,
-              base::BindOnce(&IconLoadingPipeline::CompleteWithCompressed,
-                             base::WrapRefCounted(this)));
-          return;
-        }
-        FALLTHROUGH;
-      case apps::mojom::IconType::kUncompressed:
-        if (icon_type_ == apps::mojom::IconType::kUncompressed) {
-          // For uncompressed icon, apply the resize and pad effect.
-          icon_effects_ = static_cast<apps::IconEffects>(
-              icon_effects_ | apps::IconEffects::kResizeAndPad);
-
-          // For uncompressed icon, clear the standard icon effects: kBackground
-          // and kMask.
-          icon_effects_ = static_cast<apps::IconEffects>(
-              icon_effects_ & ~apps::IconEffects::kCrOsStandardBackground);
-          icon_effects_ = static_cast<apps::IconEffects>(
-              icon_effects_ & ~apps::IconEffects::kCrOsStandardMask);
-        }
-        FALLTHROUGH;
-      case apps::mojom::IconType::kStandard:
-        // If |icon_effects| are requested, we must always load the
-        // uncompressed image to apply the icon effects, and then re-encode the
-        // image if the compressed icon is requested.
-        icon_manager.ReadSmallestIconAny(
-            web_app_id, icon_size_in_px_,
-            SkBitmapToImageSkiaCallback(
-                base::BindOnce(
-                    &IconLoadingPipeline::MaybeApplyEffectsAndComplete,
-                    base::WrapRefCounted(this)),
-                icon_scale_));
-        return;
-      case apps::mojom::IconType::kUnknown:
-        break;
-    }
+    icon_purpose_to_read = IconPurpose::MASKABLE;
+  } else if (icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::ANY},
+                                          icon_size_in_px_)) {
+    icon_purpose_to_read = IconPurpose::ANY;
   }
-  MaybeLoadFallbackOrCompleteEmpty();
+  if (!icon_purpose_to_read.has_value()) {
+    MaybeLoadFallbackOrCompleteEmpty();
+    return;
+  }
+
+  switch (icon_type_) {
+    case apps::mojom::IconType::kCompressed:
+      if (icon_effects_ == apps::IconEffects::kNone &&
+          *icon_purpose_to_read == IconPurpose::ANY) {
+        // Only read IconPurpose::ANY icons compressed as other purposes would
+        // need to be uncompressed to apply icon effects.
+        icon_manager.ReadSmallestCompressedIconAny(
+            web_app_id, icon_size_in_px_,
+            base::BindOnce(&IconLoadingPipeline::CompleteWithCompressed,
+                           base::WrapRefCounted(this)));
+        return;
+      }
+      FALLTHROUGH;
+    case apps::mojom::IconType::kUncompressed:
+      if (icon_type_ == apps::mojom::IconType::kUncompressed) {
+        // For uncompressed icon, apply the resize and pad effect.
+        icon_effects_ = static_cast<apps::IconEffects>(
+            icon_effects_ | apps::IconEffects::kResizeAndPad);
+
+        // For uncompressed icon, clear the standard icon effects: kBackground
+        // and kMask.
+        icon_effects_ = static_cast<apps::IconEffects>(
+            icon_effects_ & ~apps::IconEffects::kCrOsStandardBackground);
+        icon_effects_ = static_cast<apps::IconEffects>(
+            icon_effects_ & ~apps::IconEffects::kCrOsStandardMask);
+      }
+      FALLTHROUGH;
+    case apps::mojom::IconType::kStandard:
+      // If |icon_effects| are requested, we must always load the
+      // uncompressed image to apply the icon effects, and then re-encode the
+      // image if the compressed icon is requested.
+      icon_manager.ReadSmallestIcon(
+          web_app_id, {*icon_purpose_to_read}, icon_size_in_px_,
+          base::BindOnce(&IconLoadingPipeline::OnReadWebAppIcon,
+                         base::WrapRefCounted(this)));
+      return;
+    case apps::mojom::IconType::kUnknown:
+      MaybeLoadFallbackOrCompleteEmpty();
+      return;
+  }
+  NOTREACHED();
 }
 
 void IconLoadingPipeline::LoadExtensionIcon(
@@ -818,6 +815,19 @@ void IconLoadingPipeline::CompleteWithImageSkia(gfx::ImageSkia image) {
   iv->uncompressed = std::move(image);
   iv->is_placeholder_icon = is_placeholder_icon_;
   std::move(callback_).Run(std::move(iv));
+}
+
+// Callback for reading uncompressed web app icons.
+void IconLoadingPipeline::OnReadWebAppIcon(IconPurpose purpose,
+                                           const SkBitmap& bitmap) {
+  if (bitmap.isNull()) {
+    MaybeApplyEffectsAndComplete(gfx::ImageSkia());
+    return;
+  }
+  // TODO (nancylingwang): Apply icon effects if needed here.
+  // if (bitmap.width() != icon_size_in_px_) resize is needed.
+  // bool is_maskable = purpose == IconPurpose::MASKABLE;
+  MaybeApplyEffectsAndComplete(SkBitmapToImageSkia(bitmap, icon_scale_));
 }
 
 void IconLoadingPipeline::MaybeLoadFallbackOrCompleteEmpty() {

@@ -18,6 +18,7 @@ const Message = {
   LOAD_FILES: 'load-files',
   NAVIGATE: 'navigate',
   OPEN_FEEDBACK_DIALOG: 'open-feedback-dialog',
+  OPEN_FILE: 'open-file',
   OVERWRITE_FILE: 'overwrite-file',
   RENAME_FILE: 'rename-file',
   REQUEST_SAVE_FILE: 'request-save-file',

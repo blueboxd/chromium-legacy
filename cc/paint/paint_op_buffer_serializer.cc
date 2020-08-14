@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/paint/clear_for_opaque_raster.h"
 #include "cc/paint/scoped_raster_flags.h"
 #include "ui/gfx/skia_util.h"
 
@@ -148,63 +149,26 @@ void PaintOpBufferSerializer::ClearForOpaqueRaster(
     const Preamble& preamble,
     const PaintOp::SerializeOptions& options,
     const PlaybackParams& params) {
-  // Clear opaque raster sources.  Opaque rasters sources guarantee that all
-  // pixels inside the opaque region are painted.  However, due to scaling
-  // it's possible that the last row and column might include pixels that
-  // are not painted.  Because this raster source is required to be opaque,
-  // we may need to do extra clearing outside of the clip.  This needs to
-  // be done for both full and partial raster.
+  gfx::Rect outer_rect;
+  gfx::Rect inner_rect;
+  if (!CalculateClearForOpaqueRasterRects(
+          preamble.post_translation, preamble.post_scale, preamble.content_size,
+          preamble.full_raster_rect, preamble.playback_rect, outer_rect,
+          inner_rect))
+    return;
 
-  // The last texel of this content is not guaranteed to be fully opaque, so
-  // inset by one to generate the fully opaque coverage rect.  This rect is
-  // in device space.
-  SkIRect coverage_device_rect = SkIRect::MakeWH(
-      preamble.content_size.width() - preamble.full_raster_rect.x() - 1,
-      preamble.content_size.height() - preamble.full_raster_rect.y() - 1);
-
-  // If not fully covered, we need to clear one texel inside the coverage
-  // rect (because of blending during raster) and one texel outside the canvas
-  // bitmap rect (because of bilinear filtering during draw).  See comments
-  // in RasterSource.
-  SkIRect device_column = SkIRect::MakeXYWH(coverage_device_rect.right(), 0, 2,
-                                            coverage_device_rect.bottom());
-  // row includes the corner, column excludes it.
-  SkIRect device_row = SkIRect::MakeXYWH(0, coverage_device_rect.bottom(),
-                                         coverage_device_rect.right() + 2, 2);
-
-  bool right_edge =
-      preamble.content_size.width() == preamble.playback_rect.right();
-  bool bottom_edge =
-      preamble.content_size.height() == preamble.playback_rect.bottom();
-
-  // If the playback rect is touching either edge of the content rect
-  // extend it by one pixel to include the extra texel outside the canvas
-  // bitmap rect that was added to device column and row above.
-  SkIRect playback_device_rect = SkIRect::MakeXYWH(
-      preamble.playback_rect.x() - preamble.full_raster_rect.x(),
-      preamble.playback_rect.y() - preamble.full_raster_rect.y(),
-      preamble.playback_rect.width() + (right_edge ? 1 : 0),
-      preamble.playback_rect.height() + (bottom_edge ? 1 : 0));
-
-  // Intersect the device column and row with the playback rect and only
-  // clear inside of that rect if needed.
-  if (device_column.intersect(playback_device_rect)) {
-    Save(options, params);
-    ClipRectOp clip_op(SkRect::Make(device_column), SkClipOp::kIntersect,
-                       false);
-    SerializeOp(&clip_op, options, params);
-    DrawColorOp clear_op(preamble.background_color, SkBlendMode::kSrc);
-    SerializeOp(&clear_op, options, params);
-    RestoreToCount(1, options, params);
+  Save(options, params);
+  ClipRectOp outer_clip_op(gfx::RectToSkRect(outer_rect), SkClipOp::kIntersect,
+                           false);
+  SerializeOp(&outer_clip_op, options, params);
+  if (!inner_rect.IsEmpty()) {
+    ClipRectOp inner_clip_op(gfx::RectToSkRect(inner_rect),
+                             SkClipOp::kDifference, false);
+    SerializeOp(&inner_clip_op, options, params);
   }
-  if (device_row.intersect(playback_device_rect)) {
-    Save(options, params);
-    ClipRectOp clip_op(SkRect::Make(device_row), SkClipOp::kIntersect, false);
-    SerializeOp(&clip_op, options, params);
-    DrawColorOp clear_op(preamble.background_color, SkBlendMode::kSrc);
-    SerializeOp(&clear_op, options, params);
-    RestoreToCount(1, options, params);
-  }
+  DrawColorOp clear_op(preamble.background_color, SkBlendMode::kSrc);
+  SerializeOp(&clear_op, options, params);
+  RestoreToCount(1, options, params);
 }
 
 void PaintOpBufferSerializer::SerializePreamble(
@@ -218,7 +182,7 @@ void PaintOpBufferSerializer::SerializePreamble(
   // NOTE: The following code should be kept consistent with
   // RasterSource::PlaybackToCanvas().
   bool is_partial_raster = preamble.full_raster_rect != preamble.playback_rect;
-  if (!preamble.requires_clear && preamble.post_translation.IsZero()) {
+  if (!preamble.requires_clear) {
     ClearForOpaqueRaster(preamble, options, params);
   } else if (!is_partial_raster) {
     // If rastering the entire tile, clear to transparent pre-clip.  This is so

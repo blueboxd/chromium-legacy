@@ -50,19 +50,42 @@ TEST(WorkerTokenTest, MojomTraits) {
                            blink::SharedWorkerToken>();
 }
 
-TEST(ExecutionContextAttributionTokenTest, MojomTraits) {
-  ExpectSerializationWorks<blink::ExecutionContextAttributionToken,
-                           blink::mojom::ExecutionContextAttributionToken,
+TEST(WorkletTokenTest, MojomTraits) {
+  ExpectSerializationWorks<blink::WorkletToken, blink::mojom::WorkletToken,
+                           blink::AnimationWorkletToken>();
+  ExpectSerializationWorks<blink::WorkletToken, blink::mojom::WorkletToken,
+                           blink::AudioWorkletToken>();
+  ExpectSerializationWorks<blink::WorkletToken, blink::mojom::WorkletToken,
+                           blink::LayoutWorkletToken>();
+  ExpectSerializationWorks<blink::WorkletToken, blink::mojom::WorkletToken,
+                           blink::PaintWorkletToken>();
+}
+
+TEST(ExecutionContextTokenTest, MojomTraits) {
+  ExpectSerializationWorks<blink::ExecutionContextToken,
+                           blink::mojom::ExecutionContextToken,
                            blink::LocalFrameToken>();
-  ExpectSerializationWorks<blink::ExecutionContextAttributionToken,
-                           blink::mojom::ExecutionContextAttributionToken,
+  ExpectSerializationWorks<blink::ExecutionContextToken,
+                           blink::mojom::ExecutionContextToken,
                            blink::DedicatedWorkerToken>();
-  ExpectSerializationWorks<blink::ExecutionContextAttributionToken,
-                           blink::mojom::ExecutionContextAttributionToken,
+  ExpectSerializationWorks<blink::ExecutionContextToken,
+                           blink::mojom::ExecutionContextToken,
                            blink::ServiceWorkerToken>();
-  ExpectSerializationWorks<blink::ExecutionContextAttributionToken,
-                           blink::mojom::ExecutionContextAttributionToken,
+  ExpectSerializationWorks<blink::ExecutionContextToken,
+                           blink::mojom::ExecutionContextToken,
                            blink::SharedWorkerToken>();
+  ExpectSerializationWorks<blink::ExecutionContextToken,
+                           blink::mojom::ExecutionContextToken,
+                           blink::AnimationWorkletToken>();
+  ExpectSerializationWorks<blink::ExecutionContextToken,
+                           blink::mojom::ExecutionContextToken,
+                           blink::AudioWorkletToken>();
+  ExpectSerializationWorks<blink::ExecutionContextToken,
+                           blink::mojom::ExecutionContextToken,
+                           blink::LayoutWorkletToken>();
+  ExpectSerializationWorks<blink::ExecutionContextToken,
+                           blink::mojom::ExecutionContextToken,
+                           blink::PaintWorkletToken>();
 }
 
 }  // namespace mojo

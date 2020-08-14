@@ -39,6 +39,8 @@ bool g_overlay_caps_valid = false;
 // Indicates support for either NV12 or YUY2 overlays. GUARDED_BY
 // GetOverlayLock().
 bool g_supports_overlays = false;
+// Whether the DecodeSwapChain is disabled or not.
+bool g_decode_swap_chain_disabled = false;
 
 // The lock to guard g_overlay_caps_valid and g_supports_overlays.
 base::Lock& GetOverlayLock() {
@@ -428,12 +430,18 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
 
 // static
 bool DirectCompositionSurfaceWin::IsDecodeSwapChainSupported() {
-  if (base::FeatureList::IsEnabled(
+  if (!g_decode_swap_chain_disabled &&
+      base::FeatureList::IsEnabled(
           features::kDirectCompositionUseNV12DecodeSwapChain)) {
     UpdateOverlaySupport();
     return GetOverlayFormatUsedForSDR() == DXGI_FORMAT_NV12;
   }
   return false;
+}
+
+// static
+void DirectCompositionSurfaceWin::DisableDecodeSwapChain() {
+  g_decode_swap_chain_disabled = true;
 }
 
 // static

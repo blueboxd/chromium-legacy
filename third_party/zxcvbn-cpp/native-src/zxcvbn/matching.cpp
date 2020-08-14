@@ -124,8 +124,8 @@ std::vector<Match> omnimatch(const std::string & password,
   auto ranked_dictionaries = default_ranked_dicts();
 
   auto ranked_dict = build_ranked_dict(ordered_list);
-  ranked_dictionaries.insert(std::make_pair(DictionaryTag::USER_INPUTS,
-                                            std::cref(ranked_dict)));
+  ranked_dictionaries.insert(
+      std::make_pair(DictionaryTag::USER_INPUTS, &ranked_dict));
 
   std::vector<Match> matches;
   std::function<std::vector<Match>(const std::string&)> matchers[] = {
@@ -159,7 +159,7 @@ std::vector<Match> dictionary_match(const std::string & password,
   auto password_lower = dict_normalize(password);
   for (const auto & item : ranked_dictionaries) {
     auto dictionary_tag = item.first;
-    auto & ranked_dict = item.second;
+    auto& ranked_dict = *item.second;
     for (decltype(len) i = 0, idx = 0; idx < len; util::utf8_decode(password, idx), ++i) {
       for (decltype(len) j = i, jdx = idx; jdx < len; ++j) {
         // j is inclusive, but jdx is not so eagerly iterate jdx

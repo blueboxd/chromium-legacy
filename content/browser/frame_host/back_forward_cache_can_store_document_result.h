@@ -15,6 +15,8 @@ namespace content {
 
 // Represents the result whether the page could be stored in the back-forward
 // cache with the reasons.
+// TODO(rakina): Rename this to use "Page" instead of "Document", to follow
+// the naming of BackForwardCacheImpl::CanStorePageNow().
 class BackForwardCacheCanStoreDocumentResult {
  public:
   using NotStoredReasons =

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/rand_util.h"
 #include "base/util/values/values_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -20,9 +19,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/search/generated_colors_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -154,12 +153,7 @@ void ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo(
   AllowJavascript();
   CHECK_EQ(1U, args->GetSize());
   const base::Value& callback_id = args->GetList()[0];
-  // TODO(crbug.com/1108295): Implement more sophisticated algorithm to pick the
-  // new profile color.
-  size_t size = base::size(chrome_colors::kGeneratedColorsInfo);
-  size_t index = static_cast<size_t>(base::RandInt(0, size - 1));
-  const auto& color_info = chrome_colors::kGeneratedColorsInfo[index];
-
+  chrome_colors::ColorInfo color_info = GenerateNewProfileColor();
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetIntKey("colorId", color_info.id);
   dict.SetStringKey("themeColor",

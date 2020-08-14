@@ -58,6 +58,11 @@ interface PasswordCheckComponentUi {
     void onStartFragment();
 
     /**
+     * Forwards the signal that the fragment is being resumed.
+     */
+    void onResumeFragment();
+
+    /**
      * Forwards the signal that the fragment is being destroyed.
      */
     void onDestroyFragment();

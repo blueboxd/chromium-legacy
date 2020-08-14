@@ -260,6 +260,8 @@ source_set("weblayer_lib_base") {
     "browser/translate_client_impl.h",
     "browser/translate_ranker_factory.cc",
     "browser/translate_ranker_factory.h",
+    "browser/ukm_page_load_metrics_observer.cc",
+    "browser/ukm_page_load_metrics_observer.h",
     "browser/url_bar/autocomplete_scheme_classifier_impl.cc",
     "browser/url_bar/autocomplete_scheme_classifier_impl.h",
     "browser/url_bar/page_info_delegate_impl.cc",

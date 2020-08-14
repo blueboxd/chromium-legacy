@@ -63,8 +63,7 @@ class NearbySharingServiceImpl
       NotificationDisplayService* notification_display_service,
       Profile* profile,
       std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager,
-      NearbyProcessManager* process_manager,
-      std::unique_ptr<NearbyShareCertificateManager> certificate_manager);
+      NearbyProcessManager* process_manager);
   ~NearbySharingServiceImpl() override;
 
   // NearbySharingService:
@@ -187,10 +186,9 @@ class NearbySharingServiceImpl
       base::Optional<NearbyShareDecryptedPublicCertificate> certificate);
   void ReceiveIntroduction(ShareTarget share_target,
                            base::Optional<std::string> token);
-  void OnReceivedIntroduction(
-      ShareTarget share_target,
-      base::Optional<std::string> token,
-      base::Optional<sharing::mojom::V1FramePtr> frame);
+  void OnReceivedIntroduction(ShareTarget share_target,
+                              base::Optional<std::string> token,
+                              base::Optional<sharing::mojom::V1FramePtr> frame);
   void OnFrameRead(ShareTarget share_target,
                    base::Optional<sharing::mojom::V1FramePtr> frame);
   void HandleCertificateInfoFrame(

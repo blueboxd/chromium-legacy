@@ -32,7 +32,6 @@ size_t {{struct.name}}::Hash(size_t seed) const {
 }
 {%- endif %}
 
-#if BUILDFLAG(MOJO_TRACE_ENABLED)
 void {{struct.name}}::AsValueInto(base::trace_event::TracedValue* value) const {
 {%-  for field in struct.fields %}
 {%-    for line in field.kind|write_input_param_for_tracing(
@@ -43,7 +42,6 @@ void {{struct.name}}::AsValueInto(base::trace_event::TracedValue* value) const {
 {%-    endfor -%}
 {%-  endfor %}
 }
-#endif  // BUILDFLAG(MOJO_TRACE_ENABLED)
 
 bool {{struct.name}}::Validate(
     const void* data,

@@ -38,6 +38,7 @@ static_library("browser") {
     "//components/prerender/common:mojo_bindings",
     "//content/public/browser",
     "//net",
+    "//services/metrics/public/cpp:ukm_builders",
     "//ui/gfx/geometry",
     "//ui/gfx/image/mojom:mojom_traits",
     "//url",

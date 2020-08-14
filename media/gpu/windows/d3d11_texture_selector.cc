@@ -12,16 +12,12 @@
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
 #include "media/gpu/windows/d3d11_video_device_format_support.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gl/direct_composition_surface_win.h"
 
 namespace media {
 
 TextureSelector::TextureSelector(VideoPixelFormat pixfmt,
-                                 DXGI_FORMAT output_dxgifmt,
-                                 bool supports_swap_chain)
-    : pixel_format_(pixfmt),
-      output_dxgifmt_(output_dxgifmt),
-      supports_swap_chain_(supports_swap_chain) {}
+                                 DXGI_FORMAT output_dxgifmt)
+    : pixel_format_(pixfmt), output_dxgifmt_(output_dxgifmt) {}
 
 bool SupportsZeroCopy(const gpu::GpuPreferences& preferences,
                       const gpu::GpuDriverBugWorkarounds& workarounds) {
@@ -42,9 +38,6 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
     TextureSelector::HDRMode hdr_output_mode,
     const FormatSupportChecker* format_checker,
     MediaLog* media_log) {
-  bool supports_nv12_decode_swap_chain =
-      gl::DirectCompositionSurfaceWin::IsDecodeSwapChainSupported();
-
   VideoPixelFormat output_pixel_format;
   DXGI_FORMAT output_dxgi_format;
   base::Optional<gfx::ColorSpace> output_color_space;
@@ -165,16 +158,14 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
     MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder is copying textures";
     return std::make_unique<CopyTextureSelector>(
         output_pixel_format, decoder_output_format, output_dxgi_format,
-        output_color_space,
-        supports_nv12_decode_swap_chain);  // TODO(tmathmeyer) false always?
+        output_color_space);
   } else {
     MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder is binding textures";
     // Binding can't change the color space.  The consumer has to do it, if they
     // want to.
     DCHECK(!output_color_space);
     return std::make_unique<TextureSelector>(output_pixel_format,
-                                             output_dxgi_format,
-                                             supports_nv12_decode_swap_chain);
+                                             output_dxgi_format);
   }
 }
 
@@ -195,9 +186,8 @@ CopyTextureSelector::CopyTextureSelector(
     VideoPixelFormat pixfmt,
     DXGI_FORMAT input_dxgifmt,
     DXGI_FORMAT output_dxgifmt,
-    base::Optional<gfx::ColorSpace> output_color_space,
-    bool supports_swap_chain)
-    : TextureSelector(pixfmt, output_dxgifmt, supports_swap_chain),
+    base::Optional<gfx::ColorSpace> output_color_space)
+    : TextureSelector(pixfmt, output_dxgifmt),
       output_color_space_(std::move(output_color_space)) {}
 
 CopyTextureSelector::~CopyTextureSelector() = default;
@@ -216,13 +206,6 @@ std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
   texture_desc.Usage = D3D11_USAGE_DEFAULT;
   texture_desc.BindFlags =
       D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-
-  // Decode swap chains do not support shared resources.
-  // TODO(sunnyps): Find a workaround for when the decoder moves to its own
-  // thread and D3D device.  See https://crbug.com/911847
-  texture_desc.MiscFlags =
-      supports_swap_chain_ ? 0 : D3D11_RESOURCE_MISC_SHARED;
-
   texture_desc.Width = size.width();
   texture_desc.Height = size.height();
 

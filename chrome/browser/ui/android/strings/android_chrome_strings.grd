@@ -915,6 +915,11 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SAFETY_CHECK_PASSWORDS_SAFE" desc="Text to display when no passwords are compromised.">
         No compromised passwords found
       </message>
+      <message name="IDS_SAFETY_CHECK_PASSWORDS_COMPROMISED_EXIST" desc="Text to display when there are compromised passwords.">
+        {NUM_PASSWORDS, plural,
+        =1 {1 compromised password}
+        other {# compromised passwords}}
+      </message>
       <message name="IDS_SAFETY_CHECK_PASSWORDS_NO_PASSWORDS" desc="Text to display when no passwords are saved.">
         No saved passwords
       </message>

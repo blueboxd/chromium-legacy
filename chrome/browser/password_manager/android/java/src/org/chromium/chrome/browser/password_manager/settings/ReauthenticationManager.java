@@ -134,7 +134,8 @@ public final class ReauthenticationManager {
      * @param descriptionId   The resource ID of the string to be displayed to explain the reason
      *                        for the reauthentication.
      * @param containerViewId The ID of the container, fragments of which will get replaced with the
-     *                        reauthentication prompt. It may be equal to View.NO_ID in tests.
+     *                        reauthentication prompt. It may be equal to View.NO_ID in tests or
+     *                        when coming from password check.
      * @param fragmentManager For putting the lock screen on the transaction stack.
      */
     public static void displayReauthenticationFragment(int descriptionId, int containerViewId,

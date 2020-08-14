@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -32,8 +33,8 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver, Destroyable {
     private static final String SKIP_PRIMER_PARAM = "skip_primer";
-    private static final String DISABLE_DISAMBIGUATION_SHEET = "disable_disambiguation_sheet";
     private static final String DISAMBIGUATION_PROMO_URL = "disambiguation_promo_url";
+    static final String P_NO_DEFAULT_PROMO_STRATEGY = "p_no_default_promo";
 
     private final Activity mActivity;
     private DefaultBrowserPromoDialog mDialog;
@@ -74,11 +75,10 @@ public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver
         if (sdkInt >= Build.VERSION_CODES.Q) {
             promoByRoleManager();
         } else if (state == DefaultBrowserPromoUtils.DefaultBrowserState.NO_DEFAULT) {
-            boolean disabled = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                    ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, DISABLE_DISAMBIGUATION_SHEET,
-                    false);
-            if (disabled) {
-                destroy();
+            String promoOnP = ChromeFeatureList.getFieldTrialParamByFeature(
+                    ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, P_NO_DEFAULT_PROMO_STRATEGY);
+            if (TextUtils.equals(promoOnP, "system_settings")) {
+                promoBySystemSettings();
             } else {
                 promoByDisambiguationSheet();
             }

@@ -24,7 +24,8 @@ class FakeNearbyShareContactManager : public NearbyShareContactManager {
   // Factory that creates FakeNearbyShareContactManager instances. Use in
   // NearbyShareContactManagerImpl::Factor::SetFactoryForTesting() in unit
   // tests.
-  class Factory : NearbyShareContactManagerImpl::Factory {
+  class Factory : public NearbyShareContactManagerImpl::Factory {
+   public:
     Factory();
     ~Factory() override;
 

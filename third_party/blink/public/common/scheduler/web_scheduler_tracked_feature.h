@@ -22,6 +22,8 @@ enum class WebSchedulerTrackedFeature {
   kWebSocket = 0,
   kWebRTC = 1,
 
+  // TODO(rakina): Move tracking of cache-control usage from
+  // WebSchedulerTrackedFeature to RenderFrameHost.
   kMainResourceHasCacheControlNoCache = 2,
   kMainResourceHasCacheControlNoStore = 3,
   kSubresourceHasCacheControlNoCache = 4,
